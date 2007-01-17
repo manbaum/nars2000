@@ -1,0 +1,70 @@
+TO DO: General
+-----
+* Check floating point accuracy in input and output
+* Check for stack overflow (recursion depth)
+* Check for bison stack overflow
+* Allocate bison stack from virtual memory
+* Implement Garbage Collection???
+* Delete <InitPrimFns> and put into <CharTrans>???
+* Test implementation limits (stack, FP, Integer, etc.)
+* Check on freeing intermediate variables on error
+* Demote arrays to a more compact storage type???
+* Idiom recognition in the tokenizer
+* Test ± infinity code
+*
+
+
+TODO: Session Manager
+---------------------
+* Mouse selection in session manager:  line, sentence, block
+* CUA keystrokes:  e.g. Ctrl-RightArrow, etc.
+* Tabs for workspaces
+* )Save as ASCII plain text file
+*
+
+
+
+
+DONE:  Bugs
+-----------
+* Fix error caret position
+*
+
+
+DONE:  Features
+---------------
+* Function/operator assignment
+* Monadic and dyadic rho
+* Monadic left shoe (enclose w/axis)
+* Monadic and dyadic plus/minus/etc. (w/axis)
+* Session manager
+* Compose operator
+* ± infinity
+* Use structured exception handling to change storage
+  type on the fly (such as {floor} {infinity})
+* Monadic []DR
+* []TS
+* []TC, []TCxxx
+* []TYPE
+* []SYSID
+* []SYSVER
+*
+
+
+QUESTIONS
+---------
+* In assignment, can a var overwrite a fn, and vice versa
+  or must the original object be erased first?
+* In function assignment,
+
+  f{is}+
+  g{is}f[1]
+
+  should <g> reference
+  what happens to <g> if we change <f>
+* Should we allow f {is} {jot}{dot}   ?? (right operator)
+* Should we allow f {is} {jot}fn      ?? (left operator)
+*
+
+
+

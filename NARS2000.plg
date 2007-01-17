@@ -1,0 +1,56 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: OpenAPL - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSPDB0.tmp" with contents
+[
+/nologo /Zp1 /MLd /W3 /WX /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D RESDEBUG=1 /D "DEBUG" /Fp"Debug/NARS2000.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"R:\NARS2000\pf_plus.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSPDB0.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSPDB1.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib ret\nd\DbgBrk.obj /nologo /subsystem:windows /incremental:yes /pdb:"Debug/NARS2000.pdb" /debug /machine:I386 /out:"Debug/NARS2000.exe" /pdbtype:sept 
+.\Debug\assign.obj
+.\Debug\bjhash.obj
+.\Debug\chkesp.obj
+.\Debug\common.obj
+.\Debug\convert.obj
+.\Debug\debug.obj
+.\Debug\display.obj
+.\Debug\exec.obj
+.\Debug\free.obj
+.\Debug\main.obj
+.\Debug\parse.obj
+.\Debug\pf_iota.obj
+.\Debug\pf_lshoe.obj
+.\Debug\pf_plus.obj
+.\Debug\pf_rho.obj
+.\Debug\primfns.obj
+.\Debug\refcnt.obj
+.\Debug\reg.obj
+.\Debug\resdebug.obj
+.\Debug\sessman.obj
+.\Debug\strand.obj
+.\Debug\symtab.obj
+.\Debug\sysvars.obj
+.\Debug\ver.obj
+.\Debug\main.res
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSPDB1.tmp"
+<h3>Output Window</h3>
+Compiling...
+pf_plus.c
+Linking...
+
+
+
+<h3>Results</h3>
+NARS2000.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

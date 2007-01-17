@@ -1,0 +1,175 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#include "dlgs.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#include ""dlgs.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE
+BEGIN
+    "#include ""ver.rc""\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU MENU DISCARDABLE
+BEGIN
+    POPUP "&File"
+    BEGIN
+///     MENUITEM "&Load Grid...",               IDM_LOADGRID
+///     MENUITEM "&Save Grid...",               IDM_SAVEGRID, GRAYED
+        MENUITEM "&Exit",                       IDM_EXIT
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
+        MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
+        MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
+        MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Screen Font",                IDM_SCREENFONT
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Contents...",                IDM_HELP_CONTENTS
+        MENUITEM "&About",                      IDM_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT DIALOG DISCARDABLE  4, 4, 197, 95
+STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "About NARS2000"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&OK",IDOK,130,5,50,14
+    ICON            IDI_ABOUT,IDC_STATIC,160,30,18,20
+    LTEXT           "NARS2000\nVersion %u.%u%u",IDC_VERSION,10,
+                    5,115,18,NOT WS_GROUP
+    LTEXT           "Copyright © 2006-2007 Sudley Place Software, Inc.\nAll rights reserved.",
+                    IDC_STATIC,10,30,150,18,NOT WS_GROUP
+    LTEXT           "This program is release under version 2 of the GNU GPL license.  For more details, see",
+                    IDC_STATIC,10,55,170,20
+    LTEXT           "http://www.nars2000.org",
+                    IDC_LINK,10,75,170,9,SS_NOTIFY
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ABOUT               ICON    DISCARDABLE     "Images\\About.ico"
+IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF-L.ico"
+IDI_MF_SMALL            ICON    DISCARDABLE     "Images\\MF-S.ico"
+IDI_SM_LARGE            ICON    DISCARDABLE     "Images\\SM-L.ico"
+IDI_SM_SMALL            ICON    DISCARDABLE     "Images\\SM-S.ico"
+IDI_DB_LARGE            ICON    DISCARDABLE     "Images\\DB-L.ico"
+IDI_DB_SMALL            ICON    DISCARDABLE     "Images\\DB-S.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+IDB_LINECONT    BITMAP  DISCARDABLE "Images\\LineCont.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE
+BEGIN
+//  IDD_GOFN, DIALOG
+//  BEGIN
+//      RIGHTMARGIN, 280
+//      BOTTOMMARGIN, 160
+//  END
+//
+//  IDD_PIECE, DIALOG
+//  BEGIN
+//      RIGHTMARGIN, 264
+//      BOTTOMMARGIN, 240
+//  END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#include "ver.rc"
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
+//***************************************************************************
+//  End of File: main.rc
+//***************************************************************************

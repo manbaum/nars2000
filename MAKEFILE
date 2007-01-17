@@ -1,0 +1,532 @@
+# Microsoft Visual C++ generated build script
+
+.SUFFIXES: .DEP .DEV .PRO
+
+PROJ = OA                       # Prefix for project files
+NAME = NARS2000                 # Directory name
+ZIPNAME = NARS-SRC              # Zip file name
+ENAME = NARS2000                # Executable name
+PROJPATH = $(SRCROOT)$(NAME)\trunk\  # Project path
+BIN = $(PROJPATH)binaries\      # Binaries directory
+DEBUG=0
+RESDEBUG=1
+S=$(MAXROOT)STATUTIL\           # Utility programs
+A=$(PROJPATH)Images\            # Images & artwork
+BC=$(BIN)COM\                   # Directory for common binaries
+
+WIN=32
+WDEF=_WIN$(WIN)
+
+!if "$(DEBUG)" == "1"
+CFLAGS_DEBUG=/Zd /Fd$*.pdb /D "DEBUG" /D "RESDEBUG=$(RESDEBUG)"
+!else
+CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
+!endif
+
+CFLAGS_WEXE = /nologo /Gs /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG) /D $(WDEF)
+LFLAGS_WEXE = /NOLOGO /MAP
+LIBS_WEXE = GDI32.LIB   \
+            USER32.LIB  \
+            VERSION.LIB \
+            COMDLG32.LIB\
+            SHELL32.LIB \
+            ADVAPI32.LIB\
+            COMCTL32.LIB\
+!if "$(DEBUG)" == "1"
+            QCtrl32.LIB
+!endif
+
+RCFLAGS =
+RESFLAGS =
+ASMOPTS=/coff
+
+RUNFLAGS =
+DEFFILE = main.DEF
+OBJS_EXT =
+MAPFILE = main.MAP
+!if "$(DEBUG)" == "1"
+RCDEFINES = /D $(WDEF) /D BUILD_BETA
+!else
+RCDEFINES = /D $(WDEF)
+!endif
+
+!if [if exist MSVC.BND del MSVC.BND]
+!endif
+
+ASM=masm
+AFLAGS=/Mu /DDEBUG=$(DEBUG)
+OEM=RET\                        # default OEM directory
+!if "$(DEBUG)" == "1"
+O=$(OEM)D\                      # define output directory for OEM-specifics
+B=$(BIN)D\                      # ...                         binaries
+!else
+O=$(OEM)ND\                     # define output directory for OEM-specifics
+B=$(BIN)ND\                     # ...                         binaries
+!endif
+HLP=$(HCDIR)HCRTF.EXE           # Path to HCRTF
+P=R:\$(NAME)\                   # Full path to . dir for HCRTF
+I=$(SRCROOT)INC\                # .INC directory
+H=$(SRCROOT)INCLUDE\            # .INCLUDE directory
+L=$(SRCROOT)LIB\                # .LIB directory
+
+M98=N:\                         # Win98 build
+###M98=L:\VC98\                    # Win98 build
+I98=$(PROJPATH);$(M98)INCLUDE;$(MSVC)INCLUDE
+L98=$(M98)LIB;$(MSVC)LIB
+LD=$(M98)BIN\link
+CC=$(M98)BIN\cl
+RC=$(M98)BIN\rc
+
+
+ALL:    DIR \
+        PRO \
+        DEP \
+        $(O)$(ENAME).EXE \
+        $(L)$(ENAME).EXE \
+        $(BC)$(ENAME).HLP\
+        $(L)$(ENAME).HLP
+
+CLEAN:
+        @del /Q $(O)*.*
+
+DEL:
+        @del /Q $(O)*.*
+
+DIR:
+        @vdir -c $(O) >NUL
+
+{}.rc{$(O)}.res:
+        @Set INCLUDE=$(I98);$(H);$(O)
+        @if exist $@ del $@
+        $(RC) $(RCFLAGS) $(RCDEFINES) -r -fo$@ %s
+
+{}.y{$(O)}.c:
+        @Set INCLUDE=$(I98);$(H);$(O)
+        bison -o$(O)$(@B).c -v -r all -l %s
+########bison -o$(O)$(@B).c           -l %s
+
+{}.c{$(O)}.obj:
+        @Set INCLUDE=$(I98);$(H);$(O)
+        @if exist $@ del $@
+        $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+
+{$(O)}.c{$(O)}.obj:
+        @Set INCLUDE=$(I98);$(H);$(O)
+        @if exist $@ del $@
+        $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+
+
+####################### DEPENDENCY GENERATION #################
+
+DEP:                \
+$(O)assign.DEP      \
+$(O)bjhash.DEP      \
+$(O)common.DEP      \
+$(O)convert.DEP     \
+$(O)debug.DEP       \
+$(O)display.DEP     \
+$(O)exec.DEP        \
+$(O)free.DEP        \
+$(O)main.DEP        \
+$(O)parse.DEP       \
+$(O)pf_circle.DEP   \
+$(O)pf_cstar.DEP     \
+$(O)pf_dcaret.DEP   \
+$(O)pf_divide.DEP   \
+$(O)pf_dstile.DEP   \
+$(O)pf_equal.DEP    \
+$(O)pf_greateq.DEP  \
+$(O)pf_iota.DEP     \
+$(O)pf_lcaret.DEP   \
+$(O)pf_lesseq.DEP   \
+$(O)pf_lshoe.DEP    \
+$(O)pf_minus.DEP    \
+$(O)pf_ndcaret.DEP  \
+$(O)pf_nequal.DEP   \
+$(O)pf_nucaret.DEP  \
+$(O)pf_plus.DEP     \
+$(O)pf_rcaret.DEP   \
+$(O)pf_rho.DEP      \
+$(O)pf_star.DEP     \
+$(O)pf_stile.DEP    \
+$(O)pf_times.DEP    \
+$(O)pf_ucaret.DEP   \
+$(O)pf_ustile.DEP   \
+$(O)primfns.DEP     \
+$(O)primspec.DEP    \
+$(O)refcnt.DEP      \
+$(O)reg.DEP         \
+$(O)sessman.DEP     \
+$(O)strand.DEP      \
+$(O)symtab.DEP      \
+$(O)sysfns.DEP      \
+$(O)sysvars.DEP     \
+$(O)ver.DEP         \
+$(O)resdebug.DEP    \
+$(O)main.DEV        \
+$(O)ver.DEV         \
+$(O)version.DEV
+
+{$(O)}.C{$(O)}.DEP:
+        @Set INCLUDE=$(I98);$(H);$(O)
+        depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+
+{}.C{$(O)}.DEP:
+        @Set INCLUDE=$(I98);$(H);$(O)
+        depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+
+{}.RC{$(O)}.DEV:
+        @Set INCLUDE=$(I98);$(H);$(O)
+        depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+
+!if exist ($(O)assign.DEP)
+!       include $(O)assign.DEP
+!endif
+!if exist ($(O)bjhash.DEP)
+!       include $(O)bjhash.DEP
+!endif
+!if exist ($(O)common.DEP)
+!       include $(O)common.DEP
+!endif
+!if exist ($(O)convert.DEP)
+!       include $(O)convert.DEP
+!endif
+!if exist ($(O)debug.DEP)
+!       include $(O)debug.DEP
+!endif
+!if exist ($(O)display.DEP)
+!       include $(O)display.DEP
+!endif
+!if exist ($(O)exec.DEP)
+!       include $(O)exec.DEP
+!endif
+!if exist ($(O)free.DEP)
+!       include $(O)free.DEP
+!endif
+!if exist ($(O)main.DEP)
+!       include $(O)main.DEP
+!endif
+!if exist ($(O)parse.DEP)
+!       include $(O)parse.DEP
+!endif
+!if exist ($(O)pf_circle.DEP)
+!       include $(O)pf_circle.DEP
+!endif
+!if exist ($(O)pf_cstar.DEP)
+!       include $(O)pf_cstar.DEP
+!endif
+!if exist ($(O)pf_dcaret.DEP)
+!       include $(O)pf_dcaret.DEP
+!endif
+!if exist ($(O)pf_divide.DEP)
+!       include $(O)pf_divide.DEP
+!endif
+!if exist ($(O)pf_dstile.DEP)
+!       include $(O)pf_dstile.DEP
+!endif
+!if exist ($(O)pf_equal.DEP)
+!       include $(O)pf_equal.DEP
+!endif
+!if exist ($(O)pf_greateq.DEP)
+!       include $(O)pf_greateq.DEP
+!endif
+!if exist ($(O)pf_iota.DEP)
+!       include $(O)pf_iota.DEP
+!endif
+!if exist ($(O)pf_lcaret.DEP)
+!       include $(O)pf_lcaret.DEP
+!endif
+!if exist ($(O)pf_lesseq.DEP)
+!       include $(O)pf_lesseq.DEP
+!endif
+!if exist ($(O)pf_lshoe.DEP)
+!       include $(O)pf_lshoe.DEP
+!endif
+!if exist ($(O)pf_minus.DEP)
+!       include $(O)pf_minus.DEP
+!endif
+!if exist ($(O)pf_ndcaret.DEP)
+!       include $(O)pf_ndcaret.DEP
+!endif
+!if exist ($(O)pf_nequal.DEP)
+!       include $(O)pf_nequal.DEP
+!endif
+!if exist ($(O)pf_nucaret.DEP)
+!       include $(O)pf_nucaret.DEP
+!endif
+!if exist ($(O)pf_plus.DEP)
+!       include $(O)pf_plus.DEP
+!endif
+!if exist ($(O)pf_rcaret.DEP)
+!       include $(O)pf_rcaret.DEP
+!endif
+!if exist ($(O)pf_rho.DEP)
+!       include $(O)pf_rho.DEP
+!endif
+!if exist ($(O)pf_star.DEP)
+!       include $(O)pf_star.DEP
+!endif
+!if exist ($(O)pf_stile.DEP)
+!       include $(O)pf_stile.DEP
+!endif
+!if exist ($(O)pf_times.DEP)
+!       include $(O)pf_times.DEP
+!endif
+!if exist ($(O)pf_ucaret.DEP)
+!       include $(O)pf_ucaret.DEP
+!endif
+!if exist ($(O)pf_ustile.DEP)
+!       include $(O)pf_ustile.DEP
+!endif
+!if exist ($(O)primfns.DEP)
+!       include $(O)primfns.DEP
+!endif
+!if exist ($(O)primspec.DEP)
+!       include $(O)primspec.DEP
+!endif
+!if exist ($(O)refcnt.DEP)
+!       include $(O)refcnt.DEP
+!endif
+!if exist ($(O)reg.DEP)
+!       include $(O)reg.DEP
+!endif
+!if exist ($(O)sessman.DEP)
+!       include $(O)sessman.DEP
+!endif
+!if exist ($(O)strand.DEP)
+!       include $(O)strand.DEP
+!endif
+!if exist ($(O)symtab.DEP)
+!       include $(O)symtab.DEP
+!endif
+!if exist ($(O)sysfns.DEP)
+!       include $(O)sysfns.DEP
+!endif
+!if exist ($(O)sysvars.DEP)
+!       include $(O)sysvars.DEP
+!endif
+!if exist ($(O)ver.DEP)
+!       include $(O)ver.DEP
+!endif
+!if exist ($(O)resdebug.DEP)
+!       include $(O)resdebug.DEP
+!endif
+!if exist ($(O)main.DEV)
+!       include $(O)main.DEV
+!endif
+!if exist ($(O)ver.DEV)
+!       include $(O)ver.DEV
+!endif
+!if exist ($(O)version.DEV)
+!       include $(O)version.DEV
+!endif
+
+
+####################### PROTOTYPE GENERATION #################
+
+PRO:                \
+$(O)assign.PRO      \
+$(O)bjhash.PRO      \
+$(O)common.PRO      \
+$(O)convert.PRO     \
+$(O)debug.PRO       \
+$(O)display.PRO     \
+$(O)exec.PRO        \
+$(O)free.PRO        \
+$(O)main.PRO        \
+$(O)parse.PRO       \
+$(O)pf_circle.PRO   \
+$(O)pf_cstar.PRO    \
+$(O)pf_dcaret.PRO   \
+$(O)pf_divide.PRO   \
+$(O)pf_dstile.PRO   \
+$(O)pf_equal.PRO    \
+$(O)pf_greateq.PRO  \
+$(O)pf_iota.PRO     \
+$(O)pf_lcaret.PRO   \
+$(O)pf_lesseq.PRO   \
+$(O)pf_lshoe.PRO    \
+$(O)pf_minus.PRO    \
+$(O)pf_ndcaret.PRO  \
+$(O)pf_nequal.PRO   \
+$(O)pf_nucaret.PRO  \
+$(O)pf_plus.PRO     \
+$(O)pf_rcaret.PRO   \
+$(O)pf_rho.PRO      \
+$(O)pf_star.PRO     \
+$(O)pf_stile.PRO    \
+$(O)pf_times.PRO    \
+$(O)pf_ucaret.PRO   \
+$(O)pf_ustile.PRO   \
+$(O)primfns.PRO     \
+$(O)primspec.PRO    \
+$(O)refcnt.PRO      \
+$(O)reg.PRO         \
+$(O)sessman.PRO     \
+$(O)strand.PRO      \
+$(O)symtab.PRO      \
+$(O)sysfns.PRO      \
+$(O)sysvars.PRO     \
+$(O)ver.PRO         \
+$(O)resdebug.PRO
+
+{}.C{$(O)}.PRO:
+        @Set INCLUDE=$(I98);$(H);$(O)
+        $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
+
+{$(O)}.C{$(O)}.PRO:
+        @Set INCLUDE=$(I98);$(H);$(O)
+        $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
+
+
+########################## UTILITY ROUTINES ##########################
+
+$(O)DBGBRK.OBJ:         $(S)DBGBRK.ASM
+        @if exist $@ del $@
+        ml /I$(I) /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
+
+
+############################# MAIN APP ROUTINES ######################
+
+ICONS=$(A)MF-L.ico      \
+      $(A)MF-S.ico      \
+      $(A)SM-L.ico      \
+      $(A)SM-S.ico
+
+$(O)parse.C:            $(@B).Y
+
+$(O)assign.OBJ:         $(@B).C         $(ASSIGN_DEP)
+$(O)bjhash.OBJ:         $(@B).C         $(BJHASH_DEP)
+$(O)common.OBJ:         $(@B).C         $(COMMON_DEP)
+$(O)convert.OBJ:        $(@B).C         $(CONVERT_DEP)
+$(O)debug.OBJ:          $(@B).C         $(DEBUG_DEP)
+$(O)display.OBJ:        $(@B).C         $(DISPLAY_DEP)
+$(O)exec.OBJ:           $(@B).C         $(EXEC_DEP)
+$(O)free.OBJ:           $(@B).C         $(FREE_DEP)
+$(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
+$(O)parse.OBJ:          $(O)$(@B).C     $(PARSE_DEP)
+$(O)pf_circle.OBJ:      $(@B).C         $(PF_CIRCLE_DEP)
+$(O)pf_cstar.OBJ:       $(@B).C         $(PF_CSTAR_DEP)
+$(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
+$(O)pf_divide.OBJ:      $(@B).C         $(PF_DIVIDE_DEP)
+$(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
+$(O)pf_equal.OBJ:       $(@B).C         $(PF_EQUAL_DEP)
+$(O)pf_greateq.OBJ:     $(@B).C         $(PF_GREATEQ_DEP)
+$(O)pf_iota.OBJ:        $(@B).C         $(PF_IOTA_DEP)
+$(O)pf_lcaret.OBJ:      $(@B).C         $(PF_LCARET_DEP)
+$(O)pf_lesseq.OBJ:      $(@B).C         $(PF_LESSEQ_DEP)
+$(O)pf_lshoe.OBJ:       $(@B).C         $(PF_LSHOE_DEP)
+$(O)pf_minus.OBJ:       $(@B).C         $(PF_MINUS_DEP)
+$(O)pf_ndcaret.OBJ:     $(@B).C         $(PF_NDCARET_DEP)
+$(O)pf_nequal.OBJ:      $(@B).C         $(PF_NEQUAL_DEP)
+$(O)pf_nucaret.OBJ:     $(@B).C         $(PF_NUCARET_DEP)
+$(O)pf_plus.OBJ:        $(@B).C         $(PF_PLUS_DEP)
+$(O)pf_rcaret.OBJ:      $(@B).C         $(PF_RCARET_DEP)
+$(O)pf_rho.OBJ:         $(@B).C         $(PF_RHO_DEP)
+$(O)pf_star.OBJ:        $(@B).C         $(PF_STAR_DEP)
+$(O)pf_stile.OBJ:       $(@B).C         $(PF_STILE_DEP)
+$(O)pf_times.OBJ:       $(@B).C         $(PF_TIMES_DEP)
+$(O)pf_ucaret.OBJ:      $(@B).C         $(PF_UCARET_DEP)
+$(O)pf_ustile.OBJ:      $(@B).C         $(PF_USTILE_DEP)
+$(O)primfns.OBJ:        $(@B).C         $(PRIMFNS_DEP)
+$(O)primspec.OBJ:       $(@B).C         $(PRIMSPEC_DEP)
+$(O)refcnt.OBJ:         $(@B).C         $(REFCNT_DEP)
+$(O)reg.OBJ:            $(@B).C         $(REG_DEP)
+$(O)sessman.OBJ:        $(@B).C         $(SESSMAN_DEP)
+$(O)strand.OBJ:         $(@B).C         $(STRAND_DEP)
+$(O)symtab.OBJ:         $(@B).C         $(SYMTAB_DEP)
+$(O)sysfns.OBJ:         $(@B).C         $(SYSFNS_DEP)
+$(O)sysvars.OBJ:        $(@B).C         $(SYSVARS_DEP)
+$(O)ver.OBJ:            $(@B).C         $(VER_DEP)
+!if "$(RESDEBUG)" == "1"
+$(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
+!endif
+
+main.RC:                                $(MAIN_RCDEP)   $(ICONS)
+
+ver.RC:                                 $(VER_RCDEP)
+
+$(O)main.RES:           $(@B).RC        $(MAIN_RCDEP)
+        @Set INCLUDE=$(I98);$(H);$(O)
+        @if exist $@ del $@
+        $(RC) $(RCFLAGS) $(RCDEFINES) -r -fo$@ %s
+
+$(BC)$(ENAME).HLP:      $(ENAME).RTF
+        $(HLP) -o $@ -xr %s
+
+$(L)$(ENAME).HLP:       $(BC)$(ENAME).HLP
+        copy /y %s $@
+
+# Build the Win32 version
+OBJS=$(O)assign.OBJ     \
+     $(O)bjhash.OBJ     \
+     $(O)common.OBJ     \
+     $(O)convert.OBJ    \
+     $(O)debug.OBJ      \
+     $(O)display.OBJ    \
+     $(O)exec.OBJ       \
+     $(O)free.OBJ       \
+     $(O)main.OBJ       \
+     $(O)parse.OBJ      \
+     $(O)pf_circle.OBJ  \
+     $(O)pf_cstar.OBJ   \
+     $(O)pf_dcaret.OBJ  \
+     $(O)pf_divide.OBJ  \
+     $(O)pf_dstile.OBJ  \
+     $(O)pf_equal.OBJ   \
+     $(O)pf_greateq.OBJ \
+     $(O)pf_iota.OBJ    \
+     $(O)pf_lcaret.OBJ  \
+     $(O)pf_lesseq.OBJ  \
+     $(O)pf_lshoe.OBJ   \
+     $(O)pf_minus.OBJ   \
+     $(O)pf_ndcaret.OBJ \
+     $(O)pf_nequal.OBJ  \
+     $(O)pf_nucaret.OBJ \
+     $(O)pf_plus.OBJ    \
+     $(O)pf_rcaret.OBJ  \
+     $(O)pf_rho.OBJ     \
+     $(O)pf_star.OBJ    \
+     $(O)pf_stile.OBJ   \
+     $(O)pf_times.OBJ   \
+     $(O)pf_ucaret.OBJ  \
+     $(O)pf_ustile.OBJ  \
+     $(O)primfns.OBJ    \
+     $(O)primspec.OBJ   \
+     $(O)refcnt.OBJ     \
+     $(O)reg.OBJ        \
+     $(O)sessman.OBJ    \
+     $(O)strand.OBJ     \
+     $(O)symtab.OBJ     \
+     $(O)sysfns.OBJ     \
+     $(O)sysvars.OBJ    \
+     $(O)ver.OBJ        \
+!if "$(RESDEBUG)" == "1"
+     $(O)resdebug.OBJ   \
+!endif
+     $(O)DBGBRK.OBJ     \
+     $(O)main.RES
+
+$(O)$(ENAME).EXE:       $(OBJS)         \
+                        $(DEFFILE)      \
+                        MAKEFILE
+        @echo >NUL @<<$(O)main.CRF
+$(OBJS)
+/OUT:$(O)$(ENAME).EXE
+/MAP:$(O)$(MAPFILE)
+$(LIBS_WEXE) $(LIBS_EXT)
+/DEF:$(DEFFILE)
+<<KEEP
+        @Set LIB=$(L98);$(L)
+        @if exist $@ del $@
+        @$(LD) $(LFLAGS_WEXE) @$(O)main.CRF
+        @del $(O)$(@B).exp
+        @del $(O)$(@B).lib
+        @pkzip $(B)$(ENAME) $@ >NUL
+
+$(L)$(ENAME).EXE:       $(O)$(ENAME).EXE
+        @xc/r    %s      $@ >NUL
+        @ff $(B)$(ENAME)
+
+zip:
+        pkzip $(ZIPNAME) makefile mk.bat mkd.bat $(A)*.bmp *.c *.h $(BC)*.hlp $(A)*.ico *.rc *.rtf *.y

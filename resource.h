@@ -18,13 +18,15 @@
 #define IDR_MENU                        100
 #define IDR_ACCEL                       101
 
-#define IDI_MF_LARGE                    100
-#define IDI_MF_SMALL                    101
-#define IDI_SM_LARGE                    102
-#define IDI_SM_SMALL                    103
-#define IDI_DB_LARGE                    104
-#define IDI_DB_SMALL                    105
-#define IDI_ABOUT                       106
+#define IDI_OF_LARGE                    100
+#define IDI_OF_SMALL                    101
+#define IDI_MF_LARGE                    102
+#define IDI_MF_SMALL                    103
+#define IDI_SM_LARGE                    104
+#define IDI_SM_SMALL                    105
+#define IDI_DB_LARGE                    106
+#define IDI_DB_SMALL                    107
+#define IDI_ABOUT                       108
 
 #define IDD_ABOUT                       120
 

@@ -15,6 +15,7 @@
 #include "tokens.h"
 #include "parse.h"
 #include "primspec.h"
+#include "sysvars.h"
 #include "Unicode.h"
 
 // Include prototypes unless prototyping
@@ -26,7 +27,15 @@
 enum EXEC_CODES ExecCode = {EXEC_SUCCESS};
 
 LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
-HGLOBAL hGlbZilde, hGlbMTChar;
+HGLOBAL hGlbZilde,
+        hGlbMTChar,
+        hGlbSAEmpty,
+        hGlbSAClear,
+        hGlbSAError,
+        hGlbSAExit,
+        hGlbSAOff,
+        hGlbQuadWSID_CWS;
+
 extern APLBOOL bQuadIO;
 
 APLFLOAT PosInfinity,
@@ -106,8 +115,7 @@ void InitPrimFns
     (void)
 
 {
-    LPVARARRAY_HEADER lpHeader;
-    APLINT            aplInteger;
+    APLINT aplInteger;
 
     //****************************************************
     //  Primitive Functions
@@ -218,6 +226,38 @@ void InitPrimFns
     InitPrimFn (','                 , &PrimFnComma_EM          );
 ////InitPrimOp2('.'                 , &PrimOp2Dot_EM           );
 
+#define POS_INFINITY            (0x7FF0000000000000)
+#define NEG_INFINITY            (0xFFF0000000000000)
+#define QUIET_NAN               (0xFFF8000000000000)
+#define FLOAT2POW53             (0x4340000000000000)
+
+    // Create various floating point constants
+    aplInteger = POS_INFINITY; PosInfinity = *(double *) &aplInteger;
+    aplInteger = NEG_INFINITY; NegInfinity = *(double *) &aplInteger;
+    aplInteger = FLOAT2POW53;  Float2Pow53 = *(double *) &aplInteger;
+
+} // End InitPrimFns
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  MakePermVars
+//
+//  Make various permanent variables
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakePermVars"
+#else
+#define APPEND_NAME
+#endif
+
+void MakePermVars
+    (void)
+
+{
+    LPVARARRAY_HEADER lpHeader;
+
     // Create zilde
     hGlbZilde = DbgGlobalAlloc (GHND, sizeof (VARARRAY_HEADER)
                                     + sizeof (APLDIM) * 1);
@@ -241,18 +281,54 @@ void InitPrimFns
 ////// Mark as zero length
 ////*VarArrayBaseToDim (lpHeader) = 0;  // Already zero from GHND
 
+    // We no longer need this ptr
     MyGlobalUnlock (hGlbZilde); lpHeader = NULL;
 
-    // Create empty char vector
-    hGlbMTChar = DbgGlobalAlloc (GHND, sizeof (VARARRAY_HEADER)
-                                     + sizeof (APLDIM) * 1);
-    if (!hGlbMTChar)
+    // Create various permanent char vectors
+    hGlbMTChar  = MakePermCharVector (MTChar);
+    hGlbSAEmpty = hGlbMTChar;
+    hGlbSAClear = MakePermCharVector (SAClear);
+    hGlbSAError = MakePermCharVector (SAError);
+    hGlbSAExit  = MakePermCharVector (SAExit);
+    hGlbSAOff   = MakePermCharVector (SAOff);
+    hGlbQuadWSID_CWS = hGlbMTChar;
+} // End MakePermVars
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  MakePermCharVector
+//
+//  Make a permanent character vector
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakePermCharVector"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL MakePermCharVector
+    (LPWCHAR lpwc)
+
+{
+    HGLOBAL hGlbRes;
+    UINT    uLen;
+    LPVARARRAY_HEADER lpHeader;
+
+    // Get the string length
+    uLen = lstrlenW (lpwc);
+
+    hGlbRes = DbgGlobalAlloc (GHND, sizeof (VARARRAY_HEADER)
+                                  + sizeof (APLDIM) * 1
+                                  + sizeof (APLCHAR) * uLen);
+    if (!hGlbRes)
     {
         DbgStop ();         // We should never get here
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbMTChar);
+    lpHeader = MyGlobalLock (hGlbRes);
 
     // Fill in the header values
     lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
@@ -260,25 +336,23 @@ void InitPrimFns
     lpHeader->Perm       = 1;       // So we don't free it
 ////lpHeader->SysVar     = 0;
 ////lpHeader->RefCnt     =          // Ignore as this is perm
-////lpHeader->NELM       = 0;       // Already zero from GHND
+    lpHeader->NELM       = uLen;
     lpHeader->Rank       = 1;
 
-////// Mark as zero length
-////*VarArrayBaseToDim (lpHeader) = 0;  // Already zero from GHND
+    // Save the dimension
+    *VarArrayBaseToDim (lpHeader) = uLen;
 
-    MyGlobalUnlock (hGlbMTChar); lpHeader = NULL;
+    // Skip over the header and dimensions to the data
+    lpHeader = VarArrayBaseToData (lpHeader, 1);
 
-#define POS_INFINITY            (0x7FF0000000000000)
-#define NEG_INFINITY            (0xFFF0000000000000)
-#define QUIET_NAN               (0xFFF8000000000000)
-#define FLOAT2POW53             (0x4340000000000000)
+    // Copy the data to memory
+    CopyMemory (lpHeader, lpwc, uLen * sizeof (APLCHAR));
 
-    // Create various floating point constants
-    aplInteger = POS_INFINITY; PosInfinity = *(double *) &aplInteger;
-    aplInteger = NEG_INFINITY; NegInfinity = *(double *) &aplInteger;
-    aplInteger = FLOAT2POW53;  Float2Pow53 = *(double *) &aplInteger;
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpHeader = NULL;
 
-} // End InitPrimFns
+    return hGlbRes;
+} // End MakePermCharVector
 #undef  APPEND_NAME
 
 
@@ -2676,7 +2750,7 @@ HGLOBAL CopyArray_EM
                 break;
         } // End SWITCH
 
-        // Unlock the ptrs
+        // We no longer need these ptrs
         MyGlobalUnlock (hGlbDst); lpMemDst = NULL;
         MyGlobalUnlock (hGlbSrc); lpMemSrc = NULL;
 

@@ -115,6 +115,8 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ABOUT               ICON    DISCARDABLE     "Images\\About.ico"
+IDI_OF_LARGE            ICON    DISCARDABLE     "Images\\OF-L.ico"
+IDI_OF_SMALL            ICON    DISCARDABLE     "Images\\OF-S.ico"
 IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF-L.ico"
 IDI_MF_SMALL            ICON    DISCARDABLE     "Images\\MF-S.ico"
 IDI_SM_LARGE            ICON    DISCARDABLE     "Images\\SM-L.ico"

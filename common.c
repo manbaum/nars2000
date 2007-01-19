@@ -5,7 +5,10 @@
 #pragma pack (1)
 #define STRICT
 #include <windows.h>
+
 #include "main.h"
+#include "datatype.h"
+#include "resdebug.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -173,6 +176,76 @@ DWORD GetRegDword (HKEY hKey,
 } // End GetRegDword
 
 
+//************************************************************************
+//  GetRegQword
+//
+//  Get a registry Qword value.
+//************************************************************************
+
+QWORD GetRegQword (HKEY hKey,
+                   char *pSubKey,
+                   char *pKeyStr,
+                   QWORD qwDefVal)
+
+{
+    HKEY hKey2;
+    QWORD qwActVal = 0;
+    DWORD dwSize = sizeof (qwActVal);
+
+    if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        if (RegQueryValueEx (hKey2,         // handle of key to query
+                             pKeyStr,       // address of name of value to query
+                             NULL,          // reserved
+                             NULL,          // address of buffer for value type
+                             (char *) &qwActVal, // address of data buffer
+                             &dwSize)       // address of data buffer size
+            NE ERROR_SUCCESS)
+            qwActVal = qwDefVal;
+
+        RegCloseKey (hKey2); hKey2 = NULL;
+    } else
+        qwActVal = qwDefVal;
+
+    return qwActVal;
+} // End GetRegQword
+
+
+//************************************************************************
+//  GetRegWchar
+//
+//  Get a registry WCHAR value.
+//************************************************************************
+
+WCHAR GetRegWchar (HKEY hKey,
+                   char *pSubKey,
+                   char *pKeyStr,
+                   WCHAR wcDefVal)
+
+{
+    HKEY hKey2;
+    WCHAR wcActVal = 0;
+    DWORD dwSize = sizeof (wcActVal);
+
+    if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        if (RegQueryValueEx (hKey2,         // handle of key to query
+                             pKeyStr,       // address of name of value to query
+                             NULL,          // reserved
+                             NULL,          // address of buffer for value type
+                             (char *) &wcActVal, // address of data buffer
+                             &dwSize)       // address of data buffer size
+            NE ERROR_SUCCESS)
+            wcActVal = wcDefVal;
+
+        RegCloseKey (hKey2); hKey2 = NULL;
+    } else
+        wcActVal = wcDefVal;
+
+    return wcActVal;
+} // End GetRegWchar
+
+
 //***************************************************************************
 //  GetRegStr
 //
@@ -204,6 +277,118 @@ void GetRegStr (HKEY hKey,
     } else
         lstrcpy (pActStr, pDefVal);
 } // End GetRegStr
+
+
+//***************************************************************************
+//  GetRegGlb
+//
+//  Get a registry HGLOBAL value.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- GetRegGlb"
+#else
+#define APPEND_NAME
+#endif
+HGLOBAL GetRegGlb (HKEY hKey,
+                   char   *pSubKey,
+                   char   *pKeyStr,
+                   LPWCHAR pDefVal)
+
+{
+    HKEY    hKey2;
+    HGLOBAL hGlbRes;
+    LPVOID  lpMem;
+    BOOL    bDefVal;
+    UINT    ByteRes;
+////char    szBuf;
+    int     iActSize = 0;
+    UINT    uLen;
+
+    uLen = lstrlenW (pDefVal);
+
+    if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        // Request the data size
+        switch (RegQueryValueEx (hKey2,     // handle of key to query
+                                 pKeyStr,   // address of name of value to query
+                                 NULL,      // reserved
+                                 NULL,      // address of buffer for value type
+                                 NULL,      // address of data buffer
+                                 &iActSize))// address of data buffer size
+        {
+            case ERROR_FILE_NOT_FOUND:
+                // The keyname was not found --
+                //   allocate space for the default value
+                iActSize = uLen * sizeof (APLCHAR);
+                bDefVal = TRUE;
+
+                break;
+
+            case ERROR_MORE_DATA:
+                // iActSize contains the # bytes needed
+                uLen = iActSize / sizeof (APLCHAR);
+                bDefVal = FALSE;
+
+                break;
+
+            default:
+                DbgBrk ();
+                break;
+        } // End SWITCH
+
+        // Allocate space for the data
+        ByteRes = sizeof (VARARRAY_HEADER)
+                + sizeof (APLDIM) * 1
+                + iActSize;
+        hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
+        if (!hGlbRes)
+            return hGlbRes;
+
+        // Lock the memory to get a ptr to it
+        lpMem = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+
+        // Fill in the header values
+        lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_CHAR;
+////////lpHeader->Perm       = 0;
+////////lpHeader->SysVar     = 0;
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = uLen;
+        lpHeader->Rank       = 1;
+
+        // Save the dimension
+        *VarArrayBaseToDim (lpHeader) = uLen;
+
+        // Skip over the header and dimensions to the data
+        lpHeader = VarArrayBaseToData (lpHeader, 1);
+
+        // Split cases based upon whether the data is in the
+        //   registry or the default value
+        if (bDefVal)
+            // Copy the data to memory
+            CopyMemory (lpHeader, pDefVal, uLen * sizeof (APLCHAR));
+        else
+            RegQueryValueEx (hKey2,         // handle of key to query
+                             pKeyStr,       // address of name of value to query
+                             NULL,          // reserved
+                             NULL,          // address of buffer for value type
+                             (char *) lpHeader,// address of data buffer
+                             &iActSize);    // address of data buffer size
+#undef  lpHeader
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMem = NULL;
+
+        RegCloseKey (hKey2); hKey2 = NULL;
+    } else
+        hGlbRes = NULL;
+
+    return hGlbRes;
+} // End GetRegGlb
+#undef  APPEND_NAME
 
 
 //***************************************************************************

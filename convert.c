@@ -15,6 +15,7 @@
 #include "symtab.h"
 #include "tokens.h"
 #include "parse.h"
+#include "sysvars.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

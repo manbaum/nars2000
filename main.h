@@ -17,11 +17,10 @@
 #define LOPART_DWORDLONG        ((DWORDLONG) 0x00000000FFFFFFFF)
 #define HIPART_DWORDLONG        ((DWORDLONG) 0xFFFFFFFF00000000)
 
-// System Comparison Tolerance
-#define SYS_CT  3E-15
-
 #define LODWORD(x)              ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
 #define HIDWORD(x)              ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
+
+#define QWORD   ULONGLONG
 
 #define defstop \
 default:    \
@@ -35,7 +34,7 @@ default:    \
 #define DBGEXIT     DbgMsgW (L"Exiting " APPEND_NAME)
 
 #define DbgGlobalAlloc(uFlags,ByteRes) \
-DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN);
+DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
 
 #define DbgGlobalFree(hGlbToken) \
 dprintfW (L"**GlobalFree in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \

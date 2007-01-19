@@ -61,7 +61,7 @@ value are copied to <lpwszCurLine>.
 #define SCROLL_FIRST        0           // Constants for ScrollHorz & ScrollVert
 #define SCROLL_LAST         1           // ...
 
-extern HWND hWndSM, hWndMF, hWndDB;
+extern HWND hWndTC, hWndMC, hWndSM, hWndDB;
 extern char pszAppName[];
 extern HINSTANCE _hInstance;
 
@@ -479,6 +479,9 @@ void NewFont
 
     // Use a monospace font in the debugger's listbox
     PostMessage (hWndDB, WM_SETFONT, (WPARAM) hFontAPL, 0);
+
+    // Use this font in the Tab Control's labels
+    PostMessage (hWndTC, WM_SETFONT, (WPARAM) hFontAPL, 0);
 } // End NewFont
 
 
@@ -2088,15 +2091,15 @@ LRESULT APIENTRY SMWndProc
                 case VK_F9:             // Resize Debugger and Session Manager windows
                 {
                     RECT rc;
-                    int  nWidthMF,  nHeightMF,
+                    int  nWidthMC,  nHeightMC,
                          nHeightDB, nHeightSM;
 
-                    GetClientRect (hWndMF, &rc);
-                    nWidthMF  = rc.right  - rc.left;
-                    nHeightMF = rc.bottom - rc.top;
+                    GetClientRect (hWndMC, &rc);
+                    nWidthMC  = rc.right  - rc.left;
+                    nHeightMC = rc.bottom - rc.top;
 
                     nHeightSM = 350;
-                    nHeightDB = nHeightMF - nHeightSM;
+                    nHeightDB = nHeightMC - nHeightSM;
 
                     // Resize the Debugger window
                     //   to the top of the client area
@@ -2104,7 +2107,7 @@ LRESULT APIENTRY SMWndProc
                                   0,                // SWP_NOZORDER
                                   0,                // X-position
                                   0,                // Y-...
-                                  nWidthMF,         // Width
+                                  nWidthMC,         // Width
                                   nHeightDB,        // Height
                                   SWP_NOZORDER      // Flags
                                 | SWP_SHOWWINDOW
@@ -2115,7 +2118,7 @@ LRESULT APIENTRY SMWndProc
                                   0,                // SWP_NOZORDER
                                   0,                // X-position
                                   nHeightDB,        // Y-...
-                                  nWidthMF,         // Width
+                                  nWidthMC,         // Width
                                   nHeightSM,        // Height
                                   SWP_NOZORDER      // Flags
                                 | SWP_SHOWWINDOW
@@ -2511,10 +2514,6 @@ LRESULT APIENTRY SMWndProc
 
                 return -1;          // Mark as failed
             } // End IF
-
-            // *************** Primitive Fns ***************************
-
-            InitPrimFns ();
 
             return FALSE;           // We handled the msg
 

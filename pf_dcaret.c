@@ -15,6 +15,7 @@
 #include "tokens.h"
 #include "parse.h"
 #include "primspec.h"
+#include "sysvars.h"
 #include "Unicode.h"
 
 // Include prototypes unless prototyping

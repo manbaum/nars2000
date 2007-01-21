@@ -11,12 +11,10 @@
 #include "aplerrors.h"
 #include "datatype.h"
 #include "resdebug.h"
-#include "symtab.h"
-#include "tokens.h"
-#include "parse.h"
-#include "primspec.h"
 #include "sysvars.h"
 #include "Unicode.h"
+#include "externs.h"
+#include "primspec.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -24,23 +22,7 @@
 #endif
 
 
-enum EXEC_CODES ExecCode = {EXEC_SUCCESS};
-
 LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
-HGLOBAL hGlbZilde,
-        hGlbMTChar,
-        hGlbSAEmpty,
-        hGlbSAClear,
-        hGlbSAError,
-        hGlbSAExit,
-        hGlbSAOff,
-        hGlbQuadWSID_CWS;
-
-extern APLBOOL bQuadIO;
-
-APLFLOAT PosInfinity,
-         NegInfinity,
-         Float2Pow53;
 
 // As these functions are implemented, delete the
 //   appropriate line.
@@ -2773,7 +2755,7 @@ HGLOBAL CopyArray_EM
 
 LPSYMENTRY CopyImmSymEntry_EM
     (LPSYMENTRY lpSymSrc,
-     enum       IMM_TYPES immType,  // ImmType to use (unless -1)
+     IMM_TYPES  immType,    // ImmType to use (unless -1)
      LPTOKEN    lpToken)
 
 {

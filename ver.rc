@@ -14,8 +14,8 @@
 #define VER_MAJOR_STR               "0"
 #define VER_MINOR                   0   // x.00.xxx.xxx
 #define VER_MINOR_STR               "00"
-#define VER_BETA                    1 // x.xx.001.xxx
-#define VER_BETA_STR                "001"
+#define VER_BETA                    2 // x.xx.002.xxx
+#define VER_BETA_STR                "002"
 
 #define VERSION_BETA                VER_BETA_STR "." VER_MODULE_STR
 #if BUILD_BETA

@@ -6,8 +6,8 @@
 //   when not overridden by user preferences.
 #define DEF_QUADCT_CWS  3E-15
 #define DEF_QUADxCT_CWS 0x3CEB05876E5B0120  // 3E-15 in hex
-#define DEF_QUADDF_CWS      1
-#define DEF_QUADIF_CWS      1
+#define DEF_QUADDF_CWS      DISPLAY_PARENS
+#define DEF_QUADIF_CWS      APA_ON
 #define DEF_QUADIO_CWS      1
 #define DEF_QUADPP_CWS     10
 #define DEF_QUADPW_CWS     80
@@ -30,14 +30,14 @@
 #define SAExit      L"EXIT"
 #define SAOff       L"OFF"
 
-enum SA_VALUES
+typedef enum tagSA_VALUES
 {
     SAVAL_Empty = 0,
     SAVAL_Clear,
     SAVAL_Error,
     SAVAL_Exit,
     SAVAL_Off
-};
+} SA_VALUES;
 
 
 //***************************************************************************

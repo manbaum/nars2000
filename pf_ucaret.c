@@ -10,19 +10,16 @@
 #include "aplerrors.h"
 #include "datatype.h"
 #include "resdebug.h"
-#include "symtab.h"
-#include "tokens.h"
-#include "parse.h"
-#include "primspec.h"
 #include "sysvars.h"
 #include "Unicode.h"
+#include "externs.h"
+#include "primspec.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
 
-extern enum EXEC_CODES ExecCode;
 
 #ifndef PROTO
 PRIMSPEC PrimSpecUpCaret = {

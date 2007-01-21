@@ -89,11 +89,14 @@ DecrRefCntInd (hGlbData);
 #define MYWM_MOVE           (WM_APP+ 0) // MF
 
 
-enum EXTYPE {EX_IMMEX, EX_FN};
+typedef enum tagEXTYPE
+{
+    EX_IMMEX, EX_FN
+} EXTYPE;
 
 typedef struct tagEXECSTATE
 {
-    enum EXTYPE exType;
+    EXTYPE exType;
 } EXECSTATE;
 
 

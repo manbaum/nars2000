@@ -11,9 +11,8 @@
 #include "aplerrors.h"
 #include "datatype.h"
 #include "resdebug.h"
-#include "symtab.h"
-#include "tokens.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -23,17 +22,6 @@
 typedef unsigned int   uint32_t;
 typedef unsigned short uint16_t;
 typedef unsigned char  uint8_t;
-
-extern LPCHAR lpszTemp;                     // Use for char temporary storage
-extern LPSYMENTRY lpSymTab,                 // Ptr to start of symbol table
-                  lpSymTabNext;             // ...    next available STE
-extern LPHSHENTRY lpHshTab,                 // Ptr to start of hash table
-                  lpHshTabSplitNext;        // ...    next HTE to split
-UINT uHashMask = DEF_HSHTAB_HASHMASK;       // Mask for all hash lookups
-int iSymTabTotalSize = DEF_SYMTAB_INITSIZE, // # STEs currently
-    iHshTabTotalSize = DEF_HSHTAB_INITSIZE, // # HTEs currently including EPBs
-    iHshTabBaseSize  = DEF_HSHTAB_INITSIZE, // Base size of hash table
-    iHshTabIncr      = DEF_HSHTAB_INCR;     // Increment when looping through ST
 
 // **FIXME*** -- Distinguish between blocks (buckets) and entries
 // as well as size vs. blocks

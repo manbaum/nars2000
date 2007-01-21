@@ -10,17 +10,13 @@
 #include "aplerrors.h"
 #include "datatype.h"
 #include "resdebug.h"
-#include "symtab.h"
-#include "tokens.h"
-#include "parse.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
-
-extern APLBOOL bQuadIO;     // Current value of Quad-IO
 
 
 //***************************************************************************

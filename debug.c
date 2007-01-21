@@ -13,15 +13,12 @@
 #include "main.h"
 #include "datatype.h"
 #include "resdebug.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
-
-WNDPROC lpfnOldListboxWndProc;  // Save area for old Listbox procedure
-extern char   *lpszTemp;
-extern LPWCHAR lpwszTemp;
 
 #define IDM_COPY        100
 #define IDM_CUT         101
@@ -94,11 +91,6 @@ void DB_Delete
 //  Message processing routine for the Debugger window
 //***************************************************************************
 
-extern HINSTANCE _hInstance;
-extern HWND      hWndDB, hWndSM;
-       HWND      hWndLB;
-extern HFONT     hFontAPL;
-
 LRESULT APIENTRY DBWndProc
     (HWND hWnd,     // Window handle
      UINT message,  // Type of message
@@ -115,6 +107,11 @@ LRESULT APIENTRY DBWndProc
 ////ODSAPI ("DB: ", hWnd, message, wParam, lParam);
     switch (message)
     {
+        case WM_NCCREATE:           // lpcs = (LPCREATESTRUCT) lParam
+            hWndDB = hWnd;
+
+            break;                  // Continue with next handler
+
         case WM_CREATE:
             // Create a listbox to fit inside this window
             hWndLB =
@@ -133,8 +130,8 @@ LRESULT APIENTRY DBWndProc
                           NULL,                 // Menu
                           _hInstance,           // Instance
                           0);                   // lParam
-            // Tell it to use the APL font
-            PostMessage (hWndLB, WM_SETFONT, (WPARAM) hFontAPL, 0);
+////////////// Tell it to use the APL font
+////////////PostMessage (hWndLB, WM_SETFONT, (WPARAM) hFontAPL, 0);
 
             // Show the windows
             ShowWindow (hWndLB, SW_SHOWNORMAL);
@@ -153,7 +150,7 @@ LRESULT APIENTRY DBWndProc
             return FALSE;           // We handled the msg
 
         case WM_SETFONT:
-            PostMessage (hWndLB, message, wParam, lParam);
+            SendMessage (hWndLB, message, wParam, lParam);
 
             return FALSE;           // We handled the msg
 
@@ -193,7 +190,7 @@ LRESULT APIENTRY DBWndProc
             wsprintfA (szTemp,
                        "%4d:  %s",
                        ++iLineNum,
-                       (char *) lParam);
+                       (LPCHAR) lParam);
             A2W (wszTemp, szTemp);  // Convert the string from A to W
 
             // Call common code
@@ -290,7 +287,8 @@ LRESULT WINAPI LclListboxWndProc
             {
                 case IDM_COPY:
                     // Get the # selected items
-                    iSelCnt = SendMessage (hWndLB, LB_GETSELCOUNT, 0, 0);
+////////////////////iSelCnt = SendMessage (hWndLB, LB_GETSELCOUNT, 0, 0);
+                    iSelCnt = SendMessage (hWnd, LB_GETSELCOUNT, 0, 0);
 
                     // Allocate space for that many indices
                     hGlbInd = GlobalAlloc (GHND, iSelCnt * sizeof (int));
@@ -299,13 +297,15 @@ LRESULT WINAPI LclListboxWndProc
                     lpInd = GlobalLock (hGlbInd);
 
                     // Populate the array
-                    SendMessage (hWndLB, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
+////////////////////SendMessage (hWndLB, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
+                    SendMessage (hWnd, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
 
                     // Loop through the selected items and calculate
                     //   the storage requirement for the collection
                     for (iTotalBytes = i = 0; i < iSelCnt; i++)
                         // The "2 +" is for the '\r' and '\n' at the end of each line
-                        iTotalBytes += sizeof (WCHAR) * (2 + SendMessage (hWndLB, LB_GETTEXTLEN, lpInd[i], 0));
+////////////////////////iTotalBytes += sizeof (WCHAR) * (2 + SendMessage (hWndLB, LB_GETTEXTLEN, lpInd[i], 0));
+                        iTotalBytes += sizeof (WCHAR) * (2 + SendMessage (hWnd, LB_GETTEXTLEN, lpInd[i], 0));
 
                     // Allocate storage for the entire collection
                     hGlbSel = GlobalAlloc (GHND | GMEM_DDESHARE, iTotalBytes);
@@ -316,7 +316,8 @@ LRESULT WINAPI LclListboxWndProc
                     // Copy the text to the array, separated by a newline
                     for (p = lpSel, i = 0; i < iSelCnt; i++)
                     {
-                        p += SendMessageW (hWndLB, LB_GETTEXT, lpInd[i], (LPARAM) p);
+////////////////////////p += SendMessageW (hWndLB, LB_GETTEXT, lpInd[i], (LPARAM) p);
+                        p += SendMessageW (hWnd, LB_GETTEXT, lpInd[i], (LPARAM) p);
                         *p++ = '\r';
                         *p++ = '\n';
                     } // End FOR
@@ -366,7 +367,8 @@ LRESULT WINAPI LclListboxWndProc
 
                 case IDM_SELECTALL:
                     // Select all items
-                    if (LB_ERR EQ SendMessage (hWndLB,
+////////////////////if (LB_ERR EQ SendMessage (hWndLB,
+                    if (LB_ERR EQ SendMessage (hWnd,
                                                LB_SELITEMRANGE,
                                                TRUE,
                                                MAKELPARAM (0, -1)))
@@ -381,7 +383,8 @@ LRESULT WINAPI LclListboxWndProc
                                             // yPos = HIWORD(lParam);  // vertical position of cursor
 
             // Ensure there are items selected
-            iSelCnt = SendMessage (hWndLB, LB_GETSELCOUNT, 0, 0);
+////////////iSelCnt = SendMessage (hWndLB, LB_GETSELCOUNT, 0, 0);
+            iSelCnt = SendMessage (hWnd, LB_GETSELCOUNT, 0, 0);
 
             mfState = (iSelCnt EQ 0) ? MF_GRAYED : MF_ENABLED;
 
@@ -472,7 +475,7 @@ LRESULT WINAPI LclListboxWndProc
 //***************************************************************************
 
 void DbgMsg
-    (char *szTemp)
+    (LPCHAR szTemp)
 
 {
     if (hWndDB)
@@ -514,7 +517,8 @@ void DbgClr (void)
 //  Display a debug message a la printf
 //***************************************************************************
 
-void dprintf (char *lpszFmt, ...)
+void dprintf
+    (LPCHAR lpszFmt, ...)
 
 {
     va_list vl;
@@ -613,11 +617,11 @@ HGLOBAL DbgGlobalAllocSub
 //  Extract the filename only from __FILE__
 //***************************************************************************
 
-char *FileNameOnly
-    (char *lpFileName)
+LPCHAR FileNameOnly
+    (LPCHAR lpFileName)
 
 {
-    char *p, *q;
+    LPCHAR p, q;
 
     p = lpFileName;
 

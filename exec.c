@@ -11,9 +11,8 @@
 #include "aplerrors.h"
 #include "datatype.h"
 #include "resdebug.h"
-#include "symtab.h"
-#include "tokens.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -49,25 +48,12 @@ ToDo
                                 //   allocated for the tokenized line
 #define DEF_TOKEN_RESIZE 512    // Default increment when GlobalRealloc'ing
 
-extern HGLOBAL hGlbHist;        // Handle to global history
-extern HGLOBAL ghGlbToken;      // Save area for the current token memory handle
-extern LPCHAR  lpszTemp;        // Use for char temporary storage
-extern LPWCHAR lpwszTemp;       // Use for WCHAR temporary storage
-extern LPCHAR  lpszNumAlp;      // Accumulator for integers & floating points
-extern LPWCHAR lpwszString;     // Accumulator for strings & names
-extern int iMaxNumAlp,          // Maximum # chars in lpszNumAlp
-           iMaxString;          // ...       WCHARs in lpwszString
-extern HGLOBAL hGlbZilde, hGlbMTChar;
-extern APLFLOAT PosInfinity, NegInfinity;
-
-WCHAR *lpwszErrorMessage;       // Ptr to error message to signal
-
 // Accumulation vars for constant integer, floating point, and string
-APLINT aplInteger;              // 8-byte Integers
-BOOL bNegative,                 // Sign bit for integer part
-     bNegExp;                   // ...          exponent ...
-int iNumAlpLen,                 // # chars in lpszNumAlp
-    iStringLen;                 // ...        lpwszString
+APLINT  aplInteger;             // 8-byte Integers
+BOOL    bNegative,              // Sign bit for integer part
+        bNegExp;                // ...          exponent ...
+int     iNumAlpLen,             // # chars in lpszNumAlp
+        iStringLen;             // ...        lpwszString
 
 // The order of the values of these constants *MUST* match the
 //   column order in fsaColTable.
@@ -761,6 +747,7 @@ HGLOBAL ExecuteLine
     HGLOBAL   hGlbToken;        // Handle of tokenized line
     LPGLBHIST lpGlbHist;
     int       iTotalLen, iLen, i;
+    LPWCHAR   wp;
 
     // Ensure we calculated the lengths properly
     if (sizeof (fsaColTable) NE (COL_LENGTH * sizeof (FSA_ACTION) * FSA_LENGTH))
@@ -849,6 +836,14 @@ HGLOBAL ExecuteLine
                 // ***FIXME***
                 DbgMsg ("System command");
 #endif
+                DbgBrk ();
+
+                wp = strchrW (lpwszLine, L' ');
+                if (wp EQ NULL)
+                    wp = &lpwszLine[lstrlenW (lpwszLine)];
+
+
+
                 hGlbToken = NULL;
 
                 break;
@@ -2039,9 +2034,9 @@ BOOL fnBrkDone
 #endif
 
 BOOL GroupDoneCom
-    (LPTKLOCALVARS    lptkLocalVars,
-     enum TOKEN_TYPES uTypeCurr,
-     enum TOKEN_TYPES uTypePrev)
+    (LPTKLOCALVARS lptkLocalVars,
+     TOKEN_TYPES   uTypeCurr,
+     TOKEN_TYPES   uTypePrev)
 
 {
     int         iPrevGroup;

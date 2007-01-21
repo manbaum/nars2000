@@ -9,6 +9,7 @@
 #include "main.h"
 #include "datatype.h"
 #include "resdebug.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -16,18 +17,15 @@
 #endif
 
 
-extern char szInitDir[];
-
-char szAppDPFE  [_MAX_PATH];        // .EXE drive, path, filename.ext
-char szHlpDPFE  [_MAX_PATH];        // .HLP ...
-
 //************************************************************************
 //  ClientToWindowSize
 //
 //  Convert client area size to window size
 //************************************************************************
 
-SIZE ClientToWindowSize (HWND hWnd, SIZE Size)
+SIZE ClientToWindowSize
+    (HWND hWnd,
+     SIZE Size)
 
 {
     RECT rc;
@@ -57,7 +55,8 @@ SIZE ClientToWindowSize (HWND hWnd, SIZE Size)
 //  Move the window to a position based upon the previous center
 //************************************************************************
 
-void MoveWindowPos (HWND hWnd, POINT PosCtr)
+void MoveWindowPos
+    (HWND hWnd, POINT PosCtr)
 {
     RECT rcWnd;
     long lWidth, lHeight;
@@ -80,7 +79,8 @@ void MoveWindowPos (HWND hWnd, POINT PosCtr)
 //  Move the window to a position based upon the previous center and size
 //************************************************************************
 
-void MoveWindowPosSize (HWND hWnd, POINT PosCtr, SIZE Size)
+void MoveWindowPosSize
+    (HWND hWnd, POINT PosCtr, SIZE Size)
 {
     MoveWindow (hWnd,
                 PosCtr.x - Size.cx/2,       // Left coordinate
@@ -97,7 +97,8 @@ void MoveWindowPosSize (HWND hWnd, POINT PosCtr, SIZE Size)
 //  Center the window on the desktop
 //************************************************************************
 
-void CenterWindow (HWND hWnd)
+void CenterWindow
+    (HWND hWnd)
 {
     RECT rcWnd;
     POINT PosCtr;
@@ -116,7 +117,8 @@ void CenterWindow (HWND hWnd)
 //  Determine if a char is white space
 //****************************************************************************
 
-BOOL IsWhite (char c)
+BOOL IsWhite
+    (char c)
 
 {
     return (c EQ ' ' || c EQ '\t') ? TRUE : FALSE;
@@ -130,7 +132,8 @@ BOOL IsWhite (char c)
 //  Skip over leading white space
 //****************************************************************************
 
-char *SkipWhite (char *p)
+LPCHAR SkipWhite
+    (LPCHAR p)
 
 {
     // Skip over white space
@@ -148,14 +151,16 @@ char *SkipWhite (char *p)
 //  Get a registry dword value.
 //************************************************************************
 
-DWORD GetRegDword (HKEY hKey,
-                   char *pSubKey,
-                   char *pKeyStr,
-                   DWORD dwDefVal)
+DWORD GetRegDword
+    (HKEY   hKey,
+     LPCHAR pSubKey,
+     LPCHAR pKeyStr,
+     DWORD  dwDefVal)
 
 {
     HKEY hKey2;
-    DWORD dwActVal = 0, dwSize = sizeof (dwActVal);
+    DWORD dwActVal = 0, // Set to known value in case stored in shorter format
+          dwSize = sizeof (dwActVal);
 
     if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
     {
@@ -163,7 +168,7 @@ DWORD GetRegDword (HKEY hKey,
                              pKeyStr,       // address of name of value to query
                              NULL,          // reserved
                              NULL,          // address of buffer for value type
-                             (char *) &dwActVal, // address of data buffer
+                             (LPCHAR) &dwActVal, // address of data buffer
                              &dwSize)       // address of data buffer size
             NE ERROR_SUCCESS)
             dwActVal = dwDefVal;
@@ -182,14 +187,15 @@ DWORD GetRegDword (HKEY hKey,
 //  Get a registry Qword value.
 //************************************************************************
 
-QWORD GetRegQword (HKEY hKey,
-                   char *pSubKey,
-                   char *pKeyStr,
-                   QWORD qwDefVal)
+QWORD GetRegQword
+    (HKEY   hKey,
+     LPCHAR pSubKey,
+     LPCHAR pKeyStr,
+     QWORD  qwDefVal)
 
 {
     HKEY hKey2;
-    QWORD qwActVal = 0;
+    QWORD qwActVal = 0; // Set to known value in case stored in shorter format
     DWORD dwSize = sizeof (qwActVal);
 
     if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
@@ -198,7 +204,7 @@ QWORD GetRegQword (HKEY hKey,
                              pKeyStr,       // address of name of value to query
                              NULL,          // reserved
                              NULL,          // address of buffer for value type
-                             (char *) &qwActVal, // address of data buffer
+                             (LPCHAR) &qwActVal, // address of data buffer
                              &dwSize)       // address of data buffer size
             NE ERROR_SUCCESS)
             qwActVal = qwDefVal;
@@ -217,14 +223,15 @@ QWORD GetRegQword (HKEY hKey,
 //  Get a registry WCHAR value.
 //************************************************************************
 
-WCHAR GetRegWchar (HKEY hKey,
-                   char *pSubKey,
-                   char *pKeyStr,
-                   WCHAR wcDefVal)
+WCHAR GetRegWchar
+    (HKEY   hKey,
+     LPCHAR pSubKey,
+     LPCHAR pKeyStr,
+     WCHAR  wcDefVal)
 
 {
     HKEY hKey2;
-    WCHAR wcActVal = 0;
+    WCHAR wcActVal = 0; // Set to known value in case stored in shorter format
     DWORD dwSize = sizeof (wcActVal);
 
     if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
@@ -233,7 +240,7 @@ WCHAR GetRegWchar (HKEY hKey,
                              pKeyStr,       // address of name of value to query
                              NULL,          // reserved
                              NULL,          // address of buffer for value type
-                             (char *) &wcActVal, // address of data buffer
+                             (LPCHAR) &wcActVal, // address of data buffer
                              &dwSize)       // address of data buffer size
             NE ERROR_SUCCESS)
             wcActVal = wcDefVal;
@@ -252,12 +259,13 @@ WCHAR GetRegWchar (HKEY hKey,
 //  Get a registry string value.
 //***************************************************************************
 
-void GetRegStr (HKEY hKey,
-                char *pSubKey,
-                char *pKeyStr,
-                char *pActStr,
-                int  iActSize,
-                char *pDefVal)
+void GetRegStr
+    (HKEY   hKey,
+     LPCHAR pSubKey,
+     LPCHAR pKeyStr,
+     LPCHAR pActStr,
+     int    iActSize,
+     LPCHAR pDefVal)
 
 {
     HKEY hKey2;
@@ -280,20 +288,21 @@ void GetRegStr (HKEY hKey,
 
 
 //***************************************************************************
-//  GetRegGlb
+//  GetRegGlbChar
 //
 //  Get a registry HGLOBAL value.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- GetRegGlb"
+#define APPEND_NAME     L" -- GetRegGlbChar"
 #else
 #define APPEND_NAME
 #endif
-HGLOBAL GetRegGlb (HKEY hKey,
-                   char   *pSubKey,
-                   char   *pKeyStr,
-                   LPWCHAR pDefVal)
+HGLOBAL GetRegGlbChar
+    (HKEY    hKey,
+     LPCHAR  pSubKey,
+     LPCHAR  pKeyStr,
+     LPWCHAR pDefVal)
 
 {
     HKEY    hKey2;
@@ -325,6 +334,7 @@ HGLOBAL GetRegGlb (HKEY hKey,
 
                 break;
 
+            case ERROR_SUCCESS:     // The stored value is of zero length
             case ERROR_MORE_DATA:
                 // iActSize contains the # bytes needed
                 uLen = iActSize / sizeof (APLCHAR);
@@ -334,6 +344,7 @@ HGLOBAL GetRegGlb (HKEY hKey,
 
             default:
                 DbgBrk ();
+
                 break;
         } // End SWITCH
 
@@ -375,7 +386,7 @@ HGLOBAL GetRegGlb (HKEY hKey,
                              pKeyStr,       // address of name of value to query
                              NULL,          // reserved
                              NULL,          // address of buffer for value type
-                             (char *) lpHeader,// address of data buffer
+                             (LPCHAR) lpHeader,// address of data buffer
                              &iActSize);    // address of data buffer size
 #undef  lpHeader
 
@@ -387,7 +398,48 @@ HGLOBAL GetRegGlb (HKEY hKey,
         hGlbRes = NULL;
 
     return hGlbRes;
-} // End GetRegGlb
+} // End GetRegGlbChar
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  GetRegBinary
+//
+//  Get a registry binary value.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- GetRegBinary"
+#else
+#define APPEND_NAME
+#endif
+void GetRegBinary
+    (HKEY    hKey,
+     LPCHAR  pSubKey,
+     LPCHAR  pKeyStr,
+     UINT    uLen,
+     LPVOID  pActVal,
+     LPVOID  pDefVal)
+
+{
+    HKEY hKey2;
+    DWORD dwSize = uLen;
+
+    if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        if (RegQueryValueEx (hKey2,         // handle of key to query
+                             pKeyStr,       // address of name of value to query
+                             NULL,          // reserved
+                             NULL,          // address of buffer for value type
+                             (LPCHAR) &pActVal, // address of data buffer
+                             &dwSize)       // address of data buffer size
+            NE ERROR_SUCCESS)
+            CopyMemory (pActVal, pDefVal, uLen);
+
+        RegCloseKey (hKey2); hKey2 = NULL;
+    } else
+        CopyMemory (pActVal, pDefVal, uLen);
+} // End GetRegBinary
 #undef  APPEND_NAME
 
 
@@ -397,7 +449,8 @@ HGLOBAL GetRegGlb (HKEY hKey,
 //  Construct some filenames
 //***************************************************************************
 
-void GetFileNames (HINSTANCE hInstance)
+void GetFileNames
+    (HINSTANCE hInstance)
 
 {
     char szDrive[_MAX_DRIVE],

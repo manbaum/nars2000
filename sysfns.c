@@ -11,18 +11,15 @@
 #include "aplerrors.h"
 #include "datatype.h"
 #include "resdebug.h"
-#include "symtab.h"
-#include "tokens.h"
-#include "parse.h"
 #include "termcode.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
 
-extern char szAppDPFE [_MAX_PATH];  // .EXE file
 BOOL bUseLocalTime = TRUE;
 
 

@@ -7,13 +7,13 @@
 #define _WIN32_WINNT  0x0500
 #include <windows.h>
 #include <colors.h>
+
 #include "Unicode.h"
 #include "main.h"
 #include "datatype.h"
 #include "resdebug.h"
 #include "resource.h"
-#include "symtab.h"
-#include "tokens.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -38,39 +38,10 @@ value are copied to <lpwszCurLine>.
         lpGlbHist[iCurLine].hGlb.
  */
 
-// Default definitions
-#define DEF_FONTNAME        "APL385 Unicode"
-//efine DEF_FONTNAME        "SImPL"
-#define DEF_INDENT          6           // Prompt indent
-#define DEF_PTSIZE         13           // Point size for APL font
-//efine DEF_FONTWEIGHT     FW_THIN      // Font weight
-#define DEF_TABS            4           // Tab insertion
-#define DEF_CURWID_INS      2           // Cursor width for insert mode
-#define DEF_CURWID_REP      5           // ...              replace ...
-#define DEF_HISTLINES    3000           // # lines in history buffer
-#define DEF_MAXLINELEN   1024           // Maximum line length
-#define DEF_TEXT_FG_COLOR   COLOR_RED
-#define DEF_TEXT_BG_COLOR   COLOR_WHITE
-#define DEF_NUMALP_MAXSIZE  64*1024*sizeof (char)   // Max size for lpszNumAlp
-#define DEF_NUMALP_INITSIZE 64*1024*sizeof (char)   // Initial ...
-#define DEF_STRING_MAXSIZE  64*1024*sizeof (WCHAR)  // Max size for lpwszString
-#define DEF_STRING_INITSIZE 64*1024*sizeof (WCHAR)  // Initial ...
-#define DEF_TOKENSTACK_MAXSIZE 64*1024*sizeof (TOKEN)   // Maximum size of token stack
-#define DEF_TOKENSTACK_INITSIZE 64*1024*sizeof (TOKEN)  // Initial ...
-
 #define SCROLL_FIRST        0           // Constants for ScrollHorz & ScrollVert
 #define SCROLL_LAST         1           // ...
 
-extern HWND hWndTC, hWndMC, hWndSM, hWndDB;
-extern char pszAppName[];
-extern HINSTANCE _hInstance;
-
-HGLOBAL ghGlbToken;         // Save area for current token memory handle
-HBITMAP hBitMapLineCont;    // Bitmap for the line continuation char
-int     iLCWidth;           // Width of the line continuation column
-BITMAP  bmLineCont;         // Bitmap metrics for the line continuation char
-
-LPEXCEPTION_POINTERS lpExp;
+////LPEXCEPTION_POINTERS lpExp;
 
 COLORREF crTextColor = DEF_TEXT_FG_COLOR,
          crBkColor   = DEF_TEXT_BG_COLOR;
@@ -181,143 +152,18 @@ CHARCODE aCharCode[] =          // This ordering follows the ASCII charset
 {'~', UCS2_COMMABAR       },    // Tilde            126
 };
 
-/*
-
-The vertical window and history buffer has several
-points of interest -- all origin-0 indices into lpGlbHist:
-
----->       First line in History buffer        iFirstBufferLine (0)
-
----->       First line in the window            iFirstWindowLine
-
----->       Current line (always visible)       iCurLine
-
----->       Last line in the window             iLastWindowLine
-
----->       Last line in History buffer         iLastBufferLine (DEF_HISTLINES-1)
-
-In addition, there is the index of the last valid line in the
-history buffer (iLastValidLine), that is, the last line for
-which memory is allocated.
-
-iFirstBufferLine <= iCurLine <= (iLastValidLine + 1)
-iLastValidLine <= iLastBufferLine
-
-
-The horizontal window has several points of interest -- all
-origin-0 indices into lpwszCurLine (transposed for convenience):
-
----->       First char in buffer                iFirstBufferChar (0)
-
----->       First char in the window            iFirstWindowChar
-
----->       Current char (always visible)       iCurChar
-
----->       Last char in the window             iLastWindowChar
-
----->       Last char in buffer                 iLastBufferChar (DEF_MAXLINELEN - 1)
-
-In addition, there is the index of the last valid char in
-lpwszCurLine (iCurLineLen), that is, lstrlenW (lpwszCurLine).
-
- */
-
-int iFirstBufferLine = 0,       // Index into lpGlbHist of the first line
-                                //   in the history buffer (ALWAYS 0).
-    iLastBufferLine =           // Index into lpGlbHist of the last line
-       DEF_HISTLINES-1,         //   in the history buffer (ALWAYS DEF_HISTLINES-1)
-    iFirstWindowLine = 0,       // Index into lpGlbHist of the top line
-                                //   in the window -- changed by vertical
-                                //   scrolling.
-    iCurLine = 0,               // Index into lpGlbHist of the line with
-                                //   the cursor on it -- changed by up and
-                                //   down cursor movements.
-    iLastWindowLine,            // Index into lpGlbHist of the bottom line
-                                //   in the window -- changed by vertical
-                                //   scrolling or window resizing.
-    iLastValidLine = -1,        // Index into lpGlbHist of the last line
-                                //   which is defined (contents are not NULL)
-                                //   -- changed by the user pressing Enter
-                                //   (and thus executing a statement), or by
-                                //   normal program or system command
-                                //   output or by error messages.
-    iFirstBufferChar = 0,       // Index into lpwszCurLine of the first char
-                                //   in the buffer (ALWAYS 0)
-    iFirstWindowChar,           // Index into lpwszCurLine of the first char
-                                //   in the window -- changed by horizontal
-                                //   scrolling.
-    iCurChar,                   // Horizontal position of the caret (in chars)
-                                // The vertical position is iCurLine - iFirstWindowLine (in chars).
-    iLastWindowChar,            // Index into lpwszCurLine of the last char
-                                //   in the window -- changed by horizontal
-                                //   scrolling or window resizing.
-    iLastBufferChar =           // Index into lpwszCurLine of the last char
-       DEF_MAXLINELEN - 1,      //   in the buffer (always (DEF_MAXLINELEN - 1))
-    iCurLineLen,                // Length of lpwszCurLine (not including the trailing zero)
-    iLogPixelsX, iLogPixelsY;   // # logical pixels/inch in screen X- and Y-dimensions
-LPWCHAR lpwszCurLine;           // The contents of the line
-                                //   with the cursor on it.
-                                // This contents of this var are changed
-                                //   by editing the line in the window,
-                                //   but the contents of lpGlbHist[iCurLine].hGlb
-                                //   are not changed
 WCHAR wszEmpty[] = {L'\0'};     // Empty wide string
-LOGFONT lfAPL;                  // LOGFONT struc for the APL font
-NEWTEXTMETRIC ntmAPL;           // NEWTEXTMETRIC ...
-BOOL bAPLfont = FALSE;          // Flag used by FindAplFontEnumProc
-LONG cxAveChar, cyAveChar;      // Size of an average character in the APL font
-
-HGLOBAL hGlbHist;               // Global handle to array of history lines
-HFONT hFontAPL;                 // Handle to APL font
-CHOOSEFONT cfAPL;               // Global for ChooseFont
 
 ////LPTOKEN lptkStackBase;          // Ptr to base of token stack used in parsing
 
-BOOL bCurLineChanged;           // Has the current line changed?
-
-// Text selection variables
-BOOL bSelText = FALSE;          // Are we selecting text?
-int xSelText, ySelText,         // Starting x- & y-positions of selected text
-    xSelChar, ySelChar;         // Starting x- & y- offsets into history buffer (in chars)
-enum SELTYPE {SEL_CHARS, SEL_LINES, SEL_BLOCKS};
-enum SELTYPE eSelType;          // Selection type
-RECT rcSelInit, rcSelText;      // Selection rectangles
-
-int cxWindowPixels,             // Size of SM client area in pixels
-    cyWindowPixels,             // ...
-    nWindowChars,               // ...                    in chars
-    nWindowLines;               // ...                       lines
-extern LPCHAR  lpszTemp;        // Used for temporary storage
-extern LPWCHAR lpwszTemp;       // ...
-
-typedef struct
+typedef enum tagSELTYPE
 {
-    UINT  Shift:1,              // Left- or right-shift key up(0) or down(1)
-////     lShift:1,
-////     rShift:1,
-          Alt:1,                // Left- or right-Alt key up(0) or down(1)
-////     lAlt:1,
-////     rAlt:1,
-          Ctl:1,                // Left or -right Ctl key up(0) or down(1)
-////     lCtl:1,
-////     rCtl:1,
-          Ins:1;                // Replace(0) or insert(1)
-} VKSTATE;
+    SEL_CHARS,
+    SEL_LINES,
+    SEL_BLOCKS
+} SELTYPE;
 
-VKSTATE vkState;
-
-// Hash table variables
-LPHSHENTRY lpHshTab,            // Ptr to start of hash table
-           lpHshTabSplitNext;   // ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
-
-// Symbol table variables
-LPSYMENTRY lpSymTab,            // Ptr to start of symbol table
-           lpSymTabNext;        // Ptr to next available STE
-
-LPCHAR  lpszNumAlp;             // Accumulator for integers & floating points & names
-LPWCHAR lpwszString;            // ...             strings
-int     iMaxNumAlp = DEF_NUMALP_MAXSIZE,    // Maximum # chars in lpszNumAlp
-        iMaxString = DEF_STRING_MAXSIZE;    // ...       WCHARs in lpwszString
+SELTYPE eSelType;               // Selection type
 
 
 //***************************************************************************
@@ -334,8 +180,8 @@ void SetAttrs
     SetMapMode (hDC, MM_TEXT);
 
     // Select the font into the DC
-    if (hFontAPL)
-        SelectObject (hDC, hFontAPL);
+    if (hFontSM)
+        SelectObject (hDC, hFontSM);
 
     // Set the color of the foreground text
     SetTextColor (hDC, crTextColor);
@@ -346,143 +192,28 @@ void SetAttrs
 
 
 //***************************************************************************
-//  InitChooseFont
+//  CreateNewFontSM
 //
-//  Initialize CHOOSEFONT values
+//  Create a new font for the SM.
 //***************************************************************************
 
-void InitChooseFont
-    (void)
-{
-    memset (&cfAPL, 0, sizeof (CHOOSEFONT));
-
-    cfAPL.lStructSize = sizeof (CHOOSEFONT);
-////cfAPL.hDC =                     // Only w/CF_PRINTERFONTS
-    cfAPL.lpLogFont = &lfAPL;
-    cfAPL.iPointSize = DEF_PTSIZE;  // APL Font point size
-////cfAPL.iPointSize =              // Output only
-    cfAPL.Flags = CF_INITTOLOGFONTSTRUCT
-                | CF_FORCEFONTEXIST
-                | CF_SCREENFONTS;
-////cfAPL.rgbColors =               // Only w/CF_EFFECTS
-////cfAPL.lCustData =               // Only w/CF_ENABLEHOOK
-////cfAPL.lpfnHook =                // Only w/CF_ENABLEHOOK
-////cfAPL.lpTemplateName =          // Only w/CF_ENABLETEMPLATE
-////cfAPL.hInstance =               // Only w/CF_ENABLETEMPLATE
-////cfAPL.lpszStyle =               // Only w/CF_USESTYLE
-////cfAPL.nFontType =               // Output only
-////cfAPL.nSizeMin =                // Only w/CF_LIMITSIZE
-////cfAPL.nSizeMax =                // Only w/CF_LIMITSIZE
-
-} // End InitChooseFont
-
-
-//***************************************************************************
-//  EnumFontFamilies callback function
-//***************************************************************************
-
-int CALLBACK FindAplFontEnumProc
-    (ENUMLOGFONT *lpELF,    // Ptr to ENUMLOGFONT struc
-     NEWTEXTMETRIC *lpNTM,  // Ptr to TEXTMETRIC struc
-     int iFontType,         // Font type
-     LPARAM lParam)         // Application-defined data
-{
-    // We found a match
-    // Copy the LOGFONT struc to the data area
-    memmove (&lfAPL, &lpELF->elfLogFont, sizeof (lfAPL));
-
-    // Copy the NEWTEXTMETRIC struc to the data area
-    memmove (&ntmAPL, lpNTM, sizeof (ntmAPL));
-
-    bAPLfont = TRUE;        // Mark as found
-
-    return FALSE;           // Stop enumerating
-} // End FindAplFontEnumProc
-
-
-//***************************************************************************
-//  MyChooseFont
-//
-//  Choose a font
-//***************************************************************************
-
-void MyChooseFont
+void CreateNewFontSM
     (void)
 
 {
-    if (ChooseFont (&cfAPL))    // Choose it
-    {
-        HDC hDC;
-
-        // ChooseFont helpfully returns the point size
-        //   in 1/10th of a point.  Rescale it here.
-        cfAPL.iPointSize /= 10;
-
-        // Call EnumFontFamilies because ChooseFont
-        //   helpfully zeros lfAPL.iPointSize, so
-        //   we need to fill it in.
-        hDC = MyGetDC (hWndSM);
-        SetAttrs (hDC);
-        EnumFontFamilies (hDC,
-                          lfAPL.lfFaceName,
-                          (FONTENUMPROC) FindAplFontEnumProc,
-                          0);
-        // Release the DC
-        MyReleaseDC (hWndSM, hDC); hDC = NULL;
-
-        // Initialize variables for a new font
-        NewFont ();
-
-        // Repaint the SM window
-        InvalidateRect (hWndSM, NULL, TRUE);
-    } // End IF
-} // End MyChooseFont
-
-
-//***************************************************************************
-//  NewFont
-//
-//  Initialize variables for a new font.
-//***************************************************************************
-
-void NewFont
-    (void)
-
-{
-    // New height
-    cyAveChar = MulDiv (cfAPL.iPointSize, iLogPixelsY, 72);
-
-    // New width (same aspect ratio as old)
-    cxAveChar = MulDiv (lfAPL.lfWidth, cyAveChar, lfAPL.lfHeight);
-    lfAPL.lfWidth  =  cxAveChar;
-    lfAPL.lfHeight = -cyAveChar;
-////lfAPL.lfWeight = DEF_FONTWEIGHT;
-
-    // Because cxAveChar & cyAveChar changed, we need to reposition
-    //   the caret as it depends upon those two vars.
-    MoveCaret ();
-
-    // Recalculate the # horizontal characters
-    //   and vertical lines.
-    nWindowChars = cxWindowPixels / cxAveChar;
-    nWindowLines = cyWindowPixels / cyAveChar;
-
     // Delete the previous handle (if any)
-    if (hFontAPL)
+    if (hFontSM)
     {
-        // Delete the APL font handle
-        MyDeleteObject (hFontAPL); hFontAPL = NULL;
+        // Delete the SM font handle
+        MyDeleteObject (hFontSM); hFontSM = NULL;
     } // End IF
 
-    // Create the font we'll use
-    hFontAPL = MyCreateFontIndirect (&lfAPL);
+    // Create the font
+    hFontSM = MyCreateFontIndirect (&lfSM);
 
-    // Use a monospace font in the debugger's listbox
-    PostMessage (hWndDB, WM_SETFONT, (WPARAM) hFontAPL, 0);
-
-    // Use this font in the Tab Control's labels
-    PostMessage (hWndTC, WM_SETFONT, (WPARAM) hFontAPL, 0);
-} // End NewFont
+    // Also, use this font in the debugger's listbox
+    SendMessage (hWndDB, WM_SETFONT, (WPARAM) hFontSM, 0);
+} // End CreateNewFontSM
 
 
 //***************************************************************************
@@ -1495,10 +1226,248 @@ LRESULT APIENTRY SMWndProc
     HGLOBAL   hGlb;
     LPWCHAR   wszLine;
     RECT      rc;
+    HDC          hDC;
+    HFONT        hFontOld;
+    TEXTMETRIC   tm;
 
 ////ODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
     {
+        case WM_NCCREATE:           // lpcs = (LPCREATESTRUCT) lParam
+            hWndSM = hWnd;
+
+            INIT_PERTABVARS
+
+            break;                  // Continue with next handler
+
+        case WM_CREATE:
+        {
+            int i;
+
+            // Initialize variables
+            vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
+            cfSM.hwndOwner = hWnd;
+
+            // Initialize window-specific resources
+            SM_Create (hWnd);
+
+            // *************** lpwszCurLine ****************************
+
+            // Allocate memory for the current line
+            // Note that this memory is allocated as fixed
+            //   because we use it so often
+            lpwszCurLine = MyGlobalAlloc (GPTR, (DEF_MAXLINELEN + 1) * sizeof (WCHAR));
+            if (!lpwszCurLine)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  MyGlobalAlloc for <lpwszCurLine> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Initialize the current line
+            InitCurLine (FALSE);
+
+////////////// *************** lptkStackBase ***************************
+////////////
+////////////// Allocate virtual memory for the token stack used in parsing
+////////////lptkStackBase = VirtualAlloc (NULL,      // Any address
+////////////                              DEF_TOKENSTACK_MAXSIZE,
+////////////                              MEM_RESERVE,
+////////////                              PAGE_READWRITE);
+////////////if (!lptkStackBase)
+////////////{
+////////////    // ***FIXME*** -- WS FULL before we got started???
+////////////    DbgMsg ("WM_CREATE:  VirtualAlloc for <lptkStackBase> failed");
+////////////
+////////////    return -1;          // Mark as failed
+////////////} // End IF
+////////////
+////////////// Commit the intial size
+////////////VirtualAlloc (lptkStackBase,
+////////////              DEF_TOKENSTACK_INITSIZE,
+////////////              MEM_COMMIT,
+////////////              PAGE_READWRITE);
+
+            // *************** lpszNumAlp ******************************
+
+            // Allocate virtual memory for the Name & Number accumulator
+            lpszNumAlp = VirtualAlloc (NULL,      // Any address
+                                       DEF_NUMALP_MAXSIZE,
+                                       MEM_RESERVE,
+                                       PAGE_READWRITE);
+            if (!lpszNumAlp)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpszNumAlp> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Commit the intial size
+            VirtualAlloc (lpszNumAlp,
+                          DEF_NUMALP_INITSIZE,
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+
+            // *************** lpwszString *****************************
+
+            // Allocate virtual memory for the wide string accumulator
+            lpwszString = VirtualAlloc (NULL,       // Any address
+                                        DEF_STRING_MAXSIZE,
+                                        MEM_RESERVE,
+                                        PAGE_READWRITE);
+            if (!lpwszString)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszString> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Commit the intial size
+            VirtualAlloc (lpwszString,
+                          DEF_STRING_INITSIZE,
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+
+            // *************** lpHshTab ********************************
+
+            // Allocate virtual memory for the hash table
+            lpHshTab = VirtualAlloc (NULL,      // Any address
+                                     DEF_HSHTAB_MAXSIZE,
+                                     MEM_RESERVE,
+                                     PAGE_READWRITE);
+            if (!lpHshTab)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpHshTab> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Commit the intial size
+            VirtualAlloc (lpHshTab,
+                          DEF_HSHTAB_INITSIZE,
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+
+            // Initialize the principal hash entry (1st one in each block).
+            // This entry is never overwritten with an entry with a
+            //   different hash value.
+            for (i = 0; i < DEF_HSHTAB_INITSIZE; i += DEF_HSHTAB_EPB)
+                lpHshTab[i].htFlags.PrinHash = 1;
+
+            // Initialize the next & prev same HTE values
+            for (i = 0; i < DEF_HSHTAB_INITSIZE; i++)
+            {
+                lpHshTab[i].NextSameHash =
+                lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
+            } // End FOR
+
+            // Initialize next split entry
+            lpHshTabSplitNext = lpHshTab;
+
+            // *************** lpSymTab ********************************
+
+            // Allocate virtual memory for the symbol table
+            lpSymTab = VirtualAlloc (NULL,      // Any address
+                                     DEF_SYMTAB_MAXSIZE,
+                                     MEM_RESERVE,
+                                     PAGE_READWRITE);
+            if (!lpSymTab)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpSymTab> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Commit the intial size
+            VirtualAlloc (lpSymTab,
+                          DEF_SYMTAB_INITSIZE,
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+
+            // Initialize next available entry
+            lpSymTabNext = lpSymTab;
+
+            // *************** History *********************************
+
+            // Allocate memory for the array of ptrs to the
+            //   Session Manager window lines
+            // The "+1" is for converting limit to length.
+            hGlbHist = MyGlobalAlloc (GHND, (iLastBufferLine + 1) * sizeof (GLBHIST));
+            if (!hGlbHist)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  MyGlobalAlloc for <hGlbHist> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Mark the first entry as such
+            lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
+            lpGlbHist[0].First = 1;
+            MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
+
+            // *************** Fonts ***********************************
+
+            // Create a new font for the SM
+            CreateNewFontSM ();
+
+            // Get the text metrics for this font
+            hDC = GetDC (hWnd);
+            hFontOld = SelectObject (hDC, hFontTC);
+            GetTextMetrics (hDC, &tm);
+            SelectObject (hDC, hFontOld);
+            ReleaseDC (hWnd, hDC);
+
+            // New height
+            cyAveChar = MulDiv (cfSM.iPointSize / 10, iLogPixelsY, 72);
+            cyAveChar = -lfSM.lfHeight;
+
+            lfSM.lfWidth = (tm.tmAveCharWidth + tm.tmMaxCharWidth) / 2;
+
+            // New width (same aspect ratio as old)
+            cxAveChar = MulDiv (lfSM.lfWidth, cyAveChar, -lfSM.lfHeight);
+
+            // Because cxAveChar & cyAveChar changed, we need to reposition
+            //   the caret as it depends upon those two vars.
+            MoveCaret ();
+
+            // Recalculate the # horizontal characters
+            //   and vertical lines.
+            nWindowChars = cxWindowPixels / cxAveChar;
+            nWindowLines = cyWindowPixels / cyAveChar;
+
+            // *************** ScrollBars ******************************
+
+            // Set scrollbar ranges
+            SetVScrollRange ();
+            SetHScrollRange ();
+
+            // Append all system names (functions and variables) as reserved
+            if (!AppendSystemNames_EM ())
+            {
+                DbgMsg ("WM_CREATE:  AppendSystemNames_EM failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // *************** System Vars *****************************
+
+            // Initialize all system vars
+            if (!InitSystemVars ())
+            {
+                DbgMsg ("WM_CREATE:  InitSystemVars failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            return FALSE;           // We handled the msg
+        } // End WM_CREATE
+
 #define chCharCode ((char) wParam)
         case WM_CHAR:               // chCharCode = (TCHAR) wParam; // character code
                                     // lKeyData = lParam;           // Key data
@@ -2264,259 +2233,6 @@ LRESULT APIENTRY SMWndProc
 #undef  xPos
 #undef  fwKeys
 
-        case WM_NCCREATE:       // lpcs = (LPCREATESTRUCT) lParam
-            hWndSM = hWnd;
-
-            break;                  // Continue with next handler
-
-        case WM_CREATE:
-        {
-            HDC hDC;
-            int i;
-
-            // Initialize variables
-            vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
-            cfAPL.hwndOwner = hWnd;
-
-            // Initialize window-specific resources
-            SM_Create (hWnd);
-
-            // *************** Bitmaps *********************************
-            hBitMapLineCont = LoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
-            if (hBitMapLineCont)
-            {
-                GetObject (hBitMapLineCont, sizeof (BITMAP), (LPSTR) &bmLineCont);
-
-                iLCWidth = 2 + bmLineCont.bmWidth + 2;  // Width of line continuation column
-            } // End IF
-
-            // *************** lpwszCurLine ****************************
-
-            // Allocate memory for the current line
-            // Note that this memory is allocated as fixed
-            //   because we use so often
-            lpwszCurLine = MyGlobalAlloc (GPTR, (DEF_MAXLINELEN + 1) * sizeof (WCHAR));
-            if (!lpwszCurLine)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  MyGlobalAlloc for <lpwszCurLine> failed");
-
-                return -1;          // Mark as failed
-            } // End IF
-
-            // Initialize the current line
-            InitCurLine (FALSE);
-
-////////////// *************** lptkStackBase ***************************
-////////////
-////////////// Allocate virtual memory for the token stack used in parsing
-////////////lptkStackBase = VirtualAlloc (NULL,      // Any address
-////////////                              DEF_TOKENSTACK_MAXSIZE,
-////////////                              MEM_RESERVE,
-////////////                              PAGE_READWRITE);
-////////////if (!lptkStackBase)
-////////////{
-////////////    // ***FIXME*** -- WS FULL before we got started???
-////////////    DbgMsg ("WM_CREATE:  VirtualAlloc for <lptkStackBase> failed");
-////////////
-////////////    return -1;          // Mark as failed
-////////////} // End IF
-////////////
-////////////// Commit the intial size
-////////////VirtualAlloc (lptkStackBase,
-////////////              DEF_TOKENSTACK_INITSIZE,
-////////////              MEM_COMMIT,
-////////////              PAGE_READWRITE);
-
-            // *************** lpszNumAlp ******************************
-
-            // Allocate virtual memory for the Name & Number accumulator
-            lpszNumAlp = VirtualAlloc (NULL,      // Any address
-                                       DEF_NUMALP_MAXSIZE,
-                                       MEM_RESERVE,
-                                       PAGE_READWRITE);
-            if (!lpszNumAlp)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpszNumAlp> failed");
-
-                return -1;          // Mark as failed
-            } // End IF
-
-            // Commit the intial size
-            VirtualAlloc (lpszNumAlp,
-                          DEF_NUMALP_INITSIZE,
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
-
-            // *************** lpwszString *****************************
-
-            // Allocate virtual memory for the wide string accumulator
-            lpwszString = VirtualAlloc (NULL,       // Any address
-                                        DEF_STRING_MAXSIZE,
-                                        MEM_RESERVE,
-                                        PAGE_READWRITE);
-            if (!lpwszString)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszString> failed");
-
-                return -1;          // Mark as failed
-            } // End IF
-
-            // Commit the intial size
-            VirtualAlloc (lpwszString,
-                          DEF_STRING_INITSIZE,
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
-
-            // *************** lpHshTab ********************************
-
-            // Allocate virtual memory for the hash table
-            lpHshTab = VirtualAlloc (NULL,      // Any address
-                                     DEF_HSHTAB_MAXSIZE,
-                                     MEM_RESERVE,
-                                     PAGE_READWRITE);
-            if (!lpHshTab)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpHshTab> failed");
-
-                return -1;          // Mark as failed
-            } // End IF
-
-            // Commit the intial size
-            VirtualAlloc (lpHshTab,
-                          DEF_HSHTAB_INITSIZE,
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
-
-            // Initialize the principal hash entry (1st one in each block).
-            // This entry is never overwritten with an entry with a
-            //   different hash value.
-            for (i = 0; i < DEF_HSHTAB_INITSIZE; i += DEF_HSHTAB_EPB)
-                lpHshTab[i].htFlags.PrinHash = 1;
-
-            // Initialize the next & prev same HTE values
-            for (i = 0; i < DEF_HSHTAB_INITSIZE; i++)
-            {
-                lpHshTab[i].NextSameHash =
-                lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
-            } // End FOR
-
-            // Initialize next split entry
-            lpHshTabSplitNext = lpHshTab;
-
-            // *************** lpSymTab ********************************
-
-            // Allocate virtual memory for the symbol table
-            lpSymTab = VirtualAlloc (NULL,      // Any address
-                                     DEF_SYMTAB_MAXSIZE,
-                                     MEM_RESERVE,
-                                     PAGE_READWRITE);
-            if (!lpSymTab)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpSymTab> failed");
-
-                return -1;          // Mark as failed
-            } // End IF
-
-            // Commit the intial size
-            VirtualAlloc (lpSymTab,
-                          DEF_SYMTAB_INITSIZE,
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
-
-            // Initialize next available entry
-            lpSymTabNext = lpSymTab;
-
-            // *************** History *********************************
-
-            // Allocate memory for the array of ptrs to the
-            //   Session Manager window lines
-            // The "+1" is for converting limit to length.
-            hGlbHist = MyGlobalAlloc (GHND, (iLastBufferLine + 1) * sizeof (GLBHIST));
-            if (!hGlbHist)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  MyGlobalAlloc for <hGlbHist> failed");
-
-                return -1;          // Mark as failed
-            } // End IF
-
-            // Mark the first entry as such
-            lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
-            lpGlbHist[0].First = 1;
-            MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-
-            // *************** Fonts ***********************************
-
-            // Find the Unicode font
-            hDC = MyGetDC (hWnd);
-            SetAttrs (hDC);
-            EnumFontFamilies (hDC,
-                              DEF_FONTNAME,
-                              (FONTENUMPROC) FindAplFontEnumProc,
-                              0);
-            if (!bAPLfont)
-            {
-                // No Unicode font found -- we'll add it as a resource
-                MB ("No APL Unicode font found:  " DEF_FONTNAME);
-
-                // ***FIXME*** -- add the font as a resource and retry
-                DbgMsg ("WM_CREATE:  No APL font");
-
-
-
-
-
-
-            } // End IF
-
-            iLogPixelsX = GetDeviceCaps (hDC, LOGPIXELSX);  // # horz pixels/inch
-            iLogPixelsY = GetDeviceCaps (hDC, LOGPIXELSY);  // # vert ...
-
-            // Release the DC
-            MyReleaseDC (hWnd, hDC); hDC = NULL;
-
-            // Initialize for a new font
-            NewFont ();
-
-            // *************** ScrollBars ******************************
-
-            // Set scrollbar ranges
-            SetVScrollRange ();
-            SetHScrollRange ();
-
-            PostMessage (hWnd, WM_USER, 0, 0);
-
-            return FALSE;           // We handled the msg
-        } // End WM_CREATE
-
-        case WM_USER:
-            // *************** System Names ****************************
-
-            // Append all system names (functions and variables) as reserved
-            if (!AppendSystemNames_EM ())
-            {
-                DbgMsg ("WM_CREATE:  AppendSystemNames_EM failed");
-
-                return -1;          // Mark as failed
-            } // End IF
-
-            // *************** System Vars *****************************
-
-            // Initialize all system vars
-            if (!InitSystemVars ())
-            {
-                DbgMsg ("WM_CREATE:  InitSystemVars failed");
-
-                return -1;          // Mark as failed
-            } // End IF
-
-            return FALSE;           // We handled the msg
-
 #define fwSizeType wParam
         case WM_SIZE:               // fwSizeType = wParam;      // resizing flag
                                     // nWidth = LOWORD(lParam);  // width of client area
@@ -2899,9 +2615,9 @@ LRESULT APIENTRY SMWndProc
             // Nothing to undo
 
             // *************** Fonts ***********************************
-            if (hFontAPL)
+            if (hFontSM)
             {
-                MyDeleteObject (hFontAPL); hFontAPL = NULL;
+                MyDeleteObject (hFontSM); hFontSM = NULL;
             } // End IF
 
             // *************** History *********************************

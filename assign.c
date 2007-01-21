@@ -10,18 +10,13 @@
 #include "aplerrors.h"
 #include "datatype.h"
 #include "resdebug.h"
-#include "symtab.h"
-#include "tokens.h"
-#include "parse.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
-
-extern BOOL (*aSysVarValid[]) (LPYYSTYPE, LPTOKEN);
-extern WCHAR *lpwszTemp;
 
 
 //***************************************************************************
@@ -345,13 +340,13 @@ void SetNameType
 //  Return the FCNTYPE_xxx of a function token
 //***************************************************************************
 
-enum FCN_TYPES GetFcnType
+FCN_TYPES GetFcnType
     (LPTOKEN lpToken)
 
 {
     HGLOBAL hGlbData;
     LPVOID  lpMem;
-    enum FCN_TYPES cFcnType;
+    FCN_TYPES cFcnType;
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -430,9 +425,9 @@ enum FCN_TYPES GetFcnType
 #endif
 
 void AssignArrayCommon
-    (LPYYSTYPE lpYYName,
-     LPYYSTYPE lpYYExpr,
-     enum TOKEN_TYPES TknType)
+    (LPYYSTYPE   lpYYName,
+     LPYYSTYPE   lpYYExpr,
+     TOKEN_TYPES TknType)
 
 {
     // Free the old value for this name

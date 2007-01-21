@@ -10,11 +10,9 @@
 #include "aplerrors.h"
 #include "datatype.h"
 #include "resdebug.h"
-#include "symtab.h"
-#include "tokens.h"
-#include "parse.h"
 #include "sysvars.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -36,35 +34,6 @@
 #define SysFnTS_EM      NULL
 #define SysFnTYPE_EM    NULL
 #endif
-
-extern HGLOBAL hGlbSAEmpty,
-               hGlbSAOff,
-               hGlbSAExit,
-               hGlbSAClear,
-               hGlbSAError;
-
-
-// Default global values of system variables -- these values
-//   are used to set the variables in a CLEAR WS.
-
-// Current global values of system variables so we can use them
-//   without having to access the actual system variable.
-HGLOBAL  hGlbQuadALX_CWS,  hGlbQuadALX,     // []ALX    ([]dm)
-         hGlbQuadELX_CWS,  hGlbQuadELX,     // []ELX    ([]dm)
-         hGlbQuadLX_CWS,   hGlbQuadLX,      // []LX     ("")
-         hGlbQuadSA_CWS,   hGlbQuadSA,      // []SA     ("")
-         hGlbQuadWSID_CWS, hGlbQuadWSID,    // []WSID   ("")
-         hGlbQuadPR_CWS,   hGlbQuadPR;      // []PR     ("") (When an empty vector)
-APLFLOAT fQuadCT_CWS ,     fQuadCT;         // []CT
-APLBOOL  bQuadDF_CWS ,     bQuadDF,         // []DF
-         bQuadIF_CWS ,     bQuadIF,         // []IF
-         bQuadIO_CWS ,     bQuadIO,         // []IO
-         bQuadxSA_CWS,     bQuadxSA;        // []SA (in its index form)
-APLINT   uQuadPP_CWS ,     uQuadPP,         // []PP
-         uQuadPW_CWS ,     uQuadPW,         // []PW
-         uQuadRL_CWS ,     uQuadRL;         // []RL
-APLCHAR  cQuadPR_CWS ,     cQuadPR;         // []PR     (' ') (When a char scalar)
-
 
 typedef struct tagSYSNAME
 {
@@ -260,51 +229,6 @@ BOOL AssignCharVector_EM
 
         return FALSE;
     } // End IF
-
-////     // Get the string length (excluding the terminating zero)
-////     iStringLen = lstrlenW (lpwszString);
-////
-////     // Allocate global memory for the array header,
-////     //   one dimension (it's a vector), and the string
-////     //   excluding the terminating zero.
-////     hGlb = DbgGlobalAlloc (GHND,
-////                            sizeof (VARARRAY_HEADER)
-////                          + sizeof (APLDIM) * 1
-////                          + iStringLen * sizeof (WCHAR));
-////     if (!hGlb)
-////     {
-////         ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
-////
-////         return;
-////     } else
-////     {
-////         LPWCHAR lpwsz;
-////
-////         // Lock the handle, setup the header, and copy
-////         //   the string to the global memory
-////         lpwsz = MyGlobalLock (hGlb);
-////
-//// #define lpHeader    ((LPVARARRAY_HEADER) lpwsz)
-////
-////         lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-////         lpHeader->ArrType    = ARRAY_CHAR;
-//// ////////lpHeader->Perm       = 0;
-////         lpHeader->SysVar     = 1;
-////         lpHeader->RefCnt     = 1;
-////         lpHeader->NELM       = iStringLen;
-////         lpHeader->Rank       = 1;
-////
-//// #undef  lpHeader
-////
-////         *VarArrayBaseToDim (lpwsz) = iStringLen;
-////         CopyMemory (VarArrayBaseToData (lpwsz, 1),
-////                     lpwszString,
-////                     iStringLen * sizeof (APLCHAR));
-////         MyGlobalUnlock (hGlb); lpwsz = NULL;
-////
-////         // Save in global ptr
-////         *((HGLOBAL *) lpGlbVal) = hGlb;
-////     } // End IF/ELSE
 
     // Save the global memory ptr
     lpSymEntryDest->stData.stGlbData = MakeGlbTypeGlb (hGlb);
@@ -1516,9 +1440,6 @@ BOOL ValidateSA_EM
     //   or vector, and a valid Stop Action value
     //   ('', 'EXIT', 'ERROR', 'CLEAR', 'OFF')
 
-    // ***FINISHME***
-    DbgBrk ();
-
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
@@ -1687,29 +1608,6 @@ BOOL ValidateWSID_EM
 
     return FALSE;
 } // End ValidateWSID_EM
-
-
-enum SYSVAR_VALID
-{
-    SYSVAR_VALID_ALX = 0,   //  0:
-    SYSVAR_VALID_CT  ,      //  1:
-    SYSVAR_VALID_DF  ,      //  2:
-    SYSVAR_VALID_ELX ,      //  3:
-    SYSVAR_VALID_IF  ,      //  4:
-    SYSVAR_VALID_IO  ,      //  5:
-    SYSVAR_VALID_LX  ,      //  6:
-    SYSVAR_VALID_PP  ,      //  7:
-    SYSVAR_VALID_PR  ,      //  8:
-    SYSVAR_VALID_PW  ,      //  9:
-    SYSVAR_VALID_RL  ,      // 10:
-    SYSVAR_VALID_SA  ,      // 11:
-    SYSVAR_VALID_WSID,      // 12:
-
-    SYSVAR_VALID_LENGTH     // 13: Length of the enum *MUST* be last
-};
-
-// Use as in:  (*aSysVarValid[SYSVAR_VALID_IO]) (lpYYName, &lpYYExpr->tkToken);
-BOOL (*aSysVarValid[SYSVAR_VALID_LENGTH]) (LPYYSTYPE, LPTOKEN);
 
 
 //***************************************************************************

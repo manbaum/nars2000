@@ -3,24 +3,20 @@
 //***************************************************************************
 
 #include <windows.h>
+
 #include "main.h"
 #include "aplerrors.h"
 #include "datatype.h"
-#include "symtab.h"
-#include "tokens.h"
 #include "resdebug.h"
-#include "parse.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
 
-extern LPCHAR       lpszTemp;
-extern PLLOCALVARS  gplLocalVars;
-extern LPWCHAR      lpwszErrorMessage;
-       YYSTYPE      YYRes;
+YYSTYPE YYRes;
 
 
 /*  Strand Test cases
@@ -1058,7 +1054,7 @@ ERROR_EXIT:
 
 LPYYSTYPE MakeFcnStrand_EM
     (LPYYSTYPE lpYYArg,         // Ptr to incoming token
-     enum FCN_TYPES cFcnType)   // Type of the strand
+     FCN_TYPES cFcnType)        // Type of the strand
 
 {
     static YYSTYPE YYRes;       // The result
@@ -1332,8 +1328,8 @@ LPYYSTYPE CopyYYFcn
 //    a named token type (see TOKEN_TYPES enum).
 //***************************************************************************
 
-enum STRAND_TYPE TranslateFcnTypeToTknTypeNamed
-    (enum FCN_TYPES fcnType)
+STRAND_TYPES TranslateFcnTypeToTknTypeNamed
+    (FCN_TYPES fcnType)
 
 {
     switch (fcnType)
@@ -1361,8 +1357,8 @@ enum STRAND_TYPE TranslateFcnTypeToTknTypeNamed
 //    a token type (see TOKEN_TYPES enum).
 //***************************************************************************
 
-enum STRAND_TYPE TranslateImmTypeToTknType
-    (enum IMM_TYPES immType)
+STRAND_TYPES TranslateImmTypeToTknType
+    (IMM_TYPES immType)
 
 {
     switch (immType)
@@ -1395,8 +1391,8 @@ enum STRAND_TYPE TranslateImmTypeToTknType
 //    a strand type (see STRAND_TYPES enum).
 //***************************************************************************
 
-enum STRAND_TYPE TranslateImmTypeToStrandType
-    (enum IMM_TYPES immType)
+STRAND_TYPES TranslateImmTypeToStrandType
+    (IMM_TYPES immType)
 
 {
     switch (immType)
@@ -1426,8 +1422,8 @@ enum STRAND_TYPE TranslateImmTypeToStrandType
 //    an array type (see ARRAY_TYPES enum).
 //***************************************************************************
 
-enum ARRAY_TYPE TranslateImmTypeToArrayType
-    (enum IMM_TYPES immType)
+ARRAY_TYPES TranslateImmTypeToArrayType
+    (IMM_TYPES immType)
 
 {
     switch (immType)
@@ -1457,8 +1453,8 @@ enum ARRAY_TYPE TranslateImmTypeToArrayType
 //    an immediate type (see IMM_TYPES enum).
 //***************************************************************************
 
-enum IMM_TYPE TranslateArrayTypeToImmType
-    (enum ARRAY_TYPES arrayType)
+IMM_TYPES TranslateArrayTypeToImmType
+    (ARRAY_TYPES arrayType)
 
 {
     switch (arrayType)
@@ -1492,8 +1488,8 @@ enum IMM_TYPE TranslateArrayTypeToImmType
 //    a strand type (see STRAND_TYPES enum).
 //***************************************************************************
 
-enum STRAND_TYPE TranslateArrayTypeToStrandType
-    (enum ARRAY_TYPES arrayType)
+STRAND_TYPES TranslateArrayTypeToStrandType
+    (ARRAY_TYPES arrayType)
 
 {
     switch (arrayType)
@@ -1529,8 +1525,8 @@ enum STRAND_TYPE TranslateArrayTypeToStrandType
 //    an array type (see ARRAY_TYPES enum).
 //***************************************************************************
 
-enum ARRAY_TYPE TranslateStrandTypeToArrayType
-    (enum STRAND_TYPES strandType)
+ARRAY_TYPES TranslateStrandTypeToArrayType
+    (STRAND_TYPES strandType)
 
 {
     switch (strandType)

@@ -5,11 +5,13 @@
 #pragma pack (1)
 #define STRICT
 #include <windows.h>
+
 #include "main.h"
 #include "datatype.h"
 #include "resdebug.h"
 #include "sysvars.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -17,14 +19,15 @@
 #endif
 
 
-char lpszVersion[]                  = "NARS2000\nVersion %s";
 char lpszRegKeyRoot[]               = "Software\\NARS2000",
      lpszRegStrXPosName[]           = "xPos",
      lpszRegStrYPosName[]           = "yPos",
      lpszRegStrXSizeName[]          = "xSize",
      lpszRegStrYSizeName[]          = "ySize",
-     lpszRegStrInitDirName[]        = "InitDir",
      lpszRegStrSizeStateName[]      = "SizeState",
+     lpszRegStrInitDirName[]        = "InitDir",
+     lpszRegStrLFTCName[]           = "LogfontTC",
+     lpszRegStrLFSMName[]           = "LogfontSM",
      lpszRegStrGlbALXName[]         = "GlbALX",
      lpszRegStrGlbCTName[]          = "GlbCT",
      lpszRegStrGlbDFName[]          = "GlbDF",
@@ -38,75 +41,17 @@ char lpszRegKeyRoot[]               = "Software\\NARS2000",
      lpszRegStrGlbRLName[]          = "GlbRL",
      lpszRegStrGlbSAName[]          = "GlbSA";
 
-extern SIZE  MFSize;
-extern int   MFSizeState;
-extern POINT MFPosCtr;
-extern char  szInitDir[_MAX_PATH];
-
-extern APLFLOAT fQuadCT_CWS;
-extern APLBOOL  bQuadDF_CWS,
-                bQuadIF_CWS,
-                bQuadIO_CWS,
-                bQuadxSA_CWS;
-extern APLINT   uQuadPP_CWS,
-                uQuadPW_CWS,
-                uQuadRL_CWS;
-extern APLCHAR  cQuadPR_CWS;
-extern HGLOBAL hGlbMTChar,
-               hGlbSAClear,
-               hGlbSAError,
-               hGlbSAExit,
-               hGlbSAOff,
-               hGlbQuadPR_CWS,
-               hGlbQuadSA_CWS,
-               hGlbQuadLX_CWS,
-               hGlbQuadALX_CWS,
-               hGlbQuadELX_CWS;
-
 
 //***************************************************************************
-//  ReadReg
+//  ReadRegGlb
 //
-//  Read in registry entries
+//  Read in registry entries having to do with global values
 //***************************************************************************
 
-void ReadReg (HWND hWnd)
+void ReadRegGlb
+    (void)
 
 {
-    RECT  rcDtop;           // Rectangle for desktop
-    POINT PosCtr;           // x- and y- positions
-
-    // Save the window size for use in WM_MOVE messages
-    // Note that this is the window size, not the client area size.
-    GetWindowRect (hWnd, &rcDtop);
-    MFSize.cx = rcDtop.right  - rcDtop.left;
-    MFSize.cy = rcDtop.bottom - rcDtop.top;
-
-    MFSize.cx = GetRegDword (HKEY_CURRENT_USER,
-                             lpszRegKeyRoot,
-                             lpszRegStrXSizeName,
-                             MFSize.cx);
-    MFSize.cy = GetRegDword (HKEY_CURRENT_USER,
-                             lpszRegKeyRoot,
-                             lpszRegStrYSizeName,
-                             MFSize.cy);
-    // Setup the default values in case the .INI file is not present
-    GetWindowRect (GetDesktopWindow(), &rcDtop);
-    PosCtr.x = rcDtop.left + MFSize.cx / 2; // Center horizontally
-    PosCtr.y = rcDtop.top  + MFSize.cy / 2; // Center vertically
-
-    MFPosCtr.x = GetRegDword (HKEY_CURRENT_USER,
-                              lpszRegKeyRoot,
-                              lpszRegStrXPosName,
-                              PosCtr.x);
-    MFPosCtr.y = GetRegDword (HKEY_CURRENT_USER,
-                              lpszRegKeyRoot,
-                              lpszRegStrYPosName,
-                              PosCtr.y);
-    MFSizeState = GetRegDword (HKEY_CURRENT_USER,
-                               lpszRegKeyRoot,
-                               lpszRegStrSizeStateName,
-                               MFSizeState);
     // Read in File Open/Save Initial Dir
     GetRegStr (HKEY_CURRENT_USER,
                lpszRegKeyRoot,
@@ -114,6 +59,22 @@ void ReadReg (HWND hWnd)
                szInitDir,
                sizeof (szInitDir),
                szInitDir);
+
+    // Read in LOGFONT struc for TC
+    GetRegBinary (HKEY_CURRENT_USER,
+                  lpszRegKeyRoot,
+                  lpszRegStrLFTCName,
+                  sizeof (lfTC),
+                  &lfTC,
+                  &lfTC);
+
+    // Read in LOGFONT struc for SM
+    GetRegBinary (HKEY_CURRENT_USER,
+                  lpszRegKeyRoot,
+                  lpszRegStrLFSMName,
+                  sizeof (lfSM_CWS),
+                  &lfSM_CWS,
+                  &lfSM_CWS);
 
     // Read in default values for system variables in a CLEAR WS
 
@@ -211,25 +172,72 @@ void ReadReg (HWND hWnd)
 
     // Read in []LX
     hGlbQuadLX_CWS =
-    GetRegGlb (HKEY_CURRENT_USER,
-               lpszRegKeyRoot,
-               lpszRegStrGlbLXName,
-               DEF_QUADLX_CWS);
+    GetRegGlbChar (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbLXName,
+                   DEF_QUADLX_CWS);
 
     // Read in []ALX
     hGlbQuadALX_CWS =
-    GetRegGlb (HKEY_CURRENT_USER,
-               lpszRegKeyRoot,
-               lpszRegStrGlbALXName,
-               DEF_QUADALX_CWS);
+    GetRegGlbChar (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbALXName,
+                   DEF_QUADALX_CWS);
 
     // Read in []ELX
     hGlbQuadELX_CWS =
-    GetRegGlb (HKEY_CURRENT_USER,
-               lpszRegKeyRoot,
-               lpszRegStrGlbELXName,
-               DEF_QUADELX_CWS);
-} // End ReadReg
+    GetRegGlbChar (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbELXName,
+                   DEF_QUADELX_CWS);
+} // End ReadRegGlb
+
+
+//***************************************************************************
+//  ReadRegWnd
+//
+//  Read in window-specific registry entries
+//***************************************************************************
+
+void ReadRegWnd
+    (HWND hWnd)
+
+{
+    RECT  rcDtop;           // Rectangle for desktop
+    POINT PosCtr;           // x- and y- positions
+
+    // Save the window size for use in WM_MOVE messages
+    // Note that this is the window size, not the client area size.
+    GetWindowRect (hWnd, &rcDtop);
+    MFSize.cx = rcDtop.right  - rcDtop.left;
+    MFSize.cy = rcDtop.bottom - rcDtop.top;
+
+    MFSize.cx = GetRegDword (HKEY_CURRENT_USER,
+                             lpszRegKeyRoot,
+                             lpszRegStrXSizeName,
+                             MFSize.cx);
+    MFSize.cy = GetRegDword (HKEY_CURRENT_USER,
+                             lpszRegKeyRoot,
+                             lpszRegStrYSizeName,
+                             MFSize.cy);
+    // Setup the default values in case the .INI file is not present
+    GetWindowRect (GetDesktopWindow(), &rcDtop);
+    PosCtr.x = rcDtop.left + MFSize.cx / 2; // Center horizontally
+    PosCtr.y = rcDtop.top  + MFSize.cy / 2; // Center vertically
+
+    MFPosCtr.x = GetRegDword (HKEY_CURRENT_USER,
+                              lpszRegKeyRoot,
+                              lpszRegStrXPosName,
+                              PosCtr.x);
+    MFPosCtr.y = GetRegDword (HKEY_CURRENT_USER,
+                              lpszRegKeyRoot,
+                              lpszRegStrYPosName,
+                              PosCtr.y);
+    MFSizeState = GetRegDword (HKEY_CURRENT_USER,
+                               lpszRegKeyRoot,
+                               lpszRegStrSizeStateName,
+                               MFSizeState);
+} // End ReadRegWnd
 
 
 //***************************************************************************
@@ -241,7 +249,9 @@ void ReadReg (HWND hWnd)
 void SaveEnvironment (void)
 
 {
-    HKEY hKeyRoot;
+    HKEY    hKeyRoot;
+    LPVOID  lpMem;
+    UINT    nBytes;
 
     // Write out root settings to the registry
     RegCreateKey (HKEY_CURRENT_USER,    // Handle of an open key
@@ -291,32 +301,46 @@ void SaveEnvironment (void)
                    lstrlen (szInitDir) + 1);// Size of value (including terminating zero)
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrLFTCName,  // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) &lfTC,      // Ptr to value
+                   sizeof (lfTC));      // Size of value
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrLFSMName,  // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) &lfSM_CWS,  // Ptr to value
+                   sizeof (lfSM_CWS));  // Size of value
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbCTName, // Name of value to set
                    0,                   // Reserved
                    REG_BINARY,          // Flag for type
-                   (char *) &fQuadCT_CWS,// Ptr to value
+                   (LPCHAR) &fQuadCT_CWS,// Ptr to value
                    sizeof (fQuadCT_CWS));// Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbDFName, // Name of value to set
                    0,                   // Reserved
-                   REG_BINARY,          // Flag for type
-                   (char *) &bQuadDF_CWS,// Ptr to value
+                   REG_DWORD,           // Flag for type
+                   (LPCHAR) &bQuadDF_CWS,// Ptr to value
                    sizeof (bQuadDF_CWS));// Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbIFName, // Name of value to set
                    0,                   // Reserved
-                   REG_BINARY,          // Flag for type
-                   (char *) &bQuadIF_CWS,// Ptr to value
+                   REG_DWORD,           // Flag for type
+                   (LPCHAR) &bQuadIF_CWS,// Ptr to value
                    sizeof (bQuadIF_CWS));// Size of value
 
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbIOName, // Name of value to set
                    0,                   // Reserved
-                   REG_BINARY,          // Flag for type
-                   (char *) &bQuadIO_CWS,// Ptr to value
+                   REG_DWORD,           // Flag for type
+                   (LPCHAR) &bQuadIO_CWS,// Ptr to value
                    sizeof (bQuadIO_CWS));// Size of value
 
 
@@ -324,41 +348,112 @@ void SaveEnvironment (void)
                    lpszRegStrGlbPPName, // Name of value to set
                    0,                   // Reserved
                    REG_BINARY,          // Flag for type
-                   (char *) &uQuadPP_CWS,// Ptr to value
+                   (LPCHAR) &uQuadPP_CWS,// Ptr to value
                    sizeof (uQuadPP_CWS));// Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbPWName, // Name of value to set
                    0,                   // Reserved
                    REG_BINARY,          // Flag for type
-                   (char *) &uQuadPW_CWS,// Ptr to value
+                   (LPCHAR) &uQuadPW_CWS,// Ptr to value
                    sizeof (uQuadPW_CWS));// Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbRLName, // Name of value to set
                    0,                   // Reserved
                    REG_BINARY,          // Flag for type
-                   (char *) &uQuadRL_CWS,// Ptr to value
+                   (LPCHAR) &uQuadRL_CWS,// Ptr to value
                    sizeof (uQuadRL_CWS));// Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbPRName, // Name of value to set
                    0,                   // Reserved
                    REG_DWORD,           // Flag for type
-                   (char *) &cQuadPR_CWS,// Ptr to value
+                   (LPCHAR) &cQuadPR_CWS,// Ptr to value
                    sizeof (cQuadPR_CWS));// Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbPRName, // Name of value to set
                    0,                   // Reserved
                    REG_DWORD,           // Flag for type
-                   (char *) &cQuadPR_CWS,// Ptr to value
+                   (LPCHAR) &cQuadPR_CWS,// Ptr to value
                    sizeof (cQuadPR_CWS));// Size of value
 
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrGlbSAName, // Name of value to set
+                   0,                   // Reserved
+                   REG_DWORD,           // Flag for type
+                   (LPCHAR) &bQuadxSA_CWS,// Ptr to value
+                   sizeof (bQuadxSA_CWS));// Size of value
 
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (hGlbQuadLX_CWS);
 
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
+    // Get the # bytes
+    nBytes = ((UINT) lpHeader->NELM) * sizeof (APLCHAR);
 
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMem = VarArrayBaseToData (lpMem, 1);
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrGlbLXName, // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) lpMem,      // Ptr to value
+                   nBytes);             // Size of value
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadLX_CWS); lpMem = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (hGlbQuadALX_CWS);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+
+    // Get the # bytes
+    nBytes = ((UINT) lpHeader->NELM) * sizeof (APLCHAR);
+
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMem = VarArrayBaseToData (lpMem, 1);
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrGlbALXName, // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) lpMem,      // Ptr to value
+                   nBytes);             // Size of value
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadALX_CWS); lpMem = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (hGlbQuadELX_CWS);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+
+    // Get the # bytes
+    nBytes = ((UINT) lpHeader->NELM) * sizeof (APLCHAR);
+
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMem = VarArrayBaseToData (lpMem, 1);
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrGlbELXName, // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) lpMem,      // Ptr to value
+                   nBytes);             // Size of value
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadELX_CWS); lpMem = NULL;
 
     RegCloseKey (hKeyRoot); hKeyRoot = NULL;
 } // End SaveEnvironment

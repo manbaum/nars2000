@@ -21,11 +21,9 @@ in the lexical analyser (yylex).
 #include "main.h"
 #include "aplerrors.h"
 #include "datatype.h"
-#include "symtab.h"
-#include "tokens.h"
 #include "resdebug.h"
-#include "parse.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -38,11 +36,6 @@ in the lexical analyser (yylex).
 
 LPYYSTYPE lpYYStr, lpYYRes, lpYYFcn, lpYYLst;
 BOOL      bRet;
-extern LPCHAR  lpszTemp;            // Use for char temporary storage
-extern LPWCHAR lpwszTemp;           // Use for WCHAR temporary storage
-extern WCHAR  *lpwszErrorMessage;   // Ptr to error message to signal
-//extern LPTOKEN lptkStackBase;       // Ptr to token stack
-BOOL   bRet;
 
 #define DbgMsgW2(a) DbgMsgW(a)
 ////#define DbgMsgW2(a) DbgMsgW(a); DbgBrk ()
@@ -907,10 +900,6 @@ SingTokn:
 //***************************************************************************
 
 
-// Define the local copy of various values which allows
-//   ParseLine to be re-entrant.
-PLLOCALVARS gplLocalVars = {0};
-
 
 //***************************************************************************
 //  NonceError
@@ -1626,7 +1615,7 @@ int yylex
 //***************************************************************************
 
 void yyerror                                // Called for yacc syntax error
-    (char *s)
+    (LPCHAR s)
 
 {
     char szTemp[32];
@@ -1666,8 +1655,8 @@ void yyerror                                // Called for yacc syntax error
 //***************************************************************************
 
 void yyfprintf
-    (FILE *hfile,           // Ignore this
-     char *lpszFmt,         // Format string
+    (FILE  *hfile,          // Ignore this
+     LPCHAR lpszFmt,        // Format string
      ...)                   // Zero or more arguments
 
 {

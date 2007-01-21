@@ -113,7 +113,7 @@ typedef struct tagHSHENTRY
 // Amount to resize
 #define DEF_SYMTAB_RESIZE   DEF_SYMTAB_INITSIZE
 
-enum IMM_TYPES
+typedef enum tagIMM_TYPES
 {
     IMMTYPE_BOOL = 0,       // 0:
     IMMTYPE_INT,            // 1:
@@ -122,7 +122,7 @@ enum IMM_TYPES
     IMMTYPE_PRIMFCN,        // 4:
     IMMTYPE_PRIMOP1,        // 5:
     IMMTYPE_PRIMOP2,        // 6:
-};
+} IMM_TYPES;
 
 // Symbol table flags
 typedef struct tagSTFLAGS

@@ -11,20 +11,19 @@
 #include <winver.h>
 #include <Qualitas.h>
 #include <colors.h>
+
 #include "resource.h"
+#include "datatype.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
 
-extern char szAppDPFE [_MAX_PATH];  // .EXE file
-extern char lpszVersion[];
-extern char *lpszTemp;
-
 char szVarFileInfo[] = "\\VarFileInfo\\Translation";
 
-HWND hWndStatic;                    // Handle to static control
+HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
 
 

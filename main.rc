@@ -76,6 +76,7 @@ BEGIN
     POPUP "&Options"
     BEGIN
         MENUITEM "&Screen Font",                IDM_SCREENFONT
+        MENUITEM "&Tab Font",                   IDM_TABFONT
     END
     POPUP "&Help"
     BEGIN

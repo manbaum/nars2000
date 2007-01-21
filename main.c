@@ -20,149 +20,19 @@
 #include "resdebug.h"
 #include "resource.h"
 #include "datatype.h"
-#include "symtab.h"
+#define DEFINE_VARS
+#define DEFINE_VALUES
+#define DEFINE_ENUMS
+#include "externs.h"
+#undef  DEFINE_ENUMS
+#undef  DEFINE_VALUES
+#undef  DEFINE_VARS
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
-
-
-extern LPWCHAR    lpwszCurLine;
-////extern LPTOKEN lptkStackBase;
-extern LPCHAR     lpszNumAlp;
-extern LPWCHAR    lpwszString;
-extern LPHSHENTRY lpHshTab;
-extern LPSYMENTRY lpSymTab;
-extern HGLOBAL    hGlbHist;
-extern HGLOBAL    hGlbQuadALX   , hGlbQuadALX_CWS,
-                  hGlbQuadELX   , hGlbQuadELX_CWS,
-                  hGlbQuadLX    , hGlbQuadLX_CWS,
-                  hGlbQuadPR    , hGlbQuadPR_CWS,
-                  hGlbQuadSA    , hGlbQuadSA_CWS,
-                  hGlbQuadWSID  , hGlbQuadWSID_CWS;
-extern APLFLOAT   fQuadCT       , fQuadCT_CWS;
-extern APLBOOL    bQuadDF       , bQuadDF_CWS,
-                  bQuadIF       , bQuadIF_CWS,
-                  bQuadIO       , bQuadIO_CWS,
-                  bQuadxSA      , bQuadxSA_CWS;
-extern APLINT     uQuadPP       , uQuadPP_CWS,
-                  uQuadPW       , uQuadPW_CWS,
-                  uQuadRL       , uQuadRL_CWS;
-extern APLCHAR    cQuadPR       , cQuadPR_CWS;
-
-extern
-int cxWindowPixels,             // Size of SM client area in pixels
-    cyWindowPixels,             // ...
-    nWindowChars,               // ...                    in chars
-    nWindowLines;               // ...                       lines
-extern
-BOOL bSelText;                  // Are we selecting text?
-extern
-int xSelText, ySelText,         // Starting x- & y-positions of selected text
-    xSelChar, ySelChar;         // Starting x- & y- offsets into history buffer (in chars)
-extern
-RECT rcSelInit, rcSelText;      // Selection rectangles
-extern
-BOOL bCurLineChanged;           // Has the current line changed?
-extern
-HGLOBAL ghGlbToken;             // Save area for current token memory handle
-extern
-int iFirstBufferLine,           // Index into lpGlbHist of the first line
-                                //   in the history buffer (ALWAYS 0).
-    iLastBufferLine,            // Index into lpGlbHist of the last line
-                                //   in the history buffer (ALWAYS DEF_HISTLINES-1)
-    iFirstWindowLine,           // Index into lpGlbHist of the top line
-                                //   in the window -- changed by vertical
-                                //   scrolling.
-    iCurLine,                   // Index into lpGlbHist of the line with
-                                //   the cursor on it -- changed by up and
-                                //   down cursor movements.
-    iLastWindowLine,            // Index into lpGlbHist of the bottom line
-                                //   in the window -- changed by vertical
-                                //   scrolling or window resizing.
-    iLastValidLine,             // Index into lpGlbHist of the last line
-                                //   which is defined (contents are not NULL)
-                                //   -- changed by the user pressing Enter
-                                //   (and thus executing a statement), or by
-                                //   normal program or system command
-                                //   output or by error messages.
-    iFirstBufferChar,           // Index into lpwszCurLine of the first char
-                                //   in the buffer (ALWAYS 0)
-    iFirstWindowChar,           // Index into lpwszCurLine of the first char
-                                //   in the window -- changed by horizontal
-                                //   scrolling.
-    iCurChar,                   // Horizontal position of the caret (in chars)
-                                // The vertical position is iCurLine - iFirstWindowLine (in chars).
-    iLastWindowChar,            // Index into lpwszCurLine of the last char
-                                //   in the window -- changed by horizontal
-                                //   scrolling or window resizing.
-    iLastBufferChar,            // Index into lpwszCurLine of the last char
-                                //   in the buffer (always (DEF_MAXLINELEN - 1))
-    iCurLineLen,                // Length of lpwszCurLine (not including the trailing zero)
-    iLogPixelsX, iLogPixelsY;   // # logical pixels/inch in screen X- and Y-dimensions
-
-// Structure for Per Tab Control Data
-typedef struct tagPERTABDATA
-{
-    HWND hWndMC,        // Window handle for MDI Client window
-         hWndSM,        // ...               session manager
-         hWndDB;        // ...               debugger window
-
-    LPWCHAR    lpwszCurLine;
-////LPTOKEN    lptkStackBase;
-    LPCHAR     lpszNumAlp;
-    LPWCHAR    lpwszString;
-    LPHSHENTRY lpHshTab;
-    LPSYMENTRY lpSymTab;
-    HGLOBAL    hGlbHist;
-
-    // Miscellaneous values
-    int         cxWindowPixels,
-                cyWindowPixels,
-                nWindowChars,
-                nWindowLines;
-    BOOL        bSelText;
-    int         xSelText,
-                ySelText,
-                xSelChar,
-                ySelChar;
-    RECT        rcSelInit,
-                rcSelText;
-    BOOL        bCurLineChanged;
-    HGLOBAL     ghGlbToken;
-    int         iFirstBufferLine,
-                iLastBufferLine,
-                iFirstWindowLine,
-                iCurLine,
-                iLastWindowLine,
-                iLastValidLine,
-                iFirstBufferChar,
-                iFirstWindowChar,
-                iCurChar,
-                iLastWindowChar,
-                iLastBufferChar,
-                iCurLineLen,
-                iLogPixelsX,
-                iLogPixelsY;
-
-    // Save system variable values
-    HGLOBAL    hGlbQuadALX,
-               hGlbQuadELX,
-               hGlbQuadLX,
-               hGlbQuadSA,
-               hGlbQuadWSID,
-               hGlbQuadPR;
-    APLFLOAT   fQuadCT;
-    APLBOOL    bQuadDF,
-               bQuadIF,
-               bQuadIO,
-               bQuadxSA;
-    APLINT     uQuadPP,
-               uQuadPW,
-               uQuadRL;
-    APLCHAR    cQuadPR;
-} PERTABDATA, *LPPERTABDATA;
 
 
 //************************** Data Area **************************************
@@ -172,46 +42,20 @@ typedef struct tagPERTABDATA
 #define DEF_WTEMP_MAXSIZE   1024        // Maximum size of WCHAR ...
 #define DEF_WTEMP_INITSIZE  1024        // Initial ...
 
+WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure
+COLORREF crbk[2] = {RGB (249,215,216), RGB (212,223,245)}, // Background
+         crfg[2] = {RGB (  0,  0,  0), RGB (  0,  0,  0)}, // Foreground, normal
+         crhl[2] = {RGB (255,  0,  0), RGB (255,  0,  0)}; // Foreground, highlighted
 
-#ifdef DEBUG_ODS
-extern char DebugFile[];
-extern HANDLE DebugHandle;
-#endif
+int nMinState,                          // Minimized state as per WinMain
+    iScrollSize;                        // Width of a vertical scrollbar
+HANDLE hAccel;                          // Keyboard accelerators
+BOOL fHelp = FALSE,                     // TRUE iff we displayed help
+     bCommandLine;                      // ...      there is a filename on the command line
 
-char *lpszTemp;                         // Used for temporary storage
-WCHAR *lpwszTemp;                       // ...
-
-HINSTANCE _hInstance;                   // Global instance handle
 HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconSM_Large, hIconSM_Small,
       hIconDB_Large, hIconDB_Small;
-HGLOBAL hGlbCurTab;                     // Global handle of current tab
-HWND hWndTC,                            // Global Tab Control window handle
-     hWndMF,                            // ...    Master Frame ...
-     hWndMC,                            // ...    MDI Client   ...
-     hWndSM,                            // ...    Session Manager ...
-     hWndDB,                            // ...    Debugger     ...
-     hWndTT;                            // ...    ToolTip      ...
-int nMinState,                          // Minimized state as per WinMain
-    iScrollSize,                        // Width of a vertical scrollbar
-    MFSizeState = SIZE_RESTORED;        // Size state for MF (SIZE_xxx)
-HANDLE hAccel;                          // Keyboard accelerators
-POINT MFPosCtr;                         // X- and Y- center of Master Frame Window position
-SIZE  MFSize;                           // Size of Master Frame Window window rectangle
-BOOL fHelp = FALSE,                     // TRUE iff we displayed help
-     bCommandLine;                      // ...      there is a filename on the command line
-char szAppDPFE  [_MAX_PATH],            // .EXE drive, path, filename.ext
-     szHlpDPFE  [_MAX_PATH],            // .HLP ...
-     szInitDir  [_MAX_PATH],            // Initial directory for File Open & Save
-     szOpenFile [_MAX_PATH];            // Save area for multiple files to open
-
-#ifdef DEBUG
-#define APPEND_DEBUG " (DEBUG)"
-#else
-#define APPEND_DEBUG
-#endif
-
-char pszAppName[]       = "NARS2000" APPEND_DEBUG;                  // Application name for MessageBox
 
 char szMFTitle[]        = "NARS2000" APPEND_DEBUG,                  // Master frame window title
      szSMTitle[]        = "NARS2000 Session Manager" APPEND_DEBUG,  // Session Manager ...
@@ -238,33 +82,115 @@ char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateMCWnd[]     = "Unable to create MDI Client window",
      pszNoCreateSMWnd[]     = "Unable to create Session Manager window",
      pszNoCreateDBWnd[]     = "Unable to create Debugger window",
-     pszNoCreateTTWnd[]     = "Unable to create ToolTip window";
+     pszNoCreateTTWnd[]     = "Unable to create ToolTip window",
+     pszNoInsertTCTab[]     = "Unable to create a new Tab";
 
 
 //***************************************************************************
-//  MF_Create
+//  InitChooseFont
 //
-//  Perform window-specific initialization
+//  Initialize CHOOSEFONT values
 //***************************************************************************
 
-void MF_Create (HWND hWnd)
+void InitChooseFont
+    (LPCHOOSEFONT lpcf,
+     LPLOGFONT    lplf,
+     int          iPtSize)
+{
+    HDC hDC;
+
+    // Zero the struc
+    memset (lpcf, 0, sizeof (CHOOSEFONT));
+
+    hDC = GetDC (HWND_DESKTOP);
+    iLogPixelsY = GetDeviceCaps (hDC, LOGPIXELSY);
+    lplf->lfHeight = -MulDiv (iPtSize, iLogPixelsY, 72);
+    ReleaseDC (HWND_DESKTOP, hDC);
+
+    lpcf->lStructSize = sizeof (CHOOSEFONT);
+////lpcf->hDC =                     // Only w/CF_PRINTERFONTS
+    lpcf->lpLogFont  = lplf;
+    lpcf->iPointSize = iPtSize * 10;// Font point size in 1/10ths
+    lpcf->Flags = CF_INITTOLOGFONTSTRUCT
+                | CF_FORCEFONTEXIST
+                | CF_SCREENFONTS;
+////lpcf->rgbColors  =              // Only w/CF_EFFECTS
+////lpcf->lCustData  =              // Only w/CF_ENABLEHOOK
+////lpcf->lpfnHook   =              // Only w/CF_ENABLEHOOK
+////lpcf->lpTemplateName =          // Only w/CF_ENABLETEMPLATE
+////lpcf->hInstance  =              // Only w/CF_ENABLETEMPLATE
+////lpcf->lpszStyle  =              // Only w/CF_USESTYLE
+////lpcf->nFontType  =              // Output only
+////lpcf->nSizeMin   =              // Only w/CF_LIMITSIZE
+////lpcf->nSizeMax   =              // Only w/CF_LIMITSIZE
+} // End InitChooseFont
+
+
+//***************************************************************************
+//  MyChooseFontSM
+//
+//  Choose a font for the SM window
+//***************************************************************************
+
+void MyChooseFontSM
+    (void)
 
 {
-    // Read the default scrollbar width
-    iScrollSize = GetSystemMetrics (SM_CXVSCROLL);
-} // End MF_Create
+    if (ChooseFont (&cfSM))     // Choose it
+    {
+        // Create a new font for the SM
+        CreateNewFontSM ();
+
+        // Repaint the SM window
+        InvalidateRect (hWndSM, NULL, TRUE);
+    } // End IF
+} // End MyChooseFontSM
 
 
 //***************************************************************************
-//  MF_Delete
+//  MyChooseFontTC
 //
-//  Perform window-specific uninitialization
+//  Choose a font for the TC labels
 //***************************************************************************
 
-void MF_Delete (HWND hWnd)
+void MyChooseFontTC
+    (void)
 
 {
-} // End MF_Delete
+    if (ChooseFont (&cfTC))     // Choose it
+    {
+        // Create a new font for the TC
+        CreateNewFontTC ();
+
+        // Repaint the TC labels
+        InvalidateRect (hWndTC, NULL, TRUE);
+    } // End IF
+} // End MyChooseFontTC
+
+
+//***************************************************************************
+//  CreateNewFontTC
+//
+//  Create a new font for the TC.
+//***************************************************************************
+
+void CreateNewFontTC
+    (void)
+
+{
+    // Delete the previous handle (if any)
+    if (hFontTC)
+    {
+        // Delete the TC font handle
+        MyDeleteObject (hFontTC); hFontTC = NULL;
+    } // End IF
+
+    // Create the font
+    hFontTC = MyCreateFontIndirect (&lfTC);
+
+    // Tell the TC about the new font
+    SendMessage (hWndTC, WM_SETFONT, (WPARAM) hFontTC, 0);
+} // End CreateNewFontTC
 
 
 //***************************************************************************
@@ -273,7 +199,8 @@ void MF_Delete (HWND hWnd)
 //  Creates the ToolTip window and initializes it.
 //***************************************************************************
 
-HWND CreateToolTip (HWND hWndParent)
+HWND CreateToolTip
+    (HWND hWndParent)
 
 {
     HWND hWnd;
@@ -314,7 +241,8 @@ HWND CreateToolTip (HWND hWndParent)
 //  Create the child windows under the parent window
 //***************************************************************************
 
-BOOL CreateChildWindows (HWND hWnd)
+BOOL CreateChildWindows
+    (HWND hWnd)
 
 {
     RECT rc;                // Rectangle for setting size of window
@@ -334,10 +262,10 @@ BOOL CreateChildWindows (HWND hWnd)
         CreateWindowEx (0L,                             // Extended styles
                         WC_TABCONTROL,                  // Class
                         szTCTitle,                      // Window title (for debugging purposes only)
-                        WS_CHILD
+                        TCS_OWNERDRAWFIXED
+                      | WS_CHILD
                       | WS_CLIPSIBLINGS
-                      | WS_VISIBLE
-                      | TCS_TOOLTIPS,                   // Styles
+                      | WS_VISIBLE,                     // Styles
                         rc.left,                        // X-coord
                         rc.top,                         // Y-coord
                         rc.right - rc.left,             // X-size
@@ -353,12 +281,89 @@ BOOL CreateChildWindows (HWND hWnd)
         return FALSE;
     } // End IF
 
+    // Subclass the tab control so we can handle some of its messages
+    lpfnOldTabCtrlWndProc = (WNDPROC)
+      SetWindowLong (hWndTC,
+                     GWL_WNDPROC,
+                     (long) (WNDPROC) &LclTabCtrlWndProc);
+
     // Show and paint the window
     ShowWindow (hWndTC, SW_SHOWNORMAL);
     UpdateWindow (hWndTC);
 
+    cfTC.hwndOwner = hWndTC;
+
+    // Tell it about our tooltip control
+    TabCtrl_SetToolTips (hWndTC, hWndTT);
+
     return TRUE;            // Tell 'em it worked
 } // End CreateChildWindows
+
+
+//***************************************************************************
+//  LclTabCtrlWndProc
+//
+//  Local window procedure for the Tab Control
+//***************************************************************************
+
+LRESULT WINAPI LclTabCtrlWndProc
+    (HWND   hWnd,
+     UINT   message,
+     WPARAM wParam,
+     LPARAM lParam)
+
+{
+    TC_HITTESTINFO tcHit;
+    static int     iCurTab;
+
+    // Split cases
+    switch (message)
+    {
+        case WM_MOUSEHOVER:         // fwKeys = wParam;        // key flags
+                                    // xPos = LOWORD(lParam);  // horizontal position of cursor in CA
+                                    // yPos = HIWORD(lParam);  // vertical position of cursor  in CA
+            // Save the client coordinates
+            tcHit.pt.x = LOWORD (lParam);
+            tcHit.pt.y = HIWORD (lParam);
+
+            // Ask the Tab Control if we're over a tab
+            iCurTab = TabCtrl_HitTest (hWndTC, &tcHit);
+
+            DbgBrk ();
+
+            // Ensure we're over a tab
+            if (iCurTab EQ -1)
+                break;
+
+            // Draw the tab with the text highlighted
+            DrawTabText (hWnd,
+                         NULL,
+                         iCurTab,
+                         crhl[iCurTab],
+                         crbk[iCurTab],
+                         NULL,
+                         NULL);
+            return FALSE;       // We handled the message
+
+        case WM_MOUSELEAVE:
+            // Draw the tab with the text normal
+            DrawTabText (hWnd,
+                         NULL,
+                         iCurTab,
+                         crfg[iCurTab],
+                         crbk[iCurTab],
+                         NULL,
+                         NULL);
+
+            return FALSE;       // We handled the message
+    } // End SWITCH
+
+    return CallWindowProcW (lpfnOldTabCtrlWndProc,
+                            hWnd,
+                            message,
+                            wParam,
+                            lParam); // Pass on down the line
+} // End LclTabCtrlWndProc
 
 
 //***************************************************************************
@@ -408,63 +413,12 @@ void SaveWsData
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
-    // Save the various handles and ptrs
-    lpMem->hWndMC           = hWndMC          ;
-    lpMem->hWndSM           = hWndSM          ;
-    lpMem->hWndDB           = hWndDB          ;
-    lpMem->lpwszCurLine     = lpwszCurLine    ;
-////lpMem->lptkStackBase    = lptkStackBase   ;
-    lpMem->lpszNumAlp       = lpszNumAlp      ;
-    lpMem->lpwszString      = lpwszString     ;
-    lpMem->lpHshTab         = lpHshTab        ;
-    lpMem->lpSymTab         = lpSymTab        ;
-    lpMem->hGlbHist         = hGlbHist        ;
+#define Assign(a)   lpMem->a = a;
+    PERTABVARS
+#undef  Assign
 
-    // Save miscellaneous values
-    lpMem->cxWindowPixels   = cxWindowPixels  ;
-    lpMem->cyWindowPixels   = cyWindowPixels  ;
-    lpMem->nWindowChars     = nWindowChars    ;
-    lpMem->nWindowLines     = nWindowLines    ;
-    lpMem->bSelText         = bSelText        ;
-    lpMem->xSelText         = xSelText        ;
-    lpMem->ySelText         = ySelText        ;
-    lpMem->xSelChar         = xSelChar        ;
-    lpMem->ySelChar         = ySelChar        ;
-    lpMem->rcSelInit        = rcSelInit       ;
-    lpMem->rcSelText        = rcSelText       ;
-    lpMem->bCurLineChanged  = bCurLineChanged ;
-    lpMem->ghGlbToken       = ghGlbToken      ;
-    lpMem->iFirstBufferLine = iFirstBufferLine;
-    lpMem->iLastBufferLine  = iLastBufferLine ;
-    lpMem->iFirstWindowLine = iFirstWindowLine;
-    lpMem->iCurLine         = iCurLine        ;
-    lpMem->iLastWindowLine  = iLastWindowLine ;
-    lpMem->iLastValidLine   = iLastValidLine  ;
-    lpMem->iFirstBufferChar = iFirstBufferChar;
-    lpMem->iFirstWindowChar = iFirstWindowChar;
-    lpMem->iCurChar         = iCurChar        ;
-    lpMem->iLastWindowChar  = iLastWindowChar ;
-    lpMem->iLastBufferChar  = iLastBufferChar ;
-    lpMem->iCurLineLen      = iCurLineLen     ;
-    lpMem->iLogPixelsX      = iLogPixelsX     ;
-    lpMem->iLogPixelsY      = iLogPixelsY     ;
-
-    // Save system variable values
-    lpMem->hGlbQuadALX      = hGlbQuadALX     ;
-    lpMem->hGlbQuadELX      = hGlbQuadELX     ;
-    lpMem->hGlbQuadLX       = hGlbQuadLX      ;
-    lpMem->hGlbQuadSA       = hGlbQuadSA      ;
-    lpMem->hGlbQuadWSID     = hGlbQuadWSID    ;
-    lpMem->hGlbQuadPR       = hGlbQuadPR      ;
-    lpMem->fQuadCT          = fQuadCT         ;
-    lpMem->bQuadDF          = bQuadDF         ;
-    lpMem->bQuadIF          = bQuadIF         ;
-    lpMem->bQuadIO          = bQuadIO         ;
-    lpMem->uQuadPP          = uQuadPP         ;
-    lpMem->uQuadPW          = uQuadPW         ;
-    lpMem->uQuadRL          = uQuadRL         ;
-    lpMem->cQuadPR          = cQuadPR         ;
-    lpMem->bQuadxSA         = bQuadxSA        ;
+    // Get the handle of the active MDI window
+    lpMem->hWndActive = (HWND) SendMessage (hWndMC, WM_MDIGETACTIVE, 0, 0);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
@@ -486,63 +440,15 @@ void RestWsData
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
-    // Restore the various handles and ptrs
-    hWndMC          =  lpMem->hWndMC          ;
-    hWndSM          =  lpMem->hWndSM          ;
-    hWndDB          =  lpMem->hWndDB          ;
-    lpwszCurLine    =  lpMem->lpwszCurLine    ;
-////lptkStackBase   =  lpMem->lptkStackBase   ;
-    lpszNumAlp      =  lpMem->lpszNumAlp      ;
-    lpwszString     =  lpMem->lpwszString     ;
-    lpHshTab        =  lpMem->lpHshTab        ;
-    lpSymTab        =  lpMem->lpSymTab        ;
-    hGlbHist        =  lpMem->hGlbHist        ;
+#define Assign(a)   a = lpMem->a;
+    PERTABVARS
+#undef  Assign
 
-    // Restore miscellaneous values
-    cxWindowPixels  = lpMem->cxWindowPixels   ;
-    cyWindowPixels  = lpMem->cyWindowPixels   ;
-    nWindowChars    = lpMem->nWindowChars     ;
-    nWindowLines    = lpMem->nWindowLines     ;
-    bSelText        = lpMem->bSelText         ;
-    xSelText        = lpMem->xSelText         ;
-    ySelText        = lpMem->ySelText         ;
-    xSelChar        = lpMem->xSelChar         ;
-    ySelChar        = lpMem->ySelChar         ;
-    rcSelInit       = lpMem->rcSelInit        ;
-    rcSelText       = lpMem->rcSelText        ;
-    bCurLineChanged = lpMem->bCurLineChanged  ;
-    ghGlbToken      = lpMem->ghGlbToken       ;
-    iFirstBufferLine= lpMem->iFirstBufferLine ;
-    iLastBufferLine = lpMem->iLastBufferLine  ;
-    iFirstWindowLine= lpMem->iFirstWindowLine ;
-    iCurLine        = lpMem->iCurLine         ;
-    iLastWindowLine = lpMem->iLastWindowLine  ;
-    iLastValidLine  = lpMem->iLastValidLine   ;
-    iFirstBufferChar= lpMem->iFirstBufferChar ;
-    iFirstWindowChar= lpMem->iFirstWindowChar ;
-    iCurChar        = lpMem->iCurChar         ;
-    iLastWindowChar = lpMem->iLastWindowChar  ;
-    iLastBufferChar = lpMem->iLastBufferChar  ;
-    iCurLineLen     = lpMem->iCurLineLen      ;
-    iLogPixelsX     = lpMem->iLogPixelsX      ;
-    iLogPixelsY     = lpMem->iLogPixelsY      ;
+    // Set the active MDI window
+    SendMessage (hWndMC, WM_MDIACTIVATE, (WPARAM) lpMem->hWndActive, 0);
 
-    // Restore system variable values
-    hGlbQuadALX     = lpMem->hGlbQuadALX      ;
-    hGlbQuadELX     = lpMem->hGlbQuadELX      ;
-    hGlbQuadLX      = lpMem->hGlbQuadLX       ;
-    hGlbQuadSA      = lpMem->hGlbQuadSA       ;
-    hGlbQuadWSID    = lpMem->hGlbQuadWSID     ;
-    hGlbQuadPR      = lpMem->hGlbQuadPR       ;
-    fQuadCT         = lpMem->fQuadCT          ;
-    bQuadDF         = lpMem->bQuadDF          ;
-    bQuadIF         = lpMem->bQuadIF          ;
-    bQuadIO         = lpMem->bQuadIO          ;
-    uQuadPP         = lpMem->uQuadPP          ;
-    uQuadPW         = lpMem->uQuadPW          ;
-    uQuadRL         = lpMem->uQuadRL          ;
-    cQuadPR         = lpMem->cQuadPR          ;
-    bQuadxSA        = lpMem->bQuadxSA         ;
+    // Give it the keyboard focus
+    SetFocus (lpMem->hWndActive);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
@@ -560,6 +466,13 @@ BOOL CALLBACK ShowHideEnumChildProc
      LPARAM lParam)
 
 {
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
+
     // Show or hide the window
     ShowWindow (hWnd, lParam);
 
@@ -574,18 +487,28 @@ BOOL CALLBACK ShowHideEnumChildProc
 //***************************************************************************
 
 void ShowHideChildWindows
-    (HWND   hWnd,
-     LPARAM lParam)
+    (HWND hWndMC,
+     BOOL bShow)        // TRUE iff showing the window, FALSE if hiding it
 
 {
-    if (!hWnd)
+    if (!hWndMC)
         return;
 
-    // Show/hide the parent window
-    ShowWindow (hWnd, lParam);
+    // Put the MDI Client window at the top (SHOW) or bottom (HIDE)
+    //   of the Z-order
+    SetWindowPos (hWndMC,
+                  bShow ? HWND_TOP : HWND_BOTTOM,
+                  0, 0, 0, 0,
+                  SWP_NOMOVE
+                | SWP_NOSIZE);
+
+    // Show/hide the MDI Client window
+    ShowWindow (hWndMC, bShow ? SW_SHOW : SW_HIDE);
 
     // Loop through the child windows
-    EnumChildWindows (hWnd, &ShowHideEnumChildProc, lParam);
+    EnumChildWindows (hWndMC,
+                     &ShowHideEnumChildProc,
+                     bShow ? SW_SHOW : SW_HIDE);
 } // End ShowHideChildWindows
 
 
@@ -596,16 +519,20 @@ void ShowHideChildWindows
 //***************************************************************************
 
 BOOL CreateNewTab
-    (HWND hWndParent,
-     LPSTR lpszWSID)
+    (HWND  hWndParent,
+     LPSTR lpszDPFE)        // Drive, Path, Filename, Ext of the workspace
 
 {
+    int          iCurTab;
     TC_ITEM      tcItem;
     HGLOBAL      hGlbData;
     LPPERTABDATA lpMem = NULL;
     BOOL         bRet = TRUE;
     RECT         rc;        // Rectangle for setting size of window
+    int          rcLeft, rcRight, rcBottom;
     CLIENTCREATESTRUCT ccs; // For MDI Client window
+    LPCHAR       p, q;
+    int          iLabelText;
 
     // Get the size and position of the parent window.
     GetClientRect (hWndParent, &rc);
@@ -614,23 +541,29 @@ BOOL CreateNewTab
     SaveWsData (hGlbCurTab);
 
     // Hide the child windows of the outgoing tab
-    ShowHideChildWindows (hWndMC, SW_HIDE);
+    ShowHideChildWindows (hWndMC, FALSE);
 
     // Allocate per tab data
     hGlbData = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
     if (!hGlbData)
         return FALSE;       // Stop the whole process
 
-    // Save the handle
-    hGlbCurTab = hGlbData;
+    // Calculate the offset to the label text
+    q = lpszDPFE;
+    while (p = strchr (q, '\\'))
+        q = p + 1;
+    iLabelText = q - lpszDPFE;
 
     tcItem.mask    = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
     tcItem.iImage  = -1;
-    tcItem.pszText = lpszWSID;
+    tcItem.pszText = &lpszDPFE[iLabelText];
     tcItem.lParam  = (LPARAM) hGlbData;
 
-    if (TabCtrl_InsertItem (hWndTC, 0, &tcItem) == -1)
+    iCurTab = TabCtrl_InsertItem (hWndTC, 0, &tcItem);
+
+    if (iCurTab == -1)
     {
+        MB (pszNoInsertTCTab);
         bRet = FALSE;       // Stop the whole process
         goto ERROR_EXIT;
     } // End IF
@@ -638,9 +571,24 @@ BOOL CreateNewTab
     // Lock the per-tab data to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
+    // Save the DPFE
+    lstrcpy (lpMem->DPFE, lpszDPFE);
+
+    // Save offset to label text
+    lpMem->iLabelText = iLabelText;
+
     // Calculate the display rectangle, assuming the
     // tab control is the size of the client area.
+    // Because I don't like the look of the tab control border,
+    //   the following code saves and restores all but the
+    //   top border (where the tabs are).
+    rcLeft    = rc.left;
+    rcRight   = rc.right;
+    rcBottom  = rc.bottom;
     TabCtrl_AdjustRect (hWndTC, FALSE, &rc);
+    rc.left   = rcLeft;
+    rc.right  = rcRight;
+    rc.bottom = rcBottom;
 
     // Fill in the CLIENTCREATESTRUCT for the MDI Client
     ccs.hWindowMenu = GetSubMenu (GetMenu (hWndParent), IDMPOS_WINDOW);
@@ -648,7 +596,7 @@ BOOL CreateNewTab
 
     // Create the MDI client window
     lpMem->hWndMC =
-    CreateWindowEx (WS_EX_CLIENTEDGE,       // Extended styles
+    CreateWindowEx (0,                      // Extended styles
                     szMCClass,              // Class name
                     szMCTitle,              // Window title (for debugging purposes only)
 ////                MDIS_ALLCHILDSTYLES,    // Styles
@@ -666,7 +614,8 @@ BOOL CreateNewTab
     if (lpMem->hWndMC EQ NULL)
     {
         MB (pszNoCreateMCWnd);
-        return FALSE;       // Stop the whole process
+        bRet = FALSE;       // Stop the whole process
+        goto ERROR_EXIT;
     } // End IF
 
     // Show and paint the window
@@ -715,12 +664,33 @@ BOOL CreateNewTab
 
     // Save the window handles in global variables
     hWndMC = lpMem->hWndMC;
-    hWndSM = lpMem->hWndSM;
-    hWndDB = lpMem->hWndDB;
+////hWndSM = lpMem->hWndSM;
+////hWndDB = lpMem->hWndDB;
+
+    lpMem->hWndActive = hWndSM;
+
+    // Save the handle
+    hGlbCurTab = hGlbData;
 
     // Clear data in this WS to global default values
     ClearWsData ();
+
+    // Show the child windows of the incoming tab
+    ShowHideChildWindows (hWndMC, TRUE);
+
+    // Activate this tab
+    TabCtrl_SetCurSel (hWndTC, iCurTab);
 ERROR_EXIT:
+    // If we failed, ...
+    if ((!bRet) && lpMem && lpMem->hWndMC)
+    {
+        if (lpMem->hWndDB)
+            SendMessage (lpMem->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMem->hWndDB), 0);
+        if (lpMem->hWndSM)
+            SendMessage (lpMem->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMem->hWndSM), 0);
+        DestroyWindow (lpMem->hWndMC);
+    } // End IF
+
     if (lpMem)
     {
         // We no longer need this ptr
@@ -764,6 +734,34 @@ BOOL CALLBACK RestoreAllEnumProc (HWND hWnd, LPARAM lParam)
 
 
 //***************************************************************************
+//  MF_Create
+//
+//  Perform window-specific initialization
+//***************************************************************************
+
+void MF_Create
+    (HWND hWnd)
+
+{
+    // Read the default scrollbar width
+    iScrollSize = GetSystemMetrics (SM_CXVSCROLL);
+} // End MF_Create
+
+
+//***************************************************************************
+//  MF_Delete
+//
+//  Perform window-specific uninitialization
+//***************************************************************************
+
+void MF_Delete
+    (HWND hWnd)
+
+{
+} // End MF_Delete
+
+
+//***************************************************************************
 //  MFWndProc
 //
 //  Message processing routine for the Master Frame window
@@ -776,7 +774,11 @@ MFWndProc (HWND hWnd,       // Window handle
            LONG lParam)     // ...
 
 {
-    RECT rcDtop;            // Rectangle for desktop
+    RECT         rcDtop;    // Rectangle for desktop
+    int          iCurTab;
+    TC_ITEM      tcItem;
+    HBRUSH       hBrush;
+
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
 ////                           IDCANCEL,         IDH_CANCEL,
@@ -803,8 +805,21 @@ MFWndProc (HWND hWnd,       // Window handle
             if (CreateChildWindows (hWnd) EQ FALSE)
                 return -1;          // Stop the whole process
 
-            // Read in the registry entries
-            ReadReg (hWnd);
+            // Read in window-specific registry entries
+            ReadRegWnd (hWnd);
+
+            // *************** Bitmaps *********************************
+            hBitMapLineCont = LoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
+            if (hBitMapLineCont)
+            {
+                GetObject (hBitMapLineCont, sizeof (BITMAP), (LPSTR) &bmLineCont);
+
+                iLCWidth = 2 + bmLineCont.bmWidth + 2;  // Width of line continuation column
+            } // End IF
+
+            // *************** Fonts ***********************************
+            // Create a new font for the TC
+            CreateNewFontTC ();
 
 ////        // Ensure the position is valid
 ////        if (MFPosCtr.x > rcDtop.right)  // If center is right of right, ...
@@ -829,7 +844,7 @@ MFWndProc (HWND hWnd,       // Window handle
                 return -1;          // Stop the whole process
 
             // Load a CLEAR WS
-            if (!CreateNewTab (hWnd, "CLEAR WS-2"))
+            if (!CreateNewTab (hWnd, "R:\\NARS2000\\trunk\\CLEAR WS-2"))
                 return -1;          // Stop the whole process
 
             break;                  // Continue with next handler
@@ -866,6 +881,7 @@ MFWndProc (HWND hWnd,       // Window handle
                 SIZE S;
                 HDWP hdwp;
                 RECT rc;
+                int  rcLeft, rcRight, rcBottom;
 
                 // Calculate the display rectangle, assuming the
                 // tab control is the size of the client area.
@@ -878,7 +894,7 @@ MFWndProc (HWND hWnd,       // Window handle
                 // Size the tab control to fit the client area.
                 DeferWindowPos (hdwp,           // Handle to internal structure
                                 hWndTC,         // Handle of window to position
-                                HWND_TOP,       // Placement-order handle
+                                NULL,           // Placement-order handle
                                 rc.left,        // X-position
                                 rc.top,         // Y-position
                                 rc.right - rc.left, // X-size
@@ -887,13 +903,22 @@ MFWndProc (HWND hWnd,       // Window handle
 
                 // Calculate the display rectangle, assuming the
                 // tab control is the size of the client area.
+                // Because I don't like the look of the tab control border,
+                //   the following code saves and restores all but the
+                //   top border (where the tabs are).
+                rcLeft    = rc.left;
+                rcRight   = rc.right;
+                rcBottom  = rc.bottom;
                 TabCtrl_AdjustRect (hWndTC, FALSE, &rc);
+                rc.left   = rcLeft;
+                rc.right  = rcRight;
+                rc.bottom = rcBottom;
 
                 // Position and size the MDI Child window to fit the
                 // tab control's display area
                 DeferWindowPos (hdwp,           // Handle to internal structure
                                 hWndMC,         // Handle of window to position
-                                HWND_TOP,       // Placement-order handle
+                                NULL,           // Placement-order handle
                                 rc.left,        // X-position
                                 rc.top,         // Y-position
                                 rc.right - rc.left, // X-size
@@ -945,17 +970,52 @@ MFWndProc (HWND hWnd,       // Window handle
             // Split cases based upon the notification code
             switch (lpnmh->code)
             {
-                case TCN_SELCHANGE:
+                case TTN_NEEDTEXT:      // idTT = (int) wParam;
+                                        // lpttt = (LPTOOLTIPTEXT) lParam;
                 {
-                    int          iCurTab;
                     TC_ITEM      tcItem;
+                    HGLOBAL      hGlbData;
                     LPPERTABDATA lpMem;
+                    static char  TooltipText[_MAX_PATH];
 
+#define lpttt   ((LPTOOLTIPTEXT) lParam)
+
+                    // The page # of the tab is in lpttt->hdr.idFrom
+                    tcItem.mask = TCIF_PARAM;
+
+                    // Get the lParam
+                    TabCtrl_GetItem (hWndTC, lpttt->hdr.idFrom, &tcItem);
+
+                    // Get the lParam (an HGLOBAL)
+                    hGlbData = (HGLOBAL) tcItem.lParam;
+
+                    // Lock the memory to get a ptr to it
+                    lpMem = MyGlobalLock (hGlbData);
+
+                    // Return a ptr to the stored tooltip text
+                    lstrcpy (TooltipText, (LPCHAR) &lpMem->DPFE);
+
+                    lpttt->lpszText = TooltipText;
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbData); lpMem = NULL;
+#undef  lpttt
+                    return FALSE;
+                } // End TTN_NEEDTEXT
+
+                case TCN_SELCHANGING:   // idTabCtl = (int) LOWORD(wParam);
+                                        // hwndTabCtl = (HWND) lParam;
                     // Save data from the current WS into global memory
                     SaveWsData (hGlbCurTab);
 
+                    DestroyCaret ();    // 'cause we just lost the focus
+
+                    return FALSE;
+
+                case TCN_SELCHANGE:     // idTabCtl = (int) LOWORD(wParam);
+                                        // hwndTabCtl = (HWND) lParam;
                     // Hide the child windows of the outgoing tab
-                    ShowHideChildWindows (hWndMC, SW_HIDE);
+                    ShowHideChildWindows (hWndMC, FALSE);
 
                     // Get the index of the currently selected tab
                     iCurTab = TabCtrl_GetCurSel (hWndTC);
@@ -967,30 +1027,74 @@ MFWndProc (HWND hWnd,       // Window handle
                     // Save the handle
                     hGlbCurTab = (HGLOBAL) (tcItem.lParam);
 
-                    // Lock the memory to get a ptr to it
-                    lpMem = MyGlobalLock (hGlbCurTab);
-
-                    hWndMC = lpMem->hWndMC;
-                    hWndSM = lpMem->hWndSM;
-                    hWndDB = lpMem->hWndDB;
-
                     // Restore data into the current WS from global memory
                     RestWsData (hGlbCurTab);
 
                     // Show the child windows of the incoming tab
-                    ShowHideChildWindows (hWndMC, SW_SHOW);
+                    ShowHideChildWindows (hWndMC, TRUE);
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbCurTab); lpMem = NULL;
+                    // Because we're activating a new tab,
+                    //   the caret must be recreated
+                    // Create a default sized system caret for display
+                    MyCreateCaret ();
 
                     return FALSE;       // We handled the msg
-                } // End TCN_SELCHANGE
 
-                break;
+                default:
+                    break;
             } // End SWITCH
 #undef  lpnmh
 
             break;                  // Continue with next handler
+
+        case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // control identifier
+                                    // lpdis = (LPDRAWITEMSTRUCT) lParam; // item-drawing information
+        {
+#define lpdis   ((LPDRAWITEMSTRUCT) lParam)
+
+            // Ensure this message is for our tab control
+            if (lpdis->CtlType NE ODT_TAB)
+                break;
+
+            // Split cases absed upon the item action
+            switch (lpdis->itemAction)
+            {
+                case ODA_DRAWENTIRE:
+                    // Fill the background of the tab
+                    hBrush = CreateSolidBrush (crbk[lpdis->itemID]);
+                    FillRect (lpdis->hDC, &lpdis->rcItem, hBrush);
+                    DeleteObject (hBrush); hBrush = NULL;
+
+                    // Get the lParam for this tab
+                    tcItem.mask = TCIF_PARAM;
+                    TabCtrl_GetItem (hWndTC, lpdis->itemID, &tcItem);
+
+                    // Write the text
+                    DrawTabText (hWnd,
+                                 lpdis->hDC,
+                                 lpdis->itemID,
+                                 crfg[lpdis->itemID],
+                                 crbk[lpdis->itemID],
+                                &lpdis->rcItem,
+                                 (HGLOBAL) (tcItem.lParam));
+                    break;
+
+                case ODA_FOCUS:
+                    DbgBrk ();
+
+
+                    break;
+
+                case ODA_SELECT:
+                    DbgBrk ();
+
+
+                    break;
+            } // End SWITCH
+
+            break;
+#undef  lpdis
+        } // End WM_DRAWITEM
 
 ////////case WM_HELP:
 ////////{
@@ -1058,8 +1162,15 @@ MFWndProc (HWND hWnd,       // Window handle
 
                 case IDM_SCREENFONT:
                     // Display a Font Dialog so the user can choose
-                    //   a new font for the screen
-                    MyChooseFont ();
+                    //   a new font for the Session Manager window
+                    MyChooseFontSM ();
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_TABFONT:
+                    // Display a Font Dialog so the user can choose
+                    //   a new font for the Tab Control labels
+                    MyChooseFontTC ();
 
                     return FALSE;       // We handled the msg
 
@@ -1078,10 +1189,10 @@ MFWndProc (HWND hWnd,       // Window handle
 
             break;                  // Continue with next handler ***MUST***
 
-////    case WM_ERASEBKGND:
-////        // In order to reduce screen flicker, we handle erase background
-////        // in the WM_PAINT message for the child windows.
-////        return TRUE;            // We erased the background
+        case WM_ERASEBKGND:
+            // In order to reduce screen flicker, we handle erase background
+            // in the WM_PAINT message for the child windows.
+            return TRUE;            // We erased the background
 
         case WM_QUERYENDSESSION:
         case WM_CLOSE:
@@ -1114,6 +1225,73 @@ MFWndProc (HWND hWnd,       // Window handle
 ////ODSAPI ("MFZ:", hWnd, message, wParam, lParam);
     return DefFrameProc (hWnd, hWndMC, message, wParam, lParam);
 } // End MFWndProc
+
+
+//***************************************************************************
+//  DrawTabText
+//
+//  Draw the text on a tab
+//***************************************************************************
+
+void DrawTabText
+    (HWND     hWnd,
+     HDC      hDC,
+     int      iCurTab,
+     COLORREF crfg,
+     COLORREF crbk,
+     LPRECT   lpRect,
+     HGLOBAL  hGlbData)
+
+{
+    LPPERTABDATA lpMem;
+    HPEN         hPen;
+    HDC          hDC2 = NULL;
+    TC_ITEM      tcItem;
+    RECT         rcLcl;
+
+    if (hDC EQ NULL)
+        hDC = hDC2 = GetDC (hWnd);
+
+    if (hGlbData EQ NULL)
+    {
+        // The page # of the tab is in iCurTab
+        tcItem.mask = TCIF_PARAM;
+
+        // Get the lParam
+        TabCtrl_GetItem (hWndTC, iCurTab, &tcItem);
+
+        // Get the lParam (an HGLOBAL)
+        hGlbData = (HGLOBAL) tcItem.lParam;
+    } // End IF
+
+    if (lpRect EQ NULL)
+    {
+        TabCtrl_GetItemRect (hWndTC, iCurTab, &rcLcl);
+        lpRect = &rcLcl;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (hGlbData);
+
+    // Write the text
+    hPen = CreatePen (PS_SOLID, 1, crfg);
+    SetBkColor (hDC, crbk);
+    SetBkMode  (hDC, OPAQUE);
+    DrawText (hDC,
+             &lpMem->DPFE[lpMem->iLabelText],
+              lstrlen (&lpMem->DPFE[lpMem->iLabelText]),
+              lpRect,
+              DT_SINGLELINE
+            | DT_CENTER
+            | DT_VCENTER);
+    DeleteObject (hPen); hPen = NULL;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbData); lpMem = NULL;
+
+    if (hDC2 NE NULL)
+        ReleaseDC (hWnd, hDC2);
+} // End DrawTabText
 
 
 //***************************************************************************
@@ -1301,7 +1479,7 @@ void UninitInstance (HINSTANCE hInstance)
 BOOL ParseCommandLine (LPSTR lpCmdLine)
 
 {
-    char *p;
+    LPCHAR p;
 
     // Skip over leading space
     p = SkipWhite (lpCmdLine);
@@ -1353,14 +1531,20 @@ int PASCAL WinMain (HINSTANCE   hInstance,
     if (!InitApplication (hInstance))
         goto EXIT3;
 
+    // Create various permanent variables
+    MakePermVars ();
+
+    // Read in global registry values
+    ReadRegGlb ();
+
     // Initialize ChooseFont argument here
     //   so its settings will be present
     //   for the second and subsequent time
     //   the common dialog is called.
-    InitChooseFont ();
-
-    // Create various permanent variables
-    MakePermVars ();
+    InitChooseFont (&cfSM, &lfSM, DEF_SMPTSIZE);
+    InitChooseFont (&cfTC, &lfTC, DEF_TCPTSIZE);
+    if (lfSM_CWS.lfHeight EQ 0)
+        lfSM_CWS.lfHeight = lfSM.lfHeight;
 
     // Initialize Primitive Fns
     InitPrimFns ();

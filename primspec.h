@@ -3,15 +3,6 @@
 //***************************************************************************
 
 
-enum EXEC_CODES
-{
-    EXEC_SUCCESS = 0,       // All OK
-////EXEC_RESULT_BOOL,       // Result should be Boolean
-////EXEC_RESULT_INT,        // ...              Integer
-    EXEC_RESULT_FLOAT,      // ...              Float
-    EXEC_DOMAIN_ERROR,      // Signal a DOMAIN ERROR
-};
-
 // Call this function for each monadic primitive function
 typedef LPYYSTYPE PRIMFN_MON
     (LPTOKEN lptkFunc,
@@ -236,7 +227,7 @@ typedef struct tagPrimSpec
     FISFVF             *FisFvF;
 
     // Miscellaneous
-    enum EXEC_CODES *lpExecCode;
+    EXEC_CODES         *lpExecCode;
 } PRIMSPEC, * LPPRIMSPEC;
 
 

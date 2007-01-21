@@ -43,8 +43,10 @@
 
 #define IDM_SCREENFONT                  500
 
-#define IDC_VERSION                     600
-#define IDC_LINK                        601
+#define IDM_TABFONT                     600
+
+#define IDC_VERSION                     700
+#define IDC_LINK                        701
 
 #define IDC_STATIC                       -1
 

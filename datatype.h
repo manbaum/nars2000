@@ -53,7 +53,7 @@ typedef APLHETERO * LPAPLHETERO;
 typedef APLLONGEST* LPAPLLONGEST;
 
 // Strand types -- used during strand constuction
-enum STRAND_TYPES
+typedef enum tagSTRAND_TYPES
 {
  STRAND_INIT = 0,   //  0:  Initial state
  STRAND_BOOL,       //  1:  Boolean
@@ -67,10 +67,10 @@ enum STRAND_TYPES
 
  STRAND_LENGTH      //  9:  # elements in this enum
                     //      *MUST* be the last entry
-};
+} STRAND_TYPES;
 
 // Array types -- used to identify array storage type in memory
-enum ARRAY_TYPES
+typedef enum tagARRAY_TYPES
 {
  ARRAY_BOOL = 0,    //  0:  Boolean
  ARRAY_INT,         //  1:  Integer
@@ -89,7 +89,7 @@ enum ARRAY_TYPES
 // Whenever changing this <enum>, be sure to make a
 //   corresponding change to <StorageType> in <primfns.c>.
 
-};
+} ARRAY_TYPES;
 
 // Define macro for detecting simple non-heterogeneous array type
 #define IsSimpleNH(a)  (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR)
@@ -194,19 +194,19 @@ typedef struct tagVARARRAY_HEADER
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
 
 // Macros to skip from the array base to either the dimensions or the data
-#define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((char *) lpMem) + sizeof (VARARRAY_HEADER)                            )
-#define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((char *) lpMem) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * aplRank)
+#define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER)                            )
+#define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * aplRank)
 
 // Function types
 #define FCNTYPE_FIRST 1
 
-enum FCN_TYPES
+typedef enum tagFCN_TYPES
 {
     FCNTYPE_FCN = FCNTYPE_FIRST,// 1:  Primtive and user-defined functions
     FCNTYPE_OP1,                // 2:  ...                       monadic operators
     FCNTYPE_OP2,                // 3:  ...                       dyadic  ...
     FCNTYPE_AXISFCN,            // 4:  Primitive axis functions (is this useful?)
-};
+} FCN_TYPES;
 
 // Function array header
 #define FCNARRAY_HEADER_SIGNATURE   'SNCF'
@@ -220,16 +220,16 @@ typedef struct tagFCNARRAY_HEADER
 } FCNARRAY_HEADER, *LPFCNARRAY_HEADER;
 
 // Macros to skip from the array base to the data
-#define FcnArrayBaseToData(lpMem) (LPVOID)   (((char *) lpMem) + sizeof (FCNARRAY_HEADER))
+#define FcnArrayBaseToData(lpMem) (LPVOID)   (((LPCHAR) lpMem) + sizeof (FCNARRAY_HEADER))
 
 // Distinguish between immediate LPSYMENTRY and HGLOBAL in an array
-enum PTR_TYPES
+typedef enum tagPTR_TYPES
 {
  PTRTYPE_STCONST = 0,   // 0:  *MUST* be first (and thus zero) as we can't afford to clear all the time
  PTRTYPE_HGLOBAL,       // 1:  This ptr is an HGLOBAL
  PTRTYPE_UNUSED2,       // 2:  Unused and available
  PTRTYPE_UNUSED3,       // 3:  Unused and available
-};
+} PTR_TYPES;
 
 #define PTRTYPE_MASK     3      // This masks the two low-order bits
 

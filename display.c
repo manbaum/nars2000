@@ -10,56 +10,24 @@
 #include "main.h"
 #include "aplerrors.h"
 #include "datatype.h"
-#include "symtab.h"
-#include "tokens.h"
 #include "resdebug.h"
-#include "parse.h"
 #include "termcode.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
 
-extern LPCHAR  lpszTemp;            // Use for char temporary storage
-extern LPWCHAR lpwszTemp;           // Use for WCHAR temporary storage
-extern APLBOOL bQuadDF,             // []DF
-               bQuadIF,             // []IF
-               bQuadIO,             // []IO
-               uQuadPP;             // []PP
-extern LPHSHENTRY lpHshTab,         // Ptr to start of hash table
-                  lpHshTabSplitNext;// ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
-extern int iHshTabTotalSize,
-           iSymTabTotalSize;
-extern HWND hWndDB;
-extern LPSYMENTRY lpSymTab,         // Ptr to start of symbol table
-                  lpSymTabNext;     // Ptr to next available STE
-extern HGLOBAL hGlbHist;            // Global handle to array of history lines
-
-extern int iCurLine,
-           iLastValidLine,
-           iCurChar,
-           nWindowChars,
-           nWindowLines,
-           iFirstWindowChar,
-           iLastWindowChar;
-extern LPWCHAR lpwszCurLine;        // The contents of the line
 
 #ifdef DEBUG
-extern PLLOCALVARS  gplLocalVars;
 // Resource debugging variables
 extern int iCountGLOBAL[MAXOBJ];
 extern HANDLE ahGLOBAL[MAXOBJ];
 extern UINT auLinNumGLOBAL[MAXOBJ];
 #endif
 
-
-enum DISPLAY_FORMAT
-{
-    DISPLAY_SPACES = 0,             // Use a space to surround nested arrays
-    DISPLAY_PARENS,                 // ... parens  ...
-};
 
 //***************************************************************************
 //  ArrayDisplay_EM
@@ -273,7 +241,7 @@ LPAPLCHAR FormatGlobal
                 if (iBitIndex EQ NBIB)
                 {
                     iBitIndex = 0;
-                    ((char *) lpMem)++;
+                    ((LPCHAR) lpMem)++;
                 } // End IF
             } // End FOR
 
@@ -339,8 +307,9 @@ LPAPLCHAR FormatGlobal
             {
                 // Get ptr to APA struct
                 lpaplAPA = (LPAPLAPA) lpMem;
-                // bQuadIF is 1 iff we're to display in APA format
-                if (bQuadIF)
+
+                // bQuadIF is APA_ON iff we're to display in APA format
+                if (bQuadIF EQ APA_ON)
                 {
                     // Display in APA format
 
@@ -614,7 +583,7 @@ LPAPLCHAR FormatFloat
         //                only 16 of which are accurate
 
         // Convert fFloat to an ASCII string
-        _gcvt (fFloat, uQuadPP, lpszTemp);
+        _gcvt (fFloat, (int) uQuadPP, lpszTemp);
 
         // Convert from one-byte ASCII to two-byte UCS2
         A2W (lpaplChar, lpszTemp);

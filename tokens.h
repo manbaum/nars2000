@@ -44,7 +44,7 @@ value.
 // Data Token Types
 #define TKT_FIRST 1
 
-enum TOKEN_TYPES
+typedef enum tagTOKEN_TYPES
 {TKT_VARNAMED = TKT_FIRST,  //  1: Symbol table entry for a named var (data is LPSYMENTRY)
  TKT_STRING   ,             //  2: String  (data is HGLOBAL)
  TKT_VARIMMED ,             //  3: An immediate constant (Boolean, Integer, Character, or Floating point,
@@ -78,7 +78,7 @@ enum TOKEN_TYPES
  TKT_AXISARRAY,             // 24: An array of  ...   (data is HGLOBAL)
  TKT_OP1NAMED ,             // 25: A named monadic primitive operator (data is LPSYMENTRY)
  TKT_OP2NAMED ,             // 26: ...     dyadic  ...
-};
+} TOKEN_TYPES;
 
 #define TKT_LENGTH      (TKT_LENGTHp1 - 1)
 

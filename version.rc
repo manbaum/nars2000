@@ -1,3 +1,2 @@
-#define VER_MODULE 948
-#define VER_MODULE_STR "0948"
-
+#define VER_MODULE 196
+#define VER_MODULE_STR "0196"

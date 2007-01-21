@@ -8,9 +8,11 @@
 #pragma pack (1)
 #define STRICT
 #include <windows.h>
-#include "resdebug.h"
 
 #include "main.h"
+#include "datatype.h"
+#include "resdebug.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -19,8 +21,6 @@
 
 #define OBJ_GLOBAL  15
 
-extern HWND hWndMF;
-extern char pszAppName[];
 
 // ************** DEBUGGING DATA ********************************************
 
@@ -127,7 +127,8 @@ HANDLE *lpaah[] = {&ahPEN        [0],
 //  MyDbgBrk
 //***************************************************************************
 
-void MyDbgBrk (char *szTemp)
+void MyDbgBrk
+    (LPCHAR szTemp)
 
 {
     DbgBrk ();

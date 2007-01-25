@@ -2,14 +2,13 @@
 //  NARS2000 -- Hash & Symbol Table Routines
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <stdio.h>
 #include <math.h>
+
 #include "main.h"
 #include "aplerrors.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "Unicode.h"
 #include "externs.h"

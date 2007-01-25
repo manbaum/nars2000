@@ -7,13 +7,8 @@
 #include <windows.h>
 
 #include "main.h"
-#include "aplerrors.h"
-#include "datatype.h"
-#include "symtab.h"
-#include "tokens.h"
-#include "parse.h"
 #include "resdebug.h"
-#include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

@@ -10,7 +10,6 @@
 
 #include "main.h"
 #include "aplerrors.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "Unicode.h"
 #include "externs.h"

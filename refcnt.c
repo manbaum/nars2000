@@ -3,14 +3,11 @@
 //***************************************************************************
 
 #include <windows.h>
+
 #include "main.h"
-#include "datatype.h"
-#include "symtab.h"
-#include "tokens.h"
 #include "resdebug.h"
-#include "parse.h"
-#include "errors.h"
 #include "Unicode.h"
+#include "externs.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -57,15 +54,18 @@ int ChangeRefCntDir
                     // Don't change the reference count on Perms
                     if (lpHeader->Perm)
                     {
+#ifdef DEBUG
                         dprintfW (L"  RefCntNC in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);
+#endif
                         RefCnt = (UINT) -1;
 
                         break;
                     } // End IF
 
                     // Change the reference count
+#ifdef DEBUG
                     dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
-
+#endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;
                     RefCnt = lpHeader->RefCnt;
@@ -75,8 +75,9 @@ int ChangeRefCntDir
                 case FCNARRAY_HEADER_SIGNATURE:
 #define lpHeader        ((LPFCNARRAY_HEADER) lpSign)
                     // Change the reference count
+#ifdef DEBUG
                     dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
-
+#endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;
                     RefCnt = lpHeader->RefCnt;

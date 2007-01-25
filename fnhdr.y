@@ -40,7 +40,7 @@ in the lexical analyser (yylex).
 
 %}
 
-%token NAMEUNK ASSIGN
+%token NAMEUNK ASSIGN LINECONT
 
 %start Header
 
@@ -66,19 +66,54 @@ LftArg:
     | '[' NAMEUNK ']'
     ;
 
+MonOp:
+      '(' NAMEUNK NAMEUNK ')'
+    ;
+
+DydOp:
+      '(' NAMEUNK NAMEUNK NAMEUNK ')'
+    ;
+
 NoResHdr:
-              NAMEUNK               // Niladic
-    |         NAMEUNK NAMEUNK       // Monadic
-    |         NAMEUNK List          // Monadic
-    | NAMEUNK NAMEUNK NAMEUNK       // Dyadic
-    | NAMEUNK NAMEUNK List          // Dyadic
-    | LftArg  NAMEUNK NAMEUNK       // Dyadic
-    | LftArg  NAMEUNK List          // Dyadic
+              NAMEUNK               // Niladic function
+
+    |         NAMEUNK NAMEUNK       // Monadic function
+    |         NAMEUNK List          // ...
+
+    | NAMEUNK NAMEUNK NAMEUNK       // Dyadic function
+    | NAMEUNK NAMEUNK List          // ...
+    | LftArg  NAMEUNK NAMEUNK       // ...
+    | LftArg  NAMEUNK List          // ...
+
+//  |         MonOp   NAMEUNK       // Monadic operator, monadic function
+//  |         MonOp   List          // ...
+
+//  | NAMEUNK MonOp   NAMEUNK       // Monadic operator, dyadic function
+//  | NAMEUNK MonOp   List          // ...
+    | LftArg  MonOp   NAMEUNK       // ...
+    | LftArg  MonOp   List          // ...
+
+//  |         DydOp   NAMEUNK       // Dyadic operator, monadic function
+//  |         DydOp   List          // ...
+
+//  | NAMEUNK DydOp   NAMEUNK       // Dyadic operator, dyadic function
+//  | NAMEUNK DydOp   List          // ...
+    | LftArg  DydOp   NAMEUNK       // ...
+    | LftArg  DydOp   List          // ...
+    ;
+
+Locals:
+             LINECONT
+    |        ';' NAMEUNK
+    | Locals LINECONT
+    | Locals ';' NAMEUNK
     ;
 
 Header:
              NoResHdr
+    |        NoResHdr Locals
     | Result NoResHdr
+    | Result NoResHdr Locals
     ;
 
 %%

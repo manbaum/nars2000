@@ -6,20 +6,19 @@
 //#define WINVER       0x04FF // Needed for WINUSER.H definitions
 //#define _WIN32_WINNT 0x04FF // ...
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <windowsx.h>
 #include <windowsx.h16>
-#include <commctrl.h>   // Includes the common control header
 //#include <multimon.h>   // Multiple monitor support
 //#include <QControl.h>
 #include <limits.h>
 #include <direct.h>
+
 #include "main.h"
 #include "resdebug.h"
 #include "resource.h"
-#include "datatype.h"
+
 #define DEFINE_VARS
 #define DEFINE_VALUES
 #define DEFINE_ENUMS
@@ -27,6 +26,7 @@
 #undef  DEFINE_ENUMS
 #undef  DEFINE_VALUES
 #undef  DEFINE_VARS
+
 #include "pertab.h"
 
 // Include prototypes unless prototyping
@@ -37,15 +37,17 @@
 
 //************************** Data Area **************************************
 
+typedef struct tagENUMSETFONT
+{
+    LPCHAR  lpClassName;
+    HFONT   hFont;
+} ENUMSETFONT, *LPENUMSETFONT;
+
+
 #define DEF_CTEMP_MAXSIZE   1024        // Maximum size of char  temporary storage
 #define DEF_CTEMP_INITSIZE  1024        // Initial ...
 #define DEF_WTEMP_MAXSIZE   1024        // Maximum size of WCHAR ...
 #define DEF_WTEMP_INITSIZE  1024        // Initial ...
-
-WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure
-COLORREF crbk[2] = {RGB (249,215,216), RGB (212,223,245)}, // Background
-         crfg[2] = {RGB (  0,  0,  0), RGB (  0,  0,  0)}, // Foreground, normal
-         crhl[2] = {RGB (255,  0,  0), RGB (255,  0,  0)}; // Foreground, highlighted
 
 int nMinState,                          // Minimized state as per WinMain
     iScrollSize;                        // Width of a vertical scrollbar
@@ -55,35 +57,71 @@ BOOL fHelp = FALSE,                     // TRUE iff we displayed help
 
 HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconSM_Large, hIconSM_Small,
-      hIconDB_Large, hIconDB_Small;
+#ifdef DEBUG
+      hIconDB_Large, hIconDB_Small,
+#endif
+      hIconFE_Large, hIconFE_Small,
+      hIconME_Large, hIconME_Small,
+      hIconVE_Large, hIconVE_Small,
+      hIconClose;
 
 char szMFTitle[]        = "NARS2000" APPEND_DEBUG,                  // Master frame window title
-     szSMTitle[]        = "NARS2000 Session Manager" APPEND_DEBUG,  // Session Manager ...
-     szTCTitle[]        = "NARS2000 Tab Control Window" APPEND_DEBUG,// Tab Control ... (for debugging purposes only)
-     szMCTitle[]        = "NARS2000 MDI Client Window" APPEND_DEBUG,// MDI Client ... (for debugging purposes only)
-     szDBTitle[]        = "NARS2000 Debugger Window" APPEND_DEBUG;  // Debugger ...
+     szTCTitle[]        = "NARS2000 Tab Control Window" APPEND_DEBUG;// Tab Control ... (for debugging purposes only)
 
 #define MFWNDCLASS      "MFClass"       // Master Frame Window class
-#define MCWNDCLASS      "MDIClient"     // MDI Client   ...
-#define SMWNDCLASS      "SMClass"       // Session Manager ...
-#define DBWNDCLASS      "DBClass"       // Debugger     ...
 
-char szMFClass[]        = MFWNDCLASS,   // Master Frame Window class
-     szMCClass[]        = MCWNDCLASS,   // MDI Client   ...
-     szSMClass[]        = SMWNDCLASS,   // Session Manager ...
-     szDBClass[]        = DBWNDCLASS;   // Debugger     ...
+char szMFClass[]        = MFWNDCLASS;   // Master Frame Window class
 
 char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.",
      pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS ">.",
-     pszNoRegDBWndClass[]   = "Unable to register window class <" DBWNDCLASS ">.";
+#ifdef DEBUG
+     pszNoRegDBWndClass[]   = "Unable to register window class <" DBWNDCLASS ">.",
+#endif
+     pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS ">.",
+     pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS ">.",
+     pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.";
 
 char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateTCWnd[]     = "Unable to create Tab Control window",
-     pszNoCreateMCWnd[]     = "Unable to create MDI Client window",
-     pszNoCreateSMWnd[]     = "Unable to create Session Manager window",
-     pszNoCreateDBWnd[]     = "Unable to create Debugger window",
-     pszNoCreateTTWnd[]     = "Unable to create ToolTip window",
-     pszNoInsertTCTab[]     = "Unable to create a new Tab";
+     pszNoCreateTTWnd[]     = "Unable to create ToolTip window";
+
+
+//***************************************************************************
+//  EnumCallbackSetFont
+//
+//  EnumChildWindows callback to set a window's font
+//***************************************************************************
+
+BOOL CALLBACK EnumCallbackSetFont
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
+
+{
+    char szTemp[32];
+
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
+
+    // Get the window's class name
+    GetClassName (hWnd, szTemp, sizeof (szTemp));
+
+#define lpEnumSetFont   ((LPENUMSETFONT) lParam)
+
+    // If this is the matching class name,
+    //   set the new font in place and redraw.
+    if (lstrcmpi (lpEnumSetFont->lpClassName, szTemp) EQ 0)
+    {
+        SendMessage (hWnd, WM_SETFONT, (WPARAM) lpEnumSetFont->hFont, TRUE);
+        InvalidateRect (hWnd, NULL, TRUE);
+    } // End IF
+
+    return TRUE;        // Keep on truckin'
+#undef  lpEnumSetFont
+} // End EnumCallbackSetFont
 
 
 //***************************************************************************
@@ -127,27 +165,6 @@ void InitChooseFont
 
 
 //***************************************************************************
-//  MyChooseFontSM
-//
-//  Choose a font for the SM window
-//***************************************************************************
-
-void MyChooseFontSM
-    (void)
-
-{
-    if (ChooseFont (&cfSM))     // Choose it
-    {
-        // Create a new font for the SM
-        CreateNewFontSM ();
-
-        // Repaint the SM window
-        InvalidateRect (hWndSM, NULL, TRUE);
-    } // End IF
-} // End MyChooseFontSM
-
-
-//***************************************************************************
 //  MyChooseFontTC
 //
 //  Choose a font for the TC labels
@@ -159,7 +176,7 @@ void MyChooseFontTC
 {
     if (ChooseFont (&cfTC))     // Choose it
     {
-        // Create a new font for the TC
+        // Create a new font for the TC window
         CreateNewFontTC ();
 
         // Repaint the TC labels
@@ -169,9 +186,81 @@ void MyChooseFontTC
 
 
 //***************************************************************************
+//  MyChooseFontSM
+//
+//  Choose a font for the SM windows
+//***************************************************************************
+
+void MyChooseFontSM
+    (void)
+
+{
+    if (ChooseFont (&cfSM))     // Choose it
+    {
+        // Create a new font for the SM windows
+        CreateNewFontSM ();
+    } // End IF
+} // End MyChooseFontSM
+
+
+//***************************************************************************
+//  MyChooseFontFE
+//
+//  Choose a font for the FE windows
+//***************************************************************************
+
+void MyChooseFontFE
+    (void)
+
+{
+    if (ChooseFont (&cfFE))     // Choose it
+    {
+        // Create a new font for the FE windows
+        CreateNewFontFE ();
+    } // End IF
+} // End MyChooseFontFE
+
+
+//***************************************************************************
+//  MyChooseFontME
+//
+//  Choose a font for the ME windows
+//***************************************************************************
+
+void MyChooseFontME
+    (void)
+
+{
+    if (ChooseFont (&cfME))     // Choose it
+    {
+        // Create a new font for the ME windows
+        CreateNewFontME ();
+    } // End IF
+} // End MyChooseFontME
+
+
+//***************************************************************************
+//  MyChooseFontVE
+//
+//  Choose a font for the VE windows
+//***************************************************************************
+
+void MyChooseFontVE
+    (void)
+
+{
+    if (ChooseFont (&cfVE))     // Choose it
+    {
+        // Create a new font for the VE windows
+        CreateNewFontVE ();
+    } // End IF
+} // End MyChooseFontVE
+
+
+//***************************************************************************
 //  CreateNewFontTC
 //
-//  Create a new font for the TC.
+//  Create a new font for the TC window.
 //***************************************************************************
 
 void CreateNewFontTC
@@ -191,6 +280,139 @@ void CreateNewFontTC
     // Tell the TC about the new font
     SendMessage (hWndTC, WM_SETFONT, (WPARAM) hFontTC, 0);
 } // End CreateNewFontTC
+
+
+//***************************************************************************
+//  CreateNewFontSM
+//
+//  Create a new font for the SM windows.
+//***************************************************************************
+
+void CreateNewFontSM
+    (void)
+
+{
+    ENUMSETFONT enumSetFont;
+
+    // Delete the previous handle (if any)
+    if (hFontSM)
+    {
+        // Delete the SM font handle
+        MyDeleteObject (hFontSM); hFontSM = NULL;
+    } // End IF
+
+    // Create the font
+    hFontSM = MyCreateFontIndirect (&lfSM);
+
+    // Initialize the struct
+    enumSetFont.lpClassName = szSMClass;
+    enumSetFont.hFont       = hFontSM;
+
+    // Refont the SM windows
+    EnumChildWindows (hWndMF, &EnumCallbackSetFont, (LPARAM) &enumSetFont);
+
+#ifdef DEBUG
+    // Initialize the struct
+    enumSetFont.lpClassName = szDBClass;
+    enumSetFont.hFont       = hFontSM;
+
+    // Refont the DB windows
+    EnumChildWindows (hWndMF, &EnumCallbackSetFont, (LPARAM) &enumSetFont);
+#endif
+} // End CreateNewFontSM
+
+
+//***************************************************************************
+//  CreateNewFontFE
+//
+//  Create a new font for the FE windows.
+//***************************************************************************
+
+void CreateNewFontFE
+    (void)
+
+{
+    ENUMSETFONT enumSetFont;
+
+    // Delete the previous handle (if any)
+    if (hFontFE)
+    {
+        // Delete the FE font handle
+        MyDeleteObject (hFontFE); hFontFE = NULL;
+    } // End IF
+
+    // Create the font
+    hFontFE = MyCreateFontIndirect (&lfFE);
+
+    // Initialize the struct
+    enumSetFont.lpClassName = szFEClass;
+    enumSetFont.hFont       = hFontFE;
+
+    // Refont the FE windows
+    EnumChildWindows (hWndMF, &EnumCallbackSetFont, (LPARAM) &enumSetFont);
+} // End CreateNewFontFE
+
+
+//***************************************************************************
+//  CreateNewFontME
+//
+//  Create a new font for the ME windows.
+//***************************************************************************
+
+void CreateNewFontME
+    (void)
+
+{
+    ENUMSETFONT enumSetFont;
+
+    // Delete the previous handle (if any)
+    if (hFontME)
+    {
+        // Delete the ME font handle
+        MyDeleteObject (hFontME); hFontME = NULL;
+    } // End IF
+
+    // Create the font
+    hFontME = MyCreateFontIndirect (&lfME);
+
+    // Initialize the struct
+    enumSetFont.lpClassName = szMEClass;
+    enumSetFont.hFont       = hFontME;
+
+    // Refont the ME windows
+    EnumChildWindows (hWndMF, &EnumCallbackSetFont, (LPARAM) &enumSetFont);
+} // End CreateNewFontME
+
+
+//***************************************************************************
+//  CreateNewFontVE
+//
+//  Create a new font for the VE windows.
+//***************************************************************************
+
+void CreateNewFontVE
+    (void)
+
+{
+    ENUMSETFONT enumSetFont;
+
+    // Delete the previous handle (if any)
+    if (hFontVE)
+    {
+        // Delete the VE font handle
+        MyDeleteObject (hFontVE); hFontVE = NULL;
+    } // End IF
+
+    // Create the font
+    hFontVE = MyCreateFontIndirect (&lfVE);
+
+    // Initialize the struct
+    enumSetFont.lpClassName = szVEClass;
+    enumSetFont.hFont       = hFontVE;
+
+    // Refont the VE windows
+    EnumChildWindows (hWndMF, &EnumCallbackSetFont, (LPARAM) &enumSetFont);
+} // End CreateNewFontVE
 
 
 //***************************************************************************
@@ -301,422 +523,16 @@ BOOL CreateChildWindows
 
 
 //***************************************************************************
-//  LclTabCtrlWndProc
-//
-//  Local window procedure for the Tab Control
-//***************************************************************************
-
-LRESULT WINAPI LclTabCtrlWndProc
-    (HWND   hWnd,
-     UINT   message,
-     WPARAM wParam,
-     LPARAM lParam)
-
-{
-    TC_HITTESTINFO tcHit;
-    static int     iCurTab;
-
-    // Split cases
-    switch (message)
-    {
-        case WM_MOUSEHOVER:         // fwKeys = wParam;        // key flags
-                                    // xPos = LOWORD(lParam);  // horizontal position of cursor in CA
-                                    // yPos = HIWORD(lParam);  // vertical position of cursor  in CA
-            // Save the client coordinates
-            tcHit.pt.x = LOWORD (lParam);
-            tcHit.pt.y = HIWORD (lParam);
-
-            // Ask the Tab Control if we're over a tab
-            iCurTab = TabCtrl_HitTest (hWndTC, &tcHit);
-
-            DbgBrk ();
-
-            // Ensure we're over a tab
-            if (iCurTab EQ -1)
-                break;
-
-            // Draw the tab with the text highlighted
-            DrawTabText (hWnd,
-                         NULL,
-                         iCurTab,
-                         crhl[iCurTab],
-                         crbk[iCurTab],
-                         NULL,
-                         NULL);
-            return FALSE;       // We handled the message
-
-        case WM_MOUSELEAVE:
-            // Draw the tab with the text normal
-            DrawTabText (hWnd,
-                         NULL,
-                         iCurTab,
-                         crfg[iCurTab],
-                         crbk[iCurTab],
-                         NULL,
-                         NULL);
-
-            return FALSE;       // We handled the message
-    } // End SWITCH
-
-    return CallWindowProcW (lpfnOldTabCtrlWndProc,
-                            hWnd,
-                            message,
-                            wParam,
-                            lParam); // Pass on down the line
-} // End LclTabCtrlWndProc
-
-
-//***************************************************************************
-//  ClearWsData
-//
-//  Clear data in this WS to global default values
-//***************************************************************************
-
-void ClearWsData
-    (void)
-
-{
-    hGlbQuadALX     = hGlbQuadALX_CWS;
-    hGlbQuadELX     = hGlbQuadELX_CWS;
-    hGlbQuadLX      = hGlbQuadLX_CWS;
-    hGlbQuadSA      = hGlbQuadSA_CWS;
-    hGlbQuadWSID    = hGlbQuadWSID_CWS;
-    hGlbQuadPR      = hGlbQuadPR_CWS;
-    fQuadCT         = fQuadCT_CWS;
-    bQuadDF         = bQuadDF_CWS;
-    bQuadIF         = bQuadIF_CWS;
-    bQuadIO         = bQuadIO_CWS;
-    uQuadPP         = uQuadPP_CWS;
-    uQuadPW         = uQuadPW_CWS;
-    uQuadRL         = uQuadRL_CWS;
-    cQuadPR         = cQuadPR_CWS;
-    bQuadxSA        = bQuadxSA_CWS;
-} // End ClearWsData
-
-
-//***************************************************************************
-//  SaveWsData
-//
-//  Save data from the current WS into global memory
-//***************************************************************************
-
-void SaveWsData
-    (HGLOBAL hGlbData)
-
-{
-    LPPERTABDATA lpMem;
-
-    // Check to see if none saved as yet
-    if (!hGlbData)
-        return;
-
-    // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbData);
-
-#define Assign(a)   lpMem->a = a;
-    PERTABVARS
-#undef  Assign
-
-    // Get the handle of the active MDI window
-    lpMem->hWndActive = (HWND) SendMessage (hWndMC, WM_MDIGETACTIVE, 0, 0);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMem = NULL;
-} // End SaveWsData
-
-
-//***************************************************************************
-//  RestWsData
-//
-//  Restore data into the current WS from global memory
-//***************************************************************************
-
-void RestWsData
-    (HGLOBAL hGlbData)
-
-{
-    LPPERTABDATA lpMem;
-
-    // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbData);
-
-#define Assign(a)   a = lpMem->a;
-    PERTABVARS
-#undef  Assign
-
-    // Set the active MDI window
-    SendMessage (hWndMC, WM_MDIACTIVATE, (WPARAM) lpMem->hWndActive, 0);
-
-    // Give it the keyboard focus
-    SetFocus (lpMem->hWndActive);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMem = NULL;
-} // End RestWsData
-
-
-//***************************************************************************
-//  ShowHideEnumChildProc
-//
-//  Enum child proc for ShowChildWindows
-//***************************************************************************
-
-BOOL CALLBACK ShowHideEnumChildProc
-    (HWND   hWnd,
-     LPARAM lParam)
-
-{
-    // When an MDI child window is minimized, Windows creates two windows: an
-    // icon and the icon title.  The parent of the icon title window is set to
-    // the MDI client window, which confines the icon title to the MDI client
-    // area.  The owner of the icon title is set to the MDI child window.
-    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
-        return TRUE;                    // skip it, and continue enumerating
-
-    // Show or hide the window
-    ShowWindow (hWnd, lParam);
-
-    return TRUE;
-} // End ShowHideEnumChildProc
-
-
-//***************************************************************************
-//  ShowHideChildWindows
-//
-//  Show or hide the given window and all its children
-//***************************************************************************
-
-void ShowHideChildWindows
-    (HWND hWndMC,
-     BOOL bShow)        // TRUE iff showing the window, FALSE if hiding it
-
-{
-    if (!hWndMC)
-        return;
-
-    // Put the MDI Client window at the top (SHOW) or bottom (HIDE)
-    //   of the Z-order
-    SetWindowPos (hWndMC,
-                  bShow ? HWND_TOP : HWND_BOTTOM,
-                  0, 0, 0, 0,
-                  SWP_NOMOVE
-                | SWP_NOSIZE);
-
-    // Show/hide the MDI Client window
-    ShowWindow (hWndMC, bShow ? SW_SHOW : SW_HIDE);
-
-    // Loop through the child windows
-    EnumChildWindows (hWndMC,
-                     &ShowHideEnumChildProc,
-                     bShow ? SW_SHOW : SW_HIDE);
-} // End ShowHideChildWindows
-
-
-//***************************************************************************
-//  CreateNewTab
-//
-//  Create a new tab
-//***************************************************************************
-
-BOOL CreateNewTab
-    (HWND  hWndParent,
-     LPSTR lpszDPFE)        // Drive, Path, Filename, Ext of the workspace
-
-{
-    int          iCurTab;
-    TC_ITEM      tcItem;
-    HGLOBAL      hGlbData;
-    LPPERTABDATA lpMem = NULL;
-    BOOL         bRet = TRUE;
-    RECT         rc;        // Rectangle for setting size of window
-    int          rcLeft, rcRight, rcBottom;
-    CLIENTCREATESTRUCT ccs; // For MDI Client window
-    LPCHAR       p, q;
-    int          iLabelText;
-
-    // Get the size and position of the parent window.
-    GetClientRect (hWndParent, &rc);
-
-    // Save data from the current WS into global memory
-    SaveWsData (hGlbCurTab);
-
-    // Hide the child windows of the outgoing tab
-    ShowHideChildWindows (hWndMC, FALSE);
-
-    // Allocate per tab data
-    hGlbData = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
-    if (!hGlbData)
-        return FALSE;       // Stop the whole process
-
-    // Calculate the offset to the label text
-    q = lpszDPFE;
-    while (p = strchr (q, '\\'))
-        q = p + 1;
-    iLabelText = q - lpszDPFE;
-
-    tcItem.mask    = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
-    tcItem.iImage  = -1;
-    tcItem.pszText = &lpszDPFE[iLabelText];
-    tcItem.lParam  = (LPARAM) hGlbData;
-
-    iCurTab = TabCtrl_InsertItem (hWndTC, 0, &tcItem);
-
-    if (iCurTab == -1)
-    {
-        MB (pszNoInsertTCTab);
-        bRet = FALSE;       // Stop the whole process
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Lock the per-tab data to get a ptr to it
-    lpMem = MyGlobalLock (hGlbData);
-
-    // Save the DPFE
-    lstrcpy (lpMem->DPFE, lpszDPFE);
-
-    // Save offset to label text
-    lpMem->iLabelText = iLabelText;
-
-    // Calculate the display rectangle, assuming the
-    // tab control is the size of the client area.
-    // Because I don't like the look of the tab control border,
-    //   the following code saves and restores all but the
-    //   top border (where the tabs are).
-    rcLeft    = rc.left;
-    rcRight   = rc.right;
-    rcBottom  = rc.bottom;
-    TabCtrl_AdjustRect (hWndTC, FALSE, &rc);
-    rc.left   = rcLeft;
-    rc.right  = rcRight;
-    rc.bottom = rcBottom;
-
-    // Fill in the CLIENTCREATESTRUCT for the MDI Client
-    ccs.hWindowMenu = GetSubMenu (GetMenu (hWndParent), IDMPOS_WINDOW);
-    ccs.idFirstChild = IDM_CHILDWINDOW;
-
-    // Create the MDI client window
-    lpMem->hWndMC =
-    CreateWindowEx (0,                      // Extended styles
-                    szMCClass,              // Class name
-                    szMCTitle,              // Window title (for debugging purposes only)
-////                MDIS_ALLCHILDSTYLES,    // Styles
-                    WS_CHILD
-                  | WS_BORDER
-                  | WS_CLIPCHILDREN,        // Styles
-                    rc.left,                // X-coordinate
-                    rc.top,                 // Y-...
-                    rc.right  - rc.left,    // Width
-                    rc.bottom - rc.top,     // Height
-                    hWndParent,             // Parent
-                    (HMENU) 2,              // Child identifier
-                    _hInstance,             // hInstance
-                    &ccs);                  // lParam
-    if (lpMem->hWndMC EQ NULL)
-    {
-        MB (pszNoCreateMCWnd);
-        bRet = FALSE;       // Stop the whole process
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Show and paint the window
-    ShowWindow (lpMem->hWndMC, SW_SHOWNORMAL);
-    UpdateWindow (lpMem->hWndMC);
-
-    // Create the Debugger window first
-    //   so it can be used by subsequent windows
-    lpMem->hWndDB =
-    CreateMDIWindow (szDBClass,             // Class name
-                     szDBTitle,             // Window title
-                     0,                     // Styles
-                     CW_USEDEFAULT,         // X-pos
-                     CW_USEDEFAULT,         // Y-pos
-                     CW_USEDEFAULT,         // Height
-                     CW_USEDEFAULT,         // Width
-                     lpMem->hWndMC,         // Parent
-                     _hInstance,            // Instance
-                     0);                    // No extra data
-    if (lpMem->hWndDB EQ NULL)
-    {
-        MB (pszNoCreateDBWnd);
-        bRet = FALSE;       // Stop the whole process
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Create the Session Manager window
-    lpMem->hWndSM =
-    CreateMDIWindow (szSMClass,             // Class name
-                     szSMTitle,             // Window title
-                     WS_VSCROLL             // Styles
-                   | WS_HSCROLL,
-                     CW_USEDEFAULT,         // X-pos
-                     CW_USEDEFAULT,         // Y-pos
-                     CW_USEDEFAULT,         // Height
-                     CW_USEDEFAULT,         // Width
-                     lpMem->hWndMC,         // Parent
-                     _hInstance,            // Instance
-                     0);                    // No extra data
-    if (lpMem->hWndSM EQ NULL)
-    {
-        MB (pszNoCreateSMWnd);
-        bRet = FALSE;       // Stop the whole process
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Save the window handles in global variables
-    hWndMC = lpMem->hWndMC;
-////hWndSM = lpMem->hWndSM;
-////hWndDB = lpMem->hWndDB;
-
-    lpMem->hWndActive = hWndSM;
-
-    // Save the handle
-    hGlbCurTab = hGlbData;
-
-    // Clear data in this WS to global default values
-    ClearWsData ();
-
-    // Show the child windows of the incoming tab
-    ShowHideChildWindows (hWndMC, TRUE);
-
-    // Activate this tab
-    TabCtrl_SetCurSel (hWndTC, iCurTab);
-ERROR_EXIT:
-    // If we failed, ...
-    if ((!bRet) && lpMem && lpMem->hWndMC)
-    {
-        if (lpMem->hWndDB)
-            SendMessage (lpMem->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMem->hWndDB), 0);
-        if (lpMem->hWndSM)
-            SendMessage (lpMem->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMem->hWndSM), 0);
-        DestroyWindow (lpMem->hWndMC);
-    } // End IF
-
-    if (lpMem)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbData); lpMem = NULL;
-    } // End IF
-
-    // If we failed,
-    if ((!bRet) && hGlbData)
-    {
-        // We no longer need this storage
-        MyGlobalFree (hGlbData); hGlbData = NULL;
-    } // End IF
-
-    return bRet;
-} // End CreateNewTab
-
-
-//***************************************************************************
-//  RestoreAllEnumProc
+//  EnumCallbackRestoreAll
 //
 //  EnumChildWindows callback to restore all MDI Child windows
 //
 //  lParam = unused
 //***************************************************************************
 
-BOOL CALLBACK RestoreAllEnumProc (HWND hWnd, LPARAM lParam)
+BOOL CALLBACK EnumCallbackRestoreAll
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
 
 {
     // When an MDI child window is minimized, Windows creates two windows: an
@@ -730,7 +546,7 @@ BOOL CALLBACK RestoreAllEnumProc (HWND hWnd, LPARAM lParam)
     SendMessage (hWndMC, WM_MDIRESTORE, (WPARAM) hWnd, 0);
 
     return TRUE;                        // Continue enumerating
-} // End RestoreAllEnumProc
+} // End EnumCallbackRestoreAll
 
 
 //***************************************************************************
@@ -767,17 +583,15 @@ void MF_Delete
 //  Message processing routine for the Master Frame window
 //***************************************************************************
 
-LRESULT APIENTRY
-MFWndProc (HWND hWnd,       // Window handle
-           UINT message,    // Type of message
-           UINT wParam,     // Additional information
-           LONG lParam)     // ...
+LRESULT APIENTRY MFWndProc
+    (HWND hWnd,         // Window handle
+     UINT message,      // Type of message
+     UINT wParam,       // Additional information
+     LONG lParam)       // ...
 
 {
     RECT         rcDtop;    // Rectangle for desktop
     int          iCurTab;
-    TC_ITEM      tcItem;
-    HBRUSH       hBrush;
 
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
@@ -789,11 +603,6 @@ MFWndProc (HWND hWnd,       // Window handle
 ////ODSAPI ("MF: ", hWnd, message, wParam, lParam);
     switch (message)
     {
-////////case WM_KEYDOWN:
-////////    ODSAPI ("MF: ", hWnd, message, wParam, lParam);
-////////
-////////    break;
-////////
         case WM_NCCREATE:       // lpcs = (LPCREATESTRUCT) lParam
             hWndMF = hWnd;
 
@@ -817,9 +626,22 @@ MFWndProc (HWND hWnd,       // Window handle
                 iLCWidth = 2 + bmLineCont.bmWidth + 2;  // Width of line continuation column
             } // End IF
 
-            // *************** Fonts ***********************************
-            // Create a new font for the TC
-            CreateNewFontTC ();
+            // *************** Image Lists *****************************
+            hImageList =
+            ImageList_Create (IMAGE_CX,         // Common width in pixels
+                              IMAGE_CY,         // ...    height ...
+                              ILC_COLOR32
+                            | ILC_MASK,         // Flags
+                              1,                // Max # images
+                              0);               // # images by which the list can grow
+            if (!hImageList)
+                return -1;          // Stop the whole process
+
+            // Add the Close button icon to the image list
+            ImageList_AddIcon (hImageList, hIconClose);
+
+            // Assign the image list to the tab control
+            TabCtrl_SetImageList (hWndTC, hImageList);
 
 ////        // Ensure the position is valid
 ////        if (MFPosCtr.x > rcDtop.right)  // If center is right of right, ...
@@ -839,13 +661,26 @@ MFWndProc (HWND hWnd,       // Window handle
             // Initialize window-specific resources
             MF_Create (hWnd);
 
-            // Load a CLEAR WS
-            if (!CreateNewTab (hWnd, "CLEAR WS"))
+            // Allocate per tab data as a dummy holder
+            //   so that the first call to SaveWsData
+            //   has something to save into.
+            hGlbCurTab = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
+            if (!hGlbCurTab)
                 return -1;          // Stop the whole process
 
             // Load a CLEAR WS
-            if (!CreateNewTab (hWnd, "R:\\NARS2000\\trunk\\CLEAR WS-2"))
+            if (!CreateNewTab (hWnd,
+                               "CLEAR WS",
+                               TabCtrl_GetItemCount (hWndTC)))
                 return -1;          // Stop the whole process
+
+            // *************** Fonts ***********************************
+            // Create a new font for various windows
+            CreateNewFontTC ();
+            CreateNewFontSM ();
+            CreateNewFontFE ();
+            CreateNewFontME ();
+            CreateNewFontVE ();
 
             break;                  // Continue with next handler
         } // WM_CREATE
@@ -973,27 +808,26 @@ MFWndProc (HWND hWnd,       // Window handle
                 case TTN_NEEDTEXT:      // idTT = (int) wParam;
                                         // lpttt = (LPTOOLTIPTEXT) lParam;
                 {
-                    TC_ITEM      tcItem;
                     HGLOBAL      hGlbData;
                     LPPERTABDATA lpMem;
                     static char  TooltipText[_MAX_PATH];
 
 #define lpttt   ((LPTOOLTIPTEXT) lParam)
 
-                    // The page # of the tab is in lpttt->hdr.idFrom
-                    tcItem.mask = TCIF_PARAM;
-
-                    // Get the lParam
-                    TabCtrl_GetItem (hWndTC, lpttt->hdr.idFrom, &tcItem);
-
-                    // Get the lParam (an HGLOBAL)
-                    hGlbData = (HGLOBAL) tcItem.lParam;
+                    // Get the per tab global memory handle
+                    hGlbData = GetPerTabHandle (lpttt->hdr.idFrom);
 
                     // Lock the memory to get a ptr to it
                     lpMem = MyGlobalLock (hGlbData);
 
                     // Return a ptr to the stored tooltip text
                     lstrcpy (TooltipText, (LPCHAR) &lpMem->DPFE);
+
+                    // ***DEBUG***
+                    wsprintf (TooltipText,
+                              "hWndMC=%08X, hGlbHist=%08X",
+                              lpMem->hWndMC,
+                              lpMem->hGlbHist);
 
                     lpttt->lpszText = TooltipText;
 
@@ -1010,7 +844,10 @@ MFWndProc (HWND hWnd,       // Window handle
 
                     DestroyCaret ();    // 'cause we just lost the focus
 
-                    return FALSE;
+                    // If the user clicked on the close button,
+                    //   disallow this change so as to avoid
+                    //   screen flicker
+                    return ClickOnClose ();
 
                 case TCN_SELCHANGE:     // idTabCtl = (int) LOWORD(wParam);
                                         // hwndTabCtl = (HWND) lParam;
@@ -1020,12 +857,8 @@ MFWndProc (HWND hWnd,       // Window handle
                     // Get the index of the currently selected tab
                     iCurTab = TabCtrl_GetCurSel (hWndTC);
 
-                    // Get the lParam for this tab
-                    tcItem.mask = TCIF_PARAM;
-                    TabCtrl_GetItem (hWndTC, iCurTab, &tcItem);
-
-                    // Save the handle
-                    hGlbCurTab = (HGLOBAL) (tcItem.lParam);
+                    // Get the per tab global memory handle
+                    hGlbCurTab = GetPerTabHandle (iCurTab);
 
                     // Restore data into the current WS from global memory
                     RestWsData (hGlbCurTab);
@@ -1036,7 +869,7 @@ MFWndProc (HWND hWnd,       // Window handle
                     // Because we're activating a new tab,
                     //   the caret must be recreated
                     // Create a default sized system caret for display
-                    MyCreateCaret ();
+                    MyCreateCaret (hWndSM);
 
                     return FALSE;       // We handled the msg
 
@@ -1056,40 +889,19 @@ MFWndProc (HWND hWnd,       // Window handle
             if (lpdis->CtlType NE ODT_TAB)
                 break;
 
-            // Split cases absed upon the item action
+            // Split cases based upon the item action
             switch (lpdis->itemAction)
             {
                 case ODA_DRAWENTIRE:
-                    // Fill the background of the tab
-                    hBrush = CreateSolidBrush (crbk[lpdis->itemID]);
-                    FillRect (lpdis->hDC, &lpdis->rcItem, hBrush);
-                    DeleteObject (hBrush); hBrush = NULL;
-
-                    // Get the lParam for this tab
-                    tcItem.mask = TCIF_PARAM;
-                    TabCtrl_GetItem (hWndTC, lpdis->itemID, &tcItem);
-
-                    // Write the text
-                    DrawTabText (hWnd,
-                                 lpdis->hDC,
-                                 lpdis->itemID,
-                                 crfg[lpdis->itemID],
-                                 crbk[lpdis->itemID],
-                                &lpdis->rcItem,
-                                 (HGLOBAL) (tcItem.lParam));
+                    // Draw the tab
+                    DrawTab (hWndTC,
+                             lpdis->hDC,
+                             lpdis->itemID,
+                            &lpdis->rcItem);
                     break;
 
-                case ODA_FOCUS:
-                    DbgBrk ();
-
-
-                    break;
-
-                case ODA_SELECT:
-                    DbgBrk ();
-
-
-                    break;
+////////////////case ODA_FOCUS:     // These actions don't appear to occur with a tab ctrl
+////////////////case ODA_SELECT:
             } // End SWITCH
 
             break;
@@ -1149,7 +961,7 @@ MFWndProc (HWND hWnd,       // Window handle
                 case IDM_CASCADE:
                     // In this case, we don't care whether or not there
                     // are any child windows as we're restoring them all anyway.
-                    EnumChildWindows (hWndMC, RestoreAllEnumProc, 0);
+                    EnumChildWindows (hWndMC, EnumCallbackRestoreAll, 0);
 
                     PostMessage (hWndMC, WM_MDICASCADE, 0, 0);
 
@@ -1160,17 +972,38 @@ MFWndProc (HWND hWnd,       // Window handle
 
                     return FALSE;       // We handled the msg
 
-                case IDM_SCREENFONT:
+                case IDM_TCFONT:
+                    // Display a Font Dialog so the user can choose
+                    //   a new font for the Tab Control labels
+                    MyChooseFontTC ();
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_SMFONT:
                     // Display a Font Dialog so the user can choose
                     //   a new font for the Session Manager window
                     MyChooseFontSM ();
 
                     return FALSE;       // We handled the msg
 
-                case IDM_TABFONT:
+                case IDM_FEFONT:
                     // Display a Font Dialog so the user can choose
-                    //   a new font for the Tab Control labels
-                    MyChooseFontTC ();
+                    //   a new font for the Function Editor
+                    MyChooseFontFE ();
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_MEFONT:
+                    // Display a Font Dialog so the user can choose
+                    //   a new font for the Matrix Editor
+                    MyChooseFontME ();
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_VEFONT:
+                    // Display a Font Dialog so the user can choose
+                    //   a new font for the Vector Editor
+                    MyChooseFontVE ();
 
                     return FALSE;       // We handled the msg
 
@@ -1185,6 +1018,37 @@ MFWndProc (HWND hWnd,       // Window handle
                                hWnd,
                                &AboutDlgProc);
                     return FALSE;       // We handled the msg
+
+                // The following messages come from the Tab Control.
+                // They are sent here because we need a window whose
+                //   WM_COMMAND we control so as not to interfere with
+                //   any other window's meaning for these menu items.
+                case IDM_NEW_WS:
+                    // Load a CLEAR WS
+                    if (!CreateNewTab (hWnd,
+                                       "CLEAR WS",
+                                       (iOverTab EQ -1) ? 999 : iOverTab + 1))
+                        return -1;          // Stop the whole process
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_DUP_WS:
+                    // ***FINISHME***
+
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_SAVECLOSE_WS:
+                    // ***FINISHME***
+
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_CLOSE_WS:
+                    // Close the tab
+                    CloseTab (iOverTab);
+
+                    return FALSE;   // We handled the msg
             } // End SWITCH
 
             break;                  // Continue with next handler ***MUST***
@@ -1206,15 +1070,46 @@ MFWndProc (HWND hWnd,       // Window handle
             // Save environment variables
             SaveEnvironment ();
 
-            // This also tells the child windows to close
-            DestroyWindow (hWnd);
-
+            // Ask the child windows if it's OK to close
+            if (EnumChildWindows (hWnd, EnumCallbackQueryClose, 0))
+                // This also tells the child windows to close
+                DestroyWindow (hWnd);
             break;                  // Continue with default handler
         } // End WM_CLOSE
 
         case WM_DESTROY:
             // Uninitialize window-specific resources
             MF_Delete (hWnd);
+
+            // Destroy the fonts
+            if (hFontTC)
+            {
+                DeleteObject (hFontTC); hFontTC = NULL;
+            } // End IF
+
+            if (hFontSM)
+            {
+                DeleteObject (hFontSM); hFontSM = NULL;
+            } // End IF
+
+            if (hFontFE)
+            {
+                DeleteObject (hFontFE); hFontFE = NULL;
+            } // End IF
+
+            if (hFontME)
+            {
+                DeleteObject (hFontME); hFontME = NULL;
+            } // End IF
+
+            if (hFontVE)
+            {
+                DeleteObject (hFontVE); hFontVE = NULL;
+            } // End IF
+
+            // Destroy the image list
+            if (hImageList)
+                ImageList_Destroy (hImageList);
 
             // Say goodbye
             PostQuitMessage (0);
@@ -1228,70 +1123,35 @@ MFWndProc (HWND hWnd,       // Window handle
 
 
 //***************************************************************************
-//  DrawTabText
+//  EnumCallbackQueryClose
 //
-//  Draw the text on a tab
+//  EnumChildWindows callback to qeury whether or not they can close
 //***************************************************************************
 
-void DrawTabText
-    (HWND     hWnd,
-     HDC      hDC,
-     int      iCurTab,
-     COLORREF crfg,
-     COLORREF crbk,
-     LPRECT   lpRect,
-     HGLOBAL  hGlbData)
+BOOL CALLBACK EnumCallbackQueryClose
+    (HWND  hWnd,            // Handle to child window
+     LPARAM lParam)         // Application-defined value
 
 {
-    LPPERTABDATA lpMem;
-    HPEN         hPen;
-    HDC          hDC2 = NULL;
-    TC_ITEM      tcItem;
-    RECT         rcLcl;
+////BOOL bClose;
 
-    if (hDC EQ NULL)
-        hDC = hDC2 = GetDC (hWnd);
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
 
-    if (hGlbData EQ NULL)
-    {
-        // The page # of the tab is in iCurTab
-        tcItem.mask = TCIF_PARAM;
-
-        // Get the lParam
-        TabCtrl_GetItem (hWndTC, iCurTab, &tcItem);
-
-        // Get the lParam (an HGLOBAL)
-        hGlbData = (HGLOBAL) tcItem.lParam;
-    } // End IF
-
-    if (lpRect EQ NULL)
-    {
-        TabCtrl_GetItemRect (hWndTC, iCurTab, &rcLcl);
-        lpRect = &rcLcl;
-    } // End IF
-
-    // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbData);
-
-    // Write the text
-    hPen = CreatePen (PS_SOLID, 1, crfg);
-    SetBkColor (hDC, crbk);
-    SetBkMode  (hDC, OPAQUE);
-    DrawText (hDC,
-             &lpMem->DPFE[lpMem->iLabelText],
-              lstrlen (&lpMem->DPFE[lpMem->iLabelText]),
-              lpRect,
-              DT_SINGLELINE
-            | DT_CENTER
-            | DT_VCENTER);
-    DeleteObject (hPen); hPen = NULL;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMem = NULL;
-
-    if (hDC2 NE NULL)
-        ReleaseDC (hWnd, hDC2);
-} // End DrawTabText
+    return SendMessage (hWnd, WM_QUERYENDSESSION, 0, 0);
+////DbgBrk ();
+////bClose = SendMessage (hWnd, WM_QUERYENDSESSION, 0, 0);
+////
+////if (!bClose)
+////    DbgBrk ();
+////*((LPBOOL) lParam) &= bClose;
+////
+////return bClose;
+} // End EnumCallbackQueryClose
 
 
 //***************************************************************************
@@ -1300,7 +1160,8 @@ void DrawTabText
 //  Initializes window data and registers window class
 //***************************************************************************
 
-BOOL InitApplication (HANDLE hInstance)     // Current instance
+BOOL InitApplication
+    (HANDLE hInstance)      // Current instance
 
 {
     WNDCLASSEX wc = {sizeof (WNDCLASSEX)};
@@ -1345,6 +1206,66 @@ BOOL InitApplication (HANDLE hInstance)     // Current instance
         return FALSE;
     } // End IF
 
+    // Fill in Function Editor window class structure
+    wc.style = CS_DBLCLKS;
+    wc.lpfnWndProc = (WNDPROC) FEWndProc;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = GWLFE_EXTRA;
+    wc.hInstance = hInstance;
+    wc.hIcon = hIconFE_Large;
+    wc.hIconSm = hIconFE_Small;
+    wc.hCursor = LoadCursor (NULL, IDC_ARROW);
+    wc.hbrBackground = GetStockObject (WHITE_BRUSH);
+    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MENU);
+    wc.lpszClassName = szFEClass;
+
+    // Register the Session Manager window class
+    if (!RegisterClassEx (&wc))
+    {
+        MB (pszNoRegFEWndClass);
+        return FALSE;
+    } // End IF
+
+    // Fill in Matrix Editor window class structure
+    wc.style = CS_DBLCLKS;
+    wc.lpfnWndProc = (WNDPROC) MEWndProc;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = GWLME_EXTRA;
+    wc.hInstance = hInstance;
+    wc.hIcon = hIconME_Large;
+    wc.hIconSm = hIconME_Small;
+    wc.hCursor = LoadCursor (NULL, IDC_ARROW);
+    wc.hbrBackground = GetStockObject (WHITE_BRUSH);
+    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MENU);
+    wc.lpszClassName = szMEClass;
+
+    // Register the Session Manager window class
+    if (!RegisterClassEx (&wc))
+    {
+        MB (pszNoRegMEWndClass);
+        return FALSE;
+    } // End IF
+
+    // Fill in Vector Editor window class structure
+    wc.style = CS_DBLCLKS;
+    wc.lpfnWndProc = (WNDPROC) VEWndProc;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = GWLVE_EXTRA;
+    wc.hInstance = hInstance;
+    wc.hIcon = hIconVE_Large;
+    wc.hIconSm = hIconVE_Small;
+    wc.hCursor = LoadCursor (NULL, IDC_ARROW);
+    wc.hbrBackground = GetStockObject (WHITE_BRUSH);
+    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MENU);
+    wc.lpszClassName = szVEClass;
+
+    // Register the Session Manager window class
+    if (!RegisterClassEx (&wc))
+    {
+        MB (pszNoRegVEWndClass);
+        return FALSE;
+    } // End IF
+#ifdef DEBUG
     // Fill in Debugger window class structure
     wc.style = CS_DBLCLKS;
     wc.lpfnWndProc = (WNDPROC) DBWndProc;
@@ -1364,7 +1285,7 @@ BOOL InitApplication (HANDLE hInstance)     // Current instance
         MB (pszNoRegDBWndClass);
         return FALSE;
     } // End IF
-
+#endif
     return TRUE;
 } // End InitApplication
 
@@ -1436,8 +1357,17 @@ BOOL InitInstance (HANDLE hInstance)
     hIconMF_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_SMALL));
     hIconSM_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_SM_LARGE));
     hIconSM_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_SM_SMALL));
+#ifdef DEBUG
     hIconDB_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_DB_LARGE));
     hIconDB_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_DB_SMALL));
+#endif
+    hIconFE_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_FE_LARGE));
+    hIconFE_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_FE_SMALL));
+    hIconME_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_ME_LARGE));
+    hIconME_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_ME_SMALL));
+    hIconVE_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_VE_LARGE));
+    hIconVE_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_VE_SMALL));
+    hIconClose    = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CLOSE   ));
 
     // Get keyboard accelerators
     hAccel = LoadAccelerators (hInstance, MAKEINTRESOURCE (IDR_ACCEL));
@@ -1543,8 +1473,9 @@ int PASCAL WinMain (HINSTANCE   hInstance,
     //   the common dialog is called.
     InitChooseFont (&cfSM, &lfSM, DEF_SMPTSIZE);
     InitChooseFont (&cfTC, &lfTC, DEF_TCPTSIZE);
-    if (lfSM_CWS.lfHeight EQ 0)
-        lfSM_CWS.lfHeight = lfSM.lfHeight;
+    InitChooseFont (&cfFE, &lfFE, DEF_FEPTSIZE);
+    InitChooseFont (&cfME, &lfME, DEF_MEPTSIZE);
+    InitChooseFont (&cfVE, &lfVE, DEF_VEPTSIZE);
 
     // Initialize Primitive Fns
     InitPrimFns ();

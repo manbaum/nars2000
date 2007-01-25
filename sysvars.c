@@ -8,7 +8,6 @@
 
 #include "main.h"
 #include "aplerrors.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "sysvars.h"
 #include "Unicode.h"
@@ -499,7 +498,7 @@ BOOL ValidateBoolean_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            // Split case based upon the symbol table immediate type
+            // Split cases based upon the symbol table immediate type
             switch (lpToken->tkData.lpSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
@@ -535,7 +534,7 @@ BOOL ValidateBoolean_EM
             goto NORMAL_EXIT;
 
         case TKT_VARIMMED:
-            // Split case based upon the token immediate type
+            // Split cases based upon the token immediate type
             switch (lpToken->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
@@ -586,7 +585,7 @@ BOOL ValidateBoolean_EM
             return FALSE;
     } // End SWITCH
 
-    // tkData is a valid HGLOBAL variable array
+    // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbData));
 
     // Lock the memory to get a ptr to it
@@ -654,6 +653,9 @@ BOOL ValidateBoolean_EM
 
     // We no longer need this ptr
     MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbData)); lpMem= NULL;
+
+#undef  lpHeader
+
 NORMAL_EXIT:
     // If in error, set error message;
     //   otherwise, save the value in the name
@@ -666,7 +668,6 @@ NORMAL_EXIT:
     } // End IF
 
     return bRet;
-#undef  lpHeader
 } // End ValidateBoolean_EM
 #undef  APPEND_NAME
 
@@ -724,7 +725,7 @@ BOOL ValidateInteger_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            // Split case based upon the symbol table immediate type
+            // Split cases based upon the symbol table immediate type
             switch (lpToken->tkData.lpSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
@@ -772,7 +773,7 @@ BOOL ValidateInteger_EM
             goto NORMAL_EXIT;
 
         case TKT_VARIMMED:
-            // Split case based upon the token immediate type
+            // Split cases based upon the token immediate type
             switch (lpToken->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
@@ -835,7 +836,7 @@ BOOL ValidateInteger_EM
             return FALSE;
     } // End SWITCH
 
-    // tkData is a valid HGLOBAL variable array
+    // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbData));
 
     // Lock the memory to get a ptr to it
@@ -932,7 +933,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  ValidateFloat_EM
 //
-//  Validate a value about to be assigned to an float system var.
+//  Validate a value about to be assigned to a float system var.
 //
 //  We allow any numeric scalar or one-element vector whose value
 //    is in a given range.
@@ -982,7 +983,7 @@ BOOL ValidateFloat_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            // Split case based upon the symbol table immediate type
+            // Split cases based upon the symbol table immediate type
             switch (lpToken->tkData.lpSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
@@ -1029,7 +1030,7 @@ BOOL ValidateFloat_EM
             goto NORMAL_EXIT;
 
         case TKT_VARIMMED:
-            // Split case based upon the token immediate type
+            // Split cases based upon the token immediate type
             switch (lpToken->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
@@ -1092,7 +1093,7 @@ BOOL ValidateFloat_EM
             return FALSE;
     } // End SWITCH
 
-    // tkData is a valid HGLOBAL variable array
+    // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbData));
 
     // Lock the memory to get a ptr to it
@@ -1187,6 +1188,233 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  ValidateCharVector_EM
+//
+//  Validate a value about to be assigned to a character vector system var.
+//
+//  We allow any character scalar or vector.
+//
+//  The order of error checking is RANK, LENGTH, DOMAIN.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ValidateCharVector_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL ValidateCharVector_EM
+    (LPYYSTYPE lpYYName,
+     LPTOKEN   lpToken,
+     HGLOBAL  *lpVal)
+
+{
+    LPVOID   lpMem, lpData;
+    BOOL     bRet = TRUE,
+             bScalar = FALSE;
+    LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
+    APLCHAR  aplChar;
+    APLRANK  aplRank;
+    HGLOBAL  hGlbData;
+    UINT     ByteRes;
+
+    // Split cases based upon the token type
+    switch (lpToken->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            DbgBrk ();      // ***TESTME***
+
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+
+            // Split cases based upon the symbol table immediate type
+            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            {
+                // Get the HGLOBAL
+                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+
+                break;      // Continue with HGLOBAL processing
+            } // End IF
+
+            // Handle the immediate case
+
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+
+            // Split cases based upon the symbol table immediate type
+            switch (lpToken->tkData.lpSym->stFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                case IMMTYPE_FLOAT:
+                    bRet = FALSE;
+
+                    break;
+
+                case IMMTYPE_CHAR:
+                    aplChar = lpToken->tkData.lpSym->stData.stChar;
+
+                    bScalar = TRUE;
+
+                    goto MAKE_VECTOR;
+            } // End SWITCH
+
+            break;
+
+        case TKT_VARIMMED:
+            // Split cases based upon the token immediate type
+            switch (lpToken->tkFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                case IMMTYPE_FLOAT:
+                    bRet = FALSE;
+
+                    break;
+
+                case IMMTYPE_CHAR:
+                    aplChar = lpToken->tkData.tkChar;
+
+                    bScalar = TRUE;
+
+                    goto MAKE_VECTOR;
+            } // End SWITCH
+
+            goto NORMAL_EXIT;
+
+        case TKT_LIST:      // The tkData is an HGLOBAL of an array of HGLOBALs
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME, lpToken);
+
+            return FALSE;
+
+        case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
+        case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
+            // Get the HGLOBAL
+            hGlbData = lpToken->tkData.tkGlbData;
+
+            break;          // Continue with HGLOBAL processing
+
+        defstop
+            return FALSE;
+    } // End SWITCH
+
+    // st/tkData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir (hGlbData));
+
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (ClrPtrTypeDirGlb (hGlbData));
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+
+    // Skip over the header and dimensions to the data
+    lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
+
+    // Check for scalar or vector
+    aplRank = lpHeader->Rank;
+    if (aplRank > 1)
+    {
+        lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
+
+        bRet = FALSE;
+    } else
+    // Split cases based upon the array type
+    switch (lpHeader->ArrType)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            bRet = FALSE;
+
+            break;
+
+        case ARRAY_CHAR:
+            aplChar = *(LPAPLCHAR) lpData;
+
+            bScalar = (aplRank EQ 0);
+
+            break;
+
+        defstop
+            break;
+    } // End IF/ELSE/SWITCH
+
+#undef  lpHeader
+
+    // We no longer need this ptr
+    MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbData)); lpMem= NULL;
+
+    if (bRet)
+    {
+        // If the argument is a vector, copy it
+        if (aplRank EQ 1)
+        {
+            *lpVal = CopyArray_EM (ClrPtrTypeDirGlb (hGlbData),
+                                   FALSE,
+                                   lpToken);
+        } else
+        {
+
+        } // End IF
+    } // End IF
+
+    goto NORMAL_EXIT;
+
+MAKE_VECTOR:
+    // Allocate space for a one-element character vctor
+    ByteRes = sizeof (VARARRAY_HEADER)
+            + sizeof (APLDIM) * 1       // It's a vector
+            + sizeof (APLCHAR) * 1;     // ...one-element at that
+    *lpVal = DbgGlobalAlloc (GHND, ByteRes);
+    if (*lpVal NE NULL)
+    {
+        // Lock the memory to get a ptr to it
+        lpMem = MyGlobalLock (*lpVal);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+
+        // Fill in the header values
+        lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_CHAR;
+////    lpHeader->Perm       = 0;       // Already zero from GHND
+////    lpHeader->SysVar     = 0;       // Already zero from GHND
+////    lpHeader->RefCnt     = 0;       // Already zero from GHND
+        lpHeader->NELM       = 1;
+        lpHeader->Rank       = 1;
+
+#undef  lpHeader
+
+        // Save the dimension
+        *VarArrayBaseToDim (lpMem) = 1;
+
+        // Skip over the header and dimensions to the data
+        lpMem = VarArrayBaseToData (lpMem, 1);
+
+        *((LPAPLCHAR) lpMem) = aplChar;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (*lpVal); lpMem = NULL;
+    } else
+        bRet = FALSE;
+NORMAL_EXIT:
+    // If in error, set error message;
+    //   otherwise, save the value in the name
+    if (!bRet)
+        ErrorMessageIndirectToken (lpwErrMsg, lpToken);
+    else
+    {
+        lpYYName->tkToken.tkData.lpSym->stData.stGlbData = *lpVal;
+        lpYYName->tkToken.tkFlags.NoDisplay = 1;
+    } // End IF
+
+    return bRet;
+#undef  lpHeader
+} // End ValidateCharVector_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  ValidateALX_EM
 //
 //  Validate a value about to be assigned to Quad-ALX
@@ -1200,10 +1428,7 @@ BOOL ValidateALX_EM
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    // ***FINISHME***
-
-
-    return FALSE;
+    return ValidateCharVector_EM (lpYYName, lpToken, &hGlbQuadALX);
 } // End ValidateALX_EM
 
 
@@ -1262,10 +1487,7 @@ BOOL ValidateELX_EM
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector
 
-    // ***FINISHME***
-
-
-    return FALSE;
+    return ValidateCharVector_EM (lpYYName, lpToken, &hGlbQuadELX);
 } // End ValidateELX_EM
 
 
@@ -1327,10 +1549,7 @@ BOOL ValidateLX_EM
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    // ***FINISHME***
-
-
-    return FALSE;
+    return ValidateCharVector_EM (lpYYName, lpToken, &hGlbQuadLX);
 } // End ValidateLX_EM
 
 
@@ -1359,20 +1578,174 @@ BOOL ValidatePP_EM
 //  Validate a value about to be assigned to Quad-PR
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ValidatePR_EM"
+#else
+#define APPEND_NAME
+#endif
+
 BOOL ValidatePR_EM
     (LPYYSTYPE lpYYName,
      LPTOKEN   lpToken)
 
 {
+    HGLOBAL hGlbData;
+    LPVOID  lpMem,
+            lpData;
+    BOOL    bRet = TRUE;
+    LPWCHAR lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
+
     // Ensure the argument is a character scalar, or
     //   one-element vector (demoted to a scalar), or
     //   an empty vector.
 
-    // ***FINISHME***
+    // Split cases based upon the token type
+    switch (lpToken->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            DbgBrk ();      // ***TESTME***
 
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-    return FALSE;
+            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            {
+                // Get the HGLOBAL
+                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+
+                break;      // Continue with HGLOBAL processing
+            } // End IF
+
+            // Handle the immediate case
+
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+
+            // Split cases based upon the token immediate type
+            switch (lpToken->tkFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                case IMMTYPE_FLOAT:
+                    bRet = FALSE;
+
+                    break;
+
+                case IMMTYPE_CHAR:
+                    cQuadPR = lpToken->tkData.lpSym->stData.stChar;
+
+                    goto MAKE_SCALAR;
+            } // End SWITCH
+
+            break;
+
+        case TKT_VARIMMED:
+            // Split cases based upon the token immediate type
+            switch (lpToken->tkFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                case IMMTYPE_INT:
+                case IMMTYPE_FLOAT:
+                    bRet = FALSE;
+
+                    break;
+
+                case IMMTYPE_CHAR:
+                    cQuadPR = lpToken->tkData.tkChar;
+
+                    goto MAKE_SCALAR;
+            } // End SWITCH
+
+            break;
+
+        case TKT_LIST:      // The tkData is an HGLOBAL of an array of HGLOBALs
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       &lpYYName->tkToken);
+            return FALSE;
+
+        case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
+        case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
+            // Get the HGLOBAL
+            hGlbData = lpToken->tkData.tkGlbData;
+
+            break;          // Continue with HGLOBAL processing
+
+        defstop
+            return FALSE;
+    } // End SWITCH
+
+    // tkData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir (hGlbData));
+
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (ClrPtrTypeDirGlb (hGlbData));
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+
+    // Skip over the header and dimensions to the data
+    lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
+
+    // Check for scalar or vector
+    if (lpHeader->Rank > 1)
+    {
+        lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
+
+        bRet = FALSE;
+    } else
+    // Check for empty or singleton
+    if (lpHeader->NELM > 1)
+    {
+        lpwErrMsg = ERRMSG_LENGTH_ERROR APPEND_NAME;
+
+        bRet = FALSE;
+    } else
+    // Split cases based upon the array type
+    switch (lpHeader->ArrType)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            bRet = FALSE;
+
+            break;
+
+        case ARRAY_CHAR:
+            // Izit an empty vector?
+            if (lpHeader->Rank EQ 1 && lpHeader->NELM EQ 0)
+                cQuadPR = 0;
+            else
+                cQuadPR = *(LPAPLCHAR) lpData;
+            break;
+
+        defstop
+            break;
+    } // End IF/ELSE/SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbData)); lpMem= NULL;
+
+#undef  lpHeader
+
+MAKE_SCALAR:
+    // If in error, set error message;
+    //   otherwise, save the value in the name
+    if (!bRet)
+        ErrorMessageIndirectToken (lpwErrMsg, lpToken);
+    else
+    {
+        lpYYName->tkToken.tkData.lpSym->stFlags.Imm = (cQuadPR NE 0);
+        if (cQuadPR EQ 0)
+            lpYYName->tkToken.tkData.lpSym->stData.stGlbData = hGlbMTChar;
+        else
+            lpYYName->tkToken.tkData.lpSym->stData.stChar = cQuadPR;
+        lpYYName->tkToken.tkFlags.NoDisplay = 1;
+    } // End IF
+
+    return bRet;
 } // End ValidatePR_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

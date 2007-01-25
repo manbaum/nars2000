@@ -2,14 +2,12 @@
 //  NARS2000 -- Interpreter
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <math.h>
 
 #include "main.h"
 #include "aplerrors.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "Unicode.h"
 #include "externs.h"
@@ -747,7 +745,6 @@ HGLOBAL ExecuteLine
     HGLOBAL   hGlbToken;        // Handle of tokenized line
     LPGLBHIST lpGlbHist;
     int       iTotalLen, iLen, i;
-    LPWCHAR   wp;
 
     // Ensure we calculated the lengths properly
     if (sizeof (fsaColTable) NE (COL_LENGTH * sizeof (FSA_ACTION) * FSA_LENGTH))
@@ -832,17 +829,15 @@ HGLOBAL ExecuteLine
         switch (lpwszLine[0])
         {
             case ')':           // System commands
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-                // ***FIXME***
-                DbgMsg ("System command");
-#endif
-                DbgBrk ();
-
-                wp = strchrW (lpwszLine, L' ');
-                if (wp EQ NULL)
-                    wp = &lpwszLine[lstrlenW (lpwszLine)];
+                // Execute the command
+                if (!ExecSysCmd (lpwszLine))
+                {
+                    // ***FIXME*** -- Anything to do here??
 
 
+
+
+                } // End IF
 
                 hGlbToken = NULL;
 
@@ -862,6 +857,15 @@ HGLOBAL ExecuteLine
                 // ***FIXME***
                 DbgMsg ("Function definition");
 #endif
+                if (!CreateFcnWindow (lpwszLine))
+                {
+                    // ***FIXME*** -- Anything to do here??
+
+
+
+
+                } // End IF
+
                 hGlbToken = NULL;
 
                 break;
@@ -2116,6 +2120,27 @@ void ErrorMessageIndirect
     // Save in global for later reference
     lpwszErrorMessage = lpwszMsg;
 } // End ErrorMessageIndirect
+
+
+//***************************************************************************
+//  IncorrectCommand
+//
+//  Signal an incorrect command
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- IncorrectCommand"
+#else
+#define APPEND_NAME
+#endif
+
+void IncorrectCommand
+    (void)
+
+{
+    AppendLine (ERRMSG_INCORRECT_COMMAND APPEND_NAME, FALSE);
+} // End IncorrectCommand
+#undef  APPEND_NAME
 
 
 //***************************************************************************

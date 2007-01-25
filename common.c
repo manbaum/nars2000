@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "main.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "externs.h"
 

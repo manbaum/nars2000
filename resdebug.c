@@ -5,12 +5,10 @@
 #define WINVER       0x0501 // Needed for WINUSER.H definitions
 #define _WIN32_WINNT 0x0501 // ...
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
 #include "main.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "externs.h"
 

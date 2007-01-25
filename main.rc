@@ -62,8 +62,6 @@ IDR_MENU MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
-///     MENUITEM "&Load Grid...",               IDM_LOADGRID
-///     MENUITEM "&Save Grid...",               IDM_SAVEGRID, GRAYED
         MENUITEM "&Exit",                       IDM_EXIT
     END
     POPUP "&Window"
@@ -75,8 +73,11 @@ BEGIN
     END
     POPUP "&Options"
     BEGIN
-        MENUITEM "&Screen Font",                IDM_SCREENFONT
-        MENUITEM "&Tab Font",                   IDM_TABFONT
+        MENUITEM "&Screen Font",                IDM_SMFONT
+        MENUITEM "&Tab Font",                   IDM_TCFONT
+        MENUITEM "&Function Edit Font",         IDM_FEFONT
+        MENUITEM "&Matrix Edit Font",           IDM_MEFONT
+        MENUITEM "&Vector Edit Font",           IDM_VEFONT
     END
     POPUP "&Help"
     BEGIN
@@ -110,20 +111,25 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
+// Icons
 //
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ABOUT               ICON    DISCARDABLE     "Images\\About.ico"
-IDI_OF_LARGE            ICON    DISCARDABLE     "Images\\OF-L.ico"
-IDI_OF_SMALL            ICON    DISCARDABLE     "Images\\OF-S.ico"
-IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF-L.ico"
-IDI_MF_SMALL            ICON    DISCARDABLE     "Images\\MF-S.ico"
-IDI_SM_LARGE            ICON    DISCARDABLE     "Images\\SM-L.ico"
-IDI_SM_SMALL            ICON    DISCARDABLE     "Images\\SM-S.ico"
-IDI_DB_LARGE            ICON    DISCARDABLE     "Images\\DB-L.ico"
-IDI_DB_SMALL            ICON    DISCARDABLE     "Images\\DB-S.ico"
+IDI_CLOSE               ICON    DISCARDABLE     "Images\\Close.ico"
+IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF.ico"
+IDI_MF_SMALL            ICON    DISCARDABLE     "Images\\MF.ico"
+IDI_SM_LARGE            ICON    DISCARDABLE     "Images\\SM.ico"
+IDI_SM_SMALL            ICON    DISCARDABLE     "Images\\SM.ico"
+IDI_DB_LARGE            ICON    DISCARDABLE     "Images\\DB.ico"
+IDI_DB_SMALL            ICON    DISCARDABLE     "Images\\DB.ico"
+IDI_FE_LARGE            ICON    DISCARDABLE     "Images\\FE.ico"
+IDI_FE_SMALL            ICON    DISCARDABLE     "Images\\FE.ico"
+IDI_ME_LARGE            ICON    DISCARDABLE     "Images\\ME.ico"
+IDI_ME_SMALL            ICON    DISCARDABLE     "Images\\ME.ico"
+IDI_VE_LARGE            ICON    DISCARDABLE     "Images\\VE.ico"
+IDI_VE_SMALL            ICON    DISCARDABLE     "Images\\VE.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

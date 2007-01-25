@@ -2,22 +2,26 @@
 //  NARS2000 -- Extern Variables
 //***************************************************************************
 
-#ifdef DEFINE_VARS
-#define EXTERN
-#else
-#define EXTERN extern
-#endif
-
 // Default definitions
+#define DEF_TCFONTNAME      "Georgia"           // Or "SImPL"
 #define DEF_SMFONTNAME      "APL385 Unicode"
-//efine DEF_SMFONTNAME      "SImPL"
-#define DEF_TCLOGFONT       0,0,0,0,FW_BOLD  ,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,VARIABLE_PITCH | FF_ROMAN ,"Georgia"
-#define DEF_SMLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,"APL385 Unicode"
-#define DEF_TCFONTNAME      "Georgia"
+#define DEF_FEFONTNAME      "APL385 Unicode"
+#define DEF_MEFONTNAME      "APL385 Unicode"
+#define DEF_VEFONTNAME      "APL385 Unicode"
+
+#define DEF_TCLOGFONT       0,0,0,0,FW_BOLD  ,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,VARIABLE_PITCH | FF_ROMAN ,DEF_TCFONTNAME
+#define DEF_SMLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_SMFONTNAME
+#define DEF_FELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_FEFONTNAME
+#define DEF_MELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_MEFONTNAME
+#define DEF_VELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_VEFONTNAME
+
+#define DEF_TCPTSIZE        8           // Point size for TC font
+#define DEF_SMPTSIZE       13           // ...            SM ...
+#define DEF_FEPTSIZE       13           // ...            FE ...
+#define DEF_MEPTSIZE       13           // ...            ME ...
+#define DEF_VEPTSIZE       13           // ...            VE ...
+
 #define DEF_INDENT          6           // Prompt indent
-#define DEF_SMPTSIZE       13           // Point size for SM font
-#define DEF_TCPTSIZE        8           // ...            TC ...
-//efine DEF_FONTWEIGHT     FW_THIN      // Font weight
 #define DEF_TABS            4           // Tab insertion
 #define DEF_CURWID_INS      2           // Cursor width for insert mode
 #define DEF_CURWID_REP      5           // ...              replace ...
@@ -32,13 +36,25 @@
 #define DEF_TOKENSTACK_MAXSIZE 64*1024*sizeof (TOKEN)   // Maximum size of token stack
 #define DEF_TOKENSTACK_INITSIZE 64*1024*sizeof (TOKEN)  // Initial ...
 
+// Global Options
+#define DEF_NEWTABONCLEAR   TRUE
+#define DEF_NEWTABONLOAD    TRUE
+
+#include <commctrl.h>
+#include "datatype.h"
 #include "symtab.h"
 #include "tokens.h"
 #include "parse.h"
 
-
 // Define variables which are also used in the per tab structure
 #include "pertabdefs.h"
+
+
+#ifdef DEFINE_VARS
+#define EXTERN
+#else
+#define EXTERN extern
+#endif
 
 //***************************************************************************
 //  Below this point, define variables which do not need to be saved
@@ -218,29 +234,64 @@ int     iLCWidth;                       // Width of the line continuation column
 EXTERN
 BITMAP  bmLineCont;                     // Bitmap metrics for the line continuation char
 
+// FONTS
 EXTERN
-LOGFONT lfSM_CWS                        // LOGFONT for SM in CLEAR WS
+LOGFONT lfSM                            // LOGFONT for the SM
 #ifdef DEFINE_VALUES
  = {DEF_SMLOGFONT}
 #endif
-;
-
-EXTERN
-HFONT   hFontTC;                        // Handle to font for the TC
-
-EXTERN
-CHOOSEFONT cfTC;                        // Global for ChooseFont for the TC
-
-EXTERN
-LOGFONT lfTC                            // LOGFONT struc for the font for the TC
+,
+        lfTC                            // LOGFONT for the TC
 #ifdef DEFINE_VALUES
  = {DEF_TCLOGFONT}
 #endif
+,
+        lfFE                            // LOGFONT for the FE
+#ifdef DEFINE_VALUES
+ = {DEF_FELOGFONT}
+#endif
+,
+        lfME                            // LOGFONT for the ME
+#ifdef DEFINE_VALUES
+ = {DEF_MELOGFONT}
+#endif
+,
+        lfVE                            // LOGFONT for the VE
+#ifdef DEFINE_VALUES
+ = {DEF_VELOGFONT}
+#endif
 ;
 
-////EXTERN
-////NEWTEXTMETRIC ntmTC;                    // NEWTEXTMETRIC ...
+;
 
+EXTERN
+HFONT hFontTC,                          // Handle to font for the TC
+      hFontSM,                          // ...                    SM
+      hFontFE,                          // ...                    FE
+      hFontME,                          // ...                    ME
+      hFontVE;                          // ...                    VE
+
+EXTERN
+CHOOSEFONT cfTC,                        // Global for ChooseFont for the TC
+           cfSM,                        // ...                           SM
+           cfFE,                        // ...                           FE
+           cfME,                        // ...                           ME
+           cfVE;                        // ...                           VE
+
+EXTERN
+LONG cxAveCharSM, cyAveCharSM,          // Size of an average character in the SM font
+     cxAveCharFE, cyAveCharFE,          // Size of an average character in the SM font
+     cxAveCharME, cyAveCharME,          // Size of an average character in the SM font
+     cxAveCharVE, cyAveCharVE;          // Size of an average character in the SM font
+
+EXTERN
+int iOverTab;                           // Index of the tab the mouse is over
+
+EXTERN
+WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure
+
+EXTERN
+HGLOBAL ghGlbToken;                     // Save area for current hGlbToken
 
 #ifdef DEBUG_ODS
 EXTERN
@@ -250,8 +301,146 @@ EXTERN
 HANDLE DebugHandle;
 #endif
 
+// Define global options
+EXTERN
+BOOL bNewTabOnClear
+#ifdef DEFINE_VALUES
+ = DEF_NEWTABONCLEAR
+#endif
+,
+    bNewTabOnLoad
+#ifdef DEFINE_VALUES
+ = DEF_NEWTABONLOAD
+#endif
+;
+
+EXTERN
+char pszNoInsertTCTab[]
+#ifdef DEFINE_VALUES
+ = "Unable to create a new Tab"
+#endif
+,
+     pszNoCreateFEEditCtrl[]
+#ifdef DEFINE_VALUES
+ = "Unable to create the Edit Control in the Function Editor"
+#endif
+,
+     pszNoCreateMCWnd[]
+#ifdef DEFINE_VALUES
+ = "Unable to create MDI Client window"
+#endif
+,
+     pszNoCreateSMWnd[]
+#ifdef DEFINE_VALUES
+ = "Unable to create Session Manager window"
+#endif
+#ifdef DEBUG
+,
+     pszNoCreateDBWnd[]
+#ifdef DEFINE_VALUES
+ = "Unable to create Debugger window"
+#endif
+#endif
+,
+     pszNoCreateFEWnd[]
+#ifdef DEFINE_VALUES
+ = "Unable to create Function Editor window"
+#endif
+,
+     pszNoCreateMEWnd[]
+#ifdef DEFINE_VALUES
+ = "Unable to create Matrix Editor window"
+#endif
+,
+     pszNoCreateVEWnd[]
+#ifdef DEFINE_VALUES
+ = "Unable to create Vector Editor window"
+#endif
+;
+
+EXTERN
+char szMCTitle[]                        // MDI Client ... (for debugging purposes only)
+#ifdef DEFINE_VALUES
+ = "NARS2000 MDI Client Window" APPEND_DEBUG
+#endif
+,
+     szSMTitle[]                        // Session Manager ...
+#ifdef DEFINE_VALUES
+ = "NARS2000 Session Manager" APPEND_DEBUG
+#endif
+#ifdef DEBUG
+,
+     szDBTitle[]                        // Debugger ...
+#ifdef DEFINE_VALUES
+ = "NARS2000 Debugger Window" APPEND_DEBUG
+#endif
+#endif
+,
+     szFETitle[]                        // Function Editor ...
+#ifdef DEFINE_VALUES
+ = "NARS2000 Function Editor" APPEND_DEBUG
+#endif
+,
+     szMETitle[]                        // Matrix Editor ...
+#ifdef DEFINE_VALUES
+ = "NARS2000 Matrix Editor" APPEND_DEBUG
+#endif
+,
+     szVETitle[]                        // Vector Editor ...
+#ifdef DEFINE_VALUES
+ = "NARS2000 Vector Editor" APPEND_DEBUG
+#endif
+;
+
+#define MCWNDCLASS      "MDIClient"     // MDI Client window class
+#define SMWNDCLASS      "SMClass"       // Session Manager ...
+#ifdef DEBUG
+#define DBWNDCLASS      "DBClass"       // Debugger     ...
+#endif
+#define FEWNDCLASS      "FEClass"       // Function Editor ...
+#define MEWNDCLASS      "MEClass"       // Matrix Editor ...
+#define VEWNDCLASS      "VEClass"       // Vector Editor ...
+
+EXTERN
+char szMCClass[]                        // MDI Client window class
+#ifdef DEFINE_VALUES
+ = MCWNDCLASS
+#endif
+,
+     szSMClass[]                        // Session Manager ...
+#ifdef DEFINE_VALUES
+ = SMWNDCLASS
+#endif
+#ifdef DEBUG
+,
+     szDBClass[]                        // Debugger     ...
+#ifdef DEFINE_VALUES
+ = DBWNDCLASS
+#endif
+#endif
+,
+     szFEClass[]                        // Function Editor ...
+#ifdef DEFINE_VALUES
+ = FEWNDCLASS
+#endif
+,
+     szMEClass[]                        // Matrix Editor ...
+#ifdef DEFINE_VALUES
+ = MEWNDCLASS
+#endif
+,
+     szVEClass[]                        // Vector Editor ...
+#ifdef DEFINE_VALUES
+ = VEWNDCLASS
+#endif
+;
+
+EXTERN
+HIMAGELIST hImageList;                  // Handle to the common image list
+
 
 #define ENUMS_DEFINED
+#undef  EXTERN
 
 
 //***************************************************************************

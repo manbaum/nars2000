@@ -2,7 +2,6 @@
 //  NARS2000 -- Session Manager
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #define _WIN32_WINNT  0x0500
 #include <windows.h>
@@ -10,7 +9,6 @@
 
 #include "Unicode.h"
 #include "main.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "resource.h"
 #include "externs.h"
@@ -173,47 +171,25 @@ SELTYPE eSelType;               // Selection type
 //***************************************************************************
 
 void SetAttrs
-    (HDC hDC)
+    (HDC      hDC,
+     HFONT    hFont,
+     COLORREF crfg,
+     COLORREF crbk)
 
 {
     // Set the
     SetMapMode (hDC, MM_TEXT);
 
     // Select the font into the DC
-    if (hFontSM)
-        SelectObject (hDC, hFontSM);
+    if (hFont)
+        SelectObject (hDC, hFont);
 
     // Set the color of the foreground text
-    SetTextColor (hDC, crTextColor);
+    SetTextColor (hDC, crfg);
 
     // Set the color of the background text
-    SetBkColor   (hDC, crBkColor);
+    SetBkColor   (hDC, crbk);
 } // End SetAttrs
-
-
-//***************************************************************************
-//  CreateNewFontSM
-//
-//  Create a new font for the SM.
-//***************************************************************************
-
-void CreateNewFontSM
-    (void)
-
-{
-    // Delete the previous handle (if any)
-    if (hFontSM)
-    {
-        // Delete the SM font handle
-        MyDeleteObject (hFontSM); hFontSM = NULL;
-    } // End IF
-
-    // Create the font
-    hFontSM = MyCreateFontIndirect (&lfSM);
-
-    // Also, use this font in the debugger's listbox
-    SendMessage (hWndDB, WM_SETFONT, (WPARAM) hFontSM, 0);
-} // End CreateNewFontSM
 
 
 //***************************************************************************
@@ -728,8 +704,8 @@ void DrawLineCont
     DrawBitmap (hDC,
                 hBitMapLineCont,
                 0,
-                (iLineNum * cyAveChar)
-              + (cyAveChar - bmLineCont.bmHeight) / 2   // Vertically centered
+                (iLineNum * cyAveCharSM)
+              + (cyAveCharSM - bmLineCont.bmHeight) / 2   // Vertically centered
                );
 } // End DrawLineCont
 
@@ -752,9 +728,9 @@ void DrawLine
     iLen = lstrlenW (lpwszLine);
 
     rc.left   = iLCWidth;
-    rc.right  = rc.left + cxAveChar * iLen;
-    rc.top    = iLine   * cyAveChar;
-    rc.bottom = rc.top  + cyAveChar;
+    rc.right  = rc.left + cxAveCharSM * iLen;
+    rc.top    = iLine   * cyAveCharSM;
+    rc.bottom = rc.top  + cyAveCharSM;
 
     if (bSelText)
     {
@@ -914,8 +890,8 @@ void InvalidateLine
     rc.right  = 65535;      // Use any non-zero value as the
                             //   code in WM_PAINT looks at the
                             //   rc.top and rc.bottom only
-    rc.top    = (iLine - iFirstWindowLine) * cyAveChar;
-    rc.bottom = rc.top                     + cyAveChar;
+    rc.top    = (iLine - iFirstWindowLine) * cyAveCharSM;
+    rc.bottom = rc.top                     + cyAveCharSM;
 
 ////wsprintf (lpszTemp,
 ////          "InvalidateLine:  %d, L = %d, T = %d, R = %d, B = %d",
@@ -957,8 +933,8 @@ void InvalidateRange
     rc.right  = 65535;      // Use any non-zero value as the
                             //   code in WM_PAINT looks at the
                             //   rc.top and rc.bottom only
-    rc.top    = (    iTopLine - iFirstWindowLine) * cyAveChar;
-    rc.bottom = (1 + iBotLine - iFirstWindowLine) * cyAveChar;
+    rc.top    = (    iTopLine - iFirstWindowLine) * cyAveCharSM;
+    rc.bottom = (1 + iBotLine - iFirstWindowLine) * cyAveCharSM;
 
 ////wsprintf (lpszTemp,
 ////          "InvalidateRange:  %d - %d, L = %d, T = %d, R = %d, B = %d",
@@ -992,8 +968,8 @@ void MoveCaret
     (void)
 
 {
-    SetCaretPos ((iCurChar - iFirstWindowChar) * cxAveChar + iLCWidth,
-                 (iCurLine - iFirstWindowLine) * cyAveChar);
+    SetCaretPos ((iCurChar - iFirstWindowChar) * cxAveCharSM + iLCWidth,
+                 (iCurLine - iFirstWindowLine) * cyAveCharSM);
 } // End MoveCaret
 
 
@@ -1168,13 +1144,13 @@ void DeleteChar
 //***************************************************************************
 
 void MyCreateCaret
-    (void)
+    (HWND hWndSM)
 {
     // Create a default sized system caret for display
     CreateCaret (hWndSM,
                  NULL,
                  vkState.Ins ? DEF_CURWID_INS : DEF_CURWID_REP,
-                 cyAveChar);
+                 cyAveCharSM);
     // Position it
     MoveCaret ();
 
@@ -1413,9 +1389,6 @@ LRESULT APIENTRY SMWndProc
 
             // *************** Fonts ***********************************
 
-            // Create a new font for the SM
-            CreateNewFontSM ();
-
             // Get the text metrics for this font
             hDC = GetDC (hWnd);
             hFontOld = SelectObject (hDC, hFontTC);
@@ -1424,22 +1397,22 @@ LRESULT APIENTRY SMWndProc
             ReleaseDC (hWnd, hDC);
 
             // New height
-            cyAveChar = MulDiv (cfSM.iPointSize / 10, iLogPixelsY, 72);
-            cyAveChar = -lfSM.lfHeight;
+            cyAveCharSM = MulDiv (cfSM.iPointSize / 10, iLogPixelsY, 72);
+            cyAveCharSM = -lfSM.lfHeight;
 
             lfSM.lfWidth = (tm.tmAveCharWidth + tm.tmMaxCharWidth) / 2;
 
             // New width (same aspect ratio as old)
-            cxAveChar = MulDiv (lfSM.lfWidth, cyAveChar, -lfSM.lfHeight);
+            cxAveCharSM = MulDiv (lfSM.lfWidth, cyAveCharSM, -lfSM.lfHeight);
 
-            // Because cxAveChar & cyAveChar changed, we need to reposition
+            // Because cxAveCharSM & cyAveCharSM changed, we need to reposition
             //   the caret as it depends upon those two vars.
             MoveCaret ();
 
             // Recalculate the # horizontal characters
             //   and vertical lines.
-            nWindowChars = cxWindowPixels / cxAveChar;
-            nWindowLines = cyWindowPixels / cyAveChar;
+            nWindowChars = cxWindowPixels / cxAveCharSM;
+            nWindowLines = cyWindowPixels / cyAveCharSM;
 
             // *************** ScrollBars ******************************
 
@@ -1575,8 +1548,11 @@ LRESULT APIENTRY SMWndProc
                             // Unlock the handles
                             if (hGlb)
                             {
+                                // We no longer need this ptr
                                 MyGlobalUnlock (hGlb); wszLine = NULL;
                             } // End IF
+
+                            // We no longer need this ptr
                             MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
                         } // End IF
                     } // End IF/ELSE
@@ -1996,7 +1972,7 @@ LRESULT APIENTRY SMWndProc
                     DestroyCaret ();        // 'cause we're changing the cursor width
 
                     // Create a default sized system caret for display
-                    MyCreateCaret ();
+                    MyCreateCaret (hWndSM);
 
                     return FALSE;
 
@@ -2243,11 +2219,11 @@ LRESULT APIENTRY SMWndProc
                 cyWindowPixels = HIWORD (lParam);   // ...
 
                 // Recalculate the # characters up/down and across
-                // The test is in case we get called before cxAveChar is calculated
-                if (cxAveChar)
+                // The test is in case we get called before cxAveCharSM is calculated
+                if (cxAveCharSM)
                 {
-                    nWindowChars  = cxWindowPixels / cxAveChar;
-                    nWindowLines  = cyWindowPixels / cyAveChar;
+                    nWindowChars  = cxWindowPixels / cxAveCharSM;
+                    nWindowLines  = cyWindowPixels / cyAveCharSM;
 
                     // Set last window chars & lines
                     iLastWindowChar = iFirstWindowChar + nWindowChars;
@@ -2260,7 +2236,7 @@ LRESULT APIENTRY SMWndProc
 
         case WM_SETFOCUS:           // hwndLoseFocus = (HWND) wParam; // handle of window losing focus
             // Create a default sized system caret for display
-            MyCreateCaret ();
+            MyCreateCaret (hWndSM);
 
             break;                  // Continue with next handler ***MUST***
 
@@ -2297,8 +2273,8 @@ LRESULT APIENTRY SMWndProc
             xPosRel = max (0, xPos - iLCWidth);
 
             // Identify the selected char
-            iCurChar = iFirstWindowChar + (xPosRel / cxAveChar);
-            iCurLine = iFirstWindowLine + (yPos    / cyAveChar);
+            iCurChar = iFirstWindowChar + (xPosRel / cxAveCharSM);
+            iCurLine = iFirstWindowLine + (yPos    / cyAveCharSM);
 
             // Move the cursor to this line
             //   unless it's below the last valid line
@@ -2339,8 +2315,8 @@ LRESULT APIENTRY SMWndProc
 ////             bSelText = TRUE;        // Start selection
 ////             xSelText = xPos;        // Save starting position
 ////             ySelText = yPos;        // ...
-////             xSelChar = iFirstWindowChar + (xPos / cxAveChar);
-////             ySelChar = iFirstWindowLine + (yPos / cyAveChar);
+////             xSelChar = iFirstWindowChar + (xPos / cxAveCharSM);
+////             ySelChar = iFirstWindowLine + (yPos / cyAveCharSM);
 ////
 ////             // Clear the rectangle
 ////             SetRectEmpty (&rcSelInit);
@@ -2353,7 +2329,7 @@ LRESULT APIENTRY SMWndProc
 ////                 rcSelInit.left   = 0;
 ////                 rcSelInit.top    = yPos;
 ////                 rcSelInit.right  = 65535;
-////                 rcSelInit.bottom = yPos + cyAveChar;
+////                 rcSelInit.bottom = yPos + cyAveCharSM;
 ////             } else
 ////             // If the Shift key is down, select a rectangular block
 ////             if (fwKeys & MK_SHIFT)
@@ -2361,8 +2337,8 @@ LRESULT APIENTRY SMWndProc
 ////                 eSelType  = SEL_BLOCKS;
 ////                 rcSelInit.left   = xPos;
 ////                 rcSelInit.top    = yPos;
-////                 rcSelInit.right  = xPos + cxAveChar;
-////                 rcSelInit.bottom = yPos + cyAveChar;
+////                 rcSelInit.right  = xPos + cxAveCharSM;
+////                 rcSelInit.bottom = yPos + cyAveCharSM;
 ////             } else
 ////                 // Otherwise, select chars
 ////                 eSelType = SEL_CHARS;
@@ -2402,7 +2378,7 @@ LRESULT APIENTRY SMWndProc
 ////                         rc.left   = 0;
 ////                         rc.top    = yPos;
 ////                         rc.right  = 65535;
-////                         rc.bottom = yPos + cyAveChar;
+////                         rc.bottom = yPos + cyAveCharSM;
 ////
 ////                         UnionRect (&rcSelText, &rcSelInit, &rc);
 ////                         InvalidateRect (hWnd, &rcSelText, TRUE);
@@ -2419,8 +2395,8 @@ LRESULT APIENTRY SMWndProc
 ////
 ////                         rc.left   = xPos;
 ////                         rc.top    = yPos;
-////                         rc.right  = xPos + cxAveChar;
-////                         rc.bottom = yPos + cyAveChar;
+////                         rc.right  = xPos + cxAveCharSM;
+////                         rc.bottom = yPos + cyAveCharSM;
 ////
 ////                         UnionRect (&rcSelText, &rcSelInit, &rc);
 ////                         InvalidateRect (hWnd, &rcSelText, TRUE);
@@ -2504,16 +2480,16 @@ LRESULT APIENTRY SMWndProc
                 FillRect (hDCMem, &rcLineCont, GetStockObject (LTGRAY_BRUSH));
 
                 // Set our DC attributes
-                SetAttrs (hDCMem);
+                SetAttrs (hDCMem, hFontSM, crTextColor, crBkColor);
 
                 // Get the global handle to the history buffer
                 lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
 
                 // Calculate the range of changed line(s)
-////////////////iTop = iFirstWindowLine + (ps.rcPaint.top    / cyAveChar);
-////////////////iBot = iFirstWindowLine + (ps.rcPaint.bottom / cyAveChar);
-                iTop = iFirstWindowLine + (rc.top    / cyAveChar);
-                iBot = iFirstWindowLine + (rc.bottom / cyAveChar);
+////////////////iTop = iFirstWindowLine + (ps.rcPaint.top    / cyAveCharSM);
+////////////////iBot = iFirstWindowLine + (ps.rcPaint.bottom / cyAveCharSM);
+                iTop = iFirstWindowLine + (rc.top    / cyAveCharSM);
+                iBot = iFirstWindowLine + (rc.bottom / cyAveCharSM);
 #if (defined (DEBUG)) && 0
                 { // ***DEBUG***
                     wsprintf (lpszTemp,
@@ -2575,7 +2551,7 @@ LRESULT APIENTRY SMWndProc
                 hDC = MyGetDC (hWnd);
 
                 // Set our DC attributes
-                SetAttrs (hDC);
+                SetAttrs (hDCMem, hFontSM, crTextColor, crBkColor);
 
                 // Copy the memory DC to the screen DC
                 BitBlt (hDC,
@@ -2613,12 +2589,6 @@ LRESULT APIENTRY SMWndProc
         {
             // *************** ScrollBars ******************************
             // Nothing to undo
-
-            // *************** Fonts ***********************************
-            if (hFontSM)
-            {
-                MyDeleteObject (hFontSM); hFontSM = NULL;
-            } // End IF
 
             // *************** History *********************************
             if (hGlbHist)

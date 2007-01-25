@@ -8,7 +8,6 @@
 
 #include "main.h"
 #include "aplerrors.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "externs.h"
 #include "primspec.h"

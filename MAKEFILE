@@ -125,12 +125,15 @@ $(O)common.DEP      \
 $(O)convert.DEP     \
 $(O)debug.DEP       \
 $(O)display.DEP     \
+$(O)editfcn.DEP     \
+$(O)editmat.DEP     \
+$(O)editvec.DEP     \
 $(O)exec.DEP        \
 $(O)free.DEP        \
 $(O)main.DEP        \
 $(O)parse.DEP       \
 $(O)pf_circle.DEP   \
-$(O)pf_cstar.DEP     \
+$(O)pf_cstar.DEP    \
 $(O)pf_dcaret.DEP   \
 $(O)pf_divide.DEP   \
 $(O)pf_dstile.DEP   \
@@ -159,8 +162,10 @@ $(O)reg.DEP         \
 $(O)sessman.DEP     \
 $(O)strand.DEP      \
 $(O)symtab.DEP      \
+$(O)syscmds.DEP     \
 $(O)sysfns.DEP      \
 $(O)sysvars.DEP     \
+$(O)tabctrl.DEP     \
 $(O)ver.DEP         \
 $(O)resdebug.DEP    \
 $(O)main.DEV        \
@@ -196,6 +201,15 @@ $(O)version.DEV
 !endif
 !if exist ($(O)display.DEP)
 !       include $(O)display.DEP
+!endif
+!if exist ($(O)editfcn.DEP)
+!       include $(O)editfcn.DEP
+!endif
+!if exist ($(O)editmat.DEP)
+!       include $(O)editmat.DEP
+!endif
+!if exist ($(O)editvec.DEP)
+!       include $(O)editvec.DEP
 !endif
 !if exist ($(O)exec.DEP)
 !       include $(O)exec.DEP
@@ -299,11 +313,17 @@ $(O)version.DEV
 !if exist ($(O)symtab.DEP)
 !       include $(O)symtab.DEP
 !endif
+!if exist ($(O)syscmds.DEP)
+!       include $(O)syscmds.DEP
+!endif
 !if exist ($(O)sysfns.DEP)
 !       include $(O)sysfns.DEP
 !endif
 !if exist ($(O)sysvars.DEP)
 !       include $(O)sysvars.DEP
+!endif
+!if exist ($(O)tabctrl.DEP)
+!       include $(O)tabctrl.DEP
 !endif
 !if exist ($(O)ver.DEP)
 !       include $(O)ver.DEP
@@ -331,6 +351,9 @@ $(O)common.PRO      \
 $(O)convert.PRO     \
 $(O)debug.PRO       \
 $(O)display.PRO     \
+$(O)editfcn.PRO     \
+$(O)editmat.PRO     \
+$(O)editvec.PRO     \
 $(O)exec.PRO        \
 $(O)free.PRO        \
 $(O)main.PRO        \
@@ -365,8 +388,10 @@ $(O)reg.PRO         \
 $(O)sessman.PRO     \
 $(O)strand.PRO      \
 $(O)symtab.PRO      \
+$(O)syscmds.PRO     \
 $(O)sysfns.PRO      \
 $(O)sysvars.PRO     \
+$(O)tabctrl.PRO     \
 $(O)ver.PRO         \
 $(O)resdebug.PRO
 
@@ -388,10 +413,14 @@ $(O)DBGBRK.OBJ:         $(S)DBGBRK.ASM
 
 ############################# MAIN APP ROUTINES ######################
 
-ICONS=$(A)MF-L.ico      \
-      $(A)MF-S.ico      \
-      $(A)SM-L.ico      \
-      $(A)SM-S.ico
+ICONS=$(A)About.ico     \
+      $(A)Close.ico     \
+      $(A)MF.ico        \
+      $(A)SM.ico        \
+      $(A)DB.ico        \
+      $(A)FE.ico        \
+      $(A)ME.ico        \
+      $(A)VE.ico
 
 $(O)parse.C:            $(@B).Y
 
@@ -401,6 +430,9 @@ $(O)common.OBJ:         $(@B).C         $(COMMON_DEP)
 $(O)convert.OBJ:        $(@B).C         $(CONVERT_DEP)
 $(O)debug.OBJ:          $(@B).C         $(DEBUG_DEP)
 $(O)display.OBJ:        $(@B).C         $(DISPLAY_DEP)
+$(O)editfcn.OBJ:        $(@B).C         $(EDITFCN_DEP)
+$(O)editmat.OBJ:        $(@B).C         $(EDITMAT_DEP)
+$(O)editvec.OBJ:        $(@B).C         $(EDITVEC_DEP)
 $(O)exec.OBJ:           $(@B).C         $(EXEC_DEP)
 $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
@@ -435,8 +467,10 @@ $(O)reg.OBJ:            $(@B).C         $(REG_DEP)
 $(O)sessman.OBJ:        $(@B).C         $(SESSMAN_DEP)
 $(O)strand.OBJ:         $(@B).C         $(STRAND_DEP)
 $(O)symtab.OBJ:         $(@B).C         $(SYMTAB_DEP)
+$(O)syscmds.OBJ:        $(@B).C         $(SYSCMDS_DEP)
 $(O)sysfns.OBJ:         $(@B).C         $(SYSFNS_DEP)
 $(O)sysvars.OBJ:        $(@B).C         $(SYSVARS_DEP)
+$(O)tabctrl.OBJ:        $(@B).C         $(TABCTRL_DEP)
 $(O)ver.OBJ:            $(@B).C         $(VER_DEP)
 !if "$(RESDEBUG)" == "1"
 $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
@@ -464,6 +498,9 @@ OBJS=$(O)assign.OBJ     \
      $(O)convert.OBJ    \
      $(O)debug.OBJ      \
      $(O)display.OBJ    \
+     $(O)editfcn.OBJ    \
+     $(O)editmat.OBJ    \
+     $(O)editvec.OBJ    \
      $(O)exec.OBJ       \
      $(O)free.OBJ       \
      $(O)main.OBJ       \
@@ -498,8 +535,10 @@ OBJS=$(O)assign.OBJ     \
      $(O)sessman.OBJ    \
      $(O)strand.OBJ     \
      $(O)symtab.OBJ     \
+     $(O)syscmds.OBJ    \
      $(O)sysfns.OBJ     \
      $(O)sysvars.OBJ    \
+     $(O)tabctrl.OBJ    \
      $(O)ver.OBJ        \
 !if "$(RESDEBUG)" == "1"
      $(O)resdebug.OBJ   \

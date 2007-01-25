@@ -9,9 +9,10 @@ typedef struct tagPERTABDATA
 #include "pertabdefs.h"
 #undef  DEFINE_VARS
 
-    char    DPFE[_MAX_PATH];    // The Drive, Path, Filename, & Ext of the WS
     int     iLabelText;         // Offset in DPFE of the label text
     HWND    hWndActive;         // Active MDI window when last switched out
+    int     crIndex;            // Tab's color index
+    char    DPFE[_MAX_PATH];    // The Drive, Path, Filename, & Ext of the WS
 } PERTABDATA, *LPPERTABDATA;
 
 

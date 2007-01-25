@@ -2,7 +2,6 @@
 //  NARS2000 -- Version Routines
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #define WINVER       0x0500 // Needed for WINUSER.H definitions
 #include <windows.h>
@@ -13,7 +12,6 @@
 #include <colors.h>
 
 #include "resource.h"
-#include "datatype.h"
 #include "externs.h"
 
 // Include prototypes unless prototyping

@@ -11,7 +11,7 @@
 #include <windowsx.h>
 
 #include "main.h"
-#include "datatype.h"
+#include "resource.h"
 #include "resdebug.h"
 #include "externs.h"
 
@@ -44,11 +44,11 @@
 //// } // End DbgBrk
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  Assert
 //***************************************************************************
 
-#ifdef DEBUG
 void Assert
     (BOOL bAssert)
 
@@ -59,6 +59,7 @@ void Assert
 #endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  DB_Create
 //
@@ -70,8 +71,10 @@ void DB_Create
 
 {
 } // End DB_Create
+#endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  DB_Delete
 //
@@ -83,8 +86,10 @@ void DB_Delete
 
 {
 } // End DB_Delete
+#endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  DBWndProc
 //
@@ -100,9 +105,12 @@ LRESULT APIENTRY DBWndProc
 {
     char       szTemp[1204];
     WCHAR      wszTemp[1024];
-    static int iLineNum = 0;
-    int        iIndex, iHeight;
+    int        iLineNum,
+               iIndex,
+               iHeight;
     RECT       rcClient;
+
+#define PROP_LINENUM    "iLineNum"
 
 ////ODSAPI ("DB: ", hWnd, message, wParam, lParam);
     switch (message)
@@ -113,6 +121,9 @@ LRESULT APIENTRY DBWndProc
             break;                  // Continue with next handler
 
         case WM_CREATE:
+            iLineNum = 0;
+            SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+
             // Create a listbox to fit inside this window
             hWndLB =
             CreateWindow ("LISTBOX",
@@ -127,12 +138,9 @@ LRESULT APIENTRY DBWndProc
                           CW_USEDEFAULT,        // Width
                           CW_USEDEFAULT,        // Height
                           hWnd,                 // Parent window
-                          NULL,                 // Menu
+                          (HMENU) IDWC_DB_LB,   // ID
                           _hInstance,           // Instance
                           0);                   // lParam
-////////////// Tell it to use the APL font
-////////////PostMessage (hWndLB, WM_SETFONT, (WPARAM) hFontAPL, 0);
-
             // Show the windows
             ShowWindow (hWndLB, SW_SHOWNORMAL);
             ShowWindow (hWnd,   SW_SHOWNORMAL);
@@ -186,6 +194,8 @@ LRESULT APIENTRY DBWndProc
 #undef  fwSizeType
 
         case WM_USER + 0:           // Single-char message
+            iLineNum = (int) GetProp (hWnd, PROP_LINENUM);
+
             // Format the string with a preceding line #
             wsprintfA (szTemp,
                        "%4d:  %s",
@@ -193,17 +203,22 @@ LRESULT APIENTRY DBWndProc
                        (LPCHAR) lParam);
             A2W (wszTemp, szTemp);  // Convert the string from A to W
 
+            SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+
             // Call common code
             SendMessageW (hWnd, WM_USER + 2, 0, (LPARAM) wszTemp);
 
             return FALSE;           // We handled the msg
 
         case WM_USER + 1:           // Double-char message
+            iLineNum = (int) GetProp (hWnd, PROP_LINENUM);
+
             // Format the string with a preceding line #
             wsprintfW (wszTemp,
                        L"%4d:  %s",
                        ++iLineNum,
                        (LPWCHAR) lParam);
+            SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
             // Call common code
             SendMessageW (hWnd, WM_USER + 2, 0, (LPARAM) wszTemp);
@@ -231,7 +246,9 @@ LRESULT APIENTRY DBWndProc
         case WM_USER + 10:
             // Start over again
             SendMessage (hWndLB, LB_RESETCONTENT, 0, 0);
+////////////iLineNum = (int) GetProp (PROP_LINENUM);
             iLineNum = 0;
+            SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
             UpdateWindow (hWnd);    // Redraw the screen now
 
@@ -252,8 +269,10 @@ LRESULT APIENTRY DBWndProc
 ////ODSAPI ("DBZ:", hWnd, message, wParam, lParam);
     return DefMDIChildProc (hWnd, message, wParam, lParam);
 } // End DBWndProc
+#endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  LclListboxWndProc
 //
@@ -466,8 +485,10 @@ LRESULT WINAPI LclListboxWndProc
                             wParam,
                             lParam); // Pass on down the line
 } // End LclListboxWndProc
+#endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  DbgMsg
 //
@@ -481,8 +502,10 @@ void DbgMsg
     if (hWndDB)
         SendMessage (hWndDB, WM_USER + 0, 0, (LPARAM) szTemp);
 } // End DbgMsg
+#endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  DbgMsgW
 //
@@ -496,8 +519,10 @@ void DbgMsgW
     if (hWndDB)
         SendMessageW (hWndDB, WM_USER + 1, 0, (LPARAM) wszTemp);
 } // End DbgMsgW
+#endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  DbgClear
 //
@@ -509,8 +534,10 @@ void DbgClr (void)
 {
     PostMessage (hWndDB, WM_USER + 10, 0, 0);
 } // End DbgClr
+#endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  dprintf
 //
@@ -544,8 +571,10 @@ void dprintf
 
     va_end (vl);
 } // End dprintf
+#endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  dprintfW
 //
@@ -578,6 +607,7 @@ void dprintfW (LPWCHAR lpwszFmt, ...)
 
     va_end (vl);
 } // End dprintfW
+#endif
 
 
 #ifdef DEBUG
@@ -611,6 +641,7 @@ HGLOBAL DbgGlobalAllocSub
 #endif
 
 
+#ifdef DEBUG
 //***************************************************************************
 //  FileNameOnly
 //
@@ -631,6 +662,7 @@ LPCHAR FileNameOnly
         ;
     return p;
 } // End FileNameOnly
+#endif
 
 
 //***************************************************************************

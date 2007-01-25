@@ -73,6 +73,9 @@ DecrRefCntInd (hGlbData);
 
 #define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData);
 
+#define DbgMsg(a)
+#define DbgMsgW(a)
+
 #endif
 
 //*************************** Window Data ********************************
@@ -82,7 +85,16 @@ DecrRefCntInd (hGlbData);
 //#define GWLSM_HGLB      0
 //#define GWLSM_HFONT     GWLSM_HGLB + 1 * sizeof (long)  // Offset of hFontAPL
 //#define GWLSM_EXTRA     GWLSM_HFONT + 1 * sizeof (long) // Total # extra bytes
+
 #define GWLDB_EXTRA     0
+
+#define GWLFE_HWNDEB    0               // Handle of the matching Edit box control
+#define GWLFE_CHANGED   GWLFE_HWNDEB  + 1 * sizeof (long)
+#define GWLFE_EXTRA     GWLFE_CHANGED + 1 * sizeof (long) // Total # extra bytes
+
+#define GWLME_EXTRA     0
+
+#define GWLVE_EXTRA     0
 
 
 // Define local window messages
@@ -129,6 +141,10 @@ typedef struct tagGLBHIST
 
 // Mask for LOG2NBIB bits
 #define MASKLOG2NBIB    ((1 << LOG2NBIB) - 1)
+
+// Width and height of each image in the image list
+#define IMAGE_CX        16
+#define IMAGE_CY        16
 
 
 //***************************************************************************

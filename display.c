@@ -9,7 +9,6 @@
 
 #include "main.h"
 #include "aplerrors.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "termcode.h"
 #include "Unicode.h"
@@ -1021,7 +1020,7 @@ void DisplayHistory
     HGLOBAL   hGlb;
     LPWCHAR   wszLine;
 
-    // Display the ahGlbHist entries
+    // Display the hGlbHist entries
 
     DbgMsg ("********** History *************************************");
 
@@ -1110,6 +1109,8 @@ void DisplayGlobals
     HGLOBAL hGlb;
     LPVOID  lpMem;
     APLDIM  aplDim;
+    LPVOID  lpData;
+    APLCHAR aplArrChar[6];
 
     DbgMsg ("********** Globals *************************************");
 
@@ -1141,18 +1142,22 @@ void DisplayGlobals
                     aplDim = (APLDIM) -1;
                 else
                     aplDim = *VarArrayBaseToDim (lpHeader);
-                wsprintf (lpszTemp,
-//////////////////////////"hGlb=%08X, ArrType=%2d, NELM=%08X%08X, RC=%2d, Rank=%2d, Dim1=%3d, Line#=%d",
-                          "hGlb=%08X, ArrType=%c, NELM=%3d, RC=%2d, Rank=%2d, Dim1=%3d, Line#=%d",
-                          hGlb,
-                          L"BIFCHNLA"[lpHeader->ArrType],
-//////////////////////////HIDWORD (lpHeader->NELM),
-                          LODWORD (lpHeader->NELM),
-                          lpHeader->RefCnt,
-                          LODWORD (lpHeader->Rank),
-                          LODWORD (aplDim),
-                          auLinNumGLOBAL[i]);
-                DbgMsg (lpszTemp);
+                lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
+                lstrcpynW (aplArrChar, lpData, (UINT) min (6, lpHeader->NELM));
+                aplArrChar[min (6, lpHeader->NELM)] = L'\0';
+                wsprintfW (lpwszTemp,
+///////////////////////////L"hGlb=%08X, ArrType=%2d, NELM=%08X%08X, RC=%2d, Rank=%2d, Dim1=%3d, Line#=%d, (%5.5S)",
+                           L"hGlb=%08X, ArrType=%c, NELM=%3d, RC=%2d, Rank=%2d, Dim1=%3d, Line#=%4d, (%s)",
+                           hGlb,
+                           L"BIFCHNLA"[lpHeader->ArrType],
+///////////////////////////HIDWORD (lpHeader->NELM),
+                           LODWORD (lpHeader->NELM),
+                           lpHeader->RefCnt,
+                           LODWORD (lpHeader->Rank),
+                           LODWORD (aplDim),
+                           auLinNumGLOBAL[i],
+                           aplArrChar);
+                DbgMsgW (lpwszTemp);
             } // End IF
         } else
 #undef  lpHeader

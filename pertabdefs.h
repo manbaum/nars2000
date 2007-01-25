@@ -10,6 +10,12 @@
 //    define it in PERTABVARS macro.
 //***************************************************************************
 
+#ifdef DEFINE_VARS
+#define EXTERN
+#else
+#define EXTERN extern
+#endif
+
 EXTERN
 HWND hWndMC,                    // Global MDI Client window handle
      hWndSM,                    // ...    Session Manager ...
@@ -70,9 +76,6 @@ RECT rcSelInit, rcSelText;      // Selection rectangles
 
 EXTERN
 BOOL bCurLineChanged;           // Has the current line changed?
-
-EXTERN
-HGLOBAL ghGlbToken;             // Save area for current token memory handle
 
 /*
 
@@ -261,20 +264,7 @@ EXEC_CODES ExecCode             // Exception code
 ;
 
 EXTERN
-HFONT hFontSM;                  // Handle to font for the SM
-
-EXTERN
-CHOOSEFONT cfSM;                // Global for ChooseFont for the SM
-
-EXTERN
-LOGFONT lfSM;                   // LOGFONT struc for the font for the SM
-
-////EXTERN
-////NEWTEXTMETRIC ntmSM;            // NEWTEXTMETRIC ...
-
-EXTERN
-LONG cxAveChar, cyAveChar;      // Size of an average character in the SM font
-
+BOOL bTabTextState;             // Tab's text state:  Highlight (TRUE) or Normal (FALSE)
 
 #define INIT_PERTABVARS                     \
     iMaxNumAlp       = DEF_NUMALP_MAXSIZE;  \
@@ -293,8 +283,8 @@ LONG cxAveChar, cyAveChar;      // Size of an average character in the SM font
     iHshTabBaseSize  = DEF_HSHTAB_INITSIZE; \
     iHshTabIncr      = DEF_HSHTAB_INCR;     \
     ExecCode         = EXEC_SUCCESS;        \
-    hFontSM          = NULL;                \
-    lfSM             = lfSM_CWS;
+    hGlbQuadWSID     = CopyArray_EM (hGlbQuadWSID_CWS, FALSE, NULL); \
+    bTabTextState    = FALSE;
 
 
 #ifndef PERTABVARS
@@ -325,7 +315,6 @@ LONG cxAveChar, cyAveChar;      // Size of an average character in the SM font
     Assign (rcSelInit            );                 \
     Assign (rcSelText            );                 \
     Assign (bCurLineChanged      );                 \
-    Assign (ghGlbToken           );                 \
     Assign (iFirstBufferLine     );                 \
     Assign (iLastBufferLine      );                 \
     Assign (iFirstWindowLine     );                 \
@@ -369,13 +358,11 @@ LONG cxAveChar, cyAveChar;      // Size of an average character in the SM font
                                                     \
     Assign (lpwszErrorMessage    );                 \
     Assign (ExecCode             );                 \
-    Assign (hFontSM              );                 \
-    Assign (cfSM                 );                 \
-    Assign (lfSM                 );                 \
-/*  Assign (ntmSM                );  */             \
-    Assign (cxAveChar            );                 \
-    Assign (cyAveChar            );
+    Assign (bTabTextState        );
 #endif
+
+#undef  EXTERN
+
 
 //***************************************************************************
 //  End of File: pertabdefs.h

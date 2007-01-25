@@ -2,12 +2,10 @@
 //  NARS2000 -- Registry Routines
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
 #include "main.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "sysvars.h"
 #include "Unicode.h"
@@ -28,6 +26,9 @@ char lpszRegKeyRoot[]               = "Software\\NARS2000",
      lpszRegStrInitDirName[]        = "InitDir",
      lpszRegStrLFTCName[]           = "LogfontTC",
      lpszRegStrLFSMName[]           = "LogfontSM",
+     lpszRegStrLFFEName[]           = "LogfontFE",
+     lpszRegStrLFMEName[]           = "LogfontME",
+     lpszRegStrLFVEName[]           = "LogfontVE",
      lpszRegStrGlbALXName[]         = "GlbALX",
      lpszRegStrGlbCTName[]          = "GlbCT",
      lpszRegStrGlbDFName[]          = "GlbDF",
@@ -72,9 +73,33 @@ void ReadRegGlb
     GetRegBinary (HKEY_CURRENT_USER,
                   lpszRegKeyRoot,
                   lpszRegStrLFSMName,
-                  sizeof (lfSM_CWS),
-                  &lfSM_CWS,
-                  &lfSM_CWS);
+                  sizeof (lfSM),
+                  &lfSM,
+                  &lfSM);
+
+    // Read in LOGFONT struc for FE
+    GetRegBinary (HKEY_CURRENT_USER,
+                  lpszRegKeyRoot,
+                  lpszRegStrLFFEName,
+                  sizeof (lfFE),
+                  &lfFE,
+                  &lfFE);
+
+    // Read in LOGFONT struc for ME
+    GetRegBinary (HKEY_CURRENT_USER,
+                  lpszRegKeyRoot,
+                  lpszRegStrLFMEName,
+                  sizeof (lfME),
+                  &lfME,
+                  &lfME);
+
+    // Read in LOGFONT struc for VE
+    GetRegBinary (HKEY_CURRENT_USER,
+                  lpszRegKeyRoot,
+                  lpszRegStrLFVEName,
+                  sizeof (lfVE),
+                  &lfVE,
+                  &lfVE);
 
     // Read in default values for system variables in a CLEAR WS
 
@@ -120,8 +145,10 @@ void ReadRegGlb
                  lpszRegStrGlbPRName,
                  DEF_QUADPR_CWS);
     // If the WCHAR is 0, we interpret that
-    //   as the empty vector case
-    hGlbQuadPR_CWS = ((cQuadPR_CWS EQ L'\0') ? hGlbMTChar : NULL);
+    //   as the empty vector case.
+    // Because we only reference this var when
+    //   it's an empty vector, it always has that value.
+    hGlbQuadPR_CWS = hGlbMTChar;
 
     // Read in []PW
     uQuadPW_CWS =
@@ -311,8 +338,29 @@ void SaveEnvironment (void)
                    lpszRegStrLFSMName,  // Name of value to set
                    0,                   // Reserved
                    REG_BINARY,          // Flag for type
-                   (LPCHAR) &lfSM_CWS,  // Ptr to value
-                   sizeof (lfSM_CWS));  // Size of value
+                   (LPCHAR) &lfSM,      // Ptr to value
+                   sizeof (lfSM));      // Size of value
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrLFFEName,  // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) &lfFE,      // Ptr to value
+                   sizeof (lfFE));      // Size of value
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrLFMEName,  // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) &lfME,      // Ptr to value
+                   sizeof (lfME));      // Size of value
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrLFVEName,  // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) &lfVE,      // Ptr to value
+                   sizeof (lfVE));      // Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbCTName, // Name of value to set
@@ -324,22 +372,21 @@ void SaveEnvironment (void)
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbDFName, // Name of value to set
                    0,                   // Reserved
-                   REG_DWORD,           // Flag for type
+                   REG_BINARY,          // Flag for type
                    (LPCHAR) &bQuadDF_CWS,// Ptr to value
                    sizeof (bQuadDF_CWS));// Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbIFName, // Name of value to set
                    0,                   // Reserved
-                   REG_DWORD,           // Flag for type
+                   REG_BINARY,          // Flag for type
                    (LPCHAR) &bQuadIF_CWS,// Ptr to value
                    sizeof (bQuadIF_CWS));// Size of value
-
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbIOName, // Name of value to set
                    0,                   // Reserved
-                   REG_DWORD,           // Flag for type
+                   REG_BINARY,          // Flag for type
                    (LPCHAR) &bQuadIO_CWS,// Ptr to value
                    sizeof (bQuadIO_CWS));// Size of value
 
@@ -350,6 +397,13 @@ void SaveEnvironment (void)
                    REG_BINARY,          // Flag for type
                    (LPCHAR) &uQuadPP_CWS,// Ptr to value
                    sizeof (uQuadPP_CWS));// Size of value
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrGlbPRName, // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) &cQuadPR_CWS,// Ptr to value
+                   sizeof (cQuadPR_CWS));// Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbPWName, // Name of value to set
@@ -366,23 +420,9 @@ void SaveEnvironment (void)
                    sizeof (uQuadRL_CWS));// Size of value
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
-                   lpszRegStrGlbPRName, // Name of value to set
-                   0,                   // Reserved
-                   REG_DWORD,           // Flag for type
-                   (LPCHAR) &cQuadPR_CWS,// Ptr to value
-                   sizeof (cQuadPR_CWS));// Size of value
-
-    RegSetValueEx (hKeyRoot,            // Handle of key to set
-                   lpszRegStrGlbPRName, // Name of value to set
-                   0,                   // Reserved
-                   REG_DWORD,           // Flag for type
-                   (LPCHAR) &cQuadPR_CWS,// Ptr to value
-                   sizeof (cQuadPR_CWS));// Size of value
-
-    RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrGlbSAName, // Name of value to set
                    0,                   // Reserved
-                   REG_DWORD,           // Flag for type
+                   REG_BINARY,          // Flag for type
                    (LPCHAR) &bQuadxSA_CWS,// Ptr to value
                    sizeof (bQuadxSA_CWS));// Size of value
 

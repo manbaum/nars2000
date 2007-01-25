@@ -9,8 +9,6 @@
 #include <math.h>
 
 #include "main.h"
-#include "datatype.h"
-#include "errors.h"
 #include "resdebug.h"
 #include "sysvars.h"
 #include "externs.h"

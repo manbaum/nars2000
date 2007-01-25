@@ -297,6 +297,9 @@ ul, ol
 
       <h3>Current Miscellaneous</h3>
         <ul>
+          <li><p>Multiple workspaces can be open at the same time
+            and switched between via Tabs.</p></li>
+
           <li><p>All variable names are two-byte Unicode
             (really UCS2, a subset of UTF-16)</p></li>
 

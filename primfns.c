@@ -2,14 +2,12 @@
 //  NARS2000 -- Primitive Functions
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <float.h>
 
 #include "main.h"
 #include "aplerrors.h"
-#include "datatype.h"
 #include "resdebug.h"
 #include "sysvars.h"
 #include "Unicode.h"
@@ -21,7 +19,7 @@
 #include "compro.h"
 #endif
 
-
+// The jump table for all primitive functions
 LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
 
 // As these functions are implemented, delete the
@@ -255,7 +253,7 @@ void MakePermVars
     lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
     lpHeader->Perm       = 1;       // So we don't free it
-////lpHeader->SysVar     = 0;
+////lpHeader->SysVar     = 0;       // Already zero from GHND
 ////lpHeader->RefCnt     =          // Ignore as this is perm
 ////lpHeader->NELM       = 0;       // Already zero from GHND
     lpHeader->Rank       = 1;
@@ -316,7 +314,7 @@ HGLOBAL MakePermCharVector
     lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
     lpHeader->Perm       = 1;       // So we don't free it
-////lpHeader->SysVar     = 0;
+////lpHeader->SysVar     = 0;       // Already zero from GHND
 ////lpHeader->RefCnt     =          // Ignore as this is perm
     lpHeader->NELM       = uLen;
     lpHeader->Rank       = 1;
@@ -2262,8 +2260,8 @@ BOOL PrimScalarFnDydAllocate_EM
     // Fill in the header
     lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = cArrTypeRes;
-////lpHeader->Perm       = 0;
-////lpHeader->SysVar     = 0;
+////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = *lpaplRankRes;

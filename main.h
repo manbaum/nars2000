@@ -1,10 +1,15 @@
-//' $Header$
-
 //****************************************************************************
 //  NARS2000 -- Main Header File
 //****************************************************************************
 
-#include <Qualitas.h>
+#define EQ ==
+#define NE !=
+
+#define LOSHORT(l)  ((short)((DWORD)(l) & 0xffff))
+#define HISHORT(l)  ((short)((DWORD)(l) >> 16))
+
+#define TRUE    1
+#define FALSE   0
 
 #define MB(a)   MessageBox (NULL, a, "NARS2000", MB_OK)
 #define MBC(a)  if (MessageBox (NULL, a, "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()

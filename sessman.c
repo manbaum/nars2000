@@ -1652,13 +1652,15 @@ LRESULT APIENTRY SMWndProc
         case WM_SYSCHAR:            // chCharCode = (TCHAR) wParam; // character code
                                     // lKeyData = lParam;           // Key data
         {
-            int iChar;
+            int   iChar;
             WCHAR wch;
+
             // Handle Shifted & unshifted Alt chars
             //  e.g., 'a' = 97, 'z' = 122
 
             iChar = chCharCode - ' ';
-            if (iChar < (sizeof (aCharCode) / sizeof (CHARCODE)))
+            if (0 <= iChar
+             &&      iChar < (sizeof (aCharCode) / sizeof (aCharCode[0])))
             {
                 // Get the Alt- char code
                 wch = aCharCode[iChar].alt;

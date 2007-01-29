@@ -157,7 +157,8 @@ typedef struct tagSTFLAGS
 // .Imm    = 0 implies that stGlbData is valid.
 // .Perm   is valid for .SysVar, .SysFn0, and .SysFn12 only.
 // .Nocase is valid for .SysVar, .SysFn0, and .SysFn12 only.
-// .Value  is valid for .SysVar and .UsrVar only.
+// .Value  is valid for .SysVar and .UsrVar only, however
+//          .SysVar should never be without a value.
 // .SysName implies one and only one of .SysVar, .SysFn0, .SysFn12 is set.
 // .UsrName is set for .UsrVar, .UsrFn0, .UsrFn12, .UsrOp1, .UsrOp2.
 //          It is also set for a variable with no value.

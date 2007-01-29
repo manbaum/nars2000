@@ -1363,74 +1363,6 @@ int yylex
             return CONSTANT;
 
         case TKT_VARNAMED:
-////             // We need a bit a lookahead here so handle the FCN vs. OP1 vs. OP2
-////             //   cases when the name is being assigned to.  In this case,
-////             //   because the current meaning of the name is irrelevant
-////             //   (it's about to be reassigned), we can accept any kind of name.
-////             //   LALR grammars have a hard time dealing with this, so we
-////             //   lookahead one token to see if it is ASSIGN.  If so, we return
-////             //   the type of name corresponding to the token beyond ASSIGN.
-////
-////             // Check for ASSIGN as the next token
-////             if (gplLocalVars.lpNext[1].tkFlags.TknType EQ TKT_ASSIGN)
-////             {
-////                 // Split cases based upon the next token type
-////                 switch (gplLocalVars.lpNext[2].tkFlags.TknType)
-////                 {
-////                     case TKT_VARIMMED:
-////                     case TKT_VARNAMED:
-////                     case TKT_VARARRAY:
-//// ////////////////////////gplLocalVars.lpNext->tkFlags.TknType = TKT_VARNAMED;
-////
-////                         return NAMEVAR;
-////
-////                     case TKT_FCNIMMED:
-////                     case TKT_FCNNAMED:
-////                     case TKT_JOTDOT:
-////                         gplLocalVars.lpNext->tkFlags.TknType = TKT_FCNNAMED;
-////
-////                         return NAMEFCN;
-////
-////                     case TKT_OP1IMMED:
-////                     case TKT_OP1NAMED:
-////                         gplLocalVars.lpNext->tkFlags.TknType = TKT_OP1NAMED;
-////
-////                         return NAMEOP1;
-////
-////                     case TKT_OP2IMMED:
-////                     case TKT_OP2NAMED:
-////                         gplLocalVars.lpNext->tkFlags.TknType = TKT_OP2NAMED;
-////
-////                         return NAMEOP2;
-////
-////                     case TKT_FCNARRAY:
-////                         // Split cases based upon the underlying FCNTYPE_xxx
-////                         switch (GetFcnType (&gplLocalVars.lpNext[2]))
-////                         {
-////                             case FCNTYPE_FCN:
-////                             case FCNTYPE_AXISFCN:
-////                                 gplLocalVars.lpNext->tkFlags.TknType = TKT_FCNNAMED;
-////
-////                                 return NAMEFCN;
-////
-////                             case FCNTYPE_OP1:
-////                                 gplLocalVars.lpNext->tkFlags.TknType = TKT_OP1NAMED;
-////
-////                                 return NAMEOP1;
-////
-////                             case FCNTYPE_OP2:
-////                                 gplLocalVars.lpNext->tkFlags.TknType = TKT_OP2NAMED;
-////
-////                                 return NAMEOP2;
-////
-////                             defstop
-////                                 break;
-////                         } // End SWITCH
-////
-////                     defstop
-////                         return UNK;
-////                 } // End SWITCH
-////             } else
             // We need a bit a lookahead here so handle the FCN vs. OP1 vs. OP2
             //   cases when the name is being assigned to.  In this case,
             //   because the current meaning of the name is irrelevant
@@ -1439,48 +1371,49 @@ int yylex
             //   lookahead one token to see if it is ASSIGN.  If so, we return
             //   NAMEUNK, a universal named token.
 
-            // Check for ASSIGN as the next token
-            if ((!gplLocalVars.lpNext->tkData.lpSym->stFlags.Value
-              && gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrVar)
-             || gplLocalVars.lpNext[1].tkFlags.TknType EQ TKT_ASSIGN)
+            // If this is a UsrVar and either it has no value
+            //   or the next token is ASSIGN, call it NAMEUNK.
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrVar
+             && (!gplLocalVars.lpNext->tkData.lpSym->stFlags.Value
+              || gplLocalVars.lpNext[1].tkFlags.TknType EQ TKT_ASSIGN))
                 return NAMEUNK;
             else
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrVar
+             || gplLocalVars.lpNext->tkData.lpSym->stFlags.SysVar)
             {
-                if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrVar
-                 || gplLocalVars.lpNext->tkData.lpSym->stFlags.SysVar)
-                {
-////////////////////gplLocalVars.lpNext->tkFlags.TknType = TKT_VARNAMED;
+////////////////gplLocalVars.lpNext->tkFlags.TknType = TKT_VARNAMED;    // Already set
 
-                    return NAMEVAR;
-                } else
-                if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrFn0
-                 || gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn0)
-                    return FN0;
-                else
-                if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrFn12
-                 || gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn12)
-                {
-                    gplLocalVars.lpNext->tkFlags.TknType = TKT_FCNNAMED;
+                return NAMEVAR;
+            } else
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrFn0
+             || gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn0)
+                return FN0;
+            else
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrFn12
+             || gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn12)
+            {
+                gplLocalVars.lpNext->tkFlags.TknType = TKT_FCNNAMED;
 
-                    return NAMEFCN;
-                } else
-                if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrOp1)
-                {
-                    gplLocalVars.lpNext->tkFlags.TknType = TKT_OP1NAMED;
+                return NAMEFCN;
+            } else
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrOp1)
+            {
+                gplLocalVars.lpNext->tkFlags.TknType = TKT_OP1NAMED;
 
-                    return NAMEOP1;
-                } else
-                if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrOp2)
-                {
-                    gplLocalVars.lpNext->tkFlags.TknType = TKT_OP2NAMED;
+                return NAMEOP1;
+            } else
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrOp2)
+            {
+                gplLocalVars.lpNext->tkFlags.TknType = TKT_OP2NAMED;
 
-                    return NAMEOP2;
-                } // End IF/ELSE/...
+                return NAMEOP2;
+            } else
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrName)
+                return NAMEUNK;
 
-                DbgStop ();         // We should never get here
+            DbgStop ();         // We should never get here
 
-                return UNK;
-            } // End IF
+            return UNK;
 
         case TKT_ASSIGN:
             return ASSIGN;

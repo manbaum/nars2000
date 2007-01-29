@@ -440,6 +440,47 @@ LRESULT WINAPI LclEditCtrlWndProc
 #undef  nVirtKey
 
 #define chCharCode ((char) wParam)
+        case WM_CHAR:               // chCharCode = (TCHAR) wParam; // character code
+                                    // lKeyData = lParam;           // Key data
+        {
+            int   iChar;
+            WCHAR wch[2] = {L"\0"};
+
+            // Handle Shifted & unshifted chars
+            //  e.g., 'a' = 97, 'z' = 122
+
+            iChar = chCharCode - ' ';
+            if (0 <= iChar
+             &&      iChar < (sizeof (aCharCode) / sizeof (aCharCode[0])))
+            {
+                // Get the Nrm- char code
+                wch[0] = aCharCode[iChar].nrm;
+
+                // If it's valid, insert/replace it
+                if (wch[0])
+                {
+                    // Insert/replace the char
+                    InsRepChar (hWnd, GWLFE_VKSTATE, wch);
+
+                    return FALSE;       // We handled the msg
+                } else
+                // Otherwise, DbgMsg it
+                {
+#ifdef DEBUG
+                    wsprintfW (lpwszTemp,
+                               L"CHAR:  chCharCode = %d, %c",
+                               chCharCode,
+                               chCharCode);
+                    DbgMsgW (lpwszTemp);
+#endif
+                } // End IF/ELSE
+            } // End IF/ELSE
+
+            break;
+        } // End WM_CHAR
+#undef  chCharCode
+
+#define chCharCode ((char) wParam)
         case WM_SYSCHAR:            // chCharCode = (TCHAR) wParam; // character code
                                     // lKeyData = lParam;           // Key data
         {
@@ -450,19 +491,17 @@ LRESULT WINAPI LclEditCtrlWndProc
             //  e.g., 'a' = 97, 'z' = 122
 
             iChar = chCharCode - ' ';
-            if (iChar < (sizeof (aCharCode) / sizeof (CHARCODE)))
+            if (0 <= iChar
+             &&      iChar < (sizeof (aCharCode) / sizeof (aCharCode[0])))
             {
                 // Get the Alt- char code
                 wch[0] = aCharCode[iChar].alt;
 
-                // If it's valid, return it
+                // If it's valid, insert/replace it
                 if (wch[0])
                 {
-////                // Unset the selection
-////                SendMessage (hWnd, EM_SETSEL, (WPARAM) -1, (LPARAM) -1);
-
-                    // Insert the translated char into the text
-                    SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) TRUE, (LPARAM) wch);
+                    // Insert/replace the char
+                    InsRepChar (hWnd, GWLFE_VKSTATE, wch);
 
                     return FALSE;       // We handled the msg
                 } else
@@ -512,6 +551,66 @@ LRESULT WINAPI LclEditCtrlWndProc
                             wParam,
                             lParam); // Pass on down the line
 } // End LclEditCtrlWndProc
+
+
+//***************************************************************************
+//  InsRepChar
+//
+//  Insert or replace a char in an edit control
+//***************************************************************************
+
+void InsRepChar
+    (HWND    hWnd,
+     UINT    uGWL,
+     LPWCHAR lpwch)
+
+{
+    VKSTATE vkState;        // Virtual key state (Shift, Alt, Ctrl)
+    long    lvkState;       // Temporary var for vkState
+    HWND    hWndParent;     // Handle of parent (FE) window
+    UINT    uStart,
+            uEnd,
+            uChar,
+            uLineLen,
+            uLineIndex;
+    POINT   ptCaret;
+
+    // Get the handle of the parent window
+    hWndParent = GetParent (hWnd);
+
+    // Get the current vkState
+    lvkState = GetWindowLong (hWndParent, uGWL);
+    vkState = *(LPVKSTATE) &lvkState;
+
+        // Get the selection indices
+    SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uStart, (LPARAM) &uEnd);
+
+    // If there's no selection, and we're in Replace mode,
+    //   set the selection to the current character
+    if (uStart EQ uEnd
+     && !vkState.Ins)
+    {
+        // Get the caret position in client coords
+        GetCaretPos (&ptCaret);
+
+        // Get the index of the char under the caret
+        uChar = LOWORD (SendMessageW (hWnd, EM_CHARFROMPOS, 0, MAKELPARAM (ptCaret.x, ptCaret.y)));
+
+        // Get the length of the line with the given char index
+        uLineLen   = SendMessageW (hWnd, EM_LINELENGTH, uChar, 0);
+
+        // Get the index in the entire text of the start of the current line
+        uLineIndex = SendMessageW (hWnd, EM_LINEINDEX, (WPARAM) -1, 0);
+
+        // If we're at the end of the line, insert rather than replace
+        if (uLineLen > (uChar - uLineIndex))
+            // Set the selection to this character so we replace
+            SendMessageW (hWnd, EM_SETSEL, uStart, uStart + 1);
+    } // End IF
+
+    // Insert/replace the translated char into the text
+    SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) TRUE, (LPARAM) lpwch);
+} // End InsRepChar
 
 
 //***************************************************************************

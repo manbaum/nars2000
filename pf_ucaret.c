@@ -5,12 +5,12 @@
 #pragma pack (1)
 #define STRICT
 #include <windows.h>
+#include <math.h>
 
 #include "main.h"
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "sysvars.h"
-#include "Unicode.h"
 #include "externs.h"
 #include "primspec.h"
 
@@ -130,12 +130,12 @@ APLSTYPE PrimSpecUpCaretStorageTypeDyd
 
 
 //***************************************************************************
-//  lcmInt
+//  lcmAplInt
 //
-//  LCM (Least Common Multiple) for integers
+//  LCM (Least Common Multiple) for aplIntegers
 //***************************************************************************
 
-APLINT lcmInt
+APLINT lcmAplInt
     (APLINT     aplIntegerLft,
      APLINT     aplIntegerRht,
      LPPRIMSPEC lpPrimSpec)
@@ -148,7 +148,7 @@ APLINT lcmInt
     aplRht = PrimFnMonStileIisI (aplIntegerRht, lpPrimSpec);
 
     // Calculate the GCD
-    aplTmp = gcdInt (aplLft, aplRht, lpPrimSpec);
+    aplTmp = gcdAplInt (aplLft, aplRht, lpPrimSpec);
     if (aplTmp EQ 0)
         return aplTmp;
 
@@ -159,16 +159,16 @@ APLINT lcmInt
         return -aplTmp;
     else
         return  aplTmp;
-} // End lcmInt
+} // End lcmAplInt
 
 
 //***************************************************************************
-//  lcmFloat
+//  lcmAplFloat
 //
-//  LCM (Least Common Multiple) for floats
+//  LCM (Least Common Multiple) for aplFloats
 //***************************************************************************
 
-APLFLOAT lcmFloat
+APLFLOAT lcmAplFloat
     (APLFLOAT   aplFloatLft,
      APLFLOAT   aplFloatRht,
      LPPRIMSPEC lpPrimSpec)
@@ -181,8 +181,8 @@ APLFLOAT lcmFloat
     aplRht = PrimFnMonStileFisF (aplFloatRht, lpPrimSpec);
 
     // Calculate the GCD
-    aplTmp = gcdFloat (aplLft, aplRht, lpPrimSpec);
-    if (aplTmp < SYS_CT)
+    aplTmp = gcdAplFloat (aplLft, aplRht, lpPrimSpec);
+    if (fabs (aplTmp) < SYS_CT)
         return aplTmp;
 
     aplTmp = aplLft * (aplRht / aplTmp);
@@ -192,7 +192,7 @@ APLFLOAT lcmFloat
         return -aplTmp;
     else
         return  aplTmp;
-} // End lcmFloat
+} // End lcmAplFloat
 
 
 //***************************************************************************
@@ -223,7 +223,7 @@ APLINT PrimFnDydUpCaretIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return lcmInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
+    return lcmAplInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
 } // End PrimFnDydUpCaretIisIvI
 
 
@@ -239,7 +239,7 @@ APLFLOAT PrimFnDydUpCaretFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return (APLFLOAT) lcmInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
+    return (APLFLOAT) lcmAplInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
 } // End PrimFnDydUpCaretFisIvI
 
 
@@ -255,7 +255,7 @@ APLFLOAT PrimFnDydUpCaretFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return lcmFloat (aplFloatLft, aplFloatRht, lpPrimSpec);
+    return lcmAplFloat (aplFloatLft, aplFloatRht, lpPrimSpec);
 } // End PrimFnDydUpCaretFisFvF
 
 

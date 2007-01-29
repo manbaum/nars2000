@@ -6,7 +6,6 @@
 
 #include "main.h"
 #include "resdebug.h"
-#include "Unicode.h"
 #include "externs.h"
 
 // Include prototypes unless prototyping

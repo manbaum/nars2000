@@ -10,7 +10,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "sysvars.h"
-#include "Unicode.h"
 #include "externs.h"
 #include "primspec.h"
 

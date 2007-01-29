@@ -11,7 +11,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "sysvars.h"
-#include "Unicode.h"
 #include "externs.h"
 #include "primspec.h"
 
@@ -131,12 +130,12 @@ APLSTYPE PrimSpecDownCaretStorageTypeDyd
 
 
 //***************************************************************************
-//  gcdInt
+//  gcdAplInt
 //
-//  GCD (Greatest Common Divisor) for integers
+//  GCD (Greatest Common Divisor) for aplIntegers
 //***************************************************************************
 
-APLINT gcdInt
+APLINT gcdAplInt
     (APLINT     aplIntegerLft,
      APLINT     aplIntegerRht,
      LPPRIMSPEC lpPrimSpec)
@@ -160,16 +159,16 @@ APLINT gcdInt
         return -aplRht;
     else
         return  aplRht;
-} // End gcdInt
+} // End gcdAplInt
 
 
 //***************************************************************************
-//  gcdFloat
+//  gcdAplFloat
 //
-//  GCD (Greatest Common Divisor) for floats
+//  GCD (Greatest Common Divisor) for aplFloats
 //***************************************************************************
 
-APLFLOAT gcdFloat
+APLFLOAT gcdAplFloat
     (APLFLOAT   aplFloatLft,
      APLFLOAT   aplFloatRht,
      LPPRIMSPEC lpPrimSpec)
@@ -193,7 +192,7 @@ APLFLOAT gcdFloat
         return  aplRht;
     else
         return -aplRht;
-} // End gcdFloat
+} // End gcdAplFloat
 
 
 //***************************************************************************
@@ -224,7 +223,7 @@ APLINT PrimFnDydDownCaretIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return gcdInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
+    return gcdAplInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
 } // End PrimFnDydDownCaretIisIvI
 
 
@@ -240,7 +239,7 @@ APLFLOAT PrimFnDydDownCaretFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return (APLFLOAT) gcdInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
+    return (APLFLOAT) gcdAplInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
 } // End PrimFnDydDownCaretFisIvI
 
 
@@ -256,7 +255,7 @@ APLFLOAT PrimFnDydDownCaretFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return gcdFloat (aplFloatLft, aplFloatRht, lpPrimSpec);
+    return gcdAplFloat (aplFloatLft, aplFloatRht, lpPrimSpec);
 } // End PrimFnDydDownCaretFisFvF
 
 

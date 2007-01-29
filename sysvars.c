@@ -10,7 +10,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "sysvars.h"
-#include "Unicode.h"
 #include "externs.h"
 
 // Include prototypes unless prototyping
@@ -163,7 +162,8 @@ BOOL SymTabAppendSysName_EM
 //  Append all system names to the symbol table
 //***************************************************************************
 
-BOOL AppendSystemNames_EM (void)
+BOOL AppendSystemNames_EM
+    (void)
 
 {
     int i;
@@ -1968,6 +1968,12 @@ BOOL ValidateSA_EM
 //  Validate a value about to be assigned to Quad-WSID
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ValidateWSID_EM"
+#else
+#define APPEND_NAME
+#endif
+
 BOOL ValidateWSID_EM
     (LPYYSTYPE lpYYName,
      LPTOKEN   lpToken)
@@ -1979,8 +1985,14 @@ BOOL ValidateWSID_EM
     // ***FINISHME***
 
 
+
+
+
+    ErrorMessageIndirect (ERRMSG_NONCE_ERROR APPEND_NAME);
+
     return FALSE;
 } // End ValidateWSID_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

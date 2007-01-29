@@ -9,7 +9,6 @@
 #include "main.h"
 #include "aplerrors.h"
 #include "resdebug.h"
-#include "Unicode.h"
 #include "externs.h"
 
 // Include prototypes unless prototyping
@@ -735,8 +734,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
 #endif
 
 HGLOBAL ExecuteLine
-    (int       iExecLine,
-     EXECSTATE *esState)
+    (int         iExecLine,
+     LPEXECSTATE esState)
 
 {
     LPWCHAR   lpwszCompLine,    // Ptr to complete line
@@ -2114,7 +2113,7 @@ BOOL fnDiaDone
 //***************************************************************************
 
 void ErrorMessageIndirect
-    (WCHAR *lpwszMsg)
+    (LPWCHAR lpwszMsg)
 
 {
     // Save in global for later reference
@@ -2150,9 +2149,9 @@ void IncorrectCommand
 //***************************************************************************
 
 void ErrorMessage
-    (WCHAR *lpwszMsg,
-     WCHAR *lpwszLine,
-     int   iCaret)              // Position of caret (origin-0)
+    (LPWCHAR lpwszMsg,
+     LPWCHAR lpwszLine,
+     int     iCaret)            // Position of caret (origin-0)
 
 {
     // ***FIXME*** -- put this into []DM and then signal an error
@@ -2212,7 +2211,7 @@ The flags are defined in tokens.h
 #endif
 
 HGLOBAL Tokenize_EM
-    (WCHAR *lpwszLine)
+    (LPWCHAR lpwszLine)
 
 {
     int         i, iLen;
@@ -2979,7 +2978,8 @@ WCHAR CharTrans
 //  Convert a column number to a name
 //***************************************************************************
 
-LPWCHAR GetColName (UINT uType)
+LPWCHAR GetColName
+    (UINT uType)
 
 {
 typedef struct tagCOLNAMES

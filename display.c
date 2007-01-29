@@ -11,7 +11,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "termcode.h"
-#include "Unicode.h"
 #include "externs.h"
 
 // Include prototypes unless prototyping

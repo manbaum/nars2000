@@ -128,11 +128,13 @@ LRESULT APIENTRY DBWndProc
             hWndLB =
             CreateWindow ("LISTBOX",
                           "Debugger Listbox",   // For debugging only
-                          WS_CHILD
+                          0
+                        | WS_CHILD
                         | WS_VSCROLL
                         | LBS_NOINTEGRALHEIGHT
                         | LBS_EXTENDEDSEL
-                        | LBS_MULTIPLESEL,      // Styles
+                        | LBS_MULTIPLESEL
+                          ,                     // Styles
                           0,                    // X-position
                           0,                    // Y-...
                           CW_USEDEFAULT,        // Width
@@ -529,7 +531,8 @@ void DbgMsgW
 //  Clear the debug window
 //***************************************************************************
 
-void DbgClr (void)
+void DbgClr
+    (void)
 
 {
     PostMessage (hWndDB, WM_USER + 10, 0, 0);
@@ -581,7 +584,8 @@ void dprintf
 //  Display a debug message a la printf
 //***************************************************************************
 
-void dprintfW (LPWCHAR lpwszFmt, ...)
+void dprintfW
+    (LPWCHAR lpwszFmt, ...)
 
 {
     va_list vl;

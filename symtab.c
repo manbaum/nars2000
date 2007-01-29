@@ -10,7 +10,6 @@
 #include "main.h"
 #include "aplerrors.h"
 #include "resdebug.h"
-#include "Unicode.h"
 #include "externs.h"
 
 // Include prototypes unless prototyping
@@ -394,7 +393,7 @@ BOOL HshTabResize_EM
     // Because iHshTabTotalSize changed, we need to change iHshTabIncr
     iHshTabIncr = DEF_HSHTAB_PRIME % (UINT) iHshTabTotalSize;
 
-    Assert (1 EQ GCD (iHshTabIncr, iHshTabTotalSize));
+    Assert (1 EQ gcdAplInt (iHshTabIncr, iHshTabTotalSize, NULL));
 
     Assert (HshTabFrisk ());
 
@@ -450,33 +449,33 @@ BOOL SymTabResize_EM
 } // End SymTabResize_EM
 
 
-#ifdef DEBUG
-//***************************************************************************
-//  GCD
-//
-//  Greatest Common Divisor using the tried and true Euclidean algorithm
-//***************************************************************************
-
-int GCD
-    (int lArg,
-     int rArg)
-
-{
-    int q, r;
-L1:
-    q = lArg / rArg;
-    r = lArg - rArg * q;
-    if (r)
-    {
-        lArg = rArg;
-        rArg = r;
-
-        goto L1;
-    } // End IF
-
-    return rArg;
-} // End GCD
-#endif
+//// #ifdef DEBUG
+//// //***************************************************************************
+//// //  GCD
+//// //
+//// //  Greatest Common Divisor using the tried and true Euclidean algorithm
+//// //***************************************************************************
+////
+//// int GCD
+////     (int lArg,
+////      int rArg)
+////
+//// {
+////     int q, r;
+//// L1:
+////     q = lArg / rArg;
+////     r = lArg - rArg * q;
+////     if (r)
+////     {
+////         lArg = rArg;
+////         rArg = r;
+////
+////         goto L1;
+////     } // End IF
+////
+////     return rArg;
+//// } // End GCD
+//// #endif
 
 
 //***************************************************************************

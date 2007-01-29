@@ -2,7 +2,6 @@
 
 .SUFFIXES: .DEP .DEV .PRO
 
-PROJ = OA                       # Prefix for project files
 NAME = NARS2000                 # Directory name
 ZIPNAME = NARS-SRC              # Zip file name
 ENAME = NARS2000                # Executable name
@@ -10,7 +9,6 @@ PROJPATH = $(SRCROOT)$(NAME)\trunk\  # Project path
 BIN = $(PROJPATH)binaries\      # Binaries directory
 DEBUG=0
 RESDEBUG=1
-S=$(MAXROOT)STATUTIL\           # Utility programs
 A=$(PROJPATH)Images\            # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 
@@ -50,9 +48,6 @@ RCDEFINES = /D $(WDEF) /D BUILD_BETA
 RCDEFINES = /D $(WDEF)
 !endif
 
-!if [if exist MSVC.BND del MSVC.BND]
-!endif
-
 ASM=masm
 AFLAGS=/Mu /DDEBUG=$(DEBUG)
 OEM=RET\                        # default OEM directory
@@ -78,12 +73,12 @@ CC=$(M98)BIN\cl
 RC=$(M98)BIN\rc
 
 
-ALL:    DIR \
-        PRO \
-        DEP \
-        $(O)$(ENAME).EXE \
-        $(L)$(ENAME).EXE \
-        $(BC)$(ENAME).HLP\
+ALL:    DIR                 \
+        PRO                 \
+        DEP                 \
+        $(O)$(ENAME).EXE    \
+        $(L)$(ENAME).EXE    \
+        $(BC)$(ENAME).HLP   \
         $(L)$(ENAME).HLP
 
 CLEAN:
@@ -406,7 +401,7 @@ $(O)resdebug.PRO
 
 ########################## UTILITY ROUTINES ##########################
 
-$(O)DBGBRK.OBJ:         $(S)DBGBRK.ASM
+$(O)DBGBRK.OBJ:         DBGBRK.ASM
         @if exist $@ del $@
         ml /I$(I) /DIS_$(WIN) /c /W3 /nologo $(ASMOPTS) /Fo $@ %s
 

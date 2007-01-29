@@ -66,5 +66,22 @@ QUESTIONS
 * Should we allow f {is} {jot}fn      ?? (left operator)
 *
 
+MISSING
+-------
+
+* Qualitas.h (SVN)
+* Fix Filezilla access to BOB
+* DEPSCAN.exe (SVN)
+* VDIR.exe (SVN)
+* Look at Zview for APL to see what controls they use
+* M: MSVC152
+* N: MSVC4
+* $(HCDIR)HCRTF
+* Axialis
+* VCCORE
+* MSDN
+*
+
+
 
 

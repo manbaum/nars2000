@@ -8,7 +8,6 @@
 #include "main.h"
 #include "resdebug.h"
 #include "sysvars.h"
-#include "Unicode.h"
 #include "externs.h"
 
 // Include prototypes unless prototyping
@@ -273,7 +272,8 @@ void ReadRegWnd
 //  Save the environment to the registry
 //***************************************************************************
 
-void SaveEnvironment (void)
+void SaveEnvironment
+    (void)
 
 {
     HKEY    hKeyRoot;

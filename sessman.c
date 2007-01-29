@@ -7,7 +7,6 @@
 #include <windows.h>
 #include <colors.h>
 
-#include "Unicode.h"
 #include "main.h"
 #include "resdebug.h"
 #include "resource.h"
@@ -44,124 +43,9 @@ value are copied to <lpwszCurLine>.
 COLORREF crTextColor = DEF_TEXT_FG_COLOR,
          crBkColor   = DEF_TEXT_BG_COLOR;
 
-typedef struct
-{
-    char  nrm;      // Normal           (shifted & unshifted) (unused)
-    WCHAR alt;      // Alt key pressed  (shifted & unshifted)
-} CHARCODE;
-
-CHARCODE aCharCode[] =          // This ordering follows the ASCII charset
-{                               //   from 32 to 126 inclusive
-//Nrm Alt
-{' ', 0                   },    // Space             32
-{'!', UCS2_EQUALUNDERBAR  },    // Shreik            33
-{'"', 0                   },    // Quotation mark    34
-{'#', UCS2_DELSTILE       },    // Number sign       35
-{'$', UCS2_DELTASTILE     },    // Dollar sign       36
-{'%', UCS2_CIRCLESTILE    },    // Percent sign      37
-{'&', UCS2_CIRCLEBAR      },    // Ampersand         38
-{'\'',UCS2_HYDRANT        },    // Apostrophe        39
-{'(', UCS2_DOWNCARETTILDE },    // Left paren        40
-{')', UCS2_UPCARETTILDE   },    // Right paren       41
-{'*', UCS2_CIRCLESTAR     },    // Star              42
-{'+', UCS2_DOMINO         },    // Plus sign         43
-{',', UCS2_LAMP           },    // Comma             44
-{'-', UCS2_TIMES          },    // Bar               45
-{'.', UCS2_SLOPEBAR       },    // Dot               46
-{'/', UCS2_SLASHBAR       },    // Slash             47
-{'0', UCS2_UPCARET        },    // 0                 48
-{'1', UCS2_DIERESIS       },    // 1                 49
-{'2', UCS2_OVERBAR        },    // 2                 50
-{'3', UCS2_LEFTCARET      },    // 3                 51
-{'4', UCS2_NOTMORE        },    // 4                 52
-{'5', UCS2_EQUAL          },    // 5                 53
-{'6', UCS2_NOTLESS        },    // 6                 54
-{'7', UCS2_RIGHTCARET     },    // 7                 55
-{'8', UCS2_NOTEQUAL       },    // 8                 56
-{'9', UCS2_DOWNCARET      },    // 9                 57
-{':', 0                   },    // Colon             58
-{';', UCS2_THORN          },    // Semicolon         59
-{'<', 0                   },    // Less              60
-{'=', UCS2_DIVIDE         },    // Equal             61
-{'>', 0                   },    // More              62
-{'?', 0                   },    // Query             63
-{'@', UCS2_DELTILDE       },    // At sign           64
-{'A', 0                   },    // A                 65
-{'B', 0                   },    // B                 66
-{'C', 0                   },    // C                 67
-{'D', 0                   },    // D                 68
-{'E', UCS2_EPSILONUNDERBAR},    // E                 69
-{'F', 0                   },    // F                 70
-{'G', 0                   },    // G                 71
-{'H', UCS2_DELTAUNDERBAR  },    // H                 72
-{'I', UCS2_IOTAUNDERBAR   },    // I                 73
-{'J', 0                   },    // J                 74
-{'K', 0                   },    // K                 75
-{'L', UCS2_SQUAD          },    // L                 76
-{'M', 0                   },    // M                 77
-{'N', 0                   },    // N                 78
-{'O', 0                   },    // O                 79
-{'P', 0                   },    // P                 80
-{'Q', 0                   },    // Q                 81
-{'R', 0                   },    // R                 82
-{'S', 0                   },    // S                 83
-{'T', 0                   },    // T                 84
-{'U', 0                   },    // U                 85
-{'V', 0                   },    // V                 86
-{'W', 0                   },    // W                 87
-{'X', 0                   },    // X                 88
-{'Y', 0                   },    // Y                 89
-{'Z', 0                   },    // Z                 90
-{'[', UCS2_LEFTARROW      },    // Left bracket      91
-{'\\',UCS2_LEFTTACK       },    // Slope             92
-{']', UCS2_RIGHTARROW     },    // Right bracket     93
-{'^', UCS2_CIRCLESLOPE    },    // Up caret          94
-{'_', UCS2_SHREIK         },    // Underbar          95
-{'`', UCS2_DIAMOND        },    // Grave accent      96
-{'a', UCS2_ALPHA          },    // a                 97
-{'b', UCS2_DOWNTACK       },    // b                 98
-{'c', UCS2_UPSHOE         },    // c                 99
-{'d', UCS2_DOWNSTILE      },    // d                100
-{'e', UCS2_EPSILON        },    // e                101
-{'f', UCS2_UNDERBAR       },    // f                102
-{'g', UCS2_DEL            },    // g                103
-{'h', UCS2_DELTA          },    // h                104
-{'i', UCS2_IOTA           },    // i                105
-{'j', UCS2_JOT            },    // j                106
-{'k', UCS2_APOSTROPHE     },    // k                107
-{'l', UCS2_QUAD           },    // l                108
-{'m', UCS2_STILE          },    // m                109
-{'n', UCS2_UPTACK         },    // n                110
-{'o', UCS2_CIRCLE         },    // o                111
-{'p', UCS2_STAR           },    // p                112
-{'q', UCS2_QUERY          },    // q                113
-{'r', UCS2_RHO            },    // r                114
-{'s', UCS2_UPSTILE        },    // s                115
-{'t', UCS2_TILDE          },    // t                116
-{'u', UCS2_DNARROW        },    // u                117
-{'v', UCS2_DOWNSHOE       },    // v                118
-{'w', UCS2_OMEGA          },    // w                119
-{'x', UCS2_RIGHTSHOE      },    // x                120
-{'y', UCS2_UPARROW        },    // y                121
-{'z', UCS2_LEFTSHOE       },    // z                122
-{'{', UCS2_QUOTEQUAD      },    // Left brace       123
-{'|', UCS2_RIGHTTACK      },    // Stile            124
-{'}', UCS2_ZILDE          },    // Right brace      125
-{'~', UCS2_COMMABAR       },    // Tilde            126
-};
-
 WCHAR wszEmpty[] = {L'\0'};     // Empty wide string
 
 ////LPTOKEN lptkStackBase;          // Ptr to base of token stack used in parsing
-
-typedef enum tagSELTYPE
-{
-    SEL_CHARS,
-    SEL_LINES,
-    SEL_BLOCKS
-} SELTYPE;
-
-SELTYPE eSelType;               // Selection type
 
 
 //***************************************************************************
@@ -345,7 +229,7 @@ void ScrollVert
 
     // In case we changed iCurLine or iFirstWindowLine,
     //   move the caret
-    MoveCaret ();
+    MoveCaretSM ();
 
     // As we changed iFirstWindowLine,
     //   move the thumb on the scrollbar
@@ -423,7 +307,7 @@ void ScrollHorz
 
     // In case we changed iFirstWindowChar,
     //   move the caret
-    MoveCaret ();
+    MoveCaretSM ();
 
     // In case we changed iFirstWindowChar,
     //   move the thumb on the scrollbar
@@ -470,7 +354,7 @@ void AppendLine
     InitCurLine (bLineCont);
 
     // As we changed iCurLine, move the caret
-    MoveCaret ();
+    MoveCaretSM ();
 
     // Scroll the window as necessary
     // The "+1" is to cover the line the cursor is on
@@ -722,7 +606,7 @@ void DrawLine
       HDC     hDC,
       BOOL    bLineCont)
 {
-    RECT rc, rcInter;
+    RECT rc;
     int iLen;
 
     iLen = lstrlenW (lpwszLine);
@@ -732,41 +616,18 @@ void DrawLine
     rc.top    = iLine   * cyAveCharSM;
     rc.bottom = rc.top  + cyAveCharSM;
 
-    if (bSelText)
-    {
-        // ***FIXME***
-        // Handle V & H scrolling
-        // Handle change of screen font (point size)
-        switch (eSelType)
-        {
-            case SEL_CHARS:
-                break;
-
-            case SEL_LINES:
-                if (IntersectRect (&rcInter, &rc, &rcSelText))
-                {
-                } // End IF
-
-                break;
-
-            case SEL_BLOCKS:
-                break;
-        } // End SWITCH
-    } else
-    {
-        // Draw the text
-        DrawTextW (hDC,
-                   lpwszLine,
-                   iLen,
-                   &rc,
-                   DT_NOPREFIX
-                 | DT_SINGLELINE
-                 | DT_NOCLIP
-              );
-        if (bLineCont)
-            // Draw a continuation char
-            DrawLineCont (hDC, iLine);
-    } // End IF/ELSE
+    // Draw the text
+    DrawTextW (hDC,
+               lpwszLine,
+               iLen,
+               &rc,
+               DT_NOPREFIX
+             | DT_SINGLELINE
+             | DT_NOCLIP
+          );
+    if (bLineCont)
+        // Draw a continuation char
+        DrawLineCont (hDC, iLine);
 } // End DrawLine
 
 
@@ -959,18 +820,18 @@ void InvalidateRange
 
 
 //***************************************************************************
-//  MoveCaret
+//  MoveCaretSM
 //
 //  Move the caret into position
 //***************************************************************************
 
-void MoveCaret
+void MoveCaretSM
     (void)
 
 {
     SetCaretPos ((iCurChar - iFirstWindowChar) * cxAveCharSM + iLCWidth,
                  (iCurLine - iFirstWindowLine) * cyAveCharSM);
-} // End MoveCaret
+} // End MoveCaretSM
 
 
 //***************************************************************************
@@ -984,7 +845,8 @@ void DisplayChar
     (WCHAR chCharCode)
 
 {
-    int i;
+    int  i;
+    long lvkState;
 
 // Line Continuation ToDo
 // Handle in the middle of a line (split in two)
@@ -997,8 +859,11 @@ void DisplayChar
     //   before or beyond the end of the line
     if (iCurChar < iCurLineLen)
     {
+        // Get the current vkState
+        lvkState = GetWindowLong (hWndSM, GWLSM_VKSTATE);
+
         // Handle Insert vs. Replace
-        if (vkState.Ins)
+        if (((LPVKSTATE) &lvkState)->Ins)
         {
             // Ensure the line doesn't get too long
             if ((iCurLineLen + 1) > iLastBufferChar)
@@ -1032,7 +897,7 @@ void DisplayChar
     iCurChar++;
 
     // As we changed iCurChar, move the caret
-    MoveCaret ();
+    MoveCaretSM ();
 
     // Set new line length
     iCurLineLen = max (iCurLineLen, iCurChar);
@@ -1144,18 +1009,22 @@ void DeleteChar
 //***************************************************************************
 
 void MyCreateCaret
-    (HWND hWndSM)
+    (HWND      hWnd,
+     LPVKSTATE lpvkState,
+     long      cyAveChar,
+     void      (*lpMoveCaret) (void))
 {
     // Create a default sized system caret for display
-    CreateCaret (hWndSM,
+    CreateCaret (hWnd,
                  NULL,
-                 vkState.Ins ? DEF_CURWID_INS : DEF_CURWID_REP,
-                 cyAveCharSM);
+                 lpvkState->Ins ? DEF_CURWID_INS : DEF_CURWID_REP,
+                 cyAveChar);
     // Position it
-    MoveCaret ();
+    if (lpMoveCaret)
+        (*lpMoveCaret) ();
 
     // Show it
-    ShowCaret (hWndSM);
+    ShowCaret (hWnd);
 } // End MyCreateCaret
 
 
@@ -1198,13 +1067,15 @@ LRESULT APIENTRY SMWndProc
      LONG lParam)   // ...
 
 {
-    LPGLBHIST lpGlbHist;
-    HGLOBAL   hGlb;
-    LPWCHAR   wszLine;
-    RECT      rc;
-    HDC          hDC;
-    HFONT        hFontOld;
-    TEXTMETRIC   tm;
+    VKSTATE    vkState;
+    long       lvkState;
+    LPGLBHIST  lpGlbHist;
+    HGLOBAL    hGlb;
+    LPWCHAR    wszLine;
+    RECT       rc;
+    HDC        hDC;
+    HFONT      hFontOld;
+    TEXTMETRIC tm;
 
 ////ODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
@@ -1221,8 +1092,12 @@ LRESULT APIENTRY SMWndProc
             int i;
 
             // Initialize variables
-            vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
             cfSM.hwndOwner = hWnd;
+            ZeroMemory (&vkState, sizeof (vkState));
+            vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
+
+            // Save in window extra bytes
+            SetWindowLong (hWnd, GWLSM_VKSTATE, *(long *) &vkState);
 
             // Initialize window-specific resources
             SM_Create (hWnd);
@@ -1390,11 +1265,11 @@ LRESULT APIENTRY SMWndProc
             // *************** Fonts ***********************************
 
             // Get the text metrics for this font
-            hDC = GetDC (hWnd);
+            hDC = MyGetDC (hWnd);
             hFontOld = SelectObject (hDC, hFontTC);
             GetTextMetrics (hDC, &tm);
             SelectObject (hDC, hFontOld);
-            ReleaseDC (hWnd, hDC);
+            MyReleaseDC (hWnd, hDC);
 
             // New height
             cyAveCharSM = MulDiv (cfSM.iPointSize / 10, iLogPixelsY, 72);
@@ -1407,7 +1282,7 @@ LRESULT APIENTRY SMWndProc
 
             // Because cxAveCharSM & cyAveCharSM changed, we need to reposition
             //   the caret as it depends upon those two vars.
-            MoveCaret ();
+            MoveCaretSM ();
 
             // Recalculate the # horizontal characters
             //   and vertical lines.
@@ -1463,7 +1338,7 @@ LRESULT APIENTRY SMWndProc
                         iCurChar--;
 
                         // As we changed iCurChar, move the caret
-                        MoveCaret ();   // Move the caret
+                        MoveCaretSM ();   // Move the caret
 
                         // Delete the char at iCurChar
                         DeleteChar ();
@@ -1522,7 +1397,7 @@ LRESULT APIENTRY SMWndProc
                                 iCurLineLen += iLen;
 
                                 // As we changed iCurLine & iCurChar, move the caret
-                                MoveCaret ();
+                                MoveCaretSM ();
 
                                 // Scroll the window as necessary
                                 if (iCurLine < iFirstWindowLine)
@@ -1595,7 +1470,7 @@ LRESULT APIENTRY SMWndProc
                     iCurChar = iNewCurChar;
 
                     // As we changed iCurChar, move the caret
-                    MoveCaret ();
+                    MoveCaretSM ();
 
                     // Ensure properly terminated
                     lpwszCurLine[iCurLineLen] = L'\0';
@@ -1795,21 +1670,21 @@ LRESULT APIENTRY SMWndProc
                 // Otherwise, DbgMsg it
                 {
 #ifdef DEBUG
-                    wsprintf (lpszTemp,
-                              "SYSCHAR:  chCharCode = %d, %c",
-                              chCharCode,
-                              chCharCode);
-                    DbgMsg (lpszTemp);
+                    wsprintfW (lpwszTemp,
+                               L"SYSCHAR:  chCharCode = %d, %c",
+                               chCharCode,
+                               chCharCode);
+                    DbgMsgW (lpwszTemp);
 #endif
                 } // End IF/ELSE
             } else
             {
 #ifdef DEBUG
-                wsprintf (lpszTemp,
-                          "SYSCHAR:  chCharCode = %d, %c",
-                          chCharCode,
-                          chCharCode);
-                DbgMsg (lpszTemp);
+                wsprintfW (lpwszTemp,
+                           L"SYSCHAR:  chCharCode = %d, %c",
+                           chCharCode,
+                           chCharCode);
+                DbgMsgW (lpwszTemp);
 #endif
             } // End IF/ELSE
 
@@ -1854,7 +1729,7 @@ LRESULT APIENTRY SMWndProc
                     iCurChar = 0;
 
                     // As we changed iCurChar, move the caret
-                    MoveCaret ();       // Move the caret
+                    MoveCaretSM ();       // Move the caret
 
                     // Scroll the window as necessary
                     if (iCurChar < iFirstWindowChar)
@@ -1867,7 +1742,7 @@ LRESULT APIENTRY SMWndProc
                     iCurChar = iCurLineLen;
 
                     // As we changed iCurChar, move the caret
-                    MoveCaret ();       // Move the caret
+                    MoveCaretSM ();       // Move the caret
 
                     // Scroll the window as necessary
                     if (iCurChar > iLastWindowChar)
@@ -1886,7 +1761,7 @@ LRESULT APIENTRY SMWndProc
                         iCurChar--;
 
                         // As we changed iCurChar, move the caret
-                        MoveCaret ();   // Move the caret
+                        MoveCaretSM ();   // Move the caret
                     } // End IF
 
                     // Scroll the window as necessary
@@ -1903,7 +1778,7 @@ LRESULT APIENTRY SMWndProc
                         iCurChar++;
 
                         // As we changed iCurChar, move the caret
-                        MoveCaret ();       // Move the caret
+                        MoveCaretSM ();       // Move the caret
                     } // End IF
 
                     // Scroll the window as necessary
@@ -1926,7 +1801,7 @@ LRESULT APIENTRY SMWndProc
                         iCurLine--;
 
                         // As we changed iCurLine, move the caret
-                        MoveCaret ();
+                        MoveCaretSM ();
 
                         // Copy the current line from the
                         //   history buffer into lpwszCurLine;
@@ -1953,7 +1828,7 @@ LRESULT APIENTRY SMWndProc
                         iCurLine++;
 
                         // As we changed iCurLine, move the caret
-                        MoveCaret ();
+                        MoveCaretSM ();
 
                         // Copy the current line from the
                         //   history buffer into lpwszCurLine;
@@ -1967,12 +1842,18 @@ LRESULT APIENTRY SMWndProc
                     return FALSE;
 
                 case VK_INSERT:         // Insert
+                    // Get the current vkState
+                    lvkState = GetWindowLong (hWndSM, GWLSM_VKSTATE);
+                    vkState = *(LPVKSTATE) &lvkState;
+
                     vkState.Ins = !vkState.Ins;
 
-                    DestroyCaret ();        // 'cause we're changing the cursor width
+                    // Save in window extra bytes
+                    SetWindowLong (hWnd, GWLSM_VKSTATE, *(long *) &vkState);
 
                     // Create a default sized system caret for display
-                    MyCreateCaret (hWndSM);
+                    DestroyCaret ();        // 'cause we're changing the cursor width
+                    MyCreateCaret (hWndSM, &vkState, cyAveCharSM, &MoveCaretSM);
 
                     return FALSE;
 
@@ -2235,8 +2116,12 @@ LRESULT APIENTRY SMWndProc
 #undef  fwSizeType
 
         case WM_SETFOCUS:           // hwndLoseFocus = (HWND) wParam; // handle of window losing focus
+            // Get the current vkState
+            lvkState = GetWindowLong (hWnd, GWLSM_VKSTATE);
+            vkState = *(LPVKSTATE) &lvkState;
+
             // Create a default sized system caret for display
-            MyCreateCaret (hWndSM);
+            MyCreateCaret (hWndSM, &vkState, cyAveCharSM, &MoveCaretSM);
 
             break;                  // Continue with next handler ***MUST***
 
@@ -2258,9 +2143,9 @@ LRESULT APIENTRY SMWndProc
 #define fwKeys  wParam
 #define xPos    (LOWORD(lParam))
 #define yPos    (HIWORD(lParam))
-        case WM_LBUTTONDOWN:        // fwKeys = wParam;        // key flags
-                                    // xPos = LOWORD(lParam);  // horizontal position of cursor
-                                    // yPos = HIWORD(lParam);  // vertical position of cursor
+        case WM_LBUTTONDOWN:        // fwKeys = wParam;        // Key flags
+                                    // xPos = LOWORD(lParam);  // Horizontal position of cursor
+                                    // yPos = HIWORD(lParam);  // Vertical position of cursor
         {
             int xPosRel;
 
@@ -2283,7 +2168,7 @@ LRESULT APIENTRY SMWndProc
             // ***FIXME** -- Should we squeak if the cursor is too low??
 
             // Move the caret there
-            MoveCaret ();
+            MoveCaretSM ();
 
             // Copy the current line from the
             //   history buffer into lpwszCurLine;
@@ -2294,149 +2179,6 @@ LRESULT APIENTRY SMWndProc
 #undef  yPos
 #undef  xPos
 #undef  fwKeys
-
-//// #define fwKeys wParam
-//// #define xPos (LOWORD(lParam))
-//// #define yPos (HIWORD(lParam))
-////         case WM_LBUTTONDOWN:        // fwKeys = wParam;        // key flags
-////                                     // xPos = LOWORD(lParam);  // horizontal position of cursor
-////                                     // yPos = HIWORD(lParam);  // vertical position of cursor
-////
-////             // ***FIXME***
-////
-////             // If we've selected some text, cancel that action
-////             if (bSelText)
-////             {
-////                 // Cancel selected text
-////                 bSelText = FALSE;
-////                 InvalidateRect (hWnd, NULL, TRUE);
-////             } // End IF
-////
-////             bSelText = TRUE;        // Start selection
-////             xSelText = xPos;        // Save starting position
-////             ySelText = yPos;        // ...
-////             xSelChar = iFirstWindowChar + (xPos / cxAveCharSM);
-////             ySelChar = iFirstWindowLine + (yPos / cyAveCharSM);
-////
-////             // Clear the rectangle
-////             SetRectEmpty (&rcSelInit);
-////             SetRectEmpty (&rcSelText);
-////
-////             // If the Ctrl key is down, select whole lines
-////             if (fwKeys & MK_CONTROL)
-////             {
-////                 eSelType  = SEL_LINES;
-////                 rcSelInit.left   = 0;
-////                 rcSelInit.top    = yPos;
-////                 rcSelInit.right  = 65535;
-////                 rcSelInit.bottom = yPos + cyAveCharSM;
-////             } else
-////             // If the Shift key is down, select a rectangular block
-////             if (fwKeys & MK_SHIFT)
-////             {
-////                 eSelType  = SEL_BLOCKS;
-////                 rcSelInit.left   = xPos;
-////                 rcSelInit.top    = yPos;
-////                 rcSelInit.right  = xPos + cxAveCharSM;
-////                 rcSelInit.bottom = yPos + cyAveCharSM;
-////             } else
-////                 // Otherwise, select chars
-////                 eSelType = SEL_CHARS;
-////
-////             return FALSE;           // We handled the msg
-//// #undef  yPos
-//// #undef  xPos
-//// #undef  fwKeys
-////
-//// #define fwKeys wParam
-//// #define xPos (LOWORD(lParam))
-//// #define yPos (HIWORD(lParam))
-////         case WM_MOUSEMOVE:          // fwKeys = wParam;        // key flags
-////                                     // xPos = LOWORD(lParam);  // horizontal position of cursor
-////                                     // yPos = HIWORD(lParam);  // vertical position of cursor
-////
-////             // If we're selecting text
-////             if (bSelText)
-////             {
-////                 RECT rc;
-////
-////                 // Expand or contract selection
-////                 switch (eSelType)
-////                 {
-////                     case SEL_CHARS:
-////
-////
-////                         break;
-////
-////                     case SEL_LINES:
-////                         // Clear previous inversion
-////
-////
-////                         // Invert the lines between
-////                         //   (0, ySelText) and
-////                         //   (0, yPos)
-////                         rc.left   = 0;
-////                         rc.top    = yPos;
-////                         rc.right  = 65535;
-////                         rc.bottom = yPos + cyAveCharSM;
-////
-////                         UnionRect (&rcSelText, &rcSelInit, &rc);
-////                         InvalidateRect (hWnd, &rcSelText, TRUE);
-////
-////                         break;
-////
-////                     case SEL_BLOCKS:
-////                         // Clear previous inversion
-////
-////
-////                         // Invert the chars between
-////                         //   (xSelText, ySelText) and
-////                         //   (xPos, yPos)
-////
-////                         rc.left   = xPos;
-////                         rc.top    = yPos;
-////                         rc.right  = xPos + cxAveCharSM;
-////                         rc.bottom = yPos + cyAveCharSM;
-////
-////                         UnionRect (&rcSelText, &rcSelInit, &rc);
-////                         InvalidateRect (hWnd, &rcSelText, TRUE);
-////
-////                         break;
-////                 } // End SWITCH
-////             } // End IF
-////
-////             return FALSE;           // We handled the msg
-//// #undef  yPos
-//// #undef  xPos
-//// #undef  fwKeys
-////
-//// #define fwKeys wParam
-//// #define xPos (LOWORD(lParam))
-//// #define yPos (HIWORD(lParam))
-////         case WM_LBUTTONUP:          // fwKeys = wParam;        // key flags
-////                                     // xPos = LOWORD(lParam);  // horizontal position of cursor
-////                                     // yPos = HIWORD(lParam);  // vertical position of cursor
-////
-////             // ***FIXME***
-////
-////             // Stop or cancel selection
-////
-////
-////
-////
-////
-////
-////             bSelText = TRUE;
-////
-////             return FALSE;           // We handled the msg
-//// #undef  yPos
-//// #undef  xPos
-//// #undef  fwKeys
-////
-////         case WM_RBUTTONDOWN:        // Popup menu
-////             // ***FIXME***
-////
-////             return FALSE;           // We handled the msg
 
         case WM_ERASEBKGND:
             // In order to reduce screen flicker, we handle erase background
@@ -2640,12 +2382,6 @@ LRESULT APIENTRY SMWndProc
                 DbgGlobalFree (lpwszCurLine); lpwszCurLine = NULL;
             } // End IF
 
-            // *************** Bitmaps *********************************
-            if (hBitMapLineCont)
-            {
-                DeleteObject (hBitMapLineCont); hBitMapLineCont = NULL;
-            } // End IF
-
             // Uninitialize window-specific resources
             SM_Delete (hWnd);
 
@@ -2657,55 +2393,6 @@ LRESULT APIENTRY SMWndProc
     return DefMDIChildProc (hWnd, message, wParam, lParam);
 } // End SMWndProc
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  W2A
-//
-//  Convert and copy a wide char string to a multibyte char string
-//***************************************************************************
-
-void W2A
-    (LPSTR  lpDest,
-     LPWSTR lpSrc,
-     DWORD  dwSize)
-
-{
-    int iLen;
-
-    iLen = 1 + lstrlenW (lpSrc);    // Get source length
-    WideCharToMultiByte (CP_ACP,    // ANSI code page
-                         0,         // No flags
-                         lpSrc,     // Source
-                         iLen,      // Source length
-                         lpDest,    // Destin
-                         dwSize,    // Size of buffer
-                         NULL,      // Use system default char
-                         NULL);     // Skip notification
-} // End W2A
-
-
-//***************************************************************************
-//  A2W
-//
-//  Convert and copy a multibyte char string to a wide char string
-//***************************************************************************
-
-void A2W
-    (LPWSTR lpDest,
-     LPSTR  lpSrc)
-
-{
-    int iLen;
-
-    iLen = 1 + lstrlenA (lpSrc);    // Get source length
-    MultiByteToWideChar (CP_ACP,    // ANSI code page
-                         0,         // No flags
-                         lpSrc,     // Source
-                         iLen,      // Source length
-                         lpDest,    // Destin
-                         iLen * sizeof (WCHAR)); // Size of buffer
-} // End A2W
 
 
 //***************************************************************************

@@ -150,7 +150,7 @@ void RestWsData
 //***************************************************************************
 
 BOOL CALLBACK EnumCallbackShowHide
-    (HWND  hWnd,            // Handle to child window
+    (HWND   hWnd,           // Handle to child window
      LPARAM lParam)         // Application-defined value
 
 {
@@ -215,10 +215,10 @@ void ShowHideChildWindows
 BOOL CreateNewTab
     (HWND  hWndParent,
      LPSTR lpszDPFE,        // Drive, Path, Filename, Ext of the workspace
-     int   iOverTab)
+     int   iTab)
 
 {
-    int          iCurTab; //, iOldTab;
+    int          iCurTab;
     TC_ITEM      tcItem;
     HGLOBAL      hGlbData;
     LPPERTABDATA lpMem = NULL;
@@ -255,8 +255,8 @@ BOOL CreateNewTab
     tcItem.lParam  = (LPARAM) hGlbData;
 
     // Insert a new tab
-    // The new tab is inserted to the left of the index value (iOverTab)
-    iCurTab = TabCtrl_InsertItem (hWndTC, iOverTab, &tcItem);
+    // The new tab is inserted to the left of the index value (iTab)
+    iCurTab = TabCtrl_InsertItem (hWndTC, iTab, &tcItem);
 
     if (iCurTab EQ -1)
     {
@@ -299,10 +299,12 @@ BOOL CreateNewTab
     CreateWindowEx (0,                      // Extended styles
                     szMCClass,              // Class name
                     szMCTitle,              // Window title (for debugging purposes only)
-////                MDIS_ALLCHILDSTYLES,    // Styles
-                    WS_CHILD
+                    0
+////              | MDIS_ALLCHILDSTYLES,    // Styles
+                  | WS_CHILD
                   | WS_BORDER
-                  | WS_CLIPCHILDREN,        // Styles
+                  | WS_CLIPCHILDREN
+                    ,                       // Styles
                     rc.left,                // X-coordinate
                     rc.top,                 // Y-...
                     rc.right  - rc.left,    // Width
@@ -340,6 +342,7 @@ BOOL CreateNewTab
     {
         MB (pszNoCreateDBWnd);
         bRet = FALSE;       // Stop the whole process
+
         goto ERROR_EXIT;
     } // End IF
 #endif
@@ -348,8 +351,10 @@ BOOL CreateNewTab
     lpMem->hWndSM =
     CreateMDIWindow (szSMClass,             // Class name
                      szSMTitle,             // Window title
-                     WS_VSCROLL             // Styles
-                   | WS_HSCROLL,
+                     0
+                   | WS_VSCROLL
+                   | WS_HSCROLL
+                     ,                      // Styles
                      CW_USEDEFAULT,         // X-pos
                      CW_USEDEFAULT,         // Y-pos
                      CW_USEDEFAULT,         // Height
@@ -446,9 +451,8 @@ LRESULT WINAPI LclTabCtrlWndProc
 
 {
     TC_HITTESTINFO  tcHit;
-    static BOOL     bCaptured;
+    static BOOL     bCaptured = FALSE;
     POINT           ptScr;
-////RECT            rcTab;
     HMENU           hMenu;
     UINT            uCloseState,
                     uOverTabState;
@@ -459,15 +463,9 @@ LRESULT WINAPI LclTabCtrlWndProc
     // Split cases
     switch (message)
     {
-        case WM_CREATE:
-            iOverTab = -1;
-            bCaptured = FALSE;
-
-            break;
-
-        case WM_MOUSEMOVE:          // fwKeys = wParam;        // key flags
-                                    // xPos = LOWORD(lParam);  // horizontal position of cursor in CA
-                                    // yPos = HIWORD(lParam);  // vertical position of cursor  in CA
+        case WM_MOUSEMOVE:          // fwKeys = wParam;        // Key flags
+                                    // xPos = LOWORD(lParam);  // Horizontal position of cursor in CA
+                                    // yPos = HIWORD(lParam);  // Vertical position of cursor  in CA
             if (!bCaptured)
             {
                 SetCapture (hWnd);
@@ -514,9 +512,9 @@ LRESULT WINAPI LclTabCtrlWndProc
 
             break;
 
-        case WM_RBUTTONDOWN:                // fwKeys = wParam;        // key flags
-                                            // xPos = LOWORD(lParam);  // horizontal position of cursor
-                                            // yPos = HIWORD(lParam);  // vertical position of cursor
+        case WM_RBUTTONDOWN:                // fwKeys = wParam;        // Key flags
+                                            // xPos = LOWORD(lParam);  // Horizontal position of cursor
+                                            // yPos = HIWORD(lParam);  // Vertical position of cursor
             if (bCaptured)
             {
                 SendMessage (hWnd, WM_MOUSELEAVE, wParam, lParam);
@@ -579,44 +577,15 @@ LRESULT WINAPI LclTabCtrlWndProc
                             0,                  // Reserved (must be zero)
                             hWndMF,             // Handle of owner window
                             NULL);              // Dismissal area outside rectangle (none)
-
             // Free the menu resources
             DestroyMenu (hMenu);
 
             break;
 
-        case WM_LBUTTONUP:                  // fwKeys = wParam;        // key flags
-                                            // xPos = LOWORD(lParam);  // horizontal position of cursor
+        case WM_LBUTTONUP:                  // fwKeys = wParam;        // Key flags
+                                            // xPos = LOWORD(lParam);  // Horizontal position of cursor
                                             // yPos = HIWORD(lParam);  // vertical position of cursor
             // If the user clicked on the icon, close the tab
-
-////////////// If there's only one tab, don't check the close button
-////////////if (TabCtrl_GetItemCount (hWnd) EQ 1)
-////////////    break;
-////////////
-////////////// Save the client coordinates
-////////////tcHit.pt.x = LOWORD (lParam);
-////////////tcHit.pt.y = HIWORD (lParam);
-////////////
-////////////// Ask the Tab Control if we're over a tab
-////////////iOverTab = TabCtrl_HitTest (hWnd, &tcHit);
-////////////
-////////////// If we're not over a tab, quit
-////////////if (iOverTab EQ -1)
-////////////    break;
-////////////
-////////////// Get the item's bounding rectangle
-////////////TabCtrl_GetItemRect (hWnd, iOverTab, &rcTab);
-////////////
-////////////// Remove the border from the rectangle
-////////////AdjustTabRect (&rcTab, iOverTab);
-////////////
-////////////// Transform the bounding rectangle into an image rectangle
-////////////GetImageRect (&rcTab);
-////////////
-////////////// If the point is on the button, close the tab
-////////////if (PtInRect (&rcTab, tcHit.pt))
-////////////    CloseTab (iOverTab);
             if (ClickOnClose ())
                 CloseTab (iOverTab);
             break;
@@ -711,11 +680,6 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Show the child windows of the incoming tab
             ShowHideChildWindows (hWndMC, TRUE);
 
-            // Because we're activating a new tab,
-            //   the caret must be recreated
-            // Create a default sized system caret for display
-            MyCreateCaret (hWndSM);
-
             break;
 #undef  iTab
         } // End TCM_DELETETEM
@@ -808,6 +772,7 @@ void SetTabText
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
+    // Save the text state
     lpMem->bTabTextState = bHighlight;
 
     // We no longer need this ptr
@@ -992,7 +957,7 @@ void DrawTab
     else
         crfg = crTab[crIndex].fg;
 
-    hDC = GetDC (hWndTC);
+    hDC = MyGetDC (hWndTC);
     SetAttrs (hDC, hFontTC, crfg, crbk);
 
     // Remove the border from the rectangle
@@ -1038,7 +1003,7 @@ void DrawTab
     MyGlobalUnlock (hGlbData); lpMem = NULL;
 
     // We no longer need this DC
-    ReleaseDC (hWndTC, hDC);
+    MyReleaseDC (hWndTC, hDC);
 } // End DrawTab
 
 

@@ -140,10 +140,10 @@ void InitChooseFont
     // Zero the struc
     memset (lpcf, 0, sizeof (CHOOSEFONT));
 
-    hDC = GetDC (HWND_DESKTOP);
+    hDC = MyGetDC (HWND_DESKTOP);
     iLogPixelsY = GetDeviceCaps (hDC, LOGPIXELSY);
     lplf->lfHeight = -MulDiv (iPtSize, iLogPixelsY, 72);
-    ReleaseDC (HWND_DESKTOP, hDC);
+    MyReleaseDC (HWND_DESKTOP, hDC);
 
     lpcf->lStructSize = sizeof (CHOOSEFONT);
 ////lpcf->hDC =                     // Only w/CF_PRINTERFONTS
@@ -165,96 +165,70 @@ void InitChooseFont
 
 
 //***************************************************************************
-//  MyChooseFontTC
+//  MyChooseFont
 //
-//  Choose a font for the TC labels
+//  Choose a font for the various windows.
 //***************************************************************************
 
-void MyChooseFontTC
-    (void)
+void MyChooseFont
+    (LPCHOOSEFONT lpcf,
+     void (*CreateNewFont) (void))
 
 {
-    if (ChooseFont (&cfTC))     // Choose it
+    if (ChooseFont (lpcf))      // Choose it
     {
-        // Create a new font for the TC window
-        CreateNewFontTC ();
-
-        // Repaint the TC labels
-        InvalidateRect (hWndTC, NULL, TRUE);
+        // Create a new font for the corresponding window
+        (*CreateNewFont) ();
     } // End IF
-} // End MyChooseFontTC
+} // End MyChooseFont
 
 
 //***************************************************************************
-//  MyChooseFontSM
+//  CreateNewFontCom
 //
-//  Choose a font for the SM windows
+//  Subroutine to CreateNewFontxx to set various variables
 //***************************************************************************
 
-void MyChooseFontSM
-    (void)
+void CreateNewFontCom
+    (HFONT       *lphFont,
+     LPLOGFONT    lplf,
+     LPCHOOSEFONT lpcf,
+     LPTEXTMETRIC lptm,
+     long        *lpcxAveChar,
+     long        *lpcyAveChar)
 
 {
-    if (ChooseFont (&cfSM))     // Choose it
+    HDC         hDC;
+    HFONT       hFontOld;
+
+    // Delete the previous handle (if any)
+    if (*lphFont)
     {
-        // Create a new font for the SM windows
-        CreateNewFontSM ();
+        // Delete the SM font handle
+        MyDeleteObject (*lphFont); *lphFont = NULL;
     } // End IF
-} // End MyChooseFontSM
 
+    // Create the font
+    *lphFont = MyCreateFontIndirect (lplf);
 
-//***************************************************************************
-//  MyChooseFontFE
-//
-//  Choose a font for the FE windows
-//***************************************************************************
+    // Get the text metrics for this font
+    hDC = MyGetDC (HWND_DESKTOP);
+    hFontOld = SelectObject (hDC, *lphFont);
+    GetTextMetrics (hDC, lptm);
+    SelectObject (hDC, hFontOld);
+    MyReleaseDC (HWND_DESKTOP, hDC);
 
-void MyChooseFontFE
-    (void)
+    // New height
+    *lpcyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
 
-{
-    if (ChooseFont (&cfFE))     // Choose it
-    {
-        // Create a new font for the FE windows
-        CreateNewFontFE ();
-    } // End IF
-} // End MyChooseFontFE
+    lplf->lfWidth = (lptm->tmAveCharWidth + lptm->tmMaxCharWidth) / 2;
 
+    // New width (same aspect ratio as old)
+    *lpcxAveChar = MulDiv (lplf->lfWidth, *lpcyAveChar, -lplf->lfHeight);
 
-//***************************************************************************
-//  MyChooseFontME
-//
-//  Choose a font for the ME windows
-//***************************************************************************
-
-void MyChooseFontME
-    (void)
-
-{
-    if (ChooseFont (&cfME))     // Choose it
-    {
-        // Create a new font for the ME windows
-        CreateNewFontME ();
-    } // End IF
-} // End MyChooseFontME
-
-
-//***************************************************************************
-//  MyChooseFontVE
-//
-//  Choose a font for the VE windows
-//***************************************************************************
-
-void MyChooseFontVE
-    (void)
-
-{
-    if (ChooseFont (&cfVE))     // Choose it
-    {
-        // Create a new font for the VE windows
-        CreateNewFontVE ();
-    } // End IF
-} // End MyChooseFontVE
+    lplf->lfHeight = -*lpcyAveChar;
+    *lpcyAveChar = lptm->tmHeight;
+} // End CreateNewFontCom
 
 
 //***************************************************************************
@@ -267,18 +241,18 @@ void CreateNewFontTC
     (void)
 
 {
-    // Delete the previous handle (if any)
-    if (hFontTC)
-    {
-        // Delete the TC font handle
-        MyDeleteObject (hFontTC); hFontTC = NULL;
-    } // End IF
-
-    // Create the font
-    hFontTC = MyCreateFontIndirect (&lfTC);
-
+    // Call common routine to set various variables
+    CreateNewFontCom (&hFontTC,
+                      &lfTC,
+                      &cfTC,
+                      &tmTC,
+                      &cxAveCharTC,
+                      &cyAveCharTC);
     // Tell the TC about the new font
     SendMessage (hWndTC, WM_SETFONT, (WPARAM) hFontTC, 0);
+
+    // Repaint the TC labels
+    InvalidateRect (hWndTC, NULL, TRUE);
 } // End CreateNewFontTC
 
 
@@ -294,16 +268,13 @@ void CreateNewFontSM
 {
     ENUMSETFONT enumSetFont;
 
-    // Delete the previous handle (if any)
-    if (hFontSM)
-    {
-        // Delete the SM font handle
-        MyDeleteObject (hFontSM); hFontSM = NULL;
-    } // End IF
-
-    // Create the font
-    hFontSM = MyCreateFontIndirect (&lfSM);
-
+    // Call common routine to set various variables
+    CreateNewFontCom (&hFontSM,
+                      &lfSM,
+                      &cfSM,
+                      &tmSM,
+                      &cxAveCharSM,
+                      &cyAveCharSM);
     // Initialize the struct
     enumSetFont.lpClassName = szSMClass;
     enumSetFont.hFont       = hFontSM;
@@ -334,16 +305,13 @@ void CreateNewFontFE
 {
     ENUMSETFONT enumSetFont;
 
-    // Delete the previous handle (if any)
-    if (hFontFE)
-    {
-        // Delete the FE font handle
-        MyDeleteObject (hFontFE); hFontFE = NULL;
-    } // End IF
-
-    // Create the font
-    hFontFE = MyCreateFontIndirect (&lfFE);
-
+    // Call common routine to set various variables
+    CreateNewFontCom (&hFontFE,
+                      &lfFE,
+                      &cfFE,
+                      &tmFE,
+                      &cxAveCharFE,
+                      &cyAveCharFE);
     // Initialize the struct
     enumSetFont.lpClassName = szFEClass;
     enumSetFont.hFont       = hFontFE;
@@ -365,16 +333,13 @@ void CreateNewFontME
 {
     ENUMSETFONT enumSetFont;
 
-    // Delete the previous handle (if any)
-    if (hFontME)
-    {
-        // Delete the ME font handle
-        MyDeleteObject (hFontME); hFontME = NULL;
-    } // End IF
-
-    // Create the font
-    hFontME = MyCreateFontIndirect (&lfME);
-
+    // Call common routine to set various variables
+    CreateNewFontCom (&hFontME,
+                      &lfME,
+                      &cfME,
+                      &tmME,
+                      &cxAveCharME,
+                      &cyAveCharME);
     // Initialize the struct
     enumSetFont.lpClassName = szMEClass;
     enumSetFont.hFont       = hFontME;
@@ -396,16 +361,13 @@ void CreateNewFontVE
 {
     ENUMSETFONT enumSetFont;
 
-    // Delete the previous handle (if any)
-    if (hFontVE)
-    {
-        // Delete the VE font handle
-        MyDeleteObject (hFontVE); hFontVE = NULL;
-    } // End IF
-
-    // Create the font
-    hFontVE = MyCreateFontIndirect (&lfVE);
-
+    // Call common routine to set various variables
+    CreateNewFontCom (&hFontVE,
+                      &lfVE,
+                      &cfVE,
+                      &tmVE,
+                      &cxAveCharVE,
+                      &cyAveCharVE);
     // Initialize the struct
     enumSetFont.lpClassName = szVEClass;
     enumSetFont.hFont       = hFontVE;
@@ -436,8 +398,10 @@ HWND CreateToolTip
                     TOOLTIPS_CLASS, // Class for MS Controls
 #endif
                     NULL,           // Window title
-                    TTS_NOANIMATE
-                  | TTS_ALWAYSTIP,  // Styles
+                    0
+                  | TTS_NOANIMATE
+                  | TTS_ALWAYSTIP
+                    ,               // Styles
                     CW_USEDEFAULT,  // X-coord
                     CW_USEDEFAULT,  // Y-...
                     CW_USEDEFAULT,  // Width
@@ -484,10 +448,12 @@ BOOL CreateChildWindows
         CreateWindowEx (0L,                             // Extended styles
                         WC_TABCONTROL,                  // Class
                         szTCTitle,                      // Window title (for debugging purposes only)
-                        TCS_OWNERDRAWFIXED
+                        0
+                      | TCS_OWNERDRAWFIXED
                       | WS_CHILD
                       | WS_CLIPSIBLINGS
-                      | WS_VISIBLE,                     // Styles
+                      | WS_VISIBLE
+                        ,                               // Styles
                         rc.left,                        // X-coord
                         rc.top,                         // Y-coord
                         rc.right - rc.left,             // X-size
@@ -609,7 +575,6 @@ LRESULT APIENTRY MFWndProc
             break;                  // Continue with next handler
 
         case WM_CREATE:
-        {
             // Create the child windows
             if (CreateChildWindows (hWnd) EQ FALSE)
                 return -1;          // Stop the whole process
@@ -683,19 +648,28 @@ LRESULT APIENTRY MFWndProc
             CreateNewFontVE ();
 
             break;                  // Continue with next handler
-        } // WM_CREATE
 
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
         {
-            HWND hWndMD;
+            HWND hWndChild;
 
             // Forward this to all child windows
-            for (hWndMD = GetWindow (hWndMC, GW_CHILD);
-                 hWndMD;
-                 hWndMD = GetWindow (hWndMD, GW_HWNDNEXT))
-                PostMessage (hWndMD, message, wParam, lParam);
+            for (hWndChild = GetWindow (hWndMC, GW_CHILD);
+                 hWndChild;
+                 hWndChild = GetWindow (hWndChild, GW_HWNDNEXT))
+            {
+                // When an MDI child window is minimized, Windows creates two windows: an
+                // icon and the icon title.  The parent of the icon title window is set to
+                // the MDI client window, which confines the icon title to the MDI client
+                // area.  The owner of the icon title is set to the MDI child window.
+                if (GetWindow (hWndChild, GW_OWNER)) // If it's an icon title window, ...
+                    continue;                       // skip it, and continue enumerating
 
+                PostMessage (hWndChild, message, wParam, lParam);
+            } // End FOR
+
+            // Tell the Tooltip window about it
             PostMessage (hWndTT, message, wParam, lParam);
 
             // Uninitialize window-specific resources
@@ -866,11 +840,6 @@ LRESULT APIENTRY MFWndProc
                     // Show the child windows of the incoming tab
                     ShowHideChildWindows (hWndMC, TRUE);
 
-                    // Because we're activating a new tab,
-                    //   the caret must be recreated
-                    // Create a default sized system caret for display
-                    MyCreateCaret (hWndSM);
-
                     return FALSE;       // We handled the msg
 
                 default:
@@ -975,35 +944,35 @@ LRESULT APIENTRY MFWndProc
                 case IDM_TCFONT:
                     // Display a Font Dialog so the user can choose
                     //   a new font for the Tab Control labels
-                    MyChooseFontTC ();
+                    MyChooseFont (&cfTC, &CreateNewFontTC);
 
                     return FALSE;       // We handled the msg
 
                 case IDM_SMFONT:
                     // Display a Font Dialog so the user can choose
                     //   a new font for the Session Manager window
-                    MyChooseFontSM ();
+                    MyChooseFont (&cfSM, &CreateNewFontSM);
 
                     return FALSE;       // We handled the msg
 
                 case IDM_FEFONT:
                     // Display a Font Dialog so the user can choose
                     //   a new font for the Function Editor
-                    MyChooseFontFE ();
+                    MyChooseFont (&cfFE, &CreateNewFontFE);
 
                     return FALSE;       // We handled the msg
 
                 case IDM_MEFONT:
                     // Display a Font Dialog so the user can choose
                     //   a new font for the Matrix Editor
-                    MyChooseFontME ();
+                    MyChooseFont (&cfME, &CreateNewFontME);
 
                     return FALSE;       // We handled the msg
 
                 case IDM_VEFONT:
                     // Display a Font Dialog so the user can choose
                     //   a new font for the Vector Editor
-                    MyChooseFontVE ();
+                    MyChooseFont (&cfVE, &CreateNewFontVE);
 
                     return FALSE;       // We handled the msg
 
@@ -1109,7 +1078,15 @@ LRESULT APIENTRY MFWndProc
 
             // Destroy the image list
             if (hImageList)
-                ImageList_Destroy (hImageList);
+            {
+                ImageList_Destroy (hImageList); hImageList = NULL;
+            } // End IF
+
+            // *************** Bitmaps *********************************
+            if (hBitMapLineCont)
+            {
+                DeleteObject (hBitMapLineCont); hBitMapLineCont = NULL;
+            } // End IF
 
             // Say goodbye
             PostQuitMessage (0);
@@ -1133,8 +1110,6 @@ BOOL CALLBACK EnumCallbackQueryClose
      LPARAM lParam)         // Application-defined value
 
 {
-////BOOL bClose;
-
     // When an MDI child window is minimized, Windows creates two windows: an
     // icon and the icon title.  The parent of the icon title window is set to
     // the MDI client window, which confines the icon title to the MDI client
@@ -1143,14 +1118,6 @@ BOOL CALLBACK EnumCallbackQueryClose
         return TRUE;                    // skip it, and continue enumerating
 
     return SendMessage (hWnd, WM_QUERYENDSESSION, 0, 0);
-////DbgBrk ();
-////bClose = SendMessage (hWnd, WM_QUERYENDSESSION, 0, 0);
-////
-////if (!bClose)
-////    DbgBrk ();
-////*((LPBOOL) lParam) &= bClose;
-////
-////return bClose;
 } // End EnumCallbackQueryClose
 
 
@@ -1187,7 +1154,7 @@ BOOL InitApplication
     } // End IF
 
     // Fill in Session Manager window class structure
-    wc.style = CS_DBLCLKS;
+    wc.style = CS_DBLCLKS | CS_NOCLOSE;
     wc.lpfnWndProc = (WNDPROC) SMWndProc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = GWLSM_EXTRA;
@@ -1296,7 +1263,8 @@ BOOL InitApplication
 //  Uninitialize application-specific resources
 //***************************************************************************
 
-void UninitApplication (HINSTANCE hInstance)
+void UninitApplication
+    (HINSTANCE hInstance)
 
 {
 } // UninitApplication
@@ -1308,7 +1276,8 @@ void UninitApplication (HINSTANCE hInstance)
 //  Saves instance handle and creates main window
 //***************************************************************************
 
-BOOL InitInstance (HANDLE hInstance)
+BOOL InitInstance
+    (HANDLE hInstance)
 
 {
     // Save in global variable
@@ -1355,18 +1324,24 @@ BOOL InitInstance (HANDLE hInstance)
     // Read in the icons
     hIconMF_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_LARGE));
     hIconMF_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_SMALL));
+
     hIconSM_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_SM_LARGE));
     hIconSM_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_SM_SMALL));
+
 #ifdef DEBUG
     hIconDB_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_DB_LARGE));
     hIconDB_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_DB_SMALL));
 #endif
+
     hIconFE_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_FE_LARGE));
     hIconFE_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_FE_SMALL));
+
     hIconME_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_ME_LARGE));
     hIconME_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_ME_SMALL));
+
     hIconVE_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_VE_LARGE));
     hIconVE_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_VE_SMALL));
+
     hIconClose    = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CLOSE   ));
 
     // Get keyboard accelerators
@@ -1382,10 +1357,11 @@ BOOL InitInstance (HANDLE hInstance)
 //  Uninitialize instance-specific resources
 //***************************************************************************
 
-void UninitInstance (HINSTANCE hInstance)
+void UninitInstance
+    (HINSTANCE hInstance)
 
 {
-    // Free the temporary storage
+    // *************** Temporary Storage ***********************
     if (lpszTemp)
     {
         VirtualFree (lpszTemp, 0, MEM_RELEASE); lpszTemp = NULL;
@@ -1406,7 +1382,8 @@ void UninitInstance (HINSTANCE hInstance)
 //  Parse any command line
 //***************************************************************************
 
-BOOL ParseCommandLine (LPSTR lpCmdLine)
+BOOL ParseCommandLine
+    (LPSTR lpCmdLine)
 
 {
     LPCHAR p;
@@ -1433,10 +1410,12 @@ BOOL ParseCommandLine (LPSTR lpCmdLine)
 //  Start the process
 //***************************************************************************
 
-int PASCAL WinMain (HINSTANCE   hInstance,
-                    HINSTANCE   hPrevInstance,  // Zero under Win32
-                    LPSTR       lpCmdLine,
-                    int         nCmdShow)
+int PASCAL WinMain
+    (HINSTANCE   hInstance,
+     HINSTANCE   hPrevInstance,     // Zero under Win32
+     LPSTR       lpCmdLine,
+     int         nCmdShow)
+
 {
     MSG  Msg;
 
@@ -1485,7 +1464,9 @@ int PASCAL WinMain (HINSTANCE   hInstance,
         CreateWindowEx (0L,                             // Extended styles
                         szMFClass,                      // Class
                         szMFTitle,                      // Title
-                        WS_OVERLAPPEDWINDOW,            // Style
+                        0
+                      | WS_OVERLAPPEDWINDOW
+                        ,                               // Styles
                         CW_USEDEFAULT, CW_USEDEFAULT,   // X- and Y-coord
                         CW_USEDEFAULT, CW_USEDEFAULT,   // X- and Y-size
                         hWndTC,                         // Parent window

@@ -23,8 +23,8 @@
 
 #define DEF_INDENT          6           // Prompt indent
 #define DEF_TABS            4           // Tab insertion
-#define DEF_CURWID_INS      2           // Cursor width for insert mode
-#define DEF_CURWID_REP      5           // ...              replace ...
+#define DEF_CURWID_INS      5           // Cursor width for insert mode
+#define DEF_CURWID_REP      2           // ...              replace ...
 #define DEF_HISTLINES    3000           // # lines in history buffer
 #define DEF_MAXLINELEN   1024           // Maximum line length
 #define DEF_TEXT_FG_COLOR   COLOR_RED
@@ -45,6 +45,7 @@
 #include "symtab.h"
 #include "tokens.h"
 #include "parse.h"
+#include "Unicode.h"
 
 // Define variables which are also used in the per tab structure
 #include "pertabdefs.h"
@@ -106,9 +107,11 @@ HWND hWndTC,                            // Global Tab Control window handle
      hWndTT;                            // ...    ToolTip      ...
 
 #ifdef DEBUG
-#define APPEND_DEBUG " (DEBUG)"
+#define  APPEND_DEBUG  " (DEBUG)"
+#define LAPPEND_DEBUG L" (DEBUG)"
 #else
-#define APPEND_DEBUG
+#define  APPEND_DEBUG
+#define LAPPEND_DEBUG
 #endif
 
 EXTERN
@@ -208,23 +211,6 @@ typedef enum tagAPA_FORMAT
 } APA_FORMAT;
 #endif
 
-typedef struct tagVKSTATE
-{
-    UINT  Shift:1,                      // Left- or right-shift key up(0) or down(1)
-////     lShift:1,
-////     rShift:1,
-          Alt:1,                        // Left- or right-Alt key up(0) or down(1)
-////     lAlt:1,
-////     rAlt:1,
-          Ctl:1,                        // Left or -right Ctl key up(0) or down(1)
-////     lCtl:1,
-////     rCtl:1,
-          Ins:1;                        // Replace(0) or insert(1)
-} VKSTATE;
-
-EXTERN
-VKSTATE vkState;
-
 EXTERN
 HBITMAP hBitMapLineCont;                // Bitmap for the line continuation char
 
@@ -279,13 +265,25 @@ CHOOSEFONT cfTC,                        // Global for ChooseFont for the TC
            cfVE;                        // ...                           VE
 
 EXTERN
-LONG cxAveCharSM, cyAveCharSM,          // Size of an average character in the SM font
-     cxAveCharFE, cyAveCharFE,          // Size of an average character in the SM font
-     cxAveCharME, cyAveCharME,          // Size of an average character in the SM font
-     cxAveCharVE, cyAveCharVE;          // Size of an average character in the SM font
+TEXTMETRIC tmTC,                        // Global for TEXTMETRIC for the TC
+           tmSM,                        // ...                           SM
+           tmFE,                        // ...                           FE
+           tmME,                        // ...                           ME
+           tmVE;                        // ...                           VE
 
 EXTERN
-int iOverTab;                           // Index of the tab the mouse is over
+long cxAveCharTC, cyAveCharTC,          // Size of an average character in the TC font
+     cxAveCharSM, cyAveCharSM,          // ...                                 SM ...
+     cxAveCharFE, cyAveCharFE,          // ...                                 FE ...
+     cxAveCharME, cyAveCharME,          // ...                                 ME ...
+     cxAveCharVE, cyAveCharVE;          // ...                                 VE ...
+
+EXTERN
+int iOverTab                            // Index of the tab the mouse is over
+#ifdef DEFINE_VALUES
+ = -1
+#endif
+;
 
 EXTERN
 WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure
@@ -375,20 +373,22 @@ char szMCTitle[]                        // MDI Client ... (for debugging purpose
  = "NARS2000 Debugger Window" APPEND_DEBUG
 #endif
 #endif
-,
-     szFETitle[]                        // Function Editor ...
+;
+
+EXTERN
+WCHAR wszFETitle[]                      // Function Editor ...
 #ifdef DEFINE_VALUES
- = "NARS2000 Function Editor" APPEND_DEBUG
+ = L"NARS2000 Function Editor" LAPPEND_DEBUG
 #endif
 ,
-     szMETitle[]                        // Matrix Editor ...
+      wszMETitle[]                      // Matrix Editor ...
 #ifdef DEFINE_VALUES
- = "NARS2000 Matrix Editor" APPEND_DEBUG
+ = L"NARS2000 Matrix Editor" LAPPEND_DEBUG
 #endif
 ,
-     szVETitle[]                        // Vector Editor ...
+      wszVETitle[]                      // Vector Editor ...
 #ifdef DEFINE_VALUES
- = "NARS2000 Vector Editor" APPEND_DEBUG
+ = L"NARS2000 Vector Editor" LAPPEND_DEBUG
 #endif
 ;
 
@@ -397,9 +397,12 @@ char szMCTitle[]                        // MDI Client ... (for debugging purpose
 #ifdef DEBUG
 #define DBWNDCLASS      "DBClass"       // Debugger     ...
 #endif
-#define FEWNDCLASS      "FEClass"       // Function Editor ...
-#define MEWNDCLASS      "MEClass"       // Matrix Editor ...
-#define VEWNDCLASS      "VEClass"       // Vector Editor ...
+#define  FEWNDCLASS     "FEClass"       // Function Editor ...
+#define LFEWNDCLASS    L"FEClass"       // Function Editor ...
+#define  MEWNDCLASS     "MEClass"       // Matrix Editor ...
+#define LMEWNDCLASS    L"MEClass"       // Matrix Editor ...
+#define  VEWNDCLASS     "VEClass"       // Vector Editor ...
+#define LVEWNDCLASS    L"VEClass"       // Vector Editor ...
 
 EXTERN
 char szMCClass[]                        // MDI Client window class
@@ -437,6 +440,118 @@ char szMCClass[]                        // MDI Client window class
 
 EXTERN
 HIMAGELIST hImageList;                  // Handle to the common image list
+
+typedef struct
+{
+    char  nrm;      // Normal           (shifted & unshifted) (unused)
+    WCHAR alt;      // Alt key pressed  (shifted & unshifted)
+} CHARCODE;
+
+EXTERN
+CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
+                                //   from 32 to 126 inclusive
+#ifdef DEFINE_VALUES
+=
+{
+//Nrm Alt
+{' ', 0                   },    // Space             32
+{'!', UCS2_EQUALUNDERBAR  },    // Shreik            33
+{'"', 0                   },    // Quotation mark    34
+{'#', UCS2_DELSTILE       },    // Number sign       35
+{'$', UCS2_DELTASTILE     },    // Dollar sign       36
+{'%', UCS2_CIRCLESTILE    },    // Percent sign      37
+{'&', UCS2_CIRCLEBAR      },    // Ampersand         38
+{'\'',UCS2_HYDRANT        },    // Apostrophe        39
+{'(', UCS2_DOWNCARETTILDE },    // Left paren        40
+{')', UCS2_UPCARETTILDE   },    // Right paren       41
+{'*', UCS2_CIRCLESTAR     },    // Star              42
+{'+', UCS2_DOMINO         },    // Plus sign         43
+{',', UCS2_LAMP           },    // Comma             44
+{'-', UCS2_TIMES          },    // Bar               45
+{'.', UCS2_SLOPEBAR       },    // Dot               46
+{'/', UCS2_SLASHBAR       },    // Slash             47
+{'0', UCS2_UPCARET        },    // 0                 48
+{'1', UCS2_DIERESIS       },    // 1                 49
+{'2', UCS2_OVERBAR        },    // 2                 50
+{'3', UCS2_LEFTCARET      },    // 3                 51
+{'4', UCS2_NOTMORE        },    // 4                 52
+{'5', UCS2_EQUAL          },    // 5                 53
+{'6', UCS2_NOTLESS        },    // 6                 54
+{'7', UCS2_RIGHTCARET     },    // 7                 55
+{'8', UCS2_NOTEQUAL       },    // 8                 56
+{'9', UCS2_DOWNCARET      },    // 9                 57
+{':', 0                   },    // Colon             58
+{';', UCS2_THORN          },    // Semicolon         59
+{'<', 0                   },    // Less              60
+{'=', UCS2_DIVIDE         },    // Equal             61
+{'>', 0                   },    // More              62
+{'?', 0                   },    // Query             63
+{'@', UCS2_DELTILDE       },    // At sign           64
+{'A', 0                   },    // A                 65
+{'B', 0                   },    // B                 66
+{'C', 0                   },    // C                 67
+{'D', 0                   },    // D                 68
+{'E', UCS2_EPSILONUNDERBAR},    // E                 69
+{'F', 0                   },    // F                 70
+{'G', 0                   },    // G                 71
+{'H', UCS2_DELTAUNDERBAR  },    // H                 72
+{'I', UCS2_IOTAUNDERBAR   },    // I                 73
+{'J', 0                   },    // J                 74
+{'K', 0                   },    // K                 75
+{'L', UCS2_SQUAD          },    // L                 76
+{'M', 0                   },    // M                 77
+{'N', 0                   },    // N                 78
+{'O', 0                   },    // O                 79
+{'P', 0                   },    // P                 80
+{'Q', 0                   },    // Q                 81
+{'R', 0                   },    // R                 82
+{'S', 0                   },    // S                 83
+{'T', 0                   },    // T                 84
+{'U', 0                   },    // U                 85
+{'V', 0                   },    // V                 86
+{'W', 0                   },    // W                 87
+{'X', 0                   },    // X                 88
+{'Y', 0                   },    // Y                 89
+{'Z', 0                   },    // Z                 90
+{'[', UCS2_LEFTARROW      },    // Left bracket      91
+{'\\',UCS2_LEFTTACK       },    // Slope             92
+{']', UCS2_RIGHTARROW     },    // Right bracket     93
+{'^', UCS2_CIRCLESLOPE    },    // Up caret          94
+{'_', UCS2_SHREIK         },    // Underbar          95
+{'`', UCS2_DIAMOND        },    // Grave accent      96
+{'a', UCS2_ALPHA          },    // a                 97
+{'b', UCS2_DOWNTACK       },    // b                 98
+{'c', UCS2_UPSHOE         },    // c                 99
+{'d', UCS2_DOWNSTILE      },    // d                100
+{'e', UCS2_EPSILON        },    // e                101
+{'f', UCS2_UNDERBAR       },    // f                102
+{'g', UCS2_DEL            },    // g                103
+{'h', UCS2_DELTA          },    // h                104
+{'i', UCS2_IOTA           },    // i                105
+{'j', UCS2_JOT            },    // j                106
+{'k', UCS2_APOSTROPHE     },    // k                107
+{'l', UCS2_QUAD           },    // l                108
+{'m', UCS2_STILE          },    // m                109
+{'n', UCS2_UPTACK         },    // n                110
+{'o', UCS2_CIRCLE         },    // o                111
+{'p', UCS2_STAR           },    // p                112
+{'q', UCS2_QUERY          },    // q                113
+{'r', UCS2_RHO            },    // r                114
+{'s', UCS2_UPSTILE        },    // s                115
+{'t', UCS2_TILDE          },    // t                116
+{'u', UCS2_DNARROW        },    // u                117
+{'v', UCS2_DOWNSHOE       },    // v                118
+{'w', UCS2_OMEGA          },    // w                119
+{'x', UCS2_RIGHTSHOE      },    // x                120
+{'y', UCS2_UPARROW        },    // y                121
+{'z', UCS2_LEFTSHOE       },    // z                122
+{'{', UCS2_QUOTEQUAD      },    // Left brace       123
+{'|', UCS2_RIGHTTACK      },    // Stile            124
+{'}', UCS2_ZILDE          },    // Right brace      125
+{'~', UCS2_COMMABAR       },    // Tilde            126
+}
+#endif
+;
 
 
 #define ENUMS_DEFINED

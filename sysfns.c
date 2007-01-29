@@ -11,7 +11,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "termcode.h"
-#include "Unicode.h"
 #include "externs.h"
 
 // Include prototypes unless prototyping
@@ -603,7 +602,7 @@ LPYYSTYPE SysFnTC_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCCom
-    (WCHAR wc,
+    (WCHAR   wc,
      LPTOKEN lptkFunc)
 
 {
@@ -1040,10 +1039,11 @@ LPYYSTYPE SysFnMonTYPE_EM
 //  ConvTime
 //
 //  Convert to ASCII string in the form of
-//    Wed Jan 02 02:03:55 1980\n\0
+//    Wed Jan 02 02:03:55 1980
 //***************************************************************************
 
-LPSTR ConvTime (DWORD time)
+LPSTR ConvTime
+    (DWORD time)
 {
     LPSTR p;
 

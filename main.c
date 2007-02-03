@@ -1284,10 +1284,11 @@ BOOL InitInstance
     _hInstance = hInstance;
 
     // Allocate virtual memory for the char temporary storage
-    lpszTemp = VirtualAlloc (NULL,          // Any address
-                             DEF_CTEMP_MAXSIZE * sizeof (char),
-                             MEM_RESERVE,
-                             PAGE_READWRITE);
+    lpszTemp =
+    VirtualAlloc (NULL,         // Any address
+                  DEF_CTEMP_MAXSIZE * sizeof (char),
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
     if (!lpszTemp)
     {
         // ***FIXME*** -- WS FULL before we got started???
@@ -1303,10 +1304,11 @@ BOOL InitInstance
                   PAGE_READWRITE);
 
     // Allocate virtual memory for the WCHAR temporary storage
-    lpwszTemp = VirtualAlloc (NULL,         // Any address
-                              DEF_WTEMP_MAXSIZE * sizeof (WCHAR),
-                              MEM_RESERVE,
-                              PAGE_READWRITE);
+    lpwszTemp =
+    VirtualAlloc (NULL,         // Any address
+                  DEF_WTEMP_MAXSIZE * sizeof (WCHAR),
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
     if (!lpwszTemp)
     {
         // ***FIXME*** -- WS FULL before we got started???

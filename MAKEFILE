@@ -64,6 +64,8 @@ I=$(SRCROOT)INC\                # .INC directory
 H=$(SRCROOT)INCLUDE\            # .INCLUDE directory
 L=$(SRCROOT)LIB\                # .LIB directory
 
+WS=$(PROJPATH)WineHQ\           # Wine source
+
 M98=N:\                         # Win98 build
 ###M98=L:\VC98\                    # Win98 build
 I98=$(PROJPATH);$(M98)INCLUDE;$(MSVC)INCLUDE
@@ -110,6 +112,11 @@ DIR:
         @if exist $@ del $@
         $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
 
+{$(WS)}.c{$(O)}.obj:
+        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt
+        @if exist $@ del $@
+        $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+
 
 ####################### DEPENDENCY GENERATION #################
 
@@ -120,6 +127,7 @@ $(O)common.DEP      \
 $(O)convert.DEP     \
 $(O)debug.DEP       \
 $(O)display.DEP     \
+$(O)edit.DEP        \
 $(O)editfcn.DEP     \
 $(O)editmat.DEP     \
 $(O)editvec.DEP     \
@@ -171,6 +179,10 @@ $(O)version.DEV
         @Set INCLUDE=$(I98);$(H);$(O)
         depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
 
+{$(WS)}.C{$(O)}.DEP:
+        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt
+        depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+
 {}.C{$(O)}.DEP:
         @Set INCLUDE=$(I98);$(H);$(O)
         depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
@@ -196,6 +208,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)display.DEP)
 !       include $(O)display.DEP
+!endif
+!if exist ($(O)edit.DEP)
+!       include $(O)edit.DEP
 !endif
 !if exist ($(O)editfcn.DEP)
 !       include $(O)editfcn.DEP
@@ -346,6 +361,7 @@ $(O)common.PRO      \
 $(O)convert.PRO     \
 $(O)debug.PRO       \
 $(O)display.PRO     \
+$(O)edit.PRO        \
 $(O)editfcn.PRO     \
 $(O)editmat.PRO     \
 $(O)editvec.PRO     \
@@ -398,6 +414,10 @@ $(O)resdebug.PRO
         @Set INCLUDE=$(I98);$(H);$(O)
         $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
 
+{$(WS)}.C{$(O)}.PRO:
+        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt
+        $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
+
 
 ########################## UTILITY ROUTINES ##########################
 
@@ -426,6 +446,7 @@ $(O)convert.OBJ:        $(@B).C         $(CONVERT_DEP)
 $(O)debug.OBJ:          $(@B).C         $(DEBUG_DEP)
 $(O)display.OBJ:        $(@B).C         $(DISPLAY_DEP)
 $(O)editfcn.OBJ:        $(@B).C         $(EDITFCN_DEP)
+$(O)edit.OBJ:           $(WS)$(@B).C    $(EDIT_DEP)
 $(O)editmat.OBJ:        $(@B).C         $(EDITMAT_DEP)
 $(O)editvec.OBJ:        $(@B).C         $(EDITVEC_DEP)
 $(O)exec.OBJ:           $(@B).C         $(EXEC_DEP)
@@ -535,6 +556,7 @@ OBJS=$(O)assign.OBJ     \
      $(O)sysvars.OBJ    \
      $(O)tabctrl.OBJ    \
      $(O)ver.OBJ        \
+     $(O)edit.OBJ       \
 !if "$(RESDEBUG)" == "1"
      $(O)resdebug.OBJ   \
 !endif

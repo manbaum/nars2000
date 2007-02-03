@@ -236,7 +236,9 @@ ul, ol
 
       <h3>Possible Future Feature Set</h3>
         <ul>
-          <li><p>User-defined operators (e.g., <span class="APL">{del} Z{is}L (LF OP2 RF) R</span>)</p></li>
+          <li><p>User-defined operators (e.g., <span class="APL">{del} Z{is}L (LO OP2 RO) R</span>)</p></li>
+
+          <li><p>Strand left and right arguments to functions</p></li>
 
           <li><p>User-defined function prototypes</p></li>
 
@@ -298,7 +300,7 @@ ul, ol
       <h3>Current Miscellaneous</h3>
         <ul>
           <li><p>Multiple workspaces can be open at the same time
-            and switched between via Tabs.</p></li>
+            and switched between via Tabs</p></li>
 
           <li><p>All variable names are two-byte Unicode
             (really UCS2, a subset of UTF-16)</p></li>
@@ -307,6 +309,10 @@ ul, ol
 
           <li><p>Line continuation marker for easier display of long lines
             which also allows comments within a line</p></li>
+
+          <li><p>Multilevel Undo in function editing</p></li>
+
+          <li><p>Undo buffer saved with function for reuse on next edit</p></li>
 
           <li><p> </p></li>
         </ul>
@@ -321,7 +327,9 @@ ul, ol
             <a class="linkleft" href="http://www.slac.stanford.edu/pubs/slacreports/slac-r-114.html">"An APL Machine"</a>),
             at least for Selective Assignment</p></li>
 
-          <li><p>Workspaces are saved as plain text ASCII files.</p></li>
+          <li><p>Workspaces are saved as plain text ASCII files</p></li>
+
+          <li><p>Syntax highlighting</p></li>
 
           <li><p> </p></li>
         </ul>

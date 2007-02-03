@@ -87,18 +87,22 @@ DecrRefCntInd (hGlbData);
 
 // Define offsets in SMWNDCLASS window extra bytes
 #define GWLSM_VKSTATE   0
-#define GWLSM_EXTRA     GWLSM_VKSTATE + 1 * sizeof (long)
+#define GWLSM_EXTRA     GWLSM_VKSTATE  + 1 * sizeof (long)
 
 // Define offsets in DBWNDCLASS window extra bytes
 #define GWLDB_EXTRA     0
 
 // Define offsets in FEWNDCLASS window extra bytes
 #define GWLFE_HWNDEB    0               // Handle of the matching Edit box control
-#define GWLFE_LINECNT   GWLFE_HWNDEB  + 1 * sizeof (long)
-#define GWLFE_VKSTATE   GWLFE_LINECNT + 1 * sizeof (long)
-#define GWLFE_LASTKEY   GWLFE_VKSTATE + 1 * sizeof (long)
-#define GWLFE_CHANGED   GWLFE_LASTKEY + 1 * sizeof (long)
-#define GWLFE_EXTRA     GWLFE_CHANGED + 1 * sizeof (long) // Total # extra bytes
+#define GWLFE_UNDO_BEG  GWLFE_HWNDEB   + 1 * sizeof (long)
+#define GWLFE_UNDO_NXT  GWLFE_UNDO_BEG + 1 * sizeof (long)
+#define GWLFE_UNDO_LST  GWLFE_UNDO_NXT + 1 * sizeof (long)
+#define GWLFE_UNDO_GRP  GWLFE_UNDO_LST + 1 * sizeof (long)
+#define GWLFE_LINECNT   GWLFE_UNDO_GRP + 1 * sizeof (long)
+#define GWLFE_VKSTATE   GWLFE_LINECNT  + 1 * sizeof (long)
+#define GWLFE_LASTKEY   GWLFE_VKSTATE  + 1 * sizeof (long)
+#define GWLFE_CHANGED   GWLFE_LASTKEY  + 1 * sizeof (long)
+#define GWLFE_EXTRA     GWLFE_CHANGED  + 1 * sizeof (long) // Total # extra bytes
 
 // Define offsets in MEWNDCLASS window extra bytes
 #define GWLME_EXTRA     0

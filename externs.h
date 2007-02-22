@@ -162,8 +162,8 @@ typedef enum tagSYSVAR_VALID
 #endif
 
 EXTERN
-// Use as in:  (*aSysVarValid[SYSVAR_VALID_IO]) (lpYYName, &lpYYExpr->tkToken);
-BOOL (*aSysVarValid[SYSVAR_VALID_LENGTH]) (LPYYSTYPE, LPTOKEN);
+// Use as in:  (*aSysVarValid[SYSVAR_VALID_IO]) (lptkName, lptkExpr);
+BOOL (*aSysVarValid[SYSVAR_VALID_LENGTH]) (LPTOKEN, LPTOKEN);
 
 EXTERN
 char lpszVersion[]
@@ -403,6 +403,8 @@ WCHAR wszFETitle[]                      // Function Editor ...
 #define LMEWNDCLASS    L"MEClass"       // Matrix Editor ...
 #define  VEWNDCLASS     "VEClass"       // Vector Editor ...
 #define LVEWNDCLASS    L"VEClass"       // Vector Editor ...
+#define  ECWNDCLASS     "ECClass"       // Edit Control Window class
+#define LECWNDCLASS    L"ECClass"       // Edit Control Window class
 
 EXTERN
 char szMCClass[]                        // MDI Client window class
@@ -441,6 +443,16 @@ char szMCClass[]                        // MDI Client window class
 EXTERN
 HIMAGELIST hImageList;                  // Handle to the common image list
 
+// Same order as in ARRAY_TYPES
+// so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED
+EXTERN
+UINT uTypeMap[]
+#ifdef DEFINE_VALUES
+//  BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA
+ = {   0,   1,     2,    4,      5,      6,    7,   3}
+#endif
+;
+
 typedef struct
 {
     char  nrm;      // Normal           (shifted & unshifted) (unused)
@@ -455,7 +467,7 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 {
 //Nrm Alt
 {' ', 0                   },    // Space             32
-{'!', UCS2_EQUALUNDERBAR  },    // Shreik            33
+{'!', UCS2_EQUALUNDERBAR  },    // Quote-dot         33
 {'"', 0                   },    // Quotation mark    34
 {'#', UCS2_DELSTILE       },    // Number sign       35
 {'$', UCS2_DELTASTILE     },    // Dollar sign       36
@@ -493,20 +505,20 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 {'D', 0                   },    // D                 68
 {'E', UCS2_EPSILONUNDERBAR},    // E                 69
 {'F', 0                   },    // F                 70
-{'G', 0                   },    // G                 71
+{'G', UCS2_DIERESISDEL    },    // G                 71
 {'H', UCS2_DELTAUNDERBAR  },    // H                 72
 {'I', UCS2_IOTAUNDERBAR   },    // I                 73
-{'J', 0                   },    // J                 74
+{'J', UCS2_DIERESISJOT    },    // J                 74
 {'K', 0                   },    // K                 75
 {'L', UCS2_SQUAD          },    // L                 76
 {'M', 0                   },    // M                 77
-{'N', 0                   },    // N                 78
-{'O', 0                   },    // O                 79
-{'P', 0                   },    // P                 80
+{'N', UCS2_DIERESISUPTACK },    // N                 78
+{'O', UCS2_DIERESISCIRCLE },    // O                 79
+{'P', UCS2_DIERESISSTAR   },    // P                 80
 {'Q', 0                   },    // Q                 81
 {'R', 0                   },    // R                 82
 {'S', 0                   },    // S                 83
-{'T', 0                   },    // T                 84
+{'T', UCS2_DIERESISTILDE  },    // T                 84
 {'U', 0                   },    // U                 85
 {'V', 0                   },    // V                 86
 {'W', 0                   },    // W                 87
@@ -517,7 +529,7 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 {'\\',UCS2_LEFTTACK       },    // Slope             92
 {']', UCS2_RIGHTARROW     },    // Right bracket     93
 {'^', UCS2_CIRCLESLOPE    },    // Up caret          94
-{'_', UCS2_SHREIK         },    // Underbar          95
+{'_', UCS2_QUOTEDOT       },    // Underbar          95
 {'`', UCS2_DIAMOND        },    // Grave accent      96
 {'a', UCS2_ALPHA          },    // a                 97
 {'b', UCS2_DOWNTACK       },    // b                 98
@@ -552,6 +564,30 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 }
 #endif
 ;
+
+typedef enum tagUNDOACTS
+{
+    undoNone = 0,       // No action
+    undoIns,            // Insert a character
+    undoRep,            // Replace a character
+    undoDel,            // Delete one or more characters
+    undoSel,            // Select one or more characters
+    undoInsToggle,      // Toggle the insert mode
+} UNDOACTS;
+
+#define UNDO_NOGROUP    0
+
+typedef struct tagUNDOBUF
+{
+    UINT  CharPosBeg,   // Beginning character position (from start of text),
+                        //  -1 = current position
+          CharPosEnd,   // Ending    ...
+          Group;        // Group index identifies actions to be performed together,
+                        //   0 = no grouping
+    short Action;       // Action (see enum UNDOACTS)
+    WCHAR Char;         // The character (if any),
+                        //   0 = none
+} UNDOBUF, *LPUNDOBUF;
 
 
 #define ENUMS_DEFINED

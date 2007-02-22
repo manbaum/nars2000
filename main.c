@@ -18,6 +18,7 @@
 #include "main.h"
 #include "resdebug.h"
 #include "resource.h"
+#include "editctrl.h"
 
 #define DEFINE_VARS
 #define DEFINE_VALUES
@@ -37,6 +38,9 @@
 
 //************************** Data Area **************************************
 
+LRESULT WINAPI EditWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+
 typedef struct tagENUMSETFONT
 {
     LPCHAR  lpClassName;
@@ -54,6 +58,8 @@ int nMinState,                          // Minimized state as per WinMain
 HANDLE hAccel;                          // Keyboard accelerators
 BOOL fHelp = FALSE,                     // TRUE iff we displayed help
      bCommandLine;                      // ...      there is a filename on the command line
+
+HMODULE user32_module;
 
 HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconSM_Large, hIconSM_Small,
@@ -79,7 +85,8 @@ char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.
 #endif
      pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS ">.",
      pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS ">.",
-     pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.";
+     pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS ">.",
+     pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS ">.";
 
 char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateTCWnd[]     = "Unable to create Tab Control window",
@@ -556,8 +563,9 @@ LRESULT APIENTRY MFWndProc
      LONG lParam)       // ...
 
 {
-    RECT         rcDtop;    // Rectangle for desktop
-    int          iCurTab;
+    RECT rcDtop;    // Rectangle for desktop
+    int  iCurTab;
+    HWND hWndActive;
 
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
@@ -583,7 +591,7 @@ LRESULT APIENTRY MFWndProc
             ReadRegWnd (hWnd);
 
             // *************** Bitmaps *********************************
-            hBitMapLineCont = LoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
+            hBitMapLineCont = MyLoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
             if (hBitMapLineCont)
             {
                 GetObject (hBitMapLineCont, sizeof (BITMAP), (LPSTR) &bmLineCont);
@@ -910,10 +918,53 @@ LRESULT APIENTRY MFWndProc
         case WM_COMMAND:            // wNotifyCode = HIWORD(wParam); // notification code
                                     // wID = LOWORD(wParam);         // item, control, or accelerator identifier
                                     // hwndCtl = (HWND) lParam;      // handle of control
+            // Get the handle of the active MDI window
+            hWndActive = (HWND) SendMessage (hWndMC, WM_MDIGETACTIVE, 0, 0);
+
             switch (GET_WM_COMMAND_ID (wParam, lParam))
             {
                 case IDM_EXIT:
                     PostMessage (hWnd, WM_CLOSE, 0, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_UNDO:
+                    SendMessage (hWndActive, WM_UNDO, 0, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_REDO:
+                    SendMessage (hWndActive, MYWM_REDO, 0, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_COPY:
+                    SendMessage (hWndActive, WM_COPY, 0, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_CUT:
+                    SendMessage (hWndActive, WM_CUT, 0, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_PASTE:
+                    SendMessage (hWndActive, WM_PASTE, 0, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_PASTE_APLWIN:
+                    SendMessage (hWndActive, MYWM_PASTE_APLWIN, 0, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_DELETE:
+                    SendMessage (hWndActive, WM_CLEAR, 0, 0);
+
+                    return FALSE;       // We handled the msg
+
+                case IDM_SELECTALL:
+                    SendMessage (hWndActive, MYWM_SELECTALL, 0, (LPARAM) -1);
 
                     return FALSE;       // We handled the msg
 
@@ -1053,27 +1104,27 @@ LRESULT APIENTRY MFWndProc
             // Destroy the fonts
             if (hFontTC)
             {
-                DeleteObject (hFontTC); hFontTC = NULL;
+                MyDeleteObject (hFontTC); hFontTC = NULL;
             } // End IF
 
             if (hFontSM)
             {
-                DeleteObject (hFontSM); hFontSM = NULL;
+                MyDeleteObject (hFontSM); hFontSM = NULL;
             } // End IF
 
             if (hFontFE)
             {
-                DeleteObject (hFontFE); hFontFE = NULL;
+                MyDeleteObject (hFontFE); hFontFE = NULL;
             } // End IF
 
             if (hFontME)
             {
-                DeleteObject (hFontME); hFontME = NULL;
+                MyDeleteObject (hFontME); hFontME = NULL;
             } // End IF
 
             if (hFontVE)
             {
-                DeleteObject (hFontVE); hFontVE = NULL;
+                MyDeleteObject (hFontVE); hFontVE = NULL;
             } // End IF
 
             // Destroy the image list
@@ -1085,7 +1136,7 @@ LRESULT APIENTRY MFWndProc
             // *************** Bitmaps *********************************
             if (hBitMapLineCont)
             {
-                DeleteObject (hBitMapLineCont); hBitMapLineCont = NULL;
+                MyDeleteObject (hBitMapLineCont); hBitMapLineCont = NULL;
             } // End IF
 
             // Say goodbye
@@ -1131,7 +1182,8 @@ BOOL InitApplication
     (HANDLE hInstance)      // Current instance
 
 {
-    WNDCLASSEX wc = {sizeof (WNDCLASSEX)};
+    WNDCLASSEX wc   = {sizeof (WNDCLASSEX)};
+    WNDCLASSEXW wcw = {sizeof (WNDCLASSEXW)};
 
     // Fill in Master Frame window class structure
     wc.style = CS_DBLCLKS;
@@ -1253,6 +1305,27 @@ BOOL InitApplication
         return FALSE;
     } // End IF
 #endif
+
+    // Fill in Edit Control window class structure
+    wcw.style = CS_DBLCLKS;
+    wcw.lpfnWndProc = (WNDPROC) EditWndProcW;
+    wcw.cbClsExtra = 0;
+    wcw.cbWndExtra = GWLEC_EXTRA;
+    wcw.hInstance = hInstance;
+    wcw.hIcon = NULL;
+    wcw.hIconSm = NULL;
+    wcw.hCursor = LoadCursor (NULL, IDC_ARROW);
+    wcw.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
+    wcw.lpszMenuName = NULL;
+    wcw.lpszClassName = LECWNDCLASS;
+
+    // Register the Edit Control window class
+    if (!RegisterClassExW (&wcw))
+    {
+        MB (pszNoRegECWndClass);
+        return FALSE;
+    } // End IF
+
     return TRUE;
 } // End InitApplication
 
@@ -1421,6 +1494,9 @@ int PASCAL WinMain
 {
     MSG  Msg;
 
+    // This is needed by Wine's EDITCTRL.C
+    user32_module = hInstance;
+
     // Ensure that the common control DLL is loaded.
     InitCommonControls ();
 
@@ -1493,7 +1569,7 @@ int PASCAL WinMain
          && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
         {
             TranslateMessage (&Msg);
-            DispatchMessage (&Msg);
+            DispatchMessage  (&Msg);
         } // End IF
     } // End WHILE
     // GetMessage returned FALSE for a Quit message

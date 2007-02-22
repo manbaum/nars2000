@@ -11,6 +11,7 @@
 #define TRUE    1
 #define FALSE   0
 
+#define abs64(a)    ((a>0)?a:-a)
 #define MB(a)   MessageBox (NULL, a, "NARS2000", MB_OK)
 #define MBC(a)  if (MessageBox (NULL, a, "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
 #define IsGlbPtr(a) (GlobalFlags (a) NE GMEM_INVALID_HANDLE)
@@ -36,7 +37,7 @@ default:    \
 #ifdef DEBUG
 
 #define DBGENTER    DbgMsgW (L"Entering" APPEND_NAME)
-#define DBGEXIT     DbgMsgW (L"Exiting " APPEND_NAME)
+#define DBGLEAVE    DbgMsgW (L"Leaving " APPEND_NAME)
 
 #define DbgGlobalAlloc(uFlags,ByteRes) \
 DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
@@ -64,7 +65,7 @@ DecrRefCntInd (hGlbData);
 #else
 
 #define DBGENTER
-#define DBGEXIT
+#define DBGLEAVE
 
 #define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc (uFlags, ByteRes);
 
@@ -169,6 +170,9 @@ typedef struct tagVKSTATE
 
 // Mask for LOG2NBIB bits
 #define MASKLOG2NBIB    ((1 << LOG2NBIB) - 1)
+
+// End value for shift mask
+#define END_OF_BYTE     (1 << NBIB)
 
 // Width and height of each image in the image list
 #define IMAGE_CX        16

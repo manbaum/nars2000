@@ -465,7 +465,7 @@ BOOL AssignCharScalar_EM
 #endif
 
 BOOL ValidateBoolean_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN   lptkName,
      LPTOKEN   lpToken,
      LPAPLBOOL lpVal)
 
@@ -663,8 +663,8 @@ NORMAL_EXIT:
         ErrorMessageIndirectToken (lpwErrMsg, lpToken);
     else
     {
-        lpYYName->tkToken.tkData.lpSym->stData.stBoolean = *lpVal;
-        lpYYName->tkToken.tkFlags.NoDisplay = 1;
+        lptkName->tkData.lpSym->stData.stBoolean = *lpVal;
+        lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
     return bRet;
@@ -690,7 +690,7 @@ NORMAL_EXIT:
 #endif
 
 BOOL ValidateInteger_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN   lptkName,
      LPTOKEN   lpToken,
      UINT      uValidLo,        // Low range value (inclusive)
      UINT      uValidHi,        // High ...
@@ -920,8 +920,8 @@ NORMAL_EXIT:
         ErrorMessageIndirectToken (lpwErrMsg, lpToken);
     else
     {
-        lpYYName->tkToken.tkData.lpSym->stData.stInteger = *lpVal;
-        lpYYName->tkToken.tkFlags.NoDisplay = 1;
+        lptkName->tkData.lpSym->stData.stInteger = *lpVal;
+        lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
     return bRet;
@@ -948,7 +948,7 @@ NORMAL_EXIT:
 #endif
 
 BOOL ValidateFloat_EM
-    (LPYYSTYPE  lpYYName,
+    (LPTOKEN    lptkName,
      LPTOKEN    lpToken,
      APLFLOAT   fValidLo,       // Low range value (inclusive)
      APLFLOAT   fValidHi,       // High ...
@@ -1177,8 +1177,8 @@ NORMAL_EXIT:
         ErrorMessageIndirectToken (lpwErrMsg, lpToken);
     else
     {
-        lpYYName->tkToken.tkData.lpSym->stData.stFloat = *lpVal;
-        lpYYName->tkToken.tkFlags.NoDisplay = 1;
+        lptkName->tkData.lpSym->stData.stFloat = *lpVal;
+        lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
     return bRet;
@@ -1204,7 +1204,7 @@ NORMAL_EXIT:
 #endif
 
 BOOL ValidateCharVector_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken,
      HGLOBAL  *lpVal)
 
@@ -1404,8 +1404,8 @@ NORMAL_EXIT:
         ErrorMessageIndirectToken (lpwErrMsg, lpToken);
     else
     {
-        lpYYName->tkToken.tkData.lpSym->stData.stGlbData = *lpVal;
-        lpYYName->tkToken.tkFlags.NoDisplay = 1;
+        lptkName->tkData.lpSym->stData.stGlbData = *lpVal;
+        lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
     return bRet;
@@ -1421,14 +1421,14 @@ NORMAL_EXIT:
 //***************************************************************************
 
 BOOL ValidateALX_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    return ValidateCharVector_EM (lpYYName, lpToken, &hGlbQuadALX);
+    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadALX);
 } // End ValidateALX_EM
 
 
@@ -1439,7 +1439,7 @@ BOOL ValidateALX_EM
 //***************************************************************************
 
 BOOL ValidateCT_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
@@ -1447,7 +1447,7 @@ BOOL ValidateCT_EM
     //   one-element vector (demoted to a scalar)
     //   between 0 and 1E-10 inclusive.
 
-    return ValidateFloat_EM (lpYYName, lpToken, 0, 1E-10, &fQuadCT);
+    return ValidateFloat_EM (lptkName, lpToken, 0, 1E-10, &fQuadCT);
 } // End ValidateCT_EM
 
 
@@ -1462,14 +1462,14 @@ BOOL ValidateCT_EM
 //***************************************************************************
 
 BOOL ValidateDF_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
     // Ensure the argument is a Boolean scalar or
     //   one-element vector (demoted to a scalar).
 
-    return ValidateBoolean_EM (lpYYName, lpToken, &bQuadDF);
+    return ValidateBoolean_EM (lptkName, lpToken, &bQuadDF);
 } // End ValidateDF_EM
 
 
@@ -1480,14 +1480,14 @@ BOOL ValidateDF_EM
 //***************************************************************************
 
 BOOL ValidateELX_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector
 
-    return ValidateCharVector_EM (lpYYName, lpToken, &hGlbQuadELX);
+    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadELX);
 } // End ValidateELX_EM
 
 
@@ -1502,14 +1502,14 @@ BOOL ValidateELX_EM
 //***************************************************************************
 
 BOOL ValidateIF_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
     // Ensure the argument is a Boolean scalar or
     //   one-element vector (demoted to a scalar).
 
-    return ValidateBoolean_EM (lpYYName, lpToken, &bQuadIF);
+    return ValidateBoolean_EM (lptkName, lpToken, &bQuadIF);
 } // End ValidateIF_EM
 
 
@@ -1524,14 +1524,14 @@ BOOL ValidateIF_EM
 //***************************************************************************
 
 BOOL ValidateIO_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
     // Ensure the argument is a Boolean scalar or
     //   one-element vector (demoted to a scalar).
 
-    return ValidateBoolean_EM (lpYYName, lpToken, &bQuadIO);
+    return ValidateBoolean_EM (lptkName, lpToken, &bQuadIO);
 } // End ValidateIO_EM
 
 
@@ -1542,14 +1542,14 @@ BOOL ValidateIO_EM
 //***************************************************************************
 
 BOOL ValidateLX_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    return ValidateCharVector_EM (lpYYName, lpToken, &hGlbQuadLX);
+    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadLX);
 } // End ValidateLX_EM
 
 
@@ -1560,7 +1560,7 @@ BOOL ValidateLX_EM
 //***************************************************************************
 
 BOOL ValidatePP_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
@@ -1568,7 +1568,7 @@ BOOL ValidatePP_EM
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to 17, inclusive.
 
-    return ValidateInteger_EM (lpYYName, lpToken, 1, 17, &uQuadPP);
+    return ValidateInteger_EM (lptkName, lpToken, 1, 17, &uQuadPP);
 } // End ValidatePP_EM
 
 
@@ -1585,7 +1585,7 @@ BOOL ValidatePP_EM
 #endif
 
 BOOL ValidatePR_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
@@ -1660,7 +1660,7 @@ BOOL ValidatePR_EM
 
         case TKT_LIST:      // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       &lpYYName->tkToken);
+                                       lptkName);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1735,12 +1735,12 @@ MAKE_SCALAR:
         ErrorMessageIndirectToken (lpwErrMsg, lpToken);
     else
     {
-        lpYYName->tkToken.tkData.lpSym->stFlags.Imm = (cQuadPR NE 0);
+        lptkName->tkData.lpSym->stFlags.Imm = (cQuadPR NE 0);
         if (cQuadPR EQ 0)
-            lpYYName->tkToken.tkData.lpSym->stData.stGlbData = hGlbMTChar;
+            lptkName->tkData.lpSym->stData.stGlbData = hGlbMTChar;
         else
-            lpYYName->tkToken.tkData.lpSym->stData.stChar = cQuadPR;
-        lpYYName->tkToken.tkFlags.NoDisplay = 1;
+            lptkName->tkData.lpSym->stData.stChar = cQuadPR;
+        lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
     return bRet;
@@ -1755,7 +1755,7 @@ MAKE_SCALAR:
 //***************************************************************************
 
 BOOL ValidatePW_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
@@ -1763,7 +1763,7 @@ BOOL ValidatePW_EM
     //   one-element vector (demoted to a scalar)
     //   in the range from 30 to 255, inclusive.
 
-    return ValidateInteger_EM (lpYYName, lpToken, 30, 255, &uQuadPP);
+    return ValidateInteger_EM (lptkName, lpToken, 30, 255, &uQuadPP);
 } // End ValidatePW_EM
 
 
@@ -1774,7 +1774,7 @@ BOOL ValidatePW_EM
 //***************************************************************************
 
 BOOL ValidateRL_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
@@ -1782,7 +1782,7 @@ BOOL ValidateRL_EM
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to (-2)+2*31, inclusive.
 
-    return ValidateInteger_EM (lpYYName, lpToken, 1, 0x7FFFFFFE, &uQuadPP);
+    return ValidateInteger_EM (lptkName, lpToken, 1, 0x7FFFFFFE, &uQuadPP);
 } // End ValidateRL_EM
 
 
@@ -1799,7 +1799,7 @@ BOOL ValidateRL_EM
 #endif
 
 BOOL ValidateSA_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {
@@ -1839,12 +1839,12 @@ BOOL ValidateSA_EM
 
         case TKT_VARIMMED:
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       &lpYYName->tkToken);
+                                       lptkName);
             return FALSE;
 
         case TKT_LIST:      // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       &lpYYName->tkToken);
+                                       lptkName);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1952,9 +1952,9 @@ BOOL ValidateSA_EM
         ErrorMessageIndirectToken (lpwErrMsg, lpToken);
     else
     {
-        FreeResultGlobalVar (lpYYName->tkToken.tkData.lpSym->stData.stGlbData);
-        lpYYName->tkToken.tkData.lpSym->stData.stGlbData = MakeGlbTypeGlb (hGlbRes);
-        lpYYName->tkToken.tkFlags.NoDisplay = 1;
+        FreeResultGlobalVar (lptkName->tkData.lpSym->stData.stGlbData);
+        lptkName->tkData.lpSym->stData.stGlbData = MakeGlbTypeGlb (hGlbRes);
+        lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
     return bRet;
@@ -1975,7 +1975,7 @@ BOOL ValidateSA_EM
 #endif
 
 BOOL ValidateWSID_EM
-    (LPYYSTYPE lpYYName,
+    (LPTOKEN  lptkName,
      LPTOKEN   lpToken)
 
 {

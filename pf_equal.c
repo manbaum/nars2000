@@ -102,32 +102,32 @@ LPYYSTYPE PrimFnEqual_EM
 
 APLSTYPE PrimSpecEqualStorageTypeDyd
     (APLNELM    aplNELMLft,
-     LPAPLSTYPE lpcArrTypeLft,
+     LPAPLSTYPE lpaplTypeLft,
      LPTOKEN    lptkFunc,
      APLNELM    aplNELMRht,
-     LPAPLSTYPE lpcArrTypeRht)
+     LPAPLSTYPE lpaplTypeRht)
 
 {
-    APLSTYPE cArrTypeRes;
+    APLSTYPE aplTypeRes;
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMLft EQ 0 && *lpcArrTypeLft EQ ARRAY_CHAR)
-        *lpcArrTypeLft = ARRAY_BOOL;
+    if (aplNELMLft EQ 0 && *lpaplTypeLft EQ ARRAY_CHAR)
+        *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpcArrTypeRht EQ ARRAY_CHAR)
-        *lpcArrTypeRht = ARRAY_BOOL;
+    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+        *lpaplTypeRht = ARRAY_BOOL;
 
     // Calculate the storage type of the result
-    cArrTypeRes = StorageType (*lpcArrTypeLft, lptkFunc, *lpcArrTypeRht);
+    aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
     // All simple numeric results are Boolean
-    if (IsSimpleNum (cArrTypeRes))
-        cArrTypeRes = ARRAY_BOOL;
+    if (IsSimpleNum (aplTypeRes))
+        aplTypeRes = ARRAY_BOOL;
 
-    return cArrTypeRes;
+    return aplTypeRes;
 } // End PrimSpecEqualStorageTypeDyd
 
 
@@ -175,6 +175,23 @@ APLBOOL PrimFnDydEqualBisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    return CompareCT (aplFloatLft, aplFloatRht, fQuadCT, lpPrimSpec);
+} // End PrimFnDydEqualBisFvF
+
+
+//***************************************************************************
+//  CompareCT
+//
+//  Compare two floating point values with a Comparison Tolerance
+//***************************************************************************
+
+APLBOOL CompareCT
+    (APLFLOAT   aplFloatLft,
+     APLFLOAT   aplFloatRht,
+     APLFLOAT   fCompTol,
+     LPPRIMSPEC lpPrimSpec)
+
+{
     APLFLOAT aplLftAbs,
              aplRhtAbs,
              aplHoodLo;
@@ -184,7 +201,7 @@ APLBOOL PrimFnDydEqualBisFvF
         return 1;
 
     // If the comparison tolerance is zero, return 0
-    if (fQuadCT EQ 0)
+    if (fCompTol EQ 0)
         return 0;
 
     // If the signs differ, return 0
@@ -199,7 +216,7 @@ APLBOOL PrimFnDydEqualBisFvF
     // Calculate the low end of the left neighborhood of (|Rht)
     // ***FIXME*** -- Handle exponent underflow in the
     //   following multiplication
-    aplHoodLo = aplRhtAbs - PrimFnMonStileFisF (aplRhtAbs, lpPrimSpec) * fQuadCT;
+    aplHoodLo = aplRhtAbs - PrimFnMonStileFisF (aplRhtAbs, lpPrimSpec) * fCompTol;
 
     // If (|Rht) is greater than (|Lft),
     // and (|Lft) is in the
@@ -211,7 +228,7 @@ APLBOOL PrimFnDydEqualBisFvF
     // Calculate the low end of the left neighborhood of (|Lft)
     // ***FIXME*** -- Handle exponent underflow in the
     //   following multiplication
-    aplHoodLo = aplLftAbs - PrimFnMonStileFisF (aplLftAbs, lpPrimSpec) * fQuadCT;
+    aplHoodLo = aplLftAbs - PrimFnMonStileFisF (aplLftAbs, lpPrimSpec) * fCompTol;
 
     // If (|Lft) is greater than (|Rht),
     // and (|Rht) is in the
@@ -221,7 +238,7 @@ APLBOOL PrimFnDydEqualBisFvF
         return 1;
 
     return 0;
-} // End PrimFnDydEqualBisFvF
+} // End CompareCT
 
 
 //***************************************************************************

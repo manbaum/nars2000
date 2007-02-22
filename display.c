@@ -33,80 +33,91 @@ extern UINT auLinNumGLOBAL[MAXOBJ];
 //  Display an array
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- AssignDisplay_EM"
+#else
+#define APPEND_NAME
+#endif
+
 BOOL ArrayDisplay_EM
-    (LPYYSTYPE lpYYRes)
+    (LPTOKEN lptkRes)
 
 {
     LPAPLCHAR lpaplChar;
 
     // Split cases based upon the token type
-    switch (lpYYRes->tkToken.tkFlags.TknType)
+    switch (lptkRes->tkFlags.TknType)
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpYYRes->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRes->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, it's an array
-            if (!lpYYRes->tkToken.tkData.lpSym->stFlags.Imm)
+            if (!lptkRes->tkData.lpSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lpYYRes->tkToken.tkData.lpSym->stData.lpVoid));
+                Assert (IsGlbTypeVarDir (lptkRes->tkData.lpSym->stData.lpVoid));
 
                 // Check for NoDisplay flag
-                if (lpYYRes->tkToken.tkFlags.NoDisplay)
+                if (lptkRes->tkFlags.NoDisplay)
                     return TRUE;
 
                 lpaplChar =
                 FormatGlobal (lpwszTemp,
-                              ClrPtrTypeDirGlb (lpYYRes->tkToken.tkData.lpSym->stData.lpVoid));
+                              ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData));
                 break;
             } // End IF
 
             // Check for NoDisplay flag
-            if (lpYYRes->tkToken.tkFlags.NoDisplay)
+            if (lptkRes->tkFlags.NoDisplay)
                 return TRUE;
 
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpYYRes->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRes->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // stData is immediate
-            Assert (lpYYRes->tkToken.tkData.lpSym->stFlags.Imm);
+            Assert (lptkRes->tkData.lpSym->stFlags.Imm);
 
             lpaplChar =
             FormatSymTabConst (lpwszTemp,
-                               lpYYRes->tkToken.tkData.lpSym);
+                               lptkRes->tkData.lpSym);
             break;
 
         case TKT_VARIMMED:  // The tkData is an immediate constant
+            // Check for NoDisplay flag
+            if (lptkRes->tkFlags.NoDisplay)
+                return TRUE;
+
             lpaplChar =
             FormatImmed (lpwszTemp,
-                         lpYYRes->tkToken.tkFlags.ImmType,
-                         &lpYYRes->tkToken.tkData.lpVoid);
+                         lptkRes->tkFlags.ImmType,
+                         &lptkRes->tkData.lpVoid);
             break;
 
         case TKT_LIST:      // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR
-#ifdef DEBUG
-                                       L" -- ArrayDisplay (TKT_LIST)"
-#endif
-                                       , &lpYYRes->tkToken);
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lptkRes);
             return FALSE;
 
         case TKT_VARARRAY:  // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
-            switch (GetPtrTypeDir (lpYYRes->tkToken.tkData.lpVoid))
+            // Check for NoDisplay flag
+            if (lptkRes->tkFlags.NoDisplay)
+                return TRUE;
+
+            switch (GetPtrTypeDir (lptkRes->tkData.lpVoid))
             {
                 case PTRTYPE_STCONST:
                     lpaplChar =
                     FormatSymTabConst (lpwszTemp,
-                                       lpYYRes->tkToken.tkData.lpSym);
+                                       lptkRes->tkData.lpSym);
                     break;
 
                 case PTRTYPE_HGLOBAL:
                     lpaplChar =
                     FormatGlobal (lpwszTemp,
-                                  ClrPtrTypeDirGlb (lpYYRes->tkToken.tkData.lpVoid));
+                                  ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
                     break;
 
                 defstop
@@ -132,6 +143,7 @@ BOOL ArrayDisplay_EM
 
     return TRUE;
 } // End ArrayDisplay_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -147,7 +159,7 @@ LPAPLCHAR FormatGlobal
 {
     LPVOID    lpMem;
     UINT      u;
-    APLSTYPE  cArrType;         // The array storage type (see enum ARRAY_TYPES)
+    APLSTYPE  aplType;          // The array storage type (see enum ARRAY_TYPES)
     APLNELM   aplNELM;          // # elements in the array
     APLRANK   aplRank;          // The rank of the array
     int       iBitIndex;
@@ -166,9 +178,9 @@ LPAPLCHAR FormatGlobal
     Assert (lpHeader->Sign.ature EQ VARARRAY_HEADER_SIGNATURE);
 
     // Save the Type, NELM, and Rank
-    cArrType = lpHeader->ArrType;
-    aplNELM  = lpHeader->NELM;
-    aplRank  = lpHeader->Rank;
+    aplType = lpHeader->ArrType;
+    aplNELM = lpHeader->NELM;
+    aplRank = lpHeader->Rank;
 
 #undef  lpHeader
 
@@ -192,7 +204,7 @@ LPAPLCHAR FormatGlobal
             // Display only if 0 or 1 (otherwise it's
             //   obvious from the display)
             if ((*(LPAPLDIM) lpMem) > 1
-             || cArrType EQ ARRAY_APA)
+             || aplType EQ ARRAY_APA)
             {
                 ((LPAPLDIM) lpMem)++;   // Just skip over the dimension
 
@@ -220,7 +232,7 @@ LPAPLCHAR FormatGlobal
     } // End SWITCH
 
     // Format the individual values
-    switch (cArrType)
+    switch (aplType)
     {
         case ARRAY_BOOL:                // lpMem -> bit values
             iBitIndex = 0;
@@ -375,7 +387,7 @@ LPAPLCHAR FormatGlobal
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    Assert (cArrType EQ ARRAY_NESTED);
+                    Assert (aplType EQ ARRAY_NESTED);
                     lpaplChar =
                     FormatNestedArray (lpaplChar, ClrPtrTypeIndGlb (lpMem), aplNELM EQ 1);
 
@@ -752,6 +764,7 @@ void DisplayHshTab
     {
      {0x00001,  L" Inuse"    },
      {0x00002,  L" PrinHash" },
+     {0x00004,  L" SymCopy"  },
     };
 
     DbgMsg ("********** Hash Table **********************************");
@@ -772,7 +785,7 @@ void DisplayHshTab
         UINT  htFlags;
 
         // Format the flags
-        htFlags = *(UINT *)&lpHshEntry->htFlags;
+        htFlags = *(UINT *) &lpHshEntry->htFlags;
         for (j = 0;
              j < (sizeof (ahtFlagNames) / sizeof (ahtFlagNames[0]));
              j++)
@@ -916,7 +929,7 @@ void DisplaySymTab
         for (j = 0;
              j < (sizeof (astFlagNames) / sizeof (astFlagNames[0]));
              j++)
-        if ((*(UINT *)&stFlags) & astFlagNames[j].uMask)
+        if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
             lstrcatW (wszFlags, astFlagNames[j].lpwszName);
 
         if (stFlags.SysVar)
@@ -1104,12 +1117,13 @@ void DisplayGlobals
     (BOOL bDispAll)
 
 {
-    int     i;
-    HGLOBAL hGlb;
-    LPVOID  lpMem;
-    APLDIM  aplDim;
-    LPVOID  lpData;
-    APLCHAR aplArrChar[6];
+    int       i;
+    HGLOBAL   hGlb;
+    LPVOID    lpMem;
+    APLDIM    aplDim;
+    LPVOID    lpData;
+    APLCHAR   aplArrChar[19];
+    LPAPLCHAR lpwsz;
 
     DbgMsg ("********** Globals *************************************");
 
@@ -1141,14 +1155,53 @@ void DisplayGlobals
                     aplDim = (APLDIM) -1;
                 else
                     aplDim = *VarArrayBaseToDim (lpHeader);
+                // Skip over the header and dimension to the data
                 lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
-                lstrcpynW (aplArrChar, lpData, (UINT) min (6, lpHeader->NELM));
-                aplArrChar[min (6, lpHeader->NELM)] = L'\0';
+
+                // Split cases based upon the array storage type
+                switch (lpHeader->ArrType)
+                {
+                    case ARRAY_BOOL:
+                    case ARRAY_INT:
+                    case ARRAY_FLOAT:
+                    case ARRAY_APA:
+                        if (lpHeader->NELM EQ 0)
+                        {
+                            aplArrChar[0] = UCS2_ZILDE;
+                            aplArrChar[1] = L'\0';
+                        } else
+                        {
+                            lpwsz =
+                            FormatImmed (aplArrChar,
+                                         TranslateArrayTypeToImmType (lpHeader->ArrType),
+                                         lpData);
+                            // Delete the trailing blank
+                            lpwsz[-1] = L'\0';
+                        } // End IF/ELSE
+
+                        break;
+
+                    case ARRAY_HETERO:
+                    case ARRAY_NESTED:
+                        aplArrChar[0] = L'\0';
+
+                        break;
+
+                    case ARRAY_CHAR:
+                        lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (6, lpHeader->NELM));
+                        aplArrChar[min (6, lpHeader->NELM)] = L'\0';
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
                 wsprintfW (lpwszTemp,
-///////////////////////////L"hGlb=%08X, ArrType=%2d, NELM=%08X%08X, RC=%2d, Rank=%2d, Dim1=%3d, Line#=%d, (%5.5S)",
-                           L"hGlb=%08X, ArrType=%c, NELM=%3d, RC=%2d, Rank=%2d, Dim1=%3d, Line#=%4d, (%s)",
+                           L"hGlb=%08X, ArrType=%c%c, NELM=%3d, RC=%1d, Rank=%2d, Dim1=%3d, Line#=%4d, (%s)",
                            hGlb,
                            L"BIFCHNLA"[lpHeader->ArrType],
+                           L" *"[lpHeader->Perm],
 ///////////////////////////HIDWORD (lpHeader->NELM),
                            LODWORD (lpHeader->NELM),
                            lpHeader->RefCnt,
@@ -1776,6 +1829,111 @@ void DisplayStrand
 
     DbgMsg ("********** End Strands *********************************");
 } // End DisplayStrand
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  DisplayUndo
+//
+//  Display the Undo Buffer
+//***************************************************************************
+
+void DisplayUndo
+    (HWND hWnd)
+
+{
+    UINT      uCharPos,
+              uLineCount;
+    HGLOBAL   hGlbMem;
+    LPWCHAR   lpwsz, p;
+    HWND      hWndParent;
+    LPUNDOBUF lpUndoBeg,    // Ptr to start of Undo Buffer
+              lpUndoNxt;    // ...    next available slot in the Undo Buffer
+    static LPWCHAR Actions[]={L"None",
+                              L"Ins",
+                              L"Rep",
+                              L"Del",
+                              L"Sel",
+                              L"Back",
+                              L"InsToggle"};
+
+    DbgMsg ("********** Undo Buffer *********************************");
+
+    // Get the char position of the caret
+    uCharPos = GetCurCharPos (hWnd);
+
+    // Get the lines in the text
+    uLineCount = SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
+
+    // Display it
+    dprintf ("Caret position = %d, # lines = %d",
+             uCharPos,
+             uLineCount);
+
+    // Get the Edit Control's memory handle
+    (long) hGlbMem = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
+
+    // Lock the memory to get a ptr to it
+    lpwsz = MyGlobalLock (hGlbMem);
+
+#define VIS_CR  L'\xAE'
+#define VIS_NL  L'\xA9'
+#define VIS_HT  L'\xBB'
+
+    // Replace L'\r' with a visible char
+    while (p = strchrW (lpwsz, L'\r'))
+        *p = VIS_CR;
+
+    // Replace L'\n' with a visible char
+    while (p = strchrW (lpwsz, L'\n'))
+        *p = VIS_NL;
+
+    // Replace L'\t' with a visible char
+    while (p = strchrW (lpwsz, L'\t'))
+        *p = VIS_HT;
+
+    // Display it
+    dprintfW (L"Text = <%s>",
+              lpwsz);
+
+    // Restore L'\t'
+    while (p = strchrW (lpwsz, VIS_HT))
+        *p = L'\t';
+
+    // Restore L'\n'
+    while (p = strchrW (lpwsz, VIS_NL))
+        *p = L'\n';
+
+    // Restore L'\r'
+    while (p = strchrW (lpwsz, VIS_CR))
+        *p = L'\r';
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbMem); lpwsz = NULL;
+
+    // Get the parent window handle
+    hWndParent = GetParent (hWnd);
+
+    // Get the ptrs to the next available slot in our Undo Buffer
+    (long) lpUndoNxt = GetWindowLong (hWndParent, GWLFE_UNDO_NXT);
+    (long) lpUndoBeg = GetWindowLong (hWndParent, GWLFE_UNDO_BEG);
+
+    // Loop through the undo buffer entries
+    for (; lpUndoBeg < lpUndoNxt; lpUndoBeg++)
+    {
+        wsprintfW (lpwszTemp,
+                   L"Act = %9s, %2d-%2d, Group = %3d, Char = 0x%04X",
+                   Actions[lpUndoBeg->Action],
+                   lpUndoBeg->CharPosBeg,
+                   lpUndoBeg->CharPosEnd,
+                   lpUndoBeg->Group,
+                   lpUndoBeg->Char);
+        DbgMsgW (lpwszTemp);
+    } // End FOR
+
+    DbgMsg ("********** End Undo Buffer *****************************");
+} // End DisplayUndo
 #endif
 
 

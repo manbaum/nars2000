@@ -104,31 +104,31 @@ LPYYSTYPE PrimFnUpStile_EM
 
 APLSTYPE PrimSpecUpStileStorageTypeMon
     (APLNELM    aplNELMRht,
-     LPAPLSTYPE lpcArrTypeRht,
+     LPAPLSTYPE lpaplTypeRht,
      LPTOKEN    lptkFunc)
 
 {
-    APLSTYPE cArrTypeRes;
+    APLSTYPE aplTypeRes;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpcArrTypeRht EQ ARRAY_CHAR)
-        *lpcArrTypeRht = ARRAY_BOOL;
+    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+        *lpaplTypeRht = ARRAY_BOOL;
 
-    if (*lpcArrTypeRht EQ ARRAY_CHAR
-     || *lpcArrTypeRht EQ ARRAY_LIST)
+    if (*lpaplTypeRht EQ ARRAY_CHAR
+     || *lpaplTypeRht EQ ARRAY_LIST)
         return ARRAY_ERROR;
 
     // The storage type of the result is
     //   the same as that of the right arg
     //   except FLOAT goes to INT
     // IisF promotes to FisF as necessary.
-    if (*lpcArrTypeRht EQ ARRAY_FLOAT)
-        cArrTypeRes = ARRAY_INT;
+    if (*lpaplTypeRht EQ ARRAY_FLOAT)
+        aplTypeRes = ARRAY_INT;
     else
-        cArrTypeRes = *lpcArrTypeRht;
+        aplTypeRes = *lpaplTypeRht;
 
-    return cArrTypeRes;
+    return aplTypeRes;
 } // End PrimSpecUpStileStorageTypeMon
 
 
@@ -243,7 +243,7 @@ BOOL PrimFnMonUpStileAPA_EM
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return TRUE;
 } // End PrimFnMonUpStileAPA_EM
@@ -258,28 +258,28 @@ BOOL PrimFnMonUpStileAPA_EM
 
 APLSTYPE PrimSpecUpStileStorageTypeDyd
     (APLNELM    aplNELMLft,
-     LPAPLSTYPE lpcArrTypeLft,
+     LPAPLSTYPE lpaplTypeLft,
      LPTOKEN    lptkFunc,
      APLNELM    aplNELMRht,
-     LPAPLSTYPE lpcArrTypeRht)
+     LPAPLSTYPE lpaplTypeRht)
 
 {
-    APLSTYPE cArrTypeRes;
+    APLSTYPE aplTypeRes;
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMLft EQ 0 && *lpcArrTypeLft EQ ARRAY_CHAR)
-        *lpcArrTypeLft = ARRAY_BOOL;
+    if (aplNELMLft EQ 0 && *lpaplTypeLft EQ ARRAY_CHAR)
+        *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpcArrTypeRht EQ ARRAY_CHAR)
-        *lpcArrTypeRht = ARRAY_BOOL;
+    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+        *lpaplTypeRht = ARRAY_BOOL;
 
     // Calculate the storage type of the result
-    cArrTypeRes = StorageType (*lpcArrTypeLft, lptkFunc, *lpcArrTypeRht);
+    aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    return cArrTypeRes;
+    return aplTypeRes;
 } // End PrimSpecUpStileStorageTypeDyd
 
 

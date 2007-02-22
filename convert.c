@@ -36,7 +36,8 @@ APLINT FloatToAplint_SCT
     // Convert to an integer (rounding down)
     aplInteger = (APLINT) floor (fFloat);
 
-    if (SYS_CT > fabs (fFloat - (APLFLOAT) aplInteger))
+    // See how the number and its floor compare
+    if (CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL))
     {
         if (lpbRet)
             *lpbRet = TRUE;
@@ -46,7 +47,8 @@ APLINT FloatToAplint_SCT
     // Convert to an integer (rounding up)
     aplInteger = (APLINT) ceil (fFloat);
 
-    if (SYS_CT > fabs (fFloat - (APLFLOAT) aplInteger))
+    // See how the number and its ceiling compare
+    if (CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL))
     {
         if (lpbRet)
             *lpbRet = TRUE;
@@ -57,7 +59,8 @@ APLINT FloatToAplint_SCT
     if (lpbRet)
         *lpbRet = FALSE;
 
-    return 0;
+    // Return the ceiling of the fractional value
+    return aplInteger;
 } // End FloatToAplint_SCT
 
 

@@ -29,14 +29,14 @@
 #endif
 
 void FreeResultName
-    (LPYYSTYPE lpYYRes)
+    (LPTOKEN lptkRes)
 
 {
     DBGENTER;
 
-    FreeResultSub (lpYYRes, TRUE);
+    FreeResultSub (lptkRes, TRUE);
 
-    DBGEXIT;
+    DBGLEAVE;
 } // End FreeResultName
 #undef  APPEND_NAME
 
@@ -54,14 +54,14 @@ void FreeResultName
 #endif
 
 void FreeResult
-    (LPYYSTYPE lpYYRes)
+    (LPTOKEN lptkRes)
 
 {
     DBGENTER;
 
-    FreeResultSub (lpYYRes, FALSE);
+    FreeResultSub (lptkRes, FALSE);
 
-    DBGEXIT;
+    DBGLEAVE;
 } // End FreeResult
 #undef  APPEND_NAME
 
@@ -72,33 +72,40 @@ void FreeResult
 //  Free the HGLOBALs and LPSYMENTRYs in a result
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FreeResultSub"
+#else
+#define APPEND_NAME
+#endif
+
 void FreeResultSub
-    (LPYYSTYPE lpYYRes,
-     BOOL      bFreeName)
+    (LPTOKEN lptkRes,
+     BOOL    bFreeName)
 
 {
     STFLAGS stFlags = {0};
     BOOL    bTmp;
+    HGLOBAL hGlbData;
 
     // Split cases based upon the token type
-    switch (lpYYRes->tkToken.tkFlags.TknType)
+    switch (lptkRes->tkFlags.TknType)
     {
         case TKT_VARNAMED:
         case TKT_FCNNAMED:
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpYYRes->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRes->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            if (!lpYYRes->tkToken.tkData.lpSym->stFlags.Value)
+            if (!lptkRes->tkData.lpSym->stFlags.Value)
                 return;
 
-            // If the SYMENTRY is not immediate, it must be an HGLOBAL
-            if (!lpYYRes->tkToken.tkData.lpSym->stFlags.Imm)
+            // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
+            if (!lptkRes->tkData.lpSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable or function array
-                Assert (IsGlbTypeVarDir (lpYYRes->tkToken.tkData.lpSym->stData.stGlbData)
-                     || IsGlbTypeFcnDir (lpYYRes->tkToken.tkData.lpSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir (lptkRes->tkData.lpSym->stData.stGlbData)
+                     || IsGlbTypeFcnDir (lptkRes->tkData.lpSym->stData.stGlbData));
 
                 // The call to FreeResult after ArrayDisplay_EM needs the
                 //   following if-statement.
@@ -106,21 +113,24 @@ void FreeResultSub
                 // Is it time to free the name?
                 if (bFreeName)
                 {
-                    if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_FCNNAMED
-                     || lpYYRes->tkToken.tkFlags.TknType EQ TKT_OP1NAMED
-                     || lpYYRes->tkToken.tkFlags.TknType EQ TKT_OP2NAMED)
-                        bTmp = FreeResultGlobalFcn (ClrPtrTypeDirGlb (lpYYRes->tkToken.tkData.lpSym->stData.stGlbData));
+                    // Get the global memory ptr
+                    hGlbData = ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData);
+
+                    if (lptkRes->tkFlags.TknType EQ TKT_FCNNAMED
+                     || lptkRes->tkFlags.TknType EQ TKT_OP1NAMED
+                     || lptkRes->tkFlags.TknType EQ TKT_OP2NAMED)
+                        bTmp = FreeResultGlobalFcn (hGlbData);
                     else
-                        bTmp = FreeResultGlobalVar (ClrPtrTypeDirGlb (lpYYRes->tkToken.tkData.lpSym->stData.stGlbData));
+                        bTmp = FreeResultGlobalVar (hGlbData);
                     if (bTmp)
                     {
 #ifdef DEBUG
                         dprintf ("**Zapping in FreeResultSub: Token=%08X, Value=%08X (%s#%d)",
-                                 lpYYRes,
-                                 ClrPtrTypeDir (lpYYRes->tkToken.tkData.lpSym->stData.stGlbData),
+                                 lptkRes,
+                                 ClrPtrTypeDir (lptkRes->tkData.lpSym->stData.stGlbData),
                                  FNLN);
 #endif
-                        lpYYRes->tkToken.tkData.lpSym->stData.stGlbData = NULL;
+                        lptkRes->tkData.lpSym->stData.stGlbData = NULL;
                     } // End IF
                 } // End IF
             } // End IF
@@ -137,7 +147,7 @@ void FreeResultSub
                 stFlags.SysVarValid = (UINT) -1;
 
                 // Clear the symbol table flags
-                *(UINT *) &lpYYRes->tkToken.tkData.lpSym->stFlags &= *(UINT *) &stFlags;
+                *(UINT *) &lptkRes->tkData.lpSym->stFlags &= *(UINT *) &stFlags;
             } // End IF
 
             return;
@@ -152,25 +162,25 @@ void FreeResultSub
         case TKT_AXISARRAY: // ...
         case TKT_FCNARRAY:  // ...
             // Check for ptr reuse
-            if (!PtrReusedDir (lpYYRes->tkToken.tkData.lpVoid))
+            if (!PtrReusedDir (lptkRes->tkData.tkGlbData))
             {
                 // tkData is a valid HGLOBAL variable or function array
-                Assert (IsGlbTypeVarDir (lpYYRes->tkToken.tkData.tkGlbData)
-                     || IsGlbTypeFcnDir (lpYYRes->tkToken.tkData.tkGlbData));
+                Assert (IsGlbTypeVarDir (lptkRes->tkData.tkGlbData)
+                     || IsGlbTypeFcnDir (lptkRes->tkData.tkGlbData));
 
-                if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
-                    bTmp = FreeResultGlobalFcn (ClrPtrTypeDirGlb (lpYYRes->tkToken.tkData.tkGlbData));
+                if (lptkRes->tkFlags.TknType EQ TKT_FCNARRAY)
+                    bTmp = FreeResultGlobalFcn (ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
                 else
-                    bTmp = FreeResultGlobalVar (ClrPtrTypeDirGlb (lpYYRes->tkToken.tkData.tkGlbData));
+                    bTmp = FreeResultGlobalVar (ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
                 if (bTmp)
                 {
 #ifdef DEBUG
                     dprintf ("**Zapping in FreeResultSub: Token=%08X, Value=%08X (%s#%d)",
-                             lpYYRes,
-                             ClrPtrTypeDir (lpYYRes->tkToken.tkData.tkGlbData),
+                             lptkRes,
+                             ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
                              FNLN);
 #endif
-                    lpYYRes->tkToken.tkData.tkGlbData = NULL;
+                    lptkRes->tkData.tkGlbData = NULL;
                 } // End IF
             } // End IF
 
@@ -182,10 +192,16 @@ void FreeResultSub
         case TKT_JOTDOT:    // ...                    {jot}{dot}
             return;
 
+        case TKT_STRNAMED:  // tkData contains an HGLOBAL of a strand of names
+            DbgGlobalFree (ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
+
+            return;
+
         defstop
             return;
     } // End SWITCH
 } // End FreeResultSub
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -206,7 +222,7 @@ BOOL FreeResultGlobalVar
 {
     LPVOID    lpMem;
     APLRANK   aplRank;
-    APLSTYPE  cArrType;         // The array storage type (see enum ARRAY_TYPES)
+    APLSTYPE  aplType;          // The array storage type (see enum ARRAY_TYPES)
     APLNELM   aplNELM;
     UINT      u,
               RefCnt;
@@ -225,10 +241,10 @@ BOOL FreeResultGlobalVar
     if (!lpHeader->Perm)
     {
         // Save the Type, NELM, Rank, and RefCnt
-        cArrType = lpHeader->ArrType;
-        RefCnt   = lpHeader->RefCnt;
-        aplNELM  = lpHeader->NELM;
-        aplRank  = lpHeader->Rank;
+        aplType = lpHeader->ArrType;
+        RefCnt  = lpHeader->RefCnt;
+        aplNELM = lpHeader->NELM;
+        aplRank = lpHeader->Rank;
 
         // Ensure non-zero
         Assert (RefCnt > 0);
@@ -245,7 +261,7 @@ BOOL FreeResultGlobalVar
 
         if (RefCnt EQ 0)
         // Split cases based upon the array type
-        switch (cArrType)
+        switch (aplType)
         {
             case ARRAY_BOOL:    // Nothing to do
             case ARRAY_INT:     // ...
@@ -313,7 +329,7 @@ BOOL FreeResultGlobalVar
         DbgGlobalFree (hGlbData); hGlbData = NULL;
     } // End IF
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return bRet;
 } // End FreeResultGlobalVar
@@ -437,7 +453,7 @@ BOOL FreeResultGlobalFcn
         DbgGlobalFree (hGlbData); hGlbData = NULL;
     } // End IF
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return bRet;
 } // End FreeResultGlobalFcn

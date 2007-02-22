@@ -78,6 +78,7 @@ typedef enum tagTOKEN_TYPES
  TKT_AXISARRAY,             // 24: An array of  ...   (data is HGLOBAL)
  TKT_OP1NAMED ,             // 25: A named monadic primitive operator (data is LPSYMENTRY)
  TKT_OP2NAMED ,             // 26: ...     dyadic  ...
+ TKT_STRNAMED ,             // 27: A named strand
 } TOKEN_TYPES;
 
 #define TKT_LENGTH      (TKT_LENGTHp1 - 1)

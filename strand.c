@@ -252,11 +252,12 @@ LPYYSTYPE MakeVarStrand_EM
     (LPYYSTYPE lpYYArg)         // Ptr to incoming token
 
 {
-    int         iLen, iByteCnt, iBitIndex;
+    int         iLen, iBitIndex;
+    APLUINT     ByteRes;
     LPYYSTYPE   lpYYToken, lpYYStrand;
-    HGLOBAL     hGlbStrand,
+    HGLOBAL     hGlbStr,
                 hGlbRes;
-    LPVOID      lpMem;
+    LPVOID      lpMemStr;
     union tagLPAPL
     {
         LPAPLBOOL   Bool;
@@ -284,14 +285,12 @@ static char tabConvert[][STRAND_LENGTH] =
 
     char    cStrandCurType = STRAND_INIT,
             cStrandNxtType,
-            cArrType;
+            aplType;
     BOOL    bRet = TRUE;
 
     DBGENTER;
 
     // The strand needs to be saved to global memory
-
-////MBC ("MakeVarStrand_EM");
 
     // Save the base of this strand
     lpYYStrand                     =
@@ -335,9 +334,9 @@ static char tabConvert[][STRAND_LENGTH] =
                     Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.lpSym->stData.stGlbData));
 
                     // Lock the memory to get a ptr to it
-                    lpMem = MyGlobalLock (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.lpSym->stData.stGlbData));
+                    lpMemStr = MyGlobalLock (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.lpSym->stData.stGlbData));
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
 
                     if (lpHeader->Rank EQ 0)
                         cStrandNxtType = TranslateArrayTypeToStrandType (lpHeader->ArrType);
@@ -345,7 +344,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         cStrandNxtType = STRAND_NESTED;
 #undef  lpHeader
 
-                    MyGlobalUnlock (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.lpSym->stData.stGlbData)); lpMem = NULL;
+                    MyGlobalUnlock (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.lpSym->stData.stGlbData)); lpMemStr = NULL;
 
                     break;
                 } // End IF
@@ -435,7 +434,7 @@ static char tabConvert[][STRAND_LENGTH] =
     if (!bRet)
         goto ERROR_EXIT;
 
-    cArrType = TranslateStrandTypeToArrayType (cStrandCurType);
+    aplType = TranslateStrandTypeToArrayType (cStrandCurType);
 
     //***********************************************************************
     //********** Single Element Case ****************************************
@@ -447,6 +446,7 @@ static char tabConvert[][STRAND_LENGTH] =
     //   HGLOBAL.
     if (iLen EQ 1)
     {
+        // Split cases based upon the strand's storage type
         switch (cStrandCurType)
         {
             case STRAND_BOOL:       // e.g., 0
@@ -462,8 +462,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
 
                         // Pass through the entire token
-////////////////////////YYRes = *lpYYStrand;
-                        YYRes = *CopyYYSTYPE_EM (lpYYStrand, FALSE);
+                        YYRes = *lpYYStrand;
 
                         if (!YYRes.tkToken.tkData.lpSym->stFlags.Imm)
                         {
@@ -475,16 +474,15 @@ static char tabConvert[][STRAND_LENGTH] =
 
                     case TKT_VARIMMED:
                         // Pass through the entire token
-////////////////////////YYRes = *lpYYStrand;
-                        YYRes = *CopyYYSTYPE_EM (lpYYStrand, FALSE);
+                        YYRes = *lpYYStrand;
 
                         break;
 
                     case TKT_STRING:
                         // Fill in the result token
                         YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                    ////YYRes.tkToken.tkFlags.ImmType   = 0;
-                    ////YYRes.tkToken.tkFlags.NoDisplay = 0;
+                        YYRes.tkToken.tkFlags.ImmType   = 0;
+                        YYRes.tkToken.tkFlags.NoDisplay = 0;
                     ////YYRes.tkToken.tkFlags.Color     =
                         YYRes.tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
                         YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
@@ -501,56 +499,22 @@ static char tabConvert[][STRAND_LENGTH] =
                 break;
             } // End STRAND_BOOL/INT/CHAR/FLOAT
 
-            case STRAND_NESTED:     // e.g., a named variable that is a non-simple scalar
-            {
+            case STRAND_NESTED:     // e.g., a named variable that is not a simple scalar
                 // Split cases based upon the token type
                 switch (lpYYStrand->tkToken.tkFlags.TknType)
                 {
                     case TKT_VARNAMED:
-                        // Split cases based upon the ptr type
-                        switch (GetPtrTypeDir (lpYYStrand->tkToken.tkData.lpVoid))
-                        {
-                            case PTRTYPE_STCONST:    // e.g., a variable name (TKT_VARNAMED)
-                                // If it's immediate, pass it on directly
-                                if (lpYYStrand->tkToken.tkData.lpSym->stFlags.Imm)
-                                {
-                                    DbgStop ();             // We should never get here
-////                                // Fill in the result token
-////                                YYRes.tkToken.tkFlags.TknType   = TKT_VARIMMED;
-////                                YYRes.tkToken.tkFlags.ImmType   = lpYYStrand->tkToken.tkData.lpSym->stFlags.ImmType;
-////                            ////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////                            ////YYRes.tkToken.tkFlags.Color     =
-////                                YYRes.tkToken.tkData.tkFloat    = lpYYStrand->tkToken.tkData.lpSym->stData.stFloat;
-////                                YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
-                                } else
-                                {
-                                    // stData is a valid HGLOBAL variable array
-                                    Assert (IsGlbTypeVarDir (lpYYStrand->tkToken.tkData.lpSym->stData.stGlbData));
+                        // tkData is an LPSYMENTRY
+                        Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-                                    // Pass through the entire token
-////////////////////////////////////YYRes = *lpYYStrand;
-                                    YYRes = *CopyYYSTYPE_EM (lpYYStrand, FALSE);
-                                } // End IF/ELSE
+                        // It's not immediate (handled above)
+                        Assert (!lpYYStrand->tkToken.tkData.lpSym->stFlags.Imm);
 
-                                break;
+                        // stData is a valid HGLOBAL variable array
+                        Assert (IsGlbTypeVarDir (lpYYStrand->tkToken.tkData.lpSym->stData.stGlbData));
 
-                            case PTRTYPE_HGLOBAL:    // e.g., ('abc')
-                                // Fill in the result token
-                                YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                            ////YYRes.tkToken.tkFlags.ImmType   = 0;
-                            ////YYRes.tkToken.tkFlags.NoDisplay = 0;
-                            ////YYRes.tkToken.tkFlags.Color     =
-                                YYRes.tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
-                                YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
-
-                                // Mark as reused
-                                lpYYStrand->tkToken.tkData.tkGlbData = PTR_REUSED;
-
-                                break;
-
-                            defstop
-                                break;
-                        } // End SWITCH
+                        // Pass through the entire token
+                        YYRes = *lpYYStrand;
 
                         break;
 
@@ -560,8 +524,8 @@ static char tabConvert[][STRAND_LENGTH] =
 
                         // Fill in the result token
                         YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                    ////YYRes.tkToken.tkFlags.ImmType   = 0;
-                    ////YYRes.tkToken.tkFlags.NoDisplay = 0;
+                        YYRes.tkToken.tkFlags.ImmType   = 0;
+                        YYRes.tkToken.tkFlags.NoDisplay = 0;
                     ////YYRes.tkToken.tkFlags.Color     =
                         YYRes.tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
                         YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
@@ -576,13 +540,12 @@ static char tabConvert[][STRAND_LENGTH] =
                 } // End SWITCH
 
                 break;
-            } // End STRAND_NESTED
 
             case STRAND_STRING:     // e.g., 'abc'
                 // Fill in the result token
                 YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-            ////YYRes.tkToken.tkFlags.ImmType   = 0;
-            ////YYRes.tkToken.tkFlags.NoDisplay = 0;
+                YYRes.tkToken.tkFlags.ImmType   = 0;
+                YYRes.tkToken.tkFlags.NoDisplay = 0;
             ////YYRes.tkToken.tkFlags.Color     =
                 YYRes.tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
                 YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
@@ -604,51 +567,53 @@ static char tabConvert[][STRAND_LENGTH] =
     //***********************************************************************
 
     // Calculate the # bytes we'll need for the elements
-    switch (cStrandCurType)
-    {
-        case STRAND_BOOL:
-            iByteCnt = sizeof (APLBOOL)   * (int) RoundUpBits8 (iLen);// One bit per bit
-
-            break;
-
-        case STRAND_INT:
-            iByteCnt = sizeof (APLINT)    * iLen;   // One number per APLINT
-
-            break;
-
-        case STRAND_CHAR:
-        case STRAND_CHARST:
-            iByteCnt = sizeof (APLCHAR)   * iLen;   // One char per APLCHAR
-
-            break;
-
-        case STRAND_FLOAT:
-            iByteCnt = sizeof (APLFLOAT)  * iLen;   // One number per APLFLOAT
-
-            break;
-
-        case STRAND_HETERO:
-            iByteCnt = sizeof (APLHETERO) * iLen;   // One value per APLHETERO
-
-            break;
-
-        case STRAND_NESTED:
-            iByteCnt = sizeof (APLNESTED) * iLen;   // One value per APLNESTED
-
-            break;
-
-        case STRAND_STRING:         // Handled by "if (iLen EQ 1)" code
-        defstop
-            return NULL;
-    } // End SWITCH
-
-    // Calculate the # bytes we'll need for the header
-    iByteCnt += sizeof (VARARRAY_HEADER)// For header (including rank)
-              + sizeof (APLDIM) * 1;    // For the dimensions
+    ByteRes = CalcArraySize (aplType, iLen, 1);
+////switch (cStrandCurType)
+////{
+////    case STRAND_BOOL:
+////        iByteCnt = sizeof (APLBOOL)   * (int) RoundUpBits8 (iLen);// One bit per bit
+////
+////        break;
+////
+////    case STRAND_INT:
+////        iByteCnt = sizeof (APLINT)    * iLen;   // One number per APLINT
+////
+////        break;
+////
+////    case STRAND_CHAR:
+////    case STRAND_CHARST:
+////        iByteCnt = sizeof (APLCHAR)   * iLen;   // One char per APLCHAR
+////
+////        break;
+////
+////    case STRAND_FLOAT:
+////        iByteCnt = sizeof (APLFLOAT)  * iLen;   // One number per APLFLOAT
+////
+////        break;
+////
+////    case STRAND_HETERO:
+////        iByteCnt = sizeof (APLHETERO) * iLen;   // One value per APLHETERO
+////
+////        break;
+////
+////    case STRAND_NESTED:
+////        iByteCnt = sizeof (APLNESTED) * iLen;   // One value per APLNESTED
+////
+////        break;
+////
+////    case STRAND_STRING:         // Handled by "if (iLen EQ 1)" code
+////    defstop
+////        return NULL;
+////} // End SWITCH
+////
+////// Calculate the # bytes we'll need for the header
+////iByteCnt += sizeof (VARARRAY_HEADER)// For header (including rank)
+////          + sizeof (APLDIM) * 1;    // For the dimensions
 
     // Allocate global memory for a length <iLen> vector of type <cState>
-    hGlbStrand = DbgGlobalAlloc (GHND, iByteCnt);
-    if (!hGlbStrand)
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbStr = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbStr)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    &lpYYArg->tkToken);
@@ -663,17 +628,17 @@ static char tabConvert[][STRAND_LENGTH] =
 ////YYRes.tkToken.tkFlags.ImmType   = 0;
 ////YYRes.tkToken.tkFlags.NoDisplay = 0;
 ////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStrand);
+    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
     YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the global memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbStrand);
+    lpMemStr = MyGlobalLock (hGlbStr);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
 
     // Fill in the header
     lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType = cArrType;
+    lpHeader->ArrType = aplType;
 ////lpHeader->Perm    = 0;
 ////lpHeader->SysVar  = 0;
     lpHeader->RefCnt  = 1;
@@ -682,10 +647,10 @@ static char tabConvert[][STRAND_LENGTH] =
 
 #undef  lpHeader
 
-    *VarArrayBaseToDim (lpMem) = iLen;
+    *VarArrayBaseToDim (lpMemStr) = iLen;
 
     // Skip over the header and one dimension (it's a vector)
-    LPAPL.Bool = (LPAPLBOOL) VarArrayBaseToData (lpMem, 1);
+    LPAPL.Bool = (LPAPLBOOL) VarArrayBaseToData (lpMemStr, 1);
 
     // Copy the elements to the global memory
     // Note we copy the elements in the reverse
@@ -725,6 +690,9 @@ static char tabConvert[][STRAND_LENGTH] =
                             Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpSym->stData.lpVoid) EQ PTRTYPE_HGLOBAL);
 
                             DbgBrk ();          // ***FINISHME*** -- can we ever get here??
+                                                //   Only if we allow a named var to point to
+                                                //   a SYMENTRY which contains an HGLOBAL
+                                                //   simple scalar.
 
 
 
@@ -775,7 +743,10 @@ static char tabConvert[][STRAND_LENGTH] =
                         // stData is an HGLOBAL
                         Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpSym->stData.lpVoid) EQ PTRTYPE_HGLOBAL);
 
-                        DbgBrk ();          // ***FINISHME*** -- can we ever get here??
+                        DbgBrk ();              // ***FINISHME*** -- can we ever get here??
+                                                //   Only if we allow a named var to point to
+                                                //   a SYMENTRY which contains an HGLOBAL
+                                                //   simple scalar.
 
 
 
@@ -820,7 +791,10 @@ static char tabConvert[][STRAND_LENGTH] =
                         // stData is an HGLOBAL
                         Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpSym->stData.lpVoid) EQ PTRTYPE_HGLOBAL);
 
-                        DbgBrk ();          // ***FINISHME*** -- can we ever get here??
+                        DbgBrk ();              // ***FINISHME*** -- can we ever get here??
+                                                //   Only if we allow a named var to point to
+                                                //   a SYMENTRY which contains an HGLOBAL
+                                                //   simple scalar.
 
 
 
@@ -1015,7 +989,7 @@ static char tabConvert[][STRAND_LENGTH] =
     } // End FOR/SWITCH
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbStrand); lpMem = NULL;
+    MyGlobalUnlock (hGlbStr); lpMemStr = NULL;
 NORMAL_EXIT:
     // Free the tokens on this portion of the strand stack
     FreeStrand (gplLocalVars.lpYYStrandNext, gplLocalVars.lpYYStrandBase);
@@ -1023,7 +997,7 @@ NORMAL_EXIT:
     // Strip the tokens on this portion of the strand stack
     StripStrand (&YYRes);
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return &YYRes;
 
@@ -1031,7 +1005,7 @@ ERROR_EXIT:
     // Free the entire strand stack
     FreeStrand (gplLocalVars.lpYYStrandNext, gplLocalVars.lpYYStrandStart);
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return NULL;
 } // End MakeVarStrand_EM
@@ -1056,10 +1030,11 @@ LPYYSTYPE MakeFcnStrand_EM
 
 {
     static YYSTYPE YYRes;       // The result
-    int            iLen, iByteCnt, FcnCount = 0;
+    int            iLen, FcnCount = 0;
+    APLUINT        ByteRes;
     LPYYSTYPE      lpYYStrand;
-    HGLOBAL        hGlbStrand;
-    LPVOID         lpMem;
+    HGLOBAL        hGlbStr;
+    LPVOID         lpMemStr;
     LPYYSTYPE      lpYYMemStart, lpYYMemData, lpYYBase = (LPYYSTYPE) -1;
     BOOL           bRet = TRUE;
 
@@ -1101,12 +1076,13 @@ LPYYSTYPE MakeFcnStrand_EM
     //   and later on once for LeftFunc).  The overcount is harmless and ignored.
 
     // Calculate the # bytes we'll need for the header and data
-    iByteCnt = sizeof (FCNARRAY_HEADER) // For the header
-             + sizeof (YYSTYPE) * iLen; // For the data
+    ByteRes = sizeof (FCNARRAY_HEADER) // For the header
+            + sizeof (YYSTYPE) * iLen; // For the data
 
     // Allocate global memory for a length <iLen> vector of type <YYSTYPE>.
-    hGlbStrand = DbgGlobalAlloc (GHND, iByteCnt);
-    if (!hGlbStrand)
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbStr = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbStr)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    &lpYYArg->tkToken);
@@ -1118,13 +1094,13 @@ LPYYSTYPE MakeFcnStrand_EM
 ////YYRes.tkToken.tkFlags.ImmType   = 0;
 ////YYRes.tkToken.tkFlags.NoDisplay = 0;
 ////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStrand);
+    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
     YYRes.tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     // Lock the global memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbStrand);
+    lpMemStr = MyGlobalLock (hGlbStr);
 
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
+#define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
 
     // Fill in the header
     lpHeader->Sign.ature = FCNARRAY_HEADER_SIGNATURE;
@@ -1135,22 +1111,19 @@ LPYYSTYPE MakeFcnStrand_EM
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMem);
-
-////DbgBrk ();
-////MBC ("MakeFcnStrand");
+    lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
 
     // Copy the YYSTYPEs to the global memory object
     lpYYMemData = CopyYYFcn (lpYYMemData, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount);
 
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
+#define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
 
     lpHeader->NELM = iLen = lpYYMemData - lpYYMemStart;
 
 #undef  lpHeader
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbStrand); lpMem = lpYYMemData = lpYYMemStart = NULL;
+    MyGlobalUnlock (hGlbStr); lpMemStr = lpYYMemData = lpYYMemStart = NULL;
 
     // Handle case where we overallocated to the extent that there
     //   is only one function which can then be immediate.
@@ -1162,7 +1135,7 @@ LPYYSTYPE MakeFcnStrand_EM
         YYRes.FcnCount = FcnCount;
 
         // We no longer need this storage
-        FreeResultGlobalFcn (hGlbStrand); hGlbStrand = NULL;
+        FreeResultGlobalFcn (hGlbStr); hGlbStr = NULL;
     } // End IF
 NORMAL_EXIT:
     YYRes.unYYSTYPE.lpYYStrandBase  = gplLocalVars.lpYYStrandBase = lpYYBase;
@@ -1177,7 +1150,7 @@ NORMAL_EXIT:
     // Strip the tokens on this portion of the strand stack
     StripStrand (&YYRes);
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return &YYRes;
 
@@ -1185,7 +1158,7 @@ ERROR_EXIT:
     // Free the entire strand stack
     FreeStrand (gplLocalVars.lpYYStrandNext, gplLocalVars.lpYYStrandStart);
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return NULL;
 } // End MakeFcnStrand_EM
@@ -1586,7 +1559,7 @@ void ErrorMessageSetToken
 
 {
     // Set the error token
-    gplLocalVars.lpError = lpError;
+    gplLocalVars.tkErrorCharIndex = lpError->tkCharIndex;
 } // End ErrorMessageSetToken
 
 
@@ -1635,7 +1608,7 @@ LPYYSTYPE CopyString_EM
     YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes.tkToken.tkCharIndex       = lpYYStr->tkToken.tkCharIndex;
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return &YYRes;
 } // End CopyString_EM
@@ -1683,7 +1656,7 @@ LPYYSTYPE MakeAxis
             break;
     } // End SWITCH
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return &YYRes;
 } // End MakeAxis
@@ -1715,7 +1688,7 @@ LPYYSTYPE MakePrimFcn
     YYRes.tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
     YYRes.lpYYFcn = NULL;
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return &YYRes;
 } // End MakePrimFcn
@@ -1751,7 +1724,7 @@ LPYYSTYPE MakeNameFcn
     YYRes = *CopyYYSTYPE_EM (lpYYFcn, FALSE);
     YYRes.lpYYFcn = NULL;
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return &YYRes;
 } // End MakeNameFcn
@@ -1883,6 +1856,156 @@ LPYYSTYPE MakeNameOp2
 
 
 //***************************************************************************
+//  InitNameStrand
+//
+//  Initialize a name strand
+//***************************************************************************
+
+void InitNameStrand
+    (LPYYSTYPE lpYYArg)         // Ptr to the incoming argument
+
+{
+    // Set the base of this strand to the next available location
+    lpYYArg->unYYSTYPE.lpYYStrandBase =
+    gplLocalVars.lpYYStrandBase       = gplLocalVars.lpYYStrandNext;
+} // End InitNameStrand
+
+
+//***************************************************************************
+//  PushNameStrand
+//
+//  Push a name strand
+//***************************************************************************
+
+LPYYSTYPE PushNameStrand
+    (LPYYSTYPE lpYYArg)         // Ptr to the incoming argument
+
+{
+    // Fill in the result token
+    YYRes.tkToken.tkFlags.TknType     = TKT_STRAND;
+////YYRes.tkToken.tkFlags.ImmType     = 0;
+////YYRes.tkToken.tkFlags.NoDisplay   = 0;
+////YYRes.tkToken.tkFlags.Color       =
+    YYRes.tkToken.tkData.lpVoid       = (LPVOID) -1;
+    YYRes.tkToken.tkCharIndex         = lpYYArg->tkToken.tkCharIndex;
+
+    YYRes.unYYSTYPE.lpYYStrandBase    =
+    lpYYArg->unYYSTYPE.lpYYStrandBase = gplLocalVars.lpYYStrandBase;
+
+    // Save this token on the strand stack
+    //   and skip over it
+    *gplLocalVars.lpYYStrandNext++ = *lpYYArg;
+
+#ifdef DEBUG
+    // Display the strand stack
+    DisplayStrand ();
+#endif
+
+    return &YYRes;
+} // End PushNameStrand
+
+
+//***************************************************************************
+//  MakeNameStrand_EM
+//
+//  Make a name strand
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakeNameStrand_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE MakeNameStrand_EM
+    (LPYYSTYPE lpYYArg)         // Ptr to incoming token
+
+{
+    int         iLen;
+    APLUINT     ByteRes;
+    LPYYSTYPE   lpYYStrand;
+    HGLOBAL     hGlbStr;
+    LPVOID      lpMemStr;
+    BOOL        bRet = TRUE;
+
+    DBGENTER;
+
+    // Save the base of this strand
+    lpYYStrand                     =
+    YYRes.unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
+
+    // Get the # elements in the strand
+    iLen = gplLocalVars.lpYYStrandNext - lpYYStrand;
+
+    // Save these tokens in global memory
+
+    // Calculate storage needed for the tokens
+    ByteRes = sizeof (VARNAMED_HEADER)
+            + sizeof (lpYYStrand[0]) * iLen;
+
+    // Allocate global memory for a length <iLen> vector of type <cState>
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbStr = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbStr)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   &lpYYArg->tkToken);
+        // Mark as in error
+        bRet = FALSE;
+
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Fill in the result token
+    YYRes.tkToken.tkFlags.TknType   = TKT_STRNAMED;
+////YYRes.tkToken.tkFlags.ImmType   = 0;
+////YYRes.tkToken.tkFlags.NoDisplay = 0;
+////YYRes.tkToken.tkFlags.Color     =
+    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
+    YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+
+    // Lock the global memory to get a ptr to it
+    lpMemStr = MyGlobalLock (hGlbStr);
+
+#define lpHeader    ((LPVARNAMED_HEADER) lpMemStr)
+
+    // Fill in the header
+    lpHeader->Sign.ature = VARNAMED_HEADER_SIGNATURE;
+    lpHeader->NELM       = iLen;
+
+#undef  lpHeader
+
+    // Skip over the header to the data
+    lpMemStr = VarNamedBaseToData (lpMemStr);
+
+    // Copy the tokens to global memory
+    CopyMemory (lpMemStr, lpYYStrand, iLen * sizeof (lpYYStrand[0]));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbStr); lpMemStr = NULL;
+
+    // Free the tokens on this portion of the strand stack
+    FreeStrand (gplLocalVars.lpYYStrandNext, gplLocalVars.lpYYStrandBase);
+
+    // Strip the tokens on this portion of the strand stack
+    StripStrand (&YYRes);
+
+    DBGLEAVE;
+
+    return &YYRes;
+
+ERROR_EXIT:
+    // Free the entire strand stack
+    FreeStrand (gplLocalVars.lpYYStrandNext, gplLocalVars.lpYYStrandStart);
+
+    DBGLEAVE;
+
+    return NULL;
+} // End MakeNameStrand_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  InitList0
 //
 //  Initialize a list starting with an empty token
@@ -1991,8 +2114,8 @@ LPYYSTYPE MakeList_EM
 {
     LPYYSTYPE  lpYYStrand,
                lpYYToken;
-    int        iLen,
-               iByteCnt;
+    int        iLen;
+    APLUINT    ByteRes;
     HGLOBAL    hGlbLst;
     LPVOID     lpMemLst;
     LPSYMENTRY lpSymEntry;
@@ -2010,17 +2133,18 @@ LPYYSTYPE MakeList_EM
     iLen = gplLocalVars.lpYYStrandNext - lpYYStrand;
 
     // Calculate the # bytes we'll need for the header and the elements
-    iByteCnt = sizeof (VARARRAY_HEADER)     // For header (including rank)
-             + sizeof (APLDIM) * 1          // For the dimensions
-             + iLen * sizeof (APLNESTED);   // One value per APLNESTED
+    ByteRes = sizeof (VARARRAY_HEADER)      // For header (including rank)
+            + sizeof (APLDIM) * 1           // For the dimensions
+            + iLen * sizeof (APLNESTED);    // One value per APLNESTED
 
     // Allocate global memory for a length <iLen> vector of type <cState>
-    hGlbLst = DbgGlobalAlloc (GHND, iByteCnt);
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbLst = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbLst)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    &lpYYArg->tkToken);
-        DBGEXIT;
+        DBGLEAVE;
 
         // Mark as in error
         return NULL;
@@ -2079,7 +2203,7 @@ LPYYSTYPE MakeList_EM
             case TKT_VARARRAY:  // 1('ab')
             case TKT_STRING:    // 1 'ab'
                 // Copy the nested entry to the result
-                *((LPAPLLIST) lpMemLst)++ = MakeGlbTypeGlb (lpYYToken->tkToken.tkData.lpVoid);
+                *((LPAPLLIST) lpMemLst)++ = MakeGlbTypeGlb (lpYYToken->tkToken.tkData.tkGlbData);
 
                 break;
 
@@ -2094,7 +2218,7 @@ LPYYSTYPE MakeList_EM
     // Strip from the strand stack
     StripStrand (&YYRes);
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return &YYRes;
 } // End MakeList_EM
@@ -2197,7 +2321,7 @@ LPTOKEN CopyToken_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            // If the SYMENTRY is not immediate, it must be an HGLOBAL
+            // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
             if (!lpToken->tkData.lpSym->stFlags.Imm)
             {
                 STFLAGS stFlags;
@@ -2245,6 +2369,10 @@ LPTOKEN CopyToken_EM
         case TKT_LIST:          // tkData is HGLOBAL
             DbgBrk ();          // ***FINISHME***
 
+
+
+
+
             break;
 
         case TKT_VARIMMED:      // tkData is immediate
@@ -2259,7 +2387,7 @@ LPTOKEN CopyToken_EM
             break;
     } // End SWITCH
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return &tkRes;
 } // End CopyToken_EM
@@ -2295,7 +2423,7 @@ LPYYSTYPE CopyYYSTYPE_EM
     // Make a copy of the token within
     YYRes.tkToken = *CopyToken_EM (&lpYYArg->tkToken, bChanging);
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return &YYRes;
 } // End CopyYYSTYPE_EM

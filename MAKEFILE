@@ -1,6 +1,6 @@
 # Microsoft Visual C++ generated build script
 
-.SUFFIXES: .DEP .DEV .PRO
+.SUFFIXES: .DEP .DEV .PRO .Y
 
 NAME = NARS2000                 # Directory name
 ZIPNAME = NARS-SRC              # Zip file name
@@ -11,6 +11,7 @@ DEBUG=0
 RESDEBUG=1
 A=$(PROJPATH)Images\            # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
+WS=$(PROJPATH)WineHQ\           # Wine source
 
 WIN=32
 WDEF=_WIN$(WIN)
@@ -30,6 +31,7 @@ LIBS_WEXE = GDI32.LIB   \
             SHELL32.LIB \
             ADVAPI32.LIB\
             COMCTL32.LIB\
+#####       IMM32.LIB   \
 !if "$(DEBUG)" == "1"
             QCtrl32.LIB
 !endif
@@ -63,8 +65,6 @@ P=R:\$(NAME)\                   # Full path to . dir for HCRTF
 I=$(SRCROOT)INC\                # .INC directory
 H=$(SRCROOT)INCLUDE\            # .INCLUDE directory
 L=$(SRCROOT)LIB\                # .LIB directory
-
-WS=$(PROJPATH)WineHQ\           # Wine source
 
 M98=N:\                         # Win98 build
 ###M98=L:\VC98\                    # Win98 build
@@ -113,9 +113,9 @@ DIR:
         $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
 
 {$(WS)}.c{$(O)}.obj:
-        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt
+        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
         @if exist $@ del $@
-        $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+        $(CC) $(CFLAGS_WEXE) /Fo$@ /c /D "UNICODE" %s
 
 
 ####################### DEPENDENCY GENERATION #################
@@ -127,7 +127,7 @@ $(O)common.DEP      \
 $(O)convert.DEP     \
 $(O)debug.DEP       \
 $(O)display.DEP     \
-$(O)edit.DEP        \
+$(O)editctrl.DEP    \
 $(O)editfcn.DEP     \
 $(O)editmat.DEP     \
 $(O)editvec.DEP     \
@@ -135,24 +135,28 @@ $(O)exec.DEP        \
 $(O)free.DEP        \
 $(O)main.DEP        \
 $(O)parse.DEP       \
+$(O)pf_bar.DEP      \
 $(O)pf_circle.DEP   \
+$(O)pf_comma.DEP    \
 $(O)pf_cstar.DEP    \
 $(O)pf_dcaret.DEP   \
 $(O)pf_divide.DEP   \
 $(O)pf_dstile.DEP   \
 $(O)pf_equal.DEP    \
+$(O)pf_equalund.DEP \
 $(O)pf_greateq.DEP  \
 $(O)pf_iota.DEP     \
 $(O)pf_lcaret.DEP   \
 $(O)pf_lesseq.DEP   \
 $(O)pf_lshoe.DEP    \
-$(O)pf_minus.DEP    \
+$(O)pf_ltack.DEP    \
 $(O)pf_ndcaret.DEP  \
 $(O)pf_nequal.DEP   \
 $(O)pf_nucaret.DEP  \
 $(O)pf_plus.DEP     \
 $(O)pf_rcaret.DEP   \
 $(O)pf_rho.DEP      \
+$(O)pf_rtack.DEP    \
 $(O)pf_star.DEP     \
 $(O)pf_stile.DEP    \
 $(O)pf_times.DEP    \
@@ -177,19 +181,19 @@ $(O)version.DEV
 
 {$(O)}.C{$(O)}.DEP:
         @Set INCLUDE=$(I98);$(H);$(O)
-        depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+        $(BC)depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
 
 {$(WS)}.C{$(O)}.DEP:
-        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt
-        depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
+        $(BC)depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s > $@
 
 {}.C{$(O)}.DEP:
         @Set INCLUDE=$(I98);$(H);$(O)
-        depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+        $(BC)depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
 
 {}.RC{$(O)}.DEV:
         @Set INCLUDE=$(I98);$(H);$(O)
-        depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+        $(BC)depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
 
 !if exist ($(O)assign.DEP)
 !       include $(O)assign.DEP
@@ -209,8 +213,8 @@ $(O)version.DEV
 !if exist ($(O)display.DEP)
 !       include $(O)display.DEP
 !endif
-!if exist ($(O)edit.DEP)
-!       include $(O)edit.DEP
+!if exist ($(O)editctrl.DEP)
+!       include $(O)editctrl.DEP
 !endif
 !if exist ($(O)editfcn.DEP)
 !       include $(O)editfcn.DEP
@@ -233,8 +237,14 @@ $(O)version.DEV
 !if exist ($(O)parse.DEP)
 !       include $(O)parse.DEP
 !endif
+!if exist ($(O)pf_bar.DEP)
+!       include $(O)pf_bar.DEP
+!endif
 !if exist ($(O)pf_circle.DEP)
 !       include $(O)pf_circle.DEP
+!endif
+!if exist ($(O)pf_comma.DEP)
+!       include $(O)pf_comma.DEP
 !endif
 !if exist ($(O)pf_cstar.DEP)
 !       include $(O)pf_cstar.DEP
@@ -251,6 +261,9 @@ $(O)version.DEV
 !if exist ($(O)pf_equal.DEP)
 !       include $(O)pf_equal.DEP
 !endif
+!if exist ($(O)pf_equalund.DEP)
+!       include $(O)pf_equalund.DEP
+!endif
 !if exist ($(O)pf_greateq.DEP)
 !       include $(O)pf_greateq.DEP
 !endif
@@ -266,8 +279,8 @@ $(O)version.DEV
 !if exist ($(O)pf_lshoe.DEP)
 !       include $(O)pf_lshoe.DEP
 !endif
-!if exist ($(O)pf_minus.DEP)
-!       include $(O)pf_minus.DEP
+!if exist ($(O)pf_ltack.DEP)
+!       include $(O)pf_ltack.DEP
 !endif
 !if exist ($(O)pf_ndcaret.DEP)
 !       include $(O)pf_ndcaret.DEP
@@ -286,6 +299,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)pf_rho.DEP)
 !       include $(O)pf_rho.DEP
+!endif
+!if exist ($(O)pf_rtack.DEP)
+!       include $(O)pf_rtack.DEP
 !endif
 !if exist ($(O)pf_star.DEP)
 !       include $(O)pf_star.DEP
@@ -361,7 +377,7 @@ $(O)common.PRO      \
 $(O)convert.PRO     \
 $(O)debug.PRO       \
 $(O)display.PRO     \
-$(O)edit.PRO        \
+$(O)editctrl.PRO    \
 $(O)editfcn.PRO     \
 $(O)editmat.PRO     \
 $(O)editvec.PRO     \
@@ -369,24 +385,28 @@ $(O)exec.PRO        \
 $(O)free.PRO        \
 $(O)main.PRO        \
 $(O)parse.PRO       \
+$(O)pf_bar.PRO      \
 $(O)pf_circle.PRO   \
+$(O)pf_comma.PRO    \
 $(O)pf_cstar.PRO    \
 $(O)pf_dcaret.PRO   \
 $(O)pf_divide.PRO   \
 $(O)pf_dstile.PRO   \
 $(O)pf_equal.PRO    \
+$(O)pf_equalund.PRO \
 $(O)pf_greateq.PRO  \
 $(O)pf_iota.PRO     \
 $(O)pf_lcaret.PRO   \
 $(O)pf_lesseq.PRO   \
 $(O)pf_lshoe.PRO    \
-$(O)pf_minus.PRO    \
+$(O)pf_ltack.PRO    \
 $(O)pf_ndcaret.PRO  \
 $(O)pf_nequal.PRO   \
 $(O)pf_nucaret.PRO  \
 $(O)pf_plus.PRO     \
 $(O)pf_rcaret.PRO   \
 $(O)pf_rho.PRO      \
+$(O)pf_rtack.PRO    \
 $(O)pf_star.PRO     \
 $(O)pf_stile.PRO    \
 $(O)pf_times.PRO    \
@@ -415,8 +435,8 @@ $(O)resdebug.PRO
         $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
 
 {$(WS)}.C{$(O)}.PRO:
-        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt
-        $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
+        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
+        $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO /D "UNICODE" %s > $@
 
 
 ########################## UTILITY ROUTINES ##########################
@@ -435,7 +455,8 @@ ICONS=$(A)About.ico     \
       $(A)DB.ico        \
       $(A)FE.ico        \
       $(A)ME.ico        \
-      $(A)VE.ico
+      $(A)VE.ico        \
+      $(A)LineCont.bmp
 
 $(O)parse.C:            $(@B).Y
 
@@ -445,32 +466,36 @@ $(O)common.OBJ:         $(@B).C         $(COMMON_DEP)
 $(O)convert.OBJ:        $(@B).C         $(CONVERT_DEP)
 $(O)debug.OBJ:          $(@B).C         $(DEBUG_DEP)
 $(O)display.OBJ:        $(@B).C         $(DISPLAY_DEP)
+$(O)editctrl.OBJ:       $(WS)$(@B).C    $(EDITCTRL_DEP)
 $(O)editfcn.OBJ:        $(@B).C         $(EDITFCN_DEP)
-$(O)edit.OBJ:           $(WS)$(@B).C    $(EDIT_DEP)
 $(O)editmat.OBJ:        $(@B).C         $(EDITMAT_DEP)
 $(O)editvec.OBJ:        $(@B).C         $(EDITVEC_DEP)
 $(O)exec.OBJ:           $(@B).C         $(EXEC_DEP)
 $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
 $(O)parse.OBJ:          $(O)$(@B).C     $(PARSE_DEP)
+$(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
 $(O)pf_circle.OBJ:      $(@B).C         $(PF_CIRCLE_DEP)
+$(O)pf_comma.OBJ:       $(@B).C         $(PF_COMMA_DEP)
 $(O)pf_cstar.OBJ:       $(@B).C         $(PF_CSTAR_DEP)
 $(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
 $(O)pf_divide.OBJ:      $(@B).C         $(PF_DIVIDE_DEP)
 $(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
 $(O)pf_equal.OBJ:       $(@B).C         $(PF_EQUAL_DEP)
+$(O)pf_equalund.OBJ:    $(@B).C         $(PF_EQUALUND_DEP)
 $(O)pf_greateq.OBJ:     $(@B).C         $(PF_GREATEQ_DEP)
 $(O)pf_iota.OBJ:        $(@B).C         $(PF_IOTA_DEP)
 $(O)pf_lcaret.OBJ:      $(@B).C         $(PF_LCARET_DEP)
 $(O)pf_lesseq.OBJ:      $(@B).C         $(PF_LESSEQ_DEP)
 $(O)pf_lshoe.OBJ:       $(@B).C         $(PF_LSHOE_DEP)
-$(O)pf_minus.OBJ:       $(@B).C         $(PF_MINUS_DEP)
+$(O)pf_ltack.OBJ:       $(@B).C         $(PF_LTACK_DEP)
 $(O)pf_ndcaret.OBJ:     $(@B).C         $(PF_NDCARET_DEP)
 $(O)pf_nequal.OBJ:      $(@B).C         $(PF_NEQUAL_DEP)
 $(O)pf_nucaret.OBJ:     $(@B).C         $(PF_NUCARET_DEP)
 $(O)pf_plus.OBJ:        $(@B).C         $(PF_PLUS_DEP)
 $(O)pf_rcaret.OBJ:      $(@B).C         $(PF_RCARET_DEP)
 $(O)pf_rho.OBJ:         $(@B).C         $(PF_RHO_DEP)
+$(O)pf_rtack.OBJ:       $(@B).C         $(PF_RTACK_DEP)
 $(O)pf_star.OBJ:        $(@B).C         $(PF_STAR_DEP)
 $(O)pf_stile.OBJ:       $(@B).C         $(PF_STILE_DEP)
 $(O)pf_times.OBJ:       $(@B).C         $(PF_TIMES_DEP)
@@ -507,60 +532,66 @@ $(BC)$(ENAME).HLP:      $(ENAME).RTF
 $(L)$(ENAME).HLP:       $(BC)$(ENAME).HLP
         copy /y %s $@
 
+$(WS)local.h:           editctrl.h   resource.h
+
 # Build the Win32 version
-OBJS=$(O)assign.OBJ     \
-     $(O)bjhash.OBJ     \
-     $(O)common.OBJ     \
-     $(O)convert.OBJ    \
-     $(O)debug.OBJ      \
-     $(O)display.OBJ    \
-     $(O)editfcn.OBJ    \
-     $(O)editmat.OBJ    \
-     $(O)editvec.OBJ    \
-     $(O)exec.OBJ       \
-     $(O)free.OBJ       \
-     $(O)main.OBJ       \
-     $(O)parse.OBJ      \
-     $(O)pf_circle.OBJ  \
-     $(O)pf_cstar.OBJ   \
-     $(O)pf_dcaret.OBJ  \
-     $(O)pf_divide.OBJ  \
-     $(O)pf_dstile.OBJ  \
-     $(O)pf_equal.OBJ   \
-     $(O)pf_greateq.OBJ \
-     $(O)pf_iota.OBJ    \
-     $(O)pf_lcaret.OBJ  \
-     $(O)pf_lesseq.OBJ  \
-     $(O)pf_lshoe.OBJ   \
-     $(O)pf_minus.OBJ   \
-     $(O)pf_ndcaret.OBJ \
-     $(O)pf_nequal.OBJ  \
-     $(O)pf_nucaret.OBJ \
-     $(O)pf_plus.OBJ    \
-     $(O)pf_rcaret.OBJ  \
-     $(O)pf_rho.OBJ     \
-     $(O)pf_star.OBJ    \
-     $(O)pf_stile.OBJ   \
-     $(O)pf_times.OBJ   \
-     $(O)pf_ucaret.OBJ  \
-     $(O)pf_ustile.OBJ  \
-     $(O)primfns.OBJ    \
-     $(O)primspec.OBJ   \
-     $(O)refcnt.OBJ     \
-     $(O)reg.OBJ        \
-     $(O)sessman.OBJ    \
-     $(O)strand.OBJ     \
-     $(O)symtab.OBJ     \
-     $(O)syscmds.OBJ    \
-     $(O)sysfns.OBJ     \
-     $(O)sysvars.OBJ    \
-     $(O)tabctrl.OBJ    \
-     $(O)ver.OBJ        \
-     $(O)edit.OBJ       \
+OBJS=$(O)assign.OBJ         \
+     $(O)bjhash.OBJ         \
+     $(O)common.OBJ         \
+     $(O)convert.OBJ        \
+     $(O)debug.OBJ          \
+     $(O)display.OBJ        \
+     $(O)editctrl.OBJ       \
+     $(O)editfcn.OBJ        \
+     $(O)editmat.OBJ        \
+     $(O)editvec.OBJ        \
+     $(O)exec.OBJ           \
+     $(O)free.OBJ           \
+     $(O)main.OBJ           \
+     $(O)parse.OBJ          \
+     $(O)pf_bar.OBJ         \
+     $(O)pf_circle.OBJ      \
+     $(O)pf_comma.OBJ       \
+     $(O)pf_cstar.OBJ       \
+     $(O)pf_dcaret.OBJ      \
+     $(O)pf_divide.OBJ      \
+     $(O)pf_dstile.OBJ      \
+     $(O)pf_equal.OBJ       \
+     $(O)pf_equalund.OBJ    \
+     $(O)pf_greateq.OBJ     \
+     $(O)pf_iota.OBJ        \
+     $(O)pf_lcaret.OBJ      \
+     $(O)pf_lesseq.OBJ      \
+     $(O)pf_lshoe.OBJ       \
+     $(O)pf_ltack.OBJ       \
+     $(O)pf_ndcaret.OBJ     \
+     $(O)pf_nequal.OBJ      \
+     $(O)pf_nucaret.OBJ     \
+     $(O)pf_plus.OBJ        \
+     $(O)pf_rcaret.OBJ      \
+     $(O)pf_rho.OBJ         \
+     $(O)pf_rtack.OBJ       \
+     $(O)pf_star.OBJ        \
+     $(O)pf_stile.OBJ       \
+     $(O)pf_times.OBJ       \
+     $(O)pf_ucaret.OBJ      \
+     $(O)pf_ustile.OBJ      \
+     $(O)primfns.OBJ        \
+     $(O)primspec.OBJ       \
+     $(O)refcnt.OBJ         \
+     $(O)reg.OBJ            \
+     $(O)sessman.OBJ        \
+     $(O)strand.OBJ         \
+     $(O)symtab.OBJ         \
+     $(O)syscmds.OBJ        \
+     $(O)sysfns.OBJ         \
+     $(O)sysvars.OBJ        \
+     $(O)tabctrl.OBJ        \
+     $(O)ver.OBJ            \
 !if "$(RESDEBUG)" == "1"
-     $(O)resdebug.OBJ   \
+     $(O)resdebug.OBJ       \
 !endif
-     $(O)DBGBRK.OBJ     \
+     $(O)DBGBRK.OBJ         \
      $(O)main.RES
 
 $(O)$(ENAME).EXE:       $(OBJS)         \

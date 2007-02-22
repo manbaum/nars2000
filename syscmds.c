@@ -31,13 +31,20 @@ SYSCMDSTAB SysCmdsTab[]
     {L"close" ,     &CmdClose_EM    },
 ////{L"copy"  ,     &CmdCopy_EM     },
 ////{L"drop"  ,     &CmdDrop_EM     },
+////{L"erase" ,     &CmdErase_EM    },
     {L"exit"  ,     &CmdExit_EM     },
+////{L"fns"   ,     &CmdFns_EM      },
+////{L"lib"   ,     &CmdLib_EM      },
 ////{L"load"  ,     &CmdLoad_EM     },
     {L"newtab",     &CmdNewtab_EM   },
-////{L"pcopy" ,     &CmdPCopy_EM    },
+////{L"nms"   ,     &CmdNms_EM      },
+////{L"ops"   ,     &CmdOps_EM      },
 ////{L"save"  ,     &CmdSave_EM     },
-////{L"xload" ,     &CmdXLoad_EM    },
-
+////{L"si"    ,     &CmdSi_EM       },
+////{L"sic"   ,     &CmdSic_EM      },
+////{L"sinl"  ,     &CmdSinl_EM     },
+////{L"vars"  ,     &CmdVars_EM     },
+////{L"wsid"  ,     &CmdWsid_EM     },
 }
 #endif
 ;

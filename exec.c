@@ -2482,7 +2482,7 @@ void Untokenize
                 if (!lpToken->tkData.lpSym->stFlags.Value)
                     break;
 
-                // If the SYMENTRY is not immediate, it must be an HGLOBAL
+                // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
                 if (!lpToken->tkData.lpSym->stFlags.Imm)
                 {
                     // stData is a valid HGLOBAL variable or function array
@@ -2810,7 +2810,7 @@ WCHAR CharTrans
         case UCS2_UPARROW:              // Alt-'y' - up arrow
         case UCS2_LEFTSHOE:             // Alt-'z' - left shoe
 
-        case UCS2_EQUALUNDERBAR:        // Alt-'!' - equivalent
+        case UCS2_EQUALUNDERBAR:        // Alt-'!' - match
 ////////case UCS2_                      // Alt-'"' - (none)
         case UCS2_DELSTILE:             // Alt-'#' - grade-down
         case UCS2_DELTASTILE:           // Alt-'$' - grade-up
@@ -2848,20 +2848,20 @@ WCHAR CharTrans
 ////////case UCS2_                      // Alt-'D' - (none)
         case UCS2_EPSILONUNDERBAR:      // Alt-'E' - epsilon-underbar
 ////////case UCS2_                      // Alt-'F' - (none)
-////////case UCS2_                      // Alt-'G' - (none)
+////////case UCS2_DIERESISDEL:          // Alt-'G' - dual (COL_PRIM_OP2)
 ////////case UCS2_DELTAUNDERBAR:        // Alt-'H' - delta-underbar (COL_ALPHA)
         case UCS2_IOTAUNDERBAR:         // Alt-'I' - iota-underbar
-////////case UCS2_                      // Alt-'J' - (none)
+////////case UCS2_DIERESISJOT:          // Alt-'J' - rank (COL_PRIM_OP2)
 ////////case UCS2_                      // Alt-'K' - (none)
         case UCS2_SQUAD:                // Alt-'L' - squad
 ////////case UCS2_                      // Alt-'M' - (none)
-////////case UCS2_                      // Alt-'N' - (none)
-////////case UCS2_                      // Alt-'O' - (none)
-////////case UCS2_                      // Alt-'P' - (none)
+////////case UCS2_DIERESISUPTACK:       // Alt-'N' - convolution (COL_PRIM_OP2)
+////////case UCS2_DIERESISCIRCLE:       // Alt-'O' - holler (COL_UNK)
+////////case UCS2_DIERESISSTAR:         // Alt-'P' - power  (COL_PRIM_OP2)
 ////////case UCS2_                      // Alt-'Q' - (none)
 ////////case UCS2_                      // Alt-'R' - (none)
 ////////case UCS2_                      // Alt-'S' - (none)
-////////case UCS2_                      // Alt-'T' - (none)
+////////case UCS2_DIERESISTILDE:        // Alt-'T' - commute (COL_PRIM_OP1)
 ////////case UCS2_                      // Alt-'U' - (none)
 ////////case UCS2_                      // Alt-'V' - (none)
 ////////case UCS2_                      // Alt-'W' - (none)
@@ -2872,14 +2872,14 @@ WCHAR CharTrans
         case UCS2_LEFTTACK:             // Alt-'\\'- left tack
         case UCS2_RIGHTARROW:           // Alt-']' - right arrow
         case UCS2_CIRCLESLOPE:          // Alt-'^' - transpose
-        case UCS2_SHREIK:               // Alt-'_' - shreik
+        case UCS2_QUOTEDOT:             // Alt-'_' - quote-dot
 ////////case UCS2_DIAMOND:              // Alt-'`' - diamond (COL_DIAMOND)
 ////////case UCS2_QUOTEQUAD:            // Alt-'{' - quote-quad
         case UCS2_RIGHTTACK:            // Alt-'|' - right tack
 ////////case UCS2_ZILDE:                // Alt-'}' - zilde (COL_PRIM_FN0)
         case UCS2_COMMABAR:             // Alt-'~' - comma-bar
 ////////case '~':                       // UCS2_TILDE
-////////case '!':                       // UCS2_SHREIK
+////////case '!':                       // UCS2_QUOTEDOT
         case '^':
 ////////case '*':                       // UCS2_STAR
         case '-':
@@ -2891,6 +2891,20 @@ WCHAR CharTrans
 ////////case '>':                       // UCS2_RIGHTCARET
 ////////case '?':                       // UCS2_QUERY
             return COL_PRIM_FN;
+
+        case '\\':                      // Slope
+        case UCS2_SLOPEBAR:             // Alt-'.' - slope-bar
+        case '/':                       // Slash
+        case UCS2_SLASHBAR:             // Alt-'/' - slash-bar
+        case UCS2_DIERESIS:             // Alt-'1' - dieresis
+        case UCS2_DIERESISTILDE:        // Alt-'T' - commute
+            return COL_PRIM_OP1;
+
+        case UCS2_DIERESISDEL:          // Alt-'G' - dual
+        case UCS2_DIERESISJOT:          // Alt-'J' - rank
+        case UCS2_DIERESISUPTACK:       // Alt-'N' - convolution
+        case UCS2_DIERESISSTAR:         // Alt-'P' - power
+            return COL_PRIM_OP2;
 
         case UCS2_JOT:                  // Alt-'j' - jot
             return COL_JOT;
@@ -2907,13 +2921,6 @@ WCHAR CharTrans
 
         case UCS2_LAMP:                 // Alt-',' - comment
             return COL_LAMP;
-
-        case '\\':                      // Slope
-        case UCS2_SLOPEBAR:             // Alt-'.' - slope-bar
-        case '/':                       // Slash
-        case UCS2_SLASHBAR:             // Alt-'/' - slash-bar
-        case UCS2_DIERESIS:             // Alt-'1' - dieresis
-            return COL_PRIM_OP1;
 
         case UCS2_LEFTARROW:            // Alt-'[' - left arrow
             return COL_ASSIGN;
@@ -2943,6 +2950,7 @@ WCHAR CharTrans
             return COL_SEMICOLON;
 
         case UCS2_DELTILDE:             // Alt-'@' - del-tilde
+        case UCS2_DIERESISCIRCLE:       // Alt-'O' - holler
         case '`':
         case '@':
         case '#':

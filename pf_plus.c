@@ -103,26 +103,26 @@ LPYYSTYPE PrimFnPlus_EM
 
 APLSTYPE PrimSpecPlusStorageTypeMon
     (APLNELM    aplNELMRht,
-     LPAPLSTYPE lpcArrTypeRht,
+     LPAPLSTYPE lpaplTypeRht,
      LPTOKEN    lptkFunc)
 
 {
-    APLSTYPE cArrTypeRes;
+    APLSTYPE aplTypeRes;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpcArrTypeRht EQ ARRAY_CHAR)
-        *lpcArrTypeRht = ARRAY_BOOL;
+    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+        *lpaplTypeRht = ARRAY_BOOL;
 
-    if (*lpcArrTypeRht EQ ARRAY_CHAR
-     || *lpcArrTypeRht EQ ARRAY_LIST)
+    if (*lpaplTypeRht EQ ARRAY_CHAR
+     || *lpaplTypeRht EQ ARRAY_LIST)
         return ARRAY_ERROR;
 
     // The storage type of the result is
     //   the same as that of the right arg
-    cArrTypeRes = *lpcArrTypeRht;
+    aplTypeRes = *lpaplTypeRht;
 
-    return cArrTypeRes;
+    return aplTypeRes;
 } // End PrimSpecPlusStorageTypeMon
 
 
@@ -216,7 +216,7 @@ BOOL PrimFnMonPlusAPA_EM
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return TRUE;
 } // End PrimFnMonPlusAPA_EM
@@ -231,39 +231,39 @@ BOOL PrimFnMonPlusAPA_EM
 
 APLSTYPE PrimSpecPlusStorageTypeDyd
     (APLNELM    aplNELMLft,
-     LPAPLSTYPE lpcArrTypeLft,
+     LPAPLSTYPE lpaplTypeLft,
      LPTOKEN    lptkFunc,
      APLNELM    aplNELMRht,
-     LPAPLSTYPE lpcArrTypeRht)
+     LPAPLSTYPE lpaplTypeRht)
 
 {
-    APLSTYPE cArrTypeRes;
+    APLSTYPE aplTypeRes;
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMLft EQ 0 && *lpcArrTypeLft EQ ARRAY_CHAR)
-        *lpcArrTypeLft = ARRAY_BOOL;
+    if (aplNELMLft EQ 0 && *lpaplTypeLft EQ ARRAY_CHAR)
+        *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpcArrTypeRht EQ ARRAY_CHAR)
-        *lpcArrTypeRht = ARRAY_BOOL;
+    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+        *lpaplTypeRht = ARRAY_BOOL;
 
     // Calculate the storage type of the result
-    cArrTypeRes = StorageType (*lpcArrTypeLft, lptkFunc, *lpcArrTypeRht);
+    aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
     // No Boolean results for addition
-    if (cArrTypeRes EQ ARRAY_BOOL)
-        cArrTypeRes = ARRAY_INT;
+    if (aplTypeRes EQ ARRAY_BOOL)
+        aplTypeRes = ARRAY_INT;
 
     // Special case addition with APA
-    if (cArrTypeRes EQ ARRAY_INT                            // Res = INT
+    if (aplTypeRes EQ ARRAY_INT                            // Res = INT
      && (aplNELMLft NE 1 || aplNELMRht NE 1)                // Not both singletons
-     && ((aplNELMLft EQ 1 && *lpcArrTypeRht EQ ARRAY_APA)   // Non-singleton is APA
-      || (aplNELMRht EQ 1 && *lpcArrTypeLft EQ ARRAY_APA))) // ...
-        cArrTypeRes = ARRAY_APA;
+     && ((aplNELMLft EQ 1 && *lpaplTypeRht EQ ARRAY_APA)   // Non-singleton is APA
+      || (aplNELMRht EQ 1 && *lpaplTypeLft EQ ARRAY_APA))) // ...
+        aplTypeRes = ARRAY_APA;
 
-    return cArrTypeRes;
+    return aplTypeRes;
 } // End PrimSpecPlusStorageTypeDyd
 
 
@@ -420,7 +420,7 @@ BOOL PrimFnDydPlusAPA_EM
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return TRUE;
 } // End PrimFnDydPlusAPA_EM

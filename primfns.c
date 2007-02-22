@@ -24,52 +24,57 @@ LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
 // As these functions are implemented, delete the
 //   appropriate line.
 #define PrimFnAlpha_EM              PrimFn_EM       // No definition as yet
-#define PrimFnCircleBar_EM          PrimFn_EM
-#define PrimFnCircleSlope_EM        PrimFn_EM
-#define PrimFnCircleStile_EM        PrimFn_EM
-#define PrimFnComma_EM              PrimFn_EM
-#define PrimFnCommaBar_EM           PrimFn_EM
-#define PrimFnDelStile_EM           PrimFn_EM
-#define PrimFnDeltaStile_EM         PrimFn_EM
-#define PrimFnDomino_EM             PrimFn_EM
-#define PrimFnDownArrow_EM          PrimFn_EM
-#define PrimFnDownShoe_EM           PrimFn_EM       // No definition as yet
-#define PrimFnDownTack_EM           PrimFn_EM       // No definition as yet
-#define PrimFnEpsilon_EM            PrimFn_EM
-#define PrimFnEpsilonUnderbar_EM    PrimFn_EM
-#define PrimFnEqualUnderbar_EM      PrimFn_EM
-#define PrimFnHydrant_EM            PrimFn_EM
+#define PrimFnCircleBar_EM          PrimFn_EM       // Mixed monadic & dyadic
+#define PrimFnCircleSlope_EM        PrimFn_EM       // Mixed monadic & dyadic
+#define PrimFnCircleStile_EM        PrimFn_EM       // Mixed monadic & dyadic
+#define PrimFnDelStile_EM           PrimFn_EM       // Mixed monadic & dyadic
+#define PrimFnDeltaStile_EM         PrimFn_EM       // Mixed monadic & dyadic
+#define PrimFnDomino_EM             PrimFn_EM       // Mixed monadic & dyadic
+#define PrimFnDownArrow_EM          PrimFn_EM       // Mixed dyadic only
+#define PrimFnDownShoe_EM           PrimFn_EM       // Mixed monadic only
+#define PrimFnDownTack_EM           PrimFn_EM       // Mixed dyadic only
+#define PrimFnEpsilon_EM            PrimFn_EM       // Mixed monadic & dyadic
+#define PrimFnEpsilonUnderbar_EM    PrimFn_EM       // Mixed dyadic only
+#define PrimFnHydrant_EM            PrimFn_EM       // Mixed monadic only
 #define PrimFnIotaUnderbar_EM       PrimFn_EM       // No definition as yet
-#define PrimFnLeftTack_EM           PrimFn_EM       // No definition as yet
 #define PrimFnOmega_EM              PrimFn_EM       // No definition as yet
-#define PrimFnQuery_EM              PrimFn_EM       // Scalar monadic
-#define PrimFnRightShoe_EM          PrimFn_EM
-#define PrimFnRightTack_EM          PrimFn_EM       // No definition as yet
-#define PrimFnShreik_EM             PrimFn_EM       // Scalar monadic & dyadic
-#define PrimFnSlashBar_EM           PrimFn_EM
-#define PrimFnSlopeBar_EM           PrimFn_EM
-#define PrimFnSquad_EM              PrimFn_EM
-#define PrimFnThorn_EM              PrimFn_EM
-#define PrimFnTilde_EM              PrimFn_EM       // Scalar monadic
-#define PrimFnUpArrow_EM            PrimFn_EM
+#define PrimFnQuery_EM              PrimFn_EM       // Scalar monadic, mixed dyadic
+#define PrimFnRightShoe_EM          PrimFn_EM       // Mixed monadic & dyadic
+#define PrimFnQuoteDot_EM           PrimFn_EM       // Scalar monadic & dyadic
+#define PrimFnSlash_EM              PrimFn_EM       // Mixed monadic only
+#define PrimFnSlashBar_EM           PrimFn_EM       // Mixed monadic only
+#define PrimFnSlope_EM              PrimFn_EM       // Mixed monadic only
+#define PrimFnSlopeBar_EM           PrimFn_EM       // Mixed monadic only
+#define PrimFnSquad_EM              PrimFn_EM       //
+#define PrimFnThorn_EM              PrimFn_EM       // Mixed monadic & dyadic
+#define PrimFnTilde_EM              PrimFn_EM       // Scalar monadic, mixed dyadic
+#define PrimFnUpArrow_EM            PrimFn_EM       // Mixed monadic & dyadic
 #define PrimFnUpShoe_EM             PrimFn_EM       // No definition as yet
-#define PrimFnUpTack_EM             PrimFn_EM       // No definition as yet
+#define PrimFnUpTack_EM             PrimFn_EM       // Mixed dyadic only
 
 
 // Primitives Done
+/////// PrimFnBar_EM                PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnCircle_EM             PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnCircleStar_EM         PrimFn_EM       // Scalar monadic & dyadic
+/////// PrimFnComma_EM              PrimFn_EM       // Mixed monadic & dyadic
+/////// PrimFnCommaBar_EM           PrimFn_EM       // Mixed monadic & dyadic
 /////// PrimFnDivide_EM             PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnDownCaret_EM          PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnDownCaretTilde_EM     PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnDownStile_EM          PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnEqual_EM              PrimFn_EM       // Scalar monadic & dyadic
+/////// PrimFnEqualUnderbar_EM      PrimFn_EM       // Mixed monadic & dyadic
+/////// PrimFnIota_EM               PrimFn_EM       // Mixed monadic & dyadic
 /////// PrimFnLeftCaret_EM          PrimFn_EM       // Scalar monadic & dyadic
-/////// PrimFnMinus_EM              PrimFn_EM       // Scalar monadic & dyadic
+/////// PrimFnLeftShoe_EM           PrimFn_EM       // Mixed monadic & dyadic
+/////// PrimFnLeftTack_EM           PrimFn_EM       // Mixed dyadic only
 /////// PrimFnNotEqual_EM           PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnNotLess_EM            PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnNotMore_EM            PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnRightCaret_EM         PrimFn_EM       // Scalar monadic & dyadic
+/////// PrimFnRightTack_EM          PrimFn_EM       // Mixed dyadic only
+/////// PrimFnRho_EM                PrimFn_EM       // Mixed monadic & dyadic
 /////// PrimFnStar_EM               PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnStile_EM              PrimFn_EM       // Scalar monadic & dyadic
 /////// PrimFnTimes_EM              PrimFn_EM       // Scalar monadic & dyadic
@@ -130,11 +135,12 @@ void InitPrimFns
     InitPrimFn (UCS2_RIGHTSHOE      , &PrimFnRightShoe_EM      );   // Alt-'x' - right shoe
     InitPrimFn (UCS2_UPARROW        , &PrimFnUpArrow_EM        );   // Alt-'y' - up arrow
     InitPrimFn (UCS2_LEFTSHOE       , &PrimFnLeftShoe_EM       );   // Alt-'z' - left shoe
-    InitPrimFn (UCS2_EQUALUNDERBAR  , &PrimFnEqualUnderbar_EM  );   // Alt-'!' - equivalent
+    InitPrimFn (UCS2_EQUALUNDERBAR  , &PrimFnEqualUnderbar_EM  );   // Alt-'!' - match
 ////                                                                // Alt-'"' - (none)
     InitPrimFn (UCS2_DELSTILE       , &PrimFnDelStile_EM       );   // Alt-'#' - grade-down
     InitPrimFn (UCS2_DELTASTILE     , &PrimFnDeltaStile_EM     );   // Alt-'$' - grade-up
     InitPrimFn (UCS2_CIRCLESTILE    , &PrimFnCircleStile_EM    );   // Alt-'%' - rotate
+    InitPrimFn (UCS2_CIRCLESLOPE    , &PrimFnCircleSlope_EM    );   // Alt-'^' - transpose
     InitPrimFn (UCS2_CIRCLEBAR      , &PrimFnCircleBar_EM      );   // Alt-'&' - circle-bar
     InitPrimFn (UCS2_HYDRANT        , &PrimFnHydrant_EM        );   // Alt-'\''- execute
     InitPrimFn (UCS2_DOWNCARETTILDE , &PrimFnDownCaretTilde_EM );   // Alt-'(' - nor
@@ -191,18 +197,19 @@ void InitPrimFns
 ////                                                                // Alt-'[' - left arrow
     InitPrimFn (UCS2_LEFTTACK       , &PrimFnLeftTack_EM       );   // Alt-'\\'- left tack
 ////                                                                // Alt-']' - right arrow
-    InitPrimFn (UCS2_CIRCLESLOPE    , &PrimFnCircleSlope_EM    );   // Alt-'^' - transpose
-    InitPrimFn (UCS2_SHREIK         , &PrimFnShreik_EM         );   // Alt-'_' - shreik
+    InitPrimFn (UCS2_QUOTEDOT       , &PrimFnQuoteDot_EM       );   // Alt-'_' - quote-dot
 ////                                                                // Alt-'`' - diamond
 ////                                                                // Alt-'{' - quote-quad
     InitPrimFn (UCS2_RIGHTTACK      , &PrimFnRightTack_EM      );   // Alt-'|' - right tack
 ////                                                                // Alt-'}' - zilde
-    InitPrimFn (UCS2_COMMABAR       , &PrimFnCommaBar_EM       );   // Alt-'~' - comma-bar
+    InitPrimFn (UCS2_COMMABAR       , &PrimFnComma_EM          );   // Alt-'~' - comma-bar
     InitPrimFn ('^'                 , &PrimFnUpCaret_EM        );
-    InitPrimFn ('-'                 , &PrimFnMinus_EM          );
+    InitPrimFn ('-'                 , &PrimFnBar_EM            );
     InitPrimFn ('+'                 , &PrimFnPlus_EM           );
     InitPrimFn ('|'                 , &PrimFnStile_EM          );
     InitPrimFn (','                 , &PrimFnComma_EM          );
+    InitPrimFn ('/'                 , &PrimFnSlash_EM          );
+    InitPrimFn ('\\'                , &PrimFnSlope_EM          );
 ////InitPrimOp2('.'                 , &PrimOp2Dot_EM           );
 
 #define POS_INFINITY            (0x7FF0000000000000)
@@ -591,7 +598,7 @@ LPYYSTYPE ExecFunc_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYFunc->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            // If the SYMENTRY is not immediate, it must be an HGLOBAL
+            // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
             if (!lpYYFunc->tkToken.tkData.lpSym->stFlags.Imm)
             {
                 STFLAGS stFlags;
@@ -838,6 +845,12 @@ LPYYSTYPE ExecOp1_EM
 
             break;
 
+        case UCS2_DIERESISTILDE:// Commute
+            DbgBrk ();          // ***FINISHME***
+
+
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -893,11 +906,35 @@ LPYYSTYPE ExecOp2_EM
                                          &lpYYFcnStr[1],
                                          &YYRes.tkToken);
                 if (!lpYYRes)
-                    FreeResult (&YYRes);
+                    FreeResult (&YYRes.tkToken);
             } // End IF
 
             return lpYYRes;
         } // End UCS2_JOT
+
+        case UCS2_DIERESISDEL:  // Dual
+            DbgBrk ();          // ***FINISHME***
+
+
+            return NULL;        // break;
+
+        case UCS2_DIERESISJOT:  // Rank
+            DbgBrk ();          // ***FINISHME***
+
+
+            return NULL;        // break;
+
+        case UCS2_DIERESISUPTACK:// Convolution
+            DbgBrk ();          // ***FINISHME***
+
+
+            return NULL;        // break;
+
+        case UCS2_DIERESISSTAR: // Power
+            DbgBrk ();          // ***FINISHME***
+
+
+            return NULL;        // break;
 
         defstop
             return NULL;
@@ -995,7 +1032,7 @@ APLRANK RankOfGlb
 
 void AttrsOfToken
     (LPTOKEN   lpToken,
-     char     *lpcArrType,
+     char     *lpaplType,
      LPAPLNELM lpaplNELM,
      LPAPLRANK lpaplRank)
 
@@ -1021,16 +1058,16 @@ void AttrsOfToken
                 break;      // Continue with HGLOBAL case
             } // End IF
 
-            *lpcArrType = TranslateImmTypeToArrayType (lpToken->tkData.lpSym->stFlags.ImmType);
-            *lpaplNELM  = 1;
-            *lpaplRank  = 0;
+            *lpaplType = TranslateImmTypeToArrayType (lpToken->tkData.lpSym->stFlags.ImmType);
+            *lpaplNELM = 1;
+            *lpaplRank = 0;
 
             return;
 
         case TKT_VARIMMED:
-            *lpcArrType = TranslateImmTypeToArrayType (lpToken->tkFlags.ImmType);
-            *lpaplNELM  = 1;
-            *lpaplRank  = 0;
+            *lpaplType = TranslateImmTypeToArrayType (lpToken->tkFlags.ImmType);
+            *lpaplNELM = 1;
+            *lpaplRank = 0;
 
             return;
 
@@ -1059,9 +1096,9 @@ void AttrsOfToken
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
-    *lpcArrType = lpHeader->ArrType;
-    *lpaplNELM  = lpHeader->NELM;
-    *lpaplRank  = lpHeader->Rank;
+    *lpaplType = lpHeader->ArrType;
+    *lpaplNELM = lpHeader->NELM;
+    *lpaplRank = lpHeader->Rank;
 
 #undef  lpHeader
 
@@ -1085,11 +1122,14 @@ void AttrsOfToken
 BOOL CheckAxis_EM
     (LPTOKEN    lptkAxis,       // The Axis values
      APLRANK    aplRankCmp,     // Comparison rank
-     BOOL       bSingleton,     // TRUE if scalar or one-element vector only
+     BOOL       bSingleton,     // TRUE iff scalar or one-element vector only
                                 //   is allowed
-     BOOL       bSortAxes,      // TRUE if the the axes should be sorted
+     BOOL       bSortAxes,      // TRUE iff the axes should be sorted
                                 //   (i.e., the order of the axes is unimportant)
-     LPAPLINT   lpaplLastAxis,  // Return last axis value
+     BOOL       bContiguous,    // TRUE iff the axes must be contiguous
+     LPBOOL     lpbFract,       // Return TRUE iff fractional values are present,
+                                //   (may be NULL if fractional values not allowed)
+     LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
                                 //   (may be NULL if caller is not interested)
      LPAPLNELM  lpaplNELMAxis,  // Return # elements in axis
                                 //   (may be NULL if caller is not interested)
@@ -1104,12 +1144,14 @@ BOOL CheckAxis_EM
     LPAPLINT lpAxisStart,
              lpAxisHead,
              lpAxisTail;
-    APLSTYPE cArrType;
+    APLSTYPE aplType;
     APLNELM  aplNELM;
     APLRANK  aplRank;
     UINT     uBitMask, u;
     APLINT   ByteDup,
-             ByteAxis;
+             ByteAxis,
+             aplAxisContLo,      // Contiguous low axis
+             aplAxisContHi;      // ...        high ...
     HGLOBAL  hGlbDup;
 
     // Ensure the object is a subset of {iota}aplRankCmp
@@ -1119,11 +1161,14 @@ BOOL CheckAxis_EM
     //   of length <2 * aplRankCmp>.  In the first <aplRankCmp>
     //   values, the trailing <*lpaplNELMAxis> values are
     //   the actual values in the axis (converted to origin-0
-    //   APLINTs, and the leading values are all the other
+    //   APLINTs), and the leading values are all the other
     //   values in {iota}aplRankCmp.
     // The second <aplRankCmp> values are the grade-up of
     //   the first <aplRankCmp> values.
 
+    // Mark as no fractional values
+    if (lpbFract)
+        *lpbFract = FALSE;
     // Split cases based upon the axis token type
     switch (lptkAxis->tkFlags.TknType)
     {
@@ -1188,6 +1233,19 @@ BOOL CheckAxis_EM
                     aplRank = FloatToAplint_SCT (lptkAxis->tkData.tkFloat, &bRet);
                     aplRank -= bQuadIO; // Less the index origin
 
+                    // If fractional values are allowed,
+                    //   return whether or not they are present
+                    if (lpbFract)
+                        *lpbFract = !bRet;
+
+                    // If fractional values allowed and are present, ...
+                    if (lpbFract && !bRet)
+                        bRet = TRUE;
+
+                    // Ensure it's within range
+                    // Note that because aplRank and aplRankCmp
+                    //   are unsigned, we don't need to check
+                    //   against zero
                     bRet = bRet && (aplRank < aplRankCmp);
 
                     break;
@@ -1201,7 +1259,7 @@ BOOL CheckAxis_EM
                     goto ERROR_EXIT;
             } // End SWITCH
 
-            if (lphGlbAxis)
+            if (bRet && lphGlbAxis)
             {
                 // Save the remaining values
                 for (u = 0; u < aplRankCmp; u++)
@@ -1226,9 +1284,9 @@ BOOL CheckAxis_EM
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
-            cArrType = lpHeader->ArrType;
-            aplNELM  = lpHeader->NELM;
-            aplRank  = lpHeader->Rank;
+            aplType = lpHeader->ArrType;
+            aplNELM = lpHeader->NELM;
+            aplRank = lpHeader->Rank;
 
 #undef  lpHeader
 
@@ -1298,7 +1356,7 @@ BOOL CheckAxis_EM
                 lpMem = VarArrayBaseToData (lpMem, aplRank);
 
                 // Split cases based upon the array type
-                switch (cArrType)
+                switch (aplType)
                 {
                     case ARRAY_BOOL:
                         uBitMask = 0x01;
@@ -1329,7 +1387,7 @@ BOOL CheckAxis_EM
                                 uBitMask <<= 1;
 
                                 // Check for end-of-byte
-                                if (uBitMask EQ 0x100)
+                                if (uBitMask EQ END_OF_BYTE)
                                 {
                                     uBitMask = 0x01;        // Start over
                                     ((LPAPLBOOL) lpMem)++;  // Skip to next byte
@@ -1380,11 +1438,20 @@ BOOL CheckAxis_EM
                             aplRank = FloatToAplint_SCT (*lpaplFloat++, &bRet);
                             aplRank -= bQuadIO; // Less the index origin
 
+                            // If fractional values are allowed,
+                            //   return whether or not they are present
+                            if (lpbFract)
+                                *lpbFract |= !bRet;
+
                             // Save the next trailing value
                             //   if asked to and not sorting
                             //   the axes.
                             if (lphGlbAxis && !bSortAxes)
                                 *lpAxisTail++ = aplRank;
+
+                            // If fractional values allowed and are present, ...
+                            if (lpbFract && !bRet)
+                                bRet = TRUE;
 
                             // Ensure it's within range
                             // Note that because aplRank and aplRankCmp
@@ -1486,12 +1553,91 @@ BOOL CheckAxis_EM
                         uBitMask <<= 1;
 
                         // Check for end-of-byte
-                        if (uBitMask EQ 0x100)
+                        if (uBitMask EQ END_OF_BYTE)
                         {
                             uBitMask = 0x01;        // Start over
                             ((LPAPLBOOL) lpDup)++;  // Skip to next byte
                         } // End IF
                     } // End FOR
+                } // End IF
+
+                // If the axes must be contiguous, check that
+                if (bRet && bContiguous)
+                {
+                    // Unlock and lock the memory to reset the
+                    //   ptr to the start
+                    MyGlobalUnlock (hGlbDup); lpDup = NULL;
+                    lpDup = MyGlobalLock (hGlbDup);
+
+                    uBitMask = 0x01;
+
+                    // Look for the first 1
+                    for (u = 0; u < aplRankCmp; u++)
+                    {
+                        // If it's a 1, break
+                        if (uBitMask & *(LPAPLBOOL) lpDup)
+                            break;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;        // Start over
+                            ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    // Save as low contiguous axis
+                    aplAxisContLo = u;
+
+                    // Look for consecutive 1s
+                    for (; u < aplRankCmp; u++)
+                    {
+                        // If it's a 0, break
+                        if (!(uBitMask & *(LPAPLBOOL) lpDup))
+                            break;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;        // Start over
+                            ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    // Save as high contiguous axis
+                    aplAxisContHi = u - 1;
+
+                    // Save as highest axis
+                    if (lpaplLastAxis)
+                        *lpaplLastAxis = aplAxisContHi;
+
+                    // Look for consecutive 0s
+                    for (; u < aplRankCmp; u++)
+                    {
+                        // If it's a 1, break
+                        if (uBitMask & *(LPAPLBOOL) lpDup)
+                            break;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;        // Start over
+                            ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    // If we're not at the end, the axes
+                    //   are not contiguous
+                    bRet = (u EQ aplRankCmp);
                 } // End IF
 
                 // We no longer need this ptr and HGLOBAL
@@ -1524,6 +1670,29 @@ ERROR_EXIT:
     } else
     if (lphGlbAxis && *lphGlbAxis)
     {
+        if (bContiguous)
+        {
+            // If the axes are to be contiguous, this must be ravel
+            //   in which case the axes must be represented as
+            //   A{is}{iota}aplRankCmp {diamond} A[X[{gradeup}X]]{is}X
+            //   not as they are above for the dyadic scalar functions.
+
+            // We accomplish this by forming the above result in the
+            //   second half of lpAxisStart, and copying it to the
+            //   first half.
+
+            // A{is}{iota}aplRankCmp
+            for (u = 0; u < aplRankCmp; u++)
+                lpAxisStart[aplRankCmp + u] = u;
+
+            // A[X[{gradeup}X]]{is}X
+            for (u = 0; u < aplNELM; u++)
+                lpAxisStart[aplRankCmp + aplAxisContLo + u] = lpAxisHead[u];
+
+            // Copy back to the first half
+            CopyMemory (lpAxisStart, &lpAxisStart[aplRankCmp], (UINT) (aplRankCmp * sizeof (lpAxisStart[0])));
+        } // End IF
+
         // Place the grade-up of lpAxisStart into &lpAxisStart[aplRankCmp]
         // Because these values are guaranteed to be a permutation
         //   vector, we can use an address sort.
@@ -1578,12 +1747,12 @@ BOOL TestDupAxis
 //***************************************************************************
 
 APLSTYPE StorageType
-    (APLSTYPE sTypeLft,     // Storage type of left arg
+    (APLSTYPE aplTypeLft,   // Storage type of left arg
      LPTOKEN  lptkFunc,     // Immediate function
-     APLSTYPE sTypeRht)     // Storage type of right arg
+     APLSTYPE aplTypeRht)   // Storage type of right arg
 
 {
-    static APLSTYPE sType[ARRAY_LENGTH][ARRAY_LENGTH] =
+    static APLSTYPE aplTypeArr[ARRAY_LENGTH][ARRAY_LENGTH] =
     //      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        LIST         APA
     {{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_MIXED , ARRAY_MIXED , ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // BOOL
      {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_MIXED , ARRAY_MIXED , ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // INT
@@ -1595,23 +1764,23 @@ APLSTYPE StorageType
      {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_MIXED , ARRAY_MIXED , ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // APA
     };
 
-    APLSTYPE sTypeRes;
+    APLSTYPE aplTypeRes;
 
     // Both arguments are within bounds
-    Assert (sTypeLft < ARRAY_LENGTH);
-    Assert (sTypeRht < ARRAY_LENGTH);
+    Assert (aplTypeLft < ARRAY_LENGTH);
+    Assert (aplTypeRht < ARRAY_LENGTH);
 
     // tkData is an immediate function
     Assert (lptkFunc->tkFlags.TknType EQ TKT_FCNIMMED);
 
     // Get the common storage type
-    sTypeRes = sType[sTypeLft][sTypeRht];
+    aplTypeRes = aplTypeArr[aplTypeLft][aplTypeRht];
 
     // Split cases based upon the result type
-    switch (sTypeRes)
+    switch (aplTypeRes)
     {
         case ARRAY_ERROR:
-            return sTypeRes;
+            return aplTypeRes;
 
         case ARRAY_MIXED:
             // A mixed result is from CHAR or HETERO vs. numeric (BOOL, INT, APA, FLOAT) or NESTED
@@ -1620,8 +1789,8 @@ APLSTYPE StorageType
             if (lptkFunc->tkData.tkChar EQ UCS2_EQUAL
              || lptkFunc->tkData.tkChar EQ UCS2_NOTEQUAL)
             {
-                if (sTypeLft EQ ARRAY_NESTED
-                 || sTypeRht EQ ARRAY_NESTED)
+                if (aplTypeLft EQ ARRAY_NESTED
+                 || aplTypeRht EQ ARRAY_NESTED)
                     return ARRAY_NESTED;
                 else
                     return ARRAY_BOOL;
@@ -1635,10 +1804,10 @@ APLSTYPE StorageType
              || lptkFunc->tkData.tkChar EQ UCS2_NOTEQUAL)
                 return ARRAY_BOOL;
             else
-                return sTypeRes;
+                return aplTypeRes;
 
         case ARRAY_NESTED:
-            return sTypeRes;
+            return aplTypeRes;
 
         case ARRAY_CHAR:
         case ARRAY_HETERO:
@@ -1653,7 +1822,9 @@ APLSTYPE StorageType
 //  FirstValue
 //
 //  Return the first value from a token as either
-//    both an integer and a float, or as a character
+//    both an integer and a float, or as a character,
+//    or as an LPSYMENTRY/HGLOBAL.  The token may be
+//    an empty nested array.
 //***************************************************************************
 
 void FirstValue
@@ -1661,6 +1832,7 @@ void FirstValue
      LPAPLINT   lpaplInteger,   // Return the integer (or Boolean) (may be NULL)
      LPAPLFLOAT lpaplFloat,     // ...        float (may be NULL)
      LPAPLCHAR  lpaplChar,      // ...        char (may be NULL)
+     LPVOID    *lpSymGlb,       // ...        LPSYMENTRY or HGLOBAL (may be NULL)
      LPUCHAR    lpImmType,      // ...        immediate type IMM_TYPES (may be NULL)
      LPAPLSTYPE lpArrType)      // ...        array type -- ARRAY_TYPES (may be NULL)
 
@@ -1688,17 +1860,14 @@ void FirstValue
 
             // Handle the immediate case
 
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
-
-            // stData is an immediate
-            Assert (lpToken->tkData.lpSym->stFlags.Imm);
-
             if (lpImmType)
                 *lpImmType = lpToken->tkData.lpSym->stFlags.ImmType;
 
             if (lpArrType)
                 *lpArrType = TranslateImmTypeToArrayType (lpToken->tkData.lpSym->stFlags.ImmType);
+
+            if (lpSymGlb)
+                *lpSymGlb = NULL;
 
             // Split cases based upon the immediate type
             switch (lpToken->tkData.lpSym->stFlags.ImmType)
@@ -1755,6 +1924,9 @@ void FirstValue
 
             if (lpArrType)
                 *lpArrType = TranslateImmTypeToArrayType (lpToken->tkFlags.ImmType);
+
+            if (lpSymGlb)
+                *lpSymGlb = NULL;
 
             // Split cases based upon the immediate type
             switch (lpToken->tkFlags.ImmType)
@@ -1825,7 +1997,7 @@ void FirstValue
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
-    Assert (lpHeader->NELM > 0);
+    Assert (lpHeader->ArrType EQ ARRAY_NESTED || lpHeader->NELM > 0);
 
     lpData = VarArrayBaseToData (lpMem, lpHeader->Rank);
 
@@ -1842,7 +2014,8 @@ void FirstValue
                 *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
             if (lpaplChar)
                 *lpaplChar    = L'\0';
-
+            if (lpSymGlb)
+                *lpSymGlb = NULL;
             break;
 
         case ARRAY_INT:
@@ -1852,7 +2025,8 @@ void FirstValue
                 *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
             if (lpaplChar)
                 *lpaplChar    = L'\0';
-
+            if (lpSymGlb)
+                *lpSymGlb = NULL;
             break;
 
         case ARRAY_APA:
@@ -1862,7 +2036,8 @@ void FirstValue
                 *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
             if (lpaplChar)
                 *lpaplChar    = L'\0';
-
+            if (lpSymGlb)
+                *lpSymGlb = NULL;
             break;
 
         case ARRAY_FLOAT:
@@ -1872,7 +2047,8 @@ void FirstValue
                 *lpaplInteger = (APLINT) *lpaplFloat;
             if (lpaplChar)
                 *lpaplChar    = L'\0';
-
+            if (lpSymGlb)
+                *lpSymGlb = NULL;
             break;
 
         case ARRAY_CHAR:
@@ -1882,7 +2058,19 @@ void FirstValue
                 *lpaplFloat   = 0;
             if (lpaplChar)
                 *lpaplChar    = *(LPAPLCHAR) lpData;
+            if (lpSymGlb)
+                *lpSymGlb = NULL;
+            break;
 
+        case ARRAY_NESTED:
+            if (lpaplInteger)
+                *lpaplInteger = 0;
+            if (lpaplFloat)
+                *lpaplFloat   = 0;
+            if (lpaplChar)
+                *lpaplChar    = L'\0';
+            if (lpSymGlb)
+                *lpSymGlb = *(LPAPLNESTED) lpData;
             break;
 
         defstop
@@ -1897,17 +2085,21 @@ void FirstValue
 
 
 //***************************************************************************
-//  GetGlbPtrs
+//  GetGlbPtrs_LOCK
 //
 //  Return the HGLOBAL and LPVOID from a token if it's an HGLOBAL
+//    NULL otherwise.
+//  The "_LOCK" suffix is a reminder that this function locks
+//    a global memory handle and the caller must unlock it.
 //***************************************************************************
 
-void GetGlbPtrs
-    (LPTOKEN lpToken,
+void GetGlbPtrs_LOCK
+    (LPTOKEN  lpToken,
      HGLOBAL *lphGlb,
      LPVOID  *lplpMem)
 
 {
+    // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:
@@ -1927,24 +2119,18 @@ void GetGlbPtrs
 
             // Handle the immediate case
 
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
-
-            // stData is an immediate
-            Assert (lpToken->tkData.lpSym->stFlags.Imm);
-
             // Fall through to handle immediate case
 
         case TKT_VARIMMED:
             *lphGlb  = NULL;
             *lplpMem = NULL;
 
-            break;
+            return;
 
         case TKT_VARARRAY:
             *lphGlb = lpToken->tkData.tkGlbData;
 
-            // stData is a valid HGLOBAL variable array
+            // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (*lphGlb));
 
             break;      // Continue with common HGLOBAL code
@@ -1961,7 +2147,7 @@ void GetGlbPtrs
         // Lock the memory to get a ptr to it
         *lplpMem = MyGlobalLock (*lphGlb);
     } // End IF
-} // End GetGlbPtrs
+} // End GetGlbPtrs_LOCK
 
 
 //***************************************************************************
@@ -1972,14 +2158,14 @@ void GetGlbPtrs
 
 APLINT GetNextInteger
     (LPVOID   lpMem,
-     APLSTYPE cArrType,
+     APLSTYPE aplType,
      APLINT   uRes,
      APLINT   apaOff,
      APLINT   apaMul)
 
 {
     // Split cases based upon the storage type
-    switch (cArrType)
+    switch (aplType)
     {
         case ARRAY_BOOL:
             return BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (uRes & MASKLOG2NBIB));
@@ -2007,14 +2193,14 @@ APLINT GetNextInteger
 
 APLFLOAT GetNextFloat
     (LPVOID   lpMem,
-     APLSTYPE cArrType,
+     APLSTYPE aplType,
      APLINT   uRes,
      APLINT   apaOff,
      APLINT   apaMul)
 
 {
     // Split cases based upon the storage type
-    switch (cArrType)
+    switch (aplType)
     {
         case ARRAY_BOOL:
             return (APLFLOAT) (BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (uRes & MASKLOG2NBIB)));
@@ -2152,7 +2338,7 @@ BOOL PrimScalarFnDydAllocate_EM
      APLRANK    aplRankRht,
      LPAPLRANK  lpaplRankRes,
 
-     APLSTYPE   cArrTypeRes,
+     APLSTYPE   aplTypeRes,
 
      APLNELM    aplNELMLft,
      APLNELM    aplNELMRht,
@@ -2181,7 +2367,7 @@ BOOL PrimScalarFnDydAllocate_EM
         //   be stored as an immediate token,
         //   not global memory.
         if (*lpaplRankRes EQ 0
-         && IsSimpleNum (cArrTypeRes))
+         && IsSimpleNum (aplTypeRes))
             return TRUE;
     } else
     if (aplNELMLft EQ 1
@@ -2207,38 +2393,43 @@ BOOL PrimScalarFnDydAllocate_EM
     } // End IF/ELSE/...
 
     // Calculate space for the result
-    ByteRes = sizeof (VARARRAY_HEADER)
-            + sizeof (APLDIM) * *lpaplRankRes;
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, *lpaplRankRes);
 
-    // Split cases based upon the result storage type
-    switch (cArrTypeRes)
-    {
-        case ARRAY_BOOL:        // One value per bit, rounded up to the byte
-            ByteRes += sizeof (APLBOOL)   * RoundUpBits8 (aplNELMRes);
+    // Take into account space for a prototype
+    aplNELMNested = max (aplNELMRes, 1);
 
-            break;
-
-        case ARRAY_INT:
-            ByteRes += sizeof (APLINT)    * aplNELMRes;
-
-            break;
-
-        case ARRAY_FLOAT:
-            ByteRes += sizeof (APLFLOAT)  * aplNELMRes;
-
-            break;
-
-        case ARRAY_NESTED:
-            // Take into account space for a prototype
-            aplNELMNested = max (aplNELMRes, 1);
-
-            ByteRes += sizeof (APLNESTED) * aplNELMNested;
-
-            break;
-
-        defstop
-            break;
-    } // End IF/ELSE
+////ByteRes = sizeof (VARARRAY_HEADER)
+////        + sizeof (APLDIM) * *lpaplRankRes;
+////
+////// Split cases based upon the result storage type
+////switch (aplTypeRes)
+////{
+////    case ARRAY_BOOL:        // One value per bit, rounded up to the byte
+////        ByteRes += sizeof (APLBOOL)   * RoundUpBits8 (aplNELMRes);
+////
+////        break;
+////
+////    case ARRAY_INT:
+////        ByteRes += sizeof (APLINT)    * aplNELMRes;
+////
+////        break;
+////
+////    case ARRAY_FLOAT:
+////        ByteRes += sizeof (APLFLOAT)  * aplNELMRes;
+////
+////        break;
+////
+////    case ARRAY_NESTED:
+////        // Take into account space for a prototype
+////        aplNELMNested = max (aplNELMRes, 1);
+////
+////        ByteRes += sizeof (APLNESTED) * aplNELMNested;
+////
+////        break;
+////
+////    defstop
+////        break;
+////} // End IF/ELSE
 
     // Allocate space for the result
     // N.B. Conversion from APLINT to UINT
@@ -2258,7 +2449,7 @@ BOOL PrimScalarFnDydAllocate_EM
 
     // Fill in the header
     lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = cArrTypeRes;
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->Perm       = 0;               // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -2305,7 +2496,7 @@ BOOL PrimScalarFnDydAllocate_EM
     // If the result is nested, fill in the
     //   elements with PTR_REUSED in case of failure
     //   later so as not to fail in <FreeResultGlobal>.
-    if (cArrTypeRes EQ ARRAY_NESTED)
+    if (aplTypeRes EQ ARRAY_NESTED)
     {
         // Skip over the header and dimensions to the data
         lpMem = VarArrayBaseToData (*lplpMemRes, *lpaplRankRes);
@@ -2340,7 +2531,7 @@ HGLOBAL MakePrototype_EM
 {
     LPVOID      lpMemArr;
     LPVARARRAY_HEADER lpHeader;
-    APLSTYPE    cArrType;
+    APLSTYPE    aplType;
     APLNELM     aplNELM;
     APLRANK     aplRank;
     UINT        u;
@@ -2360,15 +2551,15 @@ HGLOBAL MakePrototype_EM
     // Lock the memory to get a ptr to it
     lpMemArr = lpHeader = MyGlobalLock (hGlbArr);
 
-    cArrType = lpHeader->ArrType;
-    aplNELM  = lpHeader->NELM;
-    aplRank  = lpHeader->Rank;
+    aplType = lpHeader->ArrType;
+    aplNELM = lpHeader->NELM;
+    aplRank = lpHeader->Rank;
 
     // Point to the data
     lpMemArr = VarArrayBaseToData (lpMemArr, aplRank);
 
     // Split cases based upon the array type
-    switch (cArrType)
+    switch (aplType)
     {
         case ARRAY_BOOL:
             // Calculate # bytes of Boolean data
@@ -2452,7 +2643,7 @@ HGLOBAL MakePrototype_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    Assert (cArrType EQ ARRAY_NESTED);
+                    Assert (aplType EQ ARRAY_NESTED);
 
                     // It's a valid HGLOBAL array
                     Assert (IsGlbTypeVarInd (lpMemArr));
@@ -2504,7 +2695,7 @@ NORMAL_EXIT:
         FreeResultGlobalVar (hGlbArr); hGlbArr = NULL;
     } // End IF
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return hGlbArr;
 } // End MakePrototype_EM
@@ -2519,12 +2710,12 @@ NORMAL_EXIT:
 
 BOOL IsFirstSimpleGlb
     (HGLOBAL *lphGlbRht,
-     LPCHAR   lpcArrTypeRes)
+     LPCHAR   lpaplTypeRes)
 
 {
     LPVOID     lpMemRht;
-    APLSTYPE   cArrTypeRht;
-    APLRANK    aplRank;
+    APLSTYPE   aplTypeRht;
+    APLRANK    aplRankRht;
     BOOL       bRet = TRUE;
     LPSYMENTRY lpSym;
     HGLOBAL    hGlbFirst;
@@ -2539,16 +2730,16 @@ BOOL IsFirstSimpleGlb
 
 #define lpHeaderRht     ((LPVARARRAY_HEADER) lpMemRht)
 
-    cArrTypeRht = lpHeaderRht->ArrType;
-    aplRank     = lpHeaderRht->Rank;
+    aplTypeRht = lpHeaderRht->ArrType;
+    aplRankRht = lpHeaderRht->Rank;
 
 #undef  lpHeaderRht
 
     // It's a nested element
-    Assert (cArrTypeRht EQ ARRAY_NESTED);
+    Assert (aplTypeRht EQ ARRAY_NESTED);
 
     // Point to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRank);
+    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // Split cases based upon the element's ptr type
     switch (GetPtrTypeInd (lpMemRht))
@@ -2558,7 +2749,7 @@ BOOL IsFirstSimpleGlb
 
             // It's an immediate
             Assert (lpSym->stFlags.Imm);
-            *lpcArrTypeRes = TranslateImmTypeToArrayType (lpSym->stFlags.ImmType);
+            *lpaplTypeRes = TranslateImmTypeToArrayType (lpSym->stFlags.ImmType);
 
             break;
 
@@ -2586,6 +2777,41 @@ BOOL IsFirstSimpleGlb
 
 
 //***************************************************************************
+//  CopySymGlb
+//
+//  Copy an LPSYMENTRY or HGLOBAL incrementing the reference count
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CopySymGlb"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL CopySymGlb
+    (LPVOID lpSymGlb)
+
+{
+    // Split cases based upon the ptr type
+    switch (GetPtrTypeDir (lpSymGlb))
+    {
+        case PTRTYPE_STCONST:
+            return lpSymGlb;
+
+        case PTRTYPE_HGLOBAL:
+            // Increment the reference count in global memory
+            DbgIncrRefCntDir ((HGLOBAL) lpSymGlb);
+
+            return lpSymGlb;
+
+        defstop
+            return NULL;
+    } // End SWITCH
+} // End CopySymGlb
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  CopyArray_EM
 //
 //  Make a copy of a global memory ptr array
@@ -2608,7 +2834,7 @@ HGLOBAL CopyArray_EM
                 lpMemDst, lpMemDstBase;
     HGLOBAL     hGlbDst,
                 hGlbTmp;
-    APLSTYPE    cArrType;
+    APLSTYPE    aplType;
     APLNELM     aplNELM;
     APLRANK     aplRank;
     LPSYMENTRY  lpSymSrc,
@@ -2649,9 +2875,9 @@ HGLOBAL CopyArray_EM
         lpHeaderDst->RefCnt = 1;
 
         // Recurse through the array, copying all the global ptrs
-        cArrType = lpHeaderDst->ArrType;
-        aplNELM  = lpHeaderDst->NELM;
-        aplRank  = lpHeaderDst->Rank;
+        aplType = lpHeaderDst->ArrType;
+        aplNELM = lpHeaderDst->NELM;
+        aplRank = lpHeaderDst->Rank;
 
 #undef  lpHeaderDst
 
@@ -2659,7 +2885,7 @@ HGLOBAL CopyArray_EM
         lpMemSrcBase = lpMemSrc = VarArrayBaseToData (lpMemSrc, aplRank);
 
         // Split cases based upon the array type
-        switch (cArrType)
+        switch (aplType)
         {
             case ARRAY_BOOL:
             case ARRAY_INT:
@@ -2705,7 +2931,7 @@ HGLOBAL CopyArray_EM
                         break;
 
                     case PTRTYPE_HGLOBAL:
-                        Assert (cArrType EQ ARRAY_NESTED);
+                        Assert (aplType EQ ARRAY_NESTED);
 
                         // It's a valid HGLOBAL array
                         Assert (IsGlbTypeVarInd (lpMemSrc));
@@ -2742,58 +2968,6 @@ HGLOBAL CopyArray_EM
     return hGlbDst;
 } // End CopyArray_EM
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  CopyImmSymEntry_EM
-//
-//  Copy an immediate symbol table entry
-//***************************************************************************
-
-LPSYMENTRY CopyImmSymEntry_EM
-    (LPSYMENTRY lpSymSrc,
-     IMM_TYPES  immType,    // ImmType to use (unless -1)
-     LPTOKEN    lpToken)
-
-{
-    LPSYMENTRY lpSymDst;
-
-    // stData is an immediate
-    Assert (lpSymSrc->stFlags.Imm);
-
-    // If unspecified, use the one in the SYMENTRY
-    if (immType EQ -1)
-        immType = lpSymSrc->stFlags.ImmType;
-
-    // Split cases based upon the immediate data type
-    switch (immType)
-    {
-        case IMMTYPE_BOOL:
-        case IMMTYPE_INT:
-            lpSymDst = SymTabAppendInteger_EM (lpSymSrc->stData.stInteger);
-
-            break;
-
-        case IMMTYPE_CHAR:
-            lpSymDst = SymTabAppendChar_EM    (lpSymSrc->stData.stChar);
-
-            break;
-
-        case IMMTYPE_FLOAT:
-            lpSymDst = SymTabAppendFloat_EM   (lpSymSrc->stData.stFloat);
-
-            break;
-
-        defstop
-            return NULL;
-    } // End SWITCH
-
-    // If it failed, set the error token
-    if (!lpSymDst)
-        ErrorMessageSetToken (lpToken);
-
-    return lpSymDst;
-} // End CopyImmSymEntry_EM
 
 
 #ifdef DEBUG
@@ -2885,7 +3059,7 @@ BOOL CheckRankLengthError_EM
     //     {iota}{rho}{rho}Z.
     //   If neither argument is a singleton and axis is specified,
     //     then it must be true that
-    //       ({rho}L)[X]{equivalent}{rho}R
+    //       ({rho}L)[X]{match}{rho}R
     //     assuming that L is the argument of lower rank.  If not,
     //     switch L and R in the above expression.
     //***************************************************************
@@ -3040,6 +3214,283 @@ APLINT imul64
 
     return aplRes;
 } // End imul64
+
+
+//***************************************************************************
+//  CalcArraySize
+//
+//  Calculate the size in bytes of an array
+//***************************************************************************
+
+APLUINT CalcArraySize
+    (APLSTYPE aplType,
+     APLNELM  aplNELM,
+     APLRANK  aplRank)
+
+{
+    APLUINT ByteRes;
+
+    Assert (0 <= aplType
+         &&      aplType < ARRAY_LENGTH);
+
+    switch (aplType)
+    {
+        case ARRAY_BOOL:
+            ByteRes = sizeof (APLBOOL)   * RoundUpBits8 (aplNELM);
+
+            break;
+
+        case ARRAY_INT:
+            ByteRes = sizeof (APLINT)    * aplNELM;
+
+            break;
+
+        case ARRAY_FLOAT:
+            ByteRes = sizeof (APLFLOAT)  * aplNELM;
+
+            break;
+
+        case ARRAY_CHAR:
+            ByteRes = sizeof (APLCHAR)   * aplNELM;
+
+            break;
+
+        case ARRAY_APA:
+            ByteRes = sizeof (APLAPA);
+
+            break;
+
+        case ARRAY_HETERO:
+            ByteRes = sizeof (APLHETERO) * aplNELM;
+
+            break;
+
+        case ARRAY_NESTED:
+            // Make room for the prototype
+            ByteRes = sizeof (APLNESTED) * max (aplNELM, 1);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Add in the size of the header and dimension
+    ByteRes += sizeof (VARARRAY_HEADER)
+             + sizeof (APLDIM) * aplRank;
+    return ByteRes;
+} // End CalcArraySize
+
+
+//***************************************************************************
+//  TypeDemote
+//
+//  Attempt to demote the type of a global memory handle
+//
+//  Various primitives (e.g. Match) rely upon type demotion to
+//  return a correct result.
+//
+//  Consequently, it must not be possible to store an all simple
+//  homogeneous array in nested array format.  In other words,
+//  structural functions such as
+//
+//  take
+//  drop
+//  indexing/squad
+//  indexed assignment
+//  pick
+//  transpose
+//  compression/replicate
+//  unique
+//  partition
+//  first
+//  enlist
+//  without
+//  each
+//  etc.
+//
+//  The following functions have been changed to use TypeDemote:
+//    reshape
+//    enclose with axis
+//
+//  must call this function to check their result to see if it
+//  can be stored more simply.  Note that more simply does not
+//  mean in fewer bytes as ptrs are four bytes while integers are eight.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- TypeDemote"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL TypeDemote
+    (HGLOBAL hGlbRht)
+
+{
+    HGLOBAL           hGlbRes;
+    LPVOID            lpMemRht,
+                      lpMemRes;
+    APLSTYPE          aplTypeRht;
+    APLNELM           aplNELMRht;
+    APLRANK           aplRankRht;
+    APLINT            uRht;
+    APLUINT           ByteRes;
+    APLSTYPE          aplTypeRes;
+    LPSYMENTRY        lpSymEntry;
+    LPVARARRAY_HEADER lpMemRhtHdr;
+    DWORD             dwSize;
+
+    // Note that neither ARRAY_APA not ARRAY_LIST can occur
+    //   as an argument to this function.
+    static APLSTYPE aplTypeArr[ARRAY_LENGTH][ARRAY_LENGTH] =
+    //      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        INIT
+    {{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_BOOL  },  // BOOL
+     {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_INT   },  // INT
+     {ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_FLOAT },  // FLOAT
+     {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_CHAR  },  // CHAR
+     {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_HETERO},  // HETERO
+     {ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED},  // NESTED
+     {ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_LIST  },  // INIT
+    };
+
+    // Copy to the result in case we don't demote
+    hGlbRes = hGlbRht;
+
+    // Lock the memory to get a ptr to it
+    lpMemRhtHdr = MyGlobalLock (hGlbRht);
+
+    // Get the Type, NELM, and Rank
+    aplTypeRht = lpMemRhtHdr->ArrType;
+    aplNELMRht = lpMemRhtHdr->NELM;
+    aplRankRht = lpMemRhtHdr->Rank;
+
+    // Skip over the header and dimensions to the data
+    lpMemRht = VarArrayBaseToData (lpMemRhtHdr, aplRankRht);
+
+    // Split cases based upon the arg's storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:        // No place to go
+        case ARRAY_INT:         // Demote to Boolean??
+        case ARRAY_FLOAT:       // Demote to Boolean/Integer??
+        case ARRAY_APA:         // No place to go
+        case ARRAY_CHAR:        // No place to go
+            break;
+
+        case ARRAY_HETERO:      // Demote to simple homogeneous
+        case ARRAY_NESTED:      // Demote to simple homogeneous/heterogeneous
+            // Initialize the type (as ARRAY_LIST never occurs
+            //   in this context, we co-opt it).
+            aplTypeRes = ARRAY_LIST;
+
+            // Loop through the elements
+            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
+            {
+                // Split cases based upon the ptr type of the element
+                switch (GetPtrTypeInd (lpMemRht))
+                {
+                    case PTRTYPE_STCONST:
+                        lpSymEntry = *(LPAPLHETERO) lpMemRht;
+
+                        // stData is an immediate
+                        Assert (lpSymEntry->stFlags.Imm);
+
+                        // Check type storage type
+                        aplTypeRes = aplTypeArr[aplTypeRes][TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType)];
+
+                        // Check for no demotion
+                        if (aplTypeRes EQ ARRAY_HETERO
+                         && aplTypeRht EQ ARRAY_HETERO)
+                            goto NORMAL_EXIT;
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        // It's nested, so there's no demotion
+                        goto NORMAL_EXIT;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
+
+            // Check for demotion from Nested to Hetero
+            if (aplTypeRes EQ ARRAY_HETERO
+             && aplTypeRht EQ ARRAY_NESTED)
+            {
+                // If the reference conut of this array is one, just
+                //   change the array type from ARRAY_NESTED to ARRAY_HETERO.
+                if (lpMemRhtHdr->RefCnt EQ 1)
+                    lpMemRhtHdr->ArrType = ARRAY_HETERO;
+                else
+                {
+                    // Copy this array and change the type from ARRAY_NESTED to ARRAY_HETERO
+                    dwSize = MyGlobalSize (hGlbRht);
+                    hGlbRes = DbgGlobalAlloc (GHND, dwSize);
+                    if (hGlbRes)
+                    {
+                        // Lock the memory to get a ptr to it
+                        lpMemRes = MyGlobalLock (hGlbRes);
+
+                        // Copy source to destin
+                        CopyMemory (lpMemRes, lpMemRht, dwSize);
+
+#ifdef DEBUG
+                        dprintfW (L"##RefCnt=1 in " APPEND_NAME L": %08X (%S#%d)", lpMemRes, FNLN);
+#endif
+#define lpHeaderRes ((LPVARARRAY_HEADER) lpMemRes)
+
+                        // Set the reference count and array type
+                        lpHeaderRes->RefCnt  = 1;
+                        lpHeaderRes->ArrType = ARRAY_HETERO;
+
+#undef  lpHeaderRes
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                        // Free the old array
+                        FreeResultGlobalVar (hGlbRht);
+                    } else
+                        // WS FULL, so no demotion
+                        hGlbRes = hGlbRht;
+                } // End IF/ELSE
+            } else
+            // Check for demotion to simple homogeneous
+            if (uTypeMap[aplTypeRes] < uTypeMap[ARRAY_HETERO])
+            {
+                DbgBrk ();      // ***TESTME***
+
+                // Calculate space needed for the new array
+                ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
+
+                // Allocate space for a new array
+
+
+
+
+
+
+
+
+
+
+
+
+
+            } // End IF/ELSE
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+NORMAL_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+    return hGlbRes;
+} // End TypeDemote
+#undef  APPEND_NAME
 
 
 //***************************************************************************

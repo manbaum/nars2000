@@ -161,7 +161,7 @@ DWORD GetRegDword
 	DWORD dwActVal = 0, // Set to known value in case stored in shorter format
 		  dwSize = sizeof (dwActVal);
 
-	if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
 	{
 		if (RegQueryValueEx (hKey2, 		// handle of key to query
 							 pKeyStr,		// address of name of value to query
@@ -197,7 +197,7 @@ QWORD GetRegQword
 	QWORD qwActVal = 0; // Set to known value in case stored in shorter format
 	DWORD dwSize = sizeof (qwActVal);
 
-	if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
 	{
 		if (RegQueryValueEx (hKey2, 		// handle of key to query
 							 pKeyStr,		// address of name of value to query
@@ -233,7 +233,7 @@ WCHAR GetRegWchar
 	WCHAR wcActVal = 0; // Set to known value in case stored in shorter format
 	DWORD dwSize = sizeof (wcActVal);
 
-	if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
 	{
 		if (RegQueryValueEx (hKey2, 		// handle of key to query
 							 pKeyStr,		// address of name of value to query
@@ -269,7 +269,7 @@ void GetRegStr
 {
 	HKEY hKey2;
 
-	if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
 	{
 		if (RegQueryValueEx (hKey2, 		// handle of key to query
 							 pKeyStr,		// address of name of value to query
@@ -315,7 +315,7 @@ HGLOBAL GetRegGlbChar
 
 	uLen = lstrlenW (pDefVal);
 
-	if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
 	{
 		// Request the data size
 		switch (RegQueryValueEx (hKey2, 	// handle of key to query
@@ -424,7 +424,7 @@ void GetRegBinary
 	HKEY hKey2;
 	DWORD dwSize = uLen;
 
-	if (RegOpenKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
 	{
 		if (RegQueryValueEx (hKey2, 		// handle of key to query
 							 pKeyStr,		// address of name of value to query

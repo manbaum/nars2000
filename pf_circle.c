@@ -104,30 +104,30 @@ LPYYSTYPE PrimFnCircle_EM
 
 APLSTYPE PrimSpecCircleStorageTypeMon
     (APLNELM    aplNELMRht,
-     LPAPLSTYPE lpcArrTypeRht,
+     LPAPLSTYPE lpaplTypeRht,
      LPTOKEN    lptkFunc)
 
 {
-    APLSTYPE cArrTypeRes;
+    APLSTYPE aplTypeRes;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpcArrTypeRht EQ ARRAY_CHAR)
-        *lpcArrTypeRht = ARRAY_BOOL;
+    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+        *lpaplTypeRht = ARRAY_BOOL;
 
-    if (*lpcArrTypeRht EQ ARRAY_CHAR
-     || *lpcArrTypeRht EQ ARRAY_LIST)
+    if (*lpaplTypeRht EQ ARRAY_CHAR
+     || *lpaplTypeRht EQ ARRAY_LIST)
         return ARRAY_ERROR;
 
     // The storage type of the result is
     //   the same as that of the right arg
-    cArrTypeRes = *lpcArrTypeRht;
+    aplTypeRes = *lpaplTypeRht;
 
     // Except all simple numerics become FLOAT
-    if (IsSimpleNum (cArrTypeRes))
-        cArrTypeRes = ARRAY_FLOAT;
+    if (IsSimpleNum (aplTypeRes))
+        aplTypeRes = ARRAY_FLOAT;
 
-    return cArrTypeRes;
+    return aplTypeRes;
 } // End PrimSpecCircleStorageTypeMon
 
 
@@ -202,32 +202,32 @@ APLFLOAT PrimFnMonCircleFisF
 
 APLSTYPE PrimSpecCircleStorageTypeDyd
     (APLNELM    aplNELMLft,
-     LPAPLSTYPE lpcArrTypeLft,
+     LPAPLSTYPE lpaplTypeLft,
      LPTOKEN    lptkFunc,
      APLNELM    aplNELMRht,
-     LPAPLSTYPE lpcArrTypeRht)
+     LPAPLSTYPE lpaplTypeRht)
 
 {
-    APLSTYPE cArrTypeRes;
+    APLSTYPE aplTypeRes;
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMLft EQ 0 && *lpcArrTypeLft EQ ARRAY_CHAR)
-        *lpcArrTypeLft = ARRAY_BOOL;
+    if (aplNELMLft EQ 0 && *lpaplTypeLft EQ ARRAY_CHAR)
+        *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpcArrTypeRht EQ ARRAY_CHAR)
-        *lpcArrTypeRht = ARRAY_BOOL;
+    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+        *lpaplTypeRht = ARRAY_BOOL;
 
     // Calculate the storage type of the result
-    cArrTypeRes = StorageType (*lpcArrTypeLft, lptkFunc, *lpcArrTypeRht);
+    aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
     // Except all simple numerics become FLOAT
-    if (IsSimpleNum (cArrTypeRes))
-        cArrTypeRes = ARRAY_FLOAT;
+    if (IsSimpleNum (aplTypeRes))
+        aplTypeRes = ARRAY_FLOAT;
 
-    return cArrTypeRes;
+    return aplTypeRes;
 } // End PrimSpecCircleStorageTypeDyd
 
 

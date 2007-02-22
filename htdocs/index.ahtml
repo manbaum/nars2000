@@ -28,6 +28,7 @@ h2
   background-color: rgb(204,213,221);
   padding: 2px 0.5em 2px 0.5em;
   margin: 0;
+  margin-right:  -0.45em;
   border-bottom: dotted 1px rgb(180,193,205);
   font-size: 110%;
 }
@@ -46,15 +47,15 @@ h4
   font-weight: bold;
   background-color: inherit;
 }
-p, dl, ul, ol
+p, dl
 {
-  padding: 0.5em 0 0 0.5em;
+  padding: 0.25em 0 0 0.5em;
   margin: 0;
 }
 
 ul, ol
 {
-  padding: 0.5em 0 0 0.5em;
+  padding: 0 0 0 0.5em;
   margin: 0 0 0 0.2in;
 }
 .title
@@ -114,6 +115,7 @@ ul, ol
   border-width: 1px;
   border-style: solid;
   padding-bottom: 0.5em;
+  padding-right: 0.5em;
   margin-bottom: 1.5em;
 }
 .bookmarks
@@ -158,6 +160,7 @@ ul, ol
       <li><a href="#Language_Features">Language Features</a></li>
       <li><a href="#Datatypes">Datatypes</a></li>
       <li><a href="#Miscellaneous">Miscellaneous</a></li>
+      <li><a href="#Available_Features">Available Features</a></li>
       <li><a href="#Platforms">Platforms</a></li>
       <li><a href="#Documentation">Documentation</a></li>
       <li><a href="#What_It_Isnt">What It Isn't</a></li>
@@ -220,39 +223,45 @@ ul, ol
 
       <h3>Current Feature Set</h3>
         <ul>
-          <li><p>ISO-APL Compliant</p></li>
+          <li>ISO/IEC 13751 Extended APL Compliant</li>
 
-          <li><p>Composite assignment (e.g., <span class="APL">A+{is}1</span>)</p></li>
+          <li>Consistent Extensions
+            <ul>
+              <li>Composite assignment (e.g.,
+                <span class="APL">A+{is}1</span>)</li>
+              <li>Function/operator assignment (e.g.,
+                <span class="APL">F{is}+.{times}</span>, or
+                <span class="APL">F{is}{jot}</span>)</li>
 
-          <li><p>Function/operator assignment (e.g.,
-            <span class="APL">F{is}+.{times}</span>, or
-            <span class="APL">F{is}{jot}</span>)</p></li>
+              <li>Sink (monadic {is}<span class="APL">A</span>
+                to suppress the display of <span class="APL">A</span>)</li>
+            </ul>
+          </li>
 
-          <li><p>Sink (monadic {is}<span class="APL">A</span>
-            to suppress the display of <span class="APL">A</span>)</p></li>
-
-          <li><p> </p></li>
+          <li>Optional Facilities
+            <ul>
+              <li>Diamond ({diamond}) as a statement separator</li>
+            </ul>
+          </li>
         </ul>
 
       <h3>Possible Future Feature Set</h3>
         <ul>
-          <li><p>User-defined operators (e.g., <span class="APL">{del} Z{is}L (LO OP2 RO) R</span>)</p></li>
-
-          <li><p>Strand left and right arguments to functions</p></li>
-
-          <li><p>User-defined function prototypes</p></li>
-
-          <li><p>User-defined function singletons</p></li>
-
-          <li><p>User-defined function inverses</p></li>
-
-          <li><p>Dynamic functions (e.g., <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</p></li>
-
-          <li><p>Selective assignment (e.g., <span class="APL">(1 1{transpose}A){is}1 2 3</span>)</p></li>
-
-          <li><p>Primitive functions and operators user extensible via user-defined APL functions</p></li>
-
-          <li><p> </p></li>
+          <li>User-defined operators (e.g., <span class="APL">{del}
+           (Z1 Z2){is}[(L1 L2 L3)] (LO OP2 RO) (R1 R2 R3 R4)</span>)</li>
+          <li>Strand left and right arguments and result to user-defined
+            functions/operators</li>
+          <li>User-defined function prototypes
+            (<span class="APL">{quad}PROTOTYPE:</span>)</li>
+          <li>User-defined function singletons
+            (<span class="APL">{quad}SINGLETON:</span>)</li>
+          <li>User-defined function inverses
+            (<span class="APL">{quad}INVERSE:</span>)</li>
+          <li>Dynamic functions (e.g.,
+            <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
+          <li>Selective assignment (e.g.,
+            <span class="APL">(1 1{transpose}A){is}1 2 3</span>)</li>
+          <li>Primitive functions and operators user extensible via user-defined APL functions</li>
         </ul>
     </div>
 
@@ -261,36 +270,24 @@ ul, ol
 
       <h3>Current Datatypes</h3>
         <ul>
-          <li><p>1-bit Booleans</p></li>
-
-          <li><p>2-byte Characters (Unicode, really UCS2, a subset of UTF-16)</p></li>
-
-          <li><p>64-bit Integers</p></li>
-
-          <li><p>64-bit Floats</p></li>
-
-          <li><p>Nested arrays</p></li>
-
-          <li><p>APAs (Arithmetic Progression Arrays) (e.g., <span class="APL">2 3 4{rho}{iota}24</span>)</p></li>
-
-          <li><p>± Infinity (e.g., <span class="APL">_</span> for infinity
-            and <span class="APL">{overbar}_</span> for negative infinity)</p></li>
-
-          <li><p> </p></li>
+          <li>1-bit Booleans</li>
+          <li>2-byte Characters (Unicode, really UCS2, a subset of UTF-16)</li>
+          <li>64-bit Integers</li>
+          <li>64-bit Floats</li>
+          <li>Nested arrays</li>
+          <li>APAs (Arithmetic Progression Arrays) (e.g.,
+            <span class="APL">2 3 4{rho}{iota}24</span>)</li>
+          <li>± Infinity (e.g., <span class="APL">_</span> for infinity
+            and <span class="APL">{overbar}_</span> for negative infinity)</li>
         </ul>
 
       <h3>Possible Future Datatypes</h3>
         <ul>
-          <li><p>Complex numbers (e.g., <span class="APL">2j3.4</span>
-            or <span class="APL">2i3.4</span>)</p></li>
-
-          <li><p>Rational numbers (e.g., <span class="APL">1r3</span>)</p></li>
-
-          <li><p>Array predicates (a la Bernecky)</p></li>
-
-          <li><p>Datatypes user extensible via user-defined APL functions</p></li>
-
-          <li><p> </p></li>
+          <li>Complex numbers (e.g., <span class="APL">2j3.4</span>
+            or <span class="APL">2i3.4</span>)</li>
+          <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
+          <li>Array predicates (a la Bernecky)</li>
+          <li>Datatypes user extensible via user-defined APL functions</li>
         </ul>
     </div>
 
@@ -299,40 +296,107 @@ ul, ol
 
       <h3>Current Miscellaneous</h3>
         <ul>
-          <li><p>Multiple workspaces can be open at the same time
-            and switched between via Tabs</p></li>
-
-          <li><p>All variable names are two-byte Unicode
-            (really UCS2, a subset of UTF-16)</p></li>
-
-          <li><p>Array rank and dimension limit of 64 bits</p></li>
-
-          <li><p>Line continuation marker for easier display of long lines
-            which also allows comments within a line</p></li>
-
-          <li><p>Multilevel Undo in function editing</p></li>
-
-          <li><p>Undo buffer saved with function for reuse on next edit</p></li>
-
-          <li><p> </p></li>
+          <li>Multiple workspaces can be open at the same time
+            and switched between via Tabs</li>
+          <li>All variable names are two-byte Unicode
+            (really UCS2, a subset of UTF-16)</li>
+          <li>Array rank and dimension limit of 64 bits</li>
+          <li>Line continuation marker for easier display of long lines
+            which also allows comments within a line</li>
+          <li>Multilevel Undo in function editing</li>
+          <li>Undo buffer saved with function for reuse on next edit</li>
         </ul>
 
       <h3>Possible Future Miscellaneous</h3>
         <ul>
-          <li><p>Control structures on one line or split across multiple lines</p></li>
-
-          <li><p>Idiom recognition at tokenization time</p></li>
-
-          <li><p>Beating and drag-along (a la P.S. Abrams
+          <li>Control structures on one line or split across multiple lines</li>
+          <li>Idiom recognition at tokenization time</li>
+          <li>Beating and drag-along (a la P.S. Abrams
             <a class="linkleft" href="http://www.slac.stanford.edu/pubs/slacreports/slac-r-114.html">"An APL Machine"</a>),
-            at least for Selective Assignment</p></li>
-
-          <li><p>Workspaces are saved as plain text ASCII files</p></li>
-
-          <li><p>Syntax highlighting</p></li>
-
-          <li><p> </p></li>
+            at least for Selective Assignment</li>
+          <li>Workspaces are saved as plain text ASCII files</li>
+          <li>Syntax highlighting</li>
         </ul>
+    </div>
+
+    <div class="section">
+      <h2 id="Available_Features">Available Features</h2>
+
+      <h3>Primitive functions</h3>
+      <ul>
+        <li>All monadic and dyadic primitive scalar functions with and without axis except for
+          <ul>
+            <li>monadic and dyadic quote-dot ({shreik}) (factorial and binomial)</li>
+            <li>monadic query ({query}) (roll)</li>
+            <li>monadic tilde ({tilde}) (not)</li>
+          </ul>
+        </li>
+        <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
+          Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
+          respectively</li>
+        <li>Monadic and dyadic rho ({rho}) (shape and reshape)</li>
+        <li>Monadic and dyadic comma ({comma} and
+          <span class="APL">,[X]</span> and {commabar})
+          (ravel/table and catenate/laminate) with and without axis</li>
+        <li>Monadic left shoe ({enclose}) (enclose) with and without axis</li>
+        <li>Monadic iota ({iota}) (index generator)</li>
+        <li>Monadic equal-underbar ({equalunderbar}) (depth)</li>
+        <li>Dyadic left ({lev}) and right ({dex})</li>
+      </ul>
+
+      <h3>Miscellaneous</h3>
+      <ul>
+        <li>Strands, e.g., <span class="APL">(1 2 3) 'abcd' ({iota}4)</span></li>
+        <li>Strand Assignment, e.g., <span class="APL">(a b c d){is}{iota}4</span></li>
+      </ul>
+
+      <h3>Session Manager</h3>
+      <ul>
+        <li>Tabbed Workspaces</li>
+        <li>Function Editor (can't save function as yet, though)</li>
+      </ul>
+
+      <h3>System Functions</h3>
+      <ul>
+        <li>Niladic
+          <ul>
+            <li><span class="APL">{quad}BEL</span></li>
+            <li><span class="APL">{quad}BS</span></li>
+            <li><span class="APL">{quad}DEL</span></li>
+            <li><span class="APL">{quad}ESC</span></li>
+            <li><span class="APL">{quad}FF</span></li>
+            <li><span class="APL">{quad}HT</span></li>
+            <li><span class="APL">{quad}LF</span></li>
+            <li><span class="APL">{quad}NL</span></li>
+            <li><span class="APL">{quad}NUL</span></li>
+            <li><span class="APL">{quad}SYSID</span></li>
+            <li><span class="APL">{quad}SYSVER</span></li>
+            <li><span class="APL">{quad}TC</span></li>
+            <li><span class="APL">{quad}TS</span></li>
+          </ul>
+        </li>
+
+        <li>Monadic
+          <ul>
+            <li><span class="APL">{quad}DR</span></li>
+            <li><span class="APL">{quad}TYPE</span></li>
+          </ul>
+        </li>
+
+        <li>Dyadic
+          <ul>
+            <li></li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>System Commands</h3>
+      <ul>
+        <li><span class="APL">)CLEAR</span></li>
+        <li><span class="APL">)CLOSE</span></li>
+        <li><span class="APL">)EXIT</span></li>
+        <li><span class="APL">)NEWTAB</span></li>
+      </ul>
     </div>
 
     <div class="section">
@@ -358,19 +422,19 @@ ul, ol
       <h2 id="What_It_Isnt">What It Isn't</h2>
 
         <ul>
-          <li><p>Performance:  NARS2000 is not intended to be a high performance
+          <li>Performance:  NARS2000 is not intended to be a high performance
             system, other than as a fallout of interesting algorithms.
             Any good or bad performance on your favorite benchmark is
-            purely accidental.</p>
+            purely accidental.
           </li>
 
-          <li><p>Commercial Use:  NARS2000 is not intended to compete with
+          <li>Commercial Use:  NARS2000 is not intended to compete with
             commercial systems.
             As such it lacks the features one expects to find in a
             commercial system, such as a Windows interface, .NET interface, COM
             server, etc., although I've not made any conscious effort to make it
             difficult to add such features.  These features may be included at some later
-            time &mdash; they just aren't high priority up front.</p>
+            time &mdash; they just aren't high priority up front.
           </li>
         </ul>
     </div>
@@ -384,17 +448,17 @@ ul, ol
         available in several forms:</p>
 
         <ul>
-          <li><p>Executable:
-            <a class="linkleft" href="svn://svn.nars2000.org/trunk/binaries/ND/NARS2000.ZIP">Windows only</a>.</p>
+          <li>Executable:
+            <a class="linkleft" href="svn://svn.nars2000.org/trunk/binaries/ND/NARS2000.ZIP">Windows only</a>.
           </li>
 
-          <li><p>Source Code Under Version Control:</p>
+          <li>Source Code Under Version Control:
             <ul>
-              <li><p>The source can be <a class="linkleft" href="http://svn.nars2000.org/">viewed</a>,
-                as well as downloaded, one file at a time, from your browser.</p>
+              <li>The source can be <a class="linkleft" href="http://svn.nars2000.org/">viewed</a>,
+                as well as downloaded, one file at a time, from your browser.
               </li>
 
-              <li><p>Or, the source may be downloaded, one file at a time
+              <li>Or, the source may be downloaded, one file at a time
                 or the whole lot, by running a version control program.
                 In particular, the source code is maintained on this
                 site using <a class="linkleft" href="http://subversion.tigris.org/">Subversion</a>,
@@ -404,13 +468,12 @@ ul, ol
                 For example, if you are running Windows, you can download (for free)
                 the program <a class="linkleft" href="http://tortoisesvn.tigris.org/">Tortoise SVN</a>.
                 This is the means by which developers can checkout and commit changes to
-                the code.</p>
+                the code.
               </li>
 
-              <li><p>The <a class="linkleft" href="http://www.nars2000.org/viewvc/">browser view</a>
+              <li>The <a class="linkleft" href="http://www.nars2000.org/viewvc/">browser view</a>
                 also allows you to download the entire source code as a compressed file.
                 Try the link at the bottom of each index page labeled "Download tarball".
-                </p>
               </li>
             </ul>
           </li>

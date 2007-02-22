@@ -11,7 +11,7 @@ TO DO: General
 * Demote arrays to a more compact storage type???
 * Idiom recognition in the tokenizer
 * Test ± infinity code
-*
+* Get permission to redistribute APL385 Unicode font
 
 
 TODO: Session Manager
@@ -20,6 +20,7 @@ TODO: Session Manager
 * CUA keystrokes:  e.g. Ctrl-RightArrow, etc.
 * Tabs for workspaces
 * )Save as ASCII plain text file
+* Ensure APL font is installed
 *
 
 

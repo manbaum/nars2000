@@ -25,8 +25,8 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     HGLOBAL     hGlbToken;          // Global memory handle
     UNION_TOKEN t2;                 // Locked base of hGlbToken
     LPTOKEN     lpStart,            // First available entry after the header
-                lpNext,             // Next  ...
-                lpError;            // Error token
+                lpNext;             // Next  ...
+    UINT        tkErrorCharIndex;   // Error char index
     LPYYSTYPE   lpYYStrandStart,    // Strand stack start (static)
                 lpYYStrandBase,     // ...          base (dynamic)
                 lpYYStrandNext;     // ...          next token (dynamic)

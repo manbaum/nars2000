@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Primitive Function -- Minus
+//  NARS2000 -- Primitive Function -- Bar
 //***************************************************************************
 
 #pragma pack (1)
@@ -19,64 +19,64 @@
 
 
 #ifndef PROTO
-PRIMSPEC PrimSpecMinus =
+PRIMSPEC PrimSpecBar =
 {
     // Monadic functions
     &PrimFnMon_EM,
-    &PrimSpecMinusStorageTypeMon,
-    &PrimFnMonMinusAPA_EM,
+    &PrimSpecBarStorageTypeMon,
+    &PrimFnMonBarAPA_EM,
 
-    NULL,   // &PrimFnMonMinusBisB, -- Can't happen w/Minus
-    NULL,   // &PrimFnMonMinusBisI, -- Can't happen w/Minus
-    NULL,   // &PrimFnMonMinusBisF, -- Can't happen w/Minus
+    NULL,   // &PrimFnMonBarBisB, -- Can't happen w/Bar
+    NULL,   // &PrimFnMonBarBisI, -- Can't happen w/Bar
+    NULL,   // &PrimFnMonBarBisF, -- Can't happen w/Bar
 
 ////               IisB,     // Handled via type promotion (to IisI)
-    &PrimFnMonMinusIisI,
-    NULL,   // &PrimFnMonMinusIisF, -- Can't happen w/Minus
+    &PrimFnMonBarIisI,
+    NULL,   // &PrimFnMonBarIisF, -- Can't happen w/Bar
 
 ////               FisB,     // Handled via type promotion (to FisI)
-    NULL,   // &PrimFnMonMinusFisI, -- Can't happen w/Minus
-    &PrimFnMonMinusFisF,
+    NULL,   // &PrimFnMonBarFisI, -- Can't happen w/Bar
+    &PrimFnMonBarFisF,
 
     // Dyadic functions
     &PrimFnDyd_EM,
-    &PrimSpecMinusStorageTypeDyd,
-    &PrimFnDydMinusAPA_EM,
+    &PrimSpecBarStorageTypeDyd,
+    &PrimFnDydBarAPA_EM,
 
-    NULL,   // &PrimFnDydMinusBisBvB, -- Can't happen w/Minus
-    NULL,   // &PrimFnDydMinusBisIvI, -- Can't happen w/Minus
-    NULL,   // &PrimFnDydMinusBisFvF, -- Can't happen w/Minus
-    NULL,   // &PrimFnDydMinusBisCvC, -- Can't happen w/Minus
+    NULL,   // &PrimFnDydBarBisBvB, -- Can't happen w/Bar
+    NULL,   // &PrimFnDydBarBisIvI, -- Can't happen w/Bar
+    NULL,   // &PrimFnDydBarBisFvF, -- Can't happen w/Bar
+    NULL,   // &PrimFnDydBarBisCvC, -- Can't happen w/Bar
 
 ////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    &PrimFnDydMinusIisIvI,
-    NULL,   // &PrimFnDydMinusIisFvF, -- Can't happen w/Minus
+    &PrimFnDydBarIisIvI,
+    NULL,   // &PrimFnDydBarIisFvF, -- Can't happen w/Bar
 
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    &PrimFnDydMinusFisIvI,
-    &PrimFnDydMinusFisFvF,
+    &PrimFnDydBarFisIvI,
+    &PrimFnDydBarFisFvF,
 
     // Miscellaneous
     &ExecCode,
 };
 
-static LPPRIMSPEC lpPrimSpec = {&PrimSpecMinus};
+static LPPRIMSPEC lpPrimSpec = {&PrimSpecBar};
 #endif
 
 
 //***************************************************************************
-//  PrimFnMinus_EM
+//  PrimFnBar_EM
 //
-//  Primitive function for monadic and dyadic Minus (negation and subtraction)
+//  Primitive function for monadic and dyadic Bar (negation and subtraction)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMinus_EM"
+#define APPEND_NAME     L" -- PrimFnBar_EM"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMinus_EM
+LPYYSTYPE PrimFnBar_EM
     (LPTOKEN lptkLftArg,
      LPTOKEN lptkFunc,
      LPTOKEN lptkRhtArg,
@@ -84,95 +84,95 @@ LPYYSTYPE PrimFnMinus_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ '-');
+    Assert (lptkFunc->tkData.tkChar EQ UCS2_BAR);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
         return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnMinus_EM
+} // End PrimFnBar_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecMinusStorageTypeMon
+//  PrimSpecBarStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
 
-APLSTYPE PrimSpecMinusStorageTypeMon
+APLSTYPE PrimSpecBarStorageTypeMon
     (APLNELM    aplNELMRht,
-     LPAPLSTYPE lpcArrTypeRht,
+     LPAPLSTYPE lpaplTypeRht,
      LPTOKEN    lptkFunc)
 
 {
-    APLSTYPE cArrTypeRes;
+    APLSTYPE aplTypeRes;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpcArrTypeRht EQ ARRAY_CHAR)
-        *lpcArrTypeRht = ARRAY_BOOL;
+    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+        *lpaplTypeRht = ARRAY_BOOL;
 
-    if (*lpcArrTypeRht EQ ARRAY_CHAR
-     || *lpcArrTypeRht EQ ARRAY_LIST)
+    if (*lpaplTypeRht EQ ARRAY_CHAR
+     || *lpaplTypeRht EQ ARRAY_LIST)
         return ARRAY_ERROR;
 
     // The storage type of the result is
     //   the same as that of the right arg
-    cArrTypeRes = *lpcArrTypeRht;
+    aplTypeRes = *lpaplTypeRht;
 
     // No Boolean result for negation
-    if (cArrTypeRes EQ ARRAY_BOOL)
-        cArrTypeRes = ARRAY_INT;
+    if (aplTypeRes EQ ARRAY_BOOL)
+        aplTypeRes = ARRAY_INT;
 
-    return cArrTypeRes;
-} // End PrimSpecMinusStorageTypeMon
+    return aplTypeRes;
+} // End PrimSpecBarStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonMinusIisI
+//  PrimFnMonBarIisI
 //
-//  Primitive scalar function monadic Minus:  I {is} fn I
+//  Primitive scalar function monadic Bar:  I {is} fn I
 //***************************************************************************
 
-APLINT PrimFnMonMinusIisI
+APLINT PrimFnMonBarIisI
     (APLINT     aplIntegerRht,
      LPPRIMSPEC lpPrimSpec)
 
 {
     return -aplIntegerRht;
-} // End PrimFnMonMinusIisI
+} // End PrimFnMonBarIisI
 
 
 //***************************************************************************
-//  PrimFnMonMinusFisF
+//  PrimFnMonBarFisF
 //
-//  Primitive scalar function monadic Minus:  F {is} fn F
+//  Primitive scalar function monadic Bar:  F {is} fn F
 //***************************************************************************
 
-APLFLOAT PrimFnMonMinusFisF
+APLFLOAT PrimFnMonBarFisF
     (APLFLOAT   aplFloatRht,
      LPPRIMSPEC lpPrimSpec)
 
 {
     return -aplFloatRht;
-} // End PrimFnMonMinusFisF
+} // End PrimFnMonBarFisF
 
 
 //***************************************************************************
-//  PrimFnMonMinusAPA_EM
+//  PrimFnMonBarAPA_EM
 //
-//  Monadic Minus, result is APA
+//  Monadic Bar, result is APA
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonMinusAPA_EM"
+#define APPEND_NAME     L" -- PrimFnMonBarAPA_EM"
 #else
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnMonMinusAPA_EM
+BOOL PrimFnMonBarAPA_EM
     (LPYYSTYPE  lpYYRes,    // The result token (may be NULL)
      LPTOKEN    lptkFunc,
      HGLOBAL    hGlbRht,
@@ -231,118 +231,118 @@ BOOL PrimFnMonMinusAPA_EM
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return TRUE;
-} // End PrimFnMonMinusAPA_EM
+} // End PrimFnMonBarAPA_EM
 #undef APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecMinusStorageTypeDyd
+//  PrimSpecBarStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
 
-APLSTYPE PrimSpecMinusStorageTypeDyd
+APLSTYPE PrimSpecBarStorageTypeDyd
     (APLNELM    aplNELMLft,
-     LPAPLSTYPE lpcArrTypeLft,
+     LPAPLSTYPE lpaplTypeLft,
      LPTOKEN    lptkFunc,
      APLNELM    aplNELMRht,
-     LPAPLSTYPE lpcArrTypeRht)
+     LPAPLSTYPE lpaplTypeRht)
 
 {
-    APLSTYPE cArrTypeRes;
+    APLSTYPE aplTypeRes;
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMLft EQ 0 && *lpcArrTypeLft EQ ARRAY_CHAR)
-        *lpcArrTypeLft = ARRAY_BOOL;
+    if (aplNELMLft EQ 0 && *lpaplTypeLft EQ ARRAY_CHAR)
+        *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpcArrTypeRht EQ ARRAY_CHAR)
-        *lpcArrTypeRht = ARRAY_BOOL;
+    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+        *lpaplTypeRht = ARRAY_BOOL;
 
     // Calculate the storage type of the result
-    cArrTypeRes = StorageType (*lpcArrTypeLft, lptkFunc, *lpcArrTypeRht);
+    aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
     // No Boolean results for subtraction
-    if (cArrTypeRes EQ ARRAY_BOOL)
-        cArrTypeRes = ARRAY_INT;
+    if (aplTypeRes EQ ARRAY_BOOL)
+        aplTypeRes = ARRAY_INT;
 
     // Special case subtraction with APA
-    if (cArrTypeRes EQ ARRAY_INT                            // Res = INT
+    if (aplTypeRes EQ ARRAY_INT                            // Res = INT
      && (aplNELMLft NE 1 || aplNELMRht NE 1)                // Not both singletons
-     && ((aplNELMLft EQ 1 && *lpcArrTypeRht EQ ARRAY_APA)   // Non-singleton is APA
-      || (aplNELMRht EQ 1 && *lpcArrTypeLft EQ ARRAY_APA))) // ...
-        cArrTypeRes = ARRAY_APA;
+     && ((aplNELMLft EQ 1 && *lpaplTypeRht EQ ARRAY_APA)   // Non-singleton is APA
+      || (aplNELMRht EQ 1 && *lpaplTypeLft EQ ARRAY_APA))) // ...
+        aplTypeRes = ARRAY_APA;
 
-    return cArrTypeRes;
-} // End PrimSpecMinusStorageTypeDyd
+    return aplTypeRes;
+} // End PrimSpecBarStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydMinusIisIvI
+//  PrimFnDydBarIisIvI
 //
-//  Primitive scalar function dyadic Minus:  I {is} I fn I
+//  Primitive scalar function dyadic Bar:  I {is} I fn I
 //***************************************************************************
 
-APLINT PrimFnDydMinusIisIvI
+APLINT PrimFnDydBarIisIvI
     (APLINT     aplIntegerLft,
      APLINT     aplIntegerRht,
      LPPRIMSPEC lpPrimSpec)
 
 {
     return aplIntegerLft - aplIntegerRht;
-} // End PrimFnDydMinusIisIvI
+} // End PrimFnDydBarIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydMinusFisIvI
+//  PrimFnDydBarFisIvI
 //
-//  Primitive scalar function dyadic Minus:  F {is} I fn I
+//  Primitive scalar function dyadic Bar:  F {is} I fn I
 //***************************************************************************
 
-APLFLOAT PrimFnDydMinusFisIvI
+APLFLOAT PrimFnDydBarFisIvI
     (APLINT     aplIntegerLft,
      APLINT     aplIntegerRht,
      LPPRIMSPEC lpPrimSpec)
 
 {
     return (APLFLOAT) (aplIntegerLft - aplIntegerRht);
-} // End PrimFnDydMinusFisIvI
+} // End PrimFnDydBarFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydMinusFisFvF
+//  PrimFnDydBarFisFvF
 //
-//  Primitive scalar function dyadic Minus:  F {is} F fn F
+//  Primitive scalar function dyadic Bar:  F {is} F fn F
 //***************************************************************************
 
-APLFLOAT PrimFnDydMinusFisFvF
+APLFLOAT PrimFnDydBarFisFvF
     (APLFLOAT   aplFloatLft,
      APLFLOAT   aplFloatRht,
      LPPRIMSPEC lpPrimSpec)
 
 {
     return (aplFloatLft - aplFloatRht);
-} // End PrimFnDydMinusFisFvF
+} // End PrimFnDydBarFisFvF
 
 
 //***************************************************************************
-//  PrimFnDydMinusAPA_EM
+//  PrimFnDydBarAPA_EM
 //
-//  Dyadic Minus, result is APA
+//  Dyadic Bar, result is APA
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydMinusAPA_EM"
+#define APPEND_NAME     L" -- PrimFnDydBarAPA_EM"
 #else
 #define APPEND_NAME
 #endif
 
-BOOL PrimFnDydMinusAPA_EM
+BOOL PrimFnDydBarAPA_EM
     (LPYYSTYPE  lpYYRes,    // The result token (may be NULL)
 
      LPTOKEN    lptkFunc,
@@ -434,13 +434,13 @@ BOOL PrimFnDydMinusAPA_EM
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 
-    DBGEXIT;
+    DBGLEAVE;
 
     return TRUE;
-} // End PrimFnDydMinusAPA_EM
+} // End PrimFnDydBarAPA_EM
 #undef APPEND_NAME
 
 
 //***************************************************************************
-//  End of File: pf_minus.c
+//  End of File: pf_bar.c
 //***************************************************************************

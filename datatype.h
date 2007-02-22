@@ -72,30 +72,34 @@ typedef enum tagSTRAND_TYPES
 // Array types -- used to identify array storage type in memory
 typedef enum tagARRAY_TYPES
 {
- ARRAY_BOOL = 0,    //  0:  Boolean
- ARRAY_INT,         //  1:  Integer
- ARRAY_FLOAT,       //  2:  Floating point
- ARRAY_CHAR,        //  3:  Character
- ARRAY_HETERO,      //  4:  Simple heterogeneous (mixed numeric and character scalars)
- ARRAY_NESTED,      //  5:  Nested
- ARRAY_LIST,        //  6:  List
- ARRAY_APA,         //  7:  Arithmetic Progression Array
+ ARRAY_BOOL = 0,            //  0:  Boolean
+ ARRAY_INT,                 //  1:  Integer
+ ARRAY_FLOAT,               //  2:  Floating point
+ ARRAY_CHAR,                //  3:  Character
+ ARRAY_HETERO,              //  4:  Simple heterogeneous (mixed numeric and character scalars)
+ ARRAY_NESTED,              //  5:  Nested
+ ARRAY_LIST,                //  6:  List
+ ARRAY_APA,                 //  7:  Arithmetic Progression Array
 
- ARRAY_LENGTH,      //  8:  # elements in this enum
-                    //      *MUST* be the last non-error entry
+ ARRAY_LENGTH,              //  8:  # elements in this enum
+                            //      *MUST* be the last non-error entry
  ARRAY_MIXED = (APLSTYPE) -2,
  ARRAY_ERROR = (APLSTYPE) -1,
 
 // Whenever changing this <enum>, be sure to make a
-//   corresponding change to <StorageType> in <primfns.c>.
+//   corresponding change to <StorageType> and <TypeDemote>
+//   in <primfns.c>,  <uTypeMap> in <externs.h>, and
+//   <IsSimpleNH> and <IsSimpleNum> macros in <datatype.h>.
 
 } ARRAY_TYPES;
 
 // Define macro for detecting simple non-heterogeneous array type
-#define IsSimpleNH(a)  (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR)
+/////// IsSimpleNH(a)  (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR)
+#define IsSimpleNH(a)  (uTypeMap[a] < uTypeMap[ARRAY_HETERO])
 
 // Define macro for detecting simple numeric array type
-#define IsSimpleNum(a) (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT)
+/////// IsSimpleNum(a) (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT)
+#define IsSimpleNum(a) (uTypeMap[a] < uTypeMap[ARRAY_CHAR])
 
 // Define macro for detecting simple integer-like array type
 #define IsSimpleInt(a) (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA)
@@ -131,11 +135,12 @@ All function arrays in memory have a common header (FCNARRAY_HEADER).
 Array Contents
 --------------
 
-The contents of an array may be an immediate (BOOL, INT, FLOAT, or
-CHAR), or an HGLOBAL.  The two types are distinguished by the
-low-order two bits.  Because we know that LPSYMENTRY and HGLOBAL
-are pointers and that these pointers are aligned on a dword boundary,
-the two low-order bits are zero, and thus available.
+The contents of a nested or a heterogeneous array may be
+an LPSYMENTRY or an HGLOBAL.  These two types are
+distinguished by their low-order two bits.  Because we know that
+LPSYMENTRY and HGLOBAL are pointers and that these pointers are
+aligned on a dword boundary, their two low-order bits are zero,
+and thus available.
 
 
 Array Types
@@ -154,7 +159,7 @@ ARRAY_HETERO    One value per APLHETERO, stored sequentially.
                 The array contents are all LPSYMENTRYs.
 
 ARRAY_NESTED    One value per APLNESTED, stored sequentially.
-                The array contents are either LPSYMENTRYs, or
+                The array contents may be a mixture of LPSYMENTRYs and
                 HGLOBALs (which point to one of the other Array Types),
                 all of which are distinguished by the low-order two bits.
 
@@ -221,6 +226,18 @@ typedef struct tagFCNARRAY_HEADER
 
 // Macros to skip from the array base to the data
 #define FcnArrayBaseToData(lpMem) (LPVOID)   (((LPCHAR) lpMem) + sizeof (FCNARRAY_HEADER))
+
+// Named strand header
+#define VARNAMED_HEADER_SIGNATURE   'RTSN'
+
+typedef struct tagVARNAMED_HEADER
+{
+    HEADER_SIGNATURE Sign;      // Array header signature
+    APLNELM          NELM;      // # elements in the array
+} VARNAMED_HEADER, *LPVARNAMED_HEADER;
+
+// Macros to skip from the array base to the data
+#define VarNamedBaseToData(lpMem) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARNAMED_HEADER))
 
 // Distinguish between immediate LPSYMENTRY and HGLOBAL in an array
 typedef enum tagPTR_TYPES

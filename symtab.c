@@ -115,6 +115,13 @@ BOOL HshTabFrisk
             Assert (lp EQ lp->PrevSameHash->NextSameHash);
     } // End FOR
 
+    // Ensure that all uHashAndMask values are up-to-date
+    for (lp = lpHshTab;
+         lp NE &lpHshTab[iHshTabTotalSize];
+         lp++)
+    if (lp->htFlags.Inuse)
+        Assert (lp->uHashAndMask EQ MaskTheHash (lp->uHash));
+
     // Ensure that all empty entries have zero flags
     //   (possibly except for .PrinHash),
     //   LPHSHENTRY_NONE in the two hash ptrs (unless .PrinHash),
@@ -127,7 +134,7 @@ BOOL HshTabFrisk
         htFlags = lp->htFlags;
         htFlags.PrinHash = FALSE;
 
-        Assert (0 EQ *(UINT *)&htFlags);
+        Assert (0 EQ *(UINT *) &htFlags);
 
         if (!lp->htFlags.PrinHash)
             Assert (lp->NextSameHash EQ LPHSHENTRY_NONE
@@ -285,7 +292,11 @@ void HshTabDelink
 ////lpHshEntry->PrevSameHash = LPSYMENTRY_NONE;
 
     if (lpHshEntry->NextSameHash NE LPHSHENTRY_NONE)
-        lpHshEntry->NextSameHash->PrevSameHash = lpHshEntry->PrevSameHash;
+    {
+        Assert (lpHshEntry->PrevSameHash EQ LPHSHENTRY_NONE
+             || !lpHshEntry->NextSameHash->htFlags.PrinHash);
+        lpHshEntry->NextSameHash->PrevSameHash = lpHshEntry->PrevSameHash;//**
+    } // End IF
 
     if (lpHshEntry->PrevSameHash NE LPHSHENTRY_NONE)
         lpHshEntry->PrevSameHash->NextSameHash = lpHshEntry->NextSameHash;
@@ -306,6 +317,12 @@ void HshTabLink
      LPHSHENTRY lpHshEntryDest)
 
 {
+    // This entry must be a principal one
+    Assert (lpHshEntryHash->htFlags.PrinHash);
+
+    // Ensure they have the same masked hash
+    Assert (lpHshEntryHash->uHashAndMask EQ lpHshEntryDest->uHashAndMask);
+
     // Something to do only if they are different entries
     if (lpHshEntryDest NE lpHshEntryHash)
     {
@@ -321,12 +338,18 @@ void HshTabLink
 ////////lpHshEntryHash->NextSameHash = lpHshEntryDest;
 ////////lpHshEntryHash->PrevSameHash = LPHSHENTRY_NONE;     // Already set
 
-        lpHshEntryDest->PrevSameHash = lpHshEntryHash;
+        Assert (lpHshEntryHash EQ LPHSHENTRY_NONE
+             || !lpHshEntryDest->htFlags.PrinHash);
+        lpHshEntryDest->PrevSameHash = lpHshEntryHash;//**
         if (lpHshEntryHash NE LPHSHENTRY_NONE)
         {
             lpHshEntryDest->NextSameHash = lpHshEntryHash->NextSameHash;
             if (lpHshEntryHash->NextSameHash NE LPHSHENTRY_NONE)
-                lpHshEntryHash->NextSameHash->PrevSameHash = lpHshEntryDest;
+            {
+                Assert (lpHshEntryDest EQ LPHSHENTRY_NONE
+                     || !lpHshEntryHash->NextSameHash->htFlags.PrinHash);
+                lpHshEntryHash->NextSameHash->PrevSameHash = lpHshEntryDest;//**
+            } // End IF
 
             lpHshEntryHash->NextSameHash = lpHshEntryDest;
         } else
@@ -347,6 +370,12 @@ void HshTabLink
 //  Resize the hash table
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- HshTabResize_EM"
+#else
+#define APPEND_NAME
+#endif
+
 BOOL HshTabResize_EM
     (int iResize)
 
@@ -355,7 +384,9 @@ BOOL HshTabResize_EM
     int        i, iHshTabNewSize;
 
     Assert (HshTabFrisk ());
-
+#ifdef DEBUG
+    dprintf ("||| Resizing the hash table from %08X to %08X", iHshTabTotalSize, iHshTabTotalSize + iResize);
+#endif
     // We need more entries
     iHshTabNewSize = iHshTabTotalSize + iResize;
     lpHshTabNew = VirtualAlloc (lpHshTab,
@@ -364,11 +395,8 @@ BOOL HshTabResize_EM
                                 PAGE_READWRITE);
     if (!lpHshTabNew)
     {
-        ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL
-#ifdef DEBUG
-                              L" -- HshTabResize_EM"
-#endif
-                             );
+        ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);
+
         return FALSE;
     } // End IF
 
@@ -399,6 +427,7 @@ BOOL HshTabResize_EM
 
     return TRUE;
 } // End HshTabResize_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -406,6 +435,12 @@ BOOL HshTabResize_EM
 //
 //  Resize the symbol table
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SymTabResize_EM"
+#else
+#define APPEND_NAME
+#endif
 
 BOOL SymTabResize_EM
     (int iResize)
@@ -416,6 +451,8 @@ BOOL SymTabResize_EM
 
     Assert (HshTabFrisk ());
 
+    DbgMsg ("||| Resizing the symbol table");
+
     // We need more entries
     iSymTabNewSize = iSymTabTotalSize + iResize;
     lpSymTabNew = VirtualAlloc (lpSymTab,
@@ -424,11 +461,8 @@ BOOL SymTabResize_EM
                                 PAGE_READWRITE);
     if (!lpSymTabNew)
     {
-        ErrorMessageIndirect (ERRMSG_SYMBOL_TABLE_FULL
-#ifdef DEBUG
-                              L" -- SymTabResize_EM"
-#endif
-                             );
+        ErrorMessageIndirect (ERRMSG_SYMBOL_TABLE_FULL APPEND_NAME);
+
         return FALSE;
     } // End IF
 
@@ -436,9 +470,7 @@ BOOL SymTabResize_EM
 
     // Initialize the lpHshEntry values
     for (i = iSymTabTotalSize; i < iSymTabNewSize; i++)
-    {
         lpSymTab[i].lpHshEntry = LPHSHENTRY_NONE;
-    } // End FOR
 
     // Set new symbol table size
     iSymTabTotalSize = iSymTabNewSize;
@@ -447,6 +479,7 @@ BOOL SymTabResize_EM
 
     return TRUE;
 } // End SymTabResize_EM
+#undef  APPEND_NAME
 
 
 //// #ifdef DEBUG
@@ -505,7 +538,9 @@ BOOL HshTabSplitNextEntry_EM
     UINT       uHashMaskNext;
 
     Assert (HshTabFrisk ());
-
+#ifdef DEBUG
+    dprintf ("||| Splitting Hash Table entry %08X to %08X", lpHshTabSplitNext, &lpHshTabSplitNext[iHshTabBaseSize]);
+#endif
     // Ensure that &lpHshTabSplitNext[iHshTabBaseSize] has been allocated.
     // If not, allocate it now
     if (&lpHshTabSplitNext[iHshTabBaseSize] >= &lpHshTab[iHshTabTotalSize]
@@ -553,10 +588,11 @@ BOOL HshTabSplitNextEntry_EM
           NE lpHshEntrySrc->uHashAndMask)                   //   it hashes to a higher bucket, ...
         {
             HTFLAGS htFlags;
+////////////LPHSHENTRY lp;
 #ifdef DEBUG
 ////        static LPHSHENTRY lp = (LPHSHENTRY) 0xF70090;
 #endif
-            Assert (HshTabFrisk ());
+////////////Assert (HshTabFrisk ());
 
             // Save as new uHashAndMask value
             lpHshEntrySrc->uHashAndMask = (lpHshEntrySrc->uHash & uHashMaskNext) * DEF_HSHTAB_EPB;
@@ -596,7 +632,9 @@ BOOL HshTabSplitNextEntry_EM
             ZeroMemory (lpHshEntrySrc, sizeof (HSHENTRY));
             lpHshEntrySrc->htFlags.PrinHash = htFlags.PrinHash;
             lpHshEntrySrc->NextSameHash = lpHshEntryDest->NextSameHash;
-            lpHshEntrySrc->PrevSameHash = lpHshEntryDest->PrevSameHash;
+            Assert (lpHshEntryDest->PrevSameHash EQ LPHSHENTRY_NONE
+                 || !lpHshEntrySrc->htFlags.PrinHash);
+            lpHshEntrySrc->PrevSameHash = lpHshEntryDest->PrevSameHash;//**
 
             // Set to NONE so we can pass error checking in HshTabLink
             //   unless this is the first entry in the sequence
@@ -609,7 +647,18 @@ BOOL HshTabSplitNextEntry_EM
             // Link the destination entry into the hash entry
             HshTabLink (lpHshEntryHash, lpHshEntryDest);
 
-            Assert (HshTabFrisk ());
+////////////// Remask entries below this point to update their uHashAndMask
+////////////for (lp = lpHshTab;
+////////////     lp NE &lpHshTab[iHshTabTotalSize];
+////////////     lp++)
+////////////if (lp->htFlags.Inuse)
+////////////if (lp->uHashAndMask NE MaskTheHash (lp->uHash))
+////////////{
+////////////    DbgBrk ();
+////////////    lp->uHashAndMask = MaskTheHash (lp->uHash);
+////////////} // End IF
+////////////
+////////////Assert (HshTabFrisk ());
 #ifdef DEBUG
 ////////////// Count in another entry moved
 ////////////iCntMoved++;
@@ -627,6 +676,9 @@ BOOL HshTabSplitNextEntry_EM
         lpHshTabSplitNext = lpHshTab;
         iHshTabBaseSize <<= 1;
         Assert (iHshTabBaseSize <= iHshTabTotalSize);
+#ifdef DEBUG
+        dprintf ("||| Shifting uHashMask from %04X to %04X", uHashMask, uHashMaskNext);
+#endif
         uHashMask = uHashMaskNext;
         Assert (uHashMask < (UINT) (2 * iHshTabBaseSize / DEF_HSHTAB_EPB));
     } // End IF
@@ -648,7 +700,7 @@ BOOL HshTabSplitNextEntry_EM
 
 
 //***************************************************************************
-//  FindNextFreeUsingHash_EM
+//  FindNextFreeUsingHash_SPLIT_EM
 //
 //  Find the next free hash table entry after a give one.
 //  The search is first within the same block from low to high,
@@ -657,7 +709,13 @@ BOOL HshTabSplitNextEntry_EM
 //    the block.
 //***************************************************************************
 
-LPHSHENTRY FindNextFreeUsingHash_EM
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FindNextFreeUsingHash_SPLIT_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPHSHENTRY FindNextFreeUsingHash_SPLIT_EM
     (UINT  uHash,
      BOOL  bSplitNext)
 
@@ -666,6 +724,8 @@ LPHSHENTRY FindNextFreeUsingHash_EM
                lpHshEntryHash;
     int        i;
     BOOL       bFirstTime = TRUE;
+
+    DBGENTER;
 
     while (TRUE)
     {
@@ -683,8 +743,10 @@ LPHSHENTRY FindNextFreeUsingHash_EM
 
         // If we found it, return it
         if (i < DEF_HSHTAB_EPB)
+        {
+            DBGLEAVE;
             return lpHshEntry;
-        else
+        } else
         if (bSplitNext)
         {
             BOOL bTemp;
@@ -709,7 +771,10 @@ LPHSHENTRY FindNextFreeUsingHash_EM
 
             // If we found it, return it
             if (i < DEF_HSHTAB_EPB)
+            {
+                DBGLEAVE;
                 return lpHshEntry;
+            } // End IF
         } // End IF/ELSE/IF
 
         // As we didn't find a free entry, continue searching
@@ -730,11 +795,17 @@ LPHSHENTRY FindNextFreeUsingHash_EM
 
         // If we found it, return it
         if (lpHshEntry NE lpHshEntryHash)
+        {
+            DBGLEAVE;
             return lpHshEntry;
+        } // End IF
 
         // As we didn't find a free entry, try to expand the hash table
         if (!HshTabResize_EM (DEF_HSHTAB_RESIZE))
+        {
+            DBGLEAVE;
             return NULL;
+        } // End IF
 
         // Go around again unless we've done this before
         if (bFirstTime)
@@ -743,14 +814,12 @@ LPHSHENTRY FindNextFreeUsingHash_EM
             break;
     } // End WHILE
 
-    ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL
-#ifdef DEBUG
-                          L" -- FindNextFreeUsingHash_EM"
-#endif
-                         );
+    ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);
 
+    DBGLEAVE;
     return NULL;
-} // End FindNextFreeUsingHash_EM
+} // End FindNextFreeUsingHash_SPLIT_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -762,6 +831,12 @@ LPHSHENTRY FindNextFreeUsingHash_EM
 //    the block, except for the principal hash (first) entry in
 //    the block.
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FindNextFreeUsingHTE_EM"
+#else
+#define APPEND_NAME
+#endif
 
 LPHSHENTRY FindNextFreeUsingHTE_EM
     (LPHSHENTRY lpHshEntryHash,
@@ -847,14 +922,11 @@ LPHSHENTRY FindNextFreeUsingHTE_EM
             break;
     } // End WHILE
 
-    ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL
-#ifdef DEBUG
-                          L" -- FindNextFreeUsingHTE_EM"
-#endif
-                         );
+    ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);
 
     return NULL;
 } // End FindNextFreeUsingHTE_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1078,6 +1150,105 @@ LPSYMENTRY SymTabLookupName
 
 
 //***************************************************************************
+//  MakeSymEntry_EM
+//
+//  Make a SYMENTRY with a given type and value
+//***************************************************************************
+
+LPSYMENTRY MakeSymEntry_EM
+    (IMM_TYPES     immType,     // ImmType to use
+     LPAPLLONGEST  lpVal,       // Value to use
+     LPTOKEN       lptkFunc)    // The token to use in case of error
+
+{
+    LPSYMENTRY lpSymDst;
+
+    // Split cases based upon the immediate type
+    switch (immType)
+    {
+        case IMMTYPE_BOOL:
+        case IMMTYPE_INT:
+            lpSymDst = SymTabAppendInteger_EM (*(LPAPLINT)   lpVal);
+
+            break;
+
+        case IMMTYPE_CHAR:
+            lpSymDst = SymTabAppendChar_EM    (*(LPAPLCHAR)  lpVal);
+
+            break;
+
+        case IMMTYPE_FLOAT:
+            lpSymDst = SymTabAppendFloat_EM   (*(LPAPLFLOAT) lpVal);
+
+            break;
+
+        defstop
+            lpSymDst = NULL;
+
+            break;
+    } // End SWITCH
+
+    // If it failed, set the error token
+    if (!lpSymDst)
+        ErrorMessageSetToken (lptkFunc);
+
+    return lpSymDst;
+} // End MakeSymEntry_EM
+
+
+//***************************************************************************
+//  CopyImmSymEntry_EM
+//
+//  Copy an immediate symbol table entry
+//***************************************************************************
+
+LPSYMENTRY CopyImmSymEntry_EM
+    (LPSYMENTRY lpSymSrc,   // LPSYMENTRY to use
+     IMM_TYPES  immType,    // ImmType to use (unless -1)
+     LPTOKEN    lpToken)    // The token to use in case of error
+
+{
+    LPSYMENTRY lpSymDst;
+
+    // stData is an immediate
+    Assert (lpSymSrc->stFlags.Imm);
+
+    // If unspecified, use the one in the SYMENTRY
+    if (immType EQ -1)
+        immType = lpSymSrc->stFlags.ImmType;
+
+    // Split cases based upon the immediate data type
+    switch (immType)
+    {
+        case IMMTYPE_BOOL:
+        case IMMTYPE_INT:
+            lpSymDst = SymTabAppendInteger_EM (lpSymSrc->stData.stInteger);
+
+            break;
+
+        case IMMTYPE_CHAR:
+            lpSymDst = SymTabAppendChar_EM    (lpSymSrc->stData.stChar);
+
+            break;
+
+        case IMMTYPE_FLOAT:
+            lpSymDst = SymTabAppendFloat_EM   (lpSymSrc->stData.stFloat);
+
+            break;
+
+        defstop
+            return NULL;
+    } // End SWITCH
+
+    // If it failed, set the error token
+    if (!lpSymDst)
+        ErrorMessageSetToken (lpToken);
+
+    return lpSymDst;
+} // End CopyImmSymEntry_EM
+
+
+//***************************************************************************
 //  SymTabAppendInteger_EM
 //
 //  Append a Boolean or long long integer to the symbol table
@@ -1112,16 +1283,23 @@ LPSYMENTRY SymTabAppendInteger_EM
     lpSymEntryDest = SymTabLookupNumber (uHash, aplInteger, &stFlags);
     if (!lpSymEntryDest)
     {
-        LPHSHENTRY lpHshEntryHash = &lpHshTab[MaskTheHash (uHash)];
-
-        Assert (lpHshEntryHash->htFlags.PrinHash);
+        LPHSHENTRY lpHshEntryHash;
 
         // This constant isn't in the ST -- find the next free entry in the HT
-        lpHshEntryDest = FindNextFreeUsingHash_EM (uHash, TRUE);
+        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE);
 
         // If it's invalid, quit
         if (!lpHshEntryDest)
             return NULL;
+
+        // We *MUST NOT* call this function until after the call
+        //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
+        //   split a STE and change lpHshTabSplitNext and uHashMask,
+        //   and thus the result of MaskTheHash.
+        lpHshEntryHash = &lpHshTab[MaskTheHash (uHash)];
+
+        // This entry must be a principal one
+        Assert (lpHshEntryHash->htFlags.PrinHash);
 
         // Ensure there's enough room in the symbol table for one more entry
         if (((lpSymTabNext - lpSymTab) >= iSymTabTotalSize)
@@ -1138,7 +1316,7 @@ LPSYMENTRY SymTabAppendInteger_EM
         lpSymEntryDest->stData.stInteger = aplInteger;
 
         // Save the symbol table flags
-        *(UINT *)&lpSymEntryDest->stFlags |= *(UINT *)&stFlags;
+        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
@@ -1191,16 +1369,23 @@ LPSYMENTRY SymTabAppendFloat_EM
     lpSymEntryDest = SymTabLookupFloat (uHash, fFloat, &stFlags);
     if (!lpSymEntryDest)
     {
-        LPHSHENTRY lpHshEntryHash = &lpHshTab[MaskTheHash (uHash)];
-
-        Assert (lpHshEntryHash->htFlags.PrinHash);
+        LPHSHENTRY lpHshEntryHash;
 
         // This constant isn't in the ST -- find the next free entry in the HT
-        lpHshEntryDest = FindNextFreeUsingHash_EM (uHash, TRUE);
+        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE);
 
         // If it's invalid, quit
         if (!lpHshEntryDest)
             return NULL;
+
+        // We *MUST NOT* call this function until after the call
+        //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
+        //   split a STE and change lpHshTabSplitNext and uHashMask,
+        //   and thus the result of MaskTheHash.
+        lpHshEntryHash = &lpHshTab[MaskTheHash (uHash)];
+
+        // This entry must be a principal one
+        Assert (lpHshEntryHash->htFlags.PrinHash);
 
         // Ensure there's enough room in the symbol table for one more entry
         if (((lpSymTabNext - lpSymTab) >= iSymTabTotalSize)
@@ -1217,7 +1402,7 @@ LPSYMENTRY SymTabAppendFloat_EM
         lpSymEntryDest->stData.stFloat = fFloat;
 
         // Save the symbol table flags
-        *(UINT *)&lpSymEntryDest->stFlags |= *(UINT *)&stFlags;
+        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
@@ -1270,16 +1455,23 @@ LPSYMENTRY SymTabAppendChar_EM
     lpSymEntryDest = SymTabLookupChar (uHash, aplChar, &stFlags);
     if (!lpSymEntryDest)
     {
-        LPHSHENTRY lpHshEntryHash = &lpHshTab[MaskTheHash (uHash)];
-
-        Assert (lpHshEntryHash->htFlags.PrinHash);
+        LPHSHENTRY lpHshEntryHash;
 
         // This constant isn't in the ST -- find the next free entry
-        lpHshEntryDest = FindNextFreeUsingHash_EM (uHash, TRUE);
+        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE);
 
         // If it's invalid, quit
         if (!lpHshEntryDest)
             return NULL;
+
+        // We *MUST NOT* call this function until after the call
+        //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
+        //   split a STE and change lpHshTabSplitNext and uHashMask,
+        //   and thus the result of MaskTheHash.
+        lpHshEntryHash = &lpHshTab[MaskTheHash (uHash)];
+
+        // This entry must be a principal one
+        Assert (lpHshEntryHash->htFlags.PrinHash);
 
         // Ensure there's enough room in the symbol table for one more entry
         if (((lpSymTabNext - lpSymTab) >= iSymTabTotalSize)
@@ -1296,7 +1488,7 @@ LPSYMENTRY SymTabAppendChar_EM
         lpSymEntryDest->stData.stChar = aplChar;
 
         // Save the flags
-        *(UINT *)&lpSymEntryDest->stFlags |= *(UINT *)&stFlags;
+        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
@@ -1324,6 +1516,12 @@ LPSYMENTRY SymTabAppendChar_EM
 //  Append a name to the symbol table
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SymTabAppendName_EM"
+#else
+#define APPEND_NAME
+#endif
+
 LPSYMENTRY SymTabAppendName_EM
     (LPWCHAR lpwszString)
 
@@ -1342,11 +1540,7 @@ LPSYMENTRY SymTabAppendName_EM
     {
         if (stFlags.SysName)
         {
-            ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR
-#ifdef DEBUG
-                                  L" -- SymTabAppendName_EM"
-#endif
-                                 );
+            ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 
             return NULL;
         } else
@@ -1355,6 +1549,7 @@ LPSYMENTRY SymTabAppendName_EM
 
     return lpSymEntry;
 } // End SymTabAppendName_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1393,7 +1588,7 @@ LPSYMENTRY SymTabAppendNewName_EM
              0);                            // Initial value or previous hash
     // This name isn't in the ST -- find the next free entry
     //   in the hash table, split if necessary
-    lpHshEntryDest = FindNextFreeUsingHash_EM (uHash, TRUE);
+    lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE);
 
     // If it's invalid, quit
     if (!lpHshEntryDest)
@@ -1412,8 +1607,8 @@ LPSYMENTRY SymTabAppendNewName_EM
 
     // Get a ptr to the corresponding hash entry
     // N.B.  It's very important to call MaskTheHash *AFTER*
-    //   calling FindNextFreeUsingHash_EM as lpHshTabSplitNext
-    //   might change, and thus the result of MaskTheHash.
+    //   calling FindNextFreeUsingHash_SPLIT_EM as lpHshTabSplitNext
+    //   and UhashMask might change, and thus the result of MaskTheHash.
     lpHshEntryHash = &lpHshTab[MaskTheHash (uHash)];
     Assert (lpHshEntryHash->htFlags.PrinHash);
 
@@ -1421,11 +1616,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     lpHshEntryDest->hGlbName = DbgGlobalAlloc (GHND, (iLen + 1) * sizeof (WCHAR));
     if (!lpHshEntryDest->hGlbName)
     {
-        ErrorMessageIndirect (ERRMSG_WS_FULL
-#ifdef DEBUG
-                              L" -- SymTabAppendNewName_EM"
-#endif
-                             );
+        ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
 
         return NULL;
     } // End IF
@@ -1436,7 +1627,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     MyGlobalUnlock (lpHshEntryDest->hGlbName); lpGlbName = NULL;
 
     // Save the flags
-    *(UINT *)&lpSymEntryDest->stFlags |= *(UINT *)lpstFlags;
+    *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) lpstFlags;
 
     // Save hash value (so we don't have to rehash on split)
     lpHshEntryDest->uHash        = uHash;

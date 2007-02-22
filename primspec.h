@@ -44,9 +44,9 @@ typedef BOOL PRIMFN_DYD_SNvSN
      APLRANK   aplRankRht,
      APLRANK   aplRankRes,
 
-     APLSTYPE  cArrTypeLft,
-     APLSTYPE  cArrTypeRht,
-     APLSTYPE  cArrTypeRes,
+     APLSTYPE  aplTypeLft,
+     APLSTYPE  aplTypeRht,
+     APLSTYPE  aplTypeRes,
 
      APLNELM   aplNELMLft,
      APLNELM   aplNELMRht,
@@ -59,7 +59,7 @@ typedef PRIMFN_DYD_SNvSN *LPPRIMFN_DYD_SNvSN;
 // Call this function to determine the storage type of the monadic result
 typedef APLSTYPE STORAGE_TYPE_MON
         (APLNELM    aplNELMRht,
-         LPAPLSTYPE lpcArrTypeRht,
+         LPAPLSTYPE lpaplTypeRht,
          LPTOKEN    lptkFunc);
 
 typedef STORAGE_TYPE_MON *LPSTORAGE_TYPE_MON;
@@ -67,10 +67,10 @@ typedef STORAGE_TYPE_MON *LPSTORAGE_TYPE_MON;
 // Call this function to determine the storage type of the dyadic result
 typedef APLSTYPE STORAGE_TYPE_DYD
         (APLNELM    aplNELMLft,
-         LPAPLSTYPE lpcArrTypeLft,
+         LPAPLSTYPE lpaplTypeLft,
          LPTOKEN    lptkFunc,
          APLNELM    aplNELMRht,
-         LPAPLSTYPE lpcArrTypeRht);
+         LPAPLSTYPE lpaplTypeRht);
 
 typedef STORAGE_TYPE_DYD *LPSTORAGE_TYPE_DYD;
 

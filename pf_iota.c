@@ -66,7 +66,7 @@ LPYYSTYPE PrimFnMonIota_EM
      LPTOKEN lptkAxis)
 
 {
-    static  YYSTYPE YYRes;
+    static  YYSTYPE YYRes;      // The result
     APLNELM aplNELMRes;
     HGLOBAL hGlbRes;
     UINT    uByteRes;
@@ -349,7 +349,7 @@ BOOL PrimFnMonIotaGlb_EM
 
 {
     LPVOID   lpMem;
-    APLSTYPE cArrType;          // The array storage type (see enum ARRAY_TYPES)
+    APLSTYPE aplType;           // The array storage type (see enum ARRAY_TYPES)
     APLNELM  aplNELM;           // # elements in the array
     APLRANK  aplRank;           // The rank of the array
     BOOL     bRet = TRUE;
@@ -363,9 +363,9 @@ BOOL PrimFnMonIotaGlb_EM
     Assert (lpHeader->Sign.ature EQ VARARRAY_HEADER_SIGNATURE);
 
     // Save the Type, NELM, and Rank
-    cArrType = lpHeader->ArrType;
-    aplNELM  = lpHeader->NELM;
-    aplRank  = lpHeader->Rank;
+    aplType = lpHeader->ArrType;
+    aplNELM = lpHeader->NELM;
+    aplRank = lpHeader->Rank;
 
 #undef  lpHeader
 
@@ -386,7 +386,7 @@ BOOL PrimFnMonIotaGlb_EM
         bRet = FALSE;
     } else
     // Split cases based upon the array storage type
-    switch (cArrType)
+    switch (aplType)
     {
         case ARRAY_BOOL:
             // Return the Boolean value
@@ -461,7 +461,7 @@ BOOL PrimFnMonIotaGlb_EM
 //***************************************************************************
 //  PrimFnDydIota_EM
 //
-//  Primitive function for dydadic iota (index of)
+//  Primitive function for dyadic iota (index of)
 //***************************************************************************
 
 #ifdef DEBUG
@@ -472,11 +472,24 @@ BOOL PrimFnMonIotaGlb_EM
 
 LPYYSTYPE PrimFnDydIota_EM
     (LPTOKEN lptkLftArg,
-     LPTOKEN lpToken,
+     LPTOKEN lptkFunc,
      LPTOKEN lptkRhtArg,
      LPTOKEN lptkAxis)
 
 {
+    static  YYSTYPE YYRes;      // The result
+    APLSTYPE aplTypeLft,
+             aplTypeRht;
+    APLNELM  aplNELMLft,
+             aplNELMRht;
+    APLRANK  aplRankLft,
+             aplRankRht;
+    HGLOBAL  hGlbLft,
+             hGlbRht;
+    LPVOID   lpMemLft,
+             lpMemRht;
+    BOOL     bRet = TRUE;
+
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -491,6 +504,23 @@ LPYYSTYPE PrimFnDydIota_EM
 
     DbgBrk ();
 
+    // Get the attributes (Type, NELM, and Rank) of the left & right args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+
+    // Get left and right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // Ensure left arg is a vector
+    if (aplRankLft NE 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkLftArg);
+        bRet = FALSE;
+
+        goto ERROR_EXIT;
+    } // End IF
 
 
 
@@ -502,7 +532,26 @@ LPYYSTYPE PrimFnDydIota_EM
 
 
 
-    return NULL;
+
+
+
+
+
+ERROR_EXIT:
+    if (hGlbLft && lpMemLft)
+    {
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
+
+    if (hGlbRht && lpMemRht)
+    {
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (bRet)
+        return &YYRes;
+    else
+        return NULL;
 } // End PrimFnDydIota_EM
 #undef  APPEND_NAME
 

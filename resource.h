@@ -7,9 +7,10 @@
 // Used by main.rc
 
 #define IDMPOS_FILE                       0
-#define IDMPOS_WINDOW                     1
-#define IDMPOS_OPTIONS                    2
-#define IDMPOS_HELP                       3
+#define IDMPOS_EDIT                       1
+#define IDMPOS_WINDOW                     2
+#define IDMPOS_OPTIONS                    3
+#define IDMPOS_HELP                       4
 
 #define IDWC_DB_LB                        1     // IDs to identify window controls
 #define IDWC_FE_EB                        2     // ...
@@ -60,6 +61,15 @@
 #define IDM_FEFONT                      603
 #define IDM_MEFONT                      604
 #define IDM_VEFONT                      605
+
+#define IDM_UNDO                        700
+#define IDM_REDO                        701
+#define IDM_COPY                        702
+#define IDM_CUT                         703
+#define IDM_PASTE                       704
+#define IDM_PASTE_APLWIN                705
+#define IDM_DELETE                      706
+#define IDM_SELECTALL                   707
 
 #define IDC_VERSION                     800
 #define IDC_LINK                        801

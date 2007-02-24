@@ -142,7 +142,7 @@ void FreeResultSub
                 stFlags.SysName =
                 stFlags.UsrName =
                 stFlags.Inuse   =
-                stFlags.Nocase  =
+                stFlags.NotCase =
                 stFlags.Perm    = 1;
                 stFlags.SysVarValid = (UINT) -1;
 

@@ -90,6 +90,9 @@ EXTERN
 APLCHAR  cQuadPR_CWS        ;           // []PR     (' ') (When a char scalar)
 
 EXTERN
+LPSYMENTRY lpSymQuadRL;                 // Ptr to STE for QuadRL
+
+EXTERN
 LPCHAR lpszTemp;                        // Used for temporary storage
 
 EXTERN

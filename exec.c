@@ -1348,6 +1348,13 @@ BOOL fnAlpDone
     // Ensure properly terminated
     lpwszString[iStringLen] = '\0';
 
+    // If this is a system name (starts with a Quad),
+    //   convert it to lowercase as those names are
+    //   case-insensitive
+    if (lpwszString[0] EQ UCS2_QUAD
+     || lpwszString[1] EQ UCS2_QUOTEQUAD)
+        CharLowerW (&lpwszString[1]);
+
     // Lookup in or append to the symbol table
     lpSymEntry = SymTabAppendName_EM (lpwszString);
     if (lpSymEntry)

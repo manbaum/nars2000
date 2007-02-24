@@ -885,7 +885,7 @@ void DisplaySymTab
      {0x000040,  L" SysVar"     },
      {0x000080,  L" SysFn0"     },
      {0x000100,  L" SysFn12"    },
-     {0x000200,  L" Nocase"     },
+     {0x000200,  L" NotCase"    },
      {0x000400,  L" Perm"       },
      {0x000800,  L" Inuse"      },
      {0x001000,  L" Value"      },

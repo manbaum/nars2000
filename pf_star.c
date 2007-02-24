@@ -125,7 +125,7 @@ APLSTYPE PrimSpecStarStorageTypeMon
 
     // Except that BOOL, INT and APA become FLOAT
     if (IsSimpleInt (aplTypeRes))
-        aplTypeRes = ARRAY_INT;
+        aplTypeRes = ARRAY_FLOAT;
 
     return aplTypeRes;
 } // End PrimSpecStarStorageTypeMon

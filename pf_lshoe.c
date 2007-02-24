@@ -128,7 +128,8 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
      LPTOKEN    lptkFunc)
 
 {
-    static YYSTYPE YYRes;   // The result
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -148,14 +149,14 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
     } // End IF
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes.tkToken.tkFlags.ImmType   = ImmType;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkLongest  = aplLongest;
-    YYRes.tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    YYRes[YYResIndex].tkToken.tkFlags.ImmType   = ImmType;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkLongest  = aplLongest;
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End PrimFnMonLeftShoeCon_EM
 #undef  APPEND_NAME
 
@@ -178,7 +179,6 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
      LPTOKEN lptkFunc)
 
 {
-    static   YYSTYPE YYRes;     // The result
     HGLOBAL  hGlbRes = NULL,
              hGlbAxis = NULL,
              hGlbSub = NULL,
@@ -195,7 +195,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
              lpMemGrUp = NULL,
              lpMemOdo = NULL,
              lpMemWVec = NULL;
-    APLINT   ByteRes;           // # bytes needed in the result
+    APLUINT  ByteRes;           // # bytes needed in the result
     APLNELM  aplNELMAxis,
              aplNELMRes,
              aplNELMRht,
@@ -209,6 +209,9 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     APLINT   apaOff,
              apaMul,
              apaLen;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -249,12 +252,12 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     if (lptkAxis && aplNELMAxis EQ 0)
     {
         // Fill in the result token
-        YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////    YYRes.tkToken.tkFlags.ImmType   = 0;
-////    YYRes.tkToken.tkFlags.NoDisplay = 0;
-////    YYRes.tkToken.tkFlags.Color     =
-        YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (CopyArray_EM (hGlbRht, FALSE, lptkFunc));
-        YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////    YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////    YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////    YYRes[YYResIndex].tkToken.tkFlags.Color     =
+        YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (CopyArray_EM (hGlbRht, FALSE, lptkFunc));
+        YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         goto QUICK_EXIT;
     } // End IF
@@ -326,8 +329,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
             + sizeof (HGLOBAL) * max (aplNELMRes, 1);
 
     //***************************************************************
-    // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLINT to UINT
+    // Now we can allocate the storage for the result.
+    // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -430,6 +433,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         ByteRes = sizeof (VARARRAY_HEADER)
                                 + sizeof (APLDIM)  * aplNELMAxis
                                 + sizeof (APLNESTED) * aplNELMSub;
+                        // N.B.:  Conversion from APLUINT to UINT.
                         Assert (ByteRes EQ (UINT) ByteRes);
                         hGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);
                         if (!hGlbProto)
@@ -506,15 +510,15 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         if (!bRet)
                         {
                             // Fill in the result token
-                            YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////                        YYRes.tkToken.tkFlags.ImmType   = 0;
-////                        YYRes.tkToken.tkFlags.NoDisplay = 0;
-////                        YYRes.tkToken.tkFlags.Color     =
-                            YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbProto);
-                            YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+                            YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////                        YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////                        YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////                        YYRes[YYResIndex].tkToken.tkFlags.Color     =
+                            YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbProto);
+                            YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
                             // Free the prototype storage
-                            FreeResult (&YYRes.tkToken);
+                            FreeResult (&YYRes[YYResIndex].tkToken);
 
                             goto ERROR_EXIT;
                         } // End IF
@@ -609,7 +613,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
         //***************************************************************
         // Allocate space for the weighting vector which is
         //   {times}{backscan}1{drop}({rho}R),1
-        // N.B.  Conversion from APLINT to UINT.
+        // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteRes = aplRankRht * sizeof (APLINT);
         Assert (ByteRes EQ (UINT) ByteRes);
@@ -641,7 +645,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
         //***************************************************************
         // Allocate space for the odometer array, one value per dimension
         //   in the right arg, with values initially all zero (thanks to GHND).
-        // N.B.  Conversion from APLINT to UINT.
+        // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteRes = aplRankRht * sizeof (APLINT);
         Assert (ByteRes EQ (UINT) ByteRes);
@@ -659,8 +663,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
         lpMemOdo = MyGlobalLock (hGlbOdo);
 
         //***************************************************************
-        // Calculate the storage needed for each subarray
-        // N.B.:  Conversion from APLINT to UINT
+        // Calculate the storage needed for each subarray.
+        // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
         // Handle APAs as INTs
         if (aplTypeRht EQ ARRAY_APA)
@@ -701,10 +705,10 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
 ////////    defstop
 ////////        break;
 ////////} // End SWITCH
-
-        // Add in the header and dimensions
-        ByteRes += sizeof (VARARRAY_HEADER)
-                 + sizeof (APLDIM) * aplNELMAxis;
+////////
+////////// Add in the header and dimensions
+////////ByteRes += sizeof (VARARRAY_HEADER)
+////////         + sizeof (APLDIM) * aplNELMAxis;
 
         //***************************************************************
         // Loop through the result NELM allocating storage
@@ -1093,12 +1097,12 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     } // End IF/ELSE
 NORMAL_EXIT:
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
-    YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (lpMemRes)
     {
@@ -1149,7 +1153,7 @@ QUICK_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes;
+        return &YYRes[YYResIndex];
     else
         return NULL;
 } // End PrimFnMonLeftShoeGlb_EM
@@ -1172,13 +1176,14 @@ BOOL PrimFnMonLeftShoeProto_EM
     (HGLOBAL *lphGlbProto,
      HGLOBAL  hGlbMT,
      int      sizeofItem,
-     APLINT   aplNELMSub,
-     APLINT   aplNELMAxis,
+     APLNELM  aplNELMSub,
+     APLNELM  aplNELMAxis,
      APLSTYPE aplType,
      LPTOKEN  lptkFunc)
 
 {
-    APLINT ByteRes, uRes;
+    APLUINT ByteRes,
+            uRes;
     LPVOID lpMemProto;
 
     if (aplNELMSub EQ 0)
@@ -1191,6 +1196,7 @@ BOOL PrimFnMonLeftShoeProto_EM
         ByteRes = sizeof (VARARRAY_HEADER)
                 + sizeof (APLDIM)  * aplNELMAxis
                 + sizeofItem * aplNELMSub;
+        // N.B.:  Conversion from APLUINT to UINT.
         Assert (ByteRes EQ (UINT) ByteRes);
         *lphGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!*lphGlbProto)
@@ -1249,7 +1255,7 @@ BOOL PrimFnMonLeftShoeProto_EM
 #endif
 
 BOOL PrimFnMonLeftShoeGlbSub_EM
-    (APLINT       ByteRes,
+    (APLUINT      ByteRes,
      APLSTYPE     aplType,
      APLNELM      aplNELMSub,
      APLNELM      aplNELMAxis,
@@ -1266,8 +1272,8 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
     APLINT uRht;
 
     //***************************************************************
-    // Allocate storage for this subarray
-    // N.B.:  Conversion from APLINT to UINT
+    // Allocate storage for this subarray.
+    // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
     Assert (ByteRes EQ (UINT) ByteRes);
     *lphGlbSub = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -1398,10 +1404,12 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
      LPTOKEN lptkFunc)
 
 {
-    static YYSTYPE YYRes;       // The result
-    APLINT         aplAxis;     // The (one and only) axis value
-    APLRANK        aplRankRht;  // The rank of the right arg
-    BOOL           bRet = TRUE;
+    APLINT  aplAxis;        // The (one and only) axis value
+    APLRANK aplRankRht;     // The rank of the right arg
+    BOOL    bRet = TRUE;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -1447,7 +1455,7 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
 ////} // End IF
 
     if (bRet)
-        return &YYRes;
+        return &YYRes[YYResIndex];
     else
         return NULL;
 } // End PrimFnDydLeftShoeGlb_EM

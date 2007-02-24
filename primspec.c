@@ -89,14 +89,16 @@ LPYYSTYPE PrimFnMon_EM
      LPPRIMSPEC lpPrimSpec)
 
 {
-    static YYSTYPE YYRes;       // The result
-    HGLOBAL        hGlbRes;
-    APLSTYPE       aplTypeRes,
-                   aplTypeRht;
-    APLRANK        aplRankRht;
-    APLNELM        aplNELMRht;
+    HGLOBAL  hGlbRes;
+    APLSTYPE aplTypeRes,
+             aplTypeRht;
+    APLRANK  aplRankRht;
+    APLNELM  aplNELMRht;
 
     DBGENTER;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -146,26 +148,26 @@ LPYYSTYPE PrimFnMon_EM
                     return NULL;
 
                 // Fill in the result token
-                YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////////YYRes.tkToken.tkFlags.ImmType   = 0;
-////////////////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////////////////YYRes.tkToken.tkFlags.Color     =
-                YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-                YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+                YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////////////////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////////////////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+                YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+                YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 DBGLEAVE;
 
-                return &YYRes;
+                return &YYRes[YYResIndex];
             } // End IF
 
             // Handle the immediate case
 
             // Fill in the result token
-            YYRes.tkToken.tkFlags.TknType   = TKT_VARIMMED;
-            YYRes.tkToken.tkFlags.ImmType   = aplTypeRes;
-////////////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////////////YYRes.tkToken.tkFlags.Color     =
-            YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+            YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+            YYRes[YYResIndex].tkToken.tkFlags.ImmType   = aplTypeRes;
+////////////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////////////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+            YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
 RESTART_EXCEPTION_VARNAMED:
             __try
@@ -178,19 +180,19 @@ RESTART_EXCEPTION_VARNAMED:
                     switch (lptkRhtArg->tkData.lpSym->stFlags.ImmType)
                     {
                         case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
-                            YYRes.tkToken.tkData.tkBoolean  =
+                            YYRes[YYResIndex].tkToken.tkData.tkBoolean  =
                               (*lpPrimSpec->BisB) (lptkRhtArg->tkData.lpSym->stData.stBoolean,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_INT:   // Res = BOOL, Rht = INT
-                            YYRes.tkToken.tkData.tkBoolean  =
+                            YYRes[YYResIndex].tkToken.tkData.tkBoolean  =
                               (*lpPrimSpec->BisI) (lptkRhtArg->tkData.lpSym->stData.stInteger,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
-                            YYRes.tkToken.tkData.tkBoolean  =
+                            YYRes[YYResIndex].tkToken.tkData.tkBoolean  =
                               (*lpPrimSpec->BisF) (lptkRhtArg->tkData.lpSym->stData.stFloat,
                                                    lpPrimSpec);
                             break;
@@ -206,19 +208,19 @@ RESTART_EXCEPTION_VARNAMED:
                     switch (lptkRhtArg->tkData.lpSym->stFlags.ImmType)
                     {
                         case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
-                            YYRes.tkToken.tkData.tkInteger  =
+                            YYRes[YYResIndex].tkToken.tkData.tkInteger  =
                               (*lpPrimSpec->IisI) (lptkRhtArg->tkData.lpSym->stData.stBoolean,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_INT:   // Res = INT, Rht = INT
-                            YYRes.tkToken.tkData.tkInteger  =
+                            YYRes[YYResIndex].tkToken.tkData.tkInteger  =
                               (*lpPrimSpec->IisI) (lptkRhtArg->tkData.lpSym->stData.stInteger,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
-                            YYRes.tkToken.tkData.tkInteger  =
+                            YYRes[YYResIndex].tkToken.tkData.tkInteger  =
                               (*lpPrimSpec->IisF) (lptkRhtArg->tkData.lpSym->stData.stFloat,
                                                    lpPrimSpec);
                             break;
@@ -234,19 +236,19 @@ RESTART_EXCEPTION_VARNAMED:
                     switch (lptkRhtArg->tkData.lpSym->stFlags.ImmType)
                     {
                         case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
-                            YYRes.tkToken.tkData.tkFloat  =
+                            YYRes[YYResIndex].tkToken.tkData.tkFloat  =
                               (*lpPrimSpec->FisI) (lptkRhtArg->tkData.lpSym->stData.stBoolean,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
-                            YYRes.tkToken.tkData.tkFloat  =
+                            YYRes[YYResIndex].tkToken.tkData.tkFloat  =
                               (*lpPrimSpec->FisI) (lptkRhtArg->tkData.lpSym->stData.stInteger,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
-                            YYRes.tkToken.tkData.tkFloat  =
+                            YYRes[YYResIndex].tkToken.tkData.tkFloat  =
                               (*lpPrimSpec->FisF) (lptkRhtArg->tkData.lpSym->stData.stFloat,
                                                    lpPrimSpec);
                             break;
@@ -299,7 +301,7 @@ RESTART_EXCEPTION_VARNAMED:
 
             DBGLEAVE;
 
-            return &YYRes;
+            return &YYRes[YYResIndex];
 
         case TKT_VARIMMED:
 RESTART_EXCEPTION_VARIMMED:
@@ -309,25 +311,23 @@ RESTART_EXCEPTION_VARIMMED:
             switch (aplTypeRes)
             {
                 case ARRAY_BOOL:            // Res = BOOL
-                    DbgBrk ();      // ***TESTME***
-
                     // Split cases based upon the right arg's storage type
                     switch (lptkRhtArg->tkFlags.ImmType)
                     {
                         case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
-                            YYRes.tkToken.tkData.tkBoolean =
+                            YYRes[YYResIndex].tkToken.tkData.tkBoolean =
                               (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkBoolean,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_INT:   // Res = BOOL, Rht = INT
-                            YYRes.tkToken.tkData.tkBoolean =
+                            YYRes[YYResIndex].tkToken.tkData.tkBoolean =
                               (*lpPrimSpec->BisI) (lptkRhtArg->tkData.tkInteger,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
-                            YYRes.tkToken.tkData.tkBoolean =
+                            YYRes[YYResIndex].tkToken.tkData.tkBoolean =
                               (*lpPrimSpec->BisF) (lptkRhtArg->tkData.tkFloat,
                                                    lpPrimSpec);
                             break;
@@ -343,19 +343,19 @@ RESTART_EXCEPTION_VARIMMED:
                     switch (lptkRhtArg->tkFlags.ImmType)
                     {
                         case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
-                            YYRes.tkToken.tkData.tkInteger =
+                            YYRes[YYResIndex].tkToken.tkData.tkInteger =
                               (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkBoolean,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_INT:   // Res = INT, Rht = INT
-                            YYRes.tkToken.tkData.tkInteger =
+                            YYRes[YYResIndex].tkToken.tkData.tkInteger =
                               (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkInteger,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
-                            YYRes.tkToken.tkData.tkInteger =
+                            YYRes[YYResIndex].tkToken.tkData.tkInteger =
                               (*lpPrimSpec->IisF) (lptkRhtArg->tkData.tkFloat,
                                                    lpPrimSpec);
                             break;
@@ -371,19 +371,19 @@ RESTART_EXCEPTION_VARIMMED:
                     switch (lptkRhtArg->tkFlags.ImmType)
                     {
                         case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
-                            YYRes.tkToken.tkData.tkFloat   =
+                            YYRes[YYResIndex].tkToken.tkData.tkFloat   =
                               (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkBoolean,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
-                            YYRes.tkToken.tkData.tkFloat   =
+                            YYRes[YYResIndex].tkToken.tkData.tkFloat   =
                               (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkInteger,
                                                    lpPrimSpec);
                             break;
 
                         case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
-                            YYRes.tkToken.tkData.tkFloat   =
+                            YYRes[YYResIndex].tkToken.tkData.tkFloat   =
                               (*lpPrimSpec->FisF) (lptkRhtArg->tkData.tkFloat,
                                                    lpPrimSpec);
                             break;
@@ -435,16 +435,16 @@ RESTART_EXCEPTION_VARIMMED:
             } // End __try/__except
 
             // Fill in the result token
-            YYRes.tkToken.tkFlags.TknType   = TKT_VARIMMED;
-            YYRes.tkToken.tkFlags.ImmType   = aplTypeRes;
-////////////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////////////YYRes.tkToken.tkFlags.Color     =
-////////////YYRes.tkToken.tkData            = (Filled in above)
-            YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+            YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+            YYRes[YYResIndex].tkToken.tkFlags.ImmType   = aplTypeRes;
+////////////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////////////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+////////////YYRes[YYResIndex].tkToken.tkData            = (Filled in above)
+            YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
             DBGLEAVE;
 
-            return &YYRes;
+            return &YYRes[YYResIndex];
 
         case TKT_VARARRAY:
             hGlbRes = lptkRhtArg->tkData.tkGlbData;
@@ -460,16 +460,16 @@ RESTART_EXCEPTION_VARIMMED:
                 return NULL;
 
             // Fill in the result token
-            YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////YYRes.tkToken.tkFlags.ImmType   = 0;
-////////////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////////////YYRes.tkToken.tkFlags.Color     =
-            YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-            YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+            YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////////////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////////////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+            YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+            YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
             DBGLEAVE;
 
-            return &YYRes;
+            return &YYRes[YYResIndex];
 
         defstop
             break;
@@ -509,7 +509,7 @@ HGLOBAL PrimFnMonGlb_EM
     APLNELM  aplNELMRht;        // # elements in the array
     APLRANK  aplRankRht;        // The rank of the array
     APLINT   uRes, apaOffRht, apaMulRht;
-    APLINT   ByteRes;
+    APLUINT  ByteRes;
     BOOL     bRet = TRUE;
     UINT     uBitIndex;
 
@@ -526,9 +526,9 @@ HGLOBAL PrimFnMonGlb_EM
     aplRankRht = lpHeader->Rank;
 
     // Get the storage type of the result
-    aplTypeRes = (*lpPrimSpec->StorageTypeMon)(aplNELMRht,
-                                              &aplTypeRht,
-                                               lptkFunc);
+    aplTypeRes = (*lpPrimSpec->StorageTypeMon) (aplNELMRht,
+                                               &aplTypeRht,
+                                                lptkFunc);
     // In case StorageTypeMon changed the value of aplTypeRht,
     //   save it back into the array
     lpHeader->ArrType = aplTypeRht;
@@ -594,8 +594,8 @@ RESTART_EXCEPTION:
 ////ByteRes += sizeof (VARARRAY_HEADER)
 ////         + sizeof (APLDIM) * aplRankRht;
 
-    // Allocate space for the result
-    // N.B. Conversion from APLINT to UINT
+    // Allocate space for the result.
+    // N.B. Conversion from APLUINT to UINT.
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
@@ -700,8 +700,6 @@ RESTART_EXCEPTION:
                     break;
 
                 case ARRAY_INT:     // Res = BOOL, Rht = INT
-                    DbgBrk ();      // ***TESTME***
-
                     // Loop through the right arg/result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
                     {
@@ -720,8 +718,6 @@ RESTART_EXCEPTION:
                     break;
 
                 case ARRAY_APA:     // Res = BOOL, Rht = APA
-                    DbgBrk ();      // ***TESTME***
-
                     // Loop through the right arg/result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
                     {
@@ -740,8 +736,6 @@ RESTART_EXCEPTION:
                     break;
 
                 case ARRAY_FLOAT:   // Res = BOOL, Rht = FLOAT
-                    DbgBrk ();      // ***TESTME***
-
                     // Loop through the right arg/result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
                     {
@@ -896,8 +890,6 @@ RESTART_EXCEPTION:
                         goto ERROR_EXIT;
                     } // End IF
 
-                    DbgBrk ();  // ***TESTME***
-
                     // Copy the SYMENTRY as the same type as the result
                     lpSymSrc = ClrPtrTypeIndSym (lpMemRht);
                     lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
@@ -913,15 +905,13 @@ RESTART_EXCEPTION:
                                 switch (lpSymSrc->stFlags.ImmType)
                                 {
                                     case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
-                                        DbgBrk ();  // ***TESTME***
-
                                         lpSymDst->stData.stBoolean =
                                           (*lpPrimSpec->BisB) (lpSymSrc->stData.stBoolean,
                                                                lpPrimSpec);
                                         break;
 
                                     case IMMTYPE_INT:   // Res = BOOL, Rht = INT
-                                        DbgBrk ();  // ***TESTME***
+                                        DbgBrk ();  // ***TESTME*** -- Tough case
 
                                         lpSymDst->stData.stBoolean =
                                           (*lpPrimSpec->BisI) (lpSymSrc->stData.stInteger,
@@ -929,8 +919,6 @@ RESTART_EXCEPTION:
                                         break;
 
                                     case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
-                                        DbgBrk ();  // ***TESTME***
-
                                         lpSymDst->stData.stBoolean =
                                           (*lpPrimSpec->BisF) (lpSymSrc->stData.stFloat,
                                                                lpPrimSpec);
@@ -947,7 +935,7 @@ RESTART_EXCEPTION:
                                 switch (lpSymSrc->stFlags.ImmType)
                                 {
                                     case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
-                                        DbgBrk ();  // ***TESTME***
+                                        DbgBrk ();  // ***TESTME*** -- Tough case
 
                                         lpSymDst->stData.stInteger =
                                           (*lpPrimSpec->IisI) (lpSymSrc->stData.stBoolean,
@@ -955,16 +943,12 @@ RESTART_EXCEPTION:
                                         break;
 
                                     case IMMTYPE_INT:   // Res = INT, Rht = INT
-                                        DbgBrk ();  // ***TESTME***
-
                                         lpSymDst->stData.stInteger =
                                           (*lpPrimSpec->IisI) (lpSymSrc->stData.stInteger,
                                                                lpPrimSpec);
                                         break;
 
                                     case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
-                                        DbgBrk ();  // ***TESTME***
-
                                         lpSymDst->stData.stInteger =
                                           (*lpPrimSpec->IisF) (lpSymSrc->stData.stFloat,
                                                                lpPrimSpec);
@@ -981,24 +965,18 @@ RESTART_EXCEPTION:
                                 switch (lpSymSrc->stFlags.ImmType)
                                 {
                                     case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
-                                        DbgBrk ();  // ***TESTME***
-
                                         lpSymDst->stData.stFloat =
                                           (*lpPrimSpec->FisI) (lpSymSrc->stData.stBoolean,
                                                                lpPrimSpec);
                                         break;
 
                                     case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
-                                        DbgBrk ();  // ***TESTME***
-
                                         lpSymDst->stData.stFloat =
                                           (*lpPrimSpec->FisI) (lpSymSrc->stData.stInteger,
                                                                lpPrimSpec);
                                         break;
 
                                     case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
-                                        DbgBrk ();  // ***TESTME***
-
                                         lpSymDst->stData.stFloat =
                                           (*lpPrimSpec->FisF) (lpSymSrc->stData.stFloat,
                                                                lpPrimSpec);
@@ -1064,8 +1042,6 @@ RESTART_EXCEPTION:
                 if (IsSimpleNum (aplTypeRes)
                  && aplTypeRes NE ARRAY_FLOAT)
                 {
-                    DbgBrk ();
-
                     aplTypeRes = ARRAY_FLOAT;
 
                     // We no longer need this ptr
@@ -1148,7 +1124,6 @@ LPYYSTYPE PrimFnDyd_EM
      LPPRIMSPEC lpPrimSpec)
 
 {
-    static YYSTYPE YYRes;   // The result
     APLRANK     aplRankLft,
                 aplRankRht,
                 aplRankRes;
@@ -1173,6 +1148,9 @@ LPYYSTYPE PrimFnDyd_EM
     LPPRIMFN_DYD_SNvSN PrimFn;
 
     DBGENTER;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1262,7 +1240,7 @@ LPYYSTYPE PrimFnDyd_EM
         else
             FirstValue (lptkLftArg, &aplInteger, NULL, NULL, NULL, NULL, NULL);
 
-        if (!(*lpPrimSpec->ApaResultDyd_EM) (&YYRes,
+        if (!(*lpPrimSpec->ApaResultDyd_EM) (&YYRes[YYResIndex],
                                               lptkFunc,
                                               hGlbLft,
                                               hGlbRht,
@@ -1322,7 +1300,7 @@ LPYYSTYPE PrimFnDyd_EM
     } // Endf IF/ELSE/...
 
     // Call the appropriate function
-    if (!(*PrimFn) (&YYRes,
+    if (!(*PrimFn) (&YYRes[YYResIndex],
                      lptkLftArg,
                      lptkFunc,
                      lptkRhtArg,
@@ -1391,7 +1369,7 @@ NORMAL_EXIT:
     DBGLEAVE;
 
     if (bRet)
-        return &YYRes;
+        return &YYRes[YYResIndex];
     else
         return NULL;
 } // End PrimFnDyd_EM
@@ -1448,8 +1426,8 @@ BOOL PrimFnDydSimpNest_EM
     APLINT     aplIntegerLft,
                apaOffLft,
                apaMulLft,
-               ByteAlloc,
                iDim;
+    APLUINT    ByteAlloc;
     APLFLOAT   aplFloatLft;
     HGLOBAL    hGlbWVec = NULL,
                hGlbOdo = NULL,
@@ -1520,7 +1498,7 @@ BOOL PrimFnDydSimpNest_EM
             //***************************************************************
             // Allocate space for the weighting vector which is
             //   {times}{backscan}1{drop}({rho}Z),1
-            // N.B.  Conversion from APLINT to UINT.
+            // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteAlloc = aplRankRes * sizeof (APLINT);
             Assert (ByteAlloc EQ (UINT) ByteAlloc);
@@ -1550,7 +1528,7 @@ BOOL PrimFnDydSimpNest_EM
             //***************************************************************
             // Allocate space for the odometer array, one value per dimension
             //   in the right arg, with values initially all zero (thanks to GHND).
-            // N.B.  Conversion from APLINT to UINT.
+            // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteAlloc = aplRankRes * sizeof (APLINT);
             Assert (ByteAlloc EQ (UINT) ByteAlloc);
@@ -1816,7 +1794,7 @@ BOOL PrimFnDydNestSimp_EM
             //***************************************************************
             // Allocate space for the weighting vector which is
             //   {times}{backscan}1{drop}({rho}Z),1
-            // N.B.  Conversion from APLINT to UINT.
+            // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteAlloc = aplRankRes * sizeof (APLINT);
             Assert (ByteAlloc EQ (UINT) ByteAlloc);
@@ -1846,7 +1824,7 @@ BOOL PrimFnDydNestSimp_EM
             //***************************************************************
             // Allocate space for the odometer array, one value per dimension
             //   in the right arg, with values initially all zero (thanks to GHND).
-            // N.B.  Conversion from APLINT to UINT.
+            // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteAlloc = aplRankRes * sizeof (APLINT);
             Assert (ByteAlloc EQ (UINT) ByteAlloc);
@@ -2790,7 +2768,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = BOOL/INT(S), Rht = FLOAT(M)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -2811,7 +2789,7 @@ RESTART_EXCEPTION:
                     switch (aplTypeRht)
                     {
                         case ARRAY_BOOL:    // Res = INT, Lft = FLOAT(S), Rht = BOOL(M)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -2831,7 +2809,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_INT:     // Res = INT, Lft = FLOAT(S), Rht = INT(M)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -2842,7 +2820,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_APA:     // Res = INT, Lft = FLOAT(S), Rht = APA(M)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -2853,7 +2831,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(S), Rht = FLOAT(M)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3528,7 +3506,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(M),   Rht = BOOL/INT(S)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3549,7 +3527,7 @@ RESTART_EXCEPTION:
                     switch (aplTypeLft)
                     {
                         case ARRAY_BOOL:    // Res = INT, Lft = BOOL (M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3569,7 +3547,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_INT:     // Res = INT, Lft = INT  (M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3580,7 +3558,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_APA:     // Res = INT, Lft = APA  (M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3591,7 +3569,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME***
+                            DbgBrk ();      // ***TESTME*** -- Tough case
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -4026,30 +4004,30 @@ BOOL PrimFnDydSimpSimp_EM
      LPPRIMSPEC lpPrimSpec)
 
 {
-    BOOL       bRet = TRUE;
-    APLINT     aplIntegerLft,
-               aplIntegerRht;
-    APLFLOAT   aplFloatLft,
-               aplFloatRht;
-    LPAPLUINT  lpMemWVec = NULL,
-               lpMemOdo = NULL;
-    HGLOBAL    hGlbWVec = NULL,
-               hGlbOdo = NULL;
-    APLINT     uLft,
-               uRht,
-               uRes;
-    LPAPLDIM   lpMemDimArg,
-               lpMemDimRes;
-    APLINT     apaOffLft,
-               apaMulLft,
-               apaOffRht,
-               apaMulRht,
-               iRht;
-    UINT       uBitIndex = 0;
-    LPVOID     lpMemResStart;
-    APLINT     ByteRes;
-    APLCHAR    aplCharLft,
-               aplCharRht;
+    BOOL      bRet = TRUE;
+    APLINT    aplIntegerLft,
+              aplIntegerRht;
+    APLFLOAT  aplFloatLft,
+              aplFloatRht;
+    LPAPLUINT lpMemWVec = NULL,
+              lpMemOdo = NULL;
+    HGLOBAL   hGlbWVec = NULL,
+              hGlbOdo = NULL;
+    APLINT    uLft,
+              uRht,
+              uRes;
+    LPAPLDIM  lpMemDimArg,
+              lpMemDimRes;
+    APLINT    apaOffLft,
+              apaMulLft,
+              apaOffRht,
+              apaMulRht,
+              iRht;
+    UINT      uBitIndex = 0;
+    LPVOID    lpMemResStart;
+    APLUINT   ByteRes;
+    APLCHAR   aplCharLft,
+              aplCharRht;
 
     DBGENTER;
 
@@ -4213,8 +4191,6 @@ RESTART_EXCEPTION_IMMED:
                         if (IsSimpleNum (aplTypeRes)
                          && aplTypeRes NE ARRAY_FLOAT)
                         {
-                            DbgBrk ();      // ***TESTME***
-
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
                             dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", *lpPrimSpec->lpExecCode, FNLN);
@@ -4363,8 +4339,6 @@ RESTART_EXCEPTION_SINGLETON:
                         if (IsSimpleNum (aplTypeRes)
                          && aplTypeRes NE ARRAY_FLOAT)
                         {
-                            DbgBrk ();      // ***TESTME***
-
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
                             dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", *lpPrimSpec->lpExecCode, FNLN);
@@ -4490,8 +4464,8 @@ RESTART_EXCEPTION_SINGLETON:
             //   {times}{backscan}1{drop}({rho}R)[Cx,Ax],1
             //
             //   where Ax contains the specified axes, and
-            //   Cx contains the remaining axes
-            // N.B.  Conversion from APLINT to UINT.
+            //   Cx contains the remaining axes.
+            // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteRes = aplRankRes * sizeof (APLINT);
             Assert (ByteRes EQ (UINT) ByteRes);
@@ -4521,7 +4495,7 @@ RESTART_EXCEPTION_SINGLETON:
             //***************************************************************
             // Allocate space for the odometer array, one value per dimension
             //   in the right arg, with values initially all zero (thanks to GHND).
-            // N.B.  Conversion from APLINT to UINT.
+            // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
             ByteRes = aplRankRes * sizeof (APLINT);
             Assert (ByteRes EQ (UINT) ByteRes);
@@ -4548,7 +4522,6 @@ RESTART_EXCEPTION_AXIS:
                      && aplTypeRht EQ ARRAY_BOOL)  // Res = BOOL(Axis), Lft = BOOL, Rht = BOOL
                     {
                         // ***FIXME*** -- Optimize by chunking
-                        DbgBrk ();      // ***TESTME***
 
                         // Loop through the result/left/right arguments
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)

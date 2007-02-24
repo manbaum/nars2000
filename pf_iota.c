@@ -66,13 +66,15 @@ LPYYSTYPE PrimFnMonIota_EM
      LPTOKEN lptkAxis)
 
 {
-    static  YYSTYPE YYRes;      // The result
     APLNELM aplNELMRes;
     HGLOBAL hGlbRes;
     UINT    uByteRes;
     LPVOID  lpMemRes;
     BOOL    bRet = TRUE;
     APLINT  aplIntTmp;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -242,14 +244,14 @@ LPYYSTYPE PrimFnMonIota_EM
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End PrimFnMonIota_EM
 #undef  APPEND_NAME
 
@@ -477,7 +479,6 @@ LPYYSTYPE PrimFnDydIota_EM
      LPTOKEN lptkAxis)
 
 {
-    static  YYSTYPE YYRes;      // The result
     APLSTYPE aplTypeLft,
              aplTypeRht;
     APLNELM  aplNELMLft,
@@ -489,6 +490,9 @@ LPYYSTYPE PrimFnDydIota_EM
     LPVOID   lpMemLft,
              lpMemRht;
     BOOL     bRet = TRUE;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -502,7 +506,7 @@ LPYYSTYPE PrimFnDydIota_EM
         return NULL;
     } // End IF
 
-    DbgBrk ();
+    DbgBrk ();          // ***FINISHME***
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -512,7 +516,7 @@ LPYYSTYPE PrimFnDydIota_EM
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // Ensure left arg is a vector
+    // Check for RANK ERROR
     if (aplRankLft NE 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
@@ -521,7 +525,6 @@ LPYYSTYPE PrimFnDydIota_EM
 
         goto ERROR_EXIT;
     } // End IF
-
 
 
 
@@ -549,7 +552,7 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes;
+        return &YYRes[YYResIndex];
     else
         return NULL;
 } // End PrimFnDydIota_EM

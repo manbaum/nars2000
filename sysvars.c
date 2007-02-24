@@ -39,74 +39,75 @@ typedef struct tagSYSNAME
     UINT        uValence;   // For system functions, Niladic(0), All others (1)
     BOOL        bSysVar;    // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
     LPYYSTYPE (*NameFcn) (LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN); // Ptr to execution routine
+    LPSYMENTRY *lplpSymEntry;// Ptr to ptr to STE if to be saved globally (NULL if not interested)
 } SYSNAME, *LPSYSNAME;
 
 SYSNAME aSystemNames[] =
 { // Name                    Valence    Var?
-    {WS_UCS2_QUAD          ,    9,      TRUE , NULL          },    //  0:  Output
-    {WS_UCS2_QUOTEQUAD     ,    9,      TRUE , NULL          },    //  1:  Character Output
-    {WS_UCS2_QUAD L"alx"   ,    9,      TRUE , NULL          },    //  2:  Attention Latent Expression
-    {WS_UCS2_QUAD L"ct"    ,    9,      TRUE , NULL          },    //  3:  Comparison Tolerance
-    {WS_UCS2_QUAD L"df"    ,    9,      TRUE , NULL          },    //  4:  Display Format
-    {WS_UCS2_QUAD L"elx"   ,    9,      TRUE , NULL          },    //  5:  Error Latent Expression
-    {WS_UCS2_QUAD L"if"    ,    9,      TRUE , NULL          },    //  6:  Iota Format
-    {WS_UCS2_QUAD L"io"    ,    9,      TRUE , NULL          },    //  7:  Index Origin
-    {WS_UCS2_QUAD L"lx"    ,    9,      TRUE , NULL          },    //  8:  Latent Expression
-    {WS_UCS2_QUAD L"pp"    ,    9,      TRUE , NULL          },    //  9:  Printing Precision
-    {WS_UCS2_QUAD L"pr"    ,    9,      TRUE , NULL          },    // 10:  Prompt Replacement
-    {WS_UCS2_QUAD L"pw"    ,    9,      TRUE , NULL          },    // 11:  Printing Width
-    {WS_UCS2_QUAD L"rl"    ,    9,      TRUE , NULL          },    // 12:  Random Link
-    {WS_UCS2_QUAD L"sa"    ,    9,      TRUE , NULL          },    // 13:  Stop Action
-    {WS_UCS2_QUAD L"wsid"  ,    9,      TRUE , NULL          },    // 14:  Workspace Identifier
+    {WS_UCS2_QUAD          ,    9,      TRUE , NULL          , NULL        },    //  0:  Output
+    {WS_UCS2_QUOTEQUAD     ,    9,      TRUE , NULL          , NULL        },    //  1:  Character Output
+    {WS_UCS2_QUAD L"alx"   ,    9,      TRUE , NULL          , NULL        },    //  2:  Attention Latent Expression
+    {WS_UCS2_QUAD L"ct"    ,    9,      TRUE , NULL          , NULL        },    //  3:  Comparison Tolerance
+    {WS_UCS2_QUAD L"df"    ,    9,      TRUE , NULL          , NULL        },    //  4:  Display Format
+    {WS_UCS2_QUAD L"elx"   ,    9,      TRUE , NULL          , NULL        },    //  5:  Error Latent Expression
+    {WS_UCS2_QUAD L"if"    ,    9,      TRUE , NULL          , NULL        },    //  6:  Iota Format
+    {WS_UCS2_QUAD L"io"    ,    9,      TRUE , NULL          , NULL        },    //  7:  Index Origin
+    {WS_UCS2_QUAD L"lx"    ,    9,      TRUE , NULL          , NULL        },    //  8:  Latent Expression
+    {WS_UCS2_QUAD L"pp"    ,    9,      TRUE , NULL          , NULL        },    //  9:  Printing Precision
+    {WS_UCS2_QUAD L"pr"    ,    9,      TRUE , NULL          , NULL        },    // 10:  Prompt Replacement
+    {WS_UCS2_QUAD L"pw"    ,    9,      TRUE , NULL          , NULL        },    // 11:  Printing Width
+    {WS_UCS2_QUAD L"rl"    ,    9,      TRUE , NULL          , &lpSymQuadRL},    // 12:  Random Link
+    {WS_UCS2_QUAD L"sa"    ,    9,      TRUE , NULL          , NULL        },    // 13:  Stop Action
+    {WS_UCS2_QUAD L"wsid"  ,    9,      TRUE , NULL          , NULL        },    // 14:  Workspace Identifier
 
-    {WS_UCS2_QUAD L"ai"    ,    0,      FALSE, NULL          },    // Accounting Information
-    {WS_UCS2_QUAD L"av"    ,    0,      FALSE, NULL          },    // Atomic Vector
-    {WS_UCS2_QUAD L"dm"    ,    0,      FALSE, NULL          },    // Diagnostic Message
-    {WS_UCS2_QUAD L"lc"    ,    0,      FALSE, NULL          },    // Line Counter
-    {WS_UCS2_QUAD L"si"    ,    0,      FALSE, NULL          },    // State Indicator
-    {WS_UCS2_QUAD L"sinl"  ,    0,      FALSE, NULL          },    // State Indicator w/Name List
-    {WS_UCS2_QUAD L"sysid" ,    0,      FALSE, SysFnSYSID_EM },    // System Identifier
-    {WS_UCS2_QUAD L"sysver",    0,      FALSE, SysFnSYSVER_EM},    // System Version
-    {WS_UCS2_QUAD L"tc"    ,    0,      FALSE, SysFnTC_EM    },    // Terminal Control Characters
-    {WS_UCS2_QUAD L"tcbel" ,    0,      FALSE, SysFnTCBEL_EM },    // Terminal Control Character, Bell
-    {WS_UCS2_QUAD L"tcbs"  ,    0,      FALSE, SysFnTCBS_EM  },    // Terminal Control Character, Backspace
-    {WS_UCS2_QUAD L"tcdel" ,    0,      FALSE, SysFnTCDEL_EM },    // Terminal Control Character, Delete
-    {WS_UCS2_QUAD L"tcesc" ,    0,      FALSE, SysFnTCESC_EM },    // Terminal Control Character, Escape
-    {WS_UCS2_QUAD L"tcff"  ,    0,      FALSE, SysFnTCFF_EM  },    // Terminal Control Character, Form Feed
-    {WS_UCS2_QUAD L"tcht"  ,    0,      FALSE, SysFnTCHT_EM  },    // Terminal Control Character, Horizontal Tab
-    {WS_UCS2_QUAD L"tclf"  ,    0,      FALSE, SysFnTCLF_EM  },    // Terminal Control Character, Line Feed
-    {WS_UCS2_QUAD L"tcnl"  ,    0,      FALSE, SysFnTCNL_EM  },    // Terminal Control Character, New Line
-    {WS_UCS2_QUAD L"tcnul" ,    0,      FALSE, SysFnTCNUL_EM },    // Terminal Control Character, Null
-    {WS_UCS2_QUAD L"ts"    ,    0,      FALSE, SysFnTS_EM    },    // Time Stamp
-    {WS_UCS2_QUAD L"wa"    ,    0,      FALSE, NULL          },    // Workspace Available
+    {WS_UCS2_QUAD L"ai"    ,    0,      FALSE, NULL          , NULL        },    // Accounting Information
+    {WS_UCS2_QUAD L"av"    ,    0,      FALSE, NULL          , NULL        },    // Atomic Vector
+    {WS_UCS2_QUAD L"dm"    ,    0,      FALSE, NULL          , NULL        },    // Diagnostic Message
+    {WS_UCS2_QUAD L"lc"    ,    0,      FALSE, NULL          , NULL        },    // Line Counter
+    {WS_UCS2_QUAD L"si"    ,    0,      FALSE, NULL          , NULL        },    // State Indicator
+    {WS_UCS2_QUAD L"sinl"  ,    0,      FALSE, NULL          , NULL        },    // State Indicator w/Name List
+    {WS_UCS2_QUAD L"sysid" ,    0,      FALSE, SysFnSYSID_EM , NULL        },    // System Identifier
+    {WS_UCS2_QUAD L"sysver",    0,      FALSE, SysFnSYSVER_EM, NULL        },    // System Version
+    {WS_UCS2_QUAD L"tc"    ,    0,      FALSE, SysFnTC_EM    , NULL        },    // Terminal Control Characters
+    {WS_UCS2_QUAD L"tcbel" ,    0,      FALSE, SysFnTCBEL_EM , NULL        },    // Terminal Control Character, Bell
+    {WS_UCS2_QUAD L"tcbs"  ,    0,      FALSE, SysFnTCBS_EM  , NULL        },    // Terminal Control Character, Backspace
+    {WS_UCS2_QUAD L"tcdel" ,    0,      FALSE, SysFnTCDEL_EM , NULL        },    // Terminal Control Character, Delete
+    {WS_UCS2_QUAD L"tcesc" ,    0,      FALSE, SysFnTCESC_EM , NULL        },    // Terminal Control Character, Escape
+    {WS_UCS2_QUAD L"tcff"  ,    0,      FALSE, SysFnTCFF_EM  , NULL        },    // Terminal Control Character, Form Feed
+    {WS_UCS2_QUAD L"tcht"  ,    0,      FALSE, SysFnTCHT_EM  , NULL        },    // Terminal Control Character, Horizontal Tab
+    {WS_UCS2_QUAD L"tclf"  ,    0,      FALSE, SysFnTCLF_EM  , NULL        },    // Terminal Control Character, Line Feed
+    {WS_UCS2_QUAD L"tcnl"  ,    0,      FALSE, SysFnTCNL_EM  , NULL        },    // Terminal Control Character, New Line
+    {WS_UCS2_QUAD L"tcnul" ,    0,      FALSE, SysFnTCNUL_EM , NULL        },    // Terminal Control Character, Null
+    {WS_UCS2_QUAD L"ts"    ,    0,      FALSE, SysFnTS_EM    , NULL        },    // Time Stamp
+    {WS_UCS2_QUAD L"wa"    ,    0,      FALSE, NULL          , NULL        },    // Workspace Available
 
-    {WS_UCS2_QUAD L"call"  ,    1,      FALSE, NULL          },    // Call Assembler Code
-    {WS_UCS2_QUAD L"cr"    ,    1,      FALSE, NULL          },    // Canonical Representation
-    {WS_UCS2_QUAD L"crl"   ,    1,      FALSE, NULL          },    // Canonical Representation, Line
-    {WS_UCS2_QUAD L"crlpc" ,    1,      FALSE, NULL          },    // Canonical Representation, Public Comment
-    {WS_UCS2_QUAD L"def"   ,    1,      FALSE, NULL          },    // Define Function
-    {WS_UCS2_QUAD L"defl"  ,    1,      FALSE, NULL          },    // Define Function Line
-    {WS_UCS2_QUAD L"dl"    ,    1,      FALSE, NULL          },    // Delay Execution
-    {WS_UCS2_QUAD L"dr"    ,    1,      FALSE, SysFnDR_EM    },    // Data Representation
-    {WS_UCS2_QUAD L"erase" ,    1,      FALSE, NULL          },    // Erase Names
-    {WS_UCS2_QUAD L"error" ,    1,      FALSE, NULL          },    // Signal Error
-    {WS_UCS2_QUAD L"ex"    ,    1,      FALSE, NULL          },    // Erase Names
-    {WS_UCS2_QUAD L"fi"    ,    1,      FALSE, NULL          },    // Format Items
-    {WS_UCS2_QUAD L"fmt"   ,    1,      FALSE, NULL          },    // Format
-    {WS_UCS2_QUAD L"fx"    ,    1,      FALSE, NULL          },    // Fix Function
-    {WS_UCS2_QUAD L"idlist",    1,      FALSE, NULL          },    // Identifier List
-    {WS_UCS2_QUAD L"idloc" ,    1,      FALSE, NULL          },    // Identifier Localization
-    {WS_UCS2_QUAD L"lock"  ,    1,      FALSE, NULL          },    // Lock Functions
-    {WS_UCS2_QUAD L"mf"    ,    1,      FALSE, NULL          },    // Monitor Function
-    {WS_UCS2_QUAD L"nc"    ,    1,      FALSE, NULL          },    // Name Classification
-    {WS_UCS2_QUAD L"nl"    ,    1,      FALSE, NULL          },    // Name List
-    {WS_UCS2_QUAD L"size"  ,    1,      FALSE, NULL          },    // Size of an object
-    {WS_UCS2_QUAD L"ss"    ,    1,      FALSE, NULL          },    // Search String
-    {WS_UCS2_QUAD L"stop"  ,    1,      FALSE, NULL          },    // Manage Stop Points
-    {WS_UCS2_QUAD L"trace" ,    1,      FALSE, NULL          },    // Manage Trace Points
-    {WS_UCS2_QUAD L"type"  ,    1,      FALSE, SysFnTYPE_EM  },    // Manage Trace Points
-    {WS_UCS2_QUAD L"vi"    ,    1,      FALSE, NULL          },    // Verify Items
-    {WS_UCS2_QUAD L"vr"    ,    1,      FALSE, NULL          },    // Vector Representation of a Function
+    {WS_UCS2_QUAD L"call"  ,    1,      FALSE, NULL          , NULL        },    // Call Assembler Code
+    {WS_UCS2_QUAD L"cr"    ,    1,      FALSE, NULL          , NULL        },    // Canonical Representation
+    {WS_UCS2_QUAD L"crl"   ,    1,      FALSE, NULL          , NULL        },    // Canonical Representation, Line
+    {WS_UCS2_QUAD L"crlpc" ,    1,      FALSE, NULL          , NULL        },    // Canonical Representation, Public Comment
+    {WS_UCS2_QUAD L"def"   ,    1,      FALSE, NULL          , NULL        },    // Define Function
+    {WS_UCS2_QUAD L"defl"  ,    1,      FALSE, NULL          , NULL        },    // Define Function Line
+    {WS_UCS2_QUAD L"dl"    ,    1,      FALSE, NULL          , NULL        },    // Delay Execution
+    {WS_UCS2_QUAD L"dr"    ,    1,      FALSE, SysFnDR_EM    , NULL        },    // Data Representation
+    {WS_UCS2_QUAD L"erase" ,    1,      FALSE, NULL          , NULL        },    // Erase Names
+    {WS_UCS2_QUAD L"error" ,    1,      FALSE, NULL          , NULL        },    // Signal Error
+    {WS_UCS2_QUAD L"ex"    ,    1,      FALSE, NULL          , NULL        },    // Erase Names
+    {WS_UCS2_QUAD L"fi"    ,    1,      FALSE, NULL          , NULL        },    // Format Items
+    {WS_UCS2_QUAD L"fmt"   ,    1,      FALSE, NULL          , NULL        },    // Format
+    {WS_UCS2_QUAD L"fx"    ,    1,      FALSE, NULL          , NULL        },    // Fix Function
+    {WS_UCS2_QUAD L"idlist",    1,      FALSE, NULL          , NULL        },    // Identifier List
+    {WS_UCS2_QUAD L"idloc" ,    1,      FALSE, NULL          , NULL        },    // Identifier Localization
+    {WS_UCS2_QUAD L"lock"  ,    1,      FALSE, NULL          , NULL        },    // Lock Functions
+    {WS_UCS2_QUAD L"mf"    ,    1,      FALSE, NULL          , NULL        },    // Monitor Function
+    {WS_UCS2_QUAD L"nc"    ,    1,      FALSE, NULL          , NULL        },    // Name Classification
+    {WS_UCS2_QUAD L"nl"    ,    1,      FALSE, NULL          , NULL        },    // Name List
+    {WS_UCS2_QUAD L"size"  ,    1,      FALSE, NULL          , NULL        },    // Size of an object
+    {WS_UCS2_QUAD L"ss"    ,    1,      FALSE, NULL          , NULL        },    // Search String
+    {WS_UCS2_QUAD L"stop"  ,    1,      FALSE, NULL          , NULL        },    // Manage Stop Points
+    {WS_UCS2_QUAD L"trace" ,    1,      FALSE, NULL          , NULL        },    // Manage Trace Points
+    {WS_UCS2_QUAD L"type"  ,    1,      FALSE, SysFnTYPE_EM  , NULL        },    // Manage Trace Points
+    {WS_UCS2_QUAD L"vi"    ,    1,      FALSE, NULL          , NULL        },    // Verify Items
+    {WS_UCS2_QUAD L"vr"    ,    1,      FALSE, NULL          , NULL        },    // Vector Representation of a Function
 
     // ***FIXME*** Add more entries
 };
@@ -140,7 +141,7 @@ BOOL SymTabAppendSysName_EM
 
     stFlags.SysName =
     stFlags.Perm    =
-    stFlags.Nocase  =
+    stFlags.NotCase =
     stFlags.Inuse   = 1;
 
     lpSymEntry = SymTabAppendNewName_EM (lpSysName->lpwszName, &stFlags);
@@ -148,6 +149,10 @@ BOOL SymTabAppendSysName_EM
     // Check for error
     if (!lpSymEntry)
         return FALSE;
+
+    // Save the LPSYMENTRY if requested
+    if (lpSysName->lplpSymEntry)
+        *lpSysName->lplpSymEntry = lpSymEntry;
 
     // Save the address of the execution routine
     lpSymEntry->stData.stNameFcn = lpSysName->NameFcn;

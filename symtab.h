@@ -133,7 +133,7 @@ typedef struct tagSTFLAGS
          SysVar:1,          // 000040:  ...                     ...     System Variable
          SysFn0:1,          // 000080:  ...                     ...     System Function, niladic
          SysFn12:1,         // 000100:  ...                     ...     System Function, monadic or dyadic
-         Nocase:1,          // 000200:  Case-insensitive name
+         NotCase:1,         // 000200:  Case-insensitive name
          Perm:1,            // 000400:  Permanent entry
          Inuse:1,           // 000800:  Inuse entry
          Value:1,           // 001000:  Entry has a value
@@ -151,19 +151,19 @@ typedef struct tagSTFLAGS
 //   and <TokenTypeFV> in <parse.y>.
 
 // .Inuse and .PrinHash are valid for all entries.
-// .Inuse  = 0 implies that all but .PrinHash are zero.
-// .Imm    implies one and only one of the IMMTYPE_***s
-// .Imm    = 1 implies that one and only one of aplBoolean, aplInteger, aplChar, or aplFloat is valid.
-// .Imm    = 0 implies that stGlbData is valid.
-// .Perm   is valid for .SysVar, .SysFn0, and .SysFn12 only.
-// .Nocase is valid for .SysVar, .SysFn0, and .SysFn12 only.
-// .Value  is valid for .SysVar and .UsrVar only, however
+// .Inuse   = 0 implies that all but .PrinHash are zero.
+// .Imm     implies one and only one of the IMMTYPE_***s
+// .Imm     = 1 implies that one and only one of aplBoolean, aplInteger, aplChar, or aplFloat is valid.
+// .Imm     = 0 implies that stGlbData is valid.
+// .Perm    is valid for .SysVar, .SysFn0, and .SysFn12 only.
+// .NotCase is valid for .SysVar, .SysFn0, and .SysFn12 only.
+// .Value   is valid for .SysVar and .UsrVar only, however
 //          .SysVar should never be without a value.
 // .SysName implies one and only one of .SysVar, .SysFn0, .SysFn12 is set.
 // .UsrName is set for .UsrVar, .UsrFn0, .UsrFn12, .UsrOp1, .UsrOp2.
 //          It is also set for a variable with no value.
 // .UsrVar, .SysVar, .SysFn0, .SysFn12, .UsrFn0, .UsrFn12, .UsrOp1, and .UsrOp2
-//    are mutually exclusive.
+//          are mutually exclusive.
 // hGlbName in SYMENTRY is set for .UsrVar, .UsrFn0, .UsrFn12, .UsrOp1, .UsrName,
 //                                 .SysVar, .SysFn0, .SysFn12, .UsrOp2.
 

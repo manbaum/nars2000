@@ -18,6 +18,8 @@
 #define DEF_QUADALX_CWS (WS_UCS2_QUAD L"DM")
 #define DEF_QUADELX_CWS (WS_UCS2_QUAD L"DM")
 
+#define QUADRL_MODULUS  0x7FFFFFFF      // (2*31)-1 is a prime
+
 // System Comparison Tolerance
 #define SYS_CT  3E-15
 

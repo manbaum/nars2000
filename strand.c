@@ -14,8 +14,6 @@
 #include "compro.h"
 #endif
 
-YYSTYPE YYRes;
-
 
 /*  Strand Test cases
     -----------------
@@ -65,15 +63,18 @@ LPYYSTYPE PushVarStrand
     (LPYYSTYPE lpYYArg)         // Ptr to the incoming argument
 
 {
-    // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType     = TKT_STRAND;
-////YYRes.tkToken.tkFlags.ImmType     = 0;
-////YYRes.tkToken.tkFlags.NoDisplay   = 0;
-////YYRes.tkToken.tkFlags.Color       =
-    YYRes.tkToken.tkData.lpVoid       = (LPVOID) -1;
-    YYRes.tkToken.tkCharIndex         = lpYYArg->tkToken.tkCharIndex;
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
-    YYRes.unYYSTYPE.lpYYStrandBase    =
+    // Fill in the result token
+    YYRes[YYResIndex].tkToken.tkFlags.TknType     = TKT_STRAND;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType     = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color       =
+    YYRes[YYResIndex].tkToken.tkData.lpVoid       = (LPVOID) -1;
+    YYRes[YYResIndex].tkToken.tkCharIndex         = lpYYArg->tkToken.tkCharIndex;
+
+    YYRes[YYResIndex].unYYSTYPE.lpYYStrandBase    =
     lpYYArg->unYYSTYPE.lpYYStrandBase = gplLocalVars.lpYYStrandBase;
 
     // Save this token on the strand stack
@@ -85,7 +86,7 @@ LPYYSTYPE PushVarStrand
     DisplayStrand ();
 #endif
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End PushVarStrand
 
 
@@ -101,7 +102,8 @@ LPYYSTYPE PushFcnStrand
      BOOL      bIndirect)       // TRUE iff lpYYArg is indirect
 
 {
-    static YYSTYPE YYRes;
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     lpYYArg->TknCount = TknCount;
     lpYYArg->Indirect = bIndirect;
@@ -110,11 +112,11 @@ LPYYSTYPE PushFcnStrand
         lpYYArg->lpYYFcn = gplLocalVars.lpYYStrandNext;
 
     // Fill in the result token
-    YYRes = *lpYYArg;
+    YYRes[YYResIndex] = *lpYYArg;
 
     // Return our own position so the next user
     //   of this token can refer to it.
-    YYRes.lpYYFcn = gplLocalVars.lpYYStrandNext;
+    YYRes[YYResIndex].lpYYFcn = gplLocalVars.lpYYStrandNext;
 
     // Save this token on the strand stack
     //   and skip over it
@@ -125,7 +127,7 @@ LPYYSTYPE PushFcnStrand
     DisplayStrand ();
 #endif
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End PushFcnStrand
 
 
@@ -290,11 +292,14 @@ static char tabConvert[][STRAND_LENGTH] =
 
     DBGENTER;
 
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
     // The strand needs to be saved to global memory
 
     // Save the base of this strand
     lpYYStrand                     =
-    YYRes.unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
+    YYRes[YYResIndex].unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
 
     // Get the # elements in the strand
     iLen = gplLocalVars.lpYYStrandNext - lpYYStrand;
@@ -462,30 +467,30 @@ static char tabConvert[][STRAND_LENGTH] =
                         Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
 
                         // Pass through the entire token
-                        YYRes = *lpYYStrand;
+                        YYRes[YYResIndex] = *lpYYStrand;
 
-                        if (!YYRes.tkToken.tkData.lpSym->stFlags.Imm)
+                        if (!YYRes[YYResIndex].tkToken.tkData.lpSym->stFlags.Imm)
                         {
                             // stData is a valid HGLOBAL variable array
-                            Assert (IsGlbTypeVarDir (YYRes.tkToken.tkData.lpSym->stData.stGlbData));
+                            Assert (IsGlbTypeVarDir (YYRes[YYResIndex].tkToken.tkData.lpSym->stData.stGlbData));
                         } // End IF
 
                         break;
 
                     case TKT_VARIMMED:
                         // Pass through the entire token
-                        YYRes = *lpYYStrand;
+                        YYRes[YYResIndex] = *lpYYStrand;
 
                         break;
 
                     case TKT_STRING:
                         // Fill in the result token
-                        YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                        YYRes.tkToken.tkFlags.ImmType   = 0;
-                        YYRes.tkToken.tkFlags.NoDisplay = 0;
-                    ////YYRes.tkToken.tkFlags.Color     =
-                        YYRes.tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
-                        YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+                        YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                        YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+                        YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+                    ////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+                        YYRes[YYResIndex].tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
+                        YYRes[YYResIndex].tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                         // Mark as reused
                         lpYYStrand->tkToken.tkData.tkGlbData = PTR_REUSED;
@@ -514,7 +519,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         Assert (IsGlbTypeVarDir (lpYYStrand->tkToken.tkData.lpSym->stData.stGlbData));
 
                         // Pass through the entire token
-                        YYRes = *lpYYStrand;
+                        YYRes[YYResIndex] = *lpYYStrand;
 
                         break;
 
@@ -523,12 +528,12 @@ static char tabConvert[][STRAND_LENGTH] =
                         Assert (IsGlbTypeVarDir (lpYYStrand->tkToken.tkData.tkGlbData));
 
                         // Fill in the result token
-                        YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                        YYRes.tkToken.tkFlags.ImmType   = 0;
-                        YYRes.tkToken.tkFlags.NoDisplay = 0;
-                    ////YYRes.tkToken.tkFlags.Color     =
-                        YYRes.tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
-                        YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+                        YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                        YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+                        YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+                    ////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+                        YYRes[YYResIndex].tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
+                        YYRes[YYResIndex].tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                         // Mark as reused
                         lpYYStrand->tkToken.tkData.tkGlbData = PTR_REUSED;
@@ -543,12 +548,12 @@ static char tabConvert[][STRAND_LENGTH] =
 
             case STRAND_STRING:     // e.g., 'abc'
                 // Fill in the result token
-                YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                YYRes.tkToken.tkFlags.ImmType   = 0;
-                YYRes.tkToken.tkFlags.NoDisplay = 0;
-            ////YYRes.tkToken.tkFlags.Color     =
-                YYRes.tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
-                YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+                YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+                YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+            ////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+                YYRes[YYResIndex].tkToken.tkData.tkGlbData  = lpYYStrand->tkToken.tkData.tkGlbData;
+                YYRes[YYResIndex].tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
                 // Mark as reused
                 lpYYStrand->tkToken.tkData.tkGlbData = PTR_REUSED;
@@ -624,12 +629,12 @@ static char tabConvert[][STRAND_LENGTH] =
     } // End IF
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
-    YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the global memory to get a ptr to it
     lpMemStr = MyGlobalLock (hGlbStr);
@@ -995,11 +1000,11 @@ NORMAL_EXIT:
     FreeStrand (gplLocalVars.lpYYStrandNext, gplLocalVars.lpYYStrandBase);
 
     // Strip the tokens on this portion of the strand stack
-    StripStrand (&YYRes);
+    StripStrand (&YYRes[YYResIndex]);
 
     DBGLEAVE;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 
 ERROR_EXIT:
     // Free the entire strand stack
@@ -1029,7 +1034,6 @@ LPYYSTYPE MakeFcnStrand_EM
      FCN_TYPES cFcnType)        // Type of the strand
 
 {
-    static YYSTYPE YYRes;       // The result
     int            iLen, FcnCount = 0;
     APLUINT        ByteRes;
     LPYYSTYPE      lpYYStrand;
@@ -1040,12 +1044,15 @@ LPYYSTYPE MakeFcnStrand_EM
 
     DBGENTER;
 
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
     // Zero the static YYRes
-    ZeroMemory (&YYRes, sizeof (YYRes));
+    ZeroMemory (&YYRes[YYResIndex], sizeof (YYRes[YYResIndex]));
 
     // Save the base of this strand
     lpYYStrand                     =
-    YYRes.unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
+    YYRes[YYResIndex].unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
 
     // Get the (maximum) # elements in the strand
     iLen = gplLocalVars.lpYYStrandNext - lpYYStrand;
@@ -1058,8 +1065,8 @@ LPYYSTYPE MakeFcnStrand_EM
     if (iLen EQ 1)
     {
         // Copy the entire token
-        YYRes = *CopyYYSTYPE_EM (lpYYArg->lpYYFcn, FALSE);
-        YYRes.FcnCount = 1;
+        YYRes[YYResIndex] = *CopyYYSTYPE_EM (lpYYArg->lpYYFcn, FALSE);
+        YYRes[YYResIndex].FcnCount = 1;
 
         lpYYBase = lpYYArg->lpYYFcn;
 
@@ -1090,12 +1097,12 @@ LPYYSTYPE MakeFcnStrand_EM
     } // End IF
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
-    YYRes.tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     // Lock the global memory to get a ptr to it
     lpMemStr = MyGlobalLock (hGlbStr);
@@ -1130,15 +1137,15 @@ LPYYSTYPE MakeFcnStrand_EM
     if (iLen EQ 1)
     {
         // Copy the entire token
-        CopyYYFcn (&YYRes, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount);
+        CopyYYFcn (&YYRes[YYResIndex], lpYYArg->lpYYFcn, &lpYYBase, &FcnCount);
         Assert (FcnCount EQ 1);
-        YYRes.FcnCount = FcnCount;
+        YYRes[YYResIndex].FcnCount = FcnCount;
 
         // We no longer need this storage
         FreeResultGlobalFcn (hGlbStr); hGlbStr = NULL;
     } // End IF
 NORMAL_EXIT:
-    YYRes.unYYSTYPE.lpYYStrandBase  = gplLocalVars.lpYYStrandBase = lpYYBase;
+    YYRes[YYResIndex].unYYSTYPE.lpYYStrandBase  = gplLocalVars.lpYYStrandBase = lpYYBase;
 
 #ifdef DEBUG
     DisplayStrand ();
@@ -1148,11 +1155,11 @@ NORMAL_EXIT:
     FreeStrand (gplLocalVars.lpYYStrandNext, gplLocalVars.lpYYStrandBase);
 
     // Strip the tokens on this portion of the strand stack
-    StripStrand (&YYRes);
+    StripStrand (&YYRes[YYResIndex]);
 
     DBGLEAVE;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 
 ERROR_EXIT:
     // Free the entire strand stack
@@ -1185,7 +1192,7 @@ LPYYSTYPE CopyYYFcn
 
 {
     int       i, iLen, FcnCount, TotalFcnCount = 0;
-    YYSTYPE   YYRes = {0};
+    YYSTYPE   YYFcn = {0};
     HGLOBAL   hGlbData;
     LPTOKEN   lpToken;
     LPYYSTYPE lpYYMem0;
@@ -1215,19 +1222,19 @@ LPYYSTYPE CopyYYFcn
             // If it's an immediate function/operator, copy it directly
             if (lpToken->tkData.lpSym->stFlags.Imm)
             {
-                YYRes = lpYYArg[i];
-                YYRes.tkToken.tkFlags.TknType   = TranslateImmTypeToTknType (lpToken->tkData.lpSym->stFlags.ImmType);
-                YYRes.tkToken.tkFlags.ImmType   = lpToken->tkData.lpSym->stFlags.ImmType;
-////////////////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////////////////YYRes.tkToken.tkFlags.Color     = ??
-                YYRes.tkToken.tkData.tkLongest  = 0;        // Keep the extraneous data clear
-                YYRes.tkToken.tkData.tkChar     = lpToken->tkData.lpSym->stData.stChar;
-////////////////YYRes.tkToken.tkCharIndex       =
-////////////////YYRes.TknCount                  = lpYYArg[i].TknCount;
-////////////////YYRes.FcnCount                  = FcnCount;
-////////////////YYRes.Indirect                  =
-////////////////YYRes.lpYYFcn                   =
-////////////////YYRes.unYYSTYPE.lpYYStrandBase  =
+                YYFcn = lpYYArg[i];
+                YYFcn.tkToken.tkFlags.TknType   = TranslateImmTypeToTknType (lpToken->tkData.lpSym->stFlags.ImmType);
+                YYFcn.tkToken.tkFlags.ImmType   = lpToken->tkData.lpSym->stFlags.ImmType;
+////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;
+////////////////YYFcn.tkToken.tkFlags.Color     = ??
+                YYFcn.tkToken.tkData.tkLongest  = 0;        // Keep the extraneous data clear
+                YYFcn.tkToken.tkData.tkChar     = lpToken->tkData.lpSym->stData.stChar;
+////////////////YYFcn.tkToken.tkCharIndex       =
+////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount;
+////////////////YYFcn.FcnCount                  = FcnCount;
+////////////////YYFcn.Indirect                  =
+////////////////YYFcn.lpYYFcn                   =
+////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
             } else
             {
                 hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
@@ -1238,25 +1245,25 @@ LPYYSTYPE CopyYYFcn
                 // Increment the reference count in global memory
                 DbgIncrRefCntDir (hGlbData);
 
-                YYRes = lpYYArg[i];
-                YYRes.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-////////////////YYRes.tkToken.tkFlags.ImmType   = 0;
-////////////////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////////////////YYRes.tkToken.tkFlags.Color     = ??
-                YYRes.tkToken.tkData.tkGlbData  = hGlbData;
-////////////////YYRes.tkToken.tkCharIndex       =
-////////////////YYRes.TknCount                  = lpYYArg[i].TknCount;
-////////////////YYRes.FcnCount                  = FcnCount;
-////////////////YYRes.Indirect                  =
-////////////////YYRes.lpYYFcn                   =
-////////////////YYRes.unYYSTYPE.lpYYStrandBase  =
+                YYFcn = lpYYArg[i];
+                YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+////////////////YYFcn.tkToken.tkFlags.ImmType   = 0;
+////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;
+////////////////YYFcn.tkToken.tkFlags.Color     = ??
+                YYFcn.tkToken.tkData.tkGlbData  = hGlbData;
+////////////////YYFcn.tkToken.tkCharIndex       =
+////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount;
+////////////////YYFcn.FcnCount                  = FcnCount;
+////////////////YYFcn.Indirect                  =
+////////////////YYFcn.lpYYFcn                   =
+////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
             } // End IF/ELSE
 
             FcnCount = 1;
-            YYRes.TknCount = lpYYArg[i].TknCount;
-            YYRes.FcnCount = FcnCount;
+            YYFcn.TknCount = lpYYArg[i].TknCount;
+            YYFcn.FcnCount = FcnCount;
 
-            *lpYYMem++ = YYRes;
+            *lpYYMem++ = YYFcn;
 
             // Save the function count
             lpYYMem[-1].FcnCount = FcnCount;
@@ -1393,7 +1400,7 @@ STRAND_TYPES TranslateImmTypeToStrandType
 //    an array type (see ARRAY_TYPES enum).
 //***************************************************************************
 
-ARRAY_TYPES TranslateImmTypeToArrayType
+APLSTYPE TranslateImmTypeToArrayType
     (IMM_TYPES immType)
 
 {
@@ -1412,7 +1419,7 @@ ARRAY_TYPES TranslateImmTypeToArrayType
             return ARRAY_FLOAT;
 
         defstop
-            return -1;              // To keep the compiler happy
+            return (APLSTYPE) -1;   // To keep the compiler happy
     } // End SWITCH
 } // End TranslateImmTypeToArrayType
 
@@ -1579,13 +1586,15 @@ LPYYSTYPE CopyString_EM
     (LPYYSTYPE lpYYStr)
 
 {
-    static YYSTYPE YYRes;       // The result
-    HGLOBAL        hGlbRes;
+    HGLOBAL hGlbRes;
 
     DBGENTER;
 
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
     // Zero the static YYRes
-    ZeroMemory (&YYRes, sizeof (YYRes));
+    ZeroMemory (&YYRes[YYResIndex], sizeof (YYRes[YYResIndex]));
 
     // tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (lpYYStr->tkToken.tkData.tkGlbData));
@@ -1601,16 +1610,16 @@ LPYYSTYPE CopyString_EM
 ////} // End IF
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes.tkToken.tkCharIndex       = lpYYStr->tkToken.tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lpYYStr->tkToken.tkCharIndex;
 
     DBGLEAVE;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End CopyString_EM
 #undef  APPEND_NAME
 
@@ -1631,24 +1640,25 @@ LPYYSTYPE MakeAxis
     (LPYYSTYPE lpYYAxis)
 
 {
-    static YYSTYPE YYRes;
-
     DBGENTER;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Split cases based upon the token type
     switch (lpYYAxis->tkToken.tkFlags.TknType)
     {
         case TKT_VARIMMED:
             // Copy the token and rename it
-            YYRes = *lpYYAxis;      // No need to CopyYYSTYPE_EM immediates
-            YYRes.tkToken.tkFlags.TknType = TKT_AXISIMMED;
+            YYRes[YYResIndex] = *lpYYAxis;      // No need to CopyYYSTYPE_EM immediates
+            YYRes[YYResIndex].tkToken.tkFlags.TknType = TKT_AXISIMMED;
 
             break;
 
         case TKT_VARARRAY:
             // Copy the token and rename it
-            YYRes = *CopyYYSTYPE_EM (lpYYAxis, FALSE);
-            YYRes.tkToken.tkFlags.TknType = TKT_AXISARRAY;
+            YYRes[YYResIndex] = *CopyYYSTYPE_EM (lpYYAxis, FALSE);
+            YYRes[YYResIndex].tkToken.tkFlags.TknType = TKT_AXISARRAY;
 
             break;
 
@@ -1658,7 +1668,7 @@ LPYYSTYPE MakeAxis
 
     DBGLEAVE;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End MakeAxis
 #undef  APPEND_NAME
 
@@ -1679,18 +1689,19 @@ LPYYSTYPE MakePrimFcn
     (LPYYSTYPE lpYYFcn)
 
 {
-    static YYSTYPE YYRes;       // The result
-
     DBGENTER;
 
-    YYRes = *CopyYYSTYPE_EM (lpYYFcn, FALSE);
-    YYRes.tkToken.tkFlags.TknType = TKT_FCNIMMED;
-    YYRes.tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
-    YYRes.lpYYFcn = NULL;
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
+    YYRes[YYResIndex] = *CopyYYSTYPE_EM (lpYYFcn, FALSE);
+    YYRes[YYResIndex].tkToken.tkFlags.TknType = TKT_FCNIMMED;
+    YYRes[YYResIndex].tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+    YYRes[YYResIndex].lpYYFcn = NULL;
 
     DBGLEAVE;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End MakePrimFcn
 #undef  APPEND_NAME
 
@@ -1711,9 +1722,10 @@ LPYYSTYPE MakeNameFcn
     (LPYYSTYPE lpYYFcn)
 
 {
-    static YYSTYPE YYRes;       // The result
-
     DBGENTER;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Because when the tokens are first created we don't
     //   know the type of a name, it is arbitrarily typed
@@ -1721,12 +1733,12 @@ LPYYSTYPE MakeNameFcn
     //   change its type to TKT_FCNNAMED.
 
     lpYYFcn->tkToken.tkFlags.TknType = TKT_FCNNAMED;
-    YYRes = *CopyYYSTYPE_EM (lpYYFcn, FALSE);
-    YYRes.lpYYFcn = NULL;
+    YYRes[YYResIndex] = *CopyYYSTYPE_EM (lpYYFcn, FALSE);
+    YYRes[YYResIndex].lpYYFcn = NULL;
 
     DBGLEAVE;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End MakeNameFcn
 #undef  APPEND_NAME
 
@@ -1747,14 +1759,15 @@ LPYYSTYPE MakeOp1
     (LPYYSTYPE lpYYOp1)
 
 {
-    static YYSTYPE YYRes;       // The result
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
-    YYRes = *lpYYOp1;           // No need to CopyYYSTYPE_EM immediates
-    YYRes.tkToken.tkFlags.TknType = TKT_OP1IMMED;
-    YYRes.tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP1;
-    YYRes.lpYYFcn = NULL;
+    YYRes[YYResIndex] = *lpYYOp1;           // No need to CopyYYSTYPE_EM immediates
+    YYRes[YYResIndex].tkToken.tkFlags.TknType = TKT_OP1IMMED;
+    YYRes[YYResIndex].tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP1;
+    YYRes[YYResIndex].lpYYFcn = NULL;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End MakeOp1
 #undef  APPEND_NAME
 
@@ -1775,7 +1788,8 @@ LPYYSTYPE MakeNameOp1
     (LPYYSTYPE lpYYOp1)
 
 {
-    static YYSTYPE YYRes;       // The result
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Because when the tokens are first created we don't
     //   know the type of a name, it is arbitrarily typed
@@ -1784,11 +1798,11 @@ LPYYSTYPE MakeNameOp1
 
     lpYYOp1->tkToken.tkFlags.TknType = TKT_OP1NAMED;
 
-    YYRes = *CopyYYSTYPE_EM (lpYYOp1, FALSE);
-    YYRes.tkToken.tkFlags.TknType = TKT_OP1NAMED;
-    YYRes.lpYYFcn = NULL;
+    YYRes[YYResIndex] = *CopyYYSTYPE_EM (lpYYOp1, FALSE);
+    YYRes[YYResIndex].tkToken.tkFlags.TknType = TKT_OP1NAMED;
+    YYRes[YYResIndex].lpYYFcn = NULL;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End MakeNameOp1
 #undef  APPEND_NAME
 
@@ -1809,14 +1823,15 @@ LPYYSTYPE MakeOp2
     (LPYYSTYPE lpYYOp2)
 
 {
-    static YYSTYPE YYRes;       // The result
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
-    YYRes = *lpYYOp2;           // No need to CopyYYSTYPE_EM immediates
-    YYRes.tkToken.tkFlags.TknType = TKT_OP2IMMED;
-    YYRes.tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP2;
-    YYRes.lpYYFcn = NULL;
+    YYRes[YYResIndex] = *lpYYOp2;           // No need to CopyYYSTYPE_EM immediates
+    YYRes[YYResIndex].tkToken.tkFlags.TknType = TKT_OP2IMMED;
+    YYRes[YYResIndex].tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP2;
+    YYRes[YYResIndex].lpYYFcn = NULL;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End MakeOp2
 #undef  APPEND_NAME
 
@@ -1837,7 +1852,8 @@ LPYYSTYPE MakeNameOp2
     (LPYYSTYPE lpYYOp2)
 
 {
-    static YYSTYPE YYRes;       // The result
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Because when the tokens are first created we don't
     //   know the type of a name, it is arbitrarily typed
@@ -1846,11 +1862,11 @@ LPYYSTYPE MakeNameOp2
 
     lpYYOp2->tkToken.tkFlags.TknType = TKT_OP2NAMED;
 
-    YYRes = *lpYYOp2;
-    YYRes.tkToken.tkFlags.TknType = TKT_OP2NAMED;
-    YYRes.lpYYFcn = NULL;
+    YYRes[YYResIndex] = *lpYYOp2;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType = TKT_OP2NAMED;
+    YYRes[YYResIndex].lpYYFcn = NULL;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End MakeNameOp2
 #undef  APPEND_NAME
 
@@ -1881,15 +1897,18 @@ LPYYSTYPE PushNameStrand
     (LPYYSTYPE lpYYArg)         // Ptr to the incoming argument
 
 {
-    // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType     = TKT_STRAND;
-////YYRes.tkToken.tkFlags.ImmType     = 0;
-////YYRes.tkToken.tkFlags.NoDisplay   = 0;
-////YYRes.tkToken.tkFlags.Color       =
-    YYRes.tkToken.tkData.lpVoid       = (LPVOID) -1;
-    YYRes.tkToken.tkCharIndex         = lpYYArg->tkToken.tkCharIndex;
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
-    YYRes.unYYSTYPE.lpYYStrandBase    =
+    // Fill in the result token
+    YYRes[YYResIndex].tkToken.tkFlags.TknType     = TKT_STRAND;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType     = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color       =
+    YYRes[YYResIndex].tkToken.tkData.lpVoid       = (LPVOID) -1;
+    YYRes[YYResIndex].tkToken.tkCharIndex         = lpYYArg->tkToken.tkCharIndex;
+
+    YYRes[YYResIndex].unYYSTYPE.lpYYStrandBase    =
     lpYYArg->unYYSTYPE.lpYYStrandBase = gplLocalVars.lpYYStrandBase;
 
     // Save this token on the strand stack
@@ -1901,7 +1920,7 @@ LPYYSTYPE PushNameStrand
     DisplayStrand ();
 #endif
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End PushNameStrand
 
 
@@ -1930,9 +1949,12 @@ LPYYSTYPE MakeNameStrand_EM
 
     DBGENTER;
 
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
     // Save the base of this strand
     lpYYStrand                     =
-    YYRes.unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
+    YYRes[YYResIndex].unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
 
     // Get the # elements in the strand
     iLen = gplLocalVars.lpYYStrandNext - lpYYStrand;
@@ -1957,12 +1979,12 @@ LPYYSTYPE MakeNameStrand_EM
     } // End IF
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_STRNAMED;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
-    YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_STRNAMED;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the global memory to get a ptr to it
     lpMemStr = MyGlobalLock (hGlbStr);
@@ -1988,11 +2010,11 @@ LPYYSTYPE MakeNameStrand_EM
     FreeStrand (gplLocalVars.lpYYStrandNext, gplLocalVars.lpYYStrandBase);
 
     // Strip the tokens on this portion of the strand stack
-    StripStrand (&YYRes);
+    StripStrand (&YYRes[YYResIndex]);
 
     DBGLEAVE;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 
 ERROR_EXIT:
     // Free the entire strand stack
@@ -2015,19 +2037,22 @@ LPYYSTYPE InitList0
     (void)
 
 {
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_LIST;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.lpVoid     = (LPVOID) -1;
-    YYRes.tkToken.tkCharIndex       = (UINT) -1 ;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_LIST;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.lpVoid     = (LPVOID) -1;
+    YYRes[YYResIndex].tkToken.tkCharIndex       = (UINT) -1 ;
 
     // Set the base of this strand to the next available location
-    YYRes.unYYSTYPE.lpYYStrandBase  =
+    YYRes[YYResIndex].unYYSTYPE.lpYYStrandBase  =
     gplLocalVars.lpYYStrandBase     = gplLocalVars.lpYYStrandNext;
 
-    return PushList (&YYRes, NULL);
+    return PushList (&YYRes[YYResIndex], NULL);
 } // End InitList0
 
 
@@ -2041,19 +2066,22 @@ LPYYSTYPE InitList1
     (LPYYSTYPE lpYYArg)
 
 {
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_LIST;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.lpVoid     = (LPVOID) -1;
-    YYRes.tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_LIST;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.lpVoid     = (LPVOID) -1;
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     // Set the base of this strand to the next available location
-    YYRes.unYYSTYPE.lpYYStrandBase  =
+    YYRes[YYResIndex].unYYSTYPE.lpYYStrandBase  =
     gplLocalVars.lpYYStrandBase     = gplLocalVars.lpYYStrandNext;
 
-    return PushList (&YYRes, lpYYArg);
+    return PushList (&YYRes[YYResIndex], lpYYArg);
 } // End InitList1
 
 
@@ -2070,8 +2098,11 @@ LPYYSTYPE PushList
 {
     YYSTYPE YYTmp;
 
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
     // Fill in the result token
-    YYRes = *lpYYStrand;
+    YYRes[YYResIndex] = *lpYYStrand;
 
     // If the token is NULL, push an empty token
     if (lpYYArg EQ NULL)
@@ -2092,7 +2123,7 @@ LPYYSTYPE PushList
     DisplayStrand ();
 #endif
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End PushList
 
 
@@ -2123,11 +2154,14 @@ LPYYSTYPE MakeList_EM
 
     DBGENTER;
 
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
     // The list needs to be saved to global memory
 
     // Save the base of this strand
     lpYYStrand                     =
-    YYRes.unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
+    YYRes[YYResIndex].unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
 
     // Get the # elements in the strand
     iLen = gplLocalVars.lpYYStrandNext - lpYYStrand;
@@ -2151,12 +2185,12 @@ LPYYSTYPE MakeList_EM
     } // End IF
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_LIST;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbLst);
-    YYRes.tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_LIST;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbLst);
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the global memory
     lpMemLst = MyGlobalLock (hGlbLst);
@@ -2216,11 +2250,11 @@ LPYYSTYPE MakeList_EM
     MyGlobalUnlock (hGlbLst); lpMemLst = NULL;
 
     // Strip from the strand stack
-    StripStrand (&YYRes);
+    StripStrand (&YYRes[YYResIndex]);
 
     DBGLEAVE;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End MakeList_EM
 #undef  APPEND_NAME
 
@@ -2411,21 +2445,22 @@ LPYYSTYPE CopyYYSTYPE_EM
      BOOL      bChanging)   // TRUE iff we're going to change the HGLOBAL
 
 {
-    static YYSTYPE YYRes;
-
     DBGENTER;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     Assert (bChanging EQ FALSE);
 
     // Copy the YYSTYPE
-    YYRes = *lpYYArg;
+    YYRes[YYResIndex] = *lpYYArg;
 
     // Make a copy of the token within
-    YYRes.tkToken = *CopyToken_EM (&lpYYArg->tkToken, bChanging);
+    YYRes[YYResIndex].tkToken = *CopyToken_EM (&lpYYArg->tkToken, bChanging);
 
     DBGLEAVE;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End CopyYYSTYPE_EM
 #undef  APPEND_NAME
 

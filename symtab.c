@@ -1134,7 +1134,7 @@ LPSYMENTRY SymTabLookupName
             Assert (lpHshEntry->hGlbName NE NULL);
             lpGlbName = MyGlobalLock (lpHshEntry->hGlbName);
 
-            if (lpHshEntry->lpSymEntry->stFlags.Nocase)
+            if (lpHshEntry->lpSymEntry->stFlags.NotCase)
                 iCmp = lstrcmpiW (lpGlbName, lpwszString);
             else
                 iCmp = lstrcmpW  (lpGlbName, lpwszString);
@@ -1167,6 +1167,10 @@ LPSYMENTRY MakeSymEntry_EM
     switch (immType)
     {
         case IMMTYPE_BOOL:
+            lpSymDst = SymTabAppendInteger_EM (*(LPAPLBOOL)  lpVal);
+
+            break;
+
         case IMMTYPE_INT:
             lpSymDst = SymTabAppendInteger_EM (*(LPAPLINT)   lpVal);
 
@@ -1221,6 +1225,10 @@ LPSYMENTRY CopyImmSymEntry_EM
     switch (immType)
     {
         case IMMTYPE_BOOL:
+            lpSymDst = SymTabAppendInteger_EM (lpSymSrc->stData.stBoolean);
+
+            break;
+
         case IMMTYPE_INT:
             lpSymDst = SymTabAppendInteger_EM (lpSymSrc->stData.stInteger);
 

@@ -154,11 +154,13 @@ $(O)pf_ndcaret.DEP  \
 $(O)pf_nequal.DEP   \
 $(O)pf_nucaret.DEP  \
 $(O)pf_plus.DEP     \
+$(O)pf_query.DEP    \
 $(O)pf_rcaret.DEP   \
 $(O)pf_rho.DEP      \
 $(O)pf_rtack.DEP    \
 $(O)pf_star.DEP     \
 $(O)pf_stile.DEP    \
+$(O)pf_tilde.DEP    \
 $(O)pf_times.DEP    \
 $(O)pf_ucaret.DEP   \
 $(O)pf_ustile.DEP   \
@@ -294,6 +296,9 @@ $(O)version.DEV
 !if exist ($(O)pf_plus.DEP)
 !       include $(O)pf_plus.DEP
 !endif
+!if exist ($(O)pf_query.DEP)
+!       include $(O)pf_query.DEP
+!endif
 !if exist ($(O)pf_rcaret.DEP)
 !       include $(O)pf_rcaret.DEP
 !endif
@@ -308,6 +313,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)pf_stile.DEP)
 !       include $(O)pf_stile.DEP
+!endif
+!if exist ($(O)pf_tilde.DEP)
+!       include $(O)pf_tilde.DEP
 !endif
 !if exist ($(O)pf_times.DEP)
 !       include $(O)pf_times.DEP
@@ -404,11 +412,13 @@ $(O)pf_ndcaret.PRO  \
 $(O)pf_nequal.PRO   \
 $(O)pf_nucaret.PRO  \
 $(O)pf_plus.PRO     \
+$(O)pf_query.PRO    \
 $(O)pf_rcaret.PRO   \
 $(O)pf_rho.PRO      \
 $(O)pf_rtack.PRO    \
 $(O)pf_star.PRO     \
 $(O)pf_stile.PRO    \
+$(O)pf_tilde.PRO    \
 $(O)pf_times.PRO    \
 $(O)pf_ucaret.PRO   \
 $(O)pf_ustile.PRO   \
@@ -493,11 +503,13 @@ $(O)pf_ndcaret.OBJ:     $(@B).C         $(PF_NDCARET_DEP)
 $(O)pf_nequal.OBJ:      $(@B).C         $(PF_NEQUAL_DEP)
 $(O)pf_nucaret.OBJ:     $(@B).C         $(PF_NUCARET_DEP)
 $(O)pf_plus.OBJ:        $(@B).C         $(PF_PLUS_DEP)
+$(O)pf_query.OBJ:       $(@B).C         $(PF_QUERY_DEP)
 $(O)pf_rcaret.OBJ:      $(@B).C         $(PF_RCARET_DEP)
 $(O)pf_rho.OBJ:         $(@B).C         $(PF_RHO_DEP)
 $(O)pf_rtack.OBJ:       $(@B).C         $(PF_RTACK_DEP)
 $(O)pf_star.OBJ:        $(@B).C         $(PF_STAR_DEP)
 $(O)pf_stile.OBJ:       $(@B).C         $(PF_STILE_DEP)
+$(O)pf_tilde.OBJ:       $(@B).C         $(PF_TILDE_DEP)
 $(O)pf_times.OBJ:       $(@B).C         $(PF_TIMES_DEP)
 $(O)pf_ucaret.OBJ:      $(@B).C         $(PF_UCARET_DEP)
 $(O)pf_ustile.OBJ:      $(@B).C         $(PF_USTILE_DEP)
@@ -568,11 +580,13 @@ OBJS=$(O)assign.OBJ         \
      $(O)pf_nequal.OBJ      \
      $(O)pf_nucaret.OBJ     \
      $(O)pf_plus.OBJ        \
+     $(O)pf_query.OBJ       \
      $(O)pf_rcaret.OBJ      \
      $(O)pf_rho.OBJ         \
      $(O)pf_rtack.OBJ       \
      $(O)pf_star.OBJ        \
      $(O)pf_stile.OBJ       \
+     $(O)pf_tilde.OBJ       \
      $(O)pf_times.OBJ       \
      $(O)pf_ucaret.OBJ      \
      $(O)pf_ustile.OBJ      \

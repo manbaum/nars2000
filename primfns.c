@@ -36,7 +36,6 @@ LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
 #define PrimFnDownArrow_EM          PrimFn_EM       // ERROR        Mixed
 #define PrimFnDownShoe_EM           PrimFn_EM       // Mixed        ERROR
 #define PrimFnDownTack_EM           PrimFn_EM       // ERORO        Mixed
-#define PrimFnEpsilon_EM            PrimFn_EM       // Mixed        Mixed
 #define PrimFnEpsilonUnderbar_EM    PrimFn_EM       // ERROR        Mixed
 #define PrimFnHydrant_EM            PrimFn_EM       // Mixed        ERROR
 #define PrimFnIotaUnderbar_EM       PrimFn_EM       // ERROR        ERROR
@@ -55,36 +54,37 @@ LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
 
 
 // Primitives Done                                     Monadic      Dyadic
-/////// PrimFnBar_EM                PrimFn_EM       // Scalar       Scalar
-/////// PrimFnCircle_EM             PrimFn_EM       // Scalar       Scalar
-/////// PrimFnCircleStar_EM         PrimFn_EM       // Scalar       Scalar
-/////// PrimFnComma_EM              PrimFn_EM       // Mixed        Mixed
-/////// PrimFnCommaBar_EM           PrimFn_EM       // Mixed        Mixed
-/////// PrimFnDivide_EM             PrimFn_EM       // Scalar       Scalar
-/////// PrimFnDownCaret_EM          PrimFn_EM       // ERROR        Scalar
-/////// PrimFnDownCaretTilde_EM     PrimFn_EM       // ERROR        Scalar
-/////// PrimFnDownStile_EM          PrimFn_EM       // Scalar       Scalar
-/////// PrimFnEqual_EM              PrimFn_EM       // ERROR        Scalar
-/////// PrimFnEqualUnderbar_EM      PrimFn_EM       // Mixed        Mixed
-/////// PrimFnIota_EM               PrimFn_EM       // Mixed        Mixed
-/////// PrimFnLeftCaret_EM          PrimFn_EM       // ERROR        Scalar
-/////// PrimFnLeftShoe_EM           PrimFn_EM       // Mixed        Mixed
-/////// PrimFnLeftTack_EM           PrimFn_EM       // ERROR        Mixed
-/////// PrimFnNotEqual_EM           PrimFn_EM       // ERROR        Scalar
-/////// PrimFnNotLess_EM            PrimFn_EM       // ERROR        Scalar
-/////// PrimFnNotMore_EM            PrimFn_EM       // ERROR        Scalar
-/////// PrimFnPlus_EM               PrimFn_EM       // Scalar       Scalar
-/////// PrimFnQuery_EM              PrimFn_EM       // Scalar       Mixed
-/////// PrimFnRightCaret_EM         PrimFn_EM       // ERROR        Scalar
-/////// PrimFnRightTack_EM          PrimFn_EM       // ERROR        Mixed
-/////// PrimFnRho_EM                PrimFn_EM       // Mixed        Mixed
-/////// PrimFnStar_EM               PrimFn_EM       // Scalar       Scalar
-/////// PrimFnStile_EM              PrimFn_EM       // Scalar       Scalar
-/////// PrimFnTilde_EM              PrimFn_EM       // Scalar       Mixed
-/////// PrimFnTimes_EM              PrimFn_EM       // Scalar       Scalar
-/////// PrimFnUpCaret_EM            PrimFn_EM       // ERROR        Scalar
-/////// PrimFnUpCaretTilde_EM       PrimFn_EM       // ERROR        Scalar
-/////// PrimFnUpStile_EM            PrimFn_EM       // Scalar       Scalar
+/////// PrimFnBar_EM                                // Scalar       Scalar
+/////// PrimFnCircle_EM                             // Scalar       Scalar
+/////// PrimFnCircleStar_EM                         // Scalar       Scalar
+/////// PrimFnComma_EM                              // Mixed        Mixed
+/////// PrimFnCommaBar_EM                           // Mixed        Mixed
+/////// PrimFnDivide_EM                             // Scalar       Scalar
+/////// PrimFnDownCaret_EM                          // ERROR        Scalar
+/////// PrimFnDownCaretTilde_EM                     // ERROR        Scalar
+/////// PrimFnDownStile_EM                          // Scalar       Scalar
+/////// PrimFnEpsilon_EM                            // Mixed        Mixed (*)
+/////// PrimFnEqual_EM                              // ERROR        Scalar
+/////// PrimFnEqualUnderbar_EM                      // Mixed        Mixed
+/////// PrimFnIota_EM                               // Mixed        Mixed (*)
+/////// PrimFnLeftCaret_EM                          // ERROR        Scalar
+/////// PrimFnLeftShoe_EM                           // Mixed        Mixed (*)
+/////// PrimFnLeftTack_EM                           // ERROR        Mixed
+/////// PrimFnNotEqual_EM                           // ERROR        Scalar
+/////// PrimFnNotLess_EM                            // ERROR        Scalar
+/////// PrimFnNotMore_EM                            // ERROR        Scalar
+/////// PrimFnPlus_EM                               // Scalar       Scalar
+/////// PrimFnQuery_EM                              // Scalar       Mixed
+/////// PrimFnRightCaret_EM                         // ERROR        Scalar
+/////// PrimFnRightTack_EM                          // ERROR        Mixed
+/////// PrimFnRho_EM                                // Mixed        Mixed
+/////// PrimFnStar_EM                               // Scalar       Scalar
+/////// PrimFnStile_EM                              // Scalar       Scalar
+/////// PrimFnTilde_EM                              // Scalar       Mixed (*)
+/////// PrimFnTimes_EM                              // Scalar       Scalar
+/////// PrimFnUpCaret_EM                            // ERROR        Scalar
+/////// PrimFnUpCaretTilde_EM                       // ERROR        Scalar
+/////// PrimFnUpStile_EM                            // Scalar       Scalar
 
 
 //***************************************************************************
@@ -249,8 +249,9 @@ void MakePermVars
     LPVARARRAY_HEADER lpHeader;
 
     // Create zilde
-    hGlbZilde = DbgGlobalAlloc (GHND, sizeof (VARARRAY_HEADER)
-                                    + sizeof (APLDIM) * 1);
+////hGlbZilde = DbgGlobalAlloc (GHND, sizeof (VARARRAY_HEADER)
+////                                + sizeof (APLDIM) * 1);
+    hGlbZilde = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_BOOL, 0, 1));
     if (!hGlbZilde)
     {
         DbgStop ();         // We should never get here
@@ -309,9 +310,10 @@ HGLOBAL MakePermCharVector
     // Get the string length
     uLen = lstrlenW (lpwc);
 
-    hGlbRes = DbgGlobalAlloc (GHND, sizeof (VARARRAY_HEADER)
-                                  + sizeof (APLDIM) * 1
-                                  + sizeof (APLCHAR) * uLen);
+////hGlbRes = DbgGlobalAlloc (GHND, sizeof (VARARRAY_HEADER)
+////                              + sizeof (APLDIM) * 1
+////                              + sizeof (APLCHAR) * uLen);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, uLen, 1));
     if (!hGlbRes)
     {
         DbgStop ();         // We should never get here

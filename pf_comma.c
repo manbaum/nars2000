@@ -142,13 +142,15 @@ LPYYSTYPE PrimFnMonCommaImm_EM
      LPTOKEN    lptkFunc)
 
 {
-    static YYSTYPE YYRes;   // The result
     APLUINT ByteRes;
     HGLOBAL hGlbRes;
     APLRANK aplRankRes;
     LPVOID  lpMemRes;
     BOOL    bFract = FALSE,
             bTableRes;
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Check for axis present
     while (lptkAxis NE NULL)
@@ -182,50 +184,52 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     } // End WHILE
 
     //***************************************************************
-    // Calculate the storage needed for the result
-    //***************************************************************
-
-    // Split cases based upon the immediate type
-    switch (ImmType)
-    {
-        case IMMTYPE_BOOL:
-            ByteRes = sizeof (APLBOOL);
-
-            break;
-
-        case IMMTYPE_INT:
-            ByteRes = sizeof (APLINT);
-
-            break;
-
-        case IMMTYPE_FLOAT:
-            ByteRes = sizeof (APLFLOAT);
-
-            break;
-
-        case IMMTYPE_CHAR:
-            ByteRes = sizeof (APLCHAR);
-
-            break;
-
-        defstop
-            return NULL;
-    } // End SWITCH
-
-    //***************************************************************
     // If the function is comma-bar (table), the result is
     //   1 1 {rho} R
     //***************************************************************
     bTableRes = (lptkFunc->tkData.tkChar EQ UCS2_COMMABAR);
     aplRankRes = 1 + bTableRes;
 
-    // Add in the header and dimension
-    ByteRes += sizeof (VARARRAY_HEADER)
-             + sizeof (APLDIM) * aplRankRes;
+    //***************************************************************
+    // Calculate the storage needed for the result
+    //***************************************************************
+    ByteRes = CalcArraySize (TranslateImmTypeToArrayType (ImmType),
+                             1,
+                             aplRankRes);
+////// Split cases based upon the immediate type
+////switch (ImmType)
+////{
+////    case IMMTYPE_BOOL:
+////        ByteRes = sizeof (APLBOOL);
+////
+////        break;
+////
+////    case IMMTYPE_INT:
+////        ByteRes = sizeof (APLINT);
+////
+////        break;
+////
+////    case IMMTYPE_FLOAT:
+////        ByteRes = sizeof (APLFLOAT);
+////
+////        break;
+////
+////    case IMMTYPE_CHAR:
+////        ByteRes = sizeof (APLCHAR);
+////
+////        break;
+////
+////    defstop
+////        return NULL;
+////} // End SWITCH
+////
+////// Add in the header and dimension
+////ByteRes += sizeof (VARARRAY_HEADER)
+////         + sizeof (APLDIM) * aplRankRes;
 
     //***************************************************************
     // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLINT to UINT
+    // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -267,14 +271,14 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes.tkToken.tkFlags.ImmType   = 0;        // Already zero from static
-////YYRes.tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;        // Already zero from static
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes;
+    return &YYRes[YYResIndex];
 } // End PrimFnMonCommaImm_EM
 #undef  APPEND_NAME
 
@@ -297,7 +301,6 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
      LPTOKEN lptkFunc)
 
 {
-    static    YYSTYPE YYRes;        // The result
     HGLOBAL   hGlbRes = NULL,
               hGlbAxis = NULL,
               hGlbOdo = NULL,
@@ -329,6 +332,10 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
               bRet = TRUE,
               bReorder = FALSE;     // TRUE iff the result values are reordered
                                     //   from those in the right arg
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
 
@@ -456,9 +463,10 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
         aplTypeRes = ARRAY_INT;
 
         // Allocate all APLINTs instead of an APLAPA
-        ByteRes = sizeof (VARARRAY_HEADER)
-                + sizeof (APLDIM) * aplRankRes
-                + sizeof (APLINT) * aplNELMRht;
+        ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRes);
+////////ByteRes = sizeof (VARARRAY_HEADER)
+////////        + sizeof (APLDIM) * aplRankRes
+////////        + sizeof (APLINT) * aplNELMRht;
     } else
     {
         // Set the array storage type for the result
@@ -471,8 +479,8 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
     } // End IF/ELSE
 
     //***************************************************************
-    // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLINT to UINT
+    // Now we can allocate the storage for the result.
+    // N.B.:  Conversion from APLUINT to UINT.
     //***************************************************************
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -594,7 +602,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
         //***************************************************************
         // Allocate space for the weighting vector which is
         //   {times}{backscan}1{drop}({rho}R),1
-        // N.B.  Conversion from APLINT to UINT.
+        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteRes = aplRankRht * sizeof (APLINT);
         Assert (ByteRes EQ (UINT) ByteRes);
@@ -626,7 +634,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
         //***************************************************************
         // Allocate space for the odometer array, one value per dimension
         //   in the right arg, with values initially all zero (thanks to GHND).
-        // N.B.  Conversion from APLINT to UINT.
+        // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
         ByteRes = aplRankRht * sizeof (APLINT);
         Assert (ByteRes EQ (UINT) ByteRes);
@@ -805,12 +813,12 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
     } // End IF/ELSE
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes.tkToken.tkFlags.ImmType   = 0;
-////YYRes.tkToken.tkFlags.NoDisplay = 0;
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (lpMemRes)
     {
@@ -861,7 +869,7 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes;
+        return &YYRes[YYResIndex];
     else
         return NULL;
 } // End PrimFnMonCommaGlb_EM
@@ -887,58 +895,57 @@ LPYYSTYPE PrimFnDydComma_EM
      LPTOKEN lptkAxis)
 
 {
-    static YYSTYPE YYRes;       // The result
-    APLUINT        aplAxis,     // The (one and only) axis value
-                   uLft,
-                   uRht,
-                   uBeg,
-                   uEnd,
-                   uEndLft,
-                   uEndRht,
-                   ByteRes;
-    APLRANK        aplRankLft,  // The rank of the left arg
-                   aplRankRht,  // ...             right ...
-                   aplRankRes,  // ...             result
-                   aplRankTmp;
-    APLSTYPE       aplTypeLft,
-                   aplTypeRht,
-                   aplTypeRes;
-    APLNELM        aplNELMLft,
-                   aplNELMRht,
-                   aplNELMRes;
-    HGLOBAL        hGlbLft = NULL,
-                   hGlbRht = NULL,
-                   hGlbRes = NULL;
-    LPVOID         lpMemLft = NULL,
-                   lpMemRht = NULL,
-                   lpMemRes = NULL,
-                   lpSymGlbLft,
-                   lpSymGlbRht;
-    LPAPLDIM       lpMemLftDim,
-                   lpMemRhtDim,
-                   lpMemResDim,
-                   lpMemDim;
-    APLDIM         aplDimTmp,
-                   aplDimBeg,
-                   aplDimLftEnd,
-                   aplDimRhtEnd,
-                   aplDim1 = 1;
-    BOOL           bRet = TRUE,
-                   bFract = FALSE;
-    UINT           uBitMaskLft,
-                   uBitMaskRht,
-                   uBitIndexRes;
-    APLINT         aplIntegerLft,
-                   aplIntegerRht,
-                   apaOffLft,
-                   apaOffRht,
-                   apaMulLft,
-                   apaMulRht;
-    APLFLOAT       aplFloatLft,
-                   aplFloatRht;
-    APLCHAR        aplCharLft,
-                   aplCharRht;
-    APLLONGEST     aplVal;
+    APLUINT    aplAxis,     // The (one and only) axis value
+               uLft,
+               uRht,
+               uBeg,
+               uEnd,
+               uEndLft,
+               uEndRht,
+               ByteRes;
+    APLRANK    aplRankLft,  // The rank of the left arg
+               aplRankRht,  // ...             right ...
+               aplRankRes,  // ...             result
+               aplRankTmp;
+    APLSTYPE   aplTypeLft,
+               aplTypeRht,
+               aplTypeRes;
+    APLNELM    aplNELMLft,
+               aplNELMRht,
+               aplNELMRes;
+    HGLOBAL    hGlbLft = NULL,
+               hGlbRht = NULL,
+               hGlbRes = NULL;
+    LPVOID     lpMemLft = NULL,
+               lpMemRht = NULL,
+               lpMemRes = NULL,
+               lpSymGlbLft,
+               lpSymGlbRht;
+    LPAPLDIM   lpMemLftDim,
+               lpMemRhtDim,
+               lpMemResDim,
+               lpMemDim;
+    APLDIM     aplDimTmp,
+               aplDimBeg,
+               aplDimLftEnd,
+               aplDimRhtEnd,
+               aplDim1 = 1;
+    BOOL       bRet = TRUE,
+               bFract = FALSE;
+    UINT       uBitMaskLft,
+               uBitMaskRht,
+               uBitIndexRes;
+    APLINT     aplIntegerLft,
+               aplIntegerRht,
+               apaOffLft,
+               apaOffRht,
+               apaMulLft,
+               apaMulRht;
+    APLFLOAT   aplFloatLft,
+               aplFloatRht;
+    APLCHAR    aplCharLft,
+               aplCharRht;
+    APLLONGEST aplVal;
     static APLSTYPE sType[ARRAY_LENGTH][ARRAY_LENGTH] =
     //      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        LIST         APA
     {{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // BOOL
@@ -950,6 +957,9 @@ LPYYSTYPE PrimFnDydComma_EM
      {ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR },  // LIST
      {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // APA
     };
+
+    // Get new index into YYRes
+    YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1169,7 +1179,6 @@ LPYYSTYPE PrimFnDydComma_EM
             case ARRAY_BOOL:
             case ARRAY_INT:
             case ARRAY_FLOAT:
-            case ARRAY_APA:
                 aplTypeRes = ARRAY_BOOL;
 
                 break;
@@ -1182,6 +1191,7 @@ LPYYSTYPE PrimFnDydComma_EM
             case ARRAY_NESTED:
                 break;
 
+            case ARRAY_APA:         // Can't happen
             case ARRAY_HETERO:      // Can't happen
             defstop
                 break;
@@ -1189,11 +1199,7 @@ LPYYSTYPE PrimFnDydComma_EM
     } // End IF
 
     // Calculate space needed for the result
-    // Handle APAs as INTs
-    if (aplTypeRes EQ ARRAY_APA)
-        ByteRes = CalcArraySize (ARRAY_INT , aplNELMRes, aplRankRes);
-    else
-        ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
 ////// Split cases based upon the result storage type
 ////switch (aplTypeRes)
@@ -1204,7 +1210,6 @@ LPYYSTYPE PrimFnDydComma_EM
 ////        break;
 ////
 ////    case ARRAY_INT:
-////    case ARRAY_APA:
 ////        ByteRes = sizeof (APLINT)    * aplNELMRes;
 ////
 ////        break;
@@ -1230,6 +1235,7 @@ LPYYSTYPE PrimFnDydComma_EM
 ////
 ////        break;
 ////
+////    case ARRAY_APA:         // Can't happen
 ////    defstop
 ////        break;
 ////} // End SWITCH
@@ -1240,7 +1246,7 @@ LPYYSTYPE PrimFnDydComma_EM
 
     //***************************************************************
     // Now we can allocate the storage for the result
-    // N.B.:  Conversion from APLINT to UINT
+    // N.B.:  Conversion from APLUINT to UINT
     //***************************************************************
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -1269,12 +1275,12 @@ LPYYSTYPE PrimFnDydComma_EM
 #undef  lpHeaderRes
 
     // Fill in the result token
-    YYRes.tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes.tkToken.tkFlags.ImmType   = 0;        // Already zero from static
-////YYRes.tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
-////YYRes.tkToken.tkFlags.Color     =
-    YYRes.tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes.tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;        // Already zero from static
+////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
+////YYRes[YYResIndex].tkToken.tkFlags.Color     =
+    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Skip over the result header to the dimensions
     lpMemResDim = VarArrayBaseToDim (lpMemRes);
@@ -2001,7 +2007,7 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes;
+        return &YYRes[YYResIndex];
     else
         return NULL;
 } // End PrimFnDydComma_EM

@@ -319,9 +319,10 @@ LPYYSTYPE SysFnSYSID_EM
 #define SYSID_NELM    (sizeof (SYSID) / sizeof (APLCHAR) - 1)
 
     // Calculate size of the result
-    ByteRes = sizeof (VARARRAY_HEADER)
-            + sizeof (APLDIM) * 1       // It's a vector
-            + sizeof (APLCHAR) * SYSID_NELM;  // with this many elements
+    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSID_NELM, 1);
+////ByteRes = sizeof (VARARRAY_HEADER)
+////        + sizeof (APLDIM) * 1       // It's a vector
+////        + sizeof (APLCHAR) * SYSID_NELM;  // with this many elements
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
@@ -407,9 +408,10 @@ LPYYSTYPE SysFnSYSVER_EM
 #define SYSVER_NELM    ((sizeof (SYSVER) / sizeof (APLCHAR)) - 1)
 
     // Calculate size of the result
-    ByteRes = sizeof (VARARRAY_HEADER)
-            + sizeof (APLDIM) * 1       // It's a vector
-            + sizeof (APLCHAR) * SYSVER_NELM;  // with this many elements
+    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);
+////ByteRes = sizeof (VARARRAY_HEADER)
+////        + sizeof (APLDIM) * 1       // It's a vector
+////        + sizeof (APLCHAR) * SYSVER_NELM;  // with this many elements
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
@@ -543,9 +545,10 @@ LPYYSTYPE SysFnTC_EM
     YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Calculate size of the result
-    ByteRes = sizeof (VARARRAY_HEADER)
-            + sizeof (APLDIM) * 1       // It's a vector
-            + sizeof (APLCHAR) * 3;     // and a three-element one at that
+    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 3, 1);
+////ByteRes = sizeof (VARARRAY_HEADER)
+////        + sizeof (APLDIM) * 1       // It's a vector
+////        + sizeof (APLCHAR) * 3;     // and a three-element one at that
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
@@ -810,9 +813,10 @@ LPYYSTYPE SysFnTS_EM
     YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Calculate size of the result
-    ByteRes = sizeof (VARARRAY_HEADER)
-            + sizeof (APLDIM) * 1       // It's a vector
-            + sizeof (APLINT) * 7;      // and a seven-element one at that
+    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 7, 1);
+////ByteRes = sizeof (VARARRAY_HEADER)
+////        + sizeof (APLDIM) * 1       // It's a vector
+////        + sizeof (APLINT) * 7;      // and a seven-element one at that
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);

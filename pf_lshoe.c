@@ -324,9 +324,10 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
 
     // Add in the header, (aplRankRht - aplNELMAxis) dimensions,
     //   and <aplNELMRes> HGLOBALs (taking into account a prototype if empty).
-    ByteRes = sizeof (VARARRAY_HEADER)
-            + sizeof (APLDIM)  * aplRankRes
-            + sizeof (HGLOBAL) * max (aplNELMRes, 1);
+    ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRes, aplRankRes);
+////ByteRes = sizeof (VARARRAY_HEADER)
+////        + sizeof (APLDIM)  * aplRankRes
+////        + sizeof (HGLOBAL) * max (aplNELMRes, 1);
 
     //***************************************************************
     // Now we can allocate the storage for the result.
@@ -398,7 +399,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                 case ARRAY_FLOAT:
                     bRet = PrimFnMonLeftShoeProto_EM (&hGlbProto,
                                                       hGlbZilde,
-                                                      sizeof (APLBOOL),
+                                                      ARRAY_BOOL,
                                                       aplNELMSub,
                                                       aplNELMAxis,
                                                       ARRAY_BOOL,
@@ -410,7 +411,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                 case ARRAY_CHAR:
                     bRet = PrimFnMonLeftShoeProto_EM (&hGlbProto,
                                                       hGlbMTChar,
-                                                      sizeof (APLCHAR),
+                                                      ARRAY_CHAR,
                                                       aplNELMSub,
                                                       aplNELMAxis,
                                                       ARRAY_CHAR,
@@ -430,9 +431,10 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         // Calculate storage for <aplNELMSub>
                         //   HGLOBALs in an array of variables of
                         //   rank <aplNELMAxis> and NELM <aplNELMSub>.
-                        ByteRes = sizeof (VARARRAY_HEADER)
-                                + sizeof (APLDIM)  * aplNELMAxis
-                                + sizeof (APLNESTED) * aplNELMSub;
+                        ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMSub, aplNELMAxis);
+////////////////////////ByteRes = sizeof (VARARRAY_HEADER)
+////////////////////////        + sizeof (APLDIM)  * aplNELMAxis
+////////////////////////        + sizeof (APLNESTED) * aplNELMSub;
                         // N.B.:  Conversion from APLUINT to UINT.
                         Assert (ByteRes EQ (UINT) ByteRes);
                         hGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -1175,7 +1177,7 @@ QUICK_EXIT:
 BOOL PrimFnMonLeftShoeProto_EM
     (HGLOBAL *lphGlbProto,
      HGLOBAL  hGlbMT,
-     int      sizeofItem,
+     APLSTYPE aplTypeProto,
      APLNELM  aplNELMSub,
      APLNELM  aplNELMAxis,
      APLSTYPE aplType,
@@ -1193,9 +1195,10 @@ BOOL PrimFnMonLeftShoeProto_EM
         // Calculate storage for <aplNELMSub>
         //   HGLOBALs in an array of variables of
         //   rank <aplNELMAxis> and NELM <aplNELMSub>.
-        ByteRes = sizeof (VARARRAY_HEADER)
-                + sizeof (APLDIM)  * aplNELMAxis
-                + sizeofItem * aplNELMSub;
+        ByteRes = CalcArraySize (aplTypeProto, aplNELMSub, aplNELMAxis);
+////////ByteRes = sizeof (VARARRAY_HEADER)
+////////        + sizeof (APLDIM)  * aplNELMAxis
+////////        + sizeofItem * aplNELMSub;
         // N.B.:  Conversion from APLUINT to UINT.
         Assert (ByteRes EQ (UINT) ByteRes);
         *lphGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);

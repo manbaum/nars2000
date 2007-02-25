@@ -25,6 +25,7 @@
 #include "pf_dcaret.pro"
 #include "pf_divide.pro"
 #include "pf_dstile.pro"
+#include "pf_epsilon.pro"
 #include "pf_equal.pro"
 #include "pf_equalund.pro"
 #include "pf_greateq.pro"

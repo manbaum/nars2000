@@ -68,7 +68,7 @@ LPYYSTYPE PrimFnMonIota_EM
 {
     APLNELM aplNELMRes;
     HGLOBAL hGlbRes;
-    UINT    uByteRes;
+    UINT    ByteRes;
     LPVOID  lpMemRes;
     BOOL    bRet = TRUE;
     APLINT  aplIntTmp;
@@ -90,7 +90,7 @@ LPYYSTYPE PrimFnMonIota_EM
 
     //***************************************************************
     // Check the right argument for RANK, LENGTH, and DOMAIN ERRORs
-    //   and fill in aplNELMRes;
+    //   and fill in aplNELMRes.
     //***************************************************************
 
     // Split cases based upon the right arg's token type
@@ -195,12 +195,13 @@ LPYYSTYPE PrimFnMonIota_EM
     } // End SWITCH
 
     // Calculate size of the result
-    uByteRes = sizeof (VARARRAY_HEADER)
-             + sizeof (APLDIM) * 1      // It's a vector
-             + sizeof (APLAPA);         // APA struct
+    ByteRes = (UINT) CalcArraySize (ARRAY_APA, 0, 1);
+////ByteRes = sizeof (VARARRAY_HEADER)
+////        + sizeof (APLDIM) * 1      // It's a vector
+////        + sizeof (APLAPA);         // APA struct
 
     // Allocate space for an APA
-    hGlbRes = DbgGlobalAlloc (GHND, uByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
     if (!hGlbRes)
     {
         // Mark as a WS FULL

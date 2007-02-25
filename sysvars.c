@@ -1368,9 +1368,10 @@ BOOL ValidateCharVector_EM
 
 MAKE_VECTOR:
     // Allocate space for a one-element character vctor
-    ByteRes = sizeof (VARARRAY_HEADER)
-            + sizeof (APLDIM) * 1       // It's a vector
-            + sizeof (APLCHAR) * 1;     // ...one-element at that
+    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 1, 1);
+////ByteRes = sizeof (VARARRAY_HEADER)
+////        + sizeof (APLDIM) * 1       // It's a vector
+////        + sizeof (APLCHAR) * 1;     // ...one-element at that
     *lpVal = DbgGlobalAlloc (GHND, ByteRes);
     if (*lpVal NE NULL)
     {

@@ -1860,10 +1860,11 @@ BOOL fnQuoDone
         // Allocate global memory for the array header,
         //   one dimension (it's a vector), and the string
         //   excluding the terminating zero.
-        hGlb = DbgGlobalAlloc (GHND,
-                               sizeof (VARARRAY_HEADER)
-                             + sizeof (APLDIM) * 1
-                             + iStringLen * sizeof (WCHAR));
+        hGlb = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, iStringLen, 1));
+////////hGlb = DbgGlobalAlloc (GHND,
+////////                       sizeof (VARARRAY_HEADER)
+////////                     + sizeof (APLDIM) * 1
+////////                     + iStringLen * sizeof (WCHAR));
         if (!hGlb)
         {
             ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);

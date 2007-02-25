@@ -142,6 +142,7 @@ $(O)pf_cstar.DEP    \
 $(O)pf_dcaret.DEP   \
 $(O)pf_divide.DEP   \
 $(O)pf_dstile.DEP   \
+$(O)pf_epsilon.DEP  \
 $(O)pf_equal.DEP    \
 $(O)pf_equalund.DEP \
 $(O)pf_greateq.DEP  \
@@ -259,6 +260,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)pf_dstile.DEP)
 !       include $(O)pf_dstile.DEP
+!endif
+!if exist ($(O)pf_epsilon.DEP)
+!       include $(O)pf_epsilon.DEP
 !endif
 !if exist ($(O)pf_equal.DEP)
 !       include $(O)pf_equal.DEP
@@ -400,6 +404,7 @@ $(O)pf_cstar.PRO    \
 $(O)pf_dcaret.PRO   \
 $(O)pf_divide.PRO   \
 $(O)pf_dstile.PRO   \
+$(O)pf_epsilon.PRO  \
 $(O)pf_equal.PRO    \
 $(O)pf_equalund.PRO \
 $(O)pf_greateq.PRO  \
@@ -491,6 +496,7 @@ $(O)pf_cstar.OBJ:       $(@B).C         $(PF_CSTAR_DEP)
 $(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
 $(O)pf_divide.OBJ:      $(@B).C         $(PF_DIVIDE_DEP)
 $(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
+$(O)pf_epsilon.OBJ:     $(@B).C         $(PF_EPSILON_DEP)
 $(O)pf_equal.OBJ:       $(@B).C         $(PF_EQUAL_DEP)
 $(O)pf_equalund.OBJ:    $(@B).C         $(PF_EQUALUND_DEP)
 $(O)pf_greateq.OBJ:     $(@B).C         $(PF_GREATEQ_DEP)
@@ -568,6 +574,7 @@ OBJS=$(O)assign.OBJ         \
      $(O)pf_dcaret.OBJ      \
      $(O)pf_divide.OBJ      \
      $(O)pf_dstile.OBJ      \
+     $(O)pf_epsilon.OBJ     \
      $(O)pf_equal.OBJ       \
      $(O)pf_equalund.OBJ    \
      $(O)pf_greateq.OBJ     \

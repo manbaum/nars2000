@@ -2167,9 +2167,10 @@ LPYYSTYPE MakeList_EM
     iLen = gplLocalVars.lpYYStrandNext - lpYYStrand;
 
     // Calculate the # bytes we'll need for the header and the elements
-    ByteRes = sizeof (VARARRAY_HEADER)      // For header (including rank)
-            + sizeof (APLDIM) * 1           // For the dimensions
-            + iLen * sizeof (APLNESTED);    // One value per APLNESTED
+    ByteRes = CalcArraySize (ARRAY_NESTED, iLen, 1);
+////ByteRes = sizeof (VARARRAY_HEADER)      // For header (including rank)
+////        + sizeof (APLDIM) * 1           // For the dimensions
+////        + iLen * sizeof (APLNESTED);    // One value per APLNESTED
 
     // Allocate global memory for a length <iLen> vector of type <cState>
     Assert (ByteRes EQ (UINT) ByteRes);

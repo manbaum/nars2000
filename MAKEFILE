@@ -90,7 +90,7 @@ DEL:
         @del /Q $(O)*.*
 
 DIR:
-        @vdir -c $(O) >NUL
+        @vdir -c $(O) $(B) $(BC) >NUL
 
 {}.rc{$(O)}.res:
         @Set INCLUDE=$(I98);$(H);$(O)

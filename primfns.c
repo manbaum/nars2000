@@ -3478,6 +3478,8 @@ HGLOBAL TypeDemote
                 if (aplFloat EQ floor (aplFloat)
                  && fabs (aplFloat) < Float2Pow53)
                     aplTypeSub = ARRAY_INT;
+                else
+                    aplTypeSub = ARRAY_FLOAT;
 
                 // Check storage type
                 aplTypeRes = aplTypeArr[aplTypeRes][aplTypeSub];
@@ -3609,7 +3611,7 @@ HGLOBAL TypeDemote
         } // End IF/ELSE
     } else
     // Check for demotion to simple homogeneous
-    if (uTypeMap[aplTypeRes] < uTypeMap[ARRAY_HETERO])
+    if (uTypeMap[aplTypeRes] < min (uTypeMap[ARRAY_HETERO], uTypeMap[aplTypeRht]))
     {
         // Calculate space needed for the new array
         ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);

@@ -482,14 +482,23 @@ LRESULT APIENTRY FEWndProc
 //***************************************************************************
 
 int LclECPaintHook
-    (HDC     hDC,
-     int     x,
-     int     y,
-     LPWCHAR lpwsz,
-     UINT    uCol,
-     UINT    uLen)
+    (HDC     hDC,       // The Device Context
+     int     x,         // The x-coordinate (Client Area)
+     int     y,         // ... y- ...
+     LPWCHAR lpwsz,     // Ptr to start of line
+     UINT    uCol,      // Starting column in the line
+     UINT    uLen)      // Length of text to display
 
 {
+    // Syntax Color the line
+
+    // To do this, we use a FSA to parse the line from the start
+    //   through the last char to display
+
+
+
+
+
     // Draw the line
     return (int) LOWORD (TabbedTextOutW (hDC,
                                          x, y,

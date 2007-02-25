@@ -634,7 +634,7 @@ LPAPLCHAR FormatFloat
         } else
         // Check for trailing decimal point in the mantissa
         if (p[-1] EQ '.')
-            *p++ = L'0';
+            *--p = L'\0';        // Zap it and back up to the terminating zero
 
         // Point to the terminating zero
         lpaplChar = p;

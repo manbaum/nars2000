@@ -15,8 +15,12 @@
 #define DEF_QUADPR_CWS   L' '
 #define DEF_QUADxSA_CWS     0   // 0 = "", 1 = "CLEAR", 2 = "ERROR", 3 = "EXIT", 4 = "OFF"
 #define DEF_QUADLX_CWS    L""
-#define DEF_QUADALX_CWS (WS_UCS2_QUAD L"DM")
-#define DEF_QUADELX_CWS (WS_UCS2_QUAD L"DM")
+#define DEF_QUADLX_GLB  hGlbMTChar
+#define WS_QUADDM       (WS_UCS2_QUAD L"DM")
+#define DEF_QUADALX_CWS WS_QUADDM
+#define DEF_QUADELX_CWS WS_QUADDM
+#define DEF_QUADALX_GLB hGlbQuadDM
+#define DEF_QUADELX_GLB hGlbQuadDM
 
 #define QUADRL_MODULUS  0x7FFFFFFF      // (2*31)-1 is a prime
 

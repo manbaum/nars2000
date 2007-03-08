@@ -123,20 +123,22 @@ LPYYSTYPE PrimFnMonRhoCon_EM
     (LPTOKEN lptkFunc)
 
 {
+    UINT YYLclIndex;
+
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // As this is a simple scalar, the result is {zilde}
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbZilde);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbZilde);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End PrimFnMonRhoCon_EM
 
 
@@ -163,9 +165,10 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
     APLUINT ByteRes;
     BOOL    bRet = TRUE;
     UINT    uRes;
+    UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Lock the global memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -197,12 +200,12 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
     } // End IF
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;        // Already zero from static
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Lock the global memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -246,7 +249,7 @@ ERROR_EXIT:
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
     if (bRet)
-        return &YYRes[YYResIndex];
+        return &YYRes[YYLclIndex];
     else
         return NULL;
 } // End PrimFnMonRhoGlb_EM
@@ -288,9 +291,10 @@ LPYYSTYPE PrimFnDydRho_EM
     APLINT   aplIntTmp;
     APLUINT  ByteRes;       // # bytes needed in the result
     UINT     uRes;
+    UINT     YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -507,33 +511,7 @@ LPYYSTYPE PrimFnDydRho_EM
 
             // Set common var
             cImmTypeRht = lptkRhtArg->tkData.lpSym->stFlags.ImmType;
-
-            // Split cases based upon the right arg's immediate type
-            switch (cImmTypeRht)
-            {
-                case IMMTYPE_BOOL:
-                    aplTypeRes = ARRAY_BOOL;
-
-                    break;
-
-                case IMMTYPE_INT:
-                    aplTypeRes = ARRAY_INT;
-
-                    break;
-
-                case IMMTYPE_FLOAT:
-                    aplTypeRes = ARRAY_FLOAT;
-
-                    break;
-
-                case IMMTYPE_CHAR:
-                    aplTypeRes = ARRAY_CHAR;
-
-                    break;
-
-                defstop
-                    return NULL;
-            } // End SWITCH
+            aplTypeRes = TranslateImmTypeToArrayType (cImmTypeRht);
 
             break;
 
@@ -543,33 +521,7 @@ LPYYSTYPE PrimFnDydRho_EM
 
             // Set common var
             cImmTypeRht = lptkRhtArg->tkFlags.ImmType;
-
-            // Split cases based upon the right arg's immediate type
-            switch (cImmTypeRht)
-            {
-                case IMMTYPE_BOOL:
-                    aplTypeRes = ARRAY_BOOL;
-
-                    break;
-
-                case IMMTYPE_INT:
-                    aplTypeRes = ARRAY_INT;
-
-                    break;
-
-                case IMMTYPE_FLOAT:
-                    aplTypeRes = ARRAY_FLOAT;
-
-                    break;
-
-                case IMMTYPE_CHAR:
-                    aplTypeRes = ARRAY_CHAR;
-
-                    break;
-
-                defstop
-                    return NULL;
-            } // End SWITCH
+            aplTypeRes = TranslateImmTypeToArrayType (cImmTypeRht);
 
             break;
 
@@ -1142,14 +1094,14 @@ LPYYSTYPE PrimFnDydRho_EM
     if (bRet)
     {
         // Fill in the result token
-        YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-        YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
-        YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+        YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+        YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+        YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+        YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-        return &YYRes[YYResIndex];
+        return &YYRes[YYLclIndex];
     } else
         return NULL;
 } // End PrimFnDydRho_EM

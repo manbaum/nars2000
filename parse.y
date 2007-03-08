@@ -235,7 +235,7 @@ ArrExpr:
                                             FreeResult (&$1.tkToken);
                                             YYERROR;
                                          }
-                                         lpYYRes = ExecFunc_EM (NULL, lpYYFcn, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&lpYYFcn->tkToken);
                                          if (!lpYYRes)
@@ -254,7 +254,7 @@ ArrExpr:
                                             FreeResult (&$1.tkToken);
                                             YYERROR;
                                          }
-                                         lpYYRes = ExecFunc_EM (NULL, lpYYFcn, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&lpYYFcn->tkToken);
                                          if (!lpYYRes)
@@ -292,7 +292,7 @@ ArrExpr:
                                              FreeResult (&lpYYStr->tkToken);
                                              YYERROR;
                                          }
-                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, lpYYFcn, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&lpYYFcn->tkToken);
                                          FreeResult (&lpYYStr->tkToken);
@@ -325,7 +325,7 @@ ArrExpr:
                                              FreeResult (&$1.tkToken);
                                              YYERROR;
                                          }
-                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, lpYYFcn, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&lpYYFcn->tkToken);
                                          FreeResult (&lpYYStr->tkToken);
@@ -407,7 +407,7 @@ SimpExpr:
                                         }
     | ArrExpr ASSIGN LeftFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR LeftFunc" WS_UCS2_LEFTARROW L"ArrExpr");
                                          $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
                                          if (!lpYYRes)
@@ -420,7 +420,7 @@ SimpExpr:
                                         }
     | ArrExpr ASSIGN AxisFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UCS2_LEFTARROW L"ArrExpr");
                                          $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
                                          if (!lpYYRes)

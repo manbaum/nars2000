@@ -143,8 +143,8 @@ typedef struct tagTKLOCALVARS
 typedef struct tagFSA_ACTION
 {
     int  iNewState;
-    BOOL (*fnAction1)(LPTKLOCALVARS);
-    BOOL (*fnAction2)(LPTKLOCALVARS);
+    BOOL (*fnAction1) (LPTKLOCALVARS);
+    BOOL (*fnAction2) (LPTKLOCALVARS);
 } FSA_ACTION;
 
 #define fnIntInit   fnIntAccum
@@ -2225,8 +2225,8 @@ HGLOBAL Tokenize_EM
     int         i, iLen;
     WCHAR       wchOrig,      // The original char
                 wchColNum;    // The translated char for tokenization as a COL_*** value
-    BOOL        (*fnAction1)(LPTKLOCALVARS);
-    BOOL        (*fnAction2)(LPTKLOCALVARS);
+    BOOL        (*fnAction1) (LPTKLOCALVARS);
+    BOOL        (*fnAction2) (LPTKLOCALVARS);
     TKLOCALVARS tkLocalVars;   // Local vars
     BOOL        bFreeGlb = FALSE;
     APLINT      aplInteger;
@@ -2792,7 +2792,7 @@ WCHAR CharTrans
             return COL_EOL;
 
         case UCS2_ALPHA:                // Alt-'a' - alpha
-        case UCS2_DOWNTACK:             // Alt-'b' - down tack
+        case UCS2_UPTACK:               // Alt-'b' - up tack
         case UCS2_UPSHOE:               // Alt-'c' - up shoe
         case UCS2_DOWNSTILE:            // Alt-'d' - down stile
         case UCS2_EPSILON:              // Alt-'e' - epsilon
@@ -2804,7 +2804,7 @@ WCHAR CharTrans
 ////////case UCS2_APOSTROPHE:           // Alt-'k' - single quote (COL_QUOTE1)
 ////////case UCS2_QUAD:                 // Alt-'l' - quad (COL_Q_QQ)
         case UCS2_STILE:                // Alt-'m' - stile
-        case UCS2_UPTACK:               // Alt-'n' - up tack
+        case UCS2_DOWNTACK:             // Alt-'n' - down tack
         case UCS2_CIRCLE:               // Alt-'o' - circle
         case UCS2_STAR:                 // Alt-'p' - star
         case UCS2_QUERY:                // Alt-'q' - question mark
@@ -2863,7 +2863,7 @@ WCHAR CharTrans
 ////////case UCS2_                      // Alt-'K' - (none)
         case UCS2_SQUAD:                // Alt-'L' - squad
 ////////case UCS2_                      // Alt-'M' - (none)
-////////case UCS2_DIERESISUPTACK:       // Alt-'N' - convolution (COL_PRIM_OP2)
+////////case UCS2_DIERESISDOWNTACK:     // Alt-'N' - convolution (COL_PRIM_OP2)
 ////////case UCS2_DIERESISCIRCLE:       // Alt-'O' - holler (COL_UNK)
 ////////case UCS2_DIERESISSTAR:         // Alt-'P' - power  (COL_PRIM_OP2)
 ////////case UCS2_                      // Alt-'Q' - (none)
@@ -2910,7 +2910,7 @@ WCHAR CharTrans
 
         case UCS2_DIERESISDEL:          // Alt-'G' - dual
         case UCS2_DIERESISJOT:          // Alt-'J' - rank
-        case UCS2_DIERESISUPTACK:       // Alt-'N' - convolution
+        case UCS2_DIERESISDOWNTACK:     // Alt-'N' - convolution
         case UCS2_DIERESISSTAR:         // Alt-'P' - power
             return COL_PRIM_OP2;
 

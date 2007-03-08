@@ -1,5 +1,5 @@
 //***************************************************************************
-//	NARS2000 -- Common Processing Routines
+//  NARS2000 -- Common Processing Routines
 //***************************************************************************
 
 #pragma pack (1)
@@ -17,509 +17,509 @@
 
 
 //************************************************************************
-//	ClientToWindowSize
+//  ClientToWindowSize
 //
-//	Convert client area size to window size
+//  Convert client area size to window size
 //************************************************************************
 
 SIZE ClientToWindowSize
-	(HWND hWnd,
-	 SIZE Size)
+    (HWND hWnd,
+     SIZE Size)
 
 {
-	RECT rc;
+    RECT rc;
 
-	// Create a rectangle
-	rc.left   = 0;
-	rc.right  = rc.left + Size.cx;
-	rc.top	  = 0;
-	rc.bottom = rc.top	+ Size.cy;
+    // Create a rectangle
+    rc.left   = 0;
+    rc.right  = rc.left + Size.cx;
+    rc.top    = 0;
+    rc.bottom = rc.top  + Size.cy;
 
-	// Adjust the rectangle from client to window
-	AdjustWindowRectEx (&rc,
-						GetWindowLong (hWnd, GWL_STYLE),
-						GetClassLong  (hWnd, GCL_MENUNAME),
-						GetWindowLong (hWnd, GWL_EXSTYLE)
-					   );
-	Size.cx = rc.right	- rc.left;
-	Size.cy = rc.bottom - rc.top;
+    // Adjust the rectangle from client to window
+    AdjustWindowRectEx (&rc,
+                        GetWindowLong (hWnd, GWL_STYLE),
+                        GetClassLong  (hWnd, GCL_MENUNAME),
+                        GetWindowLong (hWnd, GWL_EXSTYLE)
+                       );
+    Size.cx = rc.right  - rc.left;
+    Size.cy = rc.bottom - rc.top;
 
-	return Size;
+    return Size;
 } // End ClientToWindowSize
 
 
 //************************************************************************
-//	MoveWindowPos
+//  MoveWindowPos
 //
-//	Move the window to a position based upon the previous center
+//  Move the window to a position based upon the previous center
 //************************************************************************
 
 void MoveWindowPos
-	(HWND hWnd, POINT PosCtr)
+    (HWND hWnd, POINT PosCtr)
 {
-	RECT rcWnd;
-	long lWidth, lHeight;
+    RECT rcWnd;
+    long lWidth, lHeight;
 
-	GetWindowRect (hWnd, &rcWnd);			// Get the window's RECT
-	lWidth = rcWnd.right  - rcWnd.left; 	// Calc the width
-	lHeight = rcWnd.bottom - rcWnd.top; 	// Calc the height
-	MoveWindow (hWnd,
-				PosCtr.x - lWidth/2,		// Left coordinate
-				PosCtr.y - lHeight/2,		// Top ...
-				lWidth, 					// Width
-				lHeight,					// Height
-				FALSE); 					// No re-paint
+    GetWindowRect (hWnd, &rcWnd);           // Get the window's RECT
+    lWidth = rcWnd.right  - rcWnd.left;     // Calc the width
+    lHeight = rcWnd.bottom - rcWnd.top;     // Calc the height
+    MoveWindow (hWnd,
+                PosCtr.x - lWidth/2,        // Left coordinate
+                PosCtr.y - lHeight/2,       // Top ...
+                lWidth,                     // Width
+                lHeight,                    // Height
+                FALSE);                     // No re-paint
 } // End MoveWindowPos
 
 
 //************************************************************************
-//	MoveWindowPosSize
+//  MoveWindowPosSize
 //
-//	Move the window to a position based upon the previous center and size
+//  Move the window to a position based upon the previous center and size
 //************************************************************************
 
 void MoveWindowPosSize
-	(HWND hWnd, POINT PosCtr, SIZE Size)
+    (HWND hWnd, POINT PosCtr, SIZE Size)
 {
-	MoveWindow (hWnd,
-				PosCtr.x - Size.cx/2,		// Left coordinate
-				PosCtr.y - Size.cy/2,		// Top ...
-				Size.cx,					// Width
-				Size.cy,					// Height
-				FALSE); 					// No re-paint
+    MoveWindow (hWnd,
+                PosCtr.x - Size.cx/2,       // Left coordinate
+                PosCtr.y - Size.cy/2,       // Top ...
+                Size.cx,                    // Width
+                Size.cy,                    // Height
+                FALSE);                     // No re-paint
 } // End MoveWindowPosSize
 
 
 //************************************************************************
-//	CenterWindow
+//  CenterWindow
 //
-//	Center the window on the desktop
+//  Center the window on the desktop
 //************************************************************************
 
 void CenterWindow
-	(HWND hWnd)
+    (HWND hWnd)
 {
-	RECT rcWnd;
-	POINT PosCtr;
+    RECT rcWnd;
+    POINT PosCtr;
 
-	GetWindowRect (GetDesktopWindow (), &rcWnd);	// Get the desktop's RECT
-	PosCtr.x = (rcWnd.right  + rcWnd.left) / 2; 	// Center horizontally
-	PosCtr.y = (rcWnd.bottom + rcWnd.top ) / 2; 	// Center vertically
-	MoveWindowPos (hWnd, PosCtr);
+    GetWindowRect (GetDesktopWindow (), &rcWnd);    // Get the desktop's RECT
+    PosCtr.x = (rcWnd.right  + rcWnd.left) / 2;     // Center horizontally
+    PosCtr.y = (rcWnd.bottom + rcWnd.top ) / 2;     // Center vertically
+    MoveWindowPos (hWnd, PosCtr);
 
 } // End CenterWindow
 
 
 //****************************************************************************
-//	IsWhite
+//  IsWhite
 //
-//	Determine if a char is white space
+//  Determine if a char is white space
 //****************************************************************************
 
 BOOL IsWhite
-	(char c)
+    (char c)
 
 {
-	return (c EQ ' ' || c EQ '\t') ? TRUE : FALSE;
+    return (c EQ ' ' || c EQ '\t') ? TRUE : FALSE;
 
 } // End IsWhite
 
 
 //****************************************************************************
-//	SkipWhite
+//  SkipWhite
 //
-//	Skip over leading white space
+//  Skip over leading white space
 //****************************************************************************
 
 LPCHAR SkipWhite
-	(LPCHAR p)
+    (LPCHAR p)
 
 {
-	// Skip over white space
-	while (IsWhite (*p))
-		p++;
+    // Skip over white space
+    while (IsWhite (*p))
+        p++;
 
-	return p;
+    return p;
 
 } // End SkipWhite
 
 
 //************************************************************************
-//	GetRegDword
+//  GetRegDword
 //
-//	Get a registry dword value.
+//  Get a registry dword value.
 //************************************************************************
 
 DWORD GetRegDword
-	(HKEY	hKey,
-	 LPCHAR pSubKey,
-	 LPCHAR pKeyStr,
-	 DWORD	dwDefVal)
+    (HKEY   hKey,
+     LPCHAR pSubKey,
+     LPCHAR pKeyStr,
+     DWORD  dwDefVal)
 
 {
-	HKEY hKey2;
-	DWORD dwActVal = 0, // Set to known value in case stored in shorter format
-		  dwSize = sizeof (dwActVal);
+    HKEY hKey2;
+    DWORD dwActVal = 0, // Set to known value in case stored in shorter format
+          dwSize = sizeof (dwActVal);
 
-	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
-	{
-		if (RegQueryValueEx (hKey2, 		// handle of key to query
-							 pKeyStr,		// address of name of value to query
-							 NULL,			// reserved
-							 NULL,			// address of buffer for value type
-							 (LPCHAR) &dwActVal, // address of data buffer
-							 &dwSize)		// address of data buffer size
-			NE ERROR_SUCCESS)
-			dwActVal = dwDefVal;
+    if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        if (RegQueryValueEx (hKey2,         // handle of key to query
+                             pKeyStr,       // address of name of value to query
+                             NULL,          // reserved
+                             NULL,          // address of buffer for value type
+                             (LPCHAR) &dwActVal, // address of data buffer
+                             &dwSize)       // address of data buffer size
+            NE ERROR_SUCCESS)
+            dwActVal = dwDefVal;
 
-		RegCloseKey (hKey2); hKey2 = NULL;
-	} else
-		dwActVal = dwDefVal;
+        RegCloseKey (hKey2); hKey2 = NULL;
+    } else
+        dwActVal = dwDefVal;
 
-	return dwActVal;
+    return dwActVal;
 } // End GetRegDword
 
 
 //************************************************************************
-//	GetRegQword
+//  GetRegQword
 //
-//	Get a registry Qword value.
+//  Get a registry Qword value.
 //************************************************************************
 
 QWORD GetRegQword
-	(HKEY	hKey,
-	 LPCHAR pSubKey,
-	 LPCHAR pKeyStr,
-	 QWORD	qwDefVal)
+    (HKEY   hKey,
+     LPCHAR pSubKey,
+     LPCHAR pKeyStr,
+     QWORD  qwDefVal)
 
 {
-	HKEY hKey2;
-	QWORD qwActVal = 0; // Set to known value in case stored in shorter format
-	DWORD dwSize = sizeof (qwActVal);
+    HKEY hKey2;
+    QWORD qwActVal = 0; // Set to known value in case stored in shorter format
+    DWORD dwSize = sizeof (qwActVal);
 
-	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
-	{
-		if (RegQueryValueEx (hKey2, 		// handle of key to query
-							 pKeyStr,		// address of name of value to query
-							 NULL,			// reserved
-							 NULL,			// address of buffer for value type
-							 (LPCHAR) &qwActVal, // address of data buffer
-							 &dwSize)		// address of data buffer size
-			NE ERROR_SUCCESS)
-			qwActVal = qwDefVal;
+    if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        if (RegQueryValueEx (hKey2,         // handle of key to query
+                             pKeyStr,       // address of name of value to query
+                             NULL,          // reserved
+                             NULL,          // address of buffer for value type
+                             (LPCHAR) &qwActVal, // address of data buffer
+                             &dwSize)       // address of data buffer size
+            NE ERROR_SUCCESS)
+            qwActVal = qwDefVal;
 
-		RegCloseKey (hKey2); hKey2 = NULL;
-	} else
-		qwActVal = qwDefVal;
+        RegCloseKey (hKey2); hKey2 = NULL;
+    } else
+        qwActVal = qwDefVal;
 
-	return qwActVal;
+    return qwActVal;
 } // End GetRegQword
 
 
 //************************************************************************
-//	GetRegWchar
+//  GetRegWchar
 //
-//	Get a registry WCHAR value.
+//  Get a registry WCHAR value.
 //************************************************************************
 
 WCHAR GetRegWchar
-	(HKEY	hKey,
-	 LPCHAR pSubKey,
-	 LPCHAR pKeyStr,
-	 WCHAR	wcDefVal)
+    (HKEY   hKey,
+     LPCHAR pSubKey,
+     LPCHAR pKeyStr,
+     WCHAR  wcDefVal)
 
 {
-	HKEY hKey2;
-	WCHAR wcActVal = 0; // Set to known value in case stored in shorter format
-	DWORD dwSize = sizeof (wcActVal);
+    HKEY hKey2;
+    WCHAR wcActVal = 0; // Set to known value in case stored in shorter format
+    DWORD dwSize = sizeof (wcActVal);
 
-	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
-	{
-		if (RegQueryValueEx (hKey2, 		// handle of key to query
-							 pKeyStr,		// address of name of value to query
-							 NULL,			// reserved
-							 NULL,			// address of buffer for value type
-							 (LPCHAR) &wcActVal, // address of data buffer
-							 &dwSize)		// address of data buffer size
-			NE ERROR_SUCCESS)
-			wcActVal = wcDefVal;
+    if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        if (RegQueryValueEx (hKey2,         // handle of key to query
+                             pKeyStr,       // address of name of value to query
+                             NULL,          // reserved
+                             NULL,          // address of buffer for value type
+                             (LPCHAR) &wcActVal, // address of data buffer
+                             &dwSize)       // address of data buffer size
+            NE ERROR_SUCCESS)
+            wcActVal = wcDefVal;
 
-		RegCloseKey (hKey2); hKey2 = NULL;
-	} else
-		wcActVal = wcDefVal;
+        RegCloseKey (hKey2); hKey2 = NULL;
+    } else
+        wcActVal = wcDefVal;
 
-	return wcActVal;
+    return wcActVal;
 } // End GetRegWchar
 
 
 //***************************************************************************
-//	GetRegStr
+//  GetRegStr
 //
-//	Get a registry string value.
+//  Get a registry string value.
 //***************************************************************************
 
 void GetRegStr
-	(HKEY	hKey,
-	 LPCHAR pSubKey,
-	 LPCHAR pKeyStr,
-	 LPCHAR pActStr,
-	 int	iActSize,
-	 LPCHAR pDefVal)
+    (HKEY   hKey,
+     LPCHAR pSubKey,
+     LPCHAR pKeyStr,
+     LPCHAR pActStr,
+     int    iActSize,
+     LPCHAR pDefVal)
 
 {
-	HKEY hKey2;
+    HKEY hKey2;
 
-	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
-	{
-		if (RegQueryValueEx (hKey2, 		// handle of key to query
-							 pKeyStr,		// address of name of value to query
-							 NULL,			// reserved
-							 NULL,			// address of buffer for value type
-							 pActStr,		// address of data buffer
-							 &iActSize) 	// address of data buffer size
-			NE ERROR_SUCCESS)
-			lstrcpy (pActStr, pDefVal);
+    if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        if (RegQueryValueEx (hKey2,         // handle of key to query
+                             pKeyStr,       // address of name of value to query
+                             NULL,          // reserved
+                             NULL,          // address of buffer for value type
+                             pActStr,       // address of data buffer
+                             &iActSize)     // address of data buffer size
+            NE ERROR_SUCCESS)
+            lstrcpy (pActStr, pDefVal);
 
-		RegCloseKey (hKey2); hKey2 = NULL;
-	} else
-		lstrcpy (pActStr, pDefVal);
+        RegCloseKey (hKey2); hKey2 = NULL;
+    } else
+        lstrcpy (pActStr, pDefVal);
 } // End GetRegStr
 
 
 //***************************************************************************
-//	GetRegGlbChar
+//  GetRegGlbChar
 //
-//	Get a registry HGLOBAL value.
+//  Get a registry HGLOBAL value.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- GetRegGlbChar"
+#define APPEND_NAME     L" -- GetRegGlbChar"
 #else
 #define APPEND_NAME
 #endif
 HGLOBAL GetRegGlbChar
-	(HKEY	 hKey,
-	 LPCHAR  pSubKey,
-	 LPCHAR  pKeyStr,
-	 LPWCHAR pDefVal)
+    (HKEY    hKey,
+     LPCHAR  pSubKey,
+     LPCHAR  pKeyStr,
+     HGLOBAL hDefVal,
+     LPWCHAR pDefVal)
 
 {
-	HKEY	hKey2;
-	HGLOBAL hGlbRes;
-	LPVOID	lpMem;
-	BOOL	bDefVal;
-	UINT	ByteRes;
-////char	szBuf;
-	int 	iActSize = 0;
-	UINT	uLen;
+    HKEY    hKey2;
+    HGLOBAL hGlbVal;
+    LPVOID  lpMem;
+    UINT    ByteRes;
+    int     iActSize = 0;
+    UINT    uLen;
 
-	uLen = lstrlenW (pDefVal);
+    if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        // Request the data size
+        switch (RegQueryValueEx (hKey2,     // handle of key to query
+                                 pKeyStr,   // address of name of value to query
+                                 NULL,      // reserved
+                                 NULL,      // address of buffer for value type
+                                 NULL,      // address of data buffer
+                                 &iActSize))// address of data buffer size
+        {
+            case ERROR_FILE_NOT_FOUND:
+                // The keyname was not found --
+                //   use the default value
+                break;
 
-	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
-	{
-		// Request the data size
-		switch (RegQueryValueEx (hKey2, 	// handle of key to query
-								 pKeyStr,	// address of name of value to query
-								 NULL,		// reserved
-								 NULL,		// address of buffer for value type
-								 NULL,		// address of data buffer
-								 &iActSize))// address of data buffer size
-		{
-			case ERROR_FILE_NOT_FOUND:
-				// The keyname was not found --
-				//	 allocate space for the default value
-				iActSize = uLen * sizeof (APLCHAR);
-				bDefVal = TRUE;
+            case ERROR_SUCCESS:     // The stored value is of zero length
+            case ERROR_MORE_DATA:
+                // iActSize contains the # bytes needed
+                uLen = iActSize / sizeof (APLCHAR);
 
-				break;
+                // Calculate the space needed
+                ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, uLen, 1);
+////////////////ByteRes = sizeof (VARARRAY_HEADER)
+////////////////        + sizeof (APLDIM) * 1
+////////////////        + iActSize;
 
-			case ERROR_SUCCESS: 	// The stored value is of zero length
-			case ERROR_MORE_DATA:
-				// iActSize contains the # bytes needed
-				uLen = iActSize / sizeof (APLCHAR);
-				bDefVal = FALSE;
+                // Allocate space for the data
+                hGlbVal = DbgGlobalAlloc (GHND, ByteRes);
+                if (!hGlbVal)
+                    return hGlbVal;
 
-				break;
+                // Lock the memory to get a ptr to it
+                lpMem = MyGlobalLock (hGlbVal);
 
-			default:
-				DbgBrk ();
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
-				break;
-		} // End SWITCH
+                // Fill in the header values
+                lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = ARRAY_CHAR;
+////////////////lpHeader->Perm       = 0;       // Already zero from GHND
+////////////////lpHeader->SysVar     = 0;       // ...
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = uLen;
+                lpHeader->Rank       = 1;
 
-		// Allocate space for the data
-		ByteRes = sizeof (VARARRAY_HEADER)
-				+ sizeof (APLDIM) * 1
-				+ iActSize;
-		hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
-		if (!hGlbRes)
-			return hGlbRes;
+#undef  lpHeader
 
-		// Lock the memory to get a ptr to it
-		lpMem = MyGlobalLock (hGlbRes);
+                // Save the dimension
+                *VarArrayBaseToDim (lpMem) = uLen;
 
-#define lpHeader	((LPVARARRAY_HEADER) lpMem)
+                // Skip over the header and dimensions to the data
+                lpMem = VarArrayBaseToData (lpMem, 1);
 
-		// Fill in the header values
-		lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-		lpHeader->ArrType	 = ARRAY_CHAR;
-////////lpHeader->Perm		 = 0;
-////////lpHeader->SysVar	 = 0;
-		lpHeader->RefCnt	 = 1;
-		lpHeader->NELM		 = uLen;
-		lpHeader->Rank		 = 1;
+                RegQueryValueEx (hKey2,         // Handle of key to query
+                                 pKeyStr,       // Address of name of value to query
+                                 NULL,          // Reserved
+                                 NULL,          // Address of buffer for value type
+                                 (LPCHAR) lpMem,// Address of data buffer
+                                 &iActSize);    // Address of data buffer size
+                RegCloseKey (hKey2); hKey2 = NULL;
 
-		// Save the dimension
-		*VarArrayBaseToDim (lpHeader) = uLen;
+                // See if this is the default value
+                iActSize = lstrlenW (pDefVal);
+                for (uLen = 0; uLen < (UINT) iActSize; uLen++)
+                if (((LPWCHAR) lpMem)[uLen] NE pDefVal[uLen])
+                    break;
 
-		// Skip over the header and dimensions to the data
-		lpHeader = VarArrayBaseToData (lpHeader, 1);
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbVal); lpMem = NULL;
 
-		// Split cases based upon whether the data is in the
-		//	 registry or the default value
-		if (bDefVal)
-			// Copy the data to memory
-			CopyMemory (lpHeader, pDefVal, uLen * sizeof (APLCHAR));
-		else
-			RegQueryValueEx (hKey2, 		// handle of key to query
-							 pKeyStr,		// address of name of value to query
-							 NULL,			// reserved
-							 NULL,			// address of buffer for value type
-							 (LPCHAR) lpHeader,// address of data buffer
-							 &iActSize);	// address of data buffer size
-#undef	lpHeader
+                // If it's the default value, ...
+                if (uLen EQ (UINT) iActSize)
+                {
+                    DbgGlobalFree (hGlbVal); hGlbVal = NULL;
+                } else
+                    hDefVal = hGlbVal;
+                break;
 
-		// We no longer need this ptr
-		MyGlobalUnlock (hGlbRes); lpMem = NULL;
+            defstop
+                break;
+        } // End SWITCH
+    } else
+        hDefVal = NULL;
 
-		RegCloseKey (hKey2); hKey2 = NULL;
-	} else
-		hGlbRes = NULL;
-
-	return hGlbRes;
+    return hDefVal;
 } // End GetRegGlbChar
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	GetRegBinary
+//  GetRegBinary
 //
-//	Get a registry binary value.
+//  Get a registry binary value.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- GetRegBinary"
+#define APPEND_NAME     L" -- GetRegBinary"
 #else
 #define APPEND_NAME
 #endif
 void GetRegBinary
-	(HKEY	 hKey,
-	 LPCHAR  pSubKey,
-	 LPCHAR  pKeyStr,
-	 UINT	 uLen,
-	 LPVOID  pActVal,
-	 LPVOID  pDefVal)
+    (HKEY    hKey,
+     LPCHAR  pSubKey,
+     LPCHAR  pKeyStr,
+     UINT    uLen,
+     LPVOID  pActVal,
+     LPVOID  pDefVal)
 
 {
-	HKEY hKey2;
-	DWORD dwSize = uLen;
+    HKEY hKey2;
+    DWORD dwSize = uLen;
 
-	if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
-	{
-		if (RegQueryValueEx (hKey2, 		// handle of key to query
-							 pKeyStr,		// address of name of value to query
-							 NULL,			// reserved
-							 NULL,			// address of buffer for value type
-							 (LPCHAR) &pActVal, // address of data buffer
-							 &dwSize)		// address of data buffer size
-			NE ERROR_SUCCESS)
-			CopyMemory (pActVal, pDefVal, uLen);
+    if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
+    {
+        if (RegQueryValueEx (hKey2,         // handle of key to query
+                             pKeyStr,       // address of name of value to query
+                             NULL,          // reserved
+                             NULL,          // address of buffer for value type
+                             (LPCHAR) &pActVal, // address of data buffer
+                             &dwSize)       // address of data buffer size
+            NE ERROR_SUCCESS)
+            CopyMemory (pActVal, pDefVal, uLen);
 
-		RegCloseKey (hKey2); hKey2 = NULL;
-	} else
-		CopyMemory (pActVal, pDefVal, uLen);
+        RegCloseKey (hKey2); hKey2 = NULL;
+    } else
+        CopyMemory (pActVal, pDefVal, uLen);
 } // End GetRegBinary
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	GetFileNames
+//  GetFileNames
 //
-//	Construct some filenames
+//  Construct some filenames
 //***************************************************************************
 
 void GetFileNames
-	(HINSTANCE hInstance)
+    (HINSTANCE hInstance)
 
 {
-	char szDrive[_MAX_DRIVE],
-		 szDir[_MAX_DIR],
-		 szFname[_MAX_FNAME],
-		 szExt[_MAX_EXT];
+    char szDrive[_MAX_DRIVE],
+         szDir[_MAX_DIR],
+         szFname[_MAX_FNAME],
+         szExt[_MAX_EXT];
 
-	if (GetModuleFileName (hInstance, szAppDPFE, sizeof (szAppDPFE)))
-	{
-		// Split out the drive and path from the module filename
-		_splitpath (szAppDPFE, szDrive, szDir, szFname, szExt);
+    if (GetModuleFileName (hInstance, szAppDPFE, sizeof (szAppDPFE)))
+    {
+        // Split out the drive and path from the module filename
+        _splitpath (szAppDPFE, szDrive, szDir, szFname, szExt);
 
-		// Create the .HLP file name
-		_makepath  (szHlpDPFE, szDrive, szDir, szFname, ".HLP");
+        // Create the .HLP file name
+        _makepath  (szHlpDPFE, szDrive, szDir, szFname, ".HLP");
 
-		// Create the initial directory for File Open & Save
-		_makepath  (szInitDir, szDrive, szDir, NULL,	NULL);
-	} // End IF
+        // Create the initial directory for File Open & Save
+        _makepath  (szInitDir, szDrive, szDir, NULL,    NULL);
+    } // End IF
 } // End GetFileNames
 
 
 //***************************************************************************
-//	W2A
+//  W2A
 //
-//	Convert and copy a wide char string to a multibyte char string
+//  Convert and copy a wide char string to a multibyte char string
 //***************************************************************************
 
 void W2A
-	(LPSTR	lpDest,
-	 LPWSTR lpSrc,
-	 DWORD	dwSize)
+    (LPSTR  lpDest,
+     LPWSTR lpSrc,
+     DWORD  dwSize)
 
 {
-	int iLen;
+    int iLen;
 
-	iLen = 1 + lstrlenW (lpSrc);	// Get source length
-	WideCharToMultiByte (CP_ACP,	// ANSI code page
-						 0, 		// No flags
-						 lpSrc, 	// Source
-						 iLen,		// Source length
-						 lpDest,	// Destin
-						 dwSize,	// Size of buffer
-						 NULL,		// Use system default char
-						 NULL); 	// Skip notification
+    iLen = 1 + lstrlenW (lpSrc);    // Get source length
+    WideCharToMultiByte (CP_ACP,    // ANSI code page
+                         0,         // No flags
+                         lpSrc,     // Source
+                         iLen,      // Source length
+                         lpDest,    // Destin
+                         dwSize,    // Size of buffer
+                         NULL,      // Use system default char
+                         NULL);     // Skip notification
 } // End W2A
 
 
 //***************************************************************************
-//	A2W
+//  A2W
 //
-//	Convert and copy a multibyte char string to a wide char string
+//  Convert and copy a multibyte char string to a wide char string
 //***************************************************************************
 
 void A2W
-	(LPWSTR lpDest,
-	 LPSTR	lpSrc)
+    (LPWSTR lpDest,
+     LPSTR  lpSrc)
 
 {
-	int iLen;
+    int iLen;
 
-	iLen = 1 + lstrlenA (lpSrc);	// Get source length
-	MultiByteToWideChar (CP_ACP,	// ANSI code page
-						 0, 		// No flags
-						 lpSrc, 	// Source
-						 iLen,		// Source length
-						 lpDest,	// Destin
-						 iLen * sizeof (WCHAR)); // Size of buffer
+    iLen = 1 + lstrlenA (lpSrc);    // Get source length
+    MultiByteToWideChar (CP_ACP,    // ANSI code page
+                         0,         // No flags
+                         lpSrc,     // Source
+                         iLen,      // Source length
+                         lpDest,    // Destin
+                         iLen * sizeof (WCHAR)); // Size of buffer
 } // End A2W
 
 
 //***************************************************************************
-//	End of File: common.c
+//  End of File: common.c
 //***************************************************************************

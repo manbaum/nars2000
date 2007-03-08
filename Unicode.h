@@ -16,7 +16,7 @@
 #define UCS2_QUADRIGHTARROW     0x2348      //
 #define UCS2_QUADUPARROW        0x2350      //
 #define UCS2_QUADDOWNARROW      0x2357      //
-#define UCS2_DIERESISUPTACK     0x2361      // Convolution operator (snout)
+#define UCS2_DIERESISDOWNTACK   0x2361      // Convolution operator (snout)
 #define UCS2_DIERESISDEL        0x2362      // Dual operator        (frog)
 #define UCS2_DIERESISSTAR       0x2363      // Power operator       (sourpuss)
 #define UCS2_DIERESISJOT        0x2364      // Rank operator        (hoot)
@@ -25,7 +25,7 @@
 
 // The numeric or character constants
 #define UCS2_ALPHA              0x237A      // Alt-'a' - alpha
-#define UCS2_DOWNTACK           0x22A5      // Alt-'b' - base
+#define UCS2_UPTACK             0x22A5      // Alt-'b' - base
 #define UCS2_UPSHOE             0x2229      // Alt-'c' - intersection
 #define UCS2_DOWNSTILE          0x230A      // Alt-'d' - floor
 #define UCS2_EPSILON            0x220A      // Alt-'e' - epsilon
@@ -37,7 +37,7 @@
 #define UCS2_APOSTROPHE         0x0027      // Alt-'k' - single-quote
 #define UCS2_QUAD               0x25AF      // Alt-'l' - quad (9109??)
 #define UCS2_STILE              0x2223      // Alt-'m' - modulus
-#define UCS2_UPTACK             0x22A4      // Alt-'n' - representation
+#define UCS2_DOWNTACK           0x22A4      // Alt-'n' - representation
 #define UCS2_CIRCLE             0x25CB      // Alt-'o' - circle
 #define UCS2_STAR               0x002A      // Alt-'p' - power
 #define UCS2_QUERY              0x003F      // Alt-'q' - question-mark
@@ -56,6 +56,7 @@
 #define UCS2_DELSTILE           0x2352      // Alt-'#' - grade-down
 #define UCS2_DELTASTILE         0x234B      // Alt-'$' - grade-up
 #define UCS2_CIRCLESTILE        0x233D      // Alt-'%' - rotate
+#define UCS2_CIRCLESLOPE        0x2349      // Alt-'^' - transpose
 #define UCS2_CIRCLEBAR          0x2296      // Alt-'&' - circle-bar
 #define UCS2_HYDRANT            0x2355      // Alt-'\''- execute
 #define UCS2_DOWNCARETTILDE     0x2371      // Alt-'(' - nor
@@ -111,16 +112,15 @@
 //efine UCS2_                               // Alt-'Y' - (none)
 //efine UCS2_                               // Alt-'Z' - (none)
 
-#define UCS2_LEFTARROW          0x2190      // Alt-'[' - left arrow
-#define UCS2_LEFTTACK           0x22A2      // Alt-'\\'- left tack
-#define UCS2_RIGHTARROW         0x2192      // Alt-']' - right arrow
-#define UCS2_CIRCLESLOPE        0x2349      // Alt-'^' - transpose
-#define UCS2_QUOTEDOT           0x0021      // Alt-'_' - quote-dot
 #define UCS2_DIAMOND            0x22C4      // Alt-'`' - diamond (9674??)
-#define UCS2_QUOTEQUAD          0x235E      // Alt-'{' - quote-quad
-#define UCS2_RIGHTTACK          0x22A3      // Alt-'|' - right tack
-#define UCS2_ZILDE              0x236C      // Alt-'}' - zilde
 #define UCS2_COMMABAR           0x236A      // Alt-'~' - comma-bar
+#define UCS2_QUOTEDOT           0x0021      // Alt-'_' - quote-dot
+#define UCS2_LEFTARROW          0x2190      // Alt-'[' - left arrow
+#define UCS2_QUOTEQUAD          0x235E      // Alt-'{' - quote-quad
+#define UCS2_RIGHTARROW         0x2192      // Alt-']' - right arrow
+#define UCS2_ZILDE              0x236C      // Alt-'}' - zilde
+#define UCS2_LEFTTACK           0x22A3      // Alt-'\\'- left tack
+#define UCS2_RIGHTTACK          0x22A2      // Alt-'|' - right tack
 
 #define UCS2_DOUBLEQUOTE        0x0022      // Double quote
 #define UCS2_POUND              0x0023      // Pound
@@ -150,7 +150,7 @@
 
 // The corresponding wide string constants
 #define WS_UCS2_ALPHA           L"\x237A"   // Alt-'a' - alpha
-#define WS_UCS2_DOWNTACK        L"\x22A5"   // Alt-'b' - base
+#define WS_UCS2_UPTACK          L"\x22A5"   // Alt-'b' - base
 #define WS_UCS2_UPSHOE          L"\x2229"   // Alt-'c' - intersection
 #define WS_UCS2_DOWNSTILE       L"\x230A"   // Alt-'d' - floor
 #define WS_UCS2_EPSILON         L"\x220A"   // Alt-'e' - epsilon
@@ -162,7 +162,7 @@
 #define WS_UCS2_APOSTROPHE      L"\x0027"   // Alt-'k' - single-quote
 #define WS_UCS2_QUAD            L"\x25AF"   // Alt-'l' - quad (9109??)
 #define WS_UCS2_STILE           L"\x2223"   // Alt-'m' - modulus
-#define WS_UCS2_UPTACK          L"\x22A4"   // Alt-'n' - representation
+#define WS_UCS2_DOWNTACK        L"\x22A4"   // Alt-'n' - representation
 #define WS_UCS2_CIRCLE          L"\x25CB"   // Alt-'o' - circle
 #define WS_UCS2_STAR            L"\x002A"   // Alt-'p' - power
 #define WS_UCS2_QUERY           L"\x003F"   // Alt-'q' - question-mark
@@ -237,15 +237,15 @@
 //efine WS_UCS2_                            // Alt-'Y' - (none)
 //efine WS_UCS2_                            // Alt-'Z' - (none)
 
-#define WS_UCS2_LEFTARROW       L"\x2190"   // Alt-'[' - left arrow
-#define WS_UCS2_LEFTTACK        L"\x22A2"   // Alt-'\\'- left tack
-#define WS_UCS2_RIGHTARROW      L"\x2192"   // Alt-']' - right arrow
-#define WS_UCS2_QUOTEDOT        L"\x0021"   // Alt-'_' - quote-dot
 #define WS_UCS2_DIAMOND         L"\x22C4"   // Alt-'`' - diamond (9674??)
-#define WS_UCS2_QUOTEQUAD       L"\x235E"   // Alt-'{' - quote-quad
-#define WS_UCS2_RIGHTTACK       L"\x22A3"   // Alt-'|' - right tack
-#define WS_UCS2_ZILDE           L"\x236C"   // Alt-'}' - zilde
 #define WS_UCS2_COMMABAR        L"\x236A"   // Alt-'~' - comma-bar
+#define WS_UCS2_QUOTEDOT        L"\x0021"   // Alt-'_' - quote-dot
+#define WS_UCS2_LEFTARROW       L"\x2190"   // Alt-'[' - left arrow
+#define WS_UCS2_QUOTEQUAD       L"\x235E"   // Alt-'{' - quote-quad
+#define WS_UCS2_RIGHTARROW      L"\x2192"   // Alt-']' - right arrow
+#define WS_UCS2_ZILDE           L"\x236C"   // Alt-'}' - zilde
+#define WS_UCS2_LEFTTACK        L"\x22A3"   // Alt-'\\'- left tack
+#define WS_UCS2_RIGHTTACK       L"\x22A2"   // Alt-'|' - right tack
 
 #define WS_UCS2_DOUBLEQUOTE     L"\x0022"   // Double quote
 #define WS_UCS2_POUND           L"\x0023"   // Pound

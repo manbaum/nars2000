@@ -11,7 +11,7 @@
 #define TRUE    1
 #define FALSE   0
 
-#define abs64(a)    ((a>0)?a:-a)
+#define abs64(a)    (((a)>0)?a:-(a))
 #define MB(a)   MessageBox (NULL, a, "NARS2000", MB_OK)
 #define MBC(a)  if (MessageBox (NULL, a, "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
 #define IsGlbPtr(a) (GlobalFlags (a) NE GMEM_INVALID_HANDLE)
@@ -43,7 +43,7 @@ default:    \
 DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
 
 #define DbgGlobalFree(hGlbToken) \
-dprintfW (L"**GlobalFree in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \
+dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \
 MyGlobalFree (hGlbToken);
 
 #define DbgIncrRefCntDir(hGlbData) \

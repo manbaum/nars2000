@@ -20,7 +20,7 @@
 //***************************************************************************
 //  PrimFnComma_EM
 //
-//  Primitive function for monadic and dyadic comma (ravel/table and catenate/laminate)
+//  Primitive function for monadic and dyadic Comma (ravel/table and catenate/laminate)
 //***************************************************************************
 
 LPYYSTYPE PrimFnComma_EM
@@ -45,7 +45,7 @@ LPYYSTYPE PrimFnComma_EM
 //***************************************************************************
 //  PrimFnMonComma_EM
 //
-//  Primitive function for monadic comma (ravel/table)
+//  Primitive function for monadic Comma (ravel/table)
 //***************************************************************************
 
 #ifdef DEBUG
@@ -125,7 +125,7 @@ LPYYSTYPE PrimFnMonComma_EM
 //***************************************************************************
 //  PrimFnMonCommaImm_EM
 //
-//  Monadic comma (ravel/table) on an immediate value.
+//  Monadic Comma (ravel/table) on an immediate value.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -148,9 +148,10 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     LPVOID  lpMemRes;
     BOOL    bFract = FALSE,
             bTableRes;
+    UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Check for axis present
     while (lptkAxis NE NULL)
@@ -159,9 +160,10 @@ LPYYSTYPE PrimFnMonCommaImm_EM
         //   that the axis be an empty vector
         if (CheckAxis_EM (lptkAxis,         // The axis token
                           0,                // All values less than this
-                          FALSE,            // TRUE if scalar or one-element vector only
-                          FALSE,            // TRUE if want sorted axes
-                          TRUE,             // TRUE if axes must be contiguous
+                          FALSE,            // TRIE iff scalar or one-element vector only
+                          FALSE,            // TRIE iff want sorted axes
+                          TRUE,             // TRIE iff axes must be contiguous
+                          FALSE,            // TRIE iff duplicate axes are allowed
                           NULL,             // Return TRUE iff fractional values present
                           NULL,             // Return last axis value
                           NULL,             // Return # elements in axis vector
@@ -170,9 +172,10 @@ LPYYSTYPE PrimFnMonCommaImm_EM
         //   or a singleton fractional value
         if (CheckAxis_EM (lptkAxis,         // The axis token
                           1,                // All values less than this
-                          TRUE,             // TRUE if scalar or one-element vector only
-                          FALSE,            // TRUE if want sorted axes
-                          TRUE,             // TRUE if axes must be contiguous
+                          TRUE,             // TRIE iff scalar or one-element vector only
+                          FALSE,            // TRIE iff want sorted axes
+                          TRUE,             // TRIE iff axes must be contiguous
+                          FALSE,            // TRIE iff duplicate axes are allowed
                           &bFract,          // Return TRUE iff fractional values present
                           NULL,             // Return last axis value
                           NULL,             // Return # elements in axis vector
@@ -184,7 +187,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     } // End WHILE
 
     //***************************************************************
-    // If the function is comma-bar (table), the result is
+    // If the function is Comma-bar (table), the result is
     //   1 1 {rho} R
     //***************************************************************
     bTableRes = (lptkFunc->tkData.tkChar EQ UCS2_COMMABAR);
@@ -271,14 +274,14 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;        // Already zero from static
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End PrimFnMonCommaImm_EM
 #undef  APPEND_NAME
 
@@ -286,7 +289,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
 //***************************************************************************
 //  PrimFnMonCommaGlb_EM
 //
-//  Monadic comma (ravel/table) on a global memory object
+//  Monadic Comma (ravel/table) on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
@@ -332,9 +335,10 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
               bRet = TRUE,
               bReorder = FALSE;     // TRUE iff the result values are reordered
                                     //   from those in the right arg
+    UINT      YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -349,9 +353,10 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
             //   {iota}aplRankRht
             if (CheckAxis_EM (lptkAxis,         // The axis token
                               aplRankRht,       // All values less than this
-                              FALSE,            // TRUE if scalar or one-element vector only
-                              FALSE,            // TRUE if want sorted axes
-                              TRUE,             // TRUE if axes must be contiguous
+                              FALSE,            // TRIE iff scalar or one-element vector only
+                              FALSE,            // TRIE iff want sorted axes
+                              TRUE,             // TRIE iff axes must be contiguous
+                              FALSE,            // TRIE iff duplicate axes are allowed
                               NULL,             // Return TRUE iff fractional values present
                               &aplLastAxis,     // Return last axis value
                               &aplNELMAxis,     // Return # elements in axis vector
@@ -360,9 +365,10 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
             //   or a singleton fractional value
             if (CheckAxis_EM (lptkAxis,         // The axis token
                               aplRankRht + 1,   // All values less than this
-                              TRUE,             // TRUE if scalar or one-element vector only
-                              FALSE,            // TRUE if want sorted axes
-                              TRUE,             // TRUE if axes must be contiguous
+                              TRUE,             // TRIE iff scalar or one-element vector only
+                              FALSE,            // TRIE iff want sorted axes
+                              TRUE,             // TRIE iff axes must be contiguous
+                              FALSE,            // TRIE iff duplicate axes are allowed
                               &bFract,          // Return TRUE iff fractional values present
                               &aplLastAxis,     // Return last axis value
                               &aplNELMAxis,     // Return # elements in axis vector
@@ -377,7 +383,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
         aplLastAxis = aplNELMAxis = aplRankRht;
 
     //***************************************************************
-    // If the function is comma-bar (table), the result is a
+    // If the function is Comma-bar (table), the result is a
     //   matrix equivalent to
     //     ,[1{drop}{iota}{rho}{rho}R] R
     //***************************************************************
@@ -813,12 +819,12 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
     } // End IF/ELSE
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (lpMemRes)
     {
@@ -869,7 +875,7 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYResIndex];
+        return &YYRes[YYLclIndex];
     else
         return NULL;
 } // End PrimFnMonCommaGlb_EM
@@ -879,7 +885,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  PrimFnDydComma_EM
 //
-//  Primitive function for dyadic comma (catenate/laminate)
+//  Primitive function for dyadic Comma (catenate/laminate)
 //***************************************************************************
 
 #ifdef DEBUG
@@ -946,6 +952,7 @@ LPYYSTYPE PrimFnDydComma_EM
     APLCHAR    aplCharLft,
                aplCharRht;
     APLLONGEST aplVal;
+    UINT       YYLclIndex;
     static APLSTYPE sType[ARRAY_LENGTH][ARRAY_LENGTH] =
     //      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        LIST         APA
     {{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // BOOL
@@ -959,7 +966,7 @@ LPYYSTYPE PrimFnDydComma_EM
     };
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1002,7 +1009,8 @@ LPYYSTYPE PrimFnDydComma_EM
                               aplRankRes,       // All values less than this
                               TRUE,             // TRUE iff scalar or one-element vector only
                               FALSE,            // TRUE iff want sorted axes
-                              FALSE,            // TRUE if axes must be contiguous
+                              FALSE,            // TRIE iff axes must be contiguous
+                              FALSE,            // TRIE iff duplicate axes are allowed
                               NULL,             // Return TRUE iff fractional values present
                               &aplAxis,         // Return last axis value
                               NULL,             // Return # elements in axis vector
@@ -1013,7 +1021,8 @@ LPYYSTYPE PrimFnDydComma_EM
                               aplRankRes + 1,   // All values less than this
                               TRUE,             // TRUE iff scalar or one-element vector only
                               FALSE,            // TRUE iff want sorted axes
-                              FALSE,            // TRUE if axes must be contiguous
+                              FALSE,            // TRIE iff axes must be contiguous
+                              FALSE,            // TRIE iff duplicate axes are allowed
                               &bFract,          // Return TRUE iff fractional values present
                               &aplAxis,         // Return last axis value
                               NULL,             // Return # elements in axis vector
@@ -1025,11 +1034,11 @@ LPYYSTYPE PrimFnDydComma_EM
         } // End WHILE
     } else
     {
-        // No axis means catenate on the last dimension if comma
+        // No axis means catenate on the last dimension if Comma
         if (lptkFunc->tkData.tkChar EQ UCS2_COMMA)
             aplAxis = max (0, (APLRANKSIGN) aplRankRes - 1);
         else
-        // It's comma-bar, so catenate on first dimension
+        // It's Comma-bar, so catenate on first dimension
             aplAxis = 0;
     } // End IF/ELSE
 
@@ -1275,12 +1284,12 @@ LPYYSTYPE PrimFnDydComma_EM
 #undef  lpHeaderRes
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;        // Already zero from static
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Skip over the result header to the dimensions
     lpMemResDim = VarArrayBaseToDim (lpMemRes);
@@ -2007,7 +2016,7 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYResIndex];
+        return &YYRes[YYLclIndex];
     else
         return NULL;
 } // End PrimFnDydComma_EM

@@ -2,7 +2,7 @@
 //
 // DEPSCAN.C - Dependency scanner, quick and dirty version
 //
-// Copyright (C) 1995-97 Qualitas, Inc.  All rights reserved.
+// Copyright (C) 1995-2007 Qualitas, Inc.  All rights reserved.
 //
 // To truly do the job right, this program should parse the project
 // makefile to get the INCLUDE path (but we're already getting in some
@@ -25,7 +25,7 @@
 #define MAXINCLUDES 300
 #define MAXFILES    500 // 13 * 500 = 6.5K
 
-#define COPYRIGHT  "DEPSCAN v" VERSION "  Copyright (C) 1995-7 Qualitas, Inc.  All rights reserved.\n"
+#define COPYRIGHT  "DEPSCAN v" VERSION "  Copyright (C) 1995-2007 Qualitas, Inc.  All rights reserved.\n"
 
 // Display empty header dependencies
 int gnShowEmpty = 0;
@@ -1195,7 +1195,29 @@ main (int argc, char *argv[], char *envp[])
     const char *pszCatroot;
     char szTmpPath[_MAX_PATH];
 
-    fprintf (stderr, COPYRIGHT);
+////fprintf (stderr, COPYRIGHT);
+
+#if 0 //********************************************
+    // Dump argv
+    fprintf( stderr, "argv:\n" );
+    for (i = 0; argv[ i ]; i++) {
+        fprintf( stderr, "  %d: %s\n", i, argv[ i ] );
+    }
+
+    // Dump environment
+    fprintf( stderr, "command line env:\n" );
+    for (i = 0; envp[ i ]; i++) {
+        fprintf( stderr, "  %d: %s\n", i, envp[ i ] );
+    }
+
+    fprintf( stderr, "_environ:\n" );
+    for (i = 0; _environ[ i ]; i++) {
+        fprintf( stderr, "  %d: %s\n", i, _environ[ i ] );
+        if (i > 10) {
+        break;
+        }
+    }
+#endif  //*******************************************
 
     if (argc < 2)   // No filenames specified
         return SyntErr (-1);
@@ -1331,22 +1353,6 @@ main (int argc, char *argv[], char *envp[])
                          "INCLUDE=%s\n",
                          szLclPath, szIncPath, szMaxIncPath, sz386Path, getenv ("INCLUDE"));
     }
-
-#if 0 //********************************************
-    // Dump environment
-    fprintf( stderr, "command line env:\n" );
-    for (i = 0; envp[ i ]; i++) {
-        fprintf( stderr, "  %d: %s\n", i, envp[ i ] );
-    }
-
-    fprintf( stderr, "_environ:\n" );
-    for (i = 0; _environ[ i ]; i++) {
-        fprintf( stderr, "  %d: %s\n", i, _environ[ i ] );
-        if (i > 10) {
-        break;
-        }
-    }
-#endif  //*******************************************
 
     if (!gnQuiet)
         fprintf (stderr, "Sorting file list...\n");

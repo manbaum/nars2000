@@ -12,6 +12,9 @@ RESDEBUG=1
 A=$(PROJPATH)Images\            # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=$(PROJPATH)WineHQ\           # Wine source
+GS=gsl\                         # GSL Source
+GSP=$(GS)specfunc\              # GSL Special Functions
+OLDPATH = $(PATH)               # Save the current path
 
 WIN=32
 WDEF=_WIN$(WIN)
@@ -31,10 +34,8 @@ LIBS_WEXE = GDI32.LIB   \
             SHELL32.LIB \
             ADVAPI32.LIB\
             COMCTL32.LIB\
-#####       IMM32.LIB   \
-!if "$(DEBUG)" == "1"
-            QCtrl32.LIB
-!endif
+            libgsl.lib  \
+#####       IMM32.LIB
 
 RCFLAGS =
 RESFLAGS =
@@ -68,8 +69,8 @@ L=$(SRCROOT)LIB\                # .LIB directory
 
 M98=N:\                         # Win98 build
 ###M98=L:\VC98\                    # Win98 build
-I98=$(PROJPATH);$(M98)INCLUDE;$(MSVC)INCLUDE
-L98=$(M98)LIB;$(MSVC)LIB
+I98=$(PROJPATH);$(M98)INCLUDE;$(MSVC)INCLUDE;$(SRCROOT)GSL\INCLUDE
+L98=$(M98)LIB;$(MSVC)LIB;$(SRCROOT)GSL\LIB
 LD=$(M98)BIN\link
 CC=$(M98)BIN\cl
 RC=$(M98)BIN\rc
@@ -90,7 +91,7 @@ DEL:
         @del /Q $(O)*.*
 
 DIR:
-        @vdir -c $(O) $(B) $(BC) >NUL
+        @$(BC)vdir -q -c $(O) $(B) $(BC) >NUL
 
 {}.rc{$(O)}.res:
         @Set INCLUDE=$(I98);$(H);$(O)
@@ -117,6 +118,16 @@ DIR:
         @if exist $@ del $@
         $(CC) $(CFLAGS_WEXE) /Fo$@ /c /D "UNICODE" %s
 
+{$(GSP)}.c{$(O)}.obj:
+        @Set INCLUDE=$(GS).;$(GSP).;.\;.\specfunc\$(I98).
+        @if exist $@ del $@
+        $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+
+{$(GS)}.c{$(O)}.obj:
+        @Set INCLUDE=$(GS).;$(I98).
+        @if exist $@ del $@
+        $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
+
 
 ####################### DEPENDENCY GENERATION #################
 
@@ -138,9 +149,11 @@ $(O)parse.DEP       \
 $(O)pf_bar.DEP      \
 $(O)pf_circle.DEP   \
 $(O)pf_comma.DEP    \
+$(O)pf_cslope.DEP   \
 $(O)pf_cstar.DEP    \
 $(O)pf_dcaret.DEP   \
 $(O)pf_divide.DEP   \
+$(O)pf_domino.DEP   \
 $(O)pf_dstile.DEP   \
 $(O)pf_epsilon.DEP  \
 $(O)pf_equal.DEP    \
@@ -155,6 +168,7 @@ $(O)pf_ndcaret.DEP  \
 $(O)pf_nequal.DEP   \
 $(O)pf_nucaret.DEP  \
 $(O)pf_plus.DEP     \
+$(O)pf_qdot.DEP     \
 $(O)pf_query.DEP    \
 $(O)pf_rcaret.DEP   \
 $(O)pf_rho.DEP      \
@@ -183,20 +197,34 @@ $(O)ver.DEV         \
 $(O)version.DEV
 
 {$(O)}.C{$(O)}.DEP:
-        @Set INCLUDE=$(I98);$(H);$(O)
-        $(BC)depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+    @Set INCLUDE=$(I98);$(H);$(O)
+    @Set PATH=$(BC)
+    depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+    @Set PATH=$(OLDPATH)
 
 {$(WS)}.C{$(O)}.DEP:
-        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
-        $(BC)depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s > $@
+    @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
+    @Set PATH=$(BC)
+    depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s > $@
+    @Set PATH=$(OLDPATH)
+
+{$(GSP)}.C{$(O)}.DEP:
+    @Set INCLUDE=$(GS).;$(GSP).;$(I98).
+    @Set PATH=$(BC)
+    depscan -q -s$(PROJPATH)$(O)=$$(O),$(GS)=$$(GS),$(GSP)=$$(GSP) %s > $@
+    @Set PATH=$(OLDPATH)
 
 {}.C{$(O)}.DEP:
-        @Set INCLUDE=$(I98);$(H);$(O)
-        $(BC)depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+    @Set INCLUDE=$(I98);$(H);$(O)
+    @Set PATH=$(BC)
+    depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+    @Set PATH=$(OLDPATH)
 
 {}.RC{$(O)}.DEV:
-        @Set INCLUDE=$(I98);$(H);$(O)
-        $(BC)depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+    @Set INCLUDE=$(I98);$(H);$(O)
+    @Set PATH=$(BC)
+    depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+    @Set PATH=$(OLDPATH)
 
 !if exist ($(O)assign.DEP)
 !       include $(O)assign.DEP
@@ -243,11 +271,11 @@ $(O)version.DEV
 !if exist ($(O)pf_bar.DEP)
 !       include $(O)pf_bar.DEP
 !endif
-!if exist ($(O)pf_circle.DEP)
-!       include $(O)pf_circle.DEP
-!endif
 !if exist ($(O)pf_comma.DEP)
 !       include $(O)pf_comma.DEP
+!endif
+!if exist ($(O)pf_cslope.DEP)
+!       include $(O)pf_cslope.DEP
 !endif
 !if exist ($(O)pf_cstar.DEP)
 !       include $(O)pf_cstar.DEP
@@ -257,6 +285,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)pf_divide.DEP)
 !       include $(O)pf_divide.DEP
+!endif
+!if exist ($(O)pf_domino.DEP)
+!       include $(O)pf_domino.DEP
 !endif
 !if exist ($(O)pf_dstile.DEP)
 !       include $(O)pf_dstile.DEP
@@ -299,6 +330,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)pf_plus.DEP)
 !       include $(O)pf_plus.DEP
+!endif
+!if exist ($(O)pf_qdot.DEP)
+!       include $(O)pf_qdot.DEP
 !endif
 !if exist ($(O)pf_query.DEP)
 !       include $(O)pf_query.DEP
@@ -395,14 +429,17 @@ $(O)editmat.PRO     \
 $(O)editvec.PRO     \
 $(O)exec.PRO        \
 $(O)free.PRO        \
+###$(O)gamma.PRO       \
 $(O)main.PRO        \
 $(O)parse.PRO       \
 $(O)pf_bar.PRO      \
 $(O)pf_circle.PRO   \
 $(O)pf_comma.PRO    \
+$(O)pf_cslope.PRO   \
 $(O)pf_cstar.PRO    \
 $(O)pf_dcaret.PRO   \
 $(O)pf_divide.PRO   \
+$(O)pf_domino.PRO   \
 $(O)pf_dstile.PRO   \
 $(O)pf_epsilon.PRO  \
 $(O)pf_equal.PRO    \
@@ -417,6 +454,7 @@ $(O)pf_ndcaret.PRO  \
 $(O)pf_nequal.PRO   \
 $(O)pf_nucaret.PRO  \
 $(O)pf_plus.PRO     \
+$(O)pf_qdot.PRO     \
 $(O)pf_query.PRO    \
 $(O)pf_rcaret.PRO   \
 $(O)pf_rho.PRO      \
@@ -453,6 +491,10 @@ $(O)resdebug.PRO
         @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
         $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO /D "UNICODE" %s > $@
 
+{$(GSP)}.C{$(O)}.PRO:
+        @Set INCLUDE=$(GS).;$(GSP).;$(I98).
+        $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
+
 
 ########################## UTILITY ROUTINES ##########################
 
@@ -473,28 +515,57 @@ ICONS=$(A)About.ico     \
       $(A)VE.ico        \
       $(A)LineCont.bmp
 
+## bison-generated files
 $(O)parse.C:            $(@B).Y
+$(O)parse.OBJ:          $(O)$(@B).C     $(PARSE_DEP)
 
+#### ## GSL-specific files
+#### $(O)coerce.OBJ:         $(GS)$(@B).C
+#### $(O)error.OBJ:          $(GS)$(@B).C
+#### $(O)fdiv.OBJ:           $(GS)$(@B).C
+#### $(O)infnan.OBJ:         $(GS)$(@B).C
+#### $(O)init.OBJ:           $(GS)$(@B).C
+#### $(O)invhyp.OBJ:         $(GS)$(@B).C
+#### $(O)log1p.OBJ:          $(GS)$(@B).C
+#### $(O)lu.OBJ:             $(GS)$(@B).C
+#### $(O)math.OBJ:           $(GS)$(@B).C
+#### $(O)permutation.OBJ:    $(GS)$(@B).C
+#### $(O)permute_source.OBJ: $(GS)$(@B).C
+#### $(O)stream.OBJ:         $(GS)$(@B).C
+####
+#### ## GSP-specific files
+#### $(O)elementary.OBJ:     $(GSP)$(@B).C
+#### $(O)exp.OBJ:            $(GSP)$(@B).C
+#### $(O)gamma.OBJ:          $(GSP)$(@B).C
+#### $(O)log.OBJ:            $(GSP)$(@B).C
+#### $(O)psi.OBJ:            $(GSP)$(@B).C
+#### $(O)trig.OBJ:           $(GSP)$(@B).C
+#### $(O)zeta.OBJ:           $(GSP)$(@B).C
+
+## WineHQ-specific files
+$(O)editctrl.OBJ:       $(WS)$(@B).C    $(EDITCTRL_DEP)
+
+## NARS-specific files
 $(O)assign.OBJ:         $(@B).C         $(ASSIGN_DEP)
 $(O)bjhash.OBJ:         $(@B).C         $(BJHASH_DEP)
 $(O)common.OBJ:         $(@B).C         $(COMMON_DEP)
 $(O)convert.OBJ:        $(@B).C         $(CONVERT_DEP)
 $(O)debug.OBJ:          $(@B).C         $(DEBUG_DEP)
 $(O)display.OBJ:        $(@B).C         $(DISPLAY_DEP)
-$(O)editctrl.OBJ:       $(WS)$(@B).C    $(EDITCTRL_DEP)
 $(O)editfcn.OBJ:        $(@B).C         $(EDITFCN_DEP)
 $(O)editmat.OBJ:        $(@B).C         $(EDITMAT_DEP)
 $(O)editvec.OBJ:        $(@B).C         $(EDITVEC_DEP)
 $(O)exec.OBJ:           $(@B).C         $(EXEC_DEP)
 $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
-$(O)parse.OBJ:          $(O)$(@B).C     $(PARSE_DEP)
 $(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
 $(O)pf_circle.OBJ:      $(@B).C         $(PF_CIRCLE_DEP)
 $(O)pf_comma.OBJ:       $(@B).C         $(PF_COMMA_DEP)
+$(O)pf_cslope.OBJ:      $(@B).C         $(PF_CSLOPE_DEP)
 $(O)pf_cstar.OBJ:       $(@B).C         $(PF_CSTAR_DEP)
 $(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
 $(O)pf_divide.OBJ:      $(@B).C         $(PF_DIVIDE_DEP)
+$(O)pf_domino.OBJ:      $(@B).C         $(PF_DOMINO_DEP)
 $(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
 $(O)pf_epsilon.OBJ:     $(@B).C         $(PF_EPSILON_DEP)
 $(O)pf_equal.OBJ:       $(@B).C         $(PF_EQUAL_DEP)
@@ -509,6 +580,7 @@ $(O)pf_ndcaret.OBJ:     $(@B).C         $(PF_NDCARET_DEP)
 $(O)pf_nequal.OBJ:      $(@B).C         $(PF_NEQUAL_DEP)
 $(O)pf_nucaret.OBJ:     $(@B).C         $(PF_NUCARET_DEP)
 $(O)pf_plus.OBJ:        $(@B).C         $(PF_PLUS_DEP)
+$(O)pf_qdot.OBJ:        $(@B).C         $(PF_QDOT_DEP)
 $(O)pf_query.OBJ:       $(@B).C         $(PF_QUERY_DEP)
 $(O)pf_rcaret.OBJ:      $(@B).C         $(PF_RCARET_DEP)
 $(O)pf_rho.OBJ:         $(@B).C         $(PF_RHO_DEP)
@@ -553,7 +625,30 @@ $(L)$(ENAME).HLP:       $(BC)$(ENAME).HLP
 $(WS)local.h:           editctrl.h   resource.h
 
 # Build the Win32 version
-OBJS=$(O)assign.OBJ         \
+#### OBJS=                       \
+####      $(O)coerce.OBJ         \
+####      $(O)error.OBJ          \
+####      $(O)fdiv.OBJ           \
+####      $(O)infnan.OBJ         \
+####      $(O)init.OBJ           \
+####      $(O)invhyp.OBJ         \
+####      $(O)log1p.OBJ          \
+####      $(O)lu.OBJ             \
+####      $(O)math.OBJ           \
+####      $(O)permutation.OBJ    \
+####      $(O)permute_source.OBJ \
+####      $(O)stream.OBJ         \
+####                             \
+####      $(O)elementary.OBJ     \
+####      $(O)exp.OBJ            \
+####      $(O)gamma.OBJ          \
+####      $(O)log.OBJ            \
+####      $(O)psi.OBJ            \
+####      $(O)trig.OBJ           \
+####      $(O)zeta.OBJ           \
+####                             \
+OBJS=                       \
+     $(O)assign.OBJ         \
      $(O)bjhash.OBJ         \
      $(O)common.OBJ         \
      $(O)convert.OBJ        \
@@ -570,9 +665,11 @@ OBJS=$(O)assign.OBJ         \
      $(O)pf_bar.OBJ         \
      $(O)pf_circle.OBJ      \
      $(O)pf_comma.OBJ       \
+     $(O)pf_cslope.OBJ      \
      $(O)pf_cstar.OBJ       \
      $(O)pf_dcaret.OBJ      \
      $(O)pf_divide.OBJ      \
+     $(O)pf_domino.OBJ      \
      $(O)pf_dstile.OBJ      \
      $(O)pf_epsilon.OBJ     \
      $(O)pf_equal.OBJ       \
@@ -587,6 +684,7 @@ OBJS=$(O)assign.OBJ         \
      $(O)pf_nequal.OBJ      \
      $(O)pf_nucaret.OBJ     \
      $(O)pf_plus.OBJ        \
+     $(O)pf_qdot.OBJ        \
      $(O)pf_query.OBJ       \
      $(O)pf_rcaret.OBJ      \
      $(O)pf_rho.OBJ         \

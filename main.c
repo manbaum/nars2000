@@ -52,6 +52,8 @@ typedef struct tagENUMSETFONT
 #define DEF_CTEMP_INITSIZE  1024        // Initial ...
 #define DEF_WTEMP_MAXSIZE   1024        // Maximum size of WCHAR ...
 #define DEF_WTEMP_INITSIZE  1024        // Initial ...
+#define DEF_WFORMAT_MAXSIZE   1024*1024 // Maximum size of WCHAR Formatting storage
+#define DEF_WFORMAT_INITSIZE    64*1024 // Initial ...
 
 int nMinState,                          // Minimized state as per WinMain
     iScrollSize;                        // Width of a vertical scrollbar
@@ -1393,6 +1395,26 @@ BOOL InitInstance
     // Commit the intial size
     VirtualAlloc (lpwszTemp,
                   DEF_WTEMP_INITSIZE * sizeof (WCHAR),
+                  MEM_COMMIT,
+                  PAGE_READWRITE);
+
+    // Allocate virtual memory for the WCHAR Formatting storage
+    lpwszFormat =
+    VirtualAlloc (NULL,         // Any address
+                  DEF_WFORMAT_MAXSIZE * sizeof (WCHAR),
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lpwszFormat)
+    {
+        // ***FIXME*** -- WS FULL before we got started???
+        DbgMsg ("InitInstance:  VirtualAlloc for <lpwszFormat> failed");
+
+        return FALSE;       // Mark as failed
+    } // End IF
+
+    // Commit the intial size
+    VirtualAlloc (lpwszFormat,
+                  DEF_WFORMAT_INITSIZE * sizeof (WCHAR),
                   MEM_COMMIT,
                   PAGE_READWRITE);
 

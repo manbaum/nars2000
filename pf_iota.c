@@ -72,9 +72,10 @@ LPYYSTYPE PrimFnMonIota_EM
     LPVOID  lpMemRes;
     BOOL    bRet = TRUE;
     APLINT  aplIntTmp;
+    UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -245,14 +246,14 @@ LPYYSTYPE PrimFnMonIota_EM
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End PrimFnMonIota_EM
 #undef  APPEND_NAME
 
@@ -491,9 +492,10 @@ LPYYSTYPE PrimFnDydIota_EM
     LPVOID   lpMemLft,
              lpMemRht;
     BOOL     bRet = TRUE;
+    UINT     YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -553,7 +555,7 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYResIndex];
+        return &YYRes[YYLclIndex];
     else
         return NULL;
 } // End PrimFnDydIota_EM

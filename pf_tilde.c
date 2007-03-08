@@ -209,9 +209,10 @@ LPYYSTYPE PrimFnDydTilde_EM
     LPVOID   lpMemLft,
              lpMemRht;
     BOOL     bRet = TRUE;
+    UINT     YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -271,7 +272,7 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYResIndex];
+        return &YYRes[YYLclIndex];
     else
         return NULL;
 } // End PrimFnDydTilde_EM

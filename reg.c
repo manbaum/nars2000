@@ -201,6 +201,7 @@ void ReadRegGlb
     GetRegGlbChar (HKEY_CURRENT_USER,
                    lpszRegKeyRoot,
                    lpszRegStrGlbLXName,
+                   DEF_QUADLX_GLB,
                    DEF_QUADLX_CWS);
 
     // Read in []ALX
@@ -208,6 +209,7 @@ void ReadRegGlb
     GetRegGlbChar (HKEY_CURRENT_USER,
                    lpszRegKeyRoot,
                    lpszRegStrGlbALXName,
+                   DEF_QUADALX_GLB,
                    DEF_QUADALX_CWS);
 
     // Read in []ELX
@@ -215,6 +217,7 @@ void ReadRegGlb
     GetRegGlbChar (HKEY_CURRENT_USER,
                    lpszRegKeyRoot,
                    lpszRegStrGlbELXName,
+                   DEF_QUADELX_GLB,
                    DEF_QUADELX_CWS);
 } // End ReadRegGlb
 

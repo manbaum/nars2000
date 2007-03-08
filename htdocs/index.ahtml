@@ -324,11 +324,7 @@ ul, ol
 
       <h3>Primitive functions</h3>
       <ul>
-        <li>All monadic and dyadic primitive scalar functions with and without axis except for
-          <ul>
-            <li>monadic and dyadic quote-dot ({shreik}) (factorial and binomial)</li>
-          </ul>
-        </li>
+        <li>All monadic and dyadic primitive scalar functions with and without axis</li>
         <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
           Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
           respectively</li>
@@ -340,6 +336,7 @@ ul, ol
         <li>Monadic iota ({iota}) (index generator)</li>
         <li>Monadic epsilon ({epsilon}) (enlist)</li>
         <li>Monadic equal-underbar ({equalunderbar}) (depth)</li>
+        <li>Monadic and dyadic circle-slope ({circleslope}) (transpose)</li>
         <li>Dyadic left ({lev}) and right ({dex})</li>
       </ul>
 

@@ -257,10 +257,10 @@ APLSTYPE PrimSpecPlusStorageTypeDyd
         aplTypeRes = ARRAY_INT;
 
     // Special case addition with APA
-    if (aplTypeRes EQ ARRAY_INT                            // Res = INT
+    if (aplTypeRes EQ ARRAY_INT                             // Res = INT
      && (aplNELMLft NE 1 || aplNELMRht NE 1)                // Not both singletons
-     && ((aplNELMLft EQ 1 && *lpaplTypeRht EQ ARRAY_APA)   // Non-singleton is APA
-      || (aplNELMRht EQ 1 && *lpaplTypeLft EQ ARRAY_APA))) // ...
+     && ((aplNELMLft EQ 1 && *lpaplTypeRht EQ ARRAY_APA)    // Non-singleton is APA
+      || (aplNELMRht EQ 1 && *lpaplTypeLft EQ ARRAY_APA)))  // ...
         aplTypeRes = ARRAY_APA;
 
     return aplTypeRes;

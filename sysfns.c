@@ -83,17 +83,18 @@ LPYYSTYPE SysFnMonDR_EM
 {
     HGLOBAL hGlbData;
     LPVOID  lpMem;
+    UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYResIndex].tkToken.tkFlags.ImmType   = IMMTYPE_INT;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-////YYRes[YYResIndex].tkToken.tkData.tkInteger  =
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_INT;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkData.tkInteger  =   (filled in below)
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
 #define DR_BOOL     11
 #define DR_CHAR    162
@@ -128,24 +129,24 @@ LPYYSTYPE SysFnMonDR_EM
             switch (lptkRhtArg->tkData.lpSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_BOOL;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_BOOL;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_INT:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_INT;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_INT;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_FLOAT:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_FLOAT;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_FLOAT;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_CHAR:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = 162;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = 162;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 defstop
                     return NULL;
@@ -158,24 +159,24 @@ LPYYSTYPE SysFnMonDR_EM
             switch (lptkRhtArg->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_BOOL;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_BOOL;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_INT:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_INT;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_INT;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_FLOAT:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_FLOAT;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_FLOAT;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_CHAR:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_CHAR;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_CHAR;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 defstop
                     return NULL;
@@ -184,9 +185,9 @@ LPYYSTYPE SysFnMonDR_EM
             DbgStop ();         // We should never get here
 
         case TKT_LIST:
-            YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_LIST;
+            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_LIST;
 
-            return &YYRes[YYResIndex];
+            return &YYRes[YYLclIndex];
 
         case TKT_VARARRAY:
             hGlbData = lptkRhtArg->tkData.tkGlbData;
@@ -214,37 +215,37 @@ LPYYSTYPE SysFnMonDR_EM
 #undef  lpHeader
     {
         case ARRAY_BOOL:
-            YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_BOOL;
+            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_BOOL;
 
             break;
 
         case ARRAY_INT:
-            YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_INT;
+            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_INT;
 
             break;
 
         case ARRAY_FLOAT:
-            YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_FLOAT;
+            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_FLOAT;
 
             break;
 
         case ARRAY_CHAR:
-            YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_CHAR;
+            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_CHAR;
 
             break;
 
         case ARRAY_HETERO:
-            YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_HETERO;
+            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_HETERO;
 
             break;
 
         case ARRAY_NESTED:
-            YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_NESTED;
+            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_NESTED;
 
             break;
 
         case ARRAY_APA:
-            YYRes[YYResIndex].tkToken.tkData.tkInteger = DR_APA;
+            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_APA;
 
             break;
 
@@ -256,7 +257,7 @@ LPYYSTYPE SysFnMonDR_EM
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End SysFnMonDR_EM
 #undef  APPEND_NAME
 
@@ -311,9 +312,10 @@ LPYYSTYPE SysFnSYSID_EM
     UINT       ByteRes;
     HGLOBAL    hGlbRes;
     LPVOID     lpMem;
+    UINT       YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
 #define SYSID   L"NARS2000"
 #define SYSID_NELM    (sizeof (SYSID) / sizeof (APLCHAR) - 1)
@@ -363,14 +365,14 @@ LPYYSTYPE SysFnSYSID_EM
     MyGlobalUnlock (hGlbRes); lpMem = NULL;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End SysFnSYSID_EM
 #undef  APPEND_NAME
 
@@ -400,9 +402,10 @@ LPYYSTYPE SysFnSYSVER_EM
     char       szFileVer[32];
     LPAPLCHAR  p;
     HANDLE     hFile;
+    UINT       YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
 #define SYSVER  L"0.00.001.0799  Tue Jan 16 17:43:45 2007  Win/32"
 #define SYSVER_NELM    ((sizeof (SYSVER) / sizeof (APLCHAR)) - 1)
@@ -506,14 +509,14 @@ LPYYSTYPE SysFnSYSVER_EM
     MyGlobalUnlock (hGlbRes); lpMem = NULL;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End SysFnSYSVER_EM
 #undef  APPEND_NAME
 
@@ -540,9 +543,10 @@ LPYYSTYPE SysFnTC_EM
     UINT       ByteRes;
     HGLOBAL    hGlbRes;
     LPVOID     lpMem;
+    UINT       YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Calculate size of the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 3, 1);
@@ -594,14 +598,14 @@ LPYYSTYPE SysFnTC_EM
     MyGlobalUnlock (hGlbRes); lpMem = NULL;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End SysFnTC_EM
 #undef  APPEND_NAME
 
@@ -617,18 +621,20 @@ LPYYSTYPE SysFnTCCom
      LPTOKEN lptkFunc)
 
 {
+    UINT YYLclIndex;
+
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYResIndex].tkToken.tkFlags.ImmType   = IMMTYPE_CHAR;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkChar     = wc;
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_CHAR;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkChar     = wc;
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End SysFnTCCom
 
 
@@ -808,9 +814,10 @@ LPYYSTYPE SysFnTS_EM
     UINT       ByteRes;
     HGLOBAL    hGlbRes;
     LPVOID     lpMem;
+    UINT       YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Calculate size of the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 7, 1);
@@ -872,14 +879,14 @@ LPYYSTYPE SysFnTS_EM
     MyGlobalUnlock (hGlbRes); lpMem = NULL;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End SysFnTS_EM
 #undef  APPEND_NAME
 
@@ -925,9 +932,10 @@ LPYYSTYPE SysFnMonTYPE_EM
 {
     HGLOBAL hGlbData,
             hGlbRes;
+    UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Split cases based upon the token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -949,31 +957,31 @@ LPYYSTYPE SysFnMonTYPE_EM
             // stData is an immediate
             Assert (lptkRhtArg->tkData.lpSym->stFlags.Imm);
 
-            YYRes[YYResIndex].tkToken.tkFlags.TknType = TKT_VARIMMED;
-            YYRes[YYResIndex].tkToken.tkFlags.ImmType = lptkRhtArg->tkData.lpSym->stFlags.ImmType;
+            YYRes[YYLclIndex].tkToken.tkFlags.TknType = TKT_VARIMMED;
+            YYRes[YYLclIndex].tkToken.tkFlags.ImmType = lptkRhtArg->tkData.lpSym->stFlags.ImmType;
 
             // Split cases based upon the token's immediate type
             switch (lptkRhtArg->tkData.lpSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    YYRes[YYResIndex].tkToken.tkData.tkBoolean = 0;
+                    YYRes[YYLclIndex].tkToken.tkData.tkBoolean = 0;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_INT:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = 0;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = 0;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_FLOAT:
-                    YYRes[YYResIndex].tkToken.tkData.tkFloat   = 0;
+                    YYRes[YYLclIndex].tkToken.tkData.tkFloat   = 0;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_CHAR:
-                    YYRes[YYResIndex].tkToken.tkData.tkChar    = L' ';
+                    YYRes[YYLclIndex].tkToken.tkData.tkChar    = L' ';
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 defstop
                     return NULL;
@@ -982,31 +990,31 @@ LPYYSTYPE SysFnMonTYPE_EM
             DbgStop ();         // We should never get here
 
         case TKT_VARIMMED:
-            YYRes[YYResIndex].tkToken.tkFlags.TknType = TKT_VARIMMED;
-            YYRes[YYResIndex].tkToken.tkFlags.ImmType = lptkRhtArg->tkFlags.ImmType;
+            YYRes[YYLclIndex].tkToken.tkFlags.TknType = TKT_VARIMMED;
+            YYRes[YYLclIndex].tkToken.tkFlags.ImmType = lptkRhtArg->tkFlags.ImmType;
 
             // Split cases based upon the token's immediate type
             switch (lptkRhtArg->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    YYRes[YYResIndex].tkToken.tkData.tkBoolean = 0;
+                    YYRes[YYLclIndex].tkToken.tkData.tkBoolean = 0;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_INT:
-                    YYRes[YYResIndex].tkToken.tkData.tkInteger = 0;
+                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = 0;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_FLOAT:
-                    YYRes[YYResIndex].tkToken.tkData.tkFloat   = 0;
+                    YYRes[YYLclIndex].tkToken.tkData.tkFloat   = 0;
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 case IMMTYPE_CHAR:
-                    YYRes[YYResIndex].tkToken.tkData.tkChar    = L' ';
+                    YYRes[YYLclIndex].tkToken.tkData.tkChar    = L' ';
 
-                    return &YYRes[YYResIndex];
+                    return &YYRes[YYLclIndex];
 
                 defstop
                     return NULL;
@@ -1041,14 +1049,14 @@ LPYYSTYPE SysFnMonTYPE_EM
         return NULL;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End SysFnMonTYPE_EM
 
 

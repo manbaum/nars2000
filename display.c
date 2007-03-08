@@ -26,6 +26,21 @@ extern HANDLE ahGLOBAL[MAXOBJ];
 extern UINT auLinNumGLOBAL[MAXOBJ];
 #endif
 
+typedef enum tagFMT_TYPES
+{
+    FMT_INT = 0,        // Integer format, e.g. -1234
+    FMT_FLOAT,          // Floating ...         -1234.56
+    FMT_EXP,            // Exponential ...      -1234.0E-19
+} FMT_TYPES;
+
+typedef struct tagFMTSTR
+{
+    UCHAR       uIntDigits,     // # Integer digits in Boolean/Integer/APA/Float column,
+                                //   or # chars in Char column
+                                //   including sign, excluding leading/trailing spaces
+                uFracDigits;    // # Fractional digits in Float column
+} FMTSTR, *LPFMTSTR;
+
 
 //***************************************************************************
 //  ArrayDisplay_EM
@@ -61,10 +76,12 @@ BOOL ArrayDisplay_EM
                 // Check for NoDisplay flag
                 if (lptkRes->tkFlags.NoDisplay)
                     return TRUE;
-
-                lpaplChar =
-                FormatGlobal (lpwszTemp,
-                              ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData));
+                DisplayGlobal (lpwszFormat,
+                               ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData));
+                return TRUE;
+////            lpaplChar =
+////            FormatGlobal (lpwszTemp,
+////                          ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData));
                 break;
             } // End IF
 
@@ -115,9 +132,12 @@ BOOL ArrayDisplay_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    lpaplChar =
-                    FormatGlobal (lpwszTemp,
-                                  ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
+                    DisplayGlobal (lpwszFormat,
+                                   ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
+                    return TRUE;
+////                lpaplChar =
+////                FormatGlobal (lpwszTemp,
+////                              ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
                     break;
 
                 defstop
@@ -144,6 +164,344 @@ BOOL ArrayDisplay_EM
     return TRUE;
 } // End ArrayDisplay_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  DisplayGlobal
+//
+//  Display a global array
+//***************************************************************************
+
+void DisplayGlobal
+    (LPAPLCHAR lpaplChar,
+     HGLOBAL   hGlb)
+
+{
+    LPVOID    lpMem;
+    LPAPLCHAR lpaplCharStart,
+              lpwszOut;
+    APLSTYPE  aplType;
+    APLNELM   aplNELM;
+    APLRANK   aplRank;
+    LPAPLDIM  lpMemDim;
+    APLDIM    aplDimNCols,
+              aplDimNRows,
+              aplDimCol, aplDimRow;
+    APLINT    apaOff,
+              apaMul;
+    LPFMTSTR  lpFmtStr;
+    UINT      uBitMask,
+              uWidth,
+              uLen,
+              uCol;
+
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (hGlb);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+
+    // Get the header values
+    aplType = lpHeader->ArrType;
+    aplNELM = lpHeader->NELM;
+    aplRank = lpHeader->Rank;
+
+#undef  lpHeader
+
+    // Skip over the header to the dimensions
+    lpMemDim = VarArrayBaseToDim (lpMem);
+
+    // Skip over the header and dimension to the data
+    lpMem = VarArrayBaseToData (lpMem, aplRank);
+
+    // Get the # columns
+    if (aplRank EQ 0)
+        aplDimNCols = aplDimNRows = 1;
+    else
+    {
+        aplDimNCols = lpMemDim[aplRank - 1];
+
+        // If there are no columns, ignore this
+        if (aplDimNCols EQ 0)
+            goto NORMAL_EXIT;
+
+        // Get the # rows (across all planes)
+        if (aplRank EQ 1)
+            aplDimNRows = 1;
+        else
+            aplDimNRows = aplNELM / aplDimNCols;
+    } // End IF/ELSE
+
+    // Reserve <aplDimNCols> FMTSTRs in the output
+    lpFmtStr  = (LPFMTSTR) lpaplChar;
+    ZeroMemory (lpFmtStr, (UINT) aplDimNCols * sizeof (FMTSTR));
+    lpaplChar = lpaplCharStart = (LPAPLCHAR) &((LPFMTSTR) lpaplChar)[aplDimNCols];
+
+    // Loop through the array appending the formatted values (separated by L'\0')
+    //   to the output vector, and accumulating the values in the appropriate
+    //   FMTSTR entry.
+
+    // Split cases based upon the array's storage type
+    switch (aplType)
+    {
+        case ARRAY_BOOL:
+            uBitMask = 0x01;
+
+            // Because Booleans are of constant width, run through this once
+            for (aplDimCol = 1; aplDimCol < aplDimNCols; aplDimCol++)
+                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, 2);
+
+            // No leading blank for first col if scalar or vector
+            lpFmtStr[0].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, 1 + (aplRank > 1));
+
+            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+            {
+                *lpaplChar++ = (uBitMask & *((LPAPLBOOL) lpMem)) ? L'1' : L'0';
+                *lpaplChar++ = L'\0';
+
+                // Shift over the bit mask
+                uBitMask <<= 1;
+
+                // Check for end-of-byte
+                if (uBitMask EQ END_OF_BYTE)
+                {
+                    uBitMask = 0x01;        // Start over
+                    ((LPAPLBOOL) lpMem)++;  // Skip to next byte
+                } // End IF
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_INT:
+            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+            {
+                // Format the integer
+                lpaplChar =
+                FormatAplint (lpwszOut = lpaplChar,
+                              *((LPAPLINT) lpMem)++);
+                // Zap the trailing blank
+                lpaplChar[-1] = L'\0';
+
+                // Calculate the string length
+                uLen = (lpaplChar - lpwszOut) - 1;
+
+                // Add in a leading blank unless scalar/vector and 1st col
+                uLen += (aplRank > 1) || aplDimCol NE 0;
+
+                // Max the current width with the width of this number
+                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_FLOAT:
+            // ***FIXME*** -- align the decimal points
+            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+            {
+                // Format the integer
+                lpaplChar =
+                FormatFloat (lpwszOut = lpaplChar,
+                             *((LPAPLFLOAT) lpMem)++);
+                // Zap the trailing blank
+                lpaplChar[-1] = L'\0';
+
+                // Calculate the string length
+                uLen = (lpaplChar - lpwszOut) - 1;
+
+                // Add in a leading blank unless scalar/vector and 1st col
+                uLen += (aplRank > 1) || aplDimCol NE 0;
+
+                // Max the current width with the width of this number
+                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_APA:
+
+#define lpAPA       ((LPAPLAPA) lpMem)
+            apaOff = lpAPA->Off;
+            apaMul = lpAPA->Mul;
+#undef  lpAPA
+
+            for (aplDimRow = uCol = 0; aplDimRow < aplDimNRows; aplDimRow++)
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++, uCol++)
+            {
+                // Format the integer
+                lpaplChar =
+                FormatAplint (lpwszOut = lpaplChar,
+                              apaOff + apaMul * uCol);
+                // Zap the trailing blank
+                lpaplChar[-1] = L'\0';
+
+                // Calculate the string length
+                uLen = (lpaplChar - lpwszOut) - 1;
+
+                // Add in a leading blank unless scalar/vector and 1st col
+                uLen += (aplRank > 1) || aplDimCol NE 0;
+
+                // Max the current width with the width of this number
+                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_CHAR:
+            // Because Chars are of constant width, run through this once
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, 1);
+
+            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+            {
+                // Copy the char
+                *lpaplChar++ = *((LPAPLCHAR) lpMem)++;
+                *lpaplChar++ = L'\0';
+            } // End FOR/FOR
+
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++, ((LPAPLHETERO) lpMem)++)
+            {
+                // Split cases based upon the ptr type
+                switch (GetPtrTypeInd (lpMem))
+                {
+                    case PTRTYPE_STCONST:
+                        // Split cases based upon the STE immediate type
+                        switch ((*(LPSYMENTRY *) lpMem)->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:
+                                lpaplChar =
+                                FormatAplint (lpwszOut = lpaplChar,
+                                              (*(LPSYMENTRY *) lpMem)->stData.stBoolean);
+                                // Zap the trailing blank
+                                lpaplChar[-1] = L'\0';
+
+                                // Calculate the string length
+                                uLen = (lpaplChar - lpwszOut) - 1;
+
+                                // Add in a leading blank unless scalar/vector and 1st col
+                                uLen += (aplRank > 1) || aplDimCol NE 0;
+
+                                // Max the current width with the width of this number
+                                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
+
+                                break;
+
+                            case IMMTYPE_INT:
+                                lpaplChar =
+                                FormatAplint (lpwszOut = lpaplChar,
+                                              (*(LPSYMENTRY *) lpMem)->stData.stInteger);
+                                // Zap the trailing blank
+                                lpaplChar[-1] = L'\0';
+
+                                // Calculate the string length
+                                uLen = (lpaplChar - lpwszOut) - 1;
+
+                                // Add in a leading blank unless scalar/vector and 1st col
+                                uLen += (aplRank > 1) || aplDimCol NE 0;
+
+                                // Max the current width with the width of this number
+                                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
+
+                                break;
+
+                            case IMMTYPE_FLOAT:
+                                lpaplChar =
+                                FormatFloat (lpwszOut = lpaplChar,
+                                             (*(LPSYMENTRY *) lpMem)->stData.stFloat);
+                                // Zap the trailing blank
+                                lpaplChar[-1] = L'\0';
+
+                                // Calculate the string length
+                                uLen = (lpaplChar - lpwszOut) - 1;
+
+                                // Add in a leading blank unless scalar/vector and 1st col
+                                uLen += (aplRank > 1) || aplDimCol NE 0;
+
+                                // Max the current width with the width of this number
+                                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
+
+                                break;
+
+                            case IMMTYPE_CHAR:
+                                // Copy the char
+                                *lpaplChar++ = (*(LPSYMENTRY *) lpMem)->stData.stChar;
+                                *lpaplChar++ = L'\0';
+
+                                // Max the current width with the width of this char
+                                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, 1);
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        // ***FIXME*** -- Display HGLOBALs inline
+                        lpaplChar = (LPAPLCHAR) lpFmtStr;
+                        FormatNestedArray ((LPAPLCHAR) lpaplChar,
+                                           ClrPtrTypeIndGlb (lpMem),
+                                           TRUE);
+                        AppendLine (lpaplChar, FALSE);
+
+                        goto NORMAL_EXIT;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Start over again
+    lpaplChar = lpaplCharStart;
+
+    // Output the result at appropriate widths
+    // ***FIXME*** -- make sensitive to []PW
+    // ***FIXME*** -- handle blank lines between planes
+    // ***FIXME*** -- handle common fractional part
+    for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+    {
+        lpwszOut  = lpwszTemp;
+
+        for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+        {
+            // Get the # digits plus leading space
+            uWidth = lpFmtStr[aplDimCol].uIntDigits;
+            uLen = lstrlenW (lpaplChar);
+
+            Assert (uLen <= uWidth);
+
+            // Fill with leading blanks
+            for (uCol = 0; uCol < (uWidth - uLen); uCol++)
+                *lpwszOut++ = L' ';
+
+            // Get the next value and right-justify it
+            //   within the given width
+            lstrcpyW (lpwszOut, lpaplChar);
+            lpwszOut  += uLen;
+            lpaplChar += (uLen + 1);
+        } // End FOR
+
+        AppendLine (lpwszTemp, FALSE);
+    } // End FOR
+NORMAL_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlb); lpMem = NULL;
+} // End DisplayGlobal
 
 
 //***************************************************************************

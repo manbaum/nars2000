@@ -96,7 +96,8 @@ EXTERN
 LPCHAR lpszTemp;                        // Used for temporary storage
 
 EXTERN
-WCHAR *lpwszTemp;                       // ...
+LPWCHAR lpwszTemp,                      // ...
+        lpwszFormat;                    // Used for formatting
 
 EXTERN
 HINSTANCE _hInstance;                   // Global instance handle
@@ -130,6 +131,7 @@ char pszAppName[]                       // Application name for MessageBox
 
 EXTERN
 HGLOBAL hGlbZilde,
+        hGlbQuadDM,
         hGlbMTChar,
         hGlbSAEmpty,
         hGlbSAClear,
@@ -469,101 +471,101 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 =
 {
 //Nrm Alt
-{' ', 0                   },    // Space             32
-{'!', UCS2_EQUALUNDERBAR  },    // Quote-dot         33
-{'"', 0                   },    // Quotation mark    34
-{'#', UCS2_DELSTILE       },    // Number sign       35
-{'$', UCS2_DELTASTILE     },    // Dollar sign       36
-{'%', UCS2_CIRCLESTILE    },    // Percent sign      37
-{'&', UCS2_CIRCLEBAR      },    // Ampersand         38
-{'\'',UCS2_HYDRANT        },    // Apostrophe        39
-{'(', UCS2_DOWNCARETTILDE },    // Left paren        40
-{')', UCS2_UPCARETTILDE   },    // Right paren       41
-{'*', UCS2_CIRCLESTAR     },    // Star              42
-{'+', UCS2_DOMINO         },    // Plus sign         43
-{',', UCS2_LAMP           },    // Comma             44
-{'-', UCS2_TIMES          },    // Bar               45
-{'.', UCS2_SLOPEBAR       },    // Dot               46
-{'/', UCS2_SLASHBAR       },    // Slash             47
-{'0', UCS2_UPCARET        },    // 0                 48
-{'1', UCS2_DIERESIS       },    // 1                 49
-{'2', UCS2_OVERBAR        },    // 2                 50
-{'3', UCS2_LEFTCARET      },    // 3                 51
-{'4', UCS2_NOTMORE        },    // 4                 52
-{'5', UCS2_EQUAL          },    // 5                 53
-{'6', UCS2_NOTLESS        },    // 6                 54
-{'7', UCS2_RIGHTCARET     },    // 7                 55
-{'8', UCS2_NOTEQUAL       },    // 8                 56
-{'9', UCS2_DOWNCARET      },    // 9                 57
-{':', 0                   },    // Colon             58
-{';', UCS2_THORN          },    // Semicolon         59
-{'<', 0                   },    // Less              60
-{'=', UCS2_DIVIDE         },    // Equal             61
-{'>', 0                   },    // More              62
-{'?', 0                   },    // Query             63
-{'@', UCS2_DELTILDE       },    // At sign           64
-{'A', 0                   },    // A                 65
-{'B', 0                   },    // B                 66
-{'C', 0                   },    // C                 67
-{'D', 0                   },    // D                 68
-{'E', UCS2_EPSILONUNDERBAR},    // E                 69
-{'F', 0                   },    // F                 70
-{'G', UCS2_DIERESISDEL    },    // G                 71
-{'H', UCS2_DELTAUNDERBAR  },    // H                 72
-{'I', UCS2_IOTAUNDERBAR   },    // I                 73
-{'J', UCS2_DIERESISJOT    },    // J                 74
-{'K', 0                   },    // K                 75
-{'L', UCS2_SQUAD          },    // L                 76
-{'M', 0                   },    // M                 77
-{'N', UCS2_DIERESISUPTACK },    // N                 78
-{'O', UCS2_DIERESISCIRCLE },    // O                 79
-{'P', UCS2_DIERESISSTAR   },    // P                 80
-{'Q', 0                   },    // Q                 81
-{'R', 0                   },    // R                 82
-{'S', 0                   },    // S                 83
-{'T', UCS2_DIERESISTILDE  },    // T                 84
-{'U', 0                   },    // U                 85
-{'V', 0                   },    // V                 86
-{'W', 0                   },    // W                 87
-{'X', 0                   },    // X                 88
-{'Y', 0                   },    // Y                 89
-{'Z', 0                   },    // Z                 90
-{'[', UCS2_LEFTARROW      },    // Left bracket      91
-{'\\',UCS2_LEFTTACK       },    // Slope             92
-{']', UCS2_RIGHTARROW     },    // Right bracket     93
-{'^', UCS2_CIRCLESLOPE    },    // Up caret          94
-{'_', UCS2_QUOTEDOT       },    // Underbar          95
-{'`', UCS2_DIAMOND        },    // Grave accent      96
-{'a', UCS2_ALPHA          },    // a                 97
-{'b', UCS2_DOWNTACK       },    // b                 98
-{'c', UCS2_UPSHOE         },    // c                 99
-{'d', UCS2_DOWNSTILE      },    // d                100
-{'e', UCS2_EPSILON        },    // e                101
-{'f', UCS2_UNDERBAR       },    // f                102
-{'g', UCS2_DEL            },    // g                103
-{'h', UCS2_DELTA          },    // h                104
-{'i', UCS2_IOTA           },    // i                105
-{'j', UCS2_JOT            },    // j                106
-{'k', UCS2_APOSTROPHE     },    // k                107
-{'l', UCS2_QUAD           },    // l                108
-{'m', UCS2_STILE          },    // m                109
-{'n', UCS2_UPTACK         },    // n                110
-{'o', UCS2_CIRCLE         },    // o                111
-{'p', UCS2_STAR           },    // p                112
-{'q', UCS2_QUERY          },    // q                113
-{'r', UCS2_RHO            },    // r                114
-{'s', UCS2_UPSTILE        },    // s                115
-{'t', UCS2_TILDE          },    // t                116
-{'u', UCS2_DNARROW        },    // u                117
-{'v', UCS2_DOWNSHOE       },    // v                118
-{'w', UCS2_OMEGA          },    // w                119
-{'x', UCS2_RIGHTSHOE      },    // x                120
-{'y', UCS2_UPARROW        },    // y                121
-{'z', UCS2_LEFTSHOE       },    // z                122
-{'{', UCS2_QUOTEQUAD      },    // Left brace       123
-{'|', UCS2_RIGHTTACK      },    // Stile            124
-{'}', UCS2_ZILDE          },    // Right brace      125
-{'~', UCS2_COMMABAR       },    // Tilde            126
+{' ', 0                    },   // Space             32
+{'!', UCS2_EQUALUNDERBAR   },   // Quote-dot         33
+{'"', 0                    },   // Quotation mark    34
+{'#', UCS2_DELSTILE        },   // Number sign       35
+{'$', UCS2_DELTASTILE      },   // Dollar sign       36
+{'%', UCS2_CIRCLESTILE     },   // Percent sign      37
+{'&', UCS2_CIRCLEBAR       },   // Ampersand         38
+{'\'',UCS2_HYDRANT         },   // Apostrophe        39
+{'(', UCS2_DOWNCARETTILDE  },   // Left paren        40
+{')', UCS2_UPCARETTILDE    },   // Right paren       41
+{'*', UCS2_CIRCLESTAR      },   // Star              42
+{'+', UCS2_DOMINO          },   // Plus sign         43
+{',', UCS2_LAMP            },   // Comma             44
+{'-', UCS2_TIMES           },   // Bar               45
+{'.', UCS2_SLOPEBAR        },   // Dot               46
+{'/', UCS2_SLASHBAR        },   // Slash             47
+{'0', UCS2_UPCARET         },   // 0                 48
+{'1', UCS2_DIERESIS        },   // 1                 49
+{'2', UCS2_OVERBAR         },   // 2                 50
+{'3', UCS2_LEFTCARET       },   // 3                 51
+{'4', UCS2_NOTMORE         },   // 4                 52
+{'5', UCS2_EQUAL           },   // 5                 53
+{'6', UCS2_NOTLESS         },   // 6                 54
+{'7', UCS2_RIGHTCARET      },   // 7                 55
+{'8', UCS2_NOTEQUAL        },   // 8                 56
+{'9', UCS2_DOWNCARET       },   // 9                 57
+{':', 0                    },   // Colon             58
+{';', UCS2_THORN           },   // Semicolon         59
+{'<', 0                    },   // Less              60
+{'=', UCS2_DIVIDE          },   // Equal             61
+{'>', 0                    },   // More              62
+{'?', 0                    },   // Query             63
+{'@', UCS2_DELTILDE        },   // At sign           64
+{'A', 0                    },   // A                 65
+{'B', 0                    },   // B                 66
+{'C', 0                    },   // C                 67
+{'D', 0                    },   // D                 68
+{'E', UCS2_EPSILONUNDERBAR },   // E                 69
+{'F', 0                    },   // F                 70
+{'G', UCS2_DIERESISDEL     },   // G                 71
+{'H', UCS2_DELTAUNDERBAR   },   // H                 72
+{'I', UCS2_IOTAUNDERBAR    },   // I                 73
+{'J', UCS2_DIERESISJOT     },   // J                 74
+{'K', 0                    },   // K                 75
+{'L', UCS2_SQUAD           },   // L                 76
+{'M', 0                    },   // M                 77
+{'N', UCS2_DIERESISDOWNTACK},   // N                 78
+{'O', UCS2_DIERESISCIRCLE  },   // O                 79
+{'P', UCS2_DIERESISSTAR    },   // P                 80
+{'Q', 0                    },   // Q                 81
+{'R', 0                    },   // R                 82
+{'S', 0                    },   // S                 83
+{'T', UCS2_DIERESISTILDE   },   // T                 84
+{'U', 0                    },   // U                 85
+{'V', 0                    },   // V                 86
+{'W', 0                    },   // W                 87
+{'X', 0                    },   // X                 88
+{'Y', 0                    },   // Y                 89
+{'Z', 0                    },   // Z                 90
+{'[', UCS2_LEFTARROW       },   // Left bracket      91
+{'\\',UCS2_LEFTTACK        },   // Slope             92
+{']', UCS2_RIGHTARROW      },   // Right bracket     93
+{'^', UCS2_CIRCLESLOPE     },   // Up caret          94
+{'_', UCS2_QUOTEDOT        },   // Underbar          95
+{'`', UCS2_DIAMOND         },   // Grave accent      96
+{'a', UCS2_ALPHA           },   // a                 97
+{'b', UCS2_UPTACK          },   // b                 98
+{'c', UCS2_UPSHOE          },   // c                 99
+{'d', UCS2_DOWNSTILE       },   // d                100
+{'e', UCS2_EPSILON         },   // e                101
+{'f', UCS2_UNDERBAR        },   // f                102
+{'g', UCS2_DEL             },   // g                103
+{'h', UCS2_DELTA           },   // h                104
+{'i', UCS2_IOTA            },   // i                105
+{'j', UCS2_JOT             },   // j                106
+{'k', UCS2_APOSTROPHE      },   // k                107
+{'l', UCS2_QUAD            },   // l                108
+{'m', UCS2_STILE           },   // m                109
+{'n', UCS2_DOWNTACK        },   // n                110
+{'o', UCS2_CIRCLE          },   // o                111
+{'p', UCS2_STAR            },   // p                112
+{'q', UCS2_QUERY           },   // q                113
+{'r', UCS2_RHO             },   // r                114
+{'s', UCS2_UPSTILE         },   // s                115
+{'t', UCS2_TILDE           },   // t                116
+{'u', UCS2_DNARROW         },   // u                117
+{'v', UCS2_DOWNSHOE        },   // v                118
+{'w', UCS2_OMEGA           },   // w                119
+{'x', UCS2_RIGHTSHOE       },   // x                120
+{'y', UCS2_UPARROW         },   // y                121
+{'z', UCS2_LEFTSHOE        },   // z                122
+{'{', UCS2_QUOTEQUAD       },   // Left brace       123
+{'|', UCS2_RIGHTTACK       },   // Stile            124
+{'}', UCS2_ZILDE           },   // Right brace      125
+{'~', UCS2_COMMABAR        },   // Tilde            126
 }
 #endif
 ;

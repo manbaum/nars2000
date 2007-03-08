@@ -11,6 +11,7 @@
 #include "resdebug.h"
 #include "sysvars.h"
 #include "externs.h"
+#include "primfns.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -38,7 +39,7 @@ typedef struct tagSYSNAME
     LPWCHAR     lpwszName;  // The name
     UINT        uValence;   // For system functions, Niladic(0), All others (1)
     BOOL        bSysVar;    // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
-    LPYYSTYPE (*NameFcn) (LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN); // Ptr to execution routine
+    LPPRIMFNS   NameFcn;    // Ptr to execution routine
     LPSYMENTRY *lplpSymEntry;// Ptr to ptr to STE if to be saved globally (NULL if not interested)
 } SYSNAME, *LPSYSNAME;
 

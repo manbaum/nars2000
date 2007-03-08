@@ -128,8 +128,10 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
      LPTOKEN    lptkFunc)
 
 {
+    UINT YYLclIndex;
+
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -140,7 +142,8 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
                            0,               // All values less than this
                            FALSE,           // TRUE iff scalar or one-element vector only
                            FALSE,           // TRUE iff want sorted axes
-                           FALSE,           // TRUE if axes must be contiguous
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
                            NULL,            // Return # elements in axis vector
@@ -149,14 +152,14 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
     } // End IF
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYResIndex].tkToken.tkFlags.ImmType   = ImmType;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkLongest  = aplLongest;
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = ImmType;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkLongest  = aplLongest;
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End PrimFnMonLeftShoeCon_EM
 #undef  APPEND_NAME
 
@@ -209,9 +212,10 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     APLINT   apaOff,
              apaMul,
              apaLen;
+    UINT     YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -224,7 +228,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                            aplRankRht,      // All values less than this
                            FALSE,           // TRUE iff scalar or one-element vector only
                            FALSE,           // TRUE iff want sorted axes
-                           FALSE,           // TRUE if axes must be contiguous
+                           FALSE,           // TRIE iff axes must be contiguous
+                           FALSE,           // TRIE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
                            &aplNELMAxis,    // Return # elements in axis vector
@@ -252,12 +257,12 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     if (lptkAxis && aplNELMAxis EQ 0)
     {
         // Fill in the result token
-        YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////    YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////    YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////    YYRes[YYResIndex].tkToken.tkFlags.Color     =
-        YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (CopyArray_EM (hGlbRht, FALSE, lptkFunc));
-        YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+////    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////    YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+        YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (CopyArray_EM (hGlbRht, FALSE, lptkFunc));
+        YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         goto QUICK_EXIT;
     } // End IF
@@ -512,15 +517,15 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         if (!bRet)
                         {
                             // Fill in the result token
-                            YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////                        YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////                        YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////                        YYRes[YYResIndex].tkToken.tkFlags.Color     =
-                            YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbProto);
-                            YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+                            YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////                        YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+////                        YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////                        YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+                            YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbProto);
+                            YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
                             // Free the prototype storage
-                            FreeResult (&YYRes[YYResIndex].tkToken);
+                            FreeResult (&YYRes[YYLclIndex].tkToken);
 
                             goto ERROR_EXIT;
                         } // End IF
@@ -1099,12 +1104,12 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     } // End IF/ELSE
 NORMAL_EXIT:
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (lpMemRes)
     {
@@ -1155,7 +1160,7 @@ QUICK_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYResIndex];
+        return &YYRes[YYLclIndex];
     else
         return NULL;
 } // End PrimFnMonLeftShoeGlb_EM
@@ -1410,9 +1415,10 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
     APLINT  aplAxis;        // The (one and only) axis value
     APLRANK aplRankRht;     // The rank of the right arg
     BOOL    bRet = TRUE;
+    UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -1425,7 +1431,8 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
                            aplRankRht,      // All values less than this
                            TRUE,            // TRUE iff scalar or one-element vector only
                            FALSE,           // TRUE iff want sorted axes
-                           FALSE,           // TRUE if axes must be contiguous
+                           FALSE,           // TRIE iff axes must be contiguous
+                           FALSE,           // TRIE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            &aplAxis,        // Return last axis value
                            NULL,            // Return # elements in axis vector
@@ -1458,7 +1465,7 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
 ////} // End IF
 
     if (bRet)
-        return &YYRes[YYResIndex];
+        return &YYRes[YYLclIndex];
     else
         return NULL;
 } // End PrimFnDydLeftShoeGlb_EM

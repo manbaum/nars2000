@@ -19,7 +19,7 @@
 //***************************************************************************
 //  PrimFnLeftTack_EM
 //
-//  Primitive function for monadic and dyadic LeftTack (ERROR and "right")
+//  Primitive function for monadic and dyadic LeftTack (ERROR and "left")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -59,7 +59,7 @@ LPYYSTYPE PrimFnLeftTack_EM
     else
     {
         // Fill in the result token
-        YYRes.tkToken = *lptkRhtArg;
+        YYRes.tkToken = *lptkLftArg;
 
         // If this is a global memory object, increment its reference count
         // Split cases based upon the token type
@@ -80,8 +80,8 @@ LPYYSTYPE PrimFnLeftTack_EM
 
                     // Fill in the result token
                     YYRes.tkToken.tkFlags.TknType = TKT_VARARRAY;
-////////////////////YYRes.tkToken.tkFlags.ImmType   = 0;        // Already zero from static
-////////////////////YYRes.tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
+                    YYRes.tkToken.tkFlags.ImmType   = 0;
+                    YYRes.tkToken.tkFlags.NoDisplay = 0;
 ////////////////////YYRes.tkToken.tkFlags.Color     =
 ////////////////////YYRes.tkToken.tkCharIndex       =           // Already set
 
@@ -93,7 +93,7 @@ LPYYSTYPE PrimFnLeftTack_EM
                     // Fill in the result token
                     YYRes.tkToken.tkFlags.TknType = TKT_VARIMMED;
                     YYRes.tkToken.tkFlags.ImmType   = YYRes.tkToken.tkData.lpSym->stFlags.ImmType;
-////////////////////YYRes.tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
+                    YYRes.tkToken.tkFlags.NoDisplay = 0;
 ////////////////////YYRes.tkToken.tkFlags.Color     =
 ////////////////////YYRes.tkToken.tkCharIndex       =           // Already set
                     YYRes.tkToken.tkData.tkLongest  = YYRes.tkToken.tkData.lpSym->stData.stLongest;

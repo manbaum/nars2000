@@ -13,6 +13,7 @@
 #include "sysvars.h"
 #include "externs.h"
 #include "primspec.h"
+#include "primfns.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -20,7 +21,7 @@
 #endif
 
 // The jump table for all primitive functions
-LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
+LPPRIMFNS PrimFnsTab[256];
 
 // As these functions are implemented, delete the
 //   appropriate line.
@@ -28,20 +29,17 @@ LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
 // Primitives To Be Done                               Monadic      Dyadic
 #define PrimFnAlpha_EM              PrimFn_EM       // ERROR        ERROR
 #define PrimFnCircleBar_EM          PrimFn_EM       // Mixed        Mixed
-#define PrimFnCircleSlope_EM        PrimFn_EM       // Mixed        Mixed
 #define PrimFnCircleStile_EM        PrimFn_EM       // Mixed        Mixed
 #define PrimFnDelStile_EM           PrimFn_EM       // Mixed        Mixed
 #define PrimFnDeltaStile_EM         PrimFn_EM       // Mixed        Mixed
-#define PrimFnDomino_EM             PrimFn_EM       // Mixed        Mixed
 #define PrimFnDownArrow_EM          PrimFn_EM       // ERROR        Mixed
 #define PrimFnDownShoe_EM           PrimFn_EM       // Mixed        ERROR
-#define PrimFnDownTack_EM           PrimFn_EM       // ERORO        Mixed
+#define PrimFnDownTack_EM           PrimFn_EM       // ERROR        Mixed
 #define PrimFnEpsilonUnderbar_EM    PrimFn_EM       // ERROR        Mixed
 #define PrimFnHydrant_EM            PrimFn_EM       // Mixed        ERROR
 #define PrimFnIotaUnderbar_EM       PrimFn_EM       // ERROR        ERROR
 #define PrimFnOmega_EM              PrimFn_EM       // ERROR        ERROR
 #define PrimFnRightShoe_EM          PrimFn_EM       // Mixed        Mixed
-#define PrimFnQuoteDot_EM           PrimFn_EM       // Scalar       Scalar
 #define PrimFnSlash_EM              PrimFn_EM       // ERROR        Mixed
 #define PrimFnSlashBar_EM           PrimFn_EM       // ERROR        Mixed
 #define PrimFnSlope_EM              PrimFn_EM       // ERROR        Mixed
@@ -56,10 +54,12 @@ LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
 // Primitives Done                                     Monadic      Dyadic
 /////// PrimFnBar_EM                                // Scalar       Scalar
 /////// PrimFnCircle_EM                             // Scalar       Scalar
+/////// PrimFnCircleSlope_EM                        // Mixed        Mixed
 /////// PrimFnCircleStar_EM                         // Scalar       Scalar
 /////// PrimFnComma_EM                              // Mixed        Mixed
 /////// PrimFnCommaBar_EM                           // Mixed        Mixed
 /////// PrimFnDivide_EM                             // Scalar       Scalar
+/////// PrimFnDomino_EM                             // Mixed        Mixed
 /////// PrimFnDownCaret_EM                          // ERROR        Scalar
 /////// PrimFnDownCaretTilde_EM                     // ERROR        Scalar
 /////// PrimFnDownStile_EM                          // Scalar       Scalar
@@ -74,6 +74,7 @@ LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
 /////// PrimFnNotLess_EM                            // ERROR        Scalar
 /////// PrimFnNotMore_EM                            // ERROR        Scalar
 /////// PrimFnPlus_EM                               // Scalar       Scalar
+/////// PrimFnQuoteDot_EM                           // Scalar       Scalar
 /////// PrimFnQuery_EM                              // Scalar       Mixed
 /////// PrimFnRightCaret_EM                         // ERROR        Scalar
 /////// PrimFnRightTack_EM                          // ERROR        Mixed
@@ -86,6 +87,7 @@ LPYYSTYPE (*PrimFnsTab[256])(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
 /////// PrimFnUpCaretTilde_EM                       // ERROR        Scalar
 /////// PrimFnUpStile_EM                            // Scalar       Scalar
 
+// (*) = Unfinished
 
 //***************************************************************************
 //  InitPrimFns
@@ -114,7 +116,7 @@ void InitPrimFns
 ////InitPrimOp1(UCS2_JOTDOT         , &PrimOp1Jotdot_EM        );   // Pseudo-symbol
 
     InitPrimFn (UCS2_ALPHA          , &PrimFnAlpha_EM          );   // Alt-'a' - alpha
-    InitPrimFn (UCS2_DOWNTACK       , &PrimFnDownTack_EM       );   // Alt-'b' - down tack
+    InitPrimFn (UCS2_UPTACK         , &PrimFnUpTack_EM         );   // Alt-'b' - up tack
     InitPrimFn (UCS2_UPSHOE         , &PrimFnUpShoe_EM         );   // Alt-'c' - up shoe
     InitPrimFn (UCS2_DOWNSTILE      , &PrimFnDownStile_EM      );   // Alt-'d' - down stile
     InitPrimFn (UCS2_EPSILON        , &PrimFnEpsilon_EM        );   // Alt-'e' - epsilon
@@ -126,7 +128,7 @@ void InitPrimFns
 ////                                                                // Alt-'k' - single quote
 ////                                                                // Alt-'l' - quad
     InitPrimFn (UCS2_STILE          , &PrimFnStile_EM          );   // Alt-'m' - stile
-    InitPrimFn (UCS2_UPTACK         , &PrimFnUpTack_EM         );   // Alt-'n' - up tack
+    InitPrimFn (UCS2_DOWNTACK       , &PrimFnDownTack_EM       );   // Alt-'n' - down tack
     InitPrimFn (UCS2_CIRCLE         , &PrimFnCircle_EM         );   // Alt-'o' - circle
     InitPrimFn (UCS2_STAR           , &PrimFnStar_EM           );   // Alt-'p' - star
     InitPrimFn (UCS2_QUERY          , &PrimFnQuery_EM          );   // Alt-'q' - question mark
@@ -276,6 +278,7 @@ void MakePermVars
     MyGlobalUnlock (hGlbZilde); lpHeader = NULL;
 
     // Create various permanent char vectors
+    hGlbQuadDM  = MakePermCharVector (WS_QUADDM);
     hGlbMTChar  = MakePermCharVector (MTChar);
     hGlbSAEmpty = hGlbMTChar;
     hGlbSAClear = MakePermCharVector (SAClear);
@@ -355,8 +358,8 @@ HGLOBAL MakePermCharVector
 //***************************************************************************
 
 void InitPrimFn
-    (WCHAR wchFn,
-     LPYYSTYPE (*PrimFn)(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN))
+    (WCHAR     wchFn,
+     LPPRIMFNS PrimFn)
 
 {
     if (PrimFnsTab[(unsigned char) wchFn])
@@ -527,8 +530,8 @@ LPYYSTYPE OverflowPrimFn3F_EM
 //***************************************************************************
 
 void OverflowPrimFn
-    (WCHAR wchFn,
-     LPYYSTYPE (*PrimFn)(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN))
+    (WCHAR     wchFn,
+     LPPRIMFNS PrimFn)
 
 {
     // Here are the overflow cases we know about
@@ -577,40 +580,40 @@ void OverflowPrimFn
 
 LPYYSTYPE ExecFunc_EM
     (LPTOKEN   lptkLftArg,      // The left argument (may be NULL)
-     LPYYSTYPE lpYYFunc,        // The function ***FIXME*** -- this could be a token
+     LPTOKEN   lptkFunc,        // The function token
      LPTOKEN   lptkRhtArg,      // The right argument
      LPTOKEN   lptkAxis)        // The axis (may be NULL)   // ***FIXME*** -- Is it ever non-NULL?
 
 {
-    LPYYSTYPE (*PrimFn) (LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
+    LPPRIMFNS PrimFn;
 
     DBGENTER;
 
     // Split cases based upon the function token type
-    switch (lpYYFunc->tkToken.tkFlags.TknType)
+    switch (lptkFunc->tkFlags.TknType)
     {
         case TKT_FCNIMMED:
-            PrimFn = PrimFnsTab[(unsigned char) (lpYYFunc->tkToken.tkData.tkChar)];
+            PrimFn = PrimFnsTab[(unsigned char) (lptkFunc->tkData.tkChar)];
             if (!PrimFn)
             {
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                           &lpYYFunc->tkToken);
+                                           lptkFunc);
                 return NULL;
             } // End IF
 
-            return (*PrimFn) (lptkLftArg, &lpYYFunc->tkToken, lptkRhtArg, lptkAxis);
+            return (*PrimFn) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpYYFunc->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkFunc->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
-            if (!lpYYFunc->tkToken.tkData.lpSym->stFlags.Imm)
+            if (!lptkFunc->tkData.lpSym->stFlags.Imm)
             {
                 STFLAGS stFlags;
 
                 // Skip assertion if it's some kind of function
-                stFlags = lpYYFunc->tkToken.tkData.lpSym->stFlags;
+                stFlags = lptkFunc->tkData.lpSym->stFlags;
                 if (stFlags.SysFn0
                  || stFlags.SysFn12
                  || stFlags.UsrFn0
@@ -618,18 +621,18 @@ LPYYSTYPE ExecFunc_EM
                  || stFlags.UsrOp1
                  || stFlags.UsrOp2)
                 {
-                    LPYYSTYPE (*NameFcn) (LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
+                    LPPRIMFNS NameFcn;
 
                     // Get the address of the execution routine
-                    NameFcn = lpYYFunc->tkToken.tkData.lpSym->stData.stNameFcn;
+                    NameFcn = lptkFunc->tkData.lpSym->stData.stNameFcn;
 
-                    return (*NameFcn) (lptkLftArg, &lpYYFunc->tkToken, lptkRhtArg, lptkAxis);
+                    return (*NameFcn) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
                 } else
                     // stData is a valid HGLOBAL function array
-                    Assert (IsGlbTypeFcnDir (lpYYFunc->tkToken.tkData.lpSym->stData.stGlbData));
+                    Assert (IsGlbTypeFcnDir (lptkFunc->tkData.lpSym->stData.stGlbData));
 
                     return ExecFuncGlb_EM (lptkLftArg,
-                                           ClrPtrTypeDirGlb (lpYYFunc->tkToken.tkData.lpSym->stData.stGlbData),
+                                           ClrPtrTypeDirGlb (lptkFunc->tkData.lpSym->stData.stGlbData),
                                            lptkRhtArg,
                                            lptkAxis);
             } // End IF
@@ -637,17 +640,17 @@ LPYYSTYPE ExecFunc_EM
             // Handle the immediate case
 
             // Split cases based upon the immediate type
-            switch (lpYYFunc->tkToken.tkData.lpSym->stFlags.ImmType)
+            switch (lptkFunc->tkData.lpSym->stFlags.ImmType)
             {
                 case IMMTYPE_PRIMFCN:
                 {
                     TOKEN tkFn = {0};
 
-                    PrimFn = PrimFnsTab[(unsigned char) (lpYYFunc->tkToken.tkData.lpSym->stData.stChar)];
+                    PrimFn = PrimFnsTab[(unsigned char) (lptkFunc->tkData.lpSym->stData.stChar)];
                     if (!PrimFn)
                     {
                         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                                   &lpYYFunc->tkToken);
+                                                   lptkFunc);
                         return NULL;
                     } // End IF
 
@@ -656,10 +659,10 @@ LPYYSTYPE ExecFunc_EM
                     tkFn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
 ////////////////////tkFn.tkFlags.NoDisplay =
 ////////////////////tkFn.tkFlags.Color     =
-                    tkFn.tkData.tkChar     = lpYYFunc->tkToken.tkData.lpSym->stData.stChar;
-                    tkFn.tkCharIndex       = lpYYFunc->tkToken.tkCharIndex;
+                    tkFn.tkData.tkChar     = lptkFunc->tkData.lpSym->stData.stChar;
+                    tkFn.tkCharIndex       = lptkFunc->tkCharIndex;
 
-                    return (*PrimFn)(lptkLftArg, &tkFn, lptkRhtArg, lptkAxis);
+                    return (*PrimFn) (lptkLftArg, &tkFn, lptkRhtArg, lptkAxis);
                 } // End IMMTYPE_PRIMFCN
 
                 defstop
@@ -668,10 +671,10 @@ LPYYSTYPE ExecFunc_EM
 
         case TKT_FCNARRAY:
             // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lpYYFunc->tkToken.tkData.tkGlbData));
+            Assert (IsGlbTypeFcnDir (lptkFunc->tkData.tkGlbData));
 
             return ExecFuncGlb_EM (lptkLftArg,
-                                   ClrPtrTypeDirGlb (lpYYFunc->tkToken.tkData.tkGlbData),
+                                   ClrPtrTypeDirGlb (lptkFunc->tkData.tkGlbData),
                                    lptkRhtArg,
                                    lptkAxis);
         defstop
@@ -734,8 +737,8 @@ LPYYSTYPE ExecFuncStr_EM
      LPTOKEN   lptkRhtArg)
 
 {
-    LPTOKEN lptkAxis;
-    LPYYSTYPE (*PrimFn)(LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
+    LPTOKEN   lptkAxis;
+    LPPRIMFNS PrimFn;
 
     // Split cases based upon the type of the first token
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)
@@ -784,7 +787,7 @@ LPYYSTYPE ExecFuncStr_EM
                 return NULL;
             } // End IF
 
-            return (*PrimFn)(lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
+            return (*PrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
 
         defstop
             break;
@@ -808,9 +811,10 @@ LPYYSTYPE ExecOp1_EM
 
 {
     LPTOKEN lptkAxis;
+    UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Check for axis operator
     if (lpYYFcnStr->FcnCount > 1
@@ -863,7 +867,7 @@ LPYYSTYPE ExecOp1_EM
             break;
     } // End SWITCH
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End ExecOp1_EM
 
 
@@ -932,7 +936,7 @@ LPYYSTYPE ExecOp2_EM
 
             return NULL;        // break;
 
-        case UCS2_DIERESISUPTACK:// Convolution
+        case UCS2_DIERESISDOWNTACK:// Convolution
             DbgBrk ();          // ***FINISHME***
 
 
@@ -962,8 +966,10 @@ LPYYSTYPE ExecOuterProd_EM
      LPTOKEN   lptkRhtArg)
 
 {
+    UINT YYLclIndex;
+
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     DbgBrk ();                  // ***FINISHME***
 
@@ -973,7 +979,7 @@ LPYYSTYPE ExecOuterProd_EM
 
 
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End ExecOuterProd_EM
 
 
@@ -990,8 +996,10 @@ LPYYSTYPE ExecInnerProd_EM
      LPTOKEN   lptkRhtArg)
 
 {
+    UINT YYLclIndex;
+
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     DbgBrk ();                  // ***FINISHME***
 
@@ -1001,7 +1009,7 @@ LPYYSTYPE ExecInnerProd_EM
 
 
 
-    return &YYRes[YYResIndex];
+    return &YYRes[YYLclIndex];
 } // End ExecInnerProd_EM
 
 
@@ -1059,10 +1067,11 @@ void AttrsOfToken
             // If it's not immediate, we must traverse the array
             if (!lpToken->tkData.lpSym->stFlags.Imm)
             {
-                // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lpToken->tkData.lpSym->stData.stGlbData));
-
+                // Get the global handle
                 hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbData));
 
                 break;      // Continue with HGLOBAL case
             } // End IF
@@ -1081,10 +1090,11 @@ void AttrsOfToken
             return;
 
         case TKT_VARARRAY:
-            // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lpToken->tkData.tkGlbData));
-
+            // Get the global handle
             hGlbData = lpToken->tkData.tkGlbData;
+
+            // tkData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir (hGlbData));
 
             break;      // Continue with HGLOBAL case
 
@@ -1134,6 +1144,583 @@ void AttrsOfGlb
 
 
 //***************************************************************************
+//  CheckAxisImm
+//
+//  Subroutine to CheckAxis_EM for immediate values
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CheckAxisImm"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL CheckAxisImm
+    (UINT       immType,        // Type of the immediate value
+     APLLONGEST aplLongest,     // The immediate value
+     LPTOKEN    lptkAxis,       // The Axis values
+     APLRANK    aplRankCmp,     // Comparison rank
+     LPAPLNELM  lpaplNELM,      // Local var w/NELM
+     LPBOOL     lpbFract,       // Return TRUE iff fractional values are present,
+                                //   (may be NULL if fractional values not allowed)
+     LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
+                                //   (may be NULL if caller is not interested)
+     LPAPLNELM  lpaplNELMAxis,  // Return # elements in axis
+                                //   (may be NULL if caller is not interested)
+     HGLOBAL    *lphGlbAxis,    // Ptr to HGLOBAL where the cleaned up axis
+                                //   is to be stored.  If the return is FALSE,
+                                //   this ptr must be set to NULL.
+                                //   (may be NULL if caller is not interested)
+     LPAPLINT  *lplpAxisStart,  // Ptr to ptr to start of Axis values in *lphGlbAxis
+     LPAPLINT  *lplpAxisHead,   // ...                    user axis values in *lphGlbAxis
+     LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
+
+{
+    APLUINT  ByteAxis;
+    APLRANK  aplRank;
+    BOOL     bRet = TRUE;
+    UINT     u;
+    LPAPLINT lpAxisTail;        // Ptr to second set of Axis values in *lphGlbAxis
+
+    // The immediate value minus []IO
+    //   must be an integer in the range
+    //   [0, aplRankCmp - 1], inclusive.
+
+    // Set # elements
+    *lpaplNELM = 1;
+
+    // Return the # elements
+    if (lpaplNELMAxis NE NULL)
+        *lpaplNELMAxis = *lpaplNELM;
+
+    if (lphGlbAxis)
+    {
+        // Calculate space needed for axis
+        // If the comparison rank is zero, the allocation
+        //   size is zero, and the lock ptr is zero
+        //   which GlobalLock will treat as an error,
+        //   returning a zero ptr, so we max aplRankCmp with 1.
+        ByteAxis = sizeof (APLINT) * 2 * max (aplRankCmp, 1);
+
+        // Allocate storage for the axis vector
+        // N.B. Conversion from APLUINT to UINT.
+        Assert (ByteAxis EQ (UINT) ByteAxis);
+        *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
+        if (!*lphGlbAxis)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkAxis);
+            return FALSE;
+        } // End IF
+
+        // Lock the memory to get a ptr to the axis storage area
+        *lplpAxisStart = *lplpAxisHead = MyGlobalLock (*lphGlbAxis);
+
+        // Point to the start of the trailing axes
+        lpAxisTail = lplpAxisHead[aplRankCmp - *lpaplNELM];
+    } // End IF
+
+    // Split cases based upon the immediate axis type
+    switch (lptkAxis->tkFlags.ImmType)
+    {
+        case IMMTYPE_BOOL:
+        case IMMTYPE_INT:
+            // Get the Boolean or Integer value,
+            //   less the current index origin
+            aplRank = lptkAxis->tkData.tkInteger - bQuadIO;
+
+            // Ensure it's within range
+            // Note that because aplRank and aplRankCmp
+            //   are unsigned, we don't need to check
+            //   against zero
+            bRet = (aplRank < aplRankCmp);
+
+            break;
+
+        case IMMTYPE_FLOAT:     // Ensure it's close enough
+            // Convert the value to an integer using System CT
+            aplRank = FloatToAplint_SCT (lptkAxis->tkData.tkFloat, &bRet);
+            aplRank -= bQuadIO; // Less the index origin
+
+            // If fractional values are allowed,
+            //   return whether or not they are present
+            if (lpbFract)
+                *lpbFract = !bRet;
+
+            // If fractional values allowed and are present, ...
+            if (lpbFract && !bRet)
+                bRet = TRUE;
+
+            // Ensure it's within range
+            // Note that because aplRank and aplRankCmp
+            //   are unsigned, we don't need to check
+            //   against zero
+            bRet = bRet && (aplRank < aplRankCmp);
+
+            break;
+
+        case IMMTYPE_CHAR:      // No chars allowed
+            return FALSE;
+
+        defstop
+            return FALSE;
+    } // End SWITCH
+
+    if (bRet && lphGlbAxis)
+    {
+        // Save the remaining values
+        for (u = 0; u < aplRankCmp; u++)
+        if (u NE aplRank)
+            **lplpAxisHead++ = u;
+
+        // Save the trailing value
+        *lpAxisTail++ = aplRank;
+    } // End IF
+
+    // Save the contiguous low axis
+    *lpaplAxisContLo = aplRank;
+
+    // Save the last (and only) value
+    if (lpaplLastAxis)
+        *lpaplLastAxis = aplRank;
+    return bRet;
+} // End CheckAxisImm
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  CheckAxisGlb
+//
+//  Subroutine to CheckAxis_EM for global values
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CheckAxisGlb"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL CheckAxisGlb
+    (HGLOBAL    hGlbData,       // The global handle to check
+     LPTOKEN    lptkAxis,       // The Axis values
+     APLRANK    aplRankCmp,     // Comparison rank
+     BOOL       bSingleton,     // TRUE iff scalar or one-element vector only
+                                //   is allowed
+     BOOL       bSortAxes,      // TRUE iff the axes should be sorted
+                                //   (i.e., the order of the axes is unimportant)
+     BOOL       bContiguous,    // TRUE iff the axes must be contiguous
+     BOOL       bAllowDups,     // TRUE iff duplicate axes are allowed
+     LPBOOL     lpbFract,       // Return TRUE iff fractional values are present,
+                                //   (may be NULL if fractional values not allowed)
+     LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
+                                //   (may be NULL if caller is not interested)
+     LPAPLNELM  lpaplNELMAxis,  // Return # elements in axis
+                                //   (may be NULL if caller is not interested)
+     HGLOBAL   *lphGlbAxis,     // Ptr to HGLOBAL where the cleaned up axis
+                                //   is to be stored.  If the return is FALSE,
+                                //   this ptr must be set to NULL.
+                                //   (may be NULL if caller is not interested)
+     LPAPLNELM  lpaplNELM,      // Local var for NELM
+     LPAPLINT  *lplpAxisStart,  // Ptr to ptr to start of Axis values in *lphGlbAxis
+     LPAPLINT  *lplpAxisHead,   // ...                    user axis values in *lphGlbAxis
+     LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
+
+{
+    BOOL     bRet = TRUE;
+    LPVOID   lpMem,
+             lpDup = NULL;
+    HGLOBAL  hGlbDup = NULL;
+    UINT     uBitMask;
+    APLUINT  ByteDup,
+             ByteAxis,
+             u;
+    APLSTYPE aplTypeLcl;
+    APLRANK  aplRankLcl;
+    LPAPLINT lpAxisTail;        // Ptr to second set of Axis values in *lphGlbAxis
+
+    // st/tkData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir (hGlbData));
+
+    // Lock the global memory object to get a ptr to it
+    lpMem = MyGlobalLock (ClrPtrTypeDirGlb (hGlbData));
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+
+    aplTypeLcl = lpHeader->ArrType;
+    *lpaplNELM = lpHeader->NELM;
+    aplRankLcl = lpHeader->Rank;
+
+#undef  lpHeader
+
+    // Return the # elements
+    if (lpaplNELMAxis NE NULL)
+        *lpaplNELMAxis = *lpaplNELM;
+
+    if (lphGlbAxis)
+    {
+        // Calculate space needed for axis
+        // If the comparison rank is zero, the allocation
+        //   size is zero, and the lock ptr is zero
+        //   which GlobalLock will treat as an error,
+        //   returning a zero ptr, so we max aplRankCmp with 1.
+        ByteAxis = sizeof (APLINT) * 2 * max (aplRankCmp, 1);
+
+        // Allocate storage for the axis vector
+        // N.B. Conversion from APLUINT to UINT.
+        Assert (ByteAxis EQ (UINT) ByteAxis);
+        *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
+        if (!*lphGlbAxis)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkAxis);
+            goto ERROR_EXIT;
+        } // End IF
+
+        // Lock the memory to get a ptr to the axis storage area
+        *lplpAxisStart = *lplpAxisHead = MyGlobalLock (*lphGlbAxis);
+
+        // Point to the start of the trailing axes
+        lpAxisTail = lplpAxisHead[aplRankCmp - *lpaplNELM];
+    } // End IF
+
+    // If the comparison rank is zero, the allocation
+    //   size is zero, and the lock ptr is zero
+    //   which GlobalLock will treat as an error,
+    //   returning a zero ptr, so we max aplRankCmp with 1.
+    ByteDup = RoundUpBits8 (max (aplRankCmp, 1));
+
+    // Allocate global memory bit vector to test for duplicates
+    // N.B.  Conversion from APLUINT to UINT.
+    Assert (ByteDup EQ (UINT) ByteDup);
+    hGlbDup = DbgGlobalAlloc (GHND, (UINT) ByteDup);
+    if (!hGlbDup)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkAxis);
+        goto ERROR_EXIT;
+    } else
+    {
+        // Check the axis rank and the NELM (if singletons only)
+        if ((aplRankLcl > 1)
+         || (bSingleton && *lpaplNELM NE 1))
+            goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to the
+    //   duplicate indices testing area
+    lpDup = MyGlobalLock (hGlbDup);
+
+    // Skip over the header and dimensions to the data
+    lpMem = VarArrayBaseToData (lpMem, aplRankLcl);
+
+    // Split cases based upon the array type
+    switch (aplTypeLcl)
+    {
+        case ARRAY_BOOL:
+            uBitMask = 0x01;
+
+            // Loop through the elements
+            for (u = 0; bRet && u < *lpaplNELM; u++)
+            {
+                // Get the next bit value
+                aplRankLcl = (uBitMask & *(LPAPLBOOL) lpMem) ? 1 : 0;
+                aplRankLcl -= bQuadIO; // Less the index origin
+
+                // Save the next trailing value
+                //   if asked to and not sorting
+                //   the axes.
+                if (lphGlbAxis && !bSortAxes)
+                    *lpAxisTail++ = aplRankLcl;
+
+                // Test against the comparison rank
+                bRet = (aplRankLcl < aplRankCmp);
+
+                // Test for duplicates
+                if (bRet)
+                    bRet = TestDupAxis (lpDup, aplRankLcl, bAllowDups);
+
+                if (bRet)
+                {
+                    // Shift over the bit mask
+                    uBitMask <<= 1;
+
+                    // Check for end-of-byte
+                    if (uBitMask EQ END_OF_BYTE)
+                    {
+                        uBitMask = 0x01;        // Start over
+                        ((LPAPLBOOL) lpMem)++;  // Skip to next byte
+                    } // End IF
+                } // End IF
+            } // End FOR
+
+            break;
+
+        case ARRAY_INT:
+
+#define lpaplInteger    ((LPAPLINT) lpMem)
+
+            // Loop through the elements
+            for (u = 0; bRet && u < *lpaplNELM; u++)
+            {
+                aplRankLcl = *lpaplInteger++ - bQuadIO;
+
+                // Save the next trailing value
+                //   if asked to and not sorting
+                //   the axes.
+                if (lphGlbAxis && !bSortAxes)
+                    *lpAxisTail++ = aplRankLcl;
+
+                // Ensure it's within range
+                // Note that because aplRank and aplRankCmp
+                //   are unsigned, we don't need to check
+                //   against zero
+                bRet = (aplRankLcl < aplRankCmp);
+
+                // Test for duplicates
+                if (bRet)
+                    bRet = TestDupAxis (lpDup, aplRankLcl, bAllowDups);
+            } // End FOR
+
+#undef  lpaplInteger
+
+            break;
+
+        case ARRAY_FLOAT:
+
+#define lpaplFloat      ((LPAPLFLOAT) lpMem)
+
+            // Loop through the elements
+            for (u = 0; bRet && u < *lpaplNELM; u++)
+            {
+                // Convert the value to an integer using System CT
+                aplRankLcl = FloatToAplint_SCT (*lpaplFloat++, &bRet);
+                aplRankLcl -= bQuadIO; // Less the index origin
+
+                // If fractional values are allowed,
+                //   return whether or not they are present
+                if (lpbFract)
+                    *lpbFract |= !bRet;
+
+                // Save the next trailing value
+                //   if asked to and not sorting
+                //   the axes.
+                if (lphGlbAxis && !bSortAxes)
+                    *lpAxisTail++ = aplRankLcl;
+
+                // If fractional values allowed and are present, ...
+                if (lpbFract && !bRet)
+                    bRet = TRUE;
+
+                // Ensure it's within range
+                // Note that because aplRank and aplRankCmp
+                //   are unsigned, we don't need to check
+                //   against zero
+                bRet = bRet && (aplRankLcl < aplRankCmp);
+
+                // Test for duplicates
+                if (bRet)
+                    bRet = TestDupAxis (lpDup, aplRankLcl, bAllowDups);
+            } // End FOR
+
+#undef  lpaplFloat
+
+            break;
+
+        case ARRAY_APA:
+        {
+            APLINT apaOff,
+                   apaMul,
+                   apaLen;
+
+#define lpaplAPA    ((LPAPLAPA) lpMem)
+
+            // Get the APA data
+            apaOff = lpaplAPA->Off;
+            apaMul = lpaplAPA->Mul;
+            apaLen = lpaplAPA->Len;
+
+#undef  lpaplAPA
+            // Convert to origin-0
+            apaOff -= bQuadIO;
+
+            // It's sufficient to check the first and
+            //   last values for validity.
+            bRet = (((apaOff + apaMul *           0 ) < (APLRANKSIGN) aplRankCmp)
+                 && ((apaOff + apaMul * (apaLen - 1)) < (APLRANKSIGN) aplRankCmp));
+
+            // Save the trailing axis values
+            if (bRet)
+            for (u = 0; bRet && u < *lpaplNELM; u++)
+            {
+                // Get the next value
+                aplRankLcl = apaOff + apaMul * u;
+
+                // Save the next trailing value
+                //   if asked to and not sorting
+                //   the axes.
+                if (lphGlbAxis && !bSortAxes)
+                    *lpAxisTail++ = aplRankLcl;
+
+                // Note there's no possibility of duplicates,
+                //   however, we still need to fill in the
+                //   bit array of values so we can fill in
+                //   the leading axis values from the zeroes
+                //   lpDup.
+                // Test for duplicates
+                if (bRet)
+                    bRet = TestDupAxis (lpDup, aplRankLcl, bAllowDups);
+            } // End FOR
+
+            break;
+        } // End ARRAY_APA
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+        case ARRAY_LIST:
+            goto ERROR_EXIT;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Save the last value
+    if (lpaplLastAxis)
+        *lpaplLastAxis = aplRankLcl;
+
+    // Fill in the leading axis values
+    if (bRet && lphGlbAxis && !bAllowDups)
+    {
+        uBitMask = 0x01;
+
+        // Loop through the lpDup values looking for zeros
+        for (u = 0; u < aplRankCmp; u++)
+        {
+            // If the bit is a zero, ...
+            if (!(uBitMask & *(LPAPLBOOL) lpDup))
+                // Save the next value
+                *(*lplpAxisHead)++ = u;
+            else            // the bit is a one
+            if (bSortAxes)  // and we're sorting axes
+                // Fill in the trailing axis values in order
+                *lpAxisTail++ = u;
+
+            // Shift over the bit mask
+            uBitMask <<= 1;
+
+            // Check for end-of-byte
+            if (uBitMask EQ END_OF_BYTE)
+            {
+                uBitMask = 0x01;        // Start over
+                ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+            } // End IF
+        } // End FOR
+    } // End IF
+
+    // If the axes must be contiguous, check that
+    if (bRet && bContiguous)
+    {
+        // Unlock and lock the memory to reset the
+        //   ptr to the start
+        MyGlobalUnlock (hGlbDup); lpDup = NULL;
+        lpDup = MyGlobalLock (hGlbDup);
+
+        uBitMask = 0x01;
+
+        // Look for the first 1
+        for (u = 0; u < aplRankCmp; u++)
+        {
+            // If it's a 1, break
+            if (uBitMask & *(LPAPLBOOL) lpDup)
+                break;
+
+            // Shift over the bit mask
+            uBitMask <<= 1;
+
+            // Check for end-of-byte
+            if (uBitMask EQ END_OF_BYTE)
+            {
+                uBitMask = 0x01;        // Start over
+                ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+            } // End IF
+        } // End FOR
+
+        // Save as contiguous low axis
+        *lpaplAxisContLo = u;
+
+        // Look for consecutive 1s
+        for (; u < aplRankCmp; u++)
+        {
+            // If it's a 0, break
+            if (!(uBitMask & *(LPAPLBOOL) lpDup))
+                break;
+
+            // Shift over the bit mask
+            uBitMask <<= 1;
+
+            // Check for end-of-byte
+            if (uBitMask EQ END_OF_BYTE)
+            {
+                uBitMask = 0x01;        // Start over
+                ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+            } // End IF
+        } // End FOR
+
+        // Save as highest contiguous axis
+        if (lpaplLastAxis)
+            *lpaplLastAxis = u - 1;
+
+        // Look for consecutive 0s
+        for (; u < aplRankCmp; u++)
+        {
+            // If it's a 1, break
+            if (uBitMask & *(LPAPLBOOL) lpDup)
+                break;
+
+            // Shift over the bit mask
+            uBitMask <<= 1;
+
+            // Check for end-of-byte
+            if (uBitMask EQ END_OF_BYTE)
+            {
+                uBitMask = 0x01;        // Start over
+                ((LPAPLBOOL) lpDup)++;  // Skip to next byte
+            } // End IF
+        } // End FOR
+
+        // If we're not at the end, the axes
+        //   are not contiguous
+        bRet = (u EQ aplRankCmp);
+    } // End IF
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT:
+    bRet = FALSE;
+NORMAL_EXIT:
+    if (hGlbDup)
+    {
+        if (lpDup)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbDup); lpDup = NULL;
+        } // End IF
+
+        // We no longer need this HGLOBAL
+        DbgGlobalFree (hGlbDup); hGlbDup = NULL;
+    } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbData)); lpMem = NULL;
+
+    return bRet;
+} // End CheckAxisGlb
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  CheckAxis_EM
 //
 //  Check an axis value against a given rank
@@ -1153,6 +1740,7 @@ BOOL CheckAxis_EM
      BOOL       bSortAxes,      // TRUE iff the axes should be sorted
                                 //   (i.e., the order of the axes is unimportant)
      BOOL       bContiguous,    // TRUE iff the axes must be contiguous
+     BOOL       bAllowDups,     // TRUE iff duplicate axes are allowed
      LPBOOL     lpbFract,       // Return TRUE iff fractional values are present,
                                 //   (may be NULL if fractional values not allowed)
      LPAPLINT   lpaplLastAxis,  // Return last axis value or ceiling if fractional
@@ -1164,21 +1752,15 @@ BOOL CheckAxis_EM
                                 //   this ptr must be set to NULL.
                                 //   (may be NULL if caller is not interested)
 {
-    BOOL     bRet = TRUE;
-    LPVOID   lpMem,
-             lpDup;
-    LPAPLINT lpAxisStart,
-             lpAxisHead,
-             lpAxisTail;
-    APLSTYPE aplType;
-    APLNELM  aplNELM;
-    APLRANK  aplRank;
-    UINT     uBitMask, u;
-    APLUINT  ByteDup,
-             ByteAxis,
-             aplAxisContLo,      // Contiguous low axis
-             aplAxisContHi;      // ...        high ...
-    HGLOBAL  hGlbDup;
+    BOOL       bRet = TRUE;
+    APLNELM    aplNELM;
+    LPAPLINT   lpAxisStart,     // Ptr to ptr to start of Axis values in *lphGlbAxis
+               lpAxisHead;      // ...                    user axis values in *lphGlbAxis
+    UINT       u;
+    APLUINT    aplAxisContLo;   // Contiguous low axis
+    HGLOBAL    hGlbData = NULL;
+    UINT       immType;
+    APLLONGEST aplLongest;
 
     // Ensure the object is a subset of {iota}aplRankCmp
     //   with no duplicates, and not necessarily in order.
@@ -1198,488 +1780,82 @@ BOOL CheckAxis_EM
     // Split cases based upon the axis token type
     switch (lptkAxis->tkFlags.TknType)
     {
-        case TKT_AXISIMMED:
-            // The immediate value minus []IO
-            //   must be an integer in the range
-            //   [0, aplRankCmp - 1], inclusive.
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkAxis->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            // Set # elements
-            aplNELM = 1;
-
-            // Return the # elements
-            if (lpaplNELMAxis NE NULL)
-                *lpaplNELMAxis = aplNELM;
-
-            if (lphGlbAxis)
+            // If it's not immediate, it's an HGLOBAL
+            if (!lptkAxis->tkData.lpSym->stFlags.Imm)
             {
-                // Calculate space needed for axis
-                // If the comparison rank is zero, the allocation
-                //   size is zero, and the lock ptr is zero
-                //   which GlobalLock will treat as an error,
-                //   returning a zero ptr, so we max aplRankCmp with 1.
-                ByteAxis = sizeof (APLINT) * 2 * max (aplRankCmp, 1);
-
-                // Allocate storage for the axis vector
-                // N.B. Conversion from APLUINT to UINT.
-                Assert (ByteAxis EQ (UINT) ByteAxis);
-                *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
-                if (!*lphGlbAxis)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                               lptkAxis);
-                    return FALSE;
-                } // End IF
-
-                // Lock the memory to get a ptr to the axis storage area
-                lpAxisStart = lpAxisHead = MyGlobalLock (*lphGlbAxis);
-
-                // Point to the start of the trailing axes
-                lpAxisTail = &lpAxisHead[aplRankCmp - aplNELM];
-            } // End IF
-
-            // Split cases based upon the immediate axis type
-            switch (lptkAxis->tkFlags.ImmType)
-            {
-                case IMMTYPE_BOOL:
-                case IMMTYPE_INT:
-                    // Get the Boolean or Integer value,
-                    //   less the current index origin
-                    aplRank = lptkAxis->tkData.tkInteger - bQuadIO;
-
-                    // Ensure it's within range
-                    // Note that because aplRank and aplRankCmp
-                    //   are unsigned, we don't need to check
-                    //   against zero
-                    bRet = (aplRank < aplRankCmp);
-
-                    break;
-
-                case IMMTYPE_FLOAT:     // Ensure it's close enough
-                    // Convert the value to an integer using System CT
-                    aplRank = FloatToAplint_SCT (lptkAxis->tkData.tkFloat, &bRet);
-                    aplRank -= bQuadIO; // Less the index origin
-
-                    // If fractional values are allowed,
-                    //   return whether or not they are present
-                    if (lpbFract)
-                        *lpbFract = !bRet;
-
-                    // If fractional values allowed and are present, ...
-                    if (lpbFract && !bRet)
-                        bRet = TRUE;
-
-                    // Ensure it's within range
-                    // Note that because aplRank and aplRankCmp
-                    //   are unsigned, we don't need to check
-                    //   against zero
-                    bRet = bRet && (aplRank < aplRankCmp);
-
-                    break;
-
-                case IMMTYPE_CHAR:      // No chars allowed
-                    bRet = FALSE;
-
-                    goto ERROR_EXIT;
-
-                defstop
-                    goto ERROR_EXIT;
-            } // End SWITCH
-
-            if (bRet && lphGlbAxis)
-            {
-                // Save the remaining values
-                for (u = 0; u < aplRankCmp; u++)
-                if (u NE aplRank)
-                    *lpAxisHead++ = u;
-
-                // Save the trailing value
-                *lpAxisTail++ = aplRank;
-            } // End IF
-
-            // Save the last (and only) value
-            if (lpaplLastAxis)
-                *lpaplLastAxis = aplRank;
-            break;
-
-        case TKT_AXISARRAY:
-            // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkAxis->tkData.tkGlbData));
-
-            // Lock the global memory object to get a ptr to it
-            lpMem = MyGlobalLock (ClrPtrTypeDirGlb (lptkAxis->tkData.tkGlbData));
-
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
-            aplType = lpHeader->ArrType;
-            aplNELM = lpHeader->NELM;
-            aplRank = lpHeader->Rank;
-
-#undef  lpHeader
-
-            // Return the # elements
-            if (lpaplNELMAxis NE NULL)
-                *lpaplNELMAxis = aplNELM;
-
-            if (lphGlbAxis)
-            {
-                // Calculate space needed for axis
-                // If the comparison rank is zero, the allocation
-                //   size is zero, and the lock ptr is zero
-                //   which GlobalLock will treat as an error,
-                //   returning a zero ptr, so we max aplRankCmp with 1.
-                ByteAxis = sizeof (APLINT) * 2 * max (aplRankCmp, 1);
-
-                // Allocate storage for the axis vector
-                // N.B. Conversion from APLUINT to UINT.
-                Assert (ByteAxis EQ (UINT) ByteAxis);
-                *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
-                if (!*lphGlbAxis)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                               lptkAxis);
-                    bRet = FALSE;
-
-                    break;
-                } // End IF
-
-                // Lock the memory to get a ptr to the axis storage area
-                lpAxisStart = lpAxisHead = MyGlobalLock (*lphGlbAxis);
-
-                // Point to the start of the trailing axes
-                lpAxisTail = &lpAxisHead[aplRankCmp - aplNELM];
-            } // End IF
-
-            // If the comparison rank is zero, the allocation
-            //   size is zero, and the lock ptr is zero
-            //   which GlobalLock will treat as an error,
-            //   returning a zero ptr, so we max aplRankCmp with 1.
-            ByteDup = RoundUpBits8 (max (aplRankCmp, 1));
-
-            // Allocate global memory bit vector to test for duplicates
-            // N.B.  Conversion from APLUINT to UINT.
-            Assert (ByteDup EQ (UINT) ByteDup);
-            hGlbDup = DbgGlobalAlloc (GHND, (UINT) ByteDup);
-            if (!hGlbDup)
-            {
-                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkAxis);
-                bRet = FALSE;
+                // Get the global handle
+                hGlbData = lptkAxis->tkData.lpSym->stData.stGlbData;
             } else
             {
-                // Check the dup result, the axis rank, and the NELM (if singletons only)
-                bRet = bRet
-                    && (aplRank <= 1)
-                    && ((!bSingleton) || aplNELM EQ 1);
-            } // End IF
+                // Get the immediate type and value
+                immType    = lptkAxis->tkData.lpSym->stFlags.ImmType;
+                aplLongest = lptkAxis->tkData.lpSym->stData.stLongest;
+            } // End IF/ELSE
 
-            if (bRet)
-            {
-                // Lock the memory to get a ptr to the
-                //   duplicate indices testing area
-                lpDup = MyGlobalLock (hGlbDup);
+            break;
 
-                // Skip over the header and dimensions to the data
-                lpMem = VarArrayBaseToData (lpMem, aplRank);
+        case TKT_VARIMMED:
+        case TKT_AXISIMMED:
+            // Get the immediate type and value
+            immType    = lptkAxis->tkFlags.ImmType;
+            aplLongest = lptkAxis->tkData.tkLongest;
 
-                // Split cases based upon the array type
-                switch (aplType)
-                {
-                    case ARRAY_BOOL:
-                        uBitMask = 0x01;
+            break;
 
-                        // Loop through the elements
-                        for (u = 0; bRet && u < aplNELM; u++)
-                        {
-                            // Get the next bit value
-                            aplRank = (uBitMask & *(LPAPLBOOL) lpMem) ? 1 : 0;
-                            aplRank -= bQuadIO; // Less the index origin
-
-                            // Save the next trailing value
-                            //   if asked to and not sorting
-                            //   the axes.
-                            if (lphGlbAxis && !bSortAxes)
-                                *lpAxisTail++ = aplRank;
-
-                            // Test against the comparison rank
-                            bRet = (aplRank < aplRankCmp);
-
-                            // Test for duplicates
-                            if (bRet)
-                                bRet = TestDupAxis (lpDup, aplRank);
-
-                            if (bRet)
-                            {
-                                // Shift over the bit mask
-                                uBitMask <<= 1;
-
-                                // Check for end-of-byte
-                                if (uBitMask EQ END_OF_BYTE)
-                                {
-                                    uBitMask = 0x01;        // Start over
-                                    ((LPAPLBOOL) lpMem)++;  // Skip to next byte
-                                } // End IF
-                            } // End IF
-                        } // End FOR
-
-                        break;
-
-                    case ARRAY_INT:
-
-#define lpaplInteger    ((LPAPLINT) lpMem)
-
-                        // Loop through the elements
-                        for (u = 0; bRet && u < aplNELM; u++)
-                        {
-                            aplRank = *lpaplInteger++ - bQuadIO;
-
-                            // Save the next trailing value
-                            //   if asked to and not sorting
-                            //   the axes.
-                            if (lphGlbAxis && !bSortAxes)
-                                *lpAxisTail++ = aplRank;
-
-                            // Ensure it's within range
-                            // Note that because aplRank and aplRankCmp
-                            //   are unsigned, we don't need to check
-                            //   against zero
-                            bRet = (aplRank < aplRankCmp);
-
-                            // Test for duplicates
-                            if (bRet)
-                                bRet = TestDupAxis (lpDup, aplRank);
-                        } // End FOR
-
-#undef  lpaplInteger
-
-                        break;
-
-                    case ARRAY_FLOAT:
-
-#define lpaplFloat      ((LPAPLFLOAT) lpMem)
-
-                        // Loop through the elements
-                        for (u = 0; bRet && u < aplNELM; u++)
-                        {
-                            // Convert the value to an integer using System CT
-                            aplRank = FloatToAplint_SCT (*lpaplFloat++, &bRet);
-                            aplRank -= bQuadIO; // Less the index origin
-
-                            // If fractional values are allowed,
-                            //   return whether or not they are present
-                            if (lpbFract)
-                                *lpbFract |= !bRet;
-
-                            // Save the next trailing value
-                            //   if asked to and not sorting
-                            //   the axes.
-                            if (lphGlbAxis && !bSortAxes)
-                                *lpAxisTail++ = aplRank;
-
-                            // If fractional values allowed and are present, ...
-                            if (lpbFract && !bRet)
-                                bRet = TRUE;
-
-                            // Ensure it's within range
-                            // Note that because aplRank and aplRankCmp
-                            //   are unsigned, we don't need to check
-                            //   against zero
-                            bRet = bRet && (aplRank < aplRankCmp);
-
-                            // Test for duplicates
-                            if (bRet)
-                                bRet = TestDupAxis (lpDup, aplRank);
-                        } // End FOR
-
-#undef  lpaplFloat
-
-                        break;
-
-                    case ARRAY_APA:
-                    {
-                        APLINT apaOff,
-                               apaMul,
-                               apaLen;
-
-#define lpaplAPA    ((LPAPLAPA) lpMem)
-
-                        // Get the APA data
-                        apaOff = lpaplAPA->Off;
-                        apaMul = lpaplAPA->Mul;
-                        apaLen = lpaplAPA->Len;
-
-#undef  lpaplAPA
-                        // Convert to origin-0
-                        apaOff -= bQuadIO;
-
-                        // It's sufficient to check the first and
-                        //   last values for validity.
-                        bRet = (((apaOff + apaMul *           0 ) < (APLRANKSIGN) aplRankCmp)
-                             && ((apaOff + apaMul * (apaLen - 1)) < (APLRANKSIGN) aplRankCmp));
-
-                        // Save the trailing axis values
-                        if (bRet)
-                        for (u = 0; bRet && u < aplNELM; u++)
-                        {
-                            // Get the next value
-                            aplRank = apaOff + apaMul * u;
-
-                            // Save the next trailing value
-                            //   if asked to and not sorting
-                            //   the axes.
-                            if (lphGlbAxis && !bSortAxes)
-                                *lpAxisTail++ = aplRank;
-
-                            // Note there's no possibility of duplicates,
-                            //   however, we still need to fill in the
-                            //   bit array of values so we can fill in
-                            //   the leading axis values from the zeroes
-                            //   lpDup.
-                            // Test for duplicates
-                            if (bRet)
-                                bRet = TestDupAxis (lpDup, aplRank);
-                        } // End FOR
-
-                        break;
-                    } // End ARRAY_APA
-
-                    case ARRAY_CHAR:
-                    case ARRAY_HETERO:
-                    case ARRAY_NESTED:
-                    case ARRAY_LIST:
-                        bRet = FALSE;
-
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
-
-                // Save the last value
-                if (lpaplLastAxis)
-                    *lpaplLastAxis = aplRank;
-
-                // Fill in the leading axis values
-                if (bRet && lphGlbAxis)
-                {
-                    uBitMask = 0x01;
-
-                    // Loop through the lpDup values looking for zeros
-                    for (u = 0; u < aplRankCmp; u++)
-                    {
-                        // If the bit is a zero, ...
-                        if (!(uBitMask & *(LPAPLBOOL) lpDup))
-                            // Save the next value
-                            *lpAxisHead++ = u;
-                        else            // the bit is a one
-                        if (bSortAxes)  // and we're sorting axes
-                            // Fill in the trailing axis values in order
-                            *lpAxisTail++ = u;
-
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
-
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = 0x01;        // Start over
-                            ((LPAPLBOOL) lpDup)++;  // Skip to next byte
-                        } // End IF
-                    } // End FOR
-                } // End IF
-
-                // If the axes must be contiguous, check that
-                if (bRet && bContiguous)
-                {
-                    // Unlock and lock the memory to reset the
-                    //   ptr to the start
-                    MyGlobalUnlock (hGlbDup); lpDup = NULL;
-                    lpDup = MyGlobalLock (hGlbDup);
-
-                    uBitMask = 0x01;
-
-                    // Look for the first 1
-                    for (u = 0; u < aplRankCmp; u++)
-                    {
-                        // If it's a 1, break
-                        if (uBitMask & *(LPAPLBOOL) lpDup)
-                            break;
-
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
-
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = 0x01;        // Start over
-                            ((LPAPLBOOL) lpDup)++;  // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    // Save as low contiguous axis
-                    aplAxisContLo = u;
-
-                    // Look for consecutive 1s
-                    for (; u < aplRankCmp; u++)
-                    {
-                        // If it's a 0, break
-                        if (!(uBitMask & *(LPAPLBOOL) lpDup))
-                            break;
-
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
-
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = 0x01;        // Start over
-                            ((LPAPLBOOL) lpDup)++;  // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    // Save as high contiguous axis
-                    aplAxisContHi = u - 1;
-
-                    // Save as highest axis
-                    if (lpaplLastAxis)
-                        *lpaplLastAxis = aplAxisContHi;
-
-                    // Look for consecutive 0s
-                    for (; u < aplRankCmp; u++)
-                    {
-                        // If it's a 1, break
-                        if (uBitMask & *(LPAPLBOOL) lpDup)
-                            break;
-
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
-
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = 0x01;        // Start over
-                            ((LPAPLBOOL) lpDup)++;  // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    // If we're not at the end, the axes
-                    //   are not contiguous
-                    bRet = (u EQ aplRankCmp);
-                } // End IF
-
-                // We no longer need this ptr and HGLOBAL
-                MyGlobalUnlock (hGlbDup); lpDup = NULL;
-                DbgGlobalFree (hGlbDup); hGlbDup = NULL;
-            } // End IF
-
-            // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeDirGlb (lptkAxis->tkData.tkGlbData)); lpMem = NULL;
+        case TKT_VARARRAY:
+        case TKT_AXISARRAY:
+            // Get the global handle
+            hGlbData = lptkAxis->tkData.tkGlbData;
 
             break;
 
         defstop
             break;
     } // End SWITCH
-ERROR_EXIT:
+
+    if (hGlbData)
+        // Handle the global case
+        bRet = CheckAxisGlb (hGlbData,      // The global handl;e to check
+                             lptkAxis,      // The axis values
+                             aplRankCmp,    // Comparison rank
+                             bSingleton,    // TRUE iff scalar or one-element vector only
+                                            //   is allowed
+                             bSortAxes,     // TRUE iff the axes should be sorted
+                                            //   (i.e., the order of the axes is unimportant)
+                             bContiguous,   // TRUE iff the axes must be contiguous
+                             bAllowDups,    // TRUE iff duplicate axes are allowed
+                             lpbFract,      // Return TRUE iff fractional values are present,
+                                            //   (may be NULL if fractional values not allowed)
+                             lpaplLastAxis, // Return last axis value or ceiling if fractional
+                                            //   (may be NULL if caller is not interested)
+                             lpaplNELMAxis, // Return # elements in axis
+                                            //   (may be NULL if caller is not interested)
+                             lphGlbAxis,    // Ptr to HGLOBAL where the cleaned up axis
+                                            //   is to be stored.  If the return is FALSE,
+                                            //   this ptr must be set to NULL.
+                                            //   (may be NULL if caller is not interested)
+                            &aplNELM,       // Local var for NELM
+                            &lpAxisStart,   // Ptr to ptr to start of Axis values in *lphGlbAxis
+                            &lpAxisHead,    // ...                    user axis values in *lphGlbAxis
+                            &aplAxisContLo);// Contiguous low axis
+    else
+        // Handle the immediate case
+        bRet = CheckAxisImm (immType,
+                             aplLongest,
+                             lptkAxis,
+                             aplRankCmp,
+                            &aplNELM,
+                             lpbFract,
+                             lpaplLastAxis,
+                             lpaplNELMAxis,
+                             lphGlbAxis,
+                            &lpAxisStart,   // Ptr to ptr to start of Axis values in *lphGlbAxis
+                            &lpAxisHead,    // ...                    user axis values in *lphGlbAxis
+                            &aplAxisContLo);// Contiguous low axis
     // If bad values, it's an AXIS ERROR
     if (!bRet)
     {
@@ -1688,7 +1864,7 @@ ERROR_EXIT:
         if (lphGlbAxis && *lphGlbAxis)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (*lphGlbAxis); lpAxisStart = lpAxisHead = lpAxisTail = NULL;
+            MyGlobalUnlock (*lphGlbAxis); lpAxisStart = lpAxisHead = NULL;
 
             // We no longer need this storage
             DbgGlobalFree (*lphGlbAxis); *lphGlbAxis = NULL;
@@ -1696,9 +1872,10 @@ ERROR_EXIT:
     } else
     if (lphGlbAxis && *lphGlbAxis)
     {
-        if (bContiguous)
+        if (bContiguous && !bAllowDups)
         {
-            // If the axes are to be contiguous, this must be ravel
+            // If the axes are to be contiguous and no duplicates,
+            //   this must be ravel (contiguous and duplicates is transpose)
             //   in which case the axes must be represented as
             //   A{is}{iota}aplRankCmp {diamond} A[X[{gradeup}X]]{is}X
             //   not as they are above for the dyadic scalar functions.
@@ -1720,21 +1897,63 @@ ERROR_EXIT:
         } // End IF
 
         // Place the grade-up of lpAxisStart into &lpAxisStart[aplRankCmp]
-        // Because these values are guaranteed to be a permutation
-        //   vector, we can use an address sort.
-        for (u = 0; u < aplRankCmp; u++)
-            lpAxisStart[aplRankCmp + lpAxisStart[u]] = u;
+        if (bAllowDups)
+            GradeUp (lpAxisStart, &lpAxisStart[aplRankCmp], aplRankCmp);
+        else
+            // Because these values are guaranteed to be a permutation
+            //   vector, we can use an address sort.
+            for (u = 0; u < aplRankCmp; u++)
+                lpAxisStart[aplRankCmp + lpAxisStart[u]] = u;
 
         if (lphGlbAxis)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (*lphGlbAxis); lpAxisStart = lpAxisHead = lpAxisTail = NULL;
+            MyGlobalUnlock (*lphGlbAxis); lpAxisStart = lpAxisHead = NULL;
         } // End IF
     } // End IF/ELSE
 
     return bRet;
 } // End CheckAxis_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  GradeUp
+//
+//  Grade up on a small number of APLUINTs
+//***************************************************************************
+
+void GradeUp
+    (LPAPLUINT lpSrc,       // Source
+     LPAPLUINT lpDst,       // Destination
+     APLUINT   uCount)      // # APLUINTs in the source
+
+{
+    APLUINT u1, u2, u3;
+
+    // Start with {iota}aplRankCmp in lpDst
+    for (u1 = 0; u1 < uCount; u1++)
+        lpDst[u1] = u1;
+
+    // Use Gnome sort on lpDst while comparing lpSrc
+    u2 = 1; u3 = 2;
+    while (u2 < uCount)
+    {
+        if (lpSrc[lpDst[u2 - 1]] <= lpSrc[lpDst[u2]])
+        {
+            u2 = u3;
+            u3++;
+        } else
+        {
+            u1            = lpDst[u2 - 1];
+            lpDst[u2 - 1] = lpDst[u2];
+            lpDst[u2]     = u1;
+
+            if (u2 NE 1)
+                u2--;
+        } // End IF/ELSE
+    } // End WHILE
+} // End GradeUp
 
 
 //***************************************************************************
@@ -1745,7 +1964,8 @@ ERROR_EXIT:
 
 BOOL TestDupAxis
     (LPVOID  lpDup,
-     APLRANK aplRank)
+     APLRANK aplRank,
+     BOOL    bAllowDups)
 
 {
     BOOL bRet = TRUE;
@@ -1754,11 +1974,12 @@ BOOL TestDupAxis
     // Calculate the bit mask
     uBitMask = (1 << (UINT) (aplRank % NBIB));
 
-    // See if this value is already been seen
-    bRet = !(uBitMask & ((LPAPLBOOL) lpDup)[aplRank / NBIB]);
+    // See if this value has already been seen
+    if (!bAllowDups)
+        bRet = !(uBitMask & ((LPAPLBOOL) lpDup)[aplRank / NBIB]);
 
     // Set this value for the next time if necessary
-    if (bRet)
+    if (bRet || bAllowDups)
         ((LPAPLBOOL) lpDup)[aplRank / NBIB] |= uBitMask;
 
     return bRet;
@@ -1901,7 +2122,8 @@ void FirstValue
                     if (lpaplInteger)
                         *lpaplInteger = lpToken->tkData.lpSym->stData.stBoolean;
                     if (lpaplFloat)
-                        *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
+                        // ***FIXME*** -- Possible loss of precision
+                        *lpaplFloat   = (APLFLOAT) (lpToken->tkData.lpSym->stData.stBoolean);
                     if (lpaplChar)
                         *lpaplChar    = L'\0';
 
@@ -1911,7 +2133,8 @@ void FirstValue
                     if (lpaplInteger)
                         *lpaplInteger = lpToken->tkData.lpSym->stData.stInteger;
                     if (lpaplFloat)
-                        *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
+                        // ***FIXME*** -- Possible loss of precision
+                        *lpaplFloat   = (APLFLOAT) (lpToken->tkData.lpSym->stData.stInteger);
                     if (lpaplChar)
                         *lpaplChar    = L'\0';
 
@@ -1921,7 +2144,7 @@ void FirstValue
                     if (lpaplFloat)
                         *lpaplFloat   = lpToken->tkData.lpSym->stData.stFloat;
                     if (lpaplInteger)
-                        *lpaplInteger = (APLINT) *lpaplFloat;
+                        *lpaplInteger = (APLINT) (lpToken->tkData.lpSym->stData.stFloat);
                     if (lpaplChar)
                         *lpaplChar    = L'\0';
 
@@ -1960,7 +2183,8 @@ void FirstValue
                     if (lpaplInteger)
                         *lpaplInteger = lpToken->tkData.tkBoolean;
                     if (lpaplFloat)
-                        *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
+                        // ***FIXME*** -- Possible loss of precision
+                        *lpaplFloat   = (APLFLOAT) (lpToken->tkData.tkBoolean);
                     if (lpaplChar)
                         *lpaplChar    = L'\0';
 
@@ -1970,7 +2194,8 @@ void FirstValue
                     if (lpaplInteger)
                         *lpaplInteger = lpToken->tkData.tkInteger;
                     if (lpaplFloat)
-                        *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
+                        // ***FIXME*** -- Possible loss of precision
+                        *lpaplFloat   = (APLFLOAT) (lpToken->tkData.tkInteger);
                     if (lpaplChar)
                         *lpaplChar    = L'\0';
 
@@ -1980,7 +2205,7 @@ void FirstValue
                     if (lpaplFloat)
                         *lpaplFloat   = lpToken->tkData.tkFloat;
                     if (lpaplInteger)
-                        *lpaplInteger = (APLINT) *lpaplFloat;
+                        *lpaplInteger = (APLINT) (lpToken->tkData.tkFloat);
                     if (lpaplChar)
                         *lpaplChar    = L'\0';
 
@@ -3245,7 +3470,7 @@ UINT CheckException
 APLINT imul64
     (APLINT aplLft,
      APLINT aplRht,
-     LPBOOL lpbRet)     // Izit the result valid?? (may be NULL)
+     LPBOOL lpbRet)     // Is the result valid?? (may be NULL)
 
 {
     APLINT aplRes;
@@ -3356,7 +3581,6 @@ APLUINT CalcArraySize
 //  indexing/squad
 //  indexed assignment
 //  pick
-//  transpose
 //  compression/replicate
 //  unique
 //  partition
@@ -3367,8 +3591,9 @@ APLUINT CalcArraySize
 //  etc.
 //
 //  The following functions have been changed to use TypeDemote:
-//    reshape
 //    enclose with axis
+//    reshape
+//    dyadic transpose
 //
 //  must call this function to check their result to see if it
 //  can be stored more simply.  Note that more simply does not
@@ -3419,7 +3644,7 @@ HGLOBAL TypeDemote
     hGlbRes = hGlbRht;
 
     // Lock the memory to get a ptr to it
-    lpMemRhtHdr = MyGlobalLock (hGlbRht);
+    lpMemRht = lpMemRhtHdr = MyGlobalLock (hGlbRht);
 
     // Get the Type, NELM, and Rank
     aplTypeRht = lpMemRhtHdr->ArrType;

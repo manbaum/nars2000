@@ -240,6 +240,7 @@ LPYYSTYPE PrimFnDydQuery_EM
              uTmp,
              uSub;
     BOOL     bRet = TRUE;
+    UINT     YYLclIndex;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -333,15 +334,15 @@ LPYYSTYPE PrimFnDydQuery_EM
     } // End IF
 
     // Get new index into YYRes
-    YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
 
     // Fill in the result token
-    YYRes[YYResIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYResIndex].tkToken.tkFlags.ImmType   = 0;        // Already zero from static
-////YYRes[YYResIndex].tkToken.tkFlags.NoDisplay = 0;        // Already zero from static
-////YYRes[YYResIndex].tkToken.tkFlags.Color     =
-    YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYResIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
+    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
+////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -411,7 +412,7 @@ LPYYSTYPE PrimFnDydQuery_EM
         MyGlobalReAlloc (hGlbRes,
                          MyGlobalSize (hGlbRes) - (UINT) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
                          GHND);
-        YYRes[YYResIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+        YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     } // End IF/ELSE
 ERROR_EXIT:
     if (hGlbRes && lpMemRes)
@@ -433,7 +434,7 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYResIndex];
+        return &YYRes[YYLclIndex];
     else
         return NULL;
 } // End PrimFnDydQuery_EM

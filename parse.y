@@ -32,7 +32,7 @@ in the lexical analyser (yylex).
 #define YYDEBUG 1
 #define YYFPRINTF yyfprintf
 
-LPYYSTYPE lpYYStr, lpYYRes, lpYYFcn, lpYYLst;
+LPYYSTYPE lpYYStr, lpYYStrL, lpYYStrR, lpYYRes, lpYYFcn, lpYYLst;
 BOOL      bRet;
 
 #define DbgMsgW2(a) DbgMsgW(a)
@@ -41,7 +41,7 @@ BOOL      bRet;
 %}
 
 %token UNK
-%token NAMEVAR NAMEUNK CONSTANT STRING FN0
+%token NAMEVAR NAMEUNK CONSTANT STRING USRFN0 SYSFN0
 %token DIAMOND
 
 /*  Note that as we parse APL from right to left, these rules
@@ -220,7 +220,12 @@ Op2Spec:
 
 /* Array expression */
 ArrExpr:
-      SimpExpr                          {DbgMsgW2 (L"%%ArrExpr:  SimpExpr");
+      Strand                            {DbgMsgW2 (L"%%ArrExpr:  Strand -- MakeVarStrand_EM");
+                                         lpYYStr = MakeVarStrand_EM (&$1);
+                                         if (!lpYYStr)
+                                             YYERROR;
+                                         $$ = *lpYYStr;}
+    | SimpExpr                          {DbgMsgW2 (L"%%ArrExpr:  SimpExpr");
                                          $$ = $1;}
     | error   LeftFunc                  {DbgMsgW2 (L"%%ArrExpr:  LeftFunc error");
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN);
@@ -353,13 +358,12 @@ Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
 
 /* Simple array expression */
 SimpExpr:
-               Strand                   {DbgMsgW2 (L"%%SimpExpr:  Strand -- MakeVarStrand_EM");
-                                         lpYYStr = MakeVarStrand_EM (&$1);
-                                         if (!lpYYStr)
-                                             YYERROR;
-                                         $$ = *lpYYStr;}
-
-    | ILPAR                             {DbgMsgW2 (L"%%SimpExpr:  ILPAR");
+////           Strand                   {DbgMsgW2 (L"%%SimpExpr:  Strand -- MakeVarStrand_EM");
+////                                     lpYYStr = MakeVarStrand_EM (&$1);
+////                                     if (!lpYYStr)
+////                                         YYERROR;
+////                                     $$ = *lpYYStr;}
+      ILPAR                             {DbgMsgW2 (L"%%SimpExpr:  ILPAR");
                                          $$ = $1;}
     | ILBR     Strand                   {DbgMsgW2 (L"%%SimpExpr:  Strand ILBR");
                                          lpYYStr = MakeVarStrand_EM (&$2);
@@ -638,36 +642,70 @@ LeftFunc:
                                          FreeResult (&$2.tkToken);
                                         }
     |     RightFunc DydOp LeftFunc      {DbgMsgW2 (L"%%LeftFunc:  LeftFunc DydOp RightFunc");
-                                         $$ = *PushFcnStrand (&$2, 3, TRUE);
-                                               PushFcnStrand (&$3, 1, TRUE);
-                                               PushFcnStrand (&$1, 1, TRUE);
+                                         $$ = *PushFcnStrand (&$2, 3, TRUE);        // Dyadic operator
+                                               PushFcnStrand (&$3, 1, TRUE);        // Left operand
+                                               PushFcnStrand (&$1, 1, TRUE);        // Right operand
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
                                          FreeResult (&$2.tkToken);
                                         }
     |     RightFunc DydOp AxisFunc      {DbgMsgW2 (L"%%LeftFunc:  AxisFunc DydOp RightFunc");
-                                         $$ = *PushFcnStrand (&$2, 3, TRUE);
-                                               PushFcnStrand (&$3, 1, TRUE);
-                                               PushFcnStrand (&$1, 1, TRUE);
+                                         $$ = *PushFcnStrand (&$2, 3, TRUE);        // Dyadic operator
+                                               PushFcnStrand (&$3, 1, TRUE);        // Left operand
+                                               PushFcnStrand (&$1, 1, TRUE);        // Right operand
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
                                          FreeResult (&$2.tkToken);
                                         }
-    | '>' '>' SimpExpr '(' DydOp LeftFunc '(' {DbgMsgW2 (L"%%LeftFunc:  (LeftFunc DydOp (SimpExpr))");
-                                         $$ = *PushFcnStrand (&$5, 3, TRUE);
-                                               PushFcnStrand (&$6, 1, TRUE);
-                                               PushFcnStrand (&$3, 1, FALSE);
+    | '>'     Strand       DydOp LeftFunc '('
+                                        {DbgMsgW2 (L"%%LeftFunc:  (LeftFunc DydOp Strand)");
+                                         lpYYStr = MakeVarStrand_EM (&$2);
+                                         if (!lpYYStr)
+                                         {
+                                            FreeResult (&$3.tkToken);
+                                            FreeResult (&$4.tkToken);
+                                            YYERROR;
+                                         }
+                                         $$ = *PushFcnStrand (&$3, 3, TRUE);        // Dyadic operator
+                                               PushFcnStrand (&$4, 1, TRUE);        // Left operand
+                                               PushFcnStrand (lpYYStr, 1, FALSE);   // Right operand
+                                         FreeResult (&lpYYStr->tkToken);
+                                         FreeResult (&$4.tkToken);
+                                         FreeResult (&$3.tkToken);
+                                        }
+    | '>' '>' SimpExpr '(' DydOp LeftFunc '('
+                                        {DbgMsgW2 (L"%%LeftFunc:  (LeftFunc DydOp (SimpExpr))");
+                                         $$ = *PushFcnStrand (&$5, 3, TRUE);        // Dyadic operator
+                                               PushFcnStrand (&$6, 1, TRUE);        // Left operand
+                                               PushFcnStrand (&$3, 1, FALSE);       // Right operand
                                          FreeResult (&$3.tkToken);
                                          FreeResult (&$6.tkToken);
                                          FreeResult (&$5.tkToken);
                                         }
-    | '>' '>' SimpExpr '(' DydOp AxisFunc '(' {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp (SimpExpr))");
-                                         $$ = *PushFcnStrand (&$5, 3, TRUE);
-                                               PushFcnStrand (&$6, 1, TRUE);
-                                               PushFcnStrand (&$3, 1, FALSE);
+    | '>' '>' SimpExpr '(' DydOp AxisFunc '('
+                                        {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp (SimpExpr))");
+                                         $$ = *PushFcnStrand (&$5, 3, TRUE);        // Dyadic operator
+                                               PushFcnStrand (&$6, 1, TRUE);        // Left operand
+                                               PushFcnStrand (&$3, 1, FALSE);       // Right operand
                                          FreeResult (&$3.tkToken);
                                          FreeResult (&$6.tkToken);
                                          FreeResult (&$5.tkToken);
+                                        }
+    | '>'     Strand       DydOp AxisFunc '('
+                                        {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp Strand)");
+                                         lpYYStr = MakeVarStrand_EM (&$2);
+                                         if (!lpYYStr)
+                                         {
+                                            FreeResult (&$3.tkToken);
+                                            FreeResult (&$4.tkToken);
+                                            YYERROR;
+                                         }
+                                         $$ = *PushFcnStrand (&$3, 3, TRUE);        // Dyadic operator
+                                               PushFcnStrand (&$4, 1, TRUE);        // Left operand
+                                               PushFcnStrand (lpYYStr, 1, FALSE);   // Right operand
+                                         FreeResult (&lpYYStr->tkToken);
+                                         FreeResult (&$4.tkToken);
+                                         FreeResult (&$3.tkToken);
                                         }
     | '>' RightFunc DydOp Strand   '('  {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp RightFunc)");
                                          lpYYStr = MakeVarStrand_EM (&$4);
@@ -677,14 +715,15 @@ LeftFunc:
                                             FreeResult (&$3.tkToken);
                                             YYERROR;
                                          }
-                                         $$ = *PushFcnStrand (&$3, 3, TRUE);
-                                               PushFcnStrand (lpYYStr, 1, FALSE);
-                                               PushFcnStrand (&$2, 1, TRUE);
+                                         $$ = *PushFcnStrand (&$3, 3, TRUE);        // Dyadic operator
+                                               PushFcnStrand (lpYYStr, 1, FALSE);   // Left operand
+                                               PushFcnStrand (&$2, 1, TRUE);        // Right operand
                                          FreeResult (&$2.tkToken);
                                          FreeResult (&lpYYStr->tkToken);
                                          FreeResult (&$3.tkToken);
                                         }
-    | '>' '>' SimpExpr '(' DydOp Strand '(' {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp (SimpExpr))");
+    | '>' '>' SimpExpr '(' DydOp Strand '('
+                                        {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp (SimpExpr))");
                                          lpYYStr = MakeVarStrand_EM (&$6);
                                          if (!lpYYStr)
                                          {
@@ -692,12 +731,32 @@ LeftFunc:
                                             FreeResult (&$5.tkToken);
                                             YYERROR;
                                          }
-                                         $$ = *PushFcnStrand (&$5, 3, TRUE);
-                                               PushFcnStrand (lpYYStr, 1, FALSE);
-                                               PushFcnStrand (&$3, 1, FALSE);
+                                         $$ = *PushFcnStrand (&$5, 3, TRUE);        // Dyadic operator
+                                               PushFcnStrand (lpYYStr, 1, FALSE);   // Left operand
+                                               PushFcnStrand (&$3, 1, FALSE);       // Right operand
                                          FreeResult (&$3.tkToken);
                                          FreeResult (&lpYYStr->tkToken);
                                          FreeResult (&$5.tkToken);
+                                        }
+    | '>'     Strand       DydOp Strand '('
+                                        {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp Strand)");
+                                         lpYYStrL = MakeVarStrand_EM (&$4);
+                                         lpYYStrR = MakeVarStrand_EM (&$2);
+                                         if (!lpYYStrL || !lpYYStrR)
+                                         {
+                                            FreeResult (&$3.tkToken);
+                                            if (lpYYStrL)
+                                                FreeResult (&lpYYStrL->tkToken);
+                                            if (lpYYStrR)
+                                                FreeResult (&lpYYStrR->tkToken);
+                                            YYERROR;
+                                         }
+                                         $$ = *PushFcnStrand (&$3, 3, TRUE);        // Dyadic operator
+                                               PushFcnStrand (lpYYStrL, 1, FALSE);  // Left operand
+                                               PushFcnStrand (lpYYStrR, 1, FALSE);  // Right operand
+                                         FreeResult (&lpYYStrR->tkToken);
+                                         FreeResult (&lpYYStrL->tkToken);
+                                         FreeResult (&$3.tkToken);
                                         }
     ;
 
@@ -905,7 +964,13 @@ SingTokn:
     | NAMEVAR                           {DbgMsgW2 (L"%%SingTokn:  NAMEVAR");
                                          $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
                                          $$ = $1;}
-    | FN0                               {DbgMsgW2 (L"%%SingTokn:  FN0");
+    | USRFN0                            {DbgMsgW2 (L"%%SingTokn:  USRFN0");
+                                         $1.tkToken.tkFlags.TknType = TKT_FCNNAMED;
+                                         $1.tkToken.tkFlags.FcnDir  = 0;
+                                         $$ = *ExecuteFn0 (&$1);}
+    | SYSFN0                            {DbgMsgW2 (L"%%SingTokn:  SYSFN0");
+                                         $1.tkToken.tkFlags.TknType = TKT_FCNNAMED;
+                                         $1.tkToken.tkFlags.FcnDir  = 1;
                                          $$ = *ExecuteFn0 (&$1);}
     | STRING                            {DbgMsgW2 (L"%%SingTokn:  STRING");
                                          lpYYStr = CopyString_EM (&$1);
@@ -1009,29 +1074,51 @@ void ParseLine
     // Start off with no error
     gplLocalVars.tkErrorCharIndex = (UINT) -1;
 
-    // Allocate virtual memory for the Function & Variable Strand accumulator
-    gplLocalVars.lpYYStrandStart =
+    // Allocate virtual memory for the Variable Strand accumulator
+    gplLocalVars.lpYYStrandStart[VARSTRAND] =
         VirtualAlloc (NULL,      // Any address
                       DEF_STRAND_MAXSIZE * sizeof (YYSTYPE),
                       MEM_RESERVE,
                       PAGE_READWRITE);
-    if (!gplLocalVars.lpYYStrandStart)
+    if (!gplLocalVars.lpYYStrandStart[VARSTRAND])
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("ParseLine:  VirtualAlloc for <gpLocalVars.lpYYStrandStart> failed");
+        DbgMsg ("ParseLine:  VirtualAlloc for <gpLocalVars.lpYYStrandStart[VARSTRAND]> failed");
 
         return;             // Mark as failed
     } // End IF
 
     // Commit the intial size
-    VirtualAlloc (gplLocalVars.lpYYStrandStart,
+    VirtualAlloc (gplLocalVars.lpYYStrandStart[VARSTRAND],
+                  DEF_STRAND_INITSIZE * sizeof (YYSTYPE),
+                  MEM_COMMIT,
+                  PAGE_READWRITE);
+
+    // Allocate virtual memory for the Function Strand accumulator
+    gplLocalVars.lpYYStrandStart[FCNSTRAND] =
+        VirtualAlloc (NULL,      // Any address
+                      DEF_STRAND_MAXSIZE * sizeof (YYSTYPE),
+                      MEM_RESERVE,
+                      PAGE_READWRITE);
+    if (!gplLocalVars.lpYYStrandStart[FCNSTRAND])
+    {
+        // ***FIXME*** -- WS FULL before we got started???
+        DbgMsg ("ParseLine:  VirtualAlloc for <gpLocalVars.lpYYStrandStart[FCNSTRAND]> failed");
+
+        return;             // Mark as failed
+    } // End IF
+
+    // Commit the intial size
+    VirtualAlloc (gplLocalVars.lpYYStrandStart[FCNSTRAND],
                   DEF_STRAND_INITSIZE * sizeof (YYSTYPE),
                   MEM_COMMIT,
                   PAGE_READWRITE);
 
     // Initialize the base & next strand ptrs
-    gplLocalVars.lpYYStrandBase =
-    gplLocalVars.lpYYStrandNext = gplLocalVars.lpYYStrandStart;
+    gplLocalVars.lpYYStrandBase[VARSTRAND] =
+    gplLocalVars.lpYYStrandNext[VARSTRAND] = gplLocalVars.lpYYStrandStart[VARSTRAND];
+    gplLocalVars.lpYYStrandBase[FCNSTRAND] =
+    gplLocalVars.lpYYStrandNext[FCNSTRAND] = gplLocalVars.lpYYStrandStart[FCNSTRAND];
 
     // Use VirtualAlloc for the stack
     // ***FIXME***
@@ -1062,13 +1149,17 @@ void ParseLine
     // Signal an error
     ErrorMessage (lpwszErrorMessage, lpwszLine, gplLocalVars.tkErrorCharIndex);
 NORMAL_EXIT:
-
-    if (gplLocalVars.lpYYStrandStart)
+    if (gplLocalVars.lpYYStrandStart[FCNSTRAND])
     {
-        VirtualFree (gplLocalVars.lpYYStrandStart, 0, MEM_RELEASE); gplLocalVars.lpYYStrandStart = NULL;
+        VirtualFree (gplLocalVars.lpYYStrandStart[FCNSTRAND], 0, MEM_RELEASE); gplLocalVars.lpYYStrandStart[FCNSTRAND] = NULL;
     } // End IF
 
-    // Unlock the handle
+    if (gplLocalVars.lpYYStrandStart[VARSTRAND])
+    {
+        VirtualFree (gplLocalVars.lpYYStrandStart[VARSTRAND], 0, MEM_RELEASE); gplLocalVars.lpYYStrandStart[VARSTRAND] = NULL;
+    } // End IF
+
+    // We no longer need this ptr
     MyGlobalUnlock (gplLocalVars.hGlbToken); gplLocalVars.t2.lpBase   = NULL;
 
     // Restore global token ptrs so we're re-entrant
@@ -1080,13 +1171,13 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  TokenTypeFV
+//  SymbTypeFV
 //
 //  Get the type ('F' or 'V', or '?') of a symbol table name token.
 //  Used for TKT_VARNAMEDs.
 //***************************************************************************
 
-char TokenTypeFV
+char SymbTypeFV
     (LPTOKEN lpNext)
 
 {
@@ -1132,7 +1223,7 @@ char TokenTypeFV
         return 'V';
 
     return '?';             // SYNTAX ERROR
-} // TokenTypeFV
+} // SymbTypeFV
 
 
 //***************************************************************************
@@ -1276,7 +1367,7 @@ char LookaheadSurround
 
         case TKT_VARNAMED:
             // Get the token type of the symbol table name
-            return TokenTypeFV (lpNext);
+            return SymbTypeFV (lpNext);
 
         case TKT_LISTSEP:
         case TKT_COMMENT:
@@ -1333,7 +1424,7 @@ char LookaheadAdjacent
             return 'F';             // Function
 
         case TKT_VARNAMED:
-            return TokenTypeFV (lpNext);
+            return SymbTypeFV (lpNext);
 
         case TKT_ASSIGN:
         case TKT_LISTSEP:
@@ -1408,9 +1499,11 @@ int yylex
 
                 return NAMEVAR;
             } else
-            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrFn0
-             || gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn0)
-                return FN0;
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrFn0)
+                return USRFN0;
+            else
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn0)
+                return SYSFN0;
             else
             if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrFn12
              || gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn12)

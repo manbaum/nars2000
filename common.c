@@ -163,12 +163,12 @@ DWORD GetRegDword
 
     if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
     {
-        if (RegQueryValueEx (hKey2,         // handle of key to query
-                             pKeyStr,       // address of name of value to query
-                             NULL,          // reserved
-                             NULL,          // address of buffer for value type
-                             (LPCHAR) &dwActVal, // address of data buffer
-                             &dwSize)       // address of data buffer size
+        if (RegQueryValueEx (hKey2,         // Handle of key to query
+                             pKeyStr,       // Address of name of value to query
+                             NULL,          // Reserved
+                             NULL,          // Address of buffer for value type
+                             (LPCHAR) &dwActVal, // Address of data buffer
+                             &dwSize)       // Address of data buffer size
             NE ERROR_SUCCESS)
             dwActVal = dwDefVal;
 
@@ -199,12 +199,12 @@ QWORD GetRegQword
 
     if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
     {
-        if (RegQueryValueEx (hKey2,         // handle of key to query
-                             pKeyStr,       // address of name of value to query
-                             NULL,          // reserved
-                             NULL,          // address of buffer for value type
-                             (LPCHAR) &qwActVal, // address of data buffer
-                             &dwSize)       // address of data buffer size
+        if (RegQueryValueEx (hKey2,         // Handle of key to query
+                             pKeyStr,       // Address of name of value to query
+                             NULL,          // Reserved
+                             NULL,          // Address of buffer for value type
+                             (LPCHAR) &qwActVal, // Address of data buffer
+                             &dwSize)       // Address of data buffer size
             NE ERROR_SUCCESS)
             qwActVal = qwDefVal;
 
@@ -235,12 +235,12 @@ WCHAR GetRegWchar
 
     if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
     {
-        if (RegQueryValueEx (hKey2,         // handle of key to query
-                             pKeyStr,       // address of name of value to query
-                             NULL,          // reserved
-                             NULL,          // address of buffer for value type
-                             (LPCHAR) &wcActVal, // address of data buffer
-                             &dwSize)       // address of data buffer size
+        if (RegQueryValueEx (hKey2,         // Handle of key to query
+                             pKeyStr,       // Address of name of value to query
+                             NULL,          // Reserved
+                             NULL,          // Address of buffer for value type
+                             (LPCHAR) &wcActVal, // Address of data buffer
+                             &dwSize)       // Address of data buffer size
             NE ERROR_SUCCESS)
             wcActVal = wcDefVal;
 
@@ -271,12 +271,12 @@ void GetRegStr
 
     if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
     {
-        if (RegQueryValueEx (hKey2,         // handle of key to query
-                             pKeyStr,       // address of name of value to query
-                             NULL,          // reserved
-                             NULL,          // address of buffer for value type
-                             pActStr,       // address of data buffer
-                             &iActSize)     // address of data buffer size
+        if (RegQueryValueEx (hKey2,         // Handle of key to query
+                             pKeyStr,       // Address of name of value to query
+                             NULL,          // Reserved
+                             NULL,          // Address of buffer for value type
+                             pActStr,       // Address of data buffer
+                             &iActSize)     // Address of data buffer size
             NE ERROR_SUCCESS)
             lstrcpy (pActStr, pDefVal);
 
@@ -315,12 +315,12 @@ HGLOBAL GetRegGlbChar
     if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
     {
         // Request the data size
-        switch (RegQueryValueEx (hKey2,     // handle of key to query
-                                 pKeyStr,   // address of name of value to query
-                                 NULL,      // reserved
-                                 NULL,      // address of buffer for value type
-                                 NULL,      // address of data buffer
-                                 &iActSize))// address of data buffer size
+        switch (RegQueryValueEx (hKey2,     // Handle of key to query
+                                 pKeyStr,   // Address of name of value to query
+                                 NULL,      // Reserved
+                                 NULL,      // Address of buffer for value type
+                                 NULL,      // Address of data buffer
+                                 &iActSize))// Address of data buffer size
         {
             case ERROR_FILE_NOT_FOUND:
                 // The keyname was not found --
@@ -426,12 +426,12 @@ void GetRegBinary
 
     if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
     {
-        if (RegQueryValueEx (hKey2,         // handle of key to query
-                             pKeyStr,       // address of name of value to query
-                             NULL,          // reserved
-                             NULL,          // address of buffer for value type
-                             (LPCHAR) &pActVal, // address of data buffer
-                             &dwSize)       // address of data buffer size
+        if (RegQueryValueEx (hKey2,         // Handle of key to query
+                             pKeyStr,       // Address of name of value to query
+                             NULL,          // Reserved
+                             NULL,          // Address of buffer for value type
+                             (LPCHAR) pActVal, // Address of data buffer
+                             &dwSize)       // Address of data buffer size
             NE ERROR_SUCCESS)
             CopyMemory (pActVal, pDefVal, uLen);
 

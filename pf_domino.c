@@ -94,22 +94,22 @@ LPYYSTYPE PrimFnMonDomino_EM
     APLUINT  ByteRes;
     APLDIM   uNumRows,
              uNumCols,
-             uCol;
+             uRow,
+             uCol,
+             uTmp;
     APLINT   apaOff,
              apaMul;
     APLFLOAT aplFloatRht;
     UINT     YYLclIndex,
-             uBitMaskRht;
-    gsl_matrix      *lpGslMatrixRht,
-                    *lpGslMatrixRes;
-    gsl_permutation *lpGslPerm;
-    int              GslSignum;
+             uBitMask;
+    gsl_matrix      *lpGslMatrixU = NULL,
+                    *lpGslMatrixV = NULL;
+    gsl_vector      *lpGslVectorS = NULL,
+                    *lpGslVectorW = NULL;
     int              ErrCode;
 
-////DbgBrk ();          // ***TESTME***
-
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -126,41 +126,19 @@ LPYYSTYPE PrimFnMonDomino_EM
         goto ERROR_EXIT;
     } // End IF
 
-    // Check for LENGTH ERROR
-    if (hGlbRht)
-    {
-        if(aplRankRht EQ 2
-         && (VarArrayBaseToDim (lpMemRht))[0] < (VarArrayBaseToDim (lpMemRht))[1])
-        {
-            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
-    } // End IF
-
-    // Check for DOMAIN ERROR
-    if (!IsSimpleNum (aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
-
-    // The rank of the result is the same as max (rank of the right arg, 1)
-    aplRankRes = max (aplRankRht, 1);
-
     // Calculate the # rows & cols in the result
     switch (aplRankRht)
     {
         case 0:
             uNumRows =
             uNumCols = 1;
+            FirstValue (lptkRhtArg, NULL, &aplFloatRht, NULL, NULL, NULL, NULL);
 
             break;
 
         case 1:
-            uNumRows = 1;
-            uNumCols = *VarArrayBaseToDim (lpMemRht);
+            uNumRows = *VarArrayBaseToDim (lpMemRht);
+            uNumCols = 1;
 
             break;
 
@@ -174,16 +152,31 @@ LPYYSTYPE PrimFnMonDomino_EM
             break;
     } // End SWITCH
 
-    // ***FIXME***
-    if (uNumRows NE uNumCols)
+    // Check for LENGTH ERROR
+    if (aplRankRht EQ 2
+     && uNumRows < uNumCols)
     {
-        ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Check for DOMAIN ERROR
+    if (!IsSimpleNum (aplTypeRht))
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
+    // The rank of the result is the same as
+    //   max (rank of the right arg, 1)
+    aplRankRes = max (aplRankRht, 1);
+
     // Save the NELM of the result
-    aplNELMRes = uNumRows * uNumCols;
+    Assert (aplNELMRht EQ (uNumRows * uNumCols));
+////aplNELMRes = uNumRows * uNumCols;
+    aplNELMRes = aplNELMRht;
 
     // Calculate the space needed for the result
     ByteRes = CalcArraySize (ARRAY_FLOAT, aplNELMRes, aplRankRes);
@@ -217,52 +210,70 @@ LPYYSTYPE PrimFnMonDomino_EM
 
     // Fill in the dimensions
     if (aplRankRes EQ 1)
-        *VarArrayBaseToDim (lpMemRes) = uNumCols;
+        *VarArrayBaseToDim (lpMemRes) = uNumRows;
     else
     {
-        (VarArrayBaseToDim (lpMemRes))[0] = uNumRows;
-        (VarArrayBaseToDim (lpMemRes))[1] = uNumCols;
+        // Reverse dimensions from right arg
+        (VarArrayBaseToDim (lpMemRes))[0] = uNumCols;
+        (VarArrayBaseToDim (lpMemRes))[1] = uNumRows;
     } // End IF/ELSE
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    if (aplRankRht NE 0)
+        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+
+    // No aborting on error!
+    gsl_set_error_handler_off ();
 
     // Allocate space for the GSL matrices
     Assert (uNumRows EQ (UINT) uNumRows);
     Assert (uNumCols EQ (UINT) uNumCols);
-    lpGslMatrixRht = gsl_matrix_alloc ((UINT) uNumRows, (UINT) uNumCols);
-    lpGslMatrixRes = gsl_matrix_alloc ((UINT) uNumRows, (UINT) uNumCols);
 
-    // Copy the right arg to the GSL matrix
+    lpGslMatrixU = gsl_matrix_alloc  ((UINT) uNumRows, (UINT) uNumCols);    // M x N
+    lpGslMatrixV = gsl_matrix_alloc  ((UINT) uNumCols, (UINT) uNumCols);    // N x N
+    lpGslVectorS = gsl_vector_alloc  ((UINT) uNumCols);                     // N
+    lpGslVectorW = gsl_vector_alloc  ((UINT) uNumCols);                     // N
+
+    // Check the return codes for the above allocations
+    if (GSL_ENOMEM EQ (int) lpGslMatrixU
+     || GSL_ENOMEM EQ (int) lpGslMatrixV
+     || GSL_ENOMEM EQ (int) lpGslVectorS
+     || GSL_ENOMEM EQ (int) lpGslVectorW)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Copy the right arg to the GSL matrix U
     // Split cases based upon the right arg's rank
     switch (aplRankRht)
     {
-        case 0:
-            FirstValue (lptkRhtArg, NULL, &aplFloatRht, NULL, NULL, NULL, NULL);
-            lpGslMatrixRht->data[0] = aplFloatRht;
+        case 0:         // Scalar
+            lpGslMatrixU->data[0] = aplFloatRht;
 
             break;
 
-        case 1:
-        case 2:
+        case 1:         // Vector
+        case 2:         // Matrix
             // Split cases based upon the right arg storage type
             switch (aplTypeRht)
             {
                 case ARRAY_BOOL:
-                    uBitMaskRht = 0x01;
+                    uBitMask = 0x01;
 
-                    for (uCol = 0; uCol < aplNELMRes; uCol++)
+                    for (uCol = 0; uCol < aplNELMRht; uCol++)
                     {
-                        lpGslMatrixRht->data[uCol] = (uBitMaskRht & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
+                        lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
 
-                        // Shift over the right bit mask
-                        uBitMaskRht <<= 1;
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
 
                         // Check for end-of-byte
-                        if (uBitMaskRht EQ END_OF_BYTE)
+                        if (uBitMask EQ END_OF_BYTE)
                         {
-                            uBitMaskRht = 0x01;         // Start over
+                            uBitMask = 0x01;            // Start over
                             ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
                         } // End IF
                     } // End FOR
@@ -270,13 +281,17 @@ LPYYSTYPE PrimFnMonDomino_EM
                     break;
 
                 case ARRAY_INT:
-                    for (uCol = 0; uCol < aplNELMRes; uCol++)
-                        lpGslMatrixRht->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
+                    for (uCol = 0; uCol < aplNELMRht; uCol++)
+                        lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
                     break;
 
                 case ARRAY_FLOAT:
-                    for (uCol = 0; uCol < aplNELMRes; uCol++)
-                        lpGslMatrixRht->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
+                    ByteRes = aplNELMRes * sizeof (APLFLOAT);
+                    Assert (ByteRes EQ (UINT) ByteRes);
+                    Assert (sizeof (double) EQ sizeof (APLFLOAT));
+                    CopyMemory (lpGslMatrixU->data, lpMemRht, (UINT) ByteRes);
+////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
+////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
                     break;
 
                 case ARRAY_APA:
@@ -284,8 +299,8 @@ LPYYSTYPE PrimFnMonDomino_EM
                     apaOff = lpAPA->Off;
                     apaMul = lpAPA->Mul;
 #undef  lpAPA
-                    for (uCol = 0; uCol < aplNELMRes; uCol++)
-                        lpGslMatrixRht->data[uCol] = (APLFLOAT) (APLINT) (apaOff + apaMul * uCol);
+                    for (uCol = 0; uCol < aplNELMRht; uCol++)
+                        lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOff + apaMul * uCol);
                     break;
 
                 defstop
@@ -298,36 +313,118 @@ LPYYSTYPE PrimFnMonDomino_EM
             break;
     } // End SWITCH
 
-    // ***FIXME*** -- Should this be aplNELMRes instead of uNumCols??
-////lpGslPerm = gsl_permutation_alloc ((UINT) uNumCols);
-    lpGslPerm = gsl_permutation_alloc ((UINT) aplNELMRes);
+    // Calculate the SVD (Singular Value Decomposition)
+    //   with the result in U and S (S is the diagonal of the matrix)
+    ErrCode = gsl_linalg_SV_decomp (lpGslMatrixU,       // M x N
+                                    lpGslMatrixV,       // N x N
+                                    lpGslVectorS,       // N
+                                    lpGslVectorW);      // N
+    // Check the error code
+    if (ErrCode NE GSL_SUCCESS)
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
 
-    // No aborting on error!
-    gsl_set_error_handler_off ();
+    // Free the GSL work vector
+    gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
 
-////DbgBrk ();          // ***TESTME***
+#ifdef DEBUG
+    // Display matrix U (M x N)
+    dprintf ("=== Displaying Matrix U (M x N) = (%d, %d) ===", (UINT) uNumRows, (UINT) uNumCols);
+    for (uRow = 0; uRow < uNumRows; uRow++)
+    {
+        char szTemp[128];
+        char *p = szTemp;
 
-    ErrCode = gsl_linalg_LU_decomp (lpGslMatrixRht, lpGslPerm, &GslSignum);
+        p += sprintf (p, "Row %d = ", uRow);
 
-    ErrCode = gsl_linalg_LU_invert (lpGslMatrixRht, lpGslPerm, lpGslMatrixRes);
+        for (uCol = 0; uCol < uNumCols; uCol++)
+            p += sprintf (p, "%G, ", lpGslMatrixU->data[uRow * uNumCols + uCol]);
+        p [-2] = '\0';
+        DbgMsg (szTemp);
+    } // End FOR
 
-    // Copy the GSL data to the result
-    Assert (sizeof (double) EQ sizeof (APLFLOAT));
-    ByteRes = aplNELMRes * sizeof (APLFLOAT);
-    Assert (ByteRes EQ (UINT) ByteRes);
-    CopyMemory (lpMemRes, lpGslMatrixRes->data, (UINT) ByteRes);
+    // Display matrix V (N x N)
+    dprintf ("=== Displaying Matrix V (N x N) = (%d, %d) ===", (UINT) uNumCols, (UINT) uNumCols);
+    for (uRow = 0; uRow < uNumCols; uRow++)
+    {
+        char szTemp[128];
+        char *p = szTemp;
 
-    // Free the permutation
-    gsl_permutation_free (lpGslPerm);
+        p += sprintf (p, "Row %d = ", uRow);
 
-    // Free the GSL matrix
-    gsl_matrix_free (lpGslMatrixRht);
+        for (uCol = 0; uCol < uNumCols; uCol++)
+            p += sprintf (p, "%G, ", lpGslMatrixV->data[uRow * uNumCols + uCol]);
+        p [-2] = '\0';
+        DbgMsg (szTemp);
+    } // End FOR
+#endif
+
+#define lpMemData   ((LPAPLFLOAT) lpMemRes)
+
+    // The solution is now V +.x (1/S) +.x Transpose (U)
+
+    // Calculate U = (1/S) +.x U*
+    // Actually, we calculate U = (1/S) +.x U
+    //   S  is of size N (logically, N x N because it is really an N x N diagonal matrix)
+    //   U  is of size M x N
+    //   U* is of size N x M
+    // We reuse U but we don't transpose it so we can
+    //   multiply it by S in place.
+    for (uCol = 0; uCol < uNumCols; uCol++)     // 0 to N-1
+    {
+        APLFLOAT S = lpGslVectorS->data[uCol];
+
+        for (uRow = 0; uRow < uNumRows; uRow++) // 0 to M-1
+            lpGslMatrixU->data[uRow * uNumCols + uCol] /= S;
+    } // End FOR
+
+#ifdef DEBUG
+    // Display matrix U (M x N)
+    dprintf ("=== Displaying Matrix U (M x N) = (%d, %d) ===", (UINT) uNumRows, (UINT) uNumCols);
+    for (uRow = 0; uRow < uNumRows; uRow++)
+    {
+        char szTemp[128];
+        char *p = szTemp;
+
+        p += sprintf (p, "Row %d = ", uRow);
+
+        for (uCol = 0; uCol < uNumCols; uCol++)
+            p += sprintf (p, "%G, ", lpGslMatrixU->data[uRow * uNumCols + uCol]);
+        p [-2] = '\0';
+        DbgMsg (szTemp);
+    } // End FOR
+#endif
+
+    // Calculate V +.x U
+    // Actually, we calculate V +.x U*
+    //   because we didn't transpose U above
+    for (uRow = 0; uRow < uNumRows; uRow++)     // 0 to M-1
+    for (uCol = 0; uCol < uNumCols; uCol++)     // 0 to N-1
+    {
+        APLFLOAT S = 0;
+
+        for (uTmp = 0; uTmp < uNumCols; uTmp++) // 0 to N-1
+            S += lpGslMatrixV->data[uCol * uNumCols + uTmp] * lpGslMatrixU->data[uRow * uNumCols + uTmp];
+
+        lpMemData[uCol * uNumRows + uRow] = S;
+    } // End FOR
+
+#undef  lpMemData
+
+    // Free the GSL vector
+    gsl_vector_free (lpGslVectorS); lpGslVectorS = NULL;
+
+    // Free the GSL matrices
+    gsl_matrix_free (lpGslMatrixV); lpGslMatrixV = NULL;
+    gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -335,6 +432,30 @@ LPYYSTYPE PrimFnMonDomino_EM
 
 ERROR_EXIT:
     bRet = FALSE;
+
+    if (lpGslVectorW)
+    {
+        // We no longer need this storage and ptr
+        gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
+    } // End IF
+
+    if (lpGslVectorS)
+    {
+        // We no longer need this storage and ptr
+        gsl_vector_free (lpGslVectorS); lpGslVectorS = NULL;
+    } // End IF
+
+    if (lpGslMatrixV)
+    {
+        // We no longer need this storage and ptr
+        gsl_matrix_free (lpGslMatrixV); lpGslMatrixV = NULL;
+    } // End IF
+
+    if (lpGslMatrixU)
+    {
+        // We no longer need this storage and ptr
+        gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (hGlbRes)
     {
@@ -384,21 +505,47 @@ LPYYSTYPE PrimFnDydDomino_EM
      LPTOKEN lptkAxis)
 
 {
+    BOOL     bRet = TRUE;
     APLSTYPE aplTypeLft,
              aplTypeRht;
     APLNELM  aplNELMLft,
-             aplNELMRht;
+             aplNELMRht,
+             aplNELMRes;
     APLRANK  aplRankLft,
-             aplRankRht;
+             aplRankRht,
+             aplRankRes;
     HGLOBAL  hGlbLft = NULL,
-             hGlbRht = NULL;
+             hGlbRht = NULL,
+             hGlbRes = NULL;
     LPVOID   lpMemLft = NULL,
-             lpMemRht = NULL;
-    BOOL     bRet = TRUE;
-    UINT     YYLclIndex;
+             lpMemRht = NULL,
+             lpMemRes = NULL;
+    APLUINT  ByteRes;
+    APLDIM   uNumRowsLft,
+             uNumColsLft,
+             uNumRowsRht,
+             uNumColsRht,
+             uNumRowsRes,
+             uNumColsRes,
+             uRow,
+             uCol;
+    APLINT   apaOff,
+             apaMul;
+    APLFLOAT aplFloatLft,
+             aplFloatRht,
+             aplFloatRes;
+    UINT     YYLclIndex,
+             uBitMask;
+    gsl_matrix      *lpGslMatrixU = NULL,
+                    *lpGslMatrixV = NULL;
+    gsl_vector      *lpGslVectorS = NULL,
+                    *lpGslVectorW = NULL,
+                    *lpGslVectorX = NULL,
+                    *lpGslVectorB = NULL;
+    int              ErrCode;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -417,27 +564,414 @@ LPYYSTYPE PrimFnDydDomino_EM
         goto ERROR_EXIT;
     } // End IF
 
-    // ***FINISHME***
-////DbgBrk ();
+    // Calculate the # rows & cols in the right arg
+    switch (aplRankRht)
+    {
+        case 0:
+            uNumRowsRht =
+            uNumColsRht = 1;
+            FirstValue (lptkRhtArg, NULL, &aplFloatRht, NULL, NULL, NULL, NULL);
 
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+            break;
+
+        case 1:
+            uNumRowsRht = *VarArrayBaseToDim (lpMemRht);
+            uNumColsRht = 1;
+
+            break;
+
+        case 2:
+            uNumRowsRht = (VarArrayBaseToDim (lpMemRht))[0];
+            uNumColsRht = (VarArrayBaseToDim (lpMemRht))[1];
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Calculate the # rows & cols in the left arg
+    switch (aplRankLft)
+    {
+        case 0:
+            uNumRowsLft =
+            uNumColsLft = 1;
+            FirstValue (lptkLftArg, NULL, &aplFloatLft, NULL, NULL, NULL, NULL);
+
+            break;
+
+        case 1:
+            uNumRowsLft = *VarArrayBaseToDim (lpMemLft);
+            uNumColsLft = 1;
+
+            break;
+
+        case 2:
+            uNumRowsLft = (VarArrayBaseToDim (lpMemLft))[0];
+            uNumColsLft = (VarArrayBaseToDim (lpMemLft))[1];
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Check for LENGTH ERROR
+    if (uNumRowsRht <  uNumColsRht
+     || uNumRowsLft NE uNumRowsRht)
+    {
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkFunc);
-    goto ERROR_EXIT;
+        goto ERROR_EXIT;
+    } // End IF
 
+    // Check for DOMAIN ERROR
+    if (!IsSimpleNum (aplTypeLft)
+     || !IsSimpleNum (aplTypeRht))
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
 
+    // Save the # rows & cols in the result
+    uNumRowsRes = uNumColsRht;
+    uNumColsRes = uNumColsLft;
 
+    // Save the rank of the result
+    aplRankRes = aplRankLft + aplRankRht;
+    aplRankRes = max (aplRankRes, 2) - 2;
 
+    // Save the NELM of the result
+    aplNELMRes = uNumRowsRes * uNumColsRes;
 
+    // Calculate the space needed for the result
+    if (aplRankRes NE 0)
+    {
+        ByteRes = CalcArraySize (ARRAY_FLOAT, aplNELMRes, aplRankRes);
 
+        // Allocate space for the result
+        // N.B.: Conversion from APLUINT to UINT.
+        Assert (ByteRes EQ (UINT) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        if (!hGlbRes)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+        } // End IF
 
+        // Lock the memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbRes);
 
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
+        // Fill in the header values
+        lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_FLOAT;
+////////lpHeader->Perm       = 0;       // Already zero from GHND
+////////lpHeader->SysVar     = 0;       // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplNELMRes;
+        lpHeader->Rank       = aplRankRes;
+
+#undef  lpHeader
+
+        // Fill in the dimensions
+        if (aplRankRes EQ 1)
+            *VarArrayBaseToDim (lpMemRes) = uNumRowsRes;
+        else
+        if (aplRankRes EQ 2)
+        {
+            (VarArrayBaseToDim (lpMemRes))[0] = uNumRowsRes;
+            (VarArrayBaseToDim (lpMemRes))[1] = uNumColsRes;
+        } // End IF/ELSE
+    } // End IF
+
+    // Skip over the header and dimensions to the data
+    if (aplRankLft NE 0)
+        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+    if (aplRankRht NE 0)
+        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+    if (aplRankRes NE 0)
+        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+
+    // No aborting on error!
+    gsl_set_error_handler_off ();
+
+    // Allocate space for the GSL matrices
+    Assert (uNumRowsLft EQ (UINT) uNumRowsLft);
+    Assert (uNumRowsRht EQ (UINT) uNumRowsRht);
+
+    lpGslMatrixU = gsl_matrix_alloc  ((UINT) uNumRowsRht, (UINT) uNumColsRht);  // M x N
+    lpGslMatrixV = gsl_matrix_alloc  ((UINT) uNumColsRht, (UINT) uNumColsRht);  // N x N
+    lpGslVectorS = gsl_vector_alloc  ((UINT) uNumColsRht);                      // N
+    lpGslVectorW = gsl_vector_alloc  ((UINT) uNumColsRht);                      // N
+    lpGslVectorX = gsl_vector_alloc  ((UINT) uNumColsRht);                      // N
+    lpGslVectorB = gsl_vector_alloc  ((UINT) uNumRowsRht);                      // M
+
+    // Check the return codes for the above allocations
+    if (GSL_ENOMEM EQ (int) lpGslMatrixU
+     || GSL_ENOMEM EQ (int) lpGslMatrixV
+     || GSL_ENOMEM EQ (int) lpGslVectorS
+     || GSL_ENOMEM EQ (int) lpGslVectorW
+     || GSL_ENOMEM EQ (int) lpGslVectorX)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Copy the right arg to the GSL matrix U
+    // Split cases based upon the right arg's rank
+    switch (aplRankRht)
+    {
+        case 0:         // Scalar
+            lpGslMatrixU->data[0] = aplFloatRht;
+
+            break;
+
+        case 1:         // Vector
+        case 2:         // Matrix
+            // Split cases based upon the right arg storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_BOOL:
+                    uBitMask = 0x01;
+
+                    for (uCol = 0; uCol < aplNELMRht; uCol++)
+                    {
+                        lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_INT:
+                    for (uCol = 0; uCol < aplNELMRht; uCol++)
+                        lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
+                    break;
+
+                case ARRAY_FLOAT:
+                    ByteRes = aplNELMRht * sizeof (APLFLOAT);
+                    Assert (ByteRes EQ (UINT) ByteRes);
+                    Assert (sizeof (double) EQ sizeof (APLFLOAT));
+                    CopyMemory (lpGslMatrixU->data, lpMemRht, (UINT) ByteRes);
+////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
+////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
+                    break;
+
+                case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
+                    for (uCol = 0; uCol < aplNELMRht; uCol++)
+                        lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOff + apaMul * uCol);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Calculate the SVD (Singular Value Decomposition)
+    //   with the result in U and S (S is the diagonal of the matrix)
+    ErrCode = gsl_linalg_SV_decomp (lpGslMatrixU,       // M x N
+                                    lpGslMatrixV,       // N x N
+                                    lpGslVectorS,       // N
+                                    lpGslVectorW);      // N
+    // Check the error code
+    if (ErrCode NE GSL_SUCCESS)
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Free the GSL work vector
+    gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
+
+    // The solution rows are now L[;I] +.x V +.x (1/S) +.x Transpose (U)
+    for (uCol = 0; uCol < uNumColsLft; uCol++)
+    {
+        // Copy the next column from L to B
+        if (aplRankLft EQ 0)
+            lpGslVectorB->data[0] = aplFloatLft;
+        else
+        // Split cases based upon the left arg's storage type
+        switch (aplTypeLft)
+        {
+            case ARRAY_BOOL:
+                uBitMask = 0x01;
+
+                Assert (uNumRowsLft EQ lpGslVectorB->size);
+                for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                {
+                    lpGslVectorB->data[uRow] = (uBitMask & *(LPAPLBOOL) lpMemLft) ? 1 : 0;
+
+                    // Shift over the bit mask
+                    uBitMask <<= 1;
+
+                    // Check for end-of-byte
+                    if (uBitMask EQ END_OF_BYTE)
+                    {
+                        uBitMask = 0x01;            // Start over
+                        ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                    } // End IF
+                } // End FOR
+
+                break;
+
+            case ARRAY_INT:
+                Assert (uNumRowsLft EQ lpGslVectorB->size);
+                for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                    lpGslVectorB->data[uRow] = (APLFLOAT) ((LPAPLINT) lpMemLft)[uRow * uNumColsLft + uCol];
+                break;
+
+            case ARRAY_FLOAT:
+                Assert (uNumRowsLft EQ lpGslVectorB->size);
+                for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                    lpGslVectorB->data[uRow] = ((LPAPLFLOAT) lpMemLft)[uRow * uNumColsLft + uCol];
+                break;
+
+            case ARRAY_APA:
+                Assert (uNumRowsLft EQ lpGslVectorB->size);
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
+                for (uRow = 0; uRow < uNumRowsLft; uRow++)
+                    lpGslVectorB->data[uRow] = (APLFLOAT) (APLINT) (apaOff + apaMul * (uRow * uNumColsLft + uCol));
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Call GSL function to solve for this column
+        ErrCode = gsl_linalg_SV_solve (lpGslMatrixU,
+                                       lpGslMatrixV,
+                                       lpGslVectorS,
+                                       lpGslVectorB,
+                                       lpGslVectorX);
+        // Check the error code
+        if (ErrCode NE GSL_SUCCESS)
+        {
+            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+        } // End IF
+
+#define lpMemData   ((LPAPLFLOAT) lpMemRes)
+
+        // Copy X to the next column in the result
+        Assert (uNumRowsRes EQ lpGslVectorX->size);
+        if (aplRankRes EQ 0)
+            aplFloatRes = lpGslVectorX->data[0];
+        else
+        for (uRow = 0; uRow < uNumRowsRes; uRow++)
+            lpMemData[uRow * uNumColsRes + uCol] = lpGslVectorX->data[uRow];
+
+#undef  lpMemData
+    } // End FOR
+
+    // Free the GSL vectors
+    gsl_vector_free (lpGslVectorB); lpGslVectorB = NULL;
+    gsl_vector_free (lpGslVectorX); lpGslVectorX = NULL;
+    gsl_vector_free (lpGslVectorS); lpGslVectorS = NULL;
+
+    // Free the GSL matrices
+    gsl_matrix_free (lpGslMatrixV); lpGslMatrixV = NULL;
+    gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
+
+    // Fill in the result token
+    if (aplRankRes EQ 0)
+    {
+        YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
+////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
+        YYRes[YYLclIndex].tkToken.tkData.tkFloat    = aplFloatRes;
+        YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    } else
+    {
+        YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
+        YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+        YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    } // End IF/ELSE
 
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
     bRet = FALSE;
+
+    if (lpGslVectorB)
+    {
+        // We no longer need this storage and ptr
+        gsl_vector_free (lpGslVectorB); lpGslVectorB = NULL;
+    } // End IF
+
+    if (lpGslVectorX)
+    {
+        // We no longer need this storage and ptr
+        gsl_vector_free (lpGslVectorX); lpGslVectorX = NULL;
+    } // End IF
+
+    if (lpGslVectorW)
+    {
+        // We no longer need this storage and ptr
+        gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
+    } // End IF
+
+    if (lpGslVectorS)
+    {
+        // We no longer need this storage and ptr
+        gsl_vector_free (lpGslVectorS); lpGslVectorS = NULL;
+    } // End IF
+
+    if (lpGslMatrixV)
+    {
+        // We no longer need this storage and ptr
+        gsl_matrix_free (lpGslMatrixV); lpGslMatrixV = NULL;
+    } // End IF
+
+    if (lpGslMatrixU)
+    {
+        // We no longer need this storage and ptr
+        gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
+    } // End IF
 NORMAL_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        if (!bRet)
+        {
+            // We no longer need this storage
+            DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+        } // End IF
+    } // End IF
+
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr

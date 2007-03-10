@@ -334,13 +334,12 @@ LPYYSTYPE PrimFnDydQuery_EM
     } // End IF
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

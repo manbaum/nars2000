@@ -42,6 +42,7 @@
 
 #include <commctrl.h>
 #include "datatype.h"
+#include "primfns.h"
 #include "symtab.h"
 #include "tokens.h"
 #include "parse.h"

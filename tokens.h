@@ -94,7 +94,7 @@ typedef struct tagTKFLAGS
     UINT TknType:6,         // 003F:  Data token type (see TOKEN_TYPES)
          ImmType:4,         // 03C0:  Type of immediate data (see IMM_TYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
          NoDisplay:1,       // 0400:  Do not display this token
-         Color:4;           // 7800:  Color index for this token (see TKC_***) ***FIXME*** -- do it!
+         FcnDir:1;          // 0800:  Function is direct (not HGLOBAL)
 } TKFLAGS, *LPTKFLAGS;
 
 typedef union tagTOKEN_DATA

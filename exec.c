@@ -1478,9 +1478,8 @@ BOOL fnPrmDone
     {
         // Mark the data as a variable
         tkFlags.TknType   = TKT_VARARRAY;
-////    tkFlags.ImmType   = 0;
-////    tkFlags.NoDisplay = 0;
-////    tkFlags.Color     =
+////////tkFlags.ImmType   = 0;      // Already zero from {0}
+////////tkFlags.NoDisplay = 0;      // Already zero from {0}
         aplInteger        = MakeGlbType (hGlbZilde);
     } else
     {

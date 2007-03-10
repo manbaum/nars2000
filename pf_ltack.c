@@ -35,8 +35,11 @@ LPYYSTYPE PrimFnLeftTack_EM
      LPTOKEN lptkAxis)
 
 {
-    static YYSTYPE YYRes;   // The result
     HGLOBAL hGlbData;
+    UINT    YYLclIndex;
+
+    // Get new index into YYRes
+    YYLclIndex = NewYYResIndex ();
 
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UCS2_LEFTTACK);
@@ -59,44 +62,39 @@ LPYYSTYPE PrimFnLeftTack_EM
     else
     {
         // Fill in the result token
-        YYRes.tkToken = *lptkLftArg;
+        YYRes[YYLclIndex].tkToken = *lptkLftArg;
 
         // If this is a global memory object, increment its reference count
         // Split cases based upon the token type
-        switch (YYRes.tkToken.tkFlags.TknType)
+        switch (YYRes[YYLclIndex].tkToken.tkFlags.TknType)
         {
             case TKT_VARNAMED:
                 // tkData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (YYRes.tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                Assert (GetPtrTypeDir (YYRes[YYLclIndex].tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
 
                 // If it's not immediate, we must look inside the array
-                if (!YYRes.tkToken.tkData.lpSym->stFlags.Imm)
+                if (!YYRes[YYLclIndex].tkToken.tkData.lpSym->stFlags.Imm)
                 {
                     // Get the global memory handle
-                    hGlbData = YYRes.tkToken.tkData.lpSym->stData.stGlbData;
+                    hGlbData = YYRes[YYLclIndex].tkToken.tkData.lpSym->stData.stGlbData;
 
                     // stData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir (hGlbData));
 
                     // Fill in the result token
-                    YYRes.tkToken.tkFlags.TknType = TKT_VARARRAY;
-                    YYRes.tkToken.tkFlags.ImmType   = 0;
-                    YYRes.tkToken.tkFlags.NoDisplay = 0;
-////////////////////YYRes.tkToken.tkFlags.Color     =
-////////////////////YYRes.tkToken.tkCharIndex       =           // Already set
-
-                    // Make a copy of the data
-                    YYRes.tkToken.tkData.tkGlbData =
-                      MakeGlbTypeGlb (CopyArray_EM (hGlbData, FALSE, NULL));
+                    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////////////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
+                    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = CopySymGlbDir (hGlbData);
+////////////////////YYRes[YYLclIndex].tkToken.tkCharIndex       =           // Already set
                 } else
                 {
                     // Fill in the result token
-                    YYRes.tkToken.tkFlags.TknType = TKT_VARIMMED;
-                    YYRes.tkToken.tkFlags.ImmType   = YYRes.tkToken.tkData.lpSym->stFlags.ImmType;
-                    YYRes.tkToken.tkFlags.NoDisplay = 0;
-////////////////////YYRes.tkToken.tkFlags.Color     =
-////////////////////YYRes.tkToken.tkCharIndex       =           // Already set
-                    YYRes.tkToken.tkData.tkLongest  = YYRes.tkToken.tkData.lpSym->stData.stLongest;
+                    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = YYRes[YYLclIndex].tkToken.tkData.lpSym->stFlags.ImmType;
+////////////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
+                    YYRes[YYLclIndex].tkToken.tkData.tkLongest  = YYRes[YYLclIndex].tkToken.tkData.lpSym->stData.stLongest;
+////////////////////YYRes[YYLclIndex].tkToken.tkCharIndex       =           // Already set
 
                 } // End IF/ELSE
 
@@ -107,21 +105,21 @@ LPYYSTYPE PrimFnLeftTack_EM
 
             case TKT_VARARRAY:
                 // Get the global memory handle
-                hGlbData = YYRes.tkToken.tkData.tkGlbData;
+                hGlbData = YYRes[YYLclIndex].tkToken.tkData.tkGlbData;
 
                 // tkData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (hGlbData));
 
                 // Make a copy of the data
-                YYRes.tkToken.tkData.tkGlbData =
-                  MakeGlbTypeGlb (CopyArray_EM (hGlbData, FALSE, NULL));
+                YYRes[YYLclIndex].tkToken.tkData.tkGlbData = CopySymGlbDir (hGlbData);
+
                 break;
 
             defstop
                 break;
         } // End SWITCH
 
-        return &YYRes;
+        return &YYRes[YYLclIndex];
     } // End IF/ELSE
 } // End PrimFnLeftTack_EM
 #undef  APPEND_NAME

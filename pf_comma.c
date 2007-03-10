@@ -151,7 +151,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Check for axis present
     while (lptkAxis NE NULL)
@@ -275,9 +275,8 @@ LPYYSTYPE PrimFnMonCommaImm_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -338,7 +337,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
     UINT      YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -776,14 +775,9 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     // Note that APLNESTED elements are a mixture of LPSYMENTRYs
                     //   and HGLOBALs, so we need to run the HGLOBALs through
-                    //   CopyArray_EM so as to increment the reference count.
-                    if (GetPtrTypeDir (lpMemData) EQ PTRTYPE_STCONST)
-                        ((LPAPLNESTED) lpMemRes)[uRes] = lpMemData;
-                    else
-                        ((LPAPLNESTED) lpMemRes)[uRes] = MakeGlbTypeGlb
-                                                         (CopyArray_EM (ClrPtrTypeDirGlb (lpMemData),
-                                                                        FALSE,
-                                                                        lptkFunc));
+                    //   CopySymGlbDir so as to increment the reference count.
+                    ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (lpMemData);
+
 #undef  lpMemData
 
                     // Increment the odometer in lpMemOdo subject to
@@ -820,9 +814,8 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
@@ -966,7 +959,7 @@ LPYYSTYPE PrimFnDydComma_EM
     };
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1285,9 +1278,8 @@ LPYYSTYPE PrimFnDydComma_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1787,7 +1779,7 @@ LPYYSTYPE PrimFnDydComma_EM
 
             // If the result is empty, use the prototype of the right arg
             if (aplNELMRes EQ 0)
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbRht);
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
             else
             // Loop through the leading dimensions
             for (uBeg = 0; uBeg < aplDimBeg; uBeg++)
@@ -1800,7 +1792,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankLft EQ 0)
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
@@ -1825,7 +1817,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankLft EQ 0)
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
@@ -1840,7 +1832,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankLft EQ 0)
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
@@ -1855,7 +1847,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankLft EQ 0)
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
@@ -1881,11 +1873,11 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankLft EQ 0)
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbLft);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
                         else
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (*((LPAPLNESTED) lpMemLft)++);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (*((LPAPLNESTED) lpMemLft)++);
                         break;
 
                     defstop
@@ -1900,7 +1892,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankRht EQ 0)
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
@@ -1925,7 +1917,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankRht EQ 0)
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
@@ -1940,7 +1932,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankRht EQ 0)
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
@@ -1955,7 +1947,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankRht EQ 0)
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
@@ -1981,11 +1973,11 @@ LPYYSTYPE PrimFnDydComma_EM
                         if (aplRankRht EQ 0)
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (lpSymGlbRht);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
                         else
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
-                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlb (*((LPAPLNESTED) lpMemRht)++);
+                                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (*((LPAPLNESTED) lpMemRht)++);
                         break;
 
                     defstop

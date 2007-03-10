@@ -97,20 +97,13 @@ BOOL AssignName_EM
 ////////////////if (lptkName->tkData.lpSym->stFlags.SysVar
 //////////////// || lptkExpr->tkData.lpSym->stFlags.SysVar)
 ////////////////{
-                    hGlbExpr = CopyArray_EM (ClrPtrTypeDirGlb (lptkExpr->tkData.lpSym->stData.stGlbData),
-                                             FALSE,
-                                             lptkExpr);
-                    if (!hGlbExpr)
-                    {
-                        DBGLEAVE;
-                        return FALSE;
-                    } // End IF
+                    hGlbExpr = CopySymGlbDir (lptkExpr->tkData.lpSym->stData.stGlbData);
 
                     // Free the old value for this name
                     FreeResultName (lptkName);
 
                     // Save the new global memory ptr
-                    lptkName->tkData.lpSym->stData.stGlbData = MakeGlbTypeGlb (hGlbExpr);
+                    lptkName->tkData.lpSym->stData.stGlbData = hGlbExpr;
 
                     break;
 ////////////////} // End IF
@@ -157,7 +150,7 @@ BOOL AssignName_EM
             lptkName->tkData.lpSym->stFlags.ImmType = stFlags.ImmType;
 
             // Copy the constant data
-            lptkName->tkData.lpSym->stData = lptkExpr->tkData.lpSym->stData;
+            lptkName->tkData.lpSym->stData          = lptkExpr->tkData.lpSym->stData;
 
             break;
 
@@ -445,14 +438,8 @@ void AssignArrayCommon
     lptkName->tkFlags.TknType = TknType;
 
     // Copy the HGLOBAL
-    lptkName->tkData.lpSym->stData.stGlbData =
-      MakeGlbTypeGlb (CopyArray_EM (lptkExpr->tkData.tkGlbData, FALSE, lptkExpr));
-
-////// Mark the expression's global ptr as reused
-////lptkExpr->tkData.tkGlbData = PTR_REUSED;
-
-////// Increment the reference count in global memory
-////DbgIncrRefCntDir (lptkName->tkData.lpSym->stData.stGlbData);
+////lptkName->tkData.lpSym->stData.stNameFcn = ...
+    lptkName->tkData.lpSym->stData.stGlbData = CopySymGlbDir (lptkExpr->tkData.tkGlbData);
 } // End AssignArrayCommon
 #undef  APPEND_NAME
 
@@ -485,7 +472,7 @@ BOOL AssignNameSpec_EM
              aplName;
     APLRANK  aplRankVal;
     APLSTYPE aplTypeVal;
-    TOKEN    tkToken;
+    TOKEN    tkToken = {0};
     UINT     uBitMaskVal;
     LPSYMENTRY lpSymVal;
     APLINT   apaOffVal,
@@ -609,8 +596,7 @@ BOOL AssignNameSpec_EM
     // Fill in the value token
 ////tkToken.tkFlags.TknType     =
 ////tkToken.tkFlags.ImmType     =
-    tkToken.tkFlags.NoDisplay   = 0;
-////tkToken.tkFlags.Color       = ??
+////tkToken.tkFlags.NoDisplay   = 0;    // Already from from {0}
 ////tkToken.tkData              =
     tkToken.tkCharIndex         = lptkVal->tkCharIndex;
 

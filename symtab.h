@@ -166,6 +166,8 @@ typedef struct tagSTFLAGS
 //          are mutually exclusive.
 // hGlbName in SYMENTRY is set for .UsrVar, .UsrFn0, .UsrFn12, .UsrOp1, .UsrName,
 //                                 .SysVar, .SysFn0, .SysFn12, .UsrOp2.
+// .SysFn0 and .SysFn12 are both direct pointers to the code.  All other functions
+//          are indirect (HGLOBAL) pointers.
 
 typedef union tagSYMTAB_DATA    // Immediate data or a handle to global data
 {
@@ -175,10 +177,7 @@ typedef union tagSYMTAB_DATA    // Immediate data or a handle to global data
     APLCHAR    stChar;          // A character
     HGLOBAL    stGlbData;       // Handle of the entry's data
     LPVOID     lpVoid;          // An abritrary ptr
-    struct tagYYSTYPE * (*stNameFcn) (struct tagTOKEN *,
-                                      struct tagTOKEN *,
-                                      struct tagTOKEN *,
-                                      struct tagTOKEN *);
+    LPPRIMFNS  stNameFcn;       // Ptr to a named function
     APLLONGEST stLongest;       // Longest datatype (so we can copy the entire data)
 } SYMTAB_DATA, *LPSYMTAB_DATA;
 

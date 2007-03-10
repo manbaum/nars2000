@@ -131,7 +131,7 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
     UINT YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -154,8 +154,7 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
     YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = ImmType;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;        // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkLongest  = aplLongest;
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
 
@@ -215,7 +214,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     UINT     YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -247,9 +246,6 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     // Calculate the rank of the result
     aplRankRes = aplRankRht - aplNELMAxis;
 
-////// Increment the reference count as we're reusing it
-////hGlbRht = CopyArray_EM (hGlbRht, FALSE, lptkFunc);
-
     // If the axis is present and it's empty, this
     //   is an identity function.  We could go through
     //   all of the work below and end up with the same
@@ -258,10 +254,9 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     {
         // Fill in the result token
         YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-////    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////    YYRes[YYLclIndex].tkToken.tkFlags.Color     =
-        YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (CopyArray_EM (hGlbRht, FALSE, lptkFunc));
+////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
+        YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = CopySymGlbDirGlb (hGlbRht);
         YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         goto QUICK_EXIT;
@@ -387,10 +382,9 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
 
     // If this is enclose without axis
     if (lptkAxis EQ NULL)
-    {
         // Save the HGLOBAL
-        *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (CopyArray_EM (hGlbRht, FALSE, lptkFunc));
-    } else
+        *((LPAPLNESTED) lpMemRes) = CopySymGlbDirGlb (hGlbRht);
+    else
     {
         // Handle prototypes for the result
         if (aplNELMRes EQ 0)
@@ -473,42 +467,10 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         // skip over the header and dimension to the data
                         lpMemProto = VarArrayBaseToData (lpMemProto, aplNELMAxis);
 
-                        // Mark the values as reused in case we fail later on
+                        // Fill in the values
                         for (uRes = 0; uRes < aplNELMSub; uRes++)
-                            ((LPAPLNESTED) lpMemProto)[uRes] = PTR_REUSED;
-
-                        hGlbRhtProto = ClrPtrTypeIndGlb (lpMemRht);
-
-                        // Fill in the values except for the last one
-                        for (uRes = 0; uRes < (aplNELMSub - 1); uRes++)
-                        {
-                            HGLOBAL hGlbCopy;
-
-                            // Make a copy of the prototype
-                            hGlbCopy = CopyArray_EM (hGlbRhtProto,
-                                                     TRUE,
-                                                     lptkFunc);
-                            if (!hGlbCopy)
-                            {
-                                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                           lptkFunc);
-                                bRet = FALSE;
-
-                                break;
-                            } // End IF
-
                             // Save the value in the prototype
-                            *((LPAPLNESTED) lpMemProto)++ = MakeGlbTypeGlb (hGlbCopy);
-                        } // End IF
-
-                        if (bRet)
-                        {
-                            // Fill in the last one with the original prototype
-                            *((LPAPLNESTED) lpMemProto)++ = MakeGlbTypeGlb (hGlbRhtProto);
-
-                            // Mark the original prototype as reused
-                            *((LPAPLNESTED) lpMemRht) = PTR_REUSED;
-                        } // End IF
+                            *((LPAPLNESTED) lpMemProto)++ = CopySymGlbInd (lpMemRht);
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbProto); lpMemProto = NULL;
@@ -518,9 +480,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         {
                             // Fill in the result token
                             YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////                        YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-////                        YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////                        YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////////////////////////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////////////////////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
                             YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbProto);
                             YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -574,39 +535,10 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
 
                 case ARRAY_NESTED:
                 case ARRAY_HETERO:
-                    hGlbRhtProto = ClrPtrTypeIndGlb (lpMemRht);
-
-                    // Fill in the values except for the last one
-                    for (uRes = 0; uRes < (aplNELMRes - 1); uRes++)
-                    {
-                        HGLOBAL hGlbCopy;
-
-                        // Make a copy of the prototype
-                        hGlbCopy = CopyArray_EM (hGlbRhtProto,
-                                                 FALSE,
-                                                 lptkFunc);
-                        if (!hGlbCopy)
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                       lptkFunc);
-                            bRet = FALSE;
-
-                            goto ERROR_EXIT;
-                        } // End IF
-
+                    // Fill in the values
+                    for (uRes = 0; uRes < aplNELMRes; uRes++)
                         // Save the value in the prototype
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbCopy);
-                    } // End IF
-
-                    if (bRet)
-                    {
-                        // Fill in the last one with the original prototype
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbRhtProto);
-
-                        // Mark the original prototype as reused
-                        *((LPAPLNESTED) lpMemRht) = PTR_REUSED;
-                    } // End IF
-
+                        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemRht);
                     break;
 
                 case ARRAY_LIST:        // Handled above
@@ -1028,14 +960,9 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     // Note that APLNESTED elements are a mixture of LPSYMENTRYs
                     //   and HGLOBALs, so we need to run the HGLOBALs through
-                    //   CopyArray_EM so as to increment the reference count.
-                    if (GetPtrTypeDir (lpMemData) EQ PTRTYPE_STCONST)
-                        ((LPAPLNESTED) lpMemSub)[uSub] = lpMemData;
-                    else
-                        ((LPAPLNESTED) lpMemSub)[uSub] = MakeGlbTypeGlb
-                                                         (CopyArray_EM (ClrPtrTypeDirGlb (lpMemData),
-                                                                        FALSE,
-                                                                        lptkFunc));
+                    //   CopySymGlbDir to increment the reference count.
+                    ((LPAPLNESTED) lpMemSub)[uSub] = CopySymGlbDir (lpMemData);
+
 #undef  lpMemData
 
                     // Increment the odometer in lpMemOdo subject to
@@ -1105,9 +1032,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
 NORMAL_EXIT:
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
@@ -1418,7 +1344,7 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
     UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);

@@ -212,7 +212,7 @@ LPYYSTYPE PrimFnDydTilde_EM
     UINT     YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

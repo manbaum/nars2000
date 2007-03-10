@@ -99,7 +99,7 @@ LPYYSTYPE PrimFnMon_EM
     DBGENTER;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -150,9 +150,8 @@ LPYYSTYPE PrimFnMon_EM
 
                 // Fill in the result token
                 YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-                YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-                YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////////////////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////////////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
                 YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
                 YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -166,8 +165,7 @@ LPYYSTYPE PrimFnMon_EM
             // Fill in the result token
             YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
             YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = aplTypeRes;
-            YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////////////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
             YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
 RESTART_EXCEPTION_VARNAMED:
@@ -438,8 +436,7 @@ RESTART_EXCEPTION_VARIMMED:
             // Fill in the result token
             YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
             YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = aplTypeRes;
-            YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////////////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
 ////////////YYRes[YYLclIndex].tkToken.tkData            = (Filled in above)
             YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -462,9 +459,8 @@ RESTART_EXCEPTION_VARIMMED:
 
             // Fill in the result token
             YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-            YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-            YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////////////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
             YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
             YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -614,8 +610,8 @@ RESTART_EXCEPTION:
     // Fill in the header
     lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
-////lpHeader->Perm       = 0;
-////lpHeader->SysVar     = 0;
+////lpHeader->Perm       = 0;   // Already zero from GHND
+////lpHeader->SysVar     = 0;   // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
@@ -1152,7 +1148,7 @@ LPYYSTYPE PrimFnDyd_EM
     DBGENTER;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1634,9 +1630,8 @@ BOOL PrimFnDydSimpNest_EM
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////lpYYRes->tkToken.tkFlags.Color     =
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
 
     goto NORMAL_EXIT;
@@ -1930,9 +1925,8 @@ BOOL PrimFnDydNestSimp_EM
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////lpYYRes->tkToken.tkFlags.Color     =
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
 
     goto NORMAL_EXIT;
@@ -2247,16 +2241,14 @@ BOOL PrimFnDydNestNest_EM
         LPYYSTYPE lpYYRes;
 
         tkLft.tkFlags.TknType   = TKT_VARARRAY;
-////////tkLft.TknType.ImmType   = 0;
-////////tkLft.TknType.NoDisplay = 0;
-////////tkLft.TknType.Color     = ??
+////////tkLft.TknType.ImmType   = 0;    // Already zero from ZeroMemory
+////////tkLft.TknType.NoDisplay = 0;    // Already zero from ZeroMemory
         tkLft.tkData.tkGlbData  = ((LPAPLNESTED) lpMemLft)[uRes % aplNELMLft];
         tkLft.tkCharIndex       = lptkLftArg->tkCharIndex;
 
         tkRht.tkFlags.TknType   = TKT_VARARRAY;
-////////tkRht.TknType.ImmType   = 0;
-////////tkRht.TknType.NoDisplay = 0;
-////////tkRht.TknType.Color     = ??
+////////tkRht.TknType.ImmType   = 0;    // Already zero from ZeroMemory
+////////tkRht.TknType.NoDisplay = 0;    // Already zero from ZeroMemory
         tkRht.tkData.tkGlbData  = ((LPAPLNESTED) lpMemRht)[uRes % aplNELMRht];
         tkRht.tkCharIndex       = lptkRhtArg->tkCharIndex;
 
@@ -2275,9 +2267,8 @@ BOOL PrimFnDydNestNest_EM
     {
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////////lpYYRes->tkToken.tkFlags.Color     =
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from ZeroMemory
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from ZeroMemory
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 
@@ -4066,8 +4057,7 @@ RESTART_EXCEPTION_IMMED:
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = immType;
-////        lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////        lpYYRes->tkToken.tkFlags.Color     =
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from ZeroMemory
 
             __try
             {
@@ -4358,9 +4348,8 @@ RESTART_EXCEPTION_SINGLETON:
 
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////        lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////        lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////        lpYYRes->tkToken.tkFlags.Color     =
+////////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from ZeroMemory
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from ZeroMemory
             lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
         } // End IF
 
@@ -4415,9 +4404,8 @@ RESTART_EXCEPTION_SINGLETON:
                                          lptkFunc, lpPrimSpec);
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////////lpYYRes->tkToken.tkFlags.Color     =
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
@@ -5025,9 +5013,8 @@ RESTART_EXCEPTION_NOAXIS:
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////////lpYYRes->tkToken.tkFlags.Color     =
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE/...

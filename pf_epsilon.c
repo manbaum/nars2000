@@ -162,7 +162,7 @@ LPYYSTYPE PrimFnMonEpsilonImm_EM
     UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Calculate space needed for the result (a one-element vector)
     ByteRes = CalcArraySize (aplTypeRes, 1, 1);
@@ -233,9 +233,8 @@ LPYYSTYPE PrimFnMonEpsilonImm_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -275,7 +274,7 @@ LPYYSTYPE PrimFnMonEpsilonGlb_EM
     UINT       YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Traverse the array counting the # simple scalars
     //   and keeping track of the common storage type --
@@ -331,9 +330,8 @@ LPYYSTYPE PrimFnMonEpsilonGlb_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1061,7 +1059,7 @@ LPYYSTYPE PrimFnDydEpsilon_EM
     UINT     YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

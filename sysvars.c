@@ -11,7 +11,6 @@
 #include "resdebug.h"
 #include "sysvars.h"
 #include "externs.h"
-#include "primfns.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -39,7 +38,7 @@ typedef struct tagSYSNAME
     LPWCHAR     lpwszName;  // The name
     UINT        uValence;   // For system functions, Niladic(0), All others (1)
     BOOL        bSysVar;    // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
-    LPPRIMFNS   NameFcn;    // Ptr to execution routine
+    LPPRIMFNS   lpNameFcn;  // Ptr to execution routine
     LPSYMENTRY *lplpSymEntry;// Ptr to ptr to STE if to be saved globally (NULL if not interested)
 } SYSNAME, *LPSYSNAME;
 
@@ -156,7 +155,7 @@ BOOL SymTabAppendSysName_EM
         *lpSysName->lplpSymEntry = lpSymEntry;
 
     // Save the address of the execution routine
-    lpSymEntry->stData.stNameFcn = lpSysName->NameFcn;
+    lpSymEntry->stData.stNameFcn = lpSysName->lpNameFcn;
 
     return TRUE;
 } // End SymTabAppendSysName_EM
@@ -210,7 +209,6 @@ BOOL AssignCharVector_EM
 {
     LPSYMENTRY lpSymEntryDest;
     STFLAGS    stFlags = {0};
-////int        iStringLen;
     HGLOBAL    hGlb;
 
     // Lookup the name in the symbol table
@@ -227,19 +225,13 @@ BOOL AssignCharVector_EM
     } // End IF
 
     // Make a copy of the CLEAR WS value
-    hGlb = CopyArray_EM (hGlbVal_CWS, FALSE, NULL);
-    if (!hGlb)
-    {
-        ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
-
-        return FALSE;
-    } // End IF
+    hGlb = CopySymGlbDirGlb (hGlbVal_CWS);
 
     // Save the global memory ptr
-    lpSymEntryDest->stData.stGlbData = MakeGlbTypeGlb (hGlb);
+    lpSymEntryDest->stData.stGlbData = hGlb;
 
     // Save in global ptr
-    *((HGLOBAL *) lpGlbVal) = hGlb;
+    *((HGLOBAL *) lpGlbVal) = ClrPtrTypeDirGlb (hGlb);
 
     // Save the flags
     stFlags.SysVarValid = SysVarValid;
@@ -1224,6 +1216,8 @@ BOOL ValidateCharVector_EM
     HGLOBAL  hGlbData;
     UINT     ByteRes;
 
+    DbgBrk ();
+
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
@@ -1355,12 +1349,13 @@ BOOL ValidateCharVector_EM
     {
         // If the argument is a vector, copy it
         if (aplRank EQ 1)
+            *lpVal = CopySymGlbDir (hGlbData);
+        else
         {
-            *lpVal = CopyArray_EM (ClrPtrTypeDirGlb (hGlbData),
-                                   FALSE,
-                                   lpToken);
-        } else
-        {
+            // ***FINISHME***
+            DbgBrk ();
+
+
 
         } // End IF
     } // End IF

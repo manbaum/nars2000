@@ -337,6 +337,8 @@ ul, ol
         <li>Monadic epsilon ({epsilon}) (enlist)</li>
         <li>Monadic equal-underbar ({equalunderbar}) (depth)</li>
         <li>Monadic and dyadic circle-slope ({circleslope}) (transpose)</li>
+        <li>Monadic and dyadic domino ({domino}) (matrix inverse and matrix divide)
+          using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
         <li>Dyadic left ({lev}) and right ({dex})</li>
       </ul>
 

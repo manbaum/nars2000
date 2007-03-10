@@ -31,14 +31,26 @@ LPYYSTYPE ExecuteFn0
     (LPYYSTYPE lpYYFcn0)
 
 {
+    LPPRIMFNS lpNameFcn;
+
     // tkData is an LPSYMENTRY
     Assert (GetPtrTypeDir (lpYYFcn0->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-    // Call the execution routine
-    return (lpYYFcn0->tkToken.tkData.lpSym->stData.stNameFcn) (NULL,
-                                                              &lpYYFcn0->tkToken,
-                                                               NULL,
-                                                               NULL);
+    lpNameFcn = lpYYFcn0->tkToken.tkData.lpSym->stData.stNameFcn;
+
+    DbgBrk ();
+
+    if (lpYYFcn0->tkToken.tkFlags.FcnDir)
+        // Call the execution routine
+        return (*lpNameFcn) (NULL,
+                            &lpYYFcn0->tkToken,
+                             NULL,
+                             NULL);
+    else
+        return ExecFuncGlb_EM (NULL,
+                               ClrPtrTypeDirGlb (lpNameFcn),
+                               NULL,
+                               NULL);
 } // ExecuteFn0
 
 
@@ -86,13 +98,12 @@ LPYYSTYPE SysFnMonDR_EM
     UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
     YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_INT;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
 ////YYRes[YYLclIndex].tkToken.tkData.tkInteger  =   (filled in below)
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -315,20 +326,16 @@ LPYYSTYPE SysFnSYSID_EM
     UINT       YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
 #define SYSID   L"NARS2000"
 #define SYSID_NELM    (sizeof (SYSID) / sizeof (APLCHAR) - 1)
 
     // Calculate size of the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSID_NELM, 1);
-////ByteRes = sizeof (VARARRAY_HEADER)
-////        + sizeof (APLDIM) * 1       // It's a vector
-////        + sizeof (APLCHAR) * SYSID_NELM;  // with this many elements
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
-
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -366,9 +373,8 @@ LPYYSTYPE SysFnSYSID_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -405,20 +411,16 @@ LPYYSTYPE SysFnSYSVER_EM
     UINT       YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
 #define SYSVER  L"0.00.001.0799  Tue Jan 16 17:43:45 2007  Win/32"
 #define SYSVER_NELM    ((sizeof (SYSVER) / sizeof (APLCHAR)) - 1)
 
     // Calculate size of the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);
-////ByteRes = sizeof (VARARRAY_HEADER)
-////        + sizeof (APLDIM) * 1       // It's a vector
-////        + sizeof (APLCHAR) * SYSVER_NELM;  // with this many elements
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
-
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -510,9 +512,8 @@ LPYYSTYPE SysFnSYSVER_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -546,17 +547,13 @@ LPYYSTYPE SysFnTC_EM
     UINT       YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Calculate size of the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 3, 1);
-////ByteRes = sizeof (VARARRAY_HEADER)
-////        + sizeof (APLDIM) * 1       // It's a vector
-////        + sizeof (APLCHAR) * 3;     // and a three-element one at that
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
-
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -599,9 +596,8 @@ LPYYSTYPE SysFnTC_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -624,13 +620,12 @@ LPYYSTYPE SysFnTCCom
     UINT YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
     YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_CHAR;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkChar     = wc;
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -817,17 +812,13 @@ LPYYSTYPE SysFnTS_EM
     UINT       YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Calculate size of the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 7, 1);
-////ByteRes = sizeof (VARARRAY_HEADER)
-////        + sizeof (APLDIM) * 1       // It's a vector
-////        + sizeof (APLINT) * 7;      // and a seven-element one at that
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
-
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -880,9 +871,8 @@ LPYYSTYPE SysFnTS_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -935,7 +925,7 @@ LPYYSTYPE SysFnMonTYPE_EM
     UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Split cases based upon the token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -1050,9 +1040,8 @@ LPYYSTYPE SysFnMonTYPE_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

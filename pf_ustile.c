@@ -224,23 +224,17 @@ BOOL PrimFnMonUpStileAPA_EM
 
     // Axis may be anything
 
-    *lphGlbRes = CopyArray_EM (hGlbRht, FALSE, lptkFunc);
-
-    if (!*lphGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return FALSE;
-    } // End IF
+    // Copy the HGLOBAL to the result
+    // CopySymGlb below will increment the reference count
+    *lphGlbRes = hGlbRht;
 
     // Fill in the result token
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////    lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////    lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////    lpYYRes->tkToken.tkFlags.Color     =
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
+        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirGlb (hGlbRht);
     } // End IF
 
     DBGLEAVE;

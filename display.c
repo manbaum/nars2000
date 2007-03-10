@@ -76,7 +76,7 @@ BOOL ArrayDisplay_EM
                 // Check for NoDisplay flag
                 if (lptkRes->tkFlags.NoDisplay)
                     return TRUE;
-                DisplayGlobal (lpwszFormat,
+                DisplayGlbArr (lpwszFormat,
                                ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData));
                 return TRUE;
 ////            lpaplChar =
@@ -132,7 +132,7 @@ BOOL ArrayDisplay_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    DisplayGlobal (lpwszFormat,
+                    DisplayGlbArr (lpwszFormat,
                                    ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
                     return TRUE;
 ////                lpaplChar =
@@ -167,12 +167,12 @@ BOOL ArrayDisplay_EM
 
 
 //***************************************************************************
-//  DisplayGlobal
+//  DisplayGlbArr
 //
 //  Display a global array
 //***************************************************************************
 
-void DisplayGlobal
+void DisplayGlbArr
     (LPAPLCHAR lpaplChar,
      HGLOBAL   hGlb)
 
@@ -501,7 +501,7 @@ void DisplayGlobal
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlb); lpMem = NULL;
-} // End DisplayGlobal
+} // End DisplayGlbArr
 
 
 //***************************************************************************
@@ -1578,11 +1578,9 @@ void DisplayGlobals
             Assert (IsGlbTypeFcnDir (MakeGlbTypeGlb (hGlb)));
 
             wsprintf (lpszTemp,
-//////////////////////"hGlb=%08X, FcnType=%1d, NELM=%08X%08X, RC=%2d, Line#=%d",
-                      "hGlb=%08X, FcnType=%1d, NELM=%3d, RC=%2d, Line#=%d",
+                      "hGlb=%08X, FcnType=%1d,  NELM=%3d, RC=%1d,                    Line#=%4d",
                       hGlb,
                       lpHeader->FcnType,
-//////////////////////HIDWORD (lpHeader->NELM),
                       LODWORD (lpHeader->NELM),
                       lpHeader->RefCnt,
                       auLinNumGLOBAL[i]);
@@ -2051,9 +2049,34 @@ LPWCHAR DisplayFcnSub
 
             break;
 
+        case TKT_VARIMMED:
+            lpaplChar =
+              FormatAplint (lpaplChar,
+                            lpYYMem[0].tkToken.tkData.tkInteger);
+            lpaplChar[-1] = L'\0';  // Overwrite the trailing blank
+
+            break;
+
+        case TKT_VARARRAY:
+            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+
+            // tkData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir (hGlbData));
+
+            lpaplChar =
+              FormatGlobal (lpaplChar, ClrPtrTypeDirGlb (hGlbData));
+            lpaplChar[-1] = L'\0';  // Overwrite the trailing blank
+
+            break;
+
+        case TKT_VARNAMED:
+            DbgBrk ();      // ***FINISHME***
+
+            break;
+
         defstop
             break;
-    } // End FOR
+    } // End SWITCH
 
     return lpaplChar;
 } // End DisplayFcnSub
@@ -2147,41 +2170,55 @@ LPWCHAR DisplayFcnSub
 //***************************************************************************
 
 void DisplayStrand
-    (void)
+    (int strType)
 
 {
     LPYYSTYPE lp, lpLast;
 
-    DbgMsg ("********** Strands *************************************");
+    switch (strType)
+    {
+        case VARSTRAND:
+            DbgMsg ("********** Variable Strands ****************************");
+
+            break;
+
+        case FCNSTRAND:
+            DbgMsg ("********** Function Strands ****************************");
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     wsprintf (lpszTemp,
-              "Start=%08X, Base=%08X, Next=%08X",
-              gplLocalVars.lpYYStrandStart,
-              gplLocalVars.lpYYStrandBase,
-              gplLocalVars.lpYYStrandNext);
+              "Start=%08X Base=%08X Next=%08X",
+              gplLocalVars.lpYYStrandStart[strType],
+              gplLocalVars.lpYYStrandBase[strType],
+              gplLocalVars.lpYYStrandNext[strType]);
     DbgMsg (lpszTemp);
 
-    for (lp = gplLocalVars.lpYYStrandStart, lpLast = NULL;
-         lp NE gplLocalVars.lpYYStrandNext;
+    for (lp = gplLocalVars.lpYYStrandStart[strType], lpLast = NULL;
+         lp NE gplLocalVars.lpYYStrandNext[strType];
          lp ++)
     {
         if (lpLast NE lp->unYYSTYPE.lpYYStrandBase)
+        {
             DbgMsg ("--------------------------------------------------------");
+            lpLast = lp->unYYSTYPE.lpYYStrandBase;
+        } // End IF
 
         wsprintf (lpszTemp,
-//////////////////"Strand (%08X): Type=%-9.9s, D=%08X%08X, CI=%2d, F=%08X, B=%08X",
-                  "Strand (%08X): Type=%-9.9s, D=%08X, CI=%2d, TC=%1d, FC=%1d, IN=%1d, F=%08X, B=%08X",
+                  "Strand (%08X): %-9.9s D=%08X CI=%2d TC=%1d FC=%1d IN=%1d F=%08X B=%08X",
                   lp,
                   GetTokenTypeName (lp->tkToken.tkFlags.TknType),
-//////////////////HIDWORD (lp->tkToken.tkData.tkInteger),
                   LODWORD (lp->tkToken.tkData.tkInteger),
                   lp->tkToken.tkCharIndex,
                   lp->TknCount,
                   lp->FcnCount,
                   lp->Indirect,
                   lp->lpYYFcn,
-                  lp->unYYSTYPE.lpYYStrandBase);
-        lpLast = lp->unYYSTYPE.lpYYStrandBase;
+                  lpLast);
         DbgMsg (lpszTemp);
     } // End FOR
 

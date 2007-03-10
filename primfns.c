@@ -13,7 +13,6 @@
 #include "sysvars.h"
 #include "externs.h"
 #include "primspec.h"
-#include "primfns.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -267,7 +266,7 @@ void MakePermVars
     lpHeader->ArrType    = ARRAY_BOOL;
     lpHeader->Perm       = 1;       // So we don't free it
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
-////lpHeader->RefCnt     =          // Ignore as this is perm
+////lpHeader->RefCnt     = 0;       // Ignore as this is perm
 ////lpHeader->NELM       = 0;       // Already zero from GHND
     lpHeader->Rank       = 1;
 
@@ -330,7 +329,7 @@ HGLOBAL MakePermCharVector
     lpHeader->ArrType    = ARRAY_CHAR;
     lpHeader->Perm       = 1;       // So we don't free it
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
-////lpHeader->RefCnt     =          // Ignore as this is perm
+////lpHeader->RefCnt     = 0;       // Ignore as this is perm
     lpHeader->NELM       = uLen;
     lpHeader->Rank       = 1;
 
@@ -611,6 +610,7 @@ LPYYSTYPE ExecFunc_EM
             if (!lptkFunc->tkData.lpSym->stFlags.Imm)
             {
                 STFLAGS stFlags;
+                HGLOBAL hGlbFcn;
 
                 // Skip assertion if it's some kind of function
                 stFlags = lptkFunc->tkData.lpSym->stFlags;
@@ -621,20 +621,28 @@ LPYYSTYPE ExecFunc_EM
                  || stFlags.UsrOp1
                  || stFlags.UsrOp2)
                 {
-                    LPPRIMFNS NameFcn;
+                    LPPRIMFNS lpNameFcn;
 
                     // Get the address of the execution routine
-                    NameFcn = lptkFunc->tkData.lpSym->stData.stNameFcn;
+                    lpNameFcn = lptkFunc->tkData.lpSym->stData.stNameFcn;
 
-                    return (*NameFcn) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+                    // If it's a direct function, go there
+                    if (lptkFunc->tkFlags.FcnDir)
+                        return (*lpNameFcn) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+
+                    // Save the HGLOBAL
+                    hGlbFcn = lpNameFcn;
                 } else
-                    // stData is a valid HGLOBAL function array
-                    Assert (IsGlbTypeFcnDir (lptkFunc->tkData.lpSym->stData.stGlbData));
+                    // Save the HGLOBAL
+                    hGlbFcn = lptkFunc->tkData.lpSym->stData.stGlbData;
 
-                    return ExecFuncGlb_EM (lptkLftArg,
-                                           ClrPtrTypeDirGlb (lptkFunc->tkData.lpSym->stData.stGlbData),
-                                           lptkRhtArg,
-                                           lptkAxis);
+                // stData is a valid HGLOBAL function array
+                Assert (IsGlbTypeFcnDir (hGlbFcn));
+
+                return ExecFuncGlb_EM (lptkLftArg,
+                                       ClrPtrTypeDirGlb (hGlbFcn),
+                                       lptkRhtArg,
+                                       lptkAxis);
             } // End IF
 
             // Handle the immediate case
@@ -657,8 +665,7 @@ LPYYSTYPE ExecFunc_EM
                     // Fill in for PrimFn*** test
                     tkFn.tkFlags.TknType   = TKT_FCNIMMED;
                     tkFn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
-////////////////////tkFn.tkFlags.NoDisplay =
-////////////////////tkFn.tkFlags.Color     =
+////////////////////tkFn.tkFlags.NoDisplay = 0;     // Already zero from {0}
                     tkFn.tkData.tkChar     = lptkFunc->tkData.lpSym->stData.stChar;
                     tkFn.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -804,6 +811,12 @@ LPYYSTYPE ExecFuncStr_EM
 //  Execute a monadic operator
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecOp1_EM"
+#else
+#define APPEND_NAME
+#endif
+
 LPYYSTYPE ExecOp1_EM
     (LPTOKEN   lpYYLftArg,
      LPYYSTYPE lpYYFcnStr,
@@ -814,7 +827,7 @@ LPYYSTYPE ExecOp1_EM
     UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Check for axis operator
     if (lpYYFcnStr->FcnCount > 1
@@ -869,6 +882,67 @@ LPYYSTYPE ExecOp1_EM
 
     return &YYRes[YYLclIndex];
 } // End ExecOp1_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  TokenTypeFV
+//
+//  Return the type of a token
+//
+//  'F' = Function
+//  'V' = Variable
+//  '1' = Monadic operator
+//  '2' = Dyadic operator
+//
+//***************************************************************************
+
+char TokenTypeFV
+    (LPTOKEN lptk)
+
+{
+    // Split cases based upon the token type
+    switch (lptk->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+        case TKT_STRING:
+        case TKT_VARIMMED:
+        case TKT_VARARRAY:
+            return 'V';
+
+        case TKT_FCNIMMED:
+        case TKT_FCNARRAY:
+        case TKT_FCNNAMED:
+            return 'F';
+
+        case TKT_OP1IMMED:
+        case TKT_OP1NAMED:
+            return '1';
+
+        case TKT_OP2IMMED:
+        case TKT_OP2NAMED:
+            return '2';
+
+        case TKT_AXISIMMED:
+        case TKT_AXISARRAY:
+        case TKT_JOTDOT:
+        case TKT_LPAREN:
+        case TKT_RPAREN:
+        case TKT_LBRACKET:
+        case TKT_RBRACKET:
+        case TKT_COMMENT:
+        case TKT_ASSIGN:
+        case TKT_LISTSEP:
+        case TKT_EOS:
+        case TKT_EOL:
+        case TKT_LINECONT:
+        case TKT_STRAND:
+        case TKT_LIST:
+        case TKT_STRNAMED:
+        defstop
+            return '?';
+    } // End SWITCH
+} // End TokenTypeFV
 
 
 //***************************************************************************
@@ -877,12 +951,20 @@ LPYYSTYPE ExecOp1_EM
 //  Execute a dyadic operator
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecOp2_EM"
+#else
+#define APPEND_NAME
+#endif
+
 LPYYSTYPE ExecOp2_EM
     (LPTOKEN   lptkLftArg,
      LPYYSTYPE lpYYFcnStr,
      LPTOKEN   lptkRhtArg)
 
 {
+    UINT YYLclIndex;
+
     // Split cases based upon the type of the dyadic operator
     switch (lpYYFcnStr->tkToken.tkData.tkChar)
     {
@@ -897,29 +979,114 @@ LPYYSTYPE ExecOp2_EM
                                      lptkRhtArg);
         case UCS2_JOT:          // Compose
         {
-            YYSTYPE     YYTmp;
             LPYYSTYPE lpYYRes;
+            UINT      uLftArg,
+                      uRhtArg;
 
-            // Execute the right function monadically
-            //   on the right arg
-            lpYYRes = ExecFuncStr_EM (NULL,
-                                     &lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1],
-                                      lptkRhtArg);
-            if (lpYYRes)
+            // Split cases based upon the left operand's token type
+            switch (TokenTypeFV (&lpYYFcnStr[1].tkToken))
             {
-                // Save the contents of the static token
-                //   in case we reuse it
-                YYTmp = *lpYYRes;   // Save it
+                case 'F':
+                    uLftArg = 0;
 
-                // Execute the left function dyadically
-                //   between the left arg and the above
-                //   result from the right function.
-                lpYYRes = ExecFuncStr_EM (lptkLftArg,
-                                         &lpYYFcnStr[1],
-                                         &YYTmp.tkToken);
-                if (!lpYYRes)
-                    FreeResult (&YYTmp.tkToken);
-            } // End IF
+                    break;
+
+                case 'V':
+                    uLftArg = 1;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Split cases based upon the right operand's token type
+            switch (TokenTypeFV (&lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1].tkToken))
+            {
+                case 'F':
+                    uRhtArg = 0;
+
+                    break;
+
+                case 'V':
+                    uRhtArg = 1;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Split cases based upon the type (V or F) of
+            //   the left and right operands
+            switch (uLftArg * 2 + uRhtArg * 1)
+            {
+                case 0 * 2 + 0 * 1:     // F1 op2 F2 -> F1 F2 R or L F1 F2 R
+                    // Execute the right operand monadically
+                    //   on the right arg
+                    lpYYRes = ExecFuncStr_EM (NULL,
+                                             &lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1],
+                                              lptkRhtArg);
+                    if (lpYYRes)
+                    {
+                        // Get new index into YYRes
+                        YYLclIndex = NewYYResIndex ();
+
+                        // Save the contents of the previous token
+                        //   so we can free it when we're done
+                        YYRes[YYLclIndex] = *lpYYRes;   // Save it
+
+                        // Execute the left operand dyadically
+                        //   between the (optional) left arg and the
+                        //   above result from the right operand.
+                        lpYYRes = ExecFuncStr_EM (lptkLftArg,
+                                                 &lpYYFcnStr[1],
+                                                 &YYRes[YYLclIndex].tkToken);
+                        FreeResult (&YYRes[YYLclIndex].tkToken);
+                    } // End IF
+
+                    break;
+
+                case 1 * 2 + 0 * 1:     // V op2 F -> V F R
+                    // If there's a left arg, signal a SYNTAX ERROR
+                    if (lptkLftArg)
+                    {
+                        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                                  &lpYYFcnStr->tkToken);
+                        return NULL;
+                    } // End IF
+
+                    // Execute the right operand dyadically
+                    //   between the left operand and the right arg.
+                    lpYYRes = ExecFuncStr_EM (&lpYYFcnStr[1].tkToken,
+                                              &lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1],
+                                               lptkRhtArg);
+                    break;
+
+                case 0 * 2 + 1 * 1:     // F op2 V
+                    // If there's a left arg, signal a SYNTAX ERROR
+                    if (lptkLftArg)
+                    {
+                        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                                  &lpYYFcnStr->tkToken);
+                        return NULL;
+                    } // End IF
+
+                    // Execute the left operand dyadically
+                    //   between the right arg and the right operand.
+                    lpYYRes = ExecFuncStr_EM (lptkRhtArg,
+                                             &lpYYFcnStr[1],
+                                             &lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1].tkToken);
+                    break;
+
+                case 1 * 2 + 1 * 1:     // V op2 V
+                    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                              &lpYYFcnStr->tkToken);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
 
             return lpYYRes;
         } // End UCS2_JOT
@@ -952,6 +1119,7 @@ LPYYSTYPE ExecOp2_EM
             return NULL;
     } // End SWITCH
 } // End ExecOp2_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -959,6 +1127,12 @@ LPYYSTYPE ExecOp2_EM
 //
 //  Execute an outer product
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecOuterProd_EM"
+#else
+#define APPEND_NAME
+#endif
 
 LPYYSTYPE ExecOuterProd_EM
     (LPTOKEN   lptkLftArg,
@@ -969,7 +1143,7 @@ LPYYSTYPE ExecOuterProd_EM
     UINT YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     DbgBrk ();                  // ***FINISHME***
 
@@ -981,6 +1155,7 @@ LPYYSTYPE ExecOuterProd_EM
 
     return &YYRes[YYLclIndex];
 } // End ExecOuterProd_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -988,6 +1163,12 @@ LPYYSTYPE ExecOuterProd_EM
 //
 //  Execute an inner product
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecInnerProd_EM"
+#else
+#define APPEND_NAME
+#endif
 
 LPYYSTYPE ExecInnerProd_EM
     (LPTOKEN   lptkLftArg,
@@ -999,7 +1180,7 @@ LPYYSTYPE ExecInnerProd_EM
     UINT YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     DbgBrk ();                  // ***FINISHME***
 
@@ -1011,6 +1192,7 @@ LPYYSTYPE ExecInnerProd_EM
 
     return &YYRes[YYLclIndex];
 } // End ExecInnerProd_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3059,18 +3241,18 @@ BOOL IsFirstSimpleGlb
 
 
 //***************************************************************************
-//  CopySymGlb
+//  CopySymGlbDir
 //
-//  Copy an LPSYMENTRY or HGLOBAL incrementing the reference count
+//  Copy a direct LPSYMENTRY or HGLOBAL incrementing the reference count
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- CopySymGlb"
+#define APPEND_NAME     L" -- CopySymGlbDir"
 #else
 #define APPEND_NAME
 #endif
 
-HGLOBAL CopySymGlb
+HGLOBAL CopySymGlbDir
     (LPVOID lpSymGlb)
 
 {
@@ -3089,8 +3271,36 @@ HGLOBAL CopySymGlb
         defstop
             return NULL;
     } // End SWITCH
-} // End CopySymGlb
+} // End CopySymGlbDir
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  CopySymGlbInd
+//
+//  Copy an indirect LPSYMENTRY or HGLOBAL incrementing the reference count
+//***************************************************************************
+
+HGLOBAL CopySymGlbInd
+    (LPVOID lpSymGlb)
+
+{
+    return CopySymGlbDir (*(LPAPLNESTED) lpSymGlb);
+} // End CopySymGlbInd
+
+
+//***************************************************************************
+//  CopySymGlbDirGlb
+//
+//  Copy a direct HGLOBAL incrementing the reference count
+//***************************************************************************
+
+HGLOBAL CopySymGlbDirGlb
+    (HGLOBAL hGlb)
+
+{
+    return CopySymGlbDir (MakeGlbTypeGlb (hGlb));
+} // End CopySymGlbDirGlb
 
 
 //***************************************************************************
@@ -4025,6 +4235,27 @@ NORMAL_EXIT:
     return hGlbRes;
 } // End TypeDemote
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  NewYYResIndex
+//
+//  Get new index into YYRes
+//***************************************************************************
+
+UINT NewYYResIndex
+    (void)
+
+{
+    UINT YYLclIndex;
+
+    // Increment and wrap the global index (YYResIndex)
+    //   zero the memory, and return the current value.
+    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    ZeroMemory (&YYRes[YYLclIndex], sizeof (YYRes[0]));
+
+    return YYLclIndex;
+} // End NewYYResIndex
 
 
 //***************************************************************************

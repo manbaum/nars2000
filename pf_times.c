@@ -379,9 +379,8 @@ BOOL PrimFnDydTimesAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////    lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////    lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////    lpYYRes->tkToken.tkFlags.Color     =
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 

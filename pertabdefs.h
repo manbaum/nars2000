@@ -279,7 +279,7 @@ BOOL bTabTextState;             // Tab's text state:  Highlight (TRUE) or Normal
     iHshTabBaseSize  = DEF_HSHTAB_INITSIZE; \
     iHshTabIncr      = DEF_HSHTAB_INCR;     \
     ExecCode         = EXEC_SUCCESS;        \
-    hGlbQuadWSID     = CopyArray_EM (hGlbQuadWSID_CWS, FALSE, NULL); \
+    hGlbQuadWSID     = CopySymGlbDirGlb (hGlbQuadWSID_CWS); \
     bTabTextState    = FALSE;
 
 

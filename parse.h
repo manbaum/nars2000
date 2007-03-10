@@ -19,6 +19,12 @@ typedef struct tagYYSTYPE
 
 #define YYSTYPE_IS_DECLARED 1
 
+// Define indices into lpYYStrandStart[2];
+typedef enum tagINDSTRAND
+{
+    VARSTRAND = 0,
+    FCNSTRAND,
+} INDSTRAND;
 
 typedef struct tagPLLOCALVARS       // ParseLine Local Vars
 {
@@ -27,9 +33,9 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     LPTOKEN     lpStart,            // First available entry after the header
                 lpNext;             // Next  ...
     UINT        tkErrorCharIndex;   // Error char index
-    LPYYSTYPE   lpYYStrandStart,    // Strand stack start (static)
-                lpYYStrandBase,     // ...          base (dynamic)
-                lpYYStrandNext;     // ...          next token (dynamic)
+    LPYYSTYPE   lpYYStrandStart[2], // Strand stack start (static)
+                lpYYStrandBase[2],  // ...          base (dynamic)
+                lpYYStrandNext[2];  // ...          next token (dynamic)
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

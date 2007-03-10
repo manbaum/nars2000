@@ -359,6 +359,7 @@ BOOL FreeResultGlobalFcn
               RefCnt;
     BOOL      bRet;
     LPYYSTYPE lpYYToken;
+    HGLOBAL   hGlbLcl;
 
     DBGENTER;
 
@@ -398,21 +399,29 @@ BOOL FreeResultGlobalFcn
         switch (lpYYToken->tkToken.tkFlags.TknType)
         {
             case TKT_FCNIMMED:      // Nothing to do
+            case TKT_VARIMMED:      // ...
             case TKT_OP1IMMED:      // ...
             case TKT_OP2IMMED:      // ...
             case TKT_AXISIMMED:     // ...
                 break;              // Ignore immediates
 
             case TKT_FCNARRAY:      // Free the function array
-                // tkData is a valid HGLOBAL function array
-                Assert (IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkGlbData));
+                // Get the global handle
+                hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
 
-                if (FreeResultGlobalFcn (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.tkGlbData)))
+                // tkData is a valid HGLOBAL function array
+                Assert (IsGlbTypeFcnDir (hGlbLcl));
+
+                // Clear the ptr type bits
+                hGlbLcl = ClrPtrTypeDirGlb (hGlbLcl);
+
+                // Free the global function
+                if (FreeResultGlobalFcn (hGlbLcl))
                 {
 #ifdef DEBUG
                     dprintf ("**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%s#%d)",
                              hGlbData,
-                             ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
+                             hGlbLcl,
                              FNLN);
 #endif
                     lpYYToken->tkToken.tkData.tkGlbData = NULL;
@@ -420,16 +429,24 @@ BOOL FreeResultGlobalFcn
 
                 break;
 
+            case TKT_VARARRAY:      // Free the var array
             case TKT_AXISARRAY:     // Free the axis array
-                // tkData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkGlbData));
+                // Get the global handle
+                hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
 
-                if (FreeResultGlobalVar (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.tkGlbData)))
+                // tkData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbLcl));
+
+                // Clear the ptr type bits
+                hGlbLcl = ClrPtrTypeDirGlb (hGlbLcl);
+
+                // Free the global variable
+                if (FreeResultGlobalVar (hGlbLcl))
                 {
 #ifdef DEBUG
                     dprintf ("**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%s#%d)",
                              hGlbData,
-                             ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
+                             hGlbLcl,
                              FNLN);
 #endif
                     lpYYToken->tkToken.tkData.tkGlbData = NULL;

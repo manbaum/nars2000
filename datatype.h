@@ -256,6 +256,7 @@ typedef enum tagPTR_TYPES
 #define ClrPtrTypeDir(lpMem)                     ((~PTRTYPE_MASK) &  (UINT)   lpMem)
 #define ClrPtrTypeDirSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  (UINT)   lpMem)
 #define ClrPtrTypeDirGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  (UINT)   lpMem)
+#define ClrPtrTypeDirFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  (UINT)   lpMem)
 #define ClrPtrTypeInd(lpMem)                     ((~PTRTYPE_MASK) & *(UINT *) lpMem)
 #define ClrPtrTypeIndSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(UINT *) lpMem)
 #define ClrPtrTypeIndGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(UINT *) lpMem)

@@ -76,7 +76,7 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
     LPYYSTYPE lpYYRes;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -141,9 +141,8 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
 
     // Fill in the left arg token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbLft);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -212,7 +211,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
               apaMulRht;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -380,7 +379,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     // Handle empty nested array results (prototypes)
     if (aplNELMRes EQ 0 && aplTypeRes EQ ARRAY_NESTED)
     {
-        *((LPAPLNESTED) lpMemRes) = CopySymGlb (*(LPAPLNESTED) lpMemRht);
+        *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
 
         goto PROTO_EXIT;
     } // End IF
@@ -577,7 +576,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
                     uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLHETERO) lpMemRes)[uRes] = CopySymGlb (((LPAPLHETERO) lpMemRht)[uRht]);
+                ((LPAPLHETERO) lpMemRes)[uRes] = CopySymGlbDir (((LPAPLHETERO) lpMemRht)[uRht]);
 
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemResDim
@@ -592,9 +591,8 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
 PROTO_EXIT:
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 

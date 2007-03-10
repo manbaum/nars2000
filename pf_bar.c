@@ -190,7 +190,6 @@ BOOL PrimFnMonBarAPA_EM
     // Axis may be anything
 
     *lphGlbRes = CopyArray_EM (hGlbRht, TRUE, lptkFunc);
-
     if (!*lphGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -225,9 +224,8 @@ BOOL PrimFnMonBarAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////    lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////    lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////    lpYYRes->tkToken.tkFlags.Color     =
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 
@@ -428,9 +426,8 @@ BOOL PrimFnDydBarAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////    lpYYRes->tkToken.tkFlags.ImmType   = 0;
-////    lpYYRes->tkToken.tkFlags.NoDisplay = 0;
-////    lpYYRes->tkToken.tkFlags.Color     =
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 

@@ -126,15 +126,14 @@ LPYYSTYPE PrimFnMonRhoCon_EM
     UINT YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // As this is a simple scalar, the result is {zilde}
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbZilde);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -168,7 +167,7 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
     UINT    YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     // Lock the global memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -201,9 +200,8 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-    YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -294,7 +292,7 @@ LPYYSTYPE PrimFnDydRho_EM
     UINT     YYLclIndex;
 
     // Get new index into YYRes
-    YYLclIndex = YYResIndex = (YYResIndex + 1) % NUMYYRES;
+    YYLclIndex = NewYYResIndex ();
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -898,7 +896,6 @@ LPYYSTYPE PrimFnDydRho_EM
                                                       aplTypeRes,
                                                       aplNELMRes,
                                                       lpDataRes,
-                                                      FALSE,
                                                       lptkFunc);
                 break;
             } // End IF
@@ -1078,7 +1075,6 @@ LPYYSTYPE PrimFnDydRho_EM
                                                   aplTypeRes,
                                                   aplNELMRes,
                                                   lpDataRes,
-                                                  TRUE,
                                                   lptkFunc);
             break;
 
@@ -1095,9 +1091,8 @@ LPYYSTYPE PrimFnDydRho_EM
     {
         // Fill in the result token
         YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-        YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;
-        YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;
-////////YYRes[YYLclIndex].tkToken.tkFlags.Color     =
+////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
         YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
         YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -1437,7 +1432,6 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
      APLSTYPE  aplTypeRes,
      APLNELM   aplNELMRes,
      LPVOID    lpDataRes,
-     BOOL      bReusePtr,
      LPTOKEN   lptkFunc)
 
 {
@@ -1449,7 +1443,6 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
     UINT    uBitMaskRes,
             uBitMaskRht;
     BOOL    bRet = TRUE;
-    HGLOBAL hGlbRes;
     APLINT  aplNELMRht;
 
     // Lock the global memory to get a ptr to it
@@ -1561,15 +1554,6 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
         case ARRAY_HETERO:
         case ARRAY_NESTED:
         {
-            APLINT aplReusePt;
-
-            //   We can reuse ptrs by starting reuse
-            //   when the index counter for the result is at
-            //     aplNELMRes - min (aplNELMRes, aplNELMRht)
-
-            // Calculate the ptr reuse point
-            aplReusePt = aplNELMRes - min ((APLNELMSIGN) aplNELMRes, (APLNELMSIGN) aplNELMRht);
-
             // Loop through the result and right arg copying the data
             for (uRes = uRht = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
@@ -1599,21 +1583,9 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
                         // Data is an valid HGLOBAL array
                         Assert (IsGlbTypeVarInd (lpMemRhtNext));
 
-                        // Attempt to reuse ptrs
-                        if (bReusePtr
-                         && uRes >= aplReusePt)
-                        {
-                            hGlbRes = ClrPtrTypeIndGlb (lpMemRhtNext);
-                            *((LPAPLNESTED) lpMemRhtNext) = PTR_REUSED;
-                        } else
-                            // Make a copy of the HGLOBAL ptr
-                            hGlbRes = CopyArray_EM (ClrPtrTypeIndGlb (lpMemRhtNext),
-                                                    FALSE,
-                                                    lptkFunc);
-                        if (hGlbRes)
-                            *((LPAPLNESTED) lpDataRes)++ = MakeGlbTypeGlb (hGlbRes);
-                        else
-                            bRet = FALSE;
+                        // Make a copy of the HGLOBAL ptr
+                        *((LPAPLNESTED) lpDataRes)++ = CopySymGlbInd (lpMemRhtNext);
+
                         break;
 
                     defstop

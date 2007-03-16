@@ -66,7 +66,7 @@ LPYYSTYPE PrimFnDomino_EM
 //***************************************************************************
 //  PrimFnMonDomino_EM
 //
-//  Primitive function for monadic Domino (matrix inverse)
+//  Primitive function for monadic Domino ("matrix inverse")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -132,7 +132,7 @@ LPYYSTYPE PrimFnMonDomino_EM
         case 0:
             uNumRows =
             uNumCols = 1;
-            FirstValue (lptkRhtArg, NULL, &aplFloatRht, NULL, NULL, NULL, NULL);
+            FirstValue (lptkRhtArg, NULL, &aplFloatRht, NULL, NULL, NULL, NULL, NULL);
 
             break;
 
@@ -489,7 +489,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  PrimFnDydDomino_EM
 //
-//  Primitive function for dyadic Domino (matrix divide)
+//  Primitive function for dyadic Domino ("matrix divide")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -570,7 +570,7 @@ LPYYSTYPE PrimFnDydDomino_EM
         case 0:
             uNumRowsRht =
             uNumColsRht = 1;
-            FirstValue (lptkRhtArg, NULL, &aplFloatRht, NULL, NULL, NULL, NULL);
+            FirstValue (lptkRhtArg, NULL, &aplFloatRht, NULL, NULL, NULL, NULL, NULL);
 
             break;
 
@@ -596,7 +596,7 @@ LPYYSTYPE PrimFnDydDomino_EM
         case 0:
             uNumRowsLft =
             uNumColsLft = 1;
-            FirstValue (lptkLftArg, NULL, &aplFloatLft, NULL, NULL, NULL, NULL);
+            FirstValue (lptkLftArg, NULL, &aplFloatLft, NULL, NULL, NULL, NULL, NULL);
 
             break;
 

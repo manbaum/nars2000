@@ -68,7 +68,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecCircle};
 //***************************************************************************
 //  PrimFnCircle_EM
 //
-//  Primitive function for monadic and dyadic Circle ("absolute value" and "modulus")
+//  Primitive function for monadic and dyadic Circle ("pi times" and "circle functions")
 //***************************************************************************
 
 #ifdef DEBUG

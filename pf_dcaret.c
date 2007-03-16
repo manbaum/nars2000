@@ -68,7 +68,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownCaret};
 //***************************************************************************
 //  PrimFnDownCaret_EM
 //
-//  Primitive function for monadic and dyadic downCaret (ERROR and "or")
+//  Primitive function for monadic and dyadic downCaret (ERROR and "or/GCD")
 //***************************************************************************
 
 #ifdef DEBUG

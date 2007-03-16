@@ -20,6 +20,9 @@
 #define IsGlbTypeFcnDir(a) (IsGlobalTypeArray (a, FCNARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeFcnInd(a) (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
 
+#define AplModI(m,a) PrimFnDydStileIisIvI (m, a, NULL)
+#define AplModF(m,a) PrimFnDydStileFisFvF (m, a, NULL)
+
 #define LOPART_DWORDLONG        ((DWORDLONG) 0x00000000FFFFFFFF)
 #define HIPART_DWORDLONG        ((DWORDLONG) 0xFFFFFFFF00000000)
 

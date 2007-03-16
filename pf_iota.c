@@ -39,19 +39,31 @@ LPYYSTYPE PrimFnIota_EM
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UCS2_IOTA);
 
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonIota_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydIota_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnPlus_EM
+} // End PrimFnIota_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
 //  PrimFnMonIota_EM
 //
-//  Primitive function for monadic iota (index generator)
+//  Primitive function for monadic iota ("index generator")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -76,18 +88,6 @@ LPYYSTYPE PrimFnMonIota_EM
 
     // Get new index into YYRes
     YYLclIndex = NewYYResIndex ();
-
-    //***************************************************************
-    // This function is not sensitive to the axis operator,
-    //   so signal a syntax error if present
-    //***************************************************************
-
-    if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
 
     //***************************************************************
     // Check the right argument for RANK, LENGTH, and DOMAIN ERRORs
@@ -464,7 +464,7 @@ BOOL PrimFnMonIotaGlb_EM
 //***************************************************************************
 //  PrimFnDydIota_EM
 //
-//  Primitive function for dyadic iota (index of)
+//  Primitive function for dyadic iota ("index of")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -495,18 +495,6 @@ LPYYSTYPE PrimFnDydIota_EM
 
     // Get new index into YYRes
     YYLclIndex = NewYYResIndex ();
-
-    //***************************************************************
-    // This function is not sensitive to the axis operator,
-    //   so signal a syntax error if present
-    //***************************************************************
-
-    if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
 
     DbgBrk ();          // ***FINISHME***
 
@@ -545,11 +533,13 @@ LPYYSTYPE PrimFnDydIota_EM
 ERROR_EXIT:
     if (hGlbLft && lpMemLft)
     {
+        // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
     } // End IF
 
     if (hGlbRht && lpMemRht)
     {
+        // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 

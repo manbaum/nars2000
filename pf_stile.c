@@ -237,10 +237,12 @@ APLINT PrimFnDydStileIisIvI
 
     aplTmp = aplRht % aplLft;
 
-    // If the arguments are of opposite sign,
+    // If the arguments are of opposite sign
+    //   and the result so far is non-zero,
     //   replace the result with its complement
     //   in the modulus.
-    if ((aplIntegerLft > 0) NE (aplIntegerRht > 0))
+    if ((aplIntegerLft > 0) NE (aplIntegerRht > 0)
+     && aplTmp NE 0)
         aplTmp = aplLft - aplTmp;
 
     // The sign of the result is the sign of the left arg
@@ -285,10 +287,12 @@ APLFLOAT PrimFnDydStileFisFvF
 
     aplTmp = fmod (aplRht, aplLft);
 
-    // If the arguments are of opposite sign,
+    // If the arguments are of opposite sign
+    //   and the result so far is non-zero,
     //   replace the result with its complement
     //   in the modulus.
-    if ((aplFloatLft > 0) NE (aplFloatRht > 0))
+    if ((aplFloatLft > 0) NE (aplFloatRht > 0)
+     && aplTmp NE 0)
         aplTmp = aplLft - aplTmp;
 
     // The sign of the result is the sign of the left arg

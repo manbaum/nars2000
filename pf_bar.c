@@ -67,7 +67,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecBar};
 //***************************************************************************
 //  PrimFnBar_EM
 //
-//  Primitive function for monadic and dyadic Bar (negation and subtraction)
+//  Primitive function for monadic and dyadic Bar ("negation" and "subtraction")
 //***************************************************************************
 
 #ifdef DEBUG

@@ -51,7 +51,7 @@ LPYYSTYPE PrimFnEqualUnderbar_EM
 //***************************************************************************
 //  PrimFnMonEqualUnderbar_EM
 //
-//  Primitive function for monadic EqualUnderbar (depth)
+//  Primitive function for monadic EqualUnderbar ("depth")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -248,7 +248,7 @@ APLINT PrimFnMonEqualUnderBarGlb
 //***************************************************************************
 //  PrimFnDydEqualUnderbar_EM
 //
-//  Primitive function for dyadic EqualUnderbar (match)
+//  Primitive function for dyadic EqualUnderbar ("match")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -265,7 +265,8 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
 
 {
     APLSTYPE aplTypeLft,
-             aplTypeRht;
+             aplTypeRht,
+             aplTypeTmp;
     APLNELM  aplNELMLft,
              aplNELMRht;
     APLRANK  aplRankLft,
@@ -335,6 +336,10 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
         lptkTmpArg = lptkLftArg;
         lptkLftArg = lptkRhtArg;
         lptkRhtArg = lptkTmpArg;
+
+        aplTypeTmp = aplTypeLft;
+        aplTypeLft = aplTypeRht;
+        aplTypeRht = aplTypeTmp;
     } // End IF
 
     // Get left and right arg's global ptrs
@@ -342,10 +347,10 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Split based upon Simple vs. Hetero vs. Nested
-    switch (2 * (aplTypeRht EQ ARRAY_NESTED)
-              + (aplTypeLft EQ ARRAY_NESTED))
+    switch (2 * (aplTypeLft EQ ARRAY_NESTED)
+          + 1 * (aplTypeRht EQ ARRAY_NESTED))
     {
-        case 0 + 2 * 0:     // Lft = Simple, Rht = Simple
+        case 2 * 0 + 1 * 0:     // Lft = Simple, Rht = Simple
             // If both arguments are scalars, get the
             //   first values and compare them as they
             //   might be TKT_VARIMMED and thus not pointed
@@ -360,8 +365,8 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
                     break;
 
                 // Get the respective first values
-                FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL);
-                FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL);
+                FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
+                FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
 
                 // Split cases into Numeric and Char
                 if (bNumLft)
@@ -379,17 +384,17 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
 
             YYRes[YYLclIndex].tkToken.tkData.tkBoolean =
               PrimFnDydEqualUnderbarSimple (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankLft);
+                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
             break;
 
-        case 0 + 2 * 1:     // Lft = Simple, Rht = Nested
-        case 1 + 2 * 0:     // Lft = Nested, Rht = Simple
+        case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
+        case 2 * 1 + 1 * 0:     // Lft = Nested, Rht = Simple
             break;
 
-        case 1 + 2 * 1:     // Lft = Nested, Rht = Nested
+        case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
             YYRes[YYLclIndex].tkToken.tkData.tkBoolean =
               PrimFnDydEqualUnderbarNested (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankLft);
+                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
             break;
 
         defstop
@@ -445,8 +450,6 @@ BOOL PrimFnDydEqualUnderbarSimple
     if (aplRankLft NE aplRankRht
      || aplNELMLft NE aplNELMRht)
         return FALSE;
-
-    DbgBrk ();          // ***TESTME***
 
     // Ensure the dimensions are the same
     if (aplRankLft NE 0)
@@ -616,7 +619,7 @@ BOOL PrimFnDydEqualUnderbarSimple
                 case ARRAY_FLOAT:   // Lft = INT, Rht = FLOAT
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-                    if (CompareCT ((APLFLOAT) *((LPAPLINT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
+                    if (!CompareCT ((APLFLOAT) *((LPAPLINT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
                         return FALSE;
                     return TRUE;
 
@@ -674,7 +677,7 @@ BOOL PrimFnDydEqualUnderbarSimple
                 case ARRAY_FLOAT:   // Lft = FLOAT, Rht = FLOAT
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-                    if (CompareCT (*((LPAPLFLOAT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
+                    if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
                         return FALSE;
                     return TRUE;
 
@@ -685,7 +688,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 #undef  lpHeader
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-                    if (CompareCT (*((LPAPLFLOAT) lpMemLft)++, (APLFLOAT) (apaOff + apaMul * uDim), fQuadCT, NULL))
+                    if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, (APLFLOAT) (apaOff + apaMul * uDim), fQuadCT, NULL))
                         return FALSE;
                     return TRUE;
 
@@ -935,13 +938,23 @@ BOOL PrimFnDydEqualUnderbarNested
 
 {
     APLUINT  uDim;
+    APLNELM  aplNELMLft2,
+             aplNELMRht2;
+    LPVOID   lpMemLft2,
+             lpMemRht2;
+    APLINT   aplIntegerLft,
+             aplIntegerRht;
+    APLFLOAT aplFloatLft,
+             aplFloatRht;
+    APLCHAR  aplCharLft,
+             aplCharRht;
+    UINT     ptrType;
+    BOOL     bRet = TRUE;
 
     // Ensure same rank and # elements
     if (aplRankLft NE aplRankRht
      || aplNELMLft NE aplNELMRht)
         return FALSE;
-
-    DbgBrk ();          // ***FINISHME***
 
     // Ensure the dimensions are the same
     if (aplRankLft NE 0)
@@ -958,23 +971,113 @@ BOOL PrimFnDydEqualUnderbarNested
     // lpMemLft and lpMemRht now point to the data
 
     // Loop through the elements
-    for (uDim = 0; uDim < aplNELMLft; uDim++)
+    for (uDim = 0; bRet && uDim < aplNELMLft; uDim++, ((LPAPLNESTED) lpMemLft)++, ((LPAPLNESTED) lpMemRht)++)
     {
-        DbgBrk ();          // ***FINISHME***
+        // The ptr types must be the same
+        ptrType = GetPtrTypeInd (lpMemLft);
+        if (ptrType NE GetPtrTypeInd (lpMemRht))
+            return FALSE;
 
-        // Split cases based upon the
+        // Split cases based upon the ptr type of the elements
+        switch (ptrType)
+        {
+            case PTRTYPE_STCONST:
+                // Get the contents of the two LPSYMENTRYs
+                // The index is zero because we increment the ptrs in the FOR loop
+                aplTypeLft = GetNextHetero (lpMemLft, 0, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                aplTypeRht = GetNextHetero (lpMemRht, 0, &aplIntegerRht, &aplFloatRht, &aplCharRht);
 
+                // Strip out char vs. char
+                if (aplTypeLft EQ ARRAY_CHAR
+                 && aplTypeRht EQ ARRAY_CHAR)
+                {
+                    if (aplCharLft NE aplCharRht)
+                        return FALSE;
+                    else
+                        break;
+                } // End IF
 
+                // Strip out char vs. num and num vs. char
+                if (aplTypeLft EQ ARRAY_CHAR
+                 || aplTypeRht EQ ARRAY_CHAR)
+                    return FALSE;
 
+                // Strip out BOOL/INT vs. BOOL/INT
+                if (IsSimpleInt (aplTypeLft)
+                 && IsSimpleInt (aplTypeRht))
+                {
+                    if (aplIntegerLft NE aplIntegerRht)
+                        return FALSE;
+                    else
+                        break;
+                } // End IF
 
+                // Finally, handle FLOAT vs. FLOAT
+                if (!CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL))
+                    return FALSE;
+                break;
 
+            case PTRTYPE_HGLOBAL:
+                // Get the attrs (Type, NELM, and Rank) of the left and right elements
+                // Note that we overwrite the incoming parameters aplTypeXXX and aplRankXXX
+                //   as we no longer need those variables.
+                AttrsOfGlb (ClrPtrTypeIndGlb (lpMemLft), &aplTypeLft, &aplNELMLft2, &aplRankLft, NULL);
+                AttrsOfGlb (ClrPtrTypeIndGlb (lpMemRht), &aplTypeRht, &aplNELMRht2, &aplRankRht, NULL);
 
+                // Ensure same rank and # elements
+                if (aplRankLft NE aplRankRht
+                 || aplNELMLft NE aplNELMRht)
+                    return FALSE;
 
+                // Lock the memory to get a ptr to it
+                lpMemLft2 = MyGlobalLock (ClrPtrTypeIndGlb (lpMemLft));
+                lpMemRht2 = MyGlobalLock (ClrPtrTypeIndGlb (lpMemRht));
 
+                // Split based upon Simple vs. Hetero vs. Nested
+                switch (2 * (aplTypeLft EQ ARRAY_NESTED)
+                      + 1 * (aplTypeRht EQ ARRAY_NESTED))
+                {
+                    case 2 * 0 + 1 * 0:     // Lft = Simple, Rht = Simple
+                        // Because this function is commutative, we can switch
+                        //    the two args without loss of generality.
+                        // Switch the args so that the left arg is the "simpler"
+                        //    of the two (Simple Homogeneous < Simple Heterogeneous < Nested),
+                        //    and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
+                        if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
+                            bRet = PrimFnDydEqualUnderbarSimple (lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht,
+                                                                 lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft);
+                        else
+                            bRet = PrimFnDydEqualUnderbarSimple (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
+                                                                 lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht);
+                        break;
 
+                    case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
+                    case 2 * 1 + 1 * 0:     // Lft = Nested, Rht = Simple
+                        bRet = FALSE;
+
+                        break;
+
+                    case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
+                        bRet = PrimFnDydEqualUnderbarNested (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
+                                                             lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht);
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // We no longer need these ptrs
+                MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemLft)); lpMemLft2 = NULL;
+                MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemRht)); lpMemRht2 = NULL;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } // End FOR
 
-    return TRUE;
+    return bRet;
 } // End PrimFnDydEqualUnderbarNested
 
 

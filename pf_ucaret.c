@@ -68,7 +68,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecUpCaret};
 //***************************************************************************
 //  PrimFnUpCaret_EM
 //
-//  Primitive function for monadic and dyadic UpCaret (ERROR and "and")
+//  Primitive function for monadic and dyadic UpCaret (ERROR and "and/LCM")
 //***************************************************************************
 
 #ifdef DEBUG

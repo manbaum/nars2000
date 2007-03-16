@@ -155,7 +155,7 @@ APLINT PrimFnMonQueryIisI
 
     // Reduce the argument if too large
     if (aplIntegerRht > QUADRL_MODULUS)
-        aplIntegerRht = PrimFnDydStileIisIvI (aplIntegerRht, QUADRL_MODULUS, NULL);
+        aplIntegerRht = AplModI (aplIntegerRht, QUADRL_MODULUS);
 
     // Ye old Linear Congruential Generator
     return bQuadIO + (uQuadRL * aplIntegerRht) / QUADRL_MODULUS;
@@ -188,7 +188,7 @@ APLINT PrimFnMonQueryIisF
 
     // Reduce the argument if too large
     if (aplFloatRht > QUADRL_MODULUS)
-        aplFloatRht = PrimFnDydStileFisFvF (aplFloatRht, QUADRL_MODULUS, NULL);
+        aplFloatRht = AplModF (aplFloatRht, QUADRL_MODULUS);
 
     // Ye old Linear Congruential Generator
     return bQuadIO + (uQuadRL * (APLINT) aplFloatRht) / QUADRL_MODULUS;
@@ -198,7 +198,7 @@ APLINT PrimFnMonQueryIisF
 //***************************************************************************
 //  PrimFnDydQuery_EM
 //
-//  Primitive function for dyadic Query (deal)
+//  Primitive function for dyadic Query ("deal")
 //
 //  This algorithm was taken from a paper by R. A. Kelley,
 //    "APLGOL, an Experimental Structured Programming Language",
@@ -285,8 +285,8 @@ LPYYSTYPE PrimFnDydQuery_EM
     } // End IF
 
     // Get the respective first values
-    FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, NULL, NULL, NULL, NULL);
-    FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, NULL, NULL, NULL, NULL);
+    FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, NULL, NULL, NULL, NULL, NULL);
+    FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, NULL, NULL, NULL, NULL, NULL);
 
     // Check for LEFT/RIGHT DOMAIN ERRORs
     bRet = (aplTypeLft NE ARRAY_CHAR

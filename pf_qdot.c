@@ -71,7 +71,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuoteDot};
 //***************************************************************************
 //  PrimFnQuoteDot_EM
 //
-//  Primitive function for monadic and dyadic QuoteDot ("conjugate" and "addition")
+//  Primitive function for monadic and dyadic QuoteDot ("factorial" and "binomial")
 //***************************************************************************
 
 #ifdef DEBUG

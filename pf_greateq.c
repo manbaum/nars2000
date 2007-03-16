@@ -67,7 +67,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecNotLess};
 //***************************************************************************
 //  PrimFnNotLess_EM
 //
-//  Primitive function for monadic and dyadic NotLess (ERROR and "greater than")
+//  Primitive function for monadic and dyadic NotLess (ERROR and "greater than or equal")
 //***************************************************************************
 
 #ifdef DEBUG

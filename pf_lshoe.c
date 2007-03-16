@@ -20,7 +20,7 @@
 //***************************************************************************
 //  PrimFnLeftShoe_EM
 //
-//  Primitive function for monadic and dyadic left shoe (enclose and partitioned enclose)
+//  Primitive function for monadic and dyadic left shoe ("enclose" and "partitioned enclose")
 //***************************************************************************
 
 LPYYSTYPE PrimFnLeftShoe_EM
@@ -44,7 +44,7 @@ LPYYSTYPE PrimFnLeftShoe_EM
 //***************************************************************************
 //  PrimFnMonLeftShoe_EM
 //
-//  Primitive function for monadic left shoe (enclose)
+//  Primitive function for monadic left shoe ("enclose")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -111,7 +111,7 @@ LPYYSTYPE PrimFnMonLeftShoe_EM
 //***************************************************************************
 //  PrimFnMonLeftShoeCon_EM
 //
-//  Monadic left shoe (enclose) on an immediate value.
+//  Monadic left shoe ("enclose") on an immediate value.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -166,7 +166,7 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
 //***************************************************************************
 //  PrimFnMonLeftShoeGlb_EM
 //
-//  Monadic left shoe (enclose) on a global memory object
+//  Monadic left shoe ("enclose") on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
@@ -227,8 +227,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                            aplRankRht,      // All values less than this
                            FALSE,           // TRUE iff scalar or one-element vector only
                            FALSE,           // TRUE iff want sorted axes
-                           FALSE,           // TRIE iff axes must be contiguous
-                           FALSE,           // TRIE iff duplicate axes are allowed
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
                            &aplNELMAxis,    // Return # elements in axis vector
@@ -325,9 +325,6 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     // Add in the header, (aplRankRht - aplNELMAxis) dimensions,
     //   and <aplNELMRes> HGLOBALs (taking into account a prototype if empty).
     ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRes, aplRankRes);
-////ByteRes = sizeof (VARARRAY_HEADER)
-////        + sizeof (APLDIM)  * aplRankRes
-////        + sizeof (HGLOBAL) * max (aplNELMRes, 1);
 
     //***************************************************************
     // Now we can allocate the storage for the result.
@@ -431,9 +428,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         //   HGLOBALs in an array of variables of
                         //   rank <aplNELMAxis> and NELM <aplNELMSub>.
                         ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMSub, aplNELMAxis);
-////////////////////////ByteRes = sizeof (VARARRAY_HEADER)
-////////////////////////        + sizeof (APLDIM)  * aplNELMAxis
-////////////////////////        + sizeof (APLNESTED) * aplNELMSub;
+
                         // N.B.:  Conversion from APLUINT to UINT.
                         Assert (ByteRes EQ (UINT) ByteRes);
                         hGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -454,8 +449,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         // Fill in the header
                         lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
                         lpHeader->ArrType    = ARRAY_NESTED;
-////                    lpHeader->Perm       = 0;
-////                    lpHeader->SysVar     = 0;
+////////////////////////lpHeader->Perm       = 0;       // Already zero from GHND
+////////////////////////lpHeader->SysVar     = 0;       // Already zero from GHND
                         lpHeader->RefCnt     = 1;
                         lpHeader->NELM       = aplNELMSub;
                         lpHeader->Rank       = aplNELMAxis;
@@ -912,8 +907,6 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                     IncrOdometer (lpMemOdo, lpMemRhtDim, lpMemAxis, aplRankRht);
                 } // End FOR
 
-                // ***FIXME*** -- Check for storage demotion (from APLHETERO to simple).
-
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 
@@ -1148,8 +1141,8 @@ BOOL PrimFnMonLeftShoeProto_EM
         // Fill in the header
         lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplType;
-////    lpHeader->Perm       = 0;
-////    lpHeader->SysVar     = 0;
+////////lpHeader->Perm       = 0;   // ALready zero from GHND
+////////lpHeader->SysVar     = 0;   // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMSub;
         lpHeader->Rank       = aplNELMAxis;
@@ -1229,8 +1222,8 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
     // Fill in the subarray header
     lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplType;
-////lpHeader->Perm       = 0;
-////lpHeader->SysVar     = 0;
+////lpHeader->Perm       = 0;       // Already zero from GHND
+////lpHeader->SysVar     = 0;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMSub;
     lpHeader->Rank       = aplNELMAxis;
@@ -1255,7 +1248,7 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
 //***************************************************************************
 //  PrimFnDydLeftShoe_EM
 //
-//  Primitive function for dyadic left shoe (partitioned enclose)
+//  Primitive function for dyadic left shoe ("partitioned enclose")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1357,8 +1350,8 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
                            aplRankRht,      // All values less than this
                            TRUE,            // TRUE iff scalar or one-element vector only
                            FALSE,           // TRUE iff want sorted axes
-                           FALSE,           // TRIE iff axes must be contiguous
-                           FALSE,           // TRIE iff duplicate axes are allowed
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            &aplAxis,        // Return last axis value
                            NULL,            // Return # elements in axis vector

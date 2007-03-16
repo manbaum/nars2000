@@ -479,7 +479,7 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 {'$', UCS2_DELTASTILE      },   // Dollar sign       36
 {'%', UCS2_CIRCLESTILE     },   // Percent sign      37
 {'&', UCS2_CIRCLEBAR       },   // Ampersand         38
-{'\'',UCS2_HYDRANT         },   // Apostrophe        39
+{'\'',UCS2_THORN           },   // Apostrophe        39
 {'(', UCS2_DOWNCARETTILDE  },   // Left paren        40
 {')', UCS2_UPCARETTILDE    },   // Right paren       41
 {'*', UCS2_CIRCLESTAR      },   // Star              42
@@ -499,7 +499,7 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 {'8', UCS2_NOTEQUAL        },   // 8                 56
 {'9', UCS2_DOWNCARET       },   // 9                 57
 {':', 0                    },   // Colon             58
-{';', UCS2_THORN           },   // Semicolon         59
+{';', UCS2_HYDRANT         },   // Semicolon         59
 {'<', 0                    },   // Less              60
 {'=', UCS2_DIVIDE          },   // Equal             61
 {'>', 0                    },   // More              62
@@ -517,7 +517,7 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 {'J', UCS2_DIERESISJOT     },   // J                 74
 {'K', 0                    },   // K                 75
 {'L', UCS2_SQUAD           },   // L                 76
-{'M', 0                    },   // M                 77
+{'M', UCS2_STILETILDE      },   // M                 77
 {'N', UCS2_DIERESISDOWNTACK},   // N                 78
 {'O', UCS2_DIERESISCIRCLE  },   // O                 79
 {'P', UCS2_DIERESISSTAR    },   // P                 80

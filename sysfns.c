@@ -38,8 +38,6 @@ LPYYSTYPE ExecuteFn0
 
     lpNameFcn = lpYYFcn0->tkToken.tkData.lpSym->stData.stNameFcn;
 
-    DbgBrk ();
-
     if (lpYYFcn0->tkToken.tkFlags.FcnDir)
         // Call the execution routine
         return (*lpNameFcn) (NULL,
@@ -815,7 +813,7 @@ LPYYSTYPE SysFnTS_EM
     YYLclIndex = NewYYResIndex ();
 
     // Calculate size of the result
-    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 7, 1);
+    ByteRes = (UINT) CalcArraySize (ARRAY_INT, 7, 1);
 
     // Allocate space for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);

@@ -150,6 +150,7 @@ $(O)pf_bar.DEP      \
 $(O)pf_circle.DEP   \
 $(O)pf_comma.DEP    \
 $(O)pf_cslope.DEP   \
+$(O)pf_cstile.DEP   \
 $(O)pf_cstar.DEP    \
 $(O)pf_dcaret.DEP   \
 $(O)pf_divide.DEP   \
@@ -173,8 +174,11 @@ $(O)pf_query.DEP    \
 $(O)pf_rcaret.DEP   \
 $(O)pf_rho.DEP      \
 $(O)pf_rtack.DEP    \
+$(O)pf_slash.DEP    \
+$(O)pf_slope.DEP    \
 $(O)pf_star.DEP     \
 $(O)pf_stile.DEP    \
+$(O)pf_thorn.DEP    \
 $(O)pf_tilde.DEP    \
 $(O)pf_times.DEP    \
 $(O)pf_ucaret.DEP   \
@@ -277,6 +281,9 @@ $(O)version.DEV
 !if exist ($(O)pf_cslope.DEP)
 !       include $(O)pf_cslope.DEP
 !endif
+!if exist ($(O)pf_cstile.DEP)
+!       include $(O)pf_cstile.DEP
+!endif
 !if exist ($(O)pf_cstar.DEP)
 !       include $(O)pf_cstar.DEP
 !endif
@@ -346,11 +353,20 @@ $(O)version.DEV
 !if exist ($(O)pf_rtack.DEP)
 !       include $(O)pf_rtack.DEP
 !endif
+!if exist ($(O)pf_slash.DEP)
+!       include $(O)pf_slash.DEP
+!endif
+!if exist ($(O)pf_slope.DEP)
+!       include $(O)pf_slope.DEP
+!endif
 !if exist ($(O)pf_star.DEP)
 !       include $(O)pf_star.DEP
 !endif
 !if exist ($(O)pf_stile.DEP)
 !       include $(O)pf_stile.DEP
+!endif
+!if exist ($(O)pf_thorn.DEP)
+!       include $(O)pf_thorn.DEP
 !endif
 !if exist ($(O)pf_tilde.DEP)
 !       include $(O)pf_tilde.DEP
@@ -436,6 +452,7 @@ $(O)pf_bar.PRO      \
 $(O)pf_circle.PRO   \
 $(O)pf_comma.PRO    \
 $(O)pf_cslope.PRO   \
+$(O)pf_cstile.PRO   \
 $(O)pf_cstar.PRO    \
 $(O)pf_dcaret.PRO   \
 $(O)pf_divide.PRO   \
@@ -459,8 +476,11 @@ $(O)pf_query.PRO    \
 $(O)pf_rcaret.PRO   \
 $(O)pf_rho.PRO      \
 $(O)pf_rtack.PRO    \
+$(O)pf_slash.PRO    \
+$(O)pf_slope.PRO    \
 $(O)pf_star.PRO     \
 $(O)pf_stile.PRO    \
+$(O)pf_thorn.PRO    \
 $(O)pf_tilde.PRO    \
 $(O)pf_times.PRO    \
 $(O)pf_ucaret.PRO   \
@@ -562,6 +582,7 @@ $(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
 $(O)pf_circle.OBJ:      $(@B).C         $(PF_CIRCLE_DEP)
 $(O)pf_comma.OBJ:       $(@B).C         $(PF_COMMA_DEP)
 $(O)pf_cslope.OBJ:      $(@B).C         $(PF_CSLOPE_DEP)
+$(O)pf_cstile.OBJ:      $(@B).C         $(PF_CSTILE_DEP)
 $(O)pf_cstar.OBJ:       $(@B).C         $(PF_CSTAR_DEP)
 $(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
 $(O)pf_divide.OBJ:      $(@B).C         $(PF_DIVIDE_DEP)
@@ -585,8 +606,11 @@ $(O)pf_query.OBJ:       $(@B).C         $(PF_QUERY_DEP)
 $(O)pf_rcaret.OBJ:      $(@B).C         $(PF_RCARET_DEP)
 $(O)pf_rho.OBJ:         $(@B).C         $(PF_RHO_DEP)
 $(O)pf_rtack.OBJ:       $(@B).C         $(PF_RTACK_DEP)
+$(O)pf_slash.OBJ:       $(@B).C         $(PF_SLASH_DEP)
+$(O)pf_slope.OBJ:       $(@B).C         $(PF_SLOPE_DEP)
 $(O)pf_star.OBJ:        $(@B).C         $(PF_STAR_DEP)
 $(O)pf_stile.OBJ:       $(@B).C         $(PF_STILE_DEP)
+$(O)pf_thorn.OBJ:       $(@B).C         $(PF_THORN_DEP)
 $(O)pf_tilde.OBJ:       $(@B).C         $(PF_TILDE_DEP)
 $(O)pf_times.OBJ:       $(@B).C         $(PF_TIMES_DEP)
 $(O)pf_ucaret.OBJ:      $(@B).C         $(PF_UCARET_DEP)
@@ -666,6 +690,7 @@ OBJS=                       \
      $(O)pf_circle.OBJ      \
      $(O)pf_comma.OBJ       \
      $(O)pf_cslope.OBJ      \
+     $(O)pf_cstile.OBJ      \
      $(O)pf_cstar.OBJ       \
      $(O)pf_dcaret.OBJ      \
      $(O)pf_divide.OBJ      \
@@ -689,8 +714,11 @@ OBJS=                       \
      $(O)pf_rcaret.OBJ      \
      $(O)pf_rho.OBJ         \
      $(O)pf_rtack.OBJ       \
+     $(O)pf_slash.OBJ       \
+     $(O)pf_slope.OBJ       \
      $(O)pf_star.OBJ        \
      $(O)pf_stile.OBJ       \
+     $(O)pf_thorn.OBJ       \
      $(O)pf_tilde.OBJ       \
      $(O)pf_times.OBJ       \
      $(O)pf_ucaret.OBJ      \

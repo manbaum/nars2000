@@ -182,7 +182,7 @@ APLBOOL PrimFnMonTildeBisF
 //***************************************************************************
 //  PrimFnDydTilde_EM
 //
-//  Primitive function for dyadic Tilde (without)
+//  Primitive function for dyadic Tilde ("without")
 //***************************************************************************
 
 #ifdef DEBUG

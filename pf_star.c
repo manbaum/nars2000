@@ -68,7 +68,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecStar};
 //***************************************************************************
 //  PrimFnStar_EM
 //
-//  Primitive function for monadic and dyadic Star ("signum" and "multiplication")
+//  Primitive function for monadic and dyadic Star ("exponential" and "power")
 //***************************************************************************
 
 #ifdef DEBUG

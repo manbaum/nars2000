@@ -20,7 +20,7 @@
 //***************************************************************************
 //  PrimFnEpsilon_EM
 //
-//  Primitive function for monadic and dyadic Epsilon ("enlist" and "member")
+//  Primitive function for monadic and dyadic Epsilon ("enlist" and "member of")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -44,14 +44,14 @@ LPYYSTYPE PrimFnEpsilon_EM
         return PrimFnMonEpsilon_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydEpsilon_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnPlus_EM
+} // End PrimFnEpsilon_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
 //  PrimFnMonEpsilon_EM
 //
-//  Primitive function for monadic Epsilon (enlist)
+//  Primitive function for monadic Epsilon ("enlist")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1029,7 +1029,7 @@ void PrimFnMonEpsilonGlbCopy
 //***************************************************************************
 //  PrimFnDydEpsilon_EM
 //
-//  Primitive function for dyadic Epsilon (member)
+//  Primitive function for dyadic Epsilon ("member of")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1127,5 +1127,5 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  End of File: pf_Epsilon.c
+//  End of File: pf_epsilon.c
 //***************************************************************************

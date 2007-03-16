@@ -55,7 +55,9 @@ SIZE ClientToWindowSize
 //************************************************************************
 
 void MoveWindowPos
-    (HWND hWnd, POINT PosCtr)
+    (HWND  hWnd,
+     POINT PosCtr)
+
 {
     RECT rcWnd;
     long lWidth, lHeight;
@@ -79,7 +81,10 @@ void MoveWindowPos
 //************************************************************************
 
 void MoveWindowPosSize
-    (HWND hWnd, POINT PosCtr, SIZE Size)
+    (HWND  hWnd,
+     POINT PosCtr,
+     SIZE  Size)
+
 {
     MoveWindow (hWnd,
                 PosCtr.x - Size.cx/2,       // Left coordinate
@@ -98,8 +103,9 @@ void MoveWindowPosSize
 
 void CenterWindow
     (HWND hWnd)
+
 {
-    RECT rcWnd;
+    RECT  rcWnd;
     POINT PosCtr;
 
     GetWindowRect (GetDesktopWindow (), &rcWnd);    // Get the desktop's RECT
@@ -157,7 +163,7 @@ DWORD GetRegDword
      DWORD  dwDefVal)
 
 {
-    HKEY hKey2;
+    HKEY  hKey2;
     DWORD dwActVal = 0, // Set to known value in case stored in shorter format
           dwSize = sizeof (dwActVal);
 
@@ -193,7 +199,7 @@ QWORD GetRegQword
      QWORD  qwDefVal)
 
 {
-    HKEY hKey2;
+    HKEY  hKey2;
     QWORD qwActVal = 0; // Set to known value in case stored in shorter format
     DWORD dwSize = sizeof (qwActVal);
 
@@ -229,7 +235,7 @@ WCHAR GetRegWchar
      WCHAR  wcDefVal)
 
 {
-    HKEY hKey2;
+    HKEY  hKey2;
     WCHAR wcActVal = 0; // Set to known value in case stored in shorter format
     DWORD dwSize = sizeof (wcActVal);
 
@@ -421,7 +427,7 @@ void GetRegBinary
      LPVOID  pDefVal)
 
 {
-    HKEY hKey2;
+    HKEY  hKey2;
     DWORD dwSize = uLen;
 
     if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)

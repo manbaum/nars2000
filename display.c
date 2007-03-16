@@ -12,6 +12,7 @@
 #include "resdebug.h"
 #include "termcode.h"
 #include "externs.h"
+#include "display.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -25,22 +26,6 @@ extern int iCountGLOBAL[MAXOBJ];
 extern HANDLE ahGLOBAL[MAXOBJ];
 extern UINT auLinNumGLOBAL[MAXOBJ];
 #endif
-
-typedef enum tagFMT_TYPES
-{
-    FMT_INT = 0,        // Integer format, e.g. -1234
-    FMT_FLOAT,          // Floating ...         -1234.56
-    FMT_EXP,            // Exponential ...      -1234.0E-19
-} FMT_TYPES;
-
-typedef struct tagFMTSTR
-{
-    UCHAR       uIntDigits,     // # Integer digits in Boolean/Integer/APA/Float column,
-                                //   or # chars in Char column
-                                //   including sign, excluding leading/trailing spaces
-                uFracDigits;    // # Fractional digits in Float column
-} FMTSTR, *LPFMTSTR;
-
 
 //***************************************************************************
 //  ArrayDisplay_EM
@@ -177,23 +162,16 @@ void DisplayGlbArr
      HGLOBAL   hGlb)
 
 {
-    LPVOID    lpMem;
-    LPAPLCHAR lpaplCharStart,
-              lpwszOut;
-    APLSTYPE  aplType;
-    APLNELM   aplNELM;
-    APLRANK   aplRank;
-    LPAPLDIM  lpMemDim;
-    APLDIM    aplDimNCols,
-              aplDimNRows,
-              aplDimCol, aplDimRow;
-    APLINT    apaOff,
-              apaMul;
-    LPFMTSTR  lpFmtStr;
-    UINT      uBitMask,
-              uWidth,
-              uLen,
-              uCol;
+    LPVOID      lpMem;
+    LPAPLCHAR   lpaplCharStart;
+    APLSTYPE    aplType;
+    APLNELM     aplNELM;
+    APLRANK     aplRank;
+    LPAPLDIM    lpMemDim;
+    APLDIM      aplDimNCols,
+                aplDimNRows;
+    LPFMTHEADER lpFmtHeader;
+    LPFMTCOLSTR lpFmtColStr;
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlb);
@@ -231,582 +209,475 @@ void DisplayGlbArr
             aplDimNRows = aplNELM / aplDimNCols;
     } // End IF/ELSE
 
-    // Reserve <aplDimNCols> FMTSTRs in the output
-    lpFmtStr  = (LPFMTSTR) lpaplChar;
-    ZeroMemory (lpFmtStr, (UINT) aplDimNCols * sizeof (FMTSTR));
-    lpaplChar = lpaplCharStart = (LPAPLCHAR) &((LPFMTSTR) lpaplChar)[aplDimNCols];
+    // Define a new FMTHEAD in the output
+    ((LPFMTHEADER) lpaplChar)->lpFmtHeadUp = NULL;
+    lpFmtHeader = (LPFMTHEADER) lpaplChar;
+    lpFmtHeader->lpFmtRowUp  = NULL;
+    lpFmtHeader->lpFmtColUp  = NULL;
+    lpFmtHeader->uRows       = (UINT) aplDimNRows;
+    lpFmtHeader->uCols       = (UINT) aplDimNCols;
+    lpFmtHeader->uFmtRows    = 0;
+    lpFmtHeader->uFmtInts    = 0;
+    lpFmtHeader->uFmtFrcs    = 0;
+    lpFmtHeader->uDepth      = 0;
+
+    // Define <aplDimNCols> FMTCOLSTRs in the output
+    lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
+    lpFmtHeader->lpFmtCol1st = lpFmtColStr;
+    ZeroMemory (lpFmtColStr, (UINT) aplDimNCols * sizeof (FMTCOLSTR));
+    lpaplChar = lpaplCharStart = (LPAPLCHAR) (&lpFmtColStr[aplDimNCols]);
 
     // Loop through the array appending the formatted values (separated by L'\0')
     //   to the output vector, and accumulating the values in the appropriate
-    //   FMTSTR entry.
+    //   FMTCOLSTR & FMTROWSTR entries.
 
     // Split cases based upon the array's storage type
     switch (aplType)
     {
         case ARRAY_BOOL:
-            uBitMask = 0x01;
-
-            // Because Booleans are of constant width, run through this once
-            for (aplDimCol = 1; aplDimCol < aplDimNCols; aplDimCol++)
-                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, 2);
-
-            // No leading blank for first col if scalar or vector
-            lpFmtStr[0].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, 1 + (aplRank > 1));
-
-            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
-            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
-            {
-                *lpaplChar++ = (uBitMask & *((LPAPLBOOL) lpMem)) ? L'1' : L'0';
-                *lpaplChar++ = L'\0';
-
-                // Shift over the bit mask
-                uBitMask <<= 1;
-
-                // Check for end-of-byte
-                if (uBitMask EQ END_OF_BYTE)
-                {
-                    uBitMask = 0x01;        // Start over
-                    ((LPAPLBOOL) lpMem)++;  // Skip to next byte
-                } // End IF
-            } // End FOR/FOR
-
+////////////lpaplChar =
+            CompileArrBool    ((LPAPLBOOL)    lpMem,
+                               lpFmtHeader,
+                               NULL,
+                               lpFmtColStr,
+                               lpaplChar,
+                               aplDimNRows,
+                               aplDimNCols,
+                               aplRank,
+                               lpMemDim);
             break;
 
         case ARRAY_INT:
-            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
-            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
-            {
-                // Format the integer
-                lpaplChar =
-                FormatAplint (lpwszOut = lpaplChar,
-                              *((LPAPLINT) lpMem)++);
-                // Zap the trailing blank
-                lpaplChar[-1] = L'\0';
-
-                // Calculate the string length
-                uLen = (lpaplChar - lpwszOut) - 1;
-
-                // Add in a leading blank unless scalar/vector and 1st col
-                uLen += (aplRank > 1) || aplDimCol NE 0;
-
-                // Max the current width with the width of this number
-                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
-            } // End FOR/FOR
-
+////////////lpaplChar =
+            CompileArrInteger ((LPAPLINT)    lpMem,
+                               lpFmtHeader,
+                               NULL,
+                               lpFmtColStr,
+                               lpaplChar,
+                               aplDimNRows,
+                               aplDimNCols,
+                               aplRank,
+                               lpMemDim);
             break;
 
         case ARRAY_FLOAT:
-            // ***FIXME*** -- align the decimal points
-            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
-            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
-            {
-                // Format the integer
-                lpaplChar =
-                FormatFloat (lpwszOut = lpaplChar,
-                             *((LPAPLFLOAT) lpMem)++);
-                // Zap the trailing blank
-                lpaplChar[-1] = L'\0';
-
-                // Calculate the string length
-                uLen = (lpaplChar - lpwszOut) - 1;
-
-                // Add in a leading blank unless scalar/vector and 1st col
-                uLen += (aplRank > 1) || aplDimCol NE 0;
-
-                // Max the current width with the width of this number
-                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
-            } // End FOR/FOR
-
+////////////lpaplChar =
+            CompileArrFloat   ((LPAPLFLOAT)  lpMem,
+                               lpFmtHeader,
+                               NULL,
+                               lpFmtColStr,
+                               lpaplChar,
+                               aplDimNRows,
+                               aplDimNCols,
+                               aplRank,
+                               lpMemDim);
             break;
 
         case ARRAY_APA:
-
-#define lpAPA       ((LPAPLAPA) lpMem)
-            apaOff = lpAPA->Off;
-            apaMul = lpAPA->Mul;
-#undef  lpAPA
-
-            for (aplDimRow = uCol = 0; aplDimRow < aplDimNRows; aplDimRow++)
-            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++, uCol++)
-            {
-                // Format the integer
-                lpaplChar =
-                FormatAplint (lpwszOut = lpaplChar,
-                              apaOff + apaMul * uCol);
-                // Zap the trailing blank
-                lpaplChar[-1] = L'\0';
-
-                // Calculate the string length
-                uLen = (lpaplChar - lpwszOut) - 1;
-
-                // Add in a leading blank unless scalar/vector and 1st col
-                uLen += (aplRank > 1) || aplDimCol NE 0;
-
-                // Max the current width with the width of this number
-                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
-            } // End FOR/FOR
-
+////////////lpaplChar =
+            CompileArrAPA     ((LPAPLAPA)    lpMem,
+                               lpFmtHeader,
+                               NULL,
+                               lpFmtColStr,
+                               lpaplChar,
+                               aplDimNRows,
+                               aplDimNCols,
+                               aplRank,
+                               lpMemDim);
             break;
 
         case ARRAY_CHAR:
-            // Because Chars are of constant width, run through this once
-            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
-                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, 1);
-
-            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
-            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
-            {
-                // Copy the char
-                *lpaplChar++ = *((LPAPLCHAR) lpMem)++;
-                *lpaplChar++ = L'\0';
-            } // End FOR/FOR
-
+////////////lpaplChar =
+            CompileArrChar    ((LPAPLCHAR)   lpMem,
+                               lpFmtHeader,
+                               NULL,
+                               lpFmtColStr,
+                               lpaplChar,
+                               aplDimNRows,
+                               aplDimNCols,
+                               aplRank,
+                               lpMemDim);
             break;
 
         case ARRAY_HETERO:
+////////////lpaplChar =
+            CompileArrHetero  ((LPAPLHETERO) lpMem,
+                               lpFmtHeader,
+                               NULL,
+                               lpFmtColStr,
+                               lpaplChar,
+                               aplDimNRows,
+                               aplDimNCols,
+                               aplRank,
+                               lpMemDim);
+            break;
+
         case ARRAY_NESTED:
-            for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
-            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++, ((LPAPLHETERO) lpMem)++)
-            {
-                // Split cases based upon the ptr type
-                switch (GetPtrTypeInd (lpMem))
-                {
-                    case PTRTYPE_STCONST:
-                        // Split cases based upon the STE immediate type
-                        switch ((*(LPSYMENTRY *) lpMem)->stFlags.ImmType)
-                        {
-                            case IMMTYPE_BOOL:
-                                lpaplChar =
-                                FormatAplint (lpwszOut = lpaplChar,
-                                              (*(LPSYMENTRY *) lpMem)->stData.stBoolean);
-                                // Zap the trailing blank
-                                lpaplChar[-1] = L'\0';
-
-                                // Calculate the string length
-                                uLen = (lpaplChar - lpwszOut) - 1;
-
-                                // Add in a leading blank unless scalar/vector and 1st col
-                                uLen += (aplRank > 1) || aplDimCol NE 0;
-
-                                // Max the current width with the width of this number
-                                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
-
-                                break;
-
-                            case IMMTYPE_INT:
-                                lpaplChar =
-                                FormatAplint (lpwszOut = lpaplChar,
-                                              (*(LPSYMENTRY *) lpMem)->stData.stInteger);
-                                // Zap the trailing blank
-                                lpaplChar[-1] = L'\0';
-
-                                // Calculate the string length
-                                uLen = (lpaplChar - lpwszOut) - 1;
-
-                                // Add in a leading blank unless scalar/vector and 1st col
-                                uLen += (aplRank > 1) || aplDimCol NE 0;
-
-                                // Max the current width with the width of this number
-                                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
-
-                                break;
-
-                            case IMMTYPE_FLOAT:
-                                lpaplChar =
-                                FormatFloat (lpwszOut = lpaplChar,
-                                             (*(LPSYMENTRY *) lpMem)->stData.stFloat);
-                                // Zap the trailing blank
-                                lpaplChar[-1] = L'\0';
-
-                                // Calculate the string length
-                                uLen = (lpaplChar - lpwszOut) - 1;
-
-                                // Add in a leading blank unless scalar/vector and 1st col
-                                uLen += (aplRank > 1) || aplDimCol NE 0;
-
-                                // Max the current width with the width of this number
-                                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, uLen);
-
-                                break;
-
-                            case IMMTYPE_CHAR:
-                                // Copy the char
-                                *lpaplChar++ = (*(LPSYMENTRY *) lpMem)->stData.stChar;
-                                *lpaplChar++ = L'\0';
-
-                                // Max the current width with the width of this char
-                                lpFmtStr[aplDimCol].uIntDigits = max (lpFmtStr[aplDimCol].uIntDigits, 1);
-
-                                break;
-
-                            defstop
-                                break;
-                        } // End SWITCH
-
-                        break;
-
-                    case PTRTYPE_HGLOBAL:
-                        // ***FIXME*** -- Display HGLOBALs inline
-                        lpaplChar = (LPAPLCHAR) lpFmtStr;
-                        FormatNestedArray ((LPAPLCHAR) lpaplChar,
-                                           ClrPtrTypeIndGlb (lpMem),
-                                           TRUE);
-                        AppendLine (lpaplChar, FALSE);
-
-                        goto NORMAL_EXIT;
-
-                    defstop
-                        break;
-                } // End SWITCH
-            } // End FOR
-
+////////////lpaplChar =
+            CompileArrNested  ((LPAPLNESTED) lpMem,
+                               lpFmtHeader,
+                               NULL,
+                               lpFmtColStr,
+                               lpaplChar,
+                               aplDimNRows,
+                               aplDimNCols,
+                               aplRank,
+                               lpMemDim);
             break;
 
         defstop
             break;
     } // End SWITCH
 
-    // Start over again
-    lpaplChar = lpaplCharStart;
+    // Propogate the row & col count up the line
+    PropogateRowColCount (lpFmtHeader, lpFmtColStr, FALSE);
 
-    // Output the result at appropriate widths
-    // ***FIXME*** -- make sensitive to []PW
-    // ***FIXME*** -- handle blank lines between planes
-    // ***FIXME*** -- handle common fractional part
-    for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+    // Run through the array again processing the
+    //   output stream into lpwszTemp
+
+    // Split cases based upon the array's storage type
+    switch (aplType)
     {
-        lpwszOut  = lpwszTemp;
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_CHAR:
+        case ARRAY_APA:
+        case ARRAY_HETERO:
+////////////lpaplChar =
+            FmtArrSimple (lpFmtColStr,
+                          lpaplCharStart,
+                          lpwszTemp,
+                          aplDimNRows,
+                          aplDimNCols,
+                          aplRank,
+                          lpMemDim,
+                          TRUE);
+            break;
 
-        for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
-        {
-            // Get the # digits plus leading space
-            uWidth = lpFmtStr[aplDimCol].uIntDigits;
-            uLen = lstrlenW (lpaplChar);
+        case ARRAY_NESTED:
+////////////lpaplChar =
+            FmtArrNested (lpMem,
+                          lpFmtColStr,
+                          lpaplCharStart,
+                          lpwszTemp,
+                          aplDimNRows,
+                          aplDimNCols,
+                          TRUE);
+            break;
 
-            Assert (uLen <= uWidth);
-
-            // Fill with leading blanks
-            for (uCol = 0; uCol < (uWidth - uLen); uCol++)
-                *lpwszOut++ = L' ';
-
-            // Get the next value and right-justify it
-            //   within the given width
-            lstrcpyW (lpwszOut, lpaplChar);
-            lpwszOut  += uLen;
-            lpaplChar += (uLen + 1);
-        } // End FOR
-
-        AppendLine (lpwszTemp, FALSE);
-    } // End FOR
+        defstop
+            break;
+    } // End SWITCH
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlb); lpMem = NULL;
 } // End DisplayGlbArr
 
 
-//***************************************************************************
-//  FormatGlobal
-//
-//  Format an array given an HGLOBAL
-//***************************************************************************
+//// //***************************************************************************
+//// //  FormatGlobal
+//// //
+//// //  Format an array given an HGLOBAL
+//// //***************************************************************************
+////
+//// LPAPLCHAR FormatGlobal
+////     (LPAPLCHAR lpaplChar,
+////      HGLOBAL   hGlb)
+////
+//// {
+////     LPVOID    lpMem;
+////     UINT      u;
+////     APLSTYPE  aplType;          // The array storage type (see enum ARRAY_TYPES)
+////     APLNELM   aplNELM;          // # elements in the array
+////     APLRANK   aplRank;          // The rank of the array
+////     int       iBitIndex;
+////     LPAPLAPA  lpaplAPA;
+////
+////     // Note we don't use MyGlobalLock & MyGlobaUnlock
+////     //   as they expect the lock count to be zero
+////     //   which need not be the way our caller left it.
+////
+////     // Get ptr to global memory
+////     lpMem = GlobalLock (hGlb); Assert (lpMem NE NULL);
+////
+//// #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+////
+////     // It's an array
+////     Assert (lpHeader->Sign.ature EQ VARARRAY_HEADER_SIGNATURE);
+////
+////     // Save the Type, NELM, and Rank
+////     aplType = lpHeader->ArrType;
+////     aplNELM = lpHeader->NELM;
+////     aplRank = lpHeader->Rank;
+////
+//// #undef  lpHeader
+////
+////     // ***FIXME*** -- commented out only to display prototypes
+//// #if FALSE
+//// ////// If the array is empty and of rank > 1, there's no display
+//// ////if (aplNELM EQ 0 && aplRank > 1)
+//// ////    return lpaplChar;
+//// #endif
+////
+////     // Skip over the header
+////     lpMem = VarArrayBaseToDim (lpMem);
+////
+////     // Format the dimension and a rho symbol unless it's a scalar or vector
+////     switch (aplRank)
+////     {
+////         case 0:                         // It's a scalar
+////             break;
+////
+////         case 1:                         // It's a vector
+////             // Display only if 0 or 1 (otherwise it's
+////             //   obvious from the display)
+////             if ((*(LPAPLDIM) lpMem) > 1
+////              || aplType EQ ARRAY_APA)
+////             {
+////                 ((LPAPLDIM) lpMem)++;   // Just skip over the dimension
+////
+////                 break;
+////             } // End IF
+////
+////             // Fall through to general dimension formatting
+////
+////         default:
+////             for (u = 0; u < aplRank; u++)
+////             {
+////                 // Get and format the next dimension
+////                 lpaplChar =
+////                 FormatAplint (lpaplChar,
+////                               *((LPAPLDIM) lpMem)++);
+////             } // End FOR
+////
+////             // Delete the trailing blank
+////             lpaplChar--;
+////
+////             // Append a rho symbol
+////             *lpaplChar++ = UCS2_RHO;
+////
+////             break;
+////     } // End SWITCH
+////
+////     // Format the individual values
+////     switch (aplType)
+////     {
+////         case ARRAY_BOOL:                // lpMem -> bit values
+////             iBitIndex = 0;
+////             if (aplNELM EQ 0)           // Handle prototype
+////             {
+////                 *lpaplChar++ = L'0';
+////                 *lpaplChar++ = L' ';
+////             } else
+////             for (u = 0; u < aplNELM; u++)
+////             {
+////                 // Append either L"0 " or L"1 "
+////                 *lpaplChar++ = L'0' + (BIT0 & ((*(LPAPLBOOL) lpMem) >> iBitIndex++));
+////                 *lpaplChar++ = L' ';
+////
+////                 // Check for overflow
+////                 if (iBitIndex EQ NBIB)
+////                 {
+////                     iBitIndex = 0;
+////                     ((LPCHAR) lpMem)++;
+////                 } // End IF
+////             } // End FOR
+////
+////             break;
+////
+////         case ARRAY_INT:                 // lpMem -> APLINTs
+////             if (aplNELM EQ 0)           // Handle prototype
+////                                         // (can't happen as empty ints --> empty Booleans)
+////             {
+////                 *lpaplChar++ = L'0';
+////                 *lpaplChar++ = L' ';
+////             } else
+////             for (u = 0; u < aplNELM; u++)
+////                 lpaplChar =
+////                 FormatAplint (lpaplChar,
+////                               *((LPAPLINT) lpMem)++);
+////             break;
+////
+////         case ARRAY_CHAR:                // lpMem -> APLCHARs
+////             *lpaplChar++ = L'\'';       // Leading quote
+////
+////             if (aplNELM EQ 0)           // Handle prototype
+////                 *lpaplChar++ = L' ';
+////             else
+////             for (u = 0; u < aplNELM; u++)
+////                 lpaplChar +=
+////                 wsprintfW (lpaplChar,
+////                            L"%c",
+////                            *((LPAPLCHAR) lpMem)++);
+////             *lpaplChar++ = L'\'';       // Trailing quote
+////
+////             // Append a blank so we have something to delete
+////             //   in the code below
+////             *lpaplChar++ = L' ';
+////
+////             break;
+////
+////         case ARRAY_FLOAT:               // lpMem -> APLFLOATs
+////             if (aplNELM EQ 0)           // Handle prototype
+////                                         // (can't happen as empty floats --> empty Booleans)
+////             {
+////                 *lpaplChar++ = L'0';
+////                 *lpaplChar++ = L'.';
+////                 *lpaplChar++ = L'0';
+////                 *lpaplChar++ = L' ';
+////             } else
+////             for (u = 0; u < aplNELM; u++)
+////                 lpaplChar =
+////                 FormatFloat (lpaplChar, *((LPAPLFLOAT) lpMem)++);
+////             break;
+////
+////         case ARRAY_APA:
+////             if (aplNELM EQ 0)           // Handle prototype
+////             {
+//// ////////////////*lpaplChar++ = L'0';
+//// ////////////////*lpaplChar++ = L'+';
+//// ////////////////*lpaplChar++ = L'0';
+//// ////////////////*lpaplChar++ = UCS2_TIMES;
+////                 *lpaplChar++ = UCS2_IOTA;
+////                 *lpaplChar++ = L'0';
+////                 *lpaplChar++ = L' ';
+////             } else
+////             {
+////                 // Get ptr to APA struct
+////                 lpaplAPA = (LPAPLAPA) lpMem;
+////
+////                 // bQuadIF is APA_ON iff we're to display in APA format
+////                 if (bQuadIF EQ APA_ON)
+////                 {
+////                     // Display in APA format
+////
+////                     // If the multiplier is zero, the result is no
+////                     //   longer dependent upon the index origin.
+////                     if (lpaplAPA->Mul EQ 0)
+////                     {
+////                         if (lpaplAPA->Off NE 0)
+////                         {
+////                             lpaplChar =
+////                             FormatAplint (lpaplChar, lpaplAPA->Off);
+////
+////                             lpaplChar[-1] = '+';    // Overwriting the trailing blank
+////                         } // End IF
+////                     }else
+////                     {
+////                         APLINT aplTmp;
+////
+////                         aplTmp = bQuadIO * PrimFnMonTimesIisI (lpaplAPA->Mul, NULL);
+////
+////                         if (lpaplAPA->Off NE aplTmp)
+////                         {
+////                             lpaplChar =
+////                             FormatAplint (lpaplChar, lpaplAPA->Off - aplTmp);
+////
+////                             lpaplChar[-1] = '+';    // Overwriting the trailing blank
+////                         } // End IF
+////                     } // End IF
+////
+////                     if (lpaplAPA->Mul NE 1)
+////                     {
+////                         lpaplChar =
+////                         FormatAplint (lpaplChar, lpaplAPA->Mul);
+////
+////                         lpaplChar[-1] = UCS2_TIMES;     // Overwriting the trailing blank
+////                     } // End IF
+////
+////                     *lpaplChar++   = UCS2_IOTA;
+////
+////                     lpaplChar =
+////                     FormatAplint (lpaplChar, lpaplAPA->Len);
+////                 } else  // Display as integers
+////                     for (u = 0; u < aplNELM; u++)
+////                         lpaplChar =
+////                         FormatAplint (lpaplChar,
+////                                       lpaplAPA->Off + lpaplAPA->Mul * u);
+////             } // End IF/ELSE
+////
+////             break;
+////
+////         case ARRAY_HETERO:              // lpMem -> APLHETEROs (LPSYMENTRYs)
+////         case ARRAY_NESTED:              // lpMem -> APLNESTEDs
+////             if (aplNELM EQ 0)           // Handle prototype
+////             {
+////                 lpaplChar =
+////                 FormatNestedArray (lpaplChar, ClrPtrTypeIndGlb (lpMem), TRUE);
+////             } else
+////             for (u = 0; u < aplNELM; u++, ((LPAPLNESTED) lpMem)++)
+////             switch (GetPtrTypeInd (lpMem))
+////             {
+////                 case PTRTYPE_STCONST:
+////                     lpaplChar =
+////                     FormatSymTabConst (lpaplChar, ClrPtrTypeIndSym (lpMem));
+////
+////                     break;
+////
+////                 case PTRTYPE_HGLOBAL:
+////                     Assert (aplType EQ ARRAY_NESTED);
+////                     lpaplChar =
+////                     FormatNestedArray (lpaplChar, ClrPtrTypeIndGlb (lpMem), aplNELM EQ 1);
+////
+////                     break;
+////
+////                 defstop
+////                     break;
+////             } // End FOR/SWITCH
+////
+////             break;
+////
+////         defstop
+////             break;
+////     } // End SWITCH
+////
+////     // We no longer need this ptr
+////     GlobalUnlock (hGlb); lpMem = NULL;
+////
+////     return lpaplChar;
+//// } // End FormatGlobal
 
-LPAPLCHAR FormatGlobal
-    (LPAPLCHAR lpaplChar,
-     HGLOBAL   hGlb)
 
-{
-    LPVOID    lpMem;
-    UINT      u;
-    APLSTYPE  aplType;          // The array storage type (see enum ARRAY_TYPES)
-    APLNELM   aplNELM;          // # elements in the array
-    APLRANK   aplRank;          // The rank of the array
-    int       iBitIndex;
-    LPAPLAPA  lpaplAPA;
-
-    // Note we don't use MyGlobalLock & MyGlobaUnlock
-    //   as they expect the lock count to be zero
-    //   which need not be the way our caller left it.
-
-    // Get ptr to global memory
-    lpMem = GlobalLock (hGlb); Assert (lpMem NE NULL);
-
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
-    // It's an array
-    Assert (lpHeader->Sign.ature EQ VARARRAY_HEADER_SIGNATURE);
-
-    // Save the Type, NELM, and Rank
-    aplType = lpHeader->ArrType;
-    aplNELM = lpHeader->NELM;
-    aplRank = lpHeader->Rank;
-
-#undef  lpHeader
-
-    // ***FIXME*** -- commented out only to display prototypes
-#if FALSE
-////// If the array is empty and of rank > 1, there's no display
-////if (aplNELM EQ 0 && aplRank > 1)
-////    return lpaplChar;
-#endif
-
-    // Skip over the header
-    lpMem = VarArrayBaseToDim (lpMem);
-
-    // Format the dimension and a rho symbol unless it's a scalar or vector
-    switch (aplRank)
-    {
-        case 0:                         // It's a scalar
-            break;
-
-        case 1:                         // It's a vector
-            // Display only if 0 or 1 (otherwise it's
-            //   obvious from the display)
-            if ((*(LPAPLDIM) lpMem) > 1
-             || aplType EQ ARRAY_APA)
-            {
-                ((LPAPLDIM) lpMem)++;   // Just skip over the dimension
-
-                break;
-            } // End IF
-
-            // Fall through to general dimension formatting
-
-        default:
-            for (u = 0; u < aplRank; u++)
-            {
-                // Get and format the next dimension
-                lpaplChar =
-                FormatAplint (lpaplChar,
-                              *((LPAPLDIM) lpMem)++);
-            } // End FOR
-
-            // Delete the trailing blank
-            lpaplChar--;
-
-            // Append a rho symbol
-            *lpaplChar++ = UCS2_RHO;
-
-            break;
-    } // End SWITCH
-
-    // Format the individual values
-    switch (aplType)
-    {
-        case ARRAY_BOOL:                // lpMem -> bit values
-            iBitIndex = 0;
-            if (aplNELM EQ 0)           // Handle prototype
-            {
-                *lpaplChar++ = L'0';
-                *lpaplChar++ = L' ';
-            } else
-            for (u = 0; u < aplNELM; u++)
-            {
-                // Append either L"0 " or L"1 "
-                *lpaplChar++ = L'0' + (BIT0 & ((*(LPAPLBOOL) lpMem) >> iBitIndex++));
-                *lpaplChar++ = L' ';
-
-                // Check for overflow
-                if (iBitIndex EQ NBIB)
-                {
-                    iBitIndex = 0;
-                    ((LPCHAR) lpMem)++;
-                } // End IF
-            } // End FOR
-
-            break;
-
-        case ARRAY_INT:                 // lpMem -> APLINTs
-            if (aplNELM EQ 0)           // Handle prototype
-                                        // (can't happen as empty ints --> empty Booleans)
-            {
-                *lpaplChar++ = L'0';
-                *lpaplChar++ = L' ';
-            } else
-            for (u = 0; u < aplNELM; u++)
-                lpaplChar =
-                FormatAplint (lpaplChar,
-                              *((LPAPLINT) lpMem)++);
-            break;
-
-        case ARRAY_CHAR:                // lpMem -> APLCHARs
-            *lpaplChar++ = L'\'';       // Leading quote
-
-            if (aplNELM EQ 0)           // Handle prototype
-                *lpaplChar++ = L' ';
-            else
-            for (u = 0; u < aplNELM; u++)
-                lpaplChar +=
-                wsprintfW (lpaplChar,
-                           L"%c",
-                           *((LPAPLCHAR) lpMem)++);
-            *lpaplChar++ = L'\'';       // Trailing quote
-
-            // Append a blank so we have something to delete
-            //   in the code below
-            *lpaplChar++ = L' ';
-
-            break;
-
-        case ARRAY_FLOAT:               // lpMem -> APLFLOATs
-            if (aplNELM EQ 0)           // Handle prototype
-                                        // (can't happen as empty floats --> empty Booleans)
-            {
-                *lpaplChar++ = L'0';
-                *lpaplChar++ = L'.';
-                *lpaplChar++ = L'0';
-                *lpaplChar++ = L' ';
-            } else
-            for (u = 0; u < aplNELM; u++)
-                lpaplChar =
-                FormatFloat (lpaplChar, *((LPAPLFLOAT) lpMem)++);
-            break;
-
-        case ARRAY_APA:
-            if (aplNELM EQ 0)           // Handle prototype
-            {
-////////////////*lpaplChar++ = L'0';
-////////////////*lpaplChar++ = L'+';
-////////////////*lpaplChar++ = L'0';
-////////////////*lpaplChar++ = UCS2_TIMES;
-                *lpaplChar++ = UCS2_IOTA;
-                *lpaplChar++ = L'0';
-                *lpaplChar++ = L' ';
-            } else
-            {
-                // Get ptr to APA struct
-                lpaplAPA = (LPAPLAPA) lpMem;
-
-                // bQuadIF is APA_ON iff we're to display in APA format
-                if (bQuadIF EQ APA_ON)
-                {
-                    // Display in APA format
-
-                    // If the multiplier is zero, the result is no
-                    //   longer dependent upon the index origin.
-                    if (lpaplAPA->Mul EQ 0)
-                    {
-                        if (lpaplAPA->Off NE 0)
-                        {
-                            lpaplChar =
-                            FormatAplint (lpaplChar, lpaplAPA->Off);
-
-                            lpaplChar[-1] = '+';    // Overwriting the trailing blank
-                        } // End IF
-                    }else
-                    {
-                        APLINT aplTmp;
-
-                        aplTmp = bQuadIO * PrimFnMonTimesIisI (lpaplAPA->Mul, NULL);
-
-                        if (lpaplAPA->Off NE aplTmp)
-                        {
-                            lpaplChar =
-                            FormatAplint (lpaplChar, lpaplAPA->Off - aplTmp);
-
-                            lpaplChar[-1] = '+';    // Overwriting the trailing blank
-                        } // End IF
-                    } // End IF
-
-                    if (lpaplAPA->Mul NE 1)
-                    {
-                        lpaplChar =
-                        FormatAplint (lpaplChar, lpaplAPA->Mul);
-
-                        lpaplChar[-1] = UCS2_TIMES;     // Overwriting the trailing blank
-                    } // End IF
-
-                    *lpaplChar++   = UCS2_IOTA;
-
-                    lpaplChar =
-                    FormatAplint (lpaplChar, lpaplAPA->Len);
-                } else  // Display as integers
-                    for (u = 0; u < aplNELM; u++)
-                        lpaplChar =
-                        FormatAplint (lpaplChar,
-                                      lpaplAPA->Off + lpaplAPA->Mul * u);
-            } // End IF/ELSE
-
-            break;
-
-        case ARRAY_HETERO:              // lpMem -> APLHETEROs (LPSYMENTRYs)
-        case ARRAY_NESTED:              // lpMem -> APLNESTEDs
-            if (aplNELM EQ 0)           // Handle prototype
-            {
-                lpaplChar =
-                FormatNestedArray (lpaplChar, ClrPtrTypeIndGlb (lpMem), TRUE);
-            } else
-            for (u = 0; u < aplNELM; u++, ((LPAPLNESTED) lpMem)++)
-            switch (GetPtrTypeInd (lpMem))
-            {
-                case PTRTYPE_STCONST:
-                    lpaplChar =
-                    FormatSymTabConst (lpaplChar, ClrPtrTypeIndSym (lpMem));
-
-                    break;
-
-                case PTRTYPE_HGLOBAL:
-                    Assert (aplType EQ ARRAY_NESTED);
-                    lpaplChar =
-                    FormatNestedArray (lpaplChar, ClrPtrTypeIndGlb (lpMem), aplNELM EQ 1);
-
-                    break;
-
-                defstop
-                    break;
-            } // End FOR/SWITCH
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // We no longer need this ptr
-    GlobalUnlock (hGlb); lpMem = NULL;
-
-    return lpaplChar;
-} // End FormatGlobal
-
-
-//***************************************************************************
-//  FormatNestedArray
-//
-//  Format an element of an array as a nested element
-//***************************************************************************
-
-LPAPLCHAR FormatNestedArray
-    (LPAPLCHAR lpaplChar,
-     HGLOBAL   hGlb,
-     BOOL      bEnclose)
-
-{
-    // Append a nested array separator
-    if (bQuadDF EQ DISPLAY_PARENS)
-        *lpaplChar++ = L'(';
-    else
-    if (bQuadDF EQ DISPLAY_SPACES)
-        *lpaplChar++ = L' ';
-
-    // If asked to do so, insert an enclose
-    if (bEnclose)
-        *lpaplChar++ = UCS2_LEFTSHOE;
-
-    lpaplChar = FormatGlobal (lpaplChar, hGlb);
-
-    // Delete trailing blank, if present
-    if (lpaplChar[-1] EQ L' ')
-        *--lpaplChar = L'\0';
-
-    // Append a nested array separator
-    if (bQuadDF EQ DISPLAY_PARENS)
-        *lpaplChar++ = L')';
-    else
-    if (bQuadDF EQ DISPLAY_SPACES)
-        *lpaplChar++ = L' ';
-    *lpaplChar++ = L' ';
-
-    return lpaplChar;
-} // End FormatNestedArray
+//// //***************************************************************************
+//// //  FormatNestedArray
+//// //
+//// //  Format an element of an array as a nested element
+//// //***************************************************************************
+////
+//// LPAPLCHAR FormatNestedArray
+////     (LPAPLCHAR lpaplChar,
+////      HGLOBAL   hGlb,
+////      BOOL      bEnclose)
+////
+//// {
+////     // Append a nested array separator
+////     if (bQuadDF EQ DISPLAY_PARENS)
+////         *lpaplChar++ = L'(';
+////     else
+////     if (bQuadDF EQ DISPLAY_SPACES)
+////         *lpaplChar++ = L' ';
+////
+////     // If asked to do so, insert an enclose
+////     if (bEnclose)
+////         *lpaplChar++ = UCS2_LEFTSHOE;
+////
+////     lpaplChar = FormatGlobal (lpaplChar, hGlb);
+////
+////     // Delete trailing blank, if present
+////     if (lpaplChar[-1] EQ L' ')
+////         *--lpaplChar = L'\0';
+////
+////     // Append a nested array separator
+////     if (bQuadDF EQ DISPLAY_PARENS)
+////         *lpaplChar++ = L')';
+////     else
+////     if (bQuadDF EQ DISPLAY_SPACES)
+////         *lpaplChar++ = L' ';
+////     *lpaplChar++ = L' ';
+////
+////     return lpaplChar;
+//// } // End FormatNestedArray
 
 
 //***************************************************************************
@@ -855,12 +726,20 @@ LPAPLCHAR FormatImmed
                 case TCNUL:     // NUL
                     DbgBrk ();  // ***FINISHME***
 
+
+
+
+
+
+
+
                     break;
             } // End SWITCH
 
             lpaplChar +=
             wsprintfW (lpaplChar,
-                       L"'%c' ",
+///////////////////////L"'%c' ",
+                       L"%c ",
                        wc);
             break;
 
@@ -1083,17 +962,11 @@ LPAPLCHAR FormatSymTabConst
      LPSYMENTRY lpSymEntry)
 
 {
-    if (lpSymEntry->stFlags.Imm)
-        lpaplChar =
-        FormatImmed (lpaplChar,
-                     lpSymEntry->stFlags.ImmType,
-                     &lpSymEntry->stData.lpVoid);
-    else
-        lpaplChar =
-        FormatNestedArray (lpaplChar,
-                           ClrPtrTypeDirGlb (lpSymEntry->stData.stGlbData),
-                           FALSE);
-    return lpaplChar;
+    Assert (lpSymEntry->stFlags.Imm);
+
+    return FormatImmed (lpaplChar,
+                        lpSymEntry->stFlags.ImmType,
+                       &lpSymEntry->stData.lpVoid);
 } // End FormatSymTabConst
 
 
@@ -1980,6 +1853,8 @@ LPWCHAR DisplayFcnSub
 
 
 
+
+
             break;
 
         case TKT_FCNNAMED:
@@ -2043,8 +1918,12 @@ LPWCHAR DisplayFcnSub
 
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (hGlbData));
-
+#if TRUE
+            lstrcpyW (lpaplChar, L"TXT_AXISARRAY ");    // N.B.:  trailing blank is significant
+            lpaplChar += lstrlenW (lpaplChar);
+#else
             lpaplChar = FormatGlobal (lpaplChar, ClrPtrTypeDirGlb (hGlbData));
+#endif
             lpaplChar[-1] = L']';   // Overwrite the trailing blank
 
             break;
@@ -2062,15 +1941,29 @@ LPWCHAR DisplayFcnSub
 
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (hGlbData));
-
+#if TRUE
+            lstrcpyW (lpaplChar, L"TXT_VARARRAY ");     // N.B.:  trailing blank is significant
+            lpaplChar += lstrlenW (lpaplChar);
+#else
             lpaplChar =
               FormatGlobal (lpaplChar, ClrPtrTypeDirGlb (hGlbData));
+#endif
             lpaplChar[-1] = L'\0';  // Overwrite the trailing blank
 
             break;
 
         case TKT_VARNAMED:
             DbgBrk ();      // ***FINISHME***
+
+
+
+
+
+
+
+
+
+
 
             break;
 

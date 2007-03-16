@@ -977,9 +977,11 @@ void DrawTab
              &lpMem->DPFE[lpMem->iLabelText],
               lstrlen (&lpMem->DPFE[lpMem->iLabelText]),
               lpRect,
-              DT_SINGLELINE
+              0
+            | DT_SINGLELINE
             | DT_CENTER
-            | DT_VCENTER);
+            | DT_VCENTER
+             );
     // Restore the original value
     lpRect->right += IMAGE_WIDTH;
 
@@ -997,7 +999,8 @@ void DrawTab
                         hDC,                // Handle of the DC
                         lpRect->left,       // X-coordinate
                         lpRect->top,        // Y-...
-                        ILD_TRANSPARENT
+                        0
+                      | ILD_TRANSPARENT
                         );                  // Styles
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;

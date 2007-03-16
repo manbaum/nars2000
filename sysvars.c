@@ -1765,7 +1765,7 @@ BOOL ValidatePW_EM
     //   one-element vector (demoted to a scalar)
     //   in the range from 30 to 255, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 30, 255, &uQuadPP);
+    return ValidateInteger_EM (lptkName, lpToken, 30, 255, &uQuadPW);
 } // End ValidatePW_EM
 
 
@@ -1784,7 +1784,7 @@ BOOL ValidateRL_EM
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to (-2)+2*31, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 1, 0x7FFFFFFE, &uQuadPP);
+    return ValidateInteger_EM (lptkName, lpToken, 1, 0x7FFFFFFE, &uQuadRL);
 } // End ValidateRL_EM
 
 

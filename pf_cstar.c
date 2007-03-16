@@ -68,7 +68,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecCircleStar};
 //***************************************************************************
 //  PrimFnCircleStar_EM
 //
-//  Primitive function for monadic and dyadic CircleStar ("signum" and "multiplication")
+//  Primitive function for monadic and dyadic CircleStar ("natural logarithm" and "logarithm")
 //***************************************************************************
 
 #ifdef DEBUG

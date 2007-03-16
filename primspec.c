@@ -18,6 +18,29 @@
 
 
 //***************************************************************************
+//  PrimFnSyntaxError_EM
+//
+//  Primitive function SYNTAX ERROR
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnSyntaxError_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimFnSyntaxError_EM
+    (LPTOKEN lptkFunc)
+
+{
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End PrimFnSyntaxError_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonSyntaxError_EM
 //
 //  Primitive scalar monadic function SYNTAX ERROR
@@ -1166,8 +1189,8 @@ LPYYSTYPE PrimFnDyd_EM
                            aplRankRes,      // All values less than this
                            FALSE,           // TRUE iff scalar or one-element vector only
                            TRUE,            // TRUE iff want sorted axes
-                           FALSE,           // TRIE iff axes must be contiguous
-                           FALSE,           // TRIE iff duplicate axes are allowed
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
                            &aplNELMAxis,    // Return # elements in axis vector
@@ -1235,9 +1258,9 @@ LPYYSTYPE PrimFnDyd_EM
     if (aplTypeRes EQ ARRAY_APA)
     {
         if (aplTypeLft EQ ARRAY_APA)
-            FirstValue (lptkRhtArg, &aplInteger, NULL, NULL, NULL, NULL, NULL);
+            FirstValue (lptkRhtArg, &aplInteger, NULL, NULL, NULL, NULL, NULL, NULL);
         else
-            FirstValue (lptkLftArg, &aplInteger, NULL, NULL, NULL, NULL, NULL);
+            FirstValue (lptkLftArg, &aplInteger, NULL, NULL, NULL, NULL, NULL, NULL);
 
         if (!(*lpPrimSpec->ApaResultDyd_EM) (&YYRes[YYLclIndex],
                                               lptkFunc,
@@ -1442,7 +1465,7 @@ BOOL PrimFnDydSimpNest_EM
 
     // If the left arg is immediate, get the one and only value
     if (!lpMemLft)
-        FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL);
+        FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
     else
     {
         // Skip over the header to the dimensions
@@ -1737,7 +1760,7 @@ BOOL PrimFnDydNestSimp_EM
 
     // If the right arg is immediate, get the one and only value
     if (!lpMemRht)
-        FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL);
+        FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
     else
     {
         // Skip over the header to the dimensions
@@ -4044,8 +4067,8 @@ BOOL PrimFnDydSimpSimp_EM
             UINT     immType;
 
             // Get the respective first values
-            FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL);
-            FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL);
+            FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
+            FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
 RESTART_EXCEPTION_IMMED:
             // Get the immediate type for the token
             immType = TranslateArrayTypeToImmType (aplTypeRes);
@@ -4204,8 +4227,8 @@ RESTART_EXCEPTION_IMMED:
             lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
             // Get the respective values
-            FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL);
-            FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL);
+            FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
+            FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
 RESTART_EXCEPTION_SINGLETON:
             __try
             {
@@ -4386,9 +4409,9 @@ RESTART_EXCEPTION_SINGLETON:
 
         // Get the value of the singleton
         if (aplNELMLft EQ 1)
-            FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL);
+            FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
         else
-            FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL);
+            FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
 
         // Split cases based upon which argument is the simgleton
         if (aplNELMLft NE 1)    // Lft = Multipleton, Rht = Singleton

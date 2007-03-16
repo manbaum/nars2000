@@ -20,7 +20,7 @@
 //***************************************************************************
 //  PrimFnComma_EM
 //
-//  Primitive function for monadic and dyadic Comma (ravel/table and catenate/laminate)
+//  Primitive function for monadic and dyadic Comma ("ravel/table" and "catenate/laminate")
 //***************************************************************************
 
 LPYYSTYPE PrimFnComma_EM
@@ -45,7 +45,7 @@ LPYYSTYPE PrimFnComma_EM
 //***************************************************************************
 //  PrimFnMonComma_EM
 //
-//  Primitive function for monadic Comma (ravel/table)
+//  Primitive function for monadic Comma ("ravel/table")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -125,7 +125,7 @@ LPYYSTYPE PrimFnMonComma_EM
 //***************************************************************************
 //  PrimFnMonCommaImm_EM
 //
-//  Monadic Comma (ravel/table) on an immediate value.
+//  Monadic Comma ("ravel/table") on an immediate value.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -160,10 +160,10 @@ LPYYSTYPE PrimFnMonCommaImm_EM
         //   that the axis be an empty vector
         if (CheckAxis_EM (lptkAxis,         // The axis token
                           0,                // All values less than this
-                          FALSE,            // TRIE iff scalar or one-element vector only
-                          FALSE,            // TRIE iff want sorted axes
-                          TRUE,             // TRIE iff axes must be contiguous
-                          FALSE,            // TRIE iff duplicate axes are allowed
+                          FALSE,            // TRUE iff scalar or one-element vector only
+                          FALSE,            // TRUE iff want sorted axes
+                          TRUE,             // TRUE iff axes must be contiguous
+                          FALSE,            // TRUE iff duplicate axes are allowed
                           NULL,             // Return TRUE iff fractional values present
                           NULL,             // Return last axis value
                           NULL,             // Return # elements in axis vector
@@ -172,10 +172,10 @@ LPYYSTYPE PrimFnMonCommaImm_EM
         //   or a singleton fractional value
         if (CheckAxis_EM (lptkAxis,         // The axis token
                           1,                // All values less than this
-                          TRUE,             // TRIE iff scalar or one-element vector only
-                          FALSE,            // TRIE iff want sorted axes
-                          TRUE,             // TRIE iff axes must be contiguous
-                          FALSE,            // TRIE iff duplicate axes are allowed
+                          TRUE,             // TRUE iff scalar or one-element vector only
+                          FALSE,            // TRUE iff want sorted axes
+                          TRUE,             // TRUE iff axes must be contiguous
+                          FALSE,            // TRUE iff duplicate axes are allowed
                           &bFract,          // Return TRUE iff fractional values present
                           NULL,             // Return last axis value
                           NULL,             // Return # elements in axis vector
@@ -246,18 +246,18 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = TranslateImmTypeToArrayType (ImmType);
-////lpHeaderRes->Perm       = 0;            // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = 1;
-    lpHeaderRes->Rank       = aplRankRes;
+    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = TranslateImmTypeToArrayType (ImmType);
+////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = 1;
+    lpHeader->Rank       = aplRankRes;
 
-#undef  lpHeaderRes
+#undef  lpHeader
 
     // Fill in the result's dimension
     *(VarArrayBaseToDim (lpMemRes)) = 1;
@@ -288,7 +288,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
 //***************************************************************************
 //  PrimFnMonCommaGlb_EM
 //
-//  Monadic Comma (ravel/table) on a global memory object
+//  Monadic Comma ("ravel/table") on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
@@ -352,10 +352,10 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
             //   {iota}aplRankRht
             if (CheckAxis_EM (lptkAxis,         // The axis token
                               aplRankRht,       // All values less than this
-                              FALSE,            // TRIE iff scalar or one-element vector only
-                              FALSE,            // TRIE iff want sorted axes
-                              TRUE,             // TRIE iff axes must be contiguous
-                              FALSE,            // TRIE iff duplicate axes are allowed
+                              FALSE,            // TRUE iff scalar or one-element vector only
+                              FALSE,            // TRUE iff want sorted axes
+                              TRUE,             // TRUE iff axes must be contiguous
+                              FALSE,            // TRUE iff duplicate axes are allowed
                               NULL,             // Return TRUE iff fractional values present
                               &aplLastAxis,     // Return last axis value
                               &aplNELMAxis,     // Return # elements in axis vector
@@ -364,10 +364,10 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
             //   or a singleton fractional value
             if (CheckAxis_EM (lptkAxis,         // The axis token
                               aplRankRht + 1,   // All values less than this
-                              TRUE,             // TRIE iff scalar or one-element vector only
-                              FALSE,            // TRIE iff want sorted axes
-                              TRUE,             // TRIE iff axes must be contiguous
-                              FALSE,            // TRIE iff duplicate axes are allowed
+                              TRUE,             // TRUE iff scalar or one-element vector only
+                              FALSE,            // TRUE iff want sorted axes
+                              TRUE,             // TRUE iff axes must be contiguous
+                              FALSE,            // TRUE iff duplicate axes are allowed
                               &bFract,          // Return TRUE iff fractional values present
                               &aplLastAxis,     // Return last axis value
                               &aplNELMAxis,     // Return # elements in axis vector
@@ -878,7 +878,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  PrimFnDydComma_EM
 //
-//  Primitive function for dyadic Comma (catenate/laminate)
+//  Primitive function for dyadic Comma ("catenate/laminate")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -974,20 +974,20 @@ LPYYSTYPE PrimFnDydComma_EM
     if (aplRankLft EQ 0                         // Scalar
      && aplNELMLft NE 0                         // and non-empty
      && aplTypeLft NE ARRAY_NESTED)             // and non-nested
-        FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL        , NULL, NULL);
+        FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL        , NULL, NULL);
     else                                        // otherwise,
     if ((aplRankLft EQ 0 || aplNELMLft EQ 0)    // Scalar or empty
      && aplTypeLft EQ ARRAY_NESTED)             // and nested
-        FirstValue (lptkLftArg, NULL          , NULL        , NULL       , &lpSymGlbLft, NULL, NULL);
+        FirstValue (lptkLftArg, NULL          , NULL        , NULL       , NULL, &lpSymGlbLft, NULL, NULL);
 
     if (aplRankRht EQ 0                         // Scalar
      && aplNELMRht NE 0                         // and non-empty
      && aplTypeRht NE ARRAY_NESTED)             // and non-nested
-        FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL        , NULL, NULL);
+        FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL        , NULL, NULL);
     else                                        // otherwise,
     if ((aplRankRht EQ 0 || aplNELMRht EQ 0)    // Scalar or empty
      && aplTypeRht EQ ARRAY_NESTED)             // and nested
-        FirstValue (lptkRhtArg, NULL          , NULL        , NULL       , &lpSymGlbRht, NULL, NULL);
+        FirstValue (lptkRhtArg, NULL          , NULL        , NULL       , NULL, &lpSymGlbRht, NULL, NULL);
 
     // The rank of the result is the larger of the two args
     aplRankRes = max (aplRankLft, aplRankRht);
@@ -1002,8 +1002,8 @@ LPYYSTYPE PrimFnDydComma_EM
                               aplRankRes,       // All values less than this
                               TRUE,             // TRUE iff scalar or one-element vector only
                               FALSE,            // TRUE iff want sorted axes
-                              FALSE,            // TRIE iff axes must be contiguous
-                              FALSE,            // TRIE iff duplicate axes are allowed
+                              FALSE,            // TRUE iff axes must be contiguous
+                              FALSE,            // TRUE iff duplicate axes are allowed
                               NULL,             // Return TRUE iff fractional values present
                               &aplAxis,         // Return last axis value
                               NULL,             // Return # elements in axis vector
@@ -1014,8 +1014,8 @@ LPYYSTYPE PrimFnDydComma_EM
                               aplRankRes + 1,   // All values less than this
                               TRUE,             // TRUE iff scalar or one-element vector only
                               FALSE,            // TRUE iff want sorted axes
-                              FALSE,            // TRIE iff axes must be contiguous
-                              FALSE,            // TRIE iff duplicate axes are allowed
+                              FALSE,            // TRUE iff axes must be contiguous
+                              FALSE,            // TRUE iff duplicate axes are allowed
                               &bFract,          // Return TRUE iff fractional values present
                               &aplAxis,         // Return last axis value
                               NULL,             // Return # elements in axis vector
@@ -1027,11 +1027,12 @@ LPYYSTYPE PrimFnDydComma_EM
         } // End WHILE
     } else
     {
-        // No axis means catenate on the last dimension if Comma
+        // No axis specified:
+        //   if comma, use last dimension
         if (lptkFunc->tkData.tkChar EQ UCS2_COMMA)
             aplAxis = max (0, (APLRANKSIGN) aplRankRes - 1);
         else
-        // It's Comma-bar, so catenate on first dimension
+            // Otherwise, it's CommaBar on the first dimension
             aplAxis = 0;
     } // End IF/ELSE
 
@@ -1624,6 +1625,18 @@ LPYYSTYPE PrimFnDydComma_EM
                                 *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) *((LPAPLINT) lpMemLft)++;
                         break;
 
+                    case ARRAY_FLOAT:   // Res = FLOAT, Lft = FLOAT
+                        // If the left arg is a scalar, ...
+                        if (aplRankLft EQ 0)
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                                *((LPAPLFLOAT) lpMemRes)++ = aplFloatLft;
+                        else
+                            // Loop through the left arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
+                                *((LPAPLFLOAT) lpMemRes)++ = *((LPAPLFLOAT) lpMemLft)++;
+                        break;
+
                     case ARRAY_APA:     // Res = FLOAT, Lft = APA
                         // Loop through the left arg's trailing dimensions
                         for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
@@ -1671,6 +1684,18 @@ LPYYSTYPE PrimFnDydComma_EM
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) *((LPAPLINT) lpMemRht)++;
+                        break;
+
+                    case ARRAY_FLOAT:   // Res = FLOAT, Rht = FLOAT
+                        // If the right arg is a scalar, ...
+                        if (aplRankRht EQ 0)
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                                *((LPAPLFLOAT) lpMemRes)++ = aplFloatRht;
+                        else
+                            // Loop through the right arg's trailing dimensions
+                            for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
+                                *((LPAPLFLOAT) lpMemRes)++ = *((LPAPLFLOAT) lpMemRht)++;
                         break;
 
                     case ARRAY_APA:     // Res = FLOAT, Rht = APA

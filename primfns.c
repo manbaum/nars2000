@@ -27,8 +27,6 @@ LPPRIMFNS PrimFnsTab[256];
 
 // Primitives To Be Done                               Monadic      Dyadic
 #define PrimFnAlpha_EM              PrimFn_EM       // ERROR        ERROR
-#define PrimFnCircleBar_EM          PrimFn_EM       // Mixed        Mixed
-#define PrimFnCircleStile_EM        PrimFn_EM       // Mixed        Mixed
 #define PrimFnDelStile_EM           PrimFn_EM       // Mixed        Mixed
 #define PrimFnDeltaStile_EM         PrimFn_EM       // Mixed        Mixed
 #define PrimFnDownArrow_EM          PrimFn_EM       // ERROR        Mixed
@@ -39,12 +37,7 @@ LPPRIMFNS PrimFnsTab[256];
 #define PrimFnIotaUnderbar_EM       PrimFn_EM       // ERROR        ERROR
 #define PrimFnOmega_EM              PrimFn_EM       // ERROR        ERROR
 #define PrimFnRightShoe_EM          PrimFn_EM       // Mixed        Mixed
-#define PrimFnSlash_EM              PrimFn_EM       // ERROR        Mixed
-#define PrimFnSlashBar_EM           PrimFn_EM       // ERROR        Mixed
-#define PrimFnSlope_EM              PrimFn_EM       // ERROR        Mixed
-#define PrimFnSlopeBar_EM           PrimFn_EM       // ERROR        Mixed
 #define PrimFnSquad_EM              PrimFn_EM       // ERROR        Mixed
-#define PrimFnThorn_EM              PrimFn_EM       // Mixed        Mixed
 #define PrimFnUpArrow_EM            PrimFn_EM       // Mixed        Mixed
 #define PrimFnUpShoe_EM             PrimFn_EM       // ERROR        ERROR
 #define PrimFnUpTack_EM             PrimFn_EM       // ERROR        Mixed
@@ -53,8 +46,10 @@ LPPRIMFNS PrimFnsTab[256];
 // Primitives Done                                     Monadic      Dyadic
 /////// PrimFnBar_EM                                // Scalar       Scalar
 /////// PrimFnCircle_EM                             // Scalar       Scalar
+/////// PrimFnCircleBar_EM                          // Mixed        Mixed
 /////// PrimFnCircleSlope_EM                        // Mixed        Mixed
 /////// PrimFnCircleStar_EM                         // Scalar       Scalar
+/////// PrimFnCircleStile_EM                        // Mixed        Mixed
 /////// PrimFnComma_EM                              // Mixed        Mixed
 /////// PrimFnCommaBar_EM                           // Mixed        Mixed
 /////// PrimFnDivide_EM                             // Scalar       Scalar
@@ -78,8 +73,13 @@ LPPRIMFNS PrimFnsTab[256];
 /////// PrimFnRightCaret_EM                         // ERROR        Scalar
 /////// PrimFnRightTack_EM                          // ERROR        Mixed
 /////// PrimFnRho_EM                                // Mixed        Mixed
+/////// PrimFnSlash_EM                              // ERROR        Mixed
+/////// PrimFnSlashBar_EM                           // ERROR        Mixed
+/////// PrimFnSlope_EM                              // ERROR        Mixed
+/////// PrimFnSlopeBar_EM                           // ERROR        Mixed
 /////// PrimFnStar_EM                               // Scalar       Scalar
 /////// PrimFnStile_EM                              // Scalar       Scalar
+/////// PrimFnThorn_EM                              // Mixed        Mixed (*)
 /////// PrimFnTilde_EM                              // Scalar       Mixed (*)
 /////// PrimFnTimes_EM                              // Scalar       Scalar
 /////// PrimFnUpCaret_EM                            // ERROR        Scalar
@@ -87,6 +87,13 @@ LPPRIMFNS PrimFnsTab[256];
 /////// PrimFnUpStile_EM                            // Scalar       Scalar
 
 // (*) = Unfinished
+
+// First coordinate functions handled by common function
+#define PrimFnSlashBar_EM       PrimFnSlash_EM
+#define PrimFnSlopeBar_EM       PrimFnSlope_EM
+#define PrimFnCircleBar_EM      PrimFnCircleStile_EM
+#define PrimFnCommaBar_EM       PrimFnComma_EM
+
 
 //***************************************************************************
 //  InitPrimFns
@@ -207,7 +214,7 @@ void InitPrimFns
 ////                                                                // Alt-'{' - quote-quad
     InitPrimFn (UCS2_RIGHTTACK      , &PrimFnRightTack_EM      );   // Alt-'|' - right tack
 ////                                                                // Alt-'}' - zilde
-    InitPrimFn (UCS2_COMMABAR       , &PrimFnComma_EM          );   // Alt-'~' - comma-bar
+    InitPrimFn (UCS2_COMMABAR       , &PrimFnCommaBar_EM       );   // Alt-'~' - comma-bar
     InitPrimFn ('^'                 , &PrimFnUpCaret_EM        );
     InitPrimFn ('-'                 , &PrimFnBar_EM            );
     InitPrimFn ('+'                 , &PrimFnPlus_EM           );
@@ -1290,7 +1297,7 @@ void AttrsOfToken
     } // End SWITCH
 
     // Handle the global case
-    AttrsOfGlb (ClrPtrTypeDirGlb (hGlbData), lpaplType, lpaplNELM, lpaplRank);
+    AttrsOfGlb (ClrPtrTypeDirGlb (hGlbData), lpaplType, lpaplNELM, lpaplRank, NULL);
 } // End AttrsOfToken
 
 
@@ -1304,7 +1311,8 @@ void AttrsOfGlb
     (HGLOBAL   hGlbData,
      APLSTYPE *lpaplType,
      LPAPLNELM lpaplNELM,
-     LPAPLRANK lpaplRank)
+     LPAPLRANK lpaplRank,
+     LPAPLUINT lpaplCols)   // # cols in the array (scalar = 1) (may be NULL)
 
 {
     LPVOID  lpMem;
@@ -1319,6 +1327,17 @@ void AttrsOfGlb
     *lpaplRank = lpHeader->Rank;
 
 #undef  lpHeader
+
+    // Skip over the header to the dimensions
+    if (lpaplCols)
+    {
+        if (*lpaplRank NE 0)
+        {
+            lpMem = VarArrayBaseToDim (lpMem);
+            *lpaplCols = ((LPAPLDIM) lpMem)[*lpaplRank - 1];
+        } else
+            *lpaplCols = 1;
+    } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
@@ -1534,6 +1553,11 @@ BOOL CheckAxisGlb
 
 #undef  lpHeader
 
+    // Check the axis rank and the NELM (if singletons only)
+    if ((aplRankLcl > 1)
+     || (bSingleton && *lpaplNELM NE 1))
+        goto ERROR_EXIT;
+
     // Return the # elements
     if (lpaplNELMAxis NE NULL)
         *lpaplNELMAxis = *lpaplNELM;
@@ -1580,12 +1604,6 @@ BOOL CheckAxisGlb
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    lptkAxis);
         goto ERROR_EXIT;
-    } else
-    {
-        // Check the axis rank and the NELM (if singletons only)
-        if ((aplRankLcl > 1)
-         || (bSingleton && *lpaplNELM NE 1))
-            goto ERROR_EXIT;
     } // End IF
 
     // Lock the memory to get a ptr to the
@@ -1725,9 +1743,10 @@ BOOL CheckAxisGlb
             // Convert to origin-0
             apaOff -= bQuadIO;
 
-            // It's sufficient to check the first and
-            //   last values for validity.
-            bRet = (((apaOff + apaMul *           0 ) < (APLRANKSIGN) aplRankCmp)
+            // It's sufficient to check the length and
+            //   the first and last values for validity.
+            bRet = (apaLen EQ 0)
+                || (((apaOff + apaMul *           0 ) < (APLRANKSIGN) aplRankCmp)
                  && ((apaOff + apaMul * (apaLen - 1)) < (APLRANKSIGN) aplRankCmp));
 
             // Save the trailing axis values
@@ -2158,11 +2177,11 @@ BOOL TestDupAxis
 
     // See if this value has already been seen
     if (!bAllowDups)
-        bRet = !(uBitMask & ((LPAPLBOOL) lpDup)[aplRank / NBIB]);
+        bRet = !(uBitMask & ((LPAPLBOOL) lpDup)[aplRank >> LOG2NBIB]);
 
     // Set this value for the next time if necessary
     if (bRet || bAllowDups)
-        ((LPAPLBOOL) lpDup)[aplRank / NBIB] |= uBitMask;
+        ((LPAPLBOOL) lpDup)[aplRank >> LOG2NBIB] |= uBitMask;
 
     return bRet;
 } // End TestDupAxis
@@ -2257,13 +2276,14 @@ APLSTYPE StorageType
 //***************************************************************************
 
 void FirstValue
-    (LPTOKEN    lpToken,        // The token
-     LPAPLINT   lpaplInteger,   // Return the integer (or Boolean) (may be NULL)
-     LPAPLFLOAT lpaplFloat,     // ...        float (may be NULL)
-     LPAPLCHAR  lpaplChar,      // ...        char (may be NULL)
-     LPVOID    *lpSymGlb,       // ...        LPSYMENTRY or HGLOBAL (may be NULL)
-     LPUCHAR    lpImmType,      // ...        immediate type IMM_TYPES (may be NULL)
-     LPAPLSTYPE lpArrType)      // ...        array type -- ARRAY_TYPES (may be NULL)
+    (LPTOKEN      lpToken,      // The token
+     LPAPLINT     lpaplInteger, // Return the integer (or Boolean) (may be NULL)
+     LPAPLFLOAT   lpaplFloat,   // ...        float (may be NULL)
+     LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
+     LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
+     LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type IMM_TYPES (may be NULL)
+     LPAPLSTYPE   lpArrType)    // ...        array type -- ARRAY_TYPES (may be NULL)
 
 {
     HGLOBAL hGlbData;
@@ -2297,6 +2317,9 @@ void FirstValue
             if (lpSymGlb)
                 *lpSymGlb = NULL;
 
+            if (lpaplLongest)
+                *lpaplLongest = lpToken->tkData.lpSym->stData.stInteger;
+
             // Split cases based upon the immediate type
             switch (lpToken->tkData.lpSym->stFlags.ImmType)
             {
@@ -2308,7 +2331,6 @@ void FirstValue
                         *lpaplFloat   = (APLFLOAT) (lpToken->tkData.lpSym->stData.stBoolean);
                     if (lpaplChar)
                         *lpaplChar    = L'\0';
-
                     break;
 
                 case IMMTYPE_INT:
@@ -2319,7 +2341,6 @@ void FirstValue
                         *lpaplFloat   = (APLFLOAT) (lpToken->tkData.lpSym->stData.stInteger);
                     if (lpaplChar)
                         *lpaplChar    = L'\0';
-
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -2357,6 +2378,9 @@ void FirstValue
 
             if (lpSymGlb)
                 *lpSymGlb = NULL;
+
+            if (lpaplLongest)
+                *lpaplLongest = lpToken->tkData.tkInteger;
 
             // Split cases based upon the immediate type
             switch (lpToken->tkFlags.ImmType)
@@ -2426,6 +2450,7 @@ void FirstValue
                    lpaplInteger,
                    lpaplFloat,
                    lpaplChar,
+                   lpaplLongest,
                    lpSymGlb,
                    lpImmType,
                    lpArrType);
@@ -2442,17 +2467,21 @@ void FirstValue
 //***************************************************************************
 
 void FirstValueGlb
-    (HGLOBAL    hGlbData,       // The global memory handle
-     LPAPLINT   lpaplInteger,   // Return the integer (or Boolean) (may be NULL)
-     LPAPLFLOAT lpaplFloat,     // ...        float (may be NULL)
-     LPAPLCHAR  lpaplChar,      // ...        char (may be NULL)
-     LPVOID    *lpSymGlb,       // ...        LPSYMENTRY or HGLOBAL (may be NULL)
-     LPUCHAR    lpImmType,      // ...        immediate type IMM_TYPES (may be NULL)
-     LPAPLSTYPE lpArrType)      // ...        array type -- ARRAY_TYPES (may be NULL)
+    (HGLOBAL      hGlbData,     // The global memory handle
+     LPAPLINT     lpaplInteger, // Return the integer (or Boolean) (may be NULL)
+     LPAPLFLOAT   lpaplFloat,   // ...        float (may be NULL)
+     LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
+     LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
+     LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type IMM_TYPES (may be NULL)
+     LPAPLSTYPE   lpArrType)    // ...        array type -- ARRAY_TYPES (may be NULL)
 
 {
-    LPVOID lpMem,
-           lpData;
+    LPVOID   lpMem,
+             lpData;
+    APLINT   aplInteger;
+    APLFLOAT aplFloat;
+    APLCHAR  aplChar;
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
@@ -2465,6 +2494,7 @@ void FirstValueGlb
 
     if (lpImmType)
         *lpImmType = TranslateArrayTypeToImmType (lpHeader->ArrType);
+
     if (lpArrType)
         *lpArrType = lpHeader->ArrType;
 
@@ -2472,58 +2502,86 @@ void FirstValueGlb
     switch (lpHeader->ArrType)
     {
         case ARRAY_BOOL:
+            aplInteger = BIT0 & *(LPAPLBOOL) lpData;
+
             if (lpaplInteger)
-                *lpaplInteger = BIT0 & *(LPAPLBOOL) lpData;
+                *lpaplInteger = aplInteger;
             if (lpaplFloat)
-                *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
+                *lpaplFloat   = (APLFLOAT) aplInteger;  // ***FIXME*** -- Possible loss of precision
             if (lpaplChar)
                 *lpaplChar    = L'\0';
+            if (lpaplLongest)
+                *lpaplLongest = aplInteger;
             if (lpSymGlb)
                 *lpSymGlb = NULL;
             break;
 
         case ARRAY_INT:
+            aplInteger = *(LPAPLINT) lpData;
+
             if (lpaplInteger)
-                *lpaplInteger = *(LPAPLINT) lpData;
+                *lpaplInteger = aplInteger;
             if (lpaplFloat)
-                *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
+                *lpaplFloat   = (APLFLOAT) aplInteger;  // ***FIXME*** -- Possible loss of precision
             if (lpaplChar)
                 *lpaplChar    = L'\0';
+            if (lpaplLongest)
+                *lpaplLongest = aplInteger;
             if (lpSymGlb)
                 *lpSymGlb = NULL;
             break;
 
         case ARRAY_APA:
+            aplInteger = ((LPAPLAPA) lpData)->Off;
+
             if (lpaplInteger)
-                *lpaplInteger = ((LPAPLAPA) lpData)->Off;
+                *lpaplInteger = aplInteger;
             if (lpaplFloat)
-                *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
+                *lpaplFloat   = (APLFLOAT) aplInteger;  // ***FIXME*** -- Possible loss of precision
             if (lpaplChar)
                 *lpaplChar    = L'\0';
+            if (lpaplLongest)
+                *lpaplLongest = aplInteger;
             if (lpSymGlb)
                 *lpSymGlb = NULL;
             break;
 
         case ARRAY_FLOAT:
+            aplFloat = *(LPAPLFLOAT) lpData;
+
             if (lpaplFloat)
-                *lpaplFloat   = *(LPAPLFLOAT) lpData;
+                *lpaplFloat   = aplFloat;
             if (lpaplInteger)
-                *lpaplInteger = (APLINT) *lpaplFloat;
+                *lpaplInteger = (APLINT) aplFloat;
             if (lpaplChar)
                 *lpaplChar    = L'\0';
+            if (lpaplLongest)
+                *lpaplLongest = *(LPAPLLONGEST) &aplFloat;
             if (lpSymGlb)
                 *lpSymGlb = NULL;
             break;
 
         case ARRAY_CHAR:
+            aplChar = *(LPAPLCHAR) lpData;
+
             if (lpaplInteger)
                 *lpaplInteger = 0;
             if (lpaplFloat)
                 *lpaplFloat   = 0;
             if (lpaplChar)
-                *lpaplChar    = *(LPAPLCHAR) lpData;
+                *lpaplChar    = aplChar;
+            if (lpaplLongest)
+                *lpaplLongest = aplChar;
             if (lpSymGlb)
                 *lpSymGlb = NULL;
+            break;
+
+        case ARRAY_HETERO:
+            DbgBrk ();
+            DbgBrk ();
+
+
+
             break;
 
         case ARRAY_NESTED:
@@ -2533,6 +2591,8 @@ void FirstValueGlb
                 *lpaplFloat   = 0;
             if (lpaplChar)
                 *lpaplChar    = L'\0';
+            if (lpaplLongest)
+                *lpaplLongest = 0;
             if (lpSymGlb)
                 *lpSymGlb = *(LPAPLNESTED) lpData;
             break;

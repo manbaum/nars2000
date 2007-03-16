@@ -158,9 +158,11 @@ void InitChooseFont
 ////lpcf->hDC =                     // Only w/CF_PRINTERFONTS
     lpcf->lpLogFont  = lplf;
     lpcf->iPointSize = iPtSize * 10;// Font point size in 1/10ths
-    lpcf->Flags = CF_INITTOLOGFONTSTRUCT
+    lpcf->Flags = 0
+                | CF_INITTOLOGFONTSTRUCT
                 | CF_FORCEFONTEXIST
-                | CF_SCREENFONTS;
+                | CF_SCREENFONTS
+                  ;
 ////lpcf->rgbColors  =              // Only w/CF_EFFECTS
 ////lpcf->lCustData  =              // Only w/CF_ENABLEHOOK
 ////lpcf->lpfnHook   =              // Only w/CF_ENABLEHOOK
@@ -207,8 +209,8 @@ void CreateNewFontCom
      long        *lpcyAveChar)
 
 {
-    HDC         hDC;
-    HFONT       hFontOld;
+    HDC   hDC;
+    HFONT hFontOld;
 
     // Delete the previous handle (if any)
     if (*lphFont)
@@ -230,13 +232,21 @@ void CreateNewFontCom
     // New height
     *lpcyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
 
-    lplf->lfWidth = (lptm->tmAveCharWidth + lptm->tmMaxCharWidth) / 2;
+    // New width from TextMetrics
+    lplf->lfWidth = lptm->tmAveCharWidth;
 
     // New width (same aspect ratio as old)
     *lpcxAveChar = MulDiv (lplf->lfWidth, *lpcyAveChar, -lplf->lfHeight);
 
     lplf->lfHeight = -*lpcyAveChar;
     *lpcyAveChar = lptm->tmHeight;
+
+    // Now that we've caclulated the correct height & width,
+    //   delete the font and re-create it
+    DeleteObject (*lphFont);
+
+    // Re-create the font
+    *lphFont = MyCreateFontIndirect (lplf);
 } // End CreateNewFontCom
 
 

@@ -20,8 +20,14 @@
 //***************************************************************************
 //  PrimFnRho_EM
 //
-//  Primitive function for monadic and dyadic rho (shape and reshape)
+//  Primitive function for monadic and dyadic rho ("shape" and "reshape")
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnRho_EM"
+#else
+#define APPEND_NAME
+#endif
 
 LPYYSTYPE PrimFnRho_EM
     (LPTOKEN lptkLftArg,
@@ -33,18 +39,31 @@ LPYYSTYPE PrimFnRho_EM
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UCS2_RHO);
 
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonRho_EM             (lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydRho_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnRho_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
 //  PrimFnMonRho_EM
 //
-//  Primitive function for monadic rho (shape)
+//  Primitive function for monadic rho ("shape")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -59,18 +78,6 @@ LPYYSTYPE PrimFnMonRho_EM
      LPTOKEN lptkAxis)
 
 {
-    //***************************************************************
-    // This function is not sensitive to the axis operator,
-    //   so signal a syntax error if present
-    //***************************************************************
-
-    if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
-
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
     {
@@ -181,9 +188,6 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
 
     // Calculate the size of the result
     ByteRes = CalcArraySize (ARRAY_INT, aplRankRht, 1);
-////ByteRes = sizeof (VARARRAY_HEADER)
-////        + sizeof (APLDIM) * 1           // The result is a vector
-////        + sizeof (APLINT) * aplRankRht; // ...with this many integers
 
     // Allocate space for one dimension and <aplRankRht> integers
     // N.B.:  Conversion from aplRankRht to UINT
@@ -257,7 +261,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  PrimFnDydRho_EM
 //
-//  Primitive function for dydadic rho (reshape)
+//  Primitive function for dydadic rho ("reshape")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -293,18 +297,6 @@ LPYYSTYPE PrimFnDydRho_EM
 
     // Get new index into YYRes
     YYLclIndex = NewYYResIndex ();
-
-    //***************************************************************
-    // This function is not sensitive to the axis operator,
-    //   so signal a syntax error if present
-    //***************************************************************
-
-    if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
 
     //***************************************************************
     // Validate the left argument as a simple numeric scalar or vector
@@ -745,8 +737,8 @@ LPYYSTYPE PrimFnDydRho_EM
     // Fill in the header
     lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
-////lpHeaderRes->Perm       = 0;
-////lpHeaderRes->SysVar     = 0;
+////lpHeaderRes->Perm       = 0;        // ALready zero from GHND
+////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = aplRankRes;
@@ -1344,7 +1336,6 @@ void PrimFnDydRhoLftGlbCopyDim
             // Save the APA data
             apaOff = ((LPAPLAPA) lpDataLft)->Off;
             apaMul = ((LPAPLAPA) lpDataLft)->Mul;
-////////////apaLen = ((LPAPLAPA) lpDataLft)->Len;
 
             for (apaLen = 0; apaLen < aplNELMLft; apaLen++)
                 *lpaplDim++ = (APLDIM) (apaOff + apaMul * apaLen);

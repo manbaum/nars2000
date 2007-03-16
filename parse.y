@@ -50,7 +50,7 @@ BOOL      bRet;
     declared here in the %left list.  Similarly, operators in APL
     have long left scope, so they are declared in the %right list.
  */
-%left  ASSIGN PRIMFCN NAMEFCN GOTO
+%left  ASSIGN PRIMFCN NAMEFCN SYSFN12 GOTO
 %right NAMEOP1 OP1 NAMEOP2 OP2 JOTDOT
 
 %start Stmts
@@ -120,45 +120,57 @@ Stmt:     /* Empty */                   {DbgMsgW2 (L"%%Stmt:  <empty>");}
                                          NonceError (&$1); YYERROR;
                                         }
     | ArrExpr ASSIGN                    {DbgMsgW2 (L"%%Stmt:  " WS_UCS2_LEFTARROW L"ArrExpr");
-                                         FreeResult (&$1.tkToken);}
+                                         FreeResult (&$1.tkToken);
+                                        }
     | FcnSpec                           {DbgMsgW2 (L"%%Stmt:  FcnSpec");
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     | Op1Spec                           {DbgMsgW2 (L"%%Stmt:  Op1Spec");
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     | Op2Spec                           {DbgMsgW2 (L"%%Stmt:  Op2Spec");
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     ;
 
 NameAnyVar:
       NAMEUNK                           {DbgMsgW2 (L"%%NameAnyVar:  NAMEUNK");
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     | NAMEVAR                           {DbgMsgW2 (L"%%NameAnyVar:  NAMEVAR");
                                          $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     ;
 
 NameAnyFcn:
       NAMEUNK                           {DbgMsgW2 (L"%%NameAnyFcn:  NAMEUNK");
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     | NAMEFCN                           {DbgMsgW2 (L"%%NameAnyFcn:  NAMEFCN");
                                          $1.tkToken.tkFlags.TknType = TKT_FCNNAMED;
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     ;
 
 NameAnyOp1:
       NAMEUNK                           {DbgMsgW2 (L"%%NameAnyOp1:  NAMEUNK");
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     | NAMEOP1                           {DbgMsgW2 (L"%%NameAnyOp1:  NAMEOP1");
                                          $1.tkToken.tkFlags.TknType = TKT_OP1NAMED;
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     ;
 
 NameAnyOp2:
       NAMEUNK                           {DbgMsgW2 (L"%%NameAnyOp2:  NAMEUNK");
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     | NAMEOP2                           {DbgMsgW2 (L"%%NameAnyOp2:  NAMEOP2");
                                          $1.tkToken.tkFlags.TknType = TKT_OP2NAMED;
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     ;
 
 // Function specification
@@ -171,7 +183,8 @@ FcnSpec:
                                          FreeResult (&lpYYFcn->tkToken);
                                          if (!bRet)
                                              YYERROR;
-                                         $$ = $3;}
+                                         $$ = $3;
+                                        }
     | AxisFunc ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAny" WS_UCS2_LEFTARROW L"AxisFunc");
                                          lpYYFcn = MakeFcnStrand_EM (&$1, FCNTYPE_AXISFCN);
                                          if (!lpYYFcn)
@@ -180,7 +193,8 @@ FcnSpec:
                                          FreeResult (&lpYYFcn->tkToken);
                                          if (!bRet)
                                              YYERROR;
-                                         $$ = $3;}
+                                         $$ = $3;
+                                        }
     ;
 
 // Monadic operator specification
@@ -193,7 +207,8 @@ Op1Spec:
                                          FreeResult (&lpYYFcn->tkToken);
                                          if (!bRet)
                                              YYERROR;
-                                         $$ = $3;}
+                                         $$ = $3;
+                                        }
     | MonOpAxis ASSIGN NameAnyOp1       {DbgMsgW2 (L"%%Op1Spec:  NameAny" WS_UCS2_LEFTARROW L"MonOpAxis");
                                          lpYYFcn = MakeFcnStrand_EM (&$1, FCNTYPE_OP1);
                                          if (!lpYYFcn)
@@ -202,7 +217,8 @@ Op1Spec:
                                          FreeResult (&lpYYFcn->tkToken);
                                          if (!bRet)
                                              YYERROR;
-                                         $$ = $3;}
+                                         $$ = $3;
+                                        }
     ;
 
 // Dyadic operator specification
@@ -215,7 +231,8 @@ Op2Spec:
                                          FreeResult (&lpYYFcn->tkToken);
                                          if (!bRet)
                                              YYERROR;
-                                         $$ = $3;}
+                                         $$ = $3;
+                                        }
     ;
 
 /* Array expression */
@@ -224,16 +241,25 @@ ArrExpr:
                                          lpYYStr = MakeVarStrand_EM (&$1);
                                          if (!lpYYStr)
                                              YYERROR;
-                                         $$ = *lpYYStr;}
-    | SimpExpr                          {DbgMsgW2 (L"%%ArrExpr:  SimpExpr");
-                                         $$ = $1;}
-    | error   LeftFunc                  {DbgMsgW2 (L"%%ArrExpr:  LeftFunc error");
+                                         $$ = *lpYYStr;
+                                        }
+    | ArrExpr1                          {DbgMsgW2 (L"%%ArrExpr:  ArrExpr1");
+                                         $$ = $1;
+                                        }
+    ;
+
+/* Array expression from function */
+ArrExpr1:
+      SimpExpr                          {DbgMsgW2 (L"%%ArrExpr1:  SimpExpr");
+                                         $$ = $1;
+                                        }
+    | error   LeftFunc                  {DbgMsgW2 (L"%%ArrExpr1:  LeftFunc error");
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN);
                                          if (lpYYFcn)
                                              FreeResult (&lpYYFcn->tkToken);
                                          YYERROR;
                                         }
-    | ArrExpr LeftFunc                  {DbgMsgW2 (L"%%ArrExpr:  LeftFunc ArrExpr");
+    | ArrExpr LeftFunc                  {DbgMsgW2 (L"%%ArrExpr1:  LeftFunc ArrExpr");
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN);
                                          if (!lpYYFcn)
                                          {
@@ -245,14 +271,15 @@ ArrExpr:
                                          FreeResult (&lpYYFcn->tkToken);
                                          if (!lpYYRes)
                                              YYERROR;
-                                         $$ = *lpYYRes;}
-    | error   AxisFunc                  {DbgMsgW2 (L"%%ArrExpr:  AxisFunc error");
+                                         $$ = *lpYYRes;
+                                        }
+    | error   AxisFunc                  {DbgMsgW2 (L"%%ArrExpr1:  AxisFunc error");
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN);
                                          if (lpYYFcn)
                                              FreeResult (&lpYYFcn->tkToken);
                                          YYERROR;
                                         }
-    | ArrExpr AxisFunc                  {DbgMsgW2 (L"%%ArrExpr:  AxisFunc ArrExpr");
+    | ArrExpr AxisFunc                  {DbgMsgW2 (L"%%ArrExpr1:  AxisFunc ArrExpr");
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN);
                                          if (!lpYYFcn)
                                          {
@@ -264,15 +291,16 @@ ArrExpr:
                                          FreeResult (&lpYYFcn->tkToken);
                                          if (!lpYYRes)
                                              YYERROR;
-                                         $$ = *lpYYRes;}
-    | ArrExpr LeftFunc error            {DbgMsgW2 (L"%%ArrExpr:  error LeftFunc ArrExpr");
+                                         $$ = *lpYYRes;
+                                        }
+    | ArrExpr LeftFunc error            {DbgMsgW2 (L"%%ArrExpr1:  error LeftFunc ArrExpr");
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN);
                                          if (lpYYFcn)
                                             FreeResult (&lpYYFcn->tkToken);
                                          FreeResult (&$1.tkToken);
                                          YYERROR;
                                         }
-    | error   LeftFunc Strand           {DbgMsgW2 (L"%%ArrExpr:  Strand LeftFunc error");
+    | error   LeftFunc Strand           {DbgMsgW2 (L"%%ArrExpr1:  Strand LeftFunc error");
                                          lpYYStr = MakeVarStrand_EM (&$3);
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN);
                                          if (lpYYStr)
@@ -281,7 +309,7 @@ ArrExpr:
                                              FreeResult (&lpYYFcn->tkToken);
                                          YYERROR;
                                         }
-    | ArrExpr LeftFunc Strand           {DbgMsgW2 (L"%%ArrExpr:  Strand LeftFunc ArrExpr");
+    | ArrExpr LeftFunc Strand           {DbgMsgW2 (L"%%ArrExpr1:  Strand LeftFunc ArrExpr");
                                          lpYYStr = MakeVarStrand_EM (&$3);
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN);
                                          if (!lpYYStr)
@@ -303,15 +331,16 @@ ArrExpr:
                                          FreeResult (&lpYYStr->tkToken);
                                          if (!lpYYRes)
                                              YYERROR;
-                                         $$ = *lpYYRes;}
-    | ArrExpr AxisFunc error            {DbgMsgW2 (L"%%ArrExpr:  error AxisFunc ArrExpr");
+                                         $$ = *lpYYRes;
+                                        }
+    | ArrExpr AxisFunc error            {DbgMsgW2 (L"%%ArrExpr1:  error AxisFunc ArrExpr");
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN);
                                          if (lpYYFcn)
                                              FreeResult (&lpYYFcn->tkToken);
                                          FreeResult (&$1.tkToken);
                                          YYERROR;
                                         }
-    | error   AxisFunc Strand           {DbgMsgW2 (L"%%ArrExpr:  Strand AxisFunc error");
+    | error   AxisFunc Strand           {DbgMsgW2 (L"%%ArrExpr1:  Strand AxisFunc error");
                                          lpYYStr = MakeVarStrand_EM (&$3);
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN);
                                          if (lpYYStr)
@@ -320,7 +349,7 @@ ArrExpr:
                                              FreeResult (&lpYYFcn->tkToken);
                                          YYERROR;
                                         }
-    | ArrExpr AxisFunc Strand           {DbgMsgW2 (L"%%ArrExpr:  Strand AxisFunc ArrExpr");
+    | ArrExpr AxisFunc Strand           {DbgMsgW2 (L"%%ArrExpr1:  Strand AxisFunc ArrExpr");
                                          lpYYStr = MakeVarStrand_EM (&$3);
                                          lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN);
                                          if (!lpYYStr)
@@ -342,18 +371,27 @@ ArrExpr:
 
 /* Strand (including single names) */
 Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
-                                         ValueError (&$1); YYERROR;
+                                         ValueError (&$1);
+                                         YYERROR;
                                         }
     |             SingTokn              {DbgMsgW2 (L"%%Strand:  SingTokn -- InitVarStrand/PushVarStrand");
                                          InitVarStrand (&$1);
-                                         $$ = *PushVarStrand (&$1);}
+                                         $$ = *PushVarStrand (&$1);
+                                        }
     |         ')' ArrExpr '('           {DbgMsgW2 (L"%%Strand:  (ArrExpr) -- InitVarStrand/PushVarStrand");
                                          InitVarStrand (&$2);
-                                         $$ = *PushVarStrand (&$2);}
+                                         $$ = *PushVarStrand (&$2);
+                                        }
+    | Strand      NAMEUNK               {DbgMsgW2 (L"%%Strand:  Strand NAMEUNK");
+                                         ValueError (&$1);
+                                         YYERROR;
+                                        }
     | Strand      SingTokn              {DbgMsgW2 (L"%%Strand:  Strand SingTokn -- PushVarStrand");
-                                         $$ = *PushVarStrand (&$2);}
+                                         $$ = *PushVarStrand (&$2);
+                                        }
     | Strand  ')' ArrExpr '('           {DbgMsgW2 (L"%%Strand:  Strand (ArrExpr) -- PushVarStrand");
-                                         $$ = *PushVarStrand (&$3);}
+                                         $$ = *PushVarStrand (&$3);
+                                        }
     ;
 
 /* Simple array expression */
@@ -400,7 +438,8 @@ SimpExpr:
 /////////////////////////////////////////FreeResult (&$1.tkToken);  // DO NOT FREE:  Passed on as result
                                          $$ = $1;
                                         }
-    | ArrExpr ASSIGN   ')' ILBR NAMEVAR '(' {DbgMsgW2 (L"%%SimpExpr:  (NAMEVAR ILBR)" WS_UCS2_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN   ')' ILBR NAMEVAR '('
+                                        {DbgMsgW2 (L"%%SimpExpr:  (NAMEVAR ILBR)" WS_UCS2_LEFTARROW L"ArrExpr");
                                          $5.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
 
@@ -435,7 +474,8 @@ SimpExpr:
                                              YYERROR;
                                          $$ = $4;
                                         }
-    | ArrExpr ASSIGN LeftFunc ')' NameVals '('{DbgMsgW2 (L"%%SimpExpr:  (NameVals) LeftFunc" WS_UCS2_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN LeftFunc ')' NameVals '('
+                                        {DbgMsgW2 (L"%%SimpExpr:  (NameVals) LeftFunc" WS_UCS2_LEFTARROW L"ArrExpr");
                                          lpYYStr = MakeNameStrand_EM (&$5);
 
 
@@ -445,7 +485,8 @@ SimpExpr:
                                          FreeResult (&$3.tkToken);
                                          YYERROR;
                                         }
-    | ArrExpr ASSIGN AxisFunc ')' NameVals '('{DbgMsgW2 (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UCS2_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN AxisFunc ')' NameVals '('
+                                        {DbgMsgW2 (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UCS2_LEFTARROW L"ArrExpr");
                                          lpYYStr = MakeNameStrand_EM (&$5);
 
 
@@ -456,7 +497,8 @@ SimpExpr:
                                          FreeResult (&$3.tkToken);
                                          YYERROR;
                                         }
-    | ArrExpr ASSIGN LeftFunc ILBR NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR ILBR LeftFunc" WS_UCS2_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN LeftFunc ILBR NAMEVAR
+                                        {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR ILBR LeftFunc" WS_UCS2_LEFTARROW L"ArrExpr");
                                          $5.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
 
@@ -467,7 +509,8 @@ SimpExpr:
                                          FreeResult (&$3.tkToken);
                                          YYERROR;
                                         }
-    | ArrExpr ASSIGN AxisFunc ILBR NAMEVAR {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR ILBR AxisFunc" WS_UCS2_LEFTARROW L"ArrExpr");
+    | ArrExpr ASSIGN AxisFunc ILBR NAMEVAR
+                                        {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR ILBR AxisFunc" WS_UCS2_LEFTARROW L"ArrExpr");
                                          $5.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
 
@@ -483,7 +526,8 @@ SimpExpr:
 /* Selective specification */
 NameSpec:
       NameVars                          {DbgMsgW2 (L"%%NameSpec:  NameVars");
-                                         $$ = *MakeNameStrand_EM (&$1);}
+                                         $$ = *MakeNameStrand_EM (&$1);
+                                        }
     | NameSpec LeftFunc                 {DbgMsgW2 (L"%%NameSpec:  LeftFunc NameSpec");
 
 
@@ -535,10 +579,12 @@ NameVals:
       NAMEVAR                           {DbgMsgW2 (L"%%NameVals:  NAMEVAR");
                                          $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
                                          InitNameStrand (&$1);
-                                         $$ = *PushNameStrand (&$1);}
+                                         $$ = *PushNameStrand (&$1);
+                                        }
     | NameVals       NAMEVAR            {DbgMsgW2 (L"%%NameVals:  NameVals NAMEVAR");
                                          $2.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         $$ = *PushNameStrand (&$2);}
+                                         $$ = *PushNameStrand (&$2);
+                                        }
 ////|       ')' ILBR NAMEVAR '('        {DbgMsgW2 (L"%%NameVals:  (NAMEVAR ILBR)");
 ////                                     $3.tkToken.tkFlags.TknType = TKT_VARNAMED;
 ////
@@ -562,15 +608,19 @@ NameVars:
       NAMEVAR                           {DbgMsgW2 (L"%%NameVars:  NAMEVAR");
                                          $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
                                          InitNameStrand (&$1);
-                                         $$ = *PushNameStrand (&$1);}
+                                         $$ = *PushNameStrand (&$1);
+                                        }
     | NAMEUNK                           {DbgMsgW2 (L"%%NameVars:  NAMEUNK");
                                          InitNameStrand (&$1);
-                                         $$ = *PushNameStrand (&$1);}
+                                         $$ = *PushNameStrand (&$1);
+                                        }
     | NameVars       NAMEVAR            {DbgMsgW2 (L"%%NameVars:  NameVars NAMEVAR");
                                          $2.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         $$ = *PushNameStrand (&$2);}
+                                         $$ = *PushNameStrand (&$2);
+                                        }
     | NameVars       NAMEUNK            {DbgMsgW2 (L"%%NameVars:  NameVars NAMEUNK");
-                                         $$ = *PushNameStrand (&$2);}
+                                         $$ = *PushNameStrand (&$2);
+                                        }
     ;
 
 /* Left function expression */
@@ -580,6 +630,10 @@ LeftFunc:
                                          FreeResult (&$1.tkToken);
                                         }
     |     NAMEFCN                       {DbgMsgW2 (L"%%LeftFunc:  NAMEFCN");
+                                         $$ = *PushFcnStrand (MakeNameFcn (&$1), 1, FALSE);
+                                         FreeResult (&$1.tkToken);
+                                        }
+    |     SYSFN12                       {DbgMsgW2 (L"%%LeftFunc:  SYSFN12");
                                          $$ = *PushFcnStrand (MakeNameFcn (&$1), 1, FALSE);
                                          FreeResult (&$1.tkToken);
                                         }
@@ -786,6 +840,10 @@ RightFunc:
                                          $$ = *PushFcnStrand (MakeNameFcn (&$1), 1, FALSE);
                                          FreeResult (&$1.tkToken);
                                         }
+    |     SYSFN12                       {DbgMsgW2 (L"%%RightFunc:  SYSFN12");
+                                         $$ = *PushFcnStrand (MakeNameFcn (&$1), 1, FALSE);
+                                         FreeResult (&$1.tkToken);
+                                        }
     | '>' LeftFunc  '('                 {DbgMsgW2 (L"%%RightFunc:  (LeftFunc)");
                                          $$ = *PushFcnStrand (&$2, 1, TRUE);
                                          FreeResult (&$2.tkToken);
@@ -809,6 +867,12 @@ AxisFunc:
                                          FreeResult (&$4.tkToken);
                                         }
     | '}' ArrExpr '['  NAMEFCN          {DbgMsgW2 (L"%%AxisFunc:  NAMEFCN[ArrExpr]");
+                                         $$ = *PushFcnStrand (MakeNameFcn (&$4), 2, FALSE);
+                                               PushFcnStrand (MakeAxis    (&$2), 1, FALSE);
+                                         FreeResult (&$2.tkToken);
+                                         FreeResult (&$4.tkToken);
+                                        }
+    | '}' ArrExpr '['  SYSFN12          {DbgMsgW2 (L"%%AxisFunc:  SYSFN12[ArrExpr]");
                                          $$ = *PushFcnStrand (MakeNameFcn (&$4), 2, FALSE);
                                                PushFcnStrand (MakeAxis    (&$2), 1, FALSE);
                                          FreeResult (&$2.tkToken);
@@ -933,50 +997,61 @@ ILPAR:
                                          if (!lpYYLst)
                                             YYERROR;
                                          $$ = *lpYYLst;
-                                         }
+                                        }
     ;
 
 /* Index list, no empties */
 ILNE:
       ArrExpr ';' ArrExpr               {DbgMsgW2 (L"%%ILNE:  ArrExpr;ArrExpr");
                                          $$ = *InitList1 (&$1);
-                                         $$ = *PushList (&$$, &$3);}
+                                         $$ = *PushList (&$$, &$3);
+                                        }
     | ILNE    ';' ArrExpr               {DbgMsgW2 (L"%%ILNE:  ILNE;ArrExpr");
-                                         $$ = *PushList (&$1, &$3);}
+                                         $$ = *PushList (&$1, &$3);
+                                        }
     ;
 
 /* Index list, with empties */
 ILWE:
       /* Empty */                       {DbgMsgW2 (L"%%ILWE:  <empty>");
-                                         $$ = *InitList0 ();}
+                                         $$ = *InitList0 ();
+                                        }
     |          ArrExpr                  {DbgMsgW2 (L"%%ILWE:  ArrExpr");
-                                         $$ = *InitList1 (&$1);}
+                                         $$ = *InitList1 (&$1);
+                                        }
     | ILWE ';' ArrExpr                  {DbgMsgW2 (L"%%ILWE:  ILWE;ArrExpr");
-                                         $$ = *PushList (&$1, &$3);}
+                                         $$ = *PushList (&$1, &$3);
+                                        }
     | ILWE ';'                          {DbgMsgW2 (L"%%ILWE:  ILWE;");
-                                         $$ = *PushList (&$1, NULL);}
+                                         $$ = *PushList (&$1, NULL);
+                                        }
     ;
 
 /* A data expression which has a single token */
 SingTokn:
       CONSTANT                          {DbgMsgW2 (L"%%SingTokn:  CONSTANT");
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     | NAMEVAR                           {DbgMsgW2 (L"%%SingTokn:  NAMEVAR");
                                          $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         $$ = $1;}
+                                         $$ = $1;
+                                        }
     | USRFN0                            {DbgMsgW2 (L"%%SingTokn:  USRFN0");
                                          $1.tkToken.tkFlags.TknType = TKT_FCNNAMED;
                                          $1.tkToken.tkFlags.FcnDir  = 0;
-                                         $$ = *ExecuteFn0 (&$1);}
+                                         $$ = *ExecuteFn0 (&$1);
+                                        }
     | SYSFN0                            {DbgMsgW2 (L"%%SingTokn:  SYSFN0");
                                          $1.tkToken.tkFlags.TknType = TKT_FCNNAMED;
                                          $1.tkToken.tkFlags.FcnDir  = 1;
-                                         $$ = *ExecuteFn0 (&$1);}
+                                         $$ = *ExecuteFn0 (&$1);
+                                        }
     | STRING                            {DbgMsgW2 (L"%%SingTokn:  STRING");
                                          lpYYStr = CopyString_EM (&$1);
                                          if (!lpYYStr)
                                             YYERROR;
-                                         $$ = *lpYYStr;}
+                                         $$ = *lpYYStr;
+                                        }
     ;
 
 %%
@@ -1505,12 +1580,18 @@ int yylex
             if (gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn0)
                 return SYSFN0;
             else
-            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrFn12
-             || gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn12)
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrFn12)
             {
                 gplLocalVars.lpNext->tkFlags.TknType = TKT_FCNNAMED;
 
                 return NAMEFCN;
+            } else
+            if (gplLocalVars.lpNext->tkData.lpSym->stFlags.SysFn12)
+            {
+                gplLocalVars.lpNext->tkFlags.TknType = TKT_FCNNAMED;
+                gplLocalVars.lpNext->tkFlags.FcnDir  = 1;
+
+                return SYSFN12;
             } else
             if (gplLocalVars.lpNext->tkData.lpSym->stFlags.UsrOp1)
             {

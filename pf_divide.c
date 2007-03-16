@@ -67,7 +67,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecDivide};
 //***************************************************************************
 //  PrimFnDivide_EM
 //
-//  Primitive function for monadic and dyadic Divide ("signum" and "multiplication")
+//  Primitive function for monadic and dyadic Divide ("reciprocal" and "division")
 //***************************************************************************
 
 #ifdef DEBUG

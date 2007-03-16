@@ -1743,8 +1743,12 @@ LPYYSTYPE MakeNameFcn
     //   know the type of a name, it is arbitrarily typed
     //   as TKT_VARNAMED.  Now that we know it's a function,
     //   change its type to TKT_FCNNAMED.
-
     lpYYFcn->tkToken.tkFlags.TknType = TKT_FCNNAMED;
+
+    // If it's a System Function, mark is as direct
+    if (lpYYFcn->tkToken.tkData.lpSym->stFlags.SysFn12)
+        lpYYFcn->tkToken.tkFlags.FcnDir = 1;
+
     YYRes[YYLclIndex] = *CopyYYSTYPE_EM (lpYYFcn, FALSE);
     YYRes[YYLclIndex].lpYYFcn = NULL;
 

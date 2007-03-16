@@ -44,14 +44,14 @@ LPYYSTYPE PrimFnCircleSlope_EM
         return PrimFnMonCircleSlope_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydCircleSlope_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnPlus_EM
+} // End PrimFnCircleSlope_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
 //  PrimFnMonCircleSlope_EM
 //
-//  Primitive function for monadic CircleSlope (index generator)
+//  Primitive function for monadic CircleSlope ("transpose")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -92,6 +92,14 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+
+    // Check for list
+    if (aplTypeRht EQ ARRAY_LIST)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
 
     // Calculate space needed for the left arg
     ByteRes = (UINT) CalcArraySize (ARRAY_APA, aplRankRht, 1);
@@ -160,7 +168,7 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
 //***************************************************************************
 //  PrimFnDydCircleSlope_EM
 //
-//  Primitive function for dyadic CircleSlope (index of)
+//  Primitive function for dyadic CircleSlope ("transpose")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -229,6 +237,14 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
+    // Check for list
+    if (aplTypeRht EQ ARRAY_LIST)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -275,9 +291,41 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     // Strip out the simple scalar right argument case
     if (aplRankRht EQ 0 && IsSimpleNH (aplTypeRes))
     {
-        // Fill in the result token
-        YYRes[YYLclIndex].tkToken = *lptkRhtArg;
-        YYRes[YYLclIndex].tkToken.tkFlags.TknType = TKT_VARIMMED;
+        // Split cases based upon the right arg's token type
+        switch (lptkRhtArg->tkFlags.TknType)
+        {
+            case TKT_VARNAMED:
+                // tkData is an LPSYMENTRY
+                Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+
+                // If it's not immediate, we must look inside the array
+                if (!lptkRhtArg->tkData.lpSym->stFlags.Imm)
+                {
+                    // stData is a valid HGLOBAL variable array
+                    Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.lpSym->stData.stGlbData));
+
+                    // If we ever get here, we must have missed a type demotion
+                    DbgStop ();
+                } // End IF
+
+                // Handle the immediate case
+
+                // Fill in the result token
+                YYRes[YYLclIndex].tkToken.tkFlags.TknType  = TKT_VARIMMED;
+                YYRes[YYLclIndex].tkToken.tkFlags.ImmType  = lptkRhtArg->tkData.lpSym->stFlags.ImmType;
+                YYRes[YYLclIndex].tkToken.tkData.tkLongest = lptkRhtArg->tkData.lpSym->stData.stLongest;
+
+                break;
+
+            case TKT_VARIMMED:
+                // Fill in the result token
+                YYRes[YYLclIndex].tkToken = *lptkRhtArg;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         goto NORMAL_EXIT;
     } // End IF
@@ -464,7 +512,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
                 uBitMask = 1 << ((int) (uRht % NBIB));
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
-                *((LPAPLBOOL) lpMemRes) |= ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht / NBIB]) ? 1 : 0) << uBitIndex;
+                *((LPAPLBOOL) lpMemRes) |= ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << uBitIndex;
 
                 // Check for end-of-byte
                 if (++uBitIndex EQ NBIB)

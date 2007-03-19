@@ -688,9 +688,9 @@ LPAPLCHAR FmtArrNested
     APLDIM      aplDimRow,
                 aplDimCol;
     UINT        uCol;
-    LPWCHAR     lpw,
-                lpwszOut,
+    LPWCHAR     lpwszOut,
                 lpwszOutStart;
+    LPFMTROWSTR lpFmtRowStr;
 
     // Initialize local output string ptr
     lpwszOut = *lplpwszOut;
@@ -698,78 +698,80 @@ LPAPLCHAR FmtArrNested
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
     {
+        // Point to the FMTROWSTR
+        lpFmtRowStr = ((LPFMTROWSTR) lpaplChar);
+
 #ifdef DEBUG
         // Validate the FMTROWSTR
-        {
-            LPFMTROWSTR lpFmtRowStr = ((LPFMTROWSTR) lpaplChar);
-
-            if (lpFmtRowStr->Signature NE FMTROWSTR_SIGNATURE)
-                DbgStop ();     // We should never get here
-        }
+        if (lpFmtRowStr->Signature NE FMTROWSTR_SIGNATURE)
+            DbgStop ();     // We should never get here
 #endif
-        if (((LPFMTROWSTR) lpaplChar)->uBlank)
-            DbgBrk ();
-
         // Skip over the FMTROWSTR
         lpaplChar = (LPAPLCHAR) &((LPFMTROWSTR) lpaplChar)[1];
 
         // Save starting output string ptr
         lpwszOutStart = lpwszOut;
 
-        // Loop through the cols
-        for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++, ((LPAPLHETERO) lpMem)++)
+        // Handle non-blank rows
+        if (!lpFmtRowStr->uBlank)
         {
-            // Save starting output string ptr
-            lpwszOut = lpwszOutStart;
-
-            // Offset lpwszOut from the start by the widthof previous cols
-            for (uCol = 0; uCol < aplDimCol; uCol++)
-                lpwszOut += (lpFmtColStr[uCol].uInts
-                           + lpFmtColStr[uCol].uFrcs);
-
-            // Split cases based upon the ptr type
-            switch (GetPtrTypeInd (lpMem))
+            // Loop through the cols
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++, ((LPAPLHETERO) lpMem)++)
             {
-                case PTRTYPE_STCONST:
-                    // Split cases based upon the STE immediate type
-                    switch ((*(LPSYMENTRY *) lpMem)->stFlags.ImmType)
-                    {
-                        case IMMTYPE_BOOL:
-                        case IMMTYPE_INT:
-                        case IMMTYPE_FLOAT:
-                        case IMMTYPE_CHAR:
-                            lpaplChar =
-                            FmtArrSimple (lpFmtHeader,              // Ptr to FMTHEADER
-                                         &lpFmtColStr[aplDimCol],  // Ptr to vector of aplDimNCols FMTCOLSTRs
-                                          lpaplChar,                // Ptr to compiled input
-                                         &lpwszOut,               // Ptr to output string
-                                          1,                        // # rows in this array
-                                          1,                        // # cols in this array
-                                          aplLastDim,               // Length of last dim in result
-                                          0,                        // Rank of this array
-                                          NULL,                     // Ptr to this array's dimensions
-                                          FALSE);                   // TRUE iff raw output
-                            break;
+                // Save starting output string ptr
+                lpwszOut = lpwszOutStart;
 
-                        defstop
-                            break;
-                    } // End SWITCH
+                // Offset lpwszOut from the start by the widthof previous cols
+                for (uCol = 0; uCol < aplDimCol; uCol++)
+                    lpwszOut += (lpFmtColStr[uCol].uInts
+                               + lpFmtColStr[uCol].uFrcs);
 
-                    break;
+                // Split cases based upon the ptr type
+                switch (GetPtrTypeInd (lpMem))
+                {
+                    case PTRTYPE_STCONST:
+                        // Split cases based upon the STE immediate type
+                        switch ((*(LPSYMENTRY *) lpMem)->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:
+                            case IMMTYPE_INT:
+                            case IMMTYPE_FLOAT:
+                            case IMMTYPE_CHAR:
+                                lpaplChar =
+                                FmtArrSimple (lpFmtHeader,              // Ptr to FMTHEADER
+                                             &lpFmtColStr[aplDimCol],  // Ptr to vector of aplDimNCols FMTCOLSTRs
+                                              lpaplChar,                // Ptr to compiled input
+                                             &lpwszOut,               // Ptr to output string
+                                              1,                        // # rows in this array
+                                              1,                        // # cols in this array
+                                              aplLastDim,               // Length of last dim in result
+                                              0,                        // Rank of this array
+                                              NULL,                     // Ptr to this array's dimensions
+                                              FALSE);                   // TRUE iff raw output
+                                break;
 
-                case PTRTYPE_HGLOBAL:
-                    lpaplChar =
-                    FmtArrNestedGlb (ClrPtrTypeIndGlb (lpMem),
-                                     lpaplChar,
-                                    &lpwszOut,
-                                    &lpFmtColStr[aplDimCol],
-                                     aplLastDim);
-                    break;
+                            defstop
+                                break;
+                        } // End SWITCH
 
-                defstop
-                    break;
-            } // End SWITCH
-        } // End FOR
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        lpaplChar =
+                        FmtArrNestedGlb (ClrPtrTypeIndGlb (lpMem),
+                                         lpaplChar,
+                                        &lpwszOut,
+                                        &lpFmtColStr[aplDimCol],
+                                         aplLastDim);
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
+        } else
+            // Run through this row again
+            aplDimRow--;
 
         // If there is a trailing blank, skip over it
         if (lpFmtHeader->uFmtTrBl)
@@ -778,31 +780,28 @@ LPAPLCHAR FmtArrNested
 #else
             *lpwszOut++ = L' ';
 #endif
-////////// Skip to the next row if this is a multi-row array
-////////if (aplDimNRows > 1)
-////////    lpwszOut = lpwszOutStart + aplLastDim;
         // Skip to the next row
         lpwszOut = lpwszOutStart + aplLastDim;
 
-        // If raw output, output it
-        if (bRawOutput)
-        {
-            // Ensure properly terminated
-            *lpwszOut = L'\0';
-
-            // Output the line
-            AppendLine (lpwszTemp, FALSE);
-
-            // Reset the line start
-            lpwszOut = lpw = lpwszTemp;
-
-            // Fill the output area with all blanks
-            for (uCol = 0; uCol < aplLastDim; uCol++)
-                *lpw++ = L' ';
-
-            // Note that all nested arrays are formatted as
-            //   matrices, so there is no interdimensional spacing.
-        } // End IF
+////////// If raw output, output it
+////////if (bRawOutput)
+////////{
+////////    // Ensure properly terminated
+////////    *lpwszOut = L'\0';
+////////
+////////    // Output the line
+////////    AppendLine (lpwszTemp, FALSE);
+////////
+////////    // Reset the line start
+////////    lpwszOut = lpw = lpwszTemp;
+////////
+////////    // Fill the output area with all blanks
+////////    for (uCol = 0; uCol < aplLastDim; uCol++)
+////////        *lpw++ = L' ';
+////////
+////////    // Note that all nested arrays are formatted as
+////////    //   matrices, so there is no interdimensional spacing.
+////////} // End IF
     } // End FOR
 
     // Return the output string ptr

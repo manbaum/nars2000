@@ -163,15 +163,25 @@ void DisplayGlbArr
 
 {
     LPVOID      lpMem;
-    LPAPLCHAR   lpaplCharStart;
+    LPAPLCHAR   lpaplCharStart,
+                lpwsz;
     APLSTYPE    aplType;
     APLNELM     aplNELM;
     APLRANK     aplRank;
     LPAPLDIM    lpMemDim;
     APLDIM      aplDimNCols,
-                aplDimNRows;
+                aplDimNRows,
+                aplDimCol,
+                aplLastDim;
+    APLNELM     aplNELMRes;
     LPFMTHEADER lpFmtHeader;
     LPFMTCOLSTR lpFmtColStr;
+    UINT        uCol;
+
+#ifdef DEBUG
+    // Fill lpwszFormat with FFs so we can tell what we actually wrote
+    FillMemory (lpaplChar, 1024, 0xFF);
+#endif
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlb);
@@ -210,22 +220,44 @@ void DisplayGlbArr
     } // End IF/ELSE
 
     // Define a new FMTHEAD in the output
-    ((LPFMTHEADER) lpaplChar)->lpFmtHeadUp = NULL;
+    ZeroMemory ((LPFMTHEADER) lpaplChar, sizeof (FMTHEADER));
+////((LPFMTHEADER) lpaplChar)->lpFmtHeadUp = NULL;  // Filled in by ZeroMemory
     lpFmtHeader = (LPFMTHEADER) lpaplChar;
-    lpFmtHeader->lpFmtRowUp  = NULL;
-    lpFmtHeader->lpFmtColUp  = NULL;
+#ifdef DEBUG
+    lpFmtHeader->Signature   = FMTHEADER_SIGNATURE;
+#endif
+////lpFmtHeader->lpFmtRowUp  = NULL;                // Filled in by ZeroMemory
+////lpFmtHeader->lpFmtColUp  = NULL;                // ...
+////lpFmtHeader->lpFmtRow1st =                      // Filled in below
+////lpFmtHeader->lpFmtCol1st =                      // ...
     lpFmtHeader->uRows       = (UINT) aplDimNRows;
     lpFmtHeader->uCols       = (UINT) aplDimNCols;
-    lpFmtHeader->uFmtRows    = 0;
-    lpFmtHeader->uFmtInts    = 0;
-    lpFmtHeader->uFmtFrcs    = 0;
-    lpFmtHeader->uDepth      = 0;
+////lpFmtHeader->uFmtRows    = 0;                   // Filled in by ZeroMemory
+////lpFmtHeader->uFmtInts    = 0;                   // ...
+////lpFmtHeader->uFmtFrcs    = 0;                   // ...
+////lpFmtHeader->uFmtTrBl    = 0;                   // ...
+////lpFmtHeader->uDepth      = 0;                   // ...
 
     // Define <aplDimNCols> FMTCOLSTRs in the output
     lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
     lpFmtHeader->lpFmtCol1st = lpFmtColStr;
     ZeroMemory (lpFmtColStr, (UINT) aplDimNCols * sizeof (FMTCOLSTR));
+#ifdef DEBUG
+    {
+        APLDIM uCol;
+
+        for (uCol = 0; uCol < aplDimNCols; uCol++)
+            lpFmtColStr[uCol].Signature = FMTCOLSTR_SIGNATURE;
+    }
+#endif
+    // Skip over the FMTCOLSTRs
     lpaplChar = lpaplCharStart = (LPAPLCHAR) (&lpFmtColStr[aplDimNCols]);
+
+    // Save ptr to 1st child FMTROWSTR
+    if (aplDimNRows)
+        lpFmtHeader->lpFmtRow1st = (LPFMTROWSTR) lpaplChar;
+    else
+        lpFmtHeader->lpFmtRow1st = NULL;
 
     // Loop through the array appending the formatted values (separated by L'\0')
     //   to the output vector, and accumulating the values in the appropriate
@@ -238,7 +270,6 @@ void DisplayGlbArr
 ////////////lpaplChar =
             CompileArrBool    ((LPAPLBOOL)    lpMem,
                                lpFmtHeader,
-                               NULL,
                                lpFmtColStr,
                                lpaplChar,
                                aplDimNRows,
@@ -251,7 +282,6 @@ void DisplayGlbArr
 ////////////lpaplChar =
             CompileArrInteger ((LPAPLINT)    lpMem,
                                lpFmtHeader,
-                               NULL,
                                lpFmtColStr,
                                lpaplChar,
                                aplDimNRows,
@@ -264,7 +294,6 @@ void DisplayGlbArr
 ////////////lpaplChar =
             CompileArrFloat   ((LPAPLFLOAT)  lpMem,
                                lpFmtHeader,
-                               NULL,
                                lpFmtColStr,
                                lpaplChar,
                                aplDimNRows,
@@ -277,7 +306,6 @@ void DisplayGlbArr
 ////////////lpaplChar =
             CompileArrAPA     ((LPAPLAPA)    lpMem,
                                lpFmtHeader,
-                               NULL,
                                lpFmtColStr,
                                lpaplChar,
                                aplDimNRows,
@@ -290,7 +318,6 @@ void DisplayGlbArr
 ////////////lpaplChar =
             CompileArrChar    ((LPAPLCHAR)   lpMem,
                                lpFmtHeader,
-                               NULL,
                                lpFmtColStr,
                                lpaplChar,
                                aplDimNRows,
@@ -303,7 +330,6 @@ void DisplayGlbArr
 ////////////lpaplChar =
             CompileArrHetero  ((LPAPLHETERO) lpMem,
                                lpFmtHeader,
-                               NULL,
                                lpFmtColStr,
                                lpaplChar,
                                aplDimNRows,
@@ -316,7 +342,6 @@ void DisplayGlbArr
 ////////////lpaplChar =
             CompileArrNested  ((LPAPLNESTED) lpMem,
                                lpFmtHeader,
-                               NULL,
                                lpFmtColStr,
                                lpaplChar,
                                aplDimNRows,
@@ -330,7 +355,27 @@ void DisplayGlbArr
     } // End SWITCH
 
     // Propogate the row & col count up the line
-    PropogateRowColCount (lpFmtHeader, lpFmtColStr, FALSE);
+    PropogateRowColCount (lpFmtHeader,
+                          FALSE);
+
+    // Add up the width of each column to get the
+    //   # cols in the result
+    for (aplLastDim = aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+        aplLastDim += (lpFmtColStr[aplDimCol].uInts
+                     + lpFmtColStr[aplDimCol].uFrcs);
+    Assert (aplLastDim EQ (lpFmtHeader->uFmtInts
+                         + lpFmtHeader->uFmtFrcs
+                         + lpFmtHeader->uFmtTrBl));
+    // Calculate the NELM of the result
+    aplNELMRes = (lpFmtHeader->uFmtRows * (lpFmtHeader->uFmtInts
+                                         + lpFmtHeader->uFmtFrcs
+                                         + lpFmtHeader->uFmtTrBl));
+#ifdef PREFILL
+    // Fill the output area with all blanks
+    for (lpaplChar = lpwszTemp, aplDimCol = 0; aplDimCol < aplNELMRes; aplDimCol++)
+        *lpaplChar++ = L' ';
+#endif
+    lpaplChar = lpwszTemp;
 
     // Run through the array again processing the
     //   output stream into lpwszTemp
@@ -345,25 +390,42 @@ void DisplayGlbArr
         case ARRAY_APA:
         case ARRAY_HETERO:
 ////////////lpaplChar =
-            FmtArrSimple (lpFmtColStr,
-                          lpaplCharStart,
-                          lpwszTemp,
-                          aplDimNRows,
-                          aplDimNCols,
-                          aplRank,
-                          lpMemDim,
-                          TRUE);
+            FmtArrSimple (lpFmtHeader,              // Ptr to FMTHEADER
+                          lpFmtColStr,              // Ptr to vector of <aplDimNCols> FMTCOLSTRs
+                          lpaplCharStart,           // Ptr to compiled input
+                         &lpaplChar,                // Ptr to output string
+                          aplDimNRows,              // # rows in this array
+                          aplDimNCols,              // # cols in this array
+                          aplLastDim,               // Length of last dim in result (NULL for !bRawOutput)
+                          aplRank,                  // Rank of this array
+                          lpMemDim,                 // Ptr to this array's dimensions
+                          TRUE);                    // TRUE iff raw output
             break;
 
         case ARRAY_NESTED:
 ////////////lpaplChar =
-            FmtArrNested (lpMem,
-                          lpFmtColStr,
-                          lpaplCharStart,
-                          lpwszTemp,
-                          aplDimNRows,
-                          aplDimNCols,
-                          TRUE);
+            FmtArrNested (lpFmtHeader,              // Ptr to FMTHEADER
+                          lpMem,                    // Ptr to raw input
+                          lpFmtColStr,              // Ptr to vector of <aplDimNCols> FMTCOLSTRs
+                          lpaplCharStart,           // Ptr to compiled input
+                         &lpaplChar,                // Ptr to ptr to output string
+                          aplDimNRows,              // # rows in this array
+                          aplDimNCols,              // # cols ...
+                          aplLastDim,               // Length of last dim in result (NULL for !bRawOutput)
+                          FALSE);                   // TRUE iff raw (not {thorn}) output
+            // Loop through the formatted rows
+            for (lpwsz = lpwszTemp, uCol = 0; uCol < lpFmtHeader->uFmtRows; uCol++, lpwsz += aplLastDim)
+            {
+                WCHAR wch;
+
+                // Because AppendLine works on single zero-terminated lines,
+                //   we need to create one
+                wch = lpwsz[aplLastDim];        // Save the ending char
+                lpwsz[aplLastDim] = L'\0';      // Terminate the line
+                AppendLine (lpwsz, FALSE);      // Display the line
+                lpwsz[aplLastDim] = wch;        // restore the ending char
+            } // End FOR
+
             break;
 
         defstop

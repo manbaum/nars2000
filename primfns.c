@@ -1418,7 +1418,7 @@ BOOL CheckAxisImm
         *lplpAxisStart = *lplpAxisHead = MyGlobalLock (*lphGlbAxis);
 
         // Point to the start of the trailing axes
-        lpAxisTail = lplpAxisHead[aplRankCmp - *lpaplNELM];
+        lpAxisTail = &(*lplpAxisHead)[aplRankCmp - *lpaplNELM];
     } // End IF
 
     // Split cases based upon the immediate axis type

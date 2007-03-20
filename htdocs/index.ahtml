@@ -328,21 +328,22 @@ ul, ol
         <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
           Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
           respectively</li>
+        <li>Monadic left shoe ({enclose}) (enclose) with and without axis</li>
+        <li>Monadic iota ({iota}) (index generator)</li>
+        <li>Monadic epsilon ({epsilon}) (enlist)</li>
+        <li>Monadic format ({thorn}) (default format)</li>
+        <li>Dyadic slash ({/}) (replicate)</li>
+        <li>Dyadic slope ({\}) (expand)</li>
         <li>Monadic and dyadic rho ({rho}) (shape and reshape)</li>
         <li>Monadic and dyadic comma ({comma} and
           <span class="APL">,[X]</span> and {commabar})
           (ravel/table and catenate/laminate) with and without axis</li>
-        <li>Monadic left shoe ({enclose}) (enclose) with and without axis</li>
-        <li>Monadic iota ({iota}) (index generator)</li>
-        <li>Monadic epsilon ({epsilon}) (enlist)</li>
         <li>Monadic and dyadic equal-underbar ({equalunderbar}) (depth and match)</li>
+        <li>Dyadic left ({lev}) and right ({dex})</li>
         <li>Monadic and dyadic circle-slope ({circleslope}) (transpose)</li>
         <li>Monadic and dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse and rotate)</li>
         <li>Monadic and dyadic domino ({domino}) (matrix inverse and matrix divide)
           using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
-        <li>Dyadic slash ({/}) (replicate)</li>
-        <li>Dyadic slope ({\}) (expand)</li>
-        <li>Dyadic left ({lev}) and right ({dex})</li>
       </ul>
 
       <h3>Miscellaneous</h3>

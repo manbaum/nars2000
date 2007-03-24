@@ -1,5 +1,5 @@
 //****************************************************************************
-//  NARS2000 -- Common Prototypes
+//	NARS2000 -- Common Prototypes
 //****************************************************************************
 
 #ifndef COMPRO_INCLUDED
@@ -49,6 +49,7 @@
 #include "pf_rtack.pro"
 #include "pf_slash.pro"
 #include "pf_slope.pro"
+#include "pf_squad.pro"
 #include "pf_star.pro"
 #include "pf_stile.pro"
 #include "pf_thorn.pro"
@@ -77,5 +78,5 @@
 #endif
 
 //***************************************************************************
-//  End of File: compro.h
+//	End of File: compro.h
 //***************************************************************************

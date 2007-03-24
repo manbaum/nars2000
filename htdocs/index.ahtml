@@ -47,9 +47,9 @@ h4
   font-weight: bold;
   background-color: inherit;
 }
-p, dl
+p
 {
-  padding: 0.25em 0 0 0.5em;
+  padding: 0.25em 0 0.50em 0.5em;
   margin: 0;
 }
 
@@ -232,9 +232,11 @@ ul, ol
               <li>Function/operator assignment (e.g.,
                 <span class="APL">F{is}+.{times}</span>, or
                 <span class="APL">F{is}{jot}</span>)</li>
-
               <li>Sink (monadic {is}<span class="APL">A</span>
                 to suppress the display of <span class="APL">A</span>)</li>
+              <li>Generalized indexing such that <span class="APL">L[R]</span> allows both Reach and Scatter indexing</li>
+              <li>Dyadic operator jot ({jot}) (composition)</li>
+              <li>Axis operator to Ravel can transpose coordinates (e.g., <span class="APL">,[2 1] R</span> vs. <span class="APL">,[1 2] R</span>)</li>
             </ul>
           </li>
 
@@ -334,11 +336,13 @@ ul, ol
         <li>Monadic thorn ({thorn}) (default format)</li>
         <li>Dyadic slash ({/}) (replicate)</li>
         <li>Dyadic slope ({\}) (expand)</li>
-        <li>Dyadic left ({lev}) and right ({dex})</li>
+        <li>Dyadic left tack ({lev}) (left) and right tack ({dex}) (right)</li>
+        <li>Dyadic squad ({squad}) (indexing)</li>
+        <li>Dyadic right shoe ({pick}) (pick)</li>
         <li>Monadic and dyadic rho ({rho}) (shape and reshape)</li>
         <li>Monadic and dyadic comma ({comma} and
           <span class="APL">,[X]</span> and {commabar})
-          (ravel/table and catenate/laminate) with and without axis</li>
+          (ravel/table and catenate/laminate) with and without axis &mdash; Axis operator to Ravel can transpose coordinates</li>
         <li>Monadic and dyadic equal-underbar ({equalunderbar}) (depth and match)</li>
         <li>Monadic and dyadic circle-slope ({circleslope}) (transpose)</li>
         <li>Monadic and dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse and rotate)</li>
@@ -348,13 +352,16 @@ ul, ol
 
       <h3>Primitive operators</h3>
       <ul>
-        <li>Dyadic jot ({jot}) (composition)</li>
+        <li>Dyadic operator jot ({jot}) (composition)</li>
       </ul>
 
       <h3>Miscellaneous</h3>
       <ul>
         <li>Strands, e.g., <span class="APL">(1 2 3) 'abcd' ({iota}4)</span></li>
         <li>Strand Assignment, e.g., <span class="APL">(a b c d){is}{iota}4</span></li>
+        <li>Raw output</li>
+        <li>Generalized indexing such that <span class="APL">L[R]</span> allows both Reach and Scatter indexing</li>
+        <li>Quad and Quote-Quad output (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
       </ul>
 
       <h3>Session Manager</h3>

@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+		 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -7,8 +7,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <meta name="Braces2APL" content="font" />
   <link rel="stylesheet"
-        href="http://www.sudleyplace.com/styles/common.css"
-        type="text/css" />
+		href="http://www.sudleyplace.com/styles/common.css"
+		type="text/css" />
   <style type="text/css">
 body
 {
@@ -74,11 +74,11 @@ ul, ol
   font-variant:  small-caps;
   background:  black;
   color:  white;
-  text-decoration:  none;
+  text-decoration:	none;
 }
 .menu a:hover
 {
-  text-decoration:  underline;
+  text-decoration:	underline;
 }
 .pagetable tr
 {
@@ -126,7 +126,7 @@ ul, ol
 }
 .APL
 {
-  font-family:  "APL385 Unicode";
+  font-family:	"APL385 Unicode";
 }
   </style>
 </head>
@@ -135,8 +135,8 @@ ul, ol
 
 <div class="title">
 <img src="/art/NARS-Title.jpg"
-     alt="NARS2000: An Experimental APL Interpreter"
-     title="Last Changed <!--#echo var='LAST_MODIFIED' -->" />
+	 alt="NARS2000: An Experimental APL Interpreter"
+	 title="Last Changed <!--#echo var='LAST_MODIFIED' -->" />
 </div>
 
 <div class="menu">&nbsp;&nbsp;
@@ -153,396 +153,413 @@ ul, ol
 <table class="pagetable" summary="">
 <tr>
   <td class="pagecolumn1">
-    <h4>On this page:</h4>
+	<h4>On this page:</h4>
 
-    <ul class="bookmarks">
-      <li><a href="#Introduction">Introduction</a></li>
-      <li><a href="#Language_Features">Language Features</a></li>
-      <li><a href="#Datatypes">Datatypes</a></li>
-      <li><a href="#Miscellaneous">Miscellaneous</a></li>
-      <li><a href="#Currently_Implemented">Available Features</a></li>
-      <li><a href="#Platforms">Platforms</a></li>
-      <li><a href="#Documentation">Documentation</a></li>
-      <li><a href="#What_It_Isnt">What It Isn't</a></li>
-      <li><a href="#Get_The_Code">Get The Code</a></li>
-      <li><a href="#If_You_Want_To_Help">If You Want To Help</a></li>
-      <li><a href="#Discussion_Forums">Discussion Forums</a></li>
-      <li><a href="#Author">Author</a></li>
-    </ul>
+	<ul class="bookmarks">
+	  <li><a href="#Introduction">Introduction</a></li>
+	  <li><a href="#Language_Features">Language Features</a></li>
+	  <li><a href="#Datatypes">Datatypes</a></li>
+	  <li><a href="#Miscellaneous">Miscellaneous</a></li>
+	  <li><a href="#Currently_Implemented">Available Features</a></li>
+	  <li><a href="#Platforms">Platforms</a></li>
+	  <li><a href="#Documentation">Documentation</a></li>
+	  <li><a href="#What_It_Isnt">What It Isn't</a></li>
+	  <li><a href="#Get_The_Code">Get The Code</a></li>
+	  <li><a href="#If_You_Want_To_Help">If You Want To Help</a></li>
+	  <li><a href="#Discussion_Forums">Discussion Forums</a></li>
+	  <li><a href="#Author">Author</a></li>
+	</ul>
 
-    <br />
-    <br />
-    <br />
+	<br />
+	<br />
+	<br />
 
-    <script type="text/javascript">
-      <!--
-      google_ad_client = "pub-5069729984191471";
-      google_ad_width = 120;
-      google_ad_height = 600;
-      google_ad_format = "120x600_as";
-      google_color_border = "000000";
-      //-->
-    </script>
-    <div style="margin-left:  1em;">
-    <script type="text/javascript"
-            src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
-    </script>
-    </div>
+	<script type="text/javascript">
+	  <!--
+	  google_ad_client = "pub-5069729984191471";
+	  google_ad_width = 120;
+	  google_ad_height = 600;
+	  google_ad_format = "120x600_as";
+	  google_color_border = "000000";
+	  //-->
+	</script>
+	<div style="margin-left:  1em;">
+	<script type="text/javascript"
+			src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+	</script>
+	</div>
   </td>
 
   <td class="pagecolumn2">
-    <div class="section">
-      <h2 id="Introduction">Introduction</h2>
+	<div class="section">
+	  <h2 id="Introduction">Introduction</h2>
 
-      <p>The first NARS (Nested Arrays Research System) was designed and
-        implemented around 1980 as a testbed for new ideas in APL,
-        principally with nested arrays.  A quarter of a century later, it's time
-        to try again.</p>
+	  <p>The first NARS (Nested Arrays Research System) was designed and
+		implemented around 1980 as a testbed for new ideas in APL,
+		principally with nested arrays.  A quarter of a century later, it's time
+		to try again.</p>
 
-      <p>The goal of this effort, as with the last one, is to foster
-        new ideas about the language and its implementation.</p>
+	  <p>The goal of this effort, as with the last one, is to foster
+		new ideas about the language and its implementation.</p>
 
-      <p>Language ideas include new functions, operators, and
-        datatypes.  To aid in getting your ideas into an implementation,
-        there will be a mechanism for telling NARS that a user-defined
-        APL function represents a new primitive function,
-        operator, or datatype.  In order to experiment with your
-        ideas for new extensions, all you need to know is how to write
-        APL programs.</p>
+	  <p>Language ideas include new functions, operators, and
+		datatypes.	To aid in getting your ideas into an implementation,
+		there will be a mechanism for telling NARS that a user-defined
+		APL function represents a new primitive function,
+		operator, or datatype.	In order to experiment with your
+		ideas for new extensions, all you need to know is how to write
+		APL programs.</p>
 
-      <p>Implementation ideas include algorithms to enhance
-        code space (smaller executable), time space (faster execution
-        times), or expressibility (clearer and better understood code).
-        A goal of the existing implementation is to be open
-        and easy for others to change, so that new ideas can be inserted
-        smoothly.</p>
-    </div>
+	  <p>Implementation ideas include algorithms to enhance
+		code space (smaller executable), time space (faster execution
+		times), or expressibility (clearer and better understood code).
+		A goal of the existing implementation is to be open
+		and easy for others to change, so that new ideas can be inserted
+		smoothly.</p>
 
-    <div class="section">
-      <h2 id="Language_Features">Language Features</h2>
+	  <p>Moreover, this project is made available as
+		<a class="linkleft" href="http://www.gnu.org/philosophy/free-sw.html">Free Software</a> (as opposed to
+		<a class="linkleft" href="http://www.gnu.org/philosophy/open-source-misses-the-point.html">Open Source</a>)
+		so, among other things, any developer may pick it up and add new features, and any end user
+		may use it free of charge.</p>
+	</div>
 
-      <h3>Current Feature Set</h3>
-        <ul>
-          <li>ISO/IEC 13751 Extended APL Compliant</li>
+	<div class="section">
+	  <h2 id="Language_Features">Language Features</h2>
 
-          <li>Consistent Extensions
-            <ul>
-              <li>Composite assignment (e.g.,
-                <span class="APL">A+{is}1</span>)</li>
-              <li>Function/operator assignment (e.g.,
-                <span class="APL">F{is}+.{times}</span>, or
-                <span class="APL">F{is}{jot}</span>)</li>
-              <li>Sink (monadic {is}<span class="APL">A</span>
-                to suppress the display of <span class="APL">A</span>)</li>
-              <li>Generalized indexing such that <span class="APL">L[R]</span> allows both Reach and Scatter indexing</li>
-              <li>Dyadic operator jot ({jot}) (composition)</li>
-              <li>Axis operator to Ravel can transpose coordinates (e.g., <span class="APL">,[2 1] R</span> vs. <span class="APL">,[1 2] R</span>)</li>
-            </ul>
-          </li>
+	  <h3>Current Feature Set</h3>
+		<ul>
+		  <li>ISO/IEC 13751 Extended APL Compliant</li>
 
-          <li>Optional Facilities
-            <ul>
-              <li>Diamond ({diamond}) as a statement separator</li>
-            </ul>
-          </li>
-        </ul>
+		  <li>Consistent Extensions to ISO/IEC 13751
+			<ul>
+			  <li>Composite assignment (e.g.,
+				<span class="APL">A+{is}1</span>)</li>
+			  <li>Function/operator assignment (e.g.,
+				<span class="APL">F{is}+.{times}</span>, or
+				<span class="APL">F{is}{jot}</span>)</li>
+			  <li>Sink (monadic {is}<span class="APL">A</span>
+				to suppress the display of <span class="APL">A</span>)</li>
+			  <li>Generalized indexing such that <span class="APL">R[L]</span>
+				allows both Reach and Scatter indexing &mdash; that is, if
+				<span class="APL">L{pick}R</span> is valid, it is equivalent to
+				<span class="APL">{disclose}R[{enclose}L]</span>, and if
+				<span class="APL">L{squad}R</span> is valid, it is equivalent to
+				<span class="APL">R[{disclose}{jot}.,/L]</span></li>
+			  <li>Dyadic operator jot ({jot}) (composition)</li>
+			  <li>Axis operator to Ravel can transpose coordinates (e.g.,
+				<span class="APL">,[2 1] R {is}/{goto} ,[1 2] R</span>)</li>
+			</ul>
+		  </li>
 
-      <h3>Possible Future Feature Set</h3>
-        <ul>
-          <li>User-defined operators (e.g., <span class="APL">{del}
-           (Z1 Z2){is}[(L1 L2 L3)] (LO OP2 RO) (R1 R2 R3 R4)</span>)</li>
-          <li>Strand left and right arguments and result to user-defined
-            functions/operators</li>
-          <li>User-defined function prototypes
-            (<span class="APL">{quad}PROTOTYPE:</span>)</li>
-          <li>User-defined function singletons
-            (<span class="APL">{quad}SINGLETON:</span>)</li>
-          <li>User-defined function inverses
-            (<span class="APL">{quad}INVERSE:</span>)</li>
-          <li>Dynamic functions (e.g.,
-            <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
-          <li>Selective assignment (e.g.,
-            <span class="APL">(1 1{transpose}A){is}1 2 3</span>)</li>
-          <li>Primitive functions and operators user extensible via user-defined APL functions</li>
-        </ul>
-    </div>
+		  <li>Optional Facilities
+			<ul>
+			  <li>Diamond ({diamond}) as a statement separator</li>
+			</ul>
+		  </li>
+		</ul>
 
-    <div class="section">
-      <h2 id="Datatypes">Datatypes</h2>
+	  <h3>Possible Future Feature Set</h3>
+		<ul>
+		  <li>User-defined operators (e.g., <span class="APL">{del}
+		   (Z1 Z2){is}[(L1 L2 L3)] (LO OP2 RO) (R1 R2 R3 R4)</span>)</li>
+		  <li>Strand left and right arguments and result to user-defined
+			functions/operators</li>
+		  <li>User-defined function prototypes
+			(<span class="APL">{quad}PROTOTYPE:</span>)</li>
+		  <li>User-defined function singletons
+			(<span class="APL">{quad}SINGLETON:</span>)</li>
+		  <li>User-defined function inverses
+			(<span class="APL">{quad}INVERSE:</span>)</li>
+		  <li>Dynamic functions (e.g.,
+			<span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
+		  <li>Selective assignment (e.g.,
+			<span class="APL">(1 1{transpose}A){is}1 2 3</span>)</li>
+		  <li>Primitive functions and operators user extensible via user-defined APL functions</li>
+		</ul>
+	</div>
 
-      <h3>Current Datatypes</h3>
-        <ul>
-          <li>1-bit Booleans</li>
-          <li>2-byte Characters (Unicode, really UCS2, a subset of UTF-16)</li>
-          <li>64-bit Integers</li>
-          <li>64-bit Floats</li>
-          <li>Nested arrays</li>
-          <li>APAs (Arithmetic Progression Arrays) (e.g.,
-            <span class="APL">2 3 4{rho}{iota}24</span>)</li>
-          <li>± Infinity (e.g., <span class="APL">_</span> for infinity
-            and <span class="APL">{overbar}_</span> for negative infinity)</li>
-        </ul>
+	<div class="section">
+	  <h2 id="Datatypes">Datatypes</h2>
 
-      <h3>Possible Future Datatypes</h3>
-        <ul>
-          <li>Complex numbers (e.g., <span class="APL">2j3.4</span>
-            or <span class="APL">2i3.4</span>)</li>
-          <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
-          <li>Array predicates (a la Bernecky)</li>
-          <li>Datatypes user extensible via user-defined APL functions</li>
-        </ul>
-    </div>
+	  <h3>Current Datatypes</h3>
+		<ul>
+		  <li>1-bit Booleans</li>
+		  <li>2-byte Characters (Unicode, really UCS2, a subset of UTF-16)</li>
+		  <li>64-bit Integers</li>
+		  <li>64-bit Floats</li>
+		  <li>Nested arrays</li>
+		  <li>APAs (Arithmetic Progression Arrays) (e.g.,
+			<span class="APL">2 3 4{rho}{iota}24</span>)</li>
+		  <li>± Infinity (e.g., <span class="APL">_</span> for infinity
+			and <span class="APL">{overbar}_</span> for negative infinity)</li>
+		</ul>
 
-    <div class="section">
-      <h2 id="Miscellaneous">Miscellaneous</h2>
+	  <h3>Possible Future Datatypes</h3>
+		<ul>
+		  <li>Complex numbers (e.g., <span class="APL">2j3.4</span>
+			or <span class="APL">2i3.4</span>)</li>
+		  <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
+		  <li>Array predicates (a la Bernecky)</li>
+		  <li>Datatypes user extensible via user-defined APL functions</li>
+		</ul>
+	</div>
 
-      <h3>Current Miscellaneous</h3>
-        <ul>
-          <li>Multiple workspaces can be open at the same time
-            and switched between via Tabs</li>
-          <li>All variable names are two-byte Unicode
-            (really UCS2, a subset of UTF-16)</li>
-          <li>Array rank and dimension limit of 64 bits</li>
-          <li>Line continuation marker for easier display of long lines
-            which also allows comments within a line</li>
-          <li>Multilevel Undo in function editing</li>
-          <li>Undo buffer saved with function for reuse on next edit</li>
-        </ul>
+	<div class="section">
+	  <h2 id="Miscellaneous">Miscellaneous</h2>
 
-      <h3>Possible Future Miscellaneous</h3>
-        <ul>
-          <li>Control structures on one line or split across multiple lines</li>
-          <li>Idiom recognition at tokenization time</li>
-          <li>Beating and drag-along (a la P.S. Abrams
-            <a class="linkleft" href="http://www.slac.stanford.edu/pubs/slacreports/slac-r-114.html">"An APL Machine"</a>),
-            at least for Selective Assignment</li>
-          <li>Workspaces are saved as plain text ASCII files</li>
-          <li>Syntax highlighting</li>
-        </ul>
-    </div>
+	  <h3>Current Miscellaneous</h3>
+		<ul>
+		  <li>Multiple workspaces can be open at the same time
+			and switched between via Tabs</li>
+		  <li>All variable names are two-byte Unicode
+			(really UCS2, a subset of UTF-16)</li>
+		  <li>Array rank and dimension limit of 64 bits</li>
+		  <li>Line continuation marker for easier display of long lines
+			which also allows comments within a line</li>
+		  <li>Multilevel Undo in function editing</li>
+		  <li>Undo buffer saved with function for reuse on next edit</li>
+		</ul>
 
-    <div class="section">
-      <h2 id="Currently_Implemented">Currently Implemented</h2>
+	  <h3>Possible Future Miscellaneous</h3>
+		<ul>
+		  <li>Control structures on one line or split across multiple lines</li>
+		  <li>Idiom recognition at tokenization time</li>
+		  <li>Beating and drag-along (a la P.S. Abrams
+			<a class="linkleft" href="http://www.slac.stanford.edu/pubs/slacreports/slac-r-114.html">"An APL Machine"</a>),
+			at least for Selective Assignment</li>
+		  <li>Workspaces are saved as plain text ASCII files</li>
+		  <li>Syntax highlighting</li>
+		</ul>
+	</div>
 
-      <h3>Primitive functions</h3>
-      <ul>
-        <li>All monadic and dyadic primitive scalar functions with and without axis</li>
-        <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
-          Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
-          respectively</li>
-        <li>Monadic left shoe ({enclose}) (enclose) with and without axis</li>
-        <li>Monadic iota ({iota}) (index generator)</li>
-        <li>Monadic epsilon ({epsilon}) (enlist)</li>
-        <li>Monadic thorn ({thorn}) (default format)</li>
-        <li>Dyadic slash ({/}) (replicate)</li>
-        <li>Dyadic slope ({\}) (expand)</li>
-        <li>Dyadic left tack ({lev}) (left) and right tack ({dex}) (right)</li>
-        <li>Dyadic squad ({squad}) (indexing)</li>
-        <li>Dyadic right shoe ({pick}) (pick)</li>
-        <li>Monadic and dyadic rho ({rho}) (shape and reshape)</li>
-        <li>Monadic and dyadic comma ({comma} and
-          <span class="APL">,[X]</span> and {commabar})
-          (ravel/table and catenate/laminate) with and without axis &mdash; Axis operator to Ravel can transpose coordinates</li>
-        <li>Monadic and dyadic equal-underbar ({equalunderbar}) (depth and match)</li>
-        <li>Monadic and dyadic circle-slope ({circleslope}) (transpose)</li>
-        <li>Monadic and dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse and rotate)</li>
-        <li>Monadic and dyadic domino ({domino}) (matrix inverse and matrix divide)
-          using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
-      </ul>
+	<div class="section">
+	  <h2 id="Currently_Implemented">Currently Implemented</h2>
 
-      <h3>Primitive operators</h3>
-      <ul>
-        <li>Dyadic operator jot ({jot}) (composition)</li>
-      </ul>
+	  <h3>Primitive functions</h3>
+	  <ul>
+		<li>All monadic and dyadic primitive scalar functions with and without axis</li>
+		<li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
+		  Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
+		  respectively</li>
+		<li>Monadic left shoe ({enclose}) (enclose) with and without axis</li>
+		<li>Monadic iota ({iota}) (index generator)</li>
+		<li>Monadic epsilon ({epsilon}) (enlist)</li>
+		<li>Monadic thorn ({thorn}) (default format)</li>
+		<li>Dyadic slash ({/}) (replicate)</li>
+		<li>Dyadic slope ({\}) (expand)</li>
+		<li>Dyadic left tack ({lev}) (left) and right tack ({dex}) (right)</li>
+		<li>Dyadic squad ({squad}) (indexing)</li>
+		<li>Dyadic right shoe ({pick}) (pick)</li>
+		<li>Monadic and dyadic rho ({rho}) (shape and reshape)</li>
+		<li>Monadic and dyadic comma ({comma} and
+		  <span class="APL">,[X]</span> and {commabar})
+		  (ravel/table and catenate/laminate) with and without axis &mdash; Axis operator to Ravel can transpose coordinates</li>
+		<li>Monadic and dyadic equal-underbar ({equalunderbar}) (depth and match)</li>
+		<li>Monadic and dyadic circle-slope ({circleslope}) (transpose)</li>
+		<li>Monadic and dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse and rotate)</li>
+		<li>Monadic and dyadic domino ({domino}) (matrix inverse and matrix divide)
+		  using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
+	  </ul>
 
-      <h3>Miscellaneous</h3>
-      <ul>
-        <li>Strands, e.g., <span class="APL">(1 2 3) 'abcd' ({iota}4)</span></li>
-        <li>Strand Assignment, e.g., <span class="APL">(a b c d){is}{iota}4</span></li>
-        <li>Raw output</li>
-        <li>Generalized indexing such that <span class="APL">L[R]</span> allows both Reach and Scatter indexing</li>
-        <li>Quad and Quote-Quad output (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
-      </ul>
+	  <h3>Primitive operators</h3>
+	  <ul>
+		<li>Dyadic operator jot ({jot}) (composition)</li>
+	  </ul>
 
-      <h3>Session Manager</h3>
-      <ul>
-        <li>Tabbed Workspaces</li>
-        <li>Function Editor (can't save function as yet, though)</li>
-      </ul>
+	  <h3>Miscellaneous</h3>
+	  <ul>
+		<li>Strands, e.g., <span class="APL">(1 2 3) 'abcd' ({iota}4)</span></li>
+		<li>Strand Assignment, e.g., <span class="APL">(a b c d){is}{iota}4</span></li>
+		<li>Raw output</li>
+		<li>Generalized indexing such that <span class="APL">R[L]</span>
+		  allows both Reach and Scatter indexing &mdash; that is, if
+		  <span class="APL">L{pick}R</span> is valid, it is equivalent to
+		  <span class="APL">{disclose}R[{enclose}L]</span>, and if
+		  <span class="APL">L{squad}R</span> is valid, it is equivalent to
+		  <span class="APL">R[{disclose}{jot}.,/L]</span></li>
+		<li>Quad and Quote-Quad output, e.g., (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
+	  </ul>
 
-      <h3>System Functions</h3>
-      <ul>
-        <li>Niladic
-          <ul>
-            <li><span class="APL">{quad}BEL</span></li>
-            <li><span class="APL">{quad}BS</span></li>
-            <li><span class="APL">{quad}DEL</span></li>
-            <li><span class="APL">{quad}ESC</span></li>
-            <li><span class="APL">{quad}FF</span></li>
-            <li><span class="APL">{quad}HT</span></li>
-            <li><span class="APL">{quad}LF</span></li>
-            <li><span class="APL">{quad}NL</span></li>
-            <li><span class="APL">{quad}NUL</span></li>
-            <li><span class="APL">{quad}SYSID</span></li>
-            <li><span class="APL">{quad}SYSVER</span></li>
-            <li><span class="APL">{quad}TC</span></li>
-            <li><span class="APL">{quad}TS</span></li>
-          </ul>
-        </li>
+	  <h3>Session Manager</h3>
+	  <ul>
+		<li>Tabbed Workspaces</li>
+		<li>Function Editor (can't save function as yet, though)</li>
+	  </ul>
 
-        <li>Monadic
-          <ul>
-            <li><span class="APL">{quad}DR</span></li>
-            <li><span class="APL">{quad}TYPE</span></li>
-          </ul>
-        </li>
+	  <h3>System Functions</h3>
+	  <ul>
+		<li>Niladic
+		  <ul>
+			<li><span class="APL">{quad}BEL</span></li>
+			<li><span class="APL">{quad}BS</span></li>
+			<li><span class="APL">{quad}DEL</span></li>
+			<li><span class="APL">{quad}ESC</span></li>
+			<li><span class="APL">{quad}FF</span></li>
+			<li><span class="APL">{quad}HT</span></li>
+			<li><span class="APL">{quad}LF</span></li>
+			<li><span class="APL">{quad}NL</span></li>
+			<li><span class="APL">{quad}NUL</span></li>
+			<li><span class="APL">{quad}SYSID</span></li>
+			<li><span class="APL">{quad}SYSVER</span></li>
+			<li><span class="APL">{quad}TC</span></li>
+			<li><span class="APL">{quad}TS</span></li>
+		  </ul>
+		</li>
 
-        <li>Dyadic
-          <ul>
-            <li></li>
-          </ul>
-        </li>
-      </ul>
+		<li>Monadic
+		  <ul>
+			<li><span class="APL">{quad}DR</span></li>
+			<li><span class="APL">{quad}TYPE</span></li>
+		  </ul>
+		</li>
 
-      <h3>System Commands</h3>
-      <ul>
-        <li><span class="APL">)CLEAR</span></li>
-        <li><span class="APL">)CLOSE</span></li>
-        <li><span class="APL">)EXIT</span></li>
-        <li><span class="APL">)NEWTAB</span></li>
-      </ul>
-    </div>
+		<li>Dyadic
+		  <ul>
+			<li></li>
+		  </ul>
+		</li>
+	  </ul>
 
-    <div class="section">
-      <h2 id="Platforms">Platforms</h2>
+	  <h3>System Commands</h3>
+	  <ul>
+		<li><span class="APL">)CLEAR</span></li>
+		<li><span class="APL">)CLOSE</span></li>
+		<li><span class="APL">)EXIT</span></li>
+		<li><span class="APL">)NEWTAB</span></li>
+	  </ul>
+	</div>
 
-        <p>At the moment, Windows only, versions 2000/XP/..., but it is
-          open source, so you are invited to help extend its reach.
-        </p>
-    </div>
+	<div class="section">
+	  <h2 id="Platforms">Platforms</h2>
 
-    <div class="section">
-      <h2 id="Documentation">Documentation</h2>
+		<p>At the moment, Windows only, versions 2000/XP/..., but it is
+		  free software, so you are invited to help extend its reach.
+		</p>
+	</div>
 
-      <p>As with many open source projects, the documentation for
-        this project is managed by a Wiki.  To see the current
-        effort, goto
-        <a class="linkleft" href="http://wiki.nars2000.org">the Wiki
-        page</a>.</p>
+	<div class="section">
+	  <h2 id="Documentation">Documentation</h2>
 
-    </div>
+	  <p>As with many free software projects, the documentation for
+		this project is managed by a Wiki.	To see the current
+		effort, goto
+		<a class="linkleft" href="http://wiki.nars2000.org">the Wiki
+		page</a>.</p>
 
-    <div class="section">
-      <h2 id="What_It_Isnt">What It Isn't</h2>
+	</div>
 
-        <ul>
-          <li>Performance:  NARS2000 is not intended to be a high performance
-            system, other than as a fallout of interesting algorithms.
-            Any good or bad performance on your favorite benchmark is
-            purely accidental.
-          </li>
+	<div class="section">
+	  <h2 id="What_It_Isnt">What It Isn't</h2>
 
-          <li>Commercial Use:  NARS2000 is not intended to compete with
-            commercial systems.
-            As such it lacks the features one expects to find in a
-            commercial system, such as a Windows interface, .NET interface, COM
-            server, etc., although I've not made any conscious effort to make it
-            difficult to add such features.  These features may be included at some later
-            time &mdash; they just aren't high priority up front.
-          </li>
-        </ul>
-    </div>
+		<ul>
+		  <li>Performance:	NARS2000 is not intended to be a high performance
+			system, other than as a fallout of interesting algorithms.
+			Any good or bad performance on your favorite benchmark is
+			purely accidental.
+		  </li>
 
-    <div class="section">
-      <h2 id="Get_The_Code">Get The Code</h2>
+		  <li>Commercial Use:  NARS2000 is not intended to compete with
+			commercial systems.
+			As such it lacks the features one expects to find in a
+			commercial system, such as a Windows interface, .NET interface, COM
+			server, etc., although I've not made any conscious effort to make it
+			difficult to add such features.  These features may be included at some later
+			time &mdash; they just aren't high priority up front.
+		  </li>
+		</ul>
+	</div>
 
-        <p>The code is released to the public under
-        <a class="linkleft" href="http://www.gnu.org/licenses/gpl.html">Version 2
-        of the GNU GPL (General Public License)</a> or any later version, and is
-        available in several forms:</p>
+	<div class="section">
+	  <h2 id="Get_The_Code">Get The Code</h2>
 
-        <ul>
-          <li>Executable:
-            <a class="linkleft" href="svn://svn.nars2000.org/trunk/binaries/ND/NARS2000.ZIP">Windows only</a>.
-          </li>
+		<p>The code is released to the public under
+		<a class="linkleft" href="http://www.gnu.org/licenses/gpl.html">Version 2
+		of the GNU GPL (General Public License)</a> or any later version, and is
+		available in several forms:</p>
 
-          <li>Source Code Under Version Control:
-            <ul>
-              <li>The source can be <a class="linkleft" href="http://svn.nars2000.org/">viewed</a>,
-                as well as downloaded, one file at a time, from your browser.
-              </li>
+		<ul>
+		  <li>Executable:
+			<a class="linkleft" href="http://www.nars2000.org/binaries/">Windows only</a>.
+		  </li>
 
-              <li>Or, the source may be downloaded, one file at a time
-                or the whole lot, by running a version control program.
-                In particular, the source code is maintained on this
-                site using <a class="linkleft" href="http://subversion.tigris.org/">Subversion</a>,
-                as in <code>svn://svn.nars2000.org</code>.
-                There are various clients which can commmunicate with a Subversion
-                server depending upon the operating system running on your computer.
-                For example, if you are running Windows, you can download (for free)
-                the program <a class="linkleft" href="http://tortoisesvn.tigris.org/">Tortoise SVN</a>.
-                This is the means by which developers can checkout and commit changes to
-                the code.
-              </li>
+		  <li>Source Code Under Version Control:
+			<ul>
+			  <li>The source can be <a class="linkleft" href="http://www.nars2000.org/viewvc/trunk/">viewed</a>,
+				as well as downloaded, one file at a time, from your browser.
+			  </li>
 
-              <li>The <a class="linkleft" href="http://www.nars2000.org/viewvc/">browser view</a>
-                also allows you to download the entire source code as a compressed file.
-                Try the link at the bottom of each index page labeled "Download tarball".
-              </li>
-            </ul>
-          </li>
-        </ul>
-    </div>
+			  <li>Or, the source may be downloaded, one file at a time
+				or the whole lot, by running a version control program.
+				In particular, the source code is maintained on this
+				site using <a class="linkleft" href="http://subversion.tigris.org/">Subversion</a>,
+				as in <code>svn://svn.nars2000.org</code>.
+				There are various clients which can commmunicate with a Subversion
+				server depending upon the operating system running on your computer.
+				For example, if you are running Windows, you can download (for free)
+				the program <a class="linkleft" href="http://tortoisesvn.tigris.org/">Tortoise SVN</a>.
+				This is the means by which developers can checkout and commit changes to
+				the code.
+			  </li>
 
-    <div class="section">
-      <h2 id="If_You_Want_To_Help">If You Want To Help</h2>
+			  <li>The <a class="linkleft" href="http://www.nars2000.org/viewvc/">browser view</a>
+				also allows you to download the entire source code as a compressed file.
+				Try the link at the bottom of each index page labeled "Download tarball".
+			  </li>
+			</ul>
+		  </li>
+		</ul>
+	</div>
 
-      <p>This project was designed to be extensible by both the end
-      user (via APL magic functions) as well as by developers.  This is
-      your chance to add a valuable feature to NARS2000.</p>
+	<div class="section">
+	  <h2 id="If_You_Want_To_Help">If You Want To Help</h2>
 
-      <p>The source code is written in a combination of APL (as magic
-      functions) and C, so knowledge of just APL or both languages
-      is all you need.</p>
+	  <p>This project was designed to be extensible by both the end
+	  user (via APL magic functions) as well as by developers.	This is
+	  your chance to add a valuable feature to NARS2000.</p>
 
-      <p>Also, don't forget that documentation is an area in need of
-      improvement, so if your skills are in writing, your help is needed.</p>
+	  <p>The source code is written in a combination of APL (as magic
+	  functions) and C, so knowledge of just APL or both languages
+	  is all you need.</p>
 
-      <p>The best way to help is to find an area of the project in which
-      you'd like to contribute, write up a short description of what you
-      want to do and submit it to the project via the Discussion Forums.</p>
+	  <p>Also, don't forget that documentation is an area in need of
+	  improvement, so if your skills are in writing, your help is needed.</p>
 
-      <p>When you contribute content to the project, you'll be listed in
-      the List of Contributors.  First time contributors will also need to
-      <a class="linkleft" href="http://www.gnu.org/licenses/why-assign.html">assign
-      copyright</a> of what you contribute to the project, in
-      particular to the principal author, Bob Smith.  This is by no means
-      an attempt to take
-      credit for what you have contributed &mdash; instead, it provides a
-      single point of reference from a legal standpoint in case the program's copyright
-      (or <a class="linkleft" href="http://www.gnu.org/copyleft/copyleft.html">copyleft</a>)
-      needs to be enforced.  See the "assign copyright" link above for why this is
-      necessary.</p>
-    </div>
+	  <p>The best way to help is to find an area of the project in which
+	  you'd like to contribute, write up a short description of what you
+	  want to do and submit it to the project via the Discussion Forums.</p>
 
-    <div class="section">
-      <h2 id="Discussion_Forums">Discussion Forums</h2>
+	  <p>When you contribute content to the project, you'll be listed in
+	  the List of Contributors.  First time contributors will also need to
+	  <a class="linkleft" href="http://www.gnu.org/licenses/why-assign.html">assign
+	  copyright</a> of what you contribute to the project, in
+	  particular to the principal author, Bob Smith.  This is by no means
+	  an attempt to take
+	  credit for what you have contributed &mdash; instead, it provides a
+	  single point of reference from a legal standpoint in case the program's copyright
+	  (or <a class="linkleft" href="http://www.gnu.org/copyleft/copyleft.html">copyleft</a>)
+	  needs to be enforced.  See the "assign copyright" link above for why this is
+	  necessary.</p>
+	</div>
 
-      <p>To facilitate discussion about this project, there is a bulletin
-      board available for your use.  This BB is for discussion relative
-      to this project, and is not meant to supplant other forums such as the
-      <a class="linkleft" href="news:comp.lang.apl">comp.lang.apl</a>
-      newsgroup.</p>
-    </div>
+	<div class="section">
+	  <h2 id="Discussion_Forums">Discussion Forums</h2>
 
-    <div class="section">
-      <h2 id="Author">Author</h2>
+	  <p>To facilitate discussion about this project, there is a bulletin
+	  board available for your use.  This BB is for discussion relative
+	  to this project, and is not meant to supplant other forums such as the
+	  <a class="linkleft" href="news:comp.lang.apl">comp.lang.apl</a>
+	  newsgroup.</p>
+	</div>
 
-      <p>This project was started by
-      <script type="text/javascript"
-              src="/email.cgi?n=bsmith&amp;d=sudleyplace.com&amp;t=Bob%20Smith&amp;class=mailright"></script>
-      and is &copy; 2006-2007, Sudley Place Software.</p>
-    </div>
+	<div class="section">
+	  <h2 id="Author">Author</h2>
+
+	  <p>This project was started by
+	  <script type="text/javascript"
+			  src="/email.cgi?n=bsmith&amp;d=sudleyplace.com&amp;t=Bob%20Smith&amp;class=mailright"></script>
+	  and is &copy; 2006-2007, Sudley Place Software.</p>
+	</div>
   </td>
 </tr>
 </table>

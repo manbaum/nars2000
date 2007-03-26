@@ -16,6 +16,8 @@ GS=gsl\ 			# GSL Source
 GSP=$(GS)specfunc\		# GSL Special Functions
 OLDPATH = $(PATH)		# Save the current path
 
+MV=makever
+
 WIN=32
 WDEF=_WIN$(WIN)
 
@@ -82,7 +84,10 @@ ALL:	DIR		    \
 	$(O)$(ENAME).EXE    \
 	$(L)$(ENAME).EXE    \
 	$(BC)$(ENAME).HLP   \
-	$(L)$(ENAME).HLP
+	$(L)$(ENAME).HLP    \
+	$(O)$(MV).exe	    \
+	$(L)$(MV).exe	    \
+	$(ENAME).ver
 
 CLEAN:
 	@del /Q $(O)*.*
@@ -542,32 +547,9 @@ ICONS=$(A)About.ico	\
       $(A)VE.ico	\
       $(A)LineCont.bmp
 
-## bison-generated files
+## Bison-generated files
 $(O)parse.C:		$(@B).Y
 $(O)parse.OBJ:		$(O)$(@B).C	$(PARSE_DEP)
-
-#### ## GSL-specific files
-#### $(O)coerce.OBJ:	     $(GS)$(@B).C
-#### $(O)error.OBJ:	     $(GS)$(@B).C
-#### $(O)fdiv.OBJ:	     $(GS)$(@B).C
-#### $(O)infnan.OBJ:	     $(GS)$(@B).C
-#### $(O)init.OBJ:	     $(GS)$(@B).C
-#### $(O)invhyp.OBJ:	     $(GS)$(@B).C
-#### $(O)log1p.OBJ:	     $(GS)$(@B).C
-#### $(O)lu.OBJ:	     $(GS)$(@B).C
-#### $(O)math.OBJ:	     $(GS)$(@B).C
-#### $(O)permutation.OBJ:    $(GS)$(@B).C
-#### $(O)permute_source.OBJ: $(GS)$(@B).C
-#### $(O)stream.OBJ:	     $(GS)$(@B).C
-####
-#### ## GSP-specific files
-#### $(O)elementary.OBJ:     $(GSP)$(@B).C
-#### $(O)exp.OBJ:	     $(GSP)$(@B).C
-#### $(O)gamma.OBJ:	     $(GSP)$(@B).C
-#### $(O)log.OBJ:	     $(GSP)$(@B).C
-#### $(O)psi.OBJ:	     $(GSP)$(@B).C
-#### $(O)trig.OBJ:	     $(GSP)$(@B).C
-#### $(O)zeta.OBJ:	     $(GSP)$(@B).C
 
 ## WineHQ-specific files
 $(O)editctrl.OBJ:	$(WS)$(@B).C	$(EDITCTRL_DEP)
@@ -657,28 +639,6 @@ $(L)$(ENAME).HLP:	$(BC)$(ENAME).HLP
 $(WS)local.h:		editctrl.h   resource.h
 
 # Build the Win32 version
-#### OBJS=			 \
-####	  $(O)coerce.OBJ	 \
-####	  $(O)error.OBJ 	 \
-####	  $(O)fdiv.OBJ		 \
-####	  $(O)infnan.OBJ	 \
-####	  $(O)init.OBJ		 \
-####	  $(O)invhyp.OBJ	 \
-####	  $(O)log1p.OBJ 	 \
-####	  $(O)lu.OBJ		 \
-####	  $(O)math.OBJ		 \
-####	  $(O)permutation.OBJ	 \
-####	  $(O)permute_source.OBJ \
-####	  $(O)stream.OBJ	 \
-####				 \
-####	  $(O)elementary.OBJ	 \
-####	  $(O)exp.OBJ		 \
-####	  $(O)gamma.OBJ 	 \
-####	  $(O)log.OBJ		 \
-####	  $(O)psi.OBJ		 \
-####	  $(O)trig.OBJ		 \
-####	  $(O)zeta.OBJ		 \
-####				 \
 OBJS=			    \
      $(O)assign.OBJ	    \
      $(O)bjhash.OBJ	    \
@@ -765,7 +725,7 @@ $(LIBS_WEXE) $(LIBS_EXT)
 	@$(LD) $(LFLAGS_WEXE) @$(O)main.CRF
 	@del $(O)$(@B).exp
 	@del $(O)$(@B).lib
-	@pkzip $(B)$(ENAME) $@ >NUL
+	@pkzip $(B)$(ENAME) $@ LICENSE $(BC)$(ENAME).HLP >NUL
 
 $(L)$(ENAME).EXE:	$(O)$(ENAME).EXE
 	@xc/r	 %s	 $@ >NUL
@@ -773,3 +733,27 @@ $(L)$(ENAME).EXE:	$(O)$(ENAME).EXE
 
 zip:
 	pkzip $(ZIPNAME) makefile mk.bat mkd.bat $(A)*.bmp *.c *.h $(BC)*.hlp $(A)*.ico *.rc *.rtf *.y
+
+
+$(O)$(MV).obj:		$(@B).c
+
+$(O)$(MV).exe:		$(O)$(MV).obj
+	@echo >NUL @<<$(O)$(MV).crf
+$(O)$(MV).obj
+/OUT:$(O)$(MV).exe
+/MAP:$(O)$(MV).map
+$(LIBS_WEXE) $(LIBS_EXT)
+/DEF:$(MV).def
+<<KEEP
+	@Set LIB=$(L98);$(L)
+	@if exist $@ del $@
+	@$(LD) $(LFLAGS_WEXE) @$(O)$(MV).crf
+	@del $(O)$(@B).exp
+	@del $(O)$(@B).lib
+
+$(L)$(MV).exe:		$(O)$(MV).exe
+	@xc/r	 %s	$@ >NUL
+
+$(ENAME).ver:		$(O)$(MV).exe
+	@$(O)$(MV).exe $(O)$(ENAME).exe
+

@@ -884,12 +884,13 @@ BOOL ReachSymTabConst_EM
 	} // End IF
 
 	// Use aplInteger to index lpMemLft
+	bRet =
 	ValueAsSymentry (lpMemRes,
 					 lpMemLft,
 					 aplTypeLft,
 					 aplInteger,
 					 lptkFunc);
-	return TRUE;
+	return bRet;
 } // End ReachSymTabConst_EM
 #undef	APPEND_NAME
 
@@ -900,7 +901,7 @@ BOOL ReachSymTabConst_EM
 //	Extract a particular value from an array as a LPSYMENTRY
 //***************************************************************************
 
-void ValueAsSymentry
+BOOL ValueAsSymentry
 	(LPVOID   lpMemRes, 	// Put the result here
 	 LPVOID   lpMemLft, 	// Get the result from here
 	 APLSTYPE aplTypeLft,	// The storage type of the arg
@@ -972,6 +973,8 @@ void ValueAsSymentry
 		defstop
 			break;
 	} // End SWITCH
+
+	return TRUE;
 } // End ValueAsSymentry
 
 
@@ -1198,7 +1201,7 @@ BOOL ReachDown_EM
 							break;
 					} // End SWITCH
 
-					// Check for LENGTH ERROR if the left arg is simple (Depth <= 1)
+					// Check for LENGTH ERROR if the left arg is simple (Depth < 2)
 					//	 and the # reach indices are > 1.
 					if (IsSimple (aplTypeLft)
 					 && aplNELMRch > 1)
@@ -1209,12 +1212,62 @@ BOOL ReachDown_EM
 					} else
 					{
 						// Now use aplIndex to extract the next item from lpMemLft
-						// Use aplInteger to index lpMemLft
-						ValueAsSymentry (lpMemRes,
-										 lpMemLft,
-										 aplTypeLft,
-										 aplIndex,
-										 lptkFunc);
+						//	 if it's simple
+						if (IsSimple (aplTypeLft))
+							bRet =
+							ValueAsSymentry (lpMemRes,
+											 lpMemLft,
+											 aplTypeLft,
+											 aplIndex,
+											 lptkFunc);
+						else
+						{
+							HGLOBAL hGlbSub;
+
+							// Get the global memory handle
+							hGlbSub = *(LPAPLNESTED) lpMemSub;
+
+							// Split cases based upon the ptr type
+							switch (GetPtrTypeDir (hGlbSub))
+							{
+								case PTRTYPE_STCONST:
+
+
+
+
+
+									break;
+
+								case PTRTYPE_HGLOBAL:
+
+
+
+
+									// Get the global memory handle
+
+									// Lock the memory to get a ptr to it
+									lpMemSub = MyGlobalLock (ClrPtrTypeDirGlb (hGlbSub));
+
+									// Reach down through the left arg using successive
+									//	 elements of the reach arg as indices
+									bRet =
+									ReachDown_EM (lpMemRes, 			// Put the result here
+												  lpMemSub, 			// Ptr to the reach arg
+												  aplNELMSub,			// The NELM of the reach arg
+												  lpMemLft, 			// Get the results from here
+												  aplTypeLft,			// The storage type of the left arg
+												  aplRankLft,			// The rank of the left arg
+												  lpMemDimLft,			// Ptr to the dimensions of the left arg
+												  lptkFunc);			// Ptr to function token
+									// We no loner need this ptr
+									MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbSub));
+
+									break;
+
+								defstop
+									break;
+							} // End SWITCH
+						} // End IF/ELSE
 					} // End IF/ELSE
 				} // End IF/ELSE
 

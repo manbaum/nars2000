@@ -1103,8 +1103,8 @@ LPSYMENTRY SymTabLookupName
              iLen * sizeof (WCHAR),         // The # values pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
-    if (lpwszString[0] EQ UCS2_QUAD
-      || lpwszString[0] EQ UCS2_QUOTEQUAD)
+    if (lpwszString[0] EQ UTF16_QUAD
+      || lpwszString[0] EQ UTF16_QUOTEQUAD)
         lpstFlags->SysName = 1;
     else
         lpstFlags->UsrName = 1;

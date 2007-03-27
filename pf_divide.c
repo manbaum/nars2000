@@ -84,7 +84,7 @@ LPYYSTYPE PrimFnDivide_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_DIVIDE);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_DIVIDE);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

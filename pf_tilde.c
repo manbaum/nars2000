@@ -84,7 +84,7 @@ LPYYSTYPE PrimFnTilde_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_TILDE);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_TILDE);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

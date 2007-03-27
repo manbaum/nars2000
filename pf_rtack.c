@@ -36,7 +36,7 @@ LPYYSTYPE PrimFnRightTack_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_RIGHTTACK);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTTACK);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -107,7 +107,7 @@ LPYYSTYPE PrimFnDydRightTack_EM
     YYLclIndex = NewYYResIndex ();
 
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_RIGHTTACK);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTTACK);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

@@ -85,7 +85,7 @@ LPYYSTYPE PrimFnUpCaret_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_UPCARET);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_UPCARET);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

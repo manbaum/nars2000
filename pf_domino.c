@@ -40,7 +40,7 @@ LPYYSTYPE PrimFnDomino_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_DOMINO);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_DOMINO);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

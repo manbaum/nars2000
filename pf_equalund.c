@@ -1,5 +1,5 @@
 //***************************************************************************
-//	NARS2000 -- Primitive Function -- EqualUnderbar
+//  NARS2000 -- Primitive Function -- EqualUnderbar
 //***************************************************************************
 
 #pragma pack (1)
@@ -18,1069 +18,1069 @@
 
 
 //***************************************************************************
-//	PrimFnEqualUnderbar_EM
+//  PrimFnEqualUnderbar_EM
 //
-//	Primitive function for monadic and dyadic EqualUnderbar ("depth" and "match")
+//  Primitive function for monadic and dyadic EqualUnderbar ("depth" and "match")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- PrimFnEqualUnderbar_EM"
+#define APPEND_NAME     L" -- PrimFnEqualUnderbar_EM"
 #else
 #define APPEND_NAME
 #endif
 
 LPYYSTYPE PrimFnEqualUnderbar_EM
-	(LPTOKEN lptkLftArg,
-	 LPTOKEN lptkFunc,
-	 LPTOKEN lptkRhtArg,
-	 LPTOKEN lptkAxis)
+    (LPTOKEN lptkLftArg,
+     LPTOKEN lptkFunc,
+     LPTOKEN lptkRhtArg,
+     LPTOKEN lptkAxis)
 
 {
-	// Ensure not an overflow function
-	Assert (lptkFunc->tkData.tkChar EQ UCS2_EQUALUNDERBAR);
+    // Ensure not an overflow function
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUALUNDERBAR);
 
-	// Split cases based upon monadic or dyadic
-	if (lptkLftArg EQ NULL)
-		return PrimFnMonEqualUnderbar_EM (			  lptkFunc, lptkRhtArg, lptkAxis);
-	else
-		return PrimFnDydEqualUnderbar_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+    // Split cases based upon monadic or dyadic
+    if (lptkLftArg EQ NULL)
+        return PrimFnMonEqualUnderbar_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+    else
+        return PrimFnDydEqualUnderbar_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnEqualUnderbar_EM
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	PrimFnMonEqualUnderbar_EM
+//  PrimFnMonEqualUnderbar_EM
 //
-//	Primitive function for monadic EqualUnderbar ("depth")
+//  Primitive function for monadic EqualUnderbar ("depth")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- PrimFnMonEqualUnderbar_EM"
+#define APPEND_NAME     L" -- PrimFnMonEqualUnderbar_EM"
 #else
 #define APPEND_NAME
 #endif
 
 LPYYSTYPE PrimFnMonEqualUnderbar_EM
-	(LPTOKEN lptkFunc,
-	 LPTOKEN lptkRhtArg,
-	 LPTOKEN lptkAxis)
+    (LPTOKEN lptkFunc,
+     LPTOKEN lptkRhtArg,
+     LPTOKEN lptkAxis)
 
 {
-	APLSTYPE aplTypeRht;
-	APLNELM  aplNELMRht;
-	APLRANK  aplRankRht;
-	HGLOBAL  hGlbRht;
-	UINT	 YYLclIndex;
+    APLSTYPE aplTypeRht;
+    APLNELM  aplNELMRht;
+    APLRANK  aplRankRht;
+    HGLOBAL  hGlbRht;
+    UINT     YYLclIndex;
 
-	// Get new index into YYRes
-	YYLclIndex = NewYYResIndex ();
+    // Get new index into YYRes
+    YYLclIndex = NewYYResIndex ();
 
-	// Determine how deep the argument is.
-	// Simple scalars:	0
-	// Simple arrays:	1
-	// Nested arrays: > 1
+    // Determine how deep the argument is.
+    // Simple scalars:  0
+    // Simple arrays:   1
+    // Nested arrays: > 1
 
-	//***************************************************************
-	// This function is not sensitive to the axis operator,
-	//	 so signal a syntax error if present
-	//***************************************************************
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
 
-	if (lptkAxis NE NULL)
-	{
-		ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-								   lptkAxis);
-		return NULL;
-	} // End IF
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
 
-	// Fill in the result token
-	YYRes[YYLclIndex].tkToken.tkFlags.TknType	= TKT_VARIMMED;
-	YYRes[YYLclIndex].tkToken.tkFlags.ImmType	= IMMTYPE_INT;
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;	// Already from from ZeroMemory
-	YYRes[YYLclIndex].tkToken.tkCharIndex		= lptkFunc->tkCharIndex;
+    // Fill in the result token
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_INT;
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already from from ZeroMemory
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-	// Get the attributes (Type, NELM, and Rank)
-	//	 of the right arg
-	AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
-	// If it's not nested,
-	//	 it's of depth 0 (scalar) or 1 (vector or higher)
-	if (aplTypeRht NE ARRAY_NESTED)
-		YYRes[YYLclIndex].tkToken.tkData.tkInteger = (aplRankRht NE 0);
-	else
-	{
-		// Split cases based upon the right arg's token type
-		switch (lptkRhtArg->tkFlags.TknType)
-		{
-			case TKT_VARNAMED:
-				// tkData is an LPSYMENTRY
-				Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+    // If it's not nested,
+    //   it's of depth 0 (scalar) or 1 (vector or higher)
+    if (aplTypeRht NE ARRAY_NESTED)
+        YYRes[YYLclIndex].tkToken.tkData.tkInteger = (aplRankRht NE 0);
+    else
+    {
+        // Split cases based upon the right arg's token type
+        switch (lptkRhtArg->tkFlags.TknType)
+        {
+            case TKT_VARNAMED:
+                // tkData is an LPSYMENTRY
+                Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-				// It can't be immediate as that's handled above
-				Assert (!lptkRhtArg->tkData.lpSym->stFlags.Imm);
+                // It can't be immediate as that's handled above
+                Assert (!lptkRhtArg->tkData.lpSym->stFlags.Imm);
 
-				// Get the global memory handle
-				hGlbRht = lptkRhtArg->tkData.lpSym->stData.stGlbData;
+                // Get the global memory handle
+                hGlbRht = lptkRhtArg->tkData.lpSym->stData.stGlbData;
 
-				// stData is a valid HGLOBAL variable array
-				Assert (IsGlbTypeVarDir (hGlbRht));
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbRht));
 
-				break;			// Continue with global case
+                break;          // Continue with global case
 
-			case TKT_VARARRAY:
-				// Get the global memory handle
-				hGlbRht = lptkRhtArg->tkData.tkGlbData;
+            case TKT_VARARRAY:
+                // Get the global memory handle
+                hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
-				// tkData is a valid HGLOBAL variable array
-				Assert (IsGlbTypeVarDir (hGlbRht));
+                // tkData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbRht));
 
-				break;			// Continue with global case
+                break;          // Continue with global case
 
-			case TKT_LISTPAR:
-				ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-										   lptkFunc);
-				return NULL;
+            case TKT_LISTPAR:
+                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                           lptkFunc);
+                return NULL;
 
-			case TKT_VARIMMED:
-			defstop
-				break;
-		} // End SWITCH
+            case TKT_VARIMMED:
+            defstop
+                break;
+        } // End SWITCH
 
-		// Recursively run through the elements of the nested array
-		YYRes[YYLclIndex].tkToken.tkData.tkInteger = PrimFnMonEqualUnderBarGlb (hGlbRht);
-	} // End IF/ELSE
+        // Recursively run through the elements of the nested array
+        YYRes[YYLclIndex].tkToken.tkData.tkInteger = PrimFnMonEqualUnderBarGlb (hGlbRht);
+    } // End IF/ELSE
 
-	return &YYRes[YYLclIndex];
+    return &YYRes[YYLclIndex];
 } // End PrimFnMonEqualUnderbar_EM
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	PrimFnMonEqualUnderBarGlb
+//  PrimFnMonEqualUnderBarGlb
 //
-//	Common subroutine to determine the depth of a global memory handle.
+//  Common subroutine to determine the depth of a global memory handle.
 //***************************************************************************
 
 APLINT PrimFnMonEqualUnderBarGlb
-	(HGLOBAL hGlbRht)
+    (HGLOBAL hGlbRht)
 
 {
-	LPAPLNESTED lpMemRht;
-	APLSTYPE	aplTypeRht;
-	APLNELM 	aplNELMRht;
-	APLRANK 	aplRankRht;
-	APLUINT 	uRes,
-				uRht,
-				uTmp;
+    LPAPLNESTED lpMemRht;
+    APLSTYPE    aplTypeRht;
+    APLNELM     aplNELMRht;
+    APLRANK     aplRankRht;
+    APLUINT     uRes,
+                uRht,
+                uTmp;
 
-	// Split cases based upon the ptr bits
-	switch (GetPtrTypeDir (hGlbRht))
-	{
-		case PTRTYPE_STCONST:
-			return 0;
+    // Split cases based upon the ptr bits
+    switch (GetPtrTypeDir (hGlbRht))
+    {
+        case PTRTYPE_STCONST:
+            return 0;
 
-		case PTRTYPE_HGLOBAL:
-			// It's a valid HGLOBAL variable array
-			Assert (IsGlbTypeVarDir (hGlbRht));
+        case PTRTYPE_HGLOBAL:
+            // It's a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir (hGlbRht));
 
-			// Clear the ptr bits
-			hGlbRht = ClrPtrTypeDirGlb (hGlbRht);
+            // Clear the ptr bits
+            hGlbRht = ClrPtrTypeDirGlb (hGlbRht);
 
-			// Lock the memory to get a ptr to it
-			lpMemRht = MyGlobalLock (hGlbRht);
+            // Lock the memory to get a ptr to it
+            lpMemRht = MyGlobalLock (hGlbRht);
 
-#define lpHeader	((LPVARARRAY_HEADER) lpMemRht)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
 
-			// Save the type, NELM, and rank
-			aplTypeRht = lpHeader->ArrType;
-			aplNELMRht = lpHeader->NELM;
-			aplRankRht = lpHeader->Rank;
+            // Save the type, NELM, and rank
+            aplTypeRht = lpHeader->ArrType;
+            aplNELMRht = lpHeader->NELM;
+            aplRankRht = lpHeader->Rank;
 
-#undef	lpHeader
+#undef  lpHeader
 
-			// Handle nested prototype
-			if (aplNELMRht EQ 0
-			 && aplTypeRht EQ ARRAY_NESTED)
-				aplNELMRht++;
+            // Handle nested prototype
+            if (aplNELMRht EQ 0
+             && aplTypeRht EQ ARRAY_NESTED)
+                aplNELMRht++;
 
-			// Start with 0 or 1 depending upon the rank
-			uRes = (aplRankRht NE 0);
+            // Start with 0 or 1 depending upon the rank
+            uRes = (aplRankRht NE 0);
 
-			// If it's nested, recurse
-			if (aplTypeRht EQ ARRAY_NESTED)
-			{
-				// Skip over the header and dimensions
-				lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            // If it's nested, recurse
+            if (aplTypeRht EQ ARRAY_NESTED)
+            {
+                // Skip over the header and dimensions
+                lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-				// Loop through the elements of the right arg
-				for (uRht = 0; uRht < aplNELMRht; uRht++)
-				{
-					// Split cases based on the ptr type of the element
-					switch (GetPtrTypeDir (lpMemRht[uRht]))
-					{
-						case PTRTYPE_STCONST:
-							break;
+                // Loop through the elements of the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Split cases based on the ptr type of the element
+                    switch (GetPtrTypeDir (lpMemRht[uRht]))
+                    {
+                        case PTRTYPE_STCONST:
+                            break;
 
-						case PTRTYPE_HGLOBAL:
-							uTmp = 1 + PrimFnMonEqualUnderBarGlb (lpMemRht[uRht]);
-							uRes = max (uRes, uTmp);
+                        case PTRTYPE_HGLOBAL:
+                            uTmp = 1 + PrimFnMonEqualUnderBarGlb (lpMemRht[uRht]);
+                            uRes = max (uRes, uTmp);
 
-							break;
+                            break;
 
-						defstop
-							break;
-					} // End
-				} // End FOR
-			} // End IF
+                        defstop
+                            break;
+                    } // End
+                } // End FOR
+            } // End IF
 
-			// We no longer need this ptr
-			MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
-			break;
+            break;
 
-		defstop
-			break;
-	} // End SWITCH
+        defstop
+            break;
+    } // End SWITCH
 
-	return uRes;
+    return uRes;
 } // End PrimFnMonEqualUnderBarGlb
 
 
 //***************************************************************************
-//	PrimFnDydEqualUnderbar_EM
+//  PrimFnDydEqualUnderbar_EM
 //
-//	Primitive function for dyadic EqualUnderbar ("match")
+//  Primitive function for dyadic EqualUnderbar ("match")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- PrimFnDydEqualUnderbar_EM"
+#define APPEND_NAME     L" -- PrimFnDydEqualUnderbar_EM"
 #else
 #define APPEND_NAME
 #endif
 
 LPYYSTYPE PrimFnDydEqualUnderbar_EM
-	(LPTOKEN lptkLftArg,
-	 LPTOKEN lptkFunc,
-	 LPTOKEN lptkRhtArg,
-	 LPTOKEN lptkAxis)
+    (LPTOKEN lptkLftArg,
+     LPTOKEN lptkFunc,
+     LPTOKEN lptkRhtArg,
+     LPTOKEN lptkAxis)
 
 {
-	APLSTYPE aplTypeLft,
-			 aplTypeRht,
-			 aplTypeTmp;
-	APLNELM  aplNELMLft,
-			 aplNELMRht;
-	APLRANK  aplRankLft,
-			 aplRankRht;
-	HGLOBAL  hGlbLft,
-			 hGlbRht;
-	LPVOID	 lpMemLft,
-			 lpMemRht;
-	LPTOKEN  lptkTmpArg;
-	BOOL	 bNumLft,
-			 bNumRht;
-	APLINT	 aplIntegerLft,
-			 aplIntegerRht;
-	APLFLOAT aplFloatLft,
-			 aplFloatRht;
-	APLCHAR  aplCharLft,
-			 aplCharRht;
-	UINT	 YYLclIndex;
+    APLSTYPE aplTypeLft,
+             aplTypeRht,
+             aplTypeTmp;
+    APLNELM  aplNELMLft,
+             aplNELMRht;
+    APLRANK  aplRankLft,
+             aplRankRht;
+    HGLOBAL  hGlbLft,
+             hGlbRht;
+    LPVOID   lpMemLft,
+             lpMemRht;
+    LPTOKEN  lptkTmpArg;
+    BOOL     bNumLft,
+             bNumRht;
+    APLINT   aplIntegerLft,
+             aplIntegerRht;
+    APLFLOAT aplFloatLft,
+             aplFloatRht;
+    APLCHAR  aplCharLft,
+             aplCharRht;
+    UINT     YYLclIndex;
 
-	//***************************************************************
-	// This function is not sensitive to the axis operator,
-	//	 so signal a syntax error if present
-	//***************************************************************
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
 
-	if (lptkAxis NE NULL)
-	{
-		ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-								   lptkAxis);
-		return NULL;
-	} // End IF
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
 
-	// Get new index into YYRes
-	YYLclIndex = NewYYResIndex ();
+    // Get new index into YYRes
+    YYLclIndex = NewYYResIndex ();
 
-	// Determine if two arrays are identical in
-	//	 rank, length, and value at all levels
-	//	 without regarrd to the array representation
+    // Determine if two arrays are identical in
+    //   rank, length, and value at all levels
+    //   without regarrd to the array representation
 
-	// N.B.  We are relying upon type demotion here
+    // N.B.  We are relying upon type demotion here
 
-	// Fill in the result token
-	YYRes[YYLclIndex].tkToken.tkFlags.TknType	= TKT_VARIMMED;
-	YYRes[YYLclIndex].tkToken.tkFlags.ImmType	= IMMTYPE_BOOL;
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;	// Already zero from ZeroMemory
-	YYRes[YYLclIndex].tkToken.tkData.tkBoolean	= FALSE;
-	YYRes[YYLclIndex].tkToken.tkCharIndex		= lptkFunc->tkCharIndex;
+    // Fill in the result token
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
+    YYRes[YYLclIndex].tkToken.tkData.tkBoolean  = FALSE;
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-	// Get the attributes (Type, NELM, and Rank) of the left & right args
-	AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-	AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    // Get the attributes (Type, NELM, and Rank) of the left & right args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
-	// Check for lists here -- the parser catches lists on the left
-	if (aplTypeRht EQ ARRAY_LIST)
-	{
-		ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-								   lptkRhtArg);
-		return NULL;
-	} // End IF
+    // Check for lists here -- the parser catches lists on the left
+    if (aplTypeRht EQ ARRAY_LIST)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkRhtArg);
+        return NULL;
+    } // End IF
 
-	// Because this function is commutative, we can switch
-	//	  the two args without loss of generality.
-	// Switch the args so that the left arg is the "simpler"
-	//	  of the two (Simple Homogeneous < Simple Heterogeneous < Nested),
-	//	  and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
-	if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
-	{
-		lptkTmpArg = lptkLftArg;
-		lptkLftArg = lptkRhtArg;
-		lptkRhtArg = lptkTmpArg;
+    // Because this function is commutative, we can switch
+    //    the two args without loss of generality.
+    // Switch the args so that the left arg is the "simpler"
+    //    of the two (Simple Homogeneous < Simple Heterogeneous < Nested),
+    //    and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
+    if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
+    {
+        lptkTmpArg = lptkLftArg;
+        lptkLftArg = lptkRhtArg;
+        lptkRhtArg = lptkTmpArg;
 
-		aplTypeTmp = aplTypeLft;
-		aplTypeLft = aplTypeRht;
-		aplTypeRht = aplTypeTmp;
-	} // End IF
+        aplTypeTmp = aplTypeLft;
+        aplTypeLft = aplTypeRht;
+        aplTypeRht = aplTypeTmp;
+    } // End IF
 
-	// Get left and right arg's global ptrs
-	GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-	GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    // Get left and right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-	// Split based upon Simple vs. Hetero vs. Nested
-	switch (2 * (aplTypeLft EQ ARRAY_NESTED)
-		  + 1 * (aplTypeRht EQ ARRAY_NESTED))
-	{
-		case 2 * 0 + 1 * 0: 	// Lft = Simple, Rht = Simple
-			// If both arguments are scalars, get the
-			//	 first values and compare them as they
-			//	 might be TKT_VARIMMED and thus not pointed
-			//	 to by the lpMemLft/Rht vars
-			if (aplRankLft EQ 0
-			 && aplRankRht EQ 0)
-			{
-				// Ensure Numeric vs. Numeric or Char vs. Char
-				bNumLft = IsSimpleNum (aplTypeLft);
-				bNumRht = IsSimpleNum (aplTypeRht);
-				if (bNumLft NE bNumRht)
-					break;
+    // Split based upon Simple vs. Hetero vs. Nested
+    switch (2 * (aplTypeLft EQ ARRAY_NESTED)
+          + 1 * (aplTypeRht EQ ARRAY_NESTED))
+    {
+        case 2 * 0 + 1 * 0:     // Lft = Simple, Rht = Simple
+            // If both arguments are scalars, get the
+            //   first values and compare them as they
+            //   might be TKT_VARIMMED and thus not pointed
+            //   to by the lpMemLft/Rht vars
+            if (aplRankLft EQ 0
+             && aplRankRht EQ 0)
+            {
+                // Ensure Numeric vs. Numeric or Char vs. Char
+                bNumLft = IsSimpleNum (aplTypeLft);
+                bNumRht = IsSimpleNum (aplTypeRht);
+                if (bNumLft NE bNumRht)
+                    break;
 
-				// Get the respective first values
-				FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
-				FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
+                // Get the respective first values
+                FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
+                FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
 
-				// Split cases into Numeric and Char
-				if (bNumLft)
-				{				// Both are numeric
-					if (IsSimpleInt (aplTypeLft)
-					 && IsSimpleInt (aplTypeRht))
-						YYRes[YYLclIndex].tkToken.tkData.tkBoolean = (aplIntegerLft EQ aplIntegerRht);
-					else
-						YYRes[YYLclIndex].tkToken.tkData.tkBoolean = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
-				} else			// Both are char
-					// Compare the values
-					YYRes[YYLclIndex].tkToken.tkData.tkBoolean = (aplCharLft EQ aplCharRht);
-				break;
-			} // End IF
+                // Split cases into Numeric and Char
+                if (bNumLft)
+                {               // Both are numeric
+                    if (IsSimpleInt (aplTypeLft)
+                     && IsSimpleInt (aplTypeRht))
+                        YYRes[YYLclIndex].tkToken.tkData.tkBoolean = (aplIntegerLft EQ aplIntegerRht);
+                    else
+                        YYRes[YYLclIndex].tkToken.tkData.tkBoolean = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
+                } else          // Both are char
+                    // Compare the values
+                    YYRes[YYLclIndex].tkToken.tkData.tkBoolean = (aplCharLft EQ aplCharRht);
+                break;
+            } // End IF
 
-			YYRes[YYLclIndex].tkToken.tkData.tkBoolean =
-			  PrimFnDydEqualUnderbarSimple (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-											lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
-			break;
+            YYRes[YYLclIndex].tkToken.tkData.tkBoolean =
+              PrimFnDydEqualUnderbarSimple (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
+                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
+            break;
 
-		case 2 * 0 + 1 * 1: 	// Lft = Simple, Rht = Nested
-		case 2 * 1 + 1 * 0: 	// Lft = Nested, Rht = Simple
-			break;
+        case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
+        case 2 * 1 + 1 * 0:     // Lft = Nested, Rht = Simple
+            break;
 
-		case 2 * 1 + 1 * 1: 	// Lft = Nested, Rht = Nested
-			YYRes[YYLclIndex].tkToken.tkData.tkBoolean =
-			  PrimFnDydEqualUnderbarNested (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-											lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
-			break;
+        case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
+            YYRes[YYLclIndex].tkToken.tkData.tkBoolean =
+              PrimFnDydEqualUnderbarNested (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
+                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
+            break;
 
-		defstop
-			break;
-	} // End SWITCH
+        defstop
+            break;
+    } // End SWITCH
 
-	if (hGlbLft && lpMemLft)
-	{
-		// We no longer need this ptr
-		MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-	} // End IF
+    if (hGlbLft && lpMemLft)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
 
-	if (hGlbRht && lpMemRht)
-	{
-		// We no longer need this ptr
-		MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-	} // End IF
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
 
-	return &YYRes[YYLclIndex];
+    return &YYRes[YYLclIndex];
 } // End PrimFnDydEqualUnderbar_EM
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	PrimFnDydEqualUnderbarSimple
+//  PrimFnDydEqualUnderbarSimple
 //
-//	Subroutine to compare two simple arrays
+//  Subroutine to compare two simple arrays
 //***************************************************************************
 
 BOOL PrimFnDydEqualUnderbarSimple
-	(LPVOID   lpMemLft,
-	 APLSTYPE aplTypeLft,
-	 APLNELM  aplNELMLft,
-	 APLRANK  aplRankLft,
-	 LPVOID   lpMemRht,
-	 APLSTYPE aplTypeRht,
-	 APLNELM  aplNELMRht,
-	 APLRANK  aplRankRht)
+    (LPVOID   lpMemLft,
+     APLSTYPE aplTypeLft,
+     APLNELM  aplNELMLft,
+     APLRANK  aplRankLft,
+     LPVOID   lpMemRht,
+     APLSTYPE aplTypeRht,
+     APLNELM  aplNELMRht,
+     APLRANK  aplRankRht)
 
 {
-	APLINT	 uDim,
-			 apaOff,
-			 apaMul;
-	UINT	 uBitMask = 0x01;
-	APLINT	 aplIntegerLft,
-			 aplIntegerRht;
-	APLFLOAT aplFloatLft,
-			 aplFloatRht;
-	APLCHAR  aplCharLft,
-			 aplCharRht;
-
-	// Ensure same rank and # elements
-	if (aplRankLft NE aplRankRht
-	 || aplNELMLft NE aplNELMRht)
-		return FALSE;
-
-	// Ensure the dimensions are the same
-	if (aplRankLft NE 0)
-	{
-		// Skip over the headers to the dimensions
-		lpMemLft = VarArrayBaseToDim (lpMemLft);
-		lpMemRht = VarArrayBaseToDim (lpMemRht);
-
-		for (uDim = 0; uDim < (APLINT) aplRankLft; uDim++)
-		if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
-			return FALSE;
-	} // End IF
-
-	// lpMemLft and lpMemRht now point to the data
-
-	// Split cases based upon the left arg's storage type
-	switch (aplTypeLft)
-	{
-		case ARRAY_BOOL:			// Lft = BOOL, Rht = BOOL/INT/FLOAT/APA/CHAR/HETERO
-			// Split cases based upon the right arg's storage type
-			switch (aplTypeRht)
-			{
-				case ARRAY_BOOL:	// Lft = BOOL, Rht = BOOL
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						if ((uBitMask & *((LPAPLBOOL) lpMemLft))
-						 NE (uBitMask & *((LPAPLBOOL) lpMemRht)))
-							return FALSE;
-
-						// Shift over the bit mask
-						uBitMask <<= 1;
-
-						// Check for end-of-byte
-						if (uBitMask EQ END_OF_BYTE)
-						{
-							uBitMask = 0x01;			// Start over
-							((LPAPLBOOL) lpMemLft)++;	// Skip to next byte
-						} // End IF
-					} // End FOR
-
-					return TRUE;
-
-				case ARRAY_INT: 	// Lft = BOOL, Rht = INT
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0)
-						 NE *((LPAPLINT) lpMemRht)++)
-							return FALSE;
-
-						// Shift over the bit mask
-						uBitMask <<= 1;
-
-						// Check for end-of-byte
-						if (uBitMask EQ END_OF_BYTE)
-						{
-							uBitMask = 0x01;			// Start over
-							((LPAPLBOOL) lpMemLft)++;	// Skip to next byte
-						} // End IF
-					} // End FOR
-
-					return TRUE;
-
-				case ARRAY_FLOAT:	// Lft = BOOL, Rht = FLOAT
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0)
-						 NE *((LPAPLFLOAT) lpMemRht)++)
-							return FALSE;
-
-						// Shift over the bit mask
-						uBitMask <<= 1;
-
-						// Check for end-of-byte
-						if (uBitMask EQ END_OF_BYTE)
-						{
-							uBitMask = 0x01;			// Start over
-							((LPAPLBOOL) lpMemLft)++;	// Skip to next byte
-						} // End IF
-					} // End FOR
-
-					return TRUE;
-
-				case ARRAY_APA: 	// Lft = BOOL, Rht = APA
-#define lpHeader	((LPAPLAPA) lpMemLft)
-					apaOff = lpHeader->Off;
-					apaMul = lpHeader->Mul;
-#undef	lpHeader
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0)
-						 NE (apaOff + apaMul * uDim))
-							return FALSE;
-
-						// Shift over the bit mask
-						uBitMask <<= 1;
-
-						// Check for end-of-byte
-						if (uBitMask EQ END_OF_BYTE)
-						{
-							uBitMask = 0x01;			// Start over
-							((LPAPLBOOL) lpMemLft)++;	// Skip to next byte
-						} // End IF
-					} // End FOR
-
-					return TRUE;
-
-				case ARRAY_CHAR:	// Lft = BOOL, Rht = CHAR
-					return FALSE;
-
-				case ARRAY_HETERO:	// Lft = BOOL, Rht = HETERO
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						// Split cases based upon the hetero's storage type
-						switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
-						{
-							case ARRAY_BOOL:	// Lft = BOOL, Rht = BOOL
-							case ARRAY_INT: 	// Lft = BOOL, Rht = INT
-								if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0) NE aplIntegerRht)
-									return FALSE;
-								break;
-
-							case ARRAY_FLOAT:	// Lft = BOOL, Rht = FLOAT
-								if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0) NE aplFloatRht)
-									return FALSE;
-								break;
-
-							case ARRAY_CHAR:	// Lft = BOOL, Rht = CHAR
-								return FALSE;
-
-							defstop
-								break;
-						} // End SWITCH
-
-						// Shift over the bit mask
-						uBitMask <<= 1;
-
-						// Check for end-of-byte
-						if (uBitMask EQ END_OF_BYTE)
-						{
-							uBitMask = 0x01;			// Start over
-							((LPAPLBOOL) lpMemLft)++;	// Skip to next byte
-						} // End IF
-					} // End FOR
-
-					return TRUE;
-
-				defstop
-					return FALSE;
-			} // End SWITCH
-
-		case ARRAY_INT: 			// Lft = INT, Rht = INT/FLOAT/APA/CHAR/HETERO
-			// Split cases based upon the right arg's storage type
-			switch (aplTypeRht)
-			{
-				case ARRAY_INT: 	// Lft = INT, Rht = INT
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					if (*((LPAPLINT) lpMemLft)++ NE *((LPAPLINT) lpMemRht)++)
-						return FALSE;
-					return TRUE;
-
-				case ARRAY_FLOAT:	// Lft = INT, Rht = FLOAT
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					if (!CompareCT ((APLFLOAT) *((LPAPLINT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
-						return FALSE;
-					return TRUE;
-
-				case ARRAY_APA: 	// Lft = INT, Rht = APA
-#define lpHeader	((LPAPLAPA) lpMemRht)
-					apaOff = lpHeader->Off;
-					apaMul = lpHeader->Mul;
-#undef	lpHeader
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					if (*((LPAPLINT) lpMemLft)++ NE (apaOff + apaMul * uDim))
-						return FALSE;
-					return TRUE;
-
-				case ARRAY_CHAR:	// Lft = INT, Rht = CHAR
-					return FALSE;
-
-				case ARRAY_HETERO:	// Lft = INT, Rht = HETERO
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						// Split cases based upon the hetero's storage type
-						switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
-						{
-							case ARRAY_BOOL:	// Lft = INT, Rht = BOOL
-							case ARRAY_INT: 	// Lft = INT, Rht = INT
-								if (*((LPAPLINT) lpMemLft)++ NE aplIntegerRht)
-									return FALSE;
-								break;
-
-							case ARRAY_FLOAT:	// Lft = INT, Rht = FLOAT
-								if ((APLFLOAT) *((LPAPLINT) lpMemLft)++ NE aplFloatRht)
-									return FALSE;
-								break;
-
-							case ARRAY_CHAR:	// Lft = INT, Rht = CHAR
-								return FALSE;
-
-							defstop
-								break;
-						} // End SWITCH
-					} // End FOR
-
-					return TRUE;
-
-				case ARRAY_BOOL:	// Lft = INT, Rht = BOOL	(Can't happen)
-				defstop
-					return FALSE;
-			} // End SWITCH
-
-		case ARRAY_FLOAT:			// Lft = FLOAT, Rht = FLOAT/APA/CHAR/HETERO
-			// Split cases based upon the right arg's storage type
-			switch (aplTypeRht)
-			{
-				case ARRAY_FLOAT:	// Lft = FLOAT, Rht = FLOAT
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
-						return FALSE;
-					return TRUE;
-
-				case ARRAY_APA: 	// Lft = FLOAT, Rht = APA
-#define lpHeader	((LPAPLAPA) lpMemRht)
-					apaOff = lpHeader->Off;
-					apaMul = lpHeader->Mul;
-#undef	lpHeader
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, (APLFLOAT) (apaOff + apaMul * uDim), fQuadCT, NULL))
-						return FALSE;
-					return TRUE;
-
-				case ARRAY_CHAR:	// Lft = FLOAT, Rht = CHAR
-					return FALSE;
-
-				case ARRAY_HETERO:	// Lft = FLOAT, Rht = HETERO
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						// Split cases based upon the hetero's storage type
-						switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
-						{
-							case ARRAY_BOOL:	// Lft = FLOAT, Rht = BOOL
-							case ARRAY_INT: 	// Lft = FLOAT, Rht = INT
-								if (*((LPAPLFLOAT) lpMemLft)++ NE (APLFLOAT) aplIntegerRht)
-									return FALSE;
-								break;
-
-							case ARRAY_FLOAT:	// Lft = FLOAT, Rht = FLOAT
-								if (*((LPAPLFLOAT) lpMemLft)++ NE aplFloatRht)
-									return FALSE;
-								break;
-
-							case ARRAY_CHAR:	// Lft = FLOAT, Rht = CHAR
-								return FALSE;
-
-							defstop
-								break;
-						} // End SWITCH
-					} // End FOR
-
-					return TRUE;
-
-				case ARRAY_BOOL:	// Lft = FLOAT, Rht = BOOL	(Can't happen)
-				case ARRAY_INT: 	// Lft = FLOAT, Rht = INT	(Can't happen)
-				defstop
-					return FALSE;
-			} // End SWITCH
-
-		case ARRAY_APA: 			// Lft = APA, Rht = APA/CHAR/HETERO
-			// Split cases based upon the right arg's storage type
-			switch (aplTypeRht)
-			{
-				case ARRAY_APA: 	// Lft = APA, Rht = APA
-					// Compare the APA offsets and multipliers
-					return ((((LPAPLAPA) lpMemLft)->Off
-						 EQ ((LPAPLAPA) lpMemRht)->Off)
-						&& (((LPAPLAPA) lpMemLft)->Mul
-						 EQ ((LPAPLAPA) lpMemLft)->Mul));
-
-				case ARRAY_CHAR:	// Lft = APA, Rht = CHAR
-					return FALSE;
-
-				case ARRAY_HETERO:	// Lft = APA, Rht = HETERO
-#define lpHeader	((LPAPLAPA) lpMemLft)
-					apaOff = lpHeader->Off;
-					apaMul = lpHeader->Mul;
-#undef	lpHeader
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						// Split cases based upon the hetero's storage type
-						switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
-						{
-							case ARRAY_BOOL:	// Lft = APA, Rht = BOOL
-							case ARRAY_INT: 	// Lft = APA, Rht = INT
-								if ((apaOff + apaMul * uDim) NE aplIntegerRht)
-									return FALSE;
-								break;
-
-							case ARRAY_FLOAT:	// Lft = APA, Rht = FLOAT
-								if ((apaOff + apaMul * uDim) NE aplFloatRht)
-									return FALSE;
-								break;
-
-							case ARRAY_CHAR:	// Lft = APA, Rht = CHAR
-								return FALSE;
-
-							defstop
-								break;
-						} // End SWITCH
-					} // End FOR
-
-					return TRUE;
-
-				case ARRAY_BOOL:	// Lft = APA, Rht = BOOL	(Can't happen)
-				case ARRAY_INT: 	// Lft = APA, Rht = INT 	(Can't happen)
-				case ARRAY_FLOAT:	// Lft = APA, Rht = FLOAT	(Can't happen)
-				defstop
-					return FALSE;
-			} // End SWITCH
-
-		case ARRAY_CHAR:			// Lft = CHAR, Rht = CHAR/HETERO
-			// Split cases based upon the right arg's storage type
-			switch (aplTypeRht)
-			{
-				case ARRAY_CHAR:	// Lft = CHAR, Rht = CHAR
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					if (*((LPAPLCHAR) lpMemLft)++ NE *((LPAPLCHAR) lpMemRht)++)
-						return FALSE;
-					return TRUE;
-
-				case ARRAY_HETERO:	// Lft = CHAR, Rht = HETERO
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						// Split cases based upon the hetero's storage type
-						switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
-						{
-							case ARRAY_BOOL:	// Lft = CHAR, Rht = BOOL
-							case ARRAY_INT: 	// Lft = CHAR, Rht = INT
-							case ARRAY_FLOAT:	// Lft = CHAR, Rht = FLOAT
-								return FALSE;
-
-							case ARRAY_CHAR:	// Lft = CHAR, Rht = CHAR
-								if (*((LPAPLCHAR) lpMemLft)++ NE aplCharRht)
-									return FALSE;
-								break;
-
-							defstop
-								break;
-						} // End SWITCH
-					} // End FOR
-
-					return TRUE;
-
-				case ARRAY_BOOL:	// Lft = CHAR, Rht = BOOL	(Can't happen)
-				case ARRAY_INT: 	// Lft = CHAR, Rht = INT	(Can't happen)
-				case ARRAY_FLOAT:	// Lft = CHAR, Rht = FLOAT	(Can't happen)
-				case ARRAY_APA: 	// Lft = CHAR, Rht = APA	(Can't happen)
-				defstop
-					return FALSE;
-			} // End SWITCH
-
-		case ARRAY_HETERO:			// Lft = HETERO, Rht = HETERO
-			// Split cases based upon the right arg's storage type
-			switch (aplTypeRht)
-			{
-				case ARRAY_HETERO:	// Lft = HETERO, Rht = HETERO
-					// Loop through the elements
-					for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
-					{
-						// Get the next values and type
-						aplTypeLft = GetNextHetero (lpMemLft, uDim, &aplIntegerLft, &aplFloatLft, &aplCharLft);
-						aplTypeRht = GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht);
-
-						// Split cases based upon the left hetero's storage type
-						switch (aplTypeLft)
-						{
-							case ARRAY_BOOL:			// Lft = BOOL,	Rht = BOOL/INT/FLOAT/CHAR
-							case ARRAY_INT: 			// Lft = INT,	Rht = BOOL/INT/FLOAT/CHAR
-								// Split cases based upon the right hetero's storage type
-								switch (aplTypeRht)
-								{
-									case ARRAY_BOOL:	// Lft = BOOL,	Rht = BOOL
-									case ARRAY_INT: 	// Lft = BOOL,	Rht = INT
-										if (aplIntegerLft NE aplIntegerRht)
-											return FALSE;
-										break;
-
-									case ARRAY_FLOAT:	// Lft = BOOL,	Rht = FLOAT
-										if ((APLFLOAT) aplIntegerLft NE aplFloatRht)
-											return FALSE;
-										break;
-
-									case ARRAY_CHAR:	// Lft = BOOL,	Rht = CHAR
-										return FALSE;
-
-									defstop
-										return FALSE;
-								} // End SWITCH
-
-							case ARRAY_FLOAT:			// Lft = FLOAT, Rht = BOOL/INT/FLOAT/CHAR
-								// Split cases based upon the right hetero's storage type
-								switch (aplTypeRht)
-								{
-									case ARRAY_BOOL:	// Lft = FLOAT, Rht = BOOL
-									case ARRAY_INT: 	// Lft = FLOAT, Rht = INT
-										if (aplFloatLft NE (APLFLOAT) aplIntegerRht)
-											return FALSE;
-										break;
-
-									case ARRAY_FLOAT:	// Lft = FLOAT, Rht = FLOAT
-										if (aplFloatLft NE aplFloatRht)
-											return FALSE;
-										break;
-
-									case ARRAY_CHAR:	// Lft = FLOAT, Rht = CHAR
-										return FALSE;
-
-									defstop
-										return FALSE;
-								} // End SWITCH
-
-							case ARRAY_CHAR:			// Lft = CHAR,	Rht = BOOL/INT/FLOAT/CHAR
-								// Split cases based upon the right hetero's storage type
-								switch (aplTypeRht)
-								{
-									case ARRAY_BOOL:	// Lft = CHAR,	Rht = BOOL
-									case ARRAY_INT: 	// Lft = CHAR,	Rht = INT
-									case ARRAY_FLOAT:	// Lft = CHAR,	Rht = FLOAT
-										return FALSE;
-
-									case ARRAY_CHAR:	// Lft = CHAR,	Rht = CHAR
-										if (aplCharLft NE aplCharRht)
-											return FALSE;
-										break;
-
-									defstop
-										return FALSE;
-								} // End SWITCH
-
-							defstop
-								return FALSE;
-						} // End SWITCH
-					} // End FOR
-
-					return TRUE;
-
-				defstop
-					return FALSE;
-			} // End SWITCH
-
-		defstop
-			return FALSE;
-	} // End SWITCH
+    APLINT   uDim,
+             apaOff,
+             apaMul;
+    UINT     uBitMask = 0x01;
+    APLINT   aplIntegerLft,
+             aplIntegerRht;
+    APLFLOAT aplFloatLft,
+             aplFloatRht;
+    APLCHAR  aplCharLft,
+             aplCharRht;
+
+    // Ensure same rank and # elements
+    if (aplRankLft NE aplRankRht
+     || aplNELMLft NE aplNELMRht)
+        return FALSE;
+
+    // Ensure the dimensions are the same
+    if (aplRankLft NE 0)
+    {
+        // Skip over the headers to the dimensions
+        lpMemLft = VarArrayBaseToDim (lpMemLft);
+        lpMemRht = VarArrayBaseToDim (lpMemRht);
+
+        for (uDim = 0; uDim < (APLINT) aplRankLft; uDim++)
+        if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
+            return FALSE;
+    } // End IF
+
+    // lpMemLft and lpMemRht now point to the data
+
+    // Split cases based upon the left arg's storage type
+    switch (aplTypeLft)
+    {
+        case ARRAY_BOOL:            // Lft = BOOL, Rht = BOOL/INT/FLOAT/APA/CHAR/HETERO
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_BOOL:    // Lft = BOOL, Rht = BOOL
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        if ((uBitMask & *((LPAPLBOOL) lpMemLft))
+                         NE (uBitMask & *((LPAPLBOOL) lpMemRht)))
+                            return FALSE;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    return TRUE;
+
+                case ARRAY_INT:     // Lft = BOOL, Rht = INT
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0)
+                         NE *((LPAPLINT) lpMemRht)++)
+                            return FALSE;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    return TRUE;
+
+                case ARRAY_FLOAT:   // Lft = BOOL, Rht = FLOAT
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0)
+                         NE *((LPAPLFLOAT) lpMemRht)++)
+                            return FALSE;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    return TRUE;
+
+                case ARRAY_APA:     // Lft = BOOL, Rht = APA
+#define lpHeader    ((LPAPLAPA) lpMemLft)
+                    apaOff = lpHeader->Off;
+                    apaMul = lpHeader->Mul;
+#undef  lpHeader
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0)
+                         NE (apaOff + apaMul * uDim))
+                            return FALSE;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    return TRUE;
+
+                case ARRAY_CHAR:    // Lft = BOOL, Rht = CHAR
+                    return FALSE;
+
+                case ARRAY_HETERO:  // Lft = BOOL, Rht = HETERO
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        // Split cases based upon the hetero's storage type
+                        switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
+                        {
+                            case ARRAY_BOOL:    // Lft = BOOL, Rht = BOOL
+                            case ARRAY_INT:     // Lft = BOOL, Rht = INT
+                                if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0) NE aplIntegerRht)
+                                    return FALSE;
+                                break;
+
+                            case ARRAY_FLOAT:   // Lft = BOOL, Rht = FLOAT
+                                if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1 : 0) NE aplFloatRht)
+                                    return FALSE;
+                                break;
+
+                            case ARRAY_CHAR:    // Lft = BOOL, Rht = CHAR
+                                return FALSE;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    return TRUE;
+
+                defstop
+                    return FALSE;
+            } // End SWITCH
+
+        case ARRAY_INT:             // Lft = INT, Rht = INT/FLOAT/APA/CHAR/HETERO
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_INT:     // Lft = INT, Rht = INT
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    if (*((LPAPLINT) lpMemLft)++ NE *((LPAPLINT) lpMemRht)++)
+                        return FALSE;
+                    return TRUE;
+
+                case ARRAY_FLOAT:   // Lft = INT, Rht = FLOAT
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    if (!CompareCT ((APLFLOAT) *((LPAPLINT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
+                        return FALSE;
+                    return TRUE;
+
+                case ARRAY_APA:     // Lft = INT, Rht = APA
+#define lpHeader    ((LPAPLAPA) lpMemRht)
+                    apaOff = lpHeader->Off;
+                    apaMul = lpHeader->Mul;
+#undef  lpHeader
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    if (*((LPAPLINT) lpMemLft)++ NE (apaOff + apaMul * uDim))
+                        return FALSE;
+                    return TRUE;
+
+                case ARRAY_CHAR:    // Lft = INT, Rht = CHAR
+                    return FALSE;
+
+                case ARRAY_HETERO:  // Lft = INT, Rht = HETERO
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        // Split cases based upon the hetero's storage type
+                        switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
+                        {
+                            case ARRAY_BOOL:    // Lft = INT, Rht = BOOL
+                            case ARRAY_INT:     // Lft = INT, Rht = INT
+                                if (*((LPAPLINT) lpMemLft)++ NE aplIntegerRht)
+                                    return FALSE;
+                                break;
+
+                            case ARRAY_FLOAT:   // Lft = INT, Rht = FLOAT
+                                if ((APLFLOAT) *((LPAPLINT) lpMemLft)++ NE aplFloatRht)
+                                    return FALSE;
+                                break;
+
+                            case ARRAY_CHAR:    // Lft = INT, Rht = CHAR
+                                return FALSE;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
+
+                    return TRUE;
+
+                case ARRAY_BOOL:    // Lft = INT, Rht = BOOL    (Can't happen)
+                defstop
+                    return FALSE;
+            } // End SWITCH
+
+        case ARRAY_FLOAT:           // Lft = FLOAT, Rht = FLOAT/APA/CHAR/HETERO
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_FLOAT:   // Lft = FLOAT, Rht = FLOAT
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
+                        return FALSE;
+                    return TRUE;
+
+                case ARRAY_APA:     // Lft = FLOAT, Rht = APA
+#define lpHeader    ((LPAPLAPA) lpMemRht)
+                    apaOff = lpHeader->Off;
+                    apaMul = lpHeader->Mul;
+#undef  lpHeader
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, (APLFLOAT) (apaOff + apaMul * uDim), fQuadCT, NULL))
+                        return FALSE;
+                    return TRUE;
+
+                case ARRAY_CHAR:    // Lft = FLOAT, Rht = CHAR
+                    return FALSE;
+
+                case ARRAY_HETERO:  // Lft = FLOAT, Rht = HETERO
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        // Split cases based upon the hetero's storage type
+                        switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
+                        {
+                            case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL
+                            case ARRAY_INT:     // Lft = FLOAT, Rht = INT
+                                if (*((LPAPLFLOAT) lpMemLft)++ NE (APLFLOAT) aplIntegerRht)
+                                    return FALSE;
+                                break;
+
+                            case ARRAY_FLOAT:   // Lft = FLOAT, Rht = FLOAT
+                                if (*((LPAPLFLOAT) lpMemLft)++ NE aplFloatRht)
+                                    return FALSE;
+                                break;
+
+                            case ARRAY_CHAR:    // Lft = FLOAT, Rht = CHAR
+                                return FALSE;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
+
+                    return TRUE;
+
+                case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL  (Can't happen)
+                case ARRAY_INT:     // Lft = FLOAT, Rht = INT   (Can't happen)
+                defstop
+                    return FALSE;
+            } // End SWITCH
+
+        case ARRAY_APA:             // Lft = APA, Rht = APA/CHAR/HETERO
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_APA:     // Lft = APA, Rht = APA
+                    // Compare the APA offsets and multipliers
+                    return ((((LPAPLAPA) lpMemLft)->Off
+                         EQ ((LPAPLAPA) lpMemRht)->Off)
+                        && (((LPAPLAPA) lpMemLft)->Mul
+                         EQ ((LPAPLAPA) lpMemLft)->Mul));
+
+                case ARRAY_CHAR:    // Lft = APA, Rht = CHAR
+                    return FALSE;
+
+                case ARRAY_HETERO:  // Lft = APA, Rht = HETERO
+#define lpHeader    ((LPAPLAPA) lpMemLft)
+                    apaOff = lpHeader->Off;
+                    apaMul = lpHeader->Mul;
+#undef  lpHeader
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        // Split cases based upon the hetero's storage type
+                        switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
+                        {
+                            case ARRAY_BOOL:    // Lft = APA, Rht = BOOL
+                            case ARRAY_INT:     // Lft = APA, Rht = INT
+                                if ((apaOff + apaMul * uDim) NE aplIntegerRht)
+                                    return FALSE;
+                                break;
+
+                            case ARRAY_FLOAT:   // Lft = APA, Rht = FLOAT
+                                if ((apaOff + apaMul * uDim) NE aplFloatRht)
+                                    return FALSE;
+                                break;
+
+                            case ARRAY_CHAR:    // Lft = APA, Rht = CHAR
+                                return FALSE;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
+
+                    return TRUE;
+
+                case ARRAY_BOOL:    // Lft = APA, Rht = BOOL    (Can't happen)
+                case ARRAY_INT:     // Lft = APA, Rht = INT     (Can't happen)
+                case ARRAY_FLOAT:   // Lft = APA, Rht = FLOAT   (Can't happen)
+                defstop
+                    return FALSE;
+            } // End SWITCH
+
+        case ARRAY_CHAR:            // Lft = CHAR, Rht = CHAR/HETERO
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_CHAR:    // Lft = CHAR, Rht = CHAR
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    if (*((LPAPLCHAR) lpMemLft)++ NE *((LPAPLCHAR) lpMemRht)++)
+                        return FALSE;
+                    return TRUE;
+
+                case ARRAY_HETERO:  // Lft = CHAR, Rht = HETERO
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        // Split cases based upon the hetero's storage type
+                        switch (GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht))
+                        {
+                            case ARRAY_BOOL:    // Lft = CHAR, Rht = BOOL
+                            case ARRAY_INT:     // Lft = CHAR, Rht = INT
+                            case ARRAY_FLOAT:   // Lft = CHAR, Rht = FLOAT
+                                return FALSE;
+
+                            case ARRAY_CHAR:    // Lft = CHAR, Rht = CHAR
+                                if (*((LPAPLCHAR) lpMemLft)++ NE aplCharRht)
+                                    return FALSE;
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } // End FOR
+
+                    return TRUE;
+
+                case ARRAY_BOOL:    // Lft = CHAR, Rht = BOOL   (Can't happen)
+                case ARRAY_INT:     // Lft = CHAR, Rht = INT    (Can't happen)
+                case ARRAY_FLOAT:   // Lft = CHAR, Rht = FLOAT  (Can't happen)
+                case ARRAY_APA:     // Lft = CHAR, Rht = APA    (Can't happen)
+                defstop
+                    return FALSE;
+            } // End SWITCH
+
+        case ARRAY_HETERO:          // Lft = HETERO, Rht = HETERO
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_HETERO:  // Lft = HETERO, Rht = HETERO
+                    // Loop through the elements
+                    for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
+                    {
+                        // Get the next values and type
+                        aplTypeLft = GetNextHetero (lpMemLft, uDim, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                        aplTypeRht = GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+
+                        // Split cases based upon the left hetero's storage type
+                        switch (aplTypeLft)
+                        {
+                            case ARRAY_BOOL:            // Lft = BOOL,  Rht = BOOL/INT/FLOAT/CHAR
+                            case ARRAY_INT:             // Lft = INT,   Rht = BOOL/INT/FLOAT/CHAR
+                                // Split cases based upon the right hetero's storage type
+                                switch (aplTypeRht)
+                                {
+                                    case ARRAY_BOOL:    // Lft = BOOL,  Rht = BOOL
+                                    case ARRAY_INT:     // Lft = BOOL,  Rht = INT
+                                        if (aplIntegerLft NE aplIntegerRht)
+                                            return FALSE;
+                                        break;
+
+                                    case ARRAY_FLOAT:   // Lft = BOOL,  Rht = FLOAT
+                                        if ((APLFLOAT) aplIntegerLft NE aplFloatRht)
+                                            return FALSE;
+                                        break;
+
+                                    case ARRAY_CHAR:    // Lft = BOOL,  Rht = CHAR
+                                        return FALSE;
+
+                                    defstop
+                                        return FALSE;
+                                } // End SWITCH
+
+                            case ARRAY_FLOAT:           // Lft = FLOAT, Rht = BOOL/INT/FLOAT/CHAR
+                                // Split cases based upon the right hetero's storage type
+                                switch (aplTypeRht)
+                                {
+                                    case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL
+                                    case ARRAY_INT:     // Lft = FLOAT, Rht = INT
+                                        if (aplFloatLft NE (APLFLOAT) aplIntegerRht)
+                                            return FALSE;
+                                        break;
+
+                                    case ARRAY_FLOAT:   // Lft = FLOAT, Rht = FLOAT
+                                        if (aplFloatLft NE aplFloatRht)
+                                            return FALSE;
+                                        break;
+
+                                    case ARRAY_CHAR:    // Lft = FLOAT, Rht = CHAR
+                                        return FALSE;
+
+                                    defstop
+                                        return FALSE;
+                                } // End SWITCH
+
+                            case ARRAY_CHAR:            // Lft = CHAR,  Rht = BOOL/INT/FLOAT/CHAR
+                                // Split cases based upon the right hetero's storage type
+                                switch (aplTypeRht)
+                                {
+                                    case ARRAY_BOOL:    // Lft = CHAR,  Rht = BOOL
+                                    case ARRAY_INT:     // Lft = CHAR,  Rht = INT
+                                    case ARRAY_FLOAT:   // Lft = CHAR,  Rht = FLOAT
+                                        return FALSE;
+
+                                    case ARRAY_CHAR:    // Lft = CHAR,  Rht = CHAR
+                                        if (aplCharLft NE aplCharRht)
+                                            return FALSE;
+                                        break;
+
+                                    defstop
+                                        return FALSE;
+                                } // End SWITCH
+
+                            defstop
+                                return FALSE;
+                        } // End SWITCH
+                    } // End FOR
+
+                    return TRUE;
+
+                defstop
+                    return FALSE;
+            } // End SWITCH
+
+        defstop
+            return FALSE;
+    } // End SWITCH
 } // End PrimFnDydEqualUnderbarSimple
 
 
 //***************************************************************************
-//	PrimFnDydEqualUnderbarNested
+//  PrimFnDydEqualUnderbarNested
 //
-//	Subroutine to compare two nested arrays
+//  Subroutine to compare two nested arrays
 //***************************************************************************
 
 BOOL PrimFnDydEqualUnderbarNested
-	(LPVOID   lpMemLft,
-	 APLSTYPE aplTypeLft,
-	 APLNELM  aplNELMLft,
-	 APLRANK  aplRankLft,
-	 LPVOID   lpMemRht,
-	 APLSTYPE aplTypeRht,
-	 APLNELM  aplNELMRht,
-	 APLRANK  aplRankRht)
+    (LPVOID   lpMemLft,
+     APLSTYPE aplTypeLft,
+     APLNELM  aplNELMLft,
+     APLRANK  aplRankLft,
+     LPVOID   lpMemRht,
+     APLSTYPE aplTypeRht,
+     APLNELM  aplNELMRht,
+     APLRANK  aplRankRht)
 
 {
-	APLUINT  uDim;
-	APLNELM  aplNELMLft2,
-			 aplNELMRht2;
-	LPVOID	 lpMemLft2,
-			 lpMemRht2;
-	APLINT	 aplIntegerLft,
-			 aplIntegerRht;
-	APLFLOAT aplFloatLft,
-			 aplFloatRht;
-	APLCHAR  aplCharLft,
-			 aplCharRht;
-	UINT	 ptrType;
-	BOOL	 bRet = TRUE;
+    APLUINT  uDim;
+    APLNELM  aplNELMLft2,
+             aplNELMRht2;
+    LPVOID   lpMemLft2,
+             lpMemRht2;
+    APLINT   aplIntegerLft,
+             aplIntegerRht;
+    APLFLOAT aplFloatLft,
+             aplFloatRht;
+    APLCHAR  aplCharLft,
+             aplCharRht;
+    UINT     ptrType;
+    BOOL     bRet = TRUE;
 
-	// Ensure same rank and # elements
-	if (aplRankLft NE aplRankRht
-	 || aplNELMLft NE aplNELMRht)
-		return FALSE;
+    // Ensure same rank and # elements
+    if (aplRankLft NE aplRankRht
+     || aplNELMLft NE aplNELMRht)
+        return FALSE;
 
-	// Ensure the dimensions are the same
-	if (aplRankLft NE 0)
-	{
-		// Skip over the headers to the dimensions
-		lpMemLft = VarArrayBaseToDim (lpMemLft);
-		lpMemRht = VarArrayBaseToDim (lpMemRht);
+    // Ensure the dimensions are the same
+    if (aplRankLft NE 0)
+    {
+        // Skip over the headers to the dimensions
+        lpMemLft = VarArrayBaseToDim (lpMemLft);
+        lpMemRht = VarArrayBaseToDim (lpMemRht);
 
-		for (uDim = 0; uDim < aplRankLft; uDim++)
-		if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
-			return FALSE;
-	} // End IF
+        for (uDim = 0; uDim < aplRankLft; uDim++)
+        if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
+            return FALSE;
+    } // End IF
 
-	// lpMemLft and lpMemRht now point to the data
+    // lpMemLft and lpMemRht now point to the data
 
-	// Loop through the elements
-	for (uDim = 0; bRet && uDim < aplNELMLft; uDim++, ((LPAPLNESTED) lpMemLft)++, ((LPAPLNESTED) lpMemRht)++)
-	{
-		// The ptr types must be the same
-		ptrType = GetPtrTypeInd (lpMemLft);
-		if (ptrType NE GetPtrTypeInd (lpMemRht))
-			return FALSE;
+    // Loop through the elements
+    for (uDim = 0; bRet && uDim < aplNELMLft; uDim++, ((LPAPLNESTED) lpMemLft)++, ((LPAPLNESTED) lpMemRht)++)
+    {
+        // The ptr types must be the same
+        ptrType = GetPtrTypeInd (lpMemLft);
+        if (ptrType NE GetPtrTypeInd (lpMemRht))
+            return FALSE;
 
-		// Split cases based upon the ptr type of the elements
-		switch (ptrType)
-		{
-			case PTRTYPE_STCONST:
-				// Get the contents of the two LPSYMENTRYs
-				// The index is zero because we increment the ptrs in the FOR loop
-				aplTypeLft = GetNextHetero (lpMemLft, 0, &aplIntegerLft, &aplFloatLft, &aplCharLft);
-				aplTypeRht = GetNextHetero (lpMemRht, 0, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+        // Split cases based upon the ptr type of the elements
+        switch (ptrType)
+        {
+            case PTRTYPE_STCONST:
+                // Get the contents of the two LPSYMENTRYs
+                // The index is zero because we increment the ptrs in the FOR loop
+                aplTypeLft = GetNextHetero (lpMemLft, 0, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                aplTypeRht = GetNextHetero (lpMemRht, 0, &aplIntegerRht, &aplFloatRht, &aplCharRht);
 
-				// Strip out char vs. char
-				if (aplTypeLft EQ ARRAY_CHAR
-				 && aplTypeRht EQ ARRAY_CHAR)
-				{
-					if (aplCharLft NE aplCharRht)
-						return FALSE;
-					else
-						break;
-				} // End IF
+                // Strip out char vs. char
+                if (aplTypeLft EQ ARRAY_CHAR
+                 && aplTypeRht EQ ARRAY_CHAR)
+                {
+                    if (aplCharLft NE aplCharRht)
+                        return FALSE;
+                    else
+                        break;
+                } // End IF
 
-				// Strip out char vs. num and num vs. char
-				if (aplTypeLft EQ ARRAY_CHAR
-				 || aplTypeRht EQ ARRAY_CHAR)
-					return FALSE;
+                // Strip out char vs. num and num vs. char
+                if (aplTypeLft EQ ARRAY_CHAR
+                 || aplTypeRht EQ ARRAY_CHAR)
+                    return FALSE;
 
-				// Strip out BOOL/INT vs. BOOL/INT
-				if (IsSimpleInt (aplTypeLft)
-				 && IsSimpleInt (aplTypeRht))
-				{
-					if (aplIntegerLft NE aplIntegerRht)
-						return FALSE;
-					else
-						break;
-				} // End IF
+                // Strip out BOOL/INT vs. BOOL/INT
+                if (IsSimpleInt (aplTypeLft)
+                 && IsSimpleInt (aplTypeRht))
+                {
+                    if (aplIntegerLft NE aplIntegerRht)
+                        return FALSE;
+                    else
+                        break;
+                } // End IF
 
-				// Finally, handle FLOAT vs. FLOAT
-				if (!CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL))
-					return FALSE;
-				break;
+                // Finally, handle FLOAT vs. FLOAT
+                if (!CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL))
+                    return FALSE;
+                break;
 
-			case PTRTYPE_HGLOBAL:
-				// Get the attrs (Type, NELM, and Rank) of the left and right elements
-				// Note that we overwrite the incoming parameters aplTypeXXX and aplRankXXX
-				//	 as we no longer need those variables.
-				AttrsOfGlb (ClrPtrTypeIndGlb (lpMemLft), &aplTypeLft, &aplNELMLft2, &aplRankLft, NULL);
-				AttrsOfGlb (ClrPtrTypeIndGlb (lpMemRht), &aplTypeRht, &aplNELMRht2, &aplRankRht, NULL);
+            case PTRTYPE_HGLOBAL:
+                // Get the attrs (Type, NELM, and Rank) of the left and right elements
+                // Note that we overwrite the incoming parameters aplTypeXXX and aplRankXXX
+                //   as we no longer need those variables.
+                AttrsOfGlb (ClrPtrTypeIndGlb (lpMemLft), &aplTypeLft, &aplNELMLft2, &aplRankLft, NULL);
+                AttrsOfGlb (ClrPtrTypeIndGlb (lpMemRht), &aplTypeRht, &aplNELMRht2, &aplRankRht, NULL);
 
-				// Ensure same rank and # elements
-				if (aplRankLft NE aplRankRht
-				 || aplNELMLft NE aplNELMRht)
-					return FALSE;
+                // Ensure same rank and # elements
+                if (aplRankLft NE aplRankRht
+                 || aplNELMLft NE aplNELMRht)
+                    return FALSE;
 
-				// Lock the memory to get a ptr to it
-				lpMemLft2 = MyGlobalLock (ClrPtrTypeIndGlb (lpMemLft));
-				lpMemRht2 = MyGlobalLock (ClrPtrTypeIndGlb (lpMemRht));
+                // Lock the memory to get a ptr to it
+                lpMemLft2 = MyGlobalLock (ClrPtrTypeIndGlb (lpMemLft));
+                lpMemRht2 = MyGlobalLock (ClrPtrTypeIndGlb (lpMemRht));
 
-				// Split based upon Simple vs. Hetero vs. Nested
-				switch (2 * (aplTypeLft EQ ARRAY_NESTED)
-					  + 1 * (aplTypeRht EQ ARRAY_NESTED))
-				{
-					case 2 * 0 + 1 * 0: 	// Lft = Simple, Rht = Simple
-						// Because this function is commutative, we can switch
-						//	  the two args without loss of generality.
-						// Switch the args so that the left arg is the "simpler"
-						//	  of the two (Simple Homogeneous < Simple Heterogeneous < Nested),
-						//	  and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
-						if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
-							bRet = PrimFnDydEqualUnderbarSimple (lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht,
-																 lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft);
-						else
-							bRet = PrimFnDydEqualUnderbarSimple (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
-																 lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht);
-						break;
+                // Split based upon Simple vs. Hetero vs. Nested
+                switch (2 * (aplTypeLft EQ ARRAY_NESTED)
+                      + 1 * (aplTypeRht EQ ARRAY_NESTED))
+                {
+                    case 2 * 0 + 1 * 0:     // Lft = Simple, Rht = Simple
+                        // Because this function is commutative, we can switch
+                        //    the two args without loss of generality.
+                        // Switch the args so that the left arg is the "simpler"
+                        //    of the two (Simple Homogeneous < Simple Heterogeneous < Nested),
+                        //    and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
+                        if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
+                            bRet = PrimFnDydEqualUnderbarSimple (lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht,
+                                                                 lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft);
+                        else
+                            bRet = PrimFnDydEqualUnderbarSimple (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
+                                                                 lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht);
+                        break;
 
-					case 2 * 0 + 1 * 1: 	// Lft = Simple, Rht = Nested
-					case 2 * 1 + 1 * 0: 	// Lft = Nested, Rht = Simple
-						bRet = FALSE;
+                    case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
+                    case 2 * 1 + 1 * 0:     // Lft = Nested, Rht = Simple
+                        bRet = FALSE;
 
-						break;
+                        break;
 
-					case 2 * 1 + 1 * 1: 	// Lft = Nested, Rht = Nested
-						bRet = PrimFnDydEqualUnderbarNested (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
-															 lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht);
-						break;
+                    case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
+                        bRet = PrimFnDydEqualUnderbarNested (lpMemLft2, aplTypeLft, aplNELMLft2, aplRankLft,
+                                                             lpMemRht2, aplTypeRht, aplNELMRht2, aplRankRht);
+                        break;
 
-					defstop
-						break;
-				} // End SWITCH
+                    defstop
+                        break;
+                } // End SWITCH
 
-				// We no longer need these ptrs
-				MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemLft)); lpMemLft2 = NULL;
-				MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemRht)); lpMemRht2 = NULL;
+                // We no longer need these ptrs
+                MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemLft)); lpMemLft2 = NULL;
+                MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemRht)); lpMemRht2 = NULL;
 
-				break;
+                break;
 
-			defstop
-				break;
-		} // End SWITCH
-	} // End FOR
+            defstop
+                break;
+        } // End SWITCH
+    } // End FOR
 
-	return bRet;
+    return bRet;
 } // End PrimFnDydEqualUnderbarNested
 
 
 //***************************************************************************
-//	End of File: pf_equalund.c
+//  End of File: pf_equalund.c
 //***************************************************************************

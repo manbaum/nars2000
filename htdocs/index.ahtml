@@ -334,27 +334,35 @@ ul, ol
 
       <h3>Primitive functions</h3>
       <ul>
-        <li>All monadic and dyadic primitive scalar functions with and without axis</li>
-        <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
-          Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
-          respectively</li>
+        <li>All monadic primitive scalar functions</li>
+        <li>Monadic ({rho}) (shape)</li>
         <li>Monadic left shoe ({enclose}) (enclose) with and without axis</li>
         <li>Monadic iota ({iota}) (index generator)</li>
         <li>Monadic epsilon ({epsilon}) (enlist)</li>
+        <li>Monadic comma ({comma} and {commabar}) (ravel (with and without axis) and table)
+           &mdash; Axis operator to Ravel can transpose coordinates</li>
+        <li>Monadic equal-underbar ({equalunderbar}) (depth)</li>
+        <li>Monadic circle-slope ({circleslope}) (transpose)</li>
+        <li>Monadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse)</li>
+        <li>Monadic domino ({domino}) (matrix inverse)
+          using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
         <li>Monadic thorn ({thorn}) (default format)</li>
+        <li>All dyadic primitive scalar functions with and without axis</li>
+
+        <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
+          Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
+          respectively</li>
+        <li>Dyadic rho ({rho}) (reshape)</li>
         <li>Dyadic slash ({/}) (replicate)</li>
         <li>Dyadic slope ({\}) (expand)</li>
         <li>Dyadic left tack ({lev}) (left) and right tack ({dex}) (right)</li>
         <li>Dyadic squad ({squad}) (indexing)</li>
         <li>Dyadic right shoe ({pick}) (pick)</li>
-        <li>Monadic and dyadic rho ({rho}) (shape and reshape)</li>
-        <li>Monadic and dyadic comma ({comma} and
-          <span class="APL">,[X]</span> and {commabar})
-          (ravel/table and catenate/laminate) with and without axis &mdash; Axis operator to Ravel can transpose coordinates</li>
-        <li>Monadic and dyadic equal-underbar ({equalunderbar}) (depth and match)</li>
-        <li>Monadic and dyadic circle-slope ({circleslope}) (transpose)</li>
-        <li>Monadic and dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse and rotate)</li>
-        <li>Monadic and dyadic domino ({domino}) (matrix inverse and matrix divide)
+        <li>Dyadic comma ({comma} and {commabar}) (catenate/laminate) with and without axis</li>
+        <li>Dyadic equal-underbar ({equalunderbar}) (match)</li>
+        <li>Dyadic circle-slope ({circleslope}) (transpose)</li>
+        <li>Dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) (rotate)</li>
+        <li>Dyadic domino ({domino}) (matrix divide)
           using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
       </ul>
 
@@ -498,7 +506,7 @@ ul, ol
                 the code.
               </li>
 
-              <li>The <a class="linkleft" href="http://www.nars2000.org/viewvc/">browser view</a>
+              <li>The <a class="linkleft" href="http://www.nars2000.org/viewvc/trunk/">browser view</a>
                 also allows you to download the entire source code as a compressed file.
                 Try the link at the bottom of each index page labeled "Download tarball".
               </li>

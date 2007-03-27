@@ -84,7 +84,7 @@ LPYYSTYPE PrimFnStile_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_STILE
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_STILE
          || lptkFunc->tkData.tkChar EQ '|');
 
     // Split cases based upon monadic or dyadic

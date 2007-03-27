@@ -85,7 +85,7 @@ LPYYSTYPE PrimFnCircle_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_CIRCLE);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLE);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

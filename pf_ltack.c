@@ -36,7 +36,7 @@ LPYYSTYPE PrimFnLeftTack_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_LEFTTACK);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_LEFTTACK);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

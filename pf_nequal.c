@@ -83,7 +83,7 @@ LPYYSTYPE PrimFnNotEqual_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UCS2_NOTEQUAL);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)

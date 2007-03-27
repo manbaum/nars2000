@@ -45,8 +45,8 @@
  */
 
 ////WCHAR debugText[] =
-////L"(Z1 Z2)" WS_UCS2_LEFTARROW L"[(L1 L2 L3)] (LO FOO RO) (R1 R2 R3 R4)\r\n"
-////L"Z1" WS_UCS2_LEFTARROW WS_UCS2_DELTASTILE WS_UCS2_DELTASTILE L"R1"
+////L"(Z1 Z2)" WS_UTF16_LEFTARROW L"[(L1 L2 L3)] (LO FOO RO) (R1 R2 R3 R4)\r\n"
+////L"Z1" WS_UTF16_LEFTARROW WS_UTF16_DELTASTILE WS_UTF16_DELTASTILE L"R1"
 ////;
 
 char szCloseMessage[] = "You have changed the body of this function;"
@@ -89,7 +89,7 @@ BOOL CreateFcnWindow
                       CW_USEDEFAULT,        // Width
                       hWndMC,               // Parent
                       _hInstance,           // Instance
-                      (LPARAM) &lpwszLine[1]);  // Extra data, skip over the initial UCS2_DEL
+                      (LPARAM) &lpwszLine[1]);  // Extra data, skip over the initial UTF16_DEL
     if (hWnd EQ NULL)
     {
         MB (pszNoCreateFEWnd);

@@ -11,8 +11,8 @@ O=RET\                                  # Output directory
 M98=M:\                                 # MSVC 1.52 (16-bit) compiler
 CC=$(M98)BIN\cl
 LD=$(M98)BIN\link
-INCLUDE=.;$(M98)INCLUDE
-LIB=$(M98)LIB
+INCLUDE=.;$(M98)INCLUDE;R:\INCLUDE
+LIB=$(M98)LIB;R:\LIB
 
 {$(R)}.c{$(O)}.obj:
         $(CC) /c /AS /Z7 /Fo$* $(@B).c
@@ -26,7 +26,8 @@ LIB=$(M98)LIB
 
 ALL:    DIR                 \
          $(BC)depscan.exe   \
-         $(BC)vdir.exe
+         $(BC)vdir.exe      \
+         $(BC)linecnt.exe
 
 DEL:
         @del /Q $(O)*.*
@@ -37,6 +38,10 @@ DIR:
 $(O)depscan.obj: $(R)depscan.c
 
 $(O)depscan.exe: $(O)depscan.obj
+
+$(O)linecnt.obj: $(R)linecnt.c
+
+$(O)linecnt.exe: $(O)linecnt.obj
 
 $(O)vdir.exe: vdir.cpp
         $(CC) /c /AL /Z7 /Fo$* $(@B).cpp

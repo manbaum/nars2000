@@ -124,7 +124,8 @@ BOOL CmdClose_EM
 {
     if (TabCtrl_GetItemCount (hWndTC) EQ 1)
     {
-        AppendLine (L"Can't close last workspace -- use )EXIT", FALSE);
+        AppendLine (L"Can't close last workspace -- use )EXIT", FALSE, TRUE);
+
         return FALSE;
     } // End IF
 

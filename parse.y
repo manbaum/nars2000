@@ -99,7 +99,7 @@ Stmts:
 /* Statement */
 Stmt:     /* Empty */                   {DbgMsgW2 (L"%%Stmt:  <empty>");}
     | ArrExpr                           {DbgMsgW2 (L"%%Stmt:  ArrExpr");
-                                         bRet = ArrayDisplay_EM (&$1.tkToken);
+                                         bRet = ArrayDisplay_EM (&$1.tkToken, TRUE);
                                          FreeResult (&$1.tkToken);
                                          if (!bRet)
                                              YYERROR;
@@ -432,22 +432,22 @@ SimpExpr:
                                          $$ = *lpYYRes;
                                         }
     | ArrExpr ASSIGN       QUAD         {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"ArrExpr");
-                                         bRet = ArrayDisplay_EM (&$1.tkToken);
+                                         bRet = ArrayDisplay_EM (&$1.tkToken, TRUE);
                                          if (!bRet)
                                          {
                                              FreeResult (&$1.tkToken);
                                              YYERROR;
                                          }
-                                         $$ = $1;
+                                         $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                         }
     | ArrExpr ASSIGN       QUOTEQUAD    {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"ArrExpr");
-                                         bRet = ArrayDisplay_EM (&$1.tkToken);  // ***FIXME***
+                                         bRet = ArrayDisplay_EM (&$1.tkToken, FALSE);
                                          if (!bRet)
                                          {
                                              FreeResult (&$1.tkToken);
                                              YYERROR;
                                          }
-                                         $$ = $1;
+                                         $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                         }
     | ArrExpr ASSIGN       NameAnyVar   {DbgMsgW2 (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"ArrExpr");
                                          bRet = AssignName_EM (&$3.tkToken, &$1.tkToken);

@@ -89,24 +89,25 @@ DecrRefCntInd (hGlbData);
 
 //*************************** Window Data ********************************
 
-// Define offsets in SMWNDCLASS window extra bytes
-#define GWLSM_VKSTATE   0
-#define GWLSM_EXTRA     GWLSM_VKSTATE  + 1 * sizeof (long)
-
 // Define offsets in DBWNDCLASS window extra bytes
 #define GWLDB_EXTRA     0
 
+// Define common offset between the Session Manager and Function Editor
+#define GWLSF_HWNDEC    0               // Handle of the matching Edit control
+#define GWLSF_UNDO_BEG  GWLSF_HWNDEC   + 1 * sizeof (long)
+#define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (long)
+#define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (long)
+#define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (long)
+#define GWLSF_VKSTATE   GWLSF_UNDO_GRP + 1 * sizeof (long)
+#define GWLSF_LASTKEY   GWLSF_VKSTATE  + 1 * sizeof (long)
+#define GWLSF_CHANGED   GWLSF_LASTKEY  + 1 * sizeof (long)
+
+// Define offsets in SMWNDCLASS window extra bytes
+#define GWLSM_EXTRA     GWLSF_CHANGED  + 1 * sizeof (long)
+
 // Define offsets in FEWNDCLASS window extra bytes
-#define GWLFE_HWNDEB    0               // Handle of the matching Edit box control
-#define GWLFE_UNDO_BEG  GWLFE_HWNDEB   + 1 * sizeof (long)
-#define GWLFE_UNDO_NXT  GWLFE_UNDO_BEG + 1 * sizeof (long)
-#define GWLFE_UNDO_LST  GWLFE_UNDO_NXT + 1 * sizeof (long)
-#define GWLFE_UNDO_GRP  GWLFE_UNDO_LST + 1 * sizeof (long)
-#define GWLFE_LINECNT   GWLFE_UNDO_GRP + 1 * sizeof (long)
-#define GWLFE_VKSTATE   GWLFE_LINECNT  + 1 * sizeof (long)
-#define GWLFE_LASTKEY   GWLFE_VKSTATE  + 1 * sizeof (long)
-#define GWLFE_CHANGED   GWLFE_LASTKEY  + 1 * sizeof (long)
-#define GWLFE_EXTRA     GWLFE_CHANGED  + 1 * sizeof (long) // Total # extra bytes
+#define GWLFE_LINECNT   GWLSF_CHANGED  + 1 * sizeof (long)
+#define GWLFE_EXTRA     GWLFE_LINECNT  + 1 * sizeof (long) // Total # extra bytes
 
 // Define offsets in MEWNDCLASS window extra bytes
 #define GWLME_EXTRA     0

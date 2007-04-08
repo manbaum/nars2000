@@ -734,16 +734,16 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
 #endif
 
 HGLOBAL ExecuteLine
-    (int         iExecLine,
-     LPEXECSTATE esState)
+    (UINT        uLineNum,      // Line #
+     LPEXECSTATE esState,       // EXECSTATE enum
+     HWND        hWndEC)        // Handle of Edit Control window
 
 {
     LPWCHAR   lpwszCompLine,    // Ptr to complete line
-              lpwszLine,
-              lpwsz;
+              lpwszLine;
     HGLOBAL   hGlbToken;        // Handle of tokenized line
-    LPGLBHIST lpGlbHist;
-    int       iTotalLen, iLen, i;
+    UINT      uLinePos,         // Char position of start of line
+              uLineLen;         // Line length
 
     // Ensure we calculated the lengths properly
     if (sizeof (fsaColTable) NE (COL_LENGTH * sizeof (FSA_ACTION) * FSA_LENGTH))
@@ -758,22 +758,28 @@ HGLOBAL ExecuteLine
 ////    return NULL;
 ////} // End IF
 
-    // Get the global handle to the history buffer
-    lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
+////     // Get the global handle to the history buffer
+////     lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
+////
+////     // Loop through the continuations and calculate the total length
+////     for (u = uLineNum, uLineLen = 0;
+////          lpGlbHist[u].ContPrev || u EQ uLineNum;
+////          u++)
+////     {
+////         lpwszLine = MyGlobalLock (lpGlbHist[u].hGlb);
+////         uLineLen += lstrlenW (lpwszLine);
+////         MyGlobalUnlock (lpGlbHist[u].hGlb); lpwszLine = NULL;
+////     } // End FOR
 
-    // Loop through the continuations and calculate the total length
-    for (i = iExecLine, iTotalLen = 0;
-         lpGlbHist[i].ContPrev || i EQ iExecLine;
-         i++)
-    {
-        lpwszLine = MyGlobalLock (lpGlbHist[i].hGlb);
-        iTotalLen += lstrlenW (lpwszLine);
-        MyGlobalUnlock (lpGlbHist[i].hGlb); lpwszLine = NULL;
-    } // End FOR
+    // Get the position of the start of the line
+    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+
+    // Get the line length
+    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
     // Allocate virtual memory for the line (along with its continuations)
     lpwszCompLine = VirtualAlloc (NULL,             // Any address
-                                  (iTotalLen + 1) * sizeof (WCHAR), // "+1" for the terminating zero
+                                  (uLineLen + 1) * sizeof (WCHAR),  // "+1" for the terminating zero
                                   MEM_COMMIT,
                                   PAGE_READWRITE);
     if (!lpwszCompLine)
@@ -784,37 +790,43 @@ HGLOBAL ExecuteLine
         return NULL;        // Mark as failed
     } // End IF
 
-    // Catenate the lines together
-    for (i = iExecLine, lpwsz = lpwszCompLine;
-         lpGlbHist[i].ContPrev || i EQ iExecLine;
-         i++, lpwsz += iLen)
-    {
-        lpwszLine = MyGlobalLock (lpGlbHist[i].hGlb);
+////     // Catenate the lines together
+////     for (i = iExecLine, lpwsz = lpwszCompLine;
+////          lpGlbHist[i].ContPrev || i EQ iExecLine;
+////          i++, lpwsz += iLen)
+////     {
+////         lpwszLine = MyGlobalLock (lpGlbHist[i].hGlb);
+////
+////         iLen = lstrlenW (lpwszLine);
+////
+////         memmove (lpwsz, lpwszLine, iLen * sizeof (WCHAR));
+////
+////         MyGlobalUnlock (lpGlbHist[i].hGlb); lpwszLine = NULL;
+////     } // End FOR
 
-        iLen = lstrlenW (lpwszLine);
+    // Specify the maximum # chars in the buffer
+    ((LPWORD) lpwszCompLine)[0] = uLineLen;
 
-        memmove (lpwsz, lpwszLine, iLen * sizeof (WCHAR));
-
-        MyGlobalUnlock (lpGlbHist[i].hGlb); lpwszLine = NULL;
-    } // End FOR
+    // Get the contents of the line
+    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszCompLine);
 
     // Ensure properly terminated
-    lpwszCompLine[iTotalLen] = L'\0';
+    lpwszCompLine[uLineLen] = L'\0';
 
-#ifdef DEBUG
-    {   // ***DEBUG***
-        wsprintfW (lpwszTemp,
-                   L"#### Executing a line:  #%d:  <%s> (%d) ContPrev=%d, ContNext=%d",
-                   iExecLine,
-                   lpwszCompLine,
-                   lstrlenW (lpwszCompLine),
-                   lpGlbHist[iExecLine].ContPrev,
-                   lpGlbHist[iExecLine].ContNext);
-        DbgMsgW (lpwszTemp);
-    }   // ***DEBUG*** END
-#endif
-    // Unlock the handle
-    MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
+//// #ifdef DEBUG
+////     {   // ***DEBUG***
+////         wsprintfW (lpwszTemp,
+////                    L"#### Executing a line:  #%d:  <%s> (%d) ContPrev=%d, ContNext=%d",
+////                    iExecLine,
+////                    lpwszCompLine,
+////                    lstrlenW (lpwszCompLine),
+////                    lpGlbHist[iExecLine].ContPrev,
+////                    lpGlbHist[iExecLine].ContNext);
+////         DbgMsgW (lpwszTemp);
+////     }   // ***DEBUG*** END
+//// #endif
+////     // Unlock the handle
+////     MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
 
     // Strip off leading blanks
     for (lpwszLine = lpwszCompLine;
@@ -875,19 +887,22 @@ HGLOBAL ExecuteLine
                 DbgMsg ("Locked function definition");
 #endif
                 hGlbToken = NULL;
+
                 break;
 
             default:
                 // Tokenize, parse, and untokenize the line
                 hGlbToken = Tokenize_EM (lpwszCompLine);
 
-                // If it's valid, ...
-                if (hGlbToken)
-                {
-                    ParseLine (hGlbToken, lpwszCompLine);
-                    Untokenize (hGlbToken);
-                    DbgGlobalFree (hGlbToken); hGlbToken = ghGlbToken = NULL;
-                } // End IF
+                // If it's invalid, ...
+                if (hGlbToken EQ NULL)
+                    break;
+
+                ParseLine (hGlbToken, lpwszCompLine);
+                Untokenize (hGlbToken);
+                DbgGlobalFree (hGlbToken); hGlbToken = ghGlbToken = NULL;
+
+                break;
         } // End SWITCH
     } else
     {
@@ -2162,7 +2177,7 @@ void IncorrectCommand
     (void)
 
 {
-    AppendLine (ERRMSG_INCORRECT_COMMAND APPEND_NAME, FALSE);
+    AppendLine (ERRMSG_INCORRECT_COMMAND APPEND_NAME, FALSE, TRUE);
 } // End IncorrectCommand
 #undef  APPEND_NAME
 
@@ -2185,8 +2200,8 @@ void ErrorMessage
 
 ////#if (defined (DEBUG)) && (defined (EXEC_TRACE))
     { // ***DEBUG***
-        AppendLine (lpwszMsg, FALSE);
-        AppendLine (lpwszLine, FALSE);
+        AppendLine (lpwszMsg, FALSE, TRUE);
+        AppendLine (lpwszLine, FALSE, TRUE);
 
         // If the caret is not -1, display a caret
         if (iCaret NE -1)
@@ -2198,7 +2213,7 @@ void ErrorMessage
             lpwszTemp[i] = UTF16_UPCARET;
             lpwszTemp[i + 1] = '\0';
 
-            AppendLine (lpwszTemp, FALSE);
+            AppendLine (lpwszTemp, FALSE, TRUE);
         } // End IF
     } // ***DEBUG*** END
 ////#endif
@@ -2827,7 +2842,7 @@ WCHAR CharTrans
         case UTF16_RHO:                 // Alt-'r' - rho
         case UTF16_UPSTILE:             // Alt-'s' - up stile
         case UTF16_TILDE:               // Alt-'t' - tilde
-        case UTF16_DNARROW:             // Alt-'u' - down arrow
+        case UTF16_DOWNARROW:           // Alt-'u' - down arrow
         case UTF16_DOWNSHOE:            // Alt-'v' - down shoe
         case UTF16_OMEGA:               // Alt-'w' - omega
         case UTF16_RIGHTSHOE:           // Alt-'x' - right shoe
@@ -2840,7 +2855,7 @@ WCHAR CharTrans
         case UTF16_DELTASTILE:          // Alt-'$' - grade-up
         case UTF16_CIRCLESTILE:         // Alt-'%' - rotate
         case UTF16_CIRCLEBAR:           // Alt-'&' - circle-bar
-        case UTF16_HYDRANT:             // Alt-'\''- execute
+        case UTF16_UPTACKJOT:           // Alt-'\''- execute
         case UTF16_DOWNCARETTILDE:      // Alt-'(' - nor
         case UTF16_UPCARETTILDE:        // Alt-')' - nand
         case UTF16_CIRCLESTAR:          // Alt-'*' - log
@@ -2853,16 +2868,16 @@ WCHAR CharTrans
 ////////case UTF16_DIERESIS:            // Alt-'1' - dieresis (COL_PRIM_OP1)
 ////////case UTF16_OVERBAR:             // Alt-'2' - overbar (COL_OVERBAR)
         case UTF16_LEFTCARET:           // Alt-'3' - less
-        case UTF16_NOTMORE:             // Alt-'4' - not more
+        case UTF16_LEFTCARETUNDERBAR:   // Alt-'4' - not more
         case UTF16_EQUAL:               // Alt-'5' - equal
-        case UTF16_NOTLESS:             // Alt-'6' - not less
+        case UTF16_RIGHTCARETUNDERBAR:  // Alt-'6' - not less
         case UTF16_RIGHTCARET:          // Alt-'7' - more
         case UTF16_NOTEQUAL:            // Alt-'8' - not equal
         case UTF16_DOWNCARET:           // Alt-'9' - or
 ////////case UTF16_                     // Alt-':' - (none)
-        case UTF16_THORN:               // Alt-';' - format
+        case UTF16_DOWNTACKJOT:         // Alt-';' - format
 ////////case UTF16_                     // Alt-'<' - (none)
-        case UTF16_DIVIDE:              // Alt-'=' - divide
+        case UTF16_COLONBAR:            // Alt-'=' - divide
 ////////case UTF16_                     // Alt-'>' - (none)
 ////////case UTF16_                     // Alt-'?' - (none)
 ////////case UTF16_DELTILDE:            // Alt-'@' - del-tilde (COL_UNK)

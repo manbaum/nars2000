@@ -40,7 +40,8 @@ extern UINT auLinNumGLOBAL[MAXOBJ];
 #endif
 
 BOOL ArrayDisplay_EM
-    (LPTOKEN lptkRes)
+    (LPTOKEN lptkRes,
+     BOOL    bEndingCR)         // TRUE iff last line has CR
 
 {
     LPAPLCHAR lpaplChar;
@@ -59,14 +60,12 @@ BOOL ArrayDisplay_EM
                 Assert (IsGlbTypeVarDir (lptkRes->tkData.lpSym->stData.lpVoid));
 
                 // Check for NoDisplay flag
-                if (lptkRes->tkFlags.NoDisplay)
-                    return TRUE;
-                DisplayGlbArr (lpwszFormat,
-                               ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData));
+                if (!lptkRes->tkFlags.NoDisplay)
+                    DisplayGlbArr (lpwszFormat,
+                                   ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData),
+                                   bEndingCR);
                 return TRUE;
-////            lpaplChar =
-////            FormatGlobal (lpwszTemp,
-////                          ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData));
+
                 break;
             } // End IF
 
@@ -118,12 +117,9 @@ BOOL ArrayDisplay_EM
 
                 case PTRTYPE_HGLOBAL:
                     DisplayGlbArr (lpwszFormat,
-                                   ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
+                                   ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData),
+                                   bEndingCR);
                     return TRUE;
-////                lpaplChar =
-////                FormatGlobal (lpwszTemp,
-////                              ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
-                    break;
 
                 defstop
                     return FALSE;
@@ -144,7 +140,7 @@ BOOL ArrayDisplay_EM
         *lpaplChar = L'\0';
 
     // Display the line
-    AppendLine (lpwszTemp, FALSE);
+    AppendLine (lpwszTemp, FALSE, bEndingCR);
 
     return TRUE;
 } // End ArrayDisplay_EM
@@ -159,7 +155,8 @@ BOOL ArrayDisplay_EM
 
 void DisplayGlbArr
     (LPAPLCHAR lpaplChar,
-     HGLOBAL   hGlb)
+     HGLOBAL   hGlb,
+     BOOL      bEndingCR)       // TRUE iff last line has CR
 
 {
     LPVOID      lpMem;
@@ -399,7 +396,8 @@ void DisplayGlbArr
                           aplLastDim,               // Length of last dim in result (NULL for !bRawOutput)
                           aplRank,                  // Rank of this array
                           lpMemDim,                 // Ptr to this array's dimensions
-                          TRUE);                    // TRUE iff raw output
+                          TRUE,                     // TRUE iff raw output
+                          bEndingCR);               // TRUE iff last line has CR
             break;
 
         case ARRAY_NESTED:
@@ -411,8 +409,11 @@ void DisplayGlbArr
                          &lpaplChar,                // Ptr to ptr to output string
                           aplDimNRows,              // # rows in this array
                           aplDimNCols,              // # cols ...
+                          aplRank,                  // Rank of this array
+                          lpMemDim,                 // Ptr to this array's dimensions
                           aplLastDim,               // Length of last dim in result (NULL for !bRawOutput)
-                          FALSE);                   // TRUE iff raw (not {thorn}) output
+                          FALSE,                    // TRUE iff raw (not {thorn}) output
+                          bEndingCR);               // TRUE iff last line has CR
             // Loop through the formatted rows
             for (lpwsz = lpwszTemp, uCol = 0; uCol < lpFmtHeader->uFmtRows; uCol++, lpwsz += aplLastDim)
             {
@@ -422,7 +423,7 @@ void DisplayGlbArr
                 //   we need to create one
                 wch = lpwsz[aplLastDim];        // Save the ending char
                 lpwsz[aplLastDim] = L'\0';      // Terminate the line
-                AppendLine (lpwsz, FALSE);      // Display the line
+                AppendLine (lpwsz, FALSE, TRUE);// Display the line
                 lpwsz[aplLastDim] = wch;        // restore the ending char
             } // End FOR
 
@@ -666,7 +667,7 @@ LPAPLCHAR FormatFloat
                       fFloat);
             // p points to the trailing zero
 
-            q = strchrW (lpaplChar, 'E');
+            q = strchrW (lpaplChar, L'E');
 
             // Strip leading '+' in exponent
             if (q[1] EQ L'+')
@@ -1003,96 +1004,96 @@ void DisplaySymTab
 #endif
 
 
-#ifdef DEBUG
-//***************************************************************************
-//  DisplayHistory
-//
-//  Display the session manager history
-//***************************************************************************
-
-void DisplayHistory
-    (void)
-
-{
-    int       i;
-    char      szConvert[1024];
-    LPGLBHIST lpGlbHist;
-    HGLOBAL   hGlb;
-    LPWCHAR   wszLine;
-
-    // Display the hGlbHist entries
-
-    DbgMsg ("********** History *************************************");
-
-    // Get the global handle to the history buffer
-    // Note we don't use MyGlobalLock here as the caller
-    //   might have one of the handles locked and MyGlobalLock
-    //   expects the lock count to be zero.
-    lpGlbHist = GlobalLock (hGlbHist); Assert (lpGlbHist NE NULL);
-
-    // Output relevant variables
-    wsprintf (lpszTemp,
-              "SM:  iCurLine = %d, iLastValidLine = %d",
-              iCurLine,
-              iLastValidLine
-             );
-    DbgMsg (lpszTemp);
-    wsprintf (lpszTemp,
-              "SM:  iCurChar = %d, nWindowChars = %d, nWindowLines = %d",
-              iCurChar,
-              nWindowChars,
-              nWindowLines
-             );
-    DbgMsg (lpszTemp);
-    wsprintf (lpszTemp,
-              "SM:  iFirstWindowChar = %d, iLastWindowChar = %d",
-              iFirstWindowChar,
-              iLastWindowChar
-             );
-    DbgMsg (lpszTemp);
-
-    // Loop through the entries
-    for (i = 0; i < 10; i++)
-    if (hGlb = lpGlbHist[i].hGlb)
-    {
-        // Lock the memory to get a ptr to it
-        wszLine = GlobalLock (hGlb); Assert (wszLine NE NULL);
-
-        // Convert the WCHAR line wszLine to a single-byte string
-        W2A (szConvert, wszLine, sizeof (szConvert) - 1);
-
-        wsprintf (lpszTemp,
-                  "SM:  %2d:  <%s> (%d) ContPrev=%d, ContNext=%d",
-                  i,
-                  szConvert,
-                  lstrlen (szConvert),
-                  lpGlbHist[i].ContPrev,
-                  lpGlbHist[i].ContNext
-                  );
-        DbgMsg (lpszTemp);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlb); wszLine = NULL;
-    } // End FOR/IF
-
-    // Convert the WCHAR line wszLine to a single-byte string
-    W2A (szConvert, lpwszCurLine, sizeof (szConvert) - 1);
-
-    wsprintf (lpszTemp,
-              "SM:   *:  <%s> (%d)",
-              szConvert,
-              lstrlen (szConvert)
-              );
-    DbgMsg (lpszTemp);
-
-    // We no longer need this ptr
-    GlobalUnlock (hGlbHist); lpGlbHist = NULL;
-
-    DbgMsg ("********** End History *********************************");
-
-    UpdateWindow (hWndDB);
-} // End DisplayHistory
-#endif
+//// #ifdef DEBUG
+//// //***************************************************************************
+//// //  DisplayHistory
+//// //
+//// //  Display the session manager history
+//// //***************************************************************************
+////
+//// void DisplayHistory
+////     (void)
+////
+//// {
+////     int       i;
+////     char      szConvert[1024];
+////     LPGLBHIST lpGlbHist;
+////     HGLOBAL   hGlb;
+////     LPWCHAR   wszLine;
+////
+////     // Display the hGlbHist entries
+////
+////     DbgMsg ("********** History *************************************");
+////
+////     // Get the global handle to the history buffer
+////     // Note we don't use MyGlobalLock here as the caller
+////     //   might have one of the handles locked and MyGlobalLock
+////     //   expects the lock count to be zero.
+////     lpGlbHist = GlobalLock (hGlbHist); Assert (lpGlbHist NE NULL);
+////
+////     // Output relevant variables
+////     wsprintf (lpszTemp,
+////               "SM:  iCurLine = %d, iLastValidLine = %d",
+////               iCurLine,
+////               iLastValidLine
+////              );
+////     DbgMsg (lpszTemp);
+////     wsprintf (lpszTemp,
+////               "SM:  iCurChar = %d, nWindowChars = %d, nWindowLines = %d",
+////               iCurChar,
+////               nWindowChars,
+////               nWindowLines
+////              );
+////     DbgMsg (lpszTemp);
+////     wsprintf (lpszTemp,
+////               "SM:  iFirstWindowChar = %d, iLastWindowChar = %d",
+////               iFirstWindowChar,
+////               iLastWindowChar
+////              );
+////     DbgMsg (lpszTemp);
+////
+////     // Loop through the entries
+////     for (i = 0; i < 10; i++)
+////     if (hGlb = lpGlbHist[i].hGlb)
+////     {
+////         // Lock the memory to get a ptr to it
+////         wszLine = GlobalLock (hGlb); Assert (wszLine NE NULL);
+////
+////         // Convert the WCHAR line wszLine to a single-byte string
+////         W2A (szConvert, wszLine, sizeof (szConvert) - 1);
+////
+////         wsprintf (lpszTemp,
+////                   "SM:  %2d:  <%s> (%d) ContPrev=%d, ContNext=%d",
+////                   i,
+////                   szConvert,
+////                   lstrlen (szConvert),
+////                   lpGlbHist[i].ContPrev,
+////                   lpGlbHist[i].ContNext
+////                   );
+////         DbgMsg (lpszTemp);
+////
+////         // We no longer need this ptr
+////         MyGlobalUnlock (hGlb); wszLine = NULL;
+////     } // End FOR/IF
+////
+////     // Convert the WCHAR line wszLine to a single-byte string
+////     W2A (szConvert, lpwszCurLine, sizeof (szConvert) - 1);
+////
+////     wsprintf (lpszTemp,
+////               "SM:   *:  <%s> (%d)",
+////               szConvert,
+////               lstrlen (szConvert)
+////               );
+////     DbgMsg (lpszTemp);
+////
+////     // We no longer need this ptr
+////     GlobalUnlock (hGlbHist); lpGlbHist = NULL;
+////
+////     DbgMsg ("********** End History *********************************");
+////
+////     UpdateWindow (hWndDB);
+//// } // End DisplayHistory
+//// #endif
 
 
 #ifdef DEBUG
@@ -1889,12 +1890,12 @@ void DisplayStrand
 //***************************************************************************
 
 void DisplayUndo
-    (HWND hWnd)
+    (HWND hWnd)         // Window handle of the Edit Control
 
 {
     UINT      uCharPos,
               uLineCount;
-    HGLOBAL   hGlbMem;
+    HGLOBAL   hGlbEC;
     LPWCHAR   lpwsz, p;
     HWND      hWndParent;
     LPUNDOBUF lpUndoBeg,    // Ptr to start of Undo Buffer
@@ -1915,16 +1916,17 @@ void DisplayUndo
     // Get the lines in the text
     uLineCount = SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
 
-    // Display it
-    dprintf ("Caret position = %d, # lines = %d",
-             uCharPos,
-             uLineCount);
-
     // Get the Edit Control's memory handle
-    (long) hGlbMem = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
+    (long) hGlbEC = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
+
+    // Display it
+    dprintf ("Caret position = %d, # lines = %d, hGlbEC = %08X",
+             uCharPos,
+             uLineCount,
+             hGlbEC);
 
     // Lock the memory to get a ptr to it
-    lpwsz = MyGlobalLock (hGlbMem);
+    lpwsz = MyGlobalLock (hGlbEC);
 
 #define VIS_CR  L'\xAE'
 #define VIS_NL  L'\xA9'
@@ -1943,7 +1945,7 @@ void DisplayUndo
         *p = VIS_HT;
 
     // Display it
-    dprintfW (L"Text = <%s>",
+    dprintfW (L"Text = <%S>",
               lpwsz);
 
     // Restore L'\t'
@@ -1959,14 +1961,14 @@ void DisplayUndo
         *p = L'\r';
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbMem); lpwsz = NULL;
+    MyGlobalUnlock (hGlbEC); lpwsz = NULL;
 
     // Get the parent window handle
     hWndParent = GetParent (hWnd);
 
     // Get the ptrs to the next available slot in our Undo Buffer
-    (long) lpUndoNxt = GetWindowLong (hWndParent, GWLFE_UNDO_NXT);
-    (long) lpUndoBeg = GetWindowLong (hWndParent, GWLFE_UNDO_BEG);
+    (long) lpUndoNxt = GetWindowLong (hWndParent, GWLSF_UNDO_NXT);
+    (long) lpUndoBeg = GetWindowLong (hWndParent, GWLSF_UNDO_BEG);
 
     // Loop through the undo buffer entries
     for (; lpUndoBeg < lpUndoNxt; lpUndoBeg++)

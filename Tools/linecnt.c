@@ -285,7 +285,7 @@ int main
     // Display the totals
     for (i = 1; i < argc; i++)
     {
-        number_format (szLines, "%12lu", Accum[i-1].lines);
+        number_format (szLines, "%6lu" , Accum[i-1].lines);
         number_format (szSize , "%12lu", Accum[i-1].size );
 
         fprintf (stdout,
@@ -299,9 +299,9 @@ int main
         Accum[argc].files += Accum[i-1].files;
     } // End FOR
 
-    number_format (szLines, "%12lu", Accum[argc].lines);
+    number_format (szLines, "%6lu" , Accum[argc].lines);
     number_format (szSize , "%12lu", Accum[argc].size );
-    fprintf (stdout, "-----------------------------------------------------------------\n");
+    fprintf (stdout, "---------------------------------------------------------\n");
     fprintf (stdout,
              "%s lines  %s bytes  %5u files",
              szLines,

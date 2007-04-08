@@ -11,6 +11,7 @@
 #include "resdebug.h"
 #include "resource.h"
 #include "externs.h"
+#include "editctrl.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -23,27 +24,23 @@ The Session Manager (SM) window consists of <iNumLines> lines of
 APL statements, some block of which are displayed in the window
 at any one time.
 
-When the cursor moves to a line, the contents of the lpGlbHist
-value are copied to <lpwszCurLine>.
+When the cursor moves to a line, the contents of the current line
+are copied to <lpwszCurLine>.
 
 1.  Assume that the user edits the line:
-    a.  The edit changes are made to <lpwszCurLine>.
-    b.  If the user hits Enter, the contents of
-        <lpwszCurLine> are copied to lpGlbHist[iLastLine].
-    c.  If the user moves the cursor off the current line,
-        the contents of <lpwszCurLine> are copied to
-        lpGlbHist[iCurLine].hGlb.
+    a.  The edit changes are made to the Edit Control.
+    b.  If the user hits Enter, the contents of the current
+        line in the Edit Control are copied to the last line
+        in the Edit Control, the contents of <lpwszCurLine>
+        replace the current line in the Edit Control, and the
+        last line is executed.
  */
 
-#define SCROLL_FIRST        0           // Constants for ScrollHorz & ScrollVert
-#define SCROLL_LAST         1           // ...
+//// COLORREF crTextColor = DEF_TEXT_FG_COLOR,
+////          crBkColor   = DEF_TEXT_BG_COLOR;
 
-////LPEXCEPTION_POINTERS lpExp;
-
-COLORREF crTextColor = DEF_TEXT_FG_COLOR,
-         crBkColor   = DEF_TEXT_BG_COLOR;
-
-WCHAR wszEmpty[] = {L'\0'};     // Empty wide string
+// Default indent
+WCHAR wszIndent[DEF_INDENT + 1] = {L' ',L' ',L' ',L' ',L' ',L' ',L'\0'};
 
 ////LPTOKEN lptkStackBase;          // Ptr to base of token stack used in parsing
 
@@ -77,289 +74,36 @@ void SetAttrs
 
 
 //***************************************************************************
-//  SetVScrollRange
-//
-//  Set the vertical scroll range
-//***************************************************************************
-
-void SetVScrollRange
-    (void)
-
-{
-    SetScrollRange (hWndSM, SB_VERT, iFirstBufferLine, iLastValidLine + 1, TRUE);
-} // End SetVScrollRange
-
-
-//***************************************************************************
-//  SetHScrollRange
-//
-//  Set the horizontal scroll range
-//***************************************************************************
-
-void SetHScrollRange
-    (void)
-
-{
-    SetScrollRange (hWndSM, SB_HORZ, iFirstBufferChar, iLastBufferChar, TRUE);
-} // End SetHScrollRange
-
-
-//***************************************************************************
-//  SetVScrollPos
-//
-//  Set the vertical scroll position
-//***************************************************************************
-
-void SetVScrollPos
-    (void)
-
-{
-    SetScrollPos (hWndSM, SB_VERT, iFirstWindowLine, TRUE);
-} // End SetVScrollPos
-
-
-//***************************************************************************
-//  SetHScrollPos
-//
-//  Set the horizontal scroll position
-//***************************************************************************
-
-void SetHScrollPos
-    (void)
-
-{
-    SetScrollPos (hWndSM, SB_HORZ, iFirstWindowChar, TRUE);
-} // End SetHScrollPos
-
-
-//***************************************************************************
-//  ScrollVert
-//
-//  Scroll the window vertically
-//***************************************************************************
-
-void ScrollVert
-    (BOOL bScroll,
-     int iLineCnt)
-
-{
-    int iNewWindowLine;
-
-    // Set new first & last window lines
-    switch (bScroll)
-    {
-        case SCROLL_FIRST:
-////////////wsprintf (lpszTemp,
-////////////          "VSCROLL_FIRSTa:  %d",
-////////////          iLineCnt);
-////////////DbgMsg (lpszTemp);
-
-            // Calculate the new position
-            iNewWindowLine = iFirstWindowLine + iLineCnt;
-
-            if (iNewWindowLine < iFirstBufferLine)
-                iLineCnt += iFirstBufferLine - iNewWindowLine;
-
-            if ((iNewWindowLine + nWindowLines) > iLastBufferLine)
-                iLineCnt += iLastBufferLine - (iNewWindowLine + nWindowLines);
-
-            iFirstWindowLine += iLineCnt;
-            iLastWindowLine   = iFirstWindowLine + nWindowLines;
-
-////        wsprintf (lpszTemp,
-////                  "VSCROLL_FIRSTz:  %d",
-////                  iLineCnt);
-////        DbgMsg (lpszTemp);
-
-            break;
-
-        case SCROLL_LAST:
-////////////wsprintf (lpszTemp,
-////////////          "VSCROLL_LASTa:  %d",
-////////////          iLineCnt);
-////////////DbgMsg (lpszTemp);
-
-            // Calculate the new position
-            iNewWindowLine = iLastWindowLine + iLineCnt;
-
-            if (iNewWindowLine < iFirstBufferLine)
-                iLineCnt += iFirstBufferLine - iNewWindowLine;
-
-            if ((iNewWindowLine + nWindowLines) > iLastBufferLine)
-                iLineCnt += iLastBufferLine - (iNewWindowLine + nWindowLines);
-
-            iLastWindowLine += iLineCnt;
-            iFirstWindowLine = iLastWindowLine - nWindowLines;
-
-////        wsprintf (lpszTemp,
-////                  "VSCROLL_LASTz:  %d",
-////                  iLineCnt);
-////        DbgMsg (lpszTemp);
-
-            break;
-    } // End SWITCH
-
-    // For vertical scrolling only, don't let
-    //   the first line get beyond iLastValidLine + 1
-    if (iFirstWindowLine > (iLastValidLine + 1))
-    {
-        iFirstWindowLine = iLastValidLine + 1;
-        iLastWindowLine  = iFirstWindowLine + nWindowLines;
-    } // End IF
-
-    // Ensure first & last are within buffer limits
-    iFirstWindowLine  = max (iFirstWindowLine, iFirstBufferLine);
-    iLastWindowLine   = min (iLastWindowLine,  iLastBufferLine);
-
-    // If the current line has changed,
-    //   save it into the history buffer
-    if (bCurLineChanged)
-        ReplaceLine (iCurLine);
-
-    // Ensure the caret is always visible
-    if (iCurLine < iFirstWindowLine)
-        iCurLine = iFirstWindowLine;
-    else
-    if (iCurLine > iLastWindowLine)
-        iCurLine = iLastWindowLine;
-
-    // Copy the current line from the
-    //   history buffer into lpwszCurLine;
-    CopyLine (iCurLine);
-
-    // In case we changed iCurLine or iFirstWindowLine,
-    //   move the caret
-    MoveCaretSM ();
-
-    // As we changed iFirstWindowLine,
-    //   move the thumb on the scrollbar
-    SetVScrollPos ();
-
-    // Redraw the entire client area
-    InvalidateRect (hWndSM, NULL, TRUE);
-} // End ScrollVert
-
-
-//***************************************************************************
-//  ScrollHorz
-//
-//  Scroll the window horizontally
-//***************************************************************************
-
-void ScrollHorz
-    (BOOL bScroll,
-     int iCharCnt)
-
-{
-    int iNewWindowChar;
-
-    // Horizontal scrolling should be relative to the longest line in the history buffer
-    // ***FIXME***
-
-
-    // Set new first & last window chars
-    switch (bScroll)
-    {
-        case SCROLL_FIRST:
-////        wsprintf (lpszTemp,
-////                  "HSCROLL_FIRST:  %d",
-////                  iCharCnt);
-////        DbgMsg (lpszTemp);
-
-            // Calculate the new position
-            iNewWindowChar = iFirstWindowChar + iCharCnt;
-
-            if (iNewWindowChar < iFirstBufferChar)
-                iCharCnt += iFirstBufferChar - iNewWindowChar;
-
-            if ((iNewWindowChar + nWindowChars) > iLastBufferChar)
-                iCharCnt += iLastBufferChar - (iNewWindowChar + nWindowChars);
-
-            iFirstWindowChar += iCharCnt;
-            iLastWindowChar   = iFirstWindowChar + nWindowChars;
-
-            break;
-
-        case SCROLL_LAST:
-////        wsprintf (lpszTemp,
-////                  "HSCROLL_LAST:  %d",
-////                  iCharCnt);
-////        DbgMsg (lpszTemp);
-
-            // Calculate the new position
-            iNewWindowChar = iLastWindowChar + iCharCnt;
-
-            if (iNewWindowChar < iFirstBufferChar)
-                iCharCnt += iFirstBufferChar - iNewWindowChar;
-
-            if ((iNewWindowChar + nWindowChars) > iLastBufferChar)
-                iCharCnt += iLastBufferChar - (iNewWindowChar + nWindowChars);
-
-            iLastWindowChar += iCharCnt;
-            iFirstWindowChar = iLastWindowChar - nWindowChars;
-
-            break;
-    } // End SWITCH
-
-    // Ensure first & last are within buffer limits
-    iFirstWindowChar  = max (iFirstWindowChar, iFirstBufferChar);
-    iLastWindowChar   = min (iLastWindowChar,  iLastBufferChar);
-
-    // In case we changed iFirstWindowChar,
-    //   move the caret
-    MoveCaretSM ();
-
-    // In case we changed iFirstWindowChar,
-    //   move the thumb on the scrollbar
-    SetHScrollPos ();
-
-    // Redraw the entire client area
-    InvalidateRect (hWndSM, NULL, TRUE);
-} // End ScrollHorz
-
-
-//***************************************************************************
 //  AppendLine
 //
-//  Append lpwszCurLine to the history buffer
+//  Append lpwszLine to the history buffer
 //***************************************************************************
 
 void AppendLine
     (LPWCHAR lpwszLine,
-     BOOL    bLineCont)
+     BOOL    bLineCont,
+     BOOL    bEndingCR)
 
 {
-    // Ensure there are enough lines or we need to wrap the buffer
-    // ***FIXME*** -- implement a circular history buffer
+    HWND hWndEC;
 
-    lstrcpyW (lpwszCurLine, lpwszLine);
-    iCurLineLen = lstrlenW (lpwszCurLine);
-    bCurLineChanged = TRUE;
+    // Get the handle to the edit control
+    hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
 
-////wsprintf (lpszTemp,
-////          "lstrlenW (lpwszCurLine) = %d",
-////          lstrlenW (lpwszCurLine));
-////DbgMsg (lpszTemp);
+    // Move the caret to the end of the buffer
+    MoveCaretEOB (hWndEC);
 
-    ReplaceLine (iLastValidLine + 1);   // iLastValidLine changed
+    // Scroll the caret into view
+    SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
 
-    // Account for a new line
-    iCurLine = iLastValidLine + 1;
+    // Replace the selection (none) with the new line
+    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 
-    // As we changed iLastValidLine,
-    //   reset the scrollbar range.
-    SetVScrollRange ();
-
-    // Initialize the Current Line
-    InitCurLine (bLineCont);
-
-    // As we changed iCurLine, move the caret
-    MoveCaretSM ();
-
-    // Scroll the window as necessary
-    // The "+1" is to cover the line the cursor is on
-    if ((iCurLine + 1) > iLastWindowLine)
-        ScrollVert (SCROLL_LAST, (iCurLine + 1) - iLastWindowLine);
+    if (bEndingCR)
+    {
+        // Replace the selection (none) with "\r\n"
+        SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
+    } // End IF
 } // End AppendLine
 
 
@@ -376,176 +120,61 @@ void AppendLine
 #endif
 
 void ReplaceLine
-    (int iLine)
+    (LPWCHAR lpwszLine,
+     UINT    uLineNum)
 
 {
-    LPGLBHIST lpGlbHist;
-    HGLOBAL   hGlb;
-    LPWCHAR   wszLine;
+    HWND hWndEC;
+    UINT uLinePos,
+         uLineLen;
 
-    // Get the global handle to the history buffer
-    lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
+    // Get the handle to the edit control
+    hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
 
-////wsprintf (lpszTemp,
-////          "iLine = %d, iLastValidLine = %d",
-////          iLine,
-////          iLastValidLine);
-////DbgMsg (lpszTemp);
+    // Get the line position of the given line
+    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
 
-    // Free the old entry (if any)
-    if (iLine <= iLastBufferLine
-     && lpGlbHist[iLine].hGlb)
-    {
-        DbgGlobalFree (lpGlbHist[iLine].hGlb); lpGlbHist[iLine].hGlb = NULL;
-    } else
-    {
-        // Increase iLastValidLine if necessary
-        iLastValidLine = max (iLastValidLine, iLine);
-    } // End IF/ELSE
+    // Get the length of the line
+    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
-    // Allocate memory for the last line
-    hGlb = MyGlobalAlloc (GHND, (iCurLineLen + 1) * sizeof (WCHAR));
+    // Set the selection to this line
+    SendMessageW (hWndEC, EM_SETSEL, uLinePos, uLinePos + uLineLen);
 
-    if (!hGlb)
-    {
-        // ***FIXME*** -- WS FULL
-        DbgMsg ("ASSERTION FAILED:  ReplaceLine:  MyGlobalAlloc failed");
-    } else
-    {
-////////wsprintf (lpszTemp,
-////////          "iLastValidLine = %d",
-////////          iLastValidLine);
-////////DbgMsg (lpszTemp);
-
-        // Save the handle for later use
-        lpGlbHist[iLine].hGlb = hGlb;
-
-        // Get a ptr to the memory
-        wszLine = (LPWCHAR) MyGlobalLock (hGlb);
-
-        // Copy the contents of lpwszCurLine to global memory
-        memmove (wszLine,
-                 lpwszCurLine,
-                 iCurLineLen * sizeof (WCHAR));
-
-        bCurLineChanged = FALSE;
-
-        // Unlock the handle
-        MyGlobalUnlock (hGlb); wszLine = NULL;
-    } // End IF/ELSE
-
-    // Unlock the handle
-    MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-
-    // Redraw the line
-    InvalidateLine (iLine);
+    // Replace the selection with the given line
+    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 } // End ReplaceLine
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  DeleteLine
+//  IzitLastLine
 //
-//  Delete a line from the history buffer
+//  Return TRUE iff the cursor is on the last line
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- DeleteLine"
-#else
-#define APPEND_NAME
-#endif
-
-void DeleteLine
-    (int iLine)
+BOOL IzitLastLine
+    (HWND hWndEC)           // Window handle of the Edit Control
 
 {
-    LPGLBHIST lpGlbHist;
+    UINT uLineCnt,
+         uLinePos,
+         uLineLen,
+         uCharPos;
 
-    // Get the global handle to the history buffer
-    lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
+    // Get the # lines in the text
+    uLineCnt = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
-    // Free the old entry (if any)
-    if (lpGlbHist[iLine].hGlb)
-    {
-        DbgGlobalFree (lpGlbHist[iLine].hGlb); lpGlbHist[iLine].hGlb = NULL;
-    } // End IF
+    // Get the line position of the last line
+    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, (WPARAM) (uLineCnt - 1), 0);
 
-////wsprintf (lpszTemp,
-////          "DeleteLine:  iLine = %d, iLastValidLine = %d",
-////          iLine,
-////          iLastValidLine);
-////DbgMsg (lpszTemp);
+    // Get the length of the line
+    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
-    // Move the entries down over the deleted one
-    if (iLine <= iLastValidLine)
-    {
-        memmove (&lpGlbHist[iLine],
-                 &lpGlbHist[iLine + 1],
-                 (iLastValidLine - iLine) * sizeof (WCHAR));
-        lpGlbHist[iLastValidLine].hGlb = NULL;
-        lpGlbHist[iLastValidLine].ContPrev =
-        lpGlbHist[iLastValidLine].ContNext = FALSE;
-    } // End IF
+    // Get the char position of the caret
+    uCharPos = GetCurCharPos (hWndEC);
 
-    if (iLine <= iLastValidLine)
-    {
-        // Set last valid line
-        iLastValidLine--;
-////////DbgMsg ("Decrementing iLastValidLine");
-
-        // As we changed iLastValidLine,
-        //   reset the scrollbar range.
-        SetVScrollRange ();
-    } // End IF
-
-    // Unlock the handle
-    MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-} // End DeleteLine
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  CopyLine
-//
-//  Copy a line from the history buffer into lpwszCurLine.
-//***************************************************************************
-
-void CopyLine
-    (int iLine)
-
-{
-    LPGLBHIST lpGlbHist;
-    HGLOBAL   hGlb;
-    LPWCHAR   wszLine;
-
-    // Get the global handle to the history buffer
-    lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
-
-    // If the memory exists, copy the contents to the local buffer
-    if (lpGlbHist[iLine].hGlb)
-    {
-        // Lock the memory
-        hGlb = lpGlbHist[iLine].hGlb;
-        wszLine = (LPWCHAR) MyGlobalLock (hGlb);
-
-        // Set the line length
-        iCurLineLen = lstrlenW (wszLine);
-
-        // Copy the contents of global memory to lpwszCurLine
-        memmove (lpwszCurLine,
-                 wszLine,
-                 (iCurLineLen + 1) * sizeof (WCHAR));
-        // Unlock the handle
-        MyGlobalUnlock (hGlb); wszLine = NULL;
-
-        bCurLineChanged = FALSE;
-    } else
-        // Otherwise, initialize the local buffer
-        InitCurLine (lpGlbHist->ContPrev);
-
-    // Unlock the handle
-    MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-} // End CopyLine
+    return (uLinePos <= uCharPos) && (uCharPos <= (uLinePos + uLineLen));
+} // End IzitlastLine
 
 
 //***************************************************************************
@@ -574,144 +203,107 @@ void SM_Delete
 } // End SM_Delete
 
 
-//***************************************************************************
-//  DrawLineCont
-//
-//  Draw a line continuation char
-//***************************************************************************
-
-void DrawLineCont
-    (HDC hDC,
-     int iLineNum)
-
-{
-    DrawBitmap (hDC,
-                hBitMapLineCont,
-                0,
-                (iLineNum * cyAveCharSM)
-              + (cyAveCharSM - bmLineCont.bmHeight) / 2   // Vertically centered
-               );
-} // End DrawLineCont
-
-
-//***************************************************************************
-//  DrawLine
-//
-//  Draw a line in the window from within a WM_PAINT message.
-//***************************************************************************
-
-void DrawLine
-     (LPWCHAR lpwszLine,
-      int     iLine,
-      HDC     hDC,
-      BOOL    bLineCont)
-{
-    RECT rc;
-    int iLen;
-
-    iLen = lstrlenW (lpwszLine);
-
-    rc.left   = iLCWidth;
-    rc.right  = rc.left + cxAveCharSM * iLen;
-    rc.top    = iLine   * cyAveCharSM;
-    rc.bottom = rc.top  + cyAveCharSM;
-
-    // Draw the text
-    DrawTextW (hDC,
-               lpwszLine,
-               iLen,
-               &rc,
-               DT_NOPREFIX
-             | DT_SINGLELINE
-             | DT_NOCLIP
-          );
-    if (bLineCont)
-        // Draw a continuation char
-        DrawLineCont (hDC, iLine);
-} // End DrawLine
+//// //***************************************************************************
+//// //  DrawLineCont
+//// //
+//// //  Draw a line continuation char
+//// //***************************************************************************
+////
+//// void DrawLineCont
+////     (HDC hDC,
+////      int iLineNum)
+////
+//// {
+////     DrawBitmap (hDC,
+////                 hBitMapLineCont,
+////                 0,
+////                 (iLineNum * cyAveCharSM)
+////               + (cyAveCharSM - bmLineCont.bmHeight) / 2   // Vertically centered
+////                );
+//// } // End DrawLineCont
 
 
-//***************************************************************************
-//  DrawBitmap
-//
-//  Draw a bitmap
-//***************************************************************************
-
-void DrawBitmap
-    (HDC     hDC,
-     HBITMAP hBitmap,
-     UINT    xDstOrg,
-     UINT    yDstOrg) // Destin bit origin (upper left corner)
-
-{
-    BITMAP  bm;
-    HDC     hDCMem;
-    POINT   ptSize, ptOrg;
-    HBITMAP hBitmapMem, hBitmapOld;
-
-    // Get the size of the bitmap
-    GetObject (hBitmap, sizeof (BITMAP), (LPSTR) &bm);
-
-    // Create a compatible DC and bitmap
-    hDCMem = MyCreateCompatibleDC (hDC);    // Get device context handle
-#ifdef USE_COPYIMAGE
-    hBitmapMem = CopyImage (hBitmap, IMAGE_BITMAP, 0, 0, LR_COPYRETURNORG);
-    hBitmapOld = SelectObject (hDCMem, hBitmapMem);
-#else
-    // To avoid screen flicker, we use a temporary DC
-    hBitmapMem = MyCreateCompatibleBitmap (hDC,
-                                           bm.bmWidth,
-                                           bm.bmHeight);
-    hBitmapOld = SelectObject (hDCMem, hBitmapMem);
-
-    {
-        HDC hDCTmp;
-        HBITMAP hBitmapTmp;
-
-        // Create a temporary compatible DC
-        // and select our bitmap into it
-        hDCTmp = MyCreateCompatibleDC (hDC);
-        hBitmapTmp = SelectObject (hDCTmp, hBitmap);
-
-        // Copy the original bitmap from the temporary DC to the memory DC
-        BitBlt (hDCMem,
-                0,
-                0,
-                bm.bmWidth,
-                bm.bmHeight,
-                hDCTmp,
-                0,
-                0,
-                SRCCOPY);
-        SelectObject (hDCTmp, hBitmapTmp);
-        MyDeleteDC (hDCTmp); hDCTmp = NULL;
-    }
-#endif
-    SetMapMode (hDCMem, GetMapMode (hDC));  // Set the mapping mode
-
-    // Convert the bitmap size from device units to logical units
-    ptSize.x = bm.bmWidth;
-    ptSize.y = bm.bmHeight;
-    DPtoLP (hDC, &ptSize, 1);
-
-    ptOrg.x = ptOrg.y = 0;
-    DPtoLP (hDCMem, &ptOrg, 1);
-
-    // Copy the memory DC to the screen DC
-    BitBlt (hDC,
-            xDstOrg, yDstOrg,
-            ptSize.x, ptSize.y,
-            hDCMem,
-            ptOrg.x, ptOrg.y,
-            SRCCOPY);
-    // Put the old one in place before we delete the DC
-    //   or we'll delete the new bitmap when we delete the DC.
-    SelectObject (hDCMem, hBitmapOld);
-
-    // Free resources
-    MyDeleteObject (hBitmapMem); hBitmapMem = NULL;
-    MyDeleteDC (hDCMem); hDCMem = NULL;
-} // End DrawBitmap ()
+//// //***************************************************************************
+//// //  DrawBitmap
+//// //
+//// //  Draw a bitmap
+//// //***************************************************************************
+////
+//// void DrawBitmap
+////     (HDC     hDC,
+////      HBITMAP hBitmap,
+////      UINT    xDstOrg,
+////      UINT    yDstOrg) // Destin bit origin (upper left corner)
+////
+//// {
+////     BITMAP  bm;
+////     HDC     hDCMem;
+////     POINT   ptSize, ptOrg;
+////     HBITMAP hBitmapMem, hBitmapOld;
+////
+////     // Get the size of the bitmap
+////     GetObject (hBitmap, sizeof (BITMAP), (LPSTR) &bm);
+////
+////     // Create a compatible DC and bitmap
+////     hDCMem = MyCreateCompatibleDC (hDC);    // Get device context handle
+//// #ifdef USE_COPYIMAGE
+////     hBitmapMem = CopyImage (hBitmap, IMAGE_BITMAP, 0, 0, LR_COPYRETURNORG);
+////     hBitmapOld = SelectObject (hDCMem, hBitmapMem);
+//// #else
+////     // To avoid screen flicker, we use a temporary DC
+////     hBitmapMem = MyCreateCompatibleBitmap (hDC,
+////                                            bm.bmWidth,
+////                                            bm.bmHeight);
+////     hBitmapOld = SelectObject (hDCMem, hBitmapMem);
+////
+////     {
+////         HDC hDCTmp;
+////         HBITMAP hBitmapTmp;
+////
+////         // Create a temporary compatible DC
+////         // and select our bitmap into it
+////         hDCTmp = MyCreateCompatibleDC (hDC);
+////         hBitmapTmp = SelectObject (hDCTmp, hBitmap);
+////
+////         // Copy the original bitmap from the temporary DC to the memory DC
+////         BitBlt (hDCMem,
+////                 0,
+////                 0,
+////                 bm.bmWidth,
+////                 bm.bmHeight,
+////                 hDCTmp,
+////                 0,
+////                 0,
+////                 SRCCOPY);
+////         SelectObject (hDCTmp, hBitmapTmp);
+////         MyDeleteDC (hDCTmp); hDCTmp = NULL;
+////     }
+//// #endif
+////     SetMapMode (hDCMem, GetMapMode (hDC));  // Set the mapping mode
+////
+////     // Convert the bitmap size from device units to logical units
+////     ptSize.x = bm.bmWidth;
+////     ptSize.y = bm.bmHeight;
+////     DPtoLP (hDC, &ptSize, 1);
+////
+////     ptOrg.x = ptOrg.y = 0;
+////     DPtoLP (hDCMem, &ptOrg, 1);
+////
+////     // Copy the memory DC to the screen DC
+////     BitBlt (hDC,
+////             xDstOrg, yDstOrg,
+////             ptSize.x, ptSize.y,
+////             hDCMem,
+////             ptOrg.x, ptOrg.y,
+////             SRCCOPY);
+////     // Put the old one in place before we delete the DC
+////     //   or we'll delete the new bitmap when we delete the DC.
+////     SelectObject (hDCMem, hBitmapOld);
+////
+////     // Free resources
+////     MyDeleteObject (hBitmapMem); hBitmapMem = NULL;
+////     MyDeleteDC (hDCMem); hDCMem = NULL;
+//// } // End DrawBitmap ()
 
 
 //***************************************************************************
@@ -735,271 +327,31 @@ LPWCHAR strchrW
 
 
 //***************************************************************************
-//  InvalidateLine
+//  MoveCaretEOB
 //
-//  Invalidate a single line so W calls WM_PAINT
-//    to redraw the line.
+//  Move the caret in an Edit Control to the end of the buffer
 //***************************************************************************
 
-void InvalidateLine
-    (int iLine)
+void MoveCaretEOB
+    (HWND hWnd)         // Window handle of Edit Control
 
 {
-    RECT rc;
+    UINT uLineCnt,
+         uLinePos,
+         uLineLen;
 
-    rc.left = 0;
-    rc.right  = 65535;      // Use any non-zero value as the
-                            //   code in WM_PAINT looks at the
-                            //   rc.top and rc.bottom only
-    rc.top    = (iLine - iFirstWindowLine) * cyAveCharSM;
-    rc.bottom = rc.top                     + cyAveCharSM;
+    // Get the # lines in the text
+    uLineCnt = SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
 
-////wsprintf (lpszTemp,
-////          "InvalidateLine:  %d, L = %d, T = %d, R = %d, B = %d",
-////          iLine,
-////          rc.left,
-////          rc.top,
-////          rc.right,
-////          rc.bottom);
-////DbgMsg (lpszTemp);
+    // Get the initial char pos of the last line
+    uLinePos = SendMessageW (hWnd, EM_LINEINDEX, uLineCnt - 1, 0);
 
-#if (defined (DEBUG)) && 0
-    { // ***DEBUG***
-        wsprintf (lpszTemp,
-                  "InvalidateLine:  %d",
-                  iLine);
-        DbgMsg (lpszTemp);
-    } // ***DEBUG*** END
-#endif
+    // Get the length of the last line
+    uLineLen = SendMessageW (hWnd, EM_LINELENGTH, uLinePos, 0);
 
-    InvalidateRect (hWndSM, &rc, TRUE);
-} // End InvalidateLine
-
-
-//***************************************************************************
-//  InvalidateRange
-//
-//  Invalidate a range of lines so W calls WM_PAINT
-//    to redraw the line.
-//***************************************************************************
-
-void InvalidateRange
-    (int iTopLine,
-     int iBotLine)
-
-{
-    RECT rc;
-
-    rc.left = 0;
-    rc.right  = 65535;      // Use any non-zero value as the
-                            //   code in WM_PAINT looks at the
-                            //   rc.top and rc.bottom only
-    rc.top    = (    iTopLine - iFirstWindowLine) * cyAveCharSM;
-    rc.bottom = (1 + iBotLine - iFirstWindowLine) * cyAveCharSM;
-
-////wsprintf (lpszTemp,
-////          "InvalidateRange:  %d - %d, L = %d, T = %d, R = %d, B = %d",
-////          iTopLine, iBotLine,
-////          rc.left,
-////          rc.top,
-////          rc.right,
-////          rc.bottom);
-////DbgMsg (lpszTemp);
-
-#if (defined (DEBUG)) & 0
-    { // ***DEBUG***
-        wsprintf (lpszTemp,
-                  "InvalidateRange:  %d-%d",
-                  iTopLine,
-                  iBotLine);
-        DbgMsg (lpszTemp);
-    } // ***DEBUG*** END
-#endif
-    InvalidateRect (hWndSM, &rc, TRUE);
-} // End InvalidateRange
-
-
-//***************************************************************************
-//  MoveCaretSM
-//
-//  Move the caret into position
-//***************************************************************************
-
-void MoveCaretSM
-    (void)
-
-{
-    SetCaretPos ((iCurChar - iFirstWindowChar) * cxAveCharSM + iLCWidth,
-                 (iCurLine - iFirstWindowLine) * cyAveCharSM);
-} // End MoveCaretSM
-
-
-//***************************************************************************
-//  DisplayChar
-//
-//  Display a single character by inserting it into the current line
-//  and redrawing that line.
-//***************************************************************************
-
-void DisplayChar
-    (WCHAR chCharCode)
-
-{
-    int  i;
-    long lvkState;
-
-// Line Continuation ToDo
-// Handle in the middle of a line (split in two)
-// Handle beyond the end of the line (append trailing blanks
-//   and create a second line)
-
-
-
-    // Split case depending upon whether we're
-    //   before or beyond the end of the line
-    if (iCurChar < iCurLineLen)
-    {
-        // Get the current vkState
-        lvkState = GetWindowLong (hWndSM, GWLSM_VKSTATE);
-
-        // Handle Insert vs. Replace
-        if (((LPVKSTATE) &lvkState)->Ins)
-        {
-            // Ensure the line doesn't get too long
-            if ((iCurLineLen + 1) > iLastBufferChar)
-            {
-                // ***FIXME*** -- LINE TOO LONG
-                DbgMsg ("DisplayChar:  LINE TOO LONG");
-
-                return;
-            } // End IF
-
-            // Make room at iCurChar for a new character
-            memmove (&lpwszCurLine[iCurChar + 1],
-                     &lpwszCurLine[iCurChar],
-                     (iCurLineLen - iCurChar) * sizeof (WCHAR));
-            iCurLineLen++;
-        } // End IF
-    } else
-    if (iCurChar > iCurLineLen)
-    {
-        // Insert blanks from iCurLineLen to iCurChar
-        for (i = iCurLineLen; i < iCurChar; i++)
-            lpwszCurLine[i] = L' ';
-        iCurLineLen = iCurChar;
-    } // End IF/ELSE/IF
-
-    // Insert the character
-    lpwszCurLine[iCurChar] = chCharCode;
-    bCurLineChanged = TRUE;
-
-    // Set new caret position
-    iCurChar++;
-
-    // As we changed iCurChar, move the caret
-    MoveCaretSM ();
-
-    // Set new line length
-    iCurLineLen = max (iCurLineLen, iCurChar);
-
-    // Ensure properly terminated
-    lpwszCurLine[iCurLineLen] = L'\0';
-
-    // Scroll the window as necessary
-    if (iCurChar > iLastWindowChar)
-        ScrollHorz (SCROLL_LAST, iCurChar - iLastWindowChar);
-    else
-        // Invalidate the line so it gets repainted
-        InvalidateLine (iCurLine);
-} // End DisplayChar
-
-
-//***************************************************************************
-//  DeleteChar
-//
-//  Delete the character at iCurChar
-//***************************************************************************
-
-void DeleteChar
-    (void)
-{
-    LPGLBHIST lpGlbHist;
-    HGLOBAL   hGlb;
-    LPWCHAR   wszLine;
-    int iLen;
-
-    // In case the user moved the cursor beyond
-    //   the end of the line (i.e. lstrlen (lpwszCurLine)),
-    //   we need to ensure we don't fill in a
-    //   non-existant blank.
-    if (iCurChar < iCurLineLen)
-    {
-        // Erase the char in that position
-        memmove (&lpwszCurLine[iCurChar],
-                 &lpwszCurLine[iCurChar + 1],
-                 (iCurLineLen - iCurChar - 1) * sizeof (WCHAR));
-        iCurLineLen--;
-        lpwszCurLine[iCurLineLen] = L'\0';
-        bCurLineChanged = TRUE;
-
-        // Invalidate the line so it gets repainted
-        InvalidateLine (iCurLine);
-    } else
-    if (iCurChar EQ iCurLineLen
-     && iCurLine NE (iLastValidLine + 1))
-    {
-        // We're at the end of a line
-        //   with one following line:
-        //   merge it into this current line.
-
-        // Get the global handle to the history buffer
-        lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
-
-        // Get a ptr to the contents of the current line
-        hGlb = lpGlbHist[iCurLine + 1].hGlb;
-        if (hGlb)
-        {
-            wszLine = (LPWCHAR) MyGlobalLock (hGlb);
-        } else
-            wszLine = wszEmpty;
-
-        // Ensure the resulting line isn't too long
-        iLen = lstrlenW (wszLine);
-        if ((iCurLineLen + iLen) > iLastBufferChar)
-        {
-            // ***FIXME*** -- LINE TOO LONG
-            DbgMsg ("DeleteChar:  LINE TOO LONG");
-        } else
-        {
-            // Set new current line length
-            iCurLineLen += iLen;
-
-            // Merge iCurLine and iCurLine+1
-            lstrcatW (lpwszCurLine, wszLine);
-            ReplaceLine (iCurLine);
-            bCurLineChanged = TRUE;
-
-            // Unlock the memory before deleting it
-            if (hGlb)
-            {
-                MyGlobalUnlock (hGlb); wszLine = NULL;
-            } // End IF
-
-            // Delete iCurLine + 1
-            DeleteLine (iCurLine + 1); hGlb = NULL;
-
-            // Redraw this line and the ones below it
-            InvalidateRange (iCurLine, iLastValidLine + 1);
-        } // End IF/ELSE
-
-        // Unlock the handles
-        if (hGlb)
-        {
-            MyGlobalUnlock (hGlb); wszLine = NULL;
-        } // End IF
-        MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-    } // End IF/ELSE/IF
-} // End DeleteChar
+    // Set the caret to the End-of-Buffer
+    SendMessageW (hWnd, EM_SETSEL, uLinePos + uLineLen, uLinePos + uLineLen);
+} // End MoveCaretEOB
 
 
 //***************************************************************************
@@ -1029,23 +381,17 @@ void MyCreateCaret
 
 
 //***************************************************************************
-//  InitCurLine
+//  PrepareForInput
 //
-//  Initialize the current line
+//  Prepare the session for input
 //***************************************************************************
 
-void InitCurLine
-    (BOOL bLineCont)
+void PrepareForInput
+    (void)
+
 {
-    int i;
-
-    for (i = 0; (!bLineCont) && i < DEF_INDENT; i++)
-        lpwszCurLine[i] = L' ';
-    lpwszCurLine[i] = L'\0';
-    iCurChar = iCurLineLen = i;
-
-    bCurLineChanged = FALSE;
-} // End InitCurLine
+    AppendLine (wszIndent, FALSE, FALSE);
+} // End PrepareForInput
 
 
 //***************************************************************************
@@ -1067,17 +413,22 @@ LRESULT APIENTRY SMWndProc
      LONG lParam)   // ...
 
 {
+    HWND       hWndEC;
+    int        iMaxLimit;   // Maximum # chars in edit control
     VKSTATE    vkState;
     long       lvkState;
-    LPGLBHIST  lpGlbHist;
-    HGLOBAL    hGlb;
-    LPWCHAR    wszLine;
-    RECT       rc;
-    HDC        hDC;
-    HFONT      hFontOld;
-    TEXTMETRIC tm;
+////RECT       rcFmtEC;     // Formatting rectangle for the Edit Control
+    LPUNDOBUF  lpUndoBeg,   // Ptr to start of Undo Buffer
+               lpUndoNxt;   // ...    next available slot in the Undo Buffer
+////HDC        hDC;
+////HFONT      hFontOld;
+////TEXTMETRIC tm;
 
 ////ODSAPI ("SM: ", hWnd, message, wParam, lParam);
+
+    // Get the handle to the edit control
+    hWndEC = (HWND) GetWindowLong (hWnd, GWLSF_HWNDEC);
+
     switch (message)
     {
         case WM_NCCREATE:           // lpcs = (LPCREATESTRUCT) lParam
@@ -1097,27 +448,91 @@ LRESULT APIENTRY SMWndProc
             vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
 
             // Save in window extra bytes
-            SetWindowLong (hWnd, GWLSM_VKSTATE, *(long *) &vkState);
+            SetWindowLong (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
 
             // Initialize window-specific resources
             SM_Create (hWnd);
 
+            // *************** Undo Buffer *****************************
+            // At some point, we'll read in the undo buffer from
+            //   the saved function and copy it to virtual memory
+            //   also setting the _BEG, _NXT, and _LST ptrs.
+
+            // _BEG is the (static) ptr to the beginning of the virtual memory.
+            // _NXT is the (dynamic) ptr to the next available entry.
+            //    Undo entries are between _NXT[-1] and _BEG, inclusive.
+            // _LST is the (dynamic) ptr to the last available entry.
+            //    Redo entries are between _NXT and _LST[-1], inclusive.
+
+            // Allocate virtual memory for the Undo Buffer
+            lpUndoBeg =
+            VirtualAlloc (NULL,          // Any address
+                          DEF_UNDOBUF_MAXSIZE * sizeof (UNDOBUF),
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            // Commit the intial size
+            VirtualAlloc (lpUndoBeg,
+                          DEF_UNDOBUF_INITSIZE * sizeof (UNDOBUF),
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+            // Save in window extra bytes
+            SetWindowLong (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
+            SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
+            SetWindowLong (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
+////////////SetWindowLong (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
+
+            // Start with an initial action of nothing
+            AppendUndo (hWnd,                       // SM Window handle
+                        GWLSF_UNDO_NXT,             // Offset in hWnd extra bytes of lpUndoNxt
+                        undoNone,                   // Action
+                        0,                          // Beginning char position
+                        0,                          // Ending    ...
+                        UNDO_NOGROUP,               // Group index
+                        0);                         // Character
+            // Save incremented starting ptr in window extra bytes
+            SetWindowLong (hWnd, GWLSF_UNDO_BEG, (long) ++lpUndoBeg);
+
             // *************** lpwszCurLine ****************************
 
             // Allocate memory for the current line
-            // Note that this memory is allocated as fixed
-            //   because we use it so often
-            lpwszCurLine = MyGlobalAlloc (GPTR, (DEF_MAXLINELEN + 1) * sizeof (WCHAR));
+            lpwszCurLine = VirtualAlloc (NULL,      // Any address
+                                         DEF_CURLINE_MAXSIZE,
+                                         MEM_RESERVE,
+                                         PAGE_READWRITE);
             if (!lpwszCurLine)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  MyGlobalAlloc for <lpwszCurLine> failed");
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszCurLine> failed");
 
                 return -1;          // Mark as failed
             } // End IF
 
-            // Initialize the current line
-            InitCurLine (FALSE);
+            // Commit the intial size
+            VirtualAlloc (lpwszCurLine,
+                          DEF_CURLINE_INITSIZE,
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+
+            // *************** lpwszTmpLine ****************************
+
+            // Allocate memory for the temporary line
+            lpwszTmpLine = VirtualAlloc (NULL,      // Any address
+                                         DEF_CURLINE_MAXSIZE,
+                                         MEM_RESERVE,
+                                         PAGE_READWRITE);
+            if (!lpwszTmpLine)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszTmpLine> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Commit the intial size
+            VirtualAlloc (lpwszTmpLine,
+                          DEF_CURLINE_INITSIZE,
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
 
 ////////////// *************** lptkStackBase ***************************
 ////////////
@@ -1243,57 +658,25 @@ LRESULT APIENTRY SMWndProc
             // Initialize next available entry
             lpSymTabNext = lpSymTab;
 
-            // *************** History *********************************
+////////////// *************** Fonts ***********************************
+////////////
+////////////// Get the text metrics for this font
+////////////hDC = MyGetDC (hWnd);
+////////////hFontOld = SelectObject (hDC, hFontTC);
+////////////GetTextMetrics (hDC, &tm);
+////////////SelectObject (hDC, hFontOld);
+////////////MyReleaseDC (hWnd, hDC);
+////////////
+////////////// New height
+////////////cyAveCharSM = MulDiv (cfSM.iPointSize / 10, iLogPixelsY, 72);
+////////////cyAveCharSM = -lfSM.lfHeight;
+////////////
+////////////lfSM.lfWidth = (tm.tmAveCharWidth + tm.tmMaxCharWidth) / 2;
+////////////
+////////////// New width (same aspect ratio as old)
+////////////cxAveCharSM = MulDiv (lfSM.lfWidth, cyAveCharSM, -lfSM.lfHeight);
 
-            // Allocate memory for the array of ptrs to the
-            //   Session Manager window lines
-            // The "+1" is for converting limit to length.
-            hGlbHist = MyGlobalAlloc (GHND, (iLastBufferLine + 1) * sizeof (GLBHIST));
-            if (!hGlbHist)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  MyGlobalAlloc for <hGlbHist> failed");
-
-                return -1;          // Mark as failed
-            } // End IF
-
-            // Mark the first entry as such
-            lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
-            lpGlbHist[0].First = 1;
-            MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-
-            // *************** Fonts ***********************************
-
-            // Get the text metrics for this font
-            hDC = MyGetDC (hWnd);
-            hFontOld = SelectObject (hDC, hFontTC);
-            GetTextMetrics (hDC, &tm);
-            SelectObject (hDC, hFontOld);
-            MyReleaseDC (hWnd, hDC);
-
-            // New height
-            cyAveCharSM = MulDiv (cfSM.iPointSize / 10, iLogPixelsY, 72);
-            cyAveCharSM = -lfSM.lfHeight;
-
-            lfSM.lfWidth = (tm.tmAveCharWidth + tm.tmMaxCharWidth) / 2;
-
-            // New width (same aspect ratio as old)
-            cxAveCharSM = MulDiv (lfSM.lfWidth, cyAveCharSM, -lfSM.lfHeight);
-
-            // Because cxAveCharSM & cyAveCharSM changed, we need to reposition
-            //   the caret as it depends upon those two vars.
-            MoveCaretSM ();
-
-            // Recalculate the # horizontal characters
-            //   and vertical lines.
-            nWindowChars = cxWindowPixels / cxAveCharSM;
-            nWindowLines = cyWindowPixels / cyAveCharSM;
-
-            // *************** ScrollBars ******************************
-
-            // Set scrollbar ranges
-            SetVScrollRange ();
-            SetHScrollRange ();
+            // *************** System Names ****************************
 
             // Append all system names (functions and variables) as reserved
             if (!AppendSystemNames_EM ())
@@ -1313,573 +696,246 @@ LRESULT APIENTRY SMWndProc
                 return -1;          // Mark as failed
             } // End IF
 
+            // *************** Edit Control ****************************
+            // Create an edit box within which we can edit
+            hWndEC =
+            CreateWindowExW (0L,                    // Extended styles
+                             LECWNDCLASS,           // Class name
+                             NULL,                  // Initial text
+                             0
+                           | WS_CHILD
+                           | WS_VSCROLL
+                           | ES_MULTILINE
+                           | ES_WANTRETURN
+                           | ES_NOHIDESEL           // ***TESTME***
+                           | ES_AUTOHSCROLL
+                           | ES_AUTOVSCROLL
+                             ,                      // Styles
+                             0,                     // X-position
+                             0,                     // Y-...
+                             CW_USEDEFAULT,         // Width
+                             CW_USEDEFAULT,         // Height
+                             hWnd,                  // Parent window
+                             (HMENU) IDWC_SM_EC,    // ID
+                             _hInstance,            // Instance
+                             0);                    // lParam
+            if (hWndEC EQ NULL)
+            {
+                MB (pszNoCreateSMEditCtrl);
+
+                return -1;          // Stop the whole process
+            } // End IF
+
+            // Save in window extra bytes
+            SetWindowLong (hWnd, GWLSF_HWNDEC, (long) hWndEC);
+
+            // Subclass the edit control so we can handle some of its messages
+            lpfnOldEditCtrlWndProc = (WNDPROC)
+              SetWindowLongW (hWndEC,
+                              GWL_WNDPROC,
+                              (long) (WNDPROC) &LclEditCtrlWndProc);
+            // Set the paint hook
+            SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
+
+////////////// Set the soft-break flag
+////////////SendMessageW (hWndEC, EM_FMTLINES, TRUE, 0);
+
+            // Paint the window
+            ShowWindow (hWndEC, SW_SHOWNORMAL);
+            UpdateWindow (hWndEC);
+
+            // Use Post here as we need to wait for the EC window
+            //   to be drawn.
+            PostMessage (hWnd, MYWM_INIT_EC, 0, 0);
+
             return FALSE;           // We handled the msg
         } // End WM_CREATE
 
-#define chCharCode ((char) wParam)
-        case WM_CHAR:               // chCharCode = (TCHAR) wParam; // character code
-                                    // lKeyData = lParam;           // Key data
-        {
-            // Handle Unshifted and Shifted chars
-            //  e.g., 'a' = 97, 'z' = 122
-            //        'A' = 65, 'Z' =  90
+        case MYWM_INIT_EC:
+            // Get the current vkState
+            lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
+            vkState = *(LPVKSTATE) &lvkState;
 
-            // Process the character code
-            switch (chCharCode)
+            // Create a default sized system caret for display
+            DestroyCaret ();        // 'cause we're changing the cursor width
+            MyCreateCaret (hWndEC, &vkState, cyAveCharFE, NULL);
+
+            // Prepare to accept more input
+            PrepareForInput ();
+
+            return FALSE;           // We handled the msg
+
+#define fwSizeType  wParam
+#define nWidth      (LOWORD (lParam))
+#define nHeight     (HIWORD (lParam))
+        case WM_SIZE:               // fwSizeType = wParam;      // Resizing flag
+                                    // nWidth = LOWORD(lParam);  // Width of client area
+                                    // nHeight = HIWORD(lParam); // Height of client area
+            if (fwSizeType NE SIZE_MINIMIZED)
             {
-                case VK_BACK:           // Backspace
-                    if (iCurChar > iFirstBufferChar)
+                SetWindowPos (hWndEC,           // Window handle to position
+                              0,                // SWP_NOZORDER
+                              0,                // X-position
+                              0,                // Y-...
+                              nWidth,           // Width
+                              nHeight,          // Height
+                              SWP_NOZORDER      // Flags
+                            | SWP_SHOWWINDOW
+                             );
+////////////////// Get the formatting rectangle
+////////////////SendMessageW (hWndEC, EM_GETRECT, 0, (LPARAM) &rcFmtEC);
+////////////////
+////////////////// Move the rectangle over enough chars (FCN_INDENT) to provide room
+//////////////////   for line numbers
+////////////////rcFmtEC.left = FCN_INDENT * cxAveCharSM;
+////////////////
+////////////////// Tell the control about this change
+////////////////SendMessageW (hWndEC, EM_SETRECT, 0, (LPARAM) &rcFmtEC);
+            } // End IF
+
+            break;                  // Continue with next handler ***MUST***
+#undef  nHeight
+#undef  nWidth
+#undef  fwSizeType
+
+        case WM_SETFONT:
+            // Pass it on the the edit control
+            SendMessageW (hWndEC, message, wParam, lParam);
+
+            break;
+
+        case WM_SETFOCUS:           // hwndLoseFocus = (HWND) wParam; // handle of window losing focus
+            // Pass on to the edit ctrl
+            SetFocus (hWndEC);
+
+            break;                  // Continue with next handler ***MUST***
+
+        case WM_UNDO:
+        case MYWM_REDO:
+        case WM_COPY:
+        case WM_CUT:
+        case WM_PASTE:
+        case MYWM_PASTE_APLWIN:
+        case MYWM_PASTE_APL2:
+        case WM_CLEAR:
+        case MYWM_SELECTALL:
+            // Pass on to the Edit Control
+            SendMessageW (hWndEC, message, wParam, lParam);
+
+            return FALSE;           // We handled the msg
+
+#define nVirtKey    ((int) wParam)
+#define uLineNum    ((UINT) lParam)
+        case MYWM_KEYDOWN:          // nVirtKey = (int) wParam;     // Virtual-key code
+                                    // uLineNum = lParam;           // Line #   // lKeyData = lParam;           // Key data
+        {
+            EXECSTATE esState;
+            UINT      uLineLen,
+                      uLineCnt;
+
+            // Special cases for SM windows:
+            //   * Up/Dn arrows:
+            //     * Cache original line before it's changed
+            //
+            //   * CR:
+            //     * Restore original line from cached copy
+            //     * Pass changed line to parent for execution
+            //
+            //   * Shift-CR
+            //     * Insert a soft-break (line continuation) ***FIXME*** -- Not done as yet
+
+            switch (nVirtKey)
+            {
+                case VK_RETURN:
+                    // If we're not on the last line,
+                    //   copy it and append it to the buffer
+                    if (!IzitLastLine (hWndEC))
                     {
-                        // We're past the first char in the buffer
+                        UINT uLastNum;
 
-                        // Delete the preceding char
+                        // Get the current line
+                        ((LPWORD) lpwszTmpLine)[0] = DEF_CURLINE_MAXLEN;
+                        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszTmpLine);
 
-                        // Set new caret position
-                        iCurChar--;
+                        // Append CRLF
+                        lstrcatW (lpwszTmpLine, L"\r\n");
 
-                        // As we changed iCurChar, move the caret
-                        MoveCaretSM ();   // Move the caret
+                        // Move the caret to the end of the buffer
+                        MoveCaretEOB (hWndEC);
 
-                        // Delete the char at iCurChar
-                        DeleteChar ();
+                        // Get the # of the last line
+                        uLastNum = SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
-                        // Scroll the window as necessary
-                        if (iCurChar < iFirstWindowChar)
-                            ScrollHorz (SCROLL_FIRST, iCurChar - iFirstWindowChar);
-                    } else
-                    {
-                        // We're at the first char in the buffer.
+                        // Replace the last line in the buffer
+                        ReplaceLine (lpwszTmpLine, uLastNum);
 
-                        // If there's a preceding line, merge with it
-                        if (iCurLine > iFirstBufferLine)
-                        {
-                            int iLen;
+                        // Restore the original of the current line
+                        ReplaceLine (lpwszCurLine, uLineNum);
 
-                            // If the current line has changed,
-                            //   save it into the history buffer
-                            if (bCurLineChanged)
-                                ReplaceLine (iCurLine);
+                        // Move the caret to the end of the buffer
+                        MoveCaretEOB (hWndEC);
 
-                            // Copy the preceding line from the
-                            //   history buffer into lpwszCurLine;
-                            CopyLine (iCurLine - 1);
-
-                            // Get the global handle to the history buffer
-                            lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
-
-                            // Get a ptr to the contents of the current line
-                            hGlb = lpGlbHist[iCurLine].hGlb;
-                            if (hGlb)
-                            {
-                                wszLine = (LPWCHAR) MyGlobalLock (hGlb);
-                            } else
-                                wszLine = wszEmpty;
-
-                            // Ensure the resulting line isn't too long
-                            iLen = lstrlenW (wszLine);
-                            if ((iCurLineLen + iLen) > iLastBufferChar)
-                            {
-                                // ***FIXME*** -- LINE TOO LONG
-                                DbgMsg ("VK_BACK:  LINE TOO LONG");
-
-                                // Copy the current line from the
-                                //   history buffer into lpwszCurLine;
-                                CopyLine (iCurLine);
-                            } else
-                            {
-                                // Set new current line
-                                iCurLine--;
-
-                                // Set new caret position
-                                iCurChar = iCurLineLen;
-
-                                // Set new current line length
-                                iCurLineLen += iLen;
-
-                                // As we changed iCurLine & iCurChar, move the caret
-                                MoveCaretSM ();
-
-                                // Scroll the window as necessary
-                                if (iCurLine < iFirstWindowLine)
-                                    ScrollVert (SCROLL_FIRST, iCurLine - iFirstWindowLine);
-
-                                // Merge iCurLine and iCurLine+1
-                                lstrcatW (lpwszCurLine, wszLine);
-                                bCurLineChanged = TRUE;
-
-                                // Unlock the memory before deleting it
-                                if (hGlb)
-                                {
-                                    MyGlobalUnlock (hGlb); wszLine = NULL;
-                                } // End IF
-
-                                // Delete iCurLine + 1
-                                DeleteLine (iCurLine + 1); hGlb = NULL;
-
-                                // Redraw the this line and the ones below it
-                                InvalidateRange (iCurLine, iLastValidLine + 1);
-                            } // End IF/ELSE
-
-                            // Unlock the handles
-                            if (hGlb)
-                            {
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlb); wszLine = NULL;
-                            } // End IF
-
-                            // We no longer need this ptr
-                            MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-                        } // End IF
-                    } // End IF/ELSE
-
-                    return FALSE;
-
-                case VK_TAB:            // Tab
-                {
-                    int iNewCurChar, i;
-
-                    iNewCurChar = DEF_TABS * (1 + iCurChar / DEF_TABS);
-
-                    // Ensure line not too long
-                    if ((iCurLineLen + iNewCurChar - iCurChar) > iLastBufferChar)
-                    {
-                        // ***FIXME*** -- LINE TOO LONG
-                        DbgMsg ("DisplayChar:  LINE TOO LONG");
-
-
-
-
+                        // Get the current line #
+                        uLineNum = uLastNum;
                     } // End IF
-
-                    // If we're within the current line,
-                    //   insert some spaces
-                    if (iCurChar < iCurLineLen)
-                    {
-                        memmove (&lpwszCurLine[iNewCurChar],
-                                 &lpwszCurLine[iCurChar],
-                                 (iCurLineLen - iCurChar) * sizeof (WCHAR));
-                        // Calculate the new line length
-                        iCurLineLen += (iNewCurChar - iCurChar);
-
-                        // Fill with blanks
-                        for (i = iCurChar; i < iNewCurChar; i++)
-                            lpwszCurLine[i] = L' ';
-                    } // End IF
-
-                    // Position the caret
-                    iCurChar = iNewCurChar;
-
-                    // As we changed iCurChar, move the caret
-                    MoveCaretSM ();
-
-                    // Ensure properly terminated
-                    lpwszCurLine[iCurLineLen] = L'\0';
-
-                    // Invalidate the line so it gets repainted
-                    InvalidateLine (iCurLine);
-
-                    return FALSE;
-                } // End VK_TAB
-
-                case '\n':              // Line continuation char
-                    DisplayChar ('\n');
-
-                    // Restore the original value of lpGlbHist[iCurLine]
-                    InvalidateLine (iCurLine);
-
-                    // Append lpwszCurLine to the end of the history
-                    AppendLine (lpwszCurLine, TRUE);  // iLastValidLine changes
-
-                    // Get the global handle to the history buffer
-                    lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
-
-                    // Mark the lines as continuations of each other
-                    lpGlbHist[iLastValidLine    ].ContNext =
-                    lpGlbHist[iLastValidLine + 1].ContPrev = TRUE;
-
-                    // Unlock the handle
-                    MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-
-                    return FALSE;
-
-                case VK_RETURN:         // Enter
-                {
-                    EXECSTATE esState;
-                    int       iExecLine;
-
-                    // Restore the original value of lpGlbHist[iCurLine]
-                    InvalidateLine (iCurLine);
-
-                    // Append lpwszCurLine to the end of the history
-                    AppendLine (lpwszCurLine, FALSE);  // iLastValidLine changes
-
-                    // Get the global handle to the history buffer
-                    lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
-
-                    // Find the first line in the continuation sequence
-                    for (iExecLine = iLastValidLine;
-                         lpGlbHist[iExecLine].ContPrev;
-                         iExecLine--)
-                    {};
-
-                    // Unlock the handle
-                    MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
 
                     // Mark as immediate execution
                     esState.exType = EX_IMMEX;
-                    ExecuteLine (iExecLine, &esState);
+                    ExecuteLine (uLineNum, &esState, hWndEC);
 
-                    return FALSE;
-                } // End VK_RETURN
+                    // Prepare to accept more input
+                    PrepareForInput ();
 
-                case 'A':
-                case 'B':
-                case 'C':
-                case 'D':
-                case 'E':
-                case 'F':
-                case 'G':
-                case 'H':
-                case 'I':
-                case 'J':
-                case 'K':
-                case 'L':
-                case 'M':
-                case 'N':
-                case 'O':
-                case 'P':
-                case 'Q':
-                case 'R':
-                case 'S':
-                case 'T':
-                case 'U':
-                case 'V':
-                case 'W':
-                case 'X':
-                case 'Y':
-                case 'Z':
+                    break;
 
-                case 'a':
-                case 'b':
-                case 'c':
-                case 'd':
-                case 'e':
-                case 'f':
-                case 'g':
-                case 'h':
-                case 'i':
-                case 'j':
-                case 'k':
-                case 'l':
-                case 'm':
-                case 'n':
-                case 'o':
-                case 'p':
-                case 'q':
-                case 'r':
-                case 's':
-                case 't':
-                case 'u':
-                case 'v':
-                case 'w':
-                case 'x':
-                case 'y':
-                case 'z':
+                case VK_UP:
+                    // If the next line is out of range, exit
+                    if (uLineNum < 1)
+                        break;
 
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
+                    // Specify the maximum # chars for the buffer
+                    ((LPWORD) lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
 
-                case '`':
-                case '~':
-                case '!':
-                case '@':
-                case '#':
-                case '$':
-                case '%':
-                case '^':
-                case '&':
-                case '*':
-                case '(':
-                case ')':
-                case '{':
-                case '}':
-                case '[':
-                case ']':
-                case '-':
-                case '_':
-                case '=':
-                case '+':
-                case '|':
-                case '\\':
-                case ':':
-                case ';':
-                case '"':
-                case '\'':
-                case ',':
-                case '<':
-                case '.':
-                case '>':
-                case '/':
-                case '?':
-                case VK_SPACE:          // Space
-                    DisplayChar (chCharCode);
+                    // Save the (new) current line
+                    uLineLen =
+                    SendMessageW (hWndEC, EM_GETLINE, max (uLineNum, 1) - 1, (LPARAM) lpwszCurLine);
 
-                    return FALSE;
-                default:
+                    // Ensure properly terminated
+                    lpwszCurLine[uLineLen] = L'\0';
+
+                    // Reset the changed line flag
+                    SetWindowLong (hWnd, GWLSF_CHANGED, FALSE);
+
+                    break;
+
+                case VK_DOWN:
+                    // Get the # lines in the Edit Control
+                    uLineCnt = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+
+                    // If the next line is out of range, exit
+                    if (uLineCnt <= (uLineNum + 1))
+                        break;
+
+                    // Specify the maximum # chars for the buffer
+                    ((LPWORD) lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
+
+                    // Save the (new) current line
+                    uLineLen =
+                    SendMessageW (hWndEC, EM_GETLINE, uLineNum + 1, (LPARAM) lpwszCurLine);
+
+                    // Ensure properly terminated
+                    lpwszCurLine[uLineLen] = L'\0';
+
+                    // Reset the changed line flag
+                    SetWindowLong (hWnd, GWLSF_CHANGED, FALSE);
+
+                    break;
 #ifdef DEBUG
-                    wsprintf (lpszTemp,
-                              "CHAR:  chCharCode = %d, %c",
-                              chCharCode,
-                              chCharCode);
-                    DbgMsg (lpszTemp);
-#endif
-                    return FALSE;
-            } // End SWITCH
-
-            break;
-        } // End WM_CHAR
-#undef  chCharCode
-
-#define chCharCode ((char) wParam)
-        case WM_SYSCHAR:            // chCharCode = (TCHAR) wParam; // character code
-                                    // lKeyData = lParam;           // Key data
-        {
-            int   iChar;
-            WCHAR wch;
-
-            // Handle Shifted & unshifted Alt chars
-            //  e.g., 'a' = 97, 'z' = 122
-
-            iChar = chCharCode - ' ';
-            if (0 <= iChar
-             &&      iChar < (sizeof (aCharCode) / sizeof (aCharCode[0])))
-            {
-                // Get the Alt- char code
-                wch = aCharCode[iChar].alt;
-
-                // If it's valid, display it
-                if (wch)
-                    DisplayChar (wch);
-                else
-                // Otherwise, DbgMsg it
-                {
-#ifdef DEBUG
-                    wsprintfW (lpwszTemp,
-                               L"SYSCHAR:  chCharCode = %d, %c",
-                               chCharCode,
-                               chCharCode);
-                    DbgMsgW (lpwszTemp);
-#endif
-                } // End IF/ELSE
-            } else
-            {
-#ifdef DEBUG
-                wsprintfW (lpwszTemp,
-                           L"SYSCHAR:  chCharCode = %d, %c",
-                           chCharCode,
-                           chCharCode);
-                DbgMsgW (lpwszTemp);
-#endif
-            } // End IF/ELSE
-
-            return FALSE;
-        } // End WM_SYSCHAR
-#undef  chCharCode
-
-#ifdef DEBUG
-#define chCharCode ((char) wParam)
-        case WM_DEADCHAR:
-            wsprintf (lpszTemp,
-                      "DEADCHAR:  chCharCode = %d, %c",
-                      chCharCode,
-                      chCharCode);
-            DbgMsg (lpszTemp);
-
-            return FALSE;
-#undef  chCharCode
-#endif
-#ifdef DEBUG
-#define chCharCode ((char) wParam)
-        case WM_SYSDEADCHAR:
-            wsprintf (lpszTemp,
-                      "SYSDEADCHAR:  chCharCode = %d, %c",
-                      chCharCode,
-                      chCharCode);
-            DbgMsg (lpszTemp);
-
-            return FALSE;
-#undef  chCharCode
-#endif
-
-#define nVirtKey ((int) wParam)
-        case WM_KEYDOWN:            // nVirtKey = (int) wParam;     // virtual-key code
-                                    // lKeyData = lParam;           // Key data
-        {
-            // Process the virtual key
-            switch (nVirtKey)
-            {
-                case VK_HOME:           // Home
-                    // Set new caret position
-                    iCurChar = 0;
-
-                    // As we changed iCurChar, move the caret
-                    MoveCaretSM ();       // Move the caret
-
-                    // Scroll the window as necessary
-                    if (iCurChar < iFirstWindowChar)
-                        ScrollHorz (SCROLL_FIRST, iCurChar - iLastWindowChar);
-
-                    return FALSE;
-
-                case VK_END:            // End
-                    // Set new caret position
-                    iCurChar = iCurLineLen;
-
-                    // As we changed iCurChar, move the caret
-                    MoveCaretSM ();       // Move the caret
-
-                    // Scroll the window as necessary
-                    if (iCurChar > iLastWindowChar)
-                        ScrollHorz (SCROLL_LAST, iCurChar - iLastWindowChar);
-                    else
-                    if (iCurChar < iFirstWindowChar)
-                        ScrollHorz (SCROLL_FIRST, iCurChar - iFirstWindowChar);
-
-                    return FALSE;
-
-                case VK_LEFT:           // Left arrow
-                    // If the caret is not at the start of the buffer, ...
-                    if (iCurChar > iFirstBufferChar)
-                    {
-                        // Set new caret position
-                        iCurChar--;
-
-                        // As we changed iCurChar, move the caret
-                        MoveCaretSM ();   // Move the caret
-                    } // End IF
-
-                    // Scroll the window as necessary
-                    if (iCurChar < iFirstWindowChar)
-                        ScrollHorz (SCROLL_FIRST, iCurChar - iFirstWindowChar);
-
-                    return FALSE;
-
-                case VK_RIGHT:          // Right arrow
-                    // If the caret is not at the end of the buffer, ...
-                    if (iCurChar < iLastBufferChar)
-                    {
-                        // Set new caret position
-                        iCurChar++;
-
-                        // As we changed iCurChar, move the caret
-                        MoveCaretSM ();       // Move the caret
-                    } // End IF
-
-                    // Scroll the window as necessary
-                    if (iCurChar > iLastWindowChar)
-                        ScrollHorz (SCROLL_LAST, iCurChar - iLastWindowChar);
-
-                    return FALSE;
-
-                case VK_UP:             // Up arrow
-                    // Move the cursor up one line
-                    //   unless we're at the start
-                    if (iCurLine > iFirstBufferLine)
-                    {
-                        // If the current line has changed,
-                        //   save it into the history buffer
-                        if (bCurLineChanged)
-                            ReplaceLine (iCurLine);
-
-                        // Set new current line
-                        iCurLine--;
-
-                        // As we changed iCurLine, move the caret
-                        MoveCaretSM ();
-
-                        // Copy the current line from the
-                        //   history buffer into lpwszCurLine;
-                        CopyLine (iCurLine);
-
-                        // Scroll the window as necessary
-                        if (iCurLine < iFirstWindowLine)
-                            ScrollVert (SCROLL_FIRST, iCurLine - iFirstWindowLine);
-                    } // End IF
-
-                    return FALSE;
-
-                case VK_DOWN:           // Down arrow
-                    // Move the cursor down one line
-                    //   unless we're at the last valid line
-                    if (iCurLine < (iLastValidLine + 1))
-                    {
-                        // If the current line has changed,
-                        //   save it into the history buffer
-                        if (bCurLineChanged)
-                            ReplaceLine (iCurLine);
-
-                        // Set new current line
-                        iCurLine++;
-
-                        // As we changed iCurLine, move the caret
-                        MoveCaretSM ();
-
-                        // Copy the current line from the
-                        //   history buffer into lpwszCurLine;
-                        CopyLine (iCurLine);
-
-                        // Scroll the window as necessary
-                        if (iCurLine > iLastWindowLine)
-                            ScrollVert (SCROLL_LAST, iCurLine - iLastWindowLine);
-                    } // End IF
-
-                    return FALSE;
-
-                case VK_INSERT:         // Insert
-                    // Get the current vkState
-                    lvkState = GetWindowLong (hWndSM, GWLSM_VKSTATE);
-                    vkState = *(LPVKSTATE) &lvkState;
-
-                    vkState.Ins = !vkState.Ins;
-
-                    // Save in window extra bytes
-                    SetWindowLong (hWnd, GWLSM_VKSTATE, *(long *) &vkState);
-
-                    // Create a default sized system caret for display
-                    DestroyCaret ();        // 'cause we're changing the cursor width
-                    MyCreateCaret (hWndSM, &vkState, cyAveCharSM, &MoveCaretSM);
-
-                    return FALSE;
-
-                case VK_DELETE:         // Delete
-                    // Delete the char at iCurChar
-                    DeleteChar ();
-
-                    return FALSE;
-
-                case VK_PRIOR:          // Page Up
-                    // View the previous page
-                    ScrollVert (SCROLL_FIRST, -nWindowLines);
-
-                    return FALSE;
-
-                case VK_NEXT:           // Page Down
-                    // View the next page
-                    ScrollVert (SCROLL_FIRST,  nWindowLines);
-
-                    return FALSE;
-#ifdef DEBUG
-                case VK_F1:             // Display session manager history
-                    DisplayHistory ();
-
+                case VK_F1:             // No action defined as yet
+                case VK_F6:             // ...
+                case VK_F7:             // ...
+////////////////case VK_F8:             // Handled in EDITFCN.C
+                case VK_F10:            // Not generated
                     return FALSE;
 #endif
 #ifdef DEBUG
@@ -1955,10 +1011,6 @@ LRESULT APIENTRY SMWndProc
                 } // End VK_F9
 #endif
 #ifdef DEBUG
-////////////////case VK_F10:            // Not generated
-////////////////    return FALSE;
-#endif
-#ifdef DEBUG
                 case VK_F11:            // DbgBrk ()
                     DbgBrk ();
 
@@ -1971,166 +1023,14 @@ LRESULT APIENTRY SMWndProc
 
                     return FALSE;
 #endif
-#ifdef DEBUG
-////////////////default:
-////////////////    wsprintf (lpszTemp,
-////////////////              "WM_KEYDOWN:  nVirtKey = %d",
-////////////////              nVirtKey);
-////////////////    DbgMsg (lpszTemp);
-#endif
+                defstop
+                    break;
             } // End SWITCH
 
-            // We need to pass this message on to the next handler
-            //   so WM_CHAR & WM_SYSCHAR can process it.
-            break;
-        } // End WM_KEYDOWN
+            return FALSE;           // We handled the msg
+        } // End MYWM_KEYDOWN
+#undef  uLineNum
 #undef  nVirtKey
-
-#define nPos ((short int) HIWORD(wParam))
-        case WM_HSCROLL:        // nScrollCode = (int) LOWORD(wParam);  // scroll bar value
-                                // nPos = (short int) HIWORD(wParam);   // scroll box position
-                                // hwndScrollBar = (HWND) lParam;       // handle of scroll bar
-            // Split cases
-            switch (LOWORD (wParam))
-            {
-////////////////case SB_BOTTOM:
-////////////////    break;
-
-////////////////case SB_ENDSCROLL:
-////////////////    break;
-
-////////////////case SB_TOP:
-////////////////    break;
-
-////////////////case SB_THUMBPOSITION:      // Look in nPos
-////////////////    break;
-
-                case SB_LINELEFT:
-                    ScrollHorz (SCROLL_FIRST, -1);
-                    break;
-
-                case SB_LINERIGHT:
-                    ScrollHorz (SCROLL_FIRST,  1);
-                    break;
-
-                case SB_PAGELEFT:
-                    ScrollHorz (SCROLL_FIRST, -nWindowChars);
-                    break;
-
-                case SB_PAGERIGHT:
-                    ScrollHorz (SCROLL_FIRST,  nWindowChars);
-                    break;
-
-                case SB_THUMBTRACK:         // Look in nPos
-                    // nPos contains the new iFirstWindowChar
-                    ScrollHorz (SCROLL_FIRST,  nPos - iFirstWindowChar);
-
-                    break;
-            } // End SWITCH
-
-            return FALSE;           // We handled the msg
-#undef  nPos
-
-#define nPos ((short int) HIWORD(wParam))
-        case WM_VSCROLL:        // nScrollCode = (int) LOWORD(wParam);  // scroll bar value
-                                // nPos = (short int) HIWORD(wParam);   // scroll box position
-                                // hwndScrollBar = (HWND) lParam;       // handle of scroll bar
-            // Split cases
-            switch (LOWORD (wParam))
-            {
-////////////////case SB_BOTTOM:
-////////////////    break;
-
-////////////////case SB_ENDSCROLL:
-////////////////    break;
-
-////////////////case SB_TOP:
-////////////////    break;
-
-////////////////case SB_THUMBPOSITION:      // Look in nPos
-////////////////    break;
-
-                case SB_LINEUP:
-                    ScrollVert (SCROLL_FIRST, -1);
-                    break;
-
-                case SB_LINEDOWN:
-                    ScrollVert (SCROLL_FIRST,  1);
-                    break;
-
-                case SB_PAGEDOWN:
-                    ScrollVert (SCROLL_FIRST,  nWindowLines);
-                    break;
-
-                case SB_PAGEUP:
-                    ScrollVert (SCROLL_FIRST, -nWindowLines);
-                    break;
-
-                case SB_THUMBTRACK:         // Look in nPos
-                    // nPos contains the new iFirstWindowLine
-                    ScrollVert (SCROLL_FIRST,  nPos - iFirstWindowLine);
-
-                    break;
-            } // End SWITCH
-
-            return FALSE;           // We handled the msg
-#undef  nPos
-
-#define fwKeys  (LOWORD(wParam))
-#define xPos    (LOWORD(lParam))
-#define yPos    (HIWORD(lParam))
-        case WM_MOUSEWHEEL:         // fwKeys = LOWORD(wParam); // key flags
-                                    // iDist  = (int) HIWORD(wParam); // Scroll distance in units od WHEEL_DELTA
-                                    // xPos = LOWORD(lParam);  // horizontal position of cursor
-                                    // yPos = HIWORD(lParam);  // vertical position of cursor
-            if (GET_WHEEL_DELTA_WPARAM (wParam) > 0)
-                PostMessage (hWnd, WM_VSCROLL, SB_LINEUP, 0);
-            else
-                PostMessage (hWnd, WM_VSCROLL, SB_LINEDOWN, 0);
-            return FALSE;           // We handled the msg
-#undef  yPos
-#undef  xPos
-#undef  fwKeys
-
-#define fwSizeType wParam
-        case WM_SIZE:               // fwSizeType = wParam;      // resizing flag
-                                    // nWidth = LOWORD(lParam);  // width of client area
-                                    // nHeight = HIWORD(lParam); // height of client area
-            if (fwSizeType NE SIZE_MINIMIZED)
-            {
-                cxWindowPixels = LOWORD (lParam);   // Save for later use
-                cyWindowPixels = HIWORD (lParam);   // ...
-
-                // Recalculate the # characters up/down and across
-                // The test is in case we get called before cxAveCharSM is calculated
-                if (cxAveCharSM)
-                {
-                    nWindowChars  = cxWindowPixels / cxAveCharSM;
-                    nWindowLines  = cyWindowPixels / cyAveCharSM;
-
-                    // Set last window chars & lines
-                    iLastWindowChar = iFirstWindowChar + nWindowChars;
-                    iLastWindowLine = iFirstWindowLine + nWindowLines;
-                } // End IF
-            } // End IF
-
-            break;                  // Continue with next handler ***MUST***
-#undef  fwSizeType
-
-        case WM_SETFOCUS:           // hwndLoseFocus = (HWND) wParam; // handle of window losing focus
-            // Get the current vkState
-            lvkState = GetWindowLong (hWnd, GWLSM_VKSTATE);
-            vkState = *(LPVKSTATE) &lvkState;
-
-            // Create a default sized system caret for display
-            MyCreateCaret (hWndSM, &vkState, cyAveCharSM, &MoveCaretSM);
-
-            break;                  // Continue with next handler ***MUST***
-
-        case WM_KILLFOCUS:          // hwndGetFocus = (HWND) wParam; // handle of window receiving focus
-            DestroyCaret ();        // 'cause we just lost the focus
-
-            break;                  // Continue with next handler
 
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
@@ -2142,185 +1042,72 @@ LRESULT APIENTRY SMWndProc
 
             return FALSE;           // We handled the msg
 
-#define fwKeys  wParam
-#define xPos    (LOWORD(lParam))
-#define yPos    (HIWORD(lParam))
-        case WM_LBUTTONDOWN:        // fwKeys = wParam;        // Key flags
-                                    // xPos = LOWORD(lParam);  // Horizontal position of cursor
-                                    // yPos = HIWORD(lParam);  // Vertical position of cursor
-        {
-            int xPosRel;
+#define wNotifyCode     (HIWORD (wParam))
+#define wID             (LOWORD (wParam))
+#define hWndCtrl        ((HWND) lParam)
+        case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // Notification code
+                                    // wID = LOWORD (wParam);         // Item, control, or accelerator identifier
+                                    // hwndCtrl = (HWND) lParam;      // Handle of control
+            // This message should be from the edit control
+            Assert (wID      EQ IDWC_FE_EC
+                 || wID      EQ IDWC_SM_EC);
+            Assert (hWndCtrl EQ hWndEC || hWndEC EQ 0);
 
-            // If the current line has changed,
-            //   save it into the history buffer
-            if (bCurLineChanged)
-                ReplaceLine (iCurLine);
-
-            // Ensure xPos is relative to the non-iLCWidth client area
-            xPosRel = max (0, xPos - iLCWidth);
-
-            // Identify the selected char
-            iCurChar = iFirstWindowChar + (xPosRel / cxAveCharSM);
-            iCurLine = iFirstWindowLine + (yPos    / cyAveCharSM);
-
-            // Move the cursor to this line
-            //   unless it's below the last valid line
-            iCurLine = min (iCurLine, iLastValidLine + 1);
-
-            // ***FIXME** -- Should we squeak if the cursor is too low??
-
-            // Move the caret there
-            MoveCaretSM ();
-
-            // Copy the current line from the
-            //   history buffer into lpwszCurLine;
-            CopyLine (iCurLine);
-
-            return FALSE;           // We handled the msg
-        } // End WM_LBUTTONDOWN
-#undef  yPos
-#undef  xPos
-#undef  fwKeys
-
-        case WM_ERASEBKGND:
-            // In order to reduce screen flicker, we handle erase background
-            // in the WM_PAINT message.
-            return TRUE;            // We erased the background
-
-        case WM_PAINT:
-            // Validate the update region
-            if (GetUpdateRect (hWnd, &rc, FALSE))
+            // Split cases based upon the notify code
+            switch (wNotifyCode)
             {
-                PAINTSTRUCT ps;
-                int         iTop, iBot;
-                LPWCHAR     lpwszLine;
-                HDC         hDC, hDCMem;
-                HBITMAP     hBitmap, hBitmapOld;
-                RECT        rcLineCont;
+                case EN_SETFOCUS:                   // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
+                                                    // wNotifyCode = HIWORD(wParam);      // Notification code
+                                                    // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
+                    // Get the current vkState
+                    lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
+                    vkState = *(LPVKSTATE) &lvkState;
 
-                // Tell W to lay out the dropcloths
-                BeginPaint (hWnd, &ps);
+                    // Create a default sized system caret for display
+                    DestroyCaret ();        // 'cause we're changing the cursor width
+                    Assert (hWndEC NE 0);
+                    MyCreateCaret (hWndEC, &vkState, cyAveCharFE, NULL);
 
-                // Get the size of the client area
-                // so we know how big a bitmap to define
-                GetClientRect (hWnd, &rc);
+                    // Paint the window
+                    UpdateWindow (hWndEC);
 
-                rcLineCont.left   = 0;
-                rcLineCont.top    = 0;
-                rcLineCont.right  = iLCWidth;
-                rcLineCont.bottom = rc.bottom;
+                    break;
 
-                // To avoid flicker, we draw in a memory DC
-                hDCMem = MyCreateCompatibleDC (ps.hdc);
-                hBitmap = MyCreateCompatibleBitmap (ps.hdc,
-                                                    rc.right,
-                                                    rc.bottom);
-                hBitmapOld = SelectObject (hDCMem, hBitmap);
+                case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
+                                                    // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
+                    // The contents of the edit control have changed,
+                    // set the changed flag
+                    SetWindowLong (hWnd, GWLSF_CHANGED, TRUE);
 
-                // Handle WM_ERASEBKGND here by filling in the client area
-                FillRect (hDCMem, &rc, (HBRUSH) GetClassLong (hWnd, GCL_HBRBACKGROUND));
+                    break;
 
-                // Fill in the background for the line continuation column
-                FillRect (hDCMem, &rcLineCont, GetStockObject (LTGRAY_BRUSH));
+                case EN_MAXTEXT:    // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
+                                    // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
+                    // The edit control has exceed its maximum # chars
+                    DbgBrk ();      // ***TESTME***
 
-                // Set our DC attributes
-                SetAttrs (hDCMem, hFontSM, crTextColor, crBkColor);
+                    // The default maximum is 32K, so we increase it by that amount
+                    Assert (hWndEC NE 0);
+                    iMaxLimit = SendMessageW (hWndEC, EM_GETLIMITTEXT, 0, 0);
+                    SendMessageW (hWndEC, EM_SETLIMITTEXT, iMaxLimit + 32*1024, 0);
 
-                // Get the global handle to the history buffer
-                lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
+                    break;
 
-                // Calculate the range of changed line(s)
-////////////////iTop = iFirstWindowLine + (ps.rcPaint.top    / cyAveCharSM);
-////////////////iBot = iFirstWindowLine + (ps.rcPaint.bottom / cyAveCharSM);
-                iTop = iFirstWindowLine + (rc.top    / cyAveCharSM);
-                iBot = iFirstWindowLine + (rc.bottom / cyAveCharSM);
-#if (defined (DEBUG)) && 0
-                { // ***DEBUG***
-                    wsprintf (lpszTemp,
-                              "WM_PAINT:  iTop = %d, iBot = %d",
-                              iTop,
-                              iBot);
-                    DbgMsg (lpszTemp);
-                } // ***DEBUG*** END
-#endif
-                // Redraw the changed line(s)
-                for (; iTop < iBot; iTop++)
-                if (iTop EQ iCurLine)
-                {
-                    // Ensure properly terminated
-                    lpwszCurLine[iCurLineLen] = L'\0';
-                    wszLine = lpwszCurLine;
-
-                    // Ensure iFirstWindowChar not beyond string end
-                    if (iFirstWindowChar < lstrlenW (wszLine))
-                        lpwszLine = &wszLine[iFirstWindowChar];
-                    else
-                        lpwszLine = wszEmpty;
-                    DrawLine (lpwszLine,
-                              iTop - iFirstWindowLine,
-                              hDCMem,
-                              lpGlbHist[iTop].ContPrev);
-                } else
-                if (iTop <= iLastBufferLine)
-                {
-                    if (lpGlbHist[iTop].hGlb)
-                    {
-                        // Get ptr to the global memory
-                        hGlb = lpGlbHist[iTop].hGlb;
-                        wszLine = (LPWCHAR) MyGlobalLock (hGlb);
-
-                        // Ensure iFirstWindowChar not beyond string end
-                        if (iFirstWindowChar < lstrlenW (wszLine))
-                            lpwszLine = &wszLine[iFirstWindowChar];
-                        else
-                            lpwszLine = wszEmpty;
-                        DrawLine (lpwszLine,
-                                  iTop - iFirstWindowLine,
-                                  hDCMem,
-                                  lpGlbHist[iTop].ContPrev);
-
-                        // Unlock the handle
-                        MyGlobalUnlock (hGlb); wszLine = NULL;
-                    }
-////////////////////else
-////////////////////    DrawLine (wszEmpty,
-////////////////////              iTop - iFirstWindowLine,
-////////////////////              hDCMem,
-////////////////////              lpGlbHist[iTop].ContPrev);
-                } // End FOR/IF/ELSE/IF
-
-                // Obtain a DC without a clipping region
-                //   so we may draw anywhere we like
-                //   (such as for line continuations)
-                hDC = MyGetDC (hWnd);
-
-                // Set our DC attributes
-                SetAttrs (hDCMem, hFontSM, crTextColor, crBkColor);
-
-                // Copy the memory DC to the screen DC
-                BitBlt (hDC,
-                        0,
-                        0,
-                        rc.right,
-                        rc.bottom,
-                        hDCMem,
-                        0,
-                        0,
-                        SRCCOPY);
-                // Free resources
-                SelectObject (hDCMem, hBitmapOld);
-                MyDeleteObject (hBitmap); hBitmap = NULL;
-                MyDeleteDC (hDCMem); hDCMem = NULL;
-                MyReleaseDC (hWnd, hDC); hDC = NULL;
-
-                // Unlock the handle
-                MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-
-                // Pass the turpentine
-                EndPaint (hWnd, &ps);
+////            case EN_SETFOCUS:   // 0x0100
+////            case EN_KILLFOCUS:  // 0x0200
+////            case EN_CHANGE:     // 0x0300
+////            case EN_UPDATE:     // 0x0400
+////            case EN_ERRSPACE:   // 0x0500
+////            case EN_MAXTEXT:    // 0x0501
+////            case EN_HSCROLL:    // 0x0601
+////            case EN_VSCROLL:    // 0x0602
+                    break;
             } // End IF
 
-            return FALSE;           // We handled the msg
+            break;
+#undef  hWndCtrl
+#undef  wID
+#undef  wNotifyCode
 
         case WM_CLOSE:
             // Because the SM window doesn't close unless the
@@ -2331,27 +1118,16 @@ LRESULT APIENTRY SMWndProc
 
         case WM_DESTROY:
         {
-            // *************** ScrollBars ******************************
-            // Nothing to undo
-
-            // *************** History *********************************
-            if (hGlbHist)
+            // *************** Undo Buffer *****************************
+            // Get the ptr to the start of the Undo Buffer
+            (long) lpUndoBeg = GetWindowLong (hWnd, GWLSF_UNDO_BEG);
+            if (lpUndoBeg)
             {
-                int i;
-
-                // Get the global handle to the history buffer
-                lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
-
-                // Free the lines
-                for (i = 0; i <= iLastValidLine; i++)
-                if (lpGlbHist[i].hGlb)
-                {
-                    DbgGlobalFree (lpGlbHist[i].hGlb); lpGlbHist[i].hGlb = NULL;
-                } // End IF
-
-                // Unlock and free the global handle
-                MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
-                DbgGlobalFree (hGlbHist); hGlbHist = NULL;
+                // Free the virtual storage, first backing up to the start
+                VirtualFree (--lpUndoBeg, 0, MEM_RELEASE);
+                lpUndoBeg = lpUndoNxt = NULL;
+                SetWindowLong (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
+                SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
             } // End IF
 
             // *************** lpSymTab ********************************
@@ -2381,7 +1157,7 @@ LRESULT APIENTRY SMWndProc
             // *************** lpwszCurLine ****************************
             if (lpwszCurLine)
             {
-                DbgGlobalFree (lpwszCurLine); lpwszCurLine = NULL;
+                VirtualFree (lpwszCurLine, 0, MEM_RELEASE); lpwszCurLine = NULL;
             } // End IF
 
             // Uninitialize window-specific resources

@@ -91,8 +91,8 @@ typedef enum
     END_0 = 0,          /* line ends with terminating '\0' character */
     END_WRAP,           /* line is wrapped */
     END_HARD,           /* line ends with a hard return '\r\n' */
-        END_SOFT,               /* line ends with a soft return '\r\r\n' */
-        END_RICH                /* line ends with a single '\n' */
+    END_SOFT,           /* line ends with a soft return '\r\r\n' */
+    END_RICH            /* line ends with a single '\n' */
 } LINE_END;
 
 typedef struct tagLINEDEF {
@@ -1030,11 +1030,6 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
             EDIT_WM_Paint(es, (HDC)wParam);
         break;
 
-    case MYWM_PASTE_APLWIN:
-        DbgBrk ();      // ***FINISHME*** -- Launder the input
-
-
-
     case WM_PASTE:
         EDIT_WM_Paste(es);
         break;
@@ -1305,7 +1300,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
         } else if ((cp > current_position) && (*(cp - 1) == '\r')) {
             current_line->ending = END_SOFT;
             current_line->net_length = cp - current_position - 1;
-                } else if (*cp == '\n') {
+        } else if (*cp == '\n') {
             current_line->ending = END_RICH;
             current_line->net_length = cp - current_position;
         } else {
@@ -1381,7 +1376,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
         case END_SOFT:
             current_line->length = current_line->net_length + 3;
             break;
-                case END_RICH:
+        case END_RICH:
             current_line->length = current_line->net_length + 1;
             break;
         case END_HARD:
@@ -4269,20 +4264,23 @@ static void EDIT_WM_ContextMenu(EDITSTATE *es, INT x, INT y)
     ORDER_UINT(start, end);
 
     /* undo */
-////EnableMenuItem(popup, 0, MF_BYPOSITION | (EDIT_EM_CanUndo(es) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
-    EnableMenuItem(popup, 0, MF_BYPOSITION | (SendMessageA(es->hwndSelf, EM_CANUNDO, 0, 0) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
-    /* redo */  // ***FIXME*** -- Need action
-    EnableMenuItem(popup, 2, MF_BYPOSITION | ((end - start) && !(es->style & ES_PASSWORD) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_UNDO        , (SendMessageA(es->hwndSelf, EM_CANUNDO, 0, 0) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    /* redo */
+    EnableMenuItem(popup, IDM_REDO        , ((end - start) && !(es->style & ES_PASSWORD) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* cut */
-    EnableMenuItem(popup, 3, MF_BYPOSITION | ((end - start) && !(es->style & ES_PASSWORD) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_CUT         , ((end - start) && !(es->style & ES_PASSWORD) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* copy */
-    EnableMenuItem(popup, 4, MF_BYPOSITION | ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_COPY        , ((end - start) && !(es->style & ES_PASSWORD) ? MF_ENABLED : MF_GRAYED));
     /* paste */
-    EnableMenuItem(popup, 5, MF_BYPOSITION | (IsClipboardFormatAvailable(CF_UNICODETEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_PASTE       , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    /* paste APL+WIN */
+    EnableMenuItem(popup, IDM_PASTE_APLWIN, (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    /* paste APL2 */
+    EnableMenuItem(popup, IDM_PASTE_APL2  , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* delete */
-    EnableMenuItem(popup, 6, MF_BYPOSITION | ((end - start) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_DELETE      , ((end - start) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* select all */
-    EnableMenuItem(popup, 8, MF_BYPOSITION | (start || (end != strlenW(es->text)) ? MF_ENABLED : MF_GRAYED));
+    EnableMenuItem(popup, IDM_SELECTALL   , (start || (end != strlenW(es->text)) ? MF_ENABLED : MF_GRAYED));
 
         if (x == -1 && y == -1) /* passed via VK_APPS press/release */
         {

@@ -13,10 +13,19 @@
 typedef int PAINTHOOK (HDC, int, int, LPWSTR, int, int);
 typedef PAINTHOOK *LPPAINTHOOK;
 
-#define MYWM_DRAWLINENUMS   (WM_USER + 0)
-#define MYWM_PASTE_APLWIN   (WM_USER + 1)
-#define MYWM_REDO           (WM_USER + 2)
-#define MYWM_SELECTALL      (WM_USER + 3)
+#define MYWM_INIT_EC        (WM_USER + 0)
+#define MYWM_REDO           (WM_USER + 1)
+#define MYWM_SELECTALL      (WM_USER + 2)
+#define MYWM_KEYDOWN        (WM_USER + 3)
+#define MYWM_PASTE_APLWIN   (WM_USER + 4)
+#define MYWM_PASTE_APL2     (WM_USER + 5)
+
+#define FCN_INDENT  6
+
+#define WM_REDO     (WM_USER + 0)
+
+#define DEF_UNDOBUF_INITSIZE     4*1024
+#define DEF_UNDOBUF_MAXSIZE     64*1024
 
 
 //***************************************************************************

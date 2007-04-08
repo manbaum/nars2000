@@ -100,30 +100,35 @@ ul, ol
   padding-right: 0.5em;
   margin-bottom: 1.5em;
 }
-.download th, .download tr, .download td
+.reltable
 {
-  color: navy;
-  margin:  0 1em 0 1en;
+  margin-left: 1em;
+  border-collapse: collapse;
+}
+.reltable th, .reltable tr, .reltable td
+{
+  color: rgb(0,0,164);
   padding: 0 1em 0 1em;
 }
-.download, .download th
-{
-  border-bottom:  solid blue 1px;
-}
-.download td
+.reltable td
 {
   border: solid blue 1px;
-  border-collapse: collapse;
+  font-weight: bold;
+  color: seagreen;
+}
+.relbutton
+{
+  background-color: orangered;
 }
   </style>
 </head>
 
-<body><!--#config timefmt="%d %B %Y %H:%M:%S" -->
+<body>
 
 <div class="title">
 <img src="/art/NARS-Title.jpg"
      alt="NARS2000: An Experimental APL Interpreter"
-     title="Last Changed <!--#echo var='LAST_MODIFIED' -->" />
+     title="Last Changed <?php echo date ('d F Y H:i:s', filemtime (__FILE__));?>" />
 </div>
 
 <table class="pagetable" summary="">
@@ -132,7 +137,7 @@ ul, ol
     <div class="section">
       <h2>Latest File Releases</h2>
 
-      <table class="download" border="0" cellspacing="0" summary="">
+      <table class="reltable" border="0" cellspacing="0" summary="">
       <tr>
         <th>File Name</th>
         <th>Release</th>
@@ -142,13 +147,16 @@ ul, ol
       </tr>
 
       <?php
+      ob_implicit_flush (true);
+      echo "\n";
       $DirName = '/v/nars2000.org/htdocs/download/binaries/';
       $dh = opendir ($DirName);
 
       // This is the correct way to loop over the directory.
       while (false !== ($File = readdir ($dh)))
       {
-          if (!is_dir ($File))
+          if (!is_dir ($File)
+           && strcmp ($File, "linestat.txt") != 0)
           {
               $Files[] = $File;
           } // End IF
@@ -168,13 +176,14 @@ ul, ol
           $Date = date ("Y F d H:i:s", filemtime ($DirName . $File));
           $Size = number_format (filesize ($DirName . $File));
 
-          echo "<tr>"
-             .   "<td><a class=\"linkleft\" href=\"binaries/$File\">$Name</a></td>"
-             .   "<td><a class=\"linkleft\" href=\"binaries/$File\">$Rel</a></td>"
-             .   "<td><a class=\"linkleft\" href=\"binaries/$File\">$Date</a></td>"
-             .   "<td><a class=\"linkleft\" href=\"binaries/$File\">$Size</a></td>"
-             .   "<td><a class=\"linkleft\" href=\"binaries/$File\">$Ext</a></td>"
-             . "</tr>";
+          echo   "      <tr>\n"
+             .   "        <td>$Name</td>\n"
+             .   "        <td>$Rel</td>\n"
+             .   "        <td>$Date</td>\n"
+             .   "        <td>$Size</td>\n"
+             .   "        <td>$Ext</td>\n"
+             .   "        <td class=\"relbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
+             .   "      </tr>\n";
       } // End FOREACH
       closedir ($dh);
       ?>
@@ -182,9 +191,17 @@ ul, ol
     </div>
   </td>
 </tr>
+
+<tr>
+  <td class="pagecolumn2">
+    <div class="section">
+      <h2>Statistics On The Most Current File Release</h2>
+      <pre style="margin-left: 1em;"><?php readfile ($DirName . "linestat.txt");?></pre>
+    </div>
+  </td>
+</tr>
 </table>
 
-
 <?php include "/www/htdocs/ValidXHTML-CSS.html" ?>
-<?php include "/www/htdocs/footer.htm" ?>
+<?php include "../footer.html" ?>
 </body></html>

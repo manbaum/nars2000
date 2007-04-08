@@ -38,7 +38,7 @@ LPYYSTYPE PrimFnThorn_EM
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_THORN);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_DOWNTACKJOT);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -417,7 +417,8 @@ LPYYSTYPE PrimFnMonThorn_EM
                           aplLastDim,               // Length of last dim in result
                           aplRankRht,               // Rank of this array
                           lpMemDimRht,              // Ptr to this array's dimensions
-                          FALSE);                   // TRUE iff raw output
+                          FALSE,                    // TRUE iff raw output
+                          TRUE);                    // TRUE iff last line has CR
             break;
 
         case ARRAY_NESTED:
@@ -429,8 +430,11 @@ LPYYSTYPE PrimFnMonThorn_EM
                          &lpwszOut,                 // Ptr to ptr to output string
                           aplDimNRows,              // # rows in this array
                           aplDimNCols,              // # cols ...
+                          aplRankRht,               // Rank of this array
+                          lpMemDimRht,              // Ptr to this array's dimensions
                           aplLastDim,               // Length of last dim in result
-                          FALSE);                   // TRUE iff raw (not {thorn}) output
+                          FALSE,                    // TRUE iff raw (not {thorn}) output
+                          TRUE);                    // TRUE iff last line has CR
             break;
 
         defstop
@@ -483,7 +487,8 @@ LPAPLCHAR FmtArrSimple
      APLDIM      aplLastDim,    // Length of the last dimension in the result
      APLRANK     aplRank,       // Rank of this array
      LPAPLDIM    lpMemDim,      // Ptr to this array's dimensions (NULL for scalar)
-     BOOL        bRawOutput)    // TRUE iff raw (not {thorn}) output
+     BOOL        bRawOutput,    // TRUE iff raw (not {thorn}) output
+     BOOL        bEndingCR)     // TRUE iff last line has CR
 
 {
     APLDIM      aplDimRow,
@@ -562,7 +567,7 @@ LPAPLCHAR FmtArrSimple
                             *lpwszOut = L'\0';
 
                             // Output the line
-                            AppendLine (lpwszTemp, TRUE);
+                            AppendLine (lpwszTemp, TRUE, TRUE);
 
                             // Reset the line start
                             lpwszOut = lpw = *lplpwszOut;
@@ -574,6 +579,10 @@ LPAPLCHAR FmtArrSimple
 
                             // Skip over leading indent
                             lpwszOut += DEF_INDENT;
+
+                            // Shorten the width to act like this is the first col
+                            //   (which doesn't have a leading blank)
+                            uWid = max (uWid, uLen + 1) - 1;
                             uCol = 0;
                         } else
                         {
@@ -631,7 +640,7 @@ LPAPLCHAR FmtArrSimple
             *lpwszOut = L'\0';
 
             // Output the line
-            AppendLine (lpwszTemp, FALSE);
+            AppendLine (lpwszTemp, FALSE, bEndingCR || aplDimRow < (aplDimNRows - 1));
 
             // Reset the line start
             lpwszOut = lpw = *lplpwszOut;
@@ -654,7 +663,7 @@ LPAPLCHAR FmtArrSimple
                     if ((aplDimRow + 1) % aplDimAcc)
                         break;
 
-                    AppendLine (L"", FALSE);
+                    AppendLine (L"", FALSE, TRUE);
                 } // End FOR
             } // End IF
         } // End IF
@@ -681,8 +690,11 @@ LPAPLCHAR FmtArrNested
      LPAPLCHAR  *lplpwszOut,    // Ptr to ptr to output string
      APLDIM      aplDimNRows,   // # rows in this array
      APLDIM      aplDimNCols,   // # cols ...
+     APLRANK     aplRank,       // Rank of this array
+     LPAPLDIM    lpMemDim,      // Ptr to this array's dimensions (NULL for scalar)
      APLDIM      aplLastDim,    // Length of the last dimension in the result
-     BOOL        bRawOutput)    // TRUE iff raw (not {thorn}) output
+     BOOL        bRawOutput,    // TRUE iff raw (not {thorn}) output
+     BOOL        bEndingCR)     // TRUE iff last line has CR
 
 {
     APLDIM      aplDimRow,
@@ -747,7 +759,8 @@ LPAPLCHAR FmtArrNested
                                               aplLastDim,               // Length of last dim in result
                                               0,                        // Rank of this array
                                               NULL,                     // Ptr to this array's dimensions
-                                              FALSE);                   // TRUE iff raw output
+                                              FALSE,                    // TRUE iff raw output
+                                              TRUE);                    // TRUE iff last line has CR
                                 break;
 
                             defstop
@@ -782,26 +795,6 @@ LPAPLCHAR FmtArrNested
 #endif
         // Skip to the next row
         lpwszOut = lpwszOutStart + aplLastDim;
-
-////////// If raw output, output it
-////////if (bRawOutput)
-////////{
-////////    // Ensure properly terminated
-////////    *lpwszOut = L'\0';
-////////
-////////    // Output the line
-////////    AppendLine (lpwszTemp, FALSE);
-////////
-////////    // Reset the line start
-////////    lpwszOut = lpw = lpwszTemp;
-////////
-////////    // Fill the output area with all blanks
-////////    for (uCol = 0; uCol < aplLastDim; uCol++)
-////////        *lpw++ = L' ';
-////////
-////////    // Note that all nested arrays are formatted as
-////////    //   matrices, so there is no interdimensional spacing.
-////////} // End IF
     } // End FOR
 
     // Return the output string ptr
@@ -922,7 +915,8 @@ LPAPLCHAR FmtArrNestedGlb
                           aplLastDim,           // Length of last dim in result
                           aplRank,              // Rank of this array
                           lpMemDim,             // Ptr to this array's dimensions
-                          FALSE);               // TRUE iff raw output
+                          FALSE,                // TRUE iff raw output
+                          TRUE);                // TRUE iff last line has CR
             break;
 
         case ARRAY_NESTED:
@@ -934,8 +928,11 @@ LPAPLCHAR FmtArrNestedGlb
                           lplpwszOut,           // Ptr to ptr to output string
                           aplDimNRows,          // # rows in this array
                           aplDimNCols,          // # cols ...
+                          aplRank,              // Rank of this array
+                          lpMemDim,             // Ptr to this array's dimensions
                           aplLastDim,           // Length of last dim in result
-                          FALSE);               // TRUE iff raw (not {thorn}) output
+                          FALSE,                // TRUE iff raw (not {thorn}) output
+                          TRUE);                // TRUE iff last line has CR
             break;
 
         defstop
@@ -978,8 +975,8 @@ LPAPLCHAR CompileArrBool
         // Max the current width with the width of this number
         lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, 2);
 
-////////// Max the current format type with FMT_INT
-////////lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMTTYPE_INT);
+        // Max the current format type with FMT_INT
+        lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMTTYPE_INT);
     } // End FOR
 
     // Add in a leading blank unless scalar/vector
@@ -1099,8 +1096,8 @@ LPAPLCHAR CompileArrInteger
             // Max the current width with this
             lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
 
-////////////// Max the current format type with FMT_INT
-////////////lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMT_TYPEINT);
+            // Max the current format type with FMT_INT
+            lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMTTYPE_INT);
         } // End FOR
 
         // Save as ptr to next row struc
@@ -1245,7 +1242,6 @@ LPAPLCHAR CompileArrFloat
 LPAPLCHAR CompileArrChar
     (LPAPLCHAR   lpMem,         // Ptr to data to format
      LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
-//// LPFMTROWSTR lpFmtRowStr,   // Ptr to this row's FMTROWSTR
      LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
      LPAPLCHAR   lpaplChar,     // Ptr to next available format position
      APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
@@ -1457,8 +1453,8 @@ LPAPLCHAR CompileArrHetero
             // Max the current width with this
             lpFmtColStr[aplDimCol].uInts = max (lpFmtColStr[aplDimCol].uInts, uLen);
 
-////////////// Max the current format type with FMT_INT
-////////////lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMT_TYPEINT);
+            // Max the current format type with FMT_INT
+            lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMTTYPE_INT);
         } // End FOR
 
         // Save as ptr to next row struc
@@ -1598,11 +1594,14 @@ LPAPLCHAR CompileArrNested
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
-        // If this is not at the top level (Depth = 0),
+        // If this is not the first or last row,
         //   we need to count the interdimensional spacing
         //   as blank rows in the row count
-        if (lpFmtHeader->uDepth                 // Not top level, and
-         && aplDimRow NE 0                      // not first row, and
+        // Note that we don't check for Depth == 0 as this
+        //   is a nested array, so as the result is formatted
+        //   as a matrix there's no other place to insert
+        //   interdimensional spacing.
+        if (aplDimRow NE 0                      // Not first row, and
          && aplDimRow NE (aplDimNRows - 1))     // not last row
             lpaplChar = AppendBlankRows (lpaplChar,
                                          lpMemDim,
@@ -1985,7 +1984,7 @@ LPYYSTYPE PrimFnDydThorn_EM
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for RANK ERROR
-    if (aplRankLft NE 1)
+    if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkLftArg);
@@ -1994,7 +1993,16 @@ LPYYSTYPE PrimFnDydThorn_EM
         goto ERROR_EXIT;
     } // End IF
 
+    // Check for LENGTH ERROR
+////if (aplNELMLft NE 2
+//// && aplNELMLft NE (2 * 1))  // ***FIXME***
+    {
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                   lptkLftArg);
+        bRet = FALSE;
 
+        goto ERROR_EXIT;
+    } // End IF
 
 
 

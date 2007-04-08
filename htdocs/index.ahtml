@@ -224,109 +224,109 @@ ul, ol
       <h2 id="Language_Features">Language Features</h2>
 
       <h3>Current Feature Set</h3>
-        <ul>
-          <li>ISO/IEC 13751 Extended APL Compliant</li>
+      <ul>
+        <li>ISO/IEC 13751 Extended APL Compliant</li>
 
-          <li>Consistent Extensions to ISO/IEC 13751
-            <ul>
-              <li>Composite assignment (e.g.,
-                <span class="APL">A+{is}1</span>)</li>
-              <li>Function/operator assignment (e.g.,
-                <span class="APL">F{is}+.{times}</span>, or
-                <span class="APL">F{is}{jot}</span>)</li>
-              <li>Sink (monadic {is}<span class="APL">A</span>
-                to suppress the display of <span class="APL">A</span>)</li>
-              <li>Generalized indexing such that <span class="APL">R[L]</span>
-                allows both Reach and Scatter indexing &mdash; that is, if
-                <span class="APL">L{pick}R</span> is valid, it is equivalent to
-                <span class="APL">{disclose}R[{enclose}L]</span>, and if
-                <span class="APL">L{squad}R</span> is valid, it is equivalent to
-                <span class="APL">R[{disclose}{jot}.,/L]</span></li>
-              <li>Dyadic operator jot ({jot}) (composition)</li>
-              <li>Axis operator to Ravel can transpose coordinates (e.g.,
-                <span class="APL">,[2 1] R {is}/{goto} ,[1 2] R</span>)</li>
-            </ul>
-          </li>
+        <li>Consistent Extensions to ISO/IEC 13751
+          <ul>
+            <li>Composite assignment (e.g.,
+              <span class="APL">A+{is}1</span> is the same as <span class="APL">A{is}A+1</span>)</li>
+            <li>Function/operator assignment (e.g.,
+              <span class="APL">F{is}+.{times}</span>, or
+              <span class="APL">F{is}{jot}</span>)</li>
+            <li>Sink (monadic {is}<span class="APL">A</span>
+              to suppress the display of <span class="APL">A</span>)</li>
+            <li>Generalized indexing such that <span class="APL">R[L]</span>
+              allows both Reach and Scatter indexing &mdash; that is, if
+              <span class="APL">L{pick}R</span> is valid, it is equivalent to
+              <span class="APL">{disclose}R[{enclose}L]</span>, and if
+              <span class="APL">L{squad}R</span> is valid, it is equivalent to
+              <span class="APL">R[{disclose}{jot}.,/L]</span></li>
+            <li>Dyadic operator jot ({jot}) (composition)</li>
+            <li>Axis operator to Ravel can transpose coordinates (e.g.,
+              <span class="APL">,[2 1] R {is}/{goto} ,[1 2] R</span>)</li>
+          </ul>
+        </li>
 
-          <li>Optional Facilities
-            <ul>
-              <li>Diamond ({diamond}) as a statement separator</li>
-            </ul>
-          </li>
-        </ul>
+        <li>Optional Facilities
+          <ul>
+            <li>Diamond ({diamond}) as a statement separator</li>
+          </ul>
+        </li>
+      </ul>
 
       <h3>Possible Future Feature Set</h3>
-        <ul>
-          <li>User-defined operators (e.g., <span class="APL">{del}
-           (Z1 Z2){is}[(L1 L2 L3)] (LO OP2 RO) (R1 R2 R3 R4)</span>)</li>
-          <li>Strand left and right arguments and result to user-defined
-            functions/operators</li>
-          <li>User-defined function prototypes
-            (<span class="APL">{quad}PROTOTYPE:</span>)</li>
-          <li>User-defined function singletons
-            (<span class="APL">{quad}SINGLETON:</span>)</li>
-          <li>User-defined function inverses
-            (<span class="APL">{quad}INVERSE:</span>)</li>
-          <li>Dynamic functions (e.g.,
-            <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
-          <li>Selective assignment (e.g.,
-            <span class="APL">(1 1{transpose}A){is}1 2 3</span>)</li>
-          <li>Primitive functions and operators user extensible via user-defined APL functions</li>
-        </ul>
+      <ul>
+        <li>User-defined operators (e.g., <span class="APL">{del}
+         (Z1 Z2){is}[(L1 L2 L3)] (LO OP2 RO) (R1 R2 R3 R4)</span>)</li>
+        <li>Strand left and right arguments and result to user-defined
+          functions/operators</li>
+        <li>User-defined function prototypes
+          (<span class="APL">{quad}PROTOTYPE:</span>)</li>
+        <li>User-defined function singletons
+          (<span class="APL">{quad}SINGLETON:</span>)</li>
+        <li>User-defined function inverses
+          (<span class="APL">{quad}INVERSE:</span>)</li>
+        <li>Dynamic functions (e.g.,
+          <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
+        <li>Selective assignment (e.g.,
+          <span class="APL">(1 1{transpose}A){is}1 2 3</span>)</li>
+        <li>Primitive functions and operators user extensible via user-defined APL functions</li>
+      </ul>
     </div>
 
     <div class="section">
       <h2 id="Datatypes">Datatypes</h2>
 
       <h3>Current Datatypes</h3>
-        <ul>
-          <li>1-bit Booleans</li>
-          <li>2-byte Characters (Unicode, really UCS2, a subset of UTF-16)</li>
-          <li>64-bit Integers</li>
-          <li>64-bit Floats</li>
-          <li>Nested arrays</li>
-          <li>APAs (Arithmetic Progression Arrays) (e.g.,
-            <span class="APL">2 3 4{rho}{iota}24</span>)</li>
-          <li>± Infinity (e.g., <span class="APL">_</span> for infinity
-            and <span class="APL">{overbar}_</span> for negative infinity)</li>
+      <ul>
+        <li>1-bit Booleans</li>
+        <li>2-byte Characters (Unicode, that is, UTF-16)</li>
+        <li>64-bit Integers</li>
+        <li>64-bit Floats</li>
+        <li>Nested arrays</li>
+        <li>APAs (Arithmetic Progression Arrays) (e.g.,
+          <span class="APL">2 3 4{rho}{iota}24</span>)</li>
+        <li>± Infinity (e.g., <span class="APL">_</span> for infinity
+          and <span class="APL">{overbar}_</span> for negative infinity)</li>
         </ul>
 
       <h3>Possible Future Datatypes</h3>
-        <ul>
-          <li>Complex numbers (e.g., <span class="APL">2j3.4</span>
-            or <span class="APL">2i3.4</span>)</li>
-          <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
-          <li>Array predicates (a la Bernecky)</li>
-          <li>Datatypes user extensible via user-defined APL functions</li>
-        </ul>
+      <ul>
+        <li>Complex numbers (e.g., <span class="APL">2j3.4</span>
+          or <span class="APL">2i3.4</span>)</li>
+        <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
+        <li>Array predicates (a la Bernecky)</li>
+        <li>Datatypes user extensible via user-defined APL functions</li>
+      </ul>
     </div>
 
     <div class="section">
       <h2 id="Miscellaneous">Miscellaneous</h2>
 
       <h3>Current Miscellaneous</h3>
-        <ul>
-          <li>Multiple workspaces can be open at the same time
-            and switched between via Tabs</li>
-          <li>All variable names are two-byte Unicode
-            (really UCS2, a subset of UTF-16)</li>
-          <li>Array rank and dimension limit of 64 bits</li>
-          <li>Line continuation marker for easier display of long lines
-            which also allows comments within a line</li>
-          <li>Multilevel Undo in function editing</li>
-          <li>Undo buffer saved with function for reuse on next edit</li>
-        </ul>
+      <ul>
+        <li>Multiple workspaces can be open at the same time
+          and switched between via Tabs</li>
+        <li>All variable names are two-byte characters
+          (Unicode, that is, UTF-16)</li>
+        <li>Array rank and dimension limit of 64 bits</li>
+        <li>Line continuation marker for easier display of long lines
+          which also allows comments within a line</li>
+        <li>Multilevel Undo in function editing</li>
+        <li>Undo buffer saved with function for reuse on next edit</li>
+      </ul>
 
       <h3>Possible Future Miscellaneous</h3>
-        <ul>
-          <li>Control structures on one line or split across multiple lines</li>
-          <li>Idiom recognition at tokenization time</li>
-          <li>Beating and drag-along (a la P.S. Abrams
-            <a class="linkleft" href="http://www.slac.stanford.edu/pubs/slacreports/slac-r-114.html">"An APL Machine"</a>),
-            at least for Selective Assignment</li>
-          <li>Workspaces are saved as plain text ASCII files</li>
-          <li>Syntax highlighting</li>
-        </ul>
+      <ul>
+        <li>Control structures on one line or split across multiple lines</li>
+        <li>Idiom recognition at tokenization time</li>
+        <li>Beating and drag-along (a la P.S. Abrams
+          <a class="linkleft" href="http://www.slac.stanford.edu/pubs/slacreports/slac-r-114.html">"An APL Machine"</a>),
+          at least for Selective Assignment</li>
+        <li>Workspaces are saved as plain text ASCII files</li>
+        <li>Syntax highlighting</li>
+      </ul>
     </div>
 
     <div class="section">
@@ -371,6 +371,19 @@ ul, ol
         <li>Dyadic operator jot ({jot}) (composition)</li>
       </ul>
 
+      <h3>Datatypes</h3>
+      <ul>
+          <li>1-bit Booleans</li>
+          <li>2-byte Characters (Unicode, that is, UTF-16)</li>
+          <li>64-bit Integers</li>
+          <li>64-bit Floats</li>
+          <li>Nested arrays</li>
+          <li>APAs (Arithmetic Progression Arrays) (e.g.,
+            <span class="APL">2 3 4{rho}{iota}24</span>)</li>
+          <li>± Infinity (e.g., <span class="APL">_</span> for infinity
+            and <span class="APL">{overbar}_</span> for negative infinity)</li>
+      </ul>
+
       <h3>Miscellaneous</h3>
       <ul>
         <li>Strands, e.g., <span class="APL">(1 2 3) 'abcd' ({iota}4)</span></li>
@@ -389,6 +402,7 @@ ul, ol
       <ul>
         <li>Tabbed Workspaces</li>
         <li>Function Editor (can't save function as yet, though)</li>
+        <li>Character translation during Paste from APL+WIN</li>
       </ul>
 
       <h3>System Functions</h3>
@@ -419,9 +433,6 @@ ul, ol
         </li>
 
         <li>Dyadic
-          <ul>
-            <li></li>
-          </ul>
         </li>
       </ul>
 
@@ -502,7 +513,7 @@ ul, ol
                 server depending upon the operating system running on your computer.
                 For example, if you are running Windows, you can download (for free)
                 the program <a class="linkleft" href="http://tortoisesvn.tigris.org/">Tortoise SVN</a>.
-                This is the means by which developers can checkout and commit changes to
+                This is one means by which developers can checkout and commit changes to
                 the code.
               </li>
 

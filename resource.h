@@ -13,7 +13,8 @@
 #define IDMPOS_HELP                       4
 
 #define IDWC_DB_LB                        1     // IDs to identify window controls
-#define IDWC_FE_EB                        2     // ...
+#define IDWC_FE_EC                        2     // ...
+#define IDWC_SM_EC                        3     // ...
 
 #define IDB_LINECONT                     90
 
@@ -66,10 +67,11 @@
 #define IDM_REDO                        701
 #define IDM_COPY                        702
 #define IDM_CUT                         703
-#define IDM_PASTE                       704
-#define IDM_PASTE_APLWIN                705
-#define IDM_DELETE                      706
-#define IDM_SELECTALL                   707
+#define IDM_DELETE                      704
+#define IDM_SELECTALL                   705
+#define IDM_PASTE                       710
+#define IDM_PASTE_APLWIN                711
+#define IDM_PASTE_APL2                  712
 
 #define IDC_VERSION                     800
 #define IDC_LINK                        801

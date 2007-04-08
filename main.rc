@@ -32,25 +32,25 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE DISCARDABLE
 BEGIN
-	"resource.h\0"
+    "resource.h\0"
 END
 
 2 TEXTINCLUDE DISCARDABLE
 BEGIN
-	"#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
-	"#include ""windows.h""\r\n"
-	"#include ""dlgs.h""\r\n"
-	"#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
-	"\0"
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#include ""dlgs.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
 END
 
 3 TEXTINCLUDE DISCARDABLE
 BEGIN
-	"#include ""ver.rc""\r\n"
-	"\0"
+    "#include ""ver.rc""\r\n"
+    "\0"
 END
 
-#endif	  // APSTUDIO_INVOKED
+#endif    // APSTUDIO_INVOKED
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -60,12 +60,12 @@ END
 
 IDR_ACCEL ACCELERATORS MOVEABLE PURE
 BEGIN
-	"^A",       IDM_SELECTALL
-	"^C",       IDM_COPY
-	"^V",       IDM_PASTE
-	"^X",       IDM_CUT
-	"^Y",       IDM_REDO
-	"^Z",       IDM_UNDO
+    "^A",       IDM_SELECTALL
+    "^C",       IDM_COPY
+    "^V",       IDM_PASTE
+    "^X",       IDM_CUT
+    "^Y",       IDM_REDO
+    "^Z",       IDM_UNDO
 END
 
 
@@ -76,43 +76,47 @@ END
 
 IDR_MENU MENU DISCARDABLE
 BEGIN
-	POPUP "&File"
-	BEGIN
-		MENUITEM "&Exit",                       IDM_EXIT
-	END
-	POPUP "&Edit"
-	BEGIN
-		MENUITEM "&Undo",                       IDM_UNDO
-		MENUITEM "&Redo",                       IDM_REDO
-		MENUITEM SEPARATOR
-		MENUITEM "&Copy",                       IDM_COPY
-		MENUITEM "Cu&t",                        IDM_CUT
-		MENUITEM "&Paste",                      IDM_PASTE
-		MENUITEM "Paste APL+&WIN",              IDM_PASTE_APLWIN
-		MENUITEM "&Delete",                     IDM_DELETE
-		MENUITEM SEPARATOR
-		MENUITEM "Select &All",                 IDM_SELECTALL
-	END
-	POPUP "&Window"
-	BEGIN
-		MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
-		MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
-		MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
-		MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
-	END
-	POPUP "&Options"
-	BEGIN
-		MENUITEM "&Screen Font",                IDM_SMFONT
-		MENUITEM "&Tab Font",                   IDM_TCFONT
-		MENUITEM "&Function Edit Font",         IDM_FEFONT
-		MENUITEM "&Matrix Edit Font",           IDM_MEFONT
-		MENUITEM "&Vector Edit Font",           IDM_VEFONT
-	END
-	POPUP "&Help"
-	BEGIN
-		MENUITEM "&Contents...",                IDM_HELP_CONTENTS
-		MENUITEM "&About",                      IDM_ABOUT
-	END
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Exit",                       IDM_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo",                       IDM_UNDO
+        MENUITEM "&Redo",                       IDM_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t",                        IDM_CUT
+        MENUITEM "&Copy",                       IDM_COPY
+        POPUP "&Paste"
+        BEGIN
+            MENUITEM "&Normal",                 IDM_PASTE
+            MENUITEM "Paste APL+&WIN",          IDM_PASTE_APLWIN
+            MENUITEM "Paste APL&2",             IDM_PASTE_APL2
+        END
+        MENUITEM "&Delete",                     IDM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All",                 IDM_SELECTALL
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
+        MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
+        MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
+        MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Screen Font",                IDM_SMFONT
+        MENUITEM "&Tab Font",                   IDM_TCFONT
+        MENUITEM "&Function Edit Font",         IDM_FEFONT
+        MENUITEM "&Matrix Edit Font",           IDM_MEFONT
+        MENUITEM "&Vector Edit Font",           IDM_VEFONT
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Contents...",                IDM_HELP_CONTENTS
+        MENUITEM "&About",                      IDM_ABOUT
+    END
 END
 
 
@@ -126,16 +130,16 @@ STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "About NARS2000"
 FONT 8, "MS Sans Serif"
 BEGIN
-	DEFPUSHBUTTON	"&OK",IDOK,130,5,50,14
-	ICON			IDI_ABOUT,IDC_STATIC,160,30,18,20
-	LTEXT			"NARS2000\nVersion %u.%u%u",IDC_VERSION,10,
-					5,115,18,NOT WS_GROUP
-	LTEXT			"Copyright © 2006-2007 Sudley Place Software, Inc.\nAll rights reserved.",
-					IDC_STATIC,10,30,150,18,NOT WS_GROUP
-	LTEXT			"This program is release under version 2 of the GNU GPL license.  For more details, see",
-					IDC_STATIC,10,55,170,20
-	LTEXT			"http://www.nars2000.org",
-					IDC_LINK,10,75,170,9,SS_NOTIFY
+    DEFPUSHBUTTON   "&OK",IDOK,130,5,50,14
+    ICON            IDI_ABOUT,IDC_STATIC,160,30,18,20
+    LTEXT           "NARS2000\nVersion %u.%u%u",IDC_VERSION,10,
+                    5,115,18,NOT WS_GROUP
+    LTEXT           "Copyright © 2006-2007 Sudley Place Software, Inc.\nAll rights reserved.",
+                    IDC_STATIC,10,30,150,18,NOT WS_GROUP
+    LTEXT           "This program is release under version 2 of the GNU GPL license.  For more details, see",
+                    IDC_STATIC,10,55,170,20
+    LTEXT           "http://www.nars2000.org",
+                    IDC_LINK,10,75,170,9,SS_NOTIFY
 END
 
 /////////////////////////////////////////////////////////////////////////////
@@ -145,26 +149,26 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ABOUT				ICON	DISCARDABLE 	"Images\\About.ico"
-IDI_CLOSE				ICON	DISCARDABLE 	"Images\\Close.ico"
-IDI_MF_LARGE			ICON	DISCARDABLE 	"Images\\MF.ico"
-IDI_MF_SMALL			ICON	DISCARDABLE 	"Images\\MF.ico"
-IDI_SM_LARGE			ICON	DISCARDABLE 	"Images\\SM.ico"
-IDI_SM_SMALL			ICON	DISCARDABLE 	"Images\\SM.ico"
-IDI_DB_LARGE			ICON	DISCARDABLE 	"Images\\DB.ico"
-IDI_DB_SMALL			ICON	DISCARDABLE 	"Images\\DB.ico"
-IDI_FE_LARGE			ICON	DISCARDABLE 	"Images\\FE.ico"
-IDI_FE_SMALL			ICON	DISCARDABLE 	"Images\\FE.ico"
-IDI_ME_LARGE			ICON	DISCARDABLE 	"Images\\ME.ico"
-IDI_ME_SMALL			ICON	DISCARDABLE 	"Images\\ME.ico"
-IDI_VE_LARGE			ICON	DISCARDABLE 	"Images\\VE.ico"
-IDI_VE_SMALL			ICON	DISCARDABLE 	"Images\\VE.ico"
+IDI_ABOUT               ICON    DISCARDABLE     "Images\\About.ico"
+IDI_CLOSE               ICON    DISCARDABLE     "Images\\Close.ico"
+IDI_MF_LARGE            ICON    DISCARDABLE     "Images\\MF.ico"
+IDI_MF_SMALL            ICON    DISCARDABLE     "Images\\MF.ico"
+IDI_SM_LARGE            ICON    DISCARDABLE     "Images\\SM.ico"
+IDI_SM_SMALL            ICON    DISCARDABLE     "Images\\SM.ico"
+IDI_DB_LARGE            ICON    DISCARDABLE     "Images\\DB.ico"
+IDI_DB_SMALL            ICON    DISCARDABLE     "Images\\DB.ico"
+IDI_FE_LARGE            ICON    DISCARDABLE     "Images\\FE.ico"
+IDI_FE_SMALL            ICON    DISCARDABLE     "Images\\FE.ico"
+IDI_ME_LARGE            ICON    DISCARDABLE     "Images\\ME.ico"
+IDI_ME_SMALL            ICON    DISCARDABLE     "Images\\ME.ico"
+IDI_VE_LARGE            ICON    DISCARDABLE     "Images\\VE.ico"
+IDI_VE_SMALL            ICON    DISCARDABLE     "Images\\VE.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
-IDB_LINECONT	BITMAP	DISCARDABLE "Images\\LineCont.bmp"
+IDB_LINECONT    BITMAP  DISCARDABLE "Images\\LineCont.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -179,21 +183,21 @@ IDB_LINECONT	BITMAP	DISCARDABLE "Images\\LineCont.bmp"
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO DISCARDABLE
 BEGIN
-//	IDD_GOFN, DIALOG
-//	BEGIN
-//		RIGHTMARGIN, 280
-//		BOTTOMMARGIN, 160
-//	END
+//  IDD_GOFN, DIALOG
+//  BEGIN
+//      RIGHTMARGIN, 280
+//      BOTTOMMARGIN, 160
+//  END
 //
-//	IDD_PIECE, DIALOG
-//	BEGIN
-//		RIGHTMARGIN, 264
-//		BOTTOMMARGIN, 240
-//	END
+//  IDD_PIECE, DIALOG
+//  BEGIN
+//      RIGHTMARGIN, 264
+//      BOTTOMMARGIN, 240
+//  END
 END
-#endif	  // APSTUDIO_INVOKED
+#endif    // APSTUDIO_INVOKED
 
-#endif	  // English (U.S.) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -206,8 +210,8 @@ END
 #include "ver.rc"
 
 /////////////////////////////////////////////////////////////////////////////
-#endif	  // not APSTUDIO_INVOKED
+#endif    // not APSTUDIO_INVOKED
 
 //***************************************************************************
-//	End of File: main.rc
+//  End of File: main.rc
 //***************************************************************************

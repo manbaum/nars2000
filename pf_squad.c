@@ -20,7 +20,7 @@
 //***************************************************************************
 //  PrimFnSquad_EM
 //
-//  Primitive function for monadic and dyadic Squad (ERROR and "index")
+//  Primitive function for monadic and dyadic Squad (ERROR and "rectangular indexing")
 //***************************************************************************
 
 LPYYSTYPE PrimFnSquad_EM
@@ -67,7 +67,7 @@ LPYYSTYPE PrimFnMonSquad_EM
 //***************************************************************************
 //  PrimFnDydSquad_EM
 //
-//  Primitive function for dyadic Squad ("index") ("scatter indexing")
+//  Primitive function for dyadic Squad ("rectangular indexing")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -83,13 +83,11 @@ LPYYSTYPE PrimFnDydSquad_EM
      LPTOKEN lptkAxis)
 
 {
-    APLLONGEST aplLongestRht;
-    APLSTYPE   aplTypeLft,      // The storage type of the left arg
-               aplTypeRht;      // ...                     right ...
-    APLNELM    aplNELMLft,      // The # elements in the left arg
-               aplNELMRht;      // ...                   right ...
-    APLRANK    aplRankLft,      // The rank of the left arg
-               aplRankRht;      // ...             right ...
+    APLLONGEST aplLongestRht;   // The value of the right arg
+    APLSTYPE   aplTypeLft;      // The storage type of the left arg
+    APLNELM    aplNELMLft;      // The # elements in the left arg
+    APLRANK    aplRankLft;      // The rank of the left arg
+    IMM_TYPES  immTypeRht;      // The immediate type of the right arg
     UINT       YYLclIndex;
 
     // Split cases based upon the right arg's token type
@@ -113,14 +111,16 @@ LPYYSTYPE PrimFnDydSquad_EM
 
             // Handle the immediate case
 
-            // Get the immediate value
+            // Get the immediate value & type
             aplLongestRht = lptkRhtArg->tkData.lpSym->stData.stLongest;
+            immTypeRht    = lptkRhtArg->tkData.lpSym->stFlags.ImmType;
 
             break;
 
         case TKT_VARIMMED:
-            // Get the immediate value
+            // Get the immediate value & type
             aplLongestRht = lptkRhtArg->tkData.tkLongest;
+            immTypeRht    = lptkRhtArg->tkFlags.ImmType;
 
             break;
 
@@ -146,9 +146,8 @@ LPYYSTYPE PrimFnDydSquad_EM
 
     // The only allowed left arg is an empty vector
 
-    // Get the attributes (Type, NELM, and Rank) of the left & right args
+    // Get the attributes (Type, NELM, and Rank) of the left arg
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
     // Check for RANK ERROR
     if (aplRankLft NE 1)
@@ -179,7 +178,7 @@ LPYYSTYPE PrimFnDydSquad_EM
 
     // Fill in the result token
     YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = aplTypeRht;
+    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = TranslateImmTypeToArrayType (immTypeRht);
 ////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
     YYRes[YYLclIndex].tkToken.tkData.tkLongest  = aplLongestRht;
     YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
@@ -192,7 +191,7 @@ LPYYSTYPE PrimFnDydSquad_EM
 //***************************************************************************
 //  PrimFnDydSquadGlb_EM
 //
-//  Dyadic Squad ("index") ("scatter indexing") on a global memory object
+//  Dyadic Squad ("rectangular indexing") on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
@@ -208,7 +207,6 @@ LPYYSTYPE PrimFnDydSquadGlb_EM
      LPTOKEN lptkFunc)
 
 {
-
     APLSTYPE aplTypeLft,        // The storage type of the left arg
              aplTypeRht;        // ...                     right ...
     APLNELM  aplNELMLft,        // The # elements in left arg
@@ -293,8 +291,8 @@ LPYYSTYPE PrimFnDydSquadGlb_EM
 //  ArrayIndex_EM
 //
 //  Index of an array, e.g., L[R]  or  L[R1;...;Rn]
-//  The form L[R] can use either (or both) Reach and/or Scatter indexing,
-//    whereas the form L[R1;...;Rn] can use rectangular indexing only.
+//  The form L[R] can use either (or both) Reach and Scatter indexing,
+//    whereas the form L[R1;...;Rn] can use Rectangular indexing only.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -369,17 +367,32 @@ LPYYSTYPE ArrayIndex_EM
     if (aplNELMRht EQ 1             // Single array index matches all ranks
      && aplTypeLft EQ ARRAY_NESTED) // and it's Reach Indexing
     {
-        DbgBrk ();
+        // Split cases based upon the ptr type of the right arg
+        switch (GetPtrTypeInd (lpMemInd))
+        {
+            case PTRTYPE_STCONST:
+                hGlbRch    = NULL;
+                aplNELMRes = 1;
+                aplRankRes = 0;
 
-        // Get the global memory handle of the single index array
-        hGlbRch = ClrPtrTypeIndGlb (lpMemInd);
+                break;
 
-        // Get the attributes (Type, NELM, and Rank) of the next index array
-        AttrsOfGlb (hGlbRch, &aplTypeRch, &aplNELMRch, &aplRankRch, NULL);
+            case PTRTYPE_HGLOBAL:
+                // Get the global memory handle of the single index array
+                hGlbRch = ClrPtrTypeIndGlb (lpMemInd);
 
-        // Save the NELM and rank
-        aplNELMRes = aplNELMRch;
-        aplRankRes = aplRankRch;
+                // Get the attributes (Type, NELM, and Rank) of the next index array
+                AttrsOfGlb (hGlbRch, &aplTypeRch, &aplNELMRch, &aplRankRch, NULL);
+
+                // Save the NELM and rank
+                aplNELMRes = aplNELMRch;
+                aplRankRes = aplRankRch;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } else
     {
         DbgBrk ();
@@ -470,6 +483,7 @@ LPYYSTYPE ArrayIndex_EM
     //   to the result's dimension
     //***************************************************************
     if (aplNELMRht EQ 1             // Single array index matches all ranks
+     && hGlbRch NE NULL
      && aplTypeLft EQ ARRAY_NESTED) // and it's Reach Indexing
     {
         DbgBrk ();
@@ -547,22 +561,25 @@ LPYYSTYPE ArrayIndex_EM
     // Copy the data to the result
     //***************************************************************
     if (aplNELMRht EQ 1             // Single array index matches all ranks
+     && hGlbRch NE NULL
      && aplTypeLft EQ ARRAY_NESTED) // and it's Reach Indexing
     {
         DbgBrk ();
 
         // Loop through the reach arg
-        for (uRht = 0; bRet && uRht < aplNELMRch; uRht++, ((LPAPLNESTED) lpMemRes)++)
-            // Recurse through the left & reach args
+        for (uRht = 0;
+             bRet && uRht < aplNELMRch;
+             uRht++, ((LPAPLNESTED) lpMemRes)++, ((LPAPLNESTED) lpMemRch)++)
+            // Process each index vector
             bRet =
-            ReachAcross_EM (lpMemRes,                           // Put the result here
-                          &((LPAPLNESTED) lpMemRch)[uRht],      // The current reach arg
-                           aplTypeRch,                          // The storage type of the reach arg
-                           lpMemLft,                            // Get the results from here
-                           aplTypeLft,                          // The storage type of the left arg
-                           aplRankLft,                          // The rank of the left arg
-                           lpMemDimLft,                         // Ptr to the dimensions of the left arg
-                           lptkLftArg);                         // Ptr to "function" token
+            ReachIndex_EM (lpMemRes,                            // Put the result here
+                         *(LPAPLNESTED) lpMemRch,               // The current reach arg
+                          aplTypeRch,                           // The storage type of the reach arg
+                          lpMemLft,                             // Get the results from here
+                          aplTypeLft,                           // The storage type of the left arg
+                          aplRankLft,                           // The rank of the left arg
+                          lpMemDimLft,                          // Ptr to the dimensions of the left arg
+                          lptkLftArg);                          // Ptr to "function" token
         if (!bRet)
             goto ERROR_EXIT;
     } else
@@ -706,21 +723,22 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  ReachAcross_EM
+//  ReachIndex_EM
 //
-//  Reach across the reach arg for each element of the result.
+//  Given an index vector, trundle through its elements extracting
+//    the appropriate element from the left arg as this element of the result.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ReachAcross_EM"
+#define APPEND_NAME     L" -- ReachIndex_EM"
 #else
 #define APPEND_NAME
 #endif
 
-BOOL ReachAcross_EM
+BOOL ReachIndex_EM
     (LPAPLNESTED lpMemRes,      // Put the result here
-     LPVOID      lpMemRch,      // The current reach arg
-     APLSTYPE    aplTypeRch,    // The storage type of the reach arg
+     LPVOID      lpMemNdx,      // The current index vector
+     APLSTYPE    aplTypeNdx,    // The storage type of the index vector
      LPVOID      lpMemLft,      // Get the results from here
      APLSTYPE    aplTypeLft,    // The storage type of the left arg
      APLRANK     aplRankLft,    // The rank of the left arg
@@ -729,20 +747,19 @@ BOOL ReachAcross_EM
 
 {
     BOOL       bRet = TRUE;
-    LPVOID     lpMemSub;
     APLSTYPE   aplTypeSub;
     APLNELM    aplNELMSub;
     APLRANK    aplRankSub;
 
     DbgBrk ();
 
-    // Split cases based upon the ptr type of the reach arg
-    switch (GetPtrTypeInd (lpMemRch))
+    // Split cases based upon the ptr type of the index vector
+    switch (GetPtrTypeInd (lpMemNdx))
     {
         case PTRTYPE_STCONST:
             bRet =
             ReachSymTabConst_EM (lpMemRes,          // Put the result here
-                                 lpMemRch,          // Ptr to the reach symbol table const
+                                 lpMemNdx,          // Ptr to the symbol table const (a scalar)
                                  lpMemLft,          // Get the results from here
                                  aplTypeLft,        // The storage type of the left arg
                                  aplRankLft,        // The rank of the left arg
@@ -756,16 +773,8 @@ BOOL ReachAcross_EM
             // The global should point to a scalar or a vector of scalars or vectors
             //   which serves as the reach index into the left arg
 
-            // Lock the memory to get a ptr to it
-            lpMemSub = MyGlobalLock (ClrPtrTypeIndGlb (lpMemRch));
-
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
-
-            aplTypeSub = lpHeader->ArrType;
-            aplNELMSub = lpHeader->NELM;
-            aplRankSub = lpHeader->Rank;
-
-#undef  lpHeader
+            // Get the attributes (Type, NELM, and Rank) of the index vector
+            AttrsOfGlb (ClrPtrTypeIndGlb (lpMemNdx), &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
 
             // Check for RANK ERROR
             if (aplRankSub > 1)
@@ -777,24 +786,20 @@ BOOL ReachAcross_EM
             {
                 DbgBrk ();
 
-                // Skip over the header and dimensions to the data
-                lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
-
-                // Reach down through the left arg using successive
-                //   elements of the reach arg as indices
+                // Recurse through the elements of the index vector
+                //   and the left arg at the same time using successive
+                //   elements of the index vector as indices into the left arg.
                 bRet =
-                ReachDown_EM (lpMemRes,             // Put the result here
-                              lpMemSub,             // Ptr to the reach arg
-                              aplNELMSub,           // The NELM of the reach arg
-                              lpMemLft,             // Get the results from here
-                              aplTypeLft,           // The storage type of the left arg
-                              aplRankLft,           // The rank of the left arg
-                              lpMemDimLft,          // Ptr to the dimensions of the left arg
-                              lptkFunc);            // Ptr to function token
+                ReachDown_EM (lpMemRes,                 // Put the result here
+                              *(LPAPLNESTED) lpMemNdx,  // Ptr to the reach vector w/aplNELMSub elements
+                              aplTypeSub,               // The storage type of the reach vector
+                              aplNELMSub,               // The NELM of the reach vector
+                              lpMemLft,                 // Get the results from here
+                              aplTypeLft,               // The storage type of the left arg
+                              aplRankLft,               // The rank of the left arg
+                              lpMemDimLft,              // Ptr to the dimensions of the left arg
+                              lptkFunc);                // Ptr to function token
             } // End IF/ELSE
-
-            // We no longer need this ptr
-            MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemRch)); lpMemSub = NULL;
 
             break;
 
@@ -803,7 +808,7 @@ BOOL ReachAcross_EM
     } // End SWITCH
 
     return bRet;
-} // End ReachAcross_EM
+} // End ReachIndex_EM
 #undef  APPEND_NAME
 
 
@@ -885,11 +890,11 @@ BOOL ReachSymTabConst_EM
 
     // Use aplInteger to index lpMemLft
     bRet =
-    ValueAsSymentry (lpMemRes,
-                     lpMemLft,
-                     aplTypeLft,
-                     aplInteger,
-                     lptkFunc);
+    ValueAsSymentry (lpMemRes,      // Put the result here
+                     lpMemLft,      // Get the result from here
+                     aplTypeLft,    // The storage type of the left arg
+                     aplInteger,    // The index to use
+                     lptkFunc);     // The function token
     return bRet;
 } // End ReachSymTabConst_EM
 #undef  APPEND_NAME
@@ -904,7 +909,7 @@ BOOL ReachSymTabConst_EM
 BOOL ValueAsSymentry
     (LPVOID   lpMemRes,     // Put the result here
      LPVOID   lpMemLft,     // Get the result from here
-     APLSTYPE aplTypeLft,   // The storage type of the arg
+     APLSTYPE aplTypeLft,   // The storage type of the left arg
      APLINT   aplInteger,   // The index to use
      LPTOKEN  lptkFunc)     // The function token
 
@@ -981,7 +986,7 @@ BOOL ValueAsSymentry
 //***************************************************************************
 //  ReachDown_EM
 //
-//  Reach down recursively through the reach & left args
+//  Reach down recursively through the index vector & left args
 //    to put the reached for item into the result.
 //***************************************************************************
 
@@ -993,8 +998,9 @@ BOOL ValueAsSymentry
 
 BOOL ReachDown_EM
     (LPAPLNESTED lpMemRes,      // Put the result here
-     LPVOID      lpMemRch,      // The current reach arg
-     APLNELM     aplNELMRch,    // The NELM of the reach arg
+     LPVOID      lpMemNdx,      // The current index vector w/aplNELMNdx elements
+     APLSTYPE    aplTypeNdx,    // The storage type of the index vector
+     APLNELM     aplNELMNdx,    // The NELM of the index vector
      LPVOID      lpMemLft,      // Get the results from here
      APLSTYPE    aplTypeLft,    // The storage type of the left arg
      APLRANK     aplRankLft,    // The rank of the left arg
@@ -1004,35 +1010,91 @@ BOOL ReachDown_EM
 {
     BOOL     bRet = TRUE;
     LPVOID   lpMemSub;
+    HGLOBAL  hGlbLft;
     APLSTYPE aplTypeSub;
-    APLNELM  aplNELMSub;
+    APLNELM  aplNELMSub,
+             aplNELMLft;
     APLRANK  aplRankSub;
-    APLINT   iRch,
-             aplWeight,
-             aplIndex,
-             aplInteger,
-             apaOff,
-             apaMul;
+    APLINT   aplIndex;
 
     DbgBrk ();
 
-    // The global should point to a scalar or a vector of scalars or vectors
-    //   which serves as the reach index into the left arg
-
     // Stop when no more elements remain
-    if (aplNELMRch EQ 0)
+    if (aplNELMNdx EQ 0)
         *lpMemRes = CopySymGlbInd (lpMemLft);
     else
     {
+        // If the index vector is simple, it's a vector of indices to the left arg
+        if (IsSimple (aplTypeNdx))
+        {
+            // If the NELM of the index vector matches the rank of the left arg,
+            //   it's a single index into the left arg
+            if (aplNELMNdx EQ aplRankLft)
+            {
+                // Check each element in lpMemSub against lpMemDimLft
+                //   for INDEX ERROR as well as DOMAIN ERROR
+                //   and, at the same time, weigh each element as
+                //   per lpMemDimLft to get the appropriate index
+                //   into lpMemLft.
+                bRet = WeighIndex_EM (&aplIndex, lpMemNdx, aplTypeNdx, aplNELMNdx, lpMemDimLft, lptkFunc);
+                if (bRet)
+                    // Use aplInteger to index lpMemLft
+                    bRet =
+                    ValueAsSymentry (lpMemRes,      // Put the result here
+                                     lpMemLft,      // Get the result from here
+                                     aplTypeLft,    // The storage type of the left arg
+                                     aplIndex,      // The index to use
+                                     lptkFunc);     // The function token
+                return bRet;
+            } else
+            // Otherwise, the left arg must be a vector of vectors of ...
+            //   and the successive elements of the index vector
+            //   reach into it.
+            {
+                // Check for RANK ERROR
+                if (aplRankLft NE 1)
+                {
+                    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    bRet = FALSE;
+                } else
+                // Check for INDEX ERROR
+                if (aplTypeLft NE ARRAY_NESTED
+                 || !IsSimpleNum (aplTypeNdx))
+                {
+                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    bRet = FALSE;
+                } else
+                {
+
+
+
+
+
+
+                } // End IF/ELSE
+            } // End IF/ELSE
+        } else
+        {
+
+
+        } // End IF/ELSE
+
+        // The global should point to a scalar or a vector of scalars or vectors
+        //   which serves as the reach index into the left arg
+
+
+
         // Use the first element of lpMemSub to index lpMemLft
 
         // Split cases based upon the ptr type of the reach element
-        switch (GetPtrTypeInd (lpMemRch))
+        switch (GetPtrTypeInd (lpMemNdx))
         {
             case PTRTYPE_STCONST:
                 bRet =
                 ReachSymTabConst_EM (lpMemRes,          // Put the result here
-                                     lpMemRch,          // Ptr to the reach symbol table const
+                                     lpMemNdx,          // Ptr to the reach symbol table const
                                      lpMemLft,          // Get the results from here
                                      aplTypeLft,        // The storage type of the left arg
                                      aplRankLft,        // The rank of the left arg
@@ -1042,7 +1104,7 @@ BOOL ReachDown_EM
 
             case PTRTYPE_HGLOBAL:
                 // Lock the memory to get a ptr to it
-                lpMemSub = MyGlobalLock (ClrPtrTypeIndGlb (lpMemRch));
+                lpMemSub = MyGlobalLock (ClrPtrTypeIndGlb (lpMemNdx));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
 
@@ -1075,199 +1137,87 @@ BOOL ReachDown_EM
                     //   and, at the same time, weigh each element as
                     //   per lpMemDimLft to get the appropriate index
                     //   into lpMemLft.
-
-                    // Initialize the weight & index accumulator
-                    aplWeight = 1;
-                    aplIndex  = 0;
-
-                    // Split cases based upon the storage type of the reach index
-                    switch (aplTypeSub)
+                    bRet = WeighIndex_EM (&aplIndex, lpMemSub, aplTypeSub, aplNELMSub, lpMemDimLft, lptkFunc);
+                    if (bRet)
                     {
-                        case ARRAY_BOOL:
-                            // Loop through the reach index, backwards
-                            for (iRch = aplNELMSub - 1; bRet && iRch >= 0; iRch--)
-                            {
-                                // Get the next index & convert to origin-0
-                                aplInteger = (((1 << (iRch % NBIB)) & ((LPAPLBOOL) lpMemSub)[iRch >> LOG2NBIB]) ? 1 : 0) - bQuadIO;
-
-                                // Check for INDEX ERROR
-                                if (aplInteger < 0
-                                 || aplInteger >= (APLINT) lpMemDimLft[iRch])
-                                {
-                                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                                               lptkFunc);
-                                    bRet = FALSE;
-                                } else
-                                {
-                                    // Add into index & multiply into weight
-                                    aplIndex  += aplWeight * aplInteger;
-                                    aplWeight *= lpMemDimLft[iRch];
-                                } // End IF/LSE
-                            } // End FOR
-
-                            break;
-
-                        case ARRAY_INT:
-                            // Loop through the reach index, backwards
-                            for (iRch = aplNELMSub - 1; bRet && iRch >= 0; iRch--)
-                            {
-                                // Get the next index & convert to origin-0
-                                aplInteger = ((LPAPLINT) lpMemSub)[iRch] - bQuadIO;
-
-                                // Check for INDEX ERROR
-                                if (aplInteger < 0
-                                 || aplInteger >= (APLINT) lpMemDimLft[iRch])
-                                {
-                                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                                               lptkFunc);
-                                    bRet = FALSE;
-                                } else
-                                {
-                                    // Add into index & multiply into weight
-                                    aplIndex  += aplWeight * aplInteger;
-                                    aplWeight *= lpMemDimLft[iRch];
-                                } // End IF/LSE
-                            } // End FOR
-
-                            break;
-
-                        case ARRAY_FLOAT:
-                            // Loop through the reach index, backwards
-                            for (iRch = aplNELMSub - 1; bRet && iRch >= 0; iRch--)
-                            {
-                                // Get the next index & convert to origin-0
-                                aplInteger = FloatToAplint_SCT (((LPAPLFLOAT) lpMemSub)[iRch], &bRet) - bQuadIO;
-
-                                // Check for INDEX ERROR
-                                if (!bRet
-                                 || aplInteger < 0
-                                 || aplInteger >= (APLINT) lpMemDimLft[iRch])
-                                {
-                                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                                               lptkFunc);
-                                    bRet = FALSE;
-                                } else
-                                {
-                                    // Add into index & multiply into weight
-                                    aplIndex  += aplWeight * aplInteger;
-                                    aplWeight *= lpMemDimLft[iRch];
-                                } // End IF/LSE
-                            } // End FOR
-
-                            break;
-
-                        case ARRAY_APA:
-
-#define lpaplAPA        ((LPAPLAPA) lpMemSub)
-
-                            apaOff = lpaplAPA->Off;
-                            apaMul = lpaplAPA->Mul;
-
-#undef  lpaplAPA
-
-                            // Loop through the reach index, backwards
-                            for (iRch = aplNELMSub - 1; bRet && iRch >= 0; iRch--)
-                            {
-                                // Get the next index & convert to origin-0
-                                aplInteger = (apaOff + apaMul * iRch) - bQuadIO;
-
-                                // Check for INDEX ERROR
-                                if (aplInteger < 0
-                                 || aplInteger >= (APLINT) lpMemDimLft[iRch])
-                                {
-                                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                                               lptkFunc);
-                                    bRet = FALSE;
-                                } else
-                                {
-                                    // Add into index & multiply into weight
-                                    aplIndex  += aplWeight * aplInteger;
-                                    aplWeight *= lpMemDimLft[iRch];
-                                } // End IF/LSE
-                            } // End FOR
-
-                            break;
-
-                        case ARRAY_CHAR:
-                        case ARRAY_HETERO:
-                        case ARRAY_NESTED:
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                        // Check for LENGTH ERROR if the left arg is simple (Depth < 2)
+                        //   and the # reach indices are > 1.
+                        if (IsSimple (aplTypeLft)
+                         && aplNELMNdx > 1)
+                        {
+                            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                                        lptkFunc);
                             bRet = FALSE;
-
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
-
-                    // Check for LENGTH ERROR if the left arg is simple (Depth < 2)
-                    //   and the # reach indices are > 1.
-                    if (IsSimple (aplTypeLft)
-                     && aplNELMRch > 1)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        bRet = FALSE;
-                    } else
-                    {
-                        // Now use aplIndex to extract the next item from lpMemLft
-                        //   if it's simple
-                        if (IsSimple (aplTypeLft))
-                            bRet =
-                            ValueAsSymentry (lpMemRes,
-                                             lpMemLft,
-                                             aplTypeLft,
-                                             aplIndex,
-                                             lptkFunc);
-                        else
+                        } else
                         {
-                            HGLOBAL hGlbSub;
-
-                            // Get the global memory handle
-                            hGlbSub = *(LPAPLNESTED) lpMemSub;
-
-                            // Split cases based upon the ptr type
-                            switch (GetPtrTypeDir (hGlbSub))
+                            // Now use aplIndex to extract the next item from lpMemLft
+                            //   if it's simple
+                            if (IsSimple (aplTypeLft))
+                                bRet =
+                                ValueAsSymentry (lpMemRes,
+                                                 lpMemLft,
+                                                 aplTypeLft,
+                                                 aplIndex,
+                                                 lptkFunc);
+                            else
                             {
-                                case PTRTYPE_STCONST:
-                                    DbgBrk ();      // ***FIXME*** -- How do we get here??
+                                HGLOBAL hGlbSub;
+
+                                // Get the global memory handle
+                                hGlbSub = *(LPAPLNESTED) lpMemSub;
+                                hGlbLft = *(LPAPLNESTED) lpMemLft;
+
+                                // Split cases based upon the ptr type
+                                switch (GetPtrTypeDir (hGlbSub))
+                                {
+                                    case PTRTYPE_STCONST:
+                                        DbgBrk ();      // ***FIXME*** -- How do we get here??
 
 
 
 
 
-                                    break;
+                                        break;
 
-                                case PTRTYPE_HGLOBAL:
-                                    // Lock the memory to get a ptr to it
-                                    lpMemSub = MyGlobalLock (ClrPtrTypeDirGlb (hGlbSub));
+                                    case PTRTYPE_HGLOBAL:
+                                        // Lock the memory to get a ptr to it
+                                        lpMemSub = MyGlobalLock (ClrPtrTypeDirGlb (hGlbSub));
+                                        lpMemLft = MyGlobalLock (ClrPtrTypeDirGlb (hGlbLft));
 
-                                    // Reach down through the left arg using successive
-                                    //   elements of the reach arg as indices
-                                    bRet =
-                                    ReachDown_EM (lpMemRes,             // Put the result here
-                                                  lpMemSub,             // Ptr to the reach arg
-                                                  aplNELMSub,           // The NELM of the reach arg
-                                                  lpMemLft,             // Get the results from here
-                                                  aplTypeLft,           // The storage type of the left arg
-                                                  aplRankLft,           // The rank of the left arg
-                                                  lpMemDimLft,          // Ptr to the dimensions of the left arg
-                                                  lptkFunc);            // Ptr to function token
-                                    // We no loner need this ptr
-                                    MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbSub));
+                                        // Get the attributes (Type, NELM, and Rank) of the left arg
+                                        AttrsOfGlb (hGlbLft, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
-                                    break;
+                                        // Skip over the header to the dimensions
+                                        lpMemDimLft = VarArrayBaseToDim (lpMemLft);
 
-                                defstop
-                                    break;
-                            } // End SWITCH
+                                        // Reach down through the left arg using successive
+                                        //   elements of the reach arg as indices
+                                        bRet =
+                                        ReachDown_EM (lpMemRes,             // Put the result here
+                                                      lpMemSub,             // Ptr to the reach vector w/aplNELMSub elements
+                                                      aplTypeSub,           // The storage type of the reach vector ***FIXME*** -- Correct??
+                                                      aplNELMSub - 1,       // The NELM of the reach vector
+                                                      lpMemLft,             // Get the results from here
+                                                      aplTypeLft,           // The storage type of the left arg
+                                                      aplRankLft,           // The rank of the left arg
+                                                      lpMemDimLft,          // Ptr to the dimensions of the left arg
+                                                      lptkFunc);            // Ptr to function token
+                                        // We no longer need this ptr
+                                        MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbLft));
+                                        MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbSub));
+
+                                        break;
+
+                                    defstop
+                                        break;
+                                } // End SWITCH
+                            } // End IF/ELSE
                         } // End IF/ELSE
-                    } // End IF/ELSE
+                    } // End IF
                 } // End IF/ELSE
 
                 // We no longer need this ptr
-                MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemRch)); lpMemSub = NULL;
+                MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemNdx)); lpMemSub = NULL;
 
                 break;
 
@@ -1278,6 +1228,164 @@ BOOL ReachDown_EM
 
     return bRet;
 } // End ReachDown_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  WeighIndex_EM
+//
+//  Weigh an index according to a dimension vector
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- WeighIndex_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL WeighIndex_EM
+    (LPAPLINT lpaplIndex,       // Save the result here
+     LPVOID   lpMemSub,         // Ptr to the index vector
+     APLSTYPE aplTypeSub,       // Storage type of the index vector
+     APLNELM  aplNELMSub,       // NELM of the index vector
+     LPAPLDIM lpMemDimLft,      // Ptr to the dimension vector of the left arg
+     LPTOKEN  lptkFunc)         // Ptr to the function token
+
+{
+    BOOL    bRet = TRUE;
+    APLUINT aplWeight;
+    APLINT  iRch,               // Loop var (must be signed)
+            aplInteger,
+            apaOff,
+            apaMul;
+
+    // Initialize the weight & index accumulator
+    aplWeight = 1;
+    *lpaplIndex  = 0;
+
+    // Split cases based upon the storage type of the reach index
+    switch (aplTypeSub)
+    {
+        case ARRAY_BOOL:
+            // Loop through the reach index, backwards
+            for (iRch = aplNELMSub - 1; bRet && iRch >= 0; iRch--)
+            {
+                // Get the next index & convert to origin-0
+                aplInteger = (((1 << (iRch % NBIB)) & ((LPAPLBOOL) lpMemSub)[iRch >> LOG2NBIB]) ? 1 : 0) - bQuadIO;
+
+                // Check for INDEX ERROR
+                if (aplInteger < 0
+                 || aplInteger >= (APLINT) lpMemDimLft[iRch])
+                {
+                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    bRet = FALSE;
+                } else
+                {
+                    // Add into index & multiply into weight
+                    *lpaplIndex  += aplWeight * aplInteger;
+                    aplWeight *= lpMemDimLft[iRch];
+                } // End IF/LSE
+            } // End FOR
+
+            break;
+
+        case ARRAY_INT:
+            // Loop through the reach index, backwards
+            for (iRch = aplNELMSub - 1; bRet && iRch >= 0; iRch--)
+            {
+                // Get the next index & convert to origin-0
+                aplInteger = ((LPAPLINT) lpMemSub)[iRch] - bQuadIO;
+
+                // Check for INDEX ERROR
+                if (aplInteger < 0
+                 || aplInteger >= (APLINT) lpMemDimLft[iRch])
+                {
+                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    bRet = FALSE;
+                } else
+                {
+                    // Add into index & multiply into weight
+                    *lpaplIndex  += aplWeight * aplInteger;
+                    aplWeight *= lpMemDimLft[iRch];
+                } // End IF/LSE
+            } // End FOR
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Loop through the reach index, backwards
+            for (iRch = aplNELMSub - 1; bRet && iRch >= 0; iRch--)
+            {
+                // Get the next index & convert to origin-0
+                aplInteger = FloatToAplint_SCT (((LPAPLFLOAT) lpMemSub)[iRch], &bRet) - bQuadIO;
+
+                // Check for INDEX ERROR
+                if (!bRet
+                 || aplInteger < 0
+                 || aplInteger >= (APLINT) lpMemDimLft[iRch])
+                {
+                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    bRet = FALSE;
+                } else
+                {
+                    // Add into index & multiply into weight
+                    *lpaplIndex  += aplWeight * aplInteger;
+                    aplWeight *= lpMemDimLft[iRch];
+                } // End IF/LSE
+            } // End FOR
+
+            break;
+
+        case ARRAY_APA:
+
+#define lpaplAPA        ((LPAPLAPA) lpMemSub)
+
+            apaOff = lpaplAPA->Off;
+            apaMul = lpaplAPA->Mul;
+
+#undef  lpaplAPA
+
+            // Loop through the reach index, backwards
+            for (iRch = aplNELMSub - 1; bRet && iRch >= 0; iRch--)
+            {
+                // Get the next index & convert to origin-0
+                aplInteger = (apaOff + apaMul * iRch) - bQuadIO;
+
+                // Check for INDEX ERROR
+                if (aplInteger < 0
+                 || aplInteger >= (APLINT) lpMemDimLft[iRch])
+                {
+                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    bRet = FALSE;
+                } else
+                {
+                    // Add into index & multiply into weight
+                    *lpaplIndex  += aplWeight * aplInteger;
+                    aplWeight *= lpMemDimLft[iRch];
+                } // End IF/LSE
+            } // End FOR
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                       lptkFunc);
+            bRet = FALSE;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return bRet;
+} // End WeighIndex_EM
 #undef  APPEND_NAME
 
 

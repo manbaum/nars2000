@@ -26,7 +26,9 @@
 #define DEF_CURWID_INS      5           // Cursor width for insert mode
 #define DEF_CURWID_REP      2           // ...              replace ...
 #define DEF_HISTLINES    3000           // # lines in history buffer
-#define DEF_MAXLINELEN   1024           // Maximum line length
+#define DEF_CURLINE_MAXLEN   1024       // Maximum current line length
+#define DEF_CURLINE_MAXSIZE  ((DEF_CURLINE_MAXLEN + 1) * sizeof (WCHAR)) // Maximum line size in bytes
+#define DEF_CURLINE_INITSIZE DEF_CURLINE_MAXSIZE
 #define DEF_TEXT_FG_COLOR   COLOR_RED
 #define DEF_TEXT_BG_COLOR   COLOR_WHITE
 #define DEF_NUMALP_MAXSIZE  64*1024*sizeof (char)   // Max size for lpszNumAlp
@@ -313,6 +315,11 @@ char pszNoInsertTCTab[]
  = "Unable to create the Edit Control in the Function Editor"
 #endif
 ,
+     pszNoCreateSMEditCtrl[]
+#ifdef DEFINE_VALUES
+ = "Unable to create the Edit Control in the Session Manager"
+#endif
+,
      pszNoCreateMCWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create MDI Client window"
@@ -456,101 +463,101 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 =
 {
 //Nrm Alt
-{' ', 0                     },  // Space             32
-{'!', UTF16_EQUALUNDERBAR   },  // Quote-dot         33
-{'"', 0                     },  // Quotation mark    34
-{'#', UTF16_DELSTILE        },  // Number sign       35
-{'$', UTF16_DELTASTILE      },  // Dollar sign       36
-{'%', UTF16_CIRCLESTILE     },  // Percent sign      37
-{'&', UTF16_CIRCLEBAR       },  // Ampersand         38
-{'\'',UTF16_THORN           },  // Apostrophe        39
-{'(', UTF16_DOWNCARETTILDE  },  // Left paren        40
-{')', UTF16_UPCARETTILDE    },  // Right paren       41
-{'*', UTF16_CIRCLESTAR      },  // Star              42
-{'+', UTF16_DOMINO          },  // Plus sign         43
-{',', UTF16_LAMP            },  // Comma             44
-{'-', UTF16_TIMES           },  // Bar               45
-{'.', UTF16_SLOPEBAR        },  // Dot               46
-{'/', UTF16_SLASHBAR        },  // Slash             47
-{'0', UTF16_UPCARET         },  // 0                 48
-{'1', UTF16_DIERESIS        },  // 1                 49
-{'2', UTF16_OVERBAR         },  // 2                 50
-{'3', UTF16_LEFTCARET       },  // 3                 51
-{'4', UTF16_NOTMORE         },  // 4                 52
-{'5', UTF16_EQUAL           },  // 5                 53
-{'6', UTF16_NOTLESS         },  // 6                 54
-{'7', UTF16_RIGHTCARET      },  // 7                 55
-{'8', UTF16_NOTEQUAL        },  // 8                 56
-{'9', UTF16_DOWNCARET       },  // 9                 57
-{':', 0                     },  // Colon             58
-{';', UTF16_HYDRANT         },  // Semicolon         59
-{'<', 0                     },  // Less              60
-{'=', UTF16_DIVIDE          },  // Equal             61
-{'>', 0                     },  // More              62
-{'?', 0                     },  // Query             63
-{'@', UTF16_DELTILDE        },  // At sign           64
-{'A', 0                     },  // A                 65
-{'B', 0                     },  // B                 66
-{'C', 0                     },  // C                 67
-{'D', 0                     },  // D                 68
-{'E', UTF16_EPSILONUNDERBAR },  // E                 69
-{'F', 0                     },  // F                 70
-{'G', UTF16_DIERESISDEL     },  // G                 71
-{'H', UTF16_DELTAUNDERBAR   },  // H                 72
-{'I', UTF16_IOTAUNDERBAR    },  // I                 73
-{'J', UTF16_DIERESISJOT     },  // J                 74
-{'K', 0                     },  // K                 75
-{'L', UTF16_SQUAD           },  // L                 76
-{'M', UTF16_STILETILDE      },  // M                 77
-{'N', UTF16_DIERESISDOWNTACK},  // N                 78
-{'O', UTF16_DIERESISCIRCLE  },  // O                 79
-{'P', UTF16_DIERESISSTAR    },  // P                 80
-{'Q', 0                     },  // Q                 81
-{'R', 0                     },  // R                 82
-{'S', 0                     },  // S                 83
-{'T', UTF16_DIERESISTILDE   },  // T                 84
-{'U', 0                     },  // U                 85
-{'V', 0                     },  // V                 86
-{'W', 0                     },  // W                 87
-{'X', 0                     },  // X                 88
-{'Y', 0                     },  // Y                 89
-{'Z', 0                     },  // Z                 90
-{'[', UTF16_LEFTARROW       },  // Left bracket      91
-{'\\',UTF16_LEFTTACK        },  // Slope             92
-{']', UTF16_RIGHTARROW      },  // Right bracket     93
-{'^', UTF16_CIRCLESLOPE     },  // Up caret          94
-{'_', UTF16_QUOTEDOT        },  // Underbar          95
-{'`', UTF16_DIAMOND         },  // Grave accent      96
-{'a', UTF16_ALPHA           },  // a                 97
-{'b', UTF16_UPTACK          },  // b                 98
-{'c', UTF16_UPSHOE          },  // c                 99
-{'d', UTF16_DOWNSTILE       },  // d                100
-{'e', UTF16_EPSILON         },  // e                101
-{'f', UTF16_UNDERBAR        },  // f                102
-{'g', UTF16_DEL             },  // g                103
-{'h', UTF16_DELTA           },  // h                104
-{'i', UTF16_IOTA            },  // i                105
-{'j', UTF16_JOT             },  // j                106
-{'k', UTF16_APOSTROPHE      },  // k                107
-{'l', UTF16_QUAD            },  // l                108
-{'m', UTF16_STILE           },  // m                109
-{'n', UTF16_DOWNTACK        },  // n                110
-{'o', UTF16_CIRCLE          },  // o                111
-{'p', UTF16_STAR            },  // p                112
-{'q', UTF16_QUERY           },  // q                113
-{'r', UTF16_RHO             },  // r                114
-{'s', UTF16_UPSTILE         },  // s                115
-{'t', UTF16_TILDE           },  // t                116
-{'u', UTF16_DNARROW         },  // u                117
-{'v', UTF16_DOWNSHOE        },  // v                118
-{'w', UTF16_OMEGA           },  // w                119
-{'x', UTF16_RIGHTSHOE       },  // x                120
-{'y', UTF16_UPARROW         },  // y                121
-{'z', UTF16_LEFTSHOE        },  // z                122
-{'{', UTF16_QUOTEQUAD       },  // Left brace       123
-{'|', UTF16_RIGHTTACK       },  // Stile            124
-{'}', UTF16_ZILDE           },  // Right brace      125
-{'~', UTF16_COMMABAR        },  // Tilde            126
+{' ', 0                       },  // Space             32
+{'!', UTF16_EQUALUNDERBAR     },  // Quote-dot         33
+{'"', 0                       },  // Quotation mark    34
+{'#', UTF16_DELSTILE          },  // Number sign       35
+{'$', UTF16_DELTASTILE        },  // Dollar sign       36
+{'%', UTF16_CIRCLESTILE       },  // Percent sign      37
+{'&', UTF16_CIRCLEBAR         },  // Ampersand         38
+{'\'',UTF16_DOWNTACKJOT       },  // Apostrophe        39
+{'(', UTF16_DOWNCARETTILDE    },  // Left paren        40
+{')', UTF16_UPCARETTILDE      },  // Right paren       41
+{'*', UTF16_CIRCLESTAR        },  // Star              42
+{'+', UTF16_DOMINO            },  // Plus sign         43
+{',', UTF16_LAMP              },  // Comma             44
+{'-', UTF16_TIMES             },  // Bar               45
+{'.', UTF16_SLOPEBAR          },  // Dot               46
+{'/', UTF16_SLASHBAR          },  // Slash             47
+{'0', UTF16_UPCARET           },  // 0                 48
+{'1', UTF16_DIERESIS          },  // 1                 49
+{'2', UTF16_OVERBAR           },  // 2                 50
+{'3', UTF16_LEFTCARET         },  // 3                 51
+{'4', UTF16_LEFTCARETUNDERBAR },  // 4                 52
+{'5', UTF16_EQUAL             },  // 5                 53
+{'6', UTF16_RIGHTCARETUNDERBAR},  // 6                 54
+{'7', UTF16_RIGHTCARET        },  // 7                 55
+{'8', UTF16_NOTEQUAL          },  // 8                 56
+{'9', UTF16_DOWNCARET         },  // 9                 57
+{':', 0                       },  // Colon             58
+{';', UTF16_UPTACKJOT         },  // Semicolon         59
+{'<', 0                       },  // Less              60
+{'=', UTF16_COLONBAR          },  // Equal             61
+{'>', 0                       },  // More              62
+{'?', 0                       },  // Query             63
+{'@', UTF16_DELTILDE          },  // At sign           64
+{'A', 0                       },  // A                 65
+{'B', 0                       },  // B                 66
+{'C', 0                       },  // C                 67
+{'D', 0                       },  // D                 68
+{'E', UTF16_EPSILONUNDERBAR   },  // E                 69
+{'F', 0                       },  // F                 70
+{'G', UTF16_DIERESISDEL       },  // G                 71
+{'H', UTF16_DELTAUNDERBAR     },  // H                 72
+{'I', UTF16_IOTAUNDERBAR      },  // I                 73
+{'J', UTF16_DIERESISJOT       },  // J                 74
+{'K', 0                       },  // K                 75
+{'L', UTF16_SQUAD             },  // L                 76
+{'M', UTF16_STILETILDE        },  // M                 77
+{'N', UTF16_DIERESISDOWNTACK  },  // N                 78
+{'O', UTF16_DIERESISCIRCLE    },  // O                 79
+{'P', UTF16_DIERESISSTAR      },  // P                 80
+{'Q', 0                       },  // Q                 81
+{'R', 0                       },  // R                 82
+{'S', 0                       },  // S                 83
+{'T', UTF16_DIERESISTILDE     },  // T                 84
+{'U', 0                       },  // U                 85
+{'V', 0                       },  // V                 86
+{'W', 0                       },  // W                 87
+{'X', 0                       },  // X                 88
+{'Y', 0                       },  // Y                 89
+{'Z', 0                       },  // Z                 90
+{'[', UTF16_LEFTARROW         },  // Left bracket      91
+{'\\',UTF16_LEFTTACK          },  // Slope             92
+{']', UTF16_RIGHTARROW        },  // Right bracket     93
+{'^', UTF16_CIRCLESLOPE       },  // Up caret          94
+{'_', UTF16_QUOTEDOT          },  // Underbar          95
+{'`', UTF16_DIAMOND           },  // Grave accent      96
+{'a', UTF16_ALPHA             },  // a                 97
+{'b', UTF16_UPTACK            },  // b                 98
+{'c', UTF16_UPSHOE            },  // c                 99
+{'d', UTF16_DOWNSTILE         },  // d                100
+{'e', UTF16_EPSILON           },  // e                101
+{'f', UTF16_UNDERBAR          },  // f                102
+{'g', UTF16_DEL               },  // g                103
+{'h', UTF16_DELTA             },  // h                104
+{'i', UTF16_IOTA              },  // i                105
+{'j', UTF16_JOT               },  // j                106
+{'k', UTF16_APOSTROPHE        },  // k                107
+{'l', UTF16_QUAD              },  // l                108
+{'m', UTF16_STILE             },  // m                109
+{'n', UTF16_DOWNTACK          },  // n                110
+{'o', UTF16_CIRCLE            },  // o                111
+{'p', UTF16_STAR              },  // p                112
+{'q', UTF16_QUERY             },  // q                113
+{'r', UTF16_RHO               },  // r                114
+{'s', UTF16_UPSTILE           },  // s                115
+{'t', UTF16_TILDE             },  // t                116
+{'u', UTF16_DOWNARROW         },  // u                117
+{'v', UTF16_DOWNSHOE          },  // v                118
+{'w', UTF16_OMEGA             },  // w                119
+{'x', UTF16_RIGHTSHOE         },  // x                120
+{'y', UTF16_UPARROW           },  // y                121
+{'z', UTF16_LEFTSHOE          },  // z                122
+{'{', UTF16_QUOTEQUAD         },  // Left brace       123
+{'|', UTF16_RIGHTTACK         },  // Stile            124
+{'}', UTF16_ZILDE             },  // Right brace      125
+{'~', UTF16_COMMABAR          },  // Tilde            126
 }
 #endif
 ;

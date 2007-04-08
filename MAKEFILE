@@ -22,7 +22,7 @@ WIN=32
 WDEF=_WIN$(WIN)
 
 !if "$(DEBUG)" == "1"
-CFLAGS_DEBUG=/Zd /Fd$*.pdb /D "DEBUG" /D "RESDEBUG=$(RESDEBUG)"
+CFLAGS_DEBUG=/Zd /D "DEBUG" /D "RESDEBUG=$(RESDEBUG)"
 !else
 CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
 !endif
@@ -155,12 +155,12 @@ $(O)main.DEP        \
 $(O)parse.DEP       \
 $(O)pf_bar.DEP      \
 $(O)pf_circle.DEP   \
+$(O)pf_colonbar.DEP \
 $(O)pf_comma.DEP    \
 $(O)pf_cslope.DEP   \
 $(O)pf_cstile.DEP   \
 $(O)pf_cstar.DEP    \
 $(O)pf_dcaret.DEP   \
-$(O)pf_divide.DEP   \
 $(O)pf_domino.DEP   \
 $(O)pf_dstile.DEP   \
 $(O)pf_epsilon.DEP  \
@@ -239,7 +239,7 @@ $(O)version.DEV
 {}.RC{$(O)}.DEV:
     @Set INCLUDE=$(I98);$(H);$(O)
     @Set PATH=$(BC)
-    @echo depscan -q -s$(PROJPATH)$(O)=$$(O) %s
+####@echo depscan -q -s$(PROJPATH)$(O)=$$(O) %s
     @depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
     @Set PATH=$(OLDPATH)
 
@@ -288,6 +288,9 @@ $(O)version.DEV
 !if exist ($(O)pf_bar.DEP)
 !       include $(O)pf_bar.DEP
 !endif
+!if exist ($(O)pf_colonbar.DEP)
+!       include $(O)pf_colonbar.DEP
+!endif
 !if exist ($(O)pf_comma.DEP)
 !       include $(O)pf_comma.DEP
 !endif
@@ -302,9 +305,6 @@ $(O)version.DEV
 !endif
 !if exist ($(O)pf_dcaret.DEP)
 !       include $(O)pf_dcaret.DEP
-!endif
-!if exist ($(O)pf_divide.DEP)
-!       include $(O)pf_divide.DEP
 !endif
 !if exist ($(O)pf_domino.DEP)
 !       include $(O)pf_domino.DEP
@@ -461,17 +461,16 @@ $(O)editmat.PRO     \
 $(O)editvec.PRO     \
 $(O)exec.PRO        \
 $(O)free.PRO        \
-###$(O)gamma.PRO       \
 $(O)main.PRO        \
 $(O)parse.PRO       \
 $(O)pf_bar.PRO      \
 $(O)pf_circle.PRO   \
+$(O)pf_colonbar.PRO \
 $(O)pf_comma.PRO    \
 $(O)pf_cslope.PRO   \
 $(O)pf_cstile.PRO   \
 $(O)pf_cstar.PRO    \
 $(O)pf_dcaret.PRO   \
-$(O)pf_divide.PRO   \
 $(O)pf_domino.PRO   \
 $(O)pf_dstile.PRO   \
 $(O)pf_epsilon.PRO  \
@@ -574,12 +573,12 @@ $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
 $(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
 $(O)pf_circle.OBJ:      $(@B).C         $(PF_CIRCLE_DEP)
+$(O)pf_colonbar.OBJ:    $(@B).C         $(PF_COLONBAR_DEP)
 $(O)pf_comma.OBJ:       $(@B).C         $(PF_COMMA_DEP)
 $(O)pf_cslope.OBJ:      $(@B).C         $(PF_CSLOPE_DEP)
 $(O)pf_cstile.OBJ:      $(@B).C         $(PF_CSTILE_DEP)
 $(O)pf_cstar.OBJ:       $(@B).C         $(PF_CSTAR_DEP)
 $(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
-$(O)pf_divide.OBJ:      $(@B).C         $(PF_DIVIDE_DEP)
 $(O)pf_domino.OBJ:      $(@B).C         $(PF_DOMINO_DEP)
 $(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
 $(O)pf_epsilon.OBJ:     $(@B).C         $(PF_EPSILON_DEP)
@@ -661,12 +660,12 @@ OBJS=                       \
      $(O)parse.OBJ          \
      $(O)pf_bar.OBJ         \
      $(O)pf_circle.OBJ      \
+     $(O)pf_colonbar.OBJ    \
      $(O)pf_comma.OBJ       \
      $(O)pf_cslope.OBJ      \
      $(O)pf_cstile.OBJ      \
      $(O)pf_cstar.OBJ       \
      $(O)pf_dcaret.OBJ      \
-     $(O)pf_divide.OBJ      \
      $(O)pf_domino.OBJ      \
      $(O)pf_dstile.OBJ      \
      $(O)pf_epsilon.OBJ     \

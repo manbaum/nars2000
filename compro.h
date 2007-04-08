@@ -1,5 +1,5 @@
 //****************************************************************************
-//	NARS2000 -- Common Prototypes
+//  NARS2000 -- Common Prototypes
 //****************************************************************************
 
 #ifndef COMPRO_INCLUDED
@@ -21,11 +21,11 @@
 #include "parse.pro"
 #include "pf_bar.pro"
 #include "pf_circle.pro"
+#include "pf_colonbar.pro"
 #include "pf_comma.pro"
 #include "pf_cslope.pro"
 #include "pf_cstile.pro"
 #include "pf_dcaret.pro"
-#include "pf_divide.pro"
 #include "pf_domino.pro"
 #include "pf_dstile.pro"
 #include "pf_epsilon.pro"
@@ -78,5 +78,5 @@
 #endif
 
 //***************************************************************************
-//	End of File: compro.h
+//  End of File: compro.h
 //***************************************************************************

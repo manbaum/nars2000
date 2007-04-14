@@ -758,6 +758,6 @@ $(LIBS_WEXE) $(LIBS_EXT)
 $(L)$(MV).exe:          $(O)$(MV).exe
         @xc/r    %s     $@ >NUL
 
-$(ENAME).ver:           $(O)$(MV).exe
+$(ENAME).ver:           $(O)$(ENAME).exe
         @$(O)$(MV).exe $(O)$(ENAME).exe
 

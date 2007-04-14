@@ -41,10 +41,10 @@ PRIMSPEC PrimSpecCircleStar =
 
     // Dyadic functions
     &PrimFnDyd_EM,
-    &PrimSpecCircleStarStorageTypeDyd,
+    NULL,   // &PrimSpecCircleStarStorageTypeDyd, -- Can't happen w/CircleStar
     NULL,   // &PrimFnDydCircleStarAPA_EM, -- Can't happen w/CircleStar
 
-    &PrimFnDydNotLessBisBvB,
+    &PrimFnDydRightCaretUnderbarBisBvB,
     NULL,   // &PrimFnDydCircleStarBisIvI, -- Can't happen w/CircleStar
     NULL,   // &PrimFnDydCircleStarBisFvF, -- Can't happen w/CircleStar
     NULL,   // &PrimFnDydCircleStarBisCvC, -- Can't happen w/CircleStar
@@ -125,7 +125,7 @@ APLSTYPE PrimSpecCircleStarStorageTypeMon
 
     // Except that BOOL, INT and APA become FLOAT
     if (IsSimpleInt (aplTypeRes))
-        aplTypeRes = ARRAY_INT;
+        aplTypeRes = ARRAY_FLOAT;
 
     return aplTypeRes;
 } // End PrimSpecCircleStarStorageTypeMon
@@ -223,6 +223,11 @@ APLFLOAT PrimFnDydCircleStarFisIvI
     // ***FIXME*** -- Possible loss of precision
     // ***FIXME*** -- Handle DOMAIN ERROR
 
+    // Handle special cases
+    if (aplIntegerLft EQ 1
+     && aplIntegerRht EQ 1)
+        return (APLFLOAT) 1;
+
     return log ((APLFLOAT) aplIntegerLft) / log ((APLFLOAT) aplIntegerRht);
 } // End PrimFnDydCircleStarFisIvI
 
@@ -247,5 +252,5 @@ APLFLOAT PrimFnDydCircleStarFisFvF
 
 
 //***************************************************************************
-//  End of File: pf_CircleStar.c
+//  End of File: pf_cstar.c
 //***************************************************************************

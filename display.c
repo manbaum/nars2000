@@ -1004,98 +1004,6 @@ void DisplaySymTab
 #endif
 
 
-//// #ifdef DEBUG
-//// //***************************************************************************
-//// //  DisplayHistory
-//// //
-//// //  Display the session manager history
-//// //***************************************************************************
-////
-//// void DisplayHistory
-////     (void)
-////
-//// {
-////     int       i;
-////     char      szConvert[1024];
-////     LPGLBHIST lpGlbHist;
-////     HGLOBAL   hGlb;
-////     LPWCHAR   wszLine;
-////
-////     // Display the hGlbHist entries
-////
-////     DbgMsg ("********** History *************************************");
-////
-////     // Get the global handle to the history buffer
-////     // Note we don't use MyGlobalLock here as the caller
-////     //   might have one of the handles locked and MyGlobalLock
-////     //   expects the lock count to be zero.
-////     lpGlbHist = GlobalLock (hGlbHist); Assert (lpGlbHist NE NULL);
-////
-////     // Output relevant variables
-////     wsprintf (lpszTemp,
-////               "SM:  iCurLine = %d, iLastValidLine = %d",
-////               iCurLine,
-////               iLastValidLine
-////              );
-////     DbgMsg (lpszTemp);
-////     wsprintf (lpszTemp,
-////               "SM:  iCurChar = %d, nWindowChars = %d, nWindowLines = %d",
-////               iCurChar,
-////               nWindowChars,
-////               nWindowLines
-////              );
-////     DbgMsg (lpszTemp);
-////     wsprintf (lpszTemp,
-////               "SM:  iFirstWindowChar = %d, iLastWindowChar = %d",
-////               iFirstWindowChar,
-////               iLastWindowChar
-////              );
-////     DbgMsg (lpszTemp);
-////
-////     // Loop through the entries
-////     for (i = 0; i < 10; i++)
-////     if (hGlb = lpGlbHist[i].hGlb)
-////     {
-////         // Lock the memory to get a ptr to it
-////         wszLine = GlobalLock (hGlb); Assert (wszLine NE NULL);
-////
-////         // Convert the WCHAR line wszLine to a single-byte string
-////         W2A (szConvert, wszLine, sizeof (szConvert) - 1);
-////
-////         wsprintf (lpszTemp,
-////                   "SM:  %2d:  <%s> (%d) ContPrev=%d, ContNext=%d",
-////                   i,
-////                   szConvert,
-////                   lstrlen (szConvert),
-////                   lpGlbHist[i].ContPrev,
-////                   lpGlbHist[i].ContNext
-////                   );
-////         DbgMsg (lpszTemp);
-////
-////         // We no longer need this ptr
-////         MyGlobalUnlock (hGlb); wszLine = NULL;
-////     } // End FOR/IF
-////
-////     // Convert the WCHAR line wszLine to a single-byte string
-////     W2A (szConvert, lpwszCurLine, sizeof (szConvert) - 1);
-////
-////     wsprintf (lpszTemp,
-////               "SM:   *:  <%s> (%d)",
-////               szConvert,
-////               lstrlen (szConvert)
-////               );
-////     DbgMsg (lpszTemp);
-////
-////     // We no longer need this ptr
-////     GlobalUnlock (hGlbHist); lpGlbHist = NULL;
-////
-////     DbgMsg ("********** End History *********************************");
-////
-////     UpdateWindow (hWndDB);
-//// } // End DisplayHistory
-//// #endif
-
-
 #ifdef DEBUG
 //***************************************************************************
 //  DisplayGlobals
@@ -1191,7 +1099,6 @@ void DisplayGlobals
                            hGlb,
                            L"BIFCHNLA"[lpHeader->ArrType],
                            L" *"[lpHeader->Perm],
-///////////////////////////HIDWORD (lpHeader->NELM),
                            LODWORD (lpHeader->NELM),
                            lpHeader->RefCnt,
                            LODWORD (lpHeader->Rank),

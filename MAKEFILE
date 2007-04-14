@@ -138,74 +138,74 @@ DIR:
 
 ####################### DEPENDENCY GENERATION #################
 
-DEP:                \
-$(O)assign.DEP      \
-$(O)bjhash.DEP      \
-$(O)common.DEP      \
-$(O)convert.DEP     \
-$(O)debug.DEP       \
-$(O)display.DEP     \
-$(O)editctrl.DEP    \
-$(O)editfcn.DEP     \
-$(O)editmat.DEP     \
-$(O)editvec.DEP     \
-$(O)exec.DEP        \
-$(O)free.DEP        \
-$(O)main.DEP        \
-$(O)parse.DEP       \
-$(O)pf_bar.DEP      \
-$(O)pf_circle.DEP   \
-$(O)pf_colonbar.DEP \
-$(O)pf_comma.DEP    \
-$(O)pf_cslope.DEP   \
-$(O)pf_cstile.DEP   \
-$(O)pf_cstar.DEP    \
-$(O)pf_dcaret.DEP   \
-$(O)pf_domino.DEP   \
-$(O)pf_dstile.DEP   \
-$(O)pf_epsilon.DEP  \
-$(O)pf_equal.DEP    \
-$(O)pf_equalund.DEP \
-$(O)pf_greateq.DEP  \
-$(O)pf_iota.DEP     \
-$(O)pf_lcaret.DEP   \
-$(O)pf_lesseq.DEP   \
-$(O)pf_lshoe.DEP    \
-$(O)pf_ltack.DEP    \
-$(O)pf_ndcaret.DEP  \
-$(O)pf_nequal.DEP   \
-$(O)pf_nucaret.DEP  \
-$(O)pf_plus.DEP     \
-$(O)pf_qdot.DEP     \
-$(O)pf_query.DEP    \
-$(O)pf_rcaret.DEP   \
-$(O)pf_rho.DEP      \
-$(O)pf_rtack.DEP    \
-$(O)pf_slash.DEP    \
-$(O)pf_slope.DEP    \
-$(O)pf_squad.DEP    \
-$(O)pf_star.DEP     \
-$(O)pf_stile.DEP    \
-$(O)pf_thorn.DEP    \
-$(O)pf_tilde.DEP    \
-$(O)pf_times.DEP    \
-$(O)pf_ucaret.DEP   \
-$(O)pf_ustile.DEP   \
-$(O)primfns.DEP     \
-$(O)primspec.DEP    \
-$(O)refcnt.DEP      \
-$(O)reg.DEP         \
-$(O)sessman.DEP     \
-$(O)strand.DEP      \
-$(O)symtab.DEP      \
-$(O)syscmds.DEP     \
-$(O)sysfns.DEP      \
-$(O)sysvars.DEP     \
-$(O)tabctrl.DEP     \
-$(O)ver.DEP         \
-$(O)resdebug.DEP    \
-$(O)main.DEV        \
-$(O)ver.DEV         \
+DEP:                    \
+$(O)assign.DEP          \
+$(O)bjhash.DEP          \
+$(O)common.DEP          \
+$(O)convert.DEP         \
+$(O)debug.DEP           \
+$(O)display.DEP         \
+$(O)editctrl.DEP        \
+$(O)editfcn.DEP         \
+$(O)editmat.DEP         \
+$(O)editvec.DEP         \
+$(O)exec.DEP            \
+$(O)free.DEP            \
+$(O)main.DEP            \
+$(O)parse.DEP           \
+$(O)pf_bar.DEP          \
+$(O)pf_circle.DEP       \
+$(O)pf_colonbar.DEP     \
+$(O)pf_comma.DEP        \
+$(O)pf_cslope.DEP       \
+$(O)pf_cstile.DEP       \
+$(O)pf_cstar.DEP        \
+$(O)pf_dcaret.DEP       \
+$(O)pf_domino.DEP       \
+$(O)pf_dstile.DEP       \
+$(O)pf_epsilon.DEP      \
+$(O)pf_equal.DEP        \
+$(O)pf_equalund.DEP     \
+$(O)pf_iota.DEP         \
+$(O)pf_lcaret.DEP       \
+$(O)pf_lcaretund.DEP    \
+$(O)pf_lshoe.DEP        \
+$(O)pf_ltack.DEP        \
+$(O)pf_ndcaret.DEP      \
+$(O)pf_nequal.DEP       \
+$(O)pf_nucaret.DEP      \
+$(O)pf_plus.DEP         \
+$(O)pf_qdot.DEP         \
+$(O)pf_query.DEP        \
+$(O)pf_rcaret.DEP       \
+$(O)pf_rcaretund.DEP    \
+$(O)pf_rho.DEP          \
+$(O)pf_rtack.DEP        \
+$(O)pf_slash.DEP        \
+$(O)pf_slope.DEP        \
+$(O)pf_squad.DEP        \
+$(O)pf_star.DEP         \
+$(O)pf_stile.DEP        \
+$(O)pf_thorn.DEP        \
+$(O)pf_tilde.DEP        \
+$(O)pf_times.DEP        \
+$(O)pf_ucaret.DEP       \
+$(O)pf_ustile.DEP       \
+$(O)primfns.DEP         \
+$(O)primspec.DEP        \
+$(O)refcnt.DEP          \
+$(O)reg.DEP             \
+$(O)sessman.DEP         \
+$(O)strand.DEP          \
+$(O)symtab.DEP          \
+$(O)syscmds.DEP         \
+$(O)sysfns.DEP          \
+$(O)sysvars.DEP         \
+$(O)tabctrl.DEP         \
+$(O)ver.DEP             \
+$(O)resdebug.DEP        \
+$(O)main.DEV            \
+$(O)ver.DEV             \
 $(O)version.DEV
 
 {$(O)}.C{$(O)}.DEP:
@@ -321,17 +321,14 @@ $(O)version.DEV
 !if exist ($(O)pf_equalund.DEP)
 !       include $(O)pf_equalund.DEP
 !endif
-!if exist ($(O)pf_greateq.DEP)
-!       include $(O)pf_greateq.DEP
-!endif
 !if exist ($(O)pf_iota.DEP)
 !       include $(O)pf_iota.DEP
 !endif
 !if exist ($(O)pf_lcaret.DEP)
 !       include $(O)pf_lcaret.DEP
 !endif
-!if exist ($(O)pf_lesseq.DEP)
-!       include $(O)pf_lesseq.DEP
+!if exist ($(O)pf_lcaretund.DEP)
+!       include $(O)pf_lcaretund.DEP
 !endif
 !if exist ($(O)pf_lshoe.DEP)
 !       include $(O)pf_lshoe.DEP
@@ -359,6 +356,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)pf_rcaret.DEP)
 !       include $(O)pf_rcaret.DEP
+!endif
+!if exist ($(O)pf_rcaretund.DEP)
+!       include $(O)pf_rcaretund.DEP
 !endif
 !if exist ($(O)pf_rho.DEP)
 !       include $(O)pf_rho.DEP
@@ -448,71 +448,71 @@ $(O)version.DEV
 
 ####################### PROTOTYPE GENERATION #################
 
-PRO:                \
-$(O)assign.PRO      \
-$(O)bjhash.PRO      \
-$(O)common.PRO      \
-$(O)convert.PRO     \
-$(O)debug.PRO       \
-$(O)display.PRO     \
-$(O)editctrl.PRO    \
-$(O)editfcn.PRO     \
-$(O)editmat.PRO     \
-$(O)editvec.PRO     \
-$(O)exec.PRO        \
-$(O)free.PRO        \
-$(O)main.PRO        \
-$(O)parse.PRO       \
-$(O)pf_bar.PRO      \
-$(O)pf_circle.PRO   \
-$(O)pf_colonbar.PRO \
-$(O)pf_comma.PRO    \
-$(O)pf_cslope.PRO   \
-$(O)pf_cstile.PRO   \
-$(O)pf_cstar.PRO    \
-$(O)pf_dcaret.PRO   \
-$(O)pf_domino.PRO   \
-$(O)pf_dstile.PRO   \
-$(O)pf_epsilon.PRO  \
-$(O)pf_equal.PRO    \
-$(O)pf_equalund.PRO \
-$(O)pf_greateq.PRO  \
-$(O)pf_iota.PRO     \
-$(O)pf_lcaret.PRO   \
-$(O)pf_lesseq.PRO   \
-$(O)pf_lshoe.PRO    \
-$(O)pf_ltack.PRO    \
-$(O)pf_ndcaret.PRO  \
-$(O)pf_nequal.PRO   \
-$(O)pf_nucaret.PRO  \
-$(O)pf_plus.PRO     \
-$(O)pf_qdot.PRO     \
-$(O)pf_query.PRO    \
-$(O)pf_rcaret.PRO   \
-$(O)pf_rho.PRO      \
-$(O)pf_rtack.PRO    \
-$(O)pf_slash.PRO    \
-$(O)pf_slope.PRO    \
-$(O)pf_squad.PRO    \
-$(O)pf_star.PRO     \
-$(O)pf_stile.PRO    \
-$(O)pf_thorn.PRO    \
-$(O)pf_tilde.PRO    \
-$(O)pf_times.PRO    \
-$(O)pf_ucaret.PRO   \
-$(O)pf_ustile.PRO   \
-$(O)primfns.PRO     \
-$(O)primspec.PRO    \
-$(O)refcnt.PRO      \
-$(O)reg.PRO         \
-$(O)sessman.PRO     \
-$(O)strand.PRO      \
-$(O)symtab.PRO      \
-$(O)syscmds.PRO     \
-$(O)sysfns.PRO      \
-$(O)sysvars.PRO     \
-$(O)tabctrl.PRO     \
-$(O)ver.PRO         \
+PRO:                    \
+$(O)assign.PRO          \
+$(O)bjhash.PRO          \
+$(O)common.PRO          \
+$(O)convert.PRO         \
+$(O)debug.PRO           \
+$(O)display.PRO         \
+$(O)editctrl.PRO        \
+$(O)editfcn.PRO         \
+$(O)editmat.PRO         \
+$(O)editvec.PRO         \
+$(O)exec.PRO            \
+$(O)free.PRO            \
+$(O)main.PRO            \
+$(O)parse.PRO           \
+$(O)pf_bar.PRO          \
+$(O)pf_circle.PRO       \
+$(O)pf_colonbar.PRO     \
+$(O)pf_comma.PRO        \
+$(O)pf_cslope.PRO       \
+$(O)pf_cstile.PRO       \
+$(O)pf_cstar.PRO        \
+$(O)pf_dcaret.PRO       \
+$(O)pf_domino.PRO       \
+$(O)pf_dstile.PRO       \
+$(O)pf_epsilon.PRO      \
+$(O)pf_equal.PRO        \
+$(O)pf_equalund.PRO     \
+$(O)pf_iota.PRO         \
+$(O)pf_lcaret.PRO       \
+$(O)pf_lcaretund.PRO    \
+$(O)pf_lshoe.PRO        \
+$(O)pf_ltack.PRO        \
+$(O)pf_ndcaret.PRO      \
+$(O)pf_nequal.PRO       \
+$(O)pf_nucaret.PRO      \
+$(O)pf_plus.PRO         \
+$(O)pf_qdot.PRO         \
+$(O)pf_query.PRO        \
+$(O)pf_rcaret.PRO       \
+$(O)pf_rcaretund.PRO    \
+$(O)pf_rho.PRO          \
+$(O)pf_rtack.PRO        \
+$(O)pf_slash.PRO        \
+$(O)pf_slope.PRO        \
+$(O)pf_squad.PRO        \
+$(O)pf_star.PRO         \
+$(O)pf_stile.PRO        \
+$(O)pf_thorn.PRO        \
+$(O)pf_tilde.PRO        \
+$(O)pf_times.PRO        \
+$(O)pf_ucaret.PRO       \
+$(O)pf_ustile.PRO       \
+$(O)primfns.PRO         \
+$(O)primspec.PRO        \
+$(O)refcnt.PRO          \
+$(O)reg.PRO             \
+$(O)sessman.PRO         \
+$(O)strand.PRO          \
+$(O)symtab.PRO          \
+$(O)syscmds.PRO         \
+$(O)sysfns.PRO          \
+$(O)sysvars.PRO         \
+$(O)tabctrl.PRO         \
+$(O)ver.PRO             \
 $(O)resdebug.PRO
 
 {}.C{$(O)}.PRO:
@@ -584,10 +584,9 @@ $(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
 $(O)pf_epsilon.OBJ:     $(@B).C         $(PF_EPSILON_DEP)
 $(O)pf_equal.OBJ:       $(@B).C         $(PF_EQUAL_DEP)
 $(O)pf_equalund.OBJ:    $(@B).C         $(PF_EQUALUND_DEP)
-$(O)pf_greateq.OBJ:     $(@B).C         $(PF_GREATEQ_DEP)
 $(O)pf_iota.OBJ:        $(@B).C         $(PF_IOTA_DEP)
 $(O)pf_lcaret.OBJ:      $(@B).C         $(PF_LCARET_DEP)
-$(O)pf_lesseq.OBJ:      $(@B).C         $(PF_LESSEQ_DEP)
+$(O)pf_lcaretund.OBJ:   $(@B).C         $(PF_LCARETUND_DEP)
 $(O)pf_lshoe.OBJ:       $(@B).C         $(PF_LSHOE_DEP)
 $(O)pf_ltack.OBJ:       $(@B).C         $(PF_LTACK_DEP)
 $(O)pf_ndcaret.OBJ:     $(@B).C         $(PF_NDCARET_DEP)
@@ -597,6 +596,7 @@ $(O)pf_plus.OBJ:        $(@B).C         $(PF_PLUS_DEP)
 $(O)pf_qdot.OBJ:        $(@B).C         $(PF_QDOT_DEP)
 $(O)pf_query.OBJ:       $(@B).C         $(PF_QUERY_DEP)
 $(O)pf_rcaret.OBJ:      $(@B).C         $(PF_RCARET_DEP)
+$(O)pf_rcaretund.OBJ:   $(@B).C         $(PF_RCARETUND_DEP)
 $(O)pf_rho.OBJ:         $(@B).C         $(PF_RHO_DEP)
 $(O)pf_rtack.OBJ:       $(@B).C         $(PF_RTACK_DEP)
 $(O)pf_slash.OBJ:       $(@B).C         $(PF_SLASH_DEP)
@@ -671,10 +671,9 @@ OBJS=                       \
      $(O)pf_epsilon.OBJ     \
      $(O)pf_equal.OBJ       \
      $(O)pf_equalund.OBJ    \
-     $(O)pf_greateq.OBJ     \
      $(O)pf_iota.OBJ        \
      $(O)pf_lcaret.OBJ      \
-     $(O)pf_lesseq.OBJ      \
+     $(O)pf_lcaretund.OBJ   \
      $(O)pf_lshoe.OBJ       \
      $(O)pf_ltack.OBJ       \
      $(O)pf_ndcaret.OBJ     \
@@ -684,6 +683,7 @@ OBJS=                       \
      $(O)pf_qdot.OBJ        \
      $(O)pf_query.OBJ       \
      $(O)pf_rcaret.OBJ      \
+     $(O)pf_rcaretund.OBJ   \
      $(O)pf_rho.OBJ         \
      $(O)pf_rtack.OBJ       \
      $(O)pf_slash.OBJ       \

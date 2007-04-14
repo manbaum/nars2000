@@ -40,6 +40,8 @@ BOOL      bRet;
 
 %}
 
+%pure-parser
+
 %token UNK
 %token NAMEVAR NAMEUNK CONSTANT STRING USRFN0 SYSFN0 QUAD QUOTEQUAD
 %token DIAMOND
@@ -375,20 +377,10 @@ Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
                                          YYERROR;
                                         }
     |             QUAD                  {DbgMsgW2 (L"%%Strand:  QUAD");
-                                         NonceError (&$1);
-                                         YYERROR;
-
-
-
-
+                                         $$ = *WaitForInput (hWndSM, FALSE, &$1.tkToken);
                                         }
     |             QUOTEQUAD             {DbgMsgW2 (L"%%Strand:  QUOTEQUAD");
-                                         NonceError (&$1);
-                                         YYERROR;
-
-
-
-
+                                         $$ = *WaitForInput (hWndSM, TRUE, &$1.tkToken);
                                         }
     |             SingTokn              {DbgMsgW2 (L"%%Strand:  SingTokn -- InitVarStrand/PushVarStrand");
                                          InitVarStrand (&$1);
@@ -1573,18 +1565,18 @@ char LookaheadAdjacent
 //***************************************************************************
 //  yylex
 //
-//  Lexical analyzer for YACC
+//  Lexical analyzer for Bison
 //***************************************************************************
 
 int yylex
-    (void)
+    (LPYYSTYPE lpyylval)
 
 {
     // Because we're parsing the stmt from right to left
     gplLocalVars.lpNext--;
 
     // Return the current token
-    yylval.tkToken = *gplLocalVars.lpNext;
+    lpyylval->tkToken = *gplLocalVars.lpNext;
 
     // Split cases based upon the token type
     switch (gplLocalVars.lpNext->tkFlags.TknType)
@@ -1674,7 +1666,7 @@ int yylex
 
         case TKT_COMMENT:
         case TKT_LINECONT:
-            return yylex ();                // Ignore these tokens
+            return yylex (lpyylval);        // Ignore these tokens
 
         case TKT_STRING:
             return STRING;

@@ -197,7 +197,6 @@ LRESULT APIENTRY FEWndProc
             // Initialize variables
             cfFE.hwndOwner = hWnd;
             ZeroMemory (&vkState, sizeof (vkState));
-            SetWindowLong (hWnd, GWLFE_LINECNT,  1);
 
             // Save in window extra bytes
             vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
@@ -228,7 +227,7 @@ LRESULT APIENTRY FEWndProc
             SetWindowLong (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
             SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
             SetWindowLong (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
-////////////SetWindowLong (hWnd, GWLSF_UNDO_GROUP, 0);  // Already zero
+////////////SetWindowLong (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
 
             // Start with an initial action of nothing
             AppendUndo (hWnd,                       // FE Window handle
@@ -540,6 +539,7 @@ LRESULT WINAPI LclEditCtrlWndProc
               uCharPos,     // ...    a character position
               uLinePos,     // Char position of start of line
               uLineNum,     // Line #
+              uLineLen,     // Line length
               uSpaces,      // # spaces to insert
               uGroupIndex;  // Group index
     WCHAR     wChar[TABSTOP + 1],
@@ -547,6 +547,8 @@ LRESULT WINAPI LclEditCtrlWndProc
     BOOL      bSelection;   // TRUE iff there's a selection
     HANDLE    hGlbClip;     // Handle to the clipboard
     LPWCHAR   lpMemClip;    // Memory ptr
+    UINT      ksShft,       // TRUE iff VK_CONTROL is pressed
+              ksCtrl;       // ...      VK_SHIFT   ...
 
     // Split cases
     switch (message)
@@ -554,11 +556,22 @@ LRESULT WINAPI LclEditCtrlWndProc
 #define nVirtKey ((int) wParam)
         case WM_KEYDOWN:            // nVirtKey = (int) wParam;     // Virtual-key code
                                     // lKeyData = lParam;           // Key data
+            // Skip this is the Menu key is pressed
+            if (GetKeyState (VK_MENU) & 0x8000)
+                break;
+
             // Get the handle of the parent window
             hWndParent = GetParent (hWnd);
 
             // Save the key in the parent window's extra bytes
             SetWindowLong (hWndParent, GWLSF_LASTKEY, nVirtKey);
+
+            // This message handles special keys that don't
+            //   produce a WM_CHAR, i.e. non-printable keys,
+            //   Backspace, and Delete.
+
+            ksCtrl = (GetKeyState (VK_CONTROL) & 0x8000) ? TRUE : FALSE;
+            ksShft = (GetKeyState (VK_SHIFT)   & 0x8000) ? TRUE : FALSE;
 
             // Process the virtual key
             switch (nVirtKey)
@@ -600,6 +613,15 @@ LRESULT WINAPI LclEditCtrlWndProc
                 case VK_INSERT:         // Insert
                 {
                     long cyAveChar;
+
+                    // Ins      toggles the key state
+                    // Shft-Ins WM_PASTEs
+                    // Ctrl-Ins WM_COPYs
+
+                    // If either VK_SHIFT or VK_CONTROL is pressed,
+                    //   ignore this keystroke
+                    if (ksCtrl || ksShft)
+                        break;
 
                     // Set the cursor height
                     if (IzitSM (hWndParent))
@@ -657,7 +679,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // Get the char position of the caret
                     uCharPos = GetCurCharPos (hWnd);
 
-                    // Undo is to delete it
+                    // Undo deletes it
                     AppendUndo (hWndParent,                 // FE Window handle
                                 GWLSF_UNDO_NXT,             // Offset in hWnd extra bytes of lpUndoNxt
                                 undoDel,                    // Action
@@ -690,9 +712,13 @@ LRESULT WINAPI LclEditCtrlWndProc
                 } // End VK_RETURN
 
                 case VK_BACK:
+                    // If VK_CONTROL is pressed, ignore this keystroke
+                    if (ksCtrl)
+                        break;
+
                     // Delete the preceding char or selection
 
-                    // Undo is to insert the deleted char(s)
+                    // Undo inserts the deleted char(s)
 
                     // Get the indices of the selected text
                     SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
@@ -767,9 +793,23 @@ LRESULT WINAPI LclEditCtrlWndProc
                     return FALSE;       // We handled the msg
 
                 case VK_DELETE:
-                    // Delete a char or a selection
+                    // Delete a char or chars or a selection
 
-                    // Undo is to insert the deleted char(s)
+                    // If both VK_CONTROL and VK_SHIFT are pressed,
+                    //   ignore this keystroke
+                    if (ksCtrl && ksShft)
+                        break;
+
+                    // If there's a selection,
+                    //   Del       WM_CLEARs the selection
+                    //   Shift-Del WM_CUTs   the selection.
+
+                    // If there's no selection,
+                    //   Del       deletes the char to the right of the cursor
+                    //   Shift-Del deletes the char to the left of the cursor
+                    //   Ctrl-Del  deletes to the end of the line.
+
+                    // Undo inserts the deleted char(s)
 
                     // Get the indices of the selected text
                     SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
@@ -777,9 +817,33 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // Note if there's a selection
                     bSelection = uCharPosBeg NE uCharPosEnd;
 
-                    // If there's no selection, increment the ending
-                    //   ptr to account for it
-                    uCharPosEnd += !bSelection;
+                    // If there's no selection, modify the
+                    //   starting and ending ptrs as per the
+                    //   key state
+                    if (!bSelection)
+                    {
+                        if (ksCtrl)     // If VK_CONTROL is pressed, ...
+                        {
+                            // Get the line # of the starting char
+                            uLineNum = SendMessageW (hWnd, EM_LINEFROMCHAR, uCharPosBeg, 0);
+
+                            // Get the char position of the start of the current line
+                            uLinePos = SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
+
+                            // Get the length of the line
+                            uLineLen = SendMessageW (hWnd, EM_LINELENGTH, uCharPosBeg, 0);
+
+                            // Set the ending ptr to the end of the line
+                            //   to delete to that point
+                            uCharPosEnd = uLinePos + uLineLen;
+                        } else
+                        if (ksShft)     // If VK_SHIFT is pressed, ...
+                            // Decrement the starting ptr to delete the lefthand char
+                            uCharPosBeg--;
+                        else            // Neither VK_CONTROL nor VK_SHIFT is pressed, ...
+                            // Increment the ending ptr to delete the righthand char
+                            uCharPosEnd++;
+                    } // End IF
 
                     // Get the next group index, and save it back
                     uGroupIndex = 1 + GetWindowLong (hWndParent, GWLSF_UNDO_GRP);
@@ -1034,6 +1098,18 @@ LRESULT WINAPI LclEditCtrlWndProc
             DbgBrk ();              // ***FINISHME***
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             break;
 
         case WM_CUT:                // 0 = wParam
@@ -1052,7 +1128,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Get the handle of the parent window
             hWndParent = GetParent (hWnd);
 
-            // Undo is to insert the selected chars
+            // Undo inserts the selected chars
 
             // Get the next group index, and save it back
             uGroupIndex = 1 + GetWindowLong (hWndParent, GWLSF_UNDO_GRP);
@@ -1092,7 +1168,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // 0 = lParam
             // Insert text from the clipboard, deleting selected text (if any)
 
-            // Undo is to delete the inserted (pasted) chars
+            // Undo deletes the inserted (pasted) chars
             //   and insert the deleted chars (if any)
 
             // Get the handle of the parent window
@@ -1306,8 +1382,6 @@ void PasteAPLChars
 
         // Make a copy of the clipboard data
         CopyMemory (lpMemCopy, lpMemClip, dwSize);
-
-        DbgBrk ();
 
         // We no longer need this ptr
         GlobalUnlock (hGlbClip); lpMemClip = NULL;
@@ -1552,7 +1626,7 @@ void InsRepCharStr
         {
             // Insert a char
 
-            // Undo is to delete the inserted char
+            // Undo deletes the inserted char
             AppendUndo (hWndParent,                         // SM/FE Window handle
                         GWLSF_UNDO_NXT,                     // Offset in hWnd extra bytes of lpUndoNxt
                         undoDel,                            // Action
@@ -1564,7 +1638,7 @@ void InsRepCharStr
         {
             // Replace a char string
 
-            // Undo is to replace it with the existing char
+            // Undo replaces it with the existing char
             AppendUndo (hWndParent,                         // SM/FE Window handle
                         GWLSF_UNDO_NXT,                     // Offset in hWnd extra bytes of lpUndoNxt
                         undoRep,                            // Action
@@ -1577,7 +1651,7 @@ void InsRepCharStr
     {
         // Insert a char string, deleting selected chars (if any)
 
-        // Undo is to insert the deleted (selected) chars (if any)
+        // Undo inserts the deleted (selected) chars (if any)
 
         // Get the next group index, and save it back
         uGroupIndex = 1 + GetWindowLong (hWndParent, GWLSF_UNDO_GRP);
@@ -1601,7 +1675,7 @@ void InsRepCharStr
                         0,                              // Ending    ...
                         uGroupIndex,                    // Group index
                         GetCharValue (hWnd, uCharPos)); // Character
-        // Undo is to delete the inserted char string
+        // Undo deletes the inserted char string
         AppendUndo (hWndParent,                     // SM/FE Window handle
                     GWLSF_UNDO_NXT,                 // Offset in hWnd extra bytes of lpUndoNxt
                     undoDel,                        // Action
@@ -1742,9 +1816,6 @@ void DrawLineNumsFE
 
     // Pour on the white out
     FillRect (hDC, &rcClient, (HBRUSH) GetClassLong (hWnd, GCL_HBRBACKGROUND));
-
-    // Save the current line count for the next time
-    SetWindowLong (hWndParent, GWLFE_LINECNT, uLineCnt);
 
     // We no longer need this DC
     MyReleaseDC (hWnd, hDC);

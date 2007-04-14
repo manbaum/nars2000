@@ -20,20 +20,22 @@
 
 /*
 
-The Session Manager (SM) window consists of <iNumLines> lines of
-APL statements, some block of which are displayed in the window
-at any one time.
+The Session Manager (SM) window consists of an Edit Control which
+holds the APL statements of the session.
 
 When the cursor moves to a line, the contents of the current line
 are copied to <lpwszCurLine>.
 
-1.  Assume that the user edits the line:
-    a.  The edit changes are made to the Edit Control.
-    b.  If the user hits Enter, the contents of the current
-        line in the Edit Control are copied to the last line
-        in the Edit Control, the contents of <lpwszCurLine>
-        replace the current line in the Edit Control, and the
-        last line is executed.
+If the user edits the line:
+    * The edit changes are saved in the Edit Control.
+
+In any case,
+    * If the user hits Enter, the contents of the current
+      line in the Edit Control are copied to the last line
+      in the Edit Control, the contents of <lpwszCurLine>
+      replace the current line in the Edit Control, and the
+      last line in the Edit Control is executed.
+
  */
 
 //// COLORREF crTextColor = DEF_TEXT_FG_COLOR,
@@ -175,32 +177,6 @@ BOOL IzitLastLine
 
     return (uLinePos <= uCharPos) && (uCharPos <= (uLinePos + uLineLen));
 } // End IzitlastLine
-
-
-//***************************************************************************
-//  SM_Create
-//
-//  Perform window-specific initialization
-//***************************************************************************
-
-void SM_Create
-    (HWND hWnd)
-
-{
-} // End SM_Create
-
-
-//***************************************************************************
-//  SM_Delete
-//
-//  Perform window-specific uninitialization
-//***************************************************************************
-
-void SM_Delete
-    (HWND hWnd)
-
-{
-} // End SM_Delete
 
 
 //// //***************************************************************************
@@ -381,17 +357,56 @@ void MyCreateCaret
 
 
 //***************************************************************************
-//  PrepareForInput
+//  DisplayPrompt
 //
-//  Prepare the session for input
+//  Display the usual six-space prompt
 //***************************************************************************
 
-void PrepareForInput
-    (void)
+void DisplayPrompt
+    (HWND hWndEC)       // Window handle of the Edit Control
 
 {
+    UINT uCharPos,
+         uLinePos;
+
+    // Get the line position of the current line
+    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, (WPARAM) -1, 0);
+
+    // Get the char position of the caret
+    uCharPos = GetCurCharPos (hWndEC);
+
+    // If the char position of the caret
+    //   is not at the left, put it there
+    if (uLinePos NE uCharPos)
+        AppendLine (L"", FALSE, TRUE);
     AppendLine (wszIndent, FALSE, FALSE);
-} // End PrepareForInput
+} // End DisplayPrompt
+
+
+//***************************************************************************
+//  SM_Create
+//
+//  Perform window-specific initialization
+//***************************************************************************
+
+void SM_Create
+    (HWND hWnd)
+
+{
+} // End SM_Create
+
+
+//***************************************************************************
+//  SM_Delete
+//
+//  Perform window-specific uninitialization
+//***************************************************************************
+
+void SM_Delete
+    (HWND hWnd)
+
+{
+} // End SM_Delete
 
 
 //***************************************************************************
@@ -413,7 +428,7 @@ LRESULT APIENTRY SMWndProc
      LONG lParam)   // ...
 
 {
-    HWND       hWndEC;
+    HWND       hWndEC;      // Window handle to Edit Control
     int        iMaxLimit;   // Maximum # chars in edit control
     VKSTATE    vkState;
     long       lvkState;
@@ -752,16 +767,19 @@ LRESULT APIENTRY SMWndProc
         } // End WM_CREATE
 
         case MYWM_INIT_EC:
+            // Tell the Edit Control about its font
+            SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, TRUE);
+
+            // Display the default prompt
+            AppendLine (wszIndent, FALSE, FALSE);
+
             // Get the current vkState
             lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
             vkState = *(LPVKSTATE) &lvkState;
 
             // Create a default sized system caret for display
             DestroyCaret ();        // 'cause we're changing the cursor width
-            MyCreateCaret (hWndEC, &vkState, cyAveCharFE, NULL);
-
-            // Prepare to accept more input
-            PrepareForInput ();
+            MyCreateCaret (hWndEC, &vkState, cyAveCharSM, NULL);
 
             return FALSE;           // We handled the msg
 
@@ -847,6 +865,13 @@ LRESULT APIENTRY SMWndProc
             switch (nVirtKey)
             {
                 case VK_RETURN:
+                    // Check for Quad or Quote-quad input
+////                if ()       // ***FIXME***
+                    {
+
+
+                    } // End IF
+
                     // If we're not on the last line,
                     //   copy it and append it to the buffer
                     if (!IzitLastLine (hWndEC))
@@ -883,8 +908,8 @@ LRESULT APIENTRY SMWndProc
                     esState.exType = EX_IMMEX;
                     ExecuteLine (uLineNum, &esState, hWndEC);
 
-                    // Prepare to accept more input
-                    PrepareForInput ();
+                    // Display the default prompt
+                    DisplayPrompt (hWndEC);
 
                     break;
 
@@ -977,11 +1002,19 @@ LRESULT APIENTRY SMWndProc
                     RECT rc;
                     int  nWidthMC,  nHeightMC,
                          nHeightDB, nHeightSM;
+                    HWND hWndMC;
 
+                    // Get the window handle to the MDI Client (our parent)
+                    hWndMC = GetParent (hWnd);
+
+                    // Get its client rectangle
                     GetClientRect (hWndMC, &rc);
+
+                    // Calculate its width & height
                     nWidthMC  = rc.right  - rc.left;
                     nHeightMC = rc.bottom - rc.top;
 
+                    // Calculate the height of the DB & SM windows
                     nHeightSM = 350;
                     nHeightDB = nHeightMC - nHeightSM;
 
@@ -1066,7 +1099,7 @@ LRESULT APIENTRY SMWndProc
                     // Create a default sized system caret for display
                     DestroyCaret ();        // 'cause we're changing the cursor width
                     Assert (hWndEC NE 0);
-                    MyCreateCaret (hWndEC, &vkState, cyAveCharFE, NULL);
+                    MyCreateCaret (hWndEC, &vkState, cyAveCharSM, NULL);
 
                     // Paint the window
                     UpdateWindow (hWndEC);

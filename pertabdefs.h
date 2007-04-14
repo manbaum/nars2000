@@ -63,13 +63,6 @@ int     iMaxNumAlp
 #endif
 ;
 
-////EXTERN
-////HGLOBAL hGlbHist;               // Global handle to array of history lines
-
-EXTERN
-int cxWindowPixels,             // Size of SM client area in pixels
-    cyWindowPixels;             // ...
-
 // Current global values of system variables so we can use them
 //   without having to access the actual system variable.
 EXTERN
@@ -181,11 +174,6 @@ BOOL bTabTextState;             // Tab's text state:  Highlight (TRUE) or Normal
     Assign (lpwszString          );                 \
     Assign (iMaxNumAlp           );                 \
     Assign (iMaxString           );                 \
-/*  Assign (hGlbHist             );      */         \
-                                                    \
-    /* Save/restore miscellaneous values */         \
-    Assign (cxWindowPixels       );                 \
-    Assign (cyWindowPixels       );                 \
                                                     \
     /* Save/restore system variable values */       \
     Assign (hGlbQuadALX          );                 \

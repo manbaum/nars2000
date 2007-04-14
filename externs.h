@@ -65,8 +65,10 @@
 //    in the per tab structure
 //***************************************************************************
 
-// Default global values of system variables -- these values
-//   are used to set the variables in a CLEAR WS.
+//***************************************************************************
+//  Default global values of system variables -- these values
+//    are used to set the variables in a CLEAR WS.
+//***************************************************************************
 
 EXTERN
 HGLOBAL  hGlbQuadALX_CWS    ,           // []ALX    ([]dm)
@@ -93,23 +95,18 @@ APLCHAR  cQuadPR_CWS        ;           // []PR     (' ') (When a char scalar)
 EXTERN
 LPSYMENTRY lpSymQuadRL;                 // Ptr to STE for QuadRL
 
-EXTERN
-LPCHAR lpszTemp;                        // Used for temporary storage
-
-EXTERN
-LPWCHAR lpwszTemp,                      // ...
-        lpwszFormat;                    // Used for formatting
+//***************************************************************************
+//  Application values
+//***************************************************************************
 
 EXTERN
 HINSTANCE _hInstance;                   // Global instance handle
 
 EXTERN
-HGLOBAL hGlbCurTab;                     // Global handle of current tab
+DWORD dwMainThreadId;                   // Thread ID of the main application
 
 EXTERN
-HWND hWndTC,                            // Global Tab Control window handle
-     hWndMF,                            // ...    Master Frame ...
-     hWndTT;                            // ...    ToolTip      ...
+HANDLE hAccel;                          // Keyboard accelerators
 
 #ifdef DEBUG
 #define  APPEND_DEBUG  " (DEBUG)"
@@ -129,6 +126,26 @@ char pszAppName[]                       // Application name for MessageBox
      szHlpDPFE  [_MAX_PATH],            // .HLP ...
      szInitDir  [_MAX_PATH],            // Initial directory for File Open & Save
      szOpenFile [_MAX_PATH];            // Save area for multiple files to open
+
+
+//***************************************************************************
+//
+//***************************************************************************
+
+EXTERN
+LPCHAR lpszTemp;                        // Used for temporary char storage
+
+EXTERN
+LPWCHAR lpwszTemp,                      // Used for temporary WCHAR storage
+        lpwszFormat;                    // Used for formatting
+
+EXTERN
+HGLOBAL hGlbCurTab;                     // Global handle of current tab
+
+EXTERN
+HWND hWndTC,                            // Global Tab Control window handle
+     hWndMF,                            // ...    Master Frame ...
+     hWndTT;                            // ...    ToolTip      ...
 
 EXTERN
 HGLOBAL hGlbZilde,

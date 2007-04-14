@@ -44,7 +44,7 @@ PRIMSPEC PrimSpecStar =
     &PrimSpecStarStorageTypeDyd,
     NULL,   // &PrimFnDydStarAPA_EM, -- Can't happen w/Star
 
-    &PrimFnDydNotLessBisBvB,
+    &PrimFnDydRightCaretUnderbarBisBvB,
     NULL,   // &PrimFnDydStarBisIvI, -- Can't happen w/Star
     NULL,   // &PrimFnDydStarBisFvF, -- Can't happen w/Star
     NULL,   // &PrimFnDydStarBisCvC, -- Can't happen w/Star

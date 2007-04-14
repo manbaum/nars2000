@@ -11,7 +11,6 @@
 #include <windowsx.h>
 #include <windowsx.h16>
 //#include <multimon.h>   // Multiple monitor support
-//#include <QControl.h>
 #include <limits.h>
 #include <direct.h>
 
@@ -57,7 +56,6 @@ typedef struct tagENUMSETFONT
 
 int nMinState,                          // Minimized state as per WinMain
     iScrollSize;                        // Width of a vertical scrollbar
-HANDLE hAccel;                          // Keyboard accelerators
 BOOL fHelp = FALSE,                     // TRUE iff we displayed help
      bCommandLine;                      // ...      there is a filename on the command line
 
@@ -268,7 +266,7 @@ void CreateNewFontTC
                       &cxAveCharTC,
                       &cyAveCharTC);
     // Tell the TC about the new font
-    SendMessage (hWndTC, WM_SETFONT, (WPARAM) hFontTC, 0);
+    SendMessage (hWndTC, WM_SETFONT, (WPARAM) hFontTC, TRUE);
 
     // Repaint the TC labels
     InvalidateRect (hWndTC, NULL, TRUE);
@@ -1529,7 +1527,7 @@ int PASCAL WinMain
      int         nCmdShow)
 
 {
-    MSG  Msg;
+    MSG  Msg;           // Message for GetMessage loop
 
     // This is needed by Wine's EDITCTRL.C
     user32_module = hInstance;
@@ -1574,6 +1572,9 @@ int PASCAL WinMain
     // Initialize Primitive Fns
     InitPrimFns ();
 
+    // Get and save the current Thread Id
+    dwMainThreadId = GetCurrentThreadId ();
+
     // Create the Master Frame window
     hWndMF =
         CreateWindowEx (0L,                             // Extended styles
@@ -1584,7 +1585,7 @@ int PASCAL WinMain
                         ,                               // Styles
                         CW_USEDEFAULT, CW_USEDEFAULT,   // X- and Y-coord
                         CW_USEDEFAULT, CW_USEDEFAULT,   // X- and Y-size
-                        hWndTC,                         // Parent window
+                        NULL,                           // Parent window
                         NULL,                           // Menu
                         _hInstance,                     // Instance
                         NULL);                          // No extra data

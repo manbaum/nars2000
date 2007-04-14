@@ -288,7 +288,9 @@ ul, ol
         <li>APAs (Arithmetic Progression Arrays) (e.g.,
           <span class="APL">2 3 4{rho}{iota}24</span>)</li>
         <li>± Infinity (e.g., <span class="APL">_</span> for infinity
-          and <span class="APL">{overbar}_</span> for negative infinity)</li>
+          and <span class="APL">{overbar}_</span> for negative infinity)
+          &mdash; considerable development work needs to be done to this
+          feature to handle the many special cases</li>
         </ul>
 
       <h3>Possible Future Datatypes</h3>
@@ -334,36 +336,43 @@ ul, ol
 
       <h3>Primitive functions</h3>
       <ul>
-        <li>All monadic primitive scalar functions</li>
-        <li>Monadic ({rho}) (shape)</li>
-        <li>Monadic left shoe ({enclose}) (enclose) with and without axis</li>
-        <li>Monadic iota ({iota}) (index generator)</li>
-        <li>Monadic epsilon ({epsilon}) (enlist)</li>
-        <li>Monadic comma ({comma} and {commabar}) (ravel (with and without axis) and table)
-           &mdash; Axis operator to Ravel can transpose coordinates</li>
-        <li>Monadic equal-underbar ({equalunderbar}) (depth)</li>
-        <li>Monadic circle-slope ({circleslope}) (transpose)</li>
-        <li>Monadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse)</li>
-        <li>Monadic domino ({domino}) (matrix inverse)
-          using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
-        <li>Monadic thorn ({thorn}) (default format)</li>
-        <li>All dyadic primitive scalar functions with and without axis</li>
-
-        <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
-          Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
-          respectively</li>
-        <li>Dyadic rho ({rho}) (reshape)</li>
-        <li>Dyadic slash ({/}) (replicate)</li>
-        <li>Dyadic slope ({\}) (expand)</li>
-        <li>Dyadic left tack ({lev}) (left) and right tack ({dex}) (right)</li>
-        <li>Dyadic squad ({squad}) (indexing)</li>
-        <li>Dyadic right shoe ({pick}) (pick)</li>
-        <li>Dyadic comma ({comma} and {commabar}) (catenate/laminate) with and without axis</li>
-        <li>Dyadic equal-underbar ({equalunderbar}) (match)</li>
-        <li>Dyadic circle-slope ({circleslope}) (transpose)</li>
-        <li>Dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) (rotate)</li>
-        <li>Dyadic domino ({domino}) (matrix divide)
-          using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
+        <li>Monadic
+          <ul>
+            <li>All monadic primitive scalar functions</li>
+            <li>Monadic ({rho}) (shape)</li>
+            <li>Monadic left shoe ({enclose}) (enclose) with and without axis</li>
+            <li>Monadic iota ({iota}) (index generator)</li>
+            <li>Monadic epsilon ({epsilon}) (enlist)</li>
+            <li>Monadic comma ({comma} and {commabar}) (ravel (with and without axis) and table)
+               &mdash; Axis operator to Ravel can transpose coordinates</li>
+            <li>Monadic equal-underbar ({equalunderbar}) (depth)</li>
+            <li>Monadic circle-slope ({circleslope}) (transpose)</li>
+            <li>Monadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse)</li>
+            <li>Monadic domino ({domino}) (matrix inverse)
+              using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
+            <li>Monadic thorn ({thorn}) (default format)</li>
+          </ul>
+        </li>
+        <li>Dyadic
+          <ul>
+            <li>All dyadic primitive scalar functions with and without axis</li>
+            <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
+              Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
+              respectively</li>
+            <li>Dyadic rho ({rho}) (reshape)</li>
+            <li>Dyadic slash ({/}) (replicate)</li>
+            <li>Dyadic slope ({\}) (expand)</li>
+            <li>Dyadic left tack ({lev}) (left) and right tack ({dex}) (right)</li>
+            <li>Dyadic squad ({squad}) (indexing)</li>
+            <li>Dyadic right shoe ({pick}) (pick)</li>
+            <li>Dyadic comma ({comma} and {commabar}) (catenate/laminate) with and without axis</li>
+            <li>Dyadic equal-underbar ({equalunderbar}) (match)</li>
+            <li>Dyadic circle-slope ({circleslope}) (transpose)</li>
+            <li>Dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) (rotate)</li>
+            <li>Dyadic domino ({domino}) (matrix divide)
+              using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
+          </ul>
+        </li>
       </ul>
 
       <h3>Primitive operators</h3>
@@ -381,7 +390,9 @@ ul, ol
           <li>APAs (Arithmetic Progression Arrays) (e.g.,
             <span class="APL">2 3 4{rho}{iota}24</span>)</li>
           <li>± Infinity (e.g., <span class="APL">_</span> for infinity
-            and <span class="APL">{overbar}_</span> for negative infinity)</li>
+            and <span class="APL">{overbar}_</span> for negative infinity)
+            &mdash; considerable development work needs to be done to this
+            feature to handle the many special cases</li>
       </ul>
 
       <h3>Miscellaneous</h3>
@@ -448,8 +459,9 @@ ul, ol
     <div class="section">
       <h2 id="Platforms">Platforms</h2>
 
-        <p>At the moment, Windows only, versions 2000/XP/..., but it is
-          free software, so you are invited to help extend its reach.
+        <p>At the moment, NARS2000 is designed to run on Windows only,
+          versions 2000 and XP (not tested on Vista as yet).  However,
+          it is free software, so you are invited to help extend its reach.
         </p>
     </div>
 

@@ -4142,12 +4142,14 @@ static void EDIT_WM_Char(EDITSTATE *es, WCHAR c)
     case VK_BACK:
         if (!(es->style & ES_READONLY) && !control) {
             if (es->selection_start != es->selection_end)
-                EDIT_WM_Clear(es);
+                SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
+////////////////EDIT_WM_Clear(es);
             else {
                 /* delete character left of caret */
                 EDIT_EM_SetSel(es, (UINT)-1, 0, FALSE);
                 EDIT_MoveBackward(es, TRUE);
-                EDIT_WM_Clear(es);
+                SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
+////////////////EDIT_WM_Clear(es);
             }
         }
         break;
@@ -4193,35 +4195,35 @@ static void EDIT_WM_Command(EDITSTATE *es, INT code, INT id, HWND control)
 ////    case EM_UNDO:
         case IDM_UNDO:      // Send as WM_xxx message so it can be caught
                             //   in the subclass
-            PostMessageA (es->hwndSelf, WM_UNDO, 0, 0);
+            PostMessageW (es->hwndSelf, WM_UNDO, 0, 0);
 ////////////EDIT_EM_Undo(es);
             break;
         case IDM_REDO:      // Send as WM_xxx message so it can be caught
                             //   in the subclass
-            PostMessageA (es->hwndSelf, MYWM_REDO, 0, 0);
+            PostMessageW (es->hwndSelf, MYWM_REDO, 0, 0);
             break;
 ////    case WM_CUT:
         case IDM_CUT:       // Send as WM_xxx message so it can be caught
                             //   in the subclass
-            PostMessageA (es->hwndSelf, WM_CUT, 0, 0);
+            PostMessageW (es->hwndSelf, WM_CUT, 0, 0);
 ////////////EDIT_WM_Cut(es);
             break;
 ////    case WM_COPY:
         case IDM_COPY:      // Send as WM_xxx message so it can be caught
                             //   in the subclass
-            PostMessageA (es->hwndSelf, WM_COPY, 0, 0);
+            PostMessageW (es->hwndSelf, WM_COPY, 0, 0);
 ////////////EDIT_WM_Copy(es);
             break;
 ////    case WM_PASTE:
         case IDM_PASTE:     // Send as WM_xxx message so it can be caught
                             //   in the subclass
-            PostMessageA (es->hwndSelf, WM_PASTE, 0, 0);
+            PostMessageW (es->hwndSelf, WM_PASTE, 0, 0);
 ////////////EDIT_WM_Paste(es);
             break;
 ////    case WM_CLEAR:
         case IDM_DELETE:    // Send as WM_xxx message so it can be caught
                             //   in the subclass
-            PostMessageA (es->hwndSelf, WM_CLEAR, 0, 0);
+            PostMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
 ////////////EDIT_WM_Clear(es);
             break;
 ////    case EM_SETSEL:
@@ -4718,25 +4720,30 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         if (!(es->style & ES_READONLY) && !(shift && control)) {
             if (es->selection_start != es->selection_end) {
                 if (shift)
-                    EDIT_WM_Cut(es);
+                    SendMessageW(es->hwndSelf, WM_CUT, 0, 0);
+////////////////////EDIT_WM_Cut(es);
                 else
-                    EDIT_WM_Clear(es);
+                    SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
+////////////////////EDIT_WM_Clear(es);
             } else {
                 if (shift) {
                     /* delete character left of caret */
                     EDIT_EM_SetSel(es, (UINT)-1, 0, FALSE);
                     EDIT_MoveBackward(es, TRUE);
-                    EDIT_WM_Clear(es);
+                    SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
+////////////////////EDIT_WM_Clear(es);
                 } else if (control) {
                     /* delete to end of line */
                     EDIT_EM_SetSel(es, (UINT)-1, 0, FALSE);
                     EDIT_MoveEnd(es, TRUE);
-                    EDIT_WM_Clear(es);
+                    SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
+////////////////////EDIT_WM_Clear(es);
                 } else {
                     /* delete character right of caret */
                     EDIT_EM_SetSel(es, (UINT)-1, 0, FALSE);
                     EDIT_MoveForward(es, TRUE);
-                    EDIT_WM_Clear(es);
+                    SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
+////////////////////EDIT_WM_Clear(es);
                 }
             }
         }
@@ -4744,9 +4751,11 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
     case VK_INSERT:
         if (shift) {
             if (!(es->style & ES_READONLY))
-                EDIT_WM_Paste(es);
+                SendMessageW (es->hwndSelf, WM_PASTE, 0, 0);
+////////////////EDIT_WM_Paste(es);
         } else if (control)
-            EDIT_WM_Copy(es);
+            SendMessageW (es->hwndSelf, WM_COPY, 0, 0);
+////////////EDIT_WM_Copy(es);
         break;
     case VK_RETURN:
         /* If the edit doesn't want the return send a message to the default object */

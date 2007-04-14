@@ -656,6 +656,7 @@ BOOL _MyGlobalUnlock
 {
     BOOL bRet;
 
+    // Ensure the lock count is non-zero
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) EQ 0)
         MyDbgBrk ("MyGlobalUnlock");
 

@@ -3,6 +3,7 @@
 //***************************************************************************
 
 #define STRICT
+#define _WIN32_WINDOWS 0x0401   // Needed for CreateWaitableTimer, etc.
 #include <windows.h>
 #include <math.h>
 
@@ -134,6 +135,7 @@ typedef struct tagTKLOCALVARS
                 lpNext,             // Next  ...
                 lpLastEOS;          // Ptr to last EOS token
     int         State,              // Current state
+                iNdex,              // ...     index into lpwszLine
                 ActionNum;          // Action # (1 or 2)
     LPWCHAR     lpwszOrig,          // Ptr to original lpwszLine
                 lpwsz;              // ...    current WCHAR in ...
@@ -758,19 +760,6 @@ HGLOBAL ExecuteLine
 ////    return NULL;
 ////} // End IF
 
-////     // Get the global handle to the history buffer
-////     lpGlbHist = (LPGLBHIST) MyGlobalLock (hGlbHist);
-////
-////     // Loop through the continuations and calculate the total length
-////     for (u = uLineNum, uLineLen = 0;
-////          lpGlbHist[u].ContPrev || u EQ uLineNum;
-////          u++)
-////     {
-////         lpwszLine = MyGlobalLock (lpGlbHist[u].hGlb);
-////         uLineLen += lstrlenW (lpwszLine);
-////         MyGlobalUnlock (lpGlbHist[u].hGlb); lpwszLine = NULL;
-////     } // End FOR
-
     // Get the position of the start of the line
     uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
 
@@ -790,20 +779,6 @@ HGLOBAL ExecuteLine
         return NULL;        // Mark as failed
     } // End IF
 
-////     // Catenate the lines together
-////     for (i = iExecLine, lpwsz = lpwszCompLine;
-////          lpGlbHist[i].ContPrev || i EQ iExecLine;
-////          i++, lpwsz += iLen)
-////     {
-////         lpwszLine = MyGlobalLock (lpGlbHist[i].hGlb);
-////
-////         iLen = lstrlenW (lpwszLine);
-////
-////         memmove (lpwsz, lpwszLine, iLen * sizeof (WCHAR));
-////
-////         MyGlobalUnlock (lpGlbHist[i].hGlb); lpwszLine = NULL;
-////     } // End FOR
-
     // Specify the maximum # chars in the buffer
     ((LPWORD) lpwszCompLine)[0] = uLineLen;
 
@@ -812,21 +787,6 @@ HGLOBAL ExecuteLine
 
     // Ensure properly terminated
     lpwszCompLine[uLineLen] = L'\0';
-
-//// #ifdef DEBUG
-////     {   // ***DEBUG***
-////         wsprintfW (lpwszTemp,
-////                    L"#### Executing a line:  #%d:  <%s> (%d) ContPrev=%d, ContNext=%d",
-////                    iExecLine,
-////                    lpwszCompLine,
-////                    lstrlenW (lpwszCompLine),
-////                    lpGlbHist[iExecLine].ContPrev,
-////                    lpGlbHist[iExecLine].ContNext);
-////         DbgMsgW (lpwszTemp);
-////     }   // ***DEBUG*** END
-//// #endif
-////     // Unlock the handle
-////     MyGlobalUnlock (hGlbHist); lpGlbHist = NULL;
 
     // Strip off leading blanks
     for (lpwszLine = lpwszCompLine;
@@ -897,6 +857,10 @@ HGLOBAL ExecuteLine
                 // If it's invalid, ...
                 if (hGlbToken EQ NULL)
                     break;
+
+                // Run the parser in a separate thread
+
+
 
                 ParseLine (hGlbToken, lpwszCompLine);
                 Untokenize (hGlbToken);
@@ -1734,17 +1698,29 @@ BOOL fnComDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    int     iLen;
+    int     iLen, iLen2;
     HGLOBAL hGlb;
     BOOL    bRet = TRUE;
     APLINT  aplInteger;
+    LPWCHAR lpwch;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnComDone");
 #endif
 
-    // Get the length of the comment
-    iLen = lstrlenW (lptkLocalVars->lpwsz); // Including the comment symbol
+    // Get the length of the comment (up to but not including any '\n')
+    iLen  = lstrlenW (lptkLocalVars->lpwsz); // Including the comment symbol
+    lpwch = strchrW (lptkLocalVars->lpwsz, L'\n');
+    if (lpwch)
+    {
+        iLen2 = lpwch - lptkLocalVars->lpwsz;
+        iLen  = min (iLen2, iLen);
+    } // End IF
+
+    // Skip over the comment in the input stream
+    // "-1" because the FOR loop in Tokenize_EM will
+    //   increment it, too
+    lptkLocalVars->iNdex += iLen - 1;
 
     // Allocate global memory for the comment ("+1" for the terminating zero)
     hGlb = DbgGlobalAlloc (GHND, (iLen + 1) * sizeof (WCHAR));
@@ -2221,6 +2197,61 @@ void ErrorMessage
 
 
 //***************************************************************************
+//  WaitForInput
+//
+//  Wait for either Quad or Quote-quad input
+//***************************************************************************
+
+LPYYSTYPE WaitForInput
+    (HWND    hWnd,                  // Window handle to Session Manager
+     BOOL    bQuoteQuadInput,       // TRUE iff Quote-Quad input (FALSE if Quad input)
+     LPTOKEN lptkFunc)              // Ptr to "function" token
+
+{
+    HANDLE   hTimer;
+    char     szTimer[32];
+    LARGE_INTEGER waitTime;
+    DWORD    dwWaitRes = WAIT_TIMEOUT;
+    UINT     YYLclIndex;
+
+    DbgBrk ();
+
+    // Get new index into YYRes
+    YYLclIndex = NewYYResIndex ();
+
+    // Create a unique name for the timer object
+    wsprintf (szTimer, "%s%08X", bQuoteQuadInput ? "QuoteQuadInput" : "QuadInput", hWnd);
+
+    // Create a timer object
+    hTimer = CreateWaitableTimer (NULL,         // No SECURITY_ATTRIBUTES
+                                  FALSE,        // ***FIXME*** -- Is this correct??
+                                  szTimer);
+    // Set the wait time to a large integer
+    waitTime.QuadPart = -1;
+
+    SetWaitableTimer (hTimer,           // Handle to timer object
+                      &waitTime,        // Ptr to wait time
+                      0L,               // 0 = not periodic
+                      NULL,             // No completion routine
+                      NULL,             // No arg to completion routine
+                      TRUE);            // Resume from suspended state
+
+    while (dwWaitRes EQ WAIT_TIMEOUT)
+        dwWaitRes = WaitForSingleObject (hTimer,    // Handle to timer object
+                                         10000);    // 10000 x 1 millisecond = 10 second
+
+    // Fill in the result token
+    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
+////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
+//  YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);     // ***FIXME***
+    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return &YYRes[YYLclIndex];
+} // End WaitForInput
+
+
+//***************************************************************************
 //  Tokenize_EM
 //
 //  Tokenize a line of input
@@ -2255,11 +2286,11 @@ HGLOBAL Tokenize_EM
 
 {
     int         i, iLen;
-    WCHAR       wchOrig,      // The original char
-                wchColNum;    // The translated char for tokenization as a COL_*** value
+    WCHAR       wchOrig,        // The original char
+                wchColNum;      // The translated char for tokenization as a COL_*** value
     BOOL        (*fnAction1) (LPTKLOCALVARS);
     BOOL        (*fnAction2) (LPTKLOCALVARS);
-    TKLOCALVARS tkLocalVars;   // Local vars
+    TKLOCALVARS tkLocalVars;    // Local vars
     BOOL        bFreeGlb = FALSE;
     APLINT      aplInteger;
 
@@ -2375,6 +2406,9 @@ HGLOBAL Tokenize_EM
         // Save pointer to current wch
         tkLocalVars.lpwsz = &lpwszLine[i];
 
+        // Save current index (may be modified by an action)
+        tkLocalVars.iNdex = i;
+
         // Check for primary action
         tkLocalVars.ActionNum = 1;
         if (fnAction1
@@ -2412,6 +2446,9 @@ HGLOBAL Tokenize_EM
                 goto NORMAL_EXIT;
             } // End FSA_EXIT
         } // End SWITCH
+
+        // Get next index (may have been modified by an action)
+        i = tkLocalVars.iNdex;
 
         // Save this character as the previous one
         tkLocalVars.PrevWchar = wchOrig;
@@ -2486,6 +2523,12 @@ BOOL CheckGroupSymbols_EM
 //  Free allocated memory and other such resources in a tokenized line
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- Untokenize_EM"
+#else
+#define APPEND_NAME
+#endif
+
 void Untokenize
     (HGLOBAL hGlbToken)
 
@@ -2535,12 +2578,7 @@ void Untokenize
 
             case TKT_STRING:            // String  (data is HGLOBAL)
             case TKT_VARARRAY:          // Array of data (data is HGLOBAL)
-                // tkData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lpToken->tkData.tkGlbData));
-
-                // Fall through to common code
-
-            case TKT_COMMENT:           // Comment (data is HGLOBAL)
+                // Free the array and all elements of it
                 if (FreeResultGlobalVar (ClrPtrTypeDirGlb (lpToken->tkData.tkGlbData)))
                 {
 #ifdef DEBUG
@@ -2550,6 +2588,18 @@ void Untokenize
 #endif
                     lpToken->tkData.tkGlbData = NULL;
                 } // End IF
+
+                break;
+
+            case TKT_COMMENT:           // Comment (data is HGLOBAL)
+                // Free the global
+                DbgGlobalFree (ClrPtrTypeDirGlb (lpToken->tkData.tkGlbData));
+#ifdef DEBUG
+                dprintf ("**Zapping in Untokenize: %08X (%d)",
+                         ClrPtrTypeDir (lpToken->tkData.tkGlbData),
+                         __LINE__);
+#endif
+                lpToken->tkData.tkGlbData = NULL;
 
                 break;
 
@@ -2592,6 +2642,7 @@ void Untokenize
 #endif
     } // End IF/ELSE
 } // End Untokenize
+#undef  APPEND_NAME
 
 
 //***************************************************************************

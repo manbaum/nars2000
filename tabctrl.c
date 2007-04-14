@@ -22,6 +22,15 @@
 #define IMAGE_HEIGHT    (IMAGE_CY + 3)
 
 
+typedef struct tagCNT_THREAD
+{
+    HWND  hWndParent;           // Window handle of the parent
+    LPSTR lpszDPFE;             // Drive, Path, Filename, Ext of the workspace
+    int   iTab;                 // Insert the new tab to the left of this one
+} CNT_THREAD, *LPCNT_THREAD;
+
+CNT_THREAD cntThread;           // Temporary storage for CreateNewTabInThread
+
 // 1s mark the indices in use
 UCHAR crIndices[32] = {0};      // This supports 256 (=32x8) open WSs
 
@@ -104,7 +113,7 @@ void SaveWsData
 #undef  Assign
 
     // Get the handle of the active MDI window
-    lpMem->hWndActive = (HWND) SendMessage (hWndMC, WM_MDIGETACTIVE, 0, 0);
+    lpMem->hWndActive = (HWND) SendMessage (lpMem->hWndMC, WM_MDIGETACTIVE, 0, 0);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
@@ -131,7 +140,7 @@ void RestWsData
 #undef  Assign
 
     // Set the active MDI window
-    SendMessage (hWndMC, WM_MDIACTIVATE, (WPARAM) lpMem->hWndActive, 0);
+    SendMessage (lpMem->hWndMC, WM_MDIACTIVATE, (WPARAM) lpMem->hWndActive, 0);
 
     // Give it the keyboard focus
     SetFocus (lpMem->hWndActive);
@@ -173,7 +182,7 @@ BOOL CALLBACK EnumCallbackShowHide
 //***************************************************************************
 
 void ShowHideChildWindows
-    (HWND hWndMC,
+    (HWND hWndMC,       // Window handle to MDI Client
      BOOL bShow)        // TRUE iff showing the window, FALSE if hiding it
 
 {
@@ -211,9 +220,45 @@ void ShowHideChildWindows
 #endif
 
 BOOL CreateNewTab
-    (HWND  hWndParent,
+    (HWND  hWndParent,      // Window handle of the parent
      LPSTR lpszDPFE,        // Drive, Path, Filename, Ext of the workspace
-     int   iTab)
+     int   iTab)            // Insert the new tab to the left of this one
+
+{
+    DWORD  dwThreadId;
+    HANDLE hThread;
+
+    // Save args in struc to pass to thread func
+    cntThread.hWndParent = hWndParent;
+    cntThread.lpszDPFE   = lpszDPFE;
+    cntThread.iTab       = iTab;
+
+    // Create a new thread
+    hThread = CreateThread (NULL,                   // No security attrs
+                            0,                      // Use default stack size
+                            (LPTHREAD_START_ROUTINE) &CreateNewTabInThread,
+                            (LPVOID) &cntThread,    // Param to thread func
+                            0,                      // Creation flag
+                            &dwThreadId);           // Returns thread id
+    return TRUE;
+} // End CreateNewTab
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  CreateNewTabInThread
+//
+//  Create a new tab within a thread
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CreateNewTabInThread"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL CreateNewTabInThread
+    (LPCNT_THREAD lpcntThread)
 
 {
     int          iCurTab;
@@ -221,11 +266,21 @@ BOOL CreateNewTab
     HGLOBAL      hGlbData;
     LPPERTABDATA lpMem = NULL;
     BOOL         bRet = TRUE;
-    RECT         rc;        // Rectangle for setting size of window
+    RECT         rc;            // Rectangle for setting size of window
     int          rcLeft, rcRight, rcBottom;
-    CLIENTCREATESTRUCT ccs; // For MDI Client window
+    CLIENTCREATESTRUCT ccs;     // For MDI Client window
     LPCHAR       p, q;
     int          iLabelText;
+    HWND         hWndMC2,       // Secondary window handle to MDI Client
+                 hWndParent;    // Window handle of the parent
+    LPSTR        lpszDPFE;      // Drive, Path, Filename, Ext of the workspace
+    int          iTab;          // Insert the new tab to the left of this one
+    MSG          Msg;           // Message for GetMessage loop
+
+    // Extract values from the arg struc
+    hWndParent = lpcntThread->hWndParent;
+    lpszDPFE   = lpcntThread->lpszDPFE;
+    iTab       = lpcntThread->iTab;
 
     // Get the size and position of the parent window.
     GetClientRect (hWndParent, &rc);
@@ -233,8 +288,14 @@ BOOL CreateNewTab
     // Save data from the current WS into global memory
     SaveWsData (hGlbCurTab);
 
+    // Lock the per-tab data to get a ptr to it
+    lpMem = MyGlobalLock (hGlbCurTab);
+
     // Hide the child windows of the outgoing tab
-    ShowHideChildWindows (hWndMC, FALSE);
+    ShowHideChildWindows (lpMem->hWndMC, FALSE);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbCurTab); lpMem = NULL;
 
     // Allocate per tab data
     hGlbData = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
@@ -259,7 +320,7 @@ BOOL CreateNewTab
     if (iCurTab EQ -1)
     {
         MB (pszNoInsertTCTab);
-        bRet = FALSE;       // Stop the whole process
+
         goto ERROR_EXIT;
     } // End IF
 
@@ -314,7 +375,7 @@ BOOL CreateNewTab
     if (lpMem->hWndMC EQ NULL)
     {
         MB (pszNoCreateMCWnd);
-        bRet = FALSE;       // Stop the whole process
+
         goto ERROR_EXIT;
     } // End IF
 
@@ -339,7 +400,6 @@ BOOL CreateNewTab
     if (lpMem->hWndDB EQ NULL)
     {
         MB (pszNoCreateDBWnd);
-        bRet = FALSE;       // Stop the whole process
 
         goto ERROR_EXIT;
     } // End IF
@@ -360,7 +420,7 @@ BOOL CreateNewTab
     if (lpMem->hWndSM EQ NULL)
     {
         MB (pszNoCreateSMWnd);
-        bRet = FALSE;       // Stop the whole process
+
         goto ERROR_EXIT;
     } // End IF
 
@@ -374,18 +434,44 @@ BOOL CreateNewTab
 
     // Save the handle
     hGlbCurTab = hGlbData;
+    SetWindowLong (lpMem->hWndSM, GWLSF_PERTAB, (long) hGlbData);
 
     // Clear data in this WS to global default values
     ClearWsData ();
 
     // Show the child windows of the incoming tab
-    ShowHideChildWindows (hWndMC, TRUE);
+    ShowHideChildWindows (lpMem->hWndMC, TRUE);
 
     // Activate this tab
     TabCtrl_SetCurSel (hWndTC, iCurTab);
+
+    // Save hWndMC for use inside message loop
+    //   so we can unlock the per-tab data memory
+    hWndMC2 = lpMem->hWndMC;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbData); lpMem = NULL;
+
+    // Main message loop
+    while (GetMessage(&Msg, NULL, 0, 0))
+    {
+        // Handle MDI messages and accelerators
+        if (!TranslateMDISysAccel (hWndMC2, &Msg)
+         && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+        {
+            TranslateMessage (&Msg);
+            DispatchMessage  (&Msg);
+        } // End IF
+    } // End WHILE
+    // GetMessage returned FALSE for a Quit message
+
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
-    // If we failed, ...
-    if ((!bRet) && lpMem && lpMem->hWndMC)
+    bRet = FALSE;       // Stop the whole process
+
+    // Destroy any windows we might have created
+    if (lpMem && lpMem->hWndMC)
     {
         if (lpMem->hWndDB)
             SendMessage (lpMem->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMem->hWndDB), 0);
@@ -393,7 +479,7 @@ ERROR_EXIT:
             SendMessage (lpMem->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMem->hWndSM), 0);
         DestroyWindow (lpMem->hWndMC);
     } // End IF
-
+NORMAL_EXIT:
     if (lpMem)
     {
         // We no longer need this ptr
@@ -408,7 +494,7 @@ ERROR_EXIT:
     } // End IF
 
     return bRet;
-} // End CreateNewTab
+} // End CreateNewTabInThread
 #undef  APPEND_NAME
 
 
@@ -445,15 +531,15 @@ LRESULT WINAPI LclTabCtrlWndProc
      LPARAM lParam)
 
 {
-    TC_HITTESTINFO  tcHit;
-    static BOOL     bCaptured = FALSE;
-    POINT           ptScr;
-    HMENU           hMenu;
-    UINT            uCloseState,
-                    uOverTabState;
-    int             iTmpTab;
-    HGLOBAL         hGlbData;
-    LPPERTABDATA    lpMem;
+    TC_HITTESTINFO tcHit;
+    static BOOL    bCaptured = FALSE;
+    POINT          ptScr;
+    HMENU          hMenu;
+    UINT           uCloseState,
+                   uOverTabState;
+    int            iTmpTab;
+    HGLOBAL        hGlbData;
+    LPPERTABDATA   lpMem;
 
     // Split cases
     switch (message)
@@ -623,8 +709,11 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Restore data into the current WS from global memory
             RestWsData (hGlbData);
 
+            // Lock the memory to get a ptr to it
+            lpMem = MyGlobalLock (hGlbData);
+
             // Hide the child windows of the outgoing tab
-            ShowHideChildWindows (hWndMC, FALSE);
+            ShowHideChildWindows (lpMem->hWndMC, FALSE);
 
             // Lock the memory to get a ptr to it
             lpMem = MyGlobalLock (hGlbData);
@@ -639,7 +728,6 @@ LRESULT WINAPI LclTabCtrlWndProc
 #endif
 
             // Free global storage
-////////////DbgGlobalFree (hGlbHist    ); hGlbHist     = NULL;  // Freed in SMWndProc/WM_DESTROY
             FreeResultGlobalVar (hGlbQuadALX ); hGlbQuadALX  = NULL;
             FreeResultGlobalVar (hGlbQuadELX ); hGlbQuadELX  = NULL;
             FreeResultGlobalVar (hGlbQuadLX  ); hGlbQuadLX   = NULL;
@@ -649,13 +737,13 @@ LRESULT WINAPI LclTabCtrlWndProc
 
 #undef  APPEND_NAME
 
+            hWndClose = lpMem->hWndMC;
+
             // We no longer need this ptr
             MyGlobalUnlock (hGlbData); lpMem = NULL;
 
             // We no longer need this storage
             MyGlobalFree (hGlbData); hGlbData = NULL;
-
-            hWndClose = hWndMC;
 
             // In order to reduce screen flicker, we
             //   postpone removing the tab until the new
@@ -672,8 +760,14 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Restore data into the current WS from global memory
             RestWsData (hGlbCurTab);
 
+            // Lock the memory to get a ptr to it
+            lpMem = MyGlobalLock (hGlbCurTab);
+
             // Show the child windows of the incoming tab
-            ShowHideChildWindows (hWndMC, TRUE);
+            ShowHideChildWindows (lpMem->hWndMC, TRUE);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbData); lpMem = NULL;
 
             break;
 #undef  iTab

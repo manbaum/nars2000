@@ -2,7 +2,6 @@
 //  NARS2000 -- Assignment Functions
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -30,8 +29,9 @@
 #endif
 
 BOOL AssignName_EM
-    (LPTOKEN lptkName,
-     LPTOKEN lptkExpr)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lptkExpr,        // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     STFLAGS stFlags = {0};
@@ -54,15 +54,15 @@ BOOL AssignName_EM
 
     // If this is a system var, validate the assignment
     //   before we free the old value
-    if (lptkName->tkData.lpSym->stFlags.SysVar)
+    if (lptkName->tkData.tkSym->stFlags.SysVar)
     {
         // Validate the value
-        if (!(*aSysVarValid[lptkName->tkData.lpSym->stFlags.SysVarValid]) (lptkName, lptkExpr))
+        if (!(*aSysVarValid[lptkName->tkData.tkSym->stFlags.SysVarValid]) (lptkName, lptkExpr, lpplLocalVars))
             return FALSE;
 
         // If the result is immediate (a scalar), quit as we
         //   might have extracted a scalar from a singleton array.
-        if (lptkName->tkData.lpSym->stFlags.Imm)
+        if (lptkName->tkData.tkSym->stFlags.Imm)
         {
             DBGLEAVE;
             return TRUE;
@@ -83,27 +83,27 @@ BOOL AssignName_EM
             Assert (GetPtrTypeDir (lptkExpr->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If the expression is not immediate, ...
-            if (!lptkExpr->tkData.lpSym->stFlags.Imm)
+            if (!lptkExpr->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable or function array
-                Assert (IsGlbTypeVarDir (lptkExpr->tkData.lpSym->stData.stGlbData)
-                     || IsGlbTypeFcnDir (lptkExpr->tkData.lpSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir (lptkExpr->tkData.tkSym->stData.stGlbData)
+                     || IsGlbTypeFcnDir (lptkExpr->tkData.tkSym->stData.stGlbData));
 
                 // ***FIXME*** -- Do we need the tests below??
                 //                Try []WSID {is} []SA
                 //                and []WSID {is} []WSID
 
 ////////////////// There are no reference counts on .SysName variables
-////////////////if (lptkName->tkData.lpSym->stFlags.SysVar
-//////////////// || lptkExpr->tkData.lpSym->stFlags.SysVar)
+////////////////if (lptkName->tkData.tkSym->stFlags.SysVar
+//////////////// || lptkExpr->tkData.tkSym->stFlags.SysVar)
 ////////////////{
-                    hGlbExpr = CopySymGlbDir (lptkExpr->tkData.lpSym->stData.stGlbData);
+                    hGlbExpr = CopySymGlbDir (lptkExpr->tkData.tkSym->stData.stGlbData);
 
                     // Free the old value for this name
                     FreeResultName (lptkName);
 
                     // Save the new global memory ptr
-                    lptkName->tkData.lpSym->stData.stGlbData = hGlbExpr;
+                    lptkName->tkData.tkSym->stData.stGlbData = hGlbExpr;
 
                     break;
 ////////////////} // End IF
@@ -111,15 +111,15 @@ BOOL AssignName_EM
 ////////////////// If the global memory ptrs are different, there's no
 //////////////////   need to copy the expression's ptr and it would be
 //////////////////   a mistake to increment the reference count
-////////////////if (lptkName->tkData.lpSym->stData.stGlbData NE
-////////////////    lptkExpr->tkData.lpSym->stData.stGlbData)
+////////////////if (lptkName->tkData.tkSym->stData.stGlbData NE
+////////////////    lptkExpr->tkData.tkSym->stData.stGlbData)
 ////////////////{
 ////////////////    // Copy the global memory ptr
-////////////////    lptkName->tkData.lpSym->stData.stGlbData =
-////////////////    lptkExpr->tkData.lpSym->stData.stGlbData;
+////////////////    lptkName->tkData.tkSym->stData.stGlbData =
+////////////////    lptkExpr->tkData.tkSym->stData.stGlbData;
 ////////////////
 ////////////////    // Increment the reference count in global memory
-////////////////    DbgIncrRefCntDir (lptkName->tkData.lpSym->stData.stGlbData);
+////////////////    DbgIncrRefCntDir (lptkName->tkData.tkSym->stData.stGlbData);
 ////////////////} // End IF
 ////////////////
 ////////////////break;
@@ -131,7 +131,7 @@ BOOL AssignName_EM
             Assert (GetPtrTypeDir (lptkExpr->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // stData is immediate
-            Assert (lptkExpr->tkData.lpSym->stFlags.Imm);
+            Assert (lptkExpr->tkData.tkSym->stFlags.Imm);
 
             // Free the old value for this name
             FreeResultName (lptkName);
@@ -143,14 +143,14 @@ BOOL AssignName_EM
             //   into the target's LPSYMENTRY.
 
             // Copy the expression's flags
-            stFlags = lptkExpr->tkData.lpSym->stFlags;
+            stFlags = lptkExpr->tkData.tkSym->stFlags;
 
             // Include the expression's .Imm & .ImmType flags
-            lptkName->tkData.lpSym->stFlags.Imm     = stFlags.Imm;
-            lptkName->tkData.lpSym->stFlags.ImmType = stFlags.ImmType;
+            lptkName->tkData.tkSym->stFlags.Imm     = stFlags.Imm;
+            lptkName->tkData.tkSym->stFlags.ImmType = stFlags.ImmType;
 
             // Copy the constant data
-            lptkName->tkData.lpSym->stData          = lptkExpr->tkData.lpSym->stData;
+            lptkName->tkData.tkSym->stData          = lptkExpr->tkData.tkSym->stData;
 
             break;
 
@@ -165,14 +165,14 @@ BOOL AssignName_EM
             //   into the target's LPSYMENTRY.
 
             // It's an immediate
-            lptkName->tkData.lpSym->stFlags.Imm = 1;
+            lptkName->tkData.tkSym->stFlags.Imm = 1;
 
             // Include the expression's .ImmType flags
-            lptkName->tkData.lpSym->stFlags.ImmType =
+            lptkName->tkData.tkSym->stFlags.ImmType =
                           lptkExpr->tkFlags.ImmType;
 
             // Copy the constant data
-            lptkName->tkData.lpSym->stData.stLongest=
+            lptkName->tkData.tkSym->stData.stLongest=
                           lptkExpr->tkData.tkLongest;
             break;
 
@@ -181,12 +181,12 @@ BOOL AssignName_EM
             FreeResultName (lptkName);
 
             // It's an immediate primitive function
-            lptkName->tkData.lpSym->stFlags.Imm     = 1;
-            lptkName->tkData.lpSym->stFlags.ImmType = IMMTYPE_PRIMFCN;
-            lptkName->tkData.lpSym->stFlags.UsrFn12 = 1;
+            lptkName->tkData.tkSym->stFlags.Imm     = 1;
+            lptkName->tkData.tkSym->stFlags.ImmType = GetImmTypeFcn (lptkExpr->tkData.tkChar);
+            lptkName->tkData.tkSym->stFlags.UsrFn12 = 1;
 
             // Copy the constant data
-            lptkName->tkData.lpSym->stData.stLongest=
+            lptkName->tkData.tkSym->stData.stLongest=
                           lptkExpr->tkData.tkLongest;
             break;
 
@@ -195,12 +195,12 @@ BOOL AssignName_EM
             FreeResultName (lptkName);
 
             // It's an immediate primitive function
-            lptkName->tkData.lpSym->stFlags.Imm     = 1;
-            lptkName->tkData.lpSym->stFlags.ImmType = IMMTYPE_PRIMOP1;
-            lptkName->tkData.lpSym->stFlags.UsrOp1  = 1;
+            lptkName->tkData.tkSym->stFlags.Imm     = 1;
+            lptkName->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP1;
+            lptkName->tkData.tkSym->stFlags.UsrOp1  = 1;
 
             // Copy the constant data
-            lptkName->tkData.lpSym->stData.stLongest=
+            lptkName->tkData.tkSym->stData.stLongest=
                           lptkExpr->tkData.tkLongest;
             break;
 
@@ -209,12 +209,12 @@ BOOL AssignName_EM
             FreeResultName (lptkName);
 
             // It's an immediate primitive function
-            lptkName->tkData.lpSym->stFlags.Imm     = 1;
-            lptkName->tkData.lpSym->stFlags.ImmType = IMMTYPE_PRIMOP2;
-            lptkName->tkData.lpSym->stFlags.UsrOp2  = 1;
+            lptkName->tkData.tkSym->stFlags.Imm     = 1;
+            lptkName->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP2;
+            lptkName->tkData.tkSym->stFlags.UsrOp2  = 1;
 
             // Copy the constant data
-            lptkName->tkData.lpSym->stData.stLongest=
+            lptkName->tkData.tkSym->stData.stLongest=
                           lptkExpr->tkData.tkLongest;
             break;
 
@@ -241,17 +241,17 @@ BOOL AssignName_EM
         {
             case FCNTYPE_FCN:
             case FCNTYPE_AXISFCN:
-                lptkName->tkData.lpSym->stFlags.UsrFn12 = 1;
+                lptkName->tkData.tkSym->stFlags.UsrFn12 = 1;
 
                 break;
 
             case FCNTYPE_OP1:
-                lptkName->tkData.lpSym->stFlags.UsrOp1 = 1;
+                lptkName->tkData.tkSym->stFlags.UsrOp1 = 1;
 
                 break;
 
             case FCNTYPE_OP2:
-                lptkName->tkData.lpSym->stFlags.UsrOp2 = 1;
+                lptkName->tkData.tkSym->stFlags.UsrOp2 = 1;
 
                 break;
 
@@ -261,18 +261,18 @@ BOOL AssignName_EM
     } // End IF
 
     // Mark as valued
-    lptkName->tkData.lpSym->stFlags.Value = 1;
+    lptkName->tkData.tkSym->stFlags.Value = 1;
 
     // Ensure either .SysVar or .UsrVar is set
-    if (lptkName->tkData.lpSym->stFlags.SysName
-     && !lptkName->tkData.lpSym->stFlags.SysFn12)
-        lptkName->tkData.lpSym->stFlags.SysVar = 1;
+    if (lptkName->tkData.tkSym->stFlags.SysName
+     && !lptkName->tkData.tkSym->stFlags.SysFn12)
+        lptkName->tkData.tkSym->stFlags.SysVar = 1;
     else
-    if (lptkName->tkData.lpSym->stFlags.UsrName
-     && !lptkName->tkData.lpSym->stFlags.UsrFn12
-     && !lptkName->tkData.lpSym->stFlags.UsrOp1
-     && !lptkName->tkData.lpSym->stFlags.UsrOp2)
-        lptkName->tkData.lpSym->stFlags.UsrVar = 1;
+    if (lptkName->tkData.tkSym->stFlags.UsrName
+     && !lptkName->tkData.tkSym->stFlags.UsrFn12
+     && !lptkName->tkData.tkSym->stFlags.UsrOp1
+     && !lptkName->tkData.tkSym->stFlags.UsrOp2)
+        lptkName->tkData.tkSym->stFlags.UsrVar = 1;
 
     // Mark as not displayable
     lptkName->tkFlags.NoDisplay = 1;
@@ -307,21 +307,21 @@ void SetNameType
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, ...
-            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
                 // If it has no value, exit
-                if (!lpToken->tkData.lpSym->stFlags.Value)
+                if (!lpToken->tkData.tkSym->stFlags.Value)
                     return;
 
                 // stData is an HGLOBAL function array
-                Assert (IsGlbTypeFcnDir (lpToken->tkData.lpSym->stData.stGlbData));
+                Assert (IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData));
 
                 // Set the new token type
                 lpToken->tkFlags.TknType =
                   TranslateFcnTypeToTknTypeNamed (GetFcnType (lpToken));
             } else
                 lpToken->tkFlags.TknType =
-                  TranslateImmTypeToTknType (lpToken->tkData.lpSym->stFlags.ImmType);
+                  TranslateImmTypeToTknType (lpToken->tkData.tkSym->stFlags.ImmType);
             break;
 
         case TKT_VARNAMED:      // Nothing to do
@@ -358,17 +358,20 @@ FCN_TYPES GetFcnType
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not an immediate, ...
-            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
-                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with common hGlbData code
             } // End IF
 
             // Split cases based upon the immediate token type
-            switch (lpToken->tkData.lpSym->stFlags.ImmType)
+            switch (lpToken->tkData.tkSym->stFlags.ImmType)
             {
-                case IMMTYPE_PRIMFCN:
+                case IMMTYPE_PRIMFCN_MM:
+                case IMMTYPE_PRIMFCN_MS:
+                case IMMTYPE_PRIMFCN_SM:
+                case IMMTYPE_PRIMFCN_SS:
                     return FCNTYPE_FCN;
 
                 case IMMTYPE_PRIMOP1:
@@ -438,8 +441,8 @@ void AssignArrayCommon
     lptkName->tkFlags.TknType = TknType;
 
     // Copy the HGLOBAL
-////lptkName->tkData.lpSym->stData.stNameFcn = ...
-    lptkName->tkData.lpSym->stData.stGlbData = CopySymGlbDir (lptkExpr->tkData.tkGlbData);
+////lptkName->tkData.tkSym->stData.stNameFcn = ...
+    lptkName->tkData.tkSym->stData.stGlbData = CopySymGlbDir (lptkExpr->tkData.tkGlbData);
 } // End AssignArrayCommon
 #undef  APPEND_NAME
 
@@ -457,8 +460,9 @@ void AssignArrayCommon
 #endif
 
 BOOL AssignNameSpec_EM
-    (LPTOKEN lptkStr,       // The named strand
-     LPTOKEN lptkVal)       // The values
+    (LPTOKEN       lptkStr,         // Ptr to named strand token
+     LPTOKEN       lptkVal,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     BOOL     bRet = TRUE;
@@ -506,10 +510,10 @@ BOOL AssignNameSpec_EM
             Assert (GetPtrTypeDir (lptkVal->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must look inside the array
-            if (!lptkVal->tkData.lpSym->stFlags.Imm)
+            if (!lptkVal->tkData.tkSym->stFlags.Imm)
             {
                 // Get the global memory handle
-                hGlbVal = lptkVal->tkData.lpSym->stData.stGlbData;
+                hGlbVal = lptkVal->tkData.tkSym->stData.stGlbData;
 
                 break;          // Continue with global memory case
             } // End IF
@@ -521,7 +525,7 @@ BOOL AssignNameSpec_EM
         case TKT_VARIMMED:
             // Assign this immediate value to each name
             for (aplName = 0; aplName < aplNELMStr; aplName++)
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[aplName].tkToken, lptkVal);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[aplName].tkToken, lptkVal, lpplLocalVars);
             goto NORMAL_EXIT;
 
         case TKT_VARARRAY:
@@ -558,7 +562,8 @@ BOOL AssignNameSpec_EM
     if (aplRankVal > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkVal);
+                                   lptkVal,
+                                   lpplLocalVars);
         // Mark as in error
         bRet = FALSE;
 
@@ -570,7 +575,8 @@ BOOL AssignNameSpec_EM
      && aplNELMVal NE aplNELMStr)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkVal);
+                                   lptkVal,
+                                   lpplLocalVars);
         // Mark as in error
         bRet = FALSE;
 
@@ -580,18 +586,16 @@ BOOL AssignNameSpec_EM
     // Skip over the header and dimension to the data
     lpMemVal = VarArrayBaseToData (lpMemVal, aplRankVal);
 
-    // Save the APLAPA values
+#define lpAPA       ((LPAPLAPA) lpMemVal)
+
+    // If the value is an APA, get its parameters
     if (aplTypeVal EQ ARRAY_APA)
     {
-
-#define lpHeader    ((LPAPLAPA) lpMemVal)
-
-        apaOffVal = lpHeader->Off;
-        apaMulVal = lpHeader->Mul;
-
-#undef  lpHeader
-
+        apaOffVal = lpAPA->Off;
+        apaMulVal = lpAPA->Mul;
     } // End IF
+
+#undef  lpAPA
 
     // Fill in the value token
 ////tkToken.tkFlags.TknType     =
@@ -617,7 +621,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkBoolean = (uBitMaskVal & *(LPAPLBOOL) lpMemVal) ? 1 : 0;
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
 
                 // If there's more than one value, ...
                 if (aplNELMVal NE 1)
@@ -648,7 +652,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkInteger = ((LPAPLINT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
             } // End FOR
 
             break;
@@ -665,7 +669,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkFloat = ((LPAPLFLOAT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
             } // End FOR
 
             break;
@@ -682,7 +686,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkChar = ((LPAPLCHAR) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
             } // End FOR
 
             break;
@@ -708,7 +712,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkLongest = lpSymVal->stData.stLongest;
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
             } // End FOR
 
             break;
@@ -758,7 +762,7 @@ BOOL AssignNameSpec_EM
                 } // End SWITCH
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
             } // End FOR
 
             break;
@@ -775,7 +779,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkInteger = apaOffVal + apaMulVal * (aplName % aplNELMVal);
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
             } // End FOR
 
             break;

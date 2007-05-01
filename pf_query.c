@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- Query
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <math.h>
@@ -79,10 +78,11 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
 #endif
 
 LPYYSTYPE PrimFnQuery_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -90,9 +90,9 @@ LPYYSTYPE PrimFnQuery_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
     else
-        return PrimFnDydQuery_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydQuery_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis,             lpplLocalVars);
 } // End PrimFnQuery_EM
 #undef  APPEND_NAME
 
@@ -212,35 +212,36 @@ APLINT PrimFnMonQueryIisF
 #endif
 
 LPYYSTYPE PrimFnDydQuery_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    APLSTYPE aplTypeLft,
-             aplTypeRht;
-    APLNELM  aplNELMLft,
-             aplNELMRht;
-    APLRANK  aplRankLft,
-             aplRankRht;
-    HGLOBAL  hGlbLft = NULL,
-             hGlbRht = NULL,
-             hGlbRes = NULL;
-    LPVOID   lpMemLft = NULL,
-             lpMemRht = NULL;
-    LPAPLINT lpMemRes = NULL;
-    APLINT   aplIntegerLft,
-             aplIntegerRht;
-    APLFLOAT aplFloatLft,
-             aplFloatRht;
-    APLUINT  ByteRes;
-    APLINT   uLft,
-             uRht,
-             uTmp,
-             uSub;
-    BOOL     bRet = TRUE;
-    UINT     YYLclIndex;
+    APLSTYPE  aplTypeLft,
+              aplTypeRht;
+    APLNELM   aplNELMLft,
+              aplNELMRht;
+    APLRANK   aplRankLft,
+              aplRankRht;
+    HGLOBAL   hGlbLft = NULL,
+              hGlbRht = NULL,
+              hGlbRes = NULL;
+    LPVOID    lpMemLft = NULL,
+              lpMemRht = NULL;
+    LPAPLINT  lpMemRes = NULL;
+    APLINT    aplIntegerLft,
+              aplIntegerRht;
+    APLFLOAT  aplFloatLft,
+              aplFloatRht;
+    APLUINT   ByteRes;
+    APLINT    uLft,
+              uRht,
+              uTmp,
+              uSub;
+    BOOL      bRet = TRUE;
+    LPYYSTYPE lpYYRes;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -250,7 +251,8 @@ LPYYSTYPE PrimFnDydQuery_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
+                                   lptkAxis,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -267,7 +269,8 @@ LPYYSTYPE PrimFnDydQuery_EM
      || aplRankRht > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
+                                   lptkLftArg,
+                                   lpplLocalVars);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -278,7 +281,8 @@ LPYYSTYPE PrimFnDydQuery_EM
      || aplNELMRht NE 1)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
+                                   lptkLftArg,
+                                   lpplLocalVars);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -304,7 +308,8 @@ LPYYSTYPE PrimFnDydQuery_EM
      || aplIntegerRht < 0)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkLftArg);
+                                   lptkLftArg,
+                                   lpplLocalVars);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -327,21 +332,22 @@ LPYYSTYPE PrimFnDydQuery_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         bRet = FALSE;
 
         goto ERROR_EXIT;
     } // End IF
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -411,7 +417,7 @@ LPYYSTYPE PrimFnDydQuery_EM
         MyGlobalReAlloc (hGlbRes,
                          MyGlobalSize (hGlbRes) - (UINT) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
                          GHND);
-        YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     } // End IF/ELSE
 ERROR_EXIT:
     if (hGlbRes && lpMemRes)
@@ -433,7 +439,7 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
         return NULL;
 } // End PrimFnDydQuery_EM

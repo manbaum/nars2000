@@ -42,8 +42,8 @@ value.
  */
 
 // Data Token Types
-#define TKT_FIRST 1
-
+#define TKT_FIRST 1         // This way, we can catch uninitialized
+                            //   token types (i.e., .TknType EQ 0)
 typedef enum tagTOKEN_TYPES
 {TKT_VARNAMED = TKT_FIRST,  //  1: Symbol table entry for a named var (data is LPSYMENTRY)
  TKT_STRING   ,             //  2: String  (data is HGLOBAL)
@@ -96,15 +96,15 @@ typedef enum tagTOKEN_TYPES
 
 typedef struct tagTKFLAGS
 {
-    UINT TknType:6,         // 003F:  Data token type (see TOKEN_TYPES)
-         ImmType:4,         // 03C0:  Type of immediate data (see IMM_TYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
-         NoDisplay:1,       // 0400:  Do not display this token
-         FcnDir:1;          // 0800:  Function is direct (not HGLOBAL)
+    UINT TknType:6,         // 0000003F:  Data token type (see TOKEN_TYPES)
+         ImmType:4,         // 000003C0:  Type of immediate data (see IMM_TYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
+         NoDisplay:1,       // 00000400:  Do not display this token
+         FcnDir:1;          // 00000800:  Function is direct (not HGLOBAL)
 } TKFLAGS, *LPTKFLAGS;
 
 typedef union tagTOKEN_DATA
 {
-    struct tagSYMENTRY *lpSym;      // Data is a ptr to a SYMENTRY
+    struct tagSYMENTRY *tkSym;      // Data is an LPSYMENTRY
     HGLOBAL    tkGlbData;           // ...     an HGLOBAL
     UINT       tkIndex;             // ...     an index
     APLBOOL    tkBoolean;           // ...     an APLBOOL

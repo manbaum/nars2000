@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- Squad
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -24,10 +23,11 @@
 //***************************************************************************
 
 LPYYSTYPE PrimFnSquad_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -35,9 +35,9 @@ LPYYSTYPE PrimFnSquad_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonSquad_EM             (lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonSquad_EM             (lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return PrimFnDydSquad_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydSquad_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End PrimFnSquad_EM
 
 
@@ -54,12 +54,13 @@ LPYYSTYPE PrimFnSquad_EM
 #endif
 
 LPYYSTYPE PrimFnMonSquad_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc);
+    return PrimFnSyntaxError_EM (lptkFunc, lpplLocalVars);
 } // End PrimFnMonSquad_EM
 #undef  APPEND_NAME
 
@@ -77,10 +78,11 @@ LPYYSTYPE PrimFnMonSquad_EM
 #endif
 
 LPYYSTYPE PrimFnDydSquad_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLLONGEST aplLongestRht;   // The value of the right arg
@@ -88,7 +90,7 @@ LPYYSTYPE PrimFnDydSquad_EM
     APLNELM    aplNELMLft;      // The # elements in the left arg
     APLRANK    aplRankLft;      // The rank of the left arg
     IMM_TYPES  immTypeRht;      // The immediate type of the right arg
-    UINT       YYLclIndex;
+    LPYYSTYPE  lpYYRes;
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -98,22 +100,23 @@ LPYYSTYPE PrimFnDydSquad_EM
             Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must look inside the array
-            if (!lptkRhtArg->tkData.lpSym->stFlags.Imm)
+            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.lpSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnDydSquadGlb_EM (lptkLftArg,
-                                             ClrPtrTypeDirGlb (lptkRhtArg->tkData.lpSym->stData.stGlbData),
+                                             ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
                                              lptkAxis,
-                                             lptkFunc);
+                                             lptkFunc,
+                                             lpplLocalVars);
             } // End IF
 
             // Handle the immediate case
 
             // Get the immediate value & type
-            aplLongestRht = lptkRhtArg->tkData.lpSym->stData.stLongest;
-            immTypeRht    = lptkRhtArg->tkData.lpSym->stFlags.ImmType;
+            aplLongestRht = lptkRhtArg->tkData.tkSym->stData.stLongest;
+            immTypeRht    = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
 
             break;
 
@@ -132,10 +135,12 @@ LPYYSTYPE PrimFnDydSquad_EM
             return PrimFnDydSquadGlb_EM (lptkLftArg,
                                          ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
                                          lptkAxis,
-                                         lptkFunc);
+                                         lptkFunc,
+                                         lpplLocalVars);
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             return NULL;
 
         defstop
@@ -153,7 +158,8 @@ LPYYSTYPE PrimFnDydSquad_EM
     if (aplRankLft NE 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -161,7 +167,8 @@ LPYYSTYPE PrimFnDydSquad_EM
     if (aplNELMLft NE 0)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -169,21 +176,22 @@ LPYYSTYPE PrimFnDydSquad_EM
     if (!IsSimpleNH (aplTypeLft))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = TranslateImmTypeToArrayType (immTypeRht);
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkLongest  = aplLongestRht;
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = TranslateImmTypeToArrayType (immTypeRht);
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYLclIndex];
+    return lpYYRes;
 } // End PrimFnDydSquad_EM
 #undef  APPEND_NAME
 
@@ -201,26 +209,27 @@ LPYYSTYPE PrimFnDydSquad_EM
 #endif
 
 LPYYSTYPE PrimFnDydSquadGlb_EM
-    (LPTOKEN lptkLftArg,
-     HGLOBAL hGlbRht,
-     LPTOKEN lptkAxis,
-     LPTOKEN lptkFunc)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     HGLOBAL       hGlbRht,         // Right arg handle
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    APLSTYPE aplTypeLft,        // The storage type of the left arg
-             aplTypeRht;        // ...                     right ...
-    APLNELM  aplNELMLft,        // The # elements in left arg
-             aplNELMRht;        // ...               right ...
-    APLRANK  aplRankLft,        // The rank of the left arg
-             aplRankRht;        // ...             right ...
-    HGLOBAL  hGlbLft = NULL;
-    LPVOID   lpMemLft = NULL,
-             lpMemRht = NULL;
-    BOOL     bRet = TRUE;
-    UINT     YYLclIndex;
+    APLSTYPE  aplTypeLft,       // The storage type of the left arg
+              aplTypeRht;       // ...                     right ...
+    APLNELM   aplNELMLft,       // The # elements in left arg
+              aplNELMRht;       // ...               right ...
+    APLRANK   aplRankLft,       // The rank of the left arg
+              aplRankRht;       // ...             right ...
+    HGLOBAL   hGlbLft = NULL;
+    LPVOID    lpMemLft = NULL,
+              lpMemRht = NULL;
+    BOOL      bRet = TRUE;
+    LPYYSTYPE lpYYRes;
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -243,8 +252,11 @@ LPYYSTYPE PrimFnDydSquadGlb_EM
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL))           // Return HGLOBAL with APLINT axis values
-            return NULL;
+                           NULL,            // Return HGLOBAL with APLINT axis values
+                           lpplLocalVars))  // Ptr to local plLocalVars
+        {
+            YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+        } // End IF
     } // End IF/ELSE
 
     DbgBrk ();              // ***FINISHME***
@@ -280,9 +292,11 @@ LPYYSTYPE PrimFnDydSquadGlb_EM
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
-        return NULL;
+    {
+        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+    } // End IF/ELSE
 } // End PrimFnDydSquadGlb_EM
 #undef  APPEND_NAME
 
@@ -302,8 +316,9 @@ LPYYSTYPE PrimFnDydSquadGlb_EM
 #endif
 
 LPYYSTYPE ArrayIndex_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkRhtArg)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLSTYPE    aplTypeLft,         // The storage type of the left arg
@@ -335,14 +350,11 @@ LPYYSTYPE ArrayIndex_EM
     LPAPLDIM    lpMemDimLft;        // Ptr to the dimensions of the left arg
     LPAPLNESTED lpMemInd;           // Ptr to contents of the index arg
     BOOL        bRet = TRUE;
-    UINT        YYLclIndex;
+    LPYYSTYPE   lpYYRes;
     APLNELM     uRht,
                 uDim,
                 uRes;
     APLUINT     ByteRes;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -401,7 +413,8 @@ LPYYSTYPE ArrayIndex_EM
         if (aplNELMRht NE aplRankLft)
         {
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkLftArg);
+                                       lptkLftArg,
+                                       lpplLocalVars);
             goto ERROR_EXIT;
         } // End IF
 
@@ -425,7 +438,8 @@ LPYYSTYPE ArrayIndex_EM
                     if (!IsSimpleNum (aplTypeInd))
                     {
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkLftArg);
+                                                   lptkLftArg,
+                                                   lpplLocalVars);
                         goto ERROR_EXIT;
                     } // End IF
 
@@ -455,7 +469,8 @@ LPYYSTYPE ArrayIndex_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkLftArg);
+                                   lptkLftArg,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -579,7 +594,8 @@ LPYYSTYPE ArrayIndex_EM
                           aplTypeLft,                           // The storage type of the left arg
                           aplRankLft,                           // The rank of the left arg
                           lpMemDimLft,                          // Ptr to the dimensions of the left arg
-                          lptkLftArg);                          // Ptr to "function" token
+                          lptkLftArg,                           // Ptr to "function" token
+                          lpplLocalVars);                       // Ptr to local plLocalVars
         if (!bRet)
             goto ERROR_EXIT;
     } else
@@ -666,12 +682,15 @@ LPYYSTYPE ArrayIndex_EM
         } // End SWITCH
     } // End IF/ELSE
 
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkLftArg->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+    lpYYRes->tkToken.tkCharIndex       = lptkLftArg->tkCharIndex;
 
     goto NORMAL_EXIT;
 
@@ -715,7 +734,7 @@ NORMAL_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
         return NULL;
 } // End ArrayIndex_EM
@@ -736,14 +755,15 @@ NORMAL_EXIT:
 #endif
 
 BOOL ReachIndex_EM
-    (LPAPLNESTED lpMemRes,      // Put the result here
-     LPVOID      lpMemNdx,      // The current index vector
-     APLSTYPE    aplTypeNdx,    // The storage type of the index vector
-     LPVOID      lpMemLft,      // Get the results from here
-     APLSTYPE    aplTypeLft,    // The storage type of the left arg
-     APLRANK     aplRankLft,    // The rank of the left arg
-     LPAPLDIM    lpMemDimLft,   // Ptr to the dimensions of the left arg
-     LPTOKEN     lptkFunc)      // Pt to function token
+    (LPAPLNESTED lpMemRes,          // Put the result here
+     LPVOID      lpMemNdx,          // The current index vector
+     APLSTYPE    aplTypeNdx,        // The storage type of the index vector
+     LPVOID      lpMemLft,          // Get the results from here
+     APLSTYPE    aplTypeLft,        // The storage type of the left arg
+     APLRANK     aplRankLft,        // The rank of the left arg
+     LPAPLDIM    lpMemDimLft,       // Ptr to the dimensions of the left arg
+     LPTOKEN     lptkFunc,          // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     BOOL       bRet = TRUE;
@@ -764,7 +784,8 @@ BOOL ReachIndex_EM
                                  aplTypeLft,        // The storage type of the left arg
                                  aplRankLft,        // The rank of the left arg
                                  lpMemDimLft,       // Ptr to the dimensions of the left arg
-                                 lptkFunc);         // Ptr to the function token
+                                 lptkFunc,          // Ptr to the function token
+                                 lpplLocalVars);    // Ptr to local plLocalVars
             break;
 
 #undef  lpSymRch
@@ -780,7 +801,8 @@ BOOL ReachIndex_EM
             if (aplRankSub > 1)
             {
                 ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                           lptkFunc);
+                                           lptkFunc,
+                                           lpplLocalVars);
                 bRet = FALSE;
             } else
             {
@@ -798,7 +820,8 @@ BOOL ReachIndex_EM
                               aplTypeLft,               // The storage type of the left arg
                               aplRankLft,               // The rank of the left arg
                               lpMemDimLft,              // Ptr to the dimensions of the left arg
-                              lptkFunc);                // Ptr to function token
+                              lptkFunc,                 // Ptr to function token
+                              lpplLocalVars);           // Ptr to local plLocalVars
             } // End IF/ELSE
 
             break;
@@ -825,13 +848,14 @@ BOOL ReachIndex_EM
 #endif
 
 BOOL ReachSymTabConst_EM
-    (LPVOID   lpMemRes,         // Put the result here
-     LPVOID   lpMemRch,         // Ptr to the reach symbol table constant
-     LPVOID   lpMemLft,         // Get the results from here
-     APLSTYPE aplTypeLft,       // The storage type of the left arg
-     APLRANK  aplRankLft,       // The rank of the left arg
-     LPAPLDIM lpMemDimLft,      // Ptr to the dimensions of the left arg
-     LPTOKEN  lptkFunc)         // Ptr to the function token
+    (LPVOID        lpMemRes,        // Put the result here
+     LPVOID        lpMemRch,        // Ptr to the reach symbol table constant
+     LPVOID        lpMemLft,        // Get the results from here
+     APLSTYPE      aplTypeLft,      // The storage type of the left arg
+     APLRANK       aplRankLft,      // The rank of the left arg
+     LPAPLDIM      lpMemDimLft,     // Ptr to the dimensions of the left arg
+     LPTOKEN       lptkFunc,        // Ptr to the function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLINT aplInteger;
@@ -841,7 +865,8 @@ BOOL ReachSymTabConst_EM
     if (aplRankLft NE 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return FALSE;
     } // End IF
 
@@ -869,7 +894,8 @@ BOOL ReachSymTabConst_EM
 
         case IMMTYPE_CHAR:
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             return FALSE;
 
         defstop
@@ -884,17 +910,19 @@ BOOL ReachSymTabConst_EM
      || aplInteger >= (APLINT) lpMemDimLft[0])
     {
         ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return FALSE;
     } // End IF
 
     // Use aplInteger to index lpMemLft
     bRet =
-    ValueAsSymentry (lpMemRes,      // Put the result here
-                     lpMemLft,      // Get the result from here
-                     aplTypeLft,    // The storage type of the left arg
-                     aplInteger,    // The index to use
-                     lptkFunc);     // The function token
+    ValueAsSymentry (lpMemRes,          // Put the result here
+                     lpMemLft,          // Get the result from here
+                     aplTypeLft,        // The storage type of the left arg
+                     aplInteger,        // The index to use
+                     lptkFunc,          // The function token
+                     lpplLocalVars);    // Ptr to local plLocalVars
     return bRet;
 } // End ReachSymTabConst_EM
 #undef  APPEND_NAME
@@ -907,11 +935,12 @@ BOOL ReachSymTabConst_EM
 //***************************************************************************
 
 BOOL ValueAsSymentry
-    (LPVOID   lpMemRes,     // Put the result here
-     LPVOID   lpMemLft,     // Get the result from here
-     APLSTYPE aplTypeLft,   // The storage type of the left arg
-     APLINT   aplInteger,   // The index to use
-     LPTOKEN  lptkFunc)     // The function token
+    (LPVOID        lpMemRes,        // Put the result here
+     LPVOID        lpMemLft,        // Get the result from here
+     APLSTYPE      aplTypeLft,      // The storage type of the left arg
+     APLINT        aplInteger,      // The index to use
+     LPTOKEN       lptkFunc,        // The function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalvars
 
 {
     APLINT     apaOff,
@@ -922,52 +951,58 @@ BOOL ValueAsSymentry
    switch (aplTypeLft)
    {
        case ARRAY_BOOL:
-           aplVal = ((1 << (aplInteger % NBIB)) & ((LPAPLBOOL) lpMemLft)[aplInteger >> LOG2NBIB]) ? 1 : 0;
-           *((LPAPLNESTED) lpMemRes) =
-             MakeSymEntry_EM (IMMTYPE_BOOL,
-                             &aplVal,
-                              lptkFunc);
+            aplVal = ((1 << (aplInteger % NBIB)) & ((LPAPLBOOL) lpMemLft)[aplInteger >> LOG2NBIB]) ? 1 : 0;
+            *((LPAPLNESTED) lpMemRes) =
+              MakeSymEntry_EM (IMMTYPE_BOOL,
+                              &aplVal,
+                               lptkFunc,
+                               lpplLocalVars);
            break;
 
        case ARRAY_INT:
-           aplVal = ((LPAPLINT) lpMemLft)[aplInteger];
-           *((LPAPLNESTED) lpMemRes) =
-             MakeSymEntry_EM (IMMTYPE_INT,
-                             &aplVal,
-                              lptkFunc);
+            aplVal = ((LPAPLINT) lpMemLft)[aplInteger];
+            *((LPAPLNESTED) lpMemRes) =
+              MakeSymEntry_EM (IMMTYPE_INT,
+                              &aplVal,
+                               lptkFunc,
+                               lpplLocalVars);
            break;
 
        case ARRAY_FLOAT:
-           aplVal = *(LPAPLLONGEST) &((LPAPLFLOAT) lpMemLft)[aplInteger];
-           *((LPAPLNESTED) lpMemRes) =
-             MakeSymEntry_EM (IMMTYPE_FLOAT,
-                             &aplVal,
-                              lptkFunc);
+            aplVal = *(LPAPLLONGEST) &((LPAPLFLOAT) lpMemLft)[aplInteger];
+            *((LPAPLNESTED) lpMemRes) =
+              MakeSymEntry_EM (IMMTYPE_FLOAT,
+                              &aplVal,
+                               lptkFunc,
+                               lpplLocalVars);
            break;
 
        case ARRAY_CHAR:
-           aplVal = ((LPAPLCHAR) lpMemLft)[aplInteger];
-           *((LPAPLNESTED) lpMemRes) =
-             MakeSymEntry_EM (IMMTYPE_CHAR,
-                             &aplVal,
-                              lptkFunc);
+            aplVal = ((LPAPLCHAR) lpMemLft)[aplInteger];
+            *((LPAPLNESTED) lpMemRes) =
+              MakeSymEntry_EM (IMMTYPE_CHAR,
+                              &aplVal,
+                               lptkFunc,
+                               lpplLocalVars);
            break;
 
        case ARRAY_APA:
 
-#define lpaplAPA        ((LPAPLAPA) lpMemLft)
+#define lpAPA       ((LPAPLAPA) lpMemLft)
 
-            apaOff = lpaplAPA->Off;
-            apaMul = lpaplAPA->Mul;
+            apaOff = lpAPA->Off;
+            apaMul = lpAPA->Mul;
+
+#undef  lpAPA
 
             aplVal = apaOff + apaMul * aplInteger;
             *((LPAPLNESTED) lpMemRes) =
               MakeSymEntry_EM (IMMTYPE_INT,
                               &aplVal,
-                               lptkFunc);
+                               lptkFunc,
+                               lpplLocalVars);
             break;
 
-#undef  lpaplAPA
 
         case ARRAY_HETERO:
         case ARRAY_NESTED:
@@ -997,15 +1032,16 @@ BOOL ValueAsSymentry
 #endif
 
 BOOL ReachDown_EM
-    (LPAPLNESTED lpMemRes,      // Put the result here
-     LPVOID      lpMemNdx,      // The current index vector w/aplNELMNdx elements
-     APLSTYPE    aplTypeNdx,    // The storage type of the index vector
-     APLNELM     aplNELMNdx,    // The NELM of the index vector
-     LPVOID      lpMemLft,      // Get the results from here
-     APLSTYPE    aplTypeLft,    // The storage type of the left arg
-     APLRANK     aplRankLft,    // The rank of the left arg
-     LPAPLDIM    lpMemDimLft,   // Ptr to the dimensions of the left arg
-     LPTOKEN     lptkFunc)      // Ptr to function token
+    (LPAPLNESTED   lpMemRes,        // Put the result here
+     LPVOID        lpMemNdx,        // The current index vector w/aplNELMNdx elements
+     APLSTYPE      aplTypeNdx,      // The storage type of the index vector
+     APLNELM       aplNELMNdx,      // The NELM of the index vector
+     LPVOID        lpMemLft,        // Get the results from here
+     APLSTYPE      aplTypeLft,      // The storage type of the left arg
+     APLRANK       aplRankLft,      // The rank of the left arg
+     LPAPLDIM      lpMemDimLft,     // Ptr to the dimensions of the left arg
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     BOOL     bRet = TRUE;
@@ -1036,15 +1072,22 @@ BOOL ReachDown_EM
                 //   and, at the same time, weigh each element as
                 //   per lpMemDimLft to get the appropriate index
                 //   into lpMemLft.
-                bRet = WeighIndex_EM (&aplIndex, lpMemNdx, aplTypeNdx, aplNELMNdx, lpMemDimLft, lptkFunc);
+                bRet = WeighIndex_EM (&aplIndex,        // Save the result here
+                                       lpMemNdx,        // Ptr to the index vector
+                                       aplTypeNdx,      // Storage type of the index vector
+                                       aplNELMNdx,      // NELM of the index vector
+                                       lpMemDimLft,     // Ptr to the dimension vector of the left arg
+                                       lptkFunc,        // Ptr to the function token
+                                       lpplLocalVars);  // Ptr to local plLocalVars
                 if (bRet)
                     // Use aplInteger to index lpMemLft
                     bRet =
-                    ValueAsSymentry (lpMemRes,      // Put the result here
-                                     lpMemLft,      // Get the result from here
-                                     aplTypeLft,    // The storage type of the left arg
-                                     aplIndex,      // The index to use
-                                     lptkFunc);     // The function token
+                    ValueAsSymentry (lpMemRes,          // Put the result here
+                                     lpMemLft,          // Get the result from here
+                                     aplTypeLft,        // The storage type of the left arg
+                                     aplIndex,          // The index to use
+                                     lptkFunc,          // The function token
+                                     lpplLocalVars);    // Ptr to local plLocalVars
                 return bRet;
             } else
             // Otherwise, the left arg must be a vector of vectors of ...
@@ -1055,7 +1098,8 @@ BOOL ReachDown_EM
                 if (aplRankLft NE 1)
                 {
                     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                               lptkFunc);
+                                               lptkFunc,
+                                               lpplLocalVars);
                     bRet = FALSE;
                 } else
                 // Check for INDEX ERROR
@@ -1063,7 +1107,8 @@ BOOL ReachDown_EM
                  || !IsSimpleNum (aplTypeNdx))
                 {
                     ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                               lptkFunc);
+                                               lptkFunc,
+                                               lpplLocalVars);
                     bRet = FALSE;
                 } else
                 {
@@ -1099,7 +1144,8 @@ BOOL ReachDown_EM
                                      aplTypeLft,        // The storage type of the left arg
                                      aplRankLft,        // The rank of the left arg
                                      lpMemDimLft,       // Ptr to the dimensions of the left arg
-                                     lptkFunc);         // Ptr to the function token
+                                     lptkFunc,          // Ptr to the function token
+                                     lpplLocalVars);    // Ptr to local plLocalVars
                 break;
 
             case PTRTYPE_HGLOBAL:
@@ -1118,14 +1164,16 @@ BOOL ReachDown_EM
                 if (aplRankSub > 1)
                 {
                     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                               lptkFunc);
+                                               lptkFunc,
+                                               lpplLocalVars);
                     bRet = FALSE;
                 } else
                 // Check for LENGTH ERROR
                 if (aplNELMSub NE aplRankLft)
                 {
                     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                               lptkFunc);
+                                               lptkFunc,
+                                               lpplLocalVars);
                     bRet = FALSE;
                 } else
                 {
@@ -1137,7 +1185,13 @@ BOOL ReachDown_EM
                     //   and, at the same time, weigh each element as
                     //   per lpMemDimLft to get the appropriate index
                     //   into lpMemLft.
-                    bRet = WeighIndex_EM (&aplIndex, lpMemSub, aplTypeSub, aplNELMSub, lpMemDimLft, lptkFunc);
+                    bRet = WeighIndex_EM (&aplIndex,        // Save the result here
+                                           lpMemSub,        // Ptr to the index vector
+                                           aplTypeSub,      // Storage type of the index vector
+                                           aplNELMSub,      // NELM of the index vector
+                                           lpMemDimLft,     // Ptr to the dimension vector of the left arg
+                                           lptkFunc,        // Ptr to the function token
+                                           lpplLocalVars);  // Ptr to local plLocalVars
                     if (bRet)
                     {
                         // Check for LENGTH ERROR if the left arg is simple (Depth < 2)
@@ -1146,7 +1200,8 @@ BOOL ReachDown_EM
                          && aplNELMNdx > 1)
                         {
                             ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                                       lptkFunc);
+                                                       lptkFunc,
+                                                       lpplLocalVars);
                             bRet = FALSE;
                         } else
                         {
@@ -1154,11 +1209,12 @@ BOOL ReachDown_EM
                             //   if it's simple
                             if (IsSimple (aplTypeLft))
                                 bRet =
-                                ValueAsSymentry (lpMemRes,
-                                                 lpMemLft,
-                                                 aplTypeLft,
-                                                 aplIndex,
-                                                 lptkFunc);
+                                ValueAsSymentry (lpMemRes,          // Put the result here
+                                                 lpMemLft,          // Get the result from here
+                                                 aplTypeLft,        // The storage type of the left arg
+                                                 aplIndex,          // The index to use
+                                                 lptkFunc,          // The function token
+                                                 lpplLocalVars);    // Ptr to local plLocalVars
                             else
                             {
                                 HGLOBAL hGlbSub;
@@ -1201,7 +1257,8 @@ BOOL ReachDown_EM
                                                       aplTypeLft,           // The storage type of the left arg
                                                       aplRankLft,           // The rank of the left arg
                                                       lpMemDimLft,          // Ptr to the dimensions of the left arg
-                                                      lptkFunc);            // Ptr to function token
+                                                      lptkFunc,             // Ptr to function token
+                                                      lpplLocalVars);       // Ptr to local plLocalVars
                                         // We no longer need this ptr
                                         MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbLft));
                                         MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbSub));
@@ -1244,12 +1301,13 @@ BOOL ReachDown_EM
 #endif
 
 BOOL WeighIndex_EM
-    (LPAPLINT lpaplIndex,       // Save the result here
-     LPVOID   lpMemSub,         // Ptr to the index vector
-     APLSTYPE aplTypeSub,       // Storage type of the index vector
-     APLNELM  aplNELMSub,       // NELM of the index vector
-     LPAPLDIM lpMemDimLft,      // Ptr to the dimension vector of the left arg
-     LPTOKEN  lptkFunc)         // Ptr to the function token
+    (LPAPLINT      lpaplIndex,      // Save the result here
+     LPVOID        lpMemSub,        // Ptr to the index vector
+     APLSTYPE      aplTypeSub,      // Storage type of the index vector
+     APLNELM       aplNELMSub,      // NELM of the index vector
+     LPAPLDIM      lpMemDimLft,     // Ptr to the dimension vector of the left arg
+     LPTOKEN       lptkFunc,        // Ptr to the function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     BOOL    bRet = TRUE;
@@ -1278,7 +1336,8 @@ BOOL WeighIndex_EM
                  || aplInteger >= (APLINT) lpMemDimLft[iRch])
                 {
                     ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                               lptkFunc);
+                                               lptkFunc,
+                                               lpplLocalVars);
                     bRet = FALSE;
                 } else
                 {
@@ -1302,7 +1361,8 @@ BOOL WeighIndex_EM
                  || aplInteger >= (APLINT) lpMemDimLft[iRch])
                 {
                     ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                               lptkFunc);
+                                               lptkFunc,
+                                               lpplLocalVars);
                     bRet = FALSE;
                 } else
                 {
@@ -1327,7 +1387,8 @@ BOOL WeighIndex_EM
                  || aplInteger >= (APLINT) lpMemDimLft[iRch])
                 {
                     ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                               lptkFunc);
+                                               lptkFunc,
+                                               lpplLocalVars);
                     bRet = FALSE;
                 } else
                 {
@@ -1341,12 +1402,12 @@ BOOL WeighIndex_EM
 
         case ARRAY_APA:
 
-#define lpaplAPA        ((LPAPLAPA) lpMemSub)
+#define lpAPA       ((LPAPLAPA) lpMemSub)
 
-            apaOff = lpaplAPA->Off;
-            apaMul = lpaplAPA->Mul;
+            apaOff = lpAPA->Off;
+            apaMul = lpAPA->Mul;
 
-#undef  lpaplAPA
+#undef  lpAPA
 
             // Loop through the reach index, backwards
             for (iRch = aplNELMSub - 1; bRet && iRch >= 0; iRch--)
@@ -1359,7 +1420,8 @@ BOOL WeighIndex_EM
                  || aplInteger >= (APLINT) lpMemDimLft[iRch])
                 {
                     ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                               lptkFunc);
+                                               lptkFunc,
+                                               lpplLocalVars);
                     bRet = FALSE;
                 } else
                 {
@@ -1375,7 +1437,8 @@ BOOL WeighIndex_EM
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             bRet = FALSE;
 
             break;

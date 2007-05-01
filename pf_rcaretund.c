@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- RightCaretUnderbar
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <math.h>
@@ -77,10 +76,11 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecRightCaretUnderbar};
 #endif
 
 LPYYSTYPE PrimFnRightCaretUnderbar_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -88,9 +88,9 @@ LPYYSTYPE PrimFnRightCaretUnderbar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
 } // End PrimFnRightCaretUnderbar_EM
 #undef  APPEND_NAME
 

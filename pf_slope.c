@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- Slope
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -30,10 +29,11 @@
 #endif
 
 LPYYSTYPE PrimFnSlope_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -42,9 +42,9 @@ LPYYSTYPE PrimFnSlope_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonSlope_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonSlope_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return PrimFnDydSlope_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydSlope_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End PrimFnSlope_EM
 #undef  APPEND_NAME
 
@@ -62,12 +62,13 @@ LPYYSTYPE PrimFnSlope_EM
 #endif
 
 LPYYSTYPE PrimFnMonSlope_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc);
+    return PrimFnSyntaxError_EM (lptkFunc, lpplLocalVars);
 } // End PrimFnMonSlope_EM
 #undef  APPEND_NAME
 
@@ -85,10 +86,11 @@ LPYYSTYPE PrimFnMonSlope_EM
 #endif
 
 LPYYSTYPE PrimFnDydSlope_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLSTYPE  aplTypeLft,
@@ -139,12 +141,9 @@ LPYYSTYPE PrimFnDydSlope_EM
     APLNESTED aplNestRht,
               aplNestRep,
               aplNestProto;
-    UINT      YYLclIndex,
-              uBitMask,
+    LPYYSTYPE lpYYRes;
+    UINT      uBitMask,
               uBitIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -167,7 +166,8 @@ LPYYSTYPE PrimFnDydSlope_EM
                            NULL,            // Return TRUE iff fractional values present
                            &aplAxis,        // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL))           // Return HGLOBAL with APLINT axis values
+                           NULL,            // Return HGLOBAL with APLINT axis values
+                           lpplLocalVars))  // Ptr to local plLocalVars
             return NULL;
     } else
     {
@@ -188,7 +188,8 @@ LPYYSTYPE PrimFnDydSlope_EM
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
+                                   lptkLftArg,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -261,7 +262,8 @@ LPYYSTYPE PrimFnDydSlope_EM
         if (!hGlbRep)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkLftArg);
+                                       lptkLftArg,
+                                       lpplLocalVars);
             goto ERROR_EXIT;
         } // End IF
 
@@ -366,7 +368,8 @@ LPYYSTYPE PrimFnDydSlope_EM
      && uDimLftSum NE lpMemDimRht[aplAxis])
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
+                                   lptkLftArg,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -389,7 +392,8 @@ LPYYSTYPE PrimFnDydSlope_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -639,8 +643,9 @@ LPYYSTYPE PrimFnDydSlope_EM
                         NULL,
                         NULL);
             aplNestProto = MakePrototype_EM (aplNestRht,
-                                             lptkFunc,
-                                             FALSE);        // Allow CHARs
+                                             lptkFunc,          // Ptr to function token
+                                             FALSE,             // Allow CHARs
+                                             lpplLocalVars);    // Ptr to local plLocalVars
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -675,18 +680,22 @@ LPYYSTYPE PrimFnDydSlope_EM
             break;
     } // End SWITCH
 PROTO_EXIT:
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkLftArg);
+                               lptkLftArg,
+                               lpplLocalVars);
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:
@@ -721,7 +730,7 @@ NORMAL_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
         return NULL;
 } // End PrimFnDydSlope_EM

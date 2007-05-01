@@ -41,7 +41,7 @@ LRESULT APIENTRY VEWndProc
 ////                           IDC_HELP2,        IDH_HELP2,
 ////                           0,             0,
 ////                          };
-////ODSAPI ("VE: ", hWnd, message, wParam, lParam);
+////LCLODSAPI ("VE: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_CREATE:
@@ -54,7 +54,7 @@ LRESULT APIENTRY VEWndProc
 
     } // End SWITCH
 
-////ODSAPI ("VEZ:", hWnd, message, wParam, lParam);
+////LCLODSAPI ("VEZ:", hWnd, message, wParam, lParam);
     return DefMDIChildProc (hWnd, message, wParam, lParam);
 } // End VEWndProc
 #undef  APPEND_NAME

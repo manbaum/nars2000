@@ -3,14 +3,13 @@
 //***************************************************************************
 
 #define COMPILE_MULTIMON_STUBS
-//#define WINVER       0x04FF // Needed for WINUSER.H definitions
-//#define _WIN32_WINNT 0x04FF // ...
-
+#define WINVER       0x0500 // Needed for WINUSER.H definitions
+#define _WIN32_WINNT 0x0500 // ...
 #define STRICT
 #include <windows.h>
 #include <windowsx.h>
 #include <windowsx.h16>
-//#include <multimon.h>   // Multiple monitor support
+//#include <multimon.h>     // Multiple monitor support
 #include <limits.h>
 #include <direct.h>
 
@@ -45,6 +44,13 @@ typedef struct tagENUMSETFONT
     LPCHAR  lpClassName;
     HFONT   hFont;
 } ENUMSETFONT, *LPENUMSETFONT;
+
+typedef struct tagENUMPASSMSG
+{
+    UINT   message;
+    WPARAM wParam;
+    LPARAM lParam;
+} ENUMPASSMSG, *LPENUMPASSMSG;
 
 
 #define DEF_CTEMP_MAXSIZE   1024        // Maximum size of char  temporary storage
@@ -91,6 +97,41 @@ char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS ">.
 char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
      pszNoCreateTCWnd[]     = "Unable to create Tab Control window",
      pszNoCreateTTWnd[]     = "Unable to create ToolTip window";
+
+
+//***************************************************************************
+//  EnumCallbackPassMsg
+//
+//  EnumChildWindows callback to pass a message to all child
+//    windows of MDI Clients
+//***************************************************************************
+
+BOOL CALLBACK EnumCallbackPassMsg
+    (HWND   hWndMC,         // Handle to child window (MDI Client)
+     LPARAM lParam)         // Application-defined value
+
+{
+    HWND hWndChild;
+
+    // Forward this to all child windows of all MDI Clients
+    for (hWndChild = GetWindow (hWndMC, GW_CHILD);
+         hWndChild;
+         hWndChild = GetWindow (hWndChild, GW_HWNDNEXT))
+    {
+        // When an MDI child window is minimized, Windows creates two windows: an
+        // icon and the icon title.  The parent of the icon title window is set to
+        // the MDI client window, which confines the icon title to the MDI client
+        // area.  The owner of the icon title is set to the MDI child window.
+        if (GetWindow (hWndChild, GW_OWNER)) // If it's an icon title window, ...
+            continue;                       // skip it, and continue enumerating
+
+        PostMessage (hWndChild, ((LPENUMPASSMSG) lParam)->message,
+                                ((LPENUMPASSMSG) lParam)->wParam,
+                                ((LPENUMPASSMSG) lParam)->lParam);
+    } // End FOR
+
+    return TRUE;        // Keep on truckin'
+} // End EnumCallbackPassMsg
 
 
 //***************************************************************************
@@ -486,7 +527,7 @@ BOOL CreateChildWindows
         return FALSE;
     } // End IF
 
-    // Subclass the tab control so we can handle some of its messages
+    // Subclass the Tab Control so we can handle some of its messages
     lpfnOldTabCtrlWndProc = (WNDPROC)
       SetWindowLong (hWndTC,
                      GWL_WNDPROC,
@@ -518,6 +559,11 @@ BOOL CALLBACK EnumCallbackRestoreAll
      LPARAM lParam)         // Application-defined value
 
 {
+    HWND hWndMC;            // Window handle to MDI Client
+
+    // Get the window handle to the MDI Client
+    hWndMC = GetParent (hWnd);
+
     // When an MDI child window is minimized, Windows creates two windows: an
     // icon and the icon title.  The parent of the icon title window is set to
     // the MDI client window, which confines the icon title to the MDI client
@@ -573,9 +619,10 @@ LRESULT APIENTRY MFWndProc
      LONG lParam)       // ...
 
 {
-    RECT rcDtop;    // Rectangle for desktop
-    int  iCurTab;
-    HWND hWndActive;
+    RECT         rcDtop;    // Rectangle for desktop
+    HWND         hWndActive,
+                 hWndMC;
+    LPPERTABDATA lpMem;
 
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
@@ -584,7 +631,7 @@ LRESULT APIENTRY MFWndProc
 ////                           IDC_HELP2,        IDH_HELP2,
 ////                           0,             0,
 ////                          };
-////ODSAPI ("MF: ", hWnd, message, wParam, lParam);
+////LCLODSAPI ("MF: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_NCCREATE:       // lpcs = (LPCREATESTRUCT) lParam
@@ -640,6 +687,7 @@ LRESULT APIENTRY MFWndProc
             MoveWindowPosSize (hWnd, MFPosCtr, MFSize);
 
             ShowWindow (hWnd, nMinState);   // Show as per request
+            UpdateWindow (hWnd);
 
             // Initialize window-specific resources
             MF_Create (hWnd);
@@ -667,25 +715,36 @@ LRESULT APIENTRY MFWndProc
 
             break;                  // Continue with next handler
 
+////         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
+////                                     // idChild = HIWORD(wParam);  // Identifier of child window
+////                                     // lValue = lParam;           // Child handle, or cursor coordinates
+//// #define fwEvent     LOWORD (wParam)
+//// #define idChild     HIWORD (wParam)
+////
+////             DbgBrk ();
+////
+////             // Check for WM_CREATE from the Tab Control
+////             if (fwEvent EQ WM_CREATE)
+////                 PostMessage (hWnd, MYWM_INIT_EC, 0, 0);
+////
+////             return FALSE;           // We handled the msg
+////
+//// #undef  idChild
+//// #undef  fwEvent
+
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
         {
-            HWND hWndChild;
+            ENUMPASSMSG enumPassMsg;
 
-            // Forward this to all child windows
-            for (hWndChild = GetWindow (hWndMC, GW_CHILD);
-                 hWndChild;
-                 hWndChild = GetWindow (hWndChild, GW_HWNDNEXT))
-            {
-                // When an MDI child window is minimized, Windows creates two windows: an
-                // icon and the icon title.  The parent of the icon title window is set to
-                // the MDI client window, which confines the icon title to the MDI client
-                // area.  The owner of the icon title is set to the MDI child window.
-                if (GetWindow (hWndChild, GW_OWNER)) // If it's an icon title window, ...
-                    continue;                       // skip it, and continue enumerating
+            // Save parameters in struc
+            enumPassMsg.message = message;
+            enumPassMsg.wParam  = wParam;
+            enumPassMsg.lParam  = lParam;
 
-                PostMessage (hWndChild, message, wParam, lParam);
-            } // End FOR
+            // Enumerate all child windows of the Tab Control
+            //   which should give us all MDI Client windows
+            EnumChildWindows (hWndTC, &EnumCallbackPassMsg, (LPARAM) &enumPassMsg);
 
             // Tell the Tooltip window about it
             PostMessage (hWndTT, message, wParam, lParam);
@@ -740,6 +799,9 @@ LRESULT APIENTRY MFWndProc
                 rc.left   = rcLeft;
                 rc.right  = rcRight;
                 rc.bottom = rcBottom;
+
+                // Get the window handle of the currently active MDI Client
+                hWndMC = GetActiveMC (hWndTC);
 
                 // Position and size the MDI Child window to fit the
                 // tab control's display area
@@ -800,9 +862,8 @@ LRESULT APIENTRY MFWndProc
                 case TTN_NEEDTEXT:      // idTT = (int) wParam;
                                         // lpttt = (LPTOOLTIPTEXT) lParam;
                 {
-                    HGLOBAL      hGlbData;
-                    LPPERTABDATA lpMem;
-                    static char  TooltipText[_MAX_PATH];
+                    HGLOBAL     hGlbData;
+                    static char TooltipText[_MAX_PATH];
 
 #define lpttt   ((LPTOOLTIPTEXT) lParam)
 
@@ -843,14 +904,11 @@ LRESULT APIENTRY MFWndProc
 
                 case TCN_SELCHANGE:     // idTabCtl = (int) LOWORD(wParam);
                                         // hwndTabCtl = (HWND) lParam;
+                    // Get the window handle of the currently active MDI Client
+                    hWndMC = GetActiveMC (hWndTC);
+
                     // Hide the child windows of the outgoing tab
                     ShowHideChildWindows (hWndMC, FALSE);
-
-                    // Get the index of the currently selected tab
-                    iCurTab = TabCtrl_GetCurSel (hWndTC);
-
-                    // Get the per tab global memory handle
-                    hGlbCurTab = GetPerTabHandle (iCurTab);
 
                     // Restore data into the current WS from global memory
                     RestWsData (hGlbCurTab);
@@ -928,6 +986,9 @@ LRESULT APIENTRY MFWndProc
         case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // notification code
                                     // wID = LOWORD (wParam);         // item, control, or accelerator identifier
                                     // hwndCtrl = (HWND) lParam;      // handle of control
+            // Get the window handle of the currently active MDI Client
+            hWndMC = GetActiveMC (hWndTC);
+
             // Get the handle of the active MDI window
             hWndActive = (HWND) SendMessage (hWndMC, WM_MDIGETACTIVE, 0, 0);
 
@@ -1160,9 +1221,61 @@ LRESULT APIENTRY MFWndProc
             break;                  // Continue with default handler
     } // End SWITCH
 
-////ODSAPI ("MFZ:", hWnd, message, wParam, lParam);
+    // Get the window handle of the currently active MDI Client
+    if (message NE WM_NCDESTROY
+     && message NE WM_CLOSE)
+        hWndMC = GetActiveMC (hWndTC);
+    else
+        hWndMC = NULL;
+////LCLODSAPI ("MFZ:", hWnd, message, wParam, lParam);
     return DefFrameProc (hWnd, hWndMC, message, wParam, lParam);
 } // End MFWndProc
+
+
+//***************************************************************************
+//  GetActiveMC
+//
+//  Get the window handle of the currently active MDI Client
+//***************************************************************************
+
+HWND GetActiveMC
+    (HWND hWndTC)           // Window handle of Tab Control
+
+{
+    int          iCurTab;
+    HGLOBAL      hGlbCurTab;
+    LPPERTABDATA lpMem;
+    HWND         hWndMC;
+
+    // If the Tab Control is not defined, quit
+    if (hWndTC EQ NULL)
+        return NULL;
+
+    // Get the index of the currently selected tab
+    iCurTab = TabCtrl_GetCurSel (hWndTC);
+
+    // If no tab selected (early in MFWndProc processing), quit
+    if (iCurTab EQ -1)
+        return NULL;
+
+    // Get the per tab global memory handle
+    hGlbCurTab = GetPerTabHandle (iCurTab);
+
+    // Ensure it's a valid ptr
+    if (!IsGlbPtr (hGlbCurTab))
+        return NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (hGlbCurTab);
+
+    // Get window handle of MDI Client
+    hWndMC = lpMem->hWndMC;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbCurTab); lpMem = NULL;
+
+    return hWndMC;
+} // End GetActiveMC
 
 
 //***************************************************************************
@@ -1595,13 +1708,18 @@ int PASCAL WinMain
         return FALSE;
     } // End IF
 
-    // Make the window visible; update its client area
-    ShowWindow (hWndMF, nCmdShow);
-    UpdateWindow (hWndMF);
+////// Make the window visible; update its client area
+////ShowWindow (hWndMF, nCmdShow);
+////UpdateWindow (hWndMF);
 
     // Main message loop
     while (GetMessage(&Msg, NULL, 0, 0))
     {
+        HWND hWndMC;
+
+        // Get the window handle of the currently active MDI Client
+        hWndMC = GetActiveMC (hWndTC);
+
         // Handle MDI messages and accelerators
         if (!TranslateMDISysAccel (hWndMC, &Msg)
          && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))

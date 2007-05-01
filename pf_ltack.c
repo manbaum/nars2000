@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- LeftTack
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -29,10 +28,11 @@
 #endif
 
 LPYYSTYPE PrimFnLeftTack_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -45,15 +45,16 @@ LPYYSTYPE PrimFnLeftTack_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
+                                   lptkAxis,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonLeftTack_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonLeftTack_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return PrimFnDydLeftTack_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydLeftTack_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End PrimFnLeftTack_EM
 #undef  APPEND_NAME
 
@@ -71,12 +72,13 @@ LPYYSTYPE PrimFnLeftTack_EM
 #endif
 
 LPYYSTYPE PrimFnMonLeftTack_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc);
+    return PrimFnSyntaxError_EM (lptkFunc, lpplLocalVars);
 } // End PrimFnMonLeftTack_EM
 #undef  APPEND_NAME
 
@@ -94,52 +96,53 @@ LPYYSTYPE PrimFnMonLeftTack_EM
 #endif
 
 LPYYSTYPE PrimFnDydLeftTack_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    HGLOBAL hGlbData;
-    UINT    YYLclIndex;
+    HGLOBAL   hGlbData;
+    LPYYSTYPE lpYYRes;
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken = *lptkLftArg;
+    lpYYRes->tkToken = *lptkLftArg;
 
     // If this is a global memory object, increment its reference count
     // Split cases based upon the token type
-    switch (YYRes[YYLclIndex].tkToken.tkFlags.TknType)
+    switch (lpYYRes->tkToken.tkFlags.TknType)
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (YYRes[YYLclIndex].tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpYYRes->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must look inside the array
-            if (!YYRes[YYLclIndex].tkToken.tkData.lpSym->stFlags.Imm)
+            if (!lpYYRes->tkToken.tkData.tkSym->stFlags.Imm)
             {
                 // Get the global memory handle
-                hGlbData = YYRes[YYLclIndex].tkToken.tkData.lpSym->stData.stGlbData;
+                hGlbData = lpYYRes->tkToken.tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (hGlbData));
 
                 // Fill in the result token
-                YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-                YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = CopySymGlbDir (hGlbData);
-////////////////YYRes[YYLclIndex].tkToken.tkCharIndex       =           // Already set
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (hGlbData);
+////////////////lpYYRes->tkToken.tkCharIndex       =           // Already set
             } else
             {
                 // Fill in the result token
-                YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-                YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = YYRes[YYLclIndex].tkToken.tkData.lpSym->stFlags.ImmType;
-////////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-                YYRes[YYLclIndex].tkToken.tkData.tkLongest  = YYRes[YYLclIndex].tkToken.tkData.lpSym->stData.stLongest;
-////////////////YYRes[YYLclIndex].tkToken.tkCharIndex       =           // Already set
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                lpYYRes->tkToken.tkFlags.ImmType   = lpYYRes->tkToken.tkData.tkSym->stFlags.ImmType;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkLongest  = lpYYRes->tkToken.tkData.tkSym->stData.stLongest;
+////////////////lpYYRes->tkToken.tkCharIndex       =           // Already set
 
             } // End IF/ELSE
 
@@ -150,13 +153,13 @@ LPYYSTYPE PrimFnDydLeftTack_EM
 
         case TKT_VARARRAY:
             // Get the global memory handle
-            hGlbData = YYRes[YYLclIndex].tkToken.tkData.tkGlbData;
+            hGlbData = lpYYRes->tkToken.tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (hGlbData));
 
             // Make a copy of the data
-            YYRes[YYLclIndex].tkToken.tkData.tkGlbData = CopySymGlbDir (hGlbData);
+            lpYYRes->tkToken.tkData.tkGlbData = CopySymGlbDir (hGlbData);
 
             break;
 
@@ -164,7 +167,7 @@ LPYYSTYPE PrimFnDydLeftTack_EM
             break;
     } // End SWITCH
 
-    return &YYRes[YYLclIndex];
+    return lpYYRes;
 } // End PrimFnLeftTack_EM
 #undef  APPEND_NAME
 

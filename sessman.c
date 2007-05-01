@@ -12,6 +12,7 @@
 #include "resource.h"
 #include "externs.h"
 #include "editctrl.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -41,7 +42,7 @@ In any case,
 //// COLORREF crTextColor = DEF_TEXT_FG_COLOR,
 ////          crBkColor   = DEF_TEXT_BG_COLOR;
 
-// Default indent
+// Default six-space indent
 WCHAR wszIndent[DEF_INDENT + 1] = {L' ',L' ',L' ',L' ',L' ',L' ',L'\0'};
 
 ////LPTOKEN lptkStackBase;          // Ptr to base of token stack used in parsing
@@ -314,7 +315,8 @@ void MoveCaretEOB
 {
     UINT uLineCnt,
          uLinePos,
-         uLineLen;
+         uLineLen,
+         uCharPos;
 
     // Get the # lines in the text
     uLineCnt = SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
@@ -325,35 +327,30 @@ void MoveCaretEOB
     // Get the length of the last line
     uLineLen = SendMessageW (hWnd, EM_LINELENGTH, uLinePos, 0);
 
+    // Add to get char pos
+    uCharPos = uLinePos + uLineLen;
+
     // Set the caret to the End-of-Buffer
-    SendMessageW (hWnd, EM_SETSEL, uLinePos + uLineLen, uLinePos + uLineLen);
+    SendMessageW (hWnd, EM_SETSEL, uCharPos, uCharPos);
 } // End MoveCaretEOB
 
 
-//***************************************************************************
-//  MyCreateCaret
-//
-//  Create a caret
-//***************************************************************************
-
-void MyCreateCaret
-    (HWND      hWnd,
-     LPVKSTATE lpvkState,
-     long      cyAveChar,
-     void      (*lpMoveCaret) (void))
-{
-    // Create a default sized system caret for display
-    CreateCaret (hWnd,
-                 NULL,
-                 lpvkState->Ins ? DEF_CURWID_INS : DEF_CURWID_REP,
-                 cyAveChar);
-    // Position it
-    if (lpMoveCaret)
-        (*lpMoveCaret) ();
-
-    // Show it
-    ShowCaret (hWnd);
-} // End MyCreateCaret
+//// //***************************************************************************
+//// //  MyCreateCaret
+//// //
+//// //  Create a caret
+//// //***************************************************************************
+////
+//// void MyCreateCaret
+////     (HWND      hWnd,
+////      LPVKSTATE lpvkState,
+////      long      cyAveChar)
+//// {
+////     PostMessageW (hWnd,
+////                   MYWM_CREATECARET,
+////                   lpvkState->Ins ? DEF_CURWID_INS : DEF_CURWID_REP,
+////                   cyAveChar);
+//// } // End MyCreateCaret
 
 
 //***************************************************************************
@@ -432,6 +429,8 @@ LRESULT APIENTRY SMWndProc
     int        iMaxLimit;   // Maximum # chars in edit control
     VKSTATE    vkState;
     long       lvkState;
+    HGLOBAL    hGlbPTD;     // Handle to this window's PerTabData
+    LPPERTABDATA lpMemPTD;  // Ptr to ...
 ////RECT       rcFmtEC;     // Formatting rectangle for the Edit Control
     LPUNDOBUF  lpUndoBeg,   // Ptr to start of Undo Buffer
                lpUndoNxt;   // ...    next available slot in the Undo Buffer
@@ -439,11 +438,10 @@ LRESULT APIENTRY SMWndProc
 ////HFONT      hFontOld;
 ////TEXTMETRIC tm;
 
-////ODSAPI ("SM: ", hWnd, message, wParam, lParam);
-
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLong (hWnd, GWLSF_HWNDEC);
 
+////LCLODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_NCCREATE:           // lpcs = (LPCREATESTRUCT) lParam
@@ -453,7 +451,9 @@ LRESULT APIENTRY SMWndProc
 
             break;                  // Continue with next handler
 
-        case WM_CREATE:
+        case WM_CREATE:             // 0 = (int) wParam
+                                    // lpcs = (LPCREATESTRUCT) lParam
+#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
         {
             int i;
 
@@ -673,6 +673,18 @@ LRESULT APIENTRY SMWndProc
             // Initialize next available entry
             lpSymTabNext = lpSymTab;
 
+            // Get the PerTabData handle
+            hGlbPTD = (HGLOBAL) (lpMDIcs->lParam);
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Initialize the Symbol table Entry for the constant zero
+            lpMemPTD->steZero = SymTabAppendInteger_EM (0);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
 ////////////// *************** Fonts ***********************************
 ////////////
 ////////////// Get the text metrics for this font
@@ -744,7 +756,7 @@ LRESULT APIENTRY SMWndProc
             // Save in window extra bytes
             SetWindowLong (hWnd, GWLSF_HWNDEC, (long) hWndEC);
 
-            // Subclass the edit control so we can handle some of its messages
+            // Subclass the Edit Control so we can handle some of its messages
             lpfnOldEditCtrlWndProc = (WNDPROC)
               SetWindowLongW (hWndEC,
                               GWL_WNDPROC,
@@ -759,27 +771,57 @@ LRESULT APIENTRY SMWndProc
             ShowWindow (hWndEC, SW_SHOWNORMAL);
             UpdateWindow (hWndEC);
 
-            // Use Post here as we need to wait for the EC window
-            //   to be drawn.
-            PostMessage (hWnd, MYWM_INIT_EC, 0, 0);
+////        // Use Post here as we need to wait for the EC window
+////        //   to be drawn.
+////        PostMessage (hWnd, MYWM_INIT_EC, 0, 0);
 
             return FALSE;           // We handled the msg
         } // End WM_CREATE
+#undef  lpcs
+
+        case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
+                                    // idChild = HIWORD(wParam);  // Identifier of child window
+                                    // lValue = lParam;           // Child handle, or cursor coordinates
+#define fwEvent     LOWORD (wParam)
+#define idChild     HIWORD (wParam)
+
+            // Check for WM_CREATE from the Edit Control
+            if (fwEvent EQ WM_CREATE
+             && idChild EQ IDWC_SM_EC)
+                PostMessage (hWnd, MYWM_INIT_EC, 0, 0);
+
+            return FALSE;           // We handled the msg
+
+#undef  idChild
+#undef  fwEvent
 
         case MYWM_INIT_EC:
+            // Tell the Edit Control to redraw itself
+            InvalidateRect (hWndEC, NULL, FALSE);
+
+////        // Tell the Tab Control to redraw itself
+////        InvalidateRect (hWndTC, NULL, FALSE);
+
             // Tell the Edit Control about its font
             SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, TRUE);
 
+            // ***DEBUG***
+            SendMessageW (hWnd, MYWM_KEYDOWN, VK_F9, 0);
+
+////////////// Get the current vkState
+////////////lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
+////////////vkState = *(LPVKSTATE) &lvkState;
+
+////////////// Create a default sized system caret for display
+////////////MyCreateCaret (hWndEC, &vkState, cyAveCharSM);
+
+            // Make sure we can communicate between windows
+            AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
+
             // Display the default prompt
-            AppendLine (wszIndent, FALSE, FALSE);
+            DisplayPrompt (hWndEC);
 
-            // Get the current vkState
-            lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
-            vkState = *(LPVKSTATE) &lvkState;
-
-            // Create a default sized system caret for display
-            DestroyCaret ();        // 'cause we're changing the cursor width
-            MyCreateCaret (hWndEC, &vkState, cyAveCharSM, NULL);
+            SetFocus (hWnd);
 
             return FALSE;           // We handled the msg
 
@@ -969,12 +1011,13 @@ LRESULT APIENTRY SMWndProc
 
                     return FALSE;
 #endif
-#ifdef DEBUG
-                case VK_F3:             // Display current token entries
-                    DisplayTokens (ghGlbToken);
-
-                    return FALSE;
-#endif
+////#ifdef DEBUG
+////                case VK_F3:             // Display current token entries
+////
+////                    DisplayTokens (ghGlbToken);
+////
+////                    return FALSE;
+////#endif
 #ifdef DEBUG
                 case VK_F4:             // Display symbol table entries
                                         //   with non-zero reference counts
@@ -1075,6 +1118,24 @@ LRESULT APIENTRY SMWndProc
 
             return FALSE;           // We handled the msg
 
+        case WM_NOTIFY:             // idCtrl = (int) wParam;
+                                    // pnmh = (LPNMHDR) lParam;
+#define lpnmEC  ((LPNMEDITCTRL) lParam)
+
+            // Check for from Edit Ctrl
+            if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
+            {
+                // Get the current vkState
+                lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
+                vkState = *(LPVKSTATE) &lvkState;
+
+                *lpnmEC->lpCaretWidth =
+                  vkState.Ins ? DEF_CURWID_INS : DEF_CURWID_REP;
+            } // End IF
+
+            return FALSE;           // We handled the msg
+#undef  lpnmEC
+
 #define wNotifyCode     (HIWORD (wParam))
 #define wID             (LOWORD (wParam))
 #define hWndCtrl        ((HWND) lParam)
@@ -1089,22 +1150,21 @@ LRESULT APIENTRY SMWndProc
             // Split cases based upon the notify code
             switch (wNotifyCode)
             {
-                case EN_SETFOCUS:                   // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
-                                                    // wNotifyCode = HIWORD(wParam);      // Notification code
-                                                    // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
-                    // Get the current vkState
-                    lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
-                    vkState = *(LPVKSTATE) &lvkState;
-
-                    // Create a default sized system caret for display
-                    DestroyCaret ();        // 'cause we're changing the cursor width
-                    Assert (hWndEC NE 0);
-                    MyCreateCaret (hWndEC, &vkState, cyAveCharSM, NULL);
-
-                    // Paint the window
-                    UpdateWindow (hWndEC);
-
-                    break;
+////            case EN_SETFOCUS:                   // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
+////                                                // wNotifyCode = HIWORD(wParam);      // Notification code
+////                                                // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
+////                // Get the current vkState
+////                lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
+////                vkState = *(LPVKSTATE) &lvkState;
+////
+////                // Create a default sized system caret for display
+////                Assert (hWndEC NE 0);
+////                MyCreateCaret (hWndEC, &vkState, cyAveCharSM);
+////
+////                // Paint the window
+////                UpdateWindow (hWndEC);
+////
+////                break;
 
                 case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
                                                     // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
@@ -1200,7 +1260,7 @@ LRESULT APIENTRY SMWndProc
         } // End WM_DESTROY
     } // End SWITCH
 
-////ODSAPI ("SMZ:", hWnd, message, wParam, lParam);
+////LCLODSAPI ("SMZ:", hWnd, message, wParam, lParam);
     return DefMDIChildProc (hWnd, message, wParam, lParam);
 } // End SMWndProc
 #undef  APPEND_NAME

@@ -41,7 +41,7 @@ LRESULT APIENTRY MEWndProc
 ////                           IDC_HELP2,        IDH_HELP2,
 ////                           0,             0,
 ////                          };
-////ODSAPI ("ME: ", hWnd, message, wParam, lParam);
+////LCLODSAPI ("ME: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_CREATE:
@@ -54,7 +54,7 @@ LRESULT APIENTRY MEWndProc
 
     } // End SWITCH
 
-////ODSAPI ("MEZ:", hWnd, message, wParam, lParam);
+////LCLODSAPI ("MEZ:", hWnd, message, wParam, lParam);
     return DefMDIChildProc (hWnd, message, wParam, lParam);
 } // End MEWndProc
 #undef  APPEND_NAME

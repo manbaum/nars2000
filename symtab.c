@@ -1156,9 +1156,10 @@ LPSYMENTRY SymTabLookupName
 //***************************************************************************
 
 LPSYMENTRY MakeSymEntry_EM
-    (IMM_TYPES     immType,     // ImmType to use
-     LPAPLLONGEST  lpVal,       // Value to use
-     LPTOKEN       lptkFunc)    // The token to use in case of error
+    (IMM_TYPES     immType,         // ImmType to use
+     LPAPLLONGEST  lpVal,           // Value to use
+     LPTOKEN       lptkFunc,        // Ptr to token to use in case of error
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPSYMENTRY lpSymDst;
@@ -1194,7 +1195,7 @@ LPSYMENTRY MakeSymEntry_EM
 
     // If it failed, set the error token
     if (!lpSymDst)
-        ErrorMessageSetToken (lptkFunc);
+        ErrorMessageSetToken (lptkFunc, lpplLocalVars);
 
     return lpSymDst;
 } // End MakeSymEntry_EM
@@ -1207,9 +1208,10 @@ LPSYMENTRY MakeSymEntry_EM
 //***************************************************************************
 
 LPSYMENTRY CopyImmSymEntry_EM
-    (LPSYMENTRY lpSymSrc,   // LPSYMENTRY to use
-     IMM_TYPES  immType,    // ImmType to use (unless -1)
-     LPTOKEN    lpToken)    // The token to use in case of error
+    (LPSYMENTRY    lpSymSrc,        // LPSYMENTRY to use
+     IMM_TYPES     immType,         // ImmType to use (unless -1)
+     LPTOKEN       lpToken,         // Ptr to token to use in case of error
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPSYMENTRY lpSymDst;
@@ -1250,7 +1252,7 @@ LPSYMENTRY CopyImmSymEntry_EM
 
     // If it failed, set the error token
     if (!lpSymDst)
-        ErrorMessageSetToken (lpToken);
+        ErrorMessageSetToken (lpToken, lpplLocalVars);
 
     return lpSymDst;
 } // End CopyImmSymEntry_EM

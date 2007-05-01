@@ -73,6 +73,7 @@ WINE_DECLARE_DEBUG_CHANNEL(relay);
 #define GROWLENGTH      32  /* buffers granularity in bytes: must be power of 2 */
 #define ROUND_TO_GROW(size) (((size) + (GROWLENGTH - 1)) & ~(GROWLENGTH - 1))
 #define HSCROLL_FRACTION    3   /* scroll window by 1/3 width */
+#define CARETWIDTH      2       // Default caret width
 
 /*
  *  extra flags for EDITSTATE.flags field
@@ -210,6 +211,7 @@ static void EDIT_MoveUp_ML(EDITSTATE *es, BOOL extend);
 /*
  *  Helper functions valid for both single line _and_ multi line controls
  */
+static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight);
 static INT  EDIT_CallWordBreakProc(EDITSTATE *es, INT start, INT index, INT count, INT action);
 static INT  EDIT_CharFromPos(EDITSTATE *es, INT x, INT y, LPBOOL after_wrap);
 static void EDIT_ConfinePoint(EDITSTATE *es, LPINT x, LPINT y);
@@ -3606,7 +3608,7 @@ static void EDIT_EM_ScrollCaret(EDITSTATE *es)
 
     if(es->flags & EF_FOCUSED)
     EDIT_SetCaretPos(es, es->selection_end, es->flags & EF_AFTER_WRAP);
-}
+} // End EDIT_EM_ScrollCaret
 
 
 /*********************************************************************
@@ -3691,7 +3693,7 @@ static void EDIT_EM_SetHandle(EDITSTATE *es, HLOCAL hloc)
     EDIT_EM_ScrollCaret(es);
     /* force scroll info update */
     EDIT_UpdateScrollInfo(es);
-}
+} // End EDIT_EM_SetHandle
 
 #ifdef _WIN16
 /*********************************************************************
@@ -3762,7 +3764,7 @@ static void EDIT_EM_SetHandle16(EDITSTATE *es, HLOCAL16 hloc)
     EDIT_EM_ScrollCaret(es);
     /* force scroll info update */
     EDIT_UpdateScrollInfo(es);
-}
+} // End EDIT_EM_SetHandle16
 #endif
 
 
@@ -3974,7 +3976,7 @@ static void EDIT_EM_SetSel(EDITSTATE *es, UINT start, UINT end, BOOL after_wrap)
             }
     }
         else EDIT_InvalidateText(es, start, old_end);
-}
+} // End EDIT_EM_SetSel
 
 
 /*********************************************************************
@@ -4375,7 +4377,7 @@ static LRESULT EDIT_WM_Create(EDITSTATE *es, LPCWSTR name)
        /* if not. */
        /* FIXME: is that in all cases so ? */
        return 1;
-}
+} // End EDIT_WM_Create
 
 
 /*********************************************************************
@@ -4756,6 +4758,7 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         } else if (control)
             SendMessageW (es->hwndSelf, WM_COPY, 0, 0);
 ////////////EDIT_WM_Copy(es);
+        MyCreateCaret (es->hwndSelf, 0, CARETWIDTH, es->line_height);
         break;
     case VK_RETURN:
         /* If the edit doesn't want the return send a message to the default object */
@@ -4773,7 +4776,7 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         break;
     }
     return 0;
-}
+} // End EDIT_WM_KeyDown
 
 
 /*********************************************************************
@@ -4789,7 +4792,7 @@ static LRESULT EDIT_WM_KillFocus(EDITSTATE *es)
         EDIT_InvalidateText(es, es->selection_start, es->selection_end);
     EDIT_NOTIFY_PARENT(es, EN_KILLFOCUS);
     return 0;
-}
+} // End EDIT_WM_KillFocus
 
 
 /*********************************************************************
@@ -4906,7 +4909,7 @@ static LRESULT EDIT_WM_MouseMove(EDITSTATE *es, INT x, INT y)
     EDIT_EM_SetSel(es, es->selection_start, e, after_wrap);
     EDIT_SetCaretPos(es,es->selection_end,es->flags & EF_AFTER_WRAP);
     return 0;
-}
+} // End EDIT_WM_MouseMove
 
 
 /*********************************************************************
@@ -5009,7 +5012,7 @@ static LRESULT EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode)
         SetWindowLongW(hwnd, GWL_STYLE, es->style & ~WS_BORDER);
 
     return TRUE;
-}
+} // End EDIT_WM_NCCreate
 
 /*********************************************************************
  *
@@ -5098,7 +5101,7 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
 
         if (!hdc)
             EndPaint(es->hwndSelf, &ps);
-}
+} // End EDIT_WM_Paint
 
 
 /*********************************************************************
@@ -5122,7 +5125,7 @@ static void EDIT_WM_Paste(EDITSTATE *es)
         GlobalUnlock(hsrc);
     }
     CloseClipboard();
-}
+} // End EDIT_WM_Paste
 
 
 /*********************************************************************
@@ -5145,12 +5148,12 @@ static void EDIT_WM_SetFocus(EDITSTATE *es)
             ReleaseDC(es->hwndSelf, hdc);
         }
 
-    CreateCaret(es->hwndSelf, 0, 2, es->line_height);
+    MyCreateCaret(es->hwndSelf, 0, CARETWIDTH, es->line_height);
     EDIT_SetCaretPos(es, es->selection_end,
              es->flags & EF_AFTER_WRAP);
     ShowCaret(es->hwndSelf);
     EDIT_NOTIFY_PARENT(es, EN_SETFOCUS);
-}
+} // End EDIT_WM_SetFocus
 
 
 /*********************************************************************
@@ -5194,13 +5197,35 @@ static void EDIT_WM_SetFont(EDITSTATE *es, HFONT font, BOOL redraw)
     if (redraw)
         EDIT_UpdateText(es, NULL, TRUE);
     if (es->flags & EF_FOCUSED) {
-        DestroyCaret();
-        CreateCaret(es->hwndSelf, 0, 2, es->line_height);
+        MyCreateCaret(es->hwndSelf, 0, CARETWIDTH, es->line_height);
         EDIT_SetCaretPos(es, es->selection_end,
                  es->flags & EF_AFTER_WRAP);
         ShowCaret(es->hwndSelf);
     }
-}
+} // End EDIT_WM_SetFont
+
+
+/*********************************************************************
+ *  MyCreateCaret
+ *
+ *  Create a caret using either the default or parent-specified width
+ */
+
+static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
+{
+    NMEDITCTRL nmEC = {0};
+
+    nmEC.nmHdr.hwndFrom = hWnd;
+    nmEC.cbSize         = sizeof (nmEC);
+    nmEC.nmHdr.idFrom   = GetWindowLongW (hWnd, GWL_ID);
+    nmEC.nmHdr.code     = 0;                    // ***FIXME*** -- replace with our own code
+    nmEC.lpCaretWidth   = &nWidth;
+
+    // Ask the parent how wide the caret should be
+    SendMessageW (GetParent (hWnd), WM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) &nmEC);
+
+    return CreateCaret(hWnd, hBitMap, nWidth, nHeight);
+} // End MyCreateCaret
 
 
 /*********************************************************************
@@ -5609,7 +5634,7 @@ static void EDIT_GetCompositionStr(HWND hwnd, LPARAM CompFlag, EDITSTATE *es)
     HeapFree(GetProcessHeap(),0,lpCompStrAttr);
     HeapFree(GetProcessHeap(),0,lpCompStr);
     ImmReleaseContext(hwnd,hIMC);
-}
+} // End EDIT_GetCompositionStr
 #endif
 
 #if USE_IME
@@ -5652,7 +5677,7 @@ static void EDIT_GetResultStr(HWND hwnd, EDITSTATE *es)
 
     HeapFree(GetProcessHeap(),0,lpResultStr);
     ImmReleaseContext(hwnd, hIMC);
-}
+} // End EDIT_GetResultStr
 #endif
 
 #if USE_IME

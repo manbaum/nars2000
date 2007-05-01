@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- Bar
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -77,10 +76,11 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecBar};
 #endif
 
 LPYYSTYPE PrimFnBar_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -88,9 +88,9 @@ LPYYSTYPE PrimFnBar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
 } // End PrimFnBar_EM
 #undef  APPEND_NAME
 
@@ -173,13 +173,14 @@ APLFLOAT PrimFnMonBarFisF
 #endif
 
 BOOL PrimFnMonBarAPA_EM
-    (LPYYSTYPE  lpYYRes,    // The result token (may be NULL)
-     LPTOKEN    lptkFunc,
-     HGLOBAL    hGlbRht,
-     HGLOBAL   *lphGlbRes,
-     LPVOID    *lplpMemRes,
-     APLRANK    aplRankRht,
-     LPPRIMSPEC lpPrimSpec)
+    (LPYYSTYPE     lpYYRes,         // Ptr to result YYSTYPE (may be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     HGLOBAL       hGlbRht,         // Handle to right arg
+     HGLOBAL      *lphGlbRes,       // Ptr to handle to result
+     LPVOID       *lplpMemRes,      // Ptr to ptr to result memory
+     APLRANK       aplRankRht,      // Rank of the right arg
+     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPVOID  lpMemRes;
@@ -189,11 +190,15 @@ BOOL PrimFnMonBarAPA_EM
 
     // Axis may be anything
 
-    *lphGlbRes = CopyArray_EM (hGlbRht, TRUE, lptkFunc);
+    *lphGlbRes = CopyArray_EM (hGlbRht,
+                               TRUE,
+                               lptkFunc,
+                               lpplLocalVars);
     if (!*lphGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return FALSE;
     } // End IF
 
@@ -209,13 +214,13 @@ BOOL PrimFnMonBarAPA_EM
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-#define lpHeader    ((LPAPLAPA) lpMemRes)
+#define lpAPA       ((LPAPLAPA) lpMemRes)
 
     // Negating the offset and multiplier negates the APA
-    lpHeader->Off = -lpHeader->Off;
-    lpHeader->Mul = -lpHeader->Mul;
+    lpAPA->Off = -lpAPA->Off;
+    lpAPA->Mul = -lpAPA->Mul;
 
-#undef  lpHeader
+#undef  lpAPA
 
     // We no longer need this ptr
     MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
@@ -224,8 +229,8 @@ BOOL PrimFnMonBarAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 
@@ -341,24 +346,25 @@ APLFLOAT PrimFnDydBarFisFvF
 #endif
 
 BOOL PrimFnDydBarAPA_EM
-    (LPYYSTYPE  lpYYRes,    // The result token (may be NULL)
+    (LPYYSTYPE     lpYYRes,         // The result token (may be NULL)
 
-     LPTOKEN    lptkFunc,
+     LPTOKEN       lptkFunc,        // Ptr to function token
 
-     HGLOBAL    hGlbLft,    // HGLOBAL of left arg (may be NULL if simple)
-     HGLOBAL    hGlbRht,    // ...        right ...
-     HGLOBAL   *lphGlbRes,
+     HGLOBAL       hGlbLft,         // HGLOBAL of left arg (may be NULL if simple)
+     HGLOBAL       hGlbRht,         // ...        right ...
+     HGLOBAL   *   lphGlbRes,       // Ptr to HGLOBAL of the result
 
-     LPVOID    *lplpMemRes,
+     LPVOID    *   lplpMemRes,      // Ptr to ptr to result memory
 
-     APLRANK    aplRankLft,
-     APLRANK    aplRankRht,
+     APLRANK       aplRankLft,      // Rank of the left arg
+     APLRANK       aplRankRht,      // ...         right ...
 
-     APLNELM    aplNELMLft, // Only one of these NELMs is 1
-     APLNELM    aplNELMRht, // ...
+     APLNELM       aplNELMLft,      // Only one of these NELMs is 1
+     APLNELM       aplNELMRht,      // ...
 
-     APLINT     aplInteger, // The integer from the simple side
-     LPPRIMSPEC lpPrimSpec)
+     APLINT        aplInteger,      // The integer from the simple side
+     LPPRIMSPEC    lpPrimSpec,      // Ptr to PRIMSPEC
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLRANK aplRankRes;
@@ -384,12 +390,18 @@ BOOL PrimFnDydBarAPA_EM
     //   (one of the arg's must be a singleton)
     if (aplNELMLft NE 1)
     {
-        *lphGlbRes = CopyArray_EM (hGlbLft, TRUE, lptkFunc);
+        *lphGlbRes = CopyArray_EM (hGlbLft,
+                                   TRUE,
+                                   lptkFunc,
+                                   lpplLocalVars);
         aplRankRes = aplRankLft;
     } else
     if (aplNELMRht NE 1)
     {
-        *lphGlbRes = CopyArray_EM (hGlbRht, TRUE, lptkFunc);
+        *lphGlbRes = CopyArray_EM (hGlbRht,
+                                   TRUE,
+                                   lptkFunc,
+                                   lpplLocalVars);
         aplRankRes = aplRankRht;
     } else
         DbgStop ();     // We should never get here
@@ -397,7 +409,8 @@ BOOL PrimFnDydBarAPA_EM
     if (!*lphGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return FALSE;
     } // End IF
 
@@ -426,8 +439,8 @@ BOOL PrimFnDydBarAPA_EM
     if (lpYYRes)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from ZeroMemory
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from ZeroMemory
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
     } // End IF
 

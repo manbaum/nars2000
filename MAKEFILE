@@ -163,6 +163,7 @@ $(O)pf_cstar.DEP        \
 $(O)pf_dcaret.DEP       \
 $(O)pf_domino.DEP       \
 $(O)pf_dstile.DEP       \
+$(O)pf_dtackjot.DEP     \
 $(O)pf_epsilon.DEP      \
 $(O)pf_equal.DEP        \
 $(O)pf_equalund.DEP     \
@@ -186,13 +187,13 @@ $(O)pf_slope.DEP        \
 $(O)pf_squad.DEP        \
 $(O)pf_star.DEP         \
 $(O)pf_stile.DEP        \
-$(O)pf_thorn.DEP        \
 $(O)pf_tilde.DEP        \
 $(O)pf_times.DEP        \
 $(O)pf_ucaret.DEP       \
 $(O)pf_ustile.DEP       \
 $(O)primfns.DEP         \
 $(O)primspec.DEP        \
+$(O)qdwa.DEP            \
 $(O)refcnt.DEP          \
 $(O)reg.DEP             \
 $(O)sessman.DEP         \
@@ -202,6 +203,7 @@ $(O)syscmds.DEP         \
 $(O)sysfns.DEP          \
 $(O)sysvars.DEP         \
 $(O)tabctrl.DEP         \
+$(O)translate.DEP       \
 $(O)ver.DEP             \
 $(O)resdebug.DEP        \
 $(O)main.DEV            \
@@ -312,6 +314,9 @@ $(O)version.DEV
 !if exist ($(O)pf_dstile.DEP)
 !       include $(O)pf_dstile.DEP
 !endif
+!if exist ($(O)pf_dtackjot.DEP)
+!       include $(O)pf_dtackjot.DEP
+!endif
 !if exist ($(O)pf_epsilon.DEP)
 !       include $(O)pf_epsilon.DEP
 !endif
@@ -381,9 +386,6 @@ $(O)version.DEV
 !if exist ($(O)pf_stile.DEP)
 !       include $(O)pf_stile.DEP
 !endif
-!if exist ($(O)pf_thorn.DEP)
-!       include $(O)pf_thorn.DEP
-!endif
 !if exist ($(O)pf_tilde.DEP)
 !       include $(O)pf_tilde.DEP
 !endif
@@ -401,6 +403,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)primspec.DEP)
 !       include $(O)primspec.DEP
+!endif
+!if exist ($(O)qdwa.DEP)
+!       include $(O)qdwa.DEP
 !endif
 !if exist ($(O)refcnt.DEP)
 !       include $(O)refcnt.DEP
@@ -428,6 +433,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)tabctrl.DEP)
 !       include $(O)tabctrl.DEP
+!endif
+!if exist ($(O)translate.DEP)
+!       include $(O)translate.DEP
 !endif
 !if exist ($(O)ver.DEP)
 !       include $(O)ver.DEP
@@ -473,6 +481,7 @@ $(O)pf_cstar.PRO        \
 $(O)pf_dcaret.PRO       \
 $(O)pf_domino.PRO       \
 $(O)pf_dstile.PRO       \
+$(O)pf_dtackjot.PRO     \
 $(O)pf_epsilon.PRO      \
 $(O)pf_equal.PRO        \
 $(O)pf_equalund.PRO     \
@@ -496,13 +505,13 @@ $(O)pf_slope.PRO        \
 $(O)pf_squad.PRO        \
 $(O)pf_star.PRO         \
 $(O)pf_stile.PRO        \
-$(O)pf_thorn.PRO        \
 $(O)pf_tilde.PRO        \
 $(O)pf_times.PRO        \
 $(O)pf_ucaret.PRO       \
 $(O)pf_ustile.PRO       \
 $(O)primfns.PRO         \
 $(O)primspec.PRO        \
+$(O)qdwa.PRO            \
 $(O)refcnt.PRO          \
 $(O)reg.PRO             \
 $(O)sessman.PRO         \
@@ -512,6 +521,7 @@ $(O)syscmds.PRO         \
 $(O)sysfns.PRO          \
 $(O)sysvars.PRO         \
 $(O)tabctrl.PRO         \
+$(O)translate.PRO       \
 $(O)ver.PRO             \
 $(O)resdebug.PRO
 
@@ -581,6 +591,7 @@ $(O)pf_cstar.OBJ:       $(@B).C         $(PF_CSTAR_DEP)
 $(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
 $(O)pf_domino.OBJ:      $(@B).C         $(PF_DOMINO_DEP)
 $(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
+$(O)pf_dtackjot.OBJ:    $(@B).C         $(PF_DTACKJOT_DEP)
 $(O)pf_epsilon.OBJ:     $(@B).C         $(PF_EPSILON_DEP)
 $(O)pf_equal.OBJ:       $(@B).C         $(PF_EQUAL_DEP)
 $(O)pf_equalund.OBJ:    $(@B).C         $(PF_EQUALUND_DEP)
@@ -604,13 +615,13 @@ $(O)pf_slope.OBJ:       $(@B).C         $(PF_SLOPE_DEP)
 $(O)pf_squad.OBJ:       $(@B).C         $(PF_SQUAD_DEP)
 $(O)pf_star.OBJ:        $(@B).C         $(PF_STAR_DEP)
 $(O)pf_stile.OBJ:       $(@B).C         $(PF_STILE_DEP)
-$(O)pf_thorn.OBJ:       $(@B).C         $(PF_THORN_DEP)
 $(O)pf_tilde.OBJ:       $(@B).C         $(PF_TILDE_DEP)
 $(O)pf_times.OBJ:       $(@B).C         $(PF_TIMES_DEP)
 $(O)pf_ucaret.OBJ:      $(@B).C         $(PF_UCARET_DEP)
 $(O)pf_ustile.OBJ:      $(@B).C         $(PF_USTILE_DEP)
 $(O)primfns.OBJ:        $(@B).C         $(PRIMFNS_DEP)
 $(O)primspec.OBJ:       $(@B).C         $(PRIMSPEC_DEP)
+$(O)qdwa.OBJ:           $(@B).C         $(QDWA_DEP)
 $(O)refcnt.OBJ:         $(@B).C         $(REFCNT_DEP)
 $(O)reg.OBJ:            $(@B).C         $(REG_DEP)
 $(O)sessman.OBJ:        $(@B).C         $(SESSMAN_DEP)
@@ -620,6 +631,7 @@ $(O)syscmds.OBJ:        $(@B).C         $(SYSCMDS_DEP)
 $(O)sysfns.OBJ:         $(@B).C         $(SYSFNS_DEP)
 $(O)sysvars.OBJ:        $(@B).C         $(SYSVARS_DEP)
 $(O)tabctrl.OBJ:        $(@B).C         $(TABCTRL_DEP)
+$(O)translate.OBJ:      $(@B).C         $(TRANSLATE_DEP)
 $(O)ver.OBJ:            $(@B).C         $(VER_DEP)
 !if "$(RESDEBUG)" == "1"
 $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
@@ -668,6 +680,7 @@ OBJS=                       \
      $(O)pf_dcaret.OBJ      \
      $(O)pf_domino.OBJ      \
      $(O)pf_dstile.OBJ      \
+     $(O)pf_dtackjot.OBJ    \
      $(O)pf_epsilon.OBJ     \
      $(O)pf_equal.OBJ       \
      $(O)pf_equalund.OBJ    \
@@ -691,13 +704,13 @@ OBJS=                       \
      $(O)pf_squad.OBJ       \
      $(O)pf_star.OBJ        \
      $(O)pf_stile.OBJ       \
-     $(O)pf_thorn.OBJ       \
      $(O)pf_tilde.OBJ       \
      $(O)pf_times.OBJ       \
      $(O)pf_ucaret.OBJ      \
      $(O)pf_ustile.OBJ      \
      $(O)primfns.OBJ        \
      $(O)primspec.OBJ       \
+     $(O)qdwa.OBJ           \
      $(O)refcnt.OBJ         \
      $(O)reg.OBJ            \
      $(O)sessman.OBJ        \
@@ -707,6 +720,7 @@ OBJS=                       \
      $(O)sysfns.OBJ         \
      $(O)sysvars.OBJ        \
      $(O)tabctrl.OBJ        \
+     $(O)translate.OBJ      \
      $(O)ver.OBJ            \
 !if "$(RESDEBUG)" == "1"
      $(O)resdebug.OBJ       \

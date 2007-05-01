@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- EqualUnderbar
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -30,10 +29,11 @@
 #endif
 
 LPYYSTYPE PrimFnEqualUnderbar_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -41,9 +41,9 @@ LPYYSTYPE PrimFnEqualUnderbar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonEqualUnderbar_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonEqualUnderbar_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return PrimFnDydEqualUnderbar_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydEqualUnderbar_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End PrimFnEqualUnderbar_EM
 #undef  APPEND_NAME
 
@@ -61,19 +61,17 @@ LPYYSTYPE PrimFnEqualUnderbar_EM
 #endif
 
 LPYYSTYPE PrimFnMonEqualUnderbar_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    APLSTYPE aplTypeRht;
-    APLNELM  aplNELMRht;
-    APLRANK  aplRankRht;
-    HGLOBAL  hGlbRht;
-    UINT     YYLclIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    APLSTYPE  aplTypeRht;
+    APLNELM   aplNELMRht;
+    APLRANK   aplRankRht;
+    HGLOBAL   hGlbRht;
+    LPYYSTYPE lpYYRes;
 
     // Determine how deep the argument is.
     // Simple scalars:  0
@@ -88,15 +86,19 @@ LPYYSTYPE PrimFnMonEqualUnderbar_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
+                                   lptkAxis,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_INT;
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already from from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -105,7 +107,7 @@ LPYYSTYPE PrimFnMonEqualUnderbar_EM
     // If it's not nested,
     //   it's of depth 0 (scalar) or 1 (vector or higher)
     if (aplTypeRht NE ARRAY_NESTED)
-        YYRes[YYLclIndex].tkToken.tkData.tkInteger = (aplRankRht NE 0);
+        lpYYRes->tkToken.tkData.tkInteger = (aplRankRht NE 0);
     else
     {
         // Split cases based upon the right arg's token type
@@ -116,10 +118,10 @@ LPYYSTYPE PrimFnMonEqualUnderbar_EM
                 Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
                 // It can't be immediate as that's handled above
-                Assert (!lptkRhtArg->tkData.lpSym->stFlags.Imm);
+                Assert (!lptkRhtArg->tkData.tkSym->stFlags.Imm);
 
                 // Get the global memory handle
-                hGlbRht = lptkRhtArg->tkData.lpSym->stData.stGlbData;
+                hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (hGlbRht));
@@ -137,7 +139,8 @@ LPYYSTYPE PrimFnMonEqualUnderbar_EM
 
             case TKT_LISTPAR:
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                           lptkFunc);
+                                           lptkFunc,
+                                           lpplLocalVars);
                 return NULL;
 
             case TKT_VARIMMED:
@@ -146,10 +149,10 @@ LPYYSTYPE PrimFnMonEqualUnderbar_EM
         } // End SWITCH
 
         // Recursively run through the elements of the nested array
-        YYRes[YYLclIndex].tkToken.tkData.tkInteger = PrimFnMonEqualUnderBarGlb (hGlbRht);
+        lpYYRes->tkToken.tkData.tkInteger = PrimFnMonEqualUnderBarGlb (hGlbRht);
     } // End IF/ELSE
 
-    return &YYRes[YYLclIndex];
+    return lpYYRes;
 } // End PrimFnMonEqualUnderbar_EM
 #undef  APPEND_NAME
 
@@ -258,61 +261,52 @@ APLINT PrimFnMonEqualUnderBarGlb
 #endif
 
 LPYYSTYPE PrimFnDydEqualUnderbar_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    APLSTYPE aplTypeLft,
-             aplTypeRht,
-             aplTypeTmp;
-    APLNELM  aplNELMLft,
-             aplNELMRht;
-    APLRANK  aplRankLft,
-             aplRankRht;
-    HGLOBAL  hGlbLft,
-             hGlbRht;
-    LPVOID   lpMemLft,
-             lpMemRht;
-    LPTOKEN  lptkTmpArg;
-    BOOL     bNumLft,
-             bNumRht;
-    APLINT   aplIntegerLft,
-             aplIntegerRht;
-    APLFLOAT aplFloatLft,
-             aplFloatRht;
-    APLCHAR  aplCharLft,
-             aplCharRht;
-    UINT     YYLclIndex;
+    APLSTYPE  aplTypeLft,
+              aplTypeRht,
+              aplTypeTmp;
+    APLNELM   aplNELMLft,
+              aplNELMRht;
+    APLRANK   aplRankLft,
+              aplRankRht;
+    HGLOBAL   hGlbLft,
+              hGlbRht;
+    LPVOID    lpMemLft,
+              lpMemRht;
+    LPTOKEN   lptkTmpArg;
+    BOOL      bNumLft,
+              bNumRht;
+    APLINT    aplIntegerLft,
+              aplIntegerRht;
+    APLFLOAT  aplFloatLft,
+              aplFloatRht;
+    APLCHAR   aplCharLft,
+              aplCharRht;
+    LPYYSTYPE lpYYRes;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
+                                   lptkAxis,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
 
     // Determine if two arrays are identical in
     //   rank, length, and value at all levels
     //   without regarrd to the array representation
 
     // N.B.  We are relying upon type demotion here
-
-    // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkBoolean  = FALSE;
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -322,9 +316,20 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
     if (aplTypeRht EQ ARRAY_LIST)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkRhtArg);
+                                   lptkRhtArg,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkBoolean  = FALSE;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Because this function is commutative, we can switch
     //    the two args without loss of generality.
@@ -373,16 +378,16 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
                 {               // Both are numeric
                     if (IsSimpleInt (aplTypeLft)
                      && IsSimpleInt (aplTypeRht))
-                        YYRes[YYLclIndex].tkToken.tkData.tkBoolean = (aplIntegerLft EQ aplIntegerRht);
+                        lpYYRes->tkToken.tkData.tkBoolean = (aplIntegerLft EQ aplIntegerRht);
                     else
-                        YYRes[YYLclIndex].tkToken.tkData.tkBoolean = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
+                        lpYYRes->tkToken.tkData.tkBoolean = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
                 } else          // Both are char
                     // Compare the values
-                    YYRes[YYLclIndex].tkToken.tkData.tkBoolean = (aplCharLft EQ aplCharRht);
+                    lpYYRes->tkToken.tkData.tkBoolean = (aplCharLft EQ aplCharRht);
                 break;
             } // End IF
 
-            YYRes[YYLclIndex].tkToken.tkData.tkBoolean =
+            lpYYRes->tkToken.tkData.tkBoolean =
               PrimFnDydEqualUnderbarSimple (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
                                             lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
             break;
@@ -392,7 +397,7 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
             break;
 
         case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
-            YYRes[YYLclIndex].tkToken.tkData.tkBoolean =
+            lpYYRes->tkToken.tkData.tkBoolean =
               PrimFnDydEqualUnderbarNested (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
                                             lpMemRht, aplTypeRht, aplNELMRht, aplRankRht);
             break;
@@ -413,7 +418,7 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    return &YYRes[YYLclIndex];
+    return lpYYRes;
 } // End PrimFnDydEqualUnderbar_EM
 #undef  APPEND_NAME
 
@@ -536,10 +541,10 @@ BOOL PrimFnDydEqualUnderbarSimple
                     return TRUE;
 
                 case ARRAY_APA:     // Lft = BOOL, Rht = APA
-#define lpHeader    ((LPAPLAPA) lpMemLft)
-                    apaOff = lpHeader->Off;
-                    apaMul = lpHeader->Mul;
-#undef  lpHeader
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {
@@ -624,10 +629,10 @@ BOOL PrimFnDydEqualUnderbarSimple
                     return TRUE;
 
                 case ARRAY_APA:     // Lft = INT, Rht = APA
-#define lpHeader    ((LPAPLAPA) lpMemRht)
-                    apaOff = lpHeader->Off;
-                    apaMul = lpHeader->Mul;
-#undef  lpHeader
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     if (*((LPAPLINT) lpMemLft)++ NE (apaOff + apaMul * uDim))
@@ -682,10 +687,10 @@ BOOL PrimFnDydEqualUnderbarSimple
                     return TRUE;
 
                 case ARRAY_APA:     // Lft = FLOAT, Rht = APA
-#define lpHeader    ((LPAPLAPA) lpMemRht)
-                    apaOff = lpHeader->Off;
-                    apaMul = lpHeader->Mul;
-#undef  lpHeader
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, (APLFLOAT) (apaOff + apaMul * uDim), fQuadCT, NULL))
@@ -734,20 +739,22 @@ BOOL PrimFnDydEqualUnderbarSimple
             switch (aplTypeRht)
             {
                 case ARRAY_APA:     // Lft = APA, Rht = APA
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+
                     // Compare the APA offsets and multipliers
-                    return ((((LPAPLAPA) lpMemLft)->Off
-                         EQ ((LPAPLAPA) lpMemRht)->Off)
-                        && (((LPAPLAPA) lpMemLft)->Mul
-                         EQ ((LPAPLAPA) lpMemLft)->Mul));
+                    return ((lpAPA->Off EQ lpAPA->Off)
+                         && (lpAPA->Mul EQ lpAPA->Mul));
+
+#undef  lpAPA
 
                 case ARRAY_CHAR:    // Lft = APA, Rht = CHAR
                     return FALSE;
 
                 case ARRAY_HETERO:  // Lft = APA, Rht = HETERO
-#define lpHeader    ((LPAPLAPA) lpMemLft)
-                    apaOff = lpHeader->Off;
-                    apaMul = lpHeader->Mul;
-#undef  lpHeader
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {

@@ -8,7 +8,15 @@ typedef struct tagYYSTYPE
     TOKEN   tkToken;        // Token info
     int     TknCount;       // Token count
     int     FcnCount;       // Function count
-    BOOL    Indirect;       // Arg is indirect
+    UINT    Inuse:1,        // This entry is in use
+            Indirect:1,     // Arg is indirect
+#ifdef DEBUG
+            Rsvd:6,         // Unused as yet
+            Index:23,       // Index #
+            Flag:1;         // Flag to distinguish YYAlloc from yylex
+#else
+            Rsvd:30;        // Unused as yet
+#endif
     struct tagYYSTYPE *lpYYFcn; // Ptr to function/operator
     union
     {
@@ -36,6 +44,7 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     LPYYSTYPE   lpYYStrandStart[2], // Strand stack start (static)
                 lpYYStrandBase[2],  // ...          base (dynamic)
                 lpYYStrandNext[2];  // ...          next token (dynamic)
+    HGLOBAL     hGlbPTD;            // Handle to PerTabData
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

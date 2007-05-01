@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- Iota
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -30,10 +29,11 @@
 #endif
 
 LPYYSTYPE PrimFnIota_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -47,15 +47,16 @@ LPYYSTYPE PrimFnIota_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
+                                   lptkAxis,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonIota_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonIota_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return PrimFnDydIota_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydIota_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End PrimFnIota_EM
 #undef  APPEND_NAME
 
@@ -73,21 +74,19 @@ LPYYSTYPE PrimFnIota_EM
 #endif
 
 LPYYSTYPE PrimFnMonIota_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    APLNELM aplNELMRes;
-    HGLOBAL hGlbRes;
-    UINT    ByteRes;
-    LPVOID  lpMemRes;
-    BOOL    bRet = TRUE;
-    APLINT  aplIntTmp;
-    UINT    YYLclIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    APLNELM   aplNELMRes;
+    HGLOBAL   hGlbRes;
+    UINT      ByteRes;
+    LPVOID    lpMemRes;
+    BOOL      bRet = TRUE;
+    APLINT    aplIntTmp;
+    LPYYSTYPE lpYYRes;
 
     //***************************************************************
     // Check the right argument for RANK, LENGTH, and DOMAIN ERRORs
@@ -102,14 +101,15 @@ LPYYSTYPE PrimFnMonIota_EM
             Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must traverse the array
-            if (!lptkRhtArg->tkData.lpSym->stFlags.Imm)
+            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.lpSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.lpSym->stData.stGlbData),
+                if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
                                           &aplNELMRes,
-                                          lptkFunc))
+                                          lptkFunc,
+                                          lpplLocalVars))
                     return NULL;
                 break;
             } // End IF
@@ -117,11 +117,12 @@ LPYYSTYPE PrimFnMonIota_EM
             // Handle the immediate case
 
             // stData is an immediate
-            Assert (lptkRhtArg->tkData.lpSym->stFlags.Imm);
+            Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
 
-            if (!PrimFnMonIotaCon_EM (lptkRhtArg->tkData.lpSym,
+            if (!PrimFnMonIotaCon_EM (lptkRhtArg->tkData.tkSym,
                                       &aplNELMRes,
-                                      lptkFunc))
+                                      lptkFunc,
+                                      lpplLocalVars))
                 return NULL;
             break;              // Continue with common code
 
@@ -141,7 +142,8 @@ LPYYSTYPE PrimFnMonIota_EM
                     {
                         // Mark as a DOMAIN ERROR
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
+                                                   lptkFunc,
+                                                   lpplLocalVars);
                         return NULL;
                     } // End IF
 
@@ -167,7 +169,8 @@ LPYYSTYPE PrimFnMonIota_EM
                 case IMMTYPE_CHAR:
                     // Mark as a DOMAIN ERROR
                     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
+                                               lptkFunc,
+                                               lpplLocalVars);
                     return NULL;
 
                 defstop
@@ -182,24 +185,23 @@ LPYYSTYPE PrimFnMonIota_EM
 
             if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
                                       &aplNELMRes,
-                                      lptkFunc))
+                                      lptkFunc,
+                                      lpplLocalVars))
                 return NULL;
             break;              // Continue with common code
 
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             return NULL;
 
         defstop
             return NULL;
     } // End SWITCH
 
-    // Calculate size of the result
+    // Calculate space needed for the result
     ByteRes = (UINT) CalcArraySize (ARRAY_APA, 0, 1);
-////ByteRes = sizeof (VARARRAY_HEADER)
-////        + sizeof (APLDIM) * 1      // It's a vector
-////        + sizeof (APLAPA);         // APA struct
 
     // Allocate space for an APA
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
@@ -207,7 +209,8 @@ LPYYSTYPE PrimFnMonIota_EM
     {
         // Mark as a WS FULL
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -233,26 +236,29 @@ LPYYSTYPE PrimFnMonIota_EM
     // Point to the data (APLAPA struct)
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-#define lpAPARes    ((LPAPLAPA) lpMemRes)
+#define lpAPA       ((LPAPLAPA) lpMemRes)
 
     // Save the APA values
-    lpAPARes->Off = bQuadIO;
-    lpAPARes->Mul = 1;
-    lpAPARes->Len = aplNELMRes;
+    lpAPA->Off = bQuadIO;
+    lpAPA->Mul = 1;
+    lpAPA->Len = aplNELMRes;
 
-#undef  lpAPARes
+#undef  lpAPA
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-    // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
-    return &YYRes[YYLclIndex];
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 } // End PrimFnMonIota_EM
 #undef  APPEND_NAME
 
@@ -270,9 +276,10 @@ LPYYSTYPE PrimFnMonIota_EM
 #endif
 
 BOOL PrimFnMonIotaCon_EM
-    (LPSYMENTRY lpSym,
-     LPAPLNELM  lpaplNELMRes,
-     LPTOKEN    lptkFunc)
+    (LPSYMENTRY    lpSym,           // Ptr to the symbol table constant
+     LPAPLNELM     lpaplNELMRes,    // Ptr to result NELM
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Prt to local plLocalVars
 
 {
     APLINT aplIntTmp;
@@ -327,7 +334,8 @@ BOOL PrimFnMonIotaCon_EM
 
     // Mark as a DOMAIN ERROR
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkFunc);
+                               lptkFunc,
+                               lpplLocalVars);
     return FALSE;
 } // End PrimFnMonIotaCon_EM
 #undef  APPEND_NAME
@@ -346,9 +354,10 @@ BOOL PrimFnMonIotaCon_EM
 #endif
 
 BOOL PrimFnMonIotaGlb_EM
-    (HGLOBAL   hGlbRht,
-     LPAPLNELM lpaplNELMRes,
-     LPTOKEN   lptkFunc)
+    (HGLOBAL       hGlbRht,         // Handle to right arg
+     LPAPLNELM     lpaplNELMRes,    // Ptr to result NELM
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPVOID   lpMem;
@@ -382,10 +391,12 @@ BOOL PrimFnMonIotaGlb_EM
         //   otherwise it's a LENGTH ERROR
         if (aplRank > 1)
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
         else
             ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
         bRet = FALSE;
     } else
     // Split cases based upon the array storage type
@@ -402,7 +413,8 @@ BOOL PrimFnMonIotaGlb_EM
             if ((*(LPAPLINT) lpMem) < 0)
             {
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
+                                           lptkFunc,
+                                           lpplLocalVars);
                 bRet = FALSE;
             } else
                 // Return the Integer value
@@ -411,15 +423,20 @@ BOOL PrimFnMonIotaGlb_EM
             break;
 
         case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMem)
+
             // Ensure the value is non-negative
-            if ((((LPAPLAPA) lpMem)->Off) < 0)
+            if (lpAPA->Off < 0)
             {
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
+                                           lptkFunc,
+                                           lpplLocalVars);
                 bRet = FALSE;
             } else
                 // Return the Integer value
-                *lpaplNELMRes = ((LPAPLAPA) lpMem)->Off;
+                *lpaplNELMRes = lpAPA->Off;
+
+#undef  lpAPA
 
             break;
 
@@ -437,14 +454,16 @@ BOOL PrimFnMonIotaGlb_EM
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             bRet = FALSE;
 
             break;
 
         case ARRAY_LIST:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             bRet = FALSE;
 
             break;
@@ -474,27 +493,28 @@ BOOL PrimFnMonIotaGlb_EM
 #endif
 
 LPYYSTYPE PrimFnDydIota_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    APLSTYPE aplTypeLft,
-             aplTypeRht;
-    APLNELM  aplNELMLft,
-             aplNELMRht;
-    APLRANK  aplRankLft,
-             aplRankRht;
-    HGLOBAL  hGlbLft,
-             hGlbRht;
-    LPVOID   lpMemLft,
-             lpMemRht;
-    BOOL     bRet = TRUE;
-    UINT     YYLclIndex;
+    APLSTYPE  aplTypeLft,
+              aplTypeRht;
+    APLNELM   aplNELMLft,
+              aplNELMRht;
+    APLRANK   aplRankLft,
+              aplRankRht;
+    HGLOBAL   hGlbLft,
+              hGlbRht;
+    LPVOID    lpMemLft,
+              lpMemRht;
+    BOOL      bRet = TRUE;
+    LPYYSTYPE lpYYRes;
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     DbgBrk ();          // ***FINISHME***
 
@@ -510,7 +530,8 @@ LPYYSTYPE PrimFnDydIota_EM
     if (aplRankLft NE 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
+                                   lptkLftArg,
+                                   lpplLocalVars);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -544,9 +565,11 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
-        return NULL;
+    {
+        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+    } // End IF/ELSE
 } // End PrimFnDydIota_EM
 #undef  APPEND_NAME
 

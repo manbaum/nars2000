@@ -185,22 +185,13 @@ typedef enum tagSYSVAR_VALID
 #endif
 
 EXTERN
-// Use as in:  (*aSysVarValid[SYSVAR_VALID_IO]) (lptkName, lptkExpr);
-BOOL (*aSysVarValid[SYSVAR_VALID_LENGTH]) (LPTOKEN, LPTOKEN);
+// Use as in:  (*aSysVarValid[SYSVAR_VALID_IO]) (lptkName, lptkExpr, lpplLocalVars);
+BOOL (*aSysVarValid[SYSVAR_VALID_LENGTH]) (LPTOKEN, LPTOKEN, LPPLLOCALVARS);
 
 EXTERN
 char lpszVersion[]
 #ifdef DEFINE_VALUES
  = "NARS2000\nVersion %s"
-#endif
-;
-
-EXTERN
-// Define the local copy of various values which allows
-//   ParseLine to be re-entrant.
-PLLOCALVARS gplLocalVars
-#ifdef DEFINE_VALUES
- = {0}
 #endif
 ;
 
@@ -296,9 +287,6 @@ int iOverTab                            // Index of the tab the mouse is over
 
 EXTERN
 WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure
-
-EXTERN
-HGLOBAL ghGlbToken;                     // Save area for current hGlbToken
 
 #ifdef DEBUG_ODS
 EXTERN

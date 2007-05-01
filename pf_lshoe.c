@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- LeftShoe
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -24,10 +23,11 @@
 //***************************************************************************
 
 LPYYSTYPE PrimFnLeftShoe_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -35,9 +35,9 @@ LPYYSTYPE PrimFnLeftShoe_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonLeftShoe_EM             (lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonLeftShoe_EM             (lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return PrimFnDydLeftShoe_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydLeftShoe_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End PrimFnLeftShoe_EM
 
 
@@ -54,9 +54,10 @@ LPYYSTYPE PrimFnLeftShoe_EM
 #endif
 
 LPYYSTYPE PrimFnMonLeftShoe_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Split cases based upon the right arg's token type
@@ -67,38 +68,43 @@ LPYYSTYPE PrimFnMonLeftShoe_EM
             Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must look inside the array
-            if (!lptkRhtArg->tkData.lpSym->stFlags.Imm)
+            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.lpSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                return PrimFnMonLeftShoeGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.lpSym->stData.stGlbData),
+                return PrimFnMonLeftShoeGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
                                                 lptkAxis,
-                                                lptkFunc);
+                                                lptkFunc,
+                                                lpplLocalVars);
             } // End IF
 
             // Handle the immediate case
-            return PrimFnMonLeftShoeCon_EM (lptkRhtArg->tkData.lpSym->stFlags.ImmType,
-                                            lptkRhtArg->tkData.lpSym->stData.stLongest,
+            return PrimFnMonLeftShoeCon_EM (lptkRhtArg->tkData.tkSym->stFlags.ImmType,
+                                            lptkRhtArg->tkData.tkSym->stData.stLongest,
                                             lptkRhtArg,
                                             lptkAxis,
-                                            lptkFunc);
+                                            lptkFunc,
+                                            lpplLocalVars);
         case TKT_VARIMMED:
             return PrimFnMonLeftShoeCon_EM (lptkRhtArg->tkFlags.ImmType,
                                             lptkRhtArg->tkData.tkLongest,
                                             lptkRhtArg,
                                             lptkAxis,
-                                            lptkFunc);
+                                            lptkFunc,
+                                            lpplLocalVars);
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonLeftShoeGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
                                             lptkAxis,
-                                            lptkFunc);
+                                            lptkFunc,
+                                            lpplLocalVars);
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             return NULL;
 
         defstop
@@ -121,17 +127,15 @@ LPYYSTYPE PrimFnMonLeftShoe_EM
 #endif
 
 LPYYSTYPE PrimFnMonLeftShoeCon_EM
-    (UINT       ImmType,
-     APLLONGEST aplLongest,
-     LPTOKEN    lpTokenRht,
-     LPTOKEN    lptkAxis,
-     LPTOKEN    lptkFunc)
+    (UINT          ImmType,         // The immediate type
+     APLLONGEST    aplLongest,      // The immediate value
+     LPTOKEN       lpTokenRht,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    UINT YYLclIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    LPYYSTYPE lpYYRes;
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -147,18 +151,22 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL))           // Return HGLOBAL with APLINT axis values
+                           NULL,            // Return HGLOBAL with APLINT axis values
+                           lpplLocalVars))  // Ptr to local plLocalVars
             return NULL;
     } // End IF
 
-    // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = ImmType;
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;        // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkLongest  = aplLongest;
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
-    return &YYRes[YYLclIndex];
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = ImmType;
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
+    lpYYRes->tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
+
+    return lpYYRes;
 } // End PrimFnMonLeftShoeCon_EM
 #undef  APPEND_NAME
 
@@ -176,45 +184,42 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
 #endif
 
 LPYYSTYPE PrimFnMonLeftShoeGlb_EM
-    (HGLOBAL hGlbRht,
-     LPTOKEN lptkAxis,
-     LPTOKEN lptkFunc)
+    (HGLOBAL       hGlbRht,         // Handle to right arg
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    HGLOBAL  hGlbRes = NULL,
-             hGlbAxis = NULL,
-             hGlbSub = NULL,
-             hGlbProto = NULL,
-             hGlbRhtProto = NULL,
-             hGlbOdo = NULL,
-             hGlbWVec = NULL;
-    LPVOID   lpMemRes = NULL,
-             lpMemRht = NULL,
-             lpMemSub = NULL,
-             lpMemProto = NULL;
-    LPAPLDIM lpMemDimRht = NULL;
-    LPAPLINT lpMemAxis = NULL,
-             lpMemGrUp = NULL,
-             lpMemOdo = NULL,
-             lpMemWVec = NULL;
-    APLUINT  ByteRes;           // # bytes needed in the result
-    APLNELM  aplNELMAxis,
-             aplNELMRes,
-             aplNELMRht,
-             aplNELMSub;
-    APLRANK  aplRankRht,
-             aplRankRes;
-    BOOL     bRet = TRUE;
-    APLNELM  uRes, uRht, uSub, uOdo, uRhtOff;
-    APLSTYPE aplTypeRht;
+    HGLOBAL     hGlbRes = NULL,
+                hGlbAxis = NULL,
+                hGlbSub = NULL,
+                hGlbProto = NULL,
+                hGlbRhtProto = NULL,
+                hGlbOdo = NULL,
+                hGlbWVec = NULL;
+    LPVOID      lpMemRes = NULL,
+                lpMemRht = NULL,
+                lpMemSub = NULL,
+                lpMemProto = NULL;
+    LPAPLDIM    lpMemDimRht = NULL;
+    LPAPLINT    lpMemAxis = NULL,
+                lpMemGrUp = NULL,
+                lpMemOdo = NULL,
+                lpMemWVec = NULL;
+    APLUINT     ByteRes;          // # bytes needed in the result
+    APLNELM     aplNELMAxis,
+                aplNELMRes,
+                aplNELMRht,
+                aplNELMSub;
+    APLRANK     aplRankRht,
+                aplRankRes;
+    BOOL        bRet = TRUE;
+    APLNELM     uRes, uRht, uSub, uOdo, uRhtOff;
+    APLSTYPE    aplTypeRht;
     APLNELMSIGN iRht;
-    APLINT   apaOff,
-             apaMul,
-             apaLen;
-    UINT     YYLclIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    APLINT      apaOff,
+                apaMul;
+    LPYYSTYPE   lpYYRes;
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -231,8 +236,9 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
-                           &aplNELMAxis,    // Return # elements in axis vector
-                           &hGlbAxis))      // Return HGLOBAL with APLINT axis values
+                          &aplNELMAxis,     // Return # elements in axis vector
+                          &hGlbAxis,        // Return HGLOBAL with APLINT axis values
+                           lpplLocalVars))  // Ptr to local plLocalVars
             return NULL;
     } else
         // No axis means enclose all dimensions
@@ -252,12 +258,15 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     //   result, but why bother??
     if (lptkAxis && aplNELMAxis EQ 0)
     {
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
         // Fill in the result token
-        YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-        YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = CopySymGlbDirGlb (hGlbRht);
-        YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirGlb (hGlbRht);
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         goto QUICK_EXIT;
     } // End IF
@@ -278,18 +287,16 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-    // If it's an APA, get its parameters
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+
+    // If the right arg is an APA, get its parameters
     if (aplTypeRht EQ ARRAY_APA)
     {
-#define lpaplAPA    ((LPAPLAPA) lpMemRht)
-
-        // Get the APA data
-        apaOff = lpaplAPA->Off;
-        apaMul = lpaplAPA->Mul;
-        apaLen = lpaplAPA->Len;
-
-#undef  lpaplAPA
+        apaOff = lpAPA->Off;
+        apaMul = lpAPA->Mul;
     } // End IF
+
+#undef  lpAPA
 
     // Calculate the NELM of the result taking into
     //   account the axis values.
@@ -322,6 +329,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     } else
         aplNELMRes = aplNELMSub = 1;
 
+    // Calculate space needed for the result
     // Add in the header, (aplRankRht - aplNELMAxis) dimensions,
     //   and <aplNELMRes> HGLOBALs (taking into account a prototype if empty).
     ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMRes, aplRankRes);
@@ -335,7 +343,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -399,7 +408,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                                                       aplNELMSub,
                                                       aplNELMAxis,
                                                       ARRAY_BOOL,
-                                                      lptkFunc);
+                                                      lptkFunc,
+                                                      lpplLocalVars);
                     if (!bRet)
                         goto ERROR_EXIT;
                     break;
@@ -411,7 +421,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                                                       aplNELMSub,
                                                       aplNELMAxis,
                                                       ARRAY_CHAR,
-                                                      lptkFunc);
+                                                      lptkFunc,
+                                                      lpplLocalVars);
                     if (!bRet)
                         goto ERROR_EXIT;
                     break;
@@ -420,13 +431,12 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                 case ARRAY_NESTED:
                     if (aplNELMSub EQ 0)
                         hGlbProto = MakePrototype_EM (ClrPtrTypeIndGlb (lpMemRht),
-                                                      lptkFunc,
-                                                      FALSE);   // Allow CHARs
+                                                      lptkFunc,         // Ptr to function token
+                                                      FALSE,            // Allow CHARs
+                                                      lpplLocalVars);   // Ptr to local plLocalVars
                     else
                     {
-                        // Calculate storage for <aplNELMSub>
-                        //   HGLOBALs in an array of variables of
-                        //   rank <aplNELMAxis> and NELM <aplNELMSub>.
+                        // Calculate space needed for the result
                         ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMSub, aplNELMAxis);
 
                         // N.B.:  Conversion from APLUINT to UINT.
@@ -435,7 +445,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         if (!hGlbProto)
                         {
                             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                       lptkFunc);
+                                                       lptkFunc,
+                                                       lpplLocalVars);
                             bRet = FALSE;
 
                             goto ERROR_EXIT;
@@ -473,15 +484,18 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                         // If we failed, ...
                         if (!bRet)
                         {
+                            // Allocate a new YYRes
+                            lpYYRes = YYAlloc ();
+
                             // Fill in the result token
-                            YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////////////////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////////////////////////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-                            YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbProto);
-                            YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+                            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;    // Already zero from YYAlloc
+////////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;    // Already zero from YYAlloc
+                            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbProto);
+                            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
                             // Free the prototype storage
-                            FreeResult (&YYRes[YYLclIndex].tkToken);
+                            FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
 
                             goto ERROR_EXIT;
                         } // End IF
@@ -555,7 +569,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
         if (!hGlbWVec)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             bRet = FALSE;
 
             goto ERROR_EXIT;
@@ -587,7 +602,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
         if (!hGlbOdo)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             bRet = FALSE;
 
             goto ERROR_EXIT;
@@ -597,7 +613,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
         lpMemOdo = MyGlobalLock (hGlbOdo);
 
         //***************************************************************
-        // Calculate the storage needed for each subarray.
+        // Calculate space needed for each subarray.
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
         // Handle APAs as INTs
@@ -605,44 +621,6 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
             ByteRes = CalcArraySize (ARRAY_INT , aplNELMSub, aplNELMAxis);
         else
             ByteRes = CalcArraySize (aplTypeRht, aplNELMSub, aplNELMAxis);
-////////// Split cases based upon the right arg's storage type
-////////switch (aplTypeRht)
-////////{
-////////    case ARRAY_BOOL:        // One value per bit, rounded up to the byte
-////////        ByteRes = sizeof (APLBOOL)   * RoundUpBits8 (aplNELMSub);
-////////
-////////        break;
-////////
-////////    case ARRAY_INT:         // One value per APLINT
-////////    case ARRAY_APA:         // ...
-////////        ByteRes = sizeof (APLINT)    * aplNELMSub;
-////////
-////////        break;
-////////
-////////    case ARRAY_FLOAT:       // One value per APLFLOAT
-////////        ByteRes = sizeof (APLFLOAT)  * aplNELMSub;
-////////
-////////        break;
-////////
-////////    case ARRAY_CHAR:        // One value per APLCHAR
-////////        ByteRes = sizeof (APLCHAR)   * aplNELMSub;
-////////
-////////        break;
-////////
-////////    case ARRAY_HETERO:      // One value per APLHETERO/APLNESTED
-////////    case ARRAY_NESTED:
-////////        ByteRes = sizeof (APLHETERO) * aplNELMSub;
-////////
-////////        break;
-////////
-////////    case ARRAY_LIST:        // Handled above
-////////    defstop
-////////        break;
-////////} // End SWITCH
-////////
-////////// Add in the header and dimensions
-////////ByteRes += sizeof (VARARRAY_HEADER)
-////////         + sizeof (APLDIM) * aplNELMAxis;
 
         //***************************************************************
         // Loop through the result NELM allocating storage
@@ -679,7 +657,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                                                    lpMemAxis,
                                                    &hGlbSub,
                                                    &lpMemSub,
-                                                   lptkFunc);
+                                                   lptkFunc,
+                                                   lpplLocalVars);
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -733,7 +712,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                                                    lpMemAxis,
                                                    &hGlbSub,
                                                    &lpMemSub,
-                                                   lptkFunc);
+                                                   lptkFunc,
+                                                   lpplLocalVars);
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -782,7 +762,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                                                    lpMemAxis,
                                                    &hGlbSub,
                                                    &lpMemSub,
-                                                   lptkFunc);
+                                                   lptkFunc,
+                                                   lpplLocalVars);
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -831,7 +812,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                                                    lpMemAxis,
                                                    &hGlbSub,
                                                    &lpMemSub,
-                                                   lptkFunc);
+                                                   lptkFunc,
+                                                   lpplLocalVars);
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -880,7 +862,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                                                    lpMemAxis,
                                                    &hGlbSub,
                                                    &lpMemSub,
-                                                   lptkFunc);
+                                                   lptkFunc,
+                                                   lpplLocalVars);
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -931,7 +914,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                                                    lpMemAxis,
                                                    &hGlbSub,
                                                    &lpMemSub,
-                                                   lptkFunc);
+                                                   lptkFunc,
+                                                   lpplLocalVars);
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -987,7 +971,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                                                    lpMemAxis,
                                                    &hGlbSub,
                                                    &lpMemSub,
-                                                   lptkFunc);
+                                                   lptkFunc,
+                                                   lpplLocalVars);
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -1023,12 +1008,15 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
         } // End FOR/SWITCH
     } // End IF/ELSE
 NORMAL_EXIT:
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (lpMemRes)
     {
@@ -1079,7 +1067,7 @@ QUICK_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
         return NULL;
 } // End PrimFnMonLeftShoeGlb_EM
@@ -1099,13 +1087,14 @@ QUICK_EXIT:
 #endif
 
 BOOL PrimFnMonLeftShoeProto_EM
-    (HGLOBAL *lphGlbProto,
-     HGLOBAL  hGlbMT,
-     APLSTYPE aplTypeProto,
-     APLNELM  aplNELMSub,
-     APLNELM  aplNELMAxis,
-     APLSTYPE aplType,
-     LPTOKEN  lptkFunc)
+    (HGLOBAL      *lphGlbProto,     // Ptr to handle to prototype result
+     HGLOBAL       hGlbMT,          // Handle to empty (zilde or '')
+     APLSTYPE      aplTypeProto,    // Prototype type
+     APLNELM       aplNELMSub,      // Subarray NELM
+     APLNELM       aplNELMAxis,     // Axis NELM
+     APLSTYPE      aplType,         // Right arg type
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLUINT ByteRes,
@@ -1116,20 +1105,17 @@ BOOL PrimFnMonLeftShoeProto_EM
         *lphGlbProto = hGlbMT;
     else
     {
-        // Calculate storage for <aplNELMSub>
-        //   HGLOBALs in an array of variables of
-        //   rank <aplNELMAxis> and NELM <aplNELMSub>.
+        // Calculate space needed for the result
         ByteRes = CalcArraySize (aplTypeProto, aplNELMSub, aplNELMAxis);
-////////ByteRes = sizeof (VARARRAY_HEADER)
-////////        + sizeof (APLDIM)  * aplNELMAxis
-////////        + sizeofItem * aplNELMSub;
+
         // N.B.:  Conversion from APLUINT to UINT.
         Assert (ByteRes EQ (UINT) ByteRes);
         *lphGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!*lphGlbProto)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             return FALSE;
         } // End IF
 
@@ -1182,18 +1168,19 @@ BOOL PrimFnMonLeftShoeProto_EM
 #endif
 
 BOOL PrimFnMonLeftShoeGlbSub_EM
-    (APLUINT      ByteRes,
-     APLSTYPE     aplType,
-     APLNELM      aplNELMSub,
-     APLNELM      aplNELMAxis,
-     APLRANK      aplRankRes,
-     APLRANK      aplRankRht,
-     LPAPLNESTED  lpMemRes,
-     LPAPLDIM     lpMemDimRht,
-     LPAPLINT     lpMemAxis,
-     HGLOBAL     *lphGlbSub,
-     LPVOID      *lplpMemSub,
-     LPTOKEN      lptkFunc)
+    (APLUINT       ByteRes,         // # bytes in result
+     APLSTYPE      aplTypeSub,      // Subarray type
+     APLNELM       aplNELMSub,      // Subarray NELM
+     APLNELM       aplNELMAxis,     // Axis NELM
+     APLRANK       aplRankRes,      // Result rank
+     APLRANK       aplRankRht,      // Right arg rank
+     LPAPLNESTED   lpMemRes,        // Ptr to result memory
+     LPAPLDIM      lpMemDimRht,     // Ptr to right arg dimensions
+     LPAPLINT      lpMemAxis,       // Ptr to axis memory
+     HGLOBAL      *lphGlbSub,       // Ptr to subarray handle
+     LPVOID       *lplpMemSub,      // Ptr to ptr to subarray memory
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLINT uRht;
@@ -1207,7 +1194,8 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
     if (!*lphGlbSub)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return FALSE;
     } // End IF
 
@@ -1221,7 +1209,7 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
 
     // Fill in the subarray header
     lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = aplType;
+    lpHeader->ArrType    = aplTypeSub;
 ////lpHeader->Perm       = 0;       // Already zero from GHND
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -1258,10 +1246,11 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
 #endif
 
 LPYYSTYPE PrimFnDydLeftShoe_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Split cases based upon the right arg's token type
@@ -1272,15 +1261,16 @@ LPYYSTYPE PrimFnDydLeftShoe_EM
             Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must look inside the array
-            if (!lptkRhtArg->tkData.lpSym->stFlags.Imm)
+            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.lpSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnDydLeftShoeGlb_EM (lptkLftArg,
-                                                ClrPtrTypeDirGlb (lptkRhtArg->tkData.lpSym->stData.stGlbData),
+                                                ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
                                                 lptkAxis,
-                                                lptkFunc);
+                                                lptkFunc,
+                                                lpplLocalVars);
             } // End IF
 
             // Handle the immediate case
@@ -1289,7 +1279,8 @@ LPYYSTYPE PrimFnDydLeftShoe_EM
 
         case TKT_VARIMMED:
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             return NULL;
 
         case TKT_VARARRAY:
@@ -1299,10 +1290,12 @@ LPYYSTYPE PrimFnDydLeftShoe_EM
             return PrimFnDydLeftShoeGlb_EM (lptkLftArg,
                                             ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
                                             lptkAxis,
-                                            lptkFunc);
+                                            lptkFunc,
+                                            lpplLocalVars);
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             return NULL;
 
         defstop
@@ -1325,19 +1318,17 @@ LPYYSTYPE PrimFnDydLeftShoe_EM
 #endif
 
 LPYYSTYPE PrimFnDydLeftShoeGlb_EM
-    (LPTOKEN lptkLftArg,
-     HGLOBAL hGlbRht,
-     LPTOKEN lptkAxis,
-     LPTOKEN lptkFunc)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     HGLOBAL       hGlbRht,         // Handle to right arg
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLINT  aplAxis;        // The (one and only) axis value
     APLRANK aplRankRht;     // The rank of the right arg
     BOOL    bRet = TRUE;
-    UINT    YYLclIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    LPYYSTYPE lpYYRes;
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -1353,9 +1344,10 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
                            FALSE,           // TRUE iff axes must be contiguous
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
-                           &aplAxis,        // Return last axis value
+                          &aplAxis,         // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL))           // Return HGLOBAL with APLINT axis values
+                           NULL,            // Return HGLOBAL with APLINT axis values
+                           lpplLocalVars))  // Ptr to local plLocalVars
             return NULL;
     } else
     {
@@ -1364,6 +1356,9 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
     } // End IF/ELSE
 
     DbgBrk ();              // ***FINISHME***
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     // Split cases based upon the
 
@@ -1384,7 +1379,7 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
 ////} // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
         return NULL;
 } // End PrimFnDydLeftShoeGlb_EM

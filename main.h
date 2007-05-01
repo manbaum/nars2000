@@ -39,6 +39,8 @@ default:    \
 
 #ifdef DEBUG
 
+#define LCLODSAPI   ODSAPI
+
 #define DBGENTER    DbgMsgW (L"Entering" APPEND_NAME)
 #define DBGLEAVE    DbgMsgW (L"Leaving " APPEND_NAME)
 
@@ -67,6 +69,8 @@ DecrRefCntInd (hGlbData);
 
 #else
 
+#define LCLODSAPI
+
 #define DBGENTER
 #define DBGLEAVE
 
@@ -90,7 +94,8 @@ DecrRefCntInd (hGlbData);
 //*************************** Window Data ********************************
 
 // Define offsets in DBWNDCLASS window extra bytes
-#define GWLDB_EXTRA     0
+#define GWLDB_HWNDLB    0                                   // Window handle of Listbox
+#define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (long)  // Total # extra bytes
 
 // Define common offset between the Session Manager and Function Editor
 #define GWLSF_PERTAB    0                                   // HGLOBAL of corresponding PERTABDATA struc
@@ -118,6 +123,7 @@ DecrRefCntInd (hGlbData);
 
 // Define local window messages
 #define MYWM_MOVE           (WM_APP+ 0) // MF
+////#define MYWM_CREATECARET    (WM_APP+ 1) // All
 
 
 typedef enum tagEXTYPE

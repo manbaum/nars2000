@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- Tilde
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -77,10 +76,11 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTilde};
 #endif
 
 LPYYSTYPE PrimFnTilde_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -88,9 +88,9 @@ LPYYSTYPE PrimFnTilde_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
     else
-        return PrimFnDydTilde_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydTilde_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis,             lpplLocalVars);
 } // End PrimFnTilde_EM
 #undef  APPEND_NAME
 
@@ -192,27 +192,28 @@ APLBOOL PrimFnMonTildeBisF
 #endif
 
 LPYYSTYPE PrimFnDydTilde_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    APLSTYPE aplTypeLft,
-             aplTypeRht;
-    APLNELM  aplNELMLft,
-             aplNELMRht;
-    APLRANK  aplRankLft,
-             aplRankRht;
-    HGLOBAL  hGlbLft,
-             hGlbRht;
-    LPVOID   lpMemLft,
-             lpMemRht;
-    BOOL     bRet = TRUE;
-    UINT     YYLclIndex;
+    APLSTYPE  aplTypeLft,
+              aplTypeRht;
+    APLNELM   aplNELMLft,
+              aplNELMRht;
+    APLRANK   aplRankLft,
+              aplRankRht;
+    HGLOBAL   hGlbLft,
+              hGlbRht;
+    LPVOID    lpMemLft,
+              lpMemRht;
+    BOOL      bRet = TRUE;
+    LPYYSTYPE lpYYRes;
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -222,8 +223,9 @@ LPYYSTYPE PrimFnDydTilde_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
+                                   lptkAxis,
+                                   lpplLocalVars);
+        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
     } // End IF
 
     DbgBrk ();          // ***FINISHME***
@@ -240,7 +242,8 @@ LPYYSTYPE PrimFnDydTilde_EM
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
+                                   lptkLftArg,
+                                   lpplLocalVars);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -272,9 +275,11 @@ ERROR_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
-        return NULL;
+    {
+        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+    } // End IF/ELSE
 } // End PrimFnDydTilde_EM
 
 

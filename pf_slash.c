@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- Slash
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -30,10 +29,11 @@
 #endif
 
 LPYYSTYPE PrimFnSlash_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -42,9 +42,9 @@ LPYYSTYPE PrimFnSlash_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonSlash_EM    (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonSlash_EM    (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return PrimFnDydSlash_EM    (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydSlash_EM    (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End PrimFnSlash_EM
 #undef  APPEND_NAME
 
@@ -62,12 +62,13 @@ LPYYSTYPE PrimFnSlash_EM
 #endif
 
 LPYYSTYPE PrimFnMonSlash_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc);
+    return PrimFnSyntaxError_EM (lptkFunc, lpplLocalVars);
 } // End PrimFnMonSlash_EM
 #undef  APPEND_NAME
 
@@ -85,10 +86,11 @@ LPYYSTYPE PrimFnMonSlash_EM
 #endif
 
 LPYYSTYPE PrimFnDydSlash_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLSTYPE  aplTypeLft,
@@ -139,12 +141,9 @@ LPYYSTYPE PrimFnDydSlash_EM
               aplCharRep;
     APLNESTED aplNestRht,
               aplNestRep;
-    UINT      YYLclIndex,
-              uBitMask,
+    LPYYSTYPE lpYYRes;
+    UINT      uBitMask,
               uBitIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -167,7 +166,8 @@ LPYYSTYPE PrimFnDydSlash_EM
                            NULL,            // Return TRUE iff fractional values present
                            &aplAxis,        // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL))           // Return HGLOBAL with APLINT axis values
+                           NULL,            // Return HGLOBAL with APLINT axis values
+                           lpplLocalVars))  // Ptr to local plLocalVars
             return NULL;
     } else
     {
@@ -188,7 +188,8 @@ LPYYSTYPE PrimFnDydSlash_EM
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
+                                   lptkLftArg,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -204,7 +205,8 @@ LPYYSTYPE PrimFnDydSlash_EM
         if (aplNELMLft NE lpMemDimRht[aplAxis])
         {
             ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkLftArg);
+                                       lptkLftArg,
+                                       lpplLocalVars);
             goto ERROR_EXIT;
         } // End IF
     } // End IF
@@ -279,7 +281,8 @@ LPYYSTYPE PrimFnDydSlash_EM
         if (!hGlbRep)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkLftArg);
+                                       lptkLftArg,
+                                       lpplLocalVars);
             goto ERROR_EXIT;
         } // End IF
 
@@ -397,7 +400,8 @@ LPYYSTYPE PrimFnDydSlash_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -625,18 +629,22 @@ LPYYSTYPE PrimFnDydSlash_EM
             break;
     } // End SWITCH
 PROTO_EXIT:
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkLftArg);
+                               lptkLftArg,
+                               lpplLocalVars);
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:
@@ -671,7 +679,7 @@ NORMAL_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
         return NULL;
 } // End PrimFnDydSlash_EM

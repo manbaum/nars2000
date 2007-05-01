@@ -32,8 +32,7 @@ UINT YYResIndex                 // Current index into YYRes
 EXTERN
 HWND hWndMC,                    // Global MDI Client window handle
      hWndSM,                    // ...    Session Manager ...
-     hWndDB,                    // ...    Debugger     ...
-     hWndLB;                    // ...    Debugger's Listbox
+     hWndDB;                    // ...    Debugger     ...
 
 EXTERN
 WNDPROC lpfnOldListboxWndProc;  // Save area for old Listbox procedure
@@ -95,7 +94,7 @@ UINT        uHashMask           // Mask for all hash lookups
 #endif
 ;
 
-// Symbol table variables
+// Symbol & hash table variables
 EXTERN
 LPSYMENTRY  lpSymTab,           // Ptr to start of symbol table
             lpSymTabNext;       // Ptr to next available STE
@@ -144,28 +143,31 @@ EXEC_CODES ExecCode             // Exception code
 ;
 
 EXTERN
-BOOL bTabTextState;             // Tab's text state:  Highlight (TRUE) or Normal (FALSE)
+BOOL bTabTextState              // Tab's text state:  Highlight (TRUE) or Normal (FALSE)
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+;
 
-#define INIT_PERTABVARS                     \
-    iMaxNumAlp       = DEF_NUMALP_MAXSIZE;  \
-    iMaxString       = DEF_STRING_MAXSIZE;  \
-    uHashMask        = DEF_HSHTAB_HASHMASK; \
-    iSymTabTotalSize = DEF_SYMTAB_INITSIZE; \
-    iHshTabTotalSize = DEF_HSHTAB_INITSIZE; \
-    iHshTabBaseSize  = DEF_HSHTAB_INITSIZE; \
-    iHshTabIncr      = DEF_HSHTAB_INCR;     \
-    ExecCode         = EXEC_SUCCESS;        \
+#define INIT_PERTABVARS                                     \
+    iMaxNumAlp       = DEF_NUMALP_MAXSIZE;                  \
+    iMaxString       = DEF_STRING_MAXSIZE;                  \
     hGlbQuadWSID     = CopySymGlbDirGlb (hGlbQuadWSID_CWS); \
+    uHashMask        = DEF_HSHTAB_HASHMASK;                 \
+    iSymTabTotalSize = DEF_SYMTAB_INITSIZE;                 \
+    iHshTabTotalSize = DEF_HSHTAB_INITSIZE;                 \
+    iHshTabBaseSize  = DEF_HSHTAB_INITSIZE;                 \
+    iHshTabIncr      = DEF_HSHTAB_INCR;                     \
+    ExecCode         = EXEC_SUCCESS;                        \
     bTabTextState    = FALSE;
 
 
 #ifndef PERTABVARS
 #define PERTABVARS                                  \
     /* Save/restore the various handles and ptrs */ \
-    Assign (hWndMC               );                 \
+/***Assign (hWndMC               ); ***/            \
     Assign (hWndSM               );                 \
     Assign (hWndDB               );                 \
-    Assign (hWndLB               );                 \
     Assign (lpfnOldListboxWndProc);                 \
     Assign (lpfnOldEditCtrlWndProc);                \
     Assign (lpwszCurLine         );                 \

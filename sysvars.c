@@ -2,7 +2,6 @@
 //  NARS2000 -- System Variable Routines
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -459,9 +458,10 @@ BOOL AssignCharScalar_EM
 #endif
 
 BOOL ValidateBoolean_EM
-    (LPTOKEN   lptkName,
-     LPTOKEN   lpToken,
-     LPAPLBOOL lpVal)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPAPLBOOL     lpVal,           // Ptr to global var
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPVOID   lpMem, lpData;
@@ -479,10 +479,10 @@ BOOL ValidateBoolean_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
                 // Get the HGLOBAL
-                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL processing
             } // End IF
@@ -493,24 +493,24 @@ BOOL ValidateBoolean_EM
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
-            switch (lpToken->tkData.lpSym->stFlags.ImmType)
+            switch (lpToken->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    *lpVal = lpToken->tkData.lpSym->stData.stBoolean;
+                    *lpVal = lpToken->tkData.tkSym->stData.stBoolean;
 
                     break;
 
                 case IMMTYPE_INT:
                     // Test the value
-                    bRet = (lpToken->tkData.lpSym->stData.stInteger EQ 0
-                         || lpToken->tkData.lpSym->stData.stInteger EQ 1);
+                    bRet = (lpToken->tkData.tkSym->stData.stInteger EQ 0
+                         || lpToken->tkData.tkSym->stData.stInteger EQ 1);
                     if (bRet)
-                        *lpVal = (APLBOOL) (lpToken->tkData.lpSym->stData.stInteger);
+                        *lpVal = (APLBOOL) (lpToken->tkData.tkSym->stData.stInteger);
                     break;
 
                 case IMMTYPE_FLOAT:
                     // Convert the value to an integer using System CT
-                    aplInteger = FloatToAplint_SCT (lpToken->tkData.lpSym->stData.stFloat,
+                    aplInteger = FloatToAplint_SCT (lpToken->tkData.tkSym->stData.stFloat,
                                                     &bRet);
                     // Test the value
                     bRet = bRet && (aplInteger EQ 0 || aplInteger EQ 1);
@@ -564,8 +564,9 @@ BOOL ValidateBoolean_EM
             goto NORMAL_EXIT;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME, lpToken);
-
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lpToken,
+                                       lpplLocalVars);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -654,10 +655,12 @@ NORMAL_EXIT:
     // If in error, set error message;
     //   otherwise, save the value in the name
     if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg, lpToken);
+        ErrorMessageIndirectToken (lpwErrMsg,
+                                   lpToken,
+                                   lpplLocalVars);
     else
     {
-        lptkName->tkData.lpSym->stData.stBoolean = *lpVal;
+        lptkName->tkData.tkSym->stData.stBoolean = *lpVal;
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -684,11 +687,12 @@ NORMAL_EXIT:
 #endif
 
 BOOL ValidateInteger_EM
-    (LPTOKEN   lptkName,
-     LPTOKEN   lpToken,
-     UINT      uValidLo,        // Low range value (inclusive)
-     UINT      uValidHi,        // High ...
-     LPAPLINT  lpVal)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lptkExpr,        // Ptr to value token
+     UINT          uValidLo,        // Low range value (inclusive)
+     UINT          uValidHi,        // High ...
+     LPAPLINT      lpVal,           // Ptr to global var
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPVOID   lpMem, lpData;
@@ -698,18 +702,18 @@ BOOL ValidateInteger_EM
     HGLOBAL  hGlbData;
 
     // Split cases based upon the token type
-    switch (lpToken->tkFlags.TknType)
+    switch (lptkExpr->tkFlags.TknType)
     {
         case TKT_VARNAMED:
             DbgBrk ();      // ***TESTME***
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkExpr->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            if (!lptkExpr->tkData.tkSym->stFlags.Imm)
             {
                 // Get the HGLOBAL
-                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+                hGlbData = lptkExpr->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL processing
             } // End IF
@@ -717,14 +721,14 @@ BOOL ValidateInteger_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkExpr->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
-            switch (lpToken->tkData.lpSym->stFlags.ImmType)
+            switch (lptkExpr->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
                     // Get the value
-                    aplInteger = lpToken->tkData.lpSym->stData.stBoolean;
+                    aplInteger = lptkExpr->tkData.tkSym->stData.stBoolean;
 
                     // Test the value
                     if (uValidLo <= aplInteger
@@ -736,7 +740,7 @@ BOOL ValidateInteger_EM
 
                 case IMMTYPE_INT:
                     // Get the value
-                    aplInteger = lpToken->tkData.lpSym->stData.stInteger;
+                    aplInteger = lptkExpr->tkData.tkSym->stData.stInteger;
 
                     // Test the value
                     if (uValidLo <= aplInteger
@@ -748,7 +752,7 @@ BOOL ValidateInteger_EM
 
                 case IMMTYPE_FLOAT:
                     // Convert the value to an integer using System CT
-                    aplInteger = FloatToAplint_SCT (lpToken->tkData.lpSym->stData.stFloat,
+                    aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkSym->stData.stFloat,
                                                     &bRet);
                     // Test the value
                     if (uValidLo <= aplInteger
@@ -768,11 +772,11 @@ BOOL ValidateInteger_EM
 
         case TKT_VARIMMED:
             // Split cases based upon the token immediate type
-            switch (lpToken->tkFlags.ImmType)
+            switch (lptkExpr->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
                     // Get the value
-                    aplInteger = lpToken->tkData.tkBoolean;
+                    aplInteger = lptkExpr->tkData.tkBoolean;
 
                     // Test the value
                     if (uValidLo <= aplInteger
@@ -784,7 +788,7 @@ BOOL ValidateInteger_EM
 
                 case IMMTYPE_INT:
                     // Get the value
-                    aplInteger = lpToken->tkData.tkInteger;
+                    aplInteger = lptkExpr->tkData.tkInteger;
 
                     // Test the value
                     if (uValidLo <= aplInteger
@@ -796,7 +800,7 @@ BOOL ValidateInteger_EM
 
                 case IMMTYPE_FLOAT:
                     // Convert the value to an integer using System CT
-                    aplInteger = FloatToAplint_SCT (lpToken->tkData.tkFloat,
+                    aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkFloat,
                                                     &bRet);
                     // Test the value
                     if (uValidLo <= aplInteger
@@ -815,14 +819,15 @@ BOOL ValidateInteger_EM
             goto NORMAL_EXIT;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME, lpToken);
-
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lptkExpr,
+                                       lpplLocalVars);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
-            hGlbData = lpToken->tkData.tkGlbData;
+            hGlbData = lptkExpr->tkData.tkGlbData;
 
             break;          // Continue with HGLOBAL processing
 
@@ -911,10 +916,12 @@ NORMAL_EXIT:
     // If in error, set error message;
     //   otherwise, save the value in the name
     if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg, lpToken);
+        ErrorMessageIndirectToken (lpwErrMsg,
+                                   lptkExpr,
+                                   lpplLocalVars);
     else
     {
-        lptkName->tkData.lpSym->stData.stInteger = *lpVal;
+        lptkName->tkData.tkSym->stData.stInteger = *lpVal;
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -942,11 +949,12 @@ NORMAL_EXIT:
 #endif
 
 BOOL ValidateFloat_EM
-    (LPTOKEN    lptkName,
-     LPTOKEN    lpToken,
-     APLFLOAT   fValidLo,       // Low range value (inclusive)
-     APLFLOAT   fValidHi,       // High ...
-     LPAPLFLOAT lpVal)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     APLFLOAT      fValidLo,        // Low range value (inclusive)
+     APLFLOAT      fValidHi,        // High ...
+     LPAPLFLOAT    lpVal,           // Ptr to global value handle
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPVOID   lpMem, lpData;
@@ -964,10 +972,10 @@ BOOL ValidateFloat_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
                 // Get the HGLOBAL
-                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL processing
             } // End IF
@@ -978,11 +986,11 @@ BOOL ValidateFloat_EM
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
-            switch (lpToken->tkData.lpSym->stFlags.ImmType)
+            switch (lpToken->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
                     // Get the value
-                    aplFloat = lpToken->tkData.lpSym->stData.stBoolean;
+                    aplFloat = lpToken->tkData.tkSym->stData.stBoolean;
 
                     // Test the value
                     if (fValidLo <= aplFloat
@@ -994,7 +1002,7 @@ BOOL ValidateFloat_EM
 
                 case IMMTYPE_INT:
                     // Get the value
-                    aplFloat = (APLFLOAT) (lpToken->tkData.lpSym->stData.stInteger);
+                    aplFloat = (APLFLOAT) (lpToken->tkData.tkSym->stData.stInteger);
 
                     // Test the value
                     if (fValidLo <= aplFloat
@@ -1005,7 +1013,7 @@ BOOL ValidateFloat_EM
                     break;
 
                 case IMMTYPE_FLOAT:
-                    aplFloat = lpToken->tkData.lpSym->stData.stFloat;
+                    aplFloat = lpToken->tkData.tkSym->stData.stFloat;
 
                     // Test the value
                     if (fValidLo <= aplFloat
@@ -1072,8 +1080,9 @@ BOOL ValidateFloat_EM
             goto NORMAL_EXIT;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME, lpToken);
-
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lpToken,
+                                       lpplLocalVars);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1168,10 +1177,12 @@ NORMAL_EXIT:
     // If in error, set error message;
     //   otherwise, save the value in the name
     if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg, lpToken);
+        ErrorMessageIndirectToken (lpwErrMsg,
+                                   lpToken,
+                                   lpplLocalVars);
     else
     {
-        lptkName->tkData.lpSym->stData.stFloat = *lpVal;
+        lptkName->tkData.tkSym->stData.stFloat = *lpVal;
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -1198,9 +1209,10 @@ NORMAL_EXIT:
 #endif
 
 BOOL ValidateCharVector_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken,
-     HGLOBAL  *lpVal)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     HGLOBAL      *lpVal,           // Ptr to global value handle
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPVOID   lpMem, lpData;
@@ -1224,10 +1236,10 @@ BOOL ValidateCharVector_EM
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
-            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
                 // Get the HGLOBAL
-                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL processing
             } // End IF
@@ -1238,7 +1250,7 @@ BOOL ValidateCharVector_EM
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
-            switch (lpToken->tkData.lpSym->stFlags.ImmType)
+            switch (lpToken->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
                 case IMMTYPE_INT:
@@ -1248,7 +1260,7 @@ BOOL ValidateCharVector_EM
                     break;
 
                 case IMMTYPE_CHAR:
-                    aplChar = lpToken->tkData.lpSym->stData.stChar;
+                    aplChar = lpToken->tkData.tkSym->stData.stChar;
 
                     bScalar = TRUE;
 
@@ -1279,8 +1291,9 @@ BOOL ValidateCharVector_EM
             goto NORMAL_EXIT;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME, lpToken);
-
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lpToken,
+                                       lpplLocalVars);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1359,7 +1372,8 @@ BOOL ValidateCharVector_EM
     goto NORMAL_EXIT;
 
 MAKE_VECTOR:
-    // Allocate space for a one-element character vctor
+    // Calculate space needed for the result
+    //   (a one-element character vctor)
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 1, 1);
 ////ByteRes = sizeof (VARARRAY_HEADER)
 ////        + sizeof (APLDIM) * 1       // It's a vector
@@ -1375,9 +1389,9 @@ MAKE_VECTOR:
         // Fill in the header values
         lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
-////    lpHeader->Perm       = 0;       // Already zero from GHND
-////    lpHeader->SysVar     = 0;       // Already zero from GHND
-////    lpHeader->RefCnt     = 0;       // Already zero from GHND
+////////lpHeader->Perm       = 0;       // Already zero from GHND
+////////lpHeader->SysVar     = 0;       // Already zero from GHND
+////////lpHeader->RefCnt     = 0;       // Already zero from GHND
         lpHeader->NELM       = 1;
         lpHeader->Rank       = 1;
 
@@ -1399,10 +1413,12 @@ NORMAL_EXIT:
     // If in error, set error message;
     //   otherwise, save the value in the name
     if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg, lpToken);
+        ErrorMessageIndirectToken (lpwErrMsg,
+                                   lpToken,
+                                   lpplLocalVars);
     else
     {
-        lptkName->tkData.lpSym->stData.stGlbData = *lpVal;
+        lptkName->tkData.tkSym->stData.stGlbData = *lpVal;
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -1419,14 +1435,15 @@ NORMAL_EXIT:
 //***************************************************************************
 
 BOOL ValidateALX_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadALX);
+    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadALX, lpplLocalVars);
 } // End ValidateALX_EM
 
 
@@ -1437,15 +1454,16 @@ BOOL ValidateALX_EM
 //***************************************************************************
 
 BOOL ValidateCT_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure the argument is a real scalar or
     //   one-element vector (demoted to a scalar)
     //   between 0 and 1E-10 inclusive.
 
-    return ValidateFloat_EM (lptkName, lpToken, 0, 1E-10, &fQuadCT);
+    return ValidateFloat_EM (lptkName, lpToken, 0, 1E-10, &fQuadCT, lpplLocalVars);
 } // End ValidateCT_EM
 
 
@@ -1456,14 +1474,15 @@ BOOL ValidateCT_EM
 //***************************************************************************
 
 BOOL ValidateELX_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector
 
-    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadELX);
+    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadELX, lpplLocalVars);
 } // End ValidateELX_EM
 
 
@@ -1478,14 +1497,15 @@ BOOL ValidateELX_EM
 //***************************************************************************
 
 BOOL ValidateIO_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure the argument is a Boolean scalar or
     //   one-element vector (demoted to a scalar).
 
-    return ValidateBoolean_EM (lptkName, lpToken, &bQuadIO);
+    return ValidateBoolean_EM (lptkName, lpToken, &bQuadIO, lpplLocalVars);
 } // End ValidateIO_EM
 
 
@@ -1496,14 +1516,15 @@ BOOL ValidateIO_EM
 //***************************************************************************
 
 BOOL ValidateLX_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadLX);
+    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadLX, lpplLocalVars);
 } // End ValidateLX_EM
 
 
@@ -1514,15 +1535,16 @@ BOOL ValidateLX_EM
 //***************************************************************************
 
 BOOL ValidatePP_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to 17, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 1, 17, &uQuadPP);
+    return ValidateInteger_EM (lptkName, lpToken, 1, 17, &uQuadPP, lpplLocalVars);
 } // End ValidatePP_EM
 
 
@@ -1539,8 +1561,9 @@ BOOL ValidatePP_EM
 #endif
 
 BOOL ValidatePR_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     HGLOBAL hGlbData;
@@ -1562,10 +1585,10 @@ BOOL ValidatePR_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
                 // Get the HGLOBAL
-                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL processing
             } // End IF
@@ -1586,7 +1609,7 @@ BOOL ValidatePR_EM
                     break;
 
                 case IMMTYPE_CHAR:
-                    cQuadPR = lpToken->tkData.lpSym->stData.stChar;
+                    cQuadPR = lpToken->tkData.tkSym->stData.stChar;
 
                     goto MAKE_SCALAR;
             } // End SWITCH
@@ -1614,7 +1637,8 @@ BOOL ValidatePR_EM
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkName);
+                                       lptkName,
+                                       lpplLocalVars);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1686,14 +1710,16 @@ MAKE_SCALAR:
     // If in error, set error message;
     //   otherwise, save the value in the name
     if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg, lpToken);
+        ErrorMessageIndirectToken (lpwErrMsg,
+                                   lpToken,
+                                   lpplLocalVars);
     else
     {
-        lptkName->tkData.lpSym->stFlags.Imm = (cQuadPR NE 0);
+        lptkName->tkData.tkSym->stFlags.Imm = (cQuadPR NE 0);
         if (cQuadPR EQ 0)
-            lptkName->tkData.lpSym->stData.stGlbData = hGlbMTChar;
+            lptkName->tkData.tkSym->stData.stGlbData = hGlbMTChar;
         else
-            lptkName->tkData.lpSym->stData.stChar = cQuadPR;
+            lptkName->tkData.tkSym->stData.stChar = cQuadPR;
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -1709,15 +1735,16 @@ MAKE_SCALAR:
 //***************************************************************************
 
 BOOL ValidatePW_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 30 to 255, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 30, 255, &uQuadPW);
+    return ValidateInteger_EM (lptkName, lpToken, 30, 255, &uQuadPW, lpplLocalVars);
 } // End ValidatePW_EM
 
 
@@ -1728,15 +1755,16 @@ BOOL ValidatePW_EM
 //***************************************************************************
 
 BOOL ValidateRL_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to (-2)+2*31, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 1, 0x7FFFFFFE, &uQuadRL);
+    return ValidateInteger_EM (lptkName, lpToken, 1, 0x7FFFFFFE, &uQuadRL, lpplLocalVars);
 } // End ValidateRL_EM
 
 
@@ -1753,8 +1781,9 @@ BOOL ValidateRL_EM
 #endif
 
 BOOL ValidateSA_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPVOID   lpMem, lpData;
@@ -1776,10 +1805,10 @@ BOOL ValidateSA_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
                 // Get the HGLOBAL
-                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL processing
             } // End IF
@@ -1793,12 +1822,14 @@ BOOL ValidateSA_EM
 
         case TKT_VARIMMED:
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkName);
+                                       lptkName,
+                                       lpplLocalVars);
             return FALSE;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkName);
+                                       lptkName,
+                                       lpplLocalVars);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1903,11 +1934,13 @@ BOOL ValidateSA_EM
     // If in error, set error message;
     //   otherwise, save the value in the name
     if (!bRet)
-        ErrorMessageIndirectToken (lpwErrMsg, lpToken);
+        ErrorMessageIndirectToken (lpwErrMsg,
+                                   lpToken,
+                                   lpplLocalVars);
     else
     {
-        FreeResultGlobalVar (lptkName->tkData.lpSym->stData.stGlbData);
-        lptkName->tkData.lpSym->stData.stGlbData = MakeGlbTypeGlb (hGlbRes);
+        FreeResultGlobalVar (lptkName->tkData.tkSym->stData.stGlbData);
+        lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeGlb (hGlbRes);
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -1929,8 +1962,9 @@ BOOL ValidateSA_EM
 #endif
 
 BOOL ValidateWSID_EM
-    (LPTOKEN  lptkName,
-     LPTOKEN   lpToken)
+    (LPTOKEN       lptkName,        // Ptr to name token
+     LPTOKEN       lpToken,         // Ptr to value token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)

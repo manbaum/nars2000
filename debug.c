@@ -5,7 +5,6 @@
 #define WINVER       0x0501 // Needed for WINUSER.H definitions
 #define _WIN32_WINNT 0x0501 // ...
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <windowsx.h>
@@ -15,11 +14,19 @@
 #include "resource.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
+#include "threads.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
+
+#define MYWM_INIT_DB        (WM_USER + 0)
+#define MYWM_DBGMSGA        (WM_USER + 1)
+#define MYWM_DBGMSGW        (WM_USER + 2)
+#define MYWM_DBGMSG_COM     (WM_USER + 3)
+#define MYWM_DBGMSG_CLR     (WM_USER + 4)
 
 
 //***************************************************************************
@@ -105,16 +112,46 @@ LRESULT APIENTRY DBWndProc
                iIndex,
                iHeight;
     RECT       rcClient;
+    HWND       hWndLB;
 
 #define PROP_LINENUM    "iLineNum"
 
-////ODSAPI ("DB: ", hWnd, message, wParam, lParam);
+////LCLODSAPI ("DB: ", hWnd, message, wParam, lParam);
+
+    // Get the window handle of the Listbox
+    (long) hWndLB = GetWindowLong (hWnd, GWLDB_HWNDLB);
+
     switch (message)
     {
         case WM_NCCREATE:           // lpcs = (LPCREATESTRUCT) lParam
+        {
+////        HGLOBAL      hGlbPTD;
+////        LPPERTABDATA lpMemPTD;
+////////////HANDLE       hTimer;
+
+////        DbgBrk ();
+
+#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
+
+////        hGlbPTD = ((LPCDB_THREAD) lpMDIcs->lParam)->hGlbPTD;
+////////////hTimer  = ((LPCDB_THREAD) lpMDIcs->lParam)->hTimer;
+
+////        // Lock the memory to get a ptr to it
+////        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+////        lpMemPTD->hWndDB = hWndDB = hWnd;
+
+////        // We no longer need this ptr
+////        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+////////////// Tell our caller to proceed
+////////////CancelWaitableTimer (hTimer);
+
             hWndDB = hWnd;
 
             break;                  // Continue with next handler
+#undef  lpMDIcs
+        } // End WM_NCCREATE
 
         case WM_CREATE:
             iLineNum = 0;
@@ -140,11 +177,14 @@ LRESULT APIENTRY DBWndProc
                           (HMENU) IDWC_DB_LB,   // ID
                           _hInstance,           // Instance
                           0);                   // lParam
+            // Save for later use
+            SetWindowLong (hWnd, GWLDB_HWNDLB, (long) hWndLB);
+
             // Show the windows
             ShowWindow (hWndLB, SW_SHOWNORMAL);
             ShowWindow (hWnd,   SW_SHOWNORMAL);
 
-            // Subclass the LISTBOX so we can pass
+            // Subclass the List Box so we can pass
             //   certain WM_KEYDOWN messages to the
             //   session manager.
             lpfnOldListboxWndProc = (WNDPROC)
@@ -153,6 +193,19 @@ LRESULT APIENTRY DBWndProc
                               (long) (WNDPROC) &LclListboxWndProc);
             // Initialize window-specific resources
             DB_Create (hWnd);
+
+            // Use Post here as we need to wait for the LB window
+            //   to be drawn.
+            PostMessage (hWnd, MYWM_INIT_DB, 0, 0);
+
+            return FALSE;           // We handled the msg
+
+        case MYWM_INIT_DB:
+            // Tell the Listbox Control about its font
+            SendMessageW (hWndLB, WM_SETFONT, (WPARAM) hFontSM, TRUE);
+
+            // Make sure we can communicate between windows
+            AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
             return FALSE;           // We handled the msg
 
@@ -194,7 +247,7 @@ LRESULT APIENTRY DBWndProc
 #undef  nWidth
 #undef  fwSizeType
 
-        case WM_USER + 0:           // Single-char message
+        case MYWM_DBGMSGA:          // Single-char message
             iLineNum = (int) GetProp (hWnd, PROP_LINENUM);
 
             // Format the string with a preceding line #
@@ -207,11 +260,11 @@ LRESULT APIENTRY DBWndProc
             SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
             // Call common code
-            SendMessageW (hWnd, WM_USER + 2, 0, (LPARAM) wszTemp);
+            SendMessageW (hWnd, MYWM_DBGMSG_COM, 0, (LPARAM) wszTemp);
 
             return FALSE;           // We handled the msg
 
-        case WM_USER + 1:           // Double-char message
+        case MYWM_DBGMSGW:          // Double-char message
             iLineNum = (int) GetProp (hWnd, PROP_LINENUM);
 
             // Format the string with a preceding line #
@@ -222,11 +275,11 @@ LRESULT APIENTRY DBWndProc
             SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
             // Call common code
-            SendMessageW (hWnd, WM_USER + 2, 0, (LPARAM) wszTemp);
+            SendMessageW (hWnd, MYWM_DBGMSG_COM, 0, (LPARAM) wszTemp);
 
             return FALSE;           // We handled the msg
 
-        case WM_USER + 2:           // Common code
+        case MYWM_DBGMSG_COM:       // Common code
             iIndex = SendMessageW (hWndLB, LB_ADDSTRING, 0, lParam);
 
             // Ensure the item just added is visible
@@ -244,7 +297,7 @@ LRESULT APIENTRY DBWndProc
 
             return FALSE;           // We handled the msg
 
-        case WM_USER + 10:
+        case MYWM_DBGMSG_CLR:
             // Start over again
             SendMessage (hWndLB, LB_RESETCONTENT, 0, 0);
 ////////////iLineNum = (int) GetProp (PROP_LINENUM);
@@ -267,7 +320,7 @@ LRESULT APIENTRY DBWndProc
             return FALSE;           // We handled the msg
     } // End SWITCH
 
-////ODSAPI ("DBZ:", hWnd, message, wParam, lParam);
+////LCLODSAPI ("DBZ:", hWnd, message, wParam, lParam);
     return DefMDIChildProc (hWnd, message, wParam, lParam);
 } // End DBWndProc
 #endif
@@ -495,7 +548,7 @@ void DbgMsg
 
 {
     if (hWndDB)
-        SendMessage (hWndDB, WM_USER + 0, 0, (LPARAM) szTemp);
+        SendMessage (hWndDB, MYWM_DBGMSGA, 0, (LPARAM) szTemp);
 } // End DbgMsg
 #endif
 
@@ -512,7 +565,7 @@ void DbgMsgW
 
 {
     if (hWndDB)
-        SendMessageW (hWndDB, WM_USER + 1, 0, (LPARAM) wszTemp);
+        SendMessageW (hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
 } // End DbgMsgW
 #endif
 
@@ -528,7 +581,7 @@ void DbgClr
     (void)
 
 {
-    PostMessage (hWndDB, WM_USER + 10, 0, 0);
+    PostMessage (hWndDB, MYWM_DBGMSG_CLR, 0, 0);
 } // End DbgClr
 #endif
 

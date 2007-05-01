@@ -746,6 +746,10 @@ HGLOBAL ExecuteLine
     HGLOBAL   hGlbToken;        // Handle of tokenized line
     UINT      uLinePos,         // Char position of start of line
               uLineLen;         // Line length
+    HWND      hWndMC;           // Window handle of MDI Client
+
+    // Get the window handle of the MDI Client
+    hWndMC = GetParent (GetParent (hWndEC));
 
     // Ensure we calculated the lengths properly
     if (sizeof (fsaColTable) NE (COL_LENGTH * sizeof (FSA_ACTION) * FSA_LENGTH))
@@ -828,7 +832,7 @@ HGLOBAL ExecuteLine
                 // ***FIXME***
                 DbgMsg ("Function definition");
 #endif
-                if (!CreateFcnWindow (lpwszLine))
+                if (!CreateFcnWindow (lpwszLine, hWndMC))
                 {
                     // ***FIXME*** -- Anything to do here??
 
@@ -859,12 +863,12 @@ HGLOBAL ExecuteLine
                     break;
 
                 // Run the parser in a separate thread
-
-
-
-                ParseLine (hGlbToken, lpwszCompLine);
-                Untokenize (hGlbToken);
-                DbgGlobalFree (hGlbToken); hGlbToken = ghGlbToken = NULL;
+                ParseLine (hGlbToken,
+                           lpwszCompLine,
+                           (HGLOBAL) GetProp (hWndMC, "PTD"),
+                           TRUE);           // Parseline to free hGlbToken on exit
+////////////////Untokenize (hGlbToken);
+////////////////DbgGlobalFree (hGlbToken); hGlbToken = NULL;
 
                 break;
         } // End SWITCH
@@ -872,7 +876,10 @@ HGLOBAL ExecuteLine
     {
         // Tokenize and parse the line
         hGlbToken = Tokenize_EM (lpwszCompLine);
-        ParseLine (hGlbToken, lpwszCompLine);
+        ParseLine (hGlbToken,
+                   lpwszCompLine,
+                   (HGLOBAL) GetProp (hWndMC, "PTD"),
+                   FALSE);                  // ParseLine NOT to free hGlbToken on exit
     } // End IF/ELSE
 
     // Free the virtual memory for the complete line
@@ -1482,7 +1489,7 @@ BOOL fnPrmDone
     {
         // Mark the data as a primitive function
         tkFlags.TknType = TKT_FCNIMMED;
-        tkFlags.ImmType = IMMTYPE_PRIMFCN;
+        tkFlags.ImmType = GetImmTypeFcn (*lptkLocalVars->lpwsz);
     } // End IF/ELSE
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
@@ -1869,10 +1876,6 @@ BOOL fnQuoDone
         //   one dimension (it's a vector), and the string
         //   excluding the terminating zero.
         hGlb = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, iStringLen, 1));
-////////hGlb = DbgGlobalAlloc (GHND,
-////////                       sizeof (VARARRAY_HEADER)
-////////                     + sizeof (APLDIM) * 1
-////////                     + iStringLen * sizeof (WCHAR));
         if (!hGlb)
         {
             ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
@@ -2208,16 +2211,13 @@ LPYYSTYPE WaitForInput
      LPTOKEN lptkFunc)              // Ptr to "function" token
 
 {
-    HANDLE   hTimer;
-    char     szTimer[32];
+    HANDLE        hTimer;
+    char          szTimer[32];
     LARGE_INTEGER waitTime;
-    DWORD    dwWaitRes = WAIT_TIMEOUT;
-    UINT     YYLclIndex;
+    DWORD         dwWaitRes = WAIT_TIMEOUT;
+    LPYYSTYPE     lpYYRes;
 
     DbgBrk ();
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
 
     // Create a unique name for the timer object
     wsprintf (szTimer, "%s%08X", bQuoteQuadInput ? "QuoteQuadInput" : "QuadInput", hWnd);
@@ -2240,14 +2240,17 @@ LPYYSTYPE WaitForInput
         dwWaitRes = WaitForSingleObject (hTimer,    // Handle to timer object
                                          10000);    // 10000 x 1 millisecond = 10 second
 
-    // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-//  YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);     // ***FIXME***
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
-    return &YYRes[YYLclIndex];
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+  //lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);     // ***FIXME***
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 } // End WaitForInput
 
 
@@ -2299,7 +2302,6 @@ HGLOBAL Tokenize_EM
 
     // Allocate some memory for the tokens
     // If we need more, we'll GlobalRealloc
-    ghGlbToken =
     tkLocalVars.hGlbToken = DbgGlobalAlloc (GHND, DEF_TOKEN_SIZE * sizeof (TOKEN));
     if (!tkLocalVars.hGlbToken)
     {
@@ -2481,7 +2483,7 @@ NORMAL_EXIT:
     // Free the handle, if requested
     if (bFreeGlb)
     {
-        DbgGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = ghGlbToken = NULL;
+        DbgGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
     } // End IF
 
     return tkLocalVars.hGlbToken;
@@ -2562,15 +2564,15 @@ void Untokenize
                 Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
                 // Skip it if no value
-                if (!lpToken->tkData.lpSym->stFlags.Value)
+                if (!lpToken->tkData.tkSym->stFlags.Value)
                     break;
 
                 // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
-                if (!lpToken->tkData.lpSym->stFlags.Imm)
+                if (!lpToken->tkData.tkSym->stFlags.Imm)
                 {
                     // stData is a valid HGLOBAL variable or function array
-                    Assert (IsGlbTypeVarDir (lpToken->tkData.lpSym->stData.stGlbData)
-                         || IsGlbTypeFcnDir (lpToken->tkData.lpSym->stData.stGlbData));
+                    Assert (IsGlbTypeVarDir (lpToken->tkData.tkSym->stData.stGlbData)
+                         || IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData));
                 } // End IF
 
                 // Don't free a name's contents
@@ -2879,7 +2881,7 @@ WCHAR CharTrans
         case UTF16_DOWNSTILE:           // Alt-'d' - down stile
         case UTF16_EPSILON:             // Alt-'e' - epsilon
 ////////case UTF16_UNDERBAR:            // Alt-'f' - underbar (COL_ALPHA)
-        case UTF16_DEL:                 // Alt-'g' - del
+////////case UTF16_DEL:                 // Alt-'g' - del (COL_UNK)
 ////////case UTF16_DELTA:               // Alt-'h' - delta (COL_ALPHA)
         case UTF16_IOTA:                // Alt-'i' - iota
 ////////case UTF16_JOT:                 // Alt-'j' - jot (COL_JOT)
@@ -2959,7 +2961,7 @@ WCHAR CharTrans
 ////////case UTF16_                     // Alt-'Y' - (none)
 ////////case UTF16_                     // Alt-'Z' - (none)
 ////////case UTF16_LEFTARROW:           // Alt-'[' - left arrow (COL_ASSIGN)
-        case UTF16_LEFTTACK:            // Alt-'\\'- left tack
+        case UTF16_LEFTTACK:            // Alt-'\' - left tack
         case UTF16_RIGHTARROW:          // Alt-']' - right arrow
         case UTF16_CIRCLESLOPE:         // Alt-'^' - transpose
         case UTF16_QUOTEDOT:            // Alt-'_' - quote-dot
@@ -2968,23 +2970,23 @@ WCHAR CharTrans
         case UTF16_RIGHTTACK:           // Alt-'|' - right tack
 ////////case UTF16_ZILDE:               // Alt-'}' - zilde (COL_PRIM_FN0)
         case UTF16_COMMABAR:            // Alt-'~' - comma-bar
-////////case '~':                       // UTF16_TILDE
-////////case '!':                       // UTF16_QUOTEDOT
-        case '^':
-////////case '*':                       // UTF16_STAR
-        case '-':
-////////case '=':                       // UTF16_EQUAL
-        case '+':
-        case '|':
-        case ',':
-////////case '<':                       // UTF16_LEFTCARET
-////////case '>':                       // UTF16_RIGHTCARET
-////////case '?':                       // UTF16_QUERY
+////////case UTF16_TILDE:               //     '~' - tilde
+////////case UTF16_QUOTEDOT:            //     '!' - shreik
+        case UTF16_CIRCUMFLEX:          //     '^' - up caret
+////////case UTF16_STAR:                //     '*' - star
+        case UTF16_BAR:                 //     '-' - bar
+////////case UTF16_EQUAL:               //     '=' - equal
+        case UTF16_PLUS:                //     '+' - plus
+        case UTF16_STILE2:              //     '|' - stile2
+        case UTF16_COMMA:               //     ',' - comma
+////////case UTF16_LEFTCARET:           //     '<' - left caret
+////////case UTF16_RIGHTCARET:          //     '>' - right caret
+////////case UTF16_QUERY:               //     '?' - query
             return COL_PRIM_FN;
 
-        case '\\':                      // Slope
+        case UTF16_SLOPE:               //     '\' - slope
         case UTF16_SLOPEBAR:            // Alt-'.' - slope-bar
-        case '/':                       // Slash
+        case UTF16_SLASH:               //     '/' - slash
         case UTF16_SLASHBAR:            // Alt-'/' - slash-bar
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
         case UTF16_DIERESISTILDE:       // Alt-'T' - commute
@@ -3002,7 +3004,7 @@ WCHAR CharTrans
         case UTF16_APOSTROPHE:          // Alt-'k' - single quote
             return COL_QUOTE1;
 
-        case '"':                       // Double quote
+        case UTF16_DOUBLEQUOTE:         //     '"' - Double quote
             return COL_QUOTE2;
 
         case UTF16_QUAD:                // Alt-'l' - quad
@@ -3024,22 +3026,23 @@ WCHAR CharTrans
         case UTF16_ZILDE:               // Alt-'}' - zilde
             return COL_PRIM_FN0;
 
-        case '(':
+        case UTF16_LPAREN:              //     '(' - left paren
             return COL_LPAREN;
 
-        case ')':
+        case UTF16_RPAREN:              //     ')' - right paren
             return COL_RPAREN;
 
-        case '[':
+        case UTF16_LBRACKET:            //     '[' - left bracket
             return COL_LBRACKET;
 
-        case ']':
+        case UTF16_RBRACKET:            //     ']' - right bracket
             return COL_RBRACKET;
 
         case ';':                       // Lists (bracketed and otherwise)
             return COL_SEMICOLON;
 
         case UTF16_DELTILDE:            // Alt-'@' - del-tilde
+        case UTF16_DEL:                 // Alt-'g' - del
         case UTF16_DIERESISCIRCLE:      // Alt-'O' - holler
         case '`':
         case '@':

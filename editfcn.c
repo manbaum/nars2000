@@ -65,7 +65,8 @@ COLORREF crLineNum = RGB (143,188,143),   // Darkseagreen
 //***************************************************************************
 
 BOOL CreateFcnWindow
-    (LPWCHAR lpwszLine)
+    (LPWCHAR lpwszLine,
+     HWND    hWndMC)
 
 {
     HWND hWnd;
@@ -88,6 +89,9 @@ BOOL CreateFcnWindow
         MB (pszNoCreateFEWnd);
         return FALSE;
     } // End IF
+
+    // Save the PTD handle with the window
+    SetProp (hWnd, "PTD", (HGLOBAL) GetProp (hWndMC, "PTD"));
 
     // Make the window visible; update its client area
     ShowWindow (hWnd, SW_SHOWNORMAL);
@@ -172,7 +176,7 @@ LRESULT APIENTRY FEWndProc
     HWND      hWndEC;       // Handle of Edit Control window
     int       iMaxLimit;    // Maximum # chars in edit control
     VKSTATE   vkState;      // Virtual key state (Shift, Alt, Ctrl)
-    long      lvkState;     // Temporary var for vkState
+////long      lvkState;     // Temporary var for vkState
     LPUNDOBUF lpUndoBeg,    // Ptr to start of Undo Buffer
               lpUndoNxt;    // ...    next available slot in the Undo Buffer
 
@@ -183,7 +187,7 @@ LRESULT APIENTRY FEWndProc
 ////                           IDC_HELP2,        IDH_HELP2,
 ////                           0,             0,
 ////                          };
-////ODSAPI ("FE: ", hWnd, message, wParam, lParam);
+////LCLODSAPI ("FE: ", hWnd, message, wParam, lParam);
 
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLong (hWnd, GWLSF_HWNDEC);
@@ -269,10 +273,13 @@ LRESULT APIENTRY FEWndProc
                 return -1;          // Stop the whole process
             } // End IF
 
+            // Save the PTD handle with the window
+            SetProp (hWnd, "PTD", (HGLOBAL) GetProp (GetParent (hWnd), "PTD"));
+
             // Save in window extra bytes
             SetWindowLong (hWnd, GWLSF_HWNDEC, (long) hWndEC);
 
-            // Subclass the edit control so we can handle some of its messages
+            // Subclass the Edit Control so we can handle some of its messages
             lpfnOldEditCtrlWndProc = (WNDPROC)
               SetWindowLongW (hWndEC,
                               GWL_WNDPROC,
@@ -382,22 +389,21 @@ LRESULT APIENTRY FEWndProc
             // Split cases based upon the notify code
             switch (wNotifyCode)
             {
-                case EN_SETFOCUS:                   // idEditCtrl = (int) LOWORD(wParam); // identifier of edit control
-                                                    // wNotifyCode = HIWORD(wParam);      // notification code
-                                                    // hwndEditCtrl = (HWND) lParam;      // handle of edit control
-                    // Get the current vkState
-                    lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
-                    vkState = *(LPVKSTATE) &lvkState;
-
-                    // Create a default sized system caret for display
-                    DestroyCaret ();        // 'cause we're changing the cursor width
-                    MyCreateCaret (hWndEC, &vkState, cyAveCharFE, NULL);
-
-                    // Paint the window
-                    UpdateWindow (hWndEC);
-
-                    break;
-
+////            case EN_SETFOCUS:                   // idEditCtrl = (int) LOWORD(wParam); // identifier of edit control
+////                                                // wNotifyCode = HIWORD(wParam);      // notification code
+////                                                // hwndEditCtrl = (HWND) lParam;      // handle of edit control
+////                // Get the current vkState
+////                lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
+////                vkState = *(LPVKSTATE) &lvkState;
+////
+////                // Create a default sized system caret for display
+////                MyCreateCaret (hWndEC, &vkState, cyAveCharFE);
+////
+////                // Paint the window
+////                UpdateWindow (hWndEC);
+////
+////                break;
+////
                 case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // identifier of edit control
                                                     // hwndEditCtrl = (HWND) lParam;      // handle of edit control
                     // Split cases based upon the last key
@@ -472,7 +478,7 @@ LRESULT APIENTRY FEWndProc
             break;
     } // End SWITCH
 
-////ODSAPI ("FEZ:", hWnd, message, wParam, lParam);
+////LCLODSAPI ("FEZ:", hWnd, message, wParam, lParam);
     return DefMDIChildProc (hWnd, message, wParam, lParam);
 } // End FEWndProc
 #undef  APPEND_NAME
@@ -550,9 +556,34 @@ LRESULT WINAPI LclEditCtrlWndProc
     UINT      ksShft,       // TRUE iff VK_CONTROL is pressed
               ksCtrl;       // ...      VK_SHIFT   ...
 
+////LCLODSAPI ("EC: ", hWnd, message, wParam, lParam);
     // Split cases
     switch (message)
     {
+////         case MYWM_CREATECARET:      // cxCaret  = (BOOL) wParam
+////                                     // cyAveChar = (UINT) lParam
+//// #define cxCaret         ((BOOL) wParam)
+//// #define cyAveChar       ((UINT) lParam)
+////             // Get the char position of the caret
+////             uCharPos = GetCurCharPos (hWnd);
+////
+////             // Create a default sized system caret for display
+////             CreateCaret (hWnd,
+////                          NULL,
+////                          cxCaret,
+////                          cyAveChar);
+////             // Get the indices of the selected text (if any)
+////             SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
+////
+////             // Position the caret
+////
+////             // Show it
+////             ShowCaret (hWnd);
+////
+////             return FALSE;           // We handled the msg
+//// #undef  cyAveChar
+//// #undef  cxCaret
+
 #define nVirtKey ((int) wParam)
         case WM_KEYDOWN:            // nVirtKey = (int) wParam;     // Virtual-key code
                                     // lKeyData = lParam;           // Key data
@@ -650,10 +681,9 @@ LRESULT WINAPI LclEditCtrlWndProc
                                 uCharPos + 1,               // Ending    ...
                                 UNDO_NOGROUP,               // Group index
                                 0);                         // Character
-                    // Create a default sized system caret for display
-                    DestroyCaret ();        // 'cause we're changing the cursor width
-                    MyCreateCaret (hWnd, &vkState, cyAveChar, NULL);
-
+////////////////////// Create a default sized system caret for display
+////////////////////MyCreateCaret (hWnd, &vkState, cyAveChar);
+////////////////////
                     break;
                 } // End VK_INSERT
 
@@ -720,7 +750,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     // Undo inserts the deleted char(s)
 
-                    // Get the indices of the selected text
+                    // Get the indices of the selected text (if any)
                     SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
 
                     // Note if there's a selection
@@ -769,7 +799,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 case VK_TAB:
                     // Insert a tab -- convert into insert N spaces
 
-                    // Get the indices of the selected text
+                    // Get the indices of the selected text (if any)
                     SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
 
                     // Get the line # of this char
@@ -811,7 +841,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     // Undo inserts the deleted char(s)
 
-                    // Get the indices of the selected text
+                    // Get the indices of the selected text (if any)
                     SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
 
                     // Note if there's a selection
@@ -1118,7 +1148,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // 0 = lParam
             // Delete selected chars and (if WM_CUT) copy to clipboard
 
-            // Get the indices of the selected text
+            // Get the indices of the selected text (if any)
             SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
 
             // If there's no selected text, ignore this msg
@@ -1321,7 +1351,6 @@ LRESULT WINAPI LclEditCtrlWndProc
                                        message,
                                        wParam,
                                        lParam); // Pass on down the line
-
             // Draw the line #s
             DrawLineNumsFE (hWnd);
 
@@ -1458,13 +1487,21 @@ UINT GetCurCharPos
     (HWND hWndEC)       // Window handle of the Edit Control
 
 {
-    POINT ptCaret;
+    UINT uCharPosBeg,
+         uCharPosEnd;
 
-    // Get the caret position in client coords
-    GetCaretPos (&ptCaret);
+    // Get the indices of the selected text (if any)
+    SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
 
-    // Get the Position of the char under the caret
-    return LOWORD (SendMessageW (hWndEC, EM_CHARFROMPOS, 0, MAKELPARAM (ptCaret.x, ptCaret.y)));
+    return uCharPosEnd;
+
+////POINT ptCaret;
+////
+////// Get the caret position in client coords
+////GetCaretPos (&ptCaret);
+////
+////// Get the Position of the char under the caret
+////return LOWORD (SendMessageW (hWndEC, EM_CHARFROMPOS, 0, MAKELPARAM (ptCaret.x, ptCaret.y)));
 } // End GetCurCharPos
 
 
@@ -1590,7 +1627,7 @@ void InsRepCharStr
     lvkState = GetWindowLong (hWndParent, uGWL);
     vkState = *(LPVKSTATE) &lvkState;
 
-    // Get the selection indices
+    // Get the indices of the selected text (if any)
     SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
 
     // Note if there's a selection

@@ -2,7 +2,6 @@
 //  NARS2000 -- Conversion Routines
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <stdio.h>

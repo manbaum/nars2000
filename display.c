@@ -2,7 +2,6 @@
 //  NARS2000 -- Display Routines
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <float.h>
@@ -40,8 +39,9 @@ extern UINT auLinNumGLOBAL[MAXOBJ];
 #endif
 
 BOOL ArrayDisplay_EM
-    (LPTOKEN lptkRes,
-     BOOL    bEndingCR)         // TRUE iff last line has CR
+    (LPTOKEN       lptkRes,         // Ptr to value token
+     BOOL          bEndingCR,       // TRUE iff last line has CR
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPAPLCHAR lpaplChar;
@@ -54,15 +54,15 @@ BOOL ArrayDisplay_EM
             Assert (GetPtrTypeDir (lptkRes->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, it's an array
-            if (!lptkRes->tkData.lpSym->stFlags.Imm)
+            if (!lptkRes->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRes->tkData.lpSym->stData.lpVoid));
+                Assert (IsGlbTypeVarDir (lptkRes->tkData.tkSym->stData.lpVoid));
 
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)
                     DisplayGlbArr (lpwszFormat,
-                                   ClrPtrTypeDirGlb (lptkRes->tkData.lpSym->stData.stGlbData),
+                                   ClrPtrTypeDirGlb (lptkRes->tkData.tkSym->stData.stGlbData),
                                    bEndingCR);
                 return TRUE;
 
@@ -79,11 +79,11 @@ BOOL ArrayDisplay_EM
             Assert (GetPtrTypeDir (lptkRes->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // stData is immediate
-            Assert (lptkRes->tkData.lpSym->stFlags.Imm);
+            Assert (lptkRes->tkData.tkSym->stFlags.Imm);
 
             lpaplChar =
             FormatSymTabConst (lpwszTemp,
-                               lptkRes->tkData.lpSym);
+                               lptkRes->tkData.tkSym);
             break;
 
         case TKT_VARIMMED:  // The tkData is an immediate constant
@@ -99,7 +99,8 @@ BOOL ArrayDisplay_EM
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkRes);
+                                       lptkRes,
+                                       lpplLocalVars);
             return FALSE;
 
         case TKT_VARARRAY:  // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
@@ -112,7 +113,7 @@ BOOL ArrayDisplay_EM
                 case PTRTYPE_STCONST:
                     lpaplChar =
                     FormatSymTabConst (lpwszTemp,
-                                       lptkRes->tkData.lpSym);
+                                       lptkRes->tkData.tkSym);
                     break;
 
                 case PTRTYPE_HGLOBAL:
@@ -1320,9 +1321,9 @@ void DisplayFcnStrand
             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, ...
-            if (!lpToken->tkData.lpSym->stFlags.Imm)
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
-                hGlbData = lpToken->tkData.lpSym->stData.stGlbData;
+                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
                 // stData is an HGLOBAL function array
                 Assert (IsGlbTypeFcnDir (hGlbData));
@@ -1335,7 +1336,7 @@ void DisplayFcnStrand
                                         FCNTYPE_FCN,// lpHeader->FcnType,
                                         1,          // LODWORD (lpHeader->NELM),
                                         0);         // lpHeader->RefCnt);
-                *lpaplChar++ = lpToken->tkData.lpSym->stData.stChar;
+                *lpaplChar++ = lpToken->tkData.tkSym->stData.stChar;
             } // End IF/ELSE
 
             break;
@@ -1533,9 +1534,9 @@ LPWCHAR DisplayFcnSub
             Assert (GetPtrTypeDir (lpYYMem->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not an immediate function, ...
-            if (!lpYYMem->tkToken.tkData.lpSym->stFlags.Imm)
+            if (!lpYYMem->tkToken.tkData.tkSym->stFlags.Imm)
             {
-                hGlbData = lpYYMem->tkToken.tkData.lpSym->stData.stGlbData;
+                hGlbData = lpYYMem->tkToken.tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL function array
                 Assert (IsGlbTypeFcnDir (hGlbData));
@@ -1544,7 +1545,7 @@ LPWCHAR DisplayFcnSub
                 lpaplChar = DisplayFcnGlb (lpaplChar, ClrPtrTypeDirGlb (hGlbData), FALSE);
             } else
                 // Handle the immediate case
-                *lpaplChar++ = lpYYMem->tkToken.tkData.lpSym->stData.stChar;
+                *lpaplChar++ = lpYYMem->tkToken.tkData.tkSym->stData.stChar;
 
             // Check for axis operator
             if (aplNELM > 1
@@ -1681,19 +1682,19 @@ LPWCHAR DisplayFcnSub
 ////             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
 ////
 ////             // If it's an immediate
-////             if (lpToken->tkData.lpSym->stFlags.Imm)
-////                 *lpaplChar++ = lpToken->tkData.lpSym->stData.stChar;
+////             if (lpToken->tkData.tkSym->stFlags.Imm)
+////                 *lpaplChar++ = lpToken->tkData.tkSym->stData.stChar;
 ////             else
 ////             {
 ////                 // stData is a valid HGLOBAL function array
-////                 Assert (IsGlbTypeFcnDir (lpToken->tkData.lpSym->stData.stGlbData));
+////                 Assert (IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData));
 ////
 ////                 if (bParensIfGlb)
 ////                     *lpaplChar++ = L'(';
 ////
 ////                 lpaplChar =
 ////                 DisplayFcnGlb (lpaplChar,
-////                                ClrPtrTypeDirGlb (lpToken->tkData.lpSym->stData.stGlbData),
+////                                ClrPtrTypeDirGlb (lpToken->tkData.tkSym->stData.stGlbData),
 ////                                FALSE);
 ////                 if (bParensIfGlb)
 ////                     *lpaplChar++ = L')';
@@ -1732,7 +1733,8 @@ LPWCHAR DisplayFcnSub
 //***************************************************************************
 
 void DisplayStrand
-    (int strType)
+    (int           strType,         // Strand type (VARSTRAND or FCNSTRAND)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPYYSTYPE lp, lpLast;
@@ -1755,13 +1757,13 @@ void DisplayStrand
 
     wsprintf (lpszTemp,
               "Start=%08X Base=%08X Next=%08X",
-              gplLocalVars.lpYYStrandStart[strType],
-              gplLocalVars.lpYYStrandBase[strType],
-              gplLocalVars.lpYYStrandNext[strType]);
+              lpplLocalVars->lpYYStrandStart[strType],
+              lpplLocalVars->lpYYStrandBase[strType],
+              lpplLocalVars->lpYYStrandNext[strType]);
     DbgMsg (lpszTemp);
 
-    for (lp = gplLocalVars.lpYYStrandStart[strType], lpLast = NULL;
-         lp NE gplLocalVars.lpYYStrandNext[strType];
+    for (lp = lpplLocalVars->lpYYStrandStart[strType], lpLast = NULL;
+         lp NE lpplLocalVars->lpYYStrandNext[strType];
          lp ++)
     {
         if (lpLast NE lp->unYYSTYPE.lpYYStrandBase)

@@ -27,6 +27,15 @@ typedef PAINTHOOK *LPPAINTHOOK;
 #define DEF_UNDOBUF_INITSIZE     4*1024
 #define DEF_UNDOBUF_MAXSIZE     64*1024
 
+#define GWL_ID              (-12)
+
+typedef struct tagNMEDITCTRL
+{
+    NMHDR  nmHdr;                   // Initial struc
+    UINT   cbSize;                  // Byte size of NMCARETWIDTH struc
+    UINT  *lpCaretWidth;            // Ptr to default caret width
+} NMEDITCTRL, *LPNMEDITCTRL;
+
 
 //***************************************************************************
 //  End of File: editctrl.h

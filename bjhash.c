@@ -2,7 +2,6 @@
 //  NARS2000 -- Hash Routines
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 

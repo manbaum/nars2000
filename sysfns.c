@@ -2,7 +2,6 @@
 //  NARS2000 -- System Function Routines
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 #include <time.h>
@@ -28,27 +27,30 @@ BOOL bUseLocalTime = TRUE;
 //***************************************************************************
 
 LPYYSTYPE ExecuteFn0
-    (LPYYSTYPE lpYYFcn0)
+    (LPTOKEN       lptkFcn0,        // Ptr to function token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     LPPRIMFNS lpNameFcn;
 
     // tkData is an LPSYMENTRY
-    Assert (GetPtrTypeDir (lpYYFcn0->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+    Assert (GetPtrTypeDir (lptkFcn0->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-    lpNameFcn = lpYYFcn0->tkToken.tkData.lpSym->stData.stNameFcn;
+    lpNameFcn = lptkFcn0->tkData.tkSym->stData.stNameFcn;
 
-    if (lpYYFcn0->tkToken.tkFlags.FcnDir)
+    if (lptkFcn0->tkFlags.FcnDir)
         // Call the execution routine
         return (*lpNameFcn) (NULL,
-                            &lpYYFcn0->tkToken,
+                             lptkFcn0,
                              NULL,
-                             NULL);
+                             NULL,
+                             lpplLocalVars);
     else
         return ExecFuncGlb_EM (NULL,
                                ClrPtrTypeDirGlb (lpNameFcn),
                                NULL,
-                               NULL);
+                               NULL,
+                               lpplLocalVars);
 } // ExecuteFn0
 
 
@@ -59,17 +61,18 @@ LPYYSTYPE ExecuteFn0
 //***************************************************************************
 
 LPYYSTYPE SysFnDR_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonDR_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return SysFnMonDR_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return SysFnDydDR_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return SysFnDydDR_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End SysFnDR_EM
 
 
@@ -86,33 +89,38 @@ LPYYSTYPE SysFnDR_EM
 #endif
 
 LPYYSTYPE SysFnMonDR_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    HGLOBAL hGlbData;
-    LPVOID  lpMem;
-    UINT    YYLclIndex;
+    HGLOBAL   hGlbData;
+    LPVOID    lpMem;
+    LPYYSTYPE lpYYRes;
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_INT;
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkData.tkInteger  =   (filled in below)
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkData.tkInteger  =   (filled in below)
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-#define DR_BOOL     11
-#define DR_CHAR    162
-#define DR_INT     643
-#define DR_FLOAT   645
-#define DR_HETERO  326
-#define DR_NESTED  327
-#define DR_LIST    328
-#define DR_APA     649
+#define DR_BOOL           100   //    1 bit  per value
+#define DR_CHAR          1601   //   16 bits ...
+#define DR_INT           6402   //   64 ...
+#define DR_FLOAT         6403   //   64 ...
+#define DR_APA           6404   //   64 ...
+#define DR_HETERO        3205   //   32 ...
+#define DR_NESTED        3206   //   32 ...
+#define DR_LIST          3207   //   32 ...
+#define DR_RATIONAL         8   //   ?? ...
+#define DR_COMPLEX      12809   //  128 ...
+#define DR_QUATERNIONS  25610   //  256 ...
+#define DR_OCTONIONS    51211   //  512 ...
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -122,9 +130,9 @@ LPYYSTYPE SysFnMonDR_EM
             Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, it's an HGLOBAL
-            if (!lptkRhtArg->tkData.lpSym->stFlags.Imm)
+            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
-                hGlbData = lptkRhtArg->tkData.lpSym->stData.stGlbData;
+                hGlbData = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL case
             } // End IF
@@ -132,30 +140,30 @@ LPYYSTYPE SysFnMonDR_EM
             // Handle the immediate case
 
             // stData is an immediate
-            Assert (lptkRhtArg->tkData.lpSym->stFlags.Imm);
+            Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
 
             // Split cases based upon the token's immediate type
-            switch (lptkRhtArg->tkData.lpSym->stFlags.ImmType)
+            switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_BOOL;
+                    lpYYRes->tkToken.tkData.tkInteger = DR_BOOL;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_INT:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_INT;
+                    lpYYRes->tkToken.tkData.tkInteger = DR_INT;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_FLOAT:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_FLOAT;
+                    lpYYRes->tkToken.tkData.tkInteger = DR_FLOAT;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_CHAR:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = 162;
+                    lpYYRes->tkToken.tkData.tkInteger = 162;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 defstop
                     return NULL;
@@ -168,24 +176,24 @@ LPYYSTYPE SysFnMonDR_EM
             switch (lptkRhtArg->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_BOOL;
+                    lpYYRes->tkToken.tkData.tkInteger = DR_BOOL;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_INT:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_INT;
+                    lpYYRes->tkToken.tkData.tkInteger = DR_INT;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_FLOAT:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_FLOAT;
+                    lpYYRes->tkToken.tkData.tkInteger = DR_FLOAT;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_CHAR:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_CHAR;
+                    lpYYRes->tkToken.tkData.tkInteger = DR_CHAR;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 defstop
                     return NULL;
@@ -194,9 +202,9 @@ LPYYSTYPE SysFnMonDR_EM
             DbgStop ();         // We should never get here
 
         case TKT_LISTPAR:
-            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_LIST;
+            lpYYRes->tkToken.tkData.tkInteger = DR_LIST;
 
-            return &YYRes[YYLclIndex];
+            return lpYYRes;
 
         case TKT_VARARRAY:
             hGlbData = lptkRhtArg->tkData.tkGlbData;
@@ -224,37 +232,37 @@ LPYYSTYPE SysFnMonDR_EM
 #undef  lpHeader
     {
         case ARRAY_BOOL:
-            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_BOOL;
+            lpYYRes->tkToken.tkData.tkInteger = DR_BOOL;
 
             break;
 
         case ARRAY_INT:
-            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_INT;
+            lpYYRes->tkToken.tkData.tkInteger = DR_INT;
 
             break;
 
         case ARRAY_FLOAT:
-            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_FLOAT;
+            lpYYRes->tkToken.tkData.tkInteger = DR_FLOAT;
 
             break;
 
         case ARRAY_CHAR:
-            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_CHAR;
+            lpYYRes->tkToken.tkData.tkInteger = DR_CHAR;
 
             break;
 
         case ARRAY_HETERO:
-            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_HETERO;
+            lpYYRes->tkToken.tkData.tkInteger = DR_HETERO;
 
             break;
 
         case ARRAY_NESTED:
-            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_NESTED;
+            lpYYRes->tkToken.tkData.tkInteger = DR_NESTED;
 
             break;
 
         case ARRAY_APA:
-            YYRes[YYLclIndex].tkToken.tkData.tkInteger = DR_APA;
+            lpYYRes->tkToken.tkData.tkInteger = DR_APA;
 
             break;
 
@@ -266,7 +274,7 @@ LPYYSTYPE SysFnMonDR_EM
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
 
-    return &YYRes[YYLclIndex];
+    return lpYYRes;
 } // End SysFnMonDR_EM
 #undef  APPEND_NAME
 
@@ -284,16 +292,18 @@ LPYYSTYPE SysFnMonDR_EM
 #endif
 
 LPYYSTYPE SysFnDydDR_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // ***FINISHME***
 
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                               lptkFunc);
+                               lptkFunc,
+                               lpplLocalVars);
     return NULL;
 } // End SysFnDydDR_EM
 #undef  APPEND_NAME
@@ -312,24 +322,22 @@ LPYYSTYPE SysFnDydDR_EM
 #endif
 
 LPYYSTYPE SysFnSYSID_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    UINT       ByteRes;
-    HGLOBAL    hGlbRes;
-    LPVOID     lpMem;
-    UINT       YYLclIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    UINT      ByteRes;
+    HGLOBAL   hGlbRes;
+    LPVOID    lpMem;
+    LPYYSTYPE lpYYRes;
 
 #define SYSID   L"NARS2000"
 #define SYSID_NELM    (sizeof (SYSID) / sizeof (APLCHAR) - 1)
 
-    // Calculate size of the result
+    // Calculate space needed for the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSID_NELM, 1);
 
     // Allocate space for the result
@@ -337,7 +345,8 @@ LPYYSTYPE SysFnSYSID_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -369,14 +378,17 @@ LPYYSTYPE SysFnSYSID_EM
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMem = NULL;
 
-    // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
-    return &YYRes[YYLclIndex];
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 } // End SysFnSYSID_EM
 #undef  APPEND_NAME
 
@@ -394,10 +406,11 @@ LPYYSTYPE SysFnSYSID_EM
 #endif
 
 LPYYSTYPE SysFnSYSVER_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     UINT       ByteRes;
@@ -406,15 +419,12 @@ LPYYSTYPE SysFnSYSVER_EM
     char       szFileVer[32];
     LPAPLCHAR  p;
     HANDLE     hFile;
-    UINT       YYLclIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    LPYYSTYPE  lpYYRes;
 
 #define SYSVER  L"0.00.001.0799  Tue Jan 16 17:43:45 2007  Win/32"
 #define SYSVER_NELM    ((sizeof (SYSVER) / sizeof (APLCHAR)) - 1)
 
-    // Calculate size of the result
+    // Calculate space needed for the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);
 
     // Allocate space for the result
@@ -422,7 +432,8 @@ LPYYSTYPE SysFnSYSVER_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -508,14 +519,17 @@ LPYYSTYPE SysFnSYSVER_EM
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMem = NULL;
 
-    // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
-    return &YYRes[YYLclIndex];
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 } // End SysFnSYSVER_EM
 #undef  APPEND_NAME
 
@@ -533,21 +547,19 @@ LPYYSTYPE SysFnSYSVER_EM
 #endif
 
 LPYYSTYPE SysFnTC_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    UINT       ByteRes;
-    HGLOBAL    hGlbRes;
-    LPVOID     lpMem;
-    UINT       YYLclIndex;
+    UINT      ByteRes;
+    HGLOBAL   hGlbRes;
+    LPVOID    lpMem;
+    LPYYSTYPE lpYYRes;
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
-
-    // Calculate size of the result
+    // Calculate space needed for the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 3, 1);
 
     // Allocate space for the result
@@ -555,7 +567,8 @@ LPYYSTYPE SysFnTC_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -592,14 +605,17 @@ LPYYSTYPE SysFnTC_EM
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMem = NULL;
 
-    // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
-    return &YYRes[YYLclIndex];
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 } // End SysFnTC_EM
 #undef  APPEND_NAME
 
@@ -615,19 +631,19 @@ LPYYSTYPE SysFnTCCom
      LPTOKEN lptkFunc)
 
 {
-    UINT YYLclIndex;
+    LPYYSTYPE lpYYRes;
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_CHAR;
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkChar     = wc;
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_CHAR;
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkChar     = wc;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYLclIndex];
+    return lpYYRes;
 } // End SysFnTCCom
 
 
@@ -638,10 +654,11 @@ LPYYSTYPE SysFnTCCom
 //***************************************************************************
 
 LPYYSTYPE SysFnTCBEL_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     return SysFnTCCom (TCBEL, lptkFunc);
@@ -655,10 +672,11 @@ LPYYSTYPE SysFnTCBEL_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCBS_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     return SysFnTCCom (TCBS, lptkFunc);
@@ -672,10 +690,11 @@ LPYYSTYPE SysFnTCBS_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCDEL_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     return SysFnTCCom (TCDEL, lptkFunc);
@@ -689,10 +708,11 @@ LPYYSTYPE SysFnTCDEL_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCESC_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     return SysFnTCCom (TCESC, lptkFunc);
@@ -706,10 +726,11 @@ LPYYSTYPE SysFnTCESC_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCFF_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     return SysFnTCCom (TCFF, lptkFunc);
@@ -723,10 +744,11 @@ LPYYSTYPE SysFnTCFF_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCHT_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     return SysFnTCCom (TCHT, lptkFunc);
@@ -740,10 +762,11 @@ LPYYSTYPE SysFnTCHT_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCLF_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     return SysFnTCCom (TCLF, lptkFunc);
@@ -757,10 +780,11 @@ LPYYSTYPE SysFnTCLF_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCNL_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     return SysFnTCCom (TCNL, lptkFunc);
@@ -774,10 +798,11 @@ LPYYSTYPE SysFnTCNL_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCNUL_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     return SysFnTCCom (TCNUL, lptkFunc);
@@ -797,22 +822,20 @@ LPYYSTYPE SysFnTCNUL_EM
 #endif
 
 LPYYSTYPE SysFnTS_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     SYSTEMTIME SystemTime;
     UINT       ByteRes;
     HGLOBAL    hGlbRes;
     LPVOID     lpMem;
-    UINT       YYLclIndex;
+    LPYYSTYPE  lpYYRes;
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
-
-    // Calculate size of the result
+    // Calculate space needed for the result
     ByteRes = (UINT) CalcArraySize (ARRAY_INT, 7, 1);
 
     // Allocate space for the result
@@ -820,7 +843,8 @@ LPYYSTYPE SysFnTS_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -867,14 +891,17 @@ LPYYSTYPE SysFnTS_EM
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMem = NULL;
 
-    // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
-    return &YYRes[YYLclIndex];
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 } // End SysFnTS_EM
 #undef  APPEND_NAME
 
@@ -886,17 +913,18 @@ LPYYSTYPE SysFnTS_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTYPE_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonTYPE_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return SysFnMonTYPE_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return SysFnDydTYPE_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return SysFnDydTYPE_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End SysFnTYPE_EM
 
 
@@ -913,17 +941,18 @@ LPYYSTYPE SysFnTYPE_EM
 #endif
 
 LPYYSTYPE SysFnMonTYPE_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    HGLOBAL hGlbData,
-            hGlbRes;
-    UINT    YYLclIndex;
+    HGLOBAL   hGlbData,
+              hGlbRes;
+    LPYYSTYPE lpYYRes;
 
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     // Split cases based upon the token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -933,9 +962,9 @@ LPYYSTYPE SysFnMonTYPE_EM
             Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, it's an HGLOBAL
-            if (!lptkRhtArg->tkData.lpSym->stFlags.Imm)
+            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
-                hGlbData = lptkRhtArg->tkData.lpSym->stData.stGlbData;
+                hGlbData = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL case
             } // End IF
@@ -943,33 +972,33 @@ LPYYSTYPE SysFnMonTYPE_EM
             // Handle the immediate case
 
             // stData is an immediate
-            Assert (lptkRhtArg->tkData.lpSym->stFlags.Imm);
+            Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
 
-            YYRes[YYLclIndex].tkToken.tkFlags.TknType = TKT_VARIMMED;
-            YYRes[YYLclIndex].tkToken.tkFlags.ImmType = lptkRhtArg->tkData.lpSym->stFlags.ImmType;
+            lpYYRes->tkToken.tkFlags.TknType = TKT_VARIMMED;
+            lpYYRes->tkToken.tkFlags.ImmType = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
 
             // Split cases based upon the token's immediate type
-            switch (lptkRhtArg->tkData.lpSym->stFlags.ImmType)
+            switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    YYRes[YYLclIndex].tkToken.tkData.tkBoolean = 0;
+                    lpYYRes->tkToken.tkData.tkBoolean = 0;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_INT:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = 0;
+                    lpYYRes->tkToken.tkData.tkInteger = 0;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_FLOAT:
-                    YYRes[YYLclIndex].tkToken.tkData.tkFloat   = 0;
+                    lpYYRes->tkToken.tkData.tkFloat   = 0;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_CHAR:
-                    YYRes[YYLclIndex].tkToken.tkData.tkChar    = L' ';
+                    lpYYRes->tkToken.tkData.tkChar    = L' ';
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 defstop
                     return NULL;
@@ -978,31 +1007,31 @@ LPYYSTYPE SysFnMonTYPE_EM
             DbgStop ();         // We should never get here
 
         case TKT_VARIMMED:
-            YYRes[YYLclIndex].tkToken.tkFlags.TknType = TKT_VARIMMED;
-            YYRes[YYLclIndex].tkToken.tkFlags.ImmType = lptkRhtArg->tkFlags.ImmType;
+            lpYYRes->tkToken.tkFlags.TknType = TKT_VARIMMED;
+            lpYYRes->tkToken.tkFlags.ImmType = lptkRhtArg->tkFlags.ImmType;
 
             // Split cases based upon the token's immediate type
             switch (lptkRhtArg->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    YYRes[YYLclIndex].tkToken.tkData.tkBoolean = 0;
+                    lpYYRes->tkToken.tkData.tkBoolean = 0;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_INT:
-                    YYRes[YYLclIndex].tkToken.tkData.tkInteger = 0;
+                    lpYYRes->tkToken.tkData.tkInteger = 0;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_FLOAT:
-                    YYRes[YYLclIndex].tkToken.tkData.tkFloat   = 0;
+                    lpYYRes->tkToken.tkData.tkFloat   = 0;
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 case IMMTYPE_CHAR:
-                    YYRes[YYLclIndex].tkToken.tkData.tkChar    = L' ';
+                    lpYYRes->tkToken.tkData.tkChar    = L' ';
 
-                    return &YYRes[YYLclIndex];
+                    return lpYYRes;
 
                 defstop
                     return NULL;
@@ -1012,8 +1041,9 @@ LPYYSTYPE SysFnMonTYPE_EM
 
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
+                                       lptkFunc,
+                                       lpplLocalVars);
+            YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 
         case TKT_VARARRAY:
             hGlbData = lptkRhtArg->tkData.tkGlbData;
@@ -1030,20 +1060,21 @@ LPYYSTYPE SysFnMonTYPE_EM
     Assert (IsGlbTypeVarDir (hGlbData));
 
     // Make the prototype
-    hGlbRes = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbData),
-                                lptkFunc,
-                                FALSE);   // Allow CHARs
+    hGlbRes = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbData), // Proto arg handle
+                                lptkFunc,       // Ptr to function token
+                                FALSE,          // Allow CHARs
+                                lpplLocalVars); // Ptr to local plLocalVars
     if (!hGlbRes)
         return NULL;
 
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    return &YYRes[YYLclIndex];
+    return lpYYRes;
 } // End SysFnMonTYPE_EM
 #undef  APPEND_NAME
 
@@ -1061,13 +1092,14 @@ LPYYSTYPE SysFnMonTYPE_EM
 #endif
 
 LPYYSTYPE SysFnDydTYPE_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc);
+    return PrimFnSyntaxError_EM (lptkFunc, lpplLocalVars);
 } // End SysFnDydTYPE_EM
 #undef  APPEND_NAME
 

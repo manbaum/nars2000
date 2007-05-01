@@ -2,7 +2,6 @@
 //  NARS2000 -- Common Processing Routines
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -338,11 +337,8 @@ HGLOBAL GetRegGlbChar
                 // iActSize contains the # bytes needed
                 uLen = iActSize / sizeof (APLCHAR);
 
-                // Calculate the space needed
+                // Calculate space needed for the result
                 ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, uLen, 1);
-////////////////ByteRes = sizeof (VARARRAY_HEADER)
-////////////////        + sizeof (APLDIM) * 1
-////////////////        + iActSize;
 
                 // Allocate space for the data
                 hGlbVal = DbgGlobalAlloc (GHND, ByteRes);

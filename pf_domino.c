@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- Domino
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -33,10 +32,11 @@
 #endif
 
 LPYYSTYPE PrimFnDomino_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -50,15 +50,16 @@ LPYYSTYPE PrimFnDomino_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
+                                   lptkAxis,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonDomino_EM             (lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonDomino_EM             (lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return PrimFnDydDomino_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydDomino_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End PrimFnDomino_EM
 #undef  APPEND_NAME
 
@@ -76,40 +77,38 @@ LPYYSTYPE PrimFnDomino_EM
 #endif
 
 LPYYSTYPE PrimFnMonDomino_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    BOOL     bRet = TRUE;
-    APLSTYPE aplTypeRht;
-    APLNELM  aplNELMRht,
-             aplNELMRes;
-    APLRANK  aplRankRht,
-             aplRankRes;
-    HGLOBAL  hGlbRht = NULL,
-             hGlbRes = NULL;
-    LPVOID   lpMemRht = NULL,
-             lpMemRes = NULL;
-    APLUINT  ByteRes;
-    APLDIM   uNumRows,
-             uNumCols,
-             uRow,
-             uCol,
-             uTmp;
-    APLINT   apaOff,
-             apaMul;
-    APLFLOAT aplFloatRht;
-    UINT     YYLclIndex,
-             uBitMask;
-    gsl_matrix      *lpGslMatrixU = NULL,
-                    *lpGslMatrixV = NULL;
-    gsl_vector      *lpGslVectorS = NULL,
-                    *lpGslVectorW = NULL;
-    int              ErrCode;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    BOOL        bRet = TRUE;
+    APLSTYPE    aplTypeRht;
+    APLNELM     aplNELMRht,
+                aplNELMRes;
+    APLRANK     aplRankRht,
+                aplRankRes;
+    HGLOBAL     hGlbRht = NULL,
+                hGlbRes = NULL;
+    LPVOID      lpMemRht = NULL,
+                lpMemRes = NULL;
+    APLUINT     ByteRes;
+    APLDIM      uNumRows,
+                uNumCols,
+                uRow,
+                uCol,
+                uTmp;
+    APLINT      apaOff,
+                apaMul;
+    APLFLOAT    aplFloatRht;
+    LPYYSTYPE   lpYYRes;
+    UINT        uBitMask;
+    gsl_matrix *lpGslMatrixU = NULL,
+               *lpGslMatrixV = NULL;
+    gsl_vector *lpGslVectorS = NULL,
+               *lpGslVectorW = NULL;
+    int         ErrCode;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -122,7 +121,8 @@ LPYYSTYPE PrimFnMonDomino_EM
     if (aplRankRht > 2)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -157,7 +157,8 @@ LPYYSTYPE PrimFnMonDomino_EM
      && uNumRows < uNumCols)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -165,7 +166,8 @@ LPYYSTYPE PrimFnMonDomino_EM
     if (!IsSimpleNum (aplTypeRht))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -178,7 +180,7 @@ LPYYSTYPE PrimFnMonDomino_EM
 ////aplNELMRes = uNumRows * uNumCols;
     aplNELMRes = aplNELMRht;
 
-    // Calculate the space needed for the result
+    // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_FLOAT, aplNELMRes, aplRankRes);
 
     // Allocate space for the result
@@ -188,7 +190,8 @@ LPYYSTYPE PrimFnMonDomino_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -242,7 +245,8 @@ LPYYSTYPE PrimFnMonDomino_EM
      || GSL_ENOMEM EQ (int) lpGslVectorW)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -323,7 +327,8 @@ LPYYSTYPE PrimFnMonDomino_EM
     if (ErrCode NE GSL_SUCCESS)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -421,12 +426,15 @@ LPYYSTYPE PrimFnMonDomino_EM
     gsl_matrix_free (lpGslMatrixV); lpGslMatrixV = NULL;
     gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
 
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
 
@@ -479,7 +487,7 @@ NORMAL_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
         return NULL;
 } // End PrimFnMonDomino_EM
@@ -499,53 +507,51 @@ NORMAL_EXIT:
 #endif
 
 LPYYSTYPE PrimFnDydDomino_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    BOOL     bRet = TRUE;
-    APLSTYPE aplTypeLft,
-             aplTypeRht;
-    APLNELM  aplNELMLft,
-             aplNELMRht,
-             aplNELMRes;
-    APLRANK  aplRankLft,
-             aplRankRht,
-             aplRankRes;
-    HGLOBAL  hGlbLft = NULL,
-             hGlbRht = NULL,
-             hGlbRes = NULL;
-    LPVOID   lpMemLft = NULL,
-             lpMemRht = NULL,
-             lpMemRes = NULL;
-    APLUINT  ByteRes;
-    APLDIM   uNumRowsLft,
-             uNumColsLft,
-             uNumRowsRht,
-             uNumColsRht,
-             uNumRowsRes,
-             uNumColsRes,
-             uRow,
-             uCol;
-    APLINT   apaOff,
-             apaMul;
-    APLFLOAT aplFloatLft,
-             aplFloatRht,
-             aplFloatRes;
-    UINT     YYLclIndex,
-             uBitMask;
-    gsl_matrix      *lpGslMatrixU = NULL,
-                    *lpGslMatrixV = NULL;
-    gsl_vector      *lpGslVectorS = NULL,
-                    *lpGslVectorW = NULL,
-                    *lpGslVectorX = NULL,
-                    *lpGslVectorB = NULL;
-    int              ErrCode;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
+    BOOL       bRet = TRUE;
+    APLSTYPE   aplTypeLft,
+               aplTypeRht;
+    APLNELM    aplNELMLft,
+               aplNELMRht,
+               aplNELMRes;
+    APLRANK    aplRankLft,
+               aplRankRht,
+               aplRankRes;
+    HGLOBAL    hGlbLft = NULL,
+               hGlbRht = NULL,
+               hGlbRes = NULL;
+    LPVOID     lpMemLft = NULL,
+               lpMemRht = NULL,
+               lpMemRes = NULL;
+    APLUINT    ByteRes;
+    APLDIM     uNumRowsLft,
+               uNumColsLft,
+               uNumRowsRht,
+               uNumColsRht,
+               uNumRowsRes,
+               uNumColsRes,
+               uRow,
+               uCol;
+    APLINT     apaOff,
+               apaMul;
+    APLFLOAT   aplFloatLft,
+               aplFloatRht,
+               aplFloatRes;
+    LPYYSTYPE  lpYYRes;
+    UINT       uBitMask;
+    gsl_matrix *lpGslMatrixU = NULL,
+               *lpGslMatrixV = NULL;
+    gsl_vector *lpGslVectorS = NULL,
+               *lpGslVectorW = NULL,
+               *lpGslVectorX = NULL,
+               *lpGslVectorB = NULL;
+    int         ErrCode;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -560,7 +566,8 @@ LPYYSTYPE PrimFnDydDomino_EM
     if (aplRankLft > 2 || aplRankRht > 2)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -621,7 +628,8 @@ LPYYSTYPE PrimFnDydDomino_EM
      || uNumRowsLft NE uNumRowsRht)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -630,7 +638,8 @@ LPYYSTYPE PrimFnDydDomino_EM
      || !IsSimpleNum (aplTypeRht))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -648,6 +657,7 @@ LPYYSTYPE PrimFnDydDomino_EM
     // Calculate the space needed for the result
     if (aplRankRes NE 0)
     {
+        // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_FLOAT, aplNELMRes, aplRankRes);
 
         // Allocate space for the result
@@ -657,7 +667,8 @@ LPYYSTYPE PrimFnDydDomino_EM
         if (!hGlbRes)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             goto ERROR_EXIT;
         } // End IF
 
@@ -718,7 +729,8 @@ LPYYSTYPE PrimFnDydDomino_EM
      || GSL_ENOMEM EQ (int) lpGslVectorX)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -799,7 +811,8 @@ LPYYSTYPE PrimFnDydDomino_EM
     if (ErrCode NE GSL_SUCCESS)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -873,7 +886,8 @@ LPYYSTYPE PrimFnDydDomino_EM
         if (ErrCode NE GSL_SUCCESS)
         {
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
+                                       lptkFunc,
+                                       lpplLocalVars);
             goto ERROR_EXIT;
         } // End IF
 
@@ -899,21 +913,24 @@ LPYYSTYPE PrimFnDydDomino_EM
     gsl_matrix_free (lpGslMatrixV); lpGslMatrixV = NULL;
     gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
 
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
     // Fill in the result token
     if (aplRankRes EQ 0)
     {
-        YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-        YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
-////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-        YYRes[YYLclIndex].tkToken.tkData.tkFloat    = aplFloatRes;
-        YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_FLOAT;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkFloat    = aplFloatRes;
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
     {
-        YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-        YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-        YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE
 
     goto NORMAL_EXIT;
@@ -985,7 +1002,7 @@ NORMAL_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
         return NULL;
 } // End PrimFnDydDomino_EM

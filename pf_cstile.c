@@ -2,7 +2,6 @@
 //  NARS2000 -- Primitive Function -- CircleStile
 //***************************************************************************
 
-#pragma pack (1)
 #define STRICT
 #include <windows.h>
 
@@ -30,10 +29,11 @@
 #endif
 
 LPYYSTYPE PrimFnCircleStile_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     // Ensure not an overflow function
@@ -42,9 +42,9 @@ LPYYSTYPE PrimFnCircleStile_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonCircleStile_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonCircleStile_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
     else
-        return PrimFnDydCircleStile_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydCircleStile_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
 } // End PrimFnCircleStile_EM
 #undef  APPEND_NAME
 
@@ -62,9 +62,10 @@ LPYYSTYPE PrimFnCircleStile_EM
 #endif
 
 LPYYSTYPE PrimFnMonCircleStile_EM
-    (LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLSTYPE   aplTypeRht,
@@ -88,15 +89,12 @@ LPYYSTYPE PrimFnMonCircleStile_EM
                uRht;
     APLINT     apaOff,
                apaMul;
-    UINT       YYLclIndex,
-               ByteRes,
+    LPYYSTYPE  lpYYRes;
+    UINT       ByteRes,
                uBitMask,
                uBitIndex;
     UCHAR      immType;
     APLLONGEST aplLongest;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
@@ -105,7 +103,8 @@ LPYYSTYPE PrimFnMonCircleStile_EM
     if (aplTypeRht EQ ARRAY_LIST)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -120,9 +119,10 @@ LPYYSTYPE PrimFnMonCircleStile_EM
                            FALSE,           // TRUE iff axes must be contiguous
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // Return TRUE iff fractional values present
-                           &aplAxis,        // Return last axis value
+                          &aplAxis,         // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL))           // Return HGLOBAL with APLINT axis values
+                           NULL,            // Return HGLOBAL with APLINT axis values
+                           lpplLocalVars))  // Ptr to local plLocalVars
             return NULL;
     } else
     {
@@ -147,12 +147,15 @@ LPYYSTYPE PrimFnMonCircleStile_EM
                     NULL,
                    &immType,
                     NULL);
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
         // Fill in the result token
-        YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARIMMED;
-        YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = immType;
-////////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-        YYRes[YYLclIndex].tkToken.tkData.tkLongest  = aplLongest;
-        YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+        lpYYRes->tkToken.tkFlags.ImmType   = immType;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         goto IMMED_EXIT;
     } // End IF
@@ -172,7 +175,8 @@ LPYYSTYPE PrimFnMonCircleStile_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         return NULL;
     } // End IF
 
@@ -332,12 +336,15 @@ LPYYSTYPE PrimFnMonCircleStile_EM
     goto NORMAL_EXIT;
 
 NORMAL_EXIT:
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 IMMED_EXIT:
     if (hGlbRes && lpMemRes)
     {
@@ -351,7 +358,7 @@ IMMED_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    return &YYRes[YYLclIndex];
+    return lpYYRes;
 } // End PrimFnMonCircleStile_EM
 #undef  APPEND_NAME
 
@@ -369,10 +376,11 @@ IMMED_EXIT:
 #endif
 
 LPYYSTYPE PrimFnDydCircleStile_EM
-    (LPTOKEN lptkLftArg,
-     LPTOKEN lptkFunc,
-     LPTOKEN lptkRhtArg,
-     LPTOKEN lptkAxis)
+    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
+     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
+     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
+     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
     APLSTYPE  aplTypeLft,
@@ -409,12 +417,9 @@ LPYYSTYPE PrimFnDydCircleStile_EM
               apaMul,
               aplRot;
     APLFLOAT  aplFloat;
-    UINT      YYLclIndex,
-              uBitMask,
+    LPYYSTYPE lpYYRes;
+    UINT      uBitMask,
               uBitIndex;
-
-    // Get new index into YYRes
-    YYLclIndex = NewYYResIndex ();
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -431,9 +436,10 @@ LPYYSTYPE PrimFnDydCircleStile_EM
                            FALSE,           // TRUE iff axes must be contiguous
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // Return TRUE iff fractional values present
-                           &aplAxis,        // Return last axis value
+                          &aplAxis,         // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL))           // Return HGLOBAL with APLINT axis values
+                           NULL,            // Return HGLOBAL with APLINT axis values
+                           lpplLocalVars))  // Ptr to local plLocalVars
             return NULL;
     } else
     {
@@ -457,7 +463,8 @@ LPYYSTYPE PrimFnDydCircleStile_EM
          && (aplRankRht - aplRankLft) NE 1)
         {
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkLftArg);
+                                       lptkLftArg,
+                                       lpplLocalVars);
             goto ERROR_EXIT;
         } // End IF
 
@@ -471,7 +478,8 @@ LPYYSTYPE PrimFnDydCircleStile_EM
          && lpMemDimLft[uDim] NE lpMemDimRht[uDim + (uDim < aplAxis)])
         {
             ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkLftArg);
+                                       lptkLftArg,
+                                       lpplLocalVars);
             goto ERROR_EXIT;
         } // End IF
     } // End IF
@@ -513,7 +521,8 @@ LPYYSTYPE PrimFnDydCircleStile_EM
         if (!hGlbRot)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkLftArg);
+                                       lptkLftArg,
+                                       lpplLocalVars);
             goto ERROR_EXIT;
         } // End IF
         // Lock the memory to get a ptr to it
@@ -592,18 +601,24 @@ LPYYSTYPE PrimFnDydCircleStile_EM
     // Strip out the simple scalar right argument case
     if (aplRankRht EQ 0 && IsSimpleNH (aplTypeRes))
     {
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
         // Split cases based upon the right arg's token type
         switch (lptkRhtArg->tkFlags.TknType)
         {
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
             case TKT_VARNAMED:
                 // tkData is an LPSYMENTRY
                 Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
                 // If it's not immediate, we must look inside the array
-                if (!lptkRhtArg->tkData.lpSym->stFlags.Imm)
+                if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
                 {
                     // stData is a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.lpSym->stData.stGlbData));
+                    Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                     // If we ever get here, we must have missed a type demotion
                     DbgStop ();
@@ -612,15 +627,17 @@ LPYYSTYPE PrimFnDydCircleStile_EM
                 // Handle the immediate case
 
                 // Fill in the result token
-                YYRes[YYLclIndex].tkToken.tkFlags.TknType  = TKT_VARIMMED;
-                YYRes[YYLclIndex].tkToken.tkFlags.ImmType  = lptkRhtArg->tkData.lpSym->stFlags.ImmType;
-                YYRes[YYLclIndex].tkToken.tkData.tkLongest = lptkRhtArg->tkData.lpSym->stData.stLongest;
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                lpYYRes->tkToken.tkFlags.ImmType   = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkLongest  = lptkRhtArg->tkData.tkSym->stData.stLongest;
+                lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 break;
 
             case TKT_VARIMMED:
                 // Fill in the result token
-                YYRes[YYLclIndex].tkToken = *lptkRhtArg;
+                lpYYRes->tkToken = *lptkRhtArg;
 
                 break;
 
@@ -641,7 +658,8 @@ LPYYSTYPE PrimFnDydCircleStile_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
+                                   lptkFunc,
+                                   lpplLocalVars);
         goto ERROR_EXIT;
     } // End IF
 
@@ -822,18 +840,22 @@ LPYYSTYPE PrimFnDydCircleStile_EM
             break;
     } // End SWITCH
 PROTO_EXIT:
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
     // Fill in the result token
-    YYRes[YYLclIndex].tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////YYRes[YYLclIndex].tkToken.tkFlags.ImmType   = 0;    // Already zero from ZeroMemory
-////YYRes[YYLclIndex].tkToken.tkFlags.NoDisplay = 0;    // Already zero from ZeroMemory
-    YYRes[YYLclIndex].tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    YYRes[YYLclIndex].tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkLftArg);
+                               lptkLftArg,
+                               lpplLocalVars);
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:
@@ -868,7 +890,7 @@ NORMAL_EXIT:
     } // End IF
 
     if (bRet)
-        return &YYRes[YYLclIndex];
+        return lpYYRes;
     else
         return NULL;
 } // End PrimFnDydCircleStile_EM

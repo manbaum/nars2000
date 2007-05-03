@@ -57,6 +57,7 @@
 #include "pf_times.pro"
 #include "pf_ucaret.pro"
 #include "pf_ustile.pro"
+#include "po_dieresis.pro"
 #include "primfns.pro"
 #include "primspec.pro"
 #include "refcnt.pro"

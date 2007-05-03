@@ -129,7 +129,19 @@ char pszAppName[]                       // Application name for MessageBox
 
 
 //***************************************************************************
-//
+// Thread Local Storage indices
+//***************************************************************************
+
+EXTERN
+DWORD dwTlsType,                        // Thread type (e.g.
+                                        //   'MF' for Master Frame,
+                                        //   'TC' for Tab Control,
+                                        //   'PL' for ParseLine,
+                                        //   etc.)
+      dwTlsSemaphore;                   // Handle to semaphore for PL thread
+
+//***************************************************************************
+// Temporary storage
 //***************************************************************************
 
 EXTERN
@@ -138,6 +150,19 @@ LPCHAR lpszTemp;                        // Used for temporary char storage
 EXTERN
 LPWCHAR lpwszTemp,                      // Used for temporary WCHAR storage
         lpwszFormat;                    // Used for formatting
+
+#ifdef DEBUG
+EXTERN
+LPCHAR lpszDebug;                       // Used for temporary storage of char
+                                        //   debug output
+EXTERN
+LPWCHAR lpwszDebug;                     // Used for temporary storage of WCHAR
+                                        //   debug output
+#endif
+
+//***************************************************************************
+//
+//***************************************************************************
 
 EXTERN
 HGLOBAL hGlbCurTab;                     // Global handle of current tab

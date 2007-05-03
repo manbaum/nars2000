@@ -1021,7 +1021,7 @@ LPYYSTYPE MakeFcnStrand_EM
     lpYYRes = YYAlloc ();
 
     // Save the base of this strand
-    lpYYStrand                     =
+    lpYYStrand                        =
     lpYYRes->unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
 
     // Get the (maximum) # elements in the strand

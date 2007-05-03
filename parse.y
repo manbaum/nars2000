@@ -2052,6 +2052,7 @@ SingTokn:
 
 typedef struct tagPL_THREAD
 {
+    HANDLE  hSemaphore;         // Handle of semaphore for this thread
     HGLOBAL hGlbToken;          // Handle of tokenization of line to parse
     LPWCHAR lpwszLine;          // Ptr to tokens of line to parse (GlobalLock of above)
     HGLOBAL hGlbPTD;            // Handle of PerTabData for this thread
@@ -2120,18 +2121,24 @@ void ValueError
 #endif
 
 void ParseLine
-    (HGLOBAL hGlbToken,         // The token handle
+    (HWND    hWndSM,            // Window handle to Session Manager
+     HGLOBAL hGlbToken,         // The token handle
      LPWCHAR lpwszLine,         // The line to parse
      HGLOBAL hGlbPTD,           // PTD handle
      BOOL    bFreeToken)        // TRUE iff ParseLine is to free hGlbToken on exit
 
 {
-    DWORD     dwThreadId;
-////DWORD     dwWFMO,
-//////////////dwWFSO;
-    HANDLE    hThread;
+    DWORD  dwThreadId;
+    HANDLE hThread,
+           hSemaphore;
 
+    // Create a semaphore
+    hSemaphore = CreateSemaphore (NULL,             // No security attrs
+                                  0,                // Initial count (non-signalled)
+                                  65535,            // Maximum count
+                                  NULL);            // No name
     // Save args in struc to pass to thread func
+    plThread.hSemaphore = hSemaphore;
     plThread.hGlbToken  = hGlbToken;
     plThread.lpwszLine  = lpwszLine;
     plThread.hGlbPTD    = hGlbPTD;
@@ -2142,30 +2149,12 @@ void ParseLine
                             0,                      // Use default stack size
                             (LPTHREAD_START_ROUTINE) &ParseLineInThread,
                             (LPVOID) &plThread,     // Param to thread func
-////////////////////////////CREATE_SUSPENDED,       // Creation flag
                             0,                      // Creation flag
                             &dwThreadId);           // Returns thread id
     Sleep (0);              // To cut short the caller's thread slice
 
-////ResumeThread (hThread);
-
-////while (TRUE)
-////{
-////////dwWFMO =
-////////MsgWaitForMultipleObjects (1,               // # handles to wait for
-////////                          &hThread,         // Ptr to handle to wait for
-////////                           FALSE,           // Only one handle to wait for
-////////                           1000,            // Timeout value in milliseconds
-////////                           QS_ALLINPUT);    // Wait for any message
-////////if (dwWFMO NE WAIT_TIMEOUT
-//////// && dwWFMO NE (WAIT_OBJECT_0 + 1))
-////////    break;
-////    dwWFSO =
-////    WaitForSingleObject (hThread,           // Handle to wait for
-////                         1000);             // Timeout value in milliseconds
-////    if (dwWFSO NE WAIT_TIMEOUT)
-////        break;
-////} // End WHILE
+    // Tell the SM to wait for PL to finish
+    PostMessage (hWndSM, MYWM_WFMO, (WPARAM) hThread, (LPARAM) hSemaphore);
 } // End ParseLine
 #undef  APPEND_NAME
 
@@ -2186,18 +2175,26 @@ void ParseLineInThread
     (LPPL_THREAD lpplThread)
 
 {
-    HGLOBAL     hGlbToken;
-    LPWCHAR     lpwszLine;
-    HGLOBAL     hGlbPTD;
-    BOOL        bFreeToken;
+    HANDLE      hSemaphore;     // Handle to the ParseLine semaphore
+    HGLOBAL     hGlbToken;      // Handle to sequence of tokens to parse
+    LPWCHAR     lpwszLine;      // Ptr to WCHARs in the line to parse
+    HGLOBAL     hGlbPTD;        // Handle to PerTabData
+    BOOL        bFreeToken;     // TRUE iff we should free hGlbToken on exit
     PLLOCALVARS plLocalVars;    // Re-entrant vars
 
     // Make sure we can communicate between windows
     AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
+    // Save the thread type ('PL')
+    TlsSetValue (dwTlsType, (LPVOID) 'PL');
+
+    // Save the thread's semaphore handle
+    TlsSetValue (dwTlsSemaphore, (LPVOID) lpplThread->hSemaphore);
+
     DBGENTER;
 
     // Extract values from the arg struc
+    hSemaphore = lpplThread->hSemaphore;
     hGlbToken  = lpplThread->hGlbToken;
     lpwszLine  = lpplThread->lpwszLine;
     hGlbPTD    = lpplThread->hGlbPTD;
@@ -2324,7 +2321,14 @@ NORMAL_EXIT:
         DbgGlobalFree (hGlbToken); hGlbToken = NULL;
     } // End IF
 
+    // Free the virtual memory for the complete line
+    VirtualFree (lpwszLine, 0, MEM_RELEASE); lpwszLine = NULL;
+
     DBGLEAVE;
+
+    // Release it
+    if (!ReleaseSemaphore (hSemaphore, 1, NULL))
+        DbgBrk ();
 } // End ParseLineInThread
 #undef  APPEND_NAME
 
@@ -2912,14 +2916,14 @@ void yyfprintf
     i2 = va_arg (vl, int);
     i3 = va_arg (vl, int);
 
-    wsprintf (lpszTemp,
+    wsprintf (lpszDebug,
               lpszFmt,
               i1, i2, i3);
     // Accumulate into local buffer because
     //   Bison calls this function multiple
     //   times for the same line, terminating
     //   the last call for the line with a LF.
-    lstrcat (szTemp, lpszTemp);
+    lstrcat (szTemp, lpszDebug);
 
     // Check last character.
     i1 = lstrlen (szTemp);

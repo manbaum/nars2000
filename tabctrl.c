@@ -433,6 +433,9 @@ BOOL CreateNewTabInThread
     int          iTab;          // Insert the new tab to the left of this one
     MSG          Msg;           // Message for GetMessage loop
 
+    // Store the thread type ('TC')
+    TlsSetValue (dwTlsType, (LPVOID) 'TC');
+
     // Extract values from the arg struc
     hWndParent = lpcntThread->hWndParent;
     lpszDPFE   = lpcntThread->lpszDPFE;

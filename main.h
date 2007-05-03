@@ -123,7 +123,8 @@ DecrRefCntInd (hGlbData);
 
 // Define local window messages
 #define MYWM_MOVE           (WM_APP+ 0) // MF
-////#define MYWM_CREATECARET    (WM_APP+ 1) // All
+#define MYWM_WFMO           (WM_APP+ 1) // SM (Wait For Multiple Objects)
+#define MYWM_PARSELINEDONE  (WM_APP+ 2) // SM (DisplayPrompt & CloseHandle)
 
 
 typedef enum tagEXTYPE

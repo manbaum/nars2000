@@ -493,7 +493,7 @@ void W2A
                          lpSrc,     // Source
                          iLen,      // Source length
                          lpDest,    // Destin
-                         dwSize,    // Size of buffer
+                         dwSize,    // Size of destin buffer
                          NULL,      // Use system default char
                          NULL);     // Skip notification
 } // End W2A
@@ -507,7 +507,8 @@ void W2A
 
 void A2W
     (LPWSTR lpDest,
-     LPSTR  lpSrc)
+     LPSTR  lpSrc,
+     DWORD  dwSize)
 
 {
     int iLen;
@@ -518,7 +519,7 @@ void A2W
                          lpSrc,     // Source
                          iLen,      // Source length
                          lpDest,    // Destin
-                         iLen * sizeof (WCHAR)); // Size of buffer
+                         dwSize);   // Size of destin buffer
 } // End A2W
 
 

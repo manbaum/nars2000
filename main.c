@@ -53,10 +53,12 @@ typedef struct tagENUMPASSMSG
 } ENUMPASSMSG, *LPENUMPASSMSG;
 
 
-#define DEF_CTEMP_MAXSIZE   1024        // Maximum size of char  temporary storage
-#define DEF_CTEMP_INITSIZE  1024        // Initial ...
-#define DEF_WTEMP_MAXSIZE   1024        // Maximum size of WCHAR ...
-#define DEF_WTEMP_INITSIZE  1024        // Initial ...
+#define DEF_CTEMP_MAXSIZE   65536       // Maximum size of char  temporary storage
+#define DEF_CTEMP_INITSIZE  65536       // Initial ...
+#define DEF_WTEMP_MAXSIZE   65536       // Maximum size of WCHAR ...
+#define DEF_WTEMP_INITSIZE  65536       // Initial ...
+#define DEF_DEBUG_MAXSIZE   65536       // Maximum size of debug ...
+#define DEF_DEBUG_INITSIZE  65536       // Initial ...
 #define DEF_WFORMAT_MAXSIZE   1024*1024 // Maximum size of WCHAR Formatting storage
 #define DEF_WFORMAT_INITSIZE    64*1024 // Initial ...
 
@@ -1543,7 +1545,47 @@ BOOL InitInstance
                   DEF_WFORMAT_INITSIZE * sizeof (WCHAR),
                   MEM_COMMIT,
                   PAGE_READWRITE);
+#ifdef DEBUG
+    // Allocate virtual memory for the char debug storage
+    lpszDebug =
+    VirtualAlloc (NULL,         // Any address
+                  DEF_DEBUG_MAXSIZE * sizeof (char),
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lpszDebug)
+    {
+        // ***FIXME*** -- WS FULL before we got started???
+        DbgMsg ("InitInstance:  VirtualAlloc for <lpszDebug> failed");
 
+        return FALSE;       // Mark as failed
+    } // End IF
+
+    // Commit the intial size
+    VirtualAlloc (lpszDebug,
+                  DEF_DEBUG_INITSIZE * sizeof (char),
+                  MEM_COMMIT,
+                  PAGE_READWRITE);
+
+    // Allocate virtual memory for the WCHAR debug storage
+    lpwszDebug =
+    VirtualAlloc (NULL,         // Any address
+                  DEF_DEBUG_MAXSIZE * sizeof (WCHAR),
+                  MEM_RESERVE,
+                  PAGE_READWRITE);
+    if (!lpwszDebug)
+    {
+        // ***FIXME*** -- WS FULL before we got started???
+        DbgMsg ("InitInstance:  VirtualAlloc for <lpwszDebug> failed");
+
+        return FALSE;       // Mark as failed
+    } // End IF
+
+    // Commit the intial size
+    VirtualAlloc (lpwszDebug,
+                  DEF_DEBUG_INITSIZE * sizeof (WCHAR),
+                  MEM_COMMIT,
+                  PAGE_READWRITE);
+#endif
     // Read in the icons
     hIconMF_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_LARGE));
     hIconMF_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_SMALL));
@@ -1585,6 +1627,17 @@ void UninitInstance
 
 {
     // *************** Temporary Storage ***********************
+#ifdef DEBUG
+    if (lpszDebug)
+    {
+        VirtualFree (lpszDebug, 0, MEM_RELEASE); lpszDebug = NULL;
+    } // End IF
+
+    if (lpwszDebug)
+    {
+        VirtualFree (lpwszDebug, 0, MEM_RELEASE); lpwszDebug = NULL;
+    } // End IF
+#endif
     if (lpszTemp)
     {
         VirtualFree (lpszTemp, 0, MEM_RELEASE); lpszTemp = NULL;
@@ -1653,6 +1706,13 @@ int PASCAL WinMain
 
     // Save initial state
     nMinState = nCmdShow;
+
+    // Allocate TLS indices
+    dwTlsType = TlsAlloc ();        // Thread type ('MF', 'TC', 'PL', etc.)
+    dwTlsSemaphore = TlsAlloc ();   // Thread semaphore (for 'PL' only)
+
+    // Save the thread type ('MF')
+    TlsSetValue (dwTlsType, (LPVOID) 'MF');
 
     // If there's a command line, parse it
     if (!ParseCommandLine (lpCmdLine))

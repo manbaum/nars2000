@@ -464,7 +464,7 @@ LPYYSTYPE SysFnSYSVER_EM
     // Read in the application's File Version String
     LclFileVersionStr (szAppDPFE, szFileVer);
 
-    A2W (p, szFileVer);
+    A2W (p, szFileVer, SYSVER_NELM);
 
     // Skip to the trailing zero
     p += lstrlenW (p);
@@ -501,7 +501,7 @@ LPYYSTYPE SysFnSYSVER_EM
         // Read in the file timestamp
         ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
 
-        A2W (p, ConvTime (dwTemp));
+        A2W (p, ConvTime (dwTemp), SYSVER_NELM);
 
         // Skip to the trailing zero
         p += lstrlenW (p);

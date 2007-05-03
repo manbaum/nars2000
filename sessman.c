@@ -82,6 +82,12 @@ void SetAttrs
 //  Append lpwszLine to the history buffer
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- AppendLine"
+#else
+#define APPEND_NAME
+#endif
+
 void AppendLine
     (LPWCHAR lpwszLine,
      BOOL    bLineCont,
@@ -89,6 +95,10 @@ void AppendLine
 
 {
     HWND hWndEC;
+
+#ifdef DEBUG
+    dprintfW (L"AppendLine:  \"%S\" (%s#%d)", lpwszLine, FNLN);
+#endif
 
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
@@ -107,7 +117,11 @@ void AppendLine
         // Replace the selection (none) with "\r\n"
         SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
     } // End IF
+#ifdef DEBUG
+    DisplayUndo (hWndEC);
+#endif
 } // End AppendLine
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -335,24 +349,6 @@ void MoveCaretEOB
 } // End MoveCaretEOB
 
 
-//// //***************************************************************************
-//// //  MyCreateCaret
-//// //
-//// //  Create a caret
-//// //***************************************************************************
-////
-//// void MyCreateCaret
-////     (HWND      hWnd,
-////      LPVKSTATE lpvkState,
-////      long      cyAveChar)
-//// {
-////     PostMessageW (hWnd,
-////                   MYWM_CREATECARET,
-////                   lpvkState->Ins ? DEF_CURWID_INS : DEF_CURWID_REP,
-////                   cyAveChar);
-//// } // End MyCreateCaret
-
-
 //***************************************************************************
 //  DisplayPrompt
 //
@@ -377,6 +373,9 @@ void DisplayPrompt
     if (uLinePos NE uCharPos)
         AppendLine (L"", FALSE, TRUE);
     AppendLine (wszIndent, FALSE, FALSE);
+
+    // Set the focus to the Session Manager so the prompt displays
+    SetFocus (GetParent (hWndEC));
 } // End DisplayPrompt
 
 
@@ -808,13 +807,6 @@ LRESULT APIENTRY SMWndProc
             // ***DEBUG***
             SendMessageW (hWnd, MYWM_KEYDOWN, VK_F9, 0);
 
-////////////// Get the current vkState
-////////////lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
-////////////vkState = *(LPVKSTATE) &lvkState;
-
-////////////// Create a default sized system caret for display
-////////////MyCreateCaret (hWndEC, &vkState, cyAveCharSM);
-
             // Make sure we can communicate between windows
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
@@ -869,6 +861,109 @@ LRESULT APIENTRY SMWndProc
             SetFocus (hWndEC);
 
             break;                  // Continue with next handler ***MUST***
+
+        case MYWM_WFMO:             // hThread = (HANDLE) wParam;
+                                    // hSemaphore = (HANDLE) lParam;
+#define hThread     ((HANDLE) wParam)
+#define hSemaphore  ((HANDLE) lParam)
+
+            while (TRUE)
+            {
+                DWORD dwWFMO;
+
+                dwWFMO =
+                MsgWaitForMultipleObjects (1,               // # handles to wait for
+                                          &hSemaphore,      // Ptr to handle to wait for
+                                           FALSE,           // Only one handle to wait for
+                                           INFINITE,        // Timeout value in milliseconds
+                                           QS_ALLINPUT);    // Wait for any message
+                // Split cases based upon the return code
+                switch (dwWFMO)
+                {
+                    // Check for ParseLine done
+                    case WAIT_OBJECT_0:
+                        // Process ParseLine done
+                        PostMessage (hWnd, MYWM_PARSELINEDONE, wParam, lParam);
+
+                        return FALSE;           // We handled the msg
+
+                    // Check for a message in the queue, ...
+                    case WAIT_OBJECT_0 + 1:
+                        // Repost our message
+                        PostMessage (hWnd, message, wParam, lParam);
+
+                        return FALSE;           // We handled the msg
+
+                    case (DWORD) -1:
+////////////////////////DbgBrk ();
+////////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
+////////////////////////    return FALSE;
+
+                        // Fall through to <defstop>
+
+                    defstop
+                        GetLastError ();
+                        break;
+                } // End SWITCH
+            } // End WHILE
+
+            return FALSE;           // We handled the msg
+#undef  hSemaphore
+#undef  hThread
+
+        case MYWM_PARSELINEDONE:
+#define hThread     ((HANDLE) wParam)
+#define hSemaphore  ((HANDLE) lParam)
+
+            // Wait for the thread to terminate
+            while (TRUE)
+            {
+                DWORD dwWFMO;
+
+                dwWFMO =
+                MsgWaitForMultipleObjects (1,               // # handles to wait for
+                                          &hThread,         // Ptr to handle to wait for
+                                           FALSE,           // Only one handle to wait for
+                                           INFINITE,        // Timeout value in milliseconds
+                                           QS_ALLINPUT);    // Wait for any message
+                // Split cases based upon the return code
+                switch (dwWFMO)
+                {
+                    // Check for ParseLine thread done
+                    case WAIT_OBJECT_0:
+                        // Thread ParseLine done
+
+                        // Close the handle as it isn't used anymore
+                        CloseHandle (hSemaphore);
+
+                        // Display the default prompt
+                        DisplayPrompt (hWndEC);
+
+                        return FALSE;           // We handled the msg
+
+                    // Check for a message in the queue, ...
+                    case WAIT_OBJECT_0 + 1:
+                        // Repost our message
+                        PostMessage (hWnd, message, wParam, lParam);
+
+                        return FALSE;           // We handled the msg
+
+                    case (DWORD) -1:
+////////////////////////DbgBrk ();
+////////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
+////////////////////////    return FALSE;
+
+                        // Fall through to <defstop>
+
+                    defstop
+                        GetLastError ();
+                        break;
+                } // End SWITCH
+            } // End WHILE
+
+            return FALSE;           // We handled the msg
+#undef  hSemaphore
+#undef  hThread
 
         case WM_UNDO:
         case MYWM_REDO:
@@ -950,9 +1045,6 @@ LRESULT APIENTRY SMWndProc
                     esState.exType = EX_IMMEX;
                     ExecuteLine (uLineNum, &esState, hWndEC);
 
-                    // Display the default prompt
-                    DisplayPrompt (hWndEC);
-
                     break;
 
                 case VK_UP:
@@ -1001,7 +1093,7 @@ LRESULT APIENTRY SMWndProc
                 case VK_F1:             // No action defined as yet
                 case VK_F6:             // ...
                 case VK_F7:             // ...
-////////////////case VK_F8:             // Handled in EDITFCN.C
+////////////////case VK_F8:             // Handled in EDITFCN.C as <DisplayUndo>
                 case VK_F10:            // Not generated
                     return FALSE;
 #endif
@@ -1022,7 +1114,7 @@ LRESULT APIENTRY SMWndProc
                 case VK_F4:             // Display symbol table entries
                                         //   with non-zero reference counts
                     // If it's Shift-, then display all
-                    if (GetKeyState (VK_SHIFT) & 0x80000000)
+                    if (GetKeyState (VK_SHIFT) & 0x8000)
                         DisplaySymTab (TRUE);
                     else
                         DisplaySymTab (FALSE);
@@ -1032,7 +1124,7 @@ LRESULT APIENTRY SMWndProc
 #ifdef DEBUG
                 case VK_F5:             // Display outstanding global memory objects
                     // If it's Shift-, then display all
-                    if (GetKeyState (VK_SHIFT) & 0x80000000)
+                    if (GetKeyState (VK_SHIFT) & 0x8000)
                         DisplayGlobals (TRUE);
                     else
                         DisplayGlobals (FALSE);
@@ -1150,22 +1242,6 @@ LRESULT APIENTRY SMWndProc
             // Split cases based upon the notify code
             switch (wNotifyCode)
             {
-////            case EN_SETFOCUS:                   // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
-////                                                // wNotifyCode = HIWORD(wParam);      // Notification code
-////                                                // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
-////                // Get the current vkState
-////                lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
-////                vkState = *(LPVKSTATE) &lvkState;
-////
-////                // Create a default sized system caret for display
-////                Assert (hWndEC NE 0);
-////                MyCreateCaret (hWndEC, &vkState, cyAveCharSM);
-////
-////                // Paint the window
-////                UpdateWindow (hWndEC);
-////
-////                break;
-
                 case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
                                                     // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
                     // The contents of the edit control have changed,
@@ -1246,6 +1322,12 @@ LRESULT APIENTRY SMWndProc
 ////////////{
 ////////////    VirtualFree (lptkStackBase, 0, MEM_RELEASE); lptkStackBase = NULL;
 ////////////} // End IF
+
+            // *************** lpwszTmpLine ****************************
+            if (lpwszTmpLine)
+            {
+                VirtualFree (lpwszTmpLine, 0, MEM_RELEASE); lpwszTmpLine = NULL;
+            } // End IF
 
             // *************** lpwszCurLine ****************************
             if (lpwszCurLine)

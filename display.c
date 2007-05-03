@@ -61,8 +61,7 @@ BOOL ArrayDisplay_EM
 
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)
-                    DisplayGlbArr (lpwszFormat,
-                                   ClrPtrTypeDirGlb (lptkRes->tkData.tkSym->stData.stGlbData),
+                    DisplayGlbArr (ClrPtrTypeDirGlb (lptkRes->tkData.tkSym->stData.stGlbData),
                                    bEndingCR);
                 return TRUE;
 
@@ -82,7 +81,7 @@ BOOL ArrayDisplay_EM
             Assert (lptkRes->tkData.tkSym->stFlags.Imm);
 
             lpaplChar =
-            FormatSymTabConst (lpwszTemp,
+            FormatSymTabConst (lpwszFormat,
                                lptkRes->tkData.tkSym);
             break;
 
@@ -92,7 +91,7 @@ BOOL ArrayDisplay_EM
                 return TRUE;
 
             lpaplChar =
-            FormatImmed (lpwszTemp,
+            FormatImmed (lpwszFormat,
                          lptkRes->tkFlags.ImmType,
                          &lptkRes->tkData.lpVoid);
             break;
@@ -112,13 +111,12 @@ BOOL ArrayDisplay_EM
             {
                 case PTRTYPE_STCONST:
                     lpaplChar =
-                    FormatSymTabConst (lpwszTemp,
+                    FormatSymTabConst (lpwszFormat,
                                        lptkRes->tkData.tkSym);
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    DisplayGlbArr (lpwszFormat,
-                                   ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData),
+                    DisplayGlbArr (ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData),
                                    bEndingCR);
                     return TRUE;
 
@@ -141,7 +139,7 @@ BOOL ArrayDisplay_EM
         *lpaplChar = L'\0';
 
     // Display the line
-    AppendLine (lpwszTemp, FALSE, bEndingCR);
+    AppendLine (lpwszFormat, FALSE, bEndingCR);
 
     return TRUE;
 } // End ArrayDisplay_EM
@@ -155,13 +153,14 @@ BOOL ArrayDisplay_EM
 //***************************************************************************
 
 void DisplayGlbArr
-    (LPAPLCHAR lpaplChar,
-     HGLOBAL   hGlb,
+    (HGLOBAL   hGlb,
      BOOL      bEndingCR)       // TRUE iff last line has CR
 
 {
     LPVOID      lpMem;
-    LPAPLCHAR   lpaplCharStart,
+    LPAPLCHAR   lpaplCharIni = NULL,
+                lpaplChar,
+                lpaplCharStart,
                 lpwsz;
     APLSTYPE    aplType;
     APLNELM     aplNELM;
@@ -176,9 +175,32 @@ void DisplayGlbArr
     LPFMTCOLSTR lpFmtColStr;
     UINT        uCol;
 
+#define DEF_DISPLAY_INITSIZE    65536
+#define DEF_DISPLAY_MAXSIZE     65536
+
+    // Allocate space for the display
+    lpaplCharIni =
+      VirtualAlloc (NULL,          // Any address
+                    DEF_DISPLAY_MAXSIZE * sizeof (APLCHAR),
+                    MEM_RESERVE,
+                    PAGE_READWRITE);
+    if (!lpaplCharIni)
+    {
+        // ***FIXME*** -- WS FULL before we got started???
+        DbgMsg ("DisplayGlbArr:  VirtualAlloc for <lpaplCharIni> failed");
+
+        return;             // Mark as failed
+    } // End IF
+
+    // Commit the intial size
+    VirtualAlloc (lpaplCharIni,
+                  DEF_DISPLAY_INITSIZE * sizeof (APLCHAR),
+                  MEM_COMMIT,
+                  PAGE_READWRITE);
+
 #ifdef DEBUG
-    // Fill lpwszFormat with FFs so we can tell what we actually wrote
-    FillMemory (lpaplChar, 1024, 0xFF);
+    // Fill lpaplCharIni with FFs so we can tell what we actually wrote
+    FillMemory (lpaplCharIni, 1024, 0xFF);
 #endif
 
     // Lock the memory to get a ptr to it
@@ -218,9 +240,9 @@ void DisplayGlbArr
     } // End IF/ELSE
 
     // Define a new FMTHEAD in the output
-    ZeroMemory ((LPFMTHEADER) lpaplChar, sizeof (FMTHEADER));
-////((LPFMTHEADER) lpaplChar)->lpFmtHeadUp = NULL;  // Filled in by ZeroMemory
-    lpFmtHeader = (LPFMTHEADER) lpaplChar;
+    ZeroMemory ((LPFMTHEADER) lpaplCharIni, sizeof (FMTHEADER));
+////((LPFMTHEADER) lpaplCharIni)->lpFmtHeadUp = NULL;  // Filled in by ZeroMemory
+    lpFmtHeader = (LPFMTHEADER) lpaplCharIni;
 #ifdef DEBUG
     lpFmtHeader->Signature   = FMTHEADER_SIGNATURE;
 #endif
@@ -249,11 +271,11 @@ void DisplayGlbArr
     }
 #endif
     // Skip over the FMTCOLSTRs
-    lpaplChar = lpaplCharStart = (LPAPLCHAR) (&lpFmtColStr[aplDimNCols]);
+    lpaplCharStart = (LPAPLCHAR) (&lpFmtColStr[aplDimNCols]);
 
     // Save ptr to 1st child FMTROWSTR
     if (aplDimNRows)
-        lpFmtHeader->lpFmtRow1st = (LPFMTROWSTR) lpaplChar;
+        lpFmtHeader->lpFmtRow1st = (LPFMTROWSTR) lpaplCharStart;
     else
         lpFmtHeader->lpFmtRow1st = NULL;
 
@@ -269,7 +291,7 @@ void DisplayGlbArr
             CompileArrBool    ((LPAPLBOOL)    lpMem,
                                lpFmtHeader,
                                lpFmtColStr,
-                               lpaplChar,
+                               lpaplCharStart,
                                aplDimNRows,
                                aplDimNCols,
                                aplRank,
@@ -281,7 +303,7 @@ void DisplayGlbArr
             CompileArrInteger ((LPAPLINT)    lpMem,
                                lpFmtHeader,
                                lpFmtColStr,
-                               lpaplChar,
+                               lpaplCharStart,
                                aplDimNRows,
                                aplDimNCols,
                                aplRank,
@@ -293,7 +315,7 @@ void DisplayGlbArr
             CompileArrFloat   ((LPAPLFLOAT)  lpMem,
                                lpFmtHeader,
                                lpFmtColStr,
-                               lpaplChar,
+                               lpaplCharStart,
                                aplDimNRows,
                                aplDimNCols,
                                aplRank,
@@ -305,7 +327,7 @@ void DisplayGlbArr
             CompileArrAPA     ((LPAPLAPA)    lpMem,
                                lpFmtHeader,
                                lpFmtColStr,
-                               lpaplChar,
+                               lpaplCharStart,
                                aplDimNRows,
                                aplDimNCols,
                                aplRank,
@@ -317,7 +339,7 @@ void DisplayGlbArr
             CompileArrChar    ((LPAPLCHAR)   lpMem,
                                lpFmtHeader,
                                lpFmtColStr,
-                               lpaplChar,
+                               lpaplCharStart,
                                aplDimNRows,
                                aplDimNCols,
                                aplRank,
@@ -329,7 +351,7 @@ void DisplayGlbArr
             CompileArrHetero  ((LPAPLHETERO) lpMem,
                                lpFmtHeader,
                                lpFmtColStr,
-                               lpaplChar,
+                               lpaplCharStart,
                                aplDimNRows,
                                aplDimNCols,
                                aplRank,
@@ -341,7 +363,7 @@ void DisplayGlbArr
             CompileArrNested  ((LPAPLNESTED) lpMem,
                                lpFmtHeader,
                                lpFmtColStr,
-                               lpaplChar,
+                               lpaplCharStart,
                                aplDimNRows,
                                aplDimNCols,
                                aplRank,
@@ -355,6 +377,8 @@ void DisplayGlbArr
     // Propogate the row & col count up the line
     PropogateRowColCount (lpFmtHeader,
                           FALSE);
+
+    // lpaplCharStart now contains the compiled version of the output
 
     // Add up the width of each column to get the
     //   # cols in the result
@@ -370,13 +394,13 @@ void DisplayGlbArr
                                          + lpFmtHeader->uFmtTrBl));
 #ifdef PREFILL
     // Fill the output area with all blanks
-    for (lpaplChar = lpwszTemp, aplDimCol = 0; aplDimCol < aplNELMRes; aplDimCol++)
+    for (lpaplChar = lpwszFormat, aplDimCol = 0; aplDimCol < aplNELMRes; aplDimCol++)
         *lpaplChar++ = L' ';
 #endif
-    lpaplChar = lpwszTemp;
+    lpaplChar = lpwszFormat;
 
     // Run through the array again processing the
-    //   output stream into lpwszTemp
+    //   output stream into lpwszFormat
 
     // Split cases based upon the array's storage type
     switch (aplType)
@@ -416,7 +440,9 @@ void DisplayGlbArr
                           FALSE,                    // TRUE iff raw (not {thorn}) output
                           bEndingCR);               // TRUE iff last line has CR
             // Loop through the formatted rows
-            for (lpwsz = lpwszTemp, uCol = 0; uCol < lpFmtHeader->uFmtRows; uCol++, lpwsz += aplLastDim)
+            for (lpwsz = lpwszFormat, uCol = 0;
+                 uCol < lpFmtHeader->uFmtRows;
+                 uCol++, lpwsz += aplLastDim)
             {
                 WCHAR wch;
 
@@ -434,6 +460,12 @@ void DisplayGlbArr
             break;
     } // End SWITCH
 NORMAL_EXIT:
+    // Free the local storage
+    if (lpaplCharIni)
+    {
+        VirtualFree (lpaplCharIni, 0, MEM_RELEASE); lpaplCharIni = NULL;
+    } // End IF
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlb); lpMem = NULL;
 } // End DisplayGlbArr
@@ -542,7 +574,7 @@ LPAPLCHAR FormatAplint
     } // End IF
 
     // Format the number one digit at a time
-    //   in reverse order into lpwszTemp
+    //   in reverse order into lpwszFormat
     i = MAXLEN - 1;
 
     // Execute at least once so zero prints
@@ -592,7 +624,9 @@ LPAPLCHAR FormatFloat
         _gcvt (fFloat, (int) uQuadPP, lpszTemp);
 
         // Convert from one-byte ASCII to two-byte UTF16
-        A2W (lpaplChar, lpszTemp);
+        // The destin buffer length just needs be long enough
+        //    to handle a FP number
+        A2W (lpaplChar, lpszTemp, 4096);
 
         // Check for minus sign in the mantissa
         if (lpaplChar[0] EQ L'-')
@@ -759,12 +793,12 @@ void DisplayHshTab
 
     DbgMsg ("********** Hash Table **********************************");
 
-    wsprintf (lpszTemp,
+    wsprintf (lpszDebug,
               "lpHshTab = %08X, SplitNext = %08X, Last = %08X",
               lpHshTab,
               lpHshTabSplitNext,
               &lpHshTab[iHshTabTotalSize]);
-    DbgMsg (lpszTemp);
+    DbgMsg (lpszDebug);
 
     // Display the hash table
     for (lpHshEntry = lpHshTab, i = 0;
@@ -795,7 +829,7 @@ void DisplayHshTab
 
             lpSymEntry = lpHshEntry->lpSymEntry;
             if (lpSymEntry->stFlags.Imm)
-                wsprintfW (lpwszTemp,
+                wsprintfW (lpwszDebug,
                            L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%08X%08X, Sym=%08X",
                            i,
                            lpHshEntry->uHash,
@@ -812,7 +846,7 @@ void DisplayHshTab
 
                 lpGlbName = GlobalLock (lpHshEntry->hGlbName); Assert (lpGlbName NE NULL);
 
-                wsprintfW (lpwszTemp,
+                wsprintfW (lpwszDebug,
                            L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%08X, %08X-%08X",
                            i,
                            lpHshEntry->uHash,
@@ -826,14 +860,14 @@ void DisplayHshTab
                 GlobalUnlock (lpHshEntry->hGlbName); lpGlbName = NULL;
             } // End IF/ELSE/IF
         } else
-            wsprintfW (lpwszTemp,
+            wsprintfW (lpwszDebug,
                        L"HT:%3d (EMPTY) <%s>, Sym=%08X, <%08X-%08X>",
                        i,
                        &wszFlags[1],
                        lpHshEntry->lpSymEntry,
                        lpHshEntry->NextSameHash,
                        lpHshEntry->PrevSameHash);
-        DbgMsgW (lpwszTemp);
+        DbgMsgW (lpwszDebug);
     } // End FOR
 
     DbgMsg ("********** End Hash Table ******************************");
@@ -893,11 +927,11 @@ void DisplaySymTab
     else
         DbgMsg ("********** Symbol Table Referenced Non-SysNames ******** ");
 
-    wsprintf (lpszTemp,
+    wsprintf (lpszDebug,
               "lpSymTab = %08X, Last = %08X",
               lpSymTab,
               &lpSymTab[iSymTabTotalSize]);
-    DbgMsg (lpszTemp);
+    DbgMsg (lpszDebug);
 
     // Display the symbol table
     for (lpSymEntry = lpSymTab, i = 0;
@@ -958,7 +992,7 @@ void DisplaySymTab
 
             if (lpSymEntry->stFlags.Imm)
             {
-                wsprintfW (lpwszTemp,
+                wsprintfW (lpwszDebug,
                            L"ST:%08X <%s> <%s>, ull=%08X%08X, Hsh=%08X",
                            lpSymEntry,
                            wszName,
@@ -976,7 +1010,7 @@ void DisplaySymTab
 
                 if (lpHshEntry)
                 {
-                    wsprintfW (lpwszTemp,
+                    wsprintfW (lpwszDebug,
                                L"ST:%08X <%s>, <%s>, Data=%08X, Hsh=%08X",
                                lpSymEntry,
                                wszName,
@@ -984,18 +1018,18 @@ void DisplaySymTab
                                lpSymEntry->stData.lpVoid,
                                lpHshEntry);
                 } else
-                    wsprintfW (lpwszTemp,
+                    wsprintfW (lpwszDebug,
                                L"ST:%08X <******>, <%s>, Hsh=0",
                                lpSymEntry,
                                &wszFlags[1]);
             } // End IF/ELSE/IF
         } else
-            wsprintfW (lpwszTemp,
+            wsprintfW (lpwszDebug,
                        L"ST:%08X (EMPTY) <%s>, Hsh=%08X",
                        lpSymEntry,
                        &wszFlags[1],
                        lpSymEntry->lpHshEntry);
-        DbgMsgW (lpwszTemp);
+        DbgMsgW (lpwszDebug);
     } // End FOR
 
     DbgMsg ("********** End Symbol Table ****************************");
@@ -1032,10 +1066,10 @@ void DisplayGlobals
 
         if (!lpMem)
         {
-            wsprintf (lpszTemp,
+            wsprintf (lpszDebug,
                       "hGlb=%08X *** INVALID ***",
                       hGlb);
-            DbgMsg (lpszTemp);
+            DbgMsg (lpszDebug);
 
             continue;
         } // End IF
@@ -1095,7 +1129,7 @@ void DisplayGlobals
                         break;
                 } // End SWITCH
 
-                wsprintfW (lpwszTemp,
+                wsprintfW (lpwszDebug,
                            L"hGlb=%08X, ArrType=%c%c, NELM=%3d, RC=%1d, Rank=%2d, Dim1=%3d, Line#=%4d, (%s)",
                            hGlb,
                            L"BIFCHNLA"[lpHeader->ArrType],
@@ -1106,7 +1140,7 @@ void DisplayGlobals
                            LODWORD (aplDim),
                            auLinNumGLOBAL[i],
                            aplArrChar);
-                DbgMsgW (lpwszTemp);
+                DbgMsgW (lpwszDebug);
             } // End IF
         } else
 #undef  lpHeader
@@ -1116,22 +1150,22 @@ void DisplayGlobals
             // It's a valid HGLOBAL function array
             Assert (IsGlbTypeFcnDir (MakeGlbTypeGlb (hGlb)));
 
-            wsprintf (lpszTemp,
+            wsprintf (lpszDebug,
                       "hGlb=%08X, FcnType=%1d,  NELM=%3d, RC=%1d,                    Line#=%4d",
                       hGlb,
                       lpHeader->FcnType,
                       LODWORD (lpHeader->NELM),
                       lpHeader->RefCnt,
                       auLinNumGLOBAL[i]);
-            DbgMsg (lpszTemp);
+            DbgMsg (lpszDebug);
         } else
 #undef  lpHeader
         if (bDispAll)
         {
-            wsprintf (lpszTemp,
+            wsprintf (lpszDebug,
                       "hGlb=%08X -- No NARS/FCNS Signature",
                       hGlb);
-            DbgMsg (lpszTemp);
+            DbgMsg (lpszDebug);
         } // End IF/ELSE
 
         // We no longer need this ptr
@@ -1182,13 +1216,13 @@ void DisplayTokens
 
 #define lpHeader    ((LPTOKEN_HEADER) lpToken)
 
-    wsprintf (lpszTemp,
+    wsprintf (lpszDebug,
               "lpToken = %08X, Version # = %d, TokenCnt = %d, PrevGroup = %d",
               lpToken,
               lpHeader->iVersion,
               lpHeader->iTokenCnt,
               lpHeader->iPrevGroup);
-    DbgMsg (lpszTemp);
+    DbgMsg (lpszDebug);
 
     iLen = lpHeader->iTokenCnt;
 
@@ -1198,14 +1232,14 @@ void DisplayTokens
 
     for (i = 0; i < iLen; i++, lpToken++)
     {
-        wsprintf (lpszTemp,
+        wsprintf (lpszDebug,
                   "(%2d) Data=%08X%08X, CharIndex=%2d, Type=%s",
                   i,
                   HIDWORD (*(LPAPLINT) &lpToken->tkData.tkFloat),
                   LODWORD (*(LPAPLINT) &lpToken->tkData.tkFloat),
                   lpToken->tkCharIndex,
                   GetTokenTypeName (lpToken->tkFlags.TknType));
-        DbgMsg (lpszTemp);
+        DbgMsg (lpszDebug);
     } // End FOR
 
     DbgMsg ("********** End Tokens **********************************");
@@ -1293,7 +1327,7 @@ void DisplayFcnStrand
 
 {
     HGLOBAL hGlbData;
-    LPWCHAR lpaplChar = lpwszTemp;
+    LPWCHAR lpaplChar = lpwszDebug;
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -1359,7 +1393,7 @@ void DisplayFcnStrand
     *lpaplChar = L'\0';
 
     // Display the line in the debugging window
-    DbgMsgW (lpwszTemp);
+    DbgMsgW (lpwszDebug);
 } // End DisplayFcnStrand
 #endif
 
@@ -1755,12 +1789,12 @@ void DisplayStrand
             break;
     } // End SWITCH
 
-    wsprintf (lpszTemp,
+    wsprintf (lpszDebug,
               "Start=%08X Base=%08X Next=%08X",
               lpplLocalVars->lpYYStrandStart[strType],
               lpplLocalVars->lpYYStrandBase[strType],
               lpplLocalVars->lpYYStrandNext[strType]);
-    DbgMsg (lpszTemp);
+    DbgMsg (lpszDebug);
 
     for (lp = lpplLocalVars->lpYYStrandStart[strType], lpLast = NULL;
          lp NE lpplLocalVars->lpYYStrandNext[strType];
@@ -1772,7 +1806,7 @@ void DisplayStrand
             lpLast = lp->unYYSTYPE.lpYYStrandBase;
         } // End IF
 
-        wsprintf (lpszTemp,
+        wsprintf (lpszDebug,
                   "Strand (%08X): %-9.9s D=%08X CI=%2d TC=%1d FC=%1d IN=%1d F=%08X B=%08X",
                   lp,
                   GetTokenTypeName (lp->tkToken.tkFlags.TknType),
@@ -1783,7 +1817,7 @@ void DisplayStrand
                   lp->Indirect,
                   lp->lpYYFcn,
                   lpLast);
-        DbgMsg (lpszTemp);
+        DbgMsg (lpszDebug);
     } // End FOR
 
     DbgMsg ("********** End Strands *********************************");
@@ -1809,6 +1843,7 @@ void DisplayUndo
     HWND      hWndParent;
     LPUNDOBUF lpUndoBeg,    // Ptr to start of Undo Buffer
               lpUndoNxt;    // ...    next available slot in the Undo Buffer
+    BOOL      bShift;
     static LPWCHAR Actions[]={L"None",
                               L"Ins",
                               L"Rep",
@@ -1818,6 +1853,9 @@ void DisplayUndo
                               L"InsToggle"};
 
     DbgMsg ("********** Undo Buffer *********************************");
+
+    // Get the shift key state
+    bShift = (GetKeyState (VK_SHIFT) & 0x8000);
 
     // Get the char position of the caret
     uCharPos = GetCurCharPos (hWnd);
@@ -1869,6 +1907,9 @@ void DisplayUndo
     while (p = strchrW (lpwsz, VIS_CR))
         *p = L'\r';
 
+    if (bShift)
+        DbgBrk ();
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbEC); lpwsz = NULL;
 
@@ -1882,14 +1923,14 @@ void DisplayUndo
     // Loop through the undo buffer entries
     for (; lpUndoBeg < lpUndoNxt; lpUndoBeg++)
     {
-        wsprintfW (lpwszTemp,
+        wsprintfW (lpwszDebug,
                    L"Act = %9s, %2d-%2d, Group = %3d, Char = 0x%04X",
                    Actions[lpUndoBeg->Action],
                    lpUndoBeg->CharPosBeg,
                    lpUndoBeg->CharPosEnd,
                    lpUndoBeg->Group,
                    lpUndoBeg->Char);
-        DbgMsgW (lpwszTemp);
+        DbgMsgW (lpwszDebug);
     } // End FOR
 
     DbgMsg ("********** End Undo Buffer *****************************");

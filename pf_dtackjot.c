@@ -486,7 +486,7 @@ QUICK_EXIT:
 LPAPLCHAR FmtArrSimple
     (LPFMTHEADER lpFmtHeader,   // Ptr to FMTHEADER
      LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
-     LPAPLCHAR   lpaplChar,     // Ptr to compiled input
+     LPAPLCHAR   lpaplChar2,    // Ptr to compiled input
      LPAPLCHAR  *lplpwszOut,    // Ptr to ptr to output string
      APLDIM      aplDimNRows,   // # rows in this array
      APLDIM      aplDimNCols,   // # cols ...
@@ -507,6 +507,7 @@ LPAPLCHAR FmtArrSimple
                 lpwszOut,
                 lpwszOutStart;
     LPFMTROWSTR lpFmtRowStr;
+    LPAPLCHAR   lpaplChar = lpaplChar2;
 
     // Initialize local output string ptr
     lpwszOut = *lplpwszOut;
@@ -564,7 +565,8 @@ LPAPLCHAR FmtArrSimple
                         // If this is raw output,
                         // break the line if it would exceed []PW
                         //   and the line is non-empty.
-                        uCol = lpwszOut - lpwszTemp;
+////////////////////////uCol = lpwszOut - lpwszTemp;
+                        uCol = lpwszOut - lpwszOutStart;
                         if (bRawOutput
                          && DEF_INDENT < uCol
                          && uQuadPW < (uWid + uCol))
@@ -573,13 +575,15 @@ LPAPLCHAR FmtArrSimple
                             *lpwszOut = L'\0';
 
                             // Output the line
-                            AppendLine (lpwszTemp, TRUE, TRUE);
+////////////////////////////AppendLine (lpwszTemp, TRUE, TRUE);
+                            AppendLine (lpwszOutStart, TRUE, TRUE);
 
                             // Reset the line start
                             lpwszOut = lpw = *lplpwszOut;
 
                             // Fill the output area with all blanks
-                            uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszTemp);
+////////////////////////////uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszTemp);
+                            uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
                             while (uCol--)
                                 *lpw++ = L' ';
 
@@ -646,13 +650,15 @@ LPAPLCHAR FmtArrSimple
             *lpwszOut = L'\0';
 
             // Output the line
-            AppendLine (lpwszTemp, FALSE, bEndingCR || aplDimRow < (aplDimNRows - 1));
+////////////AppendLine (lpwszTemp, FALSE, bEndingCR || aplDimRow < (aplDimNRows - 1));
+            AppendLine (lpwszOutStart, FALSE, bEndingCR || aplDimRow < (aplDimNRows - 1));
 
             // Reset the line start
             lpwszOut = lpw = *lplpwszOut;
 
             // Fill the output area with all blanks
-            uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszTemp);
+////////////uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszTemp);
+            uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
             while (uCol--)
                 *lpw++ = L' ';
 

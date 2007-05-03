@@ -191,6 +191,7 @@ $(O)pf_tilde.DEP        \
 $(O)pf_times.DEP        \
 $(O)pf_ucaret.DEP       \
 $(O)pf_ustile.DEP       \
+$(O)po_dieresis.DEP     \
 $(O)primfns.DEP         \
 $(O)primspec.DEP        \
 $(O)qdwa.DEP            \
@@ -398,6 +399,9 @@ $(O)version.DEV
 !if exist ($(O)pf_ustile.DEP)
 !       include $(O)pf_ustile.DEP
 !endif
+!if exist ($(O)po_dieresis.DEP)
+!       include $(O)po_dieresis.DEP
+!endif
 !if exist ($(O)primfns.DEP)
 !       include $(O)primfns.DEP
 !endif
@@ -509,6 +513,7 @@ $(O)pf_tilde.PRO        \
 $(O)pf_times.PRO        \
 $(O)pf_ucaret.PRO       \
 $(O)pf_ustile.PRO       \
+$(O)po_dieresis.PRO     \
 $(O)primfns.PRO         \
 $(O)primspec.PRO        \
 $(O)qdwa.PRO            \
@@ -619,6 +624,7 @@ $(O)pf_tilde.OBJ:       $(@B).C         $(PF_TILDE_DEP)
 $(O)pf_times.OBJ:       $(@B).C         $(PF_TIMES_DEP)
 $(O)pf_ucaret.OBJ:      $(@B).C         $(PF_UCARET_DEP)
 $(O)pf_ustile.OBJ:      $(@B).C         $(PF_USTILE_DEP)
+$(O)po_dieresis.OBJ:    $(@B).C         $(PO_DIERESIS_DEP)
 $(O)primfns.OBJ:        $(@B).C         $(PRIMFNS_DEP)
 $(O)primspec.OBJ:       $(@B).C         $(PRIMSPEC_DEP)
 $(O)qdwa.OBJ:           $(@B).C         $(QDWA_DEP)
@@ -708,6 +714,7 @@ OBJS=                       \
      $(O)pf_times.OBJ       \
      $(O)pf_ucaret.OBJ      \
      $(O)pf_ustile.OBJ      \
+     $(O)po_dieresis.OBJ    \
      $(O)primfns.OBJ        \
      $(O)primspec.OBJ       \
      $(O)qdwa.OBJ           \

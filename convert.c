@@ -78,7 +78,8 @@ int sprintfW
     va_list vl;
     int     i1, i2, i3, i4,
             iLen;
-    char    szFmt[128];
+    char    szFmt[128],
+            szTemp[1024];
 
     // We hope that no one calls us with more than
     //   four arguments.
@@ -97,12 +98,13 @@ int sprintfW
     W2A (szFmt, lpwszFmt, sizeof (szFmt) - 1);
 
     // Format the data
-    iLen = sprintf (lpszTemp,
+    iLen = sprintf (szTemp,
                     szFmt,
                     i1, i2, i3, i4);
 
     // Convert the result back to wide chars
-    A2W (lpwszOut, lpszTemp);
+    // The destin buffer length is a guess
+    A2W (lpwszOut, szTemp, 4096);
 
     va_end (vl);
 

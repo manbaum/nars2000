@@ -604,13 +604,13 @@ BOOL HshTabSplitNextEntry_EM
 #ifdef DEBUG
 ////        if (lp EQ lpHshEntrySrc)
 ////        {
-////            wsprintf (lpszTemp,
+////            wsprintf (lpszDebug,
 ////                      "HshTabSplitNextEntry:  Entry %08X <-- %08X (%04X) (%04X)",
 ////                      lpHshEntryDest,
 ////                      lpHshEntrySrc,
 ////                      lpHshEntrySrc->uHashAndMask,
 ////                      uHashMask);
-////            MBC (lpszTemp);
+////            MBC (lpszDebug);
 ////            lp = lpHshEntryDest;
 ////        } // End IF
 #endif
@@ -685,11 +685,11 @@ BOOL HshTabSplitNextEntry_EM
 
 #ifdef DEBUG
 ////{ // ***DEBUG***
-////    wsprintf (lpszTemp,
+////    wsprintf (lpszDebug,
 ////              "@@@@ %d hash table entr%s moved by HshTabSplitNextEntry",
 ////              iCntMoved,
 ////              (iCntMoved EQ 1) ? "y" : "ies");
-////    DbgMsg (lpszTemp);
+////    DbgMsg (lpszDebug);
 ////} // ***DEBUG*** END
 #endif
 

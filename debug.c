@@ -124,34 +124,9 @@ LRESULT APIENTRY DBWndProc
     switch (message)
     {
         case WM_NCCREATE:           // lpcs = (LPCREATESTRUCT) lParam
-        {
-////        HGLOBAL      hGlbPTD;
-////        LPPERTABDATA lpMemPTD;
-////////////HANDLE       hTimer;
-
-////        DbgBrk ();
-
-#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
-
-////        hGlbPTD = ((LPCDB_THREAD) lpMDIcs->lParam)->hGlbPTD;
-////////////hTimer  = ((LPCDB_THREAD) lpMDIcs->lParam)->hTimer;
-
-////        // Lock the memory to get a ptr to it
-////        lpMemPTD = MyGlobalLock (hGlbPTD);
-
-////        lpMemPTD->hWndDB = hWndDB = hWnd;
-
-////        // We no longer need this ptr
-////        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-////////////// Tell our caller to proceed
-////////////CancelWaitableTimer (hTimer);
-
             hWndDB = hWnd;
 
             break;                  // Continue with next handler
-#undef  lpMDIcs
-        } // End WM_NCCREATE
 
         case WM_CREATE:
             iLineNum = 0;
@@ -255,7 +230,8 @@ LRESULT APIENTRY DBWndProc
                        "%4d:  %s",
                        ++iLineNum,
                        (LPCHAR) lParam);
-            A2W (wszTemp, szTemp);  // Convert the string from A to W
+            // Convert the string from A to W
+            A2W (wszTemp, szTemp, sizeof (wszTemp) - 1);
 
             SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
@@ -547,8 +523,15 @@ void DbgMsg
     (LPCHAR szTemp)
 
 {
+    WCHAR wszTemp[1024];
+
     if (hWndDB)
-        SendMessage (hWndDB, MYWM_DBGMSGA, 0, (LPARAM) szTemp);
+    {
+        // Convert the string from A to W
+        A2W (wszTemp, szTemp, sizeof (wszTemp) - 1);
+
+        DbgMsgW (wszTemp);
+    } // End IF
 } // End DbgMsg
 #endif
 
@@ -564,8 +547,39 @@ void DbgMsgW
     (LPWCHAR wszTemp)
 
 {
+    BOOL   bParseLine;      // TRUE iff the current thread is ParseLine
+    HANDLE hSemaphore;      // Handle to ParseLine semaphore
+    BOOL   bRet;            // TRUE iff <RelaseSemaphore> worked
+
     if (hWndDB)
-        SendMessageW (hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
+    {
+        bParseLine = ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+        if (bParseLine)
+        {
+            // Get the ParseLine semaphore handle
+            hSemaphore = TlsGetValue (dwTlsSemaphore);
+
+            // Release the semaphore so the Debugger can process
+            //   the following message
+            bRet = ReleaseSemaphore (hSemaphore, 1, NULL);
+            if (!bRet
+             && GetLastError () NE ERROR_INVALID_HANDLE)
+            {
+                DbgBrk ();
+            } // End IF
+
+            // Display the debug message
+            SendMessageW (hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
+
+            // Start the wait again if the semaphore handle is valid
+            if (bRet)
+                PostMessage (GetParent (hWndDB),
+                             MYWM_WFMO,
+                             (WPARAM) GetCurrentThreadId (),
+                             (LPARAM) hSemaphore);
+        } else
+            SendMessageW (hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
+    } // End IF
 } // End DbgMsgW
 #endif
 
@@ -599,6 +613,7 @@ int dprintf
 {
     va_list vl;
     int     i1, i2, i3, i4, iRet;
+    char    szTemp[1024];
 
     // We hope that no one calls us with more than
     //   four arguments.
@@ -613,10 +628,10 @@ int dprintf
     i3 = va_arg (vl, int);
     i4 = va_arg (vl, int);
 
-    iRet = sprintf (lpszTemp,
+    iRet = sprintf (szTemp,
                     lpszFmt,
                     i1, i2, i3, i4);
-    DbgMsg (lpszTemp);
+    DbgMsg (szTemp);
 
     va_end (vl);
 
@@ -638,6 +653,7 @@ int dprintfW
 {
     va_list vl;
     int     i1, i2, i3, i4, iRet;
+    WCHAR   wszTemp[1024];
 
     // We hope that no one calls us with more than
     //   four arguments.
@@ -652,10 +668,10 @@ int dprintfW
     i3 = va_arg (vl, int);
     i4 = va_arg (vl, int);
 
-    iRet = sprintfW (lpwszTemp,
+    iRet = sprintfW (wszTemp,
                      lpwszFmt,
                      i1, i2, i3, i4);
-    DbgMsgW (lpwszTemp);
+    DbgMsgW (wszTemp);
 
     va_end (vl);
 

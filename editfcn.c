@@ -176,7 +176,7 @@ LRESULT APIENTRY FEWndProc
     HWND      hWndEC;       // Handle of Edit Control window
     int       iMaxLimit;    // Maximum # chars in edit control
     VKSTATE   vkState;      // Virtual key state (Shift, Alt, Ctrl)
-////long      lvkState;     // Temporary var for vkState
+    long      lvkState;     // Temporary var for vkState
     LPUNDOBUF lpUndoBeg,    // Ptr to start of Undo Buffer
               lpUndoNxt;    // ...    next available slot in the Undo Buffer
 
@@ -317,6 +317,24 @@ LRESULT APIENTRY FEWndProc
 
             break;                  // Continue with next handler
 
+        case WM_NOTIFY:             // idCtrl = (int) wParam;
+                                    // pnmh = (LPNMHDR) lParam;
+#define lpnmEC  ((LPNMEDITCTRL) lParam)
+
+            // Check for from Edit Ctrl
+            if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
+            {
+                // Get the current vkState
+                lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
+                vkState = *(LPVKSTATE) &lvkState;
+
+                *lpnmEC->lpCaretWidth =
+                  vkState.Ins ? DEF_CURWID_INS : DEF_CURWID_REP;
+            } // End IF
+
+            return FALSE;           // We handled the msg
+#undef  lpnmEC
+
 #define fwSizeType  wParam
 #define nWidth      (LOWORD (lParam))
 #define nHeight     (HIWORD (lParam))
@@ -389,21 +407,6 @@ LRESULT APIENTRY FEWndProc
             // Split cases based upon the notify code
             switch (wNotifyCode)
             {
-////            case EN_SETFOCUS:                   // idEditCtrl = (int) LOWORD(wParam); // identifier of edit control
-////                                                // wNotifyCode = HIWORD(wParam);      // notification code
-////                                                // hwndEditCtrl = (HWND) lParam;      // handle of edit control
-////                // Get the current vkState
-////                lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
-////                vkState = *(LPVKSTATE) &lvkState;
-////
-////                // Create a default sized system caret for display
-////                MyCreateCaret (hWndEC, &vkState, cyAveCharFE);
-////
-////                // Paint the window
-////                UpdateWindow (hWndEC);
-////
-////                break;
-////
                 case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // identifier of edit control
                                                     // hwndEditCtrl = (HWND) lParam;      // handle of edit control
                     // Split cases based upon the last key
@@ -560,30 +563,6 @@ LRESULT WINAPI LclEditCtrlWndProc
     // Split cases
     switch (message)
     {
-////         case MYWM_CREATECARET:      // cxCaret  = (BOOL) wParam
-////                                     // cyAveChar = (UINT) lParam
-//// #define cxCaret         ((BOOL) wParam)
-//// #define cyAveChar       ((UINT) lParam)
-////             // Get the char position of the caret
-////             uCharPos = GetCurCharPos (hWnd);
-////
-////             // Create a default sized system caret for display
-////             CreateCaret (hWnd,
-////                          NULL,
-////                          cxCaret,
-////                          cyAveChar);
-////             // Get the indices of the selected text (if any)
-////             SendMessageW (hWnd, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
-////
-////             // Position the caret
-////
-////             // Show it
-////             ShowCaret (hWnd);
-////
-////             return FALSE;           // We handled the msg
-//// #undef  cyAveChar
-//// #undef  cxCaret
-
 #define nVirtKey ((int) wParam)
         case WM_KEYDOWN:            // nVirtKey = (int) wParam;     // Virtual-key code
                                     // lKeyData = lParam;           // Key data
@@ -681,9 +660,6 @@ LRESULT WINAPI LclEditCtrlWndProc
                                 uCharPos + 1,               // Ending    ...
                                 UNDO_NOGROUP,               // Group index
                                 0);                         // Character
-////////////////////// Create a default sized system caret for display
-////////////////////MyCreateCaret (hWnd, &vkState, cyAveChar);
-////////////////////
                     break;
                 } // End VK_INSERT
 
@@ -954,11 +930,11 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // Otherwise, DbgMsg it
                 {
 #ifdef DEBUG
-                    wsprintfW (lpwszTemp,
+                    wsprintfW (lpwszDebug,
                                L"CHAR:  chCharCode = %d, %c",
                                chCharCode,
                                chCharCode);
-                    DbgMsgW (lpwszTemp);
+                    DbgMsgW (lpwszDebug);
 #endif
                 } // End IF/ELSE
             } // End IF/ELSE
@@ -995,21 +971,21 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // Otherwise, DbgMsg it
                 {
 #ifdef DEBUG
-                    wsprintfW (lpwszTemp,
+                    wsprintfW (lpwszDebug,
                                L"SYSCHAR:  chCharCode = %d, %c",
                                chCharCode,
                                chCharCode);
-                    DbgMsgW (lpwszTemp);
+                    DbgMsgW (lpwszDebug);
 #endif
                 } // End IF/ELSE
             } else
             {
 #ifdef DEBUG
-                wsprintfW (lpwszTemp,
+                wsprintfW (lpwszDebug,
                            L"SYSCHAR:  chCharCode = %d, %c",
                            chCharCode,
                            chCharCode);
-                DbgMsgW (lpwszTemp);
+                DbgMsgW (lpwszDebug);
 #endif
             } // End IF/ELSE
 
@@ -1494,14 +1470,6 @@ UINT GetCurCharPos
     SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPosBeg, (LPARAM) &uCharPosEnd);
 
     return uCharPosEnd;
-
-////POINT ptCaret;
-////
-////// Get the caret position in client coords
-////GetCaretPos (&ptCaret);
-////
-////// Get the Position of the char under the caret
-////return LOWORD (SendMessageW (hWndEC, EM_CHARFROMPOS, 0, MAKELPARAM (ptCaret.x, ptCaret.y)));
 } // End GetCurCharPos
 
 

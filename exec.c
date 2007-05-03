@@ -746,23 +746,17 @@ HGLOBAL ExecuteLine
     HGLOBAL   hGlbToken;        // Handle of tokenized line
     UINT      uLinePos,         // Char position of start of line
               uLineLen;         // Line length
-    HWND      hWndMC;           // Window handle of MDI Client
+    HWND      hWndMC,           // Window handle of MDI Client
+              hWndSM;           // ...              Session Manager
+
+    // Get the window handle of the Session Manager
+    hWndSM = GetParent (hWndEC);
 
     // Get the window handle of the MDI Client
-    hWndMC = GetParent (GetParent (hWndEC));
+    hWndMC = GetParent (hWndSM);
 
     // Ensure we calculated the lengths properly
-    if (sizeof (fsaColTable) NE (COL_LENGTH * sizeof (FSA_ACTION) * FSA_LENGTH))
-    {
-        DbgStop ();             // We should never get here
-    } // End IF
-
-////if (0 !=  (sizeof (TOKEN_HEADER) % sizeof (TOKEN)))
-////{
-////    DbgMsg ("TOKEN_HEADER not properly packed");
-////
-////    return NULL;
-////} // End IF
+    Assert (sizeof (fsaColTable) EQ (COL_LENGTH * sizeof (FSA_ACTION) * FSA_LENGTH));
 
     // Get the position of the start of the line
     uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
@@ -863,7 +857,8 @@ HGLOBAL ExecuteLine
                     break;
 
                 // Run the parser in a separate thread
-                ParseLine (hGlbToken,
+                ParseLine (hWndSM,
+                           hGlbToken,
                            lpwszCompLine,
                            (HGLOBAL) GetProp (hWndMC, "PTD"),
                            TRUE);           // Parseline to free hGlbToken on exit
@@ -876,14 +871,16 @@ HGLOBAL ExecuteLine
     {
         // Tokenize and parse the line
         hGlbToken = Tokenize_EM (lpwszCompLine);
-        ParseLine (hGlbToken,
+        ParseLine (hWndSM,
+                   hGlbToken,
                    lpwszCompLine,
                    (HGLOBAL) GetProp (hWndMC, "PTD"),
                    FALSE);                  // ParseLine NOT to free hGlbToken on exit
     } // End IF/ELSE
 
-    // Free the virtual memory for the complete line
-    VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
+    // Now done in <ParseLine>
+////// Free the virtual memory for the complete line
+////VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
 
     return hGlbToken;
 } // End ExecuteLine
@@ -1023,11 +1020,11 @@ BOOL fnIntAccum
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
         { // ***DEBUG***
-            wsprintf (lpszTemp,
+            wsprintf (lpszDebug,
                       "aplInteger = %08X%08X",
                       HIDWORD (aplInteger),
                       LODWORD (aplInteger));
-            DbgMsg (lpszTemp);
+            DbgMsg (lpszDebug);
         } // ***DEBUG*** END
 #endif
     } // End IF/ELSE
@@ -2189,7 +2186,7 @@ void ErrorMessage
 
             for (i = 0; i < iCaret; i++)
                 lpwszTemp[i] = L' ';
-            lpwszTemp[i] = UTF16_UPCARET;
+            lpwszTemp[i] = UTF16_CIRCUMFLEX;    // UTF16_UPCARET;
             lpwszTemp[i + 1] = '\0';
 
             AppendLine (lpwszTemp, FALSE, TRUE);
@@ -2387,7 +2384,7 @@ HGLOBAL Tokenize_EM
         wchColNum = CharTrans (wchOrig);
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-        wsprintfW (lpwszTemp,
+        wsprintfW (lpwszDebug,
                    L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %08X, Act2 = %08X",
                    wchOrig ? wchOrig : 8230,
                    wchOrig,
@@ -2397,7 +2394,7 @@ HGLOBAL Tokenize_EM
                    fsaColTable[tkLocalVars.State][wchColNum].iNewState,
                    fsaColTable[tkLocalVars.State][wchColNum].fnAction1,
                    fsaColTable[tkLocalVars.State][wchColNum].fnAction2);
-        DbgMsgW (lpwszTemp);
+        DbgMsgW (lpwszDebug);
 #endif
 
         // Get primary action and new state
@@ -2624,10 +2621,10 @@ void Untokenize
 
             defstop
 #ifdef DEBUG
-                wsprintf (lpszTemp,
+                wsprintf (lpszDebug,
                           "Untokenize:  *** Unknown Token Value:  %d",
                           lpToken->tkFlags.TknType);
-                DbgMsg (lpszTemp);
+                DbgMsg (lpszDebug);
 #endif
                 break;
         } // End FOR/SWITCH
@@ -2637,10 +2634,10 @@ void Untokenize
     } else
     {
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
-        wsprintf (lpszTemp,
+        wsprintf (lpszDebug,
                   "Untokenize:  hGlobToken (%08X) is invalid.",
                   hGlbToken);
-        DbgMsg (lpszTemp);
+        DbgMsg (lpszDebug);
 #endif
     } // End IF/ELSE
 } // End Untokenize

@@ -30,13 +30,11 @@
 #endif
 
 LPYYSTYPE PrimFnSyntaxError_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc)
 
 {
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkFunc,
-                               lpplLocalVars);
+                               lptkFunc);
     return NULL;
 } // End PrimFnSyntaxError_EM
 #undef  APPEND_NAME
@@ -55,16 +53,14 @@ LPYYSTYPE PrimFnSyntaxError_EM
 #endif
 
 LPYYSTYPE PrimFnMonSyntaxError_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN    lptkFunc,           // Ptr to function token
+     LPTOKEN    lptkRhtArg,         // Ptr to right arg token
+     LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkFunc,
-                               lpplLocalVars);
+                               lptkFunc);
     return NULL;
 } // End PrimFnMonSyntaxError_EM
 #undef  APPEND_NAME
@@ -83,17 +79,15 @@ LPYYSTYPE PrimFnMonSyntaxError_EM
 #endif
 
 LPYYSTYPE PrimFnDydSyntaxError_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN    lptkLftArg,         // Ptr to left arg token
+     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPTOKEN    lptkRhtArg,         // Ptr to right arg token
+     LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkFunc,
-                               lpplLocalVars);
+                               lptkFunc);
     return NULL;
 } // End PrimFnDydSyntaxError_EM
 #undef  APPEND_NAME
@@ -112,18 +106,17 @@ LPYYSTYPE PrimFnDydSyntaxError_EM
 #endif
 
 LPYYSTYPE PrimFnMon_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN    lptkFunc,           // Ptr to function token
+     LPTOKEN    lptkRhtArg,         // Ptr to right arg token
+     LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    HGLOBAL   hGlbRes;
-    APLSTYPE  aplTypeRes,
-              aplTypeRht;
-    APLRANK   aplRankRht;
-    APLNELM   aplNELMRht;
+    HGLOBAL  hGlbRes;
+    APLSTYPE aplTypeRes,
+             aplTypeRht;
+    APLRANK  aplRankRht;
+    APLNELM  aplNELMRht;
     LPYYSTYPE lpYYRes;
 
     DBGENTER;
@@ -132,8 +125,7 @@ LPYYSTYPE PrimFnMon_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -150,8 +142,7 @@ LPYYSTYPE PrimFnMon_EM
     {
         // Mark as a DOMAIN ERROR
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -176,8 +167,7 @@ LPYYSTYPE PrimFnMon_EM
                 // Handle via subroutine
                 hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirGlb (hGlbRes),
                                            lptkFunc,
-                                           lpPrimSpec,
-                                           lpplLocalVars);
+                                           lpPrimSpec);
                 if (!hGlbRes)
                 {
                     YYFree (lpYYRes); lpYYRes = NULL; return NULL;
@@ -313,8 +303,7 @@ RESTART_EXCEPTION_VARNAMED:
                         *lpPrimSpec->lpExecCode = EXEC_SUCCESS; // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                   lptkFunc);
                         YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 
                     case EXEC_RESULT_FLOAT:
@@ -449,8 +438,7 @@ RESTART_EXCEPTION_VARIMMED:
                         *lpPrimSpec->lpExecCode = EXEC_SUCCESS; // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                   lptkFunc);
                         YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 
                     case EXEC_RESULT_FLOAT:
@@ -493,8 +481,7 @@ RESTART_EXCEPTION_VARIMMED:
             // Handle via subroutine
             hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirGlb (hGlbRes),
                                        lptkFunc,
-                                       lpPrimSpec,
-                                       lpplLocalVars);
+                                       lpPrimSpec);
             if (!hGlbRes)
             {
                 YYFree (lpYYRes); lpYYRes = NULL; return NULL;
@@ -535,10 +522,9 @@ RESTART_EXCEPTION_VARIMMED:
 #endif
 
 HGLOBAL PrimFnMonGlb_EM
-    (HGLOBAL       hGlbRht,         // Right arg handle
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (HGLOBAL    hGlbRht,            // Right arg handle
+     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     LPVOID   lpMemRes = NULL,
@@ -583,8 +569,7 @@ HGLOBAL PrimFnMonGlb_EM
     {
         // Mark as a DOMAIN ERROR
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -597,8 +582,7 @@ HGLOBAL PrimFnMonGlb_EM
                                             &hGlbRes,
                                             &lpMemRes,
                                              aplRankRht,
-                                             lpPrimSpec,
-                                             lpplLocalVars))
+                                             lpPrimSpec))
             goto ERROR_EXIT;
         else
             goto NORMAL_EXIT;
@@ -616,8 +600,7 @@ RESTART_EXCEPTION:
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -662,8 +645,7 @@ RESTART_EXCEPTION:
         // Make the prototype
         hGlbProto = MakePrototype_EM (hGlbRht,          // Proto arg handle
                                       lptkFunc,         // Ptr to function token
-                                      TRUE,             // Disallow non-empty CHARs
-                                      lpplLocalVars);   // Ptr to local plLocalVars
+                                      TRUE);            // Disallow non-empty CHARs
         if (!hGlbProto)
             goto ERROR_EXIT;
 
@@ -673,16 +655,14 @@ RESTART_EXCEPTION:
         goto NORMAL_EXIT;
     } // End IF
 
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-
     // If the right arg is an APA, get its parameters
     if (aplTypeRht EQ ARRAY_APA)
     {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
-    } // End IF
-
 #undef  lpAPA
+    } // End IF
 
     // In case the right arg is Boolean
     uBitIndex = 0;
@@ -904,8 +884,7 @@ RESTART_EXCEPTION:
                     {
                         // Mark as a DOMAIN ERROR
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                   lptkFunc);
                         goto ERROR_EXIT;
                     } // End IF
 
@@ -913,8 +892,7 @@ RESTART_EXCEPTION:
                     lpSymSrc = ClrPtrTypeIndSym (lpMemRht);
                     lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
                                                    TranslateArrayTypeToImmType (aplTypeRes2),
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                   lptkFunc);
                     if (lpSymDst)
                     {
                         // Split cases based upon the result storage type
@@ -1021,10 +999,9 @@ RESTART_EXCEPTION:
 
                 case PTRTYPE_HGLOBAL:
                     // Handle via subroutine
-                    hGlbSub = PrimFnMonGlb_EM (ClrPtrTypeIndGlb (lpMemRht), // Arg handle
-                                               lptkFunc,        // Ptr to function token
-                                               lpPrimSpec,      // Ptr to local PRIMSPEC
-                                               lpplLocalVars);  // Ptr to local plLocalVars
+                    hGlbSub = PrimFnMonGlb_EM (ClrPtrTypeIndGlb (lpMemRht),
+                                               lptkFunc,
+                                               lpPrimSpec);
                     if (hGlbSub)
                         *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
                     else
@@ -1054,8 +1031,7 @@ RESTART_EXCEPTION:
                 *lpPrimSpec->lpExecCode = EXEC_SUCCESS; // Reset
 
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                                   lptkFunc);
                 goto ERROR_EXIT;
 
             case EXEC_RESULT_FLOAT:
@@ -1139,12 +1115,11 @@ NORMAL_EXIT:
 #endif
 
 LPYYSTYPE PrimFnDyd_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN    lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPTOKEN    lptkRhtArg,         // Ptr to right arg token
+     LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     APLRANK     aplRankLft,
@@ -1196,9 +1171,8 @@ LPYYSTYPE PrimFnDyd_EM
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
-                          &aplNELMAxis,     // Return # elements in axis vector
-                          &hGlbAxis,        // Return HGLOBAL with APLINT axis values
-                           lpplLocalVars))  // Ptr to local plLocalVars
+                           &aplNELMAxis,    // Return # elements in axis vector
+                          &hGlbAxis))       // Return HGLOBAL with APLINT axis values
         {
             YYFree (lpYYRes); lpYYRes = NULL; return NULL;
         } // End IF
@@ -1221,8 +1195,7 @@ LPYYSTYPE PrimFnDyd_EM
     if (aplTypeRes EQ ARRAY_ERROR)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -1243,8 +1216,7 @@ LPYYSTYPE PrimFnDyd_EM
                                   lpMemRht,
                                   aplNELMAxis,
                                   lpMemAxisTail,
-                                  lptkFunc,
-                                  lpplLocalVars))
+                                  lptkFunc))
         goto ERROR_EXIT;
 
     // The NELM of the result is the larger of the two args
@@ -1281,8 +1253,7 @@ LPYYSTYPE PrimFnDyd_EM
                                               aplNELMLft,
                                               aplNELMRht,
                                               aplInteger,
-                                              lpPrimSpec,
-                                              lpplLocalVars))
+                                              lpPrimSpec))
             goto ERROR_EXIT;
         else
             goto NORMAL_EXIT;
@@ -1300,8 +1271,7 @@ LPYYSTYPE PrimFnDyd_EM
                                      aplTypeRes,
                                      aplNELMLft,
                                      aplNELMRht,
-                                     aplNELMRes,
-                                     lpplLocalVars))
+                                     aplNELMRes))
         goto ERROR_EXIT;
 
     // Split cases based upon the combined left vs. right types
@@ -1333,29 +1303,28 @@ LPYYSTYPE PrimFnDyd_EM
 
     // Call the appropriate function
     if (!(*PrimFn) (lpYYRes,
-                    lptkLftArg,
-                    lptkFunc,
-                    lptkRhtArg,
-                    hGlbLft,
-                    hGlbRht,
-                   &hGlbRes,
-                    lpMemLft,           // Points to sign.ature
-                    lpMemRht,           // ...
-                    lpMemRes,           // ...
-                    lpMemAxisHead,
-                    lpMemAxisTail,
-                    aplRankLft,
-                    aplRankRht,
-                    aplRankRes,
-                    aplTypeLft,
-                    aplTypeRht,
-                    aplTypeRes,
-                    aplNELMLft,
-                    aplNELMRht,
-                    aplNELMRes,
-                    aplNELMAxis,
-                    lpPrimSpec,         // Ptr to local PRIMSPEC
-                    lpplLocalVars))     // Ptr to local plLocalVars
+                     lptkLftArg,
+                     lptkFunc,
+                     lptkRhtArg,
+                     hGlbLft,
+                     hGlbRht,
+                    &hGlbRes,
+                     lpMemLft,          // Points to sign.ature
+                     lpMemRht,          // ...
+                     lpMemRes,          // ...
+                     lpMemAxisHead,
+                     lpMemAxisTail,
+                     aplRankLft,
+                     aplRankRht,
+                     aplRankRes,
+                     aplTypeLft,
+                     aplTypeRht,
+                     aplTypeRes,
+                     aplNELMLft,
+                     aplNELMRht,
+                     aplNELMRes,
+                     aplNELMAxis,
+                     lpPrimSpec))
         goto ERROR_EXIT;
     else
         goto NORMAL_EXIT;
@@ -1453,8 +1422,7 @@ BOOL PrimFnDydSimpNest_EM
      APLNELM       aplNELMRht,      // Right ...
      APLNELM       aplNELMRes,      // Result ...
      APLNELM       aplNELMAxis,     // Axis ...
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     LPPRIMSPEC    lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
     BOOL       bRet = TRUE;
@@ -1489,16 +1457,16 @@ BOOL PrimFnDydSimpNest_EM
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     } // End IF/ELSE
 
-#define lpAPA   ((LPAPLAPA) lpMemLft)
-
-    // If the left arg is an APA, get its parameters
+    // If the left arg is APA, get its parameters
     if (aplTypeLft EQ ARRAY_APA)
     {
+
+#define lpAPA   ((LPAPLAPA) lpMemLft)
+
         apaOffLft = lpAPA->Off;
         apaMulLft = lpAPA->Mul;
-    } // End IF
-
 #undef  lpAPA
+    } // End IF
 
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
@@ -1521,8 +1489,7 @@ BOOL PrimFnDydSimpNest_EM
         // Make the prototype
         hGlbProto = MakePrototype_EM (hGlbRht,          // Proto arg handle
                                       lptkFunc,         // Ptr to function token
-                                      TRUE,             // Disallow non-empty CHARs
-                                      lpplLocalVars);   // Ptr to local plLocalVars
+                                      TRUE);            // Disallow non-empty CHARs
         if (hGlbProto)
             // Save the handle
             *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbProto);
@@ -1544,8 +1511,7 @@ BOOL PrimFnDydSimpNest_EM
             if (!hGlbWVec)
             {
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 goto ERROR_EXIT;
             } // End IF
 
@@ -1575,8 +1541,7 @@ BOOL PrimFnDydSimpNest_EM
             if (!hGlbOdo)
             {
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 goto ERROR_EXIT;
             } // End IF
 
@@ -1661,8 +1626,7 @@ BOOL PrimFnDydSimpNest_EM
                                                aplFloatLft,
                                                aplCharLft,
                                                ((LPAPLNESTED) lpMemRht)[uRht],
-                                               lpPrimSpec,
-                                               lpplLocalVars);
+                                               lpPrimSpec);
             if (!hGlbSub)
                 goto ERROR_EXIT;
             else
@@ -1754,8 +1718,7 @@ BOOL PrimFnDydNestSimp_EM
      APLNELM       aplNELMRht,      // Right ...
      APLNELM       aplNELMRes,      // Result ...
      APLNELM       aplNELMAxis,     // Axis ...
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     LPPRIMSPEC    lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
     BOOL       bRet = TRUE;
@@ -1790,16 +1753,14 @@ BOOL PrimFnDydNestSimp_EM
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     } // End IF/ELSE
 
-#define lpAPA   ((LPAPLAPA) lpMemRht)
-
-    // If the right arg is an APA, get its parameters
+    // If the right arg is APA, get its parameters
     if (aplTypeRht EQ ARRAY_APA)
     {
+#define lpAPA   ((LPAPLAPA) lpMemRht)
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
-    } // End IF
-
 #undef  lpAPA
+    } // End IF
 
     // Skip over the header to the dimensions
     lpMemDimLft = VarArrayBaseToDim (lpMemLft);
@@ -1818,10 +1779,9 @@ BOOL PrimFnDydNestSimp_EM
     if (aplNELMRes EQ 0)
     {
         // Make the prototype
-        hGlbSub = MakePrototype_EM (hGlbLft,        // Proto arg handle
-                                    lptkFunc,       // Ptr to function token
-                                    TRUE,           // Disallow non-empty CHARs
-                                    lpplLocalVars); // Ptr to local plLocalVars
+        hGlbSub = MakePrototype_EM (hGlbLft,
+                                    lptkFunc,
+                                    TRUE);      // Disallow non-empty CHARs
         if (hGlbSub)
             // Save the handle
             *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbSub);
@@ -1843,8 +1803,7 @@ BOOL PrimFnDydNestSimp_EM
             if (!hGlbWVec)
             {
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 goto ERROR_EXIT;
             } // End IF
 
@@ -1874,8 +1833,7 @@ BOOL PrimFnDydNestSimp_EM
             if (!hGlbOdo)
             {
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 goto ERROR_EXIT;
             } // End IF
 
@@ -1960,8 +1918,7 @@ BOOL PrimFnDydNestSimp_EM
                                                aplFloatRht,
                                                aplCharRht,
                                                ((LPAPLNESTED) lpMemLft)[uLft],
-                                               lpPrimSpec,
-                                               lpplLocalVars);
+                                               lpPrimSpec);
             if (!hGlbSub)
                 goto ERROR_EXIT;
             else
@@ -2024,14 +1981,13 @@ NORMAL_EXIT:
 #endif
 
 HGLOBAL PrimFnDydNestSimpSub_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     APLSTYPE      aplTypeRht,      // Right arg type
-     APLINT        aplIntegerRht,   // ...       integer value
-     APLFLOAT      aplFloatRht,     // ...       float   ...
-     APLCHAR       aplCharRht,      // ...       char    ...
-     APLNESTED     aplNestedLft,    // Left arg nested value
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN    lptkFunc,           // Ptr to function token
+     APLSTYPE   aplTypeRht,         // Right arg type
+     APLINT     aplIntegerRht,      // ...       integer value
+     APLFLOAT   aplFloatRht,        // ...       float   ...
+     APLCHAR    aplCharRht,         // ...       char    ...
+     APLNESTED  aplNestedLft,       // Left arg nested value
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     BOOL     bRet = TRUE;
@@ -2084,8 +2040,7 @@ HGLOBAL PrimFnDydNestSimpSub_EM
     if (aplTypeRes EQ ARRAY_ERROR)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -2103,8 +2058,7 @@ HGLOBAL PrimFnDydNestSimpSub_EM
                                              aplNELMLft,
                                              aplNELMRht,
                                              aplIntegerRht,
-                                             lpPrimSpec,
-                                             lpplLocalVars))
+                                             lpPrimSpec))
             goto ERROR_EXIT;
         else
             goto NORMAL_EXIT;
@@ -2125,24 +2079,21 @@ HGLOBAL PrimFnDydNestSimpSub_EM
                                      aplTypeRes,
                                      aplNELMRht,
                                      aplNELMLft,
-                                     aplNELMRes,
-                                     lpplLocalVars))
+                                     aplNELMRes))
         goto ERROR_EXIT;
 
     // Skip over the header and dimensions to the data
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-#define lpAPA       ((LPAPLAPA) lpMemLft)
-
-    // If the left arg is an APA, get its parameters
+    // In case the left arg is APA
     if (aplTypeLft EQ ARRAY_APA)
     {
+#define lpAPA       ((LPAPLAPA) lpMemLft)
         apaOffLft = lpAPA->Off;
         apaMulLft = lpAPA->Mul;
-    } // End IF
-
 #undef  lpAPA
+    } // End IF
 
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
@@ -2150,7 +2101,7 @@ HGLOBAL PrimFnDydNestSimpSub_EM
         bRet = PrimFnDydMultSing_EM (aplTypeRes, lpMemRes, aplNELMRes,
                                      aplTypeLft, apaOffLft, apaMulLft, lpMemLft,
                                      aplTypeRht, aplIntegerRht, aplFloatRht, aplCharRht,
-                                     lptkFunc, lpPrimSpec, lpplLocalVars);
+                                     lptkFunc, lpPrimSpec);
 
     } else
     // If nested result, ...
@@ -2168,9 +2119,8 @@ HGLOBAL PrimFnDydNestSimpSub_EM
                                                aplIntegerRht,
                                                aplFloatRht,
                                                aplCharRht,
-                                              *((LPAPLNESTED) lpMemLft)++,
-                                               lpPrimSpec,
-                                               lpplLocalVars);
+                                               *((LPAPLNESTED) lpMemLft)++,
+                                               lpPrimSpec);
             if (!hGlbSub)
                 bRet = FALSE;
             else
@@ -2229,37 +2179,36 @@ NORMAL_EXIT:
 #endif
 
 BOOL PrimFnDydNestNest_EM
-    (LPYYSTYPE     lpYYRes,         // Ptr to result token
+    (LPYYSTYPE  lpYYRes,            // Ptr to result token
 
-     LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // ...    function ...
-     LPTOKEN       lptkRhtArg,      // ...    right arg ...
+     LPTOKEN    lptkLftArg,         // Ptr to left arg token
+     LPTOKEN    lptkFunc,           // ...    function ...
+     LPTOKEN    lptkRhtArg,         // ...    right arg ...
 
-     HGLOBAL       hGlbLft,         // Left arg handle
-     HGLOBAL       hGlbRht,         // Right ...
-     HGLOBAL      *lphGlbRes,       // Ptr to result handle
+     HGLOBAL    hGlbLft,            // Left arg handle
+     HGLOBAL    hGlbRht,            // Right ...
+     HGLOBAL   *lphGlbRes,          // Ptr to result handle
 
-     LPVOID        lpMemLft,        // Points to sign.ature
-     LPVOID        lpMemRht,        // ...
-     LPVOID        lpMemRes,        // ...
+     LPVOID     lpMemLft,           // Points to sign.ature
+     LPVOID     lpMemRht,           // ...
+     LPVOID     lpMemRes,           // ...
 
-     LPAPLUINT     lpMemAxisHead,   //
-     LPAPLUINT     lpMemAxisTail,   //
-                                    //
-     APLRANK       aplRankLft,      // Left arg rank
-     APLRANK       aplRankRht,      // Right ...
-     APLRANK       aplRankRes,      // Result ...
-                                    //
-     APLSTYPE      aplTypeLft,      // Left arg type
-     APLSTYPE      aplTypeRht,      // Right ...
-     APLSTYPE      aplTypeRes,      // Result ...
+     LPAPLUINT  lpMemAxisHead,      // Ptr to axis values, fleshed out
+     LPAPLUINT  lpMemAxisTail,      // Ptr to grade up of AxisHead
 
-     APLNELM       aplNELMLft,      // Left arg NELM
-     APLNELM       aplNELMRht,      // Right ...
-     APLNELM       aplNELMRes,      // Result ...
-     APLNELM       aplNELMAxis,     // Axis ...
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     APLRANK    aplRankLft,         // Left arg rank
+     APLRANK    aplRankRht,         // Right ...
+     APLRANK    aplRankRes,         // Result ...
+
+     APLSTYPE   aplTypeLft,         // Left arg type
+     APLSTYPE   aplTypeRht,         // Right ...
+     APLSTYPE   aplTypeRes,         // Result ...
+
+     APLNELM    aplNELMLft,         // Left arg NELM
+     APLNELM    aplNELMRht,         // Right ...
+     APLNELM    aplNELMRes,         // Result ...
+     APLNELM    aplNELMAxis,        // Axis ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     BOOL   bRet = TRUE;
@@ -2277,8 +2226,7 @@ BOOL PrimFnDydNestNest_EM
                                   lpMemRht,
                                   aplNELMAxis,
                                   lpMemAxisTail,
-                                  lptkFunc,
-                                  lpplLocalVars))
+                                  lptkFunc))
         goto ERROR_EXIT;
 
     // Skip over the headers and dimensions to the data
@@ -2309,12 +2257,11 @@ BOOL PrimFnDydNestNest_EM
                                                 lptkFunc,
                                                &tkRht,
                                                 NULL,
-                                                lpPrimSpec,
-                                                lpplLocalVars);
+                                                lpPrimSpec);
         if (lpYYRes)
         {
             ((LPAPLNESTED) lpMemRes)[uRes] = lpYYRes->tkToken.tkData.tkGlbData;
-            YYFree (lpYYRes);
+            YYFree (lpYYRes); lpYYRes = NULL;
         } else
             bRet = FALSE;
     } // End FOR
@@ -2350,20 +2297,19 @@ ERROR_EXIT:
 #endif
 
 BOOL PrimFnDydSingMult_EM
-    (APLSTYPE      aplTypeRes,      // Result type
-     LPVOID        lpMemRes,        // Ptr to result memory (Points to the data)
-     APLNELM       aplNELMRes,      // Result NELM
-     APLSTYPE      aplTypeLft,      // Left arg type
-     APLINT        aplIntegerLft,   // ...      integer value
-     APLFLOAT      aplFloatLft,     // ...      float   ...
-     APLCHAR       aplCharLft,      // ...      char    ...
-     APLSTYPE      aplTypeRht,      // Right arg type
-     APLINT        apaOffRht,       // ...       APA offset
-     APLINT        apaMulRht,       // ...       ... multiplier
-     LPVOID        lpMemRht,        // Points to the data
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (APLSTYPE   aplTypeRes,         // Result type
+     LPVOID     lpMemRes,           // Ptr to result memory (Points to the data)
+     APLNELM    aplNELMRes,         // Result NELM
+     APLSTYPE   aplTypeLft,         // Left arg type
+     APLINT     aplIntegerLft,      // ...      integer value
+     APLFLOAT   aplFloatLft,        // ...      float   ...
+     APLCHAR    aplCharLft,         // ...      char    ...
+     APLSTYPE   aplTypeRht,         // Right arg type
+     APLINT     apaOffRht,          // ...       APA offset
+     APLINT     apaMulRht,          // ...       ... multiplier
+     LPVOID     lpMemRht,           // Points to the data
+     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     APLINT   uRes;
@@ -3042,8 +2988,7 @@ RESTART_EXCEPTION:
                 *lpPrimSpec->lpExecCode = EXEC_SUCCESS; // Reset
 
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 return FALSE;
 
             case EXEC_RESULT_FLOAT:
@@ -3089,20 +3034,19 @@ RESTART_EXCEPTION:
 #endif
 
 BOOL PrimFnDydMultSing_EM
-    (APLSTYPE      aplTypeRes,      // Result type
-     LPVOID        lpMemRes,        // Ptr to result memory (Points to the data)
-     APLNELM       aplNELMRes,      // Result NELM
-     APLSTYPE      aplTypeLft,      // Left arg type
-     APLINT        apaOffLft,       // ...      APA offset
-     APLINT        apaMulLft,       // ...      ... multiplier
-     LPVOID        lpMemLft,        // Points to the data
-     APLSTYPE      aplTypeRht,      // Right arg type
-     APLINT        aplIntegerRht,   // ...       integer value
-     APLFLOAT      aplFloatRht,     // ...       float   ...
-     APLCHAR       aplCharRht,      // ...       char    ...
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (APLSTYPE   aplTypeRes,         // Result type
+     LPVOID     lpMemRes,           // Ptr to result memory (Points to the data)
+     APLNELM    aplNELMRes,         // Result NELM
+     APLSTYPE   aplTypeLft,         // Left arg type
+     APLINT     apaOffLft,          // ...      APA offset
+     APLINT     apaMulLft,          // ...      ... multiplier
+     LPVOID     lpMemLft,           // Points to the data
+     APLSTYPE   aplTypeRht,         // Right arg type
+     APLINT     aplIntegerRht,      // ...       integer value
+     APLFLOAT   aplFloatRht,        // ...       float   ...
+     APLCHAR    aplCharRht,         // ...       char    ...
+     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     APLINT   uRes;
@@ -3782,8 +3726,7 @@ RESTART_EXCEPTION:
                 *lpPrimSpec->lpExecCode = EXEC_SUCCESS; // Reset
 
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 return FALSE;
 
             case EXEC_RESULT_FLOAT:
@@ -3828,14 +3771,13 @@ RESTART_EXCEPTION:
 #endif
 
 HGLOBAL PrimFnDydSimpNestSub_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     APLSTYPE      aplTypeLft,      // Left arg type
-     APLINT        aplIntegerLft,   // ...      integer value
-     APLFLOAT      aplFloatLft,     // ...      float   ...
-     APLCHAR       aplCharLft,      // ...      char    ...
-     APLNESTED     aplNestedRht,    // Right arg nested value
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN    lptkFunc,           // Ptr to function token
+     APLSTYPE   aplTypeLft,         // Left arg type
+     APLINT     aplIntegerLft,      // ...      integer value
+     APLFLOAT   aplFloatLft,        // ...      float   ...
+     APLCHAR    aplCharLft,         // ...      char    ...
+     APLNESTED  aplNestedRht,       // Right arg nested value
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     BOOL     bRet = TRUE;
@@ -3888,8 +3830,7 @@ HGLOBAL PrimFnDydSimpNestSub_EM
     if (aplTypeRes EQ ARRAY_ERROR)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -3907,8 +3848,7 @@ HGLOBAL PrimFnDydSimpNestSub_EM
                                              aplNELMLft,
                                              aplNELMRht,
                                              aplIntegerLft,
-                                             lpPrimSpec,
-                                             lpplLocalVars))
+                                             lpPrimSpec))
             goto ERROR_EXIT;
         else
             goto NORMAL_EXIT;
@@ -3929,24 +3869,22 @@ HGLOBAL PrimFnDydSimpNestSub_EM
                                      aplTypeRes,
                                      aplNELMLft,
                                      aplNELMRht,
-                                     aplNELMRes,
-                                     lpplLocalVars))
+                                     aplNELMRes))
         goto ERROR_EXIT;
 
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-
     // If the right arg is an APA, get its parameters
+
     if (aplTypeRht EQ ARRAY_APA)
     {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
-    } // End IF
-
 #undef  lpAPA
+    } // End IF
 
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
@@ -3954,7 +3892,7 @@ HGLOBAL PrimFnDydSimpNestSub_EM
         bRet = PrimFnDydSingMult_EM (aplTypeRes, lpMemRes, aplNELMRes,
                                      aplTypeLft, aplIntegerLft, aplFloatLft, aplCharLft,
                                      aplTypeRht, apaOffRht, apaMulRht, lpMemRht,
-                                     lptkFunc, lpPrimSpec, lpplLocalVars);
+                                     lptkFunc, lpPrimSpec);
     } else
     // If nested result, ...
     if (aplTypeRes EQ ARRAY_NESTED)
@@ -3972,8 +3910,7 @@ HGLOBAL PrimFnDydSimpNestSub_EM
                                                aplFloatLft,
                                                aplCharLft,
                                                *((LPAPLNESTED) lpMemRht)++,
-                                               lpPrimSpec,
-                                               lpplLocalVars);
+                                               lpPrimSpec);
             if (!hGlbSub)
                 bRet = FALSE;
             else
@@ -4031,37 +3968,36 @@ NORMAL_EXIT:
 #endif
 
 BOOL PrimFnDydSimpSimp_EM
-    (LPYYSTYPE     lpYYRes,         // Ptr to result token
+    (LPYYSTYPE  lpYYRes,            // Ptr to result token
 
-     LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // ...    function ...
-     LPTOKEN       lptkRhtArg,      // ...    right arg ...
+     LPTOKEN    lptkLftArg,         // Ptr to left arg token
+     LPTOKEN    lptkFunc,           // ...    function ...
+     LPTOKEN    lptkRhtArg,         // ...    right arg ...
 
-     HGLOBAL       hGlbLft,         // Left arg handle
-     HGLOBAL       hGlbRht,         // Right ...
-     HGLOBAL      *lphGlbRes,       // Ptr to result handle
+     HGLOBAL    hGlbLft,            // Left arg handle
+     HGLOBAL    hGlbRht,            // Right ...
+     HGLOBAL   *lphGlbRes,          // Ptr to result handle
 
-     LPVOID        lpMemLft,        // Points to sign.ature
-     LPVOID        lpMemRht,        // ...
-     LPVOID        lpMemRes,        // ...
+     LPVOID     lpMemLft,           // Points to sign.ature
+     LPVOID     lpMemRht,           // ...
+     LPVOID     lpMemRes,           // ...
 
-     LPAPLUINT     lpMemAxisHead,   //
-     LPAPLUINT     lpMemAxisTail,   //
-                                    //
-     APLRANK       aplRankLft,      // Left arg rank
-     APLRANK       aplRankRht,      // Right ...
-     APLRANK       aplRankRes,      // Result ...
-                                    //
-     APLSTYPE      aplTypeLft,      // Left arg type
-     APLSTYPE      aplTypeRht,      // Right ...
-     APLSTYPE      aplTypeRes,      // Result ...
+     LPAPLUINT  lpMemAxisHead,      // Ptr to axis values, fleshed out
+     LPAPLUINT  lpMemAxisTail,      // Ptr to grade up of AxisHead
 
-     APLNELM       aplNELMLft,      // Left arg NELM
-     APLNELM       aplNELMRht,      // Right ...
-     APLNELM       aplNELMRes,      // Result ...
-     APLNELM       aplNELMAxis,     // Axis ...
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     APLRANK    aplRankLft,      // Left arg rank
+     APLRANK    aplRankRht,      // Right ...
+     APLRANK    aplRankRes,      // Result ...
+
+     APLSTYPE   aplTypeLft,      // Left arg type
+     APLSTYPE   aplTypeRht,      // Right ...
+     APLSTYPE   aplTypeRes,      // Result ...
+
+     APLNELM    aplNELMLft,      // Left arg NELM
+     APLNELM    aplNELMRht,      // Right ...
+     APLNELM    aplNELMRes,      // Result ...
+     APLNELM    aplNELMAxis,     // Axis ...
+     LPPRIMSPEC lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
     BOOL      bRet = TRUE;
@@ -4240,8 +4176,7 @@ RESTART_EXCEPTION_IMMED:
                         *lpPrimSpec->lpExecCode = EXEC_SUCCESS; // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                           lptkFunc);
                         bRet = FALSE;
 
                         goto ERROR_EXIT;
@@ -4389,8 +4324,7 @@ RESTART_EXCEPTION_SINGLETON:
                         *lpPrimSpec->lpExecCode = EXEC_SUCCESS; // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                           lptkFunc);
                         bRet = FALSE;
 
                         goto ERROR_EXIT;
@@ -4449,16 +4383,14 @@ RESTART_EXCEPTION_SINGLETON:
         lpMemRes    = VarArrayBaseToData (lpMemRes,    aplRankRes);
         lpMemDimArg = VarArrayBaseToData (lpMemDimArg, aplRankRes);
 
-#define lpAPA       ((LPAPLAPA) lpMemDimArg)
-
         // If the non-singleton arg is an APA, get its parameters
         if (aplTypeArg EQ ARRAY_APA)
         {
+#define lpAPA       ((LPAPLAPA) lpMemDimArg)
             apaOffLft = apaOffRht = lpAPA->Off;
             apaMulLft = apaMulRht = lpAPA->Mul;
-        } // End IF
-
 #undef  lpAPA
+        } // End IF
 
         // Get the value of the singleton
         if (aplNELMLft EQ 1)
@@ -4471,13 +4403,13 @@ RESTART_EXCEPTION_SINGLETON:
             bRet = PrimFnDydMultSing_EM (aplTypeRes, lpMemRes, aplNELMRes,
                                          aplTypeLft, apaOffLft, apaMulLft, lpMemDimArg,
                                          aplTypeRht, aplIntegerRht, aplFloatRht, aplCharRht,
-                                         lptkFunc, lpPrimSpec, lpplLocalVars);
+                                         lptkFunc, lpPrimSpec);
 
         else                    // Lft = Singleton, Rht = Multipleton
             bRet = PrimFnDydSingMult_EM (aplTypeRes, lpMemRes, aplNELMRes,
                                          aplTypeLft, aplIntegerLft, aplFloatLft, aplCharLft,
                                          aplTypeRht, apaOffRht, apaMulRht, lpMemDimArg,
-                                         lptkFunc, lpPrimSpec, lpplLocalVars);
+                                         lptkFunc, lpPrimSpec);
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
@@ -4504,27 +4436,23 @@ RESTART_EXCEPTION_SINGLETON:
         //   to restart from an exception
         lpMemResStart = lpMemRes;
 
-#define lpAPA       ((LPAPLAPA) lpMemLft)
-
         // If the left arg is an APA, get its parameters
         if (aplTypeLft EQ ARRAY_APA)
         {
+#define lpAPA       ((LPAPLAPA) lpMemLft)
             apaOffLft = lpAPA->Off;
             apaMulLft = lpAPA->Mul;
-        } // End IF
-
 #undef  lpAPA
-
-#define lpAPA       ((LPAPLAPA) lpMemRht)
+        } // End IF
 
         // If the right arg is an APA, get its parameters
         if (aplTypeRht EQ ARRAY_APA)
         {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
             apaOffRht = lpAPA->Off;
             apaMulRht = lpAPA->Mul;
-        } // End IF
-
 #undef  lpAPA
+        } // End IF
 
         // If the axis is significant, ...
         if (lpMemAxisHead && aplNELMAxis NE aplRankRes)
@@ -4544,8 +4472,7 @@ RESTART_EXCEPTION_SINGLETON:
             if (!hGlbWVec)
             {
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 goto ERROR_EXIT;
             } // End IF
 
@@ -4575,8 +4502,7 @@ RESTART_EXCEPTION_SINGLETON:
             if (!hGlbOdo)
             {
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 goto ERROR_EXIT;
             } // End IF
 
@@ -4860,8 +4786,7 @@ RESTART_EXCEPTION_AXIS:
                         *lpPrimSpec->lpExecCode = EXEC_SUCCESS; // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                   lptkFunc);
                         return FALSE;
 
                     case EXEC_RESULT_FLOAT:
@@ -5067,8 +4992,7 @@ RESTART_EXCEPTION_NOAXIS:
                         *lpPrimSpec->lpExecCode = EXEC_SUCCESS; // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                   lptkFunc);
                         return FALSE;
 
                     case EXEC_RESULT_FLOAT:

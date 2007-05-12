@@ -76,11 +76,10 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTilde};
 #endif
 
 LPYYSTYPE PrimFnTilde_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -88,9 +87,9 @@ LPYYSTYPE PrimFnTilde_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
+        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return PrimFnDydTilde_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis,             lpplLocalVars);
+        return PrimFnDydTilde_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnTilde_EM
 #undef  APPEND_NAME
 
@@ -192,24 +191,23 @@ APLBOOL PrimFnMonTildeBisF
 #endif
 
 LPYYSTYPE PrimFnDydTilde_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht;
-    APLNELM   aplNELMLft,
-              aplNELMRht;
-    APLRANK   aplRankLft,
-              aplRankRht;
-    HGLOBAL   hGlbLft,
-              hGlbRht;
-    LPVOID    lpMemLft,
-              lpMemRht;
-    BOOL      bRet = TRUE;
+    APLSTYPE aplTypeLft,
+             aplTypeRht;
+    APLNELM  aplNELMLft,
+             aplNELMRht;
+    APLRANK  aplRankLft,
+             aplRankRht;
+    HGLOBAL  hGlbLft,
+             hGlbRht;
+    LPVOID   lpMemLft,
+             lpMemRht;
+    BOOL     bRet = TRUE;
     LPYYSTYPE lpYYRes;
 
     // Allocate a new YYRes
@@ -223,8 +221,7 @@ LPYYSTYPE PrimFnDydTilde_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         YYFree (lpYYRes); lpYYRes = NULL; return NULL;
     } // End IF
 
@@ -242,8 +239,7 @@ LPYYSTYPE PrimFnDydTilde_EM
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         bRet = FALSE;
 
         goto ERROR_EXIT;

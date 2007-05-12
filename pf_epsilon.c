@@ -29,11 +29,10 @@
 #endif
 
 LPYYSTYPE PrimFnEpsilon_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -41,9 +40,9 @@ LPYYSTYPE PrimFnEpsilon_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonEpsilon_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnMonEpsilon_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydEpsilon_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnDydEpsilon_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnEpsilon_EM
 #undef  APPEND_NAME
 
@@ -61,10 +60,9 @@ LPYYSTYPE PrimFnEpsilon_EM
 #endif
 
 LPYYSTYPE PrimFnMonEpsilon_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     //***************************************************************
@@ -75,8 +73,7 @@ LPYYSTYPE PrimFnMonEpsilon_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         return NULL;
     } // End IF
 
@@ -100,31 +97,26 @@ LPYYSTYPE PrimFnMonEpsilon_EM
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonEpsilonGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                               lptkFunc,
-                                               lpplLocalVars);
+                                               lptkFunc);
             } // End IF
 
             // Handle the immediate case
             return PrimFnMonEpsilonImm_EM (TranslateImmTypeToArrayType (lptkRhtArg->tkData.tkSym->stFlags.ImmType),
                                            lptkRhtArg->tkData.tkSym->stData.stLongest,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
         case TKT_VARIMMED:
             return PrimFnMonEpsilonImm_EM (TranslateImmTypeToArrayType (lptkRhtArg->tkFlags.ImmType),
                                            lptkRhtArg->tkData.tkLongest,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonEpsilonGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc,
-                                       lpplLocalVars);
+                                       lptkFunc);
             return NULL;
 
         defstop
@@ -147,15 +139,14 @@ LPYYSTYPE PrimFnMonEpsilon_EM
 #endif
 
 LPYYSTYPE PrimFnMonEpsilonImm_EM
-    (APLSTYPE      aplTypeRes,      // Immediate type
-     APLLONGEST    aplLongest,      // Immediate value
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (APLSTYPE   aplTypeRes,         // Immediate type
+     APLLONGEST aplLongest,         // Immediate value
+     LPTOKEN    lptkFunc)           // Ptr to function token
 
 {
-    APLUINT  ByteRes;
-    HGLOBAL  hGlbRes;
-    LPVOID   lpMemRes;
+    APLUINT ByteRes;
+    HGLOBAL hGlbRes;
+    LPVOID  lpMemRes;
     LPYYSTYPE lpYYRes;
 
     // Calculate space needed for the result (a one-element vector)
@@ -168,8 +159,7 @@ LPYYSTYPE PrimFnMonEpsilonImm_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -260,9 +250,8 @@ LPYYSTYPE PrimFnMonEpsilonImm_EM
 #endif
 
 LPYYSTYPE PrimFnMonEpsilonGlb_EM
-    (HGLOBAL       hGlbRht,         // Handle to right arg
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (HGLOBAL hGlbRht,               // Handle to right arg
+     LPTOKEN lptkFunc)              // Ptr to function token
 
 {
     LPVOID    lpMemRes;
@@ -292,8 +281,7 @@ LPYYSTYPE PrimFnMonEpsilonGlb_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -324,8 +312,7 @@ LPYYSTYPE PrimFnMonEpsilonGlb_EM
                             &lpMemRes,
                             &uBitIndex,
                              ClrPtrTypeDirGlb (hGlbRht),
-                             lptkFunc,
-                             lpplLocalVars);
+                             lptkFunc);
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
@@ -451,12 +438,11 @@ void PrimFnMonEpsilonGlbCount
 //***************************************************************************
 
 void PrimFnMonEpsilonGlbCopy
-    (APLSTYPE      aplTypeRes,      // Result type
-     LPVOID       *lplpMemRes,      // Ptr to ptr to result memory
-     LPUINT        lpuBitIndex,     // Ptr to uBitIndex
-     HGLOBAL       hGlbRht,         // Handle to right arg
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (APLSTYPE aplTypeRes,           // Result type
+     LPVOID  *lplpMemRes,           // Ptr to ptr to result memory
+     LPUINT   lpuBitIndex,          // Ptr to uBitIndex
+     HGLOBAL  hGlbRht,              // Handle to right arg
+     LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
     LPVOID     lpMemRht;
@@ -485,16 +471,14 @@ void PrimFnMonEpsilonGlbCopy
     // Skip past the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-
     // If the right arg is an APA, get its parameters
     if (aplTypeRht EQ ARRAY_APA)
     {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
-    } // End IF
-
 #undef  lpAPA
+    } // End IF
 
     // Split cases based upon the result's storage type
     switch (aplTypeRes)
@@ -591,8 +575,7 @@ void PrimFnMonEpsilonGlbCopy
                                                      lplpMemRes,
                                                      lpuBitIndex,
                                                      ClrPtrTypeIndGlb (lpMemRht),
-                                                     lptkFunc,
-                                                     lpplLocalVars);
+                                                     lptkFunc);
                             break;
 
                         defstop
@@ -689,8 +672,7 @@ void PrimFnMonEpsilonGlbCopy
                                                      lplpMemRes,
                                                      lpuBitIndex,
                                                      ClrPtrTypeIndGlb (lpMemRht),
-                                                     lptkFunc,
-                                                     lpplLocalVars);
+                                                     lptkFunc);
                             break;
 
                         defstop
@@ -795,8 +777,7 @@ void PrimFnMonEpsilonGlbCopy
                                                      lplpMemRes,
                                                      lpuBitIndex,
                                                      ClrPtrTypeIndGlb (lpMemRht),
-                                                     lptkFunc,
-                                                     lpplLocalVars);
+                                                     lptkFunc);
                             break;
 
                         defstop
@@ -861,8 +842,7 @@ void PrimFnMonEpsilonGlbCopy
                                                      lplpMemRes,
                                                      lpuBitIndex,
                                                      ClrPtrTypeIndGlb (lpMemRht),
-                                                     lptkFunc,
-                                                     lpplLocalVars);
+                                                     lptkFunc);
                             break;
 
                         defstop
@@ -890,7 +870,7 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc, lpplLocalVars);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc);
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -910,7 +890,7 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = *((LPAPLINT) lpMemRht)++;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc, lpplLocalVars);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
                     } // End FOR
 
                     break;
@@ -920,7 +900,7 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = *(LPAPLLONGEST) ((LPAPLFLOAT) lpMemRht)++;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc, lpplLocalVars);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc);
                     } // End FOR
 
                     break;
@@ -930,7 +910,7 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = apaOffRht + apaMulRht * uRht;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc, lpplLocalVars);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
                     } // End FOR
 
                     break;
@@ -940,7 +920,7 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = *((LPAPLCHAR) lpMemRht)++;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc, lpplLocalVars);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc);
                     } // End FOR
 
                     break;
@@ -968,26 +948,26 @@ void PrimFnMonEpsilonGlbCopy
                             {
                                 case IMMTYPE_BOOL:  // Res = HETERO, Rht = NESTED:BOOL
                                     aplVal = (*(LPSYMENTRY *) lpMemRht)->stData.stBoolean;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc, lpplLocalVars);
+                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc);
 
                                     break;
 
                                 case IMMTYPE_INT:   // Res = HETERO, Rht = NESTED:INT
                                     aplVal = (*(LPSYMENTRY *) lpMemRht)->stData.stInteger;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc, lpplLocalVars);
+                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
 
                                     break;
 
                                 case IMMTYPE_FLOAT: // Res = HETERO, Rht = NESTED:FLOAT
                                     aplVal = *(LPAPLLONGEST) &(*(LPSYMENTRY *) lpMemRht)->stData.stFloat;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc, lpplLocalVars);
+                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc);
 
                                     break;
 
 
                                 case IMMTYPE_CHAR:  // Res = HETERO, Rht = NESTED:CHAR
                                     aplVal = (*(LPSYMENTRY *) lpMemRht)->stData.stChar;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc, lpplLocalVars);
+                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc);
 
                                     break;
 
@@ -1006,8 +986,7 @@ void PrimFnMonEpsilonGlbCopy
                                                      lplpMemRes,
                                                      lpuBitIndex,
                                                      ClrPtrTypeIndGlb (lpMemRht),
-                                                     lptkFunc,
-                                                     lpplLocalVars);
+                                                     lptkFunc);
                             break;
 
                         defstop
@@ -1046,24 +1025,23 @@ void PrimFnMonEpsilonGlbCopy
 #endif
 
 LPYYSTYPE PrimFnDydEpsilon_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht;
-    APLNELM   aplNELMLft,
-              aplNELMRht;
-    APLRANK   aplRankLft,
-              aplRankRht;
-    HGLOBAL   hGlbLft,
-              hGlbRht;
-    LPVOID    lpMemLft,
-              lpMemRht;
-    BOOL      bRet = TRUE;
+    APLSTYPE aplTypeLft,
+             aplTypeRht;
+    APLNELM  aplNELMLft,
+             aplNELMRht;
+    APLRANK  aplRankLft,
+             aplRankRht;
+    HGLOBAL  hGlbLft,
+             hGlbRht;
+    LPVOID   lpMemLft,
+             lpMemRht;
+    BOOL     bRet = TRUE;
     LPYYSTYPE lpYYRes;
 
     //***************************************************************
@@ -1074,8 +1052,7 @@ LPYYSTYPE PrimFnDydEpsilon_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         return NULL;
     } // End IF
 
@@ -1093,8 +1070,7 @@ LPYYSTYPE PrimFnDydEpsilon_EM
     if (aplRankLft NE 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         bRet = FALSE;
 
         goto ERROR_EXIT;

@@ -29,11 +29,10 @@
 #endif
 
 LPYYSTYPE PrimFnRho_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -47,16 +46,15 @@ LPYYSTYPE PrimFnRho_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         return NULL;
     } // End IF
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonRho_EM             (lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnMonRho_EM             (lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydRho_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnDydRho_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnRho_EM
 #undef  APPEND_NAME
 
@@ -74,10 +72,9 @@ LPYYSTYPE PrimFnRho_EM
 #endif
 
 LPYYSTYPE PrimFnMonRho_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Split cases based upon the right arg's token type
@@ -94,8 +91,7 @@ LPYYSTYPE PrimFnMonRho_EM
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonRhoGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
             } // End IF
 
             // Handle the immediate case
@@ -110,12 +106,10 @@ LPYYSTYPE PrimFnMonRho_EM
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonRhoGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                       lptkFunc,
-                                       lpplLocalVars);
+                                       lptkFunc);
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc,
-                                       lpplLocalVars);
+                                       lptkFunc);
             return NULL;
 
         defstop
@@ -166,18 +160,17 @@ LPYYSTYPE PrimFnMonRhoCon_EM
 #endif
 
 LPYYSTYPE PrimFnMonRhoGlb_EM
-    (HGLOBAL       hGlbRht,         // Right arg handle
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (HGLOBAL hGlbRht,               // Right arg handle
+     LPTOKEN lptkFunc)              // Ptr to function token
 
 {
     LPVOID    lpMemRht,
               lpMemRes;
-    APLRANK   aplRankRht;       // The rank of the array
-    HGLOBAL   hGlbRes;
-    APLUINT   ByteRes;
-    BOOL      bRet = TRUE;
-    UINT      uRes;
+    APLRANK aplRankRht;      // The rank of the array
+    HGLOBAL hGlbRes;
+    APLUINT ByteRes;
+    BOOL    bRet = TRUE;
+    UINT    uRes;
     LPYYSTYPE lpYYRes;
 
     // Lock the global memory to get a ptr to it
@@ -200,8 +193,7 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -279,29 +271,28 @@ ERROR_EXIT:
 #endif
 
 LPYYSTYPE PrimFnDydRho_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLNELM   aplNELMRes,       // # elements in the result
-              aplNELMRht;       // ...               right arg
-    APLRANK   aplRankRes;       // The rank of the result
-    HGLOBAL   hGlbRes,          // Handle of result's global memory
-              hGlbProto;        // ...                prototype
-    LPVOID    lpMemRes,         // Ptr to result's global memory
-              lpDataRes;        // ...    result's data
-    LPAPLDIM  lpDimRes;         // Ptr to result's dimensions
-    BOOL      bRet = TRUE,
-              bPrototype = FALSE; // TRUE iff we're to generate a prototype
+    APLNELM  aplNELMRes,    // # elements in the result
+             aplNELMRht;    // ...               right arg
+    APLRANK  aplRankRes;    // The rank of the result
+    HGLOBAL  hGlbRes,       // Handle of result's global memory
+             hGlbProto;     // ...                prototype
+    LPVOID   lpMemRes,      // Ptr to result's global memory
+             lpDataRes;     // ...    result's data
+    LPAPLDIM lpDimRes;      // Ptr to result's dimensions
+    BOOL     bRet = TRUE,
+             bPrototype = FALSE; // TRUE iff we're to generate a prototype
 
-    APLSTYPE  aplTypeRes,       // Storage type of the result
-              cImmTypeRht;      // Immediate type of right arg first element
-    APLINT    aplIntTmp;
-    APLUINT   ByteRes;          // # bytes needed in the result
-    UINT      uRes;
+    APLSTYPE aplTypeRes,    // Storage type of the result
+             cImmTypeRht;   // Immediate type of right arg first element
+    APLINT   aplIntTmp;
+    APLUINT  ByteRes;       // # bytes needed in the result
+    UINT     uRes;
     LPYYSTYPE lpYYRes;
 
     //***************************************************************
@@ -328,10 +319,9 @@ LPYYSTYPE PrimFnDydRho_EM
                 Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkSym->stData.stGlbData));
 
                 bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),
-                                                  &aplRankRes,
-                                                  &aplNELMRes,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                   &aplRankRes,
+                                                   &aplNELMRes,
+                                                   lptkFunc);
                 break;
             } // End IF
 
@@ -361,8 +351,7 @@ LPYYSTYPE PrimFnDydRho_EM
                      || lptkLftArg->tkData.tkSym->stData.stInteger < 0)
                     {
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                   lptkFunc);
                         return NULL;
                     } // End IF
 
@@ -387,8 +376,7 @@ LPYYSTYPE PrimFnDydRho_EM
 
                 case IMMTYPE_CHAR:
                     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc,
-                                               lpplLocalVars);
+                                               lptkFunc);
                     return NULL;
 
                 defstop
@@ -402,10 +390,9 @@ LPYYSTYPE PrimFnDydRho_EM
             Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkGlbData));
 
             bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkGlbData),
-                                              &aplRankRes,
-                                              &aplNELMRes,
-                                               lptkFunc,
-                                               lpplLocalVars);
+                                               &aplRankRes,
+                                               &aplNELMRes,
+                                               lptkFunc);
             break;
 
         case TKT_VARIMMED:
@@ -426,8 +413,7 @@ LPYYSTYPE PrimFnDydRho_EM
                      || lptkLftArg->tkData.tkInteger < 0)
                     {
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc,
-                                                   lpplLocalVars);
+                                                   lptkFunc);
                         return NULL;
                     } // End IF
 
@@ -452,8 +438,7 @@ LPYYSTYPE PrimFnDydRho_EM
 
                 case IMMTYPE_CHAR:
                     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc,
-                                               lpplLocalVars);
+                                               lptkFunc);
                     return NULL;
 
                 defstop
@@ -464,8 +449,7 @@ LPYYSTYPE PrimFnDydRho_EM
 
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc,
-                                       lpplLocalVars);
+                                       lptkFunc);
             return NULL;
 
         defstop
@@ -541,8 +525,7 @@ LPYYSTYPE PrimFnDydRho_EM
 
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc,
-                                       lpplLocalVars);
+                                       lptkFunc);
             return NULL;
 
         defstop
@@ -554,8 +537,7 @@ LPYYSTYPE PrimFnDydRho_EM
      && aplNELMRht EQ 0)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -675,8 +657,7 @@ LPYYSTYPE PrimFnDydRho_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -812,9 +793,8 @@ LPYYSTYPE PrimFnDydRho_EM
     {
         // Make the prototype
         hGlbProto = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbProto),
-                                      lptkFunc,         // Ptr to function token
-                                      FALSE,            // Allow CHARs
-                                      lpplLocalVars);   // Ptr to local plLocalVars
+                                      lptkFunc,
+                                      FALSE);   // Allow CHARs
         if (!hGlbProto)
             bRet = FALSE;
         else
@@ -1061,11 +1041,10 @@ LPYYSTYPE PrimFnDydRho_EM
 #endif
 
 BOOL PrimFnDydRhoLftGlbValid_EM
-    (HGLOBAL       hGlbLft,         // Left arg handle
-     LPAPLRANK     lpaplRankRes,    // Ptr to result rank
-     LPAPLNELM     lpaplNELMRes,    // Prt to result NELM
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (HGLOBAL   hGlbLft,                 // Left arg handle
+     LPAPLRANK lpaplRankRes,            // Ptr to result rank
+     LPAPLNELM lpaplNELMRes,            // Prt to result NELM
+     LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
     LPVOID   lpMemLft,      // Ptr to left argument global memory
@@ -1088,8 +1067,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
     if (lpHeaderLft->Rank > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         bRet = FALSE;
     } else
     {
@@ -1168,15 +1146,13 @@ BOOL PrimFnDydRhoLftGlbValid_EM
                         apaVal;
                 APLUINT apaLen;
 
-#define lpAPA       ((LPAPLAPA) lpDataLft)
 
                 // Save the APA data
+#define lpAPA       ((LPAPLAPA) lpDataLft)
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
                 apaLen = lpAPA->Len;
-
 #undef  lpAPA
-
                 // Ensure no element in the left arg goes negative
                 //   by checking the first and last elements
                 bRet = ((apaOff >= 0) && ((apaOff + apaMul * (apaLen - 1)) >= 0));
@@ -1208,8 +1184,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
             case ARRAY_HETERO:          // ...
             case ARRAY_LIST:
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 bRet = FALSE;
 
                 break;
@@ -1294,14 +1269,11 @@ void PrimFnDydRhoLftGlbCopyDim
                     apaMul;
             APLUINT apaLen;
 
-#define lpAPA       ((LPAPLAPA) lpDataLft)
-
             // Save the APA data
+#define lpAPA       ((LPAPLAPA) lpDataLft)
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
-
 #undef  lpAPA
-
             for (apaLen = 0; apaLen < aplNELMLft; apaLen++)
                 *lpaplDim++ = (APLDIM) (apaOff + apaMul * apaLen);
             break;
@@ -1561,30 +1533,23 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
                     apaMul;
             APLUINT apaLen;
 
-#define lpAPA       ((LPAPLAPA) lpMemRhtNext)
-
             // Save the APA data
+#define lpAPA       ((LPAPLAPA) lpMemRhtNext)
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
             apaLen = lpAPA->Len;
-
 #undef  lpAPA
-
             // If the right arg isn't reused, we can
             //   store the result as an APA
             if (aplNELMRes <= apaLen)
             {
                 // Copy the right arg's Off and MUL, and the
                 //   result's NELM
-
 #define lpAPA       ((LPAPLAPA) lpDataRes)
-
                 lpAPA->Off = apaOff;
                 lpAPA->Mul = apaMul;
                 lpAPA->Len = aplNELMRes;
-
 #undef  lpAPA
-
             } else
             {
                 // Loop through the result and right arg copying the data

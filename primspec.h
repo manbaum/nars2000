@@ -8,8 +8,7 @@ typedef LPYYSTYPE PRIMFN_MON
     (LPTOKEN lptkFunc,                      // Ptr to function token
      LPTOKEN lptkRhtArg,                    // Ptr to right arg token
      LPTOKEN lptkAxis,                      // Ptr to axis token (may be NULL)
-     struct tagPrimSpec *lpPrimSpec,        // Ptr to local PRIMSPEC
-     struct tagPLLOCALVARS *lpplLocalVars); // Ptr to local plLocalVars
+     struct tagPrimSpec *lpPrimSpec);       // Ptr to local PRIMSPEC
 
 typedef PRIMFN_MON *LPPRIMFN_MON;
 
@@ -19,103 +18,99 @@ typedef LPYYSTYPE PRIMFN_DYD
      LPTOKEN lptkFunc,                      // Ptr to function token
      LPTOKEN lptkRhtArg,                    // Ptr to right arg token
      LPTOKEN lptkAxis,                      // Ptr to axis token (may be NULL)
-     struct tagPrimSpec *lpPrimSpec,        // Ptr to local PRIMSPEC
-     struct tagPLLOCALVARS *lpplLocalVars); // Ptr to local plLocalVars
+     struct tagPrimSpec *lpPrimSpec);       // Ptr to local PRIMSPEC
 
 typedef PRIMFN_DYD *LPPRIMFN_DYD;
 
 typedef BOOL PRIMFN_DYD_SNvSN
-    (LPYYSTYPE lpYYRes,
+    (LPYYSTYPE lpYYRes,                     // Ptr to result YYSTYPE
 
-     LPTOKEN   lptkLftArg,
-     LPTOKEN   lptkFunc,
-     LPTOKEN   lptkRhtArg,
+     LPTOKEN   lptkLftArg,                  // Ptr to left arg token
+     LPTOKEN   lptkFunc,                    // Ptr to function token
+     LPTOKEN   lptkRhtArg,                  // Ptr to right arg token
 
-     HGLOBAL   hGlbLft,
-     HGLOBAL   hGlbRht,
-     HGLOBAL  *lphGlbRes,
+     HGLOBAL   hGlbLft,                     // Handle to left arg
+     HGLOBAL   hGlbRht,                     // ...       right ...
+     HGLOBAL  *lphGlbRes,                   // Ptr to handle to result
 
-     LPVOID    lpMemLft,            // Points to sign.ature
-     LPVOID    lpMemRht,            // ...
-     LPVOID    lpMemRes,            // ...
+     LPVOID    lpMemLft,                    // Points to sign.ature
+     LPVOID    lpMemRht,                    // ...
+     LPVOID    lpMemRes,                    // ...
 
-     LPAPLUINT lpMemAxisHead,
-     LPAPLUINT lpMemAxisTail,
+     LPAPLUINT lpMemAxisHead,               // Ptr to axis values, fleshed out
+     LPAPLUINT lpMemAxisTail,               // Ptr to grade up of AxisHead
 
-     APLRANK   aplRankLft,
-     APLRANK   aplRankRht,
-     APLRANK   aplRankRes,
+     APLRANK   aplRankLft,                  // Left arg rank
+     APLRANK   aplRankRht,                  // Right ...
+     APLRANK   aplRankRes,                  // Result ...
 
-     APLSTYPE  aplTypeLft,
-     APLSTYPE  aplTypeRht,
-     APLSTYPE  aplTypeRes,
+     APLSTYPE  aplTypeLft,                  // Left arg storage type
+     APLSTYPE  aplTypeRht,                  // Right ...
+     APLSTYPE  aplTypeRes,                  // Result ...
 
-     APLNELM   aplNELMLft,
-     APLNELM   aplNELMRht,
-     APLNELM   aplNELMRes,
-     APLNELM   aplNELMAxis,
-     struct tagPrimSpec *lpPrimSpec,        // Ptr to local PRIMSPEC
-     struct tagPLLOCALVARS *lpplLocalVars); // Ptr to local plLocalVars
+     APLNELM   aplNELMLft,                  // Left arg NELM
+     APLNELM   aplNELMRht,                  // Right ...
+     APLNELM   aplNELMRes,                  // Result ...
+     APLNELM   aplNELMAxis,                 // Axis ...
+     struct tagPrimSpec *lpPrimSpec);       // Ptr to local PRIMSPEC
 
 typedef PRIMFN_DYD_SNvSN *LPPRIMFN_DYD_SNvSN;
 
 // Call this function to determine the storage type of the monadic result
 typedef APLSTYPE STORAGE_TYPE_MON
-        (APLNELM    aplNELMRht,
-         LPAPLSTYPE lpaplTypeRht,
-         LPTOKEN    lptkFunc);
+        (APLNELM    aplNELMRht,             // Right arg NELM
+         LPAPLSTYPE lpaplTypeRht,           // Ptr to right arg storage type
+         LPTOKEN    lptkFunc);              // Ptr to function token
 
 typedef STORAGE_TYPE_MON *LPSTORAGE_TYPE_MON;
 
 // Call this function to determine the storage type of the dyadic result
 typedef APLSTYPE STORAGE_TYPE_DYD
-        (APLNELM    aplNELMLft,
-         LPAPLSTYPE lpaplTypeLft,
-         LPTOKEN    lptkFunc,
-         APLNELM    aplNELMRht,
-         LPAPLSTYPE lpaplTypeRht);
+        (APLNELM    aplNELMLft,             // Left arg NELM
+         LPAPLSTYPE lpaplTypeLft,           // Ptr to left arg storage type
+         LPTOKEN    lptkFunc,               // Ptr to function token
+         APLNELM    aplNELMRht,             // Right arg NELM
+         LPAPLSTYPE lpaplTypeRht);          // Ptr to right arg storage type
 
 typedef STORAGE_TYPE_DYD *LPSTORAGE_TYPE_DYD;
 
 // Call this function if the monadic result is APA
 typedef BOOL APARESULT_MON
-        (LPYYSTYPE lpYYRes,                     // Ptr to result token (may be NULL)
+        (LPYYSTYPE lpYYRes,                 // Ptr to result token (may be NULL)
 
-         LPTOKEN   lptkFunc,                    // Ptr to function token
+         LPTOKEN   lptkFunc,                // Ptr to function token
 
-         HGLOBAL   hGlbRht,                     // HGLOBAL of right arg
-         HGLOBAL  *lphGlbRes,                   // ...        result
+         HGLOBAL   hGlbRht,                 // HGLOBAL of right arg
+         HGLOBAL  *lphGlbRes,               // ...        result
 
-         LPVOID   *lplpMemRes,                  // Ptr to ptr to result memory (initially at sign.ature)
+         LPVOID   *lplpMemRes,              // Ptr to ptr to result memory (initially at sign.ature)
 
-         APLRANK   aplRankRht,                  // Right arg rank
+         APLRANK   aplRankRht,              // Right arg rank
 
-         struct tagPrimSpec *lpPrimSpec,        // Ptr to local PRIMSPEC
-         struct tagPLLOCALVARS *lpplLocalVars); // Ptr to local plLocalVars
+         struct tagPrimSpec *lpPrimSpec);   // Ptr to local PRIMSPEC
 
 typedef APARESULT_MON *LPAPARESULT_MON;
 
 // Call this function if the dyadic result is APA
 typedef BOOL APARESULT_DYD
-        (LPYYSTYPE lpYYRes,                     // Ptr to result token (may be NULL)
+        (LPYYSTYPE lpYYRes,                 // Ptr to result token (may be NULL)
 
-         LPTOKEN   lptkFunc,                    // Ptr to function token
+         LPTOKEN   lptkFunc,                // Ptr to function token
 
-         HGLOBAL   hGlbLft,                     // HGLOBAL of left arg (may be NULL if simple)
-         HGLOBAL   hGlbRht,                     // ...        right ...
-         HGLOBAL  *lphGlbRes,                   // ...        result
+         HGLOBAL   hGlbLft,                 // HGLOBAL of left arg (may be NULL if simple)
+         HGLOBAL   hGlbRht,                 // ...        right ...
+         HGLOBAL  *lphGlbRes,               // ...        result
 
-         LPVOID   *lplpMemRes,                  // Ptr to ptr to result memory (initially at sign.ature)
+         LPVOID   *lplpMemRes,              // Ptr to ptr to result memory (initially at sign.ature)
 
-         APLRANK   aplRankLft,                  // Left arg rank
-         APLRANK   aplRankRht,                  // Right ...
+         APLRANK   aplRankLft,              // Left arg rank
+         APLRANK   aplRankRht,              // Right ...
 
-         APLNELM   aplNELMLft,                  // Left arg NELM
-         APLNELM   aplNELMRht,                  // Right ...
+         APLNELM   aplNELMLft,              // Left arg NELM
+         APLNELM   aplNELMRht,              // Right ...
 
-         APLINT    aplInteger,                  // The integer from the simple side
-         struct tagPrimSpec *lpPrimSpec,        // Ptr to local PRIMSPEC
-         struct tagPLLOCALVARS *lpplLocalVars); // Ptr to local plLocalVars
+         APLINT    aplInteger,              // The integer from the simple side
+         struct tagPrimSpec *lpPrimSpec);   // Ptr to local PRIMSPEC
 
 typedef APARESULT_DYD *LPAPARESULT_DYD;
 
@@ -197,42 +192,42 @@ typedef APLFLOAT FISCVC (APLCHAR , APLCHAR , struct tagPrimSpec *lpPrimSpec);
 typedef struct tagPrimSpec
 {
     // Monadic functions
-    LPPRIMFN_MON        PrimFnMon_EM;
-    LPSTORAGE_TYPE_MON  StorageTypeMon;
-    LPAPARESULT_MON     ApaResultMon_EM;
+    LPPRIMFN_MON        PrimFnMon_EM;       // Ptr to monadic primitive function
+    LPSTORAGE_TYPE_MON  StorageTypeMon;     // ...            storage type ...
+    LPAPARESULT_MON     ApaResultMon_EM;    // ...            APA result ...
 
-    BISB               *BisB;
-    BISI               *BisI;
-    BISF               *BisF;
+    BISB               *BisB;               // Monadic B {is} B
+    BISI               *BisI;               // ...            I
+    BISF               *BisF;               // ...            F
 
-////IISB               *IisB;   // Handled via type promotion (to IisI)
-    IISI               *IisI;
-    IISF               *IisF;
+////IISB               *IisB;               // Handled via type promotion (to IisI)
+    IISI               *IisI;               // Monadic I {is} I
+    IISF               *IisF;               // ...            F
 
-////FISB               *FisB;   // Handled via type promotion (to FisF)
-    FISI               *FisI;
-    FISF               *FisF;
+////FISB               *FisB;               // Handled via type promotion (to FisF)
+    FISI               *FisI;               // Monadic F {is} I
+    FISF               *FisF;               // ...            F
 
     // Dyadic functions
-    LPPRIMFN_DYD        PrimFnDyd_EM;
-    LPSTORAGE_TYPE_DYD  StorageTypeDyd;
-    LPAPARESULT_DYD     ApaResultDyd_EM;
+    LPPRIMFN_DYD        PrimFnDyd_EM;       // Ptr to dyadic primitive function
+    LPSTORAGE_TYPE_DYD  StorageTypeDyd;     // ...           storage type ...
+    LPAPARESULT_DYD     ApaResultDyd_EM;    // ...           APA result ...
 
-    BISBVB             *BisBvB;
-    BISIVI             *BisIvI;
-    BISFVF             *BisFvF;
-    BISCVC             *BisCvC;
+    BISBVB             *BisBvB;             // Dyadic B {is} B vs B
+    BISIVI             *BisIvI;             // ...           I vs I
+    BISFVF             *BisFvF;             // ...           F vs F
+    BISCVC             *BisCvC;             // ...           C vs C
 
-////IISBVB             *IisBvB;     // Handled via type promotion (to IisIvI)
-    IISIVI             *IisIvI;
-    IISFVF             *IisFvF;
+////IISBVB             *IisBvB;             // Handled via type promotion (to IisIvI)
+    IISIVI             *IisIvI;             // Dyadic I {is} I vs I
+    IISFVF             *IisFvF;             // ...           F vs F
 
-////FISBVB             *FisBvB;     // Handled via type promotion (to FisFvF)
-    FISIVI             *FisIvI;
-    FISFVF             *FisFvF;
+////FISBVB             *FisBvB;             // Handled via type promotion (to FisFvF)
+    FISIVI             *FisIvI;             // Dyadic F {is} I vs I
+    FISFVF             *FisFvF;             // ...           F vs F
 
     // Miscellaneous
-    EXEC_CODES         *lpExecCode;
+    EXEC_CODES         *lpExecCode;         // Ptr to Exception Code
 } PRIMSPEC, * LPPRIMSPEC;
 
 

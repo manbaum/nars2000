@@ -29,11 +29,10 @@
 #endif
 
 LPYYSTYPE PrimFnCircleStile_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -42,9 +41,9 @@ LPYYSTYPE PrimFnCircleStile_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonCircleStile_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnMonCircleStile_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydCircleStile_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnDydCircleStile_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnCircleStile_EM
 #undef  APPEND_NAME
 
@@ -62,10 +61,9 @@ LPYYSTYPE PrimFnCircleStile_EM
 #endif
 
 LPYYSTYPE PrimFnMonCircleStile_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE   aplTypeRht,
@@ -103,8 +101,7 @@ LPYYSTYPE PrimFnMonCircleStile_EM
     if (aplTypeRht EQ ARRAY_LIST)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -119,10 +116,9 @@ LPYYSTYPE PrimFnMonCircleStile_EM
                            FALSE,           // TRUE iff axes must be contiguous
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // Return TRUE iff fractional values present
-                          &aplAxis,         // Return last axis value
+                           &aplAxis,        // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL,            // Return HGLOBAL with APLINT axis values
-                           lpplLocalVars))  // Ptr to local plLocalVars
+                           NULL))           // Return HGLOBAL with APLINT axis values
             return NULL;
     } else
     {
@@ -175,8 +171,7 @@ LPYYSTYPE PrimFnMonCircleStile_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -297,12 +292,9 @@ LPYYSTYPE PrimFnMonCircleStile_EM
 
         case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemRht)
-
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
-
 #undef  lpAPA
-
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -376,11 +368,10 @@ IMMED_EXIT:
 #endif
 
 LPYYSTYPE PrimFnDydCircleStile_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE  aplTypeLft,
@@ -436,10 +427,9 @@ LPYYSTYPE PrimFnDydCircleStile_EM
                            FALSE,           // TRUE iff axes must be contiguous
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // Return TRUE iff fractional values present
-                          &aplAxis,         // Return last axis value
+                           &aplAxis,        // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL,            // Return HGLOBAL with APLINT axis values
-                           lpplLocalVars))  // Ptr to local plLocalVars
+                           NULL))           // Return HGLOBAL with APLINT axis values
             return NULL;
     } else
     {
@@ -463,8 +453,7 @@ LPYYSTYPE PrimFnDydCircleStile_EM
          && (aplRankRht - aplRankLft) NE 1)
         {
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkLftArg,
-                                       lpplLocalVars);
+                                       lptkLftArg);
             goto ERROR_EXIT;
         } // End IF
 
@@ -478,8 +467,7 @@ LPYYSTYPE PrimFnDydCircleStile_EM
          && lpMemDimLft[uDim] NE lpMemDimRht[uDim + (uDim < aplAxis)])
         {
             ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkLftArg,
-                                       lpplLocalVars);
+                                       lptkLftArg);
             goto ERROR_EXIT;
         } // End IF
     } // End IF
@@ -521,8 +509,7 @@ LPYYSTYPE PrimFnDydCircleStile_EM
         if (!hGlbRot)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkLftArg,
-                                       lpplLocalVars);
+                                       lptkLftArg);
             goto ERROR_EXIT;
         } // End IF
         // Lock the memory to get a ptr to it
@@ -568,14 +555,10 @@ LPYYSTYPE PrimFnDydCircleStile_EM
                 break;
 
             case ARRAY_APA:
-
 #define lpAPA       ((LPAPLAPA) lpMemLft)
-
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
-
 #undef  lpAPA
-
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                     *lpMemRot++ = apaOff + apaMul * uDim;
                 break;
@@ -607,9 +590,6 @@ LPYYSTYPE PrimFnDydCircleStile_EM
         // Split cases based upon the right arg's token type
         switch (lptkRhtArg->tkFlags.TknType)
         {
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
-
             case TKT_VARNAMED:
                 // tkData is an LPSYMENTRY
                 Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
@@ -658,8 +638,7 @@ LPYYSTYPE PrimFnDydCircleStile_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -708,14 +687,9 @@ LPYYSTYPE PrimFnDydCircleStile_EM
 
     // Handle empty nested array results (prototypes)
     if (aplNELMRht EQ 0 && aplTypeRes EQ ARRAY_NESTED)
-    {
         *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
-
-        goto PROTO_EXIT;
-    } // End IF
-
+    else
     // Copy the data to the result
-
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {
@@ -794,14 +768,10 @@ LPYYSTYPE PrimFnDydCircleStile_EM
             break;
 
         case ARRAY_APA:
-
 #define lpAPA       ((LPAPLAPA) lpMemRht)
-
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
-
 #undef  lpAPA
-
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -839,7 +809,7 @@ LPYYSTYPE PrimFnDydCircleStile_EM
         defstop
             break;
     } // End SWITCH
-PROTO_EXIT:
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -854,8 +824,7 @@ PROTO_EXIT:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkLftArg,
-                               lpplLocalVars);
+                               lptkLftArg);
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:

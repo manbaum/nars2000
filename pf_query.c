@@ -78,11 +78,10 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
 #endif
 
 LPYYSTYPE PrimFnQuery_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -90,9 +89,9 @@ LPYYSTYPE PrimFnQuery_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
+        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return PrimFnDydQuery_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis,             lpplLocalVars);
+        return PrimFnDydQuery_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnQuery_EM
 #undef  APPEND_NAME
 
@@ -212,35 +211,34 @@ APLINT PrimFnMonQueryIisF
 #endif
 
 LPYYSTYPE PrimFnDydQuery_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht;
-    APLNELM   aplNELMLft,
-              aplNELMRht;
-    APLRANK   aplRankLft,
-              aplRankRht;
-    HGLOBAL   hGlbLft = NULL,
-              hGlbRht = NULL,
-              hGlbRes = NULL;
-    LPVOID    lpMemLft = NULL,
-              lpMemRht = NULL;
-    LPAPLINT  lpMemRes = NULL;
-    APLINT    aplIntegerLft,
-              aplIntegerRht;
-    APLFLOAT  aplFloatLft,
-              aplFloatRht;
-    APLUINT   ByteRes;
-    APLINT    uLft,
-              uRht,
-              uTmp,
-              uSub;
-    BOOL      bRet = TRUE;
+    APLSTYPE aplTypeLft,
+             aplTypeRht;
+    APLNELM  aplNELMLft,
+             aplNELMRht;
+    APLRANK  aplRankLft,
+             aplRankRht;
+    HGLOBAL  hGlbLft = NULL,
+             hGlbRht = NULL,
+             hGlbRes = NULL;
+    LPVOID   lpMemLft = NULL,
+             lpMemRht = NULL;
+    LPAPLINT lpMemRes = NULL;
+    APLINT   aplIntegerLft,
+             aplIntegerRht;
+    APLFLOAT aplFloatLft,
+             aplFloatRht;
+    APLUINT  ByteRes;
+    APLINT   uLft,
+             uRht,
+             uTmp,
+             uSub;
+    BOOL     bRet = TRUE;
     LPYYSTYPE lpYYRes;
 
     //***************************************************************
@@ -251,8 +249,7 @@ LPYYSTYPE PrimFnDydQuery_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         return NULL;
     } // End IF
 
@@ -269,8 +266,7 @@ LPYYSTYPE PrimFnDydQuery_EM
      || aplRankRht > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -281,8 +277,7 @@ LPYYSTYPE PrimFnDydQuery_EM
      || aplNELMRht NE 1)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -308,8 +303,7 @@ LPYYSTYPE PrimFnDydQuery_EM
      || aplIntegerRht < 0)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -332,8 +326,7 @@ LPYYSTYPE PrimFnDydQuery_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         bRet = FALSE;
 
         goto ERROR_EXIT;

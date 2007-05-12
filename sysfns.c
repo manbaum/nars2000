@@ -27,8 +27,7 @@ BOOL bUseLocalTime = TRUE;
 //***************************************************************************
 
 LPYYSTYPE ExecuteFn0
-    (LPTOKEN       lptkFcn0,        // Ptr to function token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFcn0)          // Ptr to function token
 
 {
     LPPRIMFNS lpNameFcn;
@@ -43,14 +42,12 @@ LPYYSTYPE ExecuteFn0
         return (*lpNameFcn) (NULL,
                              lptkFcn0,
                              NULL,
-                             NULL,
-                             lpplLocalVars);
+                             NULL);
     else
         return ExecFuncGlb_EM (NULL,
                                ClrPtrTypeDirGlb (lpNameFcn),
                                NULL,
-                               NULL,
-                               lpplLocalVars);
+                               NULL);
 } // ExecuteFn0
 
 
@@ -61,18 +58,17 @@ LPYYSTYPE ExecuteFn0
 //***************************************************************************
 
 LPYYSTYPE SysFnDR_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonDR_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return SysFnMonDR_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return SysFnDydDR_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return SysFnDydDR_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnDR_EM
 
 
@@ -89,14 +85,13 @@ LPYYSTYPE SysFnDR_EM
 #endif
 
 LPYYSTYPE SysFnMonDR_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL   hGlbData;
-    LPVOID    lpMem;
+    HGLOBAL hGlbData;
+    LPVOID  lpMem;
     LPYYSTYPE lpYYRes;
 
     // Allocate a new YYRes
@@ -292,18 +287,16 @@ LPYYSTYPE SysFnMonDR_EM
 #endif
 
 LPYYSTYPE SysFnDydDR_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // ***FINISHME***
 
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                               lptkFunc,
-                               lpplLocalVars);
+                               lptkFunc);
     return NULL;
 } // End SysFnDydDR_EM
 #undef  APPEND_NAME
@@ -322,16 +315,15 @@ LPYYSTYPE SysFnDydDR_EM
 #endif
 
 LPYYSTYPE SysFnSYSID_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token
 
 {
-    UINT      ByteRes;
-    HGLOBAL   hGlbRes;
-    LPVOID    lpMem;
+    UINT       ByteRes;
+    HGLOBAL    hGlbRes;
+    LPVOID     lpMem;
     LPYYSTYPE lpYYRes;
 
 #define SYSID   L"NARS2000"
@@ -345,8 +337,7 @@ LPYYSTYPE SysFnSYSID_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -406,11 +397,10 @@ LPYYSTYPE SysFnSYSID_EM
 #endif
 
 LPYYSTYPE SysFnSYSVER_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     UINT       ByteRes;
@@ -432,8 +422,7 @@ LPYYSTYPE SysFnSYSVER_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -547,16 +536,15 @@ LPYYSTYPE SysFnSYSVER_EM
 #endif
 
 LPYYSTYPE SysFnTC_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    UINT      ByteRes;
-    HGLOBAL   hGlbRes;
-    LPVOID    lpMem;
+    UINT       ByteRes;
+    HGLOBAL    hGlbRes;
+    LPVOID     lpMem;
     LPYYSTYPE lpYYRes;
 
     // Calculate space needed for the result
@@ -567,8 +555,7 @@ LPYYSTYPE SysFnTC_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -654,11 +641,10 @@ LPYYSTYPE SysFnTCCom
 //***************************************************************************
 
 LPYYSTYPE SysFnTCBEL_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return SysFnTCCom (TCBEL, lptkFunc);
@@ -672,11 +658,10 @@ LPYYSTYPE SysFnTCBEL_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCBS_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return SysFnTCCom (TCBS, lptkFunc);
@@ -690,11 +675,10 @@ LPYYSTYPE SysFnTCBS_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCDEL_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return SysFnTCCom (TCDEL, lptkFunc);
@@ -708,11 +692,10 @@ LPYYSTYPE SysFnTCDEL_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCESC_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return SysFnTCCom (TCESC, lptkFunc);
@@ -726,11 +709,10 @@ LPYYSTYPE SysFnTCESC_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCFF_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return SysFnTCCom (TCFF, lptkFunc);
@@ -744,11 +726,10 @@ LPYYSTYPE SysFnTCFF_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCHT_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return SysFnTCCom (TCHT, lptkFunc);
@@ -762,11 +743,10 @@ LPYYSTYPE SysFnTCHT_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCLF_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return SysFnTCCom (TCLF, lptkFunc);
@@ -780,11 +760,10 @@ LPYYSTYPE SysFnTCLF_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCNL_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return SysFnTCCom (TCNL, lptkFunc);
@@ -798,11 +777,10 @@ LPYYSTYPE SysFnTCNL_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTCNUL_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return SysFnTCCom (TCNUL, lptkFunc);
@@ -822,11 +800,10 @@ LPYYSTYPE SysFnTCNUL_EM
 #endif
 
 LPYYSTYPE SysFnTS_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (should be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token (should be NULL)
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     SYSTEMTIME SystemTime;
@@ -843,8 +820,7 @@ LPYYSTYPE SysFnTS_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -913,18 +889,17 @@ LPYYSTYPE SysFnTS_EM
 //***************************************************************************
 
 LPYYSTYPE SysFnTYPE_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonTYPE_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return SysFnMonTYPE_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return SysFnDydTYPE_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return SysFnDydTYPE_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnTYPE_EM
 
 
@@ -941,14 +916,13 @@ LPYYSTYPE SysFnTYPE_EM
 #endif
 
 LPYYSTYPE SysFnMonTYPE_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL   hGlbData,
-              hGlbRes;
+    HGLOBAL hGlbData,
+            hGlbRes;
     LPYYSTYPE lpYYRes;
 
     // Allocate a new YYRes
@@ -1041,8 +1015,7 @@ LPYYSTYPE SysFnMonTYPE_EM
 
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc,
-                                       lpplLocalVars);
+                                       lptkFunc);
             YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 
         case TKT_VARARRAY:
@@ -1060,10 +1033,9 @@ LPYYSTYPE SysFnMonTYPE_EM
     Assert (IsGlbTypeVarDir (hGlbData));
 
     // Make the prototype
-    hGlbRes = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbData), // Proto arg handle
-                                lptkFunc,       // Ptr to function token
-                                FALSE,          // Allow CHARs
-                                lpplLocalVars); // Ptr to local plLocalVars
+    hGlbRes = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbData),
+                                lptkFunc,
+                                FALSE);   // Allow CHARs
     if (!hGlbRes)
         return NULL;
 
@@ -1092,14 +1064,13 @@ LPYYSTYPE SysFnMonTYPE_EM
 #endif
 
 LPYYSTYPE SysFnDydTYPE_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc, lpplLocalVars);
+    return PrimFnSyntaxError_EM (lptkFunc);
 } // End SysFnDydTYPE_EM
 #undef  APPEND_NAME
 

@@ -77,11 +77,10 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecUpStile};
 #endif
 
 LPYYSTYPE PrimFnUpStile_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -89,9 +88,9 @@ LPYYSTYPE PrimFnUpStile_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
+        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
+        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnUpStile_EM
 #undef  APPEND_NAME
 
@@ -211,19 +210,18 @@ APLFLOAT PrimFnMonUpStileFisF
 #endif
 
 BOOL PrimFnMonUpStileAPA_EM
-    (LPYYSTYPE     lpYYRes,         // Ptr to result token (may be NULL)
+    (LPYYSTYPE  lpYYRes,            // Ptr to result token (may be NULL)
 
-     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN    lptkFunc,           // Ptr to function token
 
-     HGLOBAL       hGlbRht,         // Right arg handle
-     HGLOBAL      *lphGlbRes,       // Ptr to result handle
+     HGLOBAL    hGlbRht,            // Right arg handle
+     HGLOBAL   *lphGlbRes,          // Ptr to result handle
 
-     LPVOID       *lplpMemRes,      // Ptr to ptr to result memory
+     LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
 
-     APLRANK       aplRankRht,      // Right arg rank
+     APLRANK    aplRankRht,         // Right arg rank
 
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     DBGENTER;

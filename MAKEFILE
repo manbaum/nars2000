@@ -197,6 +197,7 @@ $(O)primspec.DEP        \
 $(O)qdwa.DEP            \
 $(O)refcnt.DEP          \
 $(O)reg.DEP             \
+$(O)resdebug.DEP        \
 $(O)sessman.DEP         \
 $(O)strand.DEP          \
 $(O)symtab.DEP          \
@@ -204,9 +205,8 @@ $(O)syscmds.DEP         \
 $(O)sysfns.DEP          \
 $(O)sysvars.DEP         \
 $(O)tabctrl.DEP         \
-$(O)translate.DEP       \
+$(O)translate.DEP        \
 $(O)ver.DEP             \
-$(O)resdebug.DEP        \
 $(O)main.DEV            \
 $(O)ver.DEV             \
 $(O)version.DEV
@@ -417,6 +417,9 @@ $(O)version.DEV
 !if exist ($(O)reg.DEP)
 !       include $(O)reg.DEP
 !endif
+!if exist ($(O)resdebug.DEP)
+!       include $(O)resdebug.DEP
+!endif
 !if exist ($(O)sessman.DEP)
 !       include $(O)sessman.DEP
 !endif
@@ -443,9 +446,6 @@ $(O)version.DEV
 !endif
 !if exist ($(O)ver.DEP)
 !       include $(O)ver.DEP
-!endif
-!if exist ($(O)resdebug.DEP)
-!       include $(O)resdebug.DEP
 !endif
 !if exist ($(O)main.DEV)
 !       include $(O)main.DEV
@@ -519,6 +519,7 @@ $(O)primspec.PRO        \
 $(O)qdwa.PRO            \
 $(O)refcnt.PRO          \
 $(O)reg.PRO             \
+$(O)resdebug.PRO        \
 $(O)sessman.PRO         \
 $(O)strand.PRO          \
 $(O)symtab.PRO          \
@@ -527,8 +528,7 @@ $(O)sysfns.PRO          \
 $(O)sysvars.PRO         \
 $(O)tabctrl.PRO         \
 $(O)translate.PRO       \
-$(O)ver.PRO             \
-$(O)resdebug.PRO
+$(O)ver.PRO
 
 {}.C{$(O)}.PRO:
         @Set INCLUDE=$(I98);$(H);$(O)
@@ -630,6 +630,9 @@ $(O)primspec.OBJ:       $(@B).C         $(PRIMSPEC_DEP)
 $(O)qdwa.OBJ:           $(@B).C         $(QDWA_DEP)
 $(O)refcnt.OBJ:         $(@B).C         $(REFCNT_DEP)
 $(O)reg.OBJ:            $(@B).C         $(REG_DEP)
+!if "$(RESDEBUG)" == "1"
+$(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
+!endif
 $(O)sessman.OBJ:        $(@B).C         $(SESSMAN_DEP)
 $(O)strand.OBJ:         $(@B).C         $(STRAND_DEP)
 $(O)symtab.OBJ:         $(@B).C         $(SYMTAB_DEP)
@@ -639,9 +642,6 @@ $(O)sysvars.OBJ:        $(@B).C         $(SYSVARS_DEP)
 $(O)tabctrl.OBJ:        $(@B).C         $(TABCTRL_DEP)
 $(O)translate.OBJ:      $(@B).C         $(TRANSLATE_DEP)
 $(O)ver.OBJ:            $(@B).C         $(VER_DEP)
-!if "$(RESDEBUG)" == "1"
-$(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
-!endif
 
 main.RC:                                $(MAIN_RCDEP)   $(ICONS)
 
@@ -720,6 +720,9 @@ OBJS=                       \
      $(O)qdwa.OBJ           \
      $(O)refcnt.OBJ         \
      $(O)reg.OBJ            \
+!if "$(RESDEBUG)" == "1"
+     $(O)resdebug.OBJ       \
+!endif
      $(O)sessman.OBJ        \
      $(O)strand.OBJ         \
      $(O)symtab.OBJ         \
@@ -729,9 +732,6 @@ OBJS=                       \
      $(O)tabctrl.OBJ        \
      $(O)translate.OBJ      \
      $(O)ver.OBJ            \
-!if "$(RESDEBUG)" == "1"
-     $(O)resdebug.OBJ       \
-!endif
      $(O)DBGBRK.OBJ         \
      $(O)main.RES
 

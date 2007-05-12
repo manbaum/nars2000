@@ -29,9 +29,8 @@
 #endif
 
 BOOL AssignName_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lptkExpr,        // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lptkExpr)              // Ptr to value token
 
 {
     STFLAGS stFlags = {0};
@@ -57,7 +56,7 @@ BOOL AssignName_EM
     if (lptkName->tkData.tkSym->stFlags.SysVar)
     {
         // Validate the value
-        if (!(*aSysVarValid[lptkName->tkData.tkSym->stFlags.SysVarValid]) (lptkName, lptkExpr, lpplLocalVars))
+        if (!(*aSysVarValid[lptkName->tkData.tkSym->stFlags.SysVarValid]) (lptkName, lptkExpr))
             return FALSE;
 
         // If the result is immediate (a scalar), quit as we
@@ -461,8 +460,7 @@ void AssignArrayCommon
 
 BOOL AssignNameSpec_EM
     (LPTOKEN       lptkStr,         // Ptr to named strand token
-     LPTOKEN       lptkVal,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     LPTOKEN       lptkVal)         // Ptr to value token
 
 {
     BOOL     bRet = TRUE;
@@ -525,7 +523,7 @@ BOOL AssignNameSpec_EM
         case TKT_VARIMMED:
             // Assign this immediate value to each name
             for (aplName = 0; aplName < aplNELMStr; aplName++)
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[aplName].tkToken, lptkVal, lpplLocalVars);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[aplName].tkToken, lptkVal);
             goto NORMAL_EXIT;
 
         case TKT_VARARRAY:
@@ -562,8 +560,7 @@ BOOL AssignNameSpec_EM
     if (aplRankVal > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkVal,
-                                   lpplLocalVars);
+                                   lptkVal);
         // Mark as in error
         bRet = FALSE;
 
@@ -575,8 +572,7 @@ BOOL AssignNameSpec_EM
      && aplNELMVal NE aplNELMStr)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkVal,
-                                   lpplLocalVars);
+                                   lptkVal);
         // Mark as in error
         bRet = FALSE;
 
@@ -621,7 +617,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkBoolean = (uBitMaskVal & *(LPAPLBOOL) lpMemVal) ? 1 : 0;
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
 
                 // If there's more than one value, ...
                 if (aplNELMVal NE 1)
@@ -652,7 +648,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkInteger = ((LPAPLINT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -669,7 +665,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkFloat = ((LPAPLFLOAT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -686,7 +682,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkChar = ((LPAPLCHAR) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -712,7 +708,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkLongest = lpSymVal->stData.stLongest;
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -762,7 +758,7 @@ BOOL AssignNameSpec_EM
                 } // End SWITCH
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -779,7 +775,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkInteger = apaOffVal + apaMulVal * (aplName % aplNELMVal);
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken, lpplLocalVars);
+                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;

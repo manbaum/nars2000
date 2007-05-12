@@ -499,5 +499,21 @@ void FreeYYFcn
 
 
 //***************************************************************************
+//  FreeYYFcn1
+//
+//  Free the first element of a strand of YYFcns
+//***************************************************************************
+
+void FreeYYFcn1
+    (LPYYSTYPE lpYYFcn)
+
+{
+    Assert (lpYYFcn->TknCount NE 0);
+
+    FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn);
+} // End FreeYYFcn1
+
+
+//***************************************************************************
 //  End of File: free.c
 //***************************************************************************

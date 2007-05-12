@@ -29,11 +29,10 @@
 #endif
 
 LPYYSTYPE PrimFnSlope_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -42,9 +41,9 @@ LPYYSTYPE PrimFnSlope_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonSlope_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnMonSlope_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydSlope_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnDydSlope_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnSlope_EM
 #undef  APPEND_NAME
 
@@ -62,13 +61,12 @@ LPYYSTYPE PrimFnSlope_EM
 #endif
 
 LPYYSTYPE PrimFnMonSlope_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc, lpplLocalVars);
+    return PrimFnSyntaxError_EM (lptkFunc);
 } // End PrimFnMonSlope_EM
 #undef  APPEND_NAME
 
@@ -86,11 +84,10 @@ LPYYSTYPE PrimFnMonSlope_EM
 #endif
 
 LPYYSTYPE PrimFnDydSlope_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE  aplTypeLft,
@@ -166,8 +163,7 @@ LPYYSTYPE PrimFnDydSlope_EM
                            NULL,            // Return TRUE iff fractional values present
                            &aplAxis,        // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL,            // Return HGLOBAL with APLINT axis values
-                           lpplLocalVars))  // Ptr to local plLocalVars
+                           NULL))           // Return HGLOBAL with APLINT axis values
             return NULL;
     } else
     {
@@ -188,8 +184,7 @@ LPYYSTYPE PrimFnDydSlope_EM
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -262,8 +257,7 @@ LPYYSTYPE PrimFnDydSlope_EM
         if (!hGlbRep)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkLftArg,
-                                       lpplLocalVars);
+                                       lptkLftArg);
             goto ERROR_EXIT;
         } // End IF
 
@@ -368,8 +362,7 @@ LPYYSTYPE PrimFnDydSlope_EM
      && uDimLftSum NE lpMemDimRht[aplAxis])
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -392,8 +385,7 @@ LPYYSTYPE PrimFnDydSlope_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -643,9 +635,8 @@ LPYYSTYPE PrimFnDydSlope_EM
                         NULL,
                         NULL);
             aplNestProto = MakePrototype_EM (aplNestRht,
-                                             lptkFunc,          // Ptr to function token
-                                             FALSE,             // Allow CHARs
-                                             lpplLocalVars);    // Ptr to local plLocalVars
+                                             lptkFunc,
+                                             FALSE);        // Allow CHARs
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -694,8 +685,7 @@ PROTO_EXIT:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkLftArg,
-                               lpplLocalVars);
+                               lptkLftArg);
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:

@@ -29,11 +29,10 @@
 #endif
 
 LPYYSTYPE PrimFnCircleSlope_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -41,9 +40,9 @@ LPYYSTYPE PrimFnCircleSlope_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonCircleSlope_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnMonCircleSlope_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydCircleSlope_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnDydCircleSlope_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnCircleSlope_EM
 #undef  APPEND_NAME
 
@@ -61,10 +60,9 @@ LPYYSTYPE PrimFnCircleSlope_EM
 #endif
 
 LPYYSTYPE PrimFnMonCircleSlope_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE  aplTypeRht;
@@ -84,8 +82,7 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         return NULL;
     } // End IF
 
@@ -96,8 +93,7 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
     if (aplTypeRht EQ ARRAY_LIST)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -109,8 +105,7 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
     if (!hGlbLft)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -136,15 +131,12 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
     // Skip over the header and dimensions to the data
     lpMemLft = VarArrayBaseToData (lpMemLft, 1);
 
-#define lpAPA       ((LPAPLAPA) lpMemLft)
-
     // Fill in the APA parameters
+#define lpAPA       ((LPAPLAPA) lpMemLft)
     lpAPA->Off = (aplRankRht - 1) + bQuadIO;
     lpAPA->Mul = -1;
     lpAPA->Len = aplRankRht;
-
 #undef  lpAPA
-
     // We no longer need this ptr
     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
 
@@ -159,7 +151,7 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Call the dyadic function
-    lpYYRes2 = PrimFnDydCircleSlope_EM (&lpYYRes->tkToken, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+    lpYYRes2 = PrimFnDydCircleSlope_EM (&lpYYRes->tkToken, lptkFunc, lptkRhtArg, lptkAxis);
 
     // We no longer need this storage
     FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
@@ -182,11 +174,10 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
 #endif
 
 LPYYSTYPE PrimFnDydCircleSlope_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE  aplTypeLft,
@@ -231,8 +222,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         return NULL;
     } // End IF
 
@@ -244,8 +234,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     if (aplTypeRht EQ ARRAY_LIST)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -257,8 +246,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -266,8 +254,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     if (aplNELMLft NE aplRankRht)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -281,12 +268,10 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
                        NULL,            // TRUE iff fractional values allowed
                       &aplRankRes,      // Return last axis value
                        NULL,            // Return # elements in axis vector
-                      &hGlbAxis,        // Return HGLOBAL with APLUINT axis values
-                       lpplLocalVars))  // Ptr to local plLocalVars
+                       &hGlbAxis))      // Return HGLOBAL with APLUINT axis values
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -391,8 +376,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -463,8 +447,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     if (!hGlbWVec)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -500,8 +483,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
     if (!hGlbOdo)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -585,14 +567,11 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
             break;
 
         case ARRAY_APA:
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-
             // Save the APA parameters
+#define lpAPA       ((LPAPLAPA) lpMemRht)
             apaOffRht = lpAPA->Off;
             apaMulRht = lpAPA->Mul;
-
 #undef  lpAPA
-
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {

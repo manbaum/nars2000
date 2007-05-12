@@ -149,16 +149,16 @@ BOOL bTabTextState              // Tab's text state:  Highlight (TRUE) or Normal
 #endif
 ;
 
-#define INIT_PERTABVARS                                     \
-    iMaxNumAlp       = DEF_NUMALP_MAXSIZE;                  \
-    iMaxString       = DEF_STRING_MAXSIZE;                  \
+#define INIT_PERTABVARS                     \
+    iMaxNumAlp       = DEF_NUMALP_MAXSIZE;  \
+    iMaxString       = DEF_STRING_MAXSIZE;  \
     hGlbQuadWSID     = CopySymGlbDirGlb (hGlbQuadWSID_CWS); \
-    uHashMask        = DEF_HSHTAB_HASHMASK;                 \
-    iSymTabTotalSize = DEF_SYMTAB_INITSIZE;                 \
-    iHshTabTotalSize = DEF_HSHTAB_INITSIZE;                 \
-    iHshTabBaseSize  = DEF_HSHTAB_INITSIZE;                 \
-    iHshTabIncr      = DEF_HSHTAB_INCR;                     \
-    ExecCode         = EXEC_SUCCESS;                        \
+    uHashMask        = DEF_HSHTAB_HASHMASK; \
+    iSymTabTotalSize = DEF_SYMTAB_INITSIZE; \
+    iHshTabTotalSize = DEF_HSHTAB_INITSIZE; \
+    iHshTabBaseSize  = DEF_HSHTAB_INITSIZE; \
+    iHshTabIncr      = DEF_HSHTAB_INCR;     \
+    ExecCode         = EXEC_SUCCESS;        \
     bTabTextState    = FALSE;
 
 

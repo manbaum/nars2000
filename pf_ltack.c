@@ -28,11 +28,10 @@
 #endif
 
 LPYYSTYPE PrimFnLeftTack_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -45,16 +44,15 @@ LPYYSTYPE PrimFnLeftTack_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         return NULL;
     } // End IF
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonLeftTack_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnMonLeftTack_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydLeftTack_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnDydLeftTack_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnLeftTack_EM
 #undef  APPEND_NAME
 
@@ -72,13 +70,12 @@ LPYYSTYPE PrimFnLeftTack_EM
 #endif
 
 LPYYSTYPE PrimFnMonLeftTack_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc, lpplLocalVars);
+    return PrimFnSyntaxError_EM (lptkFunc);
 } // End PrimFnMonLeftTack_EM
 #undef  APPEND_NAME
 
@@ -96,14 +93,13 @@ LPYYSTYPE PrimFnMonLeftTack_EM
 #endif
 
 LPYYSTYPE PrimFnDydLeftTack_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL   hGlbData;
+    HGLOBAL hGlbData;
     LPYYSTYPE lpYYRes;
 
     // Allocate a new YYRes

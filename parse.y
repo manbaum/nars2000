@@ -105,32 +105,28 @@ Stmts:
 /* Statement */
 Stmt:     /* Empty */                   {DbgMsgW2 (L"%%Stmt:  <empty>");}
     | ArrExpr                           {DbgMsgW2 (L"%%Stmt:  ArrExpr");
-                                         bRet = ArrayDisplay_EM (&$1.tkToken, TRUE, lpplLocalVars);
+                                         bRet = ArrayDisplay_EM (&$1.tkToken, TRUE);
                                          FreeResult (&$1.tkToken);
-
                                          if (!bRet)
                                              YYERROR;
                                         }
     | ArrExpr GOTO                      {DbgMsgW2 (L"%%Stmt:  " WS_UTF16_RIGHTARROW L"ArrExpr");
-
-
-
-
                                          FreeResult (&$1.tkToken);
-                                         FreeResult (&$2.tkToken);
-                                         NonceError (&$1.tkToken, lpplLocalVars); YYERROR;
+
+
+
+
+                                         NonceError (&$1.tkToken); YYERROR;
                                         }
     |         GOTO                      {DbgMsgW2 (L"%%Stmt:  " WS_UTF16_RIGHTARROW);
 
 
 
 
-                                         FreeResult (&$1.tkToken);
-                                         NonceError (&$1.tkToken, lpplLocalVars); YYERROR;
+                                         NonceError (&$1.tkToken); YYERROR;
                                         }
     | ArrExpr ASSIGN                    {DbgMsgW2 (L"%%Stmt:  " WS_UTF16_LEFTARROW L"ArrExpr");
                                          FreeResult (&$1.tkToken);
-                                         FreeResult (&$2.tkToken);
                                         }
     | FcnSpec                           {DbgMsgW2 (L"%%Stmt:  FcnSpec");
                                          $$ = $1;
@@ -186,29 +182,28 @@ NameAnyOp2:
 // Function specification
 FcnSpec:
       LeftFunc ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAny" WS_UTF16_LEFTARROW L"LeftFunc");
-                                         lpYYFcn = MakeFcnStrand_EM (&$1, FCNTYPE_FCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$1, FCNTYPE_FCN);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
-                                             YYERROR;
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                            YYERROR;
 
-                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken, lpplLocalVars);
+                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken);
 /////////////////////////////////////////FreeResult (&$3.tkToken);                  // DO NOT FREE:  Passed on as result
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!bRet)
                                              YYERROR;
-
                                          $$ = $3;
                                         }
     | AxisFunc ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAny" WS_UTF16_LEFTARROW L"AxisFunc");
-                                         lpYYFcn = MakeFcnStrand_EM (&$1, FCNTYPE_AXISFCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$1, FCNTYPE_AXISFCN);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                             YYERROR;
 
-                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken, lpplLocalVars);
+                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken);
 /////////////////////////////////////////FreeResult (&$3.tkToken);                  // DO NOT FREE:  Passed on as result
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
@@ -222,35 +217,30 @@ FcnSpec:
 // Monadic operator specification
 Op1Spec:
       MonOp    ASSIGN NameAnyOp1        {DbgMsgW2 (L"%%Op1Spec:  NameAny" WS_UTF16_LEFTARROW L"MonOp");
-                                         lpYYFcn = MakeFcnStrand_EM (&$1, FCNTYPE_OP1, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$1, FCNTYPE_OP1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
-                                             YYERROR;
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                            YYERROR;
 
-                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken, lpplLocalVars);
+                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken);
 /////////////////////////////////////////FreeResult (&$3.tkToken);                  // DO NOT FREE:  Passed on as result
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
-
                                          if (!bRet)
                                              YYERROR;
-
                                          $$ = $3;
                                         }
     | MonOpAxis ASSIGN NameAnyOp1       {DbgMsgW2 (L"%%Op1Spec:  NameAny" WS_UTF16_LEFTARROW L"MonOpAxis");
-                                         lpYYFcn = MakeFcnStrand_EM (&$1, FCNTYPE_OP1, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$1, FCNTYPE_OP1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
-                                             YYERROR;
-
-                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken, lpplLocalVars);
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                            YYERROR;
+                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken);
 /////////////////////////////////////////FreeResult (&$3.tkToken);                  // DO NOT FREE:  Passed on as result
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
-
                                          if (!bRet)
                                              YYERROR;
-
                                          $$ = $3;
                                         }
     ;
@@ -258,30 +248,28 @@ Op1Spec:
 // Dyadic operator specification
 Op2Spec:
       DydOp    ASSIGN NameAnyOp2        {DbgMsgW2 (L"%%Op2Spec:  NameAny" WS_UTF16_LEFTARROW L"DydOp");
-                                         lpYYFcn = MakeFcnStrand_EM (&$1, FCNTYPE_OP2, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$1, FCNTYPE_OP2);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
-                                             YYERROR;
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                            YYERROR;
 
-                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken, lpplLocalVars);
+                                         bRet = AssignName_EM (&$3.tkToken, &lpYYFcn->tkToken);
 /////////////////////////////////////////FreeResult (&$3.tkToken);                  // DO NOT FREE:  Passed on as result
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
-
                                          if (!bRet)
                                              YYERROR;
-
                                          $$ = $3;
                                         }
     ;
 
 /* Array expression */
 ArrExpr:
-      Strand                            {DbgMsgW2 (L"%%ArrExpr:  Strand -- MakeVarStrand_EM");
-                                         lpYYStr = MakeVarStrand_EM (&$1, lpplLocalVars);
+      Strand                            {DbgMsgW2 (L"%%ArrExpr:  Strand -- MakeVarStrand_EM_YY");
+                                         lpYYStr = MakeVarStrand_EM_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYStr; YYFree (lpYYStr); lpYYStr = NULL;
@@ -297,7 +285,7 @@ ArrExpr1:
                                          $$ = $1;
                                         }
     | error   LeftFunc                  {DbgMsgW2 (L"%%ArrExpr1:  LeftFunc error");
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN);
                                          FreeResult (&$2.tkToken);
 
                                          if (lpYYFcn)       // If defined, free it
@@ -308,29 +296,29 @@ ArrExpr1:
                                          YYERROR;
                                         }
     | ArrExpr LeftFunc                  {DbgMsgW2 (L"%%ArrExpr1:  LeftFunc ArrExpr");
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                          {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
+                                            FreeResult (&$1.tkToken);
+                                            YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken, NULL, lpplLocalVars);
+                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | error   AxisFunc                  {DbgMsgW2 (L"%%ArrExpr1:  AxisFunc error");
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN);
                                          FreeResult (&$2.tkToken);
 
-                                         if (lpYYFcn)       // If defined, free it
+                                         if (lpYYFcn)           // If defined, free it
                                          {
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          } // End IF
@@ -338,30 +326,30 @@ ArrExpr1:
                                          YYERROR;
                                         }
     | ArrExpr AxisFunc                  {DbgMsgW2 (L"%%ArrExpr1:  AxisFunc ArrExpr");
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                          {
-                                             FreeResult (&$1.tkToken);
-                                             YYERROR;
+                                            FreeResult (&$1.tkToken);
+                                            YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken, NULL, lpplLocalVars);
+                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | ArrExpr LeftFunc error            {DbgMsgW2 (L"%%ArrExpr1:  error LeftFunc ArrExpr");
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN);
                                          FreeResult (&$2.tkToken);
                                          FreeResult (&$1.tkToken);
 
-                                         if (lpYYFcn)       // If defined, free it
+                                         if (lpYYFcn)           // If defined, free it
                                          {
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          } // End IF
@@ -369,18 +357,18 @@ ArrExpr1:
                                          YYERROR;
                                         }
     | error   LeftFunc Strand           {DbgMsgW2 (L"%%ArrExpr1:  Strand LeftFunc error");
-                                         lpYYStr = MakeVarStrand_EM (&$3, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$3);
                                          FreeResult (&$3.tkToken);
 
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN);
                                          FreeResult (&$2.tkToken);
 
-                                         if (lpYYStr)       // If defined, free it
+                                         if (lpYYStr)           // If defined, free it
                                          {
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                          } // End IF
 
-                                         if (lpYYFcn)       // If defined, free it
+                                         if (lpYYFcn)           // If defined, free it
                                          {
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          } // End IF
@@ -388,15 +376,15 @@ ArrExpr1:
                                          YYERROR;
                                         }
     | ArrExpr LeftFunc Strand           {DbgMsgW2 (L"%%ArrExpr1:  Strand LeftFunc ArrExpr");
-                                         lpYYStr = MakeVarStrand_EM (&$3, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$3);
                                          FreeResult (&$3.tkToken);
 
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_FCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
-                                             if (lpYYFcn)   // If defined, free it
+                                             if (lpYYFcn)       // If defined, free it
                                              {
                                                  FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              } // End IF
@@ -405,29 +393,28 @@ ArrExpr1:
                                              YYERROR;
                                          } // End IF
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                              YYERROR;
-                                         } // End IF
-
-                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken, NULL, lpplLocalVars);
+                                         }
+                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | ArrExpr AxisFunc error            {DbgMsgW2 (L"%%ArrExpr1:  error AxisFunc ArrExpr");
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN);
                                          FreeResult (&$2.tkToken);
                                          FreeResult (&$1.tkToken);
 
-                                         if (lpYYFcn)       // If defined, free it
+                                         if (lpYYFcn)           // If defined, free it
                                          {
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          } // End IF
@@ -435,10 +422,10 @@ ArrExpr1:
                                          YYERROR;
                                         }
     | error   AxisFunc Strand           {DbgMsgW2 (L"%%ArrExpr1:  Strand AxisFunc error");
-                                         lpYYStr = MakeVarStrand_EM (&$3, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$3);
                                          FreeResult (&$3.tkToken);
 
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN);
                                          FreeResult (&$2.tkToken);
 
                                          if (lpYYStr)       // If defined, free it
@@ -450,33 +437,33 @@ ArrExpr1:
                                          {
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          } // End IF
-
                                          YYERROR;
                                         }
     | ArrExpr AxisFunc Strand           {DbgMsgW2 (L"%%ArrExpr1:  Strand AxisFunc ArrExpr");
-                                         lpYYStr = MakeVarStrand_EM (&$3, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$3);
                                          FreeResult (&$3.tkToken);
 
-                                         lpYYFcn = MakeFcnStrand_EM (&$2, FCNTYPE_AXISFCN, lpplLocalVars);
+                                         lpYYFcn = MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr || !lpYYFcn)      // If not defined, free args and YYERROR
                                          {
-                                             if (lpYYFcn)   // If defined, free it
+                                             if (lpYYFcn)       // If defined, free it
                                              {
                                                  FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              } // End IF
-
+                                             if (lpYYStr)       // If defined, free it
+                                                FreeResult (&lpYYStr->tkToken);
                                              FreeResult (&$1.tkToken);
                                              YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken, NULL, lpplLocalVars);
+                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -485,14 +472,14 @@ ArrExpr1:
 
 /* Strand (including single names) */
 Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
-                                         ValueError (&$1.tkToken, lpplLocalVars);
+                                         ValueError (&$1.tkToken);
                                          YYERROR;
                                         }
     |             QUAD                  {DbgMsgW2 (L"%%Strand:  QUAD");
                                          lpYYRes = WaitForInput (hWndSM, FALSE, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -501,54 +488,54 @@ Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
                                          lpYYRes = WaitForInput (hWndSM, TRUE, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
-    |             SingTokn              {DbgMsgW2 (L"%%Strand:  SingTokn -- InitVarStrand/PushVarStrand");
-                                         InitVarStrand (&$1, lpplLocalVars);
+    |             SingTokn              {DbgMsgW2 (L"%%Strand:  SingTokn -- InitVarStrand/PushVarStrand_YY");
+                                         InitVarStrand (&$1);
 
-                                         lpYYRes = PushVarStrand (&$1, lpplLocalVars);
-                                         FreeResult (&$1.tkToken);
+                                         lpYYRes = PushVarStrand_YY (&$1);
+/////////////////////////////////////////FreeResult (&$1.tkToken);  // Copied in PushVarStrand_YY
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
-    |         ')' ArrExpr '('           {DbgMsgW2 (L"%%Strand:  (ArrExpr) -- InitVarStrand/PushVarStrand");
-                                         InitVarStrand (&$2, lpplLocalVars);
+    |         ')' ArrExpr '('           {DbgMsgW2 (L"%%Strand:  (ArrExpr) -- InitVarStrand/PushVarStrand_YY");
+                                         InitVarStrand (&$2);
 
-                                         lpYYRes = PushVarStrand (&$2, lpplLocalVars);
-                                         FreeResult (&$2.tkToken);
+                                         lpYYRes = PushVarStrand_YY (&$2);
+/////////////////////////////////////////FreeResult (&$2.tkToken);  // Copied in PushVarStrand_YY
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | Strand      NAMEUNK               {DbgMsgW2 (L"%%Strand:  Strand NAMEUNK");
-                                         ValueError (&$1.tkToken, lpplLocalVars);
+                                         ValueError (&$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          YYERROR;
                                         }
-    | Strand      SingTokn              {DbgMsgW2 (L"%%Strand:  Strand SingTokn -- PushVarStrand");
-                                         lpYYRes = PushVarStrand (&$2, lpplLocalVars);
-                                         FreeResult (&$2.tkToken);
+    | Strand      SingTokn              {DbgMsgW2 (L"%%Strand:  Strand SingTokn -- PushVarStrand_YY");
+                                         lpYYRes = PushVarStrand_YY (&$2);
+/////////////////////////////////////////FreeResult (&$2.tkToken);  // Copied in PushVarStrand_YY
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
-    | Strand  ')' ArrExpr '('           {DbgMsgW2 (L"%%Strand:  Strand (ArrExpr) -- PushVarStrand");
-                                         lpYYRes = PushVarStrand (&$3, lpplLocalVars);
-                                         FreeResult (&$3.tkToken);
+    | Strand  ')' ArrExpr '('           {DbgMsgW2 (L"%%Strand:  Strand (ArrExpr) -- PushVarStrand_YY");
+                                         lpYYRes = PushVarStrand_YY (&$3);
+/////////////////////////////////////////FreeResult (&$3.tkToken);  // Copied in PushVarStrand_YY
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -557,11 +544,11 @@ Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
 
 /* Simple array expression */
 SimpExpr:
-////           Strand                   {DbgMsgW2 (L"%%SimpExpr:  Strand -- MakeVarStrand_EM");
-////                                     lpYYStr = MakeVarStrand_EM (&$1, lpplLocalVars);
+////           Strand                   {DbgMsgW2 (L"%%SimpExpr:  Strand -- MakeVarStrand_EM_YY");
+////                                     lpYYStr = MakeVarStrand_EM_YY (&$1);
 ////                                     FreeResult (&$1.tkToken);
 ////
-////                                     if (!lpYYStr)
+////                                     if (!lpYYStr)          // If not defined, free args and YYERROR
 ////                                         YYERROR;
 ////
 ////                                     $$ = *lpYYStr; YYFree (lpYYStr); lpYYStr = NULL;
@@ -569,19 +556,19 @@ SimpExpr:
       ILPAR                             {DbgMsgW2 (L"%%SimpExpr:  ILPAR");
                                          $$ = $1;}
     | ILBR     Strand                   {DbgMsgW2 (L"%%SimpExpr:  Strand ILBR");
-                                         lpYYStr = MakeVarStrand_EM (&$2, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$1.tkToken);
                                              YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ArrayIndex_EM (&lpYYStr->tkToken, &$1.tkToken, lpplLocalVars);
+                                         lpYYRes = ArrayIndex_EM (&lpYYStr->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                              YYERROR;
@@ -590,7 +577,7 @@ SimpExpr:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | ArrExpr ASSIGN       QUAD         {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"ArrExpr");
-                                         bRet = ArrayDisplay_EM (&$1.tkToken, TRUE, lpplLocalVars);
+                                         bRet = ArrayDisplay_EM (&$1.tkToken, TRUE);
 /////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
 
                                          if (!bRet)
@@ -602,7 +589,7 @@ SimpExpr:
                                          $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                         }
     | ArrExpr ASSIGN       QUOTEQUAD    {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUOTEQUAD WS_UTF16_LEFTARROW L"ArrExpr");
-                                         bRet = ArrayDisplay_EM (&$1.tkToken, FALSE, lpplLocalVars);
+                                         bRet = ArrayDisplay_EM (&$1.tkToken, FALSE);
 /////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
 
                                          if (!bRet)
@@ -614,13 +601,11 @@ SimpExpr:
                                          $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                         }
     | ArrExpr ASSIGN       NameAnyVar   {DbgMsgW2 (L"%%SimpExpr:  NameAny" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         bRet = AssignName_EM (&$3.tkToken, &$1.tkToken, lpplLocalVars);
+                                         bRet = AssignName_EM (&$3.tkToken, &$1.tkToken);
 /////////////////////////////////////////FreeResult (&$3.tkToken);                  // DO NOT FREE:  Passed on as result
                                          FreeResult (&$1.tkToken);
-
                                          if (!bRet)
                                              YYERROR;
-
                                          $$ = $3;
                                         }
     | ArrExpr ASSIGN ILBR  NAMEVAR      {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR ILBR" WS_UTF16_LEFTARROW L"ArrExpr");
@@ -628,20 +613,19 @@ SimpExpr:
 
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
+                                         NonceError (&$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          YYERROR;
                                         }
     | ArrExpr ASSIGN   ')' NameSpec '(' {DbgMsgW2 (L"%%SimpExpr:  (NameSpec)" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         bRet = AssignNameSpec_EM (&$4.tkToken, &$1.tkToken, lpplLocalVars);
+                                         bRet = AssignNameSpec_EM (&$4.tkToken, &$1.tkToken);
                                          FreeResult (&$4.tkToken);
-
                                          if (!bRet)
                                          {
                                              FreeResult (&$1.tkToken);
                                              YYERROR;
                                          } // End IF
-
+/////////////////////////////////////////FreeResult (&$1.tkToken);  // DO NOT FREE:  Passed on as result
                                          $$ = $1;
                                         }
     | ArrExpr ASSIGN   ')' ILBR NAMEVAR '('
@@ -650,62 +634,59 @@ SimpExpr:
 
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
+                                         NonceError (&$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          YYERROR;
                                         }
     | ArrExpr ASSIGN LeftFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR LeftFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken, NULL, lpplLocalVars);
+                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
-
-                                         if (!lpYYRes)
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$4.tkToken);
                                              YYERROR;
                                          } // End IF
 
-                                         bRet = AssignName_EM (&$4.tkToken, &lpYYRes->tkToken, lpplLocalVars);
+                                         bRet = AssignName_EM (&$4.tkToken, &lpYYRes->tkToken);
                                          FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
 /////////////////////////////////////////FreeResult (&$4.tkToken);                  // DO NOT FREE:  Passed on as result
 
                                          if (!bRet)
                                              YYERROR;
-
                                          $$ = $4;
                                         }
     | ArrExpr ASSIGN AxisFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken, NULL, lpplLocalVars);
+                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken, NULL);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
 
-                                         if (!lpYYRes)
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$4.tkToken);
                                              YYERROR;
                                          } // End IF
 
-                                         bRet = AssignName_EM (&$4.tkToken, &lpYYRes->tkToken, lpplLocalVars);
+                                         bRet = AssignName_EM (&$4.tkToken, &lpYYRes->tkToken);
                                          FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
 /////////////////////////////////////////FreeResult (&$4.tkToken);                  // DO NOT FREE:  Passed on as result
 
                                          if (!bRet)
                                              YYERROR;
-
                                          $$ = $4;
                                         }
     | ArrExpr ASSIGN LeftFunc ')' NameVals '('
                                         {DbgMsgW2 (L"%%SimpExpr:  (NameVals) LeftFunc" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         lpYYStr = MakeNameStrand_EM (&$5, lpplLocalVars);
+                                         lpYYStr = MakeNameStrand_EM_YY (&$5);
                                          FreeResult (&$5.tkToken);
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
+                                         NonceError (&$1.tkToken);
 
-                                         if (lpYYStr)       // If defined, free it
+                                         if (lpYYStr)           // If defined, free it
                                          {
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                          } // End IF
@@ -716,15 +697,13 @@ SimpExpr:
                                         }
     | ArrExpr ASSIGN AxisFunc ')' NameVals '('
                                         {DbgMsgW2 (L"%%SimpExpr:  (NameVals) AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
-                                         lpYYStr = MakeNameStrand_EM (&$5, lpplLocalVars);
+                                         lpYYStr = MakeNameStrand_EM_YY (&$5);
                                          FreeResult (&$5.tkToken);
 
+                                         NonceError (&$1.tkToken);
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
-
-
-                                         if (lpYYStr)       // If defined, free it
+                                         if (lpYYStr)           // If defined, free it
                                          {
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                          } // End IF
@@ -739,7 +718,7 @@ SimpExpr:
 
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
+                                         NonceError (&$1.tkToken);
 
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
@@ -751,7 +730,7 @@ SimpExpr:
 
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
+                                         NonceError (&$1.tkToken);
 
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
@@ -762,10 +741,10 @@ SimpExpr:
 /* Selective specification */
 NameSpec:
       NameVars                          {DbgMsgW2 (L"%%NameSpec:  NameVars");
-                                         lpYYRes = MakeNameStrand_EM (&$1, lpplLocalVars);
+                                         lpYYRes = MakeNameStrand_EM_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -774,7 +753,7 @@ NameSpec:
 
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
+                                         NonceError (&$1.tkToken);
 
                                          FreeResult (&$2.tkToken);
                                          YYERROR;
@@ -783,40 +762,40 @@ NameSpec:
 
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
+                                         NonceError (&$1.tkToken);
 
                                          FreeResult (&$2.tkToken);
                                          YYERROR;
                                         }
     | NameSpec LeftFunc Strand          {DbgMsgW2 (L"%%NameSpec:  Strand LeftFunc NameSpec");
-                                         lpYYStr = MakeVarStrand_EM (&$3, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$3);
                                          FreeResult (&$3.tkToken);
 
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
                                          } // End IF
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
+                                         NonceError (&$1.tkToken);
 
                                          FreeResult (&$2.tkToken);
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                          YYERROR;
                                         }
     | NameSpec AxisFunc Strand          {DbgMsgW2 (L"%%NameSpec:  Strand AxisFunc NameSpec");
-                                         lpYYStr = MakeVarStrand_EM (&$3, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$3);
                                          FreeResult (&$3.tkToken);
 
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
                                          } // End IF
 
 
-                                         NonceError (&$1.tkToken, lpplLocalVars);
+                                         NonceError (&$1.tkToken);
 
                                          FreeResult (&$2.tkToken);
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -828,12 +807,12 @@ NameSpec:
 NameVals:
       NAMEVAR                           {DbgMsgW2 (L"%%NameVals:  NAMEVAR");
                                          $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         InitNameStrand (&$1, lpplLocalVars);
+                                         InitNameStrand (&$1);
 
-                                         lpYYRes = PushNameStrand (&$1, lpplLocalVars);
+                                         lpYYRes = PushNameStrand_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -841,10 +820,10 @@ NameVals:
     | NameVals       NAMEVAR            {DbgMsgW2 (L"%%NameVals:  NameVals NAMEVAR");
                                          $2.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                         lpYYRes = PushNameStrand (&$2, lpplLocalVars);
+                                         lpYYRes = PushNameStrand_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -855,7 +834,7 @@ NameVals:
 ////
 ////
 ////
-////                                     NonceError (&$3.tkToken, lpplLocalVars); YYERROR;
+////                                     NonceError (&$3.tkToken); YYERROR;
 ////                                    }
 ////| NameVals ')' ILBR NAMEVAR '('     {DbgMsgW2 (L"%%NameVals:  NameVals (NAMEVAR ILBR)");
 ////                                     $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -863,7 +842,7 @@ NameVals:
 ////
 ////
 ////
-////                                     NonceError (&$4.tkToken, lpplLocalVars); YYERROR;
+////                                     NonceError (&$4.tkToken); YYERROR;
 ////                                    }
     ;
 
@@ -871,23 +850,23 @@ NameVals:
 NameVars:
       NAMEVAR                           {DbgMsgW2 (L"%%NameVars:  NAMEVAR");
                                          $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         InitNameStrand (&$1, lpplLocalVars);
+                                         InitNameStrand (&$1);
 
-                                         lpYYRes = PushNameStrand (&$1, lpplLocalVars);
+                                         lpYYRes = PushNameStrand_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | NAMEUNK                           {DbgMsgW2 (L"%%NameVars:  NAMEUNK");
-                                         InitNameStrand (&$1, lpplLocalVars);
+                                         InitNameStrand (&$1);
 
-                                         lpYYRes = PushNameStrand (&$1, lpplLocalVars);
+                                         lpYYRes = PushNameStrand_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -895,19 +874,19 @@ NameVars:
     | NameVars       NAMEVAR            {DbgMsgW2 (L"%%NameVars:  NameVars NAMEVAR");
                                          $2.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                         lpYYRes = PushNameStrand (&$2, lpplLocalVars);
+                                         lpYYRes = PushNameStrand_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | NameVars       NAMEUNK            {DbgMsgW2 (L"%%NameVars:  NameVars NAMEUNK");
-                                         lpYYRes = PushNameStrand (&$2, lpplLocalVars);
+                                         lpYYRes = PushNameStrand_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -917,69 +896,69 @@ NameVars:
 /* Left function expression */
 LeftFunc:
           PRIMFCN                       {DbgMsgW2 (L"%%LeftFunc:  PRIMFCN");
-                                         lpYYFcn = MakePrimFcn (&$1);
+                                         lpYYFcn = MakePrimFcn_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 1, FALSE, lpplLocalVars);   // Function
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |     NAMEFCN                       {DbgMsgW2 (L"%%LeftFunc:  NAMEFCN");
-                                         lpYYFcn = MakeNameFcn (&$1);
+                                         lpYYFcn = MakeNameFcn_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 1, FALSE, lpplLocalVars);   // Function
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |     SYSFN12                       {DbgMsgW2 (L"%%LeftFunc:  SYSFN12");
-                                         lpYYFcn = MakeNameFcn (&$1);
+                                         lpYYFcn = MakeNameFcn_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 1, FALSE, lpplLocalVars);   // Function
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |     SimpFunc                      {DbgMsgW2 (L"%%LeftFunc:  SimpFunc");
                                          lpYYRes =
-                                         PushFcnStrand (&$1, 1, TRUE, lpplLocalVars);        // Function
+                                         PushFcnStrand_YY (&$1, 1, TRUE);        // Function
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |     RightFunc    JOTDOT           {DbgMsgW2 (L"%%LeftFunc:  " WS_UTF16_JOT L". RightFunc");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 2, FALSE, lpplLocalVars);       // Monadic operator
+                                         PushFcnStrand_YY (&$2, 2, FALSE);       // Monadic operator
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$1.tkToken);
                                              YYERROR;
@@ -988,16 +967,20 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$1, 1, TRUE, lpplLocalVars);        // Operand
+                                         PushFcnStrand_YY (&$1, 1, TRUE);        // Operand
                                          FreeResult (&$1.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |                  MonOp LeftFunc   {DbgMsgW2 (L"%%LeftFunc:  LeftFunc MonOp");
                                          lpYYRes =
-                                         PushFcnStrand (&$1, 2, TRUE, lpplLocalVars);        // Monadic operator
+                                         PushFcnStrand_YY (&$1, 2, TRUE);        // Monadic operator
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
@@ -1006,16 +989,20 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Operand
                                          FreeResult (&$2.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |              MonOpAxis LeftFunc   {DbgMsgW2 (L"%%LeftFunc:  LeftFunc MonOpAxis");
                                          lpYYRes =
-                                         PushFcnStrand (&$1, 2, TRUE, lpplLocalVars);        // Monadic operator
+                                         PushFcnStrand_YY (&$1, 2, TRUE);        // Monadic operator
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
@@ -1024,16 +1011,20 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Operand
                                          FreeResult (&$2.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |                  MonOp AxisFunc   {DbgMsgW2 (L"%%LeftFunc:  AxisFunc MonOp");
                                          lpYYRes =
-                                         PushFcnStrand (&$1, 2, TRUE, lpplLocalVars);        // Monadic operator
+                                         PushFcnStrand_YY (&$1, 2, TRUE);        // Monadic operator
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
@@ -1042,16 +1033,20 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Operand
                                          FreeResult (&$2.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |              MonOpAxis AxisFunc   {DbgMsgW2 (L"%%LeftFunc:  AxisFunc MonOpAxis");
                                          lpYYRes =
-                                         PushFcnStrand (&$1, 2, TRUE, lpplLocalVars);        // Monadic operator
+                                         PushFcnStrand_YY (&$1, 2, TRUE);        // Monadic operator
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
@@ -1060,25 +1055,29 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Operand
                                          FreeResult (&$2.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |              '>' MonOp Strand '(' {DbgMsgW2 (L"%%LeftFunc:  (Strand MonOp)");
-                                         lpYYStr = MakeVarStrand_EM (&$3, lpplLocalVars);
-                                         FreeResult (&$3.tkToken);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$3);
+                                            FreeResult (&$3.tkToken);
 
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 2, TRUE, lpplLocalVars);        // Monadic operator
+                                         PushFcnStrand_YY (&$2, 2, TRUE);        // Monadic operator
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                              YYERROR;
@@ -1087,25 +1086,29 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYStr, 1, FALSE, lpplLocalVars);   // Operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
-                                        }
+                                         }
     |          '>' MonOpAxis Strand '(' {DbgMsgW2 (L"%%LeftFunc:  (Strand MonOpAxis)");
-                                         lpYYStr = MakeVarStrand_EM (&$3, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$3);
                                          FreeResult (&$3.tkToken);
 
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
-                                            FreeResult (&$2.tkToken);
-                                            YYERROR;
+                                             FreeResult (&$2.tkToken);
+                                             YYERROR;
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 2, TRUE, lpplLocalVars);        // Monadic operator
+                                         PushFcnStrand_YY (&$2, 2, TRUE);        // Monadic operator
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                              YYERROR;
@@ -1114,16 +1117,20 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYStr, 1, FALSE, lpplLocalVars);   // Operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |     RightFunc DydOp LeftFunc      {DbgMsgW2 (L"%%LeftFunc:  LeftFunc DydOp RightFunc");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 3, TRUE, lpplLocalVars);        // Dyadic operator
+                                         PushFcnStrand_YY (&$2, 3, TRUE);        // Dyadic operator
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$1.tkToken);
@@ -1133,21 +1140,32 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$3, 1, TRUE, lpplLocalVars);        // Left operand
+                                         PushFcnStrand_YY (&$3, 1, TRUE);        // Left operand
                                          FreeResult (&$3.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } // End IF
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$1, 1, TRUE, lpplLocalVars);        // Right operand
+                                         PushFcnStrand_YY (&$1, 1, TRUE);        // Right operand
                                          FreeResult (&$1.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |     RightFunc DydOp AxisFunc      {DbgMsgW2 (L"%%LeftFunc:  AxisFunc DydOp RightFunc");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 3, TRUE, lpplLocalVars);        // Dyadic operator
+                                         PushFcnStrand_YY (&$2, 3, TRUE);        // Dyadic operator
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$1.tkToken);
@@ -1157,56 +1175,78 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$3, 1, TRUE, lpplLocalVars);        // Left operand
+                                         PushFcnStrand_YY (&$3, 1, TRUE);        // Left operand
                                          FreeResult (&$3.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } // End IF
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$1, 1, TRUE, lpplLocalVars);        // Right operand
+                                         PushFcnStrand_YY (&$1, 1, TRUE);        // Right operand
                                          FreeResult (&$1.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>'     Strand       DydOp LeftFunc '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (LeftFunc DydOp Strand)");
-                                         lpYYStr = MakeVarStrand_EM (&$2, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
-                                            FreeResult (&$3.tkToken);
-                                            FreeResult (&$4.tkToken);
-                                            YYERROR;
+                                             FreeResult (&$3.tkToken);
+                                             FreeResult (&$4.tkToken);
+                                             YYERROR;
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (&$3, 3, TRUE, lpplLocalVars);        // Dyadic operator
+                                         PushFcnStrand_YY (&$3, 3, TRUE);        // Dyadic operator
                                          FreeResult (&$3.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$4.tkToken);
+                                             FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                              YYERROR;
                                          } // End IF
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$4, 1, TRUE, lpplLocalVars);        // Left operand
+                                         PushFcnStrand_YY (&$4, 1, TRUE);        // Left operand
                                          FreeResult (&$4.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                         {
+                                             FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+                                             YYERROR;
+                                         } // End IF
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYStr, 1, FALSE, lpplLocalVars);   // Right operand
-                                         FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr);
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Right operand
+                                         FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>' '>' SimpExpr '(' DydOp LeftFunc '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (LeftFunc DydOp (SimpExpr))");
                                          lpYYRes =
-                                         PushFcnStrand (&$5, 3, TRUE, lpplLocalVars);        // Dyadic operator
+                                         PushFcnStrand_YY (&$5, 3, TRUE);        // Dyadic operator
                                          FreeResult (&$5.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$6.tkToken);
                                              FreeResult (&$3.tkToken);
@@ -1216,22 +1256,33 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$6, 1, TRUE, lpplLocalVars);        // Left operand
+                                         PushFcnStrand_YY (&$6, 1, TRUE);        // Left operand
                                          FreeResult (&$6.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                         {
+                                             FreeResult (&$3.tkToken);
+                                             YYERROR;
+                                         } // End IF
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$3, 1, FALSE, lpplLocalVars);       // Right operand
+                                         PushFcnStrand_YY (&$3, 1, FALSE);       // Right operand
                                          FreeResult (&$3.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>' '>' SimpExpr '(' DydOp AxisFunc '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp (SimpExpr))");
                                          lpYYRes =
-                                         PushFcnStrand (&$5, 3, TRUE, lpplLocalVars);        // Dyadic operator
+                                         PushFcnStrand_YY (&$5, 3, TRUE);        // Dyadic operator
                                          FreeResult (&$5.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$6.tkToken);
                                              FreeResult (&$3.tkToken);
@@ -1241,20 +1292,31 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$6, 1, TRUE, lpplLocalVars);        // Left operand
-                                         FreeResult (&$3.tkToken);
+                                         PushFcnStrand_YY (&$6, 1, TRUE);        // Left operand
+                                         FreeResult (&$6.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                         {
+                                             FreeResult (&$3.tkToken);
+                                             YYERROR;
+                                         } // End IF
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$3, 1, FALSE, lpplLocalVars);       // Right operand
-                                         FreeResult (&$6.tkToken);
+                                         PushFcnStrand_YY (&$3, 1, FALSE);       // Right operand
+                                         FreeResult (&$3.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>'     Strand       DydOp AxisFunc '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp Strand)");
-                                         lpYYStr = MakeVarStrand_EM (&$2, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$2);
                                          FreeResult (&$2.tkToken);
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$4.tkToken);
@@ -1262,10 +1324,10 @@ LeftFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (&$3, 3, TRUE, lpplLocalVars);        // Dyadic operator
+                                         PushFcnStrand_YY (&$3, 3, TRUE);        // Dyadic operator
                                          FreeResult (&$3.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$4.tkToken);
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -1275,30 +1337,41 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$4, 1, TRUE, lpplLocalVars);        // Left operand
+                                         PushFcnStrand_YY (&$4, 1, TRUE);        // Left operand
                                          FreeResult (&$4.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                         {
+                                             FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+                                             YYERROR;
+                                         } // End IF
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYStr, 1, FALSE, lpplLocalVars);   // Right operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Right operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
-                                        }
+                                            }
     | '>' RightFunc DydOp Strand   '('  {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp RightFunc)");
-                                         lpYYStr = MakeVarStrand_EM (&$4, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$4);
                                          FreeResult (&$4.tkToken);
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
-                                             FreeResult (&$2.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
+                                            FreeResult (&$2.tkToken);
+                                            FreeResult (&$3.tkToken);
+                                            YYERROR;
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (&$3, 3, TRUE, lpplLocalVars);        // Dyadic operator
+                                         PushFcnStrand_YY (&$3, 3, TRUE);        // Dyadic operator
                                          FreeResult (&$3.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -1308,31 +1381,42 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYStr, 1, FALSE, lpplLocalVars);   // Left operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Left operand
                                          FreeResult (&$2.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                         {
+                                             FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+                                             YYERROR;
+                                         } // End IF
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Right operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Right operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>' '>' SimpExpr '(' DydOp Strand '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp (SimpExpr))");
-                                         lpYYStr = MakeVarStrand_EM (&$6, lpplLocalVars);
+                                         lpYYStr = MakeVarStrand_EM_YY (&$6);
                                          FreeResult (&$6.tkToken);
-                                         if (!lpYYStr)      // If not defined, free args and YYERROR
+                                         if (!lpYYStr)          // If not defined, free args and YYERROR
                                          {
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$5.tkToken);
-                                             YYERROR;
+                                            FreeResult (&$3.tkToken);
+                                            FreeResult (&$5.tkToken);
+                                            YYERROR;
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (&$5, 3, TRUE, lpplLocalVars);        // Dyadic operator
+                                         PushFcnStrand_YY (&$5, 3, TRUE);        // Dyadic operator
                                          FreeResult (&$5.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -1342,26 +1426,37 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYStr, 1, FALSE, lpplLocalVars);   // Left operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Left operand
                                          FreeResult (&$3.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                         {
+                                             FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+                                             YYERROR;
+                                         } // End IF
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (&$3, 1, FALSE, lpplLocalVars);       // Right operand
+                                         PushFcnStrand_YY (&$3, 1, FALSE);       // Right operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>'     Strand       DydOp Strand '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp Strand)");
-                                         lpYYStrL = MakeVarStrand_EM (&$4, lpplLocalVars);
+                                         lpYYStrL = MakeVarStrand_EM_YY (&$4);
                                          FreeResult (&$4.tkToken);
 
-                                         lpYYStrR = MakeVarStrand_EM (&$2, lpplLocalVars);
+                                         lpYYStrR = MakeVarStrand_EM_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYStrL || !lpYYStrR)    // If not defined, free args and YYERROR
                                          {
-                                            FreeResult (&$3.tkToken);
+                                         FreeResult (&$3.tkToken);
 
                                             if (lpYYStrL)       // If defined, free it
                                             {
@@ -1377,10 +1472,10 @@ LeftFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (&$3, 3, TRUE, lpplLocalVars);        // Dyadic operator
+                                         PushFcnStrand_YY (&$3, 3, TRUE);        // Dyadic operator
                                          FreeResult (&$3.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&lpYYStrL->tkToken); YYFree (lpYYStrL); lpYYStrL = NULL;
                                              FreeResult (&lpYYStrR->tkToken); YYFree (lpYYStrR); lpYYStrR = NULL;
@@ -1390,13 +1485,24 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYStrL, 1, FALSE, lpplLocalVars);  // Left operand
+                                         PushFcnStrand_YY (lpYYStrL, 1, FALSE);  // Left operand
                                          FreeResult (&lpYYStrL->tkToken); YYFree (lpYYStrL); lpYYStrL = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                         {
+                                             FreeResult (&lpYYStrR->tkToken); YYFree (lpYYStrR); lpYYStrR = NULL;
+                                             YYERROR;
+                                         } // End IF
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYStrR, 1, FALSE, lpplLocalVars);  // Right operand
+                                         PushFcnStrand_YY (lpYYStrR, 1, FALSE);  // Right operand
                                          FreeResult (&lpYYStrR->tkToken); YYFree (lpYYStrR); lpYYStrR = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     ;
@@ -1405,22 +1511,31 @@ LeftFunc:
 SimpFunc:
       '>' LeftFunc '('                  {DbgMsgW2 (L"%%SimpFunc:  (LeftFunc)");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
                                          FreeResult (&$2.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>' AxisFunc '('                  {DbgMsgW2 (L"%%SimpFunc:  (AxisFunc)");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
                                          FreeResult (&$2.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>' FcnSpec '('                   {DbgMsgW2 (L"%%SimpFunc:  (FcnSpec)");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
                                          FreeResult (&$2.tkToken);
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
@@ -1429,85 +1544,85 @@ SimpFunc:
 /* Right argument to dyadic operator */
 RightFunc:
           PRIMFCN                       {DbgMsgW2 (L"%%RightFunc:  PRIMFCN");
-                                         lpYYFcn = MakePrimFcn (&$1);
+                                         lpYYFcn = MakePrimFcn_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 1, FALSE, lpplLocalVars);   // Function
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |     NAMEFCN                       {DbgMsgW2 (L"%%RightFunc:  NAMEFCN");
-                                         lpYYFcn = MakeNameFcn (&$1);
+                                         lpYYFcn = MakeNameFcn_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 1, FALSE, lpplLocalVars);   // Function
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |     SYSFN12                       {DbgMsgW2 (L"%%RightFunc:  SYSFN12");
-                                         lpYYFcn = MakeNameFcn (&$1);
+                                         lpYYFcn = MakeNameFcn_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 1, FALSE, lpplLocalVars);   // Function
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>' LeftFunc  '('                 {DbgMsgW2 (L"%%RightFunc:  (LeftFunc)");
-                                         lpYYFcn = MakePrimFcn (&$2);
+                                         lpYYFcn = MakePrimFcn_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 1, TRUE, lpplLocalVars);    // Function
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 1, TRUE);    // Function
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>' FcnSpec  '('                  {DbgMsgW2 (L"%%RightFunc:  (FcnSpec)");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '>' AxisFunc  '('                 {DbgMsgW2 (L"%%RightFunc:  (AxisFunc)");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -1517,20 +1632,20 @@ RightFunc:
 /* Axis function expression */
 AxisFunc:
       '}' ArrExpr '['  PRIMFCN          {DbgMsgW2 (L"%%AxisFunc:  PRIMFCN[ArrExpr]");
-                                         lpYYFcn = MakePrimFcn (&$4);
+                                         lpYYFcn = MakePrimFcn_YY (&$4);
                                          FreeResult (&$4.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 2, FALSE, lpplLocalVars);   // Function
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 2, FALSE);   // Function
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
@@ -1538,32 +1653,36 @@ AxisFunc:
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
-                                         lpYYAxis = MakeAxis (&$2);
+                                         lpYYAxis = MakeAxis_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYAxis)     // If not defined, free args and YYERROR
+                                         if (!lpYYAxis)         // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYAxis, 1, FALSE, lpplLocalVars);   // Axis
+                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE);   // Axis
                                          FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '}' ArrExpr '['  NAMEFCN          {DbgMsgW2 (L"%%AxisFunc:  NAMEFCN[ArrExpr]");
-                                         lpYYFcn = MakeNameFcn (&$4);
+                                         lpYYFcn = MakeNameFcn_YY (&$4);
                                          FreeResult (&$4.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 2, FALSE, lpplLocalVars);   // Function
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 2, FALSE);   // Function
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
@@ -1571,32 +1690,36 @@ AxisFunc:
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
-                                         lpYYAxis = MakeAxis (&$2);
+                                         lpYYAxis = MakeAxis_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYAxis)     // If not defined, free args and YYERROR
+                                         if (!lpYYAxis)         // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYAxis, 1, FALSE, lpplLocalVars);   // Axis
+                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE);   // Axis
                                          FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | '}' ArrExpr '['  SYSFN12          {DbgMsgW2 (L"%%AxisFunc:  SYSFN12[ArrExpr]");
-                                         lpYYFcn = MakeNameFcn (&$4);
+                                         lpYYFcn = MakeNameFcn_YY (&$4);
                                          FreeResult (&$4.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 2, FALSE, lpplLocalVars);
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 2, FALSE);
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
@@ -1604,43 +1727,47 @@ AxisFunc:
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
-                                         lpYYAxis = MakeAxis (&$2);
+                                         lpYYAxis = MakeAxis_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYAxis)     // If not defined, free args and YYERROR
+                                         if (!lpYYAxis)         // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYAxis, 1, FALSE, lpplLocalVars);   // Axis
+                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE);   // Axis
                                          FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     // ***FIXME*** -- what does this double index mean?
 ////| '}' ArrExpr '['  AxisFunc         {DbgMsgW2 (L"%%AxisFunc:  AxisFunc[ArrExpr]");
-////                                     lpYYAxis = MakeAxis (&$2);
+////                                     lpYYAxis = MakeAxis_YY (&$2);
 ////                                     FreeResult (&$2.tkToken);
 ////
-////                                     if (!lpYYAxis)     // If not defined, free args and YYERROR
+////                                     if (!lpYYAxis)         // If not defined, free args and YYERROR
 ////                                     {
-////                                         FreeResult (&$4.tkToken);
-////                                         YYERROR;
+////                                     FreeResult (&$4.tkToken);
+////                                        YYERROR;
 ////                                     } // End IF
 ////
 ////                                     lpYYFcn = MakeArrayFn2_EM (&$4, lpYYAxis);
 ////                                     FreeResult (&$4.tkToken);
 ////                                     FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
 ////
-////                                     if (!lpYYFcn)      // If not defined, free args and YYERROR
+////                                     if (!lpYYFcn)          // If not defined, free args and YYERROR
 ////                                        YYERROR;
 ////
 ////                                     $$ = *lpYYFcn; YYFree (lpYYFcn); lpYYFcn = NULL;
 ////                                    }
     | '}' ArrExpr '[' '>' FcnSpec '('   {DbgMsgW2 (L"%%AxisFunc:  (FcnSpec)[ArrExpr]");
                                          lpYYRes =
-                                         PushFcnStrand (&$5, 2, TRUE, lpplLocalVars);         // Function
+                                         PushFcnStrand_YY (&$5, 2, TRUE);         // Function
                                          FreeResult (&$5.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
@@ -1648,15 +1775,19 @@ AxisFunc:
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
-                                         lpYYAxis = MakeAxis (&$2);
+                                         lpYYAxis = MakeAxis_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYAxis)     // If not defined, free args and YYERROR
+                                         if (!lpYYAxis)         // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYAxis, 1, FALSE, lpplLocalVars);   // Axis
+                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE);   // Axis
                                          FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     ;
@@ -1664,53 +1795,53 @@ AxisFunc:
 // Monadic operator
 MonOp:
                        OP1              {DbgMsgW2 (L"%%MonOp:  OP1");
-                                         lpYYOp1 = MakeOp1 (&$1);
+                                         lpYYOp1 = MakeOp1_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYOp1)      // If not defined, free args and YYERROR
+                                         if (!lpYYOp1)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYOp1, 1, FALSE, lpplLocalVars);   // Monadic operator
+                                         PushFcnStrand_YY (lpYYOp1, 1, FALSE);   // Monadic operator
                                          FreeResult (&lpYYOp1->tkToken); YYFree (lpYYOp1); lpYYOp1 = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |                  NAMEOP1          {DbgMsgW2 (L"%%MonOp:  NAMEOP1");
-                                         lpYYFcn = MakeNameOp1 (&$1);
+                                         lpYYFcn = MakeNameOp1_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYFcn)      // If not defined, free args and YYERROR
+                                         if (!lpYYFcn)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYFcn, 1, FALSE, lpplLocalVars);   // Monadic operator
-                                         FreeResult (&lpYYFcn->tkToken); YYFree (lpYYFcn); lpYYFcn = NULL;
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Monadic operator
+                                         FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |              '>' MonOp '('        {DbgMsgW2 (L"%%MonOp:  (MonOp)");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);        // Monadic operator
+                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Monadic operator
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |              '>' Op1Spec '('     {DbgMsgW2 (L"%%MonOp:  (Op1Spec)");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, TRUE, lpplLocalVars);
+                                         PushFcnStrand_YY (&$2, 1, TRUE);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -1721,10 +1852,10 @@ MonOp:
 MonOpAxis:
       '}' ArrExpr '['  MonOp            {DbgMsgW2 (L"%%MonOpAxis:  MonOp[ArrExpr]");
                                          lpYYRes =
-                                         PushFcnStrand (&$4, 2, TRUE, lpplLocalVars);        // Monadic operator
+                                         PushFcnStrand_YY (&$4, 2, TRUE);        // Monadic operator
                                          FreeResult (&$4.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                          {
                                              FreeResult (&$2.tkToken);
                                              YYERROR;
@@ -1732,32 +1863,36 @@ MonOpAxis:
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
-                                         lpYYAxis = MakeAxis (&$2);
+                                         lpYYAxis = MakeAxis_YY (&$2);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYAxis)     // If not defined, free args and YYERROR
+                                         if (!lpYYAxis)         // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYAxis, 1, FALSE, lpplLocalVars);   // Axis
+                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE);   // Axis
                                          FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
+
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
+                                             YYERROR;
+
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
 ////| '}' ArrExpr '['  OP1              {DbgMsgW2 (L"%%MonOpAxis:  OP1[ArrExpr]");
-////                                     lpYYOp1 = MakeOp1 (&$4);
+////                                     lpYYOp1 = MakeOp1_YY (&$4);
 ////                                     FreeResult (&$4.tkToken);
 ////
-////                                     if (!lpYYOp1)      // If not defined, free args and YYERROR
+////                                     if (!lpYYOp1)          // If not defined, free args and YYERROR
 ////                                     {
 ////                                         FreeResult (&$2.tkToken);
 ////                                         YYERROR;
 ////                                     } // End IF
 ////
 ////                                     lpYYRes =
-////                                     PushFcnStrand (lpYYOp1, 2, FALSE, lpplLocalVars);   // Monadic operator
+////                                     PushFcnStrand_YY (lpYYOp1, 2, FALSE);   // Monadic operator
 ////                                     FreeResult (&lpYYOp1->tkToken); YYFree (lpYYOp1); lpYYOp1 = NULL;
 ////
-////                                     if (!lpYYRes)      // If not defined, free args and YYERROR
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
 ////                                     {
 ////                                         FreeResult (&$2.tkToken);
 ////                                         YYERROR;
@@ -1765,32 +1900,36 @@ MonOpAxis:
 ////
 ////                                     $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 ////
-////                                     lpYYAxis = MakeAxis (&$2);
+////                                     lpYYAxis = MakeAxis_YY (&$2);
 ////                                     FreeResult (&$2.tkToken);
 ////
-////                                     if (!lpYYAxis)     // If not defined, free args and YYERROR
+////                                     if (!lpYYAxis)         // If not defined, free args and YYERROR
 ////                                         YYERROR;
 ////
 ////                                     lpYYRes =
-////                                     PushFcnStrand (lpYYAxis, 1, FALSE, lpplLocalVars);  // Axis
+////                                     PushFcnStrand_YY (lpYYAxis, 1, FALSE);  // Axis
 ////                                     FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                         YYERROR;
+////
 ////                                     YYFree (lpYYRes); lpYYRes = NULL;
 ////                                    }
 ////| '}' ArrExpr '['  NAMEOP1          {DbgMsgW2 (L"%%MonOpAxis:  NAMEOP1[ArrExpr]");
-////                                     lpYYOp1 = MakeNameOp1 (&$4);
+////                                     lpYYOp1 = MakeNameOp1_YY (&$4);
 ////                                     FreeResult (&$4.tkToken);
 ////
-////                                     if (!lpYYOp1)      // If not defined, free args and YYERROR
+////                                     if (!lpYYOp1)          // If not defined, free args and YYERROR
 ////                                     {
 ////                                         FreeResult (&$2.tkToken);
 ////                                         YYERROR;
 ////                                     } // End IF
 ////
 ////                                     lpYYRes =
-////                                     PushFcnStrand (lpYYOp1, 2, FALSE, lpplLocalVars);   // Monadic operator
+////                                     PushFcnStrand_YY (lpYYOp1, 2, FALSE);   // Monadic operator
 ////                                     FreeResult (&lpYYOp1->tkToken); YYFree (lpYYOp1); lpYYOp1 = NULL;
 ////
-////                                     if (!lpYYRes)      // If not defined, free args and YYERROR
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
 ////                                     {
 ////                                         FreeResult (&$2.tkToken);
 ////                                         YYERROR;
@@ -1798,23 +1937,27 @@ MonOpAxis:
 ////
 ////                                     $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 ////
-////                                     lpYYAxis = MakeAxis (&$2);
+////                                     lpYYAxis = MakeAxis_YY (&$2);
 ////                                     FreeResult (&$2.tkToken);
 ////
-////                                     if (!lpYYAxis)     // If not defined, free args and YYERROR
+////                                     if (!lpYYAxis)         // If not defined, free args and YYERROR
 ////                                         YYERROR;
 ////
 ////                                     lpYYRes =
-////                                     PushFcnStrand (lpYYAxis, 1, FALSE, lpplLocalVars);
+////                                     PushFcnStrand_YY (lpYYAxis, 1, FALSE;
 ////                                     FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                         YYERROR;
+////
 ////                                     YYFree (lpYYRes); lpYYRes = NULL;
 ////                                    }
 ////| '}' ArrExpr '[' '>' MonOp '('     {DbgMsgW2 (L"%%MonOpAxis:  (MonOp)[ArrExpr]");
 ////                                     lpYYRes =
-////                                     PushFcnStrand (&$5, 2, TRUE, lpplLocalVars);        // Monadic operator
+////                                     PushFcnStrand_YY (&$5, 2, TRUE);        // Monadic operator
 ////                                     FreeResult (&$5.tkToken);
 ////
-////                                     if (!lpYYRes)      // If not defined, free args and YYERROR
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
 ////                                     {
 ////                                         FreeResult (&$2.tkToken);
 ////                                         YYERROR;
@@ -1822,15 +1965,19 @@ MonOpAxis:
 ////
 ////                                     $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 ////
-////                                     lpYYAxis = MakeAxis (&$2);
+////                                     lpYYAxis = MakeAxis_YY (&$2);
 ////                                     FreeResult (&$2.tkToken);
 ////
-////                                     if (!lpYYAxis)     // If not defined, free args and YYERROR
+////                                     if (!lpYYAxis)         // If not defined, free args and YYERROR
 ////                                         YYERROR;
 ////
 ////                                     lpYYRes =
-////                                     PushFcnStrand (lpYYAxis, 1, FALSE, lpplLocalVars);
+////                                     PushFcnStrand_YY (lpYYAxis, 1, FALSE);
 ////                                     FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                         YYERROR;
+////
 ////                                     YYFree (lpYYRes); lpYYRes = NULL;
 ////                                    }
     ;
@@ -1838,53 +1985,53 @@ MonOpAxis:
 /* Dyadic operator */
 DydOp:
                        OP2              {DbgMsgW2 (L"%%DydOp:  OP2");
-                                         lpYYOp2 = MakeOp2 (&$1);
+                                         lpYYOp2 = MakeOp2_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYOp2)      // If not defined, free args and YYERROR
+                                         if (!lpYYOp2)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYOp2, 1, FALSE, lpplLocalVars);       // Dyadic operator
+                                         PushFcnStrand_YY (lpYYOp2, 1, FALSE);       // Dyadic operator
                                          FreeResult (&lpYYOp2->tkToken); YYFree (lpYYOp2); lpYYOp2 = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |                  NAMEOP2          {DbgMsgW2 (L"%%DydOp:  NAMEOP2");
-                                         lpYYOp2 = MakeNameOp2 (&$1);
+                                         lpYYOp2 = MakeNameOp2_YY (&$1);
                                          FreeResult (&$1.tkToken);
 
-                                         if (!lpYYOp2)      // If not defined, free args and YYERROR
+                                         if (!lpYYOp2)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand (lpYYOp2, 1, FALSE, lpplLocalVars);
+                                         PushFcnStrand_YY (lpYYOp2, 1, FALSE);
                                          FreeResult (&lpYYOp2->tkToken); YYFree (lpYYOp2); lpYYOp2 = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |              '#' DydOp '('        {DbgMsgW2 (L"%%DydOp:  (DydOp)");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, FALSE, lpplLocalVars);       // Dyadic operator
+                                         PushFcnStrand_YY (&$2, 1, FALSE);       // Dyadic operator
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |              '#' Op2Spec '('      {DbgMsgW2 (L"%%DydOp:  (Op2Spec)");
                                          lpYYRes =
-                                         PushFcnStrand (&$2, 1, FALSE, lpplLocalVars);       // Dyadic operator
+                                         PushFcnStrand_YY (&$2, 1, FALSE);       // Dyadic operator
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                              YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -1899,10 +2046,10 @@ DydOp:
 /* Index list w/brackets, allowing for A[A][A]... */
 ILBR:
            ']' ILWE '['                 {DbgMsgW2 (L"%%ILBR:  [ILWE]");
-                                         lpYYLst = MakeList_EM (&$2, TRUE, lpplLocalVars);
+                                         lpYYLst = MakeList_EM_YY (&$2, TRUE);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYLst)      // If not defined, free args and YYERROR
+                                         if (!lpYYLst)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYLst; YYFree (lpYYLst); lpYYLst = NULL;
@@ -1912,7 +2059,7 @@ ILBR:
 
 
 
-                                         NonceError (&$3.tkToken, lpplLocalVars);
+                                         NonceError (&$3.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
                                          YYERROR;
@@ -1922,10 +2069,10 @@ ILBR:
 /* Index list w/parens */
 ILPAR:
       ')' ILNE '('                      {DbgMsgW2 (L"%%ILPAR:  (ILNE)");
-                                         lpYYLst = MakeList_EM (&$2, FALSE, lpplLocalVars);
+                                         lpYYLst = MakeList_EM_YY (&$2, FALSE);
                                          FreeResult (&$2.tkToken);
 
-                                         if (!lpYYLst)      // If not defined, free args and YYERROR
+                                         if (!lpYYLst)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYLst; YYFree (lpYYLst); lpYYLst = NULL;
@@ -1936,25 +2083,25 @@ ILPAR:
 ILNE:
       ArrExpr ';' ArrExpr               {DbgMsgW2 (L"%%ILNE:  ArrExpr;ArrExpr");
                                          lpYYLst =
-                                         InitList1 (&$1, lpplLocalVars);
+                                         InitList1_YY (&$1);
 
-                                         if (!lpYYLst)      // If not defined, free args and YYERROR
+                                         if (!lpYYLst)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          lpYYRes =
-                                         PushList (lpYYLst, &$3, lpplLocalVars);
+                                         PushList_YY (lpYYLst, &$3);
                                          FreeResult (&lpYYLst->tkToken); YYFree (lpYYLst); lpYYLst = NULL;
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | ILNE    ';' ArrExpr               {DbgMsgW2 (L"%%ILNE:  ILNE;ArrExpr");
                                          lpYYRes =
-                                         PushList (&$1, &$3, lpplLocalVars);
+                                         PushList_YY (&$1, &$3);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -1965,36 +2112,36 @@ ILNE:
 ILWE:
       /* Empty */                       {DbgMsgW2 (L"%%ILWE:  <empty>");
                                          lpYYRes =
-                                         InitList0 (lpplLocalVars);
+                                         InitList0_YY ();
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |          ArrExpr                  {DbgMsgW2 (L"%%ILWE:  ArrExpr");
                                          lpYYRes =
-                                         InitList1 (&$1, lpplLocalVars);
+                                         InitList1_YY (&$1);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | ILWE ';' ArrExpr                  {DbgMsgW2 (L"%%ILWE:  ILWE;ArrExpr");
                                          lpYYRes =
-                                         PushList (&$1, &$3, lpplLocalVars);
+                                         PushList_YY (&$1, &$3);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | ILWE ';'                          {DbgMsgW2 (L"%%ILWE:  ILWE;");
                                          lpYYRes =
-                                         PushList (&$1, NULL, lpplLocalVars);
+                                         PushList_YY (&$1, NULL);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -2015,9 +2162,9 @@ SingTokn:
                                          $1.tkToken.tkFlags.FcnDir  = 0;
 
                                          lpYYRes =
-                                         ExecuteFn0 (&$1.tkToken, lpplLocalVars);
+                                         ExecuteFn0 (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
@@ -2027,15 +2174,15 @@ SingTokn:
                                          $1.tkToken.tkFlags.FcnDir  = 1;
 
                                          lpYYRes =
-                                         ExecuteFn0 (&$1.tkToken, lpplLocalVars);
+                                         ExecuteFn0 (&$1.tkToken);
 
-                                         if (!lpYYRes)      // If not defined, free args and YYERROR
+                                         if (!lpYYRes)          // If not defined, free args and YYERROR
                                             YYERROR;
 
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | STRING                            {DbgMsgW2 (L"%%SingTokn:  STRING");
-                                         lpYYStr = CopyString_EM (&$1);
+                                         lpYYStr = CopyString_EM_YY (&$1);
 
                                          if (!lpYYStr)
                                             YYERROR;
@@ -2069,8 +2216,7 @@ PL_THREAD plThread;             // Temporary global
 //***************************************************************************
 
 void NonceError
-    (LPTOKEN       lptkError,       // Ptr to error token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkError)
 
 #ifdef DEBUG
 #define APPEND_NAME     L" -- NonceError"
@@ -2080,8 +2226,7 @@ void NonceError
 
 {
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                               lptkError,
-                               lpplLocalVars);
+                               lptkError);
 } // End NonceError
 #undef  APPEND_NAME
 
@@ -2097,13 +2242,11 @@ void NonceError
 #endif
 
 void ValueError
-    (LPTOKEN       lptkError,       // Ptr to error token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkError)
 
 {
     ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
-                               lptkError,
-                               lpplLocalVars);
+                               lptkError);
 } // End ValueError
 #undef  APPEND_NAME
 
@@ -2191,6 +2334,9 @@ void ParseLineInThread
     // Save the thread's semaphore handle
     TlsSetValue (dwTlsSemaphore, (LPVOID) lpplThread->hSemaphore);
 
+    // Save the thread's ptr to local vars
+    TlsSetValue (dwTlsLocalVars, (LPVOID) &plLocalVars);
+
     DBGENTER;
 
     // Extract values from the arg struc
@@ -2235,7 +2381,7 @@ void ParseLineInThread
     if (!plLocalVars.lpYYStrandStart[VARSTRAND])
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("ParseLine:  VirtualAlloc for <gpLocalVars.lpYYStrandStart[VARSTRAND]> failed");
+        DbgMsg ("ParseLine:  VirtualAlloc for <pLocalVars.lpYYStrandStart[VARSTRAND]> failed");
 
         return;             // Mark as failed
     } // End IF
@@ -2312,7 +2458,7 @@ NORMAL_EXIT:
     } // End IF
 
     // We no longer need this ptr
-    MyGlobalUnlock (plLocalVars.hGlbToken); plLocalVars.t2.lpBase = NULL;
+    MyGlobalUnlock (plLocalVars.hGlbToken); plLocalVars.t2.lpBase   = NULL;
 
     // Untokenize and free hGlbToken if requested
     if (bFreeToken)
@@ -2643,7 +2789,10 @@ int yylex
     lpYYLval->tkToken  = *lpplLocalVars->lpNext;
     lpYYLval->Inuse    =
     lpYYLval->Indirect =
-    lpYYLval->Rsvd     = 0;
+    lpYYLval->Rsvd     =
+    lpYYLval->TknCount =
+    lpYYLval->FcnCount = 0;
+    lpYYLval->lpYYFcn  = NULL;
 #ifdef DEBUG
     lpYYLval->Flag     = 1;         // Mark as a yylex Index
     lpYYLval->Index    = ++Index;
@@ -2853,6 +3002,12 @@ int yylex
 //  Error callback from YACC
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- yyerror"
+#else
+#define APPEND_NAME
+#endif
+
 void yyerror                                // Called for yacc syntax error
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
      LPCHAR        s)               // Ptr to error msg
@@ -2869,23 +3024,16 @@ void yyerror                                // Called for yacc syntax error
 #define ERR     "syntax error"
     lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
-        ErrorMessageIndirect (L"SYNTAX ERROR"
-#ifdef DEBUG
-                              L" -- yyerror"
-#endif
-        );
+        ErrorMessageIndirect (L"SYNTAX ERROR" APPEND_NAME);
 #undef  ERR
     else
 #define ERR     "memory exhausted"
     lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
     if (lstrcmp (szTemp, ERR) EQ 0)
-        ErrorMessageIndirect (L"WS FULL"
-#ifdef DEBUG
-                              L" -- yyerror"
-#endif
-        );
+        ErrorMessageIndirect (L"WS FULL" APPEND_NAME);
 #undef  ERR
 } // End yyerror
+#undef  APPEND_NAME
 
 
 //***************************************************************************

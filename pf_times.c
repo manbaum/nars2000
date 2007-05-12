@@ -76,11 +76,10 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTimes};
 #endif
 
 LPYYSTYPE PrimFnTimes_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -88,9 +87,9 @@ LPYYSTYPE PrimFnTimes_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
+        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
+        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnTimes_EM
 #undef  APPEND_NAME
 
@@ -298,25 +297,24 @@ APLFLOAT PrimFnDydTimesFisFvF
 #endif
 
 BOOL PrimFnDydTimesAPA_EM
-    (LPYYSTYPE     lpYYRes,         // Ptr to result token (may be NULL)
+    (LPYYSTYPE  lpYYRes,            // Ptr to result token (may be NULL)
 
-     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN    lptkFunc,           // Ptr to function token
 
-     HGLOBAL       hGlbLft,         // HGLOBAL of left arg (may be NULL if simple)
-     HGLOBAL       hGlbRht,         // ...        right ...
-     HGLOBAL   *   lphGlbRes,       // Ptr to result handle
+     HGLOBAL    hGlbLft,            // HGLOBAL of left arg (may be NULL if simple)
+     HGLOBAL    hGlbRht,            // ...        right ...
+     HGLOBAL   *lphGlbRes,          // Ptr to result handle
 
-     LPVOID    *   lplpMemRes,      // Ptr to ptr to result memory
+     LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
 
-     APLRANK       aplRankLft,      // Left arg rank
-     APLRANK       aplRankRht,      // Right ...
+     APLRANK    aplRankLft,         // Left arg rank
+     APLRANK    aplRankRht,         // Right ...
 
-     APLNELM       aplNELMLft,      // Left arg NELM
-     APLNELM       aplNELMRht,      // Right ...
+     APLNELM    aplNELMLft,         // Left arg NELM
+     APLNELM    aplNELMRht,         // Right ...
 
-     APLINT        aplInteger,      // The integer from the simple side
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     APLINT     aplInteger,         // The integer from the simple side
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     APLRANK aplRankRes;
@@ -342,18 +340,12 @@ BOOL PrimFnDydTimesAPA_EM
     //   (one of the arg's must be a singleton)
     if (aplNELMLft NE 1)
     {
-        *lphGlbRes = CopyArray_EM (hGlbLft,
-                                   TRUE,
-                                   lptkFunc,
-                                   lpplLocalVars);
+        *lphGlbRes = CopyArray_EM (hGlbLft, TRUE, lptkFunc);
         aplRankRes = aplRankLft;
     } else
     if (aplNELMRht NE 1)
     {
-        *lphGlbRes = CopyArray_EM (hGlbRht,
-                                   TRUE,
-                                   lptkFunc,
-                                   lpplLocalVars);
+        *lphGlbRes = CopyArray_EM (hGlbRht, TRUE, lptkFunc);
         aplRankRes = aplRankRht;
     } else
         DbgStop ();     // We should never get here
@@ -361,8 +353,7 @@ BOOL PrimFnDydTimesAPA_EM
     if (!*lphGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return FALSE;
     } // End IF
 

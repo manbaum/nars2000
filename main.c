@@ -5,11 +5,12 @@
 #define COMPILE_MULTIMON_STUBS
 #define WINVER       0x0500 // Needed for WINUSER.H definitions
 #define _WIN32_WINNT 0x0500 // ...
+
 #define STRICT
 #include <windows.h>
 #include <windowsx.h>
 #include <windowsx.h16>
-//#include <multimon.h>     // Multiple monitor support
+//#include <multimon.h>   // Multiple monitor support
 #include <limits.h>
 #include <direct.h>
 
@@ -624,7 +625,7 @@ LRESULT APIENTRY MFWndProc
     RECT         rcDtop;    // Rectangle for desktop
     HWND         hWndActive,
                  hWndMC;
-    LPPERTABDATA lpMem;
+    LPPERTABDATA lpMemPTD;
 
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
@@ -864,30 +865,30 @@ LRESULT APIENTRY MFWndProc
                 case TTN_NEEDTEXT:      // idTT = (int) wParam;
                                         // lpttt = (LPTOOLTIPTEXT) lParam;
                 {
-                    HGLOBAL     hGlbData;
+                    HGLOBAL     hGlbPTD;
                     static char TooltipText[_MAX_PATH];
 
 #define lpttt   ((LPTOOLTIPTEXT) lParam)
 
                     // Get the per tab global memory handle
-                    hGlbData = GetPerTabHandle (lpttt->hdr.idFrom);
+                    hGlbPTD = GetPerTabHandle (lpttt->hdr.idFrom);
 
                     // Lock the memory to get a ptr to it
-                    lpMem = MyGlobalLock (hGlbData);
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
 
                     // Return a ptr to the stored tooltip text
-                    lstrcpy (TooltipText, (LPCHAR) &lpMem->DPFE);
+                    lstrcpy (TooltipText, (LPCHAR) &lpMemPTD->DPFE);
 
                     // ***DEBUG***
                     wsprintf (TooltipText,
                               "hWndMC=%08X, hGlbHist=%08X",
-                              lpMem->hWndMC,
+                              lpMemPTD->hWndMC,
                               0);   //// lpMem->hGlbHist);  // ***FIXME***
 
                     lpttt->lpszText = TooltipText;
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (hGlbData); lpMem = NULL;
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #undef  lpttt
                     return FALSE;
                 } // End TTN_NEEDTEXT
@@ -906,11 +907,20 @@ LRESULT APIENTRY MFWndProc
 
                 case TCN_SELCHANGE:     // idTabCtl = (int) LOWORD(wParam);
                                         // hwndTabCtl = (HWND) lParam;
+                {
+                    int iCurTab;
+
                     // Get the window handle of the currently active MDI Client
                     hWndMC = GetActiveMC (hWndTC);
 
                     // Hide the child windows of the outgoing tab
                     ShowHideChildWindows (hWndMC, FALSE);
+
+                    // Get the index of the currently selected tab
+                    iCurTab = TabCtrl_GetCurSel (hWndTC);
+
+                    // Get the per tab global memory handle
+                    hGlbCurTab = GetPerTabHandle (iCurTab);
 
                     // Restore data into the current WS from global memory
                     RestWsData (hGlbCurTab);
@@ -922,6 +932,7 @@ LRESULT APIENTRY MFWndProc
 
                 default:
                     break;
+                } // End TCN_SELCHANGE
             } // End SWITCH
 #undef  lpnmh
 
@@ -1710,6 +1721,7 @@ int PASCAL WinMain
     // Allocate TLS indices
     dwTlsType = TlsAlloc ();        // Thread type ('MF', 'TC', 'PL', etc.)
     dwTlsSemaphore = TlsAlloc ();   // Thread semaphore (for 'PL' only)
+    dwTlsLocalVars = TlsAlloc ();   // lpplLocalVars (for 'PL' only)
 
     // Save the thread type ('MF')
     TlsSetValue (dwTlsType, (LPVOID) 'MF');

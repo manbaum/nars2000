@@ -458,13 +458,13 @@ BOOL AssignCharScalar_EM
 #endif
 
 BOOL ValidateBoolean_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPAPLBOOL     lpVal,           // Ptr to global var
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN   lptkName,            // Ptr to name token
+     LPTOKEN   lpToken,             // Ptr to value token
+     LPAPLBOOL lpVal)               // Ptr to global var
 
 {
-    LPVOID   lpMem, lpData;
+    LPVOID   lpMem,
+             lpData;
     BOOL     bRet = TRUE;
     LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     APLINT   aplInteger;
@@ -565,8 +565,7 @@ BOOL ValidateBoolean_EM
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lpToken,
-                                       lpplLocalVars);
+                                       lpToken);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -656,8 +655,7 @@ NORMAL_EXIT:
     //   otherwise, save the value in the name
     if (!bRet)
         ErrorMessageIndirectToken (lpwErrMsg,
-                                   lpToken,
-                                   lpplLocalVars);
+                                   lpToken);
     else
     {
         lptkName->tkData.tkSym->stData.stBoolean = *lpVal;
@@ -687,12 +685,11 @@ NORMAL_EXIT:
 #endif
 
 BOOL ValidateInteger_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lptkExpr,        // Ptr to value token
-     UINT          uValidLo,        // Low range value (inclusive)
-     UINT          uValidHi,        // High ...
-     LPAPLINT      lpVal,           // Ptr to global var
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN  lptkName,             // Ptr to name token
+     LPTOKEN  lptkExpr,             // Ptr to value token
+     UINT     uValidLo,             // Low range value (inclusive)
+     UINT     uValidHi,             // High ...
+     LPAPLINT lpVal)                // Ptr to global var
 
 {
     LPVOID   lpMem, lpData;
@@ -820,8 +817,8 @@ BOOL ValidateInteger_EM
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkExpr,
-                                       lpplLocalVars);
+                                       lptkExpr);
+
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -917,8 +914,7 @@ NORMAL_EXIT:
     //   otherwise, save the value in the name
     if (!bRet)
         ErrorMessageIndirectToken (lpwErrMsg,
-                                   lptkExpr,
-                                   lpplLocalVars);
+                                   lptkExpr);
     else
     {
         lptkName->tkData.tkSym->stData.stInteger = *lpVal;
@@ -949,12 +945,11 @@ NORMAL_EXIT:
 #endif
 
 BOOL ValidateFloat_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     APLFLOAT      fValidLo,        // Low range value (inclusive)
-     APLFLOAT      fValidHi,        // High ...
-     LPAPLFLOAT    lpVal,           // Ptr to global value handle
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN    lptkName,           // Ptr to name token
+     LPTOKEN    lpToken,            // Ptr to value token
+     APLFLOAT   fValidLo,           // Low range value (inclusive)
+     APLFLOAT   fValidHi,           // High ...
+     LPAPLFLOAT lpVal)              // Ptr to global value handle
 
 {
     LPVOID   lpMem, lpData;
@@ -1081,8 +1076,7 @@ BOOL ValidateFloat_EM
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lpToken,
-                                       lpplLocalVars);
+                                       lpToken);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1178,8 +1172,7 @@ NORMAL_EXIT:
     //   otherwise, save the value in the name
     if (!bRet)
         ErrorMessageIndirectToken (lpwErrMsg,
-                                   lpToken,
-                                   lpplLocalVars);
+                                   lpToken);
     else
     {
         lptkName->tkData.tkSym->stData.stFloat = *lpVal;
@@ -1209,10 +1202,9 @@ NORMAL_EXIT:
 #endif
 
 BOOL ValidateCharVector_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     HGLOBAL      *lpVal,           // Ptr to global value handle
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN  lptkName,             // Ptr to name token
+     LPTOKEN  lpToken,              // Ptr to value token
+     HGLOBAL *lpVal)                // Ptr to global value handle
 
 {
     LPVOID   lpMem, lpData;
@@ -1292,8 +1284,7 @@ BOOL ValidateCharVector_EM
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lpToken,
-                                       lpplLocalVars);
+                                       lpToken);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1375,9 +1366,6 @@ MAKE_VECTOR:
     // Calculate space needed for the result
     //   (a one-element character vctor)
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 1, 1);
-////ByteRes = sizeof (VARARRAY_HEADER)
-////        + sizeof (APLDIM) * 1       // It's a vector
-////        + sizeof (APLCHAR) * 1;     // ...one-element at that
     *lpVal = DbgGlobalAlloc (GHND, ByteRes);
     if (*lpVal NE NULL)
     {
@@ -1414,8 +1402,7 @@ NORMAL_EXIT:
     //   otherwise, save the value in the name
     if (!bRet)
         ErrorMessageIndirectToken (lpwErrMsg,
-                                   lpToken,
-                                   lpplLocalVars);
+                                   lpToken);
     else
     {
         lptkName->tkData.tkSym->stData.stGlbData = *lpVal;
@@ -1435,15 +1422,14 @@ NORMAL_EXIT:
 //***************************************************************************
 
 BOOL ValidateALX_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadALX, lpplLocalVars);
+    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadALX);
 } // End ValidateALX_EM
 
 
@@ -1454,16 +1440,15 @@ BOOL ValidateALX_EM
 //***************************************************************************
 
 BOOL ValidateCT_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     // Ensure the argument is a real scalar or
     //   one-element vector (demoted to a scalar)
     //   between 0 and 1E-10 inclusive.
 
-    return ValidateFloat_EM (lptkName, lpToken, 0, 1E-10, &fQuadCT, lpplLocalVars);
+    return ValidateFloat_EM (lptkName, lpToken, 0, 1E-10, &fQuadCT);
 } // End ValidateCT_EM
 
 
@@ -1474,15 +1459,14 @@ BOOL ValidateCT_EM
 //***************************************************************************
 
 BOOL ValidateELX_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector
 
-    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadELX, lpplLocalVars);
+    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadELX);
 } // End ValidateELX_EM
 
 
@@ -1497,15 +1481,14 @@ BOOL ValidateELX_EM
 //***************************************************************************
 
 BOOL ValidateIO_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     // Ensure the argument is a Boolean scalar or
     //   one-element vector (demoted to a scalar).
 
-    return ValidateBoolean_EM (lptkName, lpToken, &bQuadIO, lpplLocalVars);
+    return ValidateBoolean_EM (lptkName, lpToken, &bQuadIO);
 } // End ValidateIO_EM
 
 
@@ -1516,15 +1499,14 @@ BOOL ValidateIO_EM
 //***************************************************************************
 
 BOOL ValidateLX_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadLX, lpplLocalVars);
+    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadLX);
 } // End ValidateLX_EM
 
 
@@ -1535,16 +1517,15 @@ BOOL ValidateLX_EM
 //***************************************************************************
 
 BOOL ValidatePP_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to 17, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 1, 17, &uQuadPP, lpplLocalVars);
+    return ValidateInteger_EM (lptkName, lpToken, 1, 17, &uQuadPP);
 } // End ValidatePP_EM
 
 
@@ -1561,9 +1542,8 @@ BOOL ValidatePP_EM
 #endif
 
 BOOL ValidatePR_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     HGLOBAL hGlbData;
@@ -1637,8 +1617,7 @@ BOOL ValidatePR_EM
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkName,
-                                       lpplLocalVars);
+                                       lptkName);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1711,8 +1690,7 @@ MAKE_SCALAR:
     //   otherwise, save the value in the name
     if (!bRet)
         ErrorMessageIndirectToken (lpwErrMsg,
-                                   lpToken,
-                                   lpplLocalVars);
+                                   lpToken);
     else
     {
         lptkName->tkData.tkSym->stFlags.Imm = (cQuadPR NE 0);
@@ -1735,16 +1713,15 @@ MAKE_SCALAR:
 //***************************************************************************
 
 BOOL ValidatePW_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 30 to 255, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 30, 255, &uQuadPW, lpplLocalVars);
+    return ValidateInteger_EM (lptkName, lpToken, 30, 255, &uQuadPW);
 } // End ValidatePW_EM
 
 
@@ -1755,16 +1732,15 @@ BOOL ValidatePW_EM
 //***************************************************************************
 
 BOOL ValidateRL_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to (-2)+2*31, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 1, 0x7FFFFFFE, &uQuadRL, lpplLocalVars);
+    return ValidateInteger_EM (lptkName, lpToken, 1, 0x7FFFFFFE, &uQuadRL);
 } // End ValidateRL_EM
 
 
@@ -1781,9 +1757,8 @@ BOOL ValidateRL_EM
 #endif
 
 BOOL ValidateSA_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     LPVOID   lpMem, lpData;
@@ -1822,14 +1797,12 @@ BOOL ValidateSA_EM
 
         case TKT_VARIMMED:
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkName,
-                                       lpplLocalVars);
+                                       lptkName);
             return FALSE;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkName,
-                                       lpplLocalVars);
+                                       lptkName);
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -1935,8 +1908,7 @@ BOOL ValidateSA_EM
     //   otherwise, save the value in the name
     if (!bRet)
         ErrorMessageIndirectToken (lpwErrMsg,
-                                   lpToken,
-                                   lpplLocalVars);
+                                   lpToken);
     else
     {
         FreeResultGlobalVar (lptkName->tkData.tkSym->stData.stGlbData);
@@ -1962,9 +1934,8 @@ BOOL ValidateSA_EM
 #endif
 
 BOOL ValidateWSID_EM
-    (LPTOKEN       lptkName,        // Ptr to name token
-     LPTOKEN       lpToken,         // Ptr to value token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkName,              // Ptr to name token
+     LPTOKEN lpToken)               // Ptr to value token
 
 {
     // Ensure the argument is a character scalar (promoted to a vector)

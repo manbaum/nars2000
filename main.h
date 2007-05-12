@@ -125,6 +125,7 @@ DecrRefCntInd (hGlbData);
 #define MYWM_MOVE           (WM_APP+ 0) // MF
 #define MYWM_WFMO           (WM_APP+ 1) // SM (Wait For Multiple Objects)
 #define MYWM_PARSELINEDONE  (WM_APP+ 2) // SM (DisplayPrompt & CloseHandle)
+#define MYWM_SETFOCUS       (WM_APP+ 3) // SM (SetFocus)
 
 
 typedef enum tagEXTYPE

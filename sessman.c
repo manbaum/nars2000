@@ -82,12 +82,6 @@ void SetAttrs
 //  Append lpwszLine to the history buffer
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AppendLine"
-#else
-#define APPEND_NAME
-#endif
-
 void AppendLine
     (LPWCHAR lpwszLine,
      BOOL    bLineCont,
@@ -95,10 +89,6 @@ void AppendLine
 
 {
     HWND hWndEC;
-
-#ifdef DEBUG
-    dprintfW (L"AppendLine:  \"%S\" (%s#%d)", lpwszLine, FNLN);
-#endif
 
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
@@ -117,11 +107,7 @@ void AppendLine
         // Replace the selection (none) with "\r\n"
         SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
     } // End IF
-#ifdef DEBUG
-    DisplayUndo (hWndEC);
-#endif
 } // End AppendLine
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -375,7 +361,7 @@ void DisplayPrompt
     AppendLine (wszIndent, FALSE, FALSE);
 
     // Set the focus to the Session Manager so the prompt displays
-    SetFocus (GetParent (hWndEC));
+    PostMessage (GetParent (hWndEC), MYWM_SETFOCUS, 0, 0);
 } // End DisplayPrompt
 
 
@@ -723,7 +709,7 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // *************** Edit Control ****************************
-            // Create an edit box within which we can edit
+            // Create an Edit Control within which we can edit
             hWndEC =
             CreateWindowExW (0L,                    // Extended styles
                              LECWNDCLASS,           // Class name
@@ -770,13 +756,9 @@ LRESULT APIENTRY SMWndProc
             ShowWindow (hWndEC, SW_SHOWNORMAL);
             UpdateWindow (hWndEC);
 
-////        // Use Post here as we need to wait for the EC window
-////        //   to be drawn.
-////        PostMessage (hWnd, MYWM_INIT_EC, 0, 0);
-
             return FALSE;           // We handled the msg
         } // End WM_CREATE
-#undef  lpcs
+#undef  lpMDIcs
 
         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
                                     // idChild = HIWORD(wParam);  // Identifier of child window
@@ -798,9 +780,6 @@ LRESULT APIENTRY SMWndProc
             // Tell the Edit Control to redraw itself
             InvalidateRect (hWndEC, NULL, FALSE);
 
-////        // Tell the Tab Control to redraw itself
-////        InvalidateRect (hWndTC, NULL, FALSE);
-
             // Tell the Edit Control about its font
             SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, TRUE);
 
@@ -812,8 +791,6 @@ LRESULT APIENTRY SMWndProc
 
             // Display the default prompt
             DisplayPrompt (hWndEC);
-
-            SetFocus (hWnd);
 
             return FALSE;           // We handled the msg
 
@@ -965,6 +942,12 @@ LRESULT APIENTRY SMWndProc
 #undef  hSemaphore
 #undef  hThread
 
+        case MYWM_SETFOCUS:
+            // Set the focus to the Session Manager so the cursor displays
+            SetFocus (hWnd);
+
+            return FALSE;           // We handled the msg
+
         case WM_UNDO:
         case MYWM_REDO:
         case WM_COPY:
@@ -1105,7 +1088,6 @@ LRESULT APIENTRY SMWndProc
 #endif
 ////#ifdef DEBUG
 ////                case VK_F3:             // Display current token entries
-////
 ////                    DisplayTokens (ghGlbToken);
 ////
 ////                    return FALSE;

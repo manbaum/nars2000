@@ -138,7 +138,8 @@ DWORD dwTlsType,                        // Thread type (e.g.
                                         //   'TC' for Tab Control,
                                         //   'PL' for ParseLine,
                                         //   etc.)
-      dwTlsSemaphore;                   // Handle to semaphore for PL thread
+      dwTlsSemaphore,                   // Handle to semaphore for PL thread only
+      dwTlsLocalVars;                   // Ptr tolpplLocalVars for PL thread only
 
 //***************************************************************************
 // Temporary storage
@@ -210,8 +211,8 @@ typedef enum tagSYSVAR_VALID
 #endif
 
 EXTERN
-// Use as in:  (*aSysVarValid[SYSVAR_VALID_IO]) (lptkName, lptkExpr, lpplLocalVars);
-BOOL (*aSysVarValid[SYSVAR_VALID_LENGTH]) (LPTOKEN, LPTOKEN, LPPLLOCALVARS);
+// Use as in:  (*aSysVarValid[SYSVAR_VALID_IO]) (lptkName, lptkExpr);
+BOOL (*aSysVarValid[SYSVAR_VALID_LENGTH]) (LPTOKEN, LPTOKEN);
 
 EXTERN
 char lpszVersion[]

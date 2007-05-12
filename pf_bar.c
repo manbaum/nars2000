@@ -76,11 +76,10 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecBar};
 #endif
 
 LPYYSTYPE PrimFnBar_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -88,9 +87,9 @@ LPYYSTYPE PrimFnBar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
+        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec, lpplLocalVars);
+        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnBar_EM
 #undef  APPEND_NAME
 
@@ -179,8 +178,7 @@ BOOL PrimFnMonBarAPA_EM
      HGLOBAL      *lphGlbRes,       // Ptr to handle to result
      LPVOID       *lplpMemRes,      // Ptr to ptr to result memory
      APLRANK       aplRankRht,      // Rank of the right arg
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to local PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     LPPRIMSPEC    lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
     LPVOID  lpMemRes;
@@ -190,15 +188,11 @@ BOOL PrimFnMonBarAPA_EM
 
     // Axis may be anything
 
-    *lphGlbRes = CopyArray_EM (hGlbRht,
-                               TRUE,
-                               lptkFunc,
-                               lpplLocalVars);
+    *lphGlbRes = CopyArray_EM (hGlbRht, TRUE, lptkFunc);
     if (!*lphGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return FALSE;
     } // End IF
 
@@ -214,12 +208,10 @@ BOOL PrimFnMonBarAPA_EM
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-#define lpAPA       ((LPAPLAPA) lpMemRes)
-
     // Negating the offset and multiplier negates the APA
+#define lpAPA       ((LPAPLAPA) lpMemRes)
     lpAPA->Off = -lpAPA->Off;
     lpAPA->Mul = -lpAPA->Mul;
-
 #undef  lpAPA
 
     // We no longer need this ptr
@@ -346,25 +338,24 @@ APLFLOAT PrimFnDydBarFisFvF
 #endif
 
 BOOL PrimFnDydBarAPA_EM
-    (LPYYSTYPE     lpYYRes,         // The result token (may be NULL)
+    (LPYYSTYPE  lpYYRes,            // The result token (may be NULL)
 
-     LPTOKEN       lptkFunc,        // Ptr to function token
+     LPTOKEN    lptkFunc,           // Ptr to function token
 
-     HGLOBAL       hGlbLft,         // HGLOBAL of left arg (may be NULL if simple)
-     HGLOBAL       hGlbRht,         // ...        right ...
-     HGLOBAL   *   lphGlbRes,       // Ptr to HGLOBAL of the result
+     HGLOBAL    hGlbLft,            // HGLOBAL of left arg (may be NULL if simple)
+     HGLOBAL    hGlbRht,            // ...        right ...
+     HGLOBAL   *lphGlbRes,          // Ptr to HGLOBAL of the result
 
-     LPVOID    *   lplpMemRes,      // Ptr to ptr to result memory
+     LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
 
-     APLRANK       aplRankLft,      // Rank of the left arg
-     APLRANK       aplRankRht,      // ...         right ...
+     APLRANK    aplRankLft,         // Rank of the left arg
+     APLRANK    aplRankRht,         // ...         right ...
 
-     APLNELM       aplNELMLft,      // Only one of these NELMs is 1
-     APLNELM       aplNELMRht,      // ...
+     APLNELM    aplNELMLft,         // Only one of these NELMs is 1
+     APLNELM    aplNELMRht,         // ...
 
-     APLINT        aplInteger,      // The integer from the simple side
-     LPPRIMSPEC    lpPrimSpec,      // Ptr to PRIMSPEC
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     APLINT     aplInteger,         // The integer from the simple side
+     LPPRIMSPEC lpPrimSpec)         // Ptr to PRIMSPEC
 
 {
     APLRANK aplRankRes;
@@ -390,18 +381,12 @@ BOOL PrimFnDydBarAPA_EM
     //   (one of the arg's must be a singleton)
     if (aplNELMLft NE 1)
     {
-        *lphGlbRes = CopyArray_EM (hGlbLft,
-                                   TRUE,
-                                   lptkFunc,
-                                   lpplLocalVars);
+        *lphGlbRes = CopyArray_EM (hGlbLft, TRUE, lptkFunc);
         aplRankRes = aplRankLft;
     } else
     if (aplNELMRht NE 1)
     {
-        *lphGlbRes = CopyArray_EM (hGlbRht,
-                                   TRUE,
-                                   lptkFunc,
-                                   lpplLocalVars);
+        *lphGlbRes = CopyArray_EM (hGlbRht, TRUE, lptkFunc);
         aplRankRes = aplRankRht;
     } else
         DbgStop ();     // We should never get here
@@ -409,8 +394,7 @@ BOOL PrimFnDydBarAPA_EM
     if (!*lphGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return FALSE;
     } // End IF
 

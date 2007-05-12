@@ -23,11 +23,10 @@
 //***************************************************************************
 
 LPYYSTYPE PrimFnComma_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalvars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -36,9 +35,9 @@ LPYYSTYPE PrimFnComma_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonComma_EM             (lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnMonComma_EM             (lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydComma_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnDydComma_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnComma_EM
 
 
@@ -55,10 +54,9 @@ LPYYSTYPE PrimFnComma_EM
 #endif
 
 LPYYSTYPE PrimFnMonComma_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalvars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     //***************************************************************
@@ -70,8 +68,7 @@ LPYYSTYPE PrimFnMonComma_EM
      && lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -90,34 +87,29 @@ LPYYSTYPE PrimFnMonComma_EM
 
                 return PrimFnMonCommaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
                                              lptkAxis,
-                                             lptkFunc,
-                                             lpplLocalVars);
+                                             lptkFunc);
             } // End IF
 
             // Handle the immediate case
             return PrimFnMonCommaImm_EM (lptkRhtArg->tkData.tkSym->stFlags.ImmType,
                                          lptkRhtArg->tkData.tkSym->stData.stLongest,
                                          lptkAxis,
-                                         lptkFunc,
-                                         lpplLocalVars);
+                                         lptkFunc);
         case TKT_VARIMMED:
             return PrimFnMonCommaImm_EM (lptkRhtArg->tkFlags.ImmType,
                                          lptkRhtArg->tkData.tkLongest,
                                          lptkAxis,
-                                         lptkFunc,
-                                         lpplLocalVars);
+                                         lptkFunc);
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonCommaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
                                          lptkAxis,
-                                         lptkFunc,
-                                         lpplLocalVars);
+                                         lptkFunc);
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc,
-                                       lpplLocalVars);
+                                       lptkFunc);
             return NULL;
 
         defstop
@@ -143,8 +135,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     (UINT          ImmType,         // Right arg Immediate type
      APLLONGEST    aplLongest,      // Ptr to right arg value
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     LPTOKEN       lptkFunc)        // Ptr to function token
 
 {
     APLUINT   ByteRes;
@@ -169,8 +160,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
                           NULL,             // Return TRUE iff fractional values present
                           NULL,             // Return last axis value
                           NULL,             // Return # elements in axis vector
-                          NULL,             // Return HGLOBAL with APLINT axis values
-                          lpplLocalVars))   // Ptr to local plLocalVars
+                          NULL))            // Return HGLOBAL with APLINT axis values
             break;
         //   or a singleton fractional value
         if (CheckAxis_EM (lptkAxis,         // The axis token
@@ -182,8 +172,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
                           &bFract,          // Return TRUE iff fractional values present
                           NULL,             // Return last axis value
                           NULL,             // Return # elements in axis vector
-                          NULL,             // Return HGLOBAL with APLINT axis values
-                          lpplLocalVars)    // Ptr to local plLocalVars
+                          NULL)             // Return HGLOBAL with APLINT axis values
          && bFract)
             break;
         // Otherwise, it's an AXIS ERROR
@@ -212,8 +201,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -277,8 +265,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
 LPYYSTYPE PrimFnMonCommaGlb_EM
     (HGLOBAL       hGlbRht,         // Handle to right arg
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+     LPTOKEN       lptkFunc)        // Ptr to function token
 
 {
     HGLOBAL   hGlbRes = NULL,
@@ -331,10 +318,9 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
                               TRUE,             // TRUE iff axes must be contiguous
                               FALSE,            // TRUE iff duplicate axes are allowed
                               NULL,             // Return TRUE iff fractional values present
-                             &aplLastAxis,      // Return last axis value
-                             &aplNELMAxis,      // Return # elements in axis vector
-                             &hGlbAxis,         // Return HGLOBAL with APLINT axis values
-                              lpplLocalVars))   // Ptr to local plLocalVars
+                              &aplLastAxis,     // Return last axis value
+                              &aplNELMAxis,     // Return # elements in axis vector
+                              &hGlbAxis))       // Return HGLOBAL with APLINT axis values
                 break;
             //   or a singleton fractional value
             if (CheckAxis_EM (lptkAxis,         // The axis token
@@ -343,11 +329,10 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
                               FALSE,            // TRUE iff want sorted axes
                               TRUE,             // TRUE iff axes must be contiguous
                               FALSE,            // TRUE iff duplicate axes are allowed
-                             &bFract,           // Return TRUE iff fractional values present
-                             &aplLastAxis,      // Return last axis value
-                             &aplNELMAxis,      // Return # elements in axis vector
-                             &hGlbAxis,         // Return HGLOBAL with APLINT axis values
-                              lpplLocalVars)    // Ptr to local plLocalVars
+                              &bFract,          // Return TRUE iff fractional values present
+                              &aplLastAxis,     // Return last axis value
+                              &aplNELMAxis,     // Return # elements in axis vector
+                              &hGlbAxis)        // Return HGLOBAL with APLINT axis values
              && bFract)
                 break;
             // Otherwise, it's an AXIS ERROR
@@ -465,8 +450,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         bRet = FALSE;
 
         goto ERROR_EXIT;
@@ -565,16 +549,14 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
     } else
     // Reorder the right arg into the result
     {
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-
         // If it's an APA, get its parameters
         if (aplTypeRht EQ ARRAY_APA)
         {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
-        } // End IF
-
 #undef  lpAPA
+        } // End IF
 
         //***************************************************************
         // Allocate space for the weighting vector which is
@@ -587,8 +569,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
         if (!hGlbWVec)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc,
-                                       lpplLocalVars);
+                                       lptkFunc);
             bRet = FALSE;
 
             goto ERROR_EXIT;
@@ -620,8 +601,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
         if (!hGlbOdo)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc,
-                                       lpplLocalVars);
+                                       lptkFunc);
             bRet = FALSE;
 
             goto ERROR_EXIT;
@@ -868,8 +848,7 @@ LPYYSTYPE PrimFnDydComma_EM
     (LPTOKEN       lptkLftArg,      // Ptr to left arg token
      LPTOKEN       lptkFunc,        // Ptr to function token
      LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalvars
+     LPTOKEN       lptkAxis)        // Ptr to axis token (may be NULL)
 
 {
     APLUINT    aplAxis,     // The (one and only) axis value
@@ -980,10 +959,9 @@ LPYYSTYPE PrimFnDydComma_EM
                               FALSE,            // TRUE iff axes must be contiguous
                               FALSE,            // TRUE iff duplicate axes are allowed
                               NULL,             // Return TRUE iff fractional values present
-                             &aplAxis,          // Return last axis value
+                              &aplAxis,         // Return last axis value
                               NULL,             // Return # elements in axis vector
-                              NULL,             // Return HGLOBAL with APLINT axis values
-                              lpplLocalVars))   // Ptr to local plLocalVars
+                              NULL))            // Return HGLOBAL with APLINT axis values
                 break;
             // Laminate allows fractional values
             if (CheckAxis_EM (lptkAxis,         // The axis token
@@ -992,11 +970,10 @@ LPYYSTYPE PrimFnDydComma_EM
                               FALSE,            // TRUE iff want sorted axes
                               FALSE,            // TRUE iff axes must be contiguous
                               FALSE,            // TRUE iff duplicate axes are allowed
-                             &bFract,           // Return TRUE iff fractional values present
-                             &aplAxis,          // Return last axis value
+                              &bFract,          // Return TRUE iff fractional values present
+                              &aplAxis,         // Return last axis value
                               NULL,             // Return # elements in axis vector
-                              NULL,             // Return HGLOBAL with APLINT axis values
-                              lpplLocalVars)    // Ptr to local plLocalVars
+                              NULL)             // Return HGLOBAL with APLINT axis values
              && bFract)
                 break;
             // Otherwise, it's an AXIS ERROR
@@ -1055,8 +1032,7 @@ LPYYSTYPE PrimFnDydComma_EM
             if (bFract || abs64 ((APLRANKSIGN) (aplRankLft - aplRankRht)) NE 1)
             {
                 ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 bRet = FALSE;
 
                 goto ERROR_EXIT;
@@ -1077,8 +1053,7 @@ LPYYSTYPE PrimFnDydComma_EM
                 if (lpMemDimLft[uLft] NE lpMemDimRht[uRht])
                 {
                     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                               lptkFunc,
-                                               lpplLocalVars);
+                                               lptkFunc);
                     bRet = FALSE;
 
                     goto ERROR_EXIT;
@@ -1094,8 +1069,7 @@ LPYYSTYPE PrimFnDydComma_EM
              && lpMemDimLft[uRht] NE lpMemDimRht[uRht]) // Compare the dimensions
             {
                 ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 bRet = FALSE;
 
                 goto ERROR_EXIT;
@@ -1194,8 +1168,7 @@ LPYYSTYPE PrimFnDydComma_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         return NULL;
     } // End IF
 
@@ -1283,18 +1256,16 @@ LPYYSTYPE PrimFnDydComma_EM
     {
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
-#define lpAPA       ((LPAPLAPA) lpMemLft)
 
         // If the left arg is an APA, get its parameters
         if (aplTypeLft EQ ARRAY_APA)
         {
+#define lpAPA       ((LPAPLAPA) lpMemLft)
             apaOffLft = lpAPA->Off;
             apaMulLft = lpAPA->Mul;
+#undef  lpAPA
             uEndLft   = 0;
         } // End IF
-
-#undef  lpAPA
-
     } // End IF
 
     // If the right arg is not a scalar,
@@ -1304,18 +1275,15 @@ LPYYSTYPE PrimFnDydComma_EM
     {
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-
         // If the left arg is an APA, get its parameters
         if (aplTypeRht EQ ARRAY_APA)
         {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
             apaOffRht = lpAPA->Off;
             apaMulRht = lpAPA->Mul;
+#undef  lpAPA
             uEndRht   = 0;
         } // End IF
-
-#undef  lpAPA
-
     } // End IF
 
     // Split cases based upon the result's storage type
@@ -1709,7 +1677,7 @@ LPYYSTYPE PrimFnDydComma_EM
                 } // End SWITCH
 
                 // Make an LPSYMENTRY out of it
-                lpSymGlbLft = MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeLft), &aplVal, lptkFunc, lpplLocalVars);
+                lpSymGlbLft = MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeLft), &aplVal, lptkFunc);
             } // End IF
 
             // If the right arg is a simple scalar, ...
@@ -1740,7 +1708,7 @@ LPYYSTYPE PrimFnDydComma_EM
                 } // End SWITCH
 
                 // Make an LPSYMENTRY out of it
-                lpSymGlbRht = MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeRht), &aplVal, lptkFunc, lpplLocalVars);
+                lpSymGlbRht = MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeRht), &aplVal, lptkFunc);
             } // End IF
 
             // If the result is empty, use the prototype of the right arg
@@ -1764,7 +1732,7 @@ LPYYSTYPE PrimFnDydComma_EM
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 aplVal = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? 1 : 0;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc, lpplLocalVars);
+                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc);
 
                                 // Shift over the bit mask
                                 uBitMaskLft <<= 1;
@@ -1789,7 +1757,7 @@ LPYYSTYPE PrimFnDydComma_EM
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLINT) lpMemLft)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc, lpplLocalVars);
+                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
                             } // End FOR
                         break;
 
@@ -1804,7 +1772,7 @@ LPYYSTYPE PrimFnDydComma_EM
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLINT) lpMemLft)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc, lpplLocalVars);
+                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc);
                             } // End FOR
                         break;
 
@@ -1819,7 +1787,7 @@ LPYYSTYPE PrimFnDydComma_EM
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLCHAR) lpMemLft)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc, lpplLocalVars);
+                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc);
                             } // End FOR
                         break;
 
@@ -1828,7 +1796,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                         {
                             aplVal = apaOffLft + apaMulLft * uEndLft++;
-                            *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc, lpplLocalVars);
+                            *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
                         } // End FOR
 
                         break;
@@ -1864,7 +1832,7 @@ LPYYSTYPE PrimFnDydComma_EM
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 aplVal = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc, lpplLocalVars);
+                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc);
 
                                 // Shift over the bit mask
                                 uBitMaskRht <<= 1;
@@ -1889,7 +1857,7 @@ LPYYSTYPE PrimFnDydComma_EM
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLINT) lpMemRht)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc, lpplLocalVars);
+                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
                             } // End FOR
                         break;
 
@@ -1904,7 +1872,7 @@ LPYYSTYPE PrimFnDydComma_EM
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLINT) lpMemRht)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc, lpplLocalVars);
+                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc);
                             } // End FOR
                         break;
 
@@ -1919,7 +1887,7 @@ LPYYSTYPE PrimFnDydComma_EM
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLCHAR) lpMemRht)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc, lpplLocalVars);
+                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc);
                             } // End FOR
                         break;
 
@@ -1928,7 +1896,7 @@ LPYYSTYPE PrimFnDydComma_EM
                         for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                         {
                             aplVal = apaOffRht + apaMulRht * uEndRht++;
-                            *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc, lpplLocalVars);
+                            *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
                         } // End FOR
 
                         break;

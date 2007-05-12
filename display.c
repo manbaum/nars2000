@@ -39,9 +39,8 @@ extern UINT auLinNumGLOBAL[MAXOBJ];
 #endif
 
 BOOL ArrayDisplay_EM
-    (LPTOKEN       lptkRes,         // Ptr to value token
-     BOOL          bEndingCR,       // TRUE iff last line has CR
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkRes,               // Ptr to value token
+     BOOL    bEndingCR)             // TRUE iff last line has CR
 
 {
     LPAPLCHAR lpaplChar;
@@ -98,8 +97,7 @@ BOOL ArrayDisplay_EM
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkRes,
-                                       lpplLocalVars);
+                                       lptkRes);
             return FALSE;
 
         case TKT_VARARRAY:  // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
@@ -1767,11 +1765,15 @@ LPWCHAR DisplayFcnSub
 //***************************************************************************
 
 void DisplayStrand
-    (int           strType,         // Strand type (VARSTRAND or FCNSTRAND)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (int strType)               // Strand type (VARSTRAND or FCNSTRAND)
 
 {
-    LPYYSTYPE lp, lpLast;
+    LPYYSTYPE lp,
+              lpLast;
+    LPPLLOCALVARS lpplLocalVars;
+
+    // Get this thread's LocalVars ptr
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
 
     switch (strType)
     {

@@ -2208,10 +2208,10 @@ LPYYSTYPE WaitForInput
      LPTOKEN lptkFunc)              // Ptr to "function" token
 
 {
-    HANDLE        hTimer;
-    char          szTimer[32];
+    HANDLE   hTimer;
+    char     szTimer[32];
     LARGE_INTEGER waitTime;
-    DWORD         dwWaitRes = WAIT_TIMEOUT;
+    DWORD    dwWaitRes = WAIT_TIMEOUT;
     LPYYSTYPE     lpYYRes;
 
     DbgBrk ();
@@ -3001,7 +3001,7 @@ WCHAR CharTrans
         case UTF16_APOSTROPHE:          // Alt-'k' - single quote
             return COL_QUOTE1;
 
-        case UTF16_DOUBLEQUOTE:         //     '"' - Double quote
+        case UTF16_DOUBLEQUOTE:         //     '"' - double quote
             return COL_QUOTE2;
 
         case UTF16_QUAD:                // Alt-'l' - quad

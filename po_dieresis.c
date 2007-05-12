@@ -30,17 +30,16 @@
 #endif
 
 LPYYSTYPE PrimOpEach_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE     lpYYFcnStr,      // Ptr to function strand
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
+     LPYYSTYPE lpYYFcnStr,          // Ptr to function strand
+     LPTOKEN   lptkRhtArg)          // Ptr to right arg token
 
 {
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonEach_EM             (lpYYFcnStr, lptkRhtArg, lpplLocalVars);
+        return PrimOpMonEach_EM             (lpYYFcnStr, lptkRhtArg);
     else
-        return PrimOpDydEach_EM (lptkLftArg, lpYYFcnStr, lptkRhtArg, lpplLocalVars);
+        return PrimOpDydEach_EM (lptkLftArg, lpYYFcnStr, lptkRhtArg);
 } // End PrimOpEach_EM
 #undef  APPEND_NAME
 
@@ -58,9 +57,8 @@ LPYYSTYPE PrimOpEach_EM
 #endif
 
 LPYYSTYPE PrimOpMonEach_EM
-    (LPYYSTYPE     lpYYFcnStr,      // Ptr to function strand
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPYYSTYPE lpYYFcnStr,          // Ptr to function strand
+     LPTOKEN   lptkRhtArg)          // Ptr to right arg token
 
 {
     APLUINT   ByteRes;
@@ -90,12 +88,11 @@ LPYYSTYPE PrimOpMonEach_EM
     {
         lpYYRes2 = ExecFuncStr_EM (NULL,
                                    lpYYFcnStr,
-                                   lptkRhtArg,
-                                   lpplLocalVars);
+                                   lptkRhtArg);
         if (lpYYRes2)
         {
             // Enclose the item
-            lpYYRes = PrimFnMonLeftShoe_EM (&lpYYFcnStr->tkToken, &lpYYRes2->tkToken, NULL, lpplLocalVars);
+            lpYYRes = PrimFnMonLeftShoe_EM (&lpYYFcnStr->tkToken, &lpYYRes2->tkToken, NULL);
             FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
         } else
             lpYYRes = lpYYRes2;
@@ -117,8 +114,7 @@ LPYYSTYPE PrimOpMonEach_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStr->tkToken,
-                                   lpplLocalVars);
+                                  &lpYYFcnStr->tkToken);
         goto ERROR_EXIT;
     } // End IF
 
@@ -173,7 +169,11 @@ LPYYSTYPE PrimOpMonEach_EM
             // If the right arg is simple, ...
             if (IsSimple (aplTypeRes))
             {
+                LPPLLOCALVARS lpplLocalVars;
                 LPPERTABDATA lpPTD;
+
+                // Get this thread's LocalVars ptr
+                lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
 
                 // Get the per tab handle for the active thread
                 lpPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
@@ -188,8 +188,7 @@ LPYYSTYPE PrimOpMonEach_EM
                 // Make the prototype
                 hGlbProto = MakePrototype_EM (hGlbRht,
                                              &lpYYFcnStr->tkToken,
-                                              TRUE,         // Disallow non-empty CHARs
-                                              lpplLocalVars);
+                                              TRUE);        // Disallow non-empty CHARs
                 if (!hGlbProto)
                     goto ERROR_EXIT;
 
@@ -253,7 +252,7 @@ LPYYSTYPE PrimOpMonEach_EM
                     } // End IF
 
                     // Execute the function on the arg token
-                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg, lpplLocalVars))
+                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg))
                         goto ERROR_EXIT;
                 } // End FOR
 
@@ -267,7 +266,7 @@ LPYYSTYPE PrimOpMonEach_EM
                     tkArg.tkData.tkInteger = *((LPAPLINT) lpMemRht)++;
 
                     // Execute the function on the arg token
-                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg, lpplLocalVars))
+                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg))
                         goto ERROR_EXIT;
                 } // End FOR
 
@@ -281,7 +280,7 @@ LPYYSTYPE PrimOpMonEach_EM
                     tkArg.tkData.tkFloat = *((LPAPLFLOAT) lpMemRht)++;
 
                     // Execute the function on the arg token
-                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg, lpplLocalVars))
+                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg))
                         goto ERROR_EXIT;
                 } // End FOR
 
@@ -295,7 +294,7 @@ LPYYSTYPE PrimOpMonEach_EM
                     tkArg.tkData.tkChar = *((LPAPLCHAR) lpMemRht)++;
 
                     // Execute the function on the arg token
-                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg, lpplLocalVars))
+                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg))
                         goto ERROR_EXIT;
                 } // End FOR
 
@@ -316,7 +315,7 @@ LPYYSTYPE PrimOpMonEach_EM
                     tkArg.tkData.tkInteger = apaOff + apaMul * uRht;
 
                     // Execute the function on the arg token
-                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg, lpplLocalVars))
+                    if (!ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg))
                         goto ERROR_EXIT;
                 } // End FOR
 
@@ -357,7 +356,7 @@ LPYYSTYPE PrimOpMonEach_EM
                     } // End SWITCH
 
                     // Execute the function on the arg token
-                    bRet = ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg, lpplLocalVars);
+                    bRet = ExecMonFuncOnToken (&lpMemRes, lpYYFcnStr, &tkArg);
 
                     // Free the arg token
                     FreeResult (&tkArg);
@@ -415,10 +414,9 @@ NORMAL_EXIT:
 //***************************************************************************
 
 BOOL ExecMonFuncOnToken
-    (LPVOID       *lplpMemRes,      // Ptr to ptr to result memory
-     LPYYSTYPE     lpYYFcnStr,      // Ptr to function strand
-     LPTOKEN       lptkArg,         // Ptr to right arg token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
+     LPYYSTYPE  lpYYFcnStr,         // Ptr to function strand
+     LPTOKEN    lptkArg)            // Ptr to right arg token
 
 {
     LPYYSTYPE lpYYRes;
@@ -426,8 +424,7 @@ BOOL ExecMonFuncOnToken
     // Execute the function on the arg token
     lpYYRes = ExecFuncStr_EM (NULL,
                               lpYYFcnStr,
-                              lptkArg,
-                              lpplLocalVars);
+                              lptkArg);
     // If it succeeded, ...
     if (lpYYRes)
     {
@@ -473,10 +470,9 @@ BOOL ExecMonFuncOnToken
 #endif
 
 LPYYSTYPE PrimOpDydEach_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE     lpYYFcnStr,      // Ptr to function strand
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
+     LPYYSTYPE lpYYFcnStr,          // Ptr to function strand
+     LPTOKEN   lptkRhtArg)          // Ptr to right arg token
 
 {
     LPYYSTYPE lpYYRes;

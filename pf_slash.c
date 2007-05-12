@@ -29,11 +29,10 @@
 #endif
 
 LPYYSTYPE PrimFnSlash_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -42,9 +41,9 @@ LPYYSTYPE PrimFnSlash_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonSlash_EM    (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnMonSlash_EM    (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydSlash_EM    (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnDydSlash_EM    (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnSlash_EM
 #undef  APPEND_NAME
 
@@ -62,13 +61,12 @@ LPYYSTYPE PrimFnSlash_EM
 #endif
 
 LPYYSTYPE PrimFnMonSlash_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc, lpplLocalVars);
+    return PrimFnSyntaxError_EM (lptkFunc);
 } // End PrimFnMonSlash_EM
 #undef  APPEND_NAME
 
@@ -86,11 +84,10 @@ LPYYSTYPE PrimFnMonSlash_EM
 #endif
 
 LPYYSTYPE PrimFnDydSlash_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE  aplTypeLft,
@@ -166,8 +163,7 @@ LPYYSTYPE PrimFnDydSlash_EM
                            NULL,            // Return TRUE iff fractional values present
                            &aplAxis,        // Return last axis value
                            NULL,            // Return # elements in axis vector
-                           NULL,            // Return HGLOBAL with APLINT axis values
-                           lpplLocalVars))  // Ptr to local plLocalVars
+                           NULL))           // Return HGLOBAL with APLINT axis values
             return NULL;
     } else
     {
@@ -188,8 +184,7 @@ LPYYSTYPE PrimFnDydSlash_EM
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg,
-                                   lpplLocalVars);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -205,8 +200,7 @@ LPYYSTYPE PrimFnDydSlash_EM
         if (aplNELMLft NE lpMemDimRht[aplAxis])
         {
             ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkLftArg,
-                                       lpplLocalVars);
+                                       lptkLftArg);
             goto ERROR_EXIT;
         } // End IF
     } // End IF
@@ -281,8 +275,7 @@ LPYYSTYPE PrimFnDydSlash_EM
         if (!hGlbRep)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkLftArg,
-                                       lpplLocalVars);
+                                       lptkLftArg);
             goto ERROR_EXIT;
         } // End IF
 
@@ -400,8 +393,7 @@ LPYYSTYPE PrimFnDydSlash_EM
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc,
-                                   lpplLocalVars);
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
@@ -643,8 +635,7 @@ PROTO_EXIT:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkLftArg,
-                               lpplLocalVars);
+                               lptkLftArg);
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:

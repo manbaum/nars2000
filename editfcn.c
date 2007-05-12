@@ -335,6 +335,7 @@ LRESULT APIENTRY FEWndProc
             return FALSE;           // We handled the msg
 #undef  lpnmEC
 
+
 #define fwSizeType  wParam
 #define nWidth      (LOWORD (lParam))
 #define nHeight     (HIWORD (lParam))
@@ -1327,6 +1328,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                        message,
                                        wParam,
                                        lParam); // Pass on down the line
+
             // Draw the line #s
             DrawLineNumsFE (hWnd);
 

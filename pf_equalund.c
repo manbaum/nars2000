@@ -29,11 +29,10 @@
 #endif
 
 LPYYSTYPE PrimFnEqualUnderbar_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     // Ensure not an overflow function
@@ -41,9 +40,9 @@ LPYYSTYPE PrimFnEqualUnderbar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonEqualUnderbar_EM (            lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnMonEqualUnderbar_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydEqualUnderbar_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpplLocalVars);
+        return PrimFnDydEqualUnderbar_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnEqualUnderbar_EM
 #undef  APPEND_NAME
 
@@ -61,16 +60,15 @@ LPYYSTYPE PrimFnEqualUnderbar_EM
 #endif
 
 LPYYSTYPE PrimFnMonEqualUnderbar_EM
-    (LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeRht;
-    APLNELM   aplNELMRht;
-    APLRANK   aplRankRht;
-    HGLOBAL   hGlbRht;
+    APLSTYPE aplTypeRht;
+    APLNELM  aplNELMRht;
+    APLRANK  aplRankRht;
+    HGLOBAL  hGlbRht;
     LPYYSTYPE lpYYRes;
 
     // Determine how deep the argument is.
@@ -86,8 +84,7 @@ LPYYSTYPE PrimFnMonEqualUnderbar_EM
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         return NULL;
     } // End IF
 
@@ -139,8 +136,7 @@ LPYYSTYPE PrimFnMonEqualUnderbar_EM
 
             case TKT_LISTPAR:
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                           lptkFunc,
-                                           lpplLocalVars);
+                                           lptkFunc);
                 return NULL;
 
             case TKT_VARIMMED:
@@ -261,44 +257,43 @@ APLINT PrimFnMonEqualUnderBarGlb
 #endif
 
 LPYYSTYPE PrimFnDydEqualUnderbar_EM
-    (LPTOKEN       lptkLftArg,      // Ptr to left arg token
-     LPTOKEN       lptkFunc,        // Ptr to function token
-     LPTOKEN       lptkRhtArg,      // Ptr to right arg token
-     LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
-     LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht,
-              aplTypeTmp;
-    APLNELM   aplNELMLft,
-              aplNELMRht;
-    APLRANK   aplRankLft,
-              aplRankRht;
-    HGLOBAL   hGlbLft,
-              hGlbRht;
-    LPVOID    lpMemLft,
-              lpMemRht;
-    LPTOKEN   lptkTmpArg;
-    BOOL      bNumLft,
-              bNumRht;
-    APLINT    aplIntegerLft,
-              aplIntegerRht;
-    APLFLOAT  aplFloatLft,
-              aplFloatRht;
-    APLCHAR   aplCharLft,
-              aplCharRht;
+    APLSTYPE aplTypeLft,
+             aplTypeRht,
+             aplTypeTmp;
+    APLNELM  aplNELMLft,
+             aplNELMRht;
+    APLRANK  aplRankLft,
+             aplRankRht;
+    HGLOBAL  hGlbLft,
+             hGlbRht;
+    LPVOID   lpMemLft,
+             lpMemRht;
+    LPTOKEN  lptkTmpArg;
+    BOOL     bNumLft,
+             bNumRht;
+    APLINT   aplIntegerLft,
+             aplIntegerRht;
+    APLFLOAT aplFloatLft,
+             aplFloatRht;
+    APLCHAR  aplCharLft,
+             aplCharRht;
     LPYYSTYPE lpYYRes;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
+
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis,
-                                   lpplLocalVars);
+                                   lptkAxis);
         return NULL;
     } // End IF
 
@@ -316,8 +311,7 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
     if (aplTypeRht EQ ARRAY_LIST)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkRhtArg,
-                                   lpplLocalVars);
+                                   lptkRhtArg);
         return NULL;
     } // End IF
 
@@ -739,14 +733,11 @@ BOOL PrimFnDydEqualUnderbarSimple
             switch (aplTypeRht)
             {
                 case ARRAY_APA:     // Lft = APA, Rht = APA
-#define lpAPA       ((LPAPLAPA) lpMemLft)
-
                     // Compare the APA offsets and multipliers
+#define lpAPA       ((LPAPLAPA) lpMemLft)
                     return ((lpAPA->Off EQ lpAPA->Off)
                          && (lpAPA->Mul EQ lpAPA->Mul));
-
 #undef  lpAPA
-
                 case ARRAY_CHAR:    // Lft = APA, Rht = CHAR
                     return FALSE;
 

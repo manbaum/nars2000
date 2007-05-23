@@ -116,14 +116,14 @@ Stmt:     /* Empty */                   {DbgMsgW2 (L"%%Stmt:  <empty>");}
 
 
 
-                                         NonceError (&$1.tkToken); YYERROR;
+                                         PrimFnNonceError_EM (&$1.tkToken); YYERROR;
                                         }
     |         GOTO                      {DbgMsgW2 (L"%%Stmt:  " WS_UTF16_RIGHTARROW);
 
 
 
 
-                                         NonceError (&$1.tkToken); YYERROR;
+                                         PrimFnNonceError_EM (&$1.tkToken); YYERROR;
                                         }
     | ArrExpr ASSIGN                    {DbgMsgW2 (L"%%Stmt:  " WS_UTF16_LEFTARROW L"ArrExpr");
                                          FreeResult (&$1.tkToken);
@@ -305,7 +305,7 @@ ArrExpr1:
                                             YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
@@ -335,7 +335,7 @@ ArrExpr1:
                                             YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
@@ -399,7 +399,7 @@ ArrExpr1:
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                              YYERROR;
                                          }
-                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -458,7 +458,7 @@ ArrExpr1:
                                              YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -472,7 +472,7 @@ ArrExpr1:
 
 /* Strand (including single names) */
 Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
-                                         ValueError (&$1.tkToken);
+                                         PrimFnValueError (&$1.tkToken);
                                          YYERROR;
                                         }
     |             QUAD                  {DbgMsgW2 (L"%%Strand:  QUAD");
@@ -516,7 +516,7 @@ Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     | Strand      NAMEUNK               {DbgMsgW2 (L"%%Strand:  Strand NAMEUNK");
-                                         ValueError (&$1.tkToken);
+                                         PrimFnValueError (&$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          YYERROR;
                                         }
@@ -613,7 +613,7 @@ SimpExpr:
 
 
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          YYERROR;
                                         }
@@ -634,13 +634,13 @@ SimpExpr:
 
 
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          YYERROR;
                                         }
     | ArrExpr ASSIGN LeftFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR LeftFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -660,7 +660,7 @@ SimpExpr:
     | ArrExpr ASSIGN AxisFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken, NULL);
+                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
 
@@ -684,7 +684,7 @@ SimpExpr:
                                          FreeResult (&$5.tkToken);
 
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
 
                                          if (lpYYStr)           // If defined, free it
                                          {
@@ -700,7 +700,7 @@ SimpExpr:
                                          lpYYStr = MakeNameStrand_EM_YY (&$5);
                                          FreeResult (&$5.tkToken);
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
 
 
                                          if (lpYYStr)           // If defined, free it
@@ -718,7 +718,7 @@ SimpExpr:
 
 
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
 
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
@@ -730,7 +730,7 @@ SimpExpr:
 
 
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
 
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
@@ -753,7 +753,7 @@ NameSpec:
 
 
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
 
                                          FreeResult (&$2.tkToken);
                                          YYERROR;
@@ -762,7 +762,7 @@ NameSpec:
 
 
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
 
                                          FreeResult (&$2.tkToken);
                                          YYERROR;
@@ -778,7 +778,7 @@ NameSpec:
                                          } // End IF
 
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
 
                                          FreeResult (&$2.tkToken);
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -795,7 +795,7 @@ NameSpec:
                                          } // End IF
 
 
-                                         NonceError (&$1.tkToken);
+                                         PrimFnNonceError_EM (&$1.tkToken);
 
                                          FreeResult (&$2.tkToken);
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -834,7 +834,7 @@ NameVals:
 ////
 ////
 ////
-////                                     NonceError (&$3.tkToken); YYERROR;
+////                                     PrimFnNonceError_EM (&$3.tkToken); YYERROR;
 ////                                    }
 ////| NameVals ')' ILBR NAMEVAR '('     {DbgMsgW2 (L"%%NameVals:  NameVals (NAMEVAR ILBR)");
 ////                                     $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -842,7 +842,7 @@ NameVals:
 ////
 ////
 ////
-////                                     NonceError (&$4.tkToken); YYERROR;
+////                                     PrimFnNonceError_EM (&$4.tkToken); YYERROR;
 ////                                    }
     ;
 
@@ -2059,7 +2059,7 @@ ILBR:
 
 
 
-                                         NonceError (&$3.tkToken);
+                                         PrimFnNonceError_EM (&$3.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
                                          YYERROR;
@@ -2207,48 +2207,6 @@ typedef struct tagPL_THREAD
 } PL_THREAD, *LPPL_THREAD;
 
 PL_THREAD plThread;             // Temporary global
-
-
-//***************************************************************************
-//  NonceError
-//
-//  I'll get right on this...
-//***************************************************************************
-
-void NonceError
-    (LPTOKEN lptkError)
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- NonceError"
-#else
-#define APPEND_NAME
-#endif
-
-{
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                               lptkError);
-} // End NonceError
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  ValueError
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValueError"
-#else
-#define APPEND_NAME
-#endif
-
-void ValueError
-    (LPTOKEN lptkError)
-
-{
-    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
-                               lptkError);
-} // End ValueError
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2495,7 +2453,7 @@ char SymbTypeFV
     // Get a ptr to the symbol table flags
     lpstFlags = &lpNext->tkData.tkSym->stFlags;
 
-    if (lpstFlags->Imm)     // IMMTYPE_BOOL, IMMTYPE_INT, IMMTYPE_CHAR, IMMTYPE_FLOAT, IMMTYPE_PRIMFCN_xx, ...
+    if (lpstFlags->Imm)     // IMMTYPE_BOOL, IMMTYPE_INT, IMMTYPE_CHAR, IMMTYPE_FLOAT, IMMTYPE_PRIMFCN, ...
     switch (lpstFlags->ImmType)
     {
         case IMMTYPE_BOOL:
@@ -2504,10 +2462,7 @@ char SymbTypeFV
         case IMMTYPE_FLOAT:
             return 'V';
 
-        case IMMTYPE_PRIMFCN_MM:
-        case IMMTYPE_PRIMFCN_MS:
-        case IMMTYPE_PRIMFCN_SM:
-        case IMMTYPE_PRIMFCN_SS:
+        case IMMTYPE_PRIMFCN:
         case IMMTYPE_PRIMOP1:
         case IMMTYPE_PRIMOP2:
             return 'F';
@@ -2572,7 +2527,7 @@ BOOL LookaheadDyadicOp
             return FALSE;
 
         case TKT_OP2IMMED:
-        case TKT_JOTDOT:
+        case TKT_OPJOTDOT:
             return TRUE;
 
         case TKT_VARNAMED:
@@ -2649,7 +2604,7 @@ char LookaheadSurround
             return '2';             // Dyadic operator
 
         case TKT_FCNIMMED:
-        case TKT_JOTDOT:
+        case TKT_OPJOTDOT:
         case TKT_ASSIGN:
         case TKT_EOS:
         case TKT_EOL:
@@ -2736,7 +2691,7 @@ char LookaheadAdjacent
             return '2';
 
         case TKT_FCNIMMED:
-        case TKT_JOTDOT:
+        case TKT_OPJOTDOT:
             return 'F';             // Function
 
         case TKT_VARNAMED:
@@ -2780,7 +2735,10 @@ int yylex
      LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
+#ifdef DEBUG
     static UINT Index = 0;
+#endif
+    WCHAR       wchFn;
 
     // Because we're parsing the stmt from right to left
     lpplLocalVars->lpNext--;
@@ -2892,11 +2850,14 @@ int yylex
             return STRING;
 
         case TKT_OP1IMMED:
+            // Get the symbol
+            wchFn = lpplLocalVars->lpNext->tkData.tkChar;
+
             // Handle the ambiguous slash(-bar) and slope(-bar) symbols
-            if (lpplLocalVars->lpNext->tkData.tkChar EQ '/'
-             || lpplLocalVars->lpNext->tkData.tkChar EQ '\\'
-             || lpplLocalVars->lpNext->tkData.tkChar EQ UTF16_SLASHBAR
-             || lpplLocalVars->lpNext->tkData.tkChar EQ UTF16_SLOPEBAR)
+            if (wchFn EQ UTF16_SLASH
+             || wchFn EQ UTF16_SLOPE
+             || wchFn EQ UTF16_SLASHBAR
+             || wchFn EQ UTF16_SLOPEBAR)
             {
                 // We really need an FSA for this
                 switch (LookaheadSurround (lpplLocalVars))
@@ -2906,6 +2867,36 @@ int yylex
 
                     case '1':               // If the next token is a monadic operator,
                     case 'F':               // If the next token is a function,
+                        // Replace the function symbol with the
+                        //   corresponding operator symbol
+
+                        // Split cases based upon the function symbol
+                        switch (wchFn)
+                        {
+                            case UTF16_SLASH:
+                                lpYYLval->tkToken.tkData.tkChar = INDEX_OPSLASH;
+
+                                break;
+
+                            case UTF16_SLASHBAR:
+                                lpYYLval->tkToken.tkData.tkChar = INDEX_OPSLASHBAR;
+
+                                break;
+
+                            case UTF16_SLOPE:
+                                lpYYLval->tkToken.tkData.tkChar = INDEX_OPSLOPE;
+
+                                break;
+
+                            case UTF16_SLOPEBAR:
+                                lpYYLval->tkToken.tkData.tkChar = INDEX_OPSLOPEBAR;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
                         return OP1;         //   then this token is an operator
 
                     case 'V':               // If the next token is a variable,
@@ -2921,7 +2912,7 @@ int yylex
         case TKT_OP2IMMED:
             return OP2;
 
-        case TKT_JOTDOT:
+        case TKT_OPJOTDOT:
             return JOTDOT;
 
         case TKT_LPAREN:

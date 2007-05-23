@@ -10,7 +10,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "primspec.h"
 #include "sysvars.h"
 
 // Include prototypes unless prototyping
@@ -93,6 +92,159 @@ LPYYSTYPE PrimFnQuery_EM
     else
         return PrimFnDydQuery_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnQuery_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  PrimProtoFnQuery_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic Query
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnQuery_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnQuery_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnQuery_EM,    // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+////     APLSTYPE  aplTypeLft,
+////               aplTypeRht;
+////     APLNELM   aplNELMLft,
+////               aplNELMRht;
+////     APLRANK   aplRankLft,
+////               aplRankRht;
+////     HGLOBAL   hGlbLft,
+////               hGlbRht;
+////     APLINT    aplIntegerLft,
+////               aplIntegerRht;
+////     APLFLOAT  aplFloatLft,
+////               aplFloatRht;
+////     BOOL      bRet = TRUE;      // TRUE iff the result is valid
+////     LPYYSTYPE lpYYRes = NULL;
+////
+////     // If the left arg is not present, ...
+////     if (lptkLftArg EQ NULL)
+////         //***************************************************************
+////         // Called monadically
+////         //***************************************************************
+////         return PrimProtoFnScalar_EM (lptkLftArg,
+////                                      lptkFunc,
+////                                      lptkRhtArg,
+////                                      lptkAxis);
+////     else
+////     {
+////         //***************************************************************
+////         // Called dyadically
+////         //***************************************************************
+////
+////         // The result is  L {rho} 0
+////
+////         //***************************************************************
+////         // This function is not sensitive to the axis operator,
+////         //   so signal a syntax error if present
+////         //***************************************************************
+////
+////         if (lptkAxis NE NULL)
+////         {
+////             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+////                                        lptkAxis);
+////             return NULL;
+////         } // End IF
+////
+////         // Get the attributes (Type, NELM, and Rank) of the left & right args
+////         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+////         AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+////
+////         // Get left and right arg's global ptrs
+////         hGlbLft = GetGlbHandle (lptkLftArg);
+////         hGlbRht = GetGlbHandle (lptkRhtArg);
+////
+////         // Check for LEFT/RIGHT RANK ERRORs
+////         if (aplRankLft > 1
+////          || aplRankRht > 1)
+////         {
+////             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+////                                        lptkLftArg);
+////             bRet = FALSE;
+////
+////             goto ERROR_EXIT;
+////         } // End IF
+////
+////         // Check for LEFT/RIGHT LENGTH ERRORs
+////         if (aplNELMLft NE 1
+////          || aplNELMRht NE 1)
+////         {
+////             ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+////                                        lptkLftArg);
+////             bRet = FALSE;
+////
+////             goto ERROR_EXIT;
+////         } // End IF
+////
+////         // Get the respective first values
+////         FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, NULL, NULL, NULL, NULL, NULL);
+////         FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, NULL, NULL, NULL, NULL, NULL);
+////
+////         // Check for LEFT/RIGHT DOMAIN ERRORs
+////         bRet = (aplTypeLft NE ARRAY_CHAR
+////              && aplTypeRht NE ARRAY_CHAR);
+////         if (bRet)
+////         {
+////             if (aplTypeLft EQ ARRAY_FLOAT)
+////                 aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
+////             if (bRet && aplTypeRht EQ ARRAY_FLOAT)
+////                 aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+////         } // End IF
+////
+////         if (!bRet
+////          || aplIntegerLft < 0
+////          || aplIntegerRht < 0
+////          || aplIntegerLft > aplIntegerRht)
+////         {
+////             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+////                                        lptkLftArg);
+////             bRet = FALSE;
+////
+////             goto ERROR_EXIT;
+////         } // End IF
+////
+////         Assert (aplIntegerLft EQ 0);
+////
+////         // The result is zilde
+////
+////         // Allocate a new YYRes
+////         lpYYRes = YYAlloc ();
+////
+////         // Fill in the result token
+////         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+//// ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+//// ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbZilde);
+////         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+//// ERROR_EXIT:
+////         if (bRet)
+////             return lpYYRes;
+////         else
+////             return NULL;
+////     } // End IF/ELSE
+} // End PrimProtoFnQuery_EM
 #undef  APPEND_NAME
 
 
@@ -284,9 +436,22 @@ LPYYSTYPE PrimFnDydQuery_EM
     } // End IF
 
     // Get the respective first values
-    FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, NULL, NULL, NULL, NULL, NULL);
-    FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, NULL, NULL, NULL, NULL, NULL);
-
+    FirstValue (lptkLftArg,         // Ptr to right arg token
+               &aplIntegerLft,      // Ptr to integer result
+               &aplFloatLft,        // Ptr to float ...
+                NULL,               // Ptr to WCHAR ...
+                NULL,               // Ptr to longest ...
+                NULL,               // Ptr to lpSym/Glb ...
+                NULL,               // Ptr to ...immediate type ...
+                NULL);              // Ptr to array type ...
+    FirstValue (lptkRhtArg,         // Ptr to right arg token
+               &aplIntegerRht,      // Ptr to integer result
+               &aplFloatRht,        // Ptr to float ...
+                NULL,               // Ptr to WCHAR ...
+                NULL,               // Ptr to longest ...
+                NULL,               // Ptr to lpSym/Glb ...
+                NULL,               // Ptr to ...immediate type ...
+                NULL);              // Ptr to array type ...
     // Check for LEFT/RIGHT DOMAIN ERRORs
     bRet = (aplTypeLft NE ARRAY_CHAR
          && aplTypeRht NE ARRAY_CHAR);
@@ -300,7 +465,8 @@ LPYYSTYPE PrimFnDydQuery_EM
 
     if (!bRet
      || aplIntegerLft < 0
-     || aplIntegerRht < 0)
+     || aplIntegerRht < 0
+     || aplIntegerLft > aplIntegerRht)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkLftArg);
@@ -388,7 +554,7 @@ LPYYSTYPE PrimFnDydQuery_EM
     {
         // The long case
 
-        // File the result with {iota}aplIntegerRht
+        // Fill the result with {iota}aplIntegerRht
         for (uLft = 0; uLft < aplIntegerRht; uLft++)    // Z {is} {iota} R
             lpMemRes[uLft] = uLft + bQuadIO;
 

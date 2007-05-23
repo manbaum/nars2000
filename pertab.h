@@ -9,11 +9,12 @@ typedef struct tagPERTABDATA
 #include "pertabdefs.h"
 #undef  DEFINE_VARS
 
-    LPSYMENTRY steZero;         // STE for constant zero
-    int     iLabelText;         // Offset in DPFE of the label text
-    HWND    hWndActive;         // Active MDI window when last switched out
-    int     crIndex;            // Tab's color index
-    char    DPFE[_MAX_PATH];    // The Drive, Path, Filename, & Ext of the WS
+    LPSYMENTRY steZero,         // STE for constant zero
+               steBlank;        // ...              blank
+    int        iLabelText;      // Offset in DPFE of the label text
+    HWND       hWndActive;      // Active MDI window when last switched out
+    int        crIndex;         // Tab's color index
+    char       DPFE[_MAX_PATH]; // The Drive, Path, Filename, & Ext of the WS
 } PERTABDATA, *LPPERTABDATA;
 
 

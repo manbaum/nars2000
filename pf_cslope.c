@@ -48,6 +48,65 @@ LPYYSTYPE PrimFnCircleSlope_EM
 
 
 //***************************************************************************
+//  PrimProtoFnCircleSlope_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic CircleSlope
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnCircleSlope_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnCircleSlope_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnCircleSlope_EM,  // Ptr to primitive function routine
+                                 lptkLftArg,            // Ptr to left arg token
+                                 lptkFunc,              // Ptr to function token
+                                 lptkRhtArg,            // Ptr to right arg token
+                                 lptkAxis);             // Ptr to axis token (may be NULL)
+//////***************************************************************
+////// This function is not sensitive to the axis operator,
+//////   so signal a syntax error if present
+//////***************************************************************
+////
+////if (lptkAxis NE NULL)
+////{
+////    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+////                               lptkAxis);
+////    return NULL;
+////} // End IF
+////
+////// If the left arg is not present, ...
+////if (lptkLftArg EQ NULL)
+////    //***************************************************************
+////    // Called monadically
+////    //***************************************************************
+////
+////    return PrimFnMonCircleSlope_EM (lptkFunc,
+////                                    lptkRhtArg,
+////                                    lptkAxis);
+////else
+////    //***************************************************************
+////    // Called dyadically
+////    //***************************************************************
+////    return PrimFnNonceError_EM (lptkFunc);
+} // End PrimProtoFnCircleSlope_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonCircleSlope_EM
 //
 //  Primitive function for monadic CircleSlope ("reverse axes")
@@ -268,7 +327,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
                        NULL,            // TRUE iff fractional values allowed
                       &aplRankRes,      // Return last axis value
                        NULL,            // Return # elements in axis vector
-                       &hGlbAxis))      // Return HGLOBAL with APLUINT axis values
+                      &hGlbAxis))       // Return HGLOBAL with APLUINT axis values
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkLftArg);

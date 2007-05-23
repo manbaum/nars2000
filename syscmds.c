@@ -104,7 +104,7 @@ BOOL CmdClear_EM
 
 {
     if (!bNewTabOnClear)
-        TabCtrl_DeleteItem (hWndTC, TabCtrl_GetCurSel (hWndTC));
+        CloseTab (TabCtrl_GetCurSel (hWndTC));
 
     return CreateNewTab (hWndMF,
                          "CLEAR WS",

@@ -48,6 +48,150 @@ LPYYSTYPE PrimFnEpsilon_EM
 
 
 //***************************************************************************
+//  PrimProtoFnEpsilon_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic Epsilon
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnEpsilon_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnEpsilon_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnEpsilon_EM,  // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+////APLSTYPE  aplTypeLft,
+////          aplTypeRht,
+////          aplTypeRes;
+////APLNELM   aplNELMLft,
+////          aplNELMRht;
+////APLRANK   aplRankLft,
+////          aplRankRht;
+////APLUINT   ByteRes;
+////HGLOBAL   hGlbLft,
+////          hGlbRes;
+////LPVOID    lpMemLft,
+////          lpMemRes;
+////LPYYSTYPE lpYYRes;
+////
+////     //***************************************************************
+////     // This function is not sensitive to the axis operator,
+////     //   so signal a syntax error if present
+////     //***************************************************************
+////
+////     if (lptkAxis NE NULL)
+////     {
+////         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+////                                    lptkAxis);
+////         return NULL;
+////     } // End IF
+////
+////     // Get the attributes (Type, NELM, and Rank) of the right arg
+////     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+////
+////     // If the left arg is not present, ...
+////     if (lptkLftArg EQ NULL)
+////     {
+////         //***************************************************************
+////         // Called monadically
+////         //***************************************************************
+////
+////         // The result is {enlist} R
+////
+////         DbgBrk ();      // ***FINISHME***
+////
+////
+////
+////
+////     } else
+////     {
+////         //***************************************************************
+////         // Called dyadically
+////         //***************************************************************
+////
+////         // Get the attributes (Type, NELM, and Rank) of the left arg
+////         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+////
+////         // The result is ({rho} L){rho} 0
+////         aplTypeRes = ARRAY_BOOL;
+////
+////         // Calculate space needed for the result
+////         ByteRes = CalcArraySize (aplTypeRes, aplNELMLft, aplRankLft);
+////
+////         // Allocate space for the result.
+////         // N.B. Conversion from APLUINT to UINT.
+////         Assert (ByteRes EQ (UINT) ByteRes);
+////         hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+////         if (!hGlbRes)
+////         {
+////             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+////                                        lptkFunc);
+////             return FALSE;
+////         } // End IF
+////
+////         // Lock the memory to get a ptr to it
+////         lpMemRes = MyGlobalLock (hGlbRes);
+////
+//// #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+////
+////         // Fill in the header
+////         lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+////         lpHeader->ArrType    = aplTypeRes;
+//// ////////lpHeader->Perm       = 0;               // Already zero from GHND
+//// ////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////         lpHeader->RefCnt     = 1;
+////         lpHeader->NELM       = aplNELMLft;
+////         lpHeader->Rank       = aplRankLft;
+////
+//// #undef  lpHeader
+////
+////         // Get left arg's global ptrs
+////         GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+////
+////         // Skip over the header to the dimensions
+////         lpMemRes = VarArrayBaseToDim (lpMemRes);
+////         lpMemLft = VarArrayBaseToDim (lpMemLft);
+////
+////         // Copy dimensions to the result
+////         CopyMemory (lpMemRes, lpMemLft, (UINT) aplRankLft * sizeof (APLDIM));
+////
+////         // We no longer need these ptrs
+////         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+////         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+////     } // End IF
+////
+////     // Allocate a new YYRes
+////     lpYYRes = YYAlloc ();
+////
+////     // Fill in the result token
+////     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+//// ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+//// ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+////     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+////
+////     return lpYYRes;
+} // End PrimProtoFnEpsilon_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonEpsilon_EM
 //
 //  Primitive function for monadic Epsilon ("enlist")

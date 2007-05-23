@@ -42,6 +42,39 @@ LPYYSTYPE PrimFnComma_EM
 
 
 //***************************************************************************
+//  PrimProtoFnComma_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic Comma
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnComma_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnComma_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnComma_EM,    // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+} // End PrimProtoFnComma_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonComma_EM
 //
 //  Primitive function for monadic Comma ("ravel/table")
@@ -169,7 +202,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM
                           FALSE,            // TRUE iff want sorted axes
                           TRUE,             // TRUE iff axes must be contiguous
                           FALSE,            // TRUE iff duplicate axes are allowed
-                          &bFract,          // Return TRUE iff fractional values present
+                         &bFract,           // Return TRUE iff fractional values present
                           NULL,             // Return last axis value
                           NULL,             // Return # elements in axis vector
                           NULL)             // Return HGLOBAL with APLINT axis values
@@ -318,9 +351,9 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
                               TRUE,             // TRUE iff axes must be contiguous
                               FALSE,            // TRUE iff duplicate axes are allowed
                               NULL,             // Return TRUE iff fractional values present
-                              &aplLastAxis,     // Return last axis value
-                              &aplNELMAxis,     // Return # elements in axis vector
-                              &hGlbAxis))       // Return HGLOBAL with APLINT axis values
+                             &aplLastAxis,      // Return last axis value
+                             &aplNELMAxis,      // Return # elements in axis vector
+                             &hGlbAxis))        // Return HGLOBAL with APLINT axis values
                 break;
             //   or a singleton fractional value
             if (CheckAxis_EM (lptkAxis,         // The axis token
@@ -329,10 +362,10 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
                               FALSE,            // TRUE iff want sorted axes
                               TRUE,             // TRUE iff axes must be contiguous
                               FALSE,            // TRUE iff duplicate axes are allowed
-                              &bFract,          // Return TRUE iff fractional values present
-                              &aplLastAxis,     // Return last axis value
-                              &aplNELMAxis,     // Return # elements in axis vector
-                              &hGlbAxis)        // Return HGLOBAL with APLINT axis values
+                             &bFract,           // Return TRUE iff fractional values present
+                             &aplLastAxis,      // Return last axis value
+                             &aplNELMAxis,      // Return # elements in axis vector
+                             &hGlbAxis)         // Return HGLOBAL with APLINT axis values
              && bFract)
                 break;
             // Otherwise, it's an AXIS ERROR
@@ -928,21 +961,47 @@ LPYYSTYPE PrimFnDydComma_EM
     if (aplRankLft EQ 0                         // Scalar
      && aplNELMLft NE 0                         // and non-empty
      && aplTypeLft NE ARRAY_NESTED)             // and non-nested
-        FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL        , NULL, NULL);
+        FirstValue (lptkLftArg,                 // Ptr to right arg token
+                   &aplIntegerLft,              // Ptr to integer result
+                   &aplFloatLft,                // Ptr to float ...
+                   &aplCharLft,                 // Ptr to WCHAR ...
+                    NULL,                       // Ptr to longest ...
+                    NULL,                       // Ptr to lpSym/Glb ...
+                    NULL,                       // Ptr to ...immediate type ...
+                    NULL);                      // Ptr to array type ...
     else                                        // otherwise,
     if ((aplRankLft EQ 0 || aplNELMLft EQ 0)    // Scalar or empty
      && aplTypeLft EQ ARRAY_NESTED)             // and nested
-        FirstValue (lptkLftArg, NULL          , NULL        , NULL       , NULL, &lpSymGlbLft, NULL, NULL);
-
+        FirstValue (lptkLftArg,                 // Ptr to right arg token
+                    NULL,                       // Ptr to integer result
+                    NULL,                       // Ptr to float ...
+                    NULL,                       // Ptr to WCHAR ...
+                    NULL,                       // Ptr to longest ...
+                   &lpSymGlbLft,                // Ptr to lpSym/Glb ...
+                    NULL,                       // Ptr to ...immediate type ...
+                    NULL);                      // Ptr to array type ...
     if (aplRankRht EQ 0                         // Scalar
      && aplNELMRht NE 0                         // and non-empty
      && aplTypeRht NE ARRAY_NESTED)             // and non-nested
-        FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL        , NULL, NULL);
+        FirstValue (lptkRhtArg,                 // Ptr to right arg token
+                   &aplIntegerRht,              // Ptr to integer result
+                   &aplFloatRht,                // Ptr to float ...
+                   &aplCharRht,                 // Ptr to WCHAR ...
+                    NULL,                       // Ptr to longest ...
+                    NULL,                       // Ptr to lpSym/Glb ...
+                    NULL,                       // Ptr to ...immediate type ...
+                    NULL);                      // Ptr to array type ...
     else                                        // otherwise,
     if ((aplRankRht EQ 0 || aplNELMRht EQ 0)    // Scalar or empty
      && aplTypeRht EQ ARRAY_NESTED)             // and nested
-        FirstValue (lptkRhtArg, NULL          , NULL        , NULL       , NULL, &lpSymGlbRht, NULL, NULL);
-
+        FirstValue (lptkRhtArg,                 // Ptr to right arg token
+                    NULL,                       // Ptr to integer result
+                    NULL,                       // Ptr to float ...
+                    NULL,                       // Ptr to WCHAR ...
+                    NULL,                       // Ptr to longest ...
+                   &lpSymGlbRht,                // Ptr to lpSym/Glb ...
+                    NULL,                       // Ptr to ...immediate type ...
+                    NULL);                      // Ptr to array type ...
     // The rank of the result is the larger of the two args
     aplRankRes = max (aplRankLft, aplRankRht);
 
@@ -959,7 +1018,7 @@ LPYYSTYPE PrimFnDydComma_EM
                               FALSE,            // TRUE iff axes must be contiguous
                               FALSE,            // TRUE iff duplicate axes are allowed
                               NULL,             // Return TRUE iff fractional values present
-                              &aplAxis,         // Return last axis value
+                             &aplAxis,          // Return last axis value
                               NULL,             // Return # elements in axis vector
                               NULL))            // Return HGLOBAL with APLINT axis values
                 break;
@@ -970,8 +1029,8 @@ LPYYSTYPE PrimFnDydComma_EM
                               FALSE,            // TRUE iff want sorted axes
                               FALSE,            // TRUE iff axes must be contiguous
                               FALSE,            // TRUE iff duplicate axes are allowed
-                              &bFract,          // Return TRUE iff fractional values present
-                              &aplAxis,         // Return last axis value
+                             &bFract,           // Return TRUE iff fractional values present
+                             &aplAxis,          // Return last axis value
                               NULL,             // Return # elements in axis vector
                               NULL)             // Return HGLOBAL with APLINT axis values
              && bFract)

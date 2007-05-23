@@ -189,7 +189,7 @@ void FreeResultSub
         case TKT_FCNIMMED:  // tkData is an immediate function
         case TKT_OP1IMMED:  // ...                    monadic operator
         case TKT_OP2IMMED:  // ...                    dyadic  ...
-        case TKT_JOTDOT:    // ...                    {jot}{dot}
+        case TKT_OPJOTDOT:  // ...                    {jot}{dot}
             return;
 
         case TKT_STRNAMED:  // tkData contains an HGLOBAL of a strand of names
@@ -403,6 +403,7 @@ BOOL FreeResultGlobalFcn
             case TKT_OP1IMMED:      // ...
             case TKT_OP2IMMED:      // ...
             case TKT_AXISIMMED:     // ...
+            case TKT_OPJOTDOT:      // ...
                 break;              // Ignore immediates
 
             case TKT_FCNARRAY:      // Free the function array

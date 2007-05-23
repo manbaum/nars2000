@@ -1754,8 +1754,8 @@ int PASCAL WinMain
     InitChooseFont (&cfME, &lfME, DEF_MEPTSIZE);
     InitChooseFont (&cfVE, &lfVE, DEF_VEPTSIZE);
 
-    // Initialize Primitive Fns
-    InitPrimFns ();
+    // Initialize Primitive Fns, Operators, etc.
+    InitPrimTabs ();
 
     // Get and save the current Thread Id
     dwMainThreadId = GetCurrentThreadId ();

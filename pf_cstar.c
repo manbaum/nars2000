@@ -10,7 +10,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "primspec.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -40,7 +39,7 @@ PRIMSPEC PrimSpecCircleStar =
 
     // Dyadic functions
     &PrimFnDyd_EM,
-    NULL,   // &PrimSpecCircleStarStorageTypeDyd, -- Can't happen w/CircleStar
+    &PrimSpecCircleStarStorageTypeDyd,
     NULL,   // &PrimFnDydCircleStarAPA_EM, -- Can't happen w/CircleStar
 
     &PrimFnDydRightCaretUnderbarBisBvB,

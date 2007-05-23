@@ -11,7 +11,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "primspec.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

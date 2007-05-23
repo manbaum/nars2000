@@ -77,7 +77,7 @@ EXTERN
 APLBOOL  bQuadIO,               // []IO
          bQuadxSA;              // []SA (in its index form)
 EXTERN
-APLINT   uQuadPP,               // []PP
+APLUINT  uQuadPP,               // []PP
          uQuadPW,               // []PW
          uQuadRL;               // []RL
 EXTERN

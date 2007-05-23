@@ -52,6 +52,7 @@
 
 // Define variables which are also used in the per tab structure
 #include "pertabdefs.h"
+#include "primspec.h"
 
 
 #ifdef DEFINE_VARS
@@ -85,7 +86,7 @@ APLBOOL  bQuadIO_CWS        ,           // []IO
          bQuadxSA_CWS       ;           // []SA (in its index form)
 
 EXTERN
-APLINT   uQuadPP_CWS        ,           // []PP
+APLUINT  uQuadPP_CWS        ,           // []PP
          uQuadPW_CWS        ,           // []PW
          uQuadRL_CWS        ;           // []RL
 
@@ -139,7 +140,7 @@ DWORD dwTlsType,                        // Thread type (e.g.
                                         //   'PL' for ParseLine,
                                         //   etc.)
       dwTlsSemaphore,                   // Handle to semaphore for PL thread only
-      dwTlsLocalVars;                   // Ptr tolpplLocalVars for PL thread only
+      dwTlsLocalVars;                   // Ptr to lpplLocalVars for PL thread only
 
 //***************************************************************************
 // Temporary storage
@@ -162,8 +163,37 @@ LPWCHAR lpwszDebug;                     // Used for temporary storage of WCHAR
 #endif
 
 //***************************************************************************
+//  Primitive function and operator tables
+//***************************************************************************
+
+EXTERN
+LPPRIMFNS PrimFnsTab[256];              // The jump table for all primitive functions
+
+EXTERN
+LPPRIMFNS PrimProtoFnsTab[256];         // The jump table for all primitive functions/operator prototypes
+
+EXTERN
+LPPRIMSPEC PrimSpecTab[256];            // The table of corresponding LPPRIMSPECs
+                                        //   for all of the primitive scalar functions
+EXTERN
+UCHAR PrimFlags[256];                   // The flag tables for all primitive functions/operators
+#define PF_FASTBOOL     0x80            // Boolean function w/reduction & scan can be sped up
+#define PF_ASSOC        0x40            // Function is associative
+#define PF_ALTER        0x20            // Function is alternating
+#define PF_MONSCALAR    0x10            // Function is scalar monadic
+#define PF_DYDSCALAR    0x08            // Function is scalar dyadic
+
+//***************************************************************************
 //
 //***************************************************************************
+
+// Default six-space indent
+EXTERN
+WCHAR wszIndent[DEF_INDENT + 1]
+#ifdef DEFINE_VALUES
+ = {L' ',L' ',L' ',L' ',L' ',L' ',L'\0'}
+#endif
+;
 
 EXTERN
 HGLOBAL hGlbCurTab;                     // Global handle of current tab

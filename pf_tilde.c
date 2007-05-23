@@ -9,7 +9,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "primspec.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -91,6 +90,39 @@ LPYYSTYPE PrimFnTilde_EM
     else
         return PrimFnDydTilde_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnTilde_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  PrimProtoFnTilde_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic Tilde
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnTilde_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnTilde_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnTilde_EM,    // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+} // End PrimProtoFnTilde_EM
 #undef  APPEND_NAME
 
 

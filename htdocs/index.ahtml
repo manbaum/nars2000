@@ -124,6 +124,10 @@ ul, ol
   font-size: 80%;
   white-space: nowrap;
 }
+code
+{
+  font-weight: bold;
+}
   </style>
 </head>
 
@@ -210,7 +214,7 @@ ul, ol
         code space (smaller executable), time space (faster execution
         times), or expressibility (clearer and better understood code).
         A goal of the existing implementation is to be open
-        and easy for others to change, so that new ideas can be inserted
+        and easy for others to change, so that new ideas may be inserted
         smoothly.</p>
 
       <p>Moreover, this project is made available as
@@ -242,9 +246,12 @@ ul, ol
               <span class="APL">{disclose}R[{enclose}L]</span>, and if
               <span class="APL">L{squad}R</span> is valid, it is equivalent to
               <span class="APL">R[{disclose}{jot}.,/L]</span></li>
-            <li>Dyadic operator jot ({jot}) (composition)</li>
-            <li>Axis operator to Ravel can transpose coordinates (e.g.,
+            <li>Dyadic operator jot ({jot}) (composition) (e.g.,
+              <span class="APL">f{is},{jot}{gradeup}{jot}{gradeup}{jot},</span>)</li>
+            <li>Axis operator to Ravel may transpose coordinates (e.g.,
               <span class="APL">(,[2 1] R) {notmatch} ,[1 2] R</span>)</li>
+            <li>Axis operator is allowed on the Each operator (e.g.,
+              <span class="APL">1 2{rho}{each}[1] 2 3{rho}{iota}6</span>)</li>
           </ul>
         </li>
 
@@ -316,7 +323,7 @@ ul, ol
 
       <h3>Current Miscellaneous</h3>
       <ul>
-        <li>Multiple workspaces can be open at the same time
+        <li>Multiple workspaces may be open at the same time
           and switched between via Tabs</li>
         <li>All variable names are two-byte characters
           (Unicode, that is, UTF-16)</li>
@@ -352,13 +359,14 @@ ul, ol
             <li>Monadic iota ({iota}) (index generator)</li>
             <li>Monadic epsilon ({epsilon}) (enlist)</li>
             <li>Monadic comma ({comma} and {commabar}) (ravel (with and without axis) and table)
-               &mdash; Axis operator to Ravel can transpose coordinates</li>
+               &mdash; Axis operator to Ravel may transpose coordinates</li>
             <li>Monadic equal-underbar ({equalunderbar}) (depth)</li>
             <li>Monadic circle-slope ({circleslope}) (transpose)</li>
             <li>Monadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse)</li>
             <li>Monadic domino ({domino}) (matrix inverse)
               using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
             <li>Monadic thorn ({thorn}) (default format)</li>
+            <li>Monadic up arrow ({uparrow}) (first)</li>
           </ul>
         </li>
         <li>Dyadic
@@ -388,13 +396,15 @@ ul, ol
       <ul>
         <li>Monadic
           <ul>
-            <li>Monadic operator each  ({each}) monadic &amp; dyadic derived functions (each)</li>
-            <li>Monadic operator frown ({frown}) monadic &amp; dyadic derived functions (commute/reflex)</li>
+            <li>Monadic operator each  ({each}) monadic and dyadic derived functions (each)
+              with and without axis operator</li>
+            <li>Monadic operator frown ({frown}) monadic and dyadic derived functions (commute/reflex)</li>
+            <li>Monadic operator jot-dot ({jot}{dot}) dyadic derived function (outer product)</li>
           </ul>
         </li>
         <li>Dyadic
           <ul>
-            <li>Dyadic operator jot ({jot}) monadic &amp; dyadic derived functions (composition)</li>
+            <li>Dyadic operator jot ({jot}) monadic and dyadic derived functions (composition)</li>
           </ul>
         </li>
       </ul>
@@ -426,6 +436,7 @@ ul, ol
           <span class="APL">L{squad}R</span> is valid, it is equivalent to
           <span class="APL">R[{disclose}{jot}.,/L]</span></li>
         <li>Quad and Quote-Quad output, e.g., (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
+        <li>Prototypes for primitive functions and operators</li>
       </ul>
 
       <h3>Session Manager</h3>
@@ -531,24 +542,25 @@ ul, ol
 
           <li>Source Code Under Version Control:
             <ul>
-              <li>The source can be <a class="linkleft" href="http://www.nars2000.org/viewvc/trunk/">viewed</a>,
+              <li>The source may be <a class="linkleft" href="http://svn.nars2000.org">viewed</a>,
                 as well as downloaded, one file at a time, from your browser.
               </li>
 
               <li>Or, the source may be downloaded, one file at a time
                 or the whole lot, by running a version control program.
                 In particular, the source code is maintained on this
-                site using <a class="linkleft" href="http://subversion.tigris.org/">Subversion</a>,
-                as in <code>svn://svn.nars2000.org</code>.
-                There are various clients which can commmunicate with a Subversion
+                site using <a class="linkleft" href="http://subversion.tigris.org/">Subversion</a>.
+                There are various clients which may commmunicate with a Subversion
                 server depending upon the operating system running on your computer.
-                For example, if you are running Windows, you can download (for free)
+                For example, if you are running Windows, you may download (for free)
                 the program <a class="linkleft" href="http://tortoisesvn.tigris.org/">Tortoise SVN</a>.
-                This is one means by which developers can checkout and commit changes to
+                This is one means by which developers may checkout and commit changes to
                 the code.
+                Using a version control program, the source code may be viewed using
+                the URL <code>svn://svn.nars2000.org</code>.
               </li>
 
-              <li>The <a class="linkleft" href="http://www.nars2000.org/viewvc/trunk/">browser view</a>
+              <li>The <a class="linkleft" href="http://svn.nars2000.org">browser view</a>
                 also allows you to download the entire source code as a compressed file.
                 Try the link at the bottom of each index page labeled "Download tarball".
               </li>
@@ -575,7 +587,7 @@ ul, ol
       you'd like to contribute, write up a short description of what you
       want to do and submit it to the project via the Discussion Forums.</p>
 
-      <p>When you contribute content to the project, you'll be listed in
+      <p>When you contribute content to the project, your name will be placed in
       the List of Contributors.  First time contributors will also need to
       <a class="linkleft" href="http://www.gnu.org/licenses/why-assign.html">assign
       copyright</a> of what you contribute to the project, in
@@ -583,7 +595,7 @@ ul, ol
       an attempt to take
       credit for what you have contributed &mdash; instead, it provides a
       single point of reference from a legal standpoint in case the program's copyright
-      (or <a class="linkleft" href="http://www.gnu.org/copyleft/copyleft.html">copyleft</a>)
+      (actually <a class="linkleft" href="http://www.gnu.org/copyleft/copyleft.html">copyleft</a>)
       needs to be enforced.  See the "assign copyright" link above for why this is
       necessary.</p>
     </div>

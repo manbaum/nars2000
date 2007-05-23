@@ -11,7 +11,6 @@
 #include "resdebug.h"
 #include "sysvars.h"
 #include "externs.h"
-#include "primspec.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

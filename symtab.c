@@ -1156,8 +1156,8 @@ LPSYMENTRY SymTabLookupName
 //***************************************************************************
 
 LPSYMENTRY MakeSymEntry_EM
-    (IMM_TYPES     immType,     // ImmType to use
-     LPAPLLONGEST  lpVal,       // Value to use
+    (IMM_TYPES     immType,         // ImmType to use
+     LPAPLLONGEST  lpVal,           // Value to use
      LPTOKEN       lptkFunc)        // Ptr to token to use in case of error
 
 {

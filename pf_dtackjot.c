@@ -60,6 +60,39 @@ LPYYSTYPE PrimFnDownTackJot_EM
 
 
 //***************************************************************************
+//  PrimProtoFnDownTackJot_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic DownTackJot
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnDownTackJot_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnDownTackJot_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnDownTackJot_EM,  // Ptr to primitive function routine
+                                 lptkLftArg,            // Ptr to left arg token
+                                 lptkFunc,              // Ptr to function token
+                                 lptkRhtArg,            // Ptr to right arg token
+                                 lptkAxis);             // Ptr to axis token (may be NULL)
+} // End PrimProtoFnDownTackJot_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonDownTackJot_EM
 //
 //  Primitive function for monadic DownTackJot ("default format")
@@ -184,14 +217,14 @@ LPYYSTYPE PrimFnMonDownTackJot_EM
     //   get its value
     bSimpleScalar = (aplRankRht EQ 0 && IsSimpleNH (aplTypeRht));
     if (bSimpleScalar)
-        FirstValue (lptkRhtArg,
-                   &aplIntegerRht,
-                   &aplFloatRht,
-                   &aplCharRht,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL);
+        FirstValue (lptkRhtArg,         // Ptr to right arg token
+                   &aplIntegerRht,      // Ptr to integer result
+                   &aplFloatRht,        // Ptr to float ...
+                   &aplCharRht,         // Ptr to WCHAR ...
+                    NULL,               // Ptr to longest ...
+                    NULL,               // Ptr to lpSym/Glb ...
+                    NULL,               // Ptr to ...immediate type ...
+                    NULL);              // Ptr to array type ...
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {
@@ -561,7 +594,6 @@ LPAPLCHAR FmtArrSimple
                         // If this is raw output,
                         // break the line if it would exceed []PW
                         //   and the line is non-empty.
-////////////////////////uCol = lpwszOut - lpwszTemp;
                         uCol = lpwszOut - lpwszOutStart;
                         if (bRawOutput
                          && DEF_INDENT < uCol
@@ -571,14 +603,12 @@ LPAPLCHAR FmtArrSimple
                             *lpwszOut = L'\0';
 
                             // Output the line
-////////////////////////////AppendLine (lpwszTemp, TRUE, TRUE);
                             AppendLine (lpwszOutStart, TRUE, TRUE);
 
                             // Reset the line start
                             lpwszOut = lpw = *lplpwszOut;
 
                             // Fill the output area with all blanks
-////////////////////////////uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszTemp);
                             uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
                             while (uCol--)
                                 *lpw++ = L' ';
@@ -646,14 +676,12 @@ LPAPLCHAR FmtArrSimple
             *lpwszOut = L'\0';
 
             // Output the line
-////////////AppendLine (lpwszTemp, FALSE, bEndingCR || aplDimRow < (aplDimNRows - 1));
             AppendLine (lpwszOutStart, FALSE, bEndingCR || aplDimRow < (aplDimNRows - 1));
 
             // Reset the line start
             lpwszOut = lpw = *lplpwszOut;
 
             // Fill the output area with all blanks
-////////////uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszTemp);
             uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
             while (uCol--)
                 *lpw++ = L' ';
@@ -741,7 +769,7 @@ LPAPLCHAR FmtArrNested
                 // Save starting output string ptr
                 lpwszOut = lpwszOutStart;
 
-                // Offset lpwszOut from the start by the widthof previous cols
+                // Offset lpwszOut from the start by the width of previous cols
                 for (uCol = 0; uCol < aplDimCol; uCol++)
                     lpwszOut += (lpFmtColStr[uCol].uInts
                                + lpFmtColStr[uCol].uFrcs);
@@ -827,7 +855,6 @@ LPAPLCHAR FmtArrNestedGlb
 
 {
     APLSTYPE aplType;
-    APLNELM  aplNELM;
     APLRANK  aplRank;
     LPVOID   lpMem;
     LPAPLDIM lpMemDim;
@@ -839,8 +866,8 @@ LPAPLCHAR FmtArrNestedGlb
              uCol,
              uWid;
 
-    // Get attrs (Type, NELM, Rank) of the global
-    AttrsOfGlb (hGlb, &aplType, &aplNELM, &aplRank, NULL);
+    // Get the attributes (Type, NELM, Rank) of the global
+    AttrsOfGlb (hGlb, &aplType, NULL, &aplRank, NULL);
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlb);
@@ -1043,8 +1070,8 @@ LPAPLCHAR CompileArrBool
     } // End FOR
 
     // Mark as last row struc
-    lpFmtRowLcl->lpFmtRowNxt = NULL;
-
+    if (lpFmtRowLcl)
+        lpFmtRowLcl->lpFmtRowNxt = NULL;
     return lpaplChar;
 } // End CompileArrBool
 
@@ -1070,7 +1097,7 @@ LPAPLCHAR CompileArrInteger
     APLDIM      aplDimCol,
                 aplDimRow;
     LPAPLCHAR   lpwszOut;
-    LPFMTROWSTR lpFmtRowLcl;
+    LPFMTROWSTR lpFmtRowLcl = NULL;
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -1124,8 +1151,8 @@ LPAPLCHAR CompileArrInteger
     } // End FOR
 
     // Mark as last row struc
-    lpFmtRowLcl->lpFmtRowNxt = NULL;
-
+    if (lpFmtRowLcl)
+        lpFmtRowLcl->lpFmtRowNxt = NULL;
     return lpaplChar;
 } // End CompileArrInteger
 
@@ -1152,7 +1179,7 @@ LPAPLCHAR CompileArrFloat
                 aplDimRow;
     LPAPLCHAR   lpwszOut;
     LPWCHAR     lpwsz;
-    LPFMTROWSTR lpFmtRowLcl;
+    LPFMTROWSTR lpFmtRowLcl = NULL;
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -1235,8 +1262,8 @@ LPAPLCHAR CompileArrFloat
     } // End FOR
 
     // Mark as last row struc
-    lpFmtRowLcl->lpFmtRowNxt = NULL;
-
+    if (lpFmtRowLcl)
+        lpFmtRowLcl->lpFmtRowNxt = NULL;
     return lpaplChar;
 } // End CompileArrFloat
 
@@ -1260,7 +1287,7 @@ LPAPLCHAR CompileArrChar
 {
     APLDIM      aplDimCol,
                 aplDimRow;
-    LPFMTROWSTR lpFmtRowLcl;
+    LPFMTROWSTR lpFmtRowLcl = NULL;
 
     // Loop through the cols setting the common width
     for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
@@ -1306,8 +1333,8 @@ LPAPLCHAR CompileArrChar
     } // End FOR
 
     // Mark as last row struc
-    lpFmtRowLcl->lpFmtRowNxt = NULL;
-
+    if (lpFmtRowLcl)
+        lpFmtRowLcl->lpFmtRowNxt = NULL;
     return lpaplChar;
 } // End CompileArrChar
 
@@ -1336,7 +1363,7 @@ LPAPLCHAR CompileArrAPA
     APLDIM      aplDimCol,
                 aplDimRow;
     LPAPLCHAR   lpwszOut;
-    LPFMTROWSTR lpFmtRowLcl;
+    LPFMTROWSTR lpFmtRowLcl = NULL;
 
     // Get the APA parameters
     apaOff = lpAPA->Off;
@@ -1391,8 +1418,8 @@ LPAPLCHAR CompileArrAPA
     } // End FOR
 
     // Mark as last row struc
-    lpFmtRowLcl->lpFmtRowNxt = NULL;
-
+    if (lpFmtRowLcl)
+        lpFmtRowLcl->lpFmtRowNxt = NULL;
     return lpaplChar;
 } // End CompileArrAPA
 
@@ -1418,7 +1445,7 @@ LPAPLCHAR CompileArrHetero
     APLDIM      aplDimCol,
                 aplDimRow;
     LPAPLCHAR   lpwszOut;
-    LPFMTROWSTR lpFmtRowLcl;
+    LPFMTROWSTR lpFmtRowLcl = NULL;
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -1481,8 +1508,8 @@ LPAPLCHAR CompileArrHetero
     } // End FOR
 
     // Mark as last row struc
-    lpFmtRowLcl->lpFmtRowNxt = NULL;
-
+    if (lpFmtRowLcl)
+        lpFmtRowLcl->lpFmtRowNxt = NULL;
     return lpaplChar;
 } // End CompileArrHetero
 
@@ -1506,7 +1533,7 @@ LPAPLCHAR CompileArrNested
 {
     APLDIM      aplDimCol,
                 aplDimRow;
-    LPFMTROWSTR lpFmtRowLcl;
+    LPFMTROWSTR lpFmtRowLcl = NULL;
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -1618,8 +1645,8 @@ LPAPLCHAR CompileArrNested
     } // End FOR
 
     // Mark as last row struc
-    lpFmtRowLcl->lpFmtRowNxt = NULL;
-
+    if (lpFmtRowLcl)
+        lpFmtRowLcl->lpFmtRowNxt = NULL;
     return lpaplChar;
 } // End CompileArrNested
 
@@ -1650,7 +1677,7 @@ LPAPLCHAR CompileArrNestedGlb
     APLFLOAT aplFloat;
     APLCHAR  aplChar;
 
-    // Get attrs (Type, NELM, Rank) of the global
+    // Get the attributes (Type, NELM, Rank) of the global
     AttrsOfGlb (hGlb, &aplType, &aplNELM, &aplRank, NULL);
 
     // Lock the memory to get a ptr to it
@@ -1726,14 +1753,14 @@ LPAPLCHAR CompileArrNestedGlb
     //   get its value
     bSimpleScalar = (aplRank EQ 0 && IsSimpleNH (aplType));
     if (bSimpleScalar)
-        FirstValueGlb (hGlb,
-                      &aplInteger,
-                      &aplFloat,
-                      &aplChar,
-                       NULL,
-                       NULL,
-                       NULL,
-                       NULL);
+        FirstValueGlb (hGlb,            // Ptr to right arg token
+                      &aplInteger,      // Ptr to integer result
+                      &aplFloat,        // Ptr to float ...
+                      &aplChar,         // Ptr to WCHAR ...
+                       NULL,            // Ptr to longest ...
+                       NULL,            // Ptr to lpSym/Glb ...
+                       NULL,            // Ptr to ...immediate type ...
+                       NULL);           // Ptr to array type ...
     // Split cases based upon the right arg's storage type
     switch (aplType)
     {

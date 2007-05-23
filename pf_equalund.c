@@ -48,6 +48,70 @@ LPYYSTYPE PrimFnEqualUnderbar_EM
 
 
 //***************************************************************************
+//  PrimProtoFnEqualUnderbar_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic EqualUnderbar
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnEqualUnderbar_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnEqualUnderbar_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnEqualUnderbar_EM,// Ptr to primitive function routine
+                                 lptkLftArg,            // Ptr to left arg token
+                                 lptkFunc,              // Ptr to function token
+                                 lptkRhtArg,            // Ptr to right arg token
+                                 lptkAxis);             // Ptr to axis token (may be NULL)
+////     LPYYSTYPE lpYYRes;
+////
+////     //***************************************************************
+////     // This function is not sensitive to the axis operator,
+////     //   so signal a syntax error if present
+////     //***************************************************************
+////
+////     if (lptkAxis NE NULL)
+////     {
+////         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+////                                    lptkAxis);
+////         return NULL;
+////     } // End IF
+////
+////     //***************************************************************
+////     // Called monadically or dyadically
+////     //***************************************************************
+////
+////     // The result is 0
+////
+////     // Allocate a new YYRes
+////     lpYYRes = YYAlloc ();
+////
+////     // Fill in the result token
+////     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+////     lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+//// ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////     lpYYRes->tkToken.tkData.tkBoolean  = 0;
+////     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+////
+////     return lpYYRes;
+} // End PrimProtoFnEqualUnderbar_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonEqualUnderbar_EM
 //
 //  Primitive function for monadic EqualUnderbar ("depth")
@@ -364,9 +428,22 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
                     break;
 
                 // Get the respective first values
-                FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
-                FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
-
+                FirstValue (lptkLftArg,         // Ptr to right arg token
+                           &aplIntegerLft,      // Ptr to integer result
+                           &aplFloatLft,        // Ptr to float ...
+                           &aplCharLft,         // Ptr to WCHAR ...
+                            NULL,               // Ptr to longest ...
+                            NULL,               // Ptr to lpSym/Glb ...
+                            NULL,               // Ptr to ...immediate type ...
+                            NULL);              // Ptr to array type ...
+                FirstValue (lptkRhtArg,         // Ptr to right arg token
+                           &aplIntegerRht,      // Ptr to integer result
+                           &aplFloatRht,        // Ptr to float ...
+                           &aplCharRht,         // Ptr to WCHAR ...
+                            NULL,               // Ptr to longest ...
+                            NULL,               // Ptr to lpSym/Glb ...
+                            NULL,               // Ptr to ...immediate type ...
+                            NULL);              // Ptr to array type ...
                 // Split cases into Numeric and Char
                 if (bNumLft)
                 {               // Both are numeric

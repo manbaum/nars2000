@@ -49,6 +49,39 @@ LPYYSTYPE PrimFnSlope_EM
 
 
 //***************************************************************************
+//  PrimProtoFnSlope_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic Slope
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnSlope_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnSlope_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnSlope_EM,    // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+} // End PrimProtoFnSlope_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonSlope_EM
 //
 //  Primitive function for monadic Slope (ERROR)
@@ -161,7 +194,7 @@ LPYYSTYPE PrimFnDydSlope_EM
                            FALSE,           // TRUE iff axes must be contiguous
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // Return TRUE iff fractional values present
-                           &aplAxis,        // Return last axis value
+                          &aplAxis,         // Return last axis value
                            NULL,            // Return # elements in axis vector
                            NULL))           // Return HGLOBAL with APLINT axis values
             return NULL;
@@ -220,14 +253,14 @@ LPYYSTYPE PrimFnDydSlope_EM
     if (aplNELMLft EQ 1)
     {
         // Get the integer or float value
-        FirstValue (lptkLftArg,
-                   &aplIntegerLft,
-                   &aplFloatLft,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL);
+        FirstValue (lptkLftArg,         // Ptr to right arg token
+                   &aplIntegerLft,      // Ptr to integer result
+                   &aplFloatLft,        // Ptr to float ...
+                    NULL,               // Ptr to WCHAR ...
+                    NULL,               // Ptr to longest ...
+                    NULL,               // Ptr to lpSym/Glb ...
+                    NULL,               // Ptr to ...immediate type ...
+                    NULL);              // Ptr to array type ...
         // Attempt to convert FLOAT left arg
         if (aplTypeLft EQ ARRAY_FLOAT)
         {
@@ -435,15 +468,14 @@ LPYYSTYPE PrimFnDydSlope_EM
 
     // If the right arg is a singleton, get its value
     if (aplNELMRht EQ 1)
-        FirstValue (lptkRhtArg,
-                   &aplIntegerRht,
-                   &aplFloatRht,
-                   &aplCharRht,
-                    NULL,
-                   &aplNestRht,
-                    NULL,
-                    NULL);
-
+        FirstValue (lptkRhtArg,         // Ptr to right arg token
+                   &aplIntegerRht,      // Ptr to integer result
+                   &aplFloatRht,        // Ptr to float ...
+                   &aplCharRht,         // Ptr to WCHAR ...
+                    NULL,               // Ptr to longest ...
+                   &aplNestRht,         // Ptr to lpSym/Glb ...
+                    NULL,               // Ptr to ...immediate type ...
+                    NULL);              // Ptr to array type ...
     // Copy the data to the result
 
     // Split cases based upon the right arg's storage type
@@ -626,17 +658,17 @@ LPYYSTYPE PrimFnDydSlope_EM
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             // Get the prototype of the right arg
-            FirstValue (lptkRhtArg,
-                       &aplIntegerRht,
-                       &aplFloatRht,
-                       &aplCharRht,
-                        NULL,
-                       &aplNestRht,
-                        NULL,
-                        NULL);
-            aplNestProto = MakePrototype_EM (aplNestRht,
-                                             lptkFunc,
-                                             FALSE);        // Allow CHARs
+            FirstValue (lptkRhtArg,         // Ptr to right arg token
+                       &aplIntegerRht,      // Ptr to integer result
+                       &aplFloatRht,        // Ptr to float ...
+                       &aplCharRht,         // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                       &aplNestRht,         // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
+            aplNestProto = MakePrototype_EM (aplNestRht,    // Proto arg handle
+                                             lptkFunc,      // Ptr to function token
+                                             MP_CHARS);     // CHARs allowed
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)

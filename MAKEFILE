@@ -11,7 +11,7 @@ DEBUG=0
 RESDEBUG=1
 A=$(PROJPATH)Images\            # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
-WS=$(PROJPATH)WineHQ\           # Wine source
+WS=WineHQ\                      # Wine source
 GS=gsl\                         # GSL Source
 GSP=$(GS)specfunc\              # GSL Special Functions
 OLDPATH = $(PATH)               # Save the current path
@@ -36,8 +36,10 @@ LIBS_WEXE = GDI32.LIB   \
             SHELL32.LIB \
             ADVAPI32.LIB\
             COMCTL32.LIB\
-            libgsl.lib  \
-#####       IMM32.LIB
+            R:\GSL\LIB\libgsl.a \
+            R:\GSL\LIB\libgslcblas.a
+
+####        libgsl.lib
 
 RCFLAGS =
 RESFLAGS =
@@ -189,9 +191,16 @@ $(O)pf_star.DEP         \
 $(O)pf_stile.DEP        \
 $(O)pf_tilde.DEP        \
 $(O)pf_times.DEP        \
+$(O)pf_uarrow.DEP       \
 $(O)pf_ucaret.DEP       \
 $(O)pf_ustile.DEP       \
 $(O)po_dieresis.DEP     \
+$(O)po_ditilde.DEP      \
+$(O)po_dot.DEP          \
+$(O)po_jot.DEP          \
+$(O)po_jotdot.DEP       \
+$(O)po_slash.DEP        \
+$(O)po_slope.DEP        \
 $(O)primfns.DEP         \
 $(O)primspec.DEP        \
 $(O)qdwa.DEP            \
@@ -201,6 +210,7 @@ $(O)resdebug.DEP        \
 $(O)sessman.DEP         \
 $(O)strand.DEP          \
 $(O)symtab.DEP          \
+$(O)symtrans.DEP        \
 $(O)syscmds.DEP         \
 $(O)sysfns.DEP          \
 $(O)sysvars.DEP         \
@@ -215,35 +225,35 @@ $(O)version.DEV
     @Set INCLUDE=$(I98);$(H);$(O)
     @Set PATH=$(BC)
     @echo depscan -q -s$(PROJPATH)$(O)=$$(O) %s
-    @depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+    @     depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
     @Set PATH=$(OLDPATH)
 
 {$(WS)}.C{$(O)}.DEP:
     @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
     @Set PATH=$(BC)
     @echo depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s
-    @depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s > $@
+    @     depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s > $@
     @Set PATH=$(OLDPATH)
 
 {$(GSP)}.C{$(O)}.DEP:
     @Set INCLUDE=$(GS).;$(GSP).;$(I98).
     @Set PATH=$(BC)
     @echo depscan -q -s$(PROJPATH)$(O)=$$(O),$(GS)=$$(GS),$(GSP)=$$(GSP) %s
-    @depscan -q -s$(PROJPATH)$(O)=$$(O),$(GS)=$$(GS),$(GSP)=$$(GSP) %s > $@
+    @     depscan -q -s$(PROJPATH)$(O)=$$(O),$(GS)=$$(GS),$(GSP)=$$(GSP) %s > $@
     @Set PATH=$(OLDPATH)
 
 {}.C{$(O)}.DEP:
     @Set INCLUDE=$(I98);$(H);$(O)
     @Set PATH=$(BC)
     @echo depscan -q -s$(PROJPATH)$(O)=$$(O) %s
-    @depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+    @     depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
     @Set PATH=$(OLDPATH)
 
 {}.RC{$(O)}.DEV:
     @Set INCLUDE=$(I98);$(H);$(O)
     @Set PATH=$(BC)
 ####@echo depscan -q -s$(PROJPATH)$(O)=$$(O) %s
-    @depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
+    @     depscan -q -s$(PROJPATH)$(O)=$$(O) %s > $@
     @Set PATH=$(OLDPATH)
 
 !if exist ($(O)assign.DEP)
@@ -393,6 +403,9 @@ $(O)version.DEV
 !if exist ($(O)pf_times.DEP)
 !       include $(O)pf_times.DEP
 !endif
+!if exist ($(O)pf_uarrow.DEP)
+!       include $(O)pf_uarrow.DEP
+!endif
 !if exist ($(O)pf_ucaret.DEP)
 !       include $(O)pf_ucaret.DEP
 !endif
@@ -401,6 +414,24 @@ $(O)version.DEV
 !endif
 !if exist ($(O)po_dieresis.DEP)
 !       include $(O)po_dieresis.DEP
+!endif
+!if exist ($(O)po_ditilde.DEP)
+!       include $(O)po_ditilde.DEP
+!endif
+!if exist ($(O)po_dot.DEP)
+!       include $(O)po_dot.DEP
+!endif
+!if exist ($(O)po_jot.DEP)
+!       include $(O)po_jot.DEP
+!endif
+!if exist ($(O)po_jotdot.DEP)
+!       include $(O)po_jotdot.DEP
+!endif
+!if exist ($(O)po_slash.DEP)
+!       include $(O)po_slash.DEP
+!endif
+!if exist ($(O)po_slope.DEP)
+!       include $(O)po_slope.DEP
 !endif
 !if exist ($(O)primfns.DEP)
 !       include $(O)primfns.DEP
@@ -428,6 +459,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)symtab.DEP)
 !       include $(O)symtab.DEP
+!endif
+!if exist ($(O)symtrans.DEP)
+!       include $(O)symtrans.DEP
 !endif
 !if exist ($(O)syscmds.DEP)
 !       include $(O)syscmds.DEP
@@ -511,9 +545,16 @@ $(O)pf_star.PRO         \
 $(O)pf_stile.PRO        \
 $(O)pf_tilde.PRO        \
 $(O)pf_times.PRO        \
+$(O)pf_uarrow.PRO       \
 $(O)pf_ucaret.PRO       \
 $(O)pf_ustile.PRO       \
 $(O)po_dieresis.PRO     \
+$(O)po_ditilde.PRO      \
+$(O)po_dot.PRO          \
+$(O)po_jot.PRO          \
+$(O)po_jotdot.PRO       \
+$(O)po_slash.PRO        \
+$(O)po_slope.PRO        \
 $(O)primfns.PRO         \
 $(O)primspec.PRO        \
 $(O)qdwa.PRO            \
@@ -523,6 +564,7 @@ $(O)resdebug.PRO        \
 $(O)sessman.PRO         \
 $(O)strand.PRO          \
 $(O)symtab.PRO          \
+$(O)symtrans.PRO        \
 $(O)syscmds.PRO         \
 $(O)sysfns.PRO          \
 $(O)sysvars.PRO         \
@@ -622,9 +664,16 @@ $(O)pf_star.OBJ:        $(@B).C         $(PF_STAR_DEP)
 $(O)pf_stile.OBJ:       $(@B).C         $(PF_STILE_DEP)
 $(O)pf_tilde.OBJ:       $(@B).C         $(PF_TILDE_DEP)
 $(O)pf_times.OBJ:       $(@B).C         $(PF_TIMES_DEP)
+$(O)pf_uarrow.OBJ:      $(@B).C         $(PF_UARROW_DEP)
 $(O)pf_ucaret.OBJ:      $(@B).C         $(PF_UCARET_DEP)
 $(O)pf_ustile.OBJ:      $(@B).C         $(PF_USTILE_DEP)
 $(O)po_dieresis.OBJ:    $(@B).C         $(PO_DIERESIS_DEP)
+$(O)po_ditilde.OBJ:     $(@B).C         $(PO_DITILDE_DEP)
+$(O)po_dot.OBJ:         $(@B).C         $(PO_DOT_DEP)
+$(O)po_jot.OBJ:         $(@B).C         $(PO_JOT_DEP)
+$(O)po_jotdot.OBJ:      $(@B).C         $(PO_JOTDOT_DEP)
+$(O)po_slash.OBJ:       $(@B).C         $(PO_SLASH_DEP)
+$(O)po_slope.OBJ:       $(@B).C         $(PO_SLOPE_DEP)
 $(O)primfns.OBJ:        $(@B).C         $(PRIMFNS_DEP)
 $(O)primspec.OBJ:       $(@B).C         $(PRIMSPEC_DEP)
 $(O)qdwa.OBJ:           $(@B).C         $(QDWA_DEP)
@@ -636,6 +685,7 @@ $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
 $(O)sessman.OBJ:        $(@B).C         $(SESSMAN_DEP)
 $(O)strand.OBJ:         $(@B).C         $(STRAND_DEP)
 $(O)symtab.OBJ:         $(@B).C         $(SYMTAB_DEP)
+$(O)symtrans.OBJ:       $(@B).C         $(SYMTRANS_DEP)
 $(O)syscmds.OBJ:        $(@B).C         $(SYSCMDS_DEP)
 $(O)sysfns.OBJ:         $(@B).C         $(SYSFNS_DEP)
 $(O)sysvars.OBJ:        $(@B).C         $(SYSVARS_DEP)
@@ -712,9 +762,16 @@ OBJS=                       \
      $(O)pf_stile.OBJ       \
      $(O)pf_tilde.OBJ       \
      $(O)pf_times.OBJ       \
+     $(O)pf_uarrow.OBJ      \
      $(O)pf_ucaret.OBJ      \
      $(O)pf_ustile.OBJ      \
      $(O)po_dieresis.OBJ    \
+     $(O)po_ditilde.OBJ     \
+     $(O)po_dot.OBJ         \
+     $(O)po_jot.OBJ         \
+     $(O)po_jotdot.OBJ      \
+     $(O)po_slash.OBJ       \
+     $(O)po_slope.OBJ       \
      $(O)primfns.OBJ        \
      $(O)primspec.OBJ       \
      $(O)qdwa.OBJ           \
@@ -726,6 +783,7 @@ OBJS=                       \
      $(O)sessman.OBJ        \
      $(O)strand.OBJ         \
      $(O)symtab.OBJ         \
+     $(O)symtrans.OBJ       \
      $(O)syscmds.OBJ        \
      $(O)sysfns.OBJ         \
      $(O)sysvars.OBJ        \

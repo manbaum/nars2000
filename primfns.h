@@ -3,9 +3,14 @@
 //***************************************************************************
 
 // Common TYPEDEF used to call all primitive functions
-////typedef LPYYSTYPE (*LPPRIMFNS) (LPTOKEN, LPTOKEN, LPTOKEN, LPTOKEN);
 typedef struct tagYYSTYPE *(*LPPRIMFNS) (struct tagTOKEN *,
                                          struct tagTOKEN *,
+                                         struct tagTOKEN *,
+                                         struct tagTOKEN *);
+
+// Common TYPEDEF used to call all primitive operators
+typedef struct tagYYSTYPE *(*LPPRIMOPS) (struct tagTOKEN *,
+                                         struct tagYYSTYPE *,
                                          struct tagTOKEN *,
                                          struct tagTOKEN *);
 

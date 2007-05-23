@@ -42,9 +42,6 @@ In any case,
 //// COLORREF crTextColor = DEF_TEXT_FG_COLOR,
 ////          crBkColor   = DEF_TEXT_BG_COLOR;
 
-// Default six-space indent
-WCHAR wszIndent[DEF_INDENT + 1] = {L' ',L' ',L' ',L' ',L' ',L' ',L'\0'};
-
 ////LPTOKEN lptkStackBase;          // Ptr to base of token stack used in parsing
 
 
@@ -366,6 +363,80 @@ void DisplayPrompt
 
 
 //***************************************************************************
+//  GetSteZero
+//
+//  Return the LPSYMENTRY corresponding to the constant zero
+//***************************************************************************
+
+LPSYMENTRY GetSteZero
+    (void)
+
+{
+    LPPLLOCALVARS lpplLocalVars;
+    LPSYMENTRY    lpSym;
+    HGLOBAL       hGlbPTD;
+    LPPERTABDATA  lpMemPTD;
+
+    // Ensure we are where we think we are
+    Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+
+    // Get the ptr to this thread's lpplLocalVars
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+
+    // Get the PerTabData global handle
+    hGlbPTD = lpplLocalVars->hGlbPTD;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the STE
+    lpSym = lpMemPTD->steZero;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpSym;
+} // GetSteZero
+
+
+//***************************************************************************
+//  GetSteBlank
+//
+//  Return the LPSYMENTRY corresponding to the constant blank
+//***************************************************************************
+
+LPSYMENTRY GetSteBlank
+    (void)
+
+{
+    LPPLLOCALVARS lpplLocalVars;
+    LPSYMENTRY    lpSym;
+    HGLOBAL       hGlbPTD;
+    LPPERTABDATA  lpMemPTD;
+
+    // Ensure we are where we think we are
+    Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+
+    // Get the ptr to this thread's lpplLocalVars
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+
+    // Get the PerTabData global handle
+    hGlbPTD = lpplLocalVars->hGlbPTD;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the STE
+    lpSym = lpMemPTD->steBlank;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpSym;
+} // GetSteBlank
+
+
+//***************************************************************************
 //  SM_Create
 //
 //  Perform window-specific initialization
@@ -441,6 +512,9 @@ LRESULT APIENTRY SMWndProc
 #define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
         {
             int i;
+
+            // Initialize # threads
+            SetProp (hWnd, "NTHREADS", 0);
 
             // Initialize variables
             cfSM.hwndOwner = hWnd;
@@ -664,8 +738,9 @@ LRESULT APIENTRY SMWndProc
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Initialize the Symbol table Entry for the constant zero
-            lpMemPTD->steZero = SymTabAppendInteger_EM (0);
+            // Initialize the Symbol table Entry for the constant zero and blank
+            lpMemPTD->steZero  = SymTabAppendInteger_EM (0);
+            lpMemPTD->steBlank = SymTabAppendChar_EM    (L' ');
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -783,9 +858,9 @@ LRESULT APIENTRY SMWndProc
             // Tell the Edit Control about its font
             SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, TRUE);
 
-            // ***DEBUG***
+#ifdef DEBUG
             SendMessageW (hWnd, MYWM_KEYDOWN, VK_F9, 0);
-
+#endif
             // Make sure we can communicate between windows
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
@@ -912,6 +987,9 @@ LRESULT APIENTRY SMWndProc
 
                         // Close the handle as it isn't used anymore
                         CloseHandle (hSemaphore);
+
+                        // Close the thread handle as it has terminated
+                        CloseHandle (hThread);
 
                         // Display the default prompt
                         DisplayPrompt (hWndEC);
@@ -1173,7 +1251,14 @@ LRESULT APIENTRY SMWndProc
 
                     return FALSE;
 #endif
+#ifdef DEBUG
                 defstop
+#else
+                default:
+                    DbgBrk ();          // ***FIXME***
+                    Beep (1000,        // Frequency in Hz (37 to 32,767)
+                          1000);         // Duration in milliseconds
+#endif
                     break;
             } // End SWITCH
 

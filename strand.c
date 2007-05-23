@@ -252,7 +252,7 @@ void FreeStrand
             case TKT_FCNIMMED:
             case TKT_OP1IMMED:
             case TKT_OP2IMMED:
-            case TKT_JOTDOT:
+            case TKT_OPJOTDOT:
             case TKT_LPAREN:
             case TKT_RPAREN:
                 break;
@@ -454,7 +454,7 @@ static char tabConvert[][STRAND_LENGTH] =
             case TKT_COMMENT:
             case TKT_OP1IMMED:
             case TKT_OP2IMMED:
-            case TKT_JOTDOT:
+            case TKT_OPJOTDOT:
             case TKT_LPAREN:
             case TKT_RPAREN:
             case TKT_LBRACKET:
@@ -1019,19 +1019,19 @@ LPYYSTYPE MakeFcnStrand_EM_YY
      FCN_TYPES     cFcnType)        // Type of the strand
 
 {
-    int       iIniLen,
-              iActLen,
-                   FcnCount = 0;
-    APLUINT        ByteRes;
-    LPYYSTYPE      lpYYStrand;
-    HGLOBAL        hGlbStr;
-    LPVOID         lpMemStr;
-    LPYYSTYPE lpYYMemStart,
-              lpYYMemData,
-              lpYYBase = (LPYYSTYPE) -1,
-              lpYYRes;
-    BOOL           bRet = TRUE;
-    LPPLLOCALVARS  lpplLocalVars;   // Ptr to local plLocalVars
+    int           iIniLen,
+                  iActLen,
+                  FcnCount = 0;
+    APLUINT       ByteRes;
+    LPYYSTYPE     lpYYStrand;
+    HGLOBAL       hGlbStr;
+    LPVOID        lpMemStr;
+    LPYYSTYPE     lpYYMemStart,
+                  lpYYMemData,
+                  lpYYBase = (LPYYSTYPE) -1,
+                  lpYYRes;
+    BOOL          bRet = TRUE;
+    LPPLLOCALVARS lpplLocalVars;   // Ptr to local plLocalVars
 
     DBGENTER;
 
@@ -1221,7 +1221,7 @@ LPYYSTYPE CopyYYFcn
     {
         lpToken = &lpYYArg[i].tkToken;
 
-        // Calculate the earliest function base
+        // Calculate the earlier function base
         *lpYYBase = min (*lpYYBase, lpYYArg[i].lpYYFcn);
 
         // Special case for named functions/operators
@@ -1655,7 +1655,7 @@ LPYYSTYPE MakeOp2_YY
     YYCopy (lpYYRes, lpYYOp2);      // No need to CopyYYSTYPE_EM_YY immediates
     lpYYRes->tkToken.tkFlags.TknType = TKT_OP2IMMED;
     lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP2;
-    lpYYRes->lpYYFcn = NULL;
+    lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
     lpYYRes->Rsvd                    = 0;
@@ -2280,7 +2280,7 @@ LPTOKEN CopyToken_EM
         case TKT_AXISIMMED:     // ...
         case TKT_OP1IMMED:      // ...
         case TKT_OP2IMMED:      // ...
-        case TKT_JOTDOT:        // ...
+        case TKT_OPJOTDOT:      // ...
             break;              // Ignore immediates
 
         case TKT_LISTPAR:       // tkData is HGLOBAL

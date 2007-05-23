@@ -4,9 +4,10 @@
 
 typedef struct tagCNT_THREAD
 {
-    HWND  hWndParent;           // Window handle of the parent
-    LPSTR lpszDPFE;             // Drive, Path, Filename, Ext of the workspace
-    int   iTab;                 // Insert the new tab to the left of this one
+    HWND   hWndParent;          // Window handle of the parent
+    LPSTR  lpszDPFE;            // Drive, Path, Filename, Ext of the workspace
+    int    iTab;                // Insert the new tab to the left of this one
+    HANDLE hThread;             // Handle to the current thread
 } CNT_THREAD, *LPCNT_THREAD;
 
 typedef struct tagCDB_THREAD

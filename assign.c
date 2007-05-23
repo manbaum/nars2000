@@ -367,10 +367,7 @@ FCN_TYPES GetFcnType
             // Split cases based upon the immediate token type
             switch (lpToken->tkData.tkSym->stFlags.ImmType)
             {
-                case IMMTYPE_PRIMFCN_MM:
-                case IMMTYPE_PRIMFCN_MS:
-                case IMMTYPE_PRIMFCN_SM:
-                case IMMTYPE_PRIMFCN_SS:
+                case IMMTYPE_PRIMFCN:
                     return FCNTYPE_FCN;
 
                 case IMMTYPE_PRIMOP1:

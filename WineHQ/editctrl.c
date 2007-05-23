@@ -4758,7 +4758,8 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         } else if (control)
             SendMessageW (es->hwndSelf, WM_COPY, 0, 0);
 ////////////EDIT_WM_Copy(es);
-        MyCreateCaret (es->hwndSelf, 0, CARETWIDTH, es->line_height);
+        else
+            MyCreateCaret (es->hwndSelf, 0, CARETWIDTH, es->line_height);
         break;
     case VK_RETURN:
         /* If the edit doesn't want the return send a message to the default object */
@@ -5214,6 +5215,7 @@ static void EDIT_WM_SetFont(EDITSTATE *es, HFONT font, BOOL redraw)
 static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
 {
     NMEDITCTRL nmEC = {0};
+    BOOL       bRet;
 
     nmEC.nmHdr.hwndFrom = hWnd;
     nmEC.cbSize         = sizeof (nmEC);
@@ -5224,7 +5226,10 @@ static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
     // Ask the parent how wide the caret should be
     SendMessageW (GetParent (hWnd), WM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) &nmEC);
 
-    return CreateCaret(hWnd, hBitMap, nWidth, nHeight);
+    bRet = CreateCaret (hWnd, hBitMap, nWidth, nHeight);
+    ShowCaret (hWnd);
+
+    return bRet;
 } // End MyCreateCaret
 
 

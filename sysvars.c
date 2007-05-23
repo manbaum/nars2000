@@ -109,6 +109,120 @@ SYSNAME aSystemNames[] =
 
 
 //***************************************************************************
+//  MakePermVars
+//
+//  Make various permanent variables
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakePermVars"
+#else
+#define APPEND_NAME
+#endif
+
+void MakePermVars
+    (void)
+
+{
+    LPVARARRAY_HEADER lpHeader;
+
+    // Create zilde
+    hGlbZilde = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_BOOL, 0, 1));
+    if (!hGlbZilde)
+    {
+        DbgStop ();         // We should never get here
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpHeader = MyGlobalLock (hGlbZilde);
+
+    // Fill in the header values
+    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_BOOL;
+    lpHeader->Perm       = 1;       // So we don't free it
+////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->RefCnt     = 0;       // Ignore as this is perm
+////lpHeader->NELM       = 0;       // Already zero from GHND
+    lpHeader->Rank       = 1;
+
+////// Mark as zero length
+////*VarArrayBaseToDim (lpHeader) = 0;  // Already zero from GHND
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbZilde); lpHeader = NULL;
+
+    // Create various permanent char vectors
+    hGlbQuadDM  = MakePermCharVector (WS_QUADDM);
+    hGlbMTChar  = MakePermCharVector (MTChar);
+    hGlbSAEmpty = hGlbMTChar;
+    hGlbSAClear = MakePermCharVector (SAClear);
+    hGlbSAError = MakePermCharVector (SAError);
+    hGlbSAExit  = MakePermCharVector (SAExit);
+    hGlbSAOff   = MakePermCharVector (SAOff);
+    hGlbQuadWSID_CWS = hGlbMTChar;
+} // End MakePermVars
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  MakePermCharVector
+//
+//  Make a permanent character vector
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakePermCharVector"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL MakePermCharVector
+    (LPWCHAR lpwc)
+
+{
+    HGLOBAL hGlbRes;
+    UINT    uLen;
+    LPVARARRAY_HEADER lpHeader;
+
+    // Get the string length
+    uLen = lstrlenW (lpwc);
+
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, uLen, 1));
+    if (!hGlbRes)
+    {
+        DbgStop ();         // We should never get here
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpHeader = MyGlobalLock (hGlbRes);
+
+    // Fill in the header values
+    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+    lpHeader->Perm       = 1;       // So we don't free it
+////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->RefCnt     = 0;       // Ignore as this is perm
+    lpHeader->NELM       = uLen;
+    lpHeader->Rank       = 1;
+
+    // Save the dimension
+    *VarArrayBaseToDim (lpHeader) = uLen;
+
+    // Skip over the header and dimensions to the data
+    lpHeader = VarArrayBaseToData (lpHeader, 1);
+
+    // Copy the data to memory
+    CopyMemory (lpHeader, lpwc, uLen * sizeof (APLCHAR));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpHeader = NULL;
+
+    return hGlbRes;
+} // End MakePermCharVector
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  SymTabAppendSysName_EM
 //
 //  Append a system name to the symbol table

@@ -1572,7 +1572,7 @@ BOOL fnOp1Done
       || lptkLocalVars->lpNext[-1].tkFlags.TknType EQ TKT_OP2IMMED))
         return fnPrmDone (lptkLocalVars);
 
-    // Mark the data as a monadic primtive operator
+    // Mark the data as a monadic primitive operator
     tkFlags.TknType = TKT_OP1IMMED;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
@@ -1604,7 +1604,7 @@ BOOL fnOp2Done
     DbgMsg ("fnOp2Done");
 #endif
 
-    // Mark the data as a dyadic primtive operator
+    // Mark the data as a dyadic primitive operator
     tkFlags.TknType = TKT_OP2IMMED;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
@@ -1636,7 +1636,7 @@ BOOL fnJotDone
     DbgMsg ("fnJotDone");
 #endif
 
-    // Mark the data as a dyadic primtive operator
+    // Mark the data as a dyadic primitive operator
     tkFlags.TknType = TKT_OP2IMMED;
 
     // Copy to local var so we may pass its address
@@ -1670,11 +1670,11 @@ BOOL fnOutDone
     DbgMsg ("fnOutDone");
 #endif
 
-    // Mark the data as an outer product monadic primtive operator (with right scope)
-    tkFlags.TknType = TKT_JOTDOT;
+    // Mark the data as an outer product monadic primitive operator (with right scope)
+    tkFlags.TknType = TKT_OPJOTDOT;
 
     // Copy to local var so we may pass its address
-    aplInteger = UTF16_JOT;
+    aplInteger = UTF16_JOTDOT;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
@@ -2608,7 +2608,7 @@ void Untokenize
             case TKT_FCNIMMED:          // Immediate primitive function (any valence) (data is UTF16_***)
             case TKT_OP1IMMED:          // ...       Monadic primitive operator (data is UTF16_***)
             case TKT_OP2IMMED:          // ...       Dyadic  ...
-            case TKT_JOTDOT:            // Outer product (data is NULL)
+            case TKT_OPJOTDOT:          // Outer product (data is NULL)
             case TKT_LPAREN:            // Left paren (data is TKT_***)
             case TKT_RPAREN:            // Right ...   ...
             case TKT_LBRACKET:          // Left bracket ...
@@ -2769,71 +2769,71 @@ WCHAR CharTrans
     // Split cases
     switch (wchOrig)
     {
-        case 'a':
-        case 'b':
-        case 'c':
-        case 'd':
-////////case 'e':                       // See below (COL_FPEXP)
-        case 'f':
-        case 'g':
-        case 'h':
-////////case 'i':                       // See below (COL_COMPLEX)
-////////case 'j':                       // ...       ...
-        case 'k':
-        case 'l':
-        case 'm':
-        case 'n':
-        case 'o':
-        case 'p':
-        case 'q':
-////////case 'r':                       // See below (COL_RATIONAL)
-        case 's':
-        case 't':
-        case 'u':
-        case 'v':
-        case 'w':
-        case 'x':
-        case 'y':
-        case 'z':
+        case L'a':
+        case L'b':
+        case L'c':
+        case L'd':
+////////case L'e':                      // See below (COL_FPEXP)
+        case L'f':
+        case L'g':
+        case L'h':
+////////case L'i':                      // See below (COL_COMPLEX)
+////////case L'j':                      // ...       ...
+        case L'k':
+        case L'l':
+        case L'm':
+        case L'n':
+        case L'o':
+        case L'p':
+        case L'q':
+////////case L'r':                      // See below (COL_RATIONAL)
+        case L's':
+        case L't':
+        case L'u':
+        case L'v':
+        case L'w':
+        case L'x':
+        case L'y':
+        case L'z':
 
-        case 'A':
-        case 'B':
-        case 'C':
-        case 'D':
-////////case 'E':                       // See below (COL_FPEXP)
-        case 'F':
-        case 'G':
-        case 'H':
-////////case 'I':                       // See below (COL_COMPLEX)
-////////case 'J':                       // ...       ...
-        case 'K':
-        case 'L':
-        case 'M':
-        case 'N':
-        case 'O':
-        case 'P':
-        case 'Q':
-////////case 'R':                       // See below (COL_RATIONAL)
-        case 'S':
-        case 'T':
-        case 'U':
-        case 'V':
-        case 'W':
-        case 'X':
-        case 'Y':
-        case 'Z':
+        case L'A':
+        case L'B':
+        case L'C':
+        case L'D':
+////////case L'E':                      // See below (COL_FPEXP)
+        case L'F':
+        case L'G':
+        case L'H':
+////////case L'I':                      // See below (COL_COMPLEX)
+////////case L'J':                      // ...       ...
+        case L'K':
+        case L'L':
+        case L'M':
+        case L'N':
+        case L'O':
+        case L'P':
+        case L'Q':
+////////case L'R':                      // See below (COL_RATIONAL)
+        case L'S':
+        case L'T':
+        case L'U':
+        case L'V':
+        case L'W':
+        case L'X':
+        case L'Y':
+        case L'Z':
         case UTF16_DELTA:               // Alt-'h' - delta
         case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar
             return COL_ALPHA;
 
-        case 'e':
-        case 'E':
+        case L'e':
+        case L'E':
             return COL_FPEXP;
 
-        case 'i':
-        case 'I':
-        case 'j':
-        case 'J':
+        case L'i':
+        case L'I':
+        case L'j':
+        case L'J':
             // Split off the complex number separator
             //   as it can be either 'i', 'I', 'j', or 'J'
             //   and as such doesn't fit into a switch
@@ -2843,30 +2843,30 @@ WCHAR CharTrans
             else
                 return COL_ALPHA;
 
-        case 'r':
-        case 'R':
+        case L'r':
+        case L'R':
             return COL_RATIONAL;
 
-        case '_':
+        case L'_':
             return COL_UNDERBAR;
 
-        case '.':
+        case L'.':
             return COL_DOT;
 
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
+        case L'0':
+        case L'1':
+        case L'2':
+        case L'3':
+        case L'4':
+        case L'5':
+        case L'6':
+        case L'7':
+        case L'8':
+        case L'9':
             return COL_DIGIT;
 
-        case ' ':
-        case '\t ':
+        case L' ':
+        case L'\t':
             return COL_SPACE;
 
         case L'\0':
@@ -2986,11 +2986,10 @@ WCHAR CharTrans
         case UTF16_SLASH:               //     '/' - slash
         case UTF16_SLASHBAR:            // Alt-'/' - slash-bar
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
-        case UTF16_DIERESISTILDE:       // Alt-'T' - commute
+        case UTF16_DIERESISTILDE:       // Alt-'T' - commute/reflex
             return COL_PRIM_OP1;
 
         case UTF16_DIERESISDEL:         // Alt-'G' - dual
-        case UTF16_DIERESISJOT:         // Alt-'J' - rank
         case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution
         case UTF16_DIERESISSTAR:        // Alt-'P' - power
             return COL_PRIM_OP2;
@@ -3035,21 +3034,22 @@ WCHAR CharTrans
         case UTF16_RBRACKET:            //     ']' - right bracket
             return COL_RBRACKET;
 
-        case ';':                       // Lists (bracketed and otherwise)
+        case L';':                      // Lists (bracketed and otherwise)
             return COL_SEMICOLON;
 
         case UTF16_DELTILDE:            // Alt-'@' - del-tilde
         case UTF16_DEL:                 // Alt-'g' - del
+        case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot)
         case UTF16_DIERESISCIRCLE:      // Alt-'O' - holler
-        case '`':
-        case '@':
-        case '#':
-        case '$':
-        case '%':
-        case '&':
-        case '{':
-        case '}':
-        case ':':                       // Control structures ***FIXME***
+        case L'`':
+        case L'@':
+        case L'#':
+        case L'$':
+        case L'%':
+        case L'&':
+        case L'{':
+        case L'}':
+        case L':':                      // Control structures ***FIXME***
             return COL_UNK;
 
         default:

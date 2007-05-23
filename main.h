@@ -161,6 +161,13 @@ typedef struct tagVKSTATE
           Ins:1;                // Replace(0) or insert(1)
 } VKSTATE, *LPVKSTATE;
 
+typedef enum tagMAKEPROTO
+{
+    MP_CHARS,                   // Chars allowed in MakePrototype arg
+    MP_NUMONLY,                 // Numerics only ...
+    MP_NUMCONV                  // Convert chars to numerics ...
+} MAKEPROTO;
+
 #ifndef DEBUG
 #define Assert(a)
 #endif

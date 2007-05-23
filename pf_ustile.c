@@ -11,7 +11,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "primspec.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -245,7 +244,7 @@ BOOL PrimFnMonUpStileAPA_EM
 
     return TRUE;
 } // End PrimFnMonUpStileAPA_EM
-#undef APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************

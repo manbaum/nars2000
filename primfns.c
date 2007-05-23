@@ -12,7 +12,6 @@
 #include "resdebug.h"
 #include "sysvars.h"
 #include "externs.h"
-#include "primspec.h"
 #include "pertab.h"
 
 // Include prototypes unless prototyping
@@ -20,14 +19,39 @@
 #include "compro.h"
 #endif
 
-// The jump table for all primitive functions
-LPPRIMFNS PrimFnsTab[256];
+extern PRIMSPEC PrimSpecBar;
+extern PRIMSPEC PrimSpecCircle;
+extern PRIMSPEC PrimSpecCircleStar;
+extern PRIMSPEC PrimSpecColonBar;
+extern PRIMSPEC PrimSpecDownCaret;
+extern PRIMSPEC PrimSpecDownCaretTilde;
+extern PRIMSPEC PrimSpecDownStile;
+extern PRIMSPEC PrimSpecEqual;
+extern PRIMSPEC PrimSpecLeftCaret;
+extern PRIMSPEC PrimSpecLeftCaretUnderbar;
+extern PRIMSPEC PrimSpecNotEqual;
+extern PRIMSPEC PrimSpecPlus;
+extern PRIMSPEC PrimSpecQuoteDot;
+extern PRIMSPEC PrimSpecQuery;
+extern PRIMSPEC PrimSpecRightCaret;
+extern PRIMSPEC PrimSpecRightCaretUnderbar;
+extern PRIMSPEC PrimSpecStar;
+extern PRIMSPEC PrimSpecStile;
+extern PRIMSPEC PrimSpecTilde;
+extern PRIMSPEC PrimSpecTimes;
+extern PRIMSPEC PrimSpecUpCaret;
+extern PRIMSPEC PrimSpecUpCaretTilde;
+extern PRIMSPEC PrimSpecUpStile;
 
-// As these functions are implemented, delete the
-//   appropriate line.
+
+// Symbols for which there is no defined function      Monadic      Dyadic
+#define PrimFnAlpha_EM              PrimFn_EM       // ERROR        ERROR
+#define PrimFnIotaUnderbar_EM       PrimFn_EM       // ERROR        ERROR
+#define PrimFnOmega_EM              PrimFn_EM       // ERROR        ERROR
+#define PrimFnUpShoe_EM             PrimFn_EM       // ERROR        ERROR
+
 
 // Primitives To Be Done                               Monadic      Dyadic
-#define PrimFnAlpha_EM              PrimFn_EM       // ERROR        ERROR
 #define PrimFnDelStile_EM           PrimFn_EM       // Mixed        Mixed
 #define PrimFnDeltaStile_EM         PrimFn_EM       // Mixed        Mixed
 #define PrimFnDownArrow_EM          PrimFn_EM       // ERROR        Mixed
@@ -35,11 +59,7 @@ LPPRIMFNS PrimFnsTab[256];
 #define PrimFnDownTack_EM           PrimFn_EM       // ERROR        Mixed
 #define PrimFnEpsilonUnderbar_EM    PrimFn_EM       // ERROR        Mixed
 #define PrimFnUpTackJot_EM          PrimFn_EM       // Mixed        ERROR
-#define PrimFnIotaUnderbar_EM       PrimFn_EM       // ERROR        ERROR
-#define PrimFnOmega_EM              PrimFn_EM       // ERROR        ERROR
 #define PrimFnRightShoe_EM          PrimFn_EM       // Mixed        Mixed
-#define PrimFnUpArrow_EM            PrimFn_EM       // Mixed        Mixed
-#define PrimFnUpShoe_EM             PrimFn_EM       // ERROR        ERROR
 #define PrimFnUpTack_EM             PrimFn_EM       // ERROR        Mixed
 
 
@@ -83,6 +103,7 @@ LPPRIMFNS PrimFnsTab[256];
 /////// PrimFnDownTackJot_EM                        // Mixed        Mixed (*)
 /////// PrimFnTilde_EM                              // Scalar       Mixed (*)
 /////// PrimFnTimes_EM                              // Scalar       Scalar
+/////// PrimFnUpArrow_EM                            // Mixed        Mixed (*)
 /////// PrimFnUpCaret_EM                            // ERROR        Scalar
 /////// PrimFnUpCaretTilde_EM                       // ERROR        Scalar
 /////// PrimFnUpStile_EM                            // Scalar       Scalar
@@ -90,16 +111,47 @@ LPPRIMFNS PrimFnsTab[256];
 // (*) = Unfinished
 
 // First coordinate functions handled by common function
-#define PrimFnSlashBar_EM       PrimFnSlash_EM
-#define PrimFnSlopeBar_EM       PrimFnSlope_EM
 #define PrimFnCircleBar_EM      PrimFnCircleStile_EM
 #define PrimFnCommaBar_EM       PrimFnComma_EM
+#define PrimFnSlashBar_EM       PrimFnSlash_EM
+#define PrimFnSlopeBar_EM       PrimFnSlope_EM
+
+
+//***************************************************************************
+//  InitPrimTabs
+//
+//  Initialize various primitive function, operator,
+//    prototype tables, and flags
+//***************************************************************************
+
+void InitPrimTabs
+    (void)
+
+{
+    APLINT aplInteger;
+
+    InitPrimFns ();
+    InitPrimProtoFns ();
+    InitPrimSpecs ();
+    InitPrimFlags ();
+
+#define POS_INFINITY            (0x7FF0000000000000)
+#define NEG_INFINITY            (0xFFF0000000000000)
+#define QUIET_NAN               (0xFFF8000000000000)
+#define FLOAT2POW53             (0x4340000000000000)
+
+    // Create various floating point constants
+    aplInteger = POS_INFINITY; PosInfinity = *(double *) &aplInteger;
+    aplInteger = NEG_INFINITY; NegInfinity = *(double *) &aplInteger;
+    aplInteger = FLOAT2POW53;  Float2Pow53 = *(double *) &aplInteger;
+
+} // End InitPrimTabs
 
 
 //***************************************************************************
 //  InitPrimFns
 //
-//  Initialize the primitive function and operator jump tables
+//  Initialize the primitive function and operator jump table
 //***************************************************************************
 
 #ifdef DEBUG
@@ -112,26 +164,21 @@ void InitPrimFns
     (void)
 
 {
-    APLINT aplInteger;
-
     //****************************************************
     //  Primitive Functions
     //  Primitive operators are handled case-by-case in
     //    ExecFunc_EM
     //****************************************************
-
-////InitPrimOp1(UTF16_JOTDOT            , &PrimOp1Jotdot_EM           );    // Pseudo-symbol
-
     InitPrimFn (UTF16_ALPHA             , &PrimFnAlpha_EM             );    // Alt-'a' - alpha
     InitPrimFn (UTF16_UPTACK            , &PrimFnUpTack_EM            );    // Alt-'b' - up tack
     InitPrimFn (UTF16_UPSHOE            , &PrimFnUpShoe_EM            );    // Alt-'c' - up shoe
     InitPrimFn (UTF16_DOWNSTILE         , &PrimFnDownStile_EM         );    // Alt-'d' - down stile
-    InitPrimFn (UTF16_EPSILON           , &PrimFnEpsilon_EM           );    // Alt-'e' - epsilon
+    InitPrimFn (INDEX_EPSILON           , &PrimFnEpsilon_EM           );    // Alt-'e' - epsilon
 ////                                                                        // Alt-'f' - underbar
 ////                                                                        // Alt-'g' - del
 ////                                                                        // Alt-'h' - delta
     InitPrimFn (UTF16_IOTA              , &PrimFnIota_EM              );    // Alt-'i' - iota
-////InitPrimOp2(UTF16_JOT               , &PrimOp2Jot_EM              );    // Alt-'j' - jot
+    InitPrimFn (UTF16_JOT               , (LPPRIMFNS) -1              );    // Alt-'j' - jot
 ////                                                                        // Alt-'k' - single quote
 ////                                                                        // Alt-'l' - quad
     InitPrimFn (UTF16_STILE             , &PrimFnStile_EM             );    // Alt-'m' - stile
@@ -143,7 +190,7 @@ void InitPrimFns
     InitPrimFn (UTF16_UPSTILE           , &PrimFnUpStile_EM           );    // Alt-'s' - up stile
     InitPrimFn (UTF16_TILDE             , &PrimFnTilde_EM             );    // Alt-'t' - tilde
     InitPrimFn (UTF16_DOWNARROW         , &PrimFnDownArrow_EM         );    // Alt-'u' - down arrow
-    InitPrimFn (UTF16_DOWNSHOE          , &PrimFnDownShoe_EM          );    // Alt-'v' - down shoe
+    InitPrimFn (INDEX_DOWNSHOE          , &PrimFnDownShoe_EM          );    // Alt-'v' - down shoe
     InitPrimFn (UTF16_OMEGA             , &PrimFnOmega_EM             );    // Alt-'w' - omega
     InitPrimFn (UTF16_RIGHTSHOE         , &PrimFnRightShoe_EM         );    // Alt-'x' - right shoe
     InitPrimFn (UTF16_UPARROW           , &PrimFnUpArrow_EM           );    // Alt-'y' - up arrow
@@ -152,7 +199,7 @@ void InitPrimFns
 ////                                                                        // Alt-'"' - (none)
     InitPrimFn (UTF16_DELSTILE          , &PrimFnDelStile_EM          );    // Alt-'#' - grade-down
     InitPrimFn (UTF16_DELTASTILE        , &PrimFnDeltaStile_EM        );    // Alt-'$' - grade-up
-    InitPrimFn (UTF16_CIRCLESTILE       , &PrimFnCircleStile_EM       );    // Alt-'%' - rotate
+    InitPrimFn (INDEX_CIRCLESTILE       , &PrimFnCircleStile_EM       );    // Alt-'%' - rotate
     InitPrimFn (UTF16_CIRCLESLOPE       , &PrimFnCircleSlope_EM       );    // Alt-'^' - transpose
     InitPrimFn (UTF16_CIRCLEBAR         , &PrimFnCircleBar_EM         );    // Alt-'&' - circle-bar
     InitPrimFn (UTF16_UPTACKJOT         , &PrimFnUpTackJot_EM         );    // Alt-'\''- execute
@@ -163,9 +210,9 @@ void InitPrimFns
 ////                                                                        // Alt-',' - lamp
     InitPrimFn (UTF16_TIMES             , &PrimFnTimes_EM             );    // Alt-'-' - times
     InitPrimFn (UTF16_SLOPEBAR          , &PrimFnSlopeBar_EM          );    // Alt-'.' - slope-bar
-    InitPrimFn (UTF16_SLASHBAR          , &PrimFnSlashBar_EM          );    // Alt-'/' - slash-bar
+    InitPrimFn (INDEX_SLASHBAR          , &PrimFnSlashBar_EM          );    // Alt-'/' - slash-bar
     InitPrimFn (UTF16_UPCARET           , &PrimFnUpCaret_EM           );    // Alt-'0' - and (94??)
-////InitPrimOp1(UTF16_DIERESIS          , &PrimOp1Dieresis_EM         );    // Alt-'1' - dieresis
+    InitPrimFn (UTF16_DIERESIS          , (LPPRIMFNS) -1              );    // Alt-'1' - dieresis
 ////                                                                        // Alt-'2' - overbar
     InitPrimFn (UTF16_LEFTCARET         , &PrimFnLeftCaret_EM         );    // Alt-'3' - less
     InitPrimFn (UTF16_LEFTCARETUNDERBAR , &PrimFnLeftCaretUnderbar_EM );    // Alt-'4' - not more
@@ -187,20 +234,20 @@ void InitPrimFns
 ////                                                                        // Alt-'D' - (none)
     InitPrimFn (UTF16_EPSILONUNDERBAR   , &PrimFnEpsilonUnderbar_EM   );    // Alt-'E' - epsilon-underbar
 ////                                                                        // Alt-'F' - (none)
-////                                                                        // Alt-'G' - (none)
+    InitPrimFn (UTF16_DIERESISDEL       , (LPPRIMFNS) -1              );    // Alt-'G' - dieresis-del (dual)
 ////                                                                        // Alt-'H' - delta-underbar
     InitPrimFn (UTF16_IOTAUNDERBAR      , &PrimFnIotaUnderbar_EM      );    // Alt-'I' - iota-underbar
-////                                                                        // Alt-'J' - (none)
+    InitPrimFn (INDEX_DIERESISJOT       , (LPPRIMFNS) -1              );    // Alt-'J' - dieresis-jot (rank)
 ////                                                                        // Alt-'K' - (none)
     InitPrimFn (UTF16_SQUAD             , &PrimFnSquad_EM             );    // Alt-'L' - squad
-////                                                                        // Alt-'M' - (none)
-////                                                                        // Alt-'N' - (none)
-////                                                                        // Alt-'O' - (none)
-////                                                                        // Alt-'P' - (none)
+    InitPrimFn (UTF16_STILETILDE        , (LPPRIMFNS) -1              );    // Alt-'M' - stile-tilde (partition)
+    InitPrimFn (INDEX_DIERESISDOWNTACK  , (LPPRIMFNS) -1              );    // Alt-'N' - dieresis-downtack (convolution)
+    InitPrimFn (INDEX_DIERESISCIRCLE    , (LPPRIMFNS) -1              );    // Alt-'O' - dieresis-circle (holler)
+    InitPrimFn (UTF16_DIERESISSTAR      , (LPPRIMFNS) -1              );    // Alt-'P' - dieresis-star (power)
 ////                                                                        // Alt-'Q' - (none)
 ////                                                                        // Alt-'R' - (none)
 ////                                                                        // Alt-'S' - (none)
-////                                                                        // Alt-'T' - (none)
+    InitPrimFn (UTF16_DIERESISTILDE     , (LPPRIMFNS) -1              );    // Alt-'T' - dieresis-tilde (commute/reflex)
 ////                                                                        // Alt-'U' - (none)
 ////                                                                        // Alt-'V' - (none)
 ////                                                                        // Alt-'W' - (none)
@@ -216,165 +263,42 @@ void InitPrimFns
     InitPrimFn (UTF16_RIGHTTACK         , &PrimFnRightTack_EM         );    // Alt-'|' - right tack
 ////                                                                        // Alt-'}' - zilde
     InitPrimFn (UTF16_COMMABAR          , &PrimFnCommaBar_EM          );    // Alt-'~' - comma-bar
-    InitPrimFn ('^'                     , &PrimFnUpCaret_EM           );
-    InitPrimFn ('-'                     , &PrimFnBar_EM               );
-    InitPrimFn ('+'                     , &PrimFnPlus_EM              );
-    InitPrimFn ('|'                     , &PrimFnStile_EM             );
-    InitPrimFn (','                     , &PrimFnComma_EM             );
-    InitPrimFn ('/'                     , &PrimFnSlash_EM             );
-    InitPrimFn ('\\'                    , &PrimFnSlope_EM             );
-////InitPrimOp2('.'                     , &PrimOp2Dot_EM              );
-
-#define POS_INFINITY            (0x7FF0000000000000)
-#define NEG_INFINITY            (0xFFF0000000000000)
-#define QUIET_NAN               (0xFFF8000000000000)
-#define FLOAT2POW53             (0x4340000000000000)
-
-    // Create various floating point constants
-    aplInteger = POS_INFINITY; PosInfinity = *(double *) &aplInteger;
-    aplInteger = NEG_INFINITY; NegInfinity = *(double *) &aplInteger;
-    aplInteger = FLOAT2POW53;  Float2Pow53 = *(double *) &aplInteger;
-
+    InitPrimFn (UTF16_CIRCUMFLEX        , &PrimFnUpCaret_EM           );
+    InitPrimFn (UTF16_BAR               , &PrimFnBar_EM               );
+    InitPrimFn (UTF16_PLUS              , &PrimFnPlus_EM              );
+    InitPrimFn (UTF16_STILE2            , &PrimFnStile_EM             );
+    InitPrimFn (UTF16_COMMA             , &PrimFnComma_EM             );
+    InitPrimFn (UTF16_SLASH             , &PrimFnSlash_EM             );
+    InitPrimFn (UTF16_SLOPE             , &PrimFnSlope_EM             );
+    InitPrimFn (UTF16_DOT               , (LPPRIMFNS) -1              );    //         - dot (inner product)
+    InitPrimFn (INDEX_JOTDOT            , (LPPRIMFNS) -1              );    //         - jotdot (outer product)
 } // End InitPrimFns
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  MakePermVars
-//
-//  Make various permanent variables
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakePermVars"
-#else
-#define APPEND_NAME
-#endif
-
-void MakePermVars
-    (void)
-
-{
-    LPVARARRAY_HEADER lpHeader;
-
-    // Create zilde
-    hGlbZilde = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_BOOL, 0, 1));
-    if (!hGlbZilde)
-    {
-        DbgStop ();         // We should never get here
-    } // End IF
-
-    // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbZilde);
-
-    // Fill in the header values
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_BOOL;
-    lpHeader->Perm       = 1;       // So we don't free it
-////lpHeader->SysVar     = 0;       // Already zero from GHND
-////lpHeader->RefCnt     = 0;       // Ignore as this is perm
-////lpHeader->NELM       = 0;       // Already zero from GHND
-    lpHeader->Rank       = 1;
-
-////// Mark as zero length
-////*VarArrayBaseToDim (lpHeader) = 0;  // Already zero from GHND
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbZilde); lpHeader = NULL;
-
-    // Create various permanent char vectors
-    hGlbQuadDM  = MakePermCharVector (WS_QUADDM);
-    hGlbMTChar  = MakePermCharVector (MTChar);
-    hGlbSAEmpty = hGlbMTChar;
-    hGlbSAClear = MakePermCharVector (SAClear);
-    hGlbSAError = MakePermCharVector (SAError);
-    hGlbSAExit  = MakePermCharVector (SAExit);
-    hGlbSAOff   = MakePermCharVector (SAOff);
-    hGlbQuadWSID_CWS = hGlbMTChar;
-} // End MakePermVars
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  MakePermCharVector
-//
-//  Make a permanent character vector
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakePermCharVector"
-#else
-#define APPEND_NAME
-#endif
-
-HGLOBAL MakePermCharVector
-    (LPWCHAR lpwc)
-
-{
-    HGLOBAL hGlbRes;
-    UINT    uLen;
-    LPVARARRAY_HEADER lpHeader;
-
-    // Get the string length
-    uLen = lstrlenW (lpwc);
-
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, uLen, 1));
-    if (!hGlbRes)
-    {
-        DbgStop ();         // We should never get here
-    } // End IF
-
-    // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbRes);
-
-    // Fill in the header values
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_CHAR;
-    lpHeader->Perm       = 1;       // So we don't free it
-////lpHeader->SysVar     = 0;       // Already zero from GHND
-////lpHeader->RefCnt     = 0;       // Ignore as this is perm
-    lpHeader->NELM       = uLen;
-    lpHeader->Rank       = 1;
-
-    // Save the dimension
-    *VarArrayBaseToDim (lpHeader) = uLen;
-
-    // Skip over the header and dimensions to the data
-    lpHeader = VarArrayBaseToData (lpHeader, 1);
-
-    // Copy the data to memory
-    CopyMemory (lpHeader, lpwc, uLen * sizeof (APLCHAR));
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpHeader = NULL;
-
-    return hGlbRes;
-} // End MakePermCharVector
 #undef  APPEND_NAME
 
 
 //***************************************************************************
 //  InitPrimFn
 //
-//  Initialize a single primitive function
+//  Initialize a single primitive function/operator
 //***************************************************************************
 
 void InitPrimFn
     (WCHAR     wchFn,
-     LPPRIMFNS PrimFn)
+     LPPRIMFNS lpPrimFn)
 
 {
-    if (PrimFnsTab[(unsigned char) wchFn])
-        OverflowPrimFn (wchFn, PrimFn);
+    if (PrimFnsTab[(UCHAR) wchFn])
+        DbgStop ();
     else
-        PrimFnsTab[(unsigned char) wchFn] = PrimFn;
+        PrimFnsTab[(UCHAR) wchFn] = lpPrimFn;
 } // End InitPrimFn
 
 
 //***************************************************************************
 //  PrimFn_EM
 //
-//  Default function for overflow
+//  Default function for symbols for which there is no corresponding
+//    primitive function/operator
 //***************************************************************************
 
 #ifdef DEBUG
@@ -396,176 +320,430 @@ LPYYSTYPE PrimFn_EM
 } // End PrimFn_EM
 #undef  APPEND_NAME
 
+// Symbols for which there is no defined function
+#define PrimProtoFnAlpha_EM                     PrimProtoFn_EM
+#define PrimProtoFnIotaUnderbar_EM              PrimProtoFn_EM
+#define PrimProtoFnOmega_EM                     PrimProtoFn_EM
+#define PrimProtoFnUpShoe_EM                    PrimProtoFn_EM
+
+
+// Primitive functions TO DO
+#define PrimProtoFnDelStile_EM                  PrimProtoFn_EM
+#define PrimProtoFnDeltaStile_EM                PrimProtoFn_EM
+#define PrimProtoFnDownArrow_EM                 PrimProtoFn_EM
+#define PrimProtoFnDownShoe_EM                  PrimProtoFn_EM
+#define PrimProtoFnDownTack_EM                  PrimProtoFn_EM
+#define PrimProtoFnEpsilonUnderbar_EM           PrimProtoFn_EM
+#define PrimProtoFnRightShoe_EM                 PrimProtoFn_EM
+#define PrimProtoFnUpTack_EM                    PrimProtoFn_EM
+#define PrimProtoFnUpTackJot_EM                 PrimProtoFn_EM
+
+
+// Primitive operators TO DO
+#define PrimProtoOpDieresisCircle_EM            PrimProtoOp_EM
+#define PrimProtoOpDieresisDel_EM               PrimProtoOp_EM
+#define PrimProtoOpDieresisDownTack_EM          PrimProtoOp_EM
+#define PrimProtoOpDieresisJot_EM               PrimProtoOp_EM
+#define PrimProtoOpDieresisStar_EM              PrimProtoOp_EM
+#define PrimProtoOpStileTilde_EM                PrimProtoOp_EM
+
+
+// Primitive scalar functions DONE
+#define PrimProtoFnBar_EM                       PrimProtoFnScalar_EM
+#define PrimProtoFnCircle_EM                    PrimProtoFnScalar_EM
+#define PrimProtoFnCircleStar_EM                PrimProtoFnScalar_EM
+#define PrimProtoFnColonBar_EM                  PrimProtoFnScalar_EM
+#define PrimProtoFnDownCaret_EM                 PrimProtoFnScalar_EM
+#define PrimProtoFnDownCaretTilde_EM            PrimProtoFnScalar_EM
+#define PrimProtoFnDownStile_EM                 PrimProtoFnScalar_EM
+#define PrimProtoFnEqual_EM                     PrimProtoFnScalar_EM
+#define PrimProtoFnLeftCaret_EM                 PrimProtoFnScalar_EM
+#define PrimProtoFnLeftCaretUnderbar_EM         PrimProtoFnScalar_EM
+#define PrimProtoFnNotEqual_EM                  PrimProtoFnScalar_EM
+#define PrimProtoFnPlus_EM                      PrimProtoFnScalar_EM
+#define PrimProtoFnQuoteDot_EM                  PrimProtoFnScalar_EM
+#define PrimProtoFnQuery_EM                     PrimProtoFnQuery_EM
+#define PrimProtoFnRightCaret_EM                PrimProtoFnScalar_EM
+#define PrimProtoFnRightCaretUnderbar_EM        PrimProtoFnScalar_EM
+#define PrimProtoFnStar_EM                      PrimProtoFnScalar_EM
+#define PrimProtoFnStile_EM                     PrimProtoFnScalar_EM
+#define PrimProtoFnTilde_EM                     PrimProtoFnTilde_EM
+#define PrimProtoFnTimes_EM                     PrimProtoFnScalar_EM
+#define PrimProtoFnUpCaret_EM                   PrimProtoFnScalar_EM
+#define PrimProtoFnUpCaretTilde_EM              PrimProtoFnScalar_EM
+#define PrimProtoFnUpStile_EM                   PrimProtoFnScalar_EM
+
+
+// Primitive mixed functions DONE
+/////// PrimProtoFnComma_EM
+/////// PrimProtoFnDomino_EM
+/////// PrimProtoFnCircleSlope_EM
+/////// PrimProtoFnCircleStile_EM
+/////// PrimProtoFnDomino_EM
+/////// PrimProtoFnDownTackJot_EM
+/////// PrimProtoFnEpsilon_EM
+/////// PrimProtoFnEqualUnderbar_EM
+/////// PrimProtoFnIota_EM
+/////// PrimProtoFnLeftShoe_EM
+/////// PrimProtoFnLeftTack_EM
+/////// PrimProtoFnQuery_EM
+/////// PrimProtoFnRho_EM
+/////// PrimProtoFnRightTack_EM
+/////// PrimProtoFnSlash_EM
+/////// PrimProtoFnSlope_EM
+/////// PrimProtoFnSquad_EM
+/////// PrimProtoFnTilde_EM
+/////// PrimProtoFnUpArrow_EM
+
+
+// Primitive operators DONE
+/////// PrimProtoOpDieresis_EM
+/////// PrimProtoOpDieresisTilde_EM
+/////// PrimProtoOpDot_EM
+/////// PrimProtoOpJot_EM
+/////// PrimProtoOpJotDot_EM
+/////// PrimProtoOpSlash_EM
+/////// PrimProtoOpSlope_EM
+
+
+// First coordinate functions handled by common function
+#define PrimProtoFnCircleBar_EM      PrimProtoFnCircleStile_EM
+#define PrimProtoFnCommaBar_EM       PrimProtoFnComma_EM
+#define PrimProtoFnSlashBar_EM       PrimProtoFnSlash_EM
+#define PrimProtoFnSlopeBar_EM       PrimProtoFnSlope_EM
+#define PrimProtoOpSlashBar_EM       PrimProtoOpSlash_EM
+#define PrimProtoOpSlopeBar_EM       PrimProtoOpSlope_EM
+
 
 //***************************************************************************
-//  OverflowPrimFn0A_EM
+//  InitPrimProtoFns
 //
-//  Overflow function for Epsilon (220A) and DownStile (230A)
+//  Initialize the primitive function and operator prototype jump table
 //***************************************************************************
 
-LPYYSTYPE OverflowPrimFn0A_EM
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+#ifdef DEBUG
+#define APPEND_NAME     L" -- InitPrimProtoFns"
+#else
+#define APPEND_NAME
+#endif
+
+void InitPrimProtoFns
+    (void)
 
 {
-    // Split cases based upon the token char
-    switch (lptkFunc->tkData.tkChar)
-    {
-        case UTF16_EPSILON:
-            return PrimFnEpsilon_EM     (lptkLftArg,
-                                         lptkFunc,
-                                         lptkRhtArg,
-                                         lptkAxis);
-        case UTF16_DOWNSTILE:
-            return PrimFnDownStile_EM   (lptkLftArg,
-                                         lptkFunc,
-                                         lptkRhtArg,
-                                         lptkAxis);
-        defstop
-            return NULL;
-    } // End SWITCH
-} // End OverflowPrimFn0A_EM
+    //****************************************************
+    //  Primitive Functions & operators
+    //****************************************************
+
+    InitPrimProtoFn (UTF16_ALPHA             , &PrimProtoFnAlpha_EM             );  // Alt-'a' - alpha
+    InitPrimProtoFn (UTF16_UPTACK            , &PrimProtoFnUpTack_EM            );  // Alt-'b' - up tack
+    InitPrimProtoFn (UTF16_UPSHOE            , &PrimProtoFnUpShoe_EM            );  // Alt-'c' - up shoe
+    InitPrimProtoFn (UTF16_DOWNSTILE         , &PrimProtoFnDownStile_EM         );  // Alt-'d' - down stile
+    InitPrimProtoFn (INDEX_EPSILON           , &PrimProtoFnEpsilon_EM           );  // Alt-'e' - epsilon
+////                                                                                // Alt-'f' - underbar
+////                                                                                // Alt-'g' - del
+////                                                                                // Alt-'h' - delta
+    InitPrimProtoFn (UTF16_IOTA              , &PrimProtoFnIota_EM              );  // Alt-'i' - iota
+    InitPrimProtoOp (UTF16_JOT               , &PrimProtoOpJot_EM               );  // Alt-'j' - jot
+////                                                                                // Alt-'k' - single quote
+////                                                                                // Alt-'l' - quad
+    InitPrimProtoFn (UTF16_STILE             , &PrimProtoFnStile_EM             );  // Alt-'m' - stile
+    InitPrimProtoFn (UTF16_DOWNTACK          , &PrimProtoFnDownTack_EM          );  // Alt-'n' - down tack
+    InitPrimProtoFn (UTF16_CIRCLE            , &PrimProtoFnCircle_EM            );  // Alt-'o' - circle
+    InitPrimProtoFn (UTF16_STAR              , &PrimProtoFnStar_EM              );  // Alt-'p' - star
+    InitPrimProtoFn (UTF16_QUERY             , &PrimProtoFnQuery_EM             );  // Alt-'q' - question mark
+    InitPrimProtoFn (UTF16_RHO               , &PrimProtoFnRho_EM               );  // Alt-'r' - rho
+    InitPrimProtoFn (UTF16_UPSTILE           , &PrimProtoFnUpStile_EM           );  // Alt-'s' - up stile
+    InitPrimProtoFn (UTF16_TILDE             , &PrimProtoFnTilde_EM             );  // Alt-'t' - tilde
+    InitPrimProtoFn (UTF16_DOWNARROW         , &PrimProtoFnDownArrow_EM         );  // Alt-'u' - down arrow
+    InitPrimProtoFn (INDEX_DOWNSHOE          , &PrimProtoFnDownShoe_EM          );  // Alt-'v' - down shoe
+    InitPrimProtoFn (UTF16_OMEGA             , &PrimProtoFnOmega_EM             );  // Alt-'w' - omega
+    InitPrimProtoFn (UTF16_RIGHTSHOE         , &PrimProtoFnRightShoe_EM         );  // Alt-'x' - right shoe
+    InitPrimProtoFn (UTF16_UPARROW           , &PrimProtoFnUpArrow_EM           );  // Alt-'y' - up arrow
+    InitPrimProtoFn (UTF16_LEFTSHOE          , &PrimProtoFnLeftShoe_EM          );  // Alt-'z' - left shoe
+    InitPrimProtoFn (UTF16_EQUALUNDERBAR     , &PrimProtoFnEqualUnderbar_EM     );  // Alt-'!' - match
+////                                                                                // Alt-'"' - (none)
+    InitPrimProtoFn (UTF16_DELSTILE          , &PrimProtoFnDelStile_EM          );  // Alt-'#' - grade-down
+    InitPrimProtoFn (UTF16_DELTASTILE        , &PrimProtoFnDeltaStile_EM        );  // Alt-'$' - grade-up
+    InitPrimProtoFn (INDEX_CIRCLESTILE       , &PrimProtoFnCircleStile_EM       );  // Alt-'%' - rotate
+    InitPrimProtoFn (UTF16_CIRCLESLOPE       , &PrimProtoFnCircleSlope_EM       );  // Alt-'^' - transpose
+    InitPrimProtoFn (UTF16_CIRCLEBAR         , &PrimProtoFnCircleBar_EM         );  // Alt-'&' - circle-bar
+    InitPrimProtoFn (UTF16_UPTACKJOT         , &PrimProtoFnUpTackJot_EM         );  // Alt-'\''- execute
+    InitPrimProtoFn (UTF16_DOWNCARETTILDE    , &PrimProtoFnDownCaretTilde_EM    );  // Alt-'(' - nor
+    InitPrimProtoFn (UTF16_UPCARETTILDE      , &PrimProtoFnUpCaretTilde_EM      );  // Alt-')' - nand
+    InitPrimProtoFn (UTF16_CIRCLESTAR        , &PrimProtoFnCircleStar_EM        );  // Alt-'*' - log
+    InitPrimProtoFn (UTF16_DOMINO            , &PrimProtoFnDomino_EM            );  // Alt-'+' - domino
+////                                                                                // Alt-',' - lamp
+    InitPrimProtoFn (UTF16_TIMES             , &PrimProtoFnTimes_EM             );  // Alt-'-' - times
+    InitPrimProtoFn (UTF16_SLOPEBAR          , &PrimProtoFnSlopeBar_EM          );  // Alt-'.' - slope-bar as Function
+    InitPrimProtoOp (INDEX_OPSLOPEBAR        , &PrimProtoOpSlopeBar_EM          );  // Alt-'.' - ...          Operator
+    InitPrimProtoFn (INDEX_SLASHBAR          , &PrimProtoFnSlashBar_EM          );  // Alt-'/' - slash-bar as Function
+    InitPrimProtoOp (INDEX_OPSLASHBAR        , &PrimProtoOpSlashBar_EM          );  // Alt-'/' - ...          Operator
+    InitPrimProtoFn (UTF16_UPCARET           , &PrimProtoFnUpCaret_EM           );  // Alt-'0' - and (94??)
+    InitPrimProtoOp (UTF16_DIERESIS          , &PrimProtoOpDieresis_EM          );  // Alt-'1' - dieresis
+////                                                                                // Alt-'2' - overbar
+    InitPrimProtoFn (UTF16_LEFTCARET         , &PrimProtoFnLeftCaret_EM         );  // Alt-'3' - less
+    InitPrimProtoFn (UTF16_LEFTCARETUNDERBAR , &PrimProtoFnLeftCaretUnderbar_EM );  // Alt-'4' - not more
+    InitPrimProtoFn (UTF16_EQUAL             , &PrimProtoFnEqual_EM             );  // Alt-'5' - equal
+    InitPrimProtoFn (UTF16_RIGHTCARETUNDERBAR, &PrimProtoFnRightCaretUnderbar_EM);  // Alt-'6' - not less
+    InitPrimProtoFn (UTF16_RIGHTCARET        , &PrimProtoFnRightCaret_EM        );  // Alt-'7' - more
+    InitPrimProtoFn (UTF16_NOTEQUAL          , &PrimProtoFnNotEqual_EM          );  // Alt-'8' - not equal
+    InitPrimProtoFn (UTF16_DOWNCARET         , &PrimProtoFnDownCaret_EM         );  // Alt-'9' - or
+////                                                                                // Alt-':' - (none)
+    InitPrimProtoFn (UTF16_DOWNTACKJOT       , &PrimProtoFnDownTackJot_EM       );  // Alt-';' - format
+////                                                                                // Alt-'<' - (none)
+    InitPrimProtoFn (UTF16_COLONBAR          , &PrimProtoFnColonBar_EM          );  // Alt-'=' - divide
+////                                                                                // Alt-'>' - (none)
+////                                                                                // Alt-'?' - (none)
+////                                                                                // Alt-'@' - del-tilde
+////                                                                                // Alt-'A' - (none)
+////                                                                                // Alt-'B' - (none)
+////                                                                                // Alt-'C' - (none)
+////                                                                                // Alt-'D' - (none)
+    InitPrimProtoFn (UTF16_EPSILONUNDERBAR   , &PrimProtoFnEpsilonUnderbar_EM   );  // Alt-'E' - epsilon-underbar
+////                                                                                // Alt-'F' - (none)
+    InitPrimProtoOp (UTF16_DIERESISDEL       , &PrimProtoOpDieresisDel_EM       );  // Alt-'G' - dieresis-del (dual)
+////                                                                                // Alt-'H' - delta-underbar
+    InitPrimProtoFn (UTF16_IOTAUNDERBAR      , &PrimProtoFnIotaUnderbar_EM      );  // Alt-'I' - iota-underbar
+    InitPrimProtoOp (INDEX_DIERESISJOT       , &PrimProtoOpDieresisJot_EM       );  // Alt-'J' - dieresis-jot (rank)
+////                                                                                // Alt-'K' - (none)
+    InitPrimProtoFn (UTF16_SQUAD             , &PrimProtoFnSquad_EM             );  // Alt-'L' - squad
+    InitPrimProtoOp (UTF16_STILETILDE        , &PrimProtoOpStileTilde_EM        );  // Alt-'M' - stile-tilde (partition)
+    InitPrimProtoOp (INDEX_DIERESISDOWNTACK  , &PrimProtoOpDieresisDownTack_EM  );  // Alt-'N' - dieresis-downtack (convolution)
+    InitPrimProtoOp (INDEX_DIERESISCIRCLE    , &PrimProtoOpDieresisCircle_EM    );  // Alt-'O' - dieresis-circle (holler)
+    InitPrimProtoOp (UTF16_DIERESISSTAR      , &PrimProtoOpDieresisStar_EM      );  // Alt-'P' - dieresis-star (power)
+////                                                                                // Alt-'Q' - (none)
+////                                                                                // Alt-'R' - (none)
+////                                                                                // Alt-'S' - (none)
+    InitPrimProtoOp (UTF16_DIERESISTILDE     , &PrimProtoOpDieresisTilde_EM     );  // Alt-'T' - dieresis-tilde (commute/reflex)
+////                                                                                // Alt-'U' - (none)
+////                                                                                // Alt-'V' - (none)
+////                                                                                // Alt-'W' - (none)
+////                                                                                // Alt-'X' - (none)
+////                                                                                // Alt-'Y' - (none)
+////                                                                                // Alt-'Z' - (none)
+////                                                                                // Alt-'[' - left arrow
+    InitPrimProtoFn (UTF16_LEFTTACK          , &PrimProtoFnLeftTack_EM          );  // Alt-'\\'- left tack
+////                                                                                // Alt-']' - right arrow
+    InitPrimProtoFn (UTF16_QUOTEDOT          , &PrimProtoFnQuoteDot_EM          );  // Alt-'_' - quote-dot
+////                                                                                // Alt-'`' - diamond
+////                                                                                // Alt-'{' - quote-quad
+    InitPrimProtoFn (UTF16_RIGHTTACK         , &PrimProtoFnRightTack_EM         );  // Alt-'|' - right tack
+////                                                                                // Alt-'}' - zilde
+    InitPrimProtoFn (UTF16_COMMABAR          , &PrimProtoFnCommaBar_EM          );  // Alt-'~' - comma-bar
+    InitPrimProtoFn (UTF16_CIRCUMFLEX        , &PrimProtoFnUpCaret_EM           );  //         -
+    InitPrimProtoFn (UTF16_BAR               , &PrimProtoFnBar_EM               );  //         -
+    InitPrimProtoFn (UTF16_PLUS              , &PrimProtoFnPlus_EM              );  //         -
+    InitPrimProtoFn (UTF16_STILE2            , &PrimProtoFnStile_EM             );  //         -
+    InitPrimProtoFn (UTF16_COMMA             , &PrimProtoFnComma_EM             );  //         -
+    InitPrimProtoFn (UTF16_SLASH             , &PrimProtoFnSlash_EM             );  //         - slash as Function
+    InitPrimProtoOp (INDEX_OPSLASH           , &PrimProtoOpSlash_EM             );  //         - ...      Operator
+    InitPrimProtoFn (UTF16_SLOPE             , &PrimProtoFnSlope_EM             );  //         - slope as Function
+    InitPrimProtoOp (INDEX_OPSLOPE           , &PrimProtoOpSlope_EM             );  //         - ...      Operator
+    InitPrimProtoOp (UTF16_DOT               , &PrimProtoOpDot_EM               );  //         - dot (inner product)
+    InitPrimProtoOp (INDEX_JOTDOT            , &PrimProtoOpJotDot_EM            );  //         - jotdot (outer product)
+} // End InitPrimProtoFns
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//  OverflowPrimFn2A_EM
+//  InitPrimProtoFn
 //
-//  Overflow function for Star (002A) and DownShoe (222A)
+//  Initialize a single primitive function prototype
 //***************************************************************************
 
-LPYYSTYPE OverflowPrimFn2A_EM
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
-
-{
-    // Split cases based upon the token char
-    switch (lptkFunc->tkData.tkChar)
-    {
-        case UTF16_STAR:
-            return PrimFnStar_EM        (lptkLftArg,
-                                         lptkFunc,
-                                         lptkRhtArg,
-                                         lptkAxis);
-        case UTF16_DOWNSHOE:
-            return PrimFnDownShoe_EM    (lptkLftArg,
-                                         lptkFunc,
-                                         lptkRhtArg,
-                                         lptkAxis);
-        defstop
-            return NULL;
-    } // End SWITCH
-} // End OverflowPrimFn2A_EM
-
-
-//***************************************************************************
-//  OverflowPrimFn3D_EM
-//
-//  Overflow function for Equal (003D) and CircleStile (233D)
-//***************************************************************************
-
-LPYYSTYPE OverflowPrimFn3D_EM
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
-
-{
-    // Split cases based upon the token char
-    switch (lptkFunc->tkData.tkChar)
-    {
-        case UTF16_EQUAL:
-            return PrimFnEqual_EM       (lptkLftArg,
-                                         lptkFunc,
-                                         lptkRhtArg,
-                                         lptkAxis);
-        case UTF16_CIRCLESTILE:
-            return PrimFnCircleStile_EM (lptkLftArg,
-                                         lptkFunc,
-                                         lptkRhtArg,
-                                         lptkAxis);
-        defstop
-            return NULL;
-    } // End SWITCH
-} // End OverflowPrimFn3D_EM
-
-
-//***************************************************************************
-//  OverflowPrimFn3F_EM
-//
-//  Overflow function for Query (003F) and SlashBar (233F)
-//***************************************************************************
-
-LPYYSTYPE OverflowPrimFn3F_EM
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
-
-{
-    // Split cases based upon the token char
-    switch (lptkFunc->tkData.tkChar)
-    {
-        case UTF16_QUERY:
-            return PrimFnQuery_EM       (lptkLftArg,
-                                         lptkFunc,
-                                         lptkRhtArg,
-                                         lptkAxis);
-        case UTF16_SLASHBAR:
-            return PrimFnSlashBar_EM    (lptkLftArg,
-                                         lptkFunc,
-                                         lptkRhtArg,
-                                         lptkAxis);
-        defstop
-            return NULL;
-    } // End SWITCH
-} // End OverflowPrimFn3F_EM
-
-
-//***************************************************************************
-//  OverflowPrimFn
-//
-//  Handle overflow in table of primitive functions
-//***************************************************************************
-
-void OverflowPrimFn
+void InitPrimProtoFn
     (WCHAR     wchFn,
-     LPPRIMFNS PrimFn)
+     LPPRIMFNS lpPrimFn)
 
 {
-    // Here are the overflow cases we know about
+    if (PrimProtoFnsTab[(UCHAR) wchFn])
+        DbgStop ();
+    else
+        PrimProtoFnsTab[(UCHAR) wchFn] = lpPrimFn;
+} // End InitPrimProtoFn
 
-    // Split cases based upon the low-order byte
-    switch ((unsigned char) wchFn)
-    {
-        case 0x0A:
-            PrimFnsTab[(unsigned char) wchFn] = &OverflowPrimFn0A_EM;
 
-            break;
+//***************************************************************************
+//  InitPrimProtoOp
+//
+//  Initialize a single primitive operator prototype
+//***************************************************************************
 
-        case 0x2A:
-            PrimFnsTab[(unsigned char) wchFn] = &OverflowPrimFn2A_EM;
+void InitPrimProtoOp
+    (WCHAR     wchFn,
+     LPPRIMOPS lpPrimFn)
 
-            break;
+{
+    if (PrimProtoFnsTab[(UCHAR) wchFn])
+        DbgStop ();
+    else
+        PrimProtoFnsTab[(UCHAR) wchFn] = (LPPRIMFNS) lpPrimFn;
+} // End InitPrimProtoOp
 
-        case 0x3D:
-            PrimFnsTab[(unsigned char) wchFn] = &OverflowPrimFn3D_EM;
 
-            break;
+//***************************************************************************
+//  PrimProtoFn_EM
+//
+//  Default function for symbols for which there is no corresponding
+//    primitive function/operator prototype
+//***************************************************************************
 
-        case 0x3F:
-            PrimFnsTab[(unsigned char) wchFn] = &OverflowPrimFn3F_EM;
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFn_EM"
+#else
+#define APPEND_NAME
+#endif
 
-            break;
+LPYYSTYPE PrimProtoFn_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
-        defstop
-            // If we get here, we have another overflow conflict to resolve
-            break;
-    } // End SWITCH
-} // End OverflowPrimFn
+{
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End PrimProtoFn_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  PrimProtoOp_EM
+//
+//  Default function for symbols for which there is no corresponding
+//    primitive operator prototype
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoOp_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoOp_EM
+    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
+     LPYYSTYPE lpYYFuncStr,         // Ptr to function token
+     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
+     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+
+{
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFuncStr->tkToken);
+    return NULL;
+} // End PrimProtoOp_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  InitPrimSpecs
+//
+//  Initialize the table of PRIMSPECs
+//***************************************************************************
+
+void InitPrimSpecs
+    (void)
+
+{
+    // Initialize the table of PRIMSPECs
+    InitPrimSpec (UTF16_BAR               , &PrimSpecBar               );
+    InitPrimSpec (UTF16_CIRCLE            , &PrimSpecCircle            );
+    InitPrimSpec (UTF16_CIRCLESTAR        , &PrimSpecCircleStar        );
+    InitPrimSpec (UTF16_CIRCUMFLEX        , &PrimSpecUpCaret           );
+    InitPrimSpec (UTF16_COLONBAR          , &PrimSpecColonBar          );
+    InitPrimSpec (UTF16_DOWNCARET         , &PrimSpecDownCaret         );
+    InitPrimSpec (UTF16_DOWNCARETTILDE    , &PrimSpecDownCaretTilde    );
+    InitPrimSpec (UTF16_DOWNSTILE         , &PrimSpecDownStile         );
+    InitPrimSpec (UTF16_EQUAL             , &PrimSpecEqual             );
+    InitPrimSpec (UTF16_LEFTCARET         , &PrimSpecLeftCaret         );
+    InitPrimSpec (UTF16_LEFTCARETUNDERBAR , &PrimSpecLeftCaretUnderbar );
+    InitPrimSpec (UTF16_NOTEQUAL          , &PrimSpecNotEqual          );
+    InitPrimSpec (UTF16_PLUS              , &PrimSpecPlus              );
+    InitPrimSpec (UTF16_QUOTEDOT          , &PrimSpecQuoteDot          );
+    InitPrimSpec (UTF16_QUERY             , &PrimSpecQuery             );
+    InitPrimSpec (UTF16_RIGHTCARET        , &PrimSpecRightCaret        );
+    InitPrimSpec (UTF16_RIGHTCARETUNDERBAR, &PrimSpecRightCaretUnderbar);
+    InitPrimSpec (UTF16_STAR              , &PrimSpecStar              );
+    InitPrimSpec (UTF16_STILE             , &PrimSpecStile             );
+    InitPrimSpec (UTF16_STILE2            , &PrimSpecStile             );
+    InitPrimSpec (UTF16_TILDE             , &PrimSpecTilde             );
+    InitPrimSpec (UTF16_TIMES             , &PrimSpecTimes             );
+    InitPrimSpec (UTF16_UPCARET           , &PrimSpecUpCaret           );
+    InitPrimSpec (UTF16_UPCARETTILDE      , &PrimSpecUpCaretTilde      );
+    InitPrimSpec (UTF16_UPSTILE           , &PrimSpecUpStile           );
+} // End InitPrimSpecs
+
+
+//***************************************************************************
+//  InitPrimSpec
+//
+//  Initialize a single lpPrimSpec
+//***************************************************************************
+
+void InitPrimSpec
+    (WCHAR      wchFn,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    if (PrimSpecTab[(UCHAR) wchFn])
+        DbgStop ();
+    else
+        PrimSpecTab[(UCHAR) wchFn] = lpPrimSpec;
+} // End InitPrimSpec
+
+
+//***************************************************************************
+//  InitPrimFlags
+//
+//  Initialize the table of primitive function/operator flags
+//***************************************************************************
+
+void InitPrimFlags
+    (void)
+
+{
+    InitPrimFlag (UTF16_BAR               , 0                     | PF_ALTER  | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_CIRCLE            , 0                                 | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_CIRCLESTAR        , 0                                 | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_CIRCUMFLEX        , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_COLONBAR          , 0                     | PF_ALTER  | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_DOWNCARET         , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_DOWNCARETTILDE    , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_DOWNSTILE         , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_EQUAL             , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_LEFTCARET         , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_LEFTCARETUNDERBAR , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_NOTEQUAL          , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_PLUS              , 0           | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_QUOTEDOT          , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_QUERY             , 0                                 | PF_MONSCALAR               );
+    InitPrimFlag (UTF16_RIGHTCARET        , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_RIGHTCARETUNDERBAR, PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_STAR              , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_STILE             , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_STILE2            , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_TILDE             , 0                                 | PF_MONSCALAR               );
+    InitPrimFlag (UTF16_TIMES             , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_UPCARET           , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_UPCARETTILDE      , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
+    InitPrimFlag (UTF16_UPSTILE           , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+} // End InitPrimFlags
+
+
+//***************************************************************************
+//  InitPrimFlag
+//
+//  Initialize a single primitive flag
+//***************************************************************************
+
+void InitPrimFlag
+    (WCHAR wchFn,
+     UINT  uFlag)
+
+{
+    PrimFlags[(UCHAR) wchFn] |= uFlag;
+} // End InitPrimFlag
 
 
 //***************************************************************************
@@ -583,11 +761,10 @@ void OverflowPrimFn
 LPYYSTYPE ExecFunc_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)  // ***FIXME*** -- Is it ever non-NULL?
+     LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    LPPRIMFNS PrimFn;
+    LPPRIMFNS lpPrimFn;
 
     DBGENTER;
 
@@ -595,15 +772,15 @@ LPYYSTYPE ExecFunc_EM
     switch (lptkFunc->tkFlags.TknType)
     {
         case TKT_FCNIMMED:
-            PrimFn = PrimFnsTab[(unsigned char) (lptkFunc->tkData.tkChar)];
-            if (!PrimFn)
+            lpPrimFn = PrimFnsTab[SymTrans (lptkFunc)];
+            if (!lpPrimFn)
             {
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                            lptkFunc);
                 return NULL;
             } // End IF
 
-            return (*PrimFn) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+            return (*lpPrimFn) (lptkLftArg, lptkFunc, lptkRhtArg, NULL);
 
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
@@ -631,7 +808,7 @@ LPYYSTYPE ExecFunc_EM
 
                     // If it's a direct function, go there
                     if (lptkFunc->tkFlags.FcnDir)
-                        return (*lpNameFcn) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+                        return (*lpNameFcn) (lptkLftArg, lptkFunc, lptkRhtArg, NULL);
 
                     // Save the HGLOBAL
                     hGlbFcn = lpNameFcn;
@@ -644,8 +821,7 @@ LPYYSTYPE ExecFunc_EM
 
                 return ExecFuncGlb_EM (lptkLftArg,
                                        ClrPtrTypeDirGlb (hGlbFcn),
-                                       lptkRhtArg,
-                                       lptkAxis);
+                                       lptkRhtArg);
             } // End IF
 
             // Handle the immediate case
@@ -653,15 +829,12 @@ LPYYSTYPE ExecFunc_EM
             // Split cases based upon the immediate type
             switch (lptkFunc->tkData.tkSym->stFlags.ImmType)
             {
-                case IMMTYPE_PRIMFCN_MM:
-                case IMMTYPE_PRIMFCN_MS:
-                case IMMTYPE_PRIMFCN_SM:
-                case IMMTYPE_PRIMFCN_SS:
+                case IMMTYPE_PRIMFCN:
                 {
                     TOKEN tkFn = {0};
 
-                    PrimFn = PrimFnsTab[(unsigned char) (lptkFunc->tkData.tkSym->stData.stChar)];
-                    if (!PrimFn)
+                    lpPrimFn = PrimFnsTab[FcnTrans (lptkFunc->tkData.tkSym->stData.stChar)];
+                    if (!lpPrimFn)
                     {
                         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                                    lptkFunc);
@@ -675,8 +848,8 @@ LPYYSTYPE ExecFunc_EM
                     tkFn.tkData.tkChar     = lptkFunc->tkData.tkSym->stData.stChar;
                     tkFn.tkCharIndex       = lptkFunc->tkCharIndex;
 
-                    return (*PrimFn) (lptkLftArg, &tkFn, lptkRhtArg, lptkAxis);
-                } // End IMMTYPE_PRIMFCN_xx
+                    return (*lpPrimFn) (lptkLftArg, &tkFn, lptkRhtArg, NULL);
+                } // End IMMTYPE_PRIMFCN
 
                 defstop
                     break;
@@ -688,8 +861,7 @@ LPYYSTYPE ExecFunc_EM
 
             return ExecFuncGlb_EM (lptkLftArg,
                                    ClrPtrTypeDirGlb (lptkFunc->tkData.tkGlbData),
-                                   lptkRhtArg,
-                                   lptkAxis);
+                                   lptkRhtArg);
         defstop
             break;
     } // End SWITCH
@@ -708,8 +880,7 @@ LPYYSTYPE ExecFunc_EM
 LPYYSTYPE ExecFuncGlb_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      HGLOBAL hGlbFcn,               // Handle to function object
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+     LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
     LPYYSTYPE lpYYFcnStr,
@@ -752,58 +923,47 @@ LPYYSTYPE ExecFuncStr_EM
 
 {
     LPTOKEN   lptkAxis;
-    LPPRIMFNS PrimFn;
+    LPPRIMFNS lpPrimFn;
 
     // Split cases based upon the type of the first token
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)
     {
         case TKT_OP1IMMED:
-            return ExecOp1_EM (lptkLftArg,
-                               lpYYFcnStr,
-                               lptkRhtArg);
-        case TKT_OP2IMMED:
-            return ExecOp2_EM (lptkLftArg,
-                               lpYYFcnStr,
-                               lptkRhtArg);
         case TKT_OP1NAMED:
-            DbgBrk ();      // ***FINISHME***
-
-
-            break;
-
+            return ExecOp1_EM (lptkLftArg,  // Ptr to left arg token
+                               lpYYFcnStr,  // Ptr to operator function strand
+                               lptkRhtArg); // Ptr to right arg token
+        case TKT_OP2IMMED:
         case TKT_OP2NAMED:
-            DbgBrk ();      // ***FINISHME***
-
-
-            break;
-
+        case TKT_OPJOTDOT:
+            return ExecOp2_EM (lptkLftArg,  // Ptr to left arg token
+                               lpYYFcnStr,  // Ptr to operator function strand
+                               lptkRhtArg); // Ptr to right arg token
         case TKT_FCNIMMED:  // Either F or F[X]
             Assert (lpYYFcnStr->FcnCount EQ 1
                  || lpYYFcnStr->FcnCount EQ 2);
 
             // Check for axis operator
             if (lpYYFcnStr->FcnCount > 1
-             && (lpYYFcnStr[lpYYFcnStr->FcnCount - 1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-              || lpYYFcnStr[lpYYFcnStr->FcnCount - 1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-                lptkAxis = &lpYYFcnStr[lpYYFcnStr->FcnCount - 1].tkToken;
+             && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+              || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+                lptkAxis = &lpYYFcnStr[1].tkToken;
             else
                 lptkAxis = NULL;
 
-            PrimFn = PrimFnsTab[(unsigned char) (lpYYFcnStr->tkToken.tkData.tkChar)];
-            if (!PrimFn)
+            lpPrimFn = PrimFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
+            if (!lpPrimFn)
             {
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                           &lpYYFcnStr->tkToken);
+                                          &lpYYFcnStr->tkToken);
                 return NULL;
             } // End IF
 
-            return (*PrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
+            return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
 
         defstop
-            break;
+            return NULL;
     } // End SWITCH
-
-    return NULL;
 } // End ExecFuncStr_EM
 #undef  APPEND_NAME
 
@@ -822,73 +982,54 @@ LPYYSTYPE ExecFuncStr_EM
 
 LPYYSTYPE ExecOp1_EM
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE lpYYFcnStr,          // Ptr to function strand
+     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg)          // Ptr to right arg token
 
 {
     LPTOKEN lptkAxis;
-    LPYYSTYPE lpYYRes;
 
     // Check for axis operator
     if (lpYYFcnStr->FcnCount > 1
-     && (lpYYFcnStr[lpYYFcnStr->FcnCount - 1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStr[lpYYFcnStr->FcnCount - 1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        lptkAxis = &lpYYFcnStr[lpYYFcnStr->FcnCount - 1].tkToken;
+     && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+      || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+        lptkAxis = &lpYYFcnStr[1].tkToken;
      else
         lptkAxis = NULL;
 
     // Split cases based upon the type of the monadic operator
     switch (lpYYFcnStr->tkToken.tkData.tkChar)
     {
-        case UTF16_SLASH:       // Reduction along the last coordinate
+        case INDEX_OPSLASH:     // Reduction along the last coordinate
+        case INDEX_OPSLASHBAR:  // Reduction along the first coordinate
+            return PrimOpSlash_EM (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+                                   lpYYFcnStr,       // Ptr to operator function strand
+                                   lptkRhtArg,       // Ptr to right arg token
+                                   lptkAxis);        // Ptr to axis token (may be NULL)
+        case INDEX_OPSLOPE:     // Scan along the last coordinate
+        case INDEX_OPSLOPEBAR:  // Scan along the first coordinate
+            return PrimOpSlope_EM (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+                                   lpYYFcnStr,       // Ptr to operator function strand
+                                   lptkRhtArg,       // Ptr to right arg token
+                                   lptkAxis);        // Ptr to axis token (may be NULL)
+        case UTF16_STILETILDE:  // Partition
             DbgBrk ();          // ***FINISHME***
 
 
-            break;
-
-        case UTF16_SLASHBAR:    // Reduction along the first coordinate
-            DbgBrk ();          // ***FINISHME***
-
-
-            break;
-
-        case UTF16_SLOPE:       // Scan along the last coordinate
-            DbgBrk ();          // ***FINISHME***
-
-
-            break;
-
-        case UTF16_SLOPEBAR:    // Scan along the first coordinate
-            DbgBrk ();          // ***FINISHME***
-
-
-            break;
+            return NULL;
 
         case UTF16_DIERESIS:    // Each
-            return PrimOpEach_EM (lptkLftArg,
-                                 &lpYYFcnStr[1],        // Skip over the operator
-                                  lptkRhtArg);
+            return PrimOpDieresis_EM (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+                                      lpYYFcnStr,       // Ptr to operator function strand
+                                      lptkRhtArg,       // Ptr to right arg token
+                                      lptkAxis);        // Ptr to axis token (may be NULL)
         case UTF16_DIERESISTILDE:   // Commute/Reflex
-            // If there is a left arg, switch it with the
-            //   right arg and calculate the result
-            if (lptkLftArg)
-                return ExecFuncStr_EM (lptkRhtArg,
-                                      &lpYYFcnStr[1],   // Skip over the operator
-                                       lptkLftArg);
-            else
-                // Otherwise, execute the function between
-                //   the right arg and itself
-                return ExecFuncStr_EM (lptkRhtArg,
-                                      &lpYYFcnStr[1],   // Skip over the operator
-                                       lptkRhtArg);
+            return PrimOpDieresisTilde_EM (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
+                                          lpYYFcnStr,   // Ptr to operator function strand
+                                          lptkRhtArg,   // Ptr to right arg token
+                                          lptkAxis);    // Ptr to axis token (may be NULL)
         defstop
-            break;
+            return NULL;
     } // End SWITCH
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    return lpYYRes;
 } // End ExecOp1_EM
 #undef  APPEND_NAME
 
@@ -911,130 +1052,34 @@ LPYYSTYPE ExecOp2_EM
      LPTOKEN   lptkRhtArg)          // Ptr to right arg token
 
 {
+    LPTOKEN lptkAxis;
+
+    // Check for axis operator
+    if (lpYYFcnStr->FcnCount > 1
+     && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+      || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+        lptkAxis = &lpYYFcnStr[1].tkToken;
+     else
+        lptkAxis = NULL;
+
     // Split cases based upon the type of the dyadic operator
     switch (lpYYFcnStr->tkToken.tkData.tkChar)
     {
         case UTF16_JOTDOT:      // Outer product
-            return ExecOuterProd_EM (lptkLftArg,
-                                    &lpYYFcnStr[1],
-                                     lptkRhtArg);
-        case '.':               // Inner product
-            return ExecInnerProd_EM (lptkLftArg,
-                                    &lpYYFcnStr[1],
-                                    &lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1],
-                                     lptkRhtArg);
+            return PrimOpJotDot_EM (lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
+                                    lpYYFcnStr,         // Ptr to operator function strand
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+        case UTF16_DOT:         // Inner product
+            return PrimOpDot_EM    (lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
+                                    lpYYFcnStr,         // Ptr to operator function strand
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
         case UTF16_JOT:         // Compose
-        {
-            LPYYSTYPE lpYYRes,
-                      lpYYRes2;
-            UINT      uLftArg,
-                      uRhtArg;
-
-            // Split cases based upon the left operand's token type
-            switch (TokenTypeFV (&lpYYFcnStr[1].tkToken))
-            {
-                case 'F':
-                    uLftArg = 0;
-
-                    break;
-
-                case 'V':
-                    uLftArg = 1;
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            // Split cases based upon the right operand's token type
-            switch (TokenTypeFV (&lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1].tkToken))
-            {
-                case 'F':
-                    uRhtArg = 0;
-
-                    break;
-
-                case 'V':
-                    uRhtArg = 1;
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            // Split cases based upon the type (V or F) of
-            //   the left and right operands
-            switch (uLftArg * 2 + uRhtArg * 1)
-            {
-                case 0 * 2 + 0 * 1:     // F1 op2 F2 -> F1 F2 R or L F1 F2 R
-                    // Execute the right operand monadically
-                    //   on the right arg
-                    lpYYRes2 = ExecFuncStr_EM (NULL,
-                                              &lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1],
-                                               lptkRhtArg);
-                    if (lpYYRes2)
-                    {
-                        // Allocate a new YYRes
-                        lpYYRes = YYAlloc ();
-
-                        // Execute the left operand dyadically
-                        //   between the (optional) left arg and the
-                        //   above result from the right operand.
-                        lpYYRes = ExecFuncStr_EM (lptkLftArg,
-                                                 &lpYYFcnStr[1],
-                                                 &lpYYRes2->tkToken);
-                        FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
-                    } else
-                        lpYYRes = NULL;
-
-                    break;
-
-                case 1 * 2 + 0 * 1:     // V op2 F -> V F R
-                    // If there's a left arg, signal a SYNTAX ERROR
-                    if (lptkLftArg)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                                  &lpYYFcnStr->tkToken);
-                        return NULL;
-                    } // End IF
-
-                    // Execute the right operand dyadically
-                    //   between the left operand and the right arg.
-                    lpYYRes = ExecFuncStr_EM (&lpYYFcnStr[1].tkToken,
-                                              &lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1],
-                                               lptkRhtArg);
-                    break;
-
-                case 0 * 2 + 1 * 1:     // F op2 V
-                    // If there's a left arg, signal a SYNTAX ERROR
-                    if (lptkLftArg)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                                  &lpYYFcnStr->tkToken);
-                        return NULL;
-                    } // End IF
-
-                    // Execute the left operand dyadically
-                    //   between the right arg and the right operand.
-                    lpYYRes = ExecFuncStr_EM (lptkRhtArg,
-                                             &lpYYFcnStr[1],
-                                             &lpYYFcnStr[lpYYFcnStr[1].FcnCount + 1].tkToken);
-                    break;
-
-                case 1 * 2 + 1 * 1:     // V op2 V
-                    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                              &lpYYFcnStr->tkToken);
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            return lpYYRes;
-        } // End UTF16_JOT
-
+            return PrimOpJot_EM    (lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
+                                    lpYYFcnStr,         // Ptr to operator function strand
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
         case UTF16_DIERESISDEL: // Dual
             DbgBrk ();          // ***FINISHME***
 
@@ -1063,79 +1108,6 @@ LPYYSTYPE ExecOp2_EM
             return NULL;
     } // End SWITCH
 } // End ExecOp2_EM
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  ExecOuterProd_EM
-//
-//  Execute an outer product
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecOuterProd_EM"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE ExecOuterProd_EM
-    (LPTOKEN   lptkLftArg,
-     LPYYSTYPE lpYYFcnStr,
-     LPTOKEN   lptkRhtArg)
-
-{
-    LPYYSTYPE lpYYRes;
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    DbgBrk ();                  // ***FINISHME***
-
-
-
-
-
-
-
-    return lpYYRes;
-} // End ExecOuterProd_EM
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  ExecInnerProd_EM
-//
-//  Execute an inner product
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecInnerProd_EM"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE ExecInnerProd_EM
-    (LPTOKEN   lptkLftArg,
-     LPYYSTYPE lpYYLftFcnStr,
-     LPYYSTYPE lpYYRhtFcnStr,
-     LPTOKEN   lptkRhtArg)
-
-{
-    LPYYSTYPE lpYYRes;
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    DbgBrk ();                  // ***FINISHME***
-
-
-
-
-
-
-
-    return lpYYRes;
-} // End ExecInnerProd_EM
 #undef  APPEND_NAME
 
 
@@ -1179,7 +1151,7 @@ char TokenTypeFV
 
         case TKT_AXISIMMED:
         case TKT_AXISARRAY:
-        case TKT_JOTDOT:
+        case TKT_OPJOTDOT:
         case TKT_LPAREN:
         case TKT_RPAREN:
         case TKT_LBRACKET:
@@ -1235,10 +1207,10 @@ APLRANK RankOfGlb
 //***************************************************************************
 
 void AttrsOfToken
-    (LPTOKEN   lpToken,
-     APLSTYPE *lpaplType,
-     LPAPLNELM lpaplNELM,
-     LPAPLRANK lpaplRank)
+    (LPTOKEN   lpToken,         // Ptr to token
+     APLSTYPE *lpaplType,       // Ptr to token storage type (may be NULL)
+     LPAPLNELM lpaplNELM,       // ...          NELM (may be NULL)
+     LPAPLRANK lpaplRank)       // ...          rank (may be NULL)
 
 {
     HGLOBAL hGlbData;
@@ -1262,17 +1234,21 @@ void AttrsOfToken
                 break;      // Continue with HGLOBAL case
             } // End IF
 
-            *lpaplType = TranslateImmTypeToArrayType (lpToken->tkData.tkSym->stFlags.ImmType);
-            *lpaplNELM = 1;
-            *lpaplRank = 0;
-
+            if (lpaplType)
+                *lpaplType = TranslateImmTypeToArrayType (lpToken->tkData.tkSym->stFlags.ImmType);
+            if (lpaplNELM)
+                *lpaplNELM = 1;
+            if (lpaplRank)
+                *lpaplRank = 0;
             return;
 
         case TKT_VARIMMED:
-            *lpaplType = TranslateImmTypeToArrayType (lpToken->tkFlags.ImmType);
-            *lpaplNELM = 1;
-            *lpaplRank = 0;
-
+            if (lpaplType)
+                *lpaplType = TranslateImmTypeToArrayType (lpToken->tkFlags.ImmType);
+            if (lpaplNELM)
+                *lpaplNELM = 1;
+            if (lpaplRank)
+                *lpaplRank = 0;
             return;
 
         case TKT_VARARRAY:
@@ -1294,7 +1270,7 @@ void AttrsOfToken
             return;
     } // End SWITCH
 
-    // Handle the global case
+    // Get the attributes (Type, NELM, and Rank) of the global
     AttrsOfGlb (ClrPtrTypeDirGlb (hGlbData), lpaplType, lpaplNELM, lpaplRank, NULL);
 } // End AttrsOfToken
 
@@ -1306,11 +1282,11 @@ void AttrsOfToken
 //***************************************************************************
 
 void AttrsOfGlb
-    (HGLOBAL   hGlbData,
-     APLSTYPE *lpaplType,
-     LPAPLNELM lpaplNELM,
-     LPAPLRANK lpaplRank,
-     LPAPLUINT lpaplCols)   // # cols in the array (scalar = 1) (may be NULL)
+    (HGLOBAL   hGlbData,        // Memory handle
+     APLSTYPE *lpaplType,       // Ptr to token storage type (may be NULL)
+     LPAPLNELM lpaplNELM,       // ...          NELM (may be NULL)
+     LPAPLRANK lpaplRank,       // ...          rank (may be NULL)
+     LPAPLUINT lpaplCols)       // ...          # cols in the array (scalar = 1) (may be NULL)
 
 {
     LPVOID  lpMem;
@@ -1320,22 +1296,25 @@ void AttrsOfGlb
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
-    *lpaplType = lpHeader->ArrType;
-    *lpaplNELM = lpHeader->NELM;
-    *lpaplRank = lpHeader->Rank;
-
-#undef  lpHeader
+    if (lpaplType)
+        *lpaplType = lpHeader->ArrType;
+    if (lpaplNELM)
+        *lpaplNELM = lpHeader->NELM;
+    if (lpaplRank)
+        *lpaplRank = lpHeader->Rank;
 
     // Skip over the header to the dimensions
     if (lpaplCols)
     {
-        if (*lpaplRank NE 0)
+        if (lpHeader->Rank NE 0)
         {
             lpMem = VarArrayBaseToDim (lpMem);
-            *lpaplCols = ((LPAPLDIM) lpMem)[*lpaplRank - 1];
+            *lpaplCols = ((LPAPLDIM) lpMem)[lpHeader->Rank - 1];
         } else
             *lpaplCols = 1;
     } // End IF
+
+#undef  lpHeader
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
@@ -2276,7 +2255,8 @@ APLSTYPE StorageType
 //  Return the first value from a token as either
 //    both an integer and a float, or as a character,
 //    or as an LPSYMENTRY/HGLOBAL.  The token may be
-//    an empty nested array.
+//    an empty array in which case the value of the
+//    prototype is returned.
 //***************************************************************************
 
 void FirstValue
@@ -2286,8 +2266,8 @@ void FirstValue
      LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
      LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
      LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
-     LPUCHAR      lpImmType,    // ...        immediate type IMM_TYPES (may be NULL)
-     LPAPLSTYPE   lpArrType)    // ...        array type -- ARRAY_TYPES (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type:  IMM_TYPES (may be NULL)
+     LPAPLSTYPE   lpArrType)    // ...        array type:  ARRAY_TYPES (may be NULL)
 
 {
     HGLOBAL hGlbData;
@@ -2311,130 +2291,28 @@ void FirstValue
             } // End IF
 
             // Handle the immediate case
-
-            if (lpImmType)
-                *lpImmType = lpToken->tkData.tkSym->stFlags.ImmType;
-
-            if (lpArrType)
-                *lpArrType = TranslateImmTypeToArrayType (lpToken->tkData.tkSym->stFlags.ImmType);
-
-            if (lpSymGlb)
-                *lpSymGlb = NULL;
-
-            if (lpaplLongest)
-                *lpaplLongest = lpToken->tkData.tkSym->stData.stInteger;
-
-            // Split cases based upon the immediate type
-            switch (lpToken->tkData.tkSym->stFlags.ImmType)
-            {
-                case IMMTYPE_BOOL:
-                    if (lpaplInteger)
-                        *lpaplInteger = lpToken->tkData.tkSym->stData.stBoolean;
-                    if (lpaplFloat)
-                        // ***FIXME*** -- Possible loss of precision
-                        *lpaplFloat   = (APLFLOAT) (lpToken->tkData.tkSym->stData.stBoolean);
-                    if (lpaplChar)
-                        *lpaplChar    = L'\0';
-                    break;
-
-                case IMMTYPE_INT:
-                    if (lpaplInteger)
-                        *lpaplInteger = lpToken->tkData.tkSym->stData.stInteger;
-                    if (lpaplFloat)
-                        // ***FIXME*** -- Possible loss of precision
-                        *lpaplFloat   = (APLFLOAT) (lpToken->tkData.tkSym->stData.stInteger);
-                    if (lpaplChar)
-                        *lpaplChar    = L'\0';
-                    break;
-
-                case IMMTYPE_FLOAT:
-                    if (lpaplFloat)
-                        *lpaplFloat   = lpToken->tkData.tkSym->stData.stFloat;
-                    if (lpaplInteger)
-                        *lpaplInteger = (APLINT) (lpToken->tkData.tkSym->stData.stFloat);
-                    if (lpaplChar)
-                        *lpaplChar    = L'\0';
-
-                    break;
-
-                case IMMTYPE_CHAR:
-                    if (lpaplInteger)
-                        *lpaplInteger = 0;
-                    if (lpaplFloat)
-                        *lpaplFloat   = 0;
-                    if (lpaplChar)
-                        *lpaplChar    = lpToken->tkData.tkSym->stData.stChar;
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-
+            FirstValueImm (lpToken->tkData.tkSym->stFlags.ImmType,
+                           lpToken->tkData.tkSym->stData.stLongest,
+                           lpaplInteger,
+                           lpaplFloat,
+                           lpaplChar,
+                           lpaplLongest,
+                           lpSymGlb,
+                           lpImmType,
+                           lpArrType);
             return;
 
         case TKT_VARIMMED:
-            if (lpImmType)
-                *lpImmType = lpToken->tkFlags.ImmType;
-
-            if (lpArrType)
-                *lpArrType = TranslateImmTypeToArrayType (lpToken->tkFlags.ImmType);
-
-            if (lpSymGlb)
-                *lpSymGlb = NULL;
-
-            if (lpaplLongest)
-                *lpaplLongest = lpToken->tkData.tkInteger;
-
-            // Split cases based upon the immediate type
-            switch (lpToken->tkFlags.ImmType)
-            {
-                case IMMTYPE_BOOL:
-                    if (lpaplInteger)
-                        *lpaplInteger = lpToken->tkData.tkBoolean;
-                    if (lpaplFloat)
-                        // ***FIXME*** -- Possible loss of precision
-                        *lpaplFloat   = (APLFLOAT) (lpToken->tkData.tkBoolean);
-                    if (lpaplChar)
-                        *lpaplChar    = L'\0';
-
-                    break;
-
-                case IMMTYPE_INT:
-                    if (lpaplInteger)
-                        *lpaplInteger = lpToken->tkData.tkInteger;
-                    if (lpaplFloat)
-                        // ***FIXME*** -- Possible loss of precision
-                        *lpaplFloat   = (APLFLOAT) (lpToken->tkData.tkInteger);
-                    if (lpaplChar)
-                        *lpaplChar    = L'\0';
-
-                    break;
-
-                case IMMTYPE_FLOAT:
-                    if (lpaplFloat)
-                        *lpaplFloat   = lpToken->tkData.tkFloat;
-                    if (lpaplInteger)
-                        *lpaplInteger = (APLINT) (lpToken->tkData.tkFloat);
-                    if (lpaplChar)
-                        *lpaplChar    = L'\0';
-
-                    break;
-
-                case IMMTYPE_CHAR:
-                    if (lpaplInteger)
-                        *lpaplInteger = 0;
-                    if (lpaplFloat)
-                        *lpaplFloat   = 0;
-                    if (lpaplChar)
-                        *lpaplChar    = lpToken->tkData.tkChar;
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-
+            // Handle the immediate case
+            FirstValueImm (lpToken->tkFlags.ImmType,
+                           lpToken->tkData.tkLongest,
+                           lpaplInteger,
+                           lpaplFloat,
+                           lpaplChar,
+                           lpaplLongest,
+                           lpSymGlb,
+                           lpImmType,
+                           lpArrType);
             return;
 
         case TKT_VARARRAY:
@@ -2462,12 +2340,85 @@ void FirstValue
 
 
 //***************************************************************************
+//  FirstValueImm
+//
+//  Return the first value of an immediate
+//***************************************************************************
+
+void FirstValueImm
+    (UINT         immType,      // The token's immediate type
+     APLLONGEST   aplLongest,   // The longest immediate value
+     LPAPLINT     lpaplInteger, // Return the integer (or Boolean) (may be NULL)
+     LPAPLFLOAT   lpaplFloat,   // ...        float (may be NULL)
+     LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
+     LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
+     LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type:  IMM_TYPES (may be NULL)
+     LPAPLSTYPE   lpArrType)    // ...        array type:  ARRAY_TYPES (may be NULL)
+{
+    if (lpImmType)
+        *lpImmType    = immType;
+    if (lpArrType)
+        *lpArrType    = TranslateImmTypeToArrayType (immType);
+    if (lpSymGlb)
+        *lpSymGlb     = NULL;
+    if (lpaplLongest)
+        *lpaplLongest = aplLongest;
+
+    // Split cases based upon the immediate type
+    switch (immType)
+    {
+        case IMMTYPE_BOOL:
+            if (lpaplInteger)
+                *lpaplInteger = (APLBOOL) aplLongest;
+            if (lpaplFloat)
+                *lpaplFloat   = (APLFLOAT) (APLBOOL) aplLongest;
+            if (lpaplChar)
+                *lpaplChar    = L'\0';
+            break;
+
+        case IMMTYPE_INT:
+            if (lpaplInteger)
+                *lpaplInteger = (APLINT) aplLongest;
+            if (lpaplFloat)
+                // ***FIXME*** -- Possible loss of precision
+                *lpaplFloat   = (APLFLOAT) (APLINT) aplLongest;
+            if (lpaplChar)
+                *lpaplChar    = L'\0';
+            break;
+
+        case IMMTYPE_FLOAT:
+            if (lpaplFloat)
+                *lpaplFloat   = *(LPAPLFLOAT) &aplLongest;
+            if (lpaplInteger)
+                *lpaplInteger = (APLINT) *(LPAPLFLOAT) &aplLongest;
+            if (lpaplChar)
+                *lpaplChar    = L'\0';
+            break;
+
+        case IMMTYPE_CHAR:
+            if (lpaplInteger)
+                *lpaplInteger = 0;
+            if (lpaplFloat)
+                *lpaplFloat   = 0;
+            if (lpaplChar)
+                *lpaplChar    = (APLCHAR) aplLongest;
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End FirstValueImm
+
+
+//***************************************************************************
 //  FirstValueGlb
 //
 //  Return the first value from an HGLOBAL as either
 //    both an integer and a float, or as a character,
 //    or as an LPSYMENTRY/HGLOBAL.  The HGLOBAL may be
-//    an empty nested array.
+//    an empty array in which case the value of the
+//    prototype is returned.
 //***************************************************************************
 
 void FirstValueGlb
@@ -2481,37 +2432,46 @@ void FirstValueGlb
      LPAPLSTYPE   lpArrType)    // ...        array type -- ARRAY_TYPES (may be NULL)
 
 {
-    LPVOID   lpMem,
-             lpData;
-    APLINT   aplInteger;
-    APLFLOAT aplFloat;
-    APLCHAR  aplChar;
+    LPVOID     lpMem;
+    APLSTYPE   aplType;
+    APLNELM    aplNELM;
+    APLINT     aplInteger;
+    APLFLOAT   aplFloat;
+    APLCHAR    aplChar;
+    LPSYMENTRY lpSym;
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
-    Assert (lpHeader->ArrType EQ ARRAY_NESTED || lpHeader->NELM > 0);
+    // Get the array's storage type & NELM
+    aplType = lpHeader->ArrType;
+    aplNELM = lpHeader->NELM;
 
-    lpData = VarArrayBaseToData (lpMem, lpHeader->Rank);
+    // Skip over the header and dimensions to the data
+    lpMem = VarArrayBaseToData (lpMem, lpHeader->Rank);
 
-    if (lpImmType)
-        *lpImmType = TranslateArrayTypeToImmType (lpHeader->ArrType);
+#undef  lpHeader
 
+    if (aplType NE ARRAY_HETERO
+     && aplType NE ARRAY_NESTED
+     && lpImmType)
+        *lpImmType = TranslateArrayTypeToImmType (aplType);
     if (lpArrType)
-        *lpArrType = lpHeader->ArrType;
+        *lpArrType = aplType;
 
     // Split cases based upon the storage type
-    switch (lpHeader->ArrType)
+    switch (aplType)
     {
         case ARRAY_BOOL:
-            aplInteger = BIT0 & *(LPAPLBOOL) lpData;
+            // If the array is empty and numeric, the value must be Boolean or APA
+            aplInteger = aplNELM ? (BIT0 & *(LPAPLBOOL) lpMem) : 0;
 
             if (lpaplInteger)
                 *lpaplInteger = aplInteger;
             if (lpaplFloat)
-                *lpaplFloat   = (APLFLOAT) aplInteger;  // ***FIXME*** -- Possible loss of precision
+                *lpaplFloat   = (APLFLOAT) aplInteger;
             if (lpaplChar)
                 *lpaplChar    = L'\0';
             if (lpaplLongest)
@@ -2521,7 +2481,9 @@ void FirstValueGlb
             break;
 
         case ARRAY_INT:
-            aplInteger = *(LPAPLINT) lpData;
+            Assert (aplNELM > 0);
+
+            aplInteger = *(LPAPLINT) lpMem;
 
             if (lpaplInteger)
                 *lpaplInteger = aplInteger;
@@ -2536,12 +2498,10 @@ void FirstValueGlb
             break;
 
         case ARRAY_APA:
-#define lpAPA       ((LPAPLAPA) lpData)
-
-            aplInteger = lpAPA->Off;
-
+#define lpAPA       ((LPAPLAPA) lpMem)
+            // If the array is empty and numeric, the value must be Boolean or APA
+            aplInteger = aplNELM ? lpAPA->Off : 0;
 #undef  lpAPA
-
             if (lpaplInteger)
                 *lpaplInteger = aplInteger;
             if (lpaplFloat)
@@ -2555,7 +2515,9 @@ void FirstValueGlb
             break;
 
         case ARRAY_FLOAT:
-            aplFloat = *(LPAPLFLOAT) lpData;
+            Assert (aplNELM > 0);
+
+            aplFloat = *(LPAPLFLOAT) lpMem;
 
             if (lpaplFloat)
                 *lpaplFloat   = aplFloat;
@@ -2570,7 +2532,8 @@ void FirstValueGlb
             break;
 
         case ARRAY_CHAR:
-            aplChar = *(LPAPLCHAR) lpData;
+            // If the array is empty and char, the value must be blank
+            aplChar = aplNELM ? (*(LPAPLCHAR) lpMem) : L' ';
 
             if (lpaplInteger)
                 *lpaplInteger = 0;
@@ -2584,36 +2547,72 @@ void FirstValueGlb
                 *lpSymGlb = NULL;
             break;
 
-        case ARRAY_HETERO:
-            DbgBrk ();
-            DbgBrk ();
-
-
-
-            break;
-
         case ARRAY_NESTED:
-            if (lpaplInteger)
-                *lpaplInteger = 0;
-            if (lpaplFloat)
-                *lpaplFloat   = 0;
-            if (lpaplChar)
-                *lpaplChar    = L'\0';
-            if (lpaplLongest)
-                *lpaplLongest = 0;
-            if (lpSymGlb)
-                *lpSymGlb = *(LPAPLNESTED) lpData;
+            // If it's an HGLOBAL, ...
+            if (GetPtrTypeInd (lpMem) EQ PTRTYPE_HGLOBAL)
+            {
+                if (lpaplInteger)
+                    *lpaplInteger = 0;
+                if (lpaplFloat)
+                    *lpaplFloat   = 0;
+                if (lpaplChar)
+                    *lpaplChar    = L'\0';
+                if (lpaplLongest)
+                    *lpaplLongest = 0;
+                if (lpSymGlb)
+                    *lpSymGlb = *(LPAPLNESTED) lpMem;
+                break;
+            } // End IF
+
+            // Fall through to ARRAY_HETERO case
+
+        case ARRAY_HETERO:
+            Assert ((aplType EQ ARRAY_NESTED) || aplNELM > 0);
+
+            lpSym = *(LPAPLHETERO) lpMem;
+
+            // stData is immediate
+            Assert (lpSym->stFlags.Imm);
+
+            // Handle the immediate case
+            FirstValueImm (lpSym->stFlags.ImmType,
+                           lpSym->stData.stLongest,
+                           lpaplInteger,
+                           lpaplFloat,
+                           lpaplChar,
+                           lpaplLongest,
+                           lpSymGlb,
+                           lpImmType,
+                           lpArrType);
             break;
 
         defstop
             break;
     } // End SWITCH
 
-#undef  lpHeader
-
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
 } // End FirstValueGlb
+
+
+//***************************************************************************
+//  GetGlbHandle
+//
+//  Return the HGLOBAL from a token if it's an HGLOBAL
+//    NULL otherwise.
+//***************************************************************************
+
+HGLOBAL GetGlbHandle
+    (LPTOKEN lpToken)           // Ptr to token
+
+{
+    HGLOBAL hGlb;
+
+    // Get the global handle w/o locking it
+    GetGlbPtrs_LOCK (lpToken, &hGlb, NULL);
+
+    return hGlb;
+} // End GetGlbHandle
 
 
 //***************************************************************************
@@ -2626,9 +2625,9 @@ void FirstValueGlb
 //***************************************************************************
 
 void GetGlbPtrs_LOCK
-    (LPTOKEN  lpToken,
-     HGLOBAL *lphGlb,
-     LPVOID  *lplpMem)
+    (LPTOKEN  lpToken,          // Ptr to token
+     HGLOBAL *lphGlb,           // Ptr to ptr to HGLOBAL
+     LPVOID  *lplpMem)          // Ptr to ptr to memory (may be NULL)
 
 {
     // Split cases based upon the token type
@@ -2655,7 +2654,9 @@ void GetGlbPtrs_LOCK
 
         case TKT_VARIMMED:
             *lphGlb  = NULL;
-            *lplpMem = NULL;
+
+            if (lplpMem)
+                *lplpMem = NULL;
 
             return;
 
@@ -2678,7 +2679,8 @@ void GetGlbPtrs_LOCK
         *lphGlb = ClrPtrTypeDirGlb (*lphGlb);
 
         // Lock the memory to get a ptr to it
-        *lplpMem = MyGlobalLock (*lphGlb);
+        if (lplpMem)
+            *lplpMem = MyGlobalLock (*lphGlb);
     } // End IF
 } // End GetGlbPtrs_LOCK
 
@@ -3024,12 +3026,13 @@ BOOL PrimScalarFnDydAllocate_EM
 #endif
 
 HGLOBAL MakePrototype_EM
-    (HGLOBAL hGlbArr,               // Incoming array handle
-     LPTOKEN lptkFunc,              // Ptr to function token
-     BOOL    bNumericOnly)          // TRUE iff numerics only (e.g., CHARs not allowed)
+    (HGLOBAL   hGlbArr,             // Incoming array handle
+     LPTOKEN   lptkFunc,            // Ptr to function token
+     MAKEPROTO mpEnum)              // See MAKEPROTO enum
 
 {
-    LPVOID      lpMemArr;
+    LPVOID      lpMemArr,
+                lpMemRes;
     LPVARARRAY_HEADER lpHeader;
     APLSTYPE    aplType;
     APLNELM     aplNELM;
@@ -3038,7 +3041,9 @@ HGLOBAL MakePrototype_EM
     APLNELM     uLen;
     HGLOBAL     hGlbTmp;
     BOOL        bRet = TRUE;
-    LPSYMENTRY  lpSymArr, lpSymRes;
+    APLUINT     ByteRes;
+    LPSYMENTRY  lpSymArr,
+                lpSymRes;
 
     DBGENTER;
 
@@ -3081,15 +3086,78 @@ HGLOBAL MakePrototype_EM
             break;
 
         case ARRAY_CHAR:
-            if (bNumericOnly)
+            // Split cases based upon mpEnum
+            switch (mpEnum)
             {
-                if (aplNELM NE 0)
-                    goto DOMAIN_ERROR_EXIT;
+                case MP_CHARS:
+                    break;
 
-                // Change the storage type to Boolean
-                lpHeader->ArrType = ARRAY_BOOL;
-            } // End IF
+                case MP_NUMONLY:
+                    // If the arg is non-empty, that's an error
+                    if (aplNELM NE 0)
+                        goto DOMAIN_ERROR_EXIT;
 
+                    // Change the storage type to Boolean
+                    lpHeader->ArrType = ARRAY_BOOL;
+
+                    break;
+
+                case MP_NUMCONV:
+                    // Convert the chars to numerics by allocating
+                    //   new (Boolean) storage and copying over
+                    //   the dimensions
+
+                    // Calculate space needed for the result
+                    ByteRes = CalcArraySize (ARRAY_BOOL, aplNELM, aplRank);
+
+                    // Allocate space for the result.
+                    // N.B. Conversion from APLUINT to UINT.
+                    Assert (ByteRes EQ (UINT) ByteRes);
+                    hGlbTmp = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+                    if (!hGlbTmp)
+                    {
+                        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                                   lptkFunc);
+                        goto ERROR_EXIT;
+                    } // End IF
+
+                    // Lock the memory to get a ptr to it
+                    lpMemRes = MyGlobalLock (hGlbTmp);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+
+                    // Fill in the header
+                    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+                    lpHeader->ArrType    = ARRAY_BOOL;
+////////////////////lpHeader->Perm       = 0;   // Already zero from GHND
+////////////////////lpHeader->SysVar     = 0;   // Already zero from GHND
+                    lpHeader->RefCnt     = 1;
+                    lpHeader->NELM       = aplNELM;
+                    lpHeader->Rank       = aplRank;
+
+#undef  lpHeader
+
+                    // Copy the dimensions to the result
+                    CopyMemory (VarArrayBaseToDim (lpMemRes),
+                                VarArrayBaseToDim (lpHeader),
+                                (UINT) aplRank * sizeof (APLDIM));
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbArr); lpMemArr = NULL;
+
+                    // We no longer need this storage
+                    DbgGlobalFree (hGlbArr); hGlbArr = NULL;
+
+                    // Copy the global handle
+                    hGlbArr = hGlbTmp;
+
+                    goto NORMAL_EXIT;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Convert the chars to blanks
             for (u = 0; u < aplNELM; u++)
                 *((LPAPLCHAR)  lpMemArr)++ = L' ';
             break;
@@ -3105,11 +3173,13 @@ HGLOBAL MakePrototype_EM
 
             break;
 
-        case ARRAY_HETERO:
         case ARRAY_NESTED:
-            // Handle prototype case
+            // Empty nested arrays have one element (the prototype)
             aplNELM = max (aplNELM, 1);
 
+            // Fall through to common HETERO/NESTED code
+
+        case ARRAY_HETERO:
             for (u = 0; bRet && u < aplNELM; u++)
             // Split cases based upon the element's ptr type
             switch (GetPtrTypeInd (lpMemArr))
@@ -3131,7 +3201,27 @@ HGLOBAL MakePrototype_EM
                             break;
 
                         case IMMTYPE_CHAR:
-                            lpSymRes = SymTabAppendChar_EM (L' ');
+                            // Split cases based upon mpEnum
+                            switch (mpEnum)
+                            {
+                                case MP_CHARS:
+                                    lpSymRes = SymTabAppendChar_EM (L' ');
+
+                                    break;
+
+                                case MP_NUMONLY:
+                                    goto DOMAIN_ERROR_EXIT;
+
+                                    break;
+
+                                case MP_NUMCONV:
+                                    lpSymRes = SymTabAppendInteger_EM (0);
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
 
                             break;
 
@@ -3155,7 +3245,7 @@ HGLOBAL MakePrototype_EM
                     hGlbTmp =
                     MakePrototype_EM (ClrPtrTypeIndGlb (lpMemArr),
                                       lptkFunc,
-                                      bNumericOnly);    // Pass flag through
+                                      mpEnum);          // Pass flag through
                     if (hGlbTmp)
                     {
                         // We no longer need this storage
@@ -3201,7 +3291,10 @@ NORMAL_EXIT:
 
     DBGLEAVE;
 
-    return hGlbArr;
+    if (hGlbArr)
+        return TypeDemote (hGlbArr);
+    else
+        return hGlbArr;
 } // End MakePrototype_EM
 #undef  APPEND_NAME
 
@@ -3833,22 +3926,24 @@ APLUINT CalcArraySize
 //
 //  take
 //  drop
-//  indexing/squad
 //  indexed assignment
 //  pick
-//  compression/replicate
 //  unique
 //  partition
-//  first
-//  enlist
 //  without
-//  each
 //  etc.
 //
 //  The following functions have been changed to use TypeDemote:
 //    enclose with axis
 //    reshape
-//    dyadic transpose
+//    collapsing dyadic transpose
+//    enlist
+//    compression/replicate
+//    each
+//    first
+//    outer product
+//    each
+//    indexing/squad
 //
 //  must call this function to check their result to see if it
 //  can be stored more simply.  Note that more simply does not
@@ -4128,137 +4223,132 @@ HGLOBAL TypeDemote
             // Now, lpMemRes and lpMemRht both point to their
             //   respective data
 
-            // Loop through the old values converting
-            //   to the new storage type
-            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+            // Split cases based upon the result's storage type
+            // Note that the result is always of lower type than
+            //   the right arg.
+            switch (aplTypeRes)
             {
-                // Split cases based upon the result's storage type
-                // Note that the result is always of lower type than
-                //   the right arg.
-                switch (aplTypeRes)
-                {
-                    case ARRAY_BOOL:            // Res = BOOL, Rht = INT/FLOAT/HETERO/NESTED
-                        uBitIndex = 0;
+                case ARRAY_BOOL:            // Res = BOOL, Rht = INT/FLOAT/HETERO/NESTED
+                    uBitIndex = 0;
 
-                        // Split cases based upon the right arg's storage type
-                        switch (aplTypeRht)
-                        {
-                            case ARRAY_INT:     // Res = BOOL, Rht = INT
-                                // Loop through the elements
-                                for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                    // Split cases based upon the right arg's storage type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_INT:     // Res = BOOL, Rht = INT
+                            // Loop through the elements
+                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                            {
+                                *((LPAPLBOOL) lpMemRes) |= (*((LPAPLINT) lpMemRht)++) << uBitIndex;
+
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
                                 {
-                                    *((LPAPLBOOL) lpMemRes) |= (*((LPAPLINT) lpMemRht)++) << uBitIndex;
+                                    uBitIndex = 0;              // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
 
-                                    // Check for end-of-byte
-                                    if (++uBitIndex EQ NBIB)
-                                    {
-                                        uBitIndex = 0;              // Start over
-                                        ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
-                                    } // End IF
-                                } // End FOR
+                            break;
 
-                                break;
+                        case ARRAY_FLOAT:   // Res = BOOL, Rht = FLOAT
+                            // Loop through the elements
+                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                            {
+                                *((LPAPLBOOL) lpMemRes) |= ((APLBOOL) *((LPAPLFLOAT) lpMemRht)++) << uBitIndex;
 
-                            case ARRAY_FLOAT:   // Res = BOOL, Rht = FLOAT
-                                // Loop through the elements
-                                for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
                                 {
-                                    *((LPAPLBOOL) lpMemRes) |= ((APLBOOL) *((LPAPLFLOAT) lpMemRht)++) << uBitIndex;
+                                    uBitIndex = 0;              // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
 
-                                    // Check for end-of-byte
-                                    if (++uBitIndex EQ NBIB)
-                                    {
-                                        uBitIndex = 0;              // Start over
-                                        ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
-                                    } // End IF
-                                } // End FOR
+                            break;
 
-                                break;
+                        case ARRAY_HETERO:  // Res = BOOL, Rht = HETERO
+                        case ARRAY_NESTED:  // Res = BOOL, Rht = NESTED
+                            // Loop through the elements
+                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                            {
+                                *((LPAPLBOOL) lpMemRes) |= ((*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger) << uBitIndex;
 
-                            case ARRAY_HETERO:  // Res = BOOL, Rht = HETERO
-                            case ARRAY_NESTED:  // Res = BOOL, Rht = NESTED
-                                // Loop through the elements
-                                for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                                // Check for end-of-byte
+                                if (++uBitIndex EQ NBIB)
                                 {
-                                    *((LPAPLBOOL) lpMemRes) |= ((*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger) << uBitIndex;
+                                    uBitIndex = 0;              // Start over
+                                    ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                                } // End IF
+                            } // End FOR
 
-                                    // Check for end-of-byte
-                                    if (++uBitIndex EQ NBIB)
-                                    {
-                                        uBitIndex = 0;              // Start over
-                                        ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
-                                    } // End IF
-                                } // End FOR
+                            break;
 
-                                break;
+                        defstop
+                            break;
+                    } // End SWITCH
 
-                            defstop
-                                break;
-                        } // End SWITCH
+                    break;
 
-                        break;
+                case ARRAY_INT:         // Res = INT, Rht = FLOAT/HETERO/NESTED
+                    // Split cases based upon the right arg's storage type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_FLOAT:   // Res = INT , Rht = FLOAT
+                            // Loop through the elements
+                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                                *((LPAPLINT) lpMemRes)++ = (APLINT) *((LPAPLFLOAT) lpMemRht)++;
+                            break;
 
-                    case ARRAY_INT:         // Res = INT, Rht = FLOAT/HETERO/NESTED
-                        // Split cases based upon the right arg's storage type
-                        switch (aplTypeRht)
-                        {
-                            case ARRAY_FLOAT:   // Res = INT , Rht = FLOAT
-                                // Loop through the elements
-                                for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                                    *((LPAPLINT) lpMemRes)++ = (APLINT) *((LPAPLFLOAT) lpMemRht)++;
-                                break;
+                        case ARRAY_HETERO:  // Res = INT , Rht = HETERO
+                        case ARRAY_NESTED:  // Res = INT , Rht = NESTED
+                            // Loop through the elements
+                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                                *((LPAPLINT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger;
+                            break;
 
-                            case ARRAY_HETERO:  // Res = INT , Rht = HETERO
-                            case ARRAY_NESTED:  // Res = INT , Rht = NESTED
-                                // Loop through the elements
-                                for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                                    *((LPAPLINT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger;
-                                break;
+                        defstop
+                            break;
+                    } // End SWITCH
 
-                            defstop
-                                break;
-                        } // End SWITCH
+                    break;
 
-                        break;
+                case ARRAY_FLOAT:       // Res = FLOAT, Rht = HETERO/NESTED
+                    // Split cases based upon the right arg's storage type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_HETERO:  // Res = FLOAT, Rht = HETERO
+                        case ARRAY_NESTED:  // Res = FLOAT, Rht = NESTED
+                            // Loop through the elements
+                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                                *((LPAPLFLOAT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stFloat;
+                            break;
 
-                    case ARRAY_FLOAT:       // Res = FLOAT, Rht = HETERO/NESTED
-                        // Split cases based upon the right arg's storage type
-                        switch (aplTypeRht)
-                        {
-                            case ARRAY_HETERO:  // Res = FLOAT, Rht = HETERO
-                            case ARRAY_NESTED:  // Res = FLOAT, Rht = NESTED
-                                // Loop through the elements
-                                for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                                    *((LPAPLFLOAT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stFloat;
-                                break;
+                        defstop
+                            break;
+                    } // End SWITCH
 
-                            defstop
-                                break;
-                        } // End SWITCH
+                    break;
 
-                        break;
+                case ARRAY_CHAR:        // Res = CHAR, Rht = HETERO/NESTED
+                    // Split cases based upon the right arg's storage type
+                    switch (aplTypeRht)
+                    {
+                        case ARRAY_HETERO:  // Res = CHAR, Rht = HETERO
+                        case ARRAY_NESTED:  // Res = CHAR, Rht = NESTED
+                            // Loop through the elements
+                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+                                *((LPAPLCHAR) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stChar;
+                            break;
 
-                    case ARRAY_CHAR:        // Res = CHAR, Rht = HETERO/NESTED
-                        // Split cases based upon the right arg's storage type
-                        switch (aplTypeRht)
-                        {
-                            case ARRAY_HETERO:  // Res = CHAR, Rht = HETERO
-                            case ARRAY_NESTED:  // Res = CHAR, Rht = NESTED
-                                // Loop through the elements
-                                for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                                    *((LPAPLCHAR) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stChar;
-                                break;
+                        defstop
+                            break;
+                    } // End SWITCH
 
-                            defstop
-                                break;
-                        } // End SWITCH
+                    break;
 
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
-            } // End FOR
+                defstop
+                    break;
+            } // End SWITCH
 
             // We no longer need these ptrs
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -4426,82 +4516,84 @@ BOOL YYResIsEmpty
 //***************************************************************************
 //  GetImmTypeFcn
 //
-//  Get the IMMTYPE_PRIMFCN_xx value corresponding to a primitive function
+//  Get the IMMTYPE_PRIMFCN value corresponding to a primitive function
 //***************************************************************************
 
 UINT GetImmTypeFcn
     (WCHAR wch)                 // Immediate function symbol (UTF16_xxx)
 
 {
-    // Split cases based upon the immediate function symbol
-    switch (wch)
-    {
-        case UTF16_BAR:
-        case UTF16_CIRCLE:
-        case UTF16_CIRCLESTAR:
-        case UTF16_COLONBAR:
-        case UTF16_DOWNSTILE:
-        case UTF16_PLUS:
-        case UTF16_QUOTEDOT:
-        case UTF16_STAR:
-        case UTF16_STILE:
-        case UTF16_TIMES:
-        case UTF16_UPSTILE:
-            return IMMTYPE_PRIMFCN_SS;      // Monadic scalar     , dyadic scalar
+    return IMMTYPE_PRIMFCN;
 
-        case UTF16_QUERY:
-        case UTF16_TILDE:
-            return IMMTYPE_PRIMFCN_SM;      // Monadic scalar     , dyadic mixed/error
-
-        case UTF16_DOWNCARET:
-        case UTF16_DOWNCARETTILDE:
-        case UTF16_EQUAL:
-        case UTF16_LEFTCARET:
-        case UTF16_LEFTCARETUNDERBAR:
-        case UTF16_NOTEQUAL:
-        case UTF16_RIGHTCARET:
-        case UTF16_RIGHTCARETUNDERBAR:
-        case UTF16_UPCARET:
-        case UTF16_UPCARETTILDE:
-            return IMMTYPE_PRIMFCN_MS;      // Monadic mixed/error, dyadic scalar
-
-        case UTF16_ALPHA:
-        case UTF16_CIRCLEBAR:
-        case UTF16_CIRCLESLOPE:
-        case UTF16_CIRCLESTILE:
-        case UTF16_COMMA:
-        case UTF16_COMMABAR:
-        case UTF16_DELSTILE:
-        case UTF16_DELTASTILE:
-        case UTF16_DOMINO:
-        case UTF16_DOWNARROW:
-        case UTF16_DOWNTACK:
-        case UTF16_DOWNTACKJOT:
-        case UTF16_EPSILON:
-        case UTF16_EPSILONUNDERBAR:
-        case UTF16_EQUALUNDERBAR:
-        case UTF16_IOTA:
-        case UTF16_IOTAUNDERBAR:
-        case UTF16_LEFTSHOE:
-        case UTF16_LEFTTACK:
-        case UTF16_OMEGA:
-        case UTF16_RIGHTSHOE:
-        case UTF16_RIGHTTACK:
-        case UTF16_RHO:
-        case UTF16_SLASH:
-        case UTF16_SLASHBAR:
-        case UTF16_SLOPE:
-        case UTF16_SLOPEBAR:
-        case UTF16_SQUAD:
-        case UTF16_UPARROW:
-        case UTF16_UPSHOE:
-        case UTF16_UPTACK:
-        case UTF16_UPTACKJOT:
-            return IMMTYPE_PRIMFCN_MM;      // Monadic mixed/error, dyadic mixed/error
-
-        defstop
-            return 0;
-    } // End SWITCH
+////// Split cases based upon the immediate function symbol
+////switch (wch)
+////{
+////    case UTF16_BAR:
+////    case UTF16_CIRCLE:
+////    case UTF16_CIRCLESTAR:
+////    case UTF16_COLONBAR:
+////    case UTF16_DOWNSTILE:
+////    case UTF16_PLUS:
+////    case UTF16_QUOTEDOT:
+////    case UTF16_STAR:
+////    case UTF16_STILE:
+////    case UTF16_TIMES:
+////    case UTF16_UPSTILE:
+////        return IMMTYPE_PRIMFCN_SS;      // Monadic scalar     , dyadic scalar
+////
+////    case UTF16_QUERY:
+////    case UTF16_TILDE:
+////        return IMMTYPE_PRIMFCN_SM;      // Monadic scalar     , dyadic mixed/error
+////
+////    case UTF16_DOWNCARET:
+////    case UTF16_DOWNCARETTILDE:
+////    case UTF16_EQUAL:
+////    case UTF16_LEFTCARET:
+////    case UTF16_LEFTCARETUNDERBAR:
+////    case UTF16_NOTEQUAL:
+////    case UTF16_RIGHTCARET:
+////    case UTF16_RIGHTCARETUNDERBAR:
+////    case UTF16_UPCARET:
+////    case UTF16_UPCARETTILDE:
+////        return IMMTYPE_PRIMFCN_MS;      // Monadic mixed/error, dyadic scalar
+////
+////    case UTF16_ALPHA:
+////    case UTF16_CIRCLEBAR:
+////    case UTF16_CIRCLESLOPE:
+////    case UTF16_CIRCLESTILE:
+////    case UTF16_COMMA:
+////    case UTF16_COMMABAR:
+////    case UTF16_DELSTILE:
+////    case UTF16_DELTASTILE:
+////    case UTF16_DOMINO:
+////    case UTF16_DOWNARROW:
+////    case UTF16_DOWNTACK:
+////    case UTF16_DOWNTACKJOT:
+////    case UTF16_EPSILON:
+////    case UTF16_EPSILONUNDERBAR:
+////    case UTF16_EQUALUNDERBAR:
+////    case UTF16_IOTA:
+////    case UTF16_IOTAUNDERBAR:
+////    case UTF16_LEFTSHOE:
+////    case UTF16_LEFTTACK:
+////    case UTF16_OMEGA:
+////    case UTF16_RIGHTSHOE:
+////    case UTF16_RIGHTTACK:
+////    case UTF16_RHO:
+////    case UTF16_SLASH:
+////    case UTF16_SLASHBAR:
+////    case UTF16_SLOPE:
+////    case UTF16_SLOPEBAR:
+////    case UTF16_SQUAD:
+////    case UTF16_UPARROW:
+////    case UTF16_UPSHOE:
+////    case UTF16_UPTACK:
+////    case UTF16_UPTACKJOT:
+////        return IMMTYPE_PRIMFCN_MM;      // Monadic mixed/error, dyadic mixed/error
+////
+////    defstop
+////        return 0;
+////} // End SWITCH
 } // End GetImmTypeFcn
 
 

@@ -228,7 +228,7 @@ typedef struct tagPrimSpec
 
     // Miscellaneous
     EXEC_CODES         *lpExecCode;         // Ptr to Exception Code
-} PRIMSPEC, * LPPRIMSPEC;
+} PRIMSPEC, *LPPRIMSPEC;
 
 
 //***************************************************************************

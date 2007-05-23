@@ -289,10 +289,11 @@ int main
         number_format (szSize , "%12lu", Accum[i-1].size );
 
         fprintf (stdout,
-                 "%s lines  %s bytes  %5u files:  %s\n",
+                 "%s lines  %s bytes  %5u file%s  %s\n",
                  szLines,
                  szSize,
-                 Accum[i-1].files,
+                 Accum[i - 1].files,
+                (Accum[i - 1].files EQ 1) ? ": " : "s:",
                  argv[i]);
         Accum[argc].lines += Accum[i-1].lines;
         Accum[argc].size  += Accum[i-1].size ;

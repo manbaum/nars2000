@@ -2,10 +2,31 @@
 //  NARS2000 -- Unicode Constants
 //****************************************************************************
 
-#define UTF16_JOTDOT             0x0001         // Pseudo-symbol for {jot}{dot} digraph
+// When initializing an array of functions (such as PrimFnsTab) use these
+//   equates instead of the low-order byte of the corresponding UTF16_xxx
+//   so as to avoid a conflict.
+#define INDEX_JOTDOT             0x01           // Index for {jot}{dot}
+#define INDEX_EPSILON            0x02           // ...       {epsilon}
+#define INDEX_DOWNSHOE           0x03           // ...       {downshoe}
+#define INDEX_CIRCLESTILE        0x04           // ...       {circlestile}
+#define INDEX_SLASHBAR           0x05           // ...       {slashbar}
+///////                          0x06           // ...       {delta}
+///////                          0x07           // ...       {del}
+///////                          0x08           // ...       {upstile}
+#define INDEX_DIERESISJOT        0x09           // ...       {dieresisjot}
+///////                          0x0A           // ...       {epsilon}/{downstile}
+#define INDEX_DIERESISDOWNTACK   0x0B           // ...       {dieresisdowntack}
+#define INDEX_DIERESISCIRCLE     0x0C           // ...       {dieresiscircle}
+#define INDEX_OPSLASH            0x0D           // ...       {slash} as an operator
+#define INDEX_OPSLASHBAR         0x0E           // ...       {slashbar} ...
+#define INDEX_OPSLOPE            0x0F           // ...       {slope}    ...
+#define INDEX_OPSLOPEBAR         0x10           // ...       {slopebar} ...
+///////                          0x11-0x17      // (available)
+///////                          0x18           // ...       {jot}
+
 
 // No keystroke equivalents for these as yet
-#define UTF16_DIERESISDOT        0x2235         //                      (???)
+#define UTF16_DIERESISDOT        0x2235         //
 #define UTF16_NOTEQUALUNDERBAR   0x2262         // Not-match function
 #define UTF16_IBEAM              0x2336         //
 #define UTF16_QUADJOT            0x233B         //
@@ -14,13 +35,6 @@
 #define UTF16_QUADRIGHTARROW     0x2348         //
 #define UTF16_QUADUPARROW        0x2350         //
 #define UTF16_QUADDOWNARROW      0x2357         //
-#define UTF16_DIERESISDOWNTACK   0x2361         // Convolution operator (snout)
-#define UTF16_DIERESISDEL        0x2362         // Dual operator        (frog)
-#define UTF16_DIERESISSTAR       0x2363         // Power operator       (sourpuss)
-#define UTF16_DIERESISJOT        0x2364         // Rank operator        (hoot)
-#define UTF16_DIERESISCIRCLE     0x2365         //                      (holler)
-#define UTF16_DIERESISTILDE      0x2368         // Commute operator     (frown)
-#define UTF16_STILETILDE         0x236D         // Partition operator   (dagger)
 
 // The alphabet, unshifted
 #define UTF16_ALPHA              0x237A         // Alt-'a' - alpha
@@ -57,21 +71,20 @@
 //efine UTF16_                                  // Alt-'D' - (none)
 #define UTF16_EPSILONUNDERBAR    0x2377         // Alt-'E' - epsilon-underbar
 //efine UTF16_                                  // Alt-'F' - (none)
-//efine UTF16_                                  // Alt-'G' - (none)
+#define UTF16_DIERESISDEL        0x2362         // Alt-'G' - Dual operator        (frog)
 #define UTF16_DELTAUNDERBAR      0x2359         // Alt-'H' - delta-underbar
 #define UTF16_IOTAUNDERBAR       0x2378         // Alt-'I' - iota-underbar
-//efine UTF16_                                  // Alt-'J' - (none)
+#define UTF16_DIERESISJOT        0x2364         // Alt-'J' - Rank operator        (hoot)
 //efine UTF16_                                  // Alt-'K' - (none)
 #define UTF16_SQUAD              0x2337         // Alt-'L' - squad
-//efine UTF16_                                  // Alt-'M' - (none)
 #define UTF16_STILETILDE         0x236D         // Alt-'M' - Partition operator   (dagger)
-//efine UTF16_                                  // Alt-'N' - (none)
-//efine UTF16_                                  // Alt-'O' - (none)
-//efine UTF16_                                  // Alt-'P' - (none)
+#define UTF16_DIERESISDOWNTACK   0x2361         // Alt-'N' - Convolution operator (snout)
+#define UTF16_DIERESISCIRCLE     0x2365         // Alt-'O' -                      (holler)
+#define UTF16_DIERESISSTAR       0x2363         // Alt-'P' - Power operator       (sourpuss)
 //efine UTF16_                                  // Alt-'Q' - (none)
 //efine UTF16_                                  // Alt-'R' - (none)
 //efine UTF16_                                  // Alt-'S' - (none)
-//efine UTF16_                                  // Alt-'T' - (none)
+#define UTF16_DIERESISTILDE      0x2368         // Alt-'T' - Commute operator     (frown)
 //efine UTF16_                                  // Alt-'U' - (none)
 //efine UTF16_                                  // Alt-'V' - (none)
 //efine UTF16_                                  // Alt-'W' - (none)
@@ -138,6 +151,7 @@
 //efine UTF16_                                  // Alt-'?' - (none)
 
 // Non-Alt key equivalents
+#define UTF16_JOTDOT             0x0001         // Pseudo-symbol for {jot}{dot} digraph
 #define UTF16_DOUBLEQUOTE        0x0022         // Double quote
 #define UTF16_POUND              0x0023         // Pound
 #define UTF16_DOLLAR             0x0024         // Dollar
@@ -165,6 +179,17 @@
 
 
 // The corresponding wide string constants
+
+// No keystroke equivalents for these as yet
+#define WS_UTF16_DIERESISDOT        L"\x2235"   //
+#define WS_UTF16_NOTEQUALUNDERBAR   L"\x2262"   // Not-match function
+#define WS_UTF16_IBEAM              L"\x2336"   //
+#define WS_UTF16_QUADJOT            L"\x233B"   //
+#define WS_UTF16_QUADSLOPE          L"\x2342"   //
+#define WS_UTF16_QUADLEFTARROW      L"\x2347"   //
+#define WS_UTF16_QUADRIGHTARROW     L"\x2348"   //
+#define WS_UTF16_QUADUPARROW        L"\x2350"   //
+#define WS_UTF16_QUADDOWNARROW      L"\x2357"   //
 
 // The alphabet, unshifted
 #define WS_UTF16_ALPHA              L"\x237A"   // Alt-'a' - alpha
@@ -201,20 +226,20 @@
 //efine WS_UTF16_                               // Alt-'D' - (none)
 #define WS_UTF16_EPSILONUNDERBAR    L"\x2377"   // Alt-'E' - epsilon-underbar
 //efine WS_UTF16_                               // Alt-'F' - (none)
-//efine WS_UTF16_                               // Alt-'G' - (none)
+#define WS_UTF16_DIERESISDEL        L"\x2362"   // Alt-'G' - Dual operator        (frog)
 #define WS_UTF16_DELTAUNDERBAR      L"\x2359"   // Alt-'H' - delta-underbar
 #define WS_UTF16_IOTAUNDERBAR       L"\x2378"   // Alt-'I' - iota-underbar
-//efine WS_UTF16_                               // Alt-'J' - (none)
+#define WS_UTF16_DIERESISJOT        L"\x2364"   // Alt-'J' - Rank operator        (hoot)
 //efine WS_UTF16_                               // Alt-'K' - (none)
 #define WS_UTF16_SQUAD              L"\x2337"   // Alt-'L' - squad
-//efine WS_UTF16_                               // Alt-'M' - (none)
-//efine WS_UTF16_                               // Alt-'N' - (none)
-//efine WS_UTF16_                               // Alt-'O' - (none)
-//efine WS_UTF16_                               // Alt-'P' - (none)
+#define WS_UTF16_STILETILDE         L"\x236D"   // Alt-'M' - Partition operator   (dagger)
+#define WS_UTF16_DIERESISDOWNTACK   L"\x2361"   // Alt-'N' - Convolution operator (snout)
+#define WS_UTF16_DIERESISCIRCLE     L"\x2365"   // Alt-'O' -                      (holler)
+#define WS_UTF16_DIERESISSTAR       L"\x2363"   // Alt-'P' - Power operator       (sourpuss)
 //efine WS_UTF16_                               // Alt-'Q' - (none)
 //efine WS_UTF16_                               // Alt-'R' - (none)
 //efine WS_UTF16_                               // Alt-'S' - (none)
-//efine WS_UTF16_                               // Alt-'T' - (none)
+#define WS_UTF16_DIERESISTILDE      L"\x2368"   // Alt-'T' - Commute operator     (frown)
 //efine WS_UTF16_                               // Alt-'U' - (none)
 //efine WS_UTF16_                               // Alt-'V' - (none)
 //efine WS_UTF16_                               // Alt-'W' - (none)
@@ -281,6 +306,7 @@
 //efine WS_UTF16_                               // Alt-'?' - (none)
 
 // Non-Alt key equivalents
+#define WS_UTF16_JOTDOT             L"\x0001"   // Pseudo-symbol for {jot}{dot} digraph
 #define WS_UTF16_DOUBLEQUOTE        L"\x0022"   // Double quote
 #define WS_UTF16_POUND              L"\x0023"   // Pound
 #define WS_UTF16_DOLLAR             L"\x0024"   // Dollar
@@ -305,6 +331,7 @@
 #define WS_UTF16_LBRACE             L"\x007B"   // Left brace
 #define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. 0x2223)
 #define WS_UTF16_RBRACE             L"\x007D"   // Right brace
+
 
 //***************************************************************************
 //  End of File: Unicode.h

@@ -8,7 +8,6 @@ TO DO: General
 * Delete <InitPrimFns> and put into <CharTrans>???
 * Test implementation limits (stack, FP, Integer, etc.)
 * Check on freeing intermediate variables on error
-* Demote arrays to a more compact storage type???
 * Idiom recognition in the tokenizer
 * Test ± infinity code
 * Get permission to redistribute APL385 Unicode font
@@ -16,14 +15,23 @@ TO DO: General
 
 TODO: Session Manager
 ---------------------
-* Mouse selection in session manager:  line, sentence, block
-* CUA keystrokes:  e.g. Ctrl-RightArrow, etc.
-* Tabs for workspaces
 * )Save as ASCII plain text file
 * Ensure APL font is installed
 *
 
 
+DONE:  General
+--------------
+* Demote arrays to a more compact storage type???
+*
+
+
+DONE:  Session Manager
+----------------------
+* Mouse selection in session manager:  line, sentence, block
+* CUA keystrokes:  e.g. Ctrl-RightArrow, etc.
+* Tabs for workspaces
+*
 
 
 DONE:  Bugs
@@ -65,10 +73,17 @@ QUESTIONS
   what happens to <g> if we change <f>
 * Should we allow f {is} {jot}{dot}   ?? (right operator)
 * Should we allow f {is} {jot}fn      ?? (left operator)
+* When adding two empty vectors whose prototypes are
+  0 (0 0) and (0 0) 0, the resulting empty vector's prototype
+  should be (0 0) (0 0).
+* How should an empty vector display?
+  On APL+WIN systems 3.6 + 5.x, '' displays by skipping one blank line
+  but 0{rho}{enclose}{zilde} displays without skipping a blank line.
 *
 
-MISSING
--------
+
+MISSING On Laptop
+-----------------
 
 * Qualitas.h (SVN)
 * Fix Filezilla access to BOB

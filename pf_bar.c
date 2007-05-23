@@ -9,7 +9,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "primspec.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -230,7 +229,7 @@ BOOL PrimFnMonBarAPA_EM
 
     return TRUE;
 } // End PrimFnMonBarAPA_EM
-#undef APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -432,7 +431,7 @@ BOOL PrimFnDydBarAPA_EM
 
     return TRUE;
 } // End PrimFnDydBarAPA_EM
-#undef APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************

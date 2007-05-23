@@ -226,8 +226,9 @@ void DisplayGlbArr
     {
         aplDimNCols = lpMemDim[aplRank - 1];
 
-        // If there are no columns, ignore this
-        if (aplDimNCols EQ 0)
+        // If there are no columns and the rank is > 1, ignore this
+        if (aplDimNCols EQ 0
+         && aplRank > 1)
             goto NORMAL_EXIT;
 
         // Get the # rows (across all planes)
@@ -442,15 +443,51 @@ void DisplayGlbArr
                  uCol < lpFmtHeader->uFmtRows;
                  uCol++, lpwsz += aplLastDim)
             {
-                WCHAR wch;
+                WCHAR   wch;                // The replaced WCHAR
+                APLDIM  aplDimTmp;          // Remaining line length to output
+                APLUINT uOutLen;            // Output length for this line
+                BOOL    bLineCont;          // TRUE iff this line is a continuation
+                APLUINT uOffset;            // Offset in line to start of display
+
+                // ***FIXME*** -- this routine may split a number in half
+                //                because it doesn't know the difference
+                //                numbers and characters
+
+                aplDimTmp = aplLastDim;     // Save line length
+                uOutLen = uQuadPW;          // Initial output length
+                bLineCont = FALSE;          // First line isn't a continuation
+                uOffset = 0;                // Initialize the line offset
+                while (aplDimTmp > uQuadPW)
+                {
+                    // Because AppendLine works on single zero-terminated lines,
+                    //   we need to create one
+                    wch = lpwsz[uOffset + uOutLen];     // Save the ending char
+                    lpwsz[uOffset + uOutLen] = L'\0';   // Terminate the line
+                    AppendLine (lpwsz + uOffset, bLineCont, TRUE);  // Display the line
+                    lpwsz[uOffset + uOutLen] = wch;     // Restore the ending char
+
+                    bLineCont = TRUE;                   // Lines from here on are continuations
+                    AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
+
+                    aplDimTmp -= uOutLen;               // Less how much we output
+                    uOffset += uOutLen;                 // Skip over what we just output
+                    uOutLen = uQuadPW - DEF_INDENT;     // Take into account the indent
+                } // End WHILE
+
+                // Output whatever remains
 
                 // Because AppendLine works on single zero-terminated lines,
                 //   we need to create one
-                wch = lpwsz[aplLastDim];        // Save the ending char
-                lpwsz[aplLastDim] = L'\0';      // Terminate the line
-                AppendLine (lpwsz, FALSE, TRUE);// Display the line
-                lpwsz[aplLastDim] = wch;        // restore the ending char
+                wch = lpwsz[uOffset + aplDimTmp];       // Save the ending char
+                lpwsz[uOffset + aplDimTmp] = L'\0';     // Terminate the line
+                AppendLine (lpwsz + uOffset, bLineCont, TRUE);// Display the line
+                lpwsz[uOffset + aplDimTmp] = wch;       // Restore the ending char
             } // End FOR
+
+            // If this is an empty vector, make sure it skips a line
+            if (lpFmtHeader->uFmtRows EQ 0
+             && aplRank EQ 1)
+                AppendLine (L"", FALSE, TRUE);// Display the empty line
 
             break;
 
@@ -1275,7 +1312,7 @@ static TOKENNAMES tokenNames[] =
  {"FCNIMMED"  , TKT_FCNIMMED }, //  7: Primitive function (any valence) (data is UTF16_***)
  {"OP1IMMED"  , TKT_OP1IMMED }, //  8: Monadic primitive operator (data is UTF16_***)
  {"OP2IMMED"  , TKT_OP2IMMED }, //  9: Dyadic  ...
- {"JOTDOT"    , TKT_JOTDOT   }, // 10: Outer product monadic operator (with right scope) (data is NULL)
+ {"OPJOTDOT"  , TKT_OPJOTDOT }, // 10: Outer product monadic operator (with right scope) (data is NULL)
  {"LPAREN"    , TKT_LPAREN   }, // 11: Left paren (data is TKT_LPAREN)
  {"RPAREN"    , TKT_RPAREN   }, // 12: Right ...   ...         RPAREN
  {"LBRACKET"  , TKT_LBRACKET }, // 13: Left bracket ...        LBRACKET
@@ -1437,7 +1474,7 @@ LPWCHAR DisplayFcnGlb
 ////{
 ////    case 2:                 // e.g., {fn}{op1} or {fn}{jotdot}
 ////        // Handle {jotdot} in reverse
-////        if (((LPYYSTYPE) lpMem)[1].tkToken.tkFlags.TknType EQ TKT_JOTDOT)
+////        if (((LPYYSTYPE) lpMem)[1].tkToken.tkFlags.TknType EQ TKT_OPJOTDOT)
 ////        {
 ////            lpaplChar =
 ////              DisplayFcnSub (lpaplChar, &((LPYYSTYPE) lpMem)[1].tkToken);
@@ -1590,7 +1627,7 @@ LPWCHAR DisplayFcnSub
 
             break;
 
-        case TKT_JOTDOT:
+        case TKT_OPJOTDOT:
             *lpaplChar++ = UTF16_JOT;
             *lpaplChar++ = L'.';
 
@@ -1694,7 +1731,7 @@ LPWCHAR DisplayFcnSub
 ////     // Split cases based upon the token type
 ////     switch (lpToken->tkFlags.TknType)
 ////     {
-////         case TKT_JOTDOT:
+////         case TKT_OPJOTDOT:
 ////             *lpaplChar++ = UTF16_JOT;
 ////             *lpaplChar++ = L'.';
 ////

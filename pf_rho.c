@@ -19,7 +19,7 @@
 //***************************************************************************
 //  PrimFnRho_EM
 //
-//  Primitive function for monadic and dyadic rho ("shape" and "reshape")
+//  Primitive function for monadic and dyadic Rho ("shape" and "reshape")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -60,9 +60,42 @@ LPYYSTYPE PrimFnRho_EM
 
 
 //***************************************************************************
+//  PrimProtoFnRho_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic Rho
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnRho_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnRho_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnRho_EM,      // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+} // End PrimProtoFnRho_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonRho_EM
 //
-//  Primitive function for monadic rho ("shape")
+//  Primitive function for monadic Rho ("shape")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -122,7 +155,7 @@ LPYYSTYPE PrimFnMonRho_EM
 //***************************************************************************
 //  PrimFnMonRhoCon_EM
 //
-//  Monadic rho on a symbol table constant
+//  Monadic Rho on a symbol table constant
 //***************************************************************************
 
 LPYYSTYPE PrimFnMonRhoCon_EM
@@ -150,7 +183,7 @@ LPYYSTYPE PrimFnMonRhoCon_EM
 //***************************************************************************
 //  PrimFnMonRhoGlb_EM
 //
-//  Monadic rho on a global memory object
+//  Monadic Rho on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
@@ -164,14 +197,14 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    LPVOID    lpMemRht,
-              lpMemRes;
+    LPVOID    lpMemRht,         // Ptr to right arg memory
+              lpMemRes;         // ...    result ...
     APLRANK aplRankRht;      // The rank of the array
-    HGLOBAL hGlbRes;
-    APLUINT ByteRes;
-    BOOL    bRet = TRUE;
-    UINT    uRes;
-    LPYYSTYPE lpYYRes;
+    HGLOBAL   hGlbRes;          // Result global memory handle
+    APLUINT   ByteRes;          // # bytes in the result
+    BOOL      bRet = TRUE;      // TRUE iff the result is valid
+    UINT      uRes;             // Loop counter
+    LPYYSTYPE lpYYRes = NULL;   // Ptr to result
 
     // Lock the global memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -183,20 +216,64 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
 
 #undef  lpHeaderRht
 
-    // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_INT, aplRankRht, 1);
-
-    // Allocate space for one dimension and <aplRankRht> integers
-    // N.B.:  Conversion from aplRankRht to UINT
-    Assert (ByteRes EQ (UINT) ByteRes);
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
-    if (!hGlbRes)
+    // If the right arg rank is zero, the result is {zilde}
+    if (aplRankRht EQ 0)
+        hGlbRes = hGlbZilde;
+    else
     {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        bRet = FALSE;
+        // Calculate space needed for the result
+        ByteRes = CalcArraySize (ARRAY_INT, aplRankRht, 1);
 
-        goto ERROR_EXIT;
+        // Allocate space for one dimension and <aplRankRht> integers
+        // N.B.:  Conversion from aplRankRht to UINT
+        Assert (ByteRes EQ (UINT) ByteRes);
+        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        if (!hGlbRes)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkFunc);
+            bRet = FALSE;
+
+            goto ERROR_EXIT;
+        } // End IF
+
+        // Lock the global memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+
+        // Fill in the header
+        lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+        lpHeaderRes->ArrType    = ARRAY_INT;
+////////lpHeaderRes->Perm       = 0;                // Already zero from GHND
+////////lpHeaderRes->SysVar     = 0;                // Already zero from GHND
+        lpHeaderRes->RefCnt     = 1;
+        lpHeaderRes->NELM       = aplRankRht;
+        lpHeaderRes->Rank       = 1;
+
+#undef  lpHeaderRes
+
+        // Save the dimension
+        *VarArrayBaseToDim (lpMemRes) = aplRankRht;
+
+        // Skip over the header and dimension to the data
+        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+        // Skip over the header to the right arg's dimensions
+        lpMemRht = VarArrayBaseToDim (lpMemRht);
+
+#define lpDimRht        ((LPAPLDIM) lpMemRht)
+#define lpDataRes       ((LPAPLINT) lpMemRes)
+
+        // Copy the dimensions to the result
+        for (uRes = 0; uRes < aplRankRht; uRes++)
+            *lpDataRes++ = *lpDimRht++;
+
+#undef  lpDimRht
+#undef  lpDataRes
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
     // Allocate a new YYRes
@@ -208,52 +285,11 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-    // Lock the global memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
-
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
-    // Fill in the header
-    lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = ARRAY_INT;
-////lpHeaderRes->Perm       = 0;                // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;                // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplRankRht;
-    lpHeaderRes->Rank       = 1;
-
-#undef  lpHeaderRes
-
-    // Save the dimension
-    *VarArrayBaseToDim (lpMemRes) = aplRankRht;
-
-    // Skip over the header and dimension to the data
-    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
-
-    // Skip over the header to the right arg's dimensions
-    lpMemRht = VarArrayBaseToDim (lpMemRht);
-
-#define lpDimRht        ((LPAPLDIM) lpMemRht)
-#define lpDataRes       ((LPAPLINT) lpMemRes)
-
-    // Copy the dimensions to the result
-    for (uRes = 0; uRes < aplRankRht; uRes++)
-        *lpDataRes++ = *lpDimRht++;
-
-#undef  lpDimRht
-#undef  lpDataRes
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnMonRhoGlb_EM
 #undef  APPEND_NAME
 
@@ -261,7 +297,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  PrimFnDydRho_EM
 //
-//  Primitive function for dydadic rho ("reshape")
+//  Primitive function for dydadic Rho ("reshape")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -277,262 +313,35 @@ LPYYSTYPE PrimFnDydRho_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLNELM  aplNELMRes,    // # elements in the result
-             aplNELMRht;    // ...               right arg
-    APLRANK  aplRankRes;    // The rank of the result
+    APLNELM  aplNELMRht,    // Right arg NELM
+             aplNELMRes;    // Result ...
+    APLRANK  aplRankRes;    // Result rank
     HGLOBAL  hGlbRes,       // Handle of result's global memory
              hGlbProto;     // ...                prototype
-    LPVOID   lpMemRes,      // Ptr to result's global memory
-             lpDataRes;     // ...    result's data
-    LPAPLDIM lpDimRes;      // Ptr to result's dimensions
-    BOOL     bRet = TRUE,
+    LPVOID   lpMemRes;      // Ptr to result's global memory
+    BOOL     bRet = TRUE,   // TRUE iff the result is valid
              bPrototype = FALSE; // TRUE iff we're to generate a prototype
-
-    APLSTYPE aplTypeRes,    // Storage type of the result
-             cImmTypeRht;   // Immediate type of right arg first element
-    APLINT   aplIntTmp;
+    APLSTYPE aplTypeRes;    // Storage type of the result
     APLUINT  ByteRes;       // # bytes needed in the result
-    UINT     uRes;
-    LPYYSTYPE lpYYRes;
+    LPYYSTYPE lpYYRes;      // Ptr to result
 
     //***************************************************************
-    // Validate the left argument as a simple numeric scalar or vector
-    //   all of whose elements can be coerced to non-negative integers,
-    //   and accumulate the product of the dimensions so we know the NELM
-    //   of the result.
-
-    // All paths through this switch statement should set
-    //   aplRankRes and aplNELMRes.
+    // Validate the left arg token
     //***************************************************************
-
-    // Split cases based upon the left arg's token type
-    switch (lptkLftArg->tkFlags.TknType)
-    {
-        case TKT_VARNAMED:
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkLftArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
-
-            // If it's not immediate, stData is an HGLOBAL
-            if (!lptkLftArg->tkData.tkSym->stFlags.Imm)
-            {
-                // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkSym->stData.stGlbData));
-
-                bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),
-                                                   &aplRankRes,
-                                                   &aplNELMRes,
-                                                   lptkFunc);
-                break;
-            } // End IF
-
-            // Handle the immediate case
-
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkLftArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
-
-            // stData is an immediate
-            Assert (lptkLftArg->tkData.tkSym->stFlags.Imm);
-
-            // The left arg's NELM is the rank of the result
-            aplRankRes = 1;     // The result is a vector
-
-            // Check for LEFT DOMAIN ERROR
-            // Split cases based upon the left arg's token type
-            switch (lptkLftArg->tkData.tkSym->stFlags.ImmType)
-            {
-                case IMMTYPE_BOOL:      // All Booleans are OK
-                    aplNELMRes = (APLNELM) (lptkLftArg->tkData.tkSym->stData.stInteger);
-
-                    break;
-
-                case IMMTYPE_INT:       // Non-negative integers are OK
-                    // Ensure the immediate value isn't too large and isn't negative
-                    if (lptkLftArg->tkData.tkSym->stData.stInteger > MAX_APLNELM
-                     || lptkLftArg->tkData.tkSym->stData.stInteger < 0)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        return NULL;
-                    } // End IF
-
-                    aplNELMRes = (APLNELM) (lptkLftArg->tkData.tkSym->stData.stInteger);
-
-                    break;
-
-                case IMMTYPE_FLOAT:     // Ensure it's close enough to a non-negative integer
-                    // Convert the value to an integer using System CT
-                    aplIntTmp = FloatToAplint_SCT (lptkLftArg->tkData.tkSym->stData.stFloat, &bRet);
-
-                    if (bRet
-                     && aplIntTmp < MAX_APLNELM
-                     && !SIGN_APLNELM (aplIntTmp))
-                    {
-                        aplNELMRes = (APLNELM) aplIntTmp;
-
-                        break;
-                    } // End IF
-
-                    // Fall through to IMMTYPE_CHAR to handle DOMAIN ERROR
-
-                case IMMTYPE_CHAR:
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    return NULL;
-
-                defstop
-                    return NULL;
-            } // End SWITCH
-
-            break;              // Exit to common reshape code
-
-        case TKT_VARARRAY:
-            // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkGlbData));
-
-            bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkGlbData),
-                                               &aplRankRes,
-                                               &aplNELMRes,
-                                               lptkFunc);
-            break;
-
-        case TKT_VARIMMED:
-            // The left arg's NELM is the rank of the result
-            aplRankRes = 1;     // The result is a vector
-
-            // Split cases based upon the left arg's token type
-            switch (lptkLftArg->tkFlags.ImmType)
-            {
-                case IMMTYPE_BOOL:      // All Booleans are OK
-                    aplNELMRes = (APLNELM) (lptkLftArg->tkData.tkInteger);
-
-                    break;
-
-                case IMMTYPE_INT:       // Non-negative integers are OK
-                    // Ensure the immediate value isn't too large and isn't negative
-                    if (lptkLftArg->tkData.tkInteger > MAX_APLNELM
-                     || lptkLftArg->tkData.tkInteger < 0)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        return NULL;
-                    } // End IF
-
-                    aplNELMRes = (APLNELM) (lptkLftArg->tkData.tkInteger);
-
-                    break;
-
-                case IMMTYPE_FLOAT:     // Ensure it's close enough to a non-negative integer
-                    // Convert the value to an integer using System CT
-                    aplIntTmp = FloatToAplint_SCT (lptkLftArg->tkData.tkFloat, &bRet);
-
-                    if (bRet
-                     && aplIntTmp < MAX_APLNELM
-                     && !SIGN_APLNELM (aplIntTmp))
-                    {
-                        aplNELMRes = (APLNELM) aplIntTmp;
-
-                        break;
-                    } // End IF
-
-                    // Fall through to IMMTYPE_CHAR to handle DOMAIN ERROR
-
-                case IMMTYPE_CHAR:
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    return NULL;
-
-                defstop
-                    return NULL;
-            } // End SWITCH
-
-            break;
-
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
-        defstop
-            return NULL;
-    } // End SWITCH
-
-    // If there's been an error, exit now
-    if (!bRet)
+    if (!PrimFnDydRhoLftValid_EM (lptkLftArg,       // Ptr to left arg token
+                                 &aplRankRes,       // Ptr to result rank
+                                 &aplNELMRes,       // Ptr to result NELM
+                                  lptkFunc))        // Ptr to function token
         return NULL;
 
     //***************************************************************
-    // Get the storage type of the result and NELM of the right arg
+    // Get the attributes (Type, NELM, and Rank) of the right arg
     //***************************************************************
+    AttrsOfToken (lptkRhtArg, &aplTypeRes, &aplNELMRht, NULL);
 
-    // Split cases based upon the right arg's token type
-    switch (lptkRhtArg->tkFlags.TknType)
-    {
-        case TKT_VARNAMED:
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
-
-            // If it's not immediate, stData is an HGLOBAL
-            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
-            {
-                // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
-
-                // Determine the right arg's storage type and NELM
-                PrimFnDydRhoRhtGlbType (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                        &aplTypeRes,
-                                        &cImmTypeRht,
-                                        &aplNELMRht);
-                break;
-            } // End IF
-
-            // Handle the immediate case
-
-            // The tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
-
-            // stData is immediate
-            Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
-
-            // Only one element in the right arg
-            aplNELMRht = 1;
-
-            // Set common var
-            cImmTypeRht = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
-            aplTypeRes = TranslateImmTypeToArrayType (cImmTypeRht);
-
-            break;
-
-        case TKT_VARIMMED:
-            // Only one element in the right arg
-            aplNELMRht = 1;
-
-            // Set common var
-            cImmTypeRht = lptkRhtArg->tkFlags.ImmType;
-            aplTypeRes = TranslateImmTypeToArrayType (cImmTypeRht);
-
-            break;
-
-        case TKT_VARARRAY:
-            // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
-
-            // Determine the right arg's storage type and NELM
-            PrimFnDydRhoRhtGlbType (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                   &aplTypeRes,
-                                   &cImmTypeRht,
-                                   &aplNELMRht);
-            break;
-
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
-        defstop
-            return NULL;
-    } // End SWITCH
-
+    //***************************************************************
     // Check for non-zero result NELM and zero right arg NELM
+    //***************************************************************
     if (aplNELMRes NE 0
      && aplNELMRht EQ 0)
     {
@@ -558,18 +367,28 @@ LPYYSTYPE PrimFnDydRho_EM
             case ARRAY_APA:
                 aplTypeRes = ARRAY_BOOL;
             case ARRAY_CHAR:
-                ByteRes = 0;
+////////////////ByteRes = 0;
 
                 break;
 
             case ARRAY_HETERO:
                 // If the empty result is HETERO, convert the result
                 //   type to either char or Boolean.
-                aplTypeRes = TranslateImmTypeToArrayType (cImmTypeRht);
+
+                // Get the storage type of the first value
+                FirstValue (lptkRhtArg,     // Ptr to right arg token
+                            NULL,           // Ptr to integer result
+                            NULL,           // Ptr to float ...
+                            NULL,           // Ptr to WCHAR ...
+                            NULL,           // Ptr to longest ...
+                            NULL,           // Ptr to lpSym/Glb ...
+                            NULL,           // Ptr to ...immediate type ...
+                           &aplTypeRes);    // Ptr to array type ...
+                // If it's not char, it's Boolean
                 if (aplTypeRes NE ARRAY_CHAR)
                     aplTypeRes = ARRAY_BOOL;
 
-                ByteRes = 0;
+////////////////ByteRes = 0;
 
                 break;
 
@@ -610,10 +429,11 @@ LPYYSTYPE PrimFnDydRho_EM
                 // If so, fill in aplTypeRes; if not, fill in hGlbProto
                 //   with the HGLOBAL of the first element.
                 if (IsFirstSimpleGlb (&hGlbProto, &aplTypeRes))
-                    ByteRes = 0;
-                else
                 {
-                    ByteRes = 1 * sizeof (APLNESTED);
+////////////////////ByteRes = 0;
+                } else
+                {
+////////////////////ByteRes = 1 * sizeof (APLNESTED);
 
                     // Mark as needing to generate a prototype
                     bPrototype = TRUE;
@@ -625,28 +445,31 @@ LPYYSTYPE PrimFnDydRho_EM
                 return NULL;
         } // End SWITCH
 
-        // Add in the header and <aplRankRes> dimensions
-        ByteRes += sizeof (VARARRAY_HEADER)
-                 + sizeof (APLDIM) * aplRankRes;
-    } else
-    {
-        //***************************************************************
-        // Now that we know the NELM, rank, and storage type of the result, we can
-        //   calculate the amount of storage needed for the result
-        //***************************************************************
+////////// Add in the header and <aplRankRes> dimensions
+////////ByteRes += sizeof (VARARRAY_HEADER)
+////////         + sizeof (APLDIM) * aplRankRes;
+    } // End IF
 
-        // Handle APAs specially
-        if (aplTypeRes EQ ARRAY_APA)
-        {
-            // If the right arg is reused, we cannot
-            //   store the result as an APA, so use integers
-            if (aplNELMRes > aplNELMRht)
-                aplTypeRes = ARRAY_INT;
-            // Calculate space needed for the result
-            ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
-        } else
-            ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
-    } // End IF/ELSE
+    //***************************************************************
+    // Now that we know the NELM, rank, and storage type of the result, we can
+    //   calculate the amount of storage needed for the result
+    //***************************************************************
+
+    //***************************************************************
+    // Handle APAs specially
+    //***************************************************************
+    if (aplTypeRes EQ ARRAY_APA)
+    {
+        // If the right arg is reused, we cannot
+        //   store the result as an APA, so use integers
+        if (aplNELMRes > aplNELMRht)
+            aplTypeRes = ARRAY_INT;
+    } // End IF
+
+    //***************************************************************
+    // Calculate space needed for the result
+    //***************************************************************
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
     //***************************************************************
     // Now we can allocate the storage for the result.
@@ -683,6 +506,313 @@ LPYYSTYPE PrimFnDydRho_EM
     // Because the left argument's values have already been
     //   validated above, we can skip error checks.
     //***************************************************************
+    PrimFnDydRhoCopyDim (lpMemRes, lptkLftArg);
+
+    //***************************************************************
+    // Now run through the right arg copying its data
+    //   to the result as its data
+    //***************************************************************
+
+    //***************************************************************
+    // If the result is empty, but we need to generate
+    //   a prototype, do so now
+    //***************************************************************
+    if (bPrototype)
+    {
+        // Make the prototype
+        hGlbProto = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbProto),
+                                      lptkFunc,
+                                      FALSE);   // Allow CHARs
+        if (!hGlbProto)
+            bRet = FALSE;
+        else
+        {
+            LPAPLNESTED lpDataRes;
+
+            // Get a ptr to the result's data
+            lpDataRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+
+            // Save the handle
+            *lpDataRes = MakeGlbTypeGlb (hGlbProto);
+        } // End IF
+    } else
+    if (aplNELMRes)
+        bRet =
+        PrimFnDydRhoRhtCopyData (lptkRhtArg,        // Ptr to right arg token
+                                 aplTypeRes,        // Result storage type
+                                 aplNELMRes,        // Result NELM
+                                 aplRankRes,        // Result rank
+                                 lpMemRes,          // Ptr to result memory
+                                 lptkFunc);         // Ptr to function token
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Check the result
+    if (bRet)
+    {
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        return lpYYRes;
+    } else
+    // If we failed, release the allocated storage
+    {
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+
+        return NULL;
+    } // End IF
+} // End PrimFnDydRho_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  PrimFnDydRhoRhtCopyData
+//
+//  Copy data to the result
+//***************************************************************************
+
+BOOL PrimFnDydRhoRhtCopyData
+    (LPTOKEN  lptkRhtArg,           // Ptr to right arg token
+     APLSTYPE aplTypeRes,           // Result storage type
+     APLNELM  aplNELMRes,           // Result NELM
+     APLRANK  aplRankRes,           // Result rank
+     LPVOID   lpMemRes,             // Ptr to result memory
+     LPTOKEN  lptkFunc)             // Ptr to function token
+
+{
+    BOOL   bRet = TRUE;     // TRUE iff result is valid
+    UINT   uRes;            // Loop counter
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+
+    // Split cases based upon the right arg's token type
+    switch (lptkRhtArg->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, stData is an HGLOBAL
+            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
+            {
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+
+                bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
+                                                      aplTypeRes,
+                                                      aplNELMRes,
+                                                      lpMemRes,
+                                                      lptkFunc);
+                break;
+            } // End IF
+
+            // Handle the immediate case
+
+            // The tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+
+            // stData is immediate
+            Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
+
+            // Split cases based upon the right arg's immediate type
+            switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                {
+                    APLBOOL aplBool;
+                    APLNELM uNELM;
+                    UINT    uBits;
+
+                    Assert (aplTypeRes EQ ARRAY_BOOL);
+
+                    // If the single value is 1, we're saving all 1s (e.g., 0xFF),
+                    //   otherwise, we're saving all 0s (e.g. 0x00).
+                    if (lptkRhtArg->tkData.tkSym->stData.stBoolean)
+                        aplBool = 0xFF;
+                    else
+                        aplBool = 0x00;
+
+                    // Smear all 1s or 0s into the result,
+                    //   except possibly for the last byte
+                    uNELM = aplNELMRes >> LOG2NBIB;
+                    for (uRes = 0; uRes < uNELM; uRes++)
+                        *((LPAPLBOOL) lpMemRes)++ = aplBool;
+
+                    // # valid bits in last byte
+                    uBits = (UINT) (aplNELMRes & MASKLOG2NBIB);
+                    if (uBits)
+                        *((LPAPLBOOL) lpMemRes) = aplBool & ((1 << uBits) - 1);
+                    break;
+                } // End IMMTYPE_BOOL
+
+                case IMMTYPE_INT:
+                {
+                    APLINT aplInt;
+
+                    Assert (aplTypeRes EQ ARRAY_INT);
+
+                    // Copy the single value to avoid recalling it everytime
+                    aplInt = lptkRhtArg->tkData.tkSym->stData.stInteger;
+
+                    for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        *((LPAPLINT) lpMemRes)++ = aplInt;
+                    break;
+                } // End IMMTYPE_INT
+
+                case IMMTYPE_FLOAT:
+                {
+                    APLFLOAT aplFloat;
+
+                    Assert (aplTypeRes EQ ARRAY_FLOAT);
+
+                    // Copy the single value to avoid recalling it everytime
+                    aplFloat = lptkRhtArg->tkData.tkSym->stData.stFloat;
+
+                    for (uRes = 0; bRet && uRes < aplNELMRes; uRes++)
+                        *((LPAPLFLOAT) lpMemRes)++ = aplFloat;
+                    break;
+                } // End IMMTYPE_FLOAT
+
+                case IMMTYPE_CHAR:
+                {
+                    APLCHAR aplChar;
+
+                    Assert (aplTypeRes EQ ARRAY_CHAR);
+
+                    // Copy the single value to avoid recalling it everytime
+                    aplChar = lptkRhtArg->tkData.tkSym->stData.stChar;
+
+                    for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        *((LPAPLCHAR) lpMemRes)++ = aplChar;
+                    break;
+                } // End IMMTYPE_CHAR
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case TKT_VARIMMED:
+            // Split cases based upon the right arg's immediate type
+            switch (lptkRhtArg->tkFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:
+                {
+                    APLBOOL aplBool;
+                    APLNELM uNELM;
+                    UINT    uBits;
+
+                    Assert (aplTypeRes EQ ARRAY_BOOL);
+
+                    // If the single value is 1, we're saving all 1s (e.g., 0xFF),
+                    //   otherwise, we're saving all 0s (e.g. 0x00).
+                    if (lptkRhtArg->tkData.tkBoolean)
+                        aplBool = 0xFF;
+                    else
+                        aplBool = 0x00;
+
+                    // Smear all 1s or 0s into the result,
+                    //   except possibly for the last byte
+                    uNELM = aplNELMRes >> LOG2NBIB;
+                    for (uRes = 0; uRes < uNELM; uRes++)
+                        *((LPAPLBOOL) lpMemRes)++ = aplBool;
+
+                    // # valid bits in last byte
+                    uBits = (UINT) (aplNELMRes & MASKLOG2NBIB);
+                    if (uBits)
+                        *((LPAPLBOOL) lpMemRes) = aplBool & ((1 << uBits) - 1);
+                    break;
+                } // End IMMTYPE_BOOL
+
+                case IMMTYPE_INT:
+                {
+                    APLINT aplInt;
+
+                    Assert (aplTypeRes EQ ARRAY_INT);
+
+                    // Copy the single value to avoid recalling it everytime
+                    aplInt = lptkRhtArg->tkData.tkInteger;
+
+                    for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        *((LPAPLINT) lpMemRes)++ = aplInt;
+                    break;
+                } // End IMMTYPE_INT
+
+                case IMMTYPE_FLOAT:
+                {
+                    APLFLOAT aplFloat;
+
+                    Assert (aplTypeRes EQ ARRAY_FLOAT);
+
+                    // Copy the single value to avoid recalling it everytime
+                    aplFloat = lptkRhtArg->tkData.tkFloat;
+
+                    for (uRes = 0; bRet && uRes < aplNELMRes; uRes++)
+                        *((LPAPLFLOAT) lpMemRes)++ = aplFloat;
+                    break;
+                } // End IMMTYPE_FLOAT
+
+                case IMMTYPE_CHAR:
+                {
+                    APLCHAR aplChar;
+
+                    Assert (aplTypeRes EQ ARRAY_CHAR);
+
+                    // Copy the single value to avoid recalling it everytime
+                    aplChar = lptkRhtArg->tkData.tkChar;
+
+                    for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        *((LPAPLCHAR) lpMemRes)++ = aplChar;
+                    break;
+                } // End IMMTYPE_CHAR
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case TKT_VARARRAY:
+            // tkData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
+
+            bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
+                                                  aplTypeRes,
+                                                  aplNELMRes,
+                                                  lpMemRes,
+                                                  lptkFunc);
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return bRet;
+} // End PrimFnDydRhoRhtCopyData
+
+
+//***************************************************************************
+//  PrimFnDydRhoCopyDim
+//
+//  Copy dimensions to the result of dyadic Rho
+//***************************************************************************
+
+void PrimFnDydRhoCopyDim
+    (LPVOID  lpMemRes,      // Ptr to result memory
+     LPTOKEN lptkLftArg)    // Ptr to left arg token
+
+{
+    LPAPLDIM  lpDimRes;     // Ptr to result's dimensions
 
     // Get ptr to the dimensions in the result
     lpDimRes = VarArrayBaseToDim (lpMemRes);
@@ -777,261 +907,197 @@ LPYYSTYPE PrimFnDydRho_EM
         defstop
             break;
     } // End SWITCH
-#undef  lpDimRes
+} // End PrimFnDydRhoCopyDim
 
-    // Now run through the right arg copying its data
-    //   to the result as its data
 
-    // Get a ptr to the result's data
-    lpDataRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+//***************************************************************************
+//  PrimFnDydRhoLftValid_EM
+//
+//  Validate the left argument as a simple numeric scalar or vector
+//    all of whose elements can be coerced to non-negative integers,
+//    and accumulate the product of the dimensions so we know the NELM
+//    of the result.
+//***************************************************************************
 
-    //***************************************************************
-    // If the result is empty, but we need to generate
-    //   a prototype, do so now
-    //***************************************************************
-    if (bPrototype)
-    {
-        // Make the prototype
-        hGlbProto = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbProto),
-                                      lptkFunc,
-                                      FALSE);   // Allow CHARs
-        if (!hGlbProto)
-            bRet = FALSE;
-        else
-            // Save the handle
-            *((LPAPLNESTED) lpDataRes) = MakeGlbTypeGlb (hGlbProto);
-    } else
-    if (aplNELMRes)
-    // Split cases based upon the right arg's token type
-    switch (lptkRhtArg->tkFlags.TknType)
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydRhoLftValid_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL PrimFnDydRhoLftValid_EM
+    (LPTOKEN   lptkLftArg,          // Ptr to left arg token
+     LPAPLRANK lpaplRankRes,        // Ptr to result rank
+     LPAPLNELM lpaplNELMRes,        // Ptr to result NELM
+     LPTOKEN   lptkFunc)            // Ptr to function token
+
+{
+    BOOL   bRet = TRUE;
+    APLINT aplIntTmp;
+
+    // All paths through this switch statement should set
+    //   aplRankRes and aplNELMRes.
+
+    // Split cases based upon the left arg's token type
+    switch (lptkLftArg->tkFlags.TknType)
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkLftArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, stData is an HGLOBAL
-            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
+            if (!lptkLftArg->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkSym->stData.stGlbData));
 
-                bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                                      aplTypeRes,
-                                                      aplNELMRes,
-                                                      lpDataRes,
-                                                      lptkFunc);
+                bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),
+                                                   lpaplRankRes,
+                                                   lpaplNELMRes,
+                                                   lptkFunc);
                 break;
             } // End IF
 
             // Handle the immediate case
 
-            // The tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkLftArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
 
-            // stData is immediate
-            Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
+            // stData is an immediate
+            Assert (lptkLftArg->tkData.tkSym->stFlags.Imm);
 
-            // Split cases based upon the right arg's immediate type
-            switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
+            // The left arg's NELM is the rank of the result
+            *lpaplRankRes = 1;      // The result is a vector
+
+            // Check for LEFT DOMAIN ERROR
+            // Split cases based upon the left arg's token type
+            switch (lptkLftArg->tkData.tkSym->stFlags.ImmType)
             {
-                case IMMTYPE_BOOL:
-                {
-                    APLBOOL aplBool;
-                    APLNELM uNELM;
-                    UINT    uBits;
+                case IMMTYPE_BOOL:      // All Booleans are OK
+                    *lpaplNELMRes = (APLNELM) (lptkLftArg->tkData.tkSym->stData.stInteger);
 
-                    Assert (aplTypeRes EQ ARRAY_BOOL);
-
-                    // If the single value is 1, we're saving all 1s (e.g., 0xFF),
-                    //   otherwise, we're saving all 0s (e.g. 0x00).
-                    if (lptkRhtArg->tkData.tkSym->stData.stBoolean)
-                        aplBool = 0xFF;
-                    else
-                        aplBool = 0x00;
-
-                    // Smear all 1s or 0s into the result,
-                    //   except possibly for the last byte
-                    uNELM = aplNELMRes >> LOG2NBIB;
-                    for (uRes = 0; uRes < uNELM; uRes++)
-                        *((LPAPLBOOL) lpDataRes)++ = aplBool;
-
-                    // # valid bits in last byte
-                    uBits = (UINT) (aplNELMRes & MASKLOG2NBIB);
-                    if (uBits)
-                        *((LPAPLBOOL) lpDataRes) = aplBool & ((1 << uBits) - 1);
                     break;
-                } // End IMMTYPE_BOOL
 
-                case IMMTYPE_INT:
-                {
-                    APLINT aplInt;
+                case IMMTYPE_INT:       // Non-negative integers are OK
+                    // Ensure the immediate value isn't too large and isn't negative
+                    if (lptkLftArg->tkData.tkSym->stData.stInteger > MAX_APLNELM
+                     || lptkLftArg->tkData.tkSym->stData.stInteger < 0)
+                    {
+                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                                   lptkFunc);
+                        return FALSE;
+                    } // End IF
 
-                    Assert (aplTypeRes EQ ARRAY_INT);
+                    *lpaplNELMRes = (APLNELM) (lptkLftArg->tkData.tkSym->stData.stInteger);
 
-                    // Copy the single value to avoid recalling it everytime
-                    aplInt = lptkRhtArg->tkData.tkSym->stData.stInteger;
-
-                    for (uRes = 0; uRes < aplNELMRes; uRes++)
-                        *((LPAPLINT) lpDataRes)++ = aplInt;
                     break;
-                } // End IMMTYPE_INT
 
-                case IMMTYPE_FLOAT:
-                {
-                    APLFLOAT aplFloat;
+                case IMMTYPE_FLOAT:     // Ensure it's close enough to a non-negative integer
+                    // Convert the value to an integer using System CT
+                    aplIntTmp = FloatToAplint_SCT (lptkLftArg->tkData.tkSym->stData.stFloat, &bRet);
 
-                    Assert (aplTypeRes EQ ARRAY_FLOAT);
+                    if (bRet
+                     && aplIntTmp < MAX_APLNELM
+                     && !SIGN_APLNELM (aplIntTmp))
+                    {
+                        *lpaplNELMRes = (APLNELM) aplIntTmp;
 
-                    // Copy the single value to avoid recalling it everytime
-                    aplFloat = lptkRhtArg->tkData.tkSym->stData.stFloat;
+                        break;
+                    } // End IF
 
-                    for (uRes = 0; bRet && uRes < aplNELMRes; uRes++)
-                        *((LPAPLFLOAT) lpDataRes)++ = aplFloat;
-                    break;
-                } // End IMMTYPE_FLOAT
+                    // Fall through to IMMTYPE_CHAR to handle DOMAIN ERROR
 
                 case IMMTYPE_CHAR:
-                {
-                    APLCHAR aplChar;
-
-                    Assert (aplTypeRes EQ ARRAY_CHAR);
-
-                    // Copy the single value to avoid recalling it everytime
-                    aplChar = lptkRhtArg->tkData.tkSym->stData.stChar;
-
-                    for (uRes = 0; uRes < aplNELMRes; uRes++)
-                        *((LPAPLCHAR) lpDataRes)++ = aplChar;
-                    break;
-                } // End IMMTYPE_CHAR
+                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    return FALSE;
 
                 defstop
-                    break;
+                    return FALSE;
             } // End SWITCH
 
-            break;
-
-        case TKT_VARIMMED:
-            // Split cases based upon the right arg's immediate type
-            switch (lptkRhtArg->tkFlags.ImmType)
-            {
-                case IMMTYPE_BOOL:
-                {
-                    APLBOOL aplBool;
-                    APLNELM uNELM;
-                    UINT    uBits;
-
-                    Assert (aplTypeRes EQ ARRAY_BOOL);
-
-                    // If the single value is 1, we're saving all 1s (e.g., 0xFF),
-                    //   otherwise, we're saving all 0s (e.g. 0x00).
-                    if (lptkRhtArg->tkData.tkBoolean)
-                        aplBool = 0xFF;
-                    else
-                        aplBool = 0x00;
-
-                    // Smear all 1s or 0s into the result,
-                    //   except possibly for the last byte
-                    uNELM = aplNELMRes >> LOG2NBIB;
-                    for (uRes = 0; uRes < uNELM; uRes++)
-                        *((LPAPLBOOL) lpDataRes)++ = aplBool;
-
-                    // # valid bits in last byte
-                    uBits = (UINT) (aplNELMRes & MASKLOG2NBIB);
-                    if (uBits)
-                        *((LPAPLBOOL) lpDataRes) = aplBool & ((1 << uBits) - 1);
-                    break;
-                } // End IMMTYPE_BOOL
-
-                case IMMTYPE_INT:
-                {
-                    APLINT aplInt;
-
-                    Assert (aplTypeRes EQ ARRAY_INT);
-
-                    // Copy the single value to avoid recalling it everytime
-                    aplInt = lptkRhtArg->tkData.tkInteger;
-
-                    for (uRes = 0; uRes < aplNELMRes; uRes++)
-                        *((LPAPLINT) lpDataRes)++ = aplInt;
-                    break;
-                } // End IMMTYPE_INT
-
-                case IMMTYPE_FLOAT:
-                {
-                    APLFLOAT aplFloat;
-
-                    Assert (aplTypeRes EQ ARRAY_FLOAT);
-
-                    // Copy the single value to avoid recalling it everytime
-                    aplFloat = lptkRhtArg->tkData.tkFloat;
-
-                    for (uRes = 0; bRet && uRes < aplNELMRes; uRes++)
-                        *((LPAPLFLOAT) lpDataRes)++ = aplFloat;
-                    break;
-                } // End IMMTYPE_FLOAT
-
-                case IMMTYPE_CHAR:
-                {
-                    APLCHAR aplChar;
-
-                    Assert (aplTypeRes EQ ARRAY_CHAR);
-
-                    // Copy the single value to avoid recalling it everytime
-                    aplChar = lptkRhtArg->tkData.tkChar;
-
-                    for (uRes = 0; uRes < aplNELMRes; uRes++)
-                        *((LPAPLCHAR) lpDataRes)++ = aplChar;
-                    break;
-                } // End IMMTYPE_CHAR
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            break;
+            break;              // Exit to common reshape code
 
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
+            Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkGlbData));
 
-            bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                                  aplTypeRes,
-                                                  aplNELMRes,
-                                                  lpDataRes,
-                                                  lptkFunc);
+            bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkGlbData),
+                                               lpaplRankRes,
+                                               lpaplNELMRes,
+                                               lptkFunc);
             break;
+
+        case TKT_VARIMMED:
+            // The left arg's NELM is the rank of the result
+            *lpaplRankRes = 1;      // The result is a vector
+
+            // Split cases based upon the left arg's token type
+            switch (lptkLftArg->tkFlags.ImmType)
+            {
+                case IMMTYPE_BOOL:      // All Booleans are OK
+                    *lpaplNELMRes = (APLNELM) (lptkLftArg->tkData.tkInteger);
+
+                    break;
+
+                case IMMTYPE_INT:       // Non-negative integers are OK
+                    // Ensure the immediate value isn't too large and isn't negative
+                    if (lptkLftArg->tkData.tkInteger > MAX_APLNELM
+                     || lptkLftArg->tkData.tkInteger < 0)
+                    {
+                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                                   lptkFunc);
+                        return FALSE;
+                    } // End IF
+
+                    *lpaplNELMRes = (APLNELM) (lptkLftArg->tkData.tkInteger);
+
+                    break;
+
+                case IMMTYPE_FLOAT:     // Ensure it's close enough to a non-negative integer
+                    // Convert the value to an integer using System CT
+                    aplIntTmp = FloatToAplint_SCT (lptkLftArg->tkData.tkFloat, &bRet);
+
+                    if (bRet
+                     && aplIntTmp < MAX_APLNELM
+                     && !SIGN_APLNELM (aplIntTmp))
+                    {
+                        *lpaplNELMRes = (APLNELM) aplIntTmp;
+
+                        break;
+                    } // End IF
+
+                    // Fall through to IMMTYPE_CHAR to handle DOMAIN ERROR
+
+                case IMMTYPE_CHAR:
+                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    return FALSE;
+
+                defstop
+                    return FALSE;
+            } // End SWITCH
+
+            break;
+
+        case TKT_LISTPAR:
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lptkFunc);
+            return FALSE;
 
         defstop
-            break;
+            return FALSE;
     } // End SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-    // Check the result
-    if (bRet)
-    {
-        // Allocate a new YYRes
-        lpYYRes = YYAlloc ();
-
-        // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
-        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-        return lpYYRes;
-    } else
-        return NULL;
-} // End PrimFnDydRho_EM
+    return bRet;
+} // End PrimFnDydRhoLftValid_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
 //  PrimFnDydRhoLftGlbValid_EM
 //
-//  Dyadic rho left argument validation on a global memory object
+//  Dyadic Rho left argument validation on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1043,53 +1109,60 @@ LPYYSTYPE PrimFnDydRho_EM
 BOOL PrimFnDydRhoLftGlbValid_EM
     (HGLOBAL   hGlbLft,                 // Left arg handle
      LPAPLRANK lpaplRankRes,            // Ptr to result rank
-     LPAPLNELM lpaplNELMRes,            // Prt to result NELM
+     LPAPLNELM lpaplNELMRes,            // Ptr to result NELM
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
     LPVOID   lpMemLft,      // Ptr to left argument global memory
              lpDataLft;
+    APLSTYPE aplTypeLft;
+    APLNELM  aplNELMLft;
+    APLRANK  aplRankLft;
     BOOL     bRet = TRUE;
     APLNELM  uNELM;
     UINT     u,
              uBits;
     APLINT   aplIntTmp;
+    LPWCHAR  lpErrMsg;
 
     // Lock the global memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
 
 #define lpHeaderLft     ((LPVARARRAY_HEADER) lpMemLft)
+    aplTypeLft = lpHeaderLft->ArrType;
+    aplNELMLft = lpHeaderLft->NELM;
+    aplRankLft = lpHeaderLft->Rank;
+#undef  lpHeaderLft
 
     // The left arg's NELM is the rank of the result
-    *lpaplRankRes = lpHeaderLft->NELM;
+    *lpaplRankRes = aplNELMLft;
 
     // Check for LEFT RANK ERROR
-    if (lpHeaderLft->Rank > 1)
+    if (aplRankLft > 1)
     {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
+        lpErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
         bRet = FALSE;
     } else
     {
         // Point to the left arg's data
-        lpDataLft = VarArrayBaseToData (lpMemLft, lpHeaderLft->Rank);
+        lpDataLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
         // Check for LEFT DOMAIN ERROR and fill in *lpaplNELMRes
-        // Split cases based upon the left arg's array type
-        switch (lpHeaderLft->ArrType)
+        // Split cases based upon the left arg's storage type
+        switch (aplTypeLft)
         {
             case ARRAY_BOOL:
                 // The result's NELM is either zero or one
                 *lpaplNELMRes = 1;
 
-                uNELM = *lpaplRankRes >> LOG2NBIB;
+                uNELM = aplNELMLft >> LOG2NBIB;
                 for (u = 0; *lpaplNELMRes && u < uNELM; u++) // char at a time, except for the last byte
                     *lpaplNELMRes = ((LPAPLBOOL) lpDataLft)[u] EQ 0xFF;
 
                 // Check the last byte
 
                 // # valid bits in last byte
-                uBits = (UINT) (*lpaplRankRes & MASKLOG2NBIB);
+                uBits = (UINT) (aplNELMLft & MASKLOG2NBIB);
                 if (uBits)                                  // Last byte not full
                     *lpaplNELMRes &= ((LPAPLBOOL) lpDataLft)[u] EQ ((1 << uBits) - 1);
 
@@ -1097,7 +1170,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
 
             case ARRAY_INT:
                 *lpaplNELMRes = 1;      // Initialize with identity element for multiply
-                for (u = 0; bRet && u < *lpaplRankRes; u++)
+                for (u = 0; bRet && u < aplNELMLft; u++)
                 if (((LPAPLINT) lpDataLft)[u] > MAX_APLNELM)
                     bRet = FALSE;
                 else
@@ -1119,23 +1192,26 @@ BOOL PrimFnDydRhoLftGlbValid_EM
 
             case ARRAY_FLOAT:
                 *lpaplNELMRes = 1;      // Initialize with identity element for multiply
-                for (u = 0; bRet && u < *lpaplRankRes; u++)
-                if (((LPAPLFLOAT) lpDataLft)[u] > MAX_APLNELM)
-                    bRet = FALSE;
-                else
+                for (u = 0; bRet && u < aplNELMLft; u++)
                 {
-                    // Ensure the value fits into a dimension
-                    bRet = ((LPAPLFLOAT) lpDataLft)[u] <= MAX_APLDIM;
+                    aplIntTmp = FloatToAplint_SCT (((LPAPLFLOAT) lpDataLft)[u], &bRet);
+                    if ((!bRet) || aplIntTmp > MAX_APLNELM)
+                        bRet = FALSE;
+                    else
+                    {
+                        // Ensure the value fits into a dimension
+                            bRet = aplIntTmp <= MAX_APLDIM;
 
-                    // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = ((APLINT) *lpaplNELMRes) * (APLNELM) ((LPAPLFLOAT) lpDataLft)[u];
+                        // Multiply the two numbers as APLINTs so we can check for overflow
+                            aplIntTmp = imul64 ((APLINT) *lpaplNELMRes, (APLNELM) aplIntTmp, &bRet);
 
-                    // Check for overflow
-                    bRet = bRet && (aplIntTmp <= MAX_APLNELM);
+                        // Check for overflow
+                        bRet = bRet && (aplIntTmp <= MAX_APLNELM);
 
-                    // Save back
-                    *lpaplNELMRes = (APLNELM) aplIntTmp;
-                } // End FOR/IF/ELSE
+                        // Save back
+                        *lpaplNELMRes = (APLNELM) aplIntTmp;
+                    } // End IF/ELSE
+                } // End FOR
 
                 break;
 
@@ -1158,7 +1234,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
                 bRet = ((apaOff >= 0) && ((apaOff + apaMul * (apaLen - 1)) >= 0));
 
                 *lpaplNELMRes = 1;      // Initialize with identity element for multiply
-                for (apaLen = 0; bRet && apaLen < *lpaplRankRes; apaLen++)
+                for (apaLen = 0; bRet && apaLen < aplNELMLft; apaLen++)
                 {
                     apaVal = apaOff + apaMul * apaLen;
                     if (apaVal > MAX_APLNELM)
@@ -1183,8 +1259,6 @@ BOOL PrimFnDydRhoLftGlbValid_EM
             case ARRAY_NESTED:          // We could check for promotion to simple numeric
             case ARRAY_HETERO:          // ...
             case ARRAY_LIST:
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
                 bRet = FALSE;
 
                 break;
@@ -1192,12 +1266,19 @@ BOOL PrimFnDydRhoLftGlbValid_EM
             defstop
                 break;
         } // End SWITCH
+
+        // If error, it's a DOMAIN ERROR
+        if (!bRet)
+            lpErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     } // End IF/ELSE
-#undef  lpHeaderLft
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
 
+    // If error, set the error msg
+    if (!bRet)
+        ErrorMessageIndirectToken (lpErrMsg,
+                                   lptkFunc);
     return bRet;
 } // End PrimFnDydRhoLftGlbValid_EM
 #undef  APPEND_NAME
@@ -1206,7 +1287,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
 //***************************************************************************
 //  PrimFnDydRhoLftGlbCopyDim
 //
-//  Dyadic rho left argument copying from the left global memory object
+//  Dyadic Rho left argument copying from the left global memory object
 //    to the result's dimensions
 //***************************************************************************
 
@@ -1293,60 +1374,6 @@ void PrimFnDydRhoLftGlbCopyDim
     // We no longer need this ptr
     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
 } // End PrimFnDydRhoLftGlbCopyDim
-
-
-//***************************************************************************
-//  PrimFnDydRhoRhtGlbType
-//
-//  Dyadic rho right argument storage type
-//***************************************************************************
-
-void PrimFnDydRhoRhtGlbType
-    (HGLOBAL   hGlbRht,
-     LPCHAR    lpaplTypeRes,
-     LPCHAR    lpcImmTypeRht,
-     LPAPLNELM lpaplNELMRht)
-
-{
-    LPVOID lpMemRht;
-
-    // Lock the global memory to get a ptr to it
-    lpMemRht = MyGlobalLock (hGlbRht);
-
-#define lpHeaderRht     ((LPVARARRAY_HEADER) lpMemRht)
-
-    // Return the right arg's NELM
-    *lpaplNELMRht = lpHeaderRht->NELM;
-
-    // Return the right arg's storage type
-    *lpaplTypeRes = lpHeaderRht->ArrType;
-
-    // Point to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, lpHeaderRht->Rank);
-
-#undef  lpHeaderRht
-
-    // If the right arg is HETERO, return the
-    //   immediate type of its first element
-    if (*lpaplTypeRes EQ ARRAY_HETERO)
-    {
-        LPSYMENTRY lpSym;
-
-        // Data is LPSYMENTRY
-        Assert (GetPtrTypeInd (lpMemRht) EQ PTRTYPE_STCONST);
-
-        lpSym = *(LPSYMENTRY *) lpMemRht;
-
-        // stData is an immediate
-        Assert (lpSym->stFlags.Imm);
-
-        *lpcImmTypeRht = lpSym->stFlags.ImmType;
-    } else
-        *lpcImmTypeRht = *lpaplTypeRes;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-} // End PrimFnDydRhoRhtGlbType
 
 
 //***************************************************************************
@@ -1479,9 +1506,10 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
 
             break;
 
-        case ARRAY_HETERO:
         case ARRAY_NESTED:
-        {
+            // Take into account nested prototype
+            aplNELMRes = max (aplNELMRes, 1);
+        case ARRAY_HETERO:
             // Loop through the result and right arg copying the data
             for (uRes = uRht = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
@@ -1525,7 +1553,6 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             } // End FOR
 
             break;
-        } // End ARRAY_HETERO/ARRAY_NESTED
 
         case ARRAY_APA:
         {

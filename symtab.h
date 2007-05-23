@@ -77,11 +77,11 @@ http://portal.acm.org/citation.cfm?id=3324
 // Hash table flags
 typedef struct tagHTFLAGS
 {
-    UINT Inuse:1,           // 1:  Inuse entry
-         PrinHash:1,        // 2:  Entry with principal hash
-         SymCopy:1          // 4:  Symbol table entry copy
+    UINT Inuse:1,           // 01:  Inuse entry
+         PrinHash:1,        // 02:  Entry with principal hash
+         SymCopy:1          // 04:  Symbol table entry copy
 #ifdef DEBUG
-        ,Temp:1             // 8:  Temporary flag used for debugging
+        ,Temp:1             // 08:  Temporary flag used for debugging
 #endif
          ;
 } HTFLAGS, *LPHTFLAGS;
@@ -115,16 +115,13 @@ typedef struct tagHSHENTRY
 
 typedef enum tagIMM_TYPES
 {
-    IMMTYPE_BOOL = 0,       // 0:  Boolean
-    IMMTYPE_INT,            // 1:  Integer
-    IMMTYPE_FLOAT,          // 2:  Floating point
-    IMMTYPE_CHAR,           // 3:  Character
-    IMMTYPE_PRIMFCN_MM,     // 4:  Primitive function:  monadic mixed/error, dyadic mixed/error
-    IMMTYPE_PRIMFCN_SM,     // 5:  ...                  monadic scalar     , dyadic mixed/error
-    IMMTYPE_PRIMFCN_MS,     // 6:  ...                  monadic mixed/error, dyadic scalar
-    IMMTYPE_PRIMFCN_SS,     // 7:  ...                  monadic scalar     , dyadic scalar
-    IMMTYPE_PRIMOP1,        // 8:  Primitive monadic operator
-    IMMTYPE_PRIMOP2,        // 9:  ...       dyadic  ...
+    IMMTYPE_BOOL = 0,       // 00:  Boolean
+    IMMTYPE_INT,            // 01:  Integer
+    IMMTYPE_FLOAT,          // 02:  Floating point
+    IMMTYPE_CHAR,           // 03:  Character
+    IMMTYPE_PRIMFCN,        // 04:  Primitive monadic/dyadic function
+    IMMTYPE_PRIMOP1,        // 05:  Primitive monadic operator
+    IMMTYPE_PRIMOP2,        // 06:  ...       dyadic  ...
 } IMM_TYPES;
 
 // Symbol table flags

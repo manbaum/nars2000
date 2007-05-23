@@ -10,7 +10,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "primspec.h"
 #include "gsl/gsl_sf_gamma.h"
 #include "gsl/gsl_sf_result.h"
 #include "gsl/gsl_errno.h"

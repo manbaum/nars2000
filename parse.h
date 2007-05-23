@@ -5,6 +5,10 @@
 
 typedef struct tagYYSTYPE
 {
+    // N.B.:  The first item in this struct *MUST* be the TOKEN
+    //   because when we pass it as an argument to an LPPRIMFNS
+    //   we might need it to be an LPYYSTYPE (for a function strand)
+    //   or an LPTOKEN (single function).
     TOKEN   tkToken;        // Token info
     int     TknCount;       // Token count
     int     FcnCount;       // Function count

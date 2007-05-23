@@ -64,10 +64,7 @@ STRAND_TYPES TranslateImmTypeToTknType
         case IMMTYPE_FLOAT:
             return TKT_VARIMMED;
 
-        case IMMTYPE_PRIMFCN_MM:
-        case IMMTYPE_PRIMFCN_MS:
-        case IMMTYPE_PRIMFCN_SM:
-        case IMMTYPE_PRIMFCN_SS:
+        case IMMTYPE_PRIMFCN:
             return TKT_FCNIMMED;
 
         case IMMTYPE_PRIMOP1:

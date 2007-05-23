@@ -49,6 +49,32 @@ LPYYSTYPE PrimFnCircleStile_EM
 
 
 //***************************************************************************
+//  PrimProtoFnCircleStile_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic CircleStile
+//***************************************************************************
+
+LPYYSTYPE PrimProtoFnCircleStile_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnCircleStile_EM,  // Ptr to primitive function routine
+                                 lptkLftArg,            // Ptr to left arg token
+                                 lptkFunc,              // Ptr to function token
+                                 lptkRhtArg,            // Ptr to right arg token
+                                 lptkAxis);             // Ptr to axis token (may be NULL)
+} // End PrimProtoFnCircleStile_EM
+
+
+//***************************************************************************
 //  PrimFnMonCircleStile_EM
 //
 //  Primitive function for monadic CircleStile ("reverse")
@@ -87,8 +113,8 @@ LPYYSTYPE PrimFnMonCircleStile_EM
                uRht;
     APLINT     apaOff,
                apaMul;
-    LPYYSTYPE  lpYYRes;
-    UINT       ByteRes,
+    LPYYSTYPE  lpYYRes;         // Ptr to the result
+    UINT       ByteRes,         // # bytes to allocate for the result
                uBitMask,
                uBitIndex;
     UCHAR      immType;
@@ -135,14 +161,14 @@ LPYYSTYPE PrimFnMonCircleStile_EM
      && aplRankRht EQ 0)
     {
         // Get the first value
-        FirstValue (lptkRhtArg,
-                    NULL,
-                    NULL,
-                    NULL,
-                   &aplLongest,
-                    NULL,
-                   &immType,
-                    NULL);
+        FirstValue (lptkRhtArg,         // Ptr to right arg token
+                    NULL,               // Ptr to integer result
+                    NULL,               // Ptr to float ...
+                    NULL,               // Ptr to WCHAR ...
+                   &aplLongest,         // Ptr to longest ...
+                    NULL,               // Ptr to lpSym/Glb ...
+                   &immType,            // Ptr to ...immediate type ...
+                    NULL);              // Ptr to array type ...
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
 
@@ -480,14 +506,14 @@ LPYYSTYPE PrimFnDydCircleStile_EM
     if (aplNELMLft EQ 1)
     {
         // Get the integer or float value
-        FirstValue (lptkLftArg,
-                   &aplInteger,
-                   &aplFloat,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL);
+        FirstValue (lptkLftArg,         // Ptr to right arg token
+                   &aplInteger,         // Ptr to integer result
+                   &aplFloat,           // Ptr to float ...
+                    NULL,               // Ptr to WCHAR ...
+                    NULL,               // Ptr to longest ...
+                    NULL,               // Ptr to lpSym/Glb ...
+                    NULL,               // Ptr to ...immediate type ...
+                    NULL);              // Ptr to array type ...
         // Attempt to convert FLOAT left arg
         if (aplTypeLft EQ ARRAY_FLOAT)
         {
@@ -827,6 +853,18 @@ DOMAIN_EXIT:
                                lptkLftArg);
 ERROR_EXIT:
     bRet = FALSE;
+
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (hGlbRot)
     {

@@ -46,7 +46,6 @@ LPYYSTYPE ExecuteFn0
     else
         return ExecFuncGlb_EM (NULL,
                                ClrPtrTypeDirGlb (lpNameFcn),
-                               NULL,
                                NULL);
 } // ExecuteFn0
 
@@ -1033,9 +1032,9 @@ LPYYSTYPE SysFnMonTYPE_EM
     Assert (IsGlbTypeVarDir (hGlbData));
 
     // Make the prototype
-    hGlbRes = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbData),
-                                lptkFunc,
-                                FALSE);   // Allow CHARs
+    hGlbRes = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbData),// Proto arg handle
+                                lptkFunc,       // Ptr to function token
+                                MP_CHARS);      // CHARs allowed
     if (!hGlbRes)
         return NULL;
 

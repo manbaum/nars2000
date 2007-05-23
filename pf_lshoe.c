@@ -41,6 +41,39 @@ LPYYSTYPE PrimFnLeftShoe_EM
 
 
 //***************************************************************************
+//  PrimProtoFnLeftShoe_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic LeftShoe
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnLeftShoe_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnLeftShoe_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnLeftShoe_EM, // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+} // End PrimProtoFnLeftShoe_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonLeftShoe_EM
 //
 //  Primitive function for monadic LeftShoe ("enclose")
@@ -226,8 +259,8 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
-                           &aplNELMAxis,    // Return # elements in axis vector
-                           &hGlbAxis))      // Return HGLOBAL with APLINT axis values
+                          &aplNELMAxis,     // Return # elements in axis vector
+                          &hGlbAxis))       // Return HGLOBAL with APLINT axis values
             return NULL;
     } else
         // No axis means enclose all dimensions
@@ -414,9 +447,9 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
                 case ARRAY_HETERO:
                 case ARRAY_NESTED:
                     if (aplNELMSub EQ 0)
-                        hGlbProto = MakePrototype_EM (ClrPtrTypeIndGlb (lpMemRht),
-                                                      lptkFunc,
-                                                      FALSE);   // Allow CHARs
+                        hGlbProto = MakePrototype_EM (ClrPtrTypeIndGlb (lpMemRht),// Proto arg handle
+                                                      lptkFunc,     // Ptr to function token
+                                                      MP_CHARS);    // CHARs allowed
                     else
                     {
                         // Calculate space needed for the result
@@ -1306,7 +1339,7 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
                            FALSE,           // TRUE iff axes must be contiguous
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
-                           &aplAxis,        // Return last axis value
+                          &aplAxis,         // Return last axis value
                            NULL,            // Return # elements in axis vector
                            NULL))           // Return HGLOBAL with APLINT axis values
             return NULL;

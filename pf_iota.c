@@ -60,6 +60,177 @@ LPYYSTYPE PrimFnIota_EM
 
 
 //***************************************************************************
+//  PrimProtoFnIota_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic Iota
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnIota_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnIota_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnIota_EM,     // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+////     APLSTYPE  aplTypeLft,
+////               aplTypeRht,
+////               aplTypeRes;
+////     APLNELM   aplNELMLft,
+////               aplNELMRht;
+////     APLRANK   aplRankLft,
+////               aplRankRht;
+////     APLUINT   ByteRes;
+////     HGLOBAL   hGlbRht,
+////               hGlbRes;
+////     LPVOID    lpMemRht,
+////               lpMemRes;
+////     LPYYSTYPE lpYYRes;
+////
+////     //***************************************************************
+////     // This function is not sensitive to the axis operator,
+////     //   so signal a syntax error if present
+////     //***************************************************************
+////
+////     if (lptkAxis NE NULL)
+////     {
+////         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+////                                    lptkAxis);
+////         return NULL;
+////     } // End IF
+////
+////     // Get the attributes (Type, NELM, and Rank) of the right arg
+////     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+////
+////     // If the left arg is not present, ...
+////     if (lptkLftArg EQ NULL)
+////     {
+////         //***************************************************************
+////         // Called monadically
+////         //***************************************************************
+////
+////         // Only singletons allowed so far
+////         if (aplNELMRht > 1)
+////         {
+////             // If its rank is too high, it's a RANK ERROR,
+////             //   otherwise it's a LENGTH ERROR
+////             if (aplRankRht > 1)
+////                 ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+////                                            lptkFunc);
+////             else
+////                 ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+////                                            lptkFunc);
+////             return NULL;
+////         } // End IF
+////
+////         // Check for DOMAIN ERROR
+////         if (aplTypeRht EQ ARRAY_CHAR)
+////         {
+////             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+////                                        lptkFunc);
+////             return NULL;
+////         } // End IF
+////
+////         // The result is {zilde}
+////
+////         // Copy to result handle
+////         hGlbRes = hGlbZilde;
+////     } else
+////     {
+////         //***************************************************************
+////         // Called dyadically
+////         //***************************************************************
+////
+////         // Get the attributes (Type, NELM, and Rank) of the left arg
+////         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+////
+////         // Check for RANK ERROR
+////         if (aplRankLft NE 1)
+////         {
+////             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+////                                        lptkFunc);
+////             return NULL;
+////         } // End IF
+////
+////         // The result is ({rho} R){rho} 0
+////         aplTypeRes = ARRAY_BOOL;
+////
+////         // Calculate space needed for the result
+////         ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
+////
+////         // Allocate space for the result.
+////         // N.B. Conversion from APLUINT to UINT.
+////         Assert (ByteRes EQ (UINT) ByteRes);
+////         hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+////         if (!hGlbRes)
+////         {
+////             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+////                                        lptkFunc);
+////             return FALSE;
+////         } // End IF
+////
+////         // Lock the memory to get a ptr to it
+////         lpMemRes = MyGlobalLock (hGlbRes);
+////
+//// #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+////
+////         // Fill in the header
+////         lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+////         lpHeader->ArrType    = aplTypeRes;
+//// ////////lpHeader->Perm       = 0;               // Already zero from GHND
+//// ////////lpHeader->SysVar     = 0;               // Already zero from GHND
+////         lpHeader->RefCnt     = 1;
+////         lpHeader->NELM       = aplNELMRht;
+////         lpHeader->Rank       = aplRankRht;
+////
+//// #undef  lpHeader
+////
+////         // Get right arg's global ptrs
+////         GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+////
+////         // Skip over the header to the dimensions
+////         lpMemRes = VarArrayBaseToDim (lpMemRes);
+////         lpMemRht = VarArrayBaseToDim (lpMemRht);
+////
+////         // Copy dimensions to the result
+////         CopyMemory (lpMemRes, lpMemRht, (UINT) aplRankRht * sizeof (APLDIM));
+////
+////         // We no longer need these ptrs
+////         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+////         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+////     } // End IF
+////
+////     // Allocate a new YYRes
+////     lpYYRes = YYAlloc ();
+////
+////     // Fill in the result token
+////     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+//// ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+//// ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+////     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+////
+////     return lpYYRes;
+} // End PrimProtoFnIota_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonIota_EM
 //
 //  Primitive function for monadic iota ("index generator")
@@ -104,7 +275,7 @@ LPYYSTYPE PrimFnMonIota_EM
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                          &aplNELMRes,
+                                         &aplNELMRes,
                                           lptkFunc))
                     return NULL;
                 break;
@@ -116,7 +287,7 @@ LPYYSTYPE PrimFnMonIota_EM
             Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
 
             if (!PrimFnMonIotaCon_EM (lptkRhtArg->tkData.tkSym,
-                                      &aplNELMRes,
+                                     &aplNELMRes,
                                       lptkFunc))
                 return NULL;
             break;              // Continue with common code
@@ -177,7 +348,7 @@ LPYYSTYPE PrimFnMonIota_EM
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                      &aplNELMRes,
+                                     &aplNELMRes,
                                       lptkFunc))
                 return NULL;
             break;              // Continue with common code
@@ -372,7 +543,7 @@ BOOL PrimFnMonIotaGlb_EM
     // Only singletons allowed so far
     if (aplNELM > 1)
     {
-        // If it's rank is too high, it's a RANK ERROR,
+        // If its rank is too high, it's a RANK ERROR,
         //   otherwise it's a LENGTH ERROR
         if (aplRank > 1)
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
@@ -416,7 +587,6 @@ BOOL PrimFnMonIotaGlb_EM
                 // Return the Integer value
                 *lpaplNELMRes = lpAPA->Off;
 #undef  lpAPA
-
             break;
 
         case ARRAY_FLOAT:

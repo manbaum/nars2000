@@ -63,6 +63,39 @@ LPYYSTYPE PrimFnDomino_EM
 
 
 //***************************************************************************
+//  PrimProtoFnDomino_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic Domino
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnDomino_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnDomino_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnDomino_EM,   // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+} // End PrimProtoFnDomino_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonDomino_EM
 //
 //  Primitive function for monadic Domino ("matrix inverse")
@@ -128,8 +161,14 @@ LPYYSTYPE PrimFnMonDomino_EM
         case 0:
             uNumRows =
             uNumCols = 1;
-            FirstValue (lptkRhtArg, NULL, &aplFloatRht, NULL, NULL, NULL, NULL, NULL);
-
+            FirstValue (lptkRhtArg,         // Ptr to right arg token
+                        NULL,               // Ptr to integer result
+                       &aplFloatRht,        // Ptr to float ...
+                        NULL,               // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
             break;
 
         case 1:
@@ -467,7 +506,7 @@ NORMAL_EXIT:
         if (!bRet)
         {
             // We no longer need this storage
-            DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+            FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
         } // End IF
     } // End IF
 
@@ -566,8 +605,14 @@ LPYYSTYPE PrimFnDydDomino_EM
         case 0:
             uNumRowsRht =
             uNumColsRht = 1;
-            FirstValue (lptkRhtArg, NULL, &aplFloatRht, NULL, NULL, NULL, NULL, NULL);
-
+            FirstValue (lptkRhtArg,         // Ptr to right arg token
+                        NULL,               // Ptr to integer result
+                       &aplFloatRht,        // Ptr to float ...
+                        NULL,               // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
             break;
 
         case 1:
@@ -592,8 +637,14 @@ LPYYSTYPE PrimFnDydDomino_EM
         case 0:
             uNumRowsLft =
             uNumColsLft = 1;
-            FirstValue (lptkLftArg, NULL, &aplFloatLft, NULL, NULL, NULL, NULL, NULL);
-
+            FirstValue (lptkLftArg,         // Ptr to right arg token
+                        NULL,               // Ptr to integer result
+                       &aplFloatLft,        // Ptr to float ...
+                        NULL,               // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
             break;
 
         case 1:
@@ -968,7 +1019,7 @@ NORMAL_EXIT:
         if (!bRet)
         {
             // We no longer need this storage
-            DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+            FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
         } // End IF
     } // End IF
 

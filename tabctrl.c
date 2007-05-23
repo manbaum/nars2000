@@ -235,8 +235,13 @@ BOOL CreateNewTab
                             0,                      // Use default stack size
                             (LPTHREAD_START_ROUTINE) &CreateNewTabInThread,
                             (LPVOID) &cntThread,    // Param to thread func
-                            0,                      // Creation flag
+                            CREATE_SUSPENDED,       // Creation flag
                             &dwThreadId);           // Returns thread id
+    // Save the thread handle
+    cntThread.hThread = hThread;
+
+    ResumeThread (hThread);
+
     return (hThread NE NULL);
 } // End CreateNewTab
 #undef  APPEND_NAME
@@ -266,6 +271,7 @@ BOOL CreateNewTabInThread
     RECT         rc;            // Rectangle for setting size of window
     int          rcLeft, rcRight, rcBottom;
     CLIENTCREATESTRUCT ccs;     // For MDI Client window
+    HANDLE       hThread;       // Handle to this thread
     LPCHAR       p, q;
     int          iLabelText;
     HWND         hWndMC,        // Window handle of MDI Client
@@ -273,6 +279,8 @@ BOOL CreateNewTabInThread
     LPSTR        lpszDPFE;      // Drive, Path, Filename, Ext of the workspace
     int          iTab;          // Insert the new tab to the left of this one
     MSG          Msg;           // Message for GetMessage loop
+    int          nThreads;
+    char         szTemp[32];
 
     // Store the thread type ('TC')
     TlsSetValue (dwTlsType, (LPVOID) 'TC');
@@ -281,6 +289,7 @@ BOOL CreateNewTabInThread
     hWndParent = lpcntThread->hWndParent;
     lpszDPFE   = lpcntThread->lpszDPFE;
     iTab       = lpcntThread->iTab;
+    hThread    = lpcntThread->hThread;
 
     // Get the size and position of the parent window.
     GetClientRect (hWndParent, &rc);
@@ -439,6 +448,15 @@ BOOL CreateNewTabInThread
 
     // Save the PTD handle with the window
     SetProp (lpMemPTD->hWndSM, "PTD", hGlbPTD);
+
+    // Get # current threads under the SM
+    nThreads = 1 + (int) GetProp (lpMemPTD->hWndSM, "NTHREADS");
+
+    // Format the next property name
+    wsprintf (szTemp, "Thread%d", hThread);
+
+    // Set the property to the current thread handle
+    SetProp (hWndParent, szTemp, hThread);
 
     // Save the window handles in global variables
 ////hWndMC = lpMemPTD->hWndMC;  // No longer referenced globally
@@ -846,13 +864,21 @@ BOOL ClickOnClose
 //***************************************************************************
 //  CloseTab
 //
-//  Close a tab
+//  Close a given tab
 //***************************************************************************
 
 BOOL CloseTab
     (int iTab)
 
 {
+    // Close any and all thread handles associated with the SM
+    DbgBrk ();      // ***FINISHME***
+
+
+
+
+
+
     // Close the tab
     return (TabCtrl_DeleteItem (hWndTC, iTab) NE -1);
 } // End CloseTab

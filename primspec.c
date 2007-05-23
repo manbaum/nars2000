@@ -9,12 +9,13 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "primspec.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
+
+#define PRIMPROTOFNSCALAR
 
 
 //***************************************************************************
@@ -37,6 +38,51 @@ LPYYSTYPE PrimFnSyntaxError_EM
                                lptkFunc);
     return NULL;
 } // End PrimFnSyntaxError_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  PrimFnNonceError_EM
+//
+//  Primitive function NONCE ERROR
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnNonceError_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimFnNonceError_EM
+    (LPTOKEN lptkFunc)
+
+{
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End PrimFnNonceError_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  PrimFnValueError
+//
+//  Primitive function VALUE ERROR
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnValueError"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnValueError
+    (LPTOKEN lptkFunc)
+
+{
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                               lptkFunc);
+} // End PrimFnValueError
 #undef  APPEND_NAME
 
 
@@ -66,31 +112,297 @@ LPYYSTYPE PrimFnMonSyntaxError_EM
 #undef  APPEND_NAME
 
 
+//// //***************************************************************************
+//// //  PrimFnDydSyntaxError_EM
+//// //
+//// //  Primitive scalar dyadic function SYNTAX ERROR
+//// //***************************************************************************
+////
+//// #ifdef DEBUG
+//// #define APPEND_NAME     L" -- PrimFnDydSyntaxError_EM"
+//// #else
+//// #define APPEND_NAME
+//// #endif
+////
+//// LPYYSTYPE PrimFnDydSyntaxError_EM
+////     (LPTOKEN    lptkLftArg,         // Ptr to left arg token
+////      LPTOKEN    lptkFunc,           // Ptr to function token
+////      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
+////      LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
+////      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+////
+//// {
+////     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+////                                lptkFunc);
+////     return NULL;
+//// } // End PrimFnDydSyntaxError_EM
+//// #undef  APPEND_NAME
+
+
 //***************************************************************************
-//  PrimFnDydSyntaxError_EM
+//  PrimProtoFnMixed_EM
 //
-//  Primitive scalar dyadic function SYNTAX ERROR
+//  Generate a prototype result for the monadic & dyadic primitive mixed functions
+//***************************************************************************
+
+LPYYSTYPE PrimProtoFnMixed_EM
+    (LPPRIMFNS  lpPrimFn,           // Ptr to primitive function routine
+     LPTOKEN    lptkLftArg,         // Ptr to left arg token
+     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPTOKEN    lptkRhtArg,         // Ptr to right arg token
+     LPTOKEN    lptkAxis)           // Ptr to axis token (may be NULL)
+
+{
+    LPYYSTYPE lpYYRes;
+    HGLOBAL   hGlbRes,
+              hGlbResProto;
+
+    // Call the original function
+    lpYYRes = (*lpPrimFn) (lptkLftArg,      // Ptr to left arg token
+                           lptkFunc,        // Ptr to function token
+                           lptkRhtArg,      // Ptr to right arg token
+                           lptkAxis);       // Ptr to axis token (may be NULL)
+    if (lpYYRes)
+    // As this is a prototype function, convert
+    //   the result to a prototype
+    // Split cases based upon the result token type
+    switch (lpYYRes->tkToken.tkFlags.TknType)
+    {
+        case TKT_VARIMMED:
+            if (lpYYRes->tkToken.tkFlags.ImmType EQ IMMTYPE_CHAR)
+                lpYYRes->tkToken.tkData.tkChar = L' ';
+            else
+            {
+                lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_BOOL;
+                lpYYRes->tkToken.tkData.tkBoolean = 0;
+            } // End IF/ELSE
+
+            break;
+
+        case TKT_VARARRAY:
+            hGlbRes = ClrPtrTypeDirGlb (lpYYRes->tkToken.tkData.tkGlbData);
+
+            // Make the prototype
+            hGlbResProto = MakePrototype_EM (hGlbRes,   // Proto arg handle
+                                             lptkFunc,  // Ptr to function token
+                                             MP_CHARS); // CHARs allowed
+            // Save back into the result
+            lpYYRes->tkToken.tkData.tkGlbData =
+              MakeGlbTypeGlb (hGlbResProto);
+
+            // We no longer need this storage
+            FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+
+            break;
+
+        defstop
+            break;
+    } // End IF/SWITCH
+
+    return lpYYRes;
+} // End PrimProtoFnMixed_EM
+#undef  APPEND_NAME
+
+
+#ifdef PRIMPROTOFNSCALAR
+//***************************************************************************
+//  PrimProtoFnScalar_EM
+//
+//  Generate a prototype result for the monadic & dyadic primitive scalar functions
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSyntaxError_EM"
+#define APPEND_NAME     L" -- PrimProtoFnScalar_EM"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydSyntaxError_EM
+LPYYSTYPE PrimProtoFnScalar_EM
     (LPTOKEN    lptkLftArg,         // Ptr to left arg token
      LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
-     LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+     LPTOKEN    lptkAxis)           // Ptr to axis token (may be NULL)
 
 {
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkFunc);
-    return NULL;
-} // End PrimFnDydSyntaxError_EM
+    HGLOBAL    hGlbLft = NULL,
+               hGlbRht = NULL,
+               hGlbRes = NULL,
+               hGlbAxis = NULL;
+    LPVOID     lpMemLft = NULL,
+               lpMemRht = NULL;
+    APLSTYPE   aplTypeLft,
+               aplTypeRht,
+               aplTypeRes;
+    APLRANK    aplRankLft,
+               aplRankRht,
+               aplRankRes;
+    APLNELM    aplNELMAxis,
+               aplNELMLft,
+               aplNELMRht;
+    LPAPLUINT  lpMemAxisHead = NULL,
+               lpMemAxisTail = NULL;
+    LPYYSTYPE  lpYYRes = NULL;
+    LPPRIMSPEC lpPrimSpec;
+    BOOL       bBoolFn;
+
+    // Get right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // If left arg is not present, ...
+    if (lptkLftArg EQ NULL)
+    {
+        //***************************************************************
+        // Called monadically
+        //***************************************************************
+
+        // Make the prototype
+        hGlbRes = MakePrototype_EM (hGlbRht,    // Proto arg handle
+                                    lptkFunc,   // Ptr to function token
+                                    MP_NUMONLY);// Numeric only
+    } else
+    {
+        //***************************************************************
+        // Called dyadically
+        //***************************************************************
+
+        // Get the attributes (Type, NELM, and Rank)
+        //   of the left & right args
+        AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+        AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+
+        // Get left arg's global ptrs
+        GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+
+        // The rank of the result is the larger of the two args
+        aplRankRes = max (aplRankLft, aplRankRht);
+
+        // Check for axis present
+        if (lptkAxis NE NULL)
+        {
+            // Check the axis values, fill in # elements in axis
+            if (!CheckAxis_EM (lptkAxis,        // The axis token
+                               aplRankRes,      // All values less than this
+                               FALSE,           // TRUE iff scalar or one-element vector only
+                               TRUE,            // TRUE iff want sorted axes
+                               FALSE,           // TRUE iff axes must be contiguous
+                               FALSE,           // TRUE iff duplicate axes are allowed
+                               NULL,            // TRUE iff fractional values allowed
+                               NULL,            // Return last axis value
+                              &aplNELMAxis,     // Return # elements in axis vector
+                              &hGlbAxis))       // Return HGLOBAL with APLINT axis values
+                goto ERROR_EXIT;
+            // Lock the memory to get a ptr to it
+            lpMemAxisHead = MyGlobalLock (hGlbAxis);
+
+            // Get pointer to the axis tail (where the [X] values are)
+            lpMemAxisTail = &lpMemAxisHead[aplRankRes - aplNELMAxis];
+        } else
+            // No axis is the same as all axes
+            aplNELMAxis = aplRankRes;
+
+        // Get the corresponding lpPrimSpec
+        lpPrimSpec = PrimSpecTab[SymTrans (lptkFunc)];
+
+        // Calculate the storage type of the result
+        aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMLft,
+                                                   &aplTypeLft,
+                                                    lptkFunc,
+                                                    aplNELMRht,
+                                                   &aplTypeRht);
+        if (aplTypeRes EQ ARRAY_ERROR)
+        {
+            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+        } // End IF
+
+        // Get left arg's global handle (if any)
+        hGlbLft = GetGlbHandle (lptkLftArg);
+
+        // Check for RANK and LENGTH ERRORs
+        if (!CheckRankLengthError_EM (aplRankRes,
+                                      aplRankLft,
+                                      aplNELMLft,
+                                      lpMemLft,
+                                      aplRankRht,
+                                      aplNELMRht,
+                                      lpMemRht,
+                                      aplNELMAxis,
+                                      lpMemAxisTail,
+                                      lptkFunc))
+            goto ERROR_EXIT;
+
+        // ***FIXME***
+        // Instead of returning one of the args as the result,
+        //   we should create a result by trundling through
+        //   the args using scalar extension as well as checking
+        //   for RANK and LENGTH ERRORs between the args.
+        // For example, adding empty vectors whose prototypes are
+        //   0 (0 0) and (0 0) 0 should produce an empty vector
+        //   whose prototype is (0 0) (0 0) by scalar extension.
+
+
+
+
+
+
+
+
+        // By convention, use the prototype of the right arg
+        //   if it is empty, the left arg if not
+        hGlbRes = (aplNELMRht EQ 0) ? hGlbRht : hGlbLft;
+
+        // Get the function type
+        bBoolFn = lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+               || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL;
+
+        // Make the prototype
+        hGlbRes = MakePrototype_EM (hGlbRes,    // Proto arg handle
+                                    lptkFunc,   // Ptr to function token
+                                    bBoolFn ? MP_NUMCONV : MP_NUMONLY);
+    } // End IF/ELSE
+
+    if (!hGlbRes)
+        goto ERROR_EXIT;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+ERROR_EXIT:
+    if (lpMemLft)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
+
+    if (lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (hGlbAxis)
+    {
+        if (lpMemAxisHead)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = lpMemAxisTail = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End PrimProtoFnScalar_EM
 #undef  APPEND_NAME
+#endif
 
 
 //***************************************************************************
@@ -133,6 +445,14 @@ LPYYSTYPE PrimFnMon_EM
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
+#ifdef PRIMPROTOFNSCALAR
+    // Handle prototypes separately
+    if (aplNELMRht EQ 0)
+        return PrimProtoFnScalar_EM (NULL,
+                                     lptkFunc,
+                                     lptkRhtArg,
+                                     lptkAxis);
+#endif
     // Get the storage type of the result
     aplTypeRes = (*lpPrimSpec->StorageTypeMon) (aplNELMRht,
                                                &aplTypeRht,
@@ -194,8 +514,8 @@ LPYYSTYPE PrimFnMon_EM
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = aplTypeRes;
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkData            =        // Filled in below
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
 RESTART_EXCEPTION_VARNAMED:
             __try
             {
@@ -634,7 +954,8 @@ RESTART_EXCEPTION:
     // lpMemRes now points to its data
     // lpMemRht now points to its data
 
-    // Handle prototype case
+#ifndef PRIMPROTOFNSCALAR
+    // Handle prototypes separately
     if (aplNELMRht EQ 0)
     {
         HGLOBAL hGlbProto;
@@ -645,7 +966,7 @@ RESTART_EXCEPTION:
         // Make the prototype
         hGlbProto = MakePrototype_EM (hGlbRht,          // Proto arg handle
                                       lptkFunc,         // Ptr to function token
-                                      TRUE);            // Disallow non-empty CHARs
+                                      MP_NUMONLY);      // Numerics only
         if (!hGlbProto)
             goto ERROR_EXIT;
 
@@ -654,6 +975,7 @@ RESTART_EXCEPTION:
 
         goto NORMAL_EXIT;
     } // End IF
+#endif
 
     // If the right arg is an APA, get its parameters
     if (aplTypeRht EQ ARRAY_APA)
@@ -909,7 +1231,7 @@ RESTART_EXCEPTION:
                                         break;
 
                                     case IMMTYPE_INT:   // Res = BOOL, Rht = INT
-                                        DbgBrk ();  // ***TESTME*** -- Tough case
+                                        DbgBrk ();  // ***TESTME*** -- No such primitive
 
                                         lpSymDst->stData.stBoolean =
                                           (*lpPrimSpec->BisI) (lpSymSrc->stData.stInteger,
@@ -933,7 +1255,7 @@ RESTART_EXCEPTION:
                                 switch (lpSymSrc->stFlags.ImmType)
                                 {
                                     case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
-                                        DbgBrk ();  // ***TESTME*** -- Tough case
+                                        DbgBrk ();  // ***TESTME*** -- No such primitive
 
                                         lpSymDst->stData.stInteger =
                                           (*lpPrimSpec->IisI) (lpSymSrc->stData.stBoolean,
@@ -1144,12 +1466,9 @@ LPYYSTYPE PrimFnDyd_EM
     APLINT      aplInteger;
     BOOL        bRet = TRUE;
     LPPRIMFN_DYD_SNvSN PrimFn;
-    LPYYSTYPE   lpYYRes;
+    LPYYSTYPE   lpYYRes = NULL;
 
     DBGENTER;
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1171,11 +1490,9 @@ LPYYSTYPE PrimFnDyd_EM
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
                            NULL,            // Return last axis value
-                           &aplNELMAxis,    // Return # elements in axis vector
+                          &aplNELMAxis,     // Return # elements in axis vector
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
-        {
-            YYFree (lpYYRes); lpYYRes = NULL; return NULL;
-        } // End IF
+            return NULL;
 
         // Lock the memory to get a ptr to it
         lpMemAxisHead = MyGlobalLock (hGlbAxis);
@@ -1202,6 +1519,21 @@ LPYYSTYPE PrimFnDyd_EM
     Assert (IsSimpleNum (aplTypeRes)
          || aplTypeRes EQ ARRAY_NESTED);
 
+#ifdef PRIMPROTOFNSCALAR
+    // Handle prototypes separately
+    if (aplNELMLft EQ 0
+     || aplNELMRht EQ 0)
+    {
+        lpYYRes = PrimProtoFnScalar_EM (lptkLftArg,
+                                        lptkFunc,
+                                        lptkRhtArg,
+                                        lptkAxis);
+        bRet = (lpYYRes NE NULL);
+
+        goto NORMAL_EXIT;
+    } // End IF
+#endif
+
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -1226,34 +1558,42 @@ LPYYSTYPE PrimFnDyd_EM
     else
         aplNELMRes = max (aplNELMLft, aplNELMRht);
 
-    // Five cases:
-    //   Result     Left       Right
-    //   ----------------------------
-    //   APA        ...        ...
-    //   Simple     Simple     Simple
-    //   Nested     Simple     Nested
-    //   Nested     Nested     Simple
-    //   Nested     Nested     Nested
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
+    // Handle APA result separately
     if (aplTypeRes EQ ARRAY_APA)
     {
         if (aplTypeLft EQ ARRAY_APA)
-            FirstValue (lptkRhtArg, &aplInteger, NULL, NULL, NULL, NULL, NULL, NULL);
+            FirstValue (lptkRhtArg,     // Ptr to right arg token
+                       &aplInteger,     // Ptr to integer result
+                        NULL,           // Ptr to float ...
+                        NULL,           // Ptr to WCHAR ...
+                        NULL,           // Ptr to longest ...
+                        NULL,           // Ptr to lpSym/Glb ...
+                        NULL,           // Ptr to ...immediate type ...
+                        NULL);          // Ptr to array type ...
         else
-            FirstValue (lptkLftArg, &aplInteger, NULL, NULL, NULL, NULL, NULL, NULL);
-
+            FirstValue (lptkLftArg,     // Ptr to right arg token
+                       &aplInteger,     // Ptr to integer result
+                        NULL,           // Ptr to float ...
+                        NULL,           // Ptr to WCHAR ...
+                        NULL,           // Ptr to longest ...
+                        NULL,           // Ptr to lpSym/Glb ...
+                        NULL,           // Ptr to ...immediate type ...
+                        NULL);          // Ptr to array type ...
         if (!(*lpPrimSpec->ApaResultDyd_EM) (lpYYRes,
-                                              lptkFunc,
-                                              hGlbLft,
-                                              hGlbRht,
-                                             &hGlbRes,
-                                             &lpMemRes,
-                                              aplRankLft,
-                                              aplRankRht,
-                                              aplNELMLft,
-                                              aplNELMRht,
-                                              aplInteger,
-                                              lpPrimSpec))
+                                             lptkFunc,
+                                             hGlbLft,
+                                             hGlbRht,
+                                            &hGlbRes,
+                                            &lpMemRes,
+                                             aplRankLft,
+                                             aplRankRht,
+                                             aplNELMLft,
+                                             aplNELMRht,
+                                             aplInteger,
+                                             lpPrimSpec))
             goto ERROR_EXIT;
         else
             goto NORMAL_EXIT;
@@ -1273,6 +1613,14 @@ LPYYSTYPE PrimFnDyd_EM
                                      aplNELMRht,
                                      aplNELMRes))
         goto ERROR_EXIT;
+
+    // Four cases:
+    //   Result     Left       Right
+    //   ----------------------------
+    //   Simple     Simple     Simple
+    //   Nested     Simple     Nested
+    //   Nested     Nested     Simple
+    //   Nested     Nested     Nested
 
     // Split cases based upon the combined left vs. right types
     if (aplTypeLft EQ ARRAY_NESTED
@@ -1303,32 +1651,31 @@ LPYYSTYPE PrimFnDyd_EM
 
     // Call the appropriate function
     if (!(*PrimFn) (lpYYRes,
-                     lptkLftArg,
-                     lptkFunc,
-                     lptkRhtArg,
-                     hGlbLft,
-                     hGlbRht,
-                    &hGlbRes,
-                     lpMemLft,          // Points to sign.ature
-                     lpMemRht,          // ...
-                     lpMemRes,          // ...
-                     lpMemAxisHead,
-                     lpMemAxisTail,
-                     aplRankLft,
-                     aplRankRht,
-                     aplRankRes,
-                     aplTypeLft,
-                     aplTypeRht,
-                     aplTypeRes,
-                     aplNELMLft,
-                     aplNELMRht,
-                     aplNELMRes,
-                     aplNELMAxis,
-                     lpPrimSpec))
+                    lptkLftArg,
+                    lptkFunc,
+                    lptkRhtArg,
+                    hGlbLft,
+                    hGlbRht,
+                   &hGlbRes,
+                    lpMemLft,           // Points to sign.ature
+                    lpMemRht,           // ...
+                    lpMemRes,           // ...
+                    lpMemAxisHead,
+                    lpMemAxisTail,
+                    aplRankLft,
+                    aplRankRht,
+                    aplRankRes,
+                    aplTypeLft,
+                    aplTypeRht,
+                    aplTypeRes,
+                    aplNELMLft,
+                    aplNELMRht,
+                    aplNELMRes,
+                    aplNELMAxis,
+                    lpPrimSpec))
         goto ERROR_EXIT;
     else
         goto NORMAL_EXIT;
-
 ERROR_EXIT:
     bRet = FALSE;
 
@@ -1368,14 +1715,15 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbAxis); lpMemAxisHead = lpMemAxisTail = NULL;
     } // End IF
 
+    // If we failed and there's a result, free it
+    if (!bRet && lpYYRes)
+    {
+        YYFree (lpYYRes); lpYYRes = NULL;
+    } // End IF/ELSE
+
     DBGLEAVE;
 
-    if (bRet)
-        return lpYYRes;
-    else
-    {
-        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
-    } // End IF/ELSE
+    return lpYYRes;
 } // End PrimFnDyd_EM
 #undef  APPEND_NAME
 
@@ -1447,7 +1795,14 @@ BOOL PrimFnDydSimpNest_EM
 
     // If the left arg is immediate, get the one and only value
     if (!lpMemLft)
-        FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
+        FirstValue (lptkLftArg,         // Ptr to right arg token
+                   &aplIntegerLft,      // Ptr to integer result
+                   &aplFloatLft,        // Ptr to float ...
+                   &aplCharLft,         // Ptr to WCHAR ...
+                    NULL,               // Ptr to longest ...
+                    NULL,               // Ptr to lpSym/Glb ...
+                    NULL,               // Ptr to ...immediate type ...
+                    NULL);              // Ptr to array type ...
     else
     {
         // Skip over the header to the dimensions
@@ -1460,9 +1815,7 @@ BOOL PrimFnDydSimpNest_EM
     // If the left arg is APA, get its parameters
     if (aplTypeLft EQ ARRAY_APA)
     {
-
-#define lpAPA   ((LPAPLAPA) lpMemLft)
-
+#define lpAPA       ((LPAPLAPA) lpMemLft)
         apaOffLft = lpAPA->Off;
         apaMulLft = lpAPA->Mul;
 #undef  lpAPA
@@ -1481,7 +1834,8 @@ BOOL PrimFnDydSimpNest_EM
     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
         ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
 
-    // Handle prototype case
+#ifndef PRIMPROTOFNSCALAR
+    // Handle prototypes separately
     if (aplNELMRes EQ 0)
     {
         HGLOBAL hGlbProto;
@@ -1489,13 +1843,14 @@ BOOL PrimFnDydSimpNest_EM
         // Make the prototype
         hGlbProto = MakePrototype_EM (hGlbRht,          // Proto arg handle
                                       lptkFunc,         // Ptr to function token
-                                      TRUE);            // Disallow non-empty CHARs
+                                      MP_NUMCONV);      // Convert to numerics
         if (hGlbProto)
             // Save the handle
             *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbProto);
         else
             goto ERROR_EXIT;
     } else
+#endif
     {
         // Handle axis if present
         if (aplNELMAxis NE aplRankRes)
@@ -1549,7 +1904,7 @@ BOOL PrimFnDydSimpNest_EM
             lpMemOdo = MyGlobalLock (hGlbOdo);
         } // End IF
 
-        // Loop through the # elements in the result
+        // Loop through the result
         for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++)
         {
             APLINT   uLft, uRht, uArg;
@@ -1639,6 +1994,7 @@ BOOL PrimFnDydSimpNest_EM
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
 
@@ -1743,7 +2099,14 @@ BOOL PrimFnDydNestSimp_EM
 
     // If the right arg is immediate, get the one and only value
     if (!lpMemRht)
-        FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
+        FirstValue (lptkRhtArg,         // Ptr to right arg token
+                   &aplIntegerRht,      // Ptr to integer result
+                   &aplFloatRht,        // Ptr to float ...
+                   &aplCharRht,         // Ptr to WCHAR ...
+                    NULL,               // Ptr to longest ...
+                    NULL,               // Ptr to lpSym/Glb ...
+                    NULL,               // Ptr to ...immediate type ...
+                    NULL);              // Ptr to array type ...
     else
     {
         // Skip over the header to the dimensions
@@ -1756,7 +2119,7 @@ BOOL PrimFnDydNestSimp_EM
     // If the right arg is APA, get its parameters
     if (aplTypeRht EQ ARRAY_APA)
     {
-#define lpAPA   ((LPAPLAPA) lpMemRht)
+#define lpAPA       ((LPAPLAPA) lpMemRht)
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -1775,19 +2138,21 @@ BOOL PrimFnDydNestSimp_EM
     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
         ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
 
-    // Handle prototype case
+#ifndef PRIMPROTOFNSCALAR
+    // Handle prototypes separately
     if (aplNELMRes EQ 0)
     {
         // Make the prototype
-        hGlbSub = MakePrototype_EM (hGlbLft,
-                                    lptkFunc,
-                                    TRUE);      // Disallow non-empty CHARs
+        hGlbSub = MakePrototype_EM (hGlbLft,        // Proto arg handle
+                                    lptkFunc,       // Ptr to function token
+                                    MP_NUMCONV);    // Convert to numerics
         if (hGlbSub)
             // Save the handle
             *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbSub);
         else
             goto ERROR_EXIT;
     } else
+#endif
     {
         // Handle axis if present
         if (aplNELMAxis NE aplRankRes)
@@ -1841,7 +2206,7 @@ BOOL PrimFnDydNestSimp_EM
             lpMemOdo = MyGlobalLock (hGlbOdo);
         } // End IF
 
-        // Loop through the # elements in the result
+        // Loop through the result
         for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++)
         {
             APLINT   uLft, uRht, uArg;
@@ -1931,6 +2296,7 @@ BOOL PrimFnDydNestSimp_EM
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
 
@@ -2023,8 +2389,8 @@ HGLOBAL PrimFnDydNestSimpSub_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemLft)
 
     aplTypeLft = lpHeader->ArrType;
-    aplNELMLft  = lpHeader->NELM;
-    aplRankLft  = lpHeader->Rank;
+    aplNELMLft = lpHeader->NELM;
+    aplRankLft = lpHeader->Rank;
 
 #undef  lpHeader
 
@@ -2098,19 +2464,29 @@ HGLOBAL PrimFnDydNestSimpSub_EM
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
     {
-        bRet = PrimFnDydMultSing_EM (aplTypeRes, lpMemRes, aplNELMRes,
-                                     aplTypeLft, apaOffLft, apaMulLft, lpMemLft,
-                                     aplTypeRht, aplIntegerRht, aplFloatRht, aplCharRht,
-                                     lptkFunc, lpPrimSpec);
+        bRet = PrimFnDydMultSing_EM (aplTypeRes,
+                                     lpMemRes,
+                                     aplNELMRes,
+                                     aplTypeLft,
+                                     apaOffLft,
+                                     apaMulLft,
+                                     lpMemLft,
+                                     aplTypeRht,
+                                     aplIntegerRht,
+                                     aplFloatRht,
+                                     aplCharRht,
+                                     lptkFunc,
+                                     lpPrimSpec);
 
     } else
     // If nested result, ...
     if (aplTypeRes EQ ARRAY_NESTED)
     {
 ////case ARRAY_NESTED:              // Res = NESTED, Lft = NESTED, Rht = BOOL/INT/FLOAT(S)
+#ifndef PRIMPROTOFNSCALAR
         // Handle the prototype case
         aplNELMLft = max (aplNELMLft, 1);
-
+#endif
         // Loop through the left arg/result
         for (uLft = 0; bRet && uLft < (APLNELMSIGN) aplNELMLft; uLft++)
         {
@@ -2216,6 +2592,8 @@ BOOL PrimFnDydNestNest_EM
 
     DBGENTER;
 
+    DbgBrk ();
+
     // Check for INNER RANK and LENGTH ERRORs
     if (!CheckRankLengthError_EM (aplRankRes,
                                   aplRankLft,
@@ -2234,6 +2612,17 @@ BOOL PrimFnDydNestNest_EM
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
+#ifndef PRIMPROTOFNSCALAR
+    // Handle prototypes separately
+    if (aplNELMRes EQ 0)
+    {
+        DbgBrk ();      // ***FINISHME***
+
+
+
+
+    } else
+#endif
     // Loop through the left and right args
     for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++)
     {
@@ -2273,8 +2662,8 @@ BOOL PrimFnDydNestNest_EM
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF
-
 ERROR_EXIT:
     DBGLEAVE;
 
@@ -2397,7 +2786,7 @@ RESTART_EXCEPTION:
                     {
                         case ARRAY_BOOL:    // Res = BOOL, Lft = BOOL (S)
                         case ARRAY_INT:     // Res = BOOL, Lft = INT  (S)
-                            // Loop through the right argument
+                            // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
                                 aplTypeHet = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
@@ -2440,7 +2829,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = BOOL, Lft = FLOAT(S)
-                            // Loop through the right argument
+                            // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
                                 aplTypeHet = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
@@ -2477,7 +2866,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_CHAR:    // Res = BOOL, Lft = CHAR (S)
-                            // Loop through the right argument
+                            // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
                                 aplTypeHet = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
@@ -2765,7 +3154,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = BOOL/INT(S), Rht = FLOAT(M)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -2786,7 +3175,7 @@ RESTART_EXCEPTION:
                     switch (aplTypeRht)
                     {
                         case ARRAY_BOOL:    // Res = INT, Lft = FLOAT(S), Rht = BOOL(M)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -2806,7 +3195,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_INT:     // Res = INT, Lft = FLOAT(S), Rht = INT(M)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -2817,7 +3206,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_APA:     // Res = INT, Lft = FLOAT(S), Rht = APA(M)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -2828,7 +3217,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(S), Rht = FLOAT(M)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the right arg/result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3503,7 +3892,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(M),   Rht = BOOL/INT(S)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3524,7 +3913,7 @@ RESTART_EXCEPTION:
                     switch (aplTypeLft)
                     {
                         case ARRAY_BOOL:    // Res = INT, Lft = BOOL (M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3544,7 +3933,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_INT:     // Res = INT, Lft = INT  (M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3555,7 +3944,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_APA:     // Res = INT, Lft = APA  (M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3566,7 +3955,7 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:   // Res = INT, Lft = FLOAT(M),   Rht = FLOAT(S)
-                            DbgBrk ();      // ***TESTME*** -- Tough case
+                            DbgBrk ();      // ***TESTME*** -- No such primitive
 
                             // Loop through the result
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3889,18 +4278,28 @@ HGLOBAL PrimFnDydSimpNestSub_EM
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
     {
-        bRet = PrimFnDydSingMult_EM (aplTypeRes, lpMemRes, aplNELMRes,
-                                     aplTypeLft, aplIntegerLft, aplFloatLft, aplCharLft,
-                                     aplTypeRht, apaOffRht, apaMulRht, lpMemRht,
-                                     lptkFunc, lpPrimSpec);
+        bRet = PrimFnDydSingMult_EM (aplTypeRes,
+                                     lpMemRes,
+                                     aplNELMRes,
+                                     aplTypeLft,
+                                     aplIntegerLft,
+                                     aplFloatLft,
+                                     aplCharLft,
+                                     aplTypeRht,
+                                     apaOffRht,
+                                     apaMulRht,
+                                     lpMemRht,
+                                     lptkFunc,
+                                     lpPrimSpec);
     } else
     // If nested result, ...
     if (aplTypeRes EQ ARRAY_NESTED)
     {
 ////case ARRAY_NESTED:              // Res = NESTED, Lft = BOOL/INT/FLOAT(S), Rht = NESTED
+#ifndef PRIMPROTOFNSCALAR
         // Handle the prototype case
         aplNELMRht = max (aplNELMRht, 1);
-
+#endif
         // Loop through the right arg/result
         for (uRht = 0; bRet && uRht < (APLNELMSIGN) aplNELMRht; uRht++)
         {
@@ -3985,19 +4384,19 @@ BOOL PrimFnDydSimpSimp_EM
      LPAPLUINT  lpMemAxisHead,      // Ptr to axis values, fleshed out
      LPAPLUINT  lpMemAxisTail,      // Ptr to grade up of AxisHead
 
-     APLRANK    aplRankLft,      // Left arg rank
-     APLRANK    aplRankRht,      // Right ...
-     APLRANK    aplRankRes,      // Result ...
+     APLRANK    aplRankLft,         // Left arg rank
+     APLRANK    aplRankRht,         // Right ...
+     APLRANK    aplRankRes,         // Result ...
 
-     APLSTYPE   aplTypeLft,      // Left arg type
-     APLSTYPE   aplTypeRht,      // Right ...
-     APLSTYPE   aplTypeRes,      // Result ...
+     APLSTYPE   aplTypeLft,         // Left arg type
+     APLSTYPE   aplTypeRht,         // Right ...
+     APLSTYPE   aplTypeRes,         // Result ...
 
-     APLNELM    aplNELMLft,      // Left arg NELM
-     APLNELM    aplNELMRht,      // Right ...
-     APLNELM    aplNELMRes,      // Result ...
-     APLNELM    aplNELMAxis,     // Axis ...
-     LPPRIMSPEC lpPrimSpec)      // Ptr to local PRIMSPEC
+     APLNELM    aplNELMLft,         // Left arg NELM
+     APLNELM    aplNELMRht,         // Right ...
+     APLNELM    aplNELMRes,         // Result ...
+     APLNELM    aplNELMAxis,        // Axis ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     BOOL      bRet = TRUE;
@@ -4041,14 +4440,28 @@ BOOL PrimFnDydSimpSimp_EM
 
         // Axis may be anything
 
-        // If it's a scalar, ...
+        // If the result is a scalar, ...
         if (aplRankRes EQ 0)
         {
             UINT     immType;
 
             // Get the respective first values
-            FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
-            FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
+            FirstValue (lptkLftArg,         // Ptr to right arg token
+                       &aplIntegerLft,      // Ptr to integer result
+                       &aplFloatLft,        // Ptr to float ...
+                       &aplCharLft,         // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
+            FirstValue (lptkRhtArg,         // Ptr to right arg token
+                       &aplIntegerRht,      // Ptr to integer result
+                       &aplFloatRht,        // Ptr to float ...
+                       &aplCharRht,         // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
 RESTART_EXCEPTION_IMMED:
             // Get the immediate type for the token
             immType = TranslateArrayTypeToImmType (aplTypeRes);
@@ -4061,6 +4474,7 @@ RESTART_EXCEPTION_IMMED:
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = immType;
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
             __try
             {
@@ -4207,8 +4621,22 @@ RESTART_EXCEPTION_IMMED:
             lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
             // Get the respective values
-            FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
-            FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
+            FirstValue (lptkLftArg,         // Ptr to right arg token
+                       &aplIntegerLft,      // Ptr to integer result
+                       &aplFloatLft,        // Ptr to float ...
+                       &aplCharLft,         // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
+            FirstValue (lptkRhtArg,         // Ptr to right arg token
+                       &aplIntegerRht,      // Ptr to integer result
+                       &aplFloatRht,        // Ptr to float ...
+                       &aplCharRht,         // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
 RESTART_EXCEPTION_SINGLETON:
             __try
             {
@@ -4354,7 +4782,7 @@ RESTART_EXCEPTION_SINGLETON:
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
             lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
-        } // End IF
+        } // End IF/ELSE
 
         // Finish with common code
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
@@ -4368,7 +4796,7 @@ RESTART_EXCEPTION_SINGLETON:
 
         // Axis may be anything
 
-        // Copy the ptr to the non-singleton argument
+        // Copy the ptr of the non-singleton argument
         if (aplNELMLft NE 1)
         {
             lpMemDimArg = lpMemLft;
@@ -4394,22 +4822,53 @@ RESTART_EXCEPTION_SINGLETON:
 
         // Get the value of the singleton
         if (aplNELMLft EQ 1)
-            FirstValue (lptkLftArg, &aplIntegerLft, &aplFloatLft, &aplCharLft, NULL, NULL, NULL, NULL);
+            FirstValue (lptkLftArg,         // Ptr to right arg token
+                       &aplIntegerLft,      // Ptr to integer result
+                       &aplFloatLft,        // Ptr to float ...
+                       &aplCharLft,         // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
         else
-            FirstValue (lptkRhtArg, &aplIntegerRht, &aplFloatRht, &aplCharRht, NULL, NULL, NULL, NULL);
-
+            FirstValue (lptkRhtArg,         // Ptr to right arg token
+                       &aplIntegerRht,      // Ptr to integer result
+                       &aplFloatRht,        // Ptr to float ...
+                       &aplCharRht,         // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
         // Split cases based upon which argument is the simgleton
         if (aplNELMLft NE 1)    // Lft = Multipleton, Rht = Singleton
-            bRet = PrimFnDydMultSing_EM (aplTypeRes, lpMemRes, aplNELMRes,
-                                         aplTypeLft, apaOffLft, apaMulLft, lpMemDimArg,
-                                         aplTypeRht, aplIntegerRht, aplFloatRht, aplCharRht,
-                                         lptkFunc, lpPrimSpec);
+            bRet = PrimFnDydMultSing_EM (aplTypeRes,
+                                         lpMemRes,
+                                         aplNELMRes,
+                                         aplTypeLft,
+                                         apaOffLft,
+                                         apaMulLft,
+                                         lpMemDimArg,
+                                         aplTypeRht,
+                                         aplIntegerRht,
+                                         aplFloatRht,
+                                         aplCharRht,
+                                         lptkFunc,
+                                         lpPrimSpec);
 
         else                    // Lft = Singleton, Rht = Multipleton
-            bRet = PrimFnDydSingMult_EM (aplTypeRes, lpMemRes, aplNELMRes,
-                                         aplTypeLft, aplIntegerLft, aplFloatLft, aplCharLft,
-                                         aplTypeRht, apaOffRht, apaMulRht, lpMemDimArg,
-                                         lptkFunc, lpPrimSpec);
+            bRet = PrimFnDydSingMult_EM (aplTypeRes,
+                                         lpMemRes,
+                                         aplNELMRes,
+                                         aplTypeLft,
+                                         aplIntegerLft,
+                                         aplFloatLft,
+                                         aplCharLft,
+                                         aplTypeRht,
+                                         apaOffRht,
+                                         apaMulRht,
+                                         lpMemDimArg,
+                                         lptkFunc,
+                                         lpPrimSpec);
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
@@ -4518,11 +4977,11 @@ RESTART_EXCEPTION_AXIS:
                     // If both arguments are BOOL,
                     //   use BisBvB
                     if (aplTypeLft EQ ARRAY_BOOL
-                     && aplTypeRht EQ ARRAY_BOOL)  // Res = BOOL(Axis), Lft = BOOL, Rht = BOOL
+                     && aplTypeRht EQ ARRAY_BOOL)   // Res = BOOL(Axis), Lft = BOOL, Rht = BOOL
                     {
                         // ***FIXME*** -- Optimize by chunking
 
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             // Calculate the left and right argument indices
@@ -4552,11 +5011,11 @@ RESTART_EXCEPTION_AXIS:
                     // If both arguments are integer-like (BOOL, INT, or APA),
                     //   use BisIvI
                     if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeLft))  // Res = BOOL(Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
+                     && IsSimpleInt (aplTypeLft))   // Res = BOOL(Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
                     {
-                        DbgBrk ();      // ***TESTME***
+                        DbgBrk ();      // ***TESTME*** -- No such primitive
 
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             // Calculate the left and right argument indices
@@ -4586,11 +5045,11 @@ RESTART_EXCEPTION_AXIS:
                     // If both arguments are CHAR,
                     //   use BisCvC
                     if (aplTypeLft EQ ARRAY_CHAR
-                     && aplTypeRht EQ ARRAY_CHAR)  // Res = BOOL(Axis), Lft = CHAR, Rht = CHAR
+                     && aplTypeRht EQ ARRAY_CHAR)   // Res = BOOL(Axis), Lft = CHAR, Rht = CHAR
                     {
-                        DbgBrk ();      // ***TESTME***
+                        DbgBrk ();      // ***TESTME*** -- No such primitive
 
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             // Calculate the left and right argument indices
@@ -4622,9 +5081,9 @@ RESTART_EXCEPTION_AXIS:
                     if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = BOOL(Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
                      || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = BOOL(Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
-                        DbgBrk ();      // ***TESTME***
+                        DbgBrk ();      // ***TESTME*** -- No such primitive
 
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             // Calculate the left and right argument indices
@@ -4658,9 +5117,9 @@ RESTART_EXCEPTION_AXIS:
                     // If both left and right arguments are integer-like (BOOL, INT, or APA),
                     //   use IisIvI
                     if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeRht))  // Res = INT(Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
+                     && IsSimpleInt (aplTypeRht))   // Res = INT(Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
                     {
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             // Calculate the left and right argument indices
@@ -4686,9 +5145,9 @@ RESTART_EXCEPTION_AXIS:
                     if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = INT(Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
                      || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = INT(Axis), Rht = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
-                        DbgBrk ();      // ***TESTME***
+                        DbgBrk ();      // ***TESTME*** -- No such primitive
 
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             // Calculate the left and right argument indices
@@ -4717,9 +5176,9 @@ RESTART_EXCEPTION_AXIS:
                     // If both arguments are simple integer (BOOL, INT, APA),
                     //   use FisIvI
                     if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeRht))  // Res = FLOAT(Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
+                     && IsSimpleInt (aplTypeRht))   // Res = FLOAT(Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
                     {
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             // Calculate the left and right argument indices
@@ -4743,9 +5202,9 @@ RESTART_EXCEPTION_AXIS:
                     // If both arguments are simple numeric (BOOL, INT, APA, FLOAT),
                     //   use FisFvF
                     if (IsSimpleNum (aplTypeLft)
-                     && IsSimpleNum (aplTypeRht))  // Res = FLOAT(Axis), Lft = BOOL/INT/APA/FLOAT, Rht = BOOL/INT/APA/FLOAT
+                     && IsSimpleNum (aplTypeRht))   // Res = FLOAT(Axis), Lft = BOOL/INT/APA/FLOAT, Rht = BOOL/INT/APA/FLOAT
                     {
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             // Calculate the left and right argument indices
@@ -4827,11 +5286,11 @@ RESTART_EXCEPTION_NOAXIS:
                     // If both arguments are BOOL,
                     //   use BisBvB
                     if (aplTypeLft EQ ARRAY_BOOL
-                     && aplTypeRht EQ ARRAY_BOOL)  // Res = BOOL(No Axis), Lft = BOOL, Rht = BOOL
+                     && aplTypeRht EQ ARRAY_BOOL)   // Res = BOOL(No Axis), Lft = BOOL, Rht = BOOL
                     {
                         // ***FIXME*** -- Optimize by chunking
 
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLBOOL)  lpMemRes) |=
@@ -4849,9 +5308,9 @@ RESTART_EXCEPTION_NOAXIS:
                     // If both arguments are integer-like (BOOL, INT, or APA),
                     //   use BisIvI
                     if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeLft))  // Res = BOOL(No Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
+                     && IsSimpleInt (aplTypeLft))   // Res = BOOL(No Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
                     {
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLBOOL)  lpMemRes) |=
@@ -4869,9 +5328,9 @@ RESTART_EXCEPTION_NOAXIS:
                     // If both arguments are CHAR,
                     //   use BisCvC
                     if (aplTypeLft EQ ARRAY_CHAR
-                     && aplTypeRht EQ ARRAY_CHAR)  // Res = BOOL(No Axis), Lft = CHAR, Rht = CHAR
+                     && aplTypeRht EQ ARRAY_CHAR)   // Res = BOOL(No Axis), Lft = CHAR, Rht = CHAR
                     {
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLBOOL)  lpMemRes) |=
@@ -4891,7 +5350,7 @@ RESTART_EXCEPTION_NOAXIS:
                     if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = BOOL(No Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
                      || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLBOOL)  lpMemRes) |=
@@ -4913,9 +5372,9 @@ RESTART_EXCEPTION_NOAXIS:
                     // If both left and right arguments are integer-like (BOOL, INT, or APA),
                     //   use IisIvI
                     if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeRht))  // Res = INT(No Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
+                     && IsSimpleInt (aplTypeRht))   // Res = INT(No Axis), Lft = BOOL/INT/APA, Rht = BOOL/INT/APA
                     {
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLINT)   lpMemRes)++ =
@@ -4929,9 +5388,9 @@ RESTART_EXCEPTION_NOAXIS:
                     if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = INT(No Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
                      || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = INT(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
-                        DbgBrk ();      // ***TESTME***
+                        DbgBrk ();      // ***TESTME*** -- No such primitive
 
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLINT)   lpMemRes)++ =
@@ -4947,9 +5406,9 @@ RESTART_EXCEPTION_NOAXIS:
                     // If both arguments are simple integer (BOOL, INT, APA),
                     //   use FisIvI
                     if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeRht))  // Res = FLOAT(No Axis), Lft = BOOL/INT/APA      , Rht = BOOL/INT/APA
+                     && IsSimpleInt (aplTypeRht))   // Res = FLOAT(No Axis), Lft = BOOL/INT/APA      , Rht = BOOL/INT/APA
                     {
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLFLOAT) lpMemRes)++ =
@@ -4961,9 +5420,9 @@ RESTART_EXCEPTION_NOAXIS:
                     // If both arguments are simple numeric (BOOL, INT, APA, FLOAT),
                     //   use FisFvF
                     if (IsSimpleNum (aplTypeLft)
-                     && IsSimpleNum (aplTypeRht))  // Res = FLOAT(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = BOOL/INT/APA/FLOAT
+                     && IsSimpleNum (aplTypeRht))   // Res = FLOAT(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = BOOL/INT/APA/FLOAT
                     {
-                        // Loop through the result/left/right arguments
+                        // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLFLOAT) lpMemRes)++ =
@@ -4980,9 +5439,9 @@ RESTART_EXCEPTION_NOAXIS:
             } // End SWITCH
             } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
             {
-        #ifdef DEBUG
+#ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", *lpPrimSpec->lpExecCode, FNLN);
-        #endif
+#endif
                 // Split cases based upon the ExecCode
                 switch (*lpPrimSpec->lpExecCode)
                 {

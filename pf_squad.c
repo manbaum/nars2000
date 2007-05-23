@@ -41,6 +41,39 @@ LPYYSTYPE PrimFnSquad_EM
 
 
 //***************************************************************************
+//  PrimProtoFnSquad_EM
+//
+//  Generate a prototype for the primitive functions monadic & dyadic Squad
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnSquad_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE PrimProtoFnSquad_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM (&PrimFnSquad_EM,    // Ptr to primitive function routine
+                                 lptkLftArg,        // Ptr to left arg token
+                                 lptkFunc,          // Ptr to function token
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 lptkAxis);         // Ptr to axis token (may be NULL)
+} // End PrimProtoFnSquad_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  PrimFnMonSquad_EM
 //
 //  Primitive function for monadic Squad (ERROR)

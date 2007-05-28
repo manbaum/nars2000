@@ -1,6 +1,8 @@
 APL+WIN V3.6 Bugs
 -----------------
 
+1.  Missing Error Message
+
 ''+{enclose}'1 2'({enclose}{iota}4)
 
 should be a domain error, but isn't
@@ -10,4 +12,18 @@ The same expression should be equivalent to
 ''+0{rho}{enclose}'1 2'({enclose}{iota}4)
 
 due to scalar extension, but isn't (the prototype is much richer).
+
+
+2.  Incorrect Prototype
+
+(0{rho}{enclose} 0 (0 0)) + 0{rho}{enclose} (0 0) 0
+
+should return
+
+0{rho}{enclose} (0 0) (0 0)
+
+but instead returns
+
+0{rho}{enclose} (0 0) 0
+
 

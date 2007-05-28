@@ -64,6 +64,30 @@ APLINT FloatToAplint_SCT
 
 
 //***************************************************************************
+//  FloatToAplchar
+//
+//  Convert a floating point number to APLCHARs
+//***************************************************************************
+
+void FloatToAplchar
+    (APLFLOAT  aplFloat,
+     LPAPLCHAR lpMem)
+
+{
+    int i;
+
+#define fta     ((LPCHAR) &aplFloat)
+
+    for (i = 7; i >= 0; i--)
+    {
+        *lpMem++ = L"0123456789ABCDEF"[(fta[i] & 0xF0) >> 4];
+        *lpMem++ = L"0123456789ABCDEF"[(fta[i] & 0x0F) >> 0];
+    } // End FOR
+#undef  fta
+} // Enf FloatToAplchar
+
+
+//***************************************************************************
 //  sprintfW
 //
 //  sprintf for wide chars

@@ -507,7 +507,7 @@ int LclECPaintHook
 
     // To do this, we use a FSA to parse the line from the start
     //   through the last char to display
-
+    // ***FINISHME***
 
 
 

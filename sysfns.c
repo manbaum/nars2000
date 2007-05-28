@@ -292,12 +292,245 @@ LPYYSTYPE SysFnDydDR_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    // ***FINISHME***
+    APLSTYPE  aplTypeLft,
+              aplTypeRht;
+    APLNELM   aplNELMLft,
+              aplNELMRht;
+    APLRANK   aplRankLft,
+              aplRankRht;
+    HGLOBAL   hGlbRes = NULL;
+    APLINT    aplIntegerLft;
+    APLFLOAT  aplFloatLft;
+    LPYYSTYPE lpYYRes;
 
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                               lptkFunc);
-    return NULL;
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the left & right args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+
+    // Check for LEFT RANK ERRORs
+    if (aplRankLft > 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Check for LEFT LENGTH ERRORs
+    if (aplNELMLft NE 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Check for LEFT DOMAIN ERRORs
+    if (!IsSimpleNum (aplTypeLft))
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Get the first (and only) value
+    FirstValue (lptkLftArg,         // Ptr to left arg token
+               &aplIntegerLft,      // Ptr to integer result
+               &aplFloatLft,        // Ptr to float ...
+                NULL,               // Ptr to WCHAR ...
+                NULL,               // Ptr to longest ...
+                NULL,               // Ptr to lpSym/Glb ...
+                NULL,               // Ptr to ...immediate type ...
+                NULL);              // Ptr to array type ...
+
+    // If it's a float, attempt to convert it to integer
+    if (aplTypeLft EQ ARRAY_FLOAT)
+    {
+        BOOL bRet;
+
+        aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
+        if (!bRet)
+        {
+            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                       lptkFunc);
+            return NULL;
+        } // End IF
+    } // End IF
+
+    // Ensure the left arg is valid
+    switch (aplIntegerLft)
+    {
+        case DR_BOOL:
+        case DR_CHAR:
+        case DR_INT:
+        case DR_FLOAT:
+            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                                       lptkFunc);
+            return NULL;
+
+            DbgBrk ();      // ***FINISHME***
+
+            break;
+
+        case DR_APA:
+        case DR_HETERO:
+        case DR_NESTED:
+        case DR_LIST:
+        case DR_RATIONAL:
+        case DR_COMPLEX:
+        case DR_QUATERNIONS:
+        case DR_OCTONIONS:
+            // ***DEBUG***
+            hGlbRes = DR_FloatToChar_EM (lptkRhtArg, lptkFunc);
+
+            break;
+
+        default:
+            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                       lptkFunc);
+            return NULL;
+    } // End SWITCH
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 } // End SysFnDydDR_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  DR_FloatToChar_EM
+//
+//  QuadDR subroutine to convert FP to WCHAR
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- DR_FloatToChar_EM"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL DR_FloatToChar_EM
+    (LPTOKEN lptkRhtArg,
+     LPTOKEN lptkFunc)
+
+{
+    APLSTYPE aplTypeRht;
+    APLNELM  aplNELMRht;
+    APLRANK  aplRankRht;
+    APLUINT  ByteRes,
+             uRes;
+    HGLOBAL  hGlbRht,
+             hGlbRes;
+    LPVOID   lpMemRht = NULL,
+             lpMemRes = NULL;
+    APLFLOAT aplFloatRht;
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right args
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+
+    // Ensure the right arg is float
+    if (aplTypeRht NE ARRAY_FLOAT)
+    {
+        ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Convert the FP argument to displayable chars
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRht * 16, aplRankRht + 1);
+
+    // Allocate space for the result.
+    // N.B. Conversion from APLUINT to UINT.
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+
+    // Fill in the header
+    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->Perm       = 0;   // Already zero from GHND
+////lpHeader->SysVar     = 0;   // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRht * 16;
+    lpHeader->Rank       = aplRankRht + 1;
+
+#undef  lpHeader
+
+    // Get right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // Skip over the header to the dimensions
+    lpMemRes = VarArrayBaseToDim (lpMemRes);
+    if (lpMemRht)
+    {
+        lpMemRht = VarArrayBaseToDim (lpMemRht);
+
+        //***************************************************************
+        // Copy the dimensions from the right arg
+        //   to the result's dimension
+        //***************************************************************
+        for (uRes = 0; uRes < aplRankRht; uRes++)
+            *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRht)++;
+    } // End IF
+
+    // The last dimension is 16
+    *((LPAPLDIM) lpMemRes)++ = 16;
+
+    // lpMemRes now points to its data
+
+    // If the right arg is not an immediate, ...
+    if (lpMemRht)
+    {
+        // Loop through the right arg converting it to the result
+        for (uRes = 0; uRes < aplNELMRht; uRes++, ((LPAPLCHAR) lpMemRes += 16))
+            FloatToAplchar (*((LPAPLFLOAT) lpMemRht)++, (LPAPLCHAR) lpMemRes);
+    } else
+    // The right arg is an immediate
+    {
+        // Get the first (and only) value
+        FirstValue (lptkRhtArg,         // Ptr to right arg token
+                    NULL,               // Ptr to integer result
+                   &aplFloatRht,        // Ptr to float ...
+                    NULL,               // Ptr to WCHAR ...
+                    NULL,               // Ptr to longest ...
+                    NULL,               // Ptr to lpSym/Glb ...
+                    NULL,               // Ptr to ...immediate type ...
+                    NULL);              // Ptr to array type ...
+        FloatToAplchar (aplFloatRht, (LPAPLCHAR) lpMemRes);
+    } // End IF/ELSE
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // We no longer need this ptr
+    if (lpMemRht)
+    {
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    return hGlbRes;
+} // End DR_FloatToChar_EM
 #undef  APPEND_NAME
 
 

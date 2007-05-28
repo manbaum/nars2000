@@ -287,86 +287,93 @@ void DisplayGlbArr
     {
         case ARRAY_BOOL:
 ////////////lpaplChar =
-            CompileArrBool    ((LPAPLBOOL)    lpMem,
-                               lpFmtHeader,
-                               lpFmtColStr,
-                               lpaplCharStart,
-                               aplDimNRows,
-                               aplDimNCols,
-                               aplRank,
-                               lpMemDim);
+            CompileArrBool    ((LPAPLBOOL)    lpMem,    // Ptr to right arg memory
+                               lpFmtHeader,             // Ptr to parent header
+                               lpFmtColStr,             // Ptr to vector of ColStrs
+                               lpaplCharStart,          // Ptr to compiled output
+                               aplDimNRows,             // # rows
+                               aplDimNCols,             // # cols
+                               aplRank,                 // Right arg rank
+                               lpMemDim,                // Ptr to right arg dimensions
+                               FALSE);                  // TRUE iff nested
             break;
 
         case ARRAY_INT:
 ////////////lpaplChar =
-            CompileArrInteger ((LPAPLINT)    lpMem,
-                               lpFmtHeader,
-                               lpFmtColStr,
-                               lpaplCharStart,
-                               aplDimNRows,
-                               aplDimNCols,
-                               aplRank,
-                               lpMemDim);
+            CompileArrInteger ((LPAPLINT)    lpMem,     // Ptr to right arg memory
+                               lpFmtHeader,             // Ptr to parent header
+                               lpFmtColStr,             // Ptr to vector of ColStrs
+                               lpaplCharStart,          // Ptr to compiled output
+                               aplDimNRows,             // # rows
+                               aplDimNCols,             // # cols
+                               aplRank,                 // Right arg rank
+                               lpMemDim,                // Ptr to right arg dimensions
+                               FALSE);                  // TRUE iff nested
             break;
 
         case ARRAY_FLOAT:
 ////////////lpaplChar =
-            CompileArrFloat   ((LPAPLFLOAT)  lpMem,
-                               lpFmtHeader,
-                               lpFmtColStr,
-                               lpaplCharStart,
-                               aplDimNRows,
-                               aplDimNCols,
-                               aplRank,
-                               lpMemDim);
+            CompileArrFloat   ((LPAPLFLOAT)  lpMem,     // Ptr to right arg memory
+                               lpFmtHeader,             // Ptr to parent header
+                               lpFmtColStr,             // Ptr to vector of ColStrs
+                               lpaplCharStart,          // Ptr to compiled output
+                               aplDimNRows,             // # rows
+                               aplDimNCols,             // # cols
+                               aplRank,                 // Right arg rank
+                               lpMemDim,                // Ptr to right arg dimensions
+                               FALSE);                  // TRUE iff nested
             break;
 
         case ARRAY_APA:
 ////////////lpaplChar =
-            CompileArrAPA     ((LPAPLAPA)    lpMem,
-                               lpFmtHeader,
-                               lpFmtColStr,
-                               lpaplCharStart,
-                               aplDimNRows,
-                               aplDimNCols,
-                               aplRank,
-                               lpMemDim);
+            CompileArrAPA     ((LPAPLAPA)    lpMem,     // Ptr to right arg memory
+                               lpFmtHeader,             // Ptr to parent header
+                               lpFmtColStr,             // Ptr to vector of ColStrs
+                               lpaplCharStart,          // Ptr to compiled output
+                               aplDimNRows,             // # rows
+                               aplDimNCols,             // # cols
+                               aplRank,                 // Right arg rank
+                               lpMemDim,                // Ptr to right arg dimensions
+                               FALSE);                  // TRUE iff nested
             break;
 
         case ARRAY_CHAR:
 ////////////lpaplChar =
-            CompileArrChar    ((LPAPLCHAR)   lpMem,
-                               lpFmtHeader,
-                               lpFmtColStr,
-                               lpaplCharStart,
-                               aplDimNRows,
-                               aplDimNCols,
-                               aplRank,
-                               lpMemDim);
+            CompileArrChar    ((LPAPLCHAR)   lpMem,     // Ptr to right arg memory
+                               lpFmtHeader,             // Ptr to parent header
+                               lpFmtColStr,             // Ptr to vector of ColStrs
+                               lpaplCharStart,          // Ptr to compiled output
+                               aplDimNRows,             // # rows
+                               aplDimNCols,             // # cols
+                               aplRank,                 // Right arg rank
+                               lpMemDim,                // Ptr to right arg dimensions
+                               FALSE);                  // TRUE iff nested
             break;
 
         case ARRAY_HETERO:
 ////////////lpaplChar =
-            CompileArrHetero  ((LPAPLHETERO) lpMem,
-                               lpFmtHeader,
-                               lpFmtColStr,
-                               lpaplCharStart,
-                               aplDimNRows,
-                               aplDimNCols,
-                               aplRank,
-                               lpMemDim);
+            CompileArrHetero  ((LPAPLHETERO) lpMem,     // Ptr to right arg memory
+                               lpFmtHeader,             // Ptr to parent header
+                               lpFmtColStr,             // Ptr to vector of ColStrs
+                               lpaplCharStart,          // Ptr to compiled output
+                               aplDimNRows,             // # rows
+                               aplDimNCols,             // # cols
+                               aplRank,                 // Right arg rank
+                               lpMemDim,                // Ptr to right arg dimensions
+                               FALSE);                  // TRUE iff nested
             break;
 
         case ARRAY_NESTED:
 ////////////lpaplChar =
-            CompileArrNested  ((LPAPLNESTED) lpMem,
-                               lpFmtHeader,
-                               lpFmtColStr,
-                               lpaplCharStart,
-                               aplDimNRows,
-                               aplDimNCols,
-                               aplRank,
-                               lpMemDim);
+            CompileArrNested  ((LPAPLNESTED) lpMem,     // Ptr to right arg memory
+                               lpFmtHeader,             // Ptr to parent header
+                               lpFmtColStr,             // Ptr to vector of ColStrs
+                               lpaplCharStart,          // Ptr to compiled output
+                               aplDimNRows,             // # rows
+                               aplDimNCols,             // # cols
+                               aplRank,                 // Right arg rank
+                               lpMemDim,                // Ptr to right arg dimensions
+                               FALSE);                  // TRUE iff nested
             break;
 
         defstop
@@ -384,6 +391,7 @@ void DisplayGlbArr
     for (aplLastDim = aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
         aplLastDim += (lpFmtColStr[aplDimCol].uInts
                      + lpFmtColStr[aplDimCol].uFrcs);
+    aplLastDim += lpFmtHeader->uFmtTrBl;
     Assert (aplLastDim EQ (lpFmtHeader->uFmtInts
                          + lpFmtHeader->uFmtFrcs
                          + lpFmtHeader->uFmtTrBl));
@@ -411,33 +419,33 @@ void DisplayGlbArr
         case ARRAY_APA:
         case ARRAY_HETERO:
 ////////////lpaplChar =
-            FmtArrSimple (lpFmtHeader,              // Ptr to FMTHEADER
-                          lpFmtColStr,              // Ptr to vector of <aplDimNCols> FMTCOLSTRs
-                          lpaplCharStart,           // Ptr to compiled input
-                         &lpaplChar,                // Ptr to output string
-                          aplDimNRows,              // # rows in this array
-                          aplDimNCols,              // # cols in this array
-                          aplLastDim,               // Length of last dim in result (NULL for !bRawOutput)
-                          aplRank,                  // Rank of this array
-                          lpMemDim,                 // Ptr to this array's dimensions
-                          TRUE,                     // TRUE iff raw output
-                          bEndingCR);               // TRUE iff last line has CR
+            FormatArrSimple (lpFmtHeader,           // Ptr to FMTHEADER
+                             lpFmtColStr,           // Ptr to vector of <aplDimNCols> FMTCOLSTRs
+                             lpaplCharStart,        // Ptr to compiled input
+                            &lpaplChar,             // Ptr to output string
+                             aplDimNRows,           // # rows in this array
+                             aplDimNCols,           // # cols in this array
+                             aplLastDim,            // Length of last dim in result (NULL for !bRawOutput)
+                             aplRank,               // Rank of this array
+                             lpMemDim,              // Ptr to this array's dimensions
+                             TRUE,                  // TRUE iff raw output
+                             bEndingCR);            // TRUE iff last line has CR
             break;
 
         case ARRAY_NESTED:
 ////////////lpaplChar =
-            FmtArrNested (lpFmtHeader,              // Ptr to FMTHEADER
-                          lpMem,                    // Ptr to raw input
-                          lpFmtColStr,              // Ptr to vector of <aplDimNCols> FMTCOLSTRs
-                          lpaplCharStart,           // Ptr to compiled input
-                         &lpaplChar,                // Ptr to ptr to output string
-                          aplDimNRows,              // # rows in this array
-                          aplDimNCols,              // # cols ...
-                          aplRank,                  // Rank of this array
-                          lpMemDim,                 // Ptr to this array's dimensions
-                          aplLastDim,               // Length of last dim in result (NULL for !bRawOutput)
-                          FALSE,                    // TRUE iff raw (not {thorn}) output
-                          bEndingCR);               // TRUE iff last line has CR
+            FormatArrNested (lpFmtHeader,           // Ptr to FMTHEADER
+                             lpMem,                 // Ptr to raw input
+                             lpFmtColStr,           // Ptr to vector of <aplDimNCols> FMTCOLSTRs
+                             lpaplCharStart,        // Ptr to compiled input
+                            &lpaplChar,             // Ptr to ptr to output string
+                             aplDimNRows,           // # rows in this array
+                             aplDimNCols,           // # cols ...
+                             aplRank,               // Rank of this array
+                             lpMemDim,              // Ptr to this array's dimensions
+                             aplLastDim,            // Length of last dim in result (NULL for !bRawOutput)
+                             FALSE,                 // TRUE iff raw (not {thorn}) output
+                             bEndingCR);            // TRUE iff last line has CR
             // Loop through the formatted rows
             for (lpwsz = lpwszFormat, uCol = 0;
                  uCol < lpFmtHeader->uFmtRows;
@@ -649,52 +657,96 @@ LPAPLCHAR FormatFloat
         *lpaplChar++ = L'_';
     } else
     {
-#if TRUE
-        LPAPLCHAR p, q;
-
-        // ***FIXME*** -- _gcvt returns 17 digits
-        //                only 16 of which are accurate
+        LPAPLCHAR p, ep, dp;
 
         // Convert fFloat to an ASCII string
-        _gcvt (fFloat, (int) uQuadPP, lpszTemp);
+        // Use David Gay's routines
+        g_fmt (lpszTemp,        // Output save area
+               fFloat,          // # to convert to ASCII
+               2,               // Mode 2: max (1, ndigits)
+         (int) uQuadPP);        // ndigits
 
         // Convert from one-byte ASCII to two-byte UTF16
         // The destin buffer length just needs be long enough
         //    to handle a FP number
         A2W (lpaplChar, lpszTemp, 4096);
 
+        p  = lpaplChar;
+        ep = strchrW (lpaplChar, L'e');
+        dp = strchrW (lpaplChar, L'.');
+
+        // Convert to normalized form
+        // [s][int][.][frc][E][s][exp]
+
         // Check for minus sign in the mantissa
         if (lpaplChar[0] EQ L'-')
+        {
             lpaplChar[0] = UTF16_OVERBAR;
+            p++;        // Skip over it
+        } // End IF
+
+        // Check for no leading 0 with .123
+        if (*p EQ L'.')
+        {
+            // Use MoveMemory as the source and destin blocks overlap
+            MoveMemory (p + 1, p, (1 + lstrlenW (p)) * sizeof (APLCHAR));
+            *p = L'0';
+            dp++;
+        } else
+        // Check for trailing zeros in integer only because
+        //   of small uQuadPP.  Replace them with E-notation.
+        if (lstrlenW (p) > uQuadPP  // Too many digits vs. significant digits
+         && dp EQ NULL              // No fractional part
+         && ep EQ NULL)             // Not already E-notation
+        {
+            // Move data to the right to make room for a decimal point
+            // Use MoveMemory as the source and destin blocks overlap
+            MoveMemory (p + 2, p + 1, (lstrlenW (p)) * sizeof (APLCHAR));
+            p[1] = L'.';        // Insert a decimal point
+            dp = p + 1;         // Save location of decimal point
+
+            p[uQuadPP + 1] = L'E';
+            ep = &p[uQuadPP + 1];
+            p = FormatAplint (&p[uQuadPP + 2], lstrlenW (p) - 2);
+            p[-1] = L'\0';
+        } // End IF/ELSE
 
         // p points to the trailing zero
         p = lpaplChar + lstrlenW (lpaplChar);
-        q = strchrW (lpaplChar, L'e');
-        if (q)
+        if (ep)
         {
             // Check for trailing decimal point in the mantissa
-            if (q[-1] EQ L'.')
+            if (ep[-1] EQ L'.')
             {
                 // Use MoveMemory as the source and destin blocks overlap
-                MoveMemory (q + 1, q, (1 + p++ - q) * sizeof (APLCHAR));
-                *q++ = L'0';    // Change to zero and skip over so it ends with ".0"
-            } // End IF
+                MoveMemory (ep + 1, ep, (1 + p++ - ep) * sizeof (APLCHAR));
+                *ep++ = L'0';   // Change to zero and skip over so it ends with ".0"
+            } else  // No trailing decimal point:  insert one if not already present
+            if (!dp)            // If not already present, ...
+            {
+                // Use MoveMemory as the source and destin blocks overlap
+                MoveMemory (ep + 2, ep, (1 + p - ep) * sizeof (APLCHAR));
+                p += 2;         // Add to length # chars we're inserting
+                dp = ep;        // Save location of decimal point
+                *ep++ = L'.';   // Insert a decimal point
+                *ep++ = L'0';   // Insert a trailing zero
+            } // End IF/ELSE
 
-            *q++ = L'E';        // Change to uppercase and skip over
+            *ep++ = L'E';       // Change to uppercase and skip over
 
             // Check for minus sign in the exponent
-            if (q[0] EQ L'-')
-                *q++ = UTF16_OVERBAR;   // Change to high minus and skip over
+            if (ep[0] EQ L'-')
+                *ep++ = UTF16_OVERBAR;  // Change to high minus and skip over
             else
             // Check for plus sign in the exponent
-            if (q[0] EQ L'+')
+            if (ep[0] EQ L'+')
                 // Delete by copying over
-                CopyMemory (q, q + 1, (1 + p-- - (q + 1)) * sizeof (APLCHAR));
+                CopyMemory (ep, ep + 1, (1 + p-- - (ep + 1)) * sizeof (APLCHAR));
 
             // Check for leading 0s in the exponent
-            while (q[0] EQ L'0')
+            while (ep[0] EQ L'0')
                 // Delete by copying over
-                CopyMemory (q, q + 1, (1 + p-- - (q + 1)) * sizeof (APLCHAR));
+                CopyMemory (ep, ep + 1, (1 + p-- - (ep + 1)) * sizeof (APLCHAR));
 
         } else
         // Check for trailing decimal point in the mantissa
@@ -703,73 +755,6 @@ LPAPLCHAR FormatFloat
 
         // Point to the terminating zero
         lpaplChar = p;
-#else
-        int       iLen;
-        LPAPLCHAR p, q, r;
-
-        iLen =
-        sprintfW (lpaplChar,
-                  L"%.*g",
-                  uQuadPP,
-                  fFloat);
-        // Strip trailing zeros
-        for (p = &lpaplChar[lstrlenW (lpaplChar) - 1];
-             p > lpaplChar && *p EQ L'0';
-             p--)
-            *p = L'\0';     // Zap it
-
-        // Strip trailing decimal point
-        if (*p EQ L'.')
-            *p-- = L'\0';
-
-        // If the resulting display is "0"
-        //   and fFloat is not zero, switch to
-        //   exponential format.
-        iLen = lpaplChar[0] EQ '-'; // Skip over minus sign
-        if (lpaplChar[iLen    ] EQ L'0'
-         && lpaplChar[iLen + 1] EQ L'\0'
-         && fFloat NE 0)
-        {
-            p = lpaplChar +
-            sprintfW (lpaplChar,
-                      L"%.*E",
-                      uQuadPP,
-                      fFloat);
-            // p points to the trailing zero
-
-            q = strchrW (lpaplChar, L'E');
-
-            // Strip leading '+' in exponent
-            if (q[1] EQ L'+')
-                CopyMemory (q + 1, q + 2, (1 + p-- - (q + 2)) * sizeof (APLCHAR));
-
-            // Strip leading zeros in exponent
-            r = q + (q[1] EQ L'-'); // Skip over negative sign
-            while (r[1] EQ L'0')
-                CopyMemory (r + 1, r + 2, (1 + p-- - (r + 2)) * sizeof (APLCHAR));
-
-            // Insert high minus sign
-            if (q[1] EQ L'-')
-                q[1] = UTF16_OVERBAR;
-
-            // Strip trailing blanks in the mantissa
-            while (*--q EQ L'0')
-                CopyMemory (q, q + 1, (1 + p-- - (q + 1)) * sizeof (APLCHAR));
-
-            // Strip trailing decimal point
-            if (*q EQ L'.')
-                CopyMemory (q, q + 1, (1 + p-- - (q + 1)) * sizeof (APLCHAR));
-
-            // Point to the last char
-            p--;
-        } // End IF
-
-        // Insert high minus sign
-        if (lpaplChar[0] EQ L'-')
-            lpaplChar[0] = UTF16_OVERBAR;
-
-        lpaplChar += (p + 1 - lpaplChar);
-#endif
     } // End IF/ELSE/...
 
     // Append a separator

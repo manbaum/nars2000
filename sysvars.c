@@ -1639,7 +1639,11 @@ BOOL ValidatePP_EM
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to 17, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 1, 17, &uQuadPP);
+    return ValidateInteger_EM (lptkName,        // Ptr to token name
+                               lpToken,         // Ptr to token value
+                               DEF_MIN_QUADPP,  // Minimum value
+                               DEF_MAX_QUADPP,  // Maximum ...
+                              &uQuadPP);        // Global output save area
 } // End ValidatePP_EM
 
 
@@ -1835,7 +1839,11 @@ BOOL ValidatePW_EM
     //   one-element vector (demoted to a scalar)
     //   in the range from 30 to 255, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 30, 255, &uQuadPW);
+    return ValidateInteger_EM (lptkName,        // Ptr to token name
+                               lpToken,         // Ptr to token value
+                               DEF_MIN_QUADPW,  // Minimum value
+                               DEF_MAX_QUADPW,  // Maximum ...
+                              &uQuadPW);        // Global output save area
 } // End ValidatePW_EM
 
 
@@ -1854,7 +1862,11 @@ BOOL ValidateRL_EM
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to (-2)+2*31, inclusive.
 
-    return ValidateInteger_EM (lptkName, lpToken, 1, 0x7FFFFFFE, &uQuadRL);
+    return ValidateInteger_EM (lptkName,        // Ptr to token name
+                               lpToken,         // Ptr to token value
+                               DEF_MIN_QUADRL,  // Minimum value
+                               DEF_MAX_QUADRL,  // Maximum ...
+                              &uQuadRL);        // Global output save area
 } // End ValidateRL_EM
 
 

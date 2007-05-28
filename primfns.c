@@ -44,14 +44,14 @@ extern PRIMSPEC PrimSpecUpCaretTilde;
 extern PRIMSPEC PrimSpecUpStile;
 
 
-// Symbols for which there is no defined function      Monadic      Dyadic
+// Symbols for which there is no definition            Monadic      Dyadic
 #define PrimFnAlpha_EM              PrimFn_EM       // ERROR        ERROR
 #define PrimFnIotaUnderbar_EM       PrimFn_EM       // ERROR        ERROR
 #define PrimFnOmega_EM              PrimFn_EM       // ERROR        ERROR
 #define PrimFnUpShoe_EM             PrimFn_EM       // ERROR        ERROR
 
 
-// Primitives To Be Done                               Monadic      Dyadic
+// Primitives TO DO                                    Monadic      Dyadic
 #define PrimFnDelStile_EM           PrimFn_EM       // Mixed        Mixed
 #define PrimFnDeltaStile_EM         PrimFn_EM       // Mixed        Mixed
 #define PrimFnDownArrow_EM          PrimFn_EM       // ERROR        Mixed
@@ -63,7 +63,13 @@ extern PRIMSPEC PrimSpecUpStile;
 #define PrimFnUpTack_EM             PrimFn_EM       // ERROR        Mixed
 
 
-// Primitives Done                                     Monadic      Dyadic
+// Operators TO DO                                     Monadic      Dyadic
+/////// PrimOpDot_EM                                // ERROR        Inner product
+/////// PrimOpSlash_EM                              // Reduction    N-wise reduction
+/////// PrimOpSlope_EM                              // Scan         ERROR
+
+
+// Primitives DONE                                     Monadic      Dyadic
 /////// PrimFnBar_EM                                // Scalar       Scalar
 /////// PrimFnCircle_EM                             // Scalar       Scalar
 /////// PrimFnCircleBar_EM                          // Mixed        Mixed
@@ -110,11 +116,21 @@ extern PRIMSPEC PrimSpecUpStile;
 
 // (*) = Unfinished
 
+
+// Operators DONE                                      Monadic      Dyadic
+/////// PrimOpDieresis_EM                           // Each         Each
+/////// PrimOpDieresisTilde_EM                      // Reflex       Commute
+/////// PrimOpJot_EM                                // Composition  Composition
+/////// PrimOpJotDot_EM                             // ERROR        Outer Product
+
+
 // First coordinate functions handled by common function
 #define PrimFnCircleBar_EM      PrimFnCircleStile_EM
 #define PrimFnCommaBar_EM       PrimFnComma_EM
 #define PrimFnSlashBar_EM       PrimFnSlash_EM
 #define PrimFnSlopeBar_EM       PrimFnSlope_EM
+#define PrimOpSlashBar_EM       PrimOpSlash_EM
+#define PrimOpSlopeBar_EM       PrimOpSlope_EM
 
 
 //***************************************************************************
@@ -320,7 +336,7 @@ LPYYSTYPE PrimFn_EM
 } // End PrimFn_EM
 #undef  APPEND_NAME
 
-// Symbols for which there is no defined function
+// Symbols for which there is no definition
 #define PrimProtoFnAlpha_EM                     PrimProtoFn_EM
 #define PrimProtoFnIotaUnderbar_EM              PrimProtoFn_EM
 #define PrimProtoFnOmega_EM                     PrimProtoFn_EM

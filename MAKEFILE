@@ -147,12 +147,14 @@ $(O)common.DEP          \
 $(O)convert.DEP         \
 $(O)debug.DEP           \
 $(O)display.DEP         \
+$(O)dtoa.DEP            \
 $(O)editctrl.DEP        \
 $(O)editfcn.DEP         \
 $(O)editmat.DEP         \
 $(O)editvec.DEP         \
 $(O)exec.DEP            \
 $(O)free.DEP            \
+$(O)g_fmt.DEP           \
 $(O)main.DEP            \
 $(O)parse.DEP           \
 $(O)pf_bar.DEP          \
@@ -274,6 +276,9 @@ $(O)version.DEV
 !if exist ($(O)display.DEP)
 !       include $(O)display.DEP
 !endif
+!if exist ($(O)dtoa.DEP)
+!       include $(O)dtoa.DEP
+!endif
 !if exist ($(O)editctrl.DEP)
 !       include $(O)editctrl.DEP
 !endif
@@ -291,6 +296,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)free.DEP)
 !       include $(O)free.DEP
+!endif
+!if exist ($(O)g_fmt.DEP)
+!       include $(O)g_fmt.DEP
 !endif
 !if exist ($(O)main.DEP)
 !       include $(O)main.DEP
@@ -501,12 +509,14 @@ $(O)common.PRO          \
 $(O)convert.PRO         \
 $(O)debug.PRO           \
 $(O)display.PRO         \
+$(O)dtoa.PRO            \
 $(O)editctrl.PRO        \
 $(O)editfcn.PRO         \
 $(O)editmat.PRO         \
 $(O)editvec.PRO         \
 $(O)exec.PRO            \
 $(O)free.PRO            \
+$(O)g_fmt.PRO           \
 $(O)main.PRO            \
 $(O)parse.PRO           \
 $(O)pf_bar.PRO          \
@@ -607,6 +617,10 @@ ICONS=$(A)About.ico     \
       $(A)ME.ico        \
       $(A)VE.ico        \
       $(A)LineCont.bmp
+
+## FP-specific files
+$(O)dtoa.OBJ:           $(@B).C         $(DTOA_DEP)
+$(O)g_fmt.OBJ:          $(@B).C         $(G_FMT_DEP)
 
 ## Bison-generated files
 $(O)parse.C:            $(@B).Y
@@ -718,12 +732,14 @@ OBJS=                       \
      $(O)convert.OBJ        \
      $(O)debug.OBJ          \
      $(O)display.OBJ        \
+     $(O)dtoa.obj           \
      $(O)editctrl.OBJ       \
      $(O)editfcn.OBJ        \
      $(O)editmat.OBJ        \
      $(O)editvec.OBJ        \
      $(O)exec.OBJ           \
      $(O)free.OBJ           \
+     $(O)g_fmt.obj          \
      $(O)main.OBJ           \
      $(O)parse.OBJ          \
      $(O)pf_bar.OBJ         \

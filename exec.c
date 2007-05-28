@@ -1199,11 +1199,9 @@ BOOL fnFPDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    BOOL       bRet = TRUE;
-    APLFLOAT   aplFloat;
-////APLFLOAT   aplDiv, aplExp;
-    TKFLAGS    tkFlags = {0};
-////int        i;
+    BOOL     bRet = TRUE;
+    APLFLOAT aplFloat;
+    TKFLAGS  tkFlags = {0};
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnFPDone");
@@ -1212,47 +1210,8 @@ BOOL fnFPDone
     // Ensure properly terminated
     lpszNumAlp[iNumAlpLen] = '\0';
 
-    // ***FIXME*** -- Is this whole approach very accurate??
-
-////// Loop through the digits
-////for (i = (lpszNumAlp[0] EQ '-'), aplFloat = 0;
-////     lpszNumAlp[i] NE '\0'
-////  && lpszNumAlp[i] NE '.'
-////  && lpszNumAlp[i] NE 'e'
-////  && lpszNumAlp[i] NE 'E';
-////     i++)
-////    aplFloat = (aplFloat * 10) + (lpszNumAlp[i] - '0');
-////
-////if (lpszNumAlp[i] EQ '.')
-////for (i = i + 1, aplDiv = 10;
-////     i < iNumAlpLen
-////  && lpszNumAlp[i] NE 'e'
-////  && lpszNumAlp[i] NE 'E';
-////     i++, aplDiv *= 10)
-////    aplFloat += (lpszNumAlp[i] - '0') / aplDiv;
-////
-////// Check for exponent
-////if (lpszNumAlp[i] EQ 'e'
-//// || lpszNumAlp[i] EQ 'E')
-////{
-////    for (i = i + 1 + (lpszNumAlp[i + 1] EQ L'-'), aplExp = 0;
-////         i < iNumAlpLen;
-////         i++)
-////        aplExp = (aplExp * 10) + (lpszNumAlp[i] - '0');
-////
-////    if (bNegExp)
-////        aplExp = -aplExp;
-////
-////    aplFloat *= pow (10, aplExp);
-////} // End IF
-////
-////// Include the mantissa's sign
-////if (bNegative)
-////    aplFloat = -aplFloat;
-////
-////Assert (aplFloat EQ atof (lpszNumAlp));
-
-    aplFloat = atof (lpszNumAlp);
+    // Use David Gay's routines
+    aplFloat = strtod (lpszNumAlp, NULL);
 
     // Mark as an immediate float or Boolean
     tkFlags.TknType = TKT_VARIMMED;

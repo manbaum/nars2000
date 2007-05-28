@@ -112,16 +112,28 @@ LPYYSTYPE PrimProtoFnTilde_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    //***************************************************************
-    // Called monadically or dyadically
-    //***************************************************************
+    // If the left arg is not present, ...
+    if (lptkLftArg EQ NULL)
+        //***************************************************************
+        // Called monadically
+        //***************************************************************
+        return PrimProtoFnScalar_EM (lptkLftArg,        // Ptr to left arg token
+                                     lptkFunc,          // Ptr to function token
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     lptkAxis);         // Ptr to axis token (may be NULL)
+    else
+    {
+        //***************************************************************
+        // Called dyadically
+        //***************************************************************
 
-    // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnTilde_EM,    // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
+        // Convert to a prototype
+        return PrimProtoFnMixed_EM (&PrimFnTilde_EM,    // Ptr to primitive function routine
+                                     lptkLftArg,        // Ptr to left arg token
+                                     lptkFunc,          // Ptr to function token
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     lptkAxis);         // Ptr to axis token (may be NULL)
+    } // End IF/ELSE
 } // End PrimProtoFnTilde_EM
 #undef  APPEND_NAME
 

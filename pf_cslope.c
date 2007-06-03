@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  PrimFnCircleSlope_EM
+//  $PrimFnCircleSlope_EM_YY
 //
 //  Primitive function for monadic and dyadic CircleSlope ("reverse axes" and "transpose")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnCircleSlope_EM"
+#define APPEND_NAME     L" -- PrimFnCircleSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnCircleSlope_EM
+LPYYSTYPE PrimFnCircleSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -40,26 +40,26 @@ LPYYSTYPE PrimFnCircleSlope_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonCircleSlope_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonCircleSlope_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydCircleSlope_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnCircleSlope_EM
+        return PrimFnDydCircleSlope_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnCircleSlope_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnCircleSlope_EM
+//  $PrimProtoFnCircleSlope_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic CircleSlope
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnCircleSlope_EM"
+#define APPEND_NAME     L" -- PrimProtoFnCircleSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnCircleSlope_EM
+LPYYSTYPE PrimProtoFnCircleSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -71,54 +71,28 @@ LPYYSTYPE PrimProtoFnCircleSlope_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnCircleSlope_EM,  // Ptr to primitive function routine
-                                 lptkLftArg,            // Ptr to left arg token
-                                 lptkFunc,              // Ptr to function token
-                                 lptkRhtArg,            // Ptr to right arg token
-                                 lptkAxis);             // Ptr to axis token (may be NULL)
-//////***************************************************************
-////// This function is not sensitive to the axis operator,
-//////   so signal a syntax error if present
-//////***************************************************************
-////
-////if (lptkAxis NE NULL)
-////{
-////    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-////                               lptkAxis);
-////    return NULL;
-////} // End IF
-////
-////// If the left arg is not present, ...
-////if (lptkLftArg EQ NULL)
-////    //***************************************************************
-////    // Called monadically
-////    //***************************************************************
-////
-////    return PrimFnMonCircleSlope_EM (lptkFunc,
-////                                    lptkRhtArg,
-////                                    lptkAxis);
-////else
-////    //***************************************************************
-////    // Called dyadically
-////    //***************************************************************
-////    return PrimFnNonceError_EM (lptkFunc);
-} // End PrimProtoFnCircleSlope_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnCircleSlope_EM_YY,// Ptr to primitive function routine
+                                    lptkLftArg,             // Ptr to left arg token
+                                    lptkFunc,               // Ptr to function token
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    lptkAxis);              // Ptr to axis token (may be NULL)
+} // End PrimProtoFnCircleSlope_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonCircleSlope_EM
+//  $PrimFnMonCircleSlope_EM_YY
 //
 //  Primitive function for monadic CircleSlope ("reverse axes")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonCircleSlope_EM"
+#define APPEND_NAME     L" -- PrimFnMonCircleSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonCircleSlope_EM
+LPYYSTYPE PrimFnMonCircleSlope_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -210,68 +184,73 @@ LPYYSTYPE PrimFnMonCircleSlope_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Call the dyadic function
-    lpYYRes2 = PrimFnDydCircleSlope_EM (&lpYYRes->tkToken, lptkFunc, lptkRhtArg, lptkAxis);
-
+    lpYYRes2 = PrimFnDydCircleSlope_EM_YY (&lpYYRes->tkToken,   // Ptr to left arg token
+                                            lptkFunc,           // Ptr to function token
+                                            lptkRhtArg,         // Ptr to right arg token
+                                            lptkAxis);          // Ptr to axis token (may be NULL)
     // We no longer need this storage
     FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
 
     return lpYYRes2;
-} // End PrimFnMonCircleSlope_EM
+} // End PrimFnMonCircleSlope_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydCircleSlope_EM
+//  $PrimFnDydCircleSlope_EM_YY
 //
 //  Primitive function for dyadic CircleSlope ("transpose")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydCircleSlope_EM"
+#define APPEND_NAME     L" -- PrimFnDydCircleSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydCircleSlope_EM
+LPYYSTYPE PrimFnDydCircleSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht,
-              aplTypeRes;
-    APLNELM   aplNELMLft,
-              aplNELMRht,
-              aplNELMRes;
-    APLRANK   aplRankLft,
-              aplRankRht,
-              aplRankRes;
-    HGLOBAL   hGlbLft = NULL,
-              hGlbRht = NULL,
-              hGlbRes = NULL,
-              hGlbAxis = NULL,
-              hGlbWVec = NULL,
-              hGlbOdo = NULL;
-    LPAPLDIM  lpMemDimRht,
-              lpMemDimRes;
-    APLDIM    uMinDim;
-    LPVOID    lpMemLft = NULL,
-              lpMemRht = NULL,
-              lpMemRes = NULL;
-    LPAPLUINT lpMemAxis = NULL,
-              lpMemGrUp,
-              lpMemWVec = NULL,
-              lpMemOdo = NULL;
-    BOOL      bRet = TRUE;
-    APLUINT   ByteRes, uRes, uRht, uOdo;
-    LPYYSTYPE lpYYRes;
-    UINT      uBitIndex,
-              uBitMask;
-    APLINT    iDim,
-              apaOffRht,
-              apaMulRht;
+    APLSTYPE  aplTypeLft,           // Left arg storage type
+              aplTypeRht,           // Right ...
+              aplTypeRes;           // Result   ...
+    APLNELM   aplNELMLft,           // Left arg NELM
+              aplNELMRht,           // Right ...
+              aplNELMRes;           // Result   ...
+    APLRANK   aplRankLft,           // Left arg rank
+              aplRankRht,           // Right ...
+              aplRankRes;           // Result   ...
+    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
+              hGlbRht = NULL,       // Right ...
+              hGlbRes = NULL,       // Result   ...
+              hGlbAxis = NULL,      // Axis     ...
+              hGlbWVec = NULL,      // Weighting vector ...
+              hGlbOdo = NULL;       // Odometer ...
+    LPAPLDIM  lpMemDimRht,          // Ptr to right arg dimensions
+              lpMemDimRes;          // Ptr to result    ...
+    APLDIM    uMinDim;              //
+    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
+              lpMemRht = NULL,      // Ptr to right ...
+              lpMemRes = NULL;      // Ptr to result   ...
+    LPAPLUINT lpMemAxis = NULL,     // Ptr to axis global memory
+              lpMemGrUp,            // Ptr to grade up ...
+              lpMemWVec = NULL,     // Ptr to weighting vector ...
+              lpMemOdo = NULL;      // Ptr to odometer ...
+    BOOL      bRet = TRUE;          // TRUE iff result is valid
+    APLUINT   ByteRes,              // # bytes needed for the result
+              uRht,                 // Right arg loop counter
+              uRes,                 // Result    ...
+              uOdo;                 // Odometer  ...
+    LPYYSTYPE lpYYRes;              // Ptr to the result
+    UINT      uBitIndex,            // Bit index for marching through Booleans
+              uBitMask;             // Bit mask  ...
+    APLINT    iDim,                 // Dimension loop counter
+              apaOffRht,            // Right arg APA offset
+              apaMulRht;            // ...           multiplier
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -479,7 +458,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM
         *((LPAPLDIM) lpMemRes)++ = uMinDim;
     } // End IF
 
-    // lpMemRes now points to the data
+    // lpMemRes now points to the result's data
 
     // Handle empty nested array results (prototypes)
     if (aplNELMRes EQ 0 && aplTypeRes EQ ARRAY_NESTED)
@@ -702,8 +681,11 @@ PROTO_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
 
@@ -768,7 +750,7 @@ NORMAL_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydCircleSlope_EM
+} // End PrimFnDydCircleSlope_EM_YY
 #undef  APPEND_NAME
 
 

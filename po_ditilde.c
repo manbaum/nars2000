@@ -18,25 +18,25 @@
 
 
 //***************************************************************************
-//  PrimOpDieresisTilde_EM
+//  $PrimOpDieresisTilde_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from DieresisTilde ("ERROR" and "inner product")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDieresisTilde_EM"
+#define APPEND_NAME     L" -- PrimOpDieresisTilde_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpDieresisTilde_EM
+LPYYSTYPE PrimOpDieresisTilde_EM_YY
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
      LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg,          // Ptr to right arg token
      LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
 
 {
-    Assert (lpYYFcnStr->tkToken.tkData.tkChar EQ UTF16_DIERESIS);
+    Assert (lpYYFcnStr->tkToken.tkData.tkChar EQ UTF16_DIERESISTILDE);
 
     //***************************************************************
     // The derived functions from this operator are not sensitive
@@ -52,41 +52,41 @@ LPYYSTYPE PrimOpDieresisTilde_EM
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonDieresisTilde_EM (lpYYFcnStr,       // Ptr to operator function strand
-                                          lptkRhtArg,       // Ptr to right arg
-                                          lptkAxis);        // Ptr to axis token (may be NULL)
+        return PrimOpMonDieresisTilde_EM_YY (lpYYFcnStr,    // Ptr to operator function strand
+                                             lptkRhtArg,    // Ptr to right arg
+                                             lptkAxis);     // Ptr to axis token (may be NULL)
     else
-        return PrimOpDydDieresisTilde_EM (lptkLftArg,       // Ptr to left arg token
-                                          lpYYFcnStr,       // Ptr to operator function strand
-                                          lptkRhtArg,       // Ptr to right arg token
-                                          lptkAxis);        // Ptr to axis token (may be NULL)
-} // End PrimOpDieresisTilde_EM
+        return PrimOpDydDieresisTilde_EM_YY (lptkLftArg,    // Ptr to left arg token
+                                             lpYYFcnStr,    // Ptr to operator function strand
+                                             lptkRhtArg,    // Ptr to right arg token
+                                             lptkAxis);     // Ptr to axis token (may be NULL)
+} // End PrimOpDieresisTilde_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoOpDieresisTilde_EM
+//  $PrimProtoOpDieresisTilde_EM_YY
 //
 //  Generate a prototype for the derived functions from
 //    monadic operator DieresisTilde ("ERROR" and "inner product")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpDieresisTilde_EM"
+#define APPEND_NAME     L" -- PrimProtoOpDieresisTilde_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoOpDieresisTilde_EM
+LPYYSTYPE PrimProtoOpDieresisTilde_EM_YY
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token
      LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg,          // Ptr to right arg token
      LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
 
 {
-    LPYYSTYPE lpYYRes = NULL,
-              lpYYFcnStrLft;
-    LPPRIMFNS lpPrimProto;
+    LPYYSTYPE lpYYRes = NULL,       // Ptr to the result
+              lpYYFcnStrLft;        // Ptr to left operand function strand
+    LPPRIMFNS lpPrimProtoLft;       // Ptr to left operand prototype function
 
     //***************************************************************
     // The derived functions from this operator are not sensitive
@@ -101,8 +101,8 @@ LPYYSTYPE PrimProtoOpDieresisTilde_EM
     } // End IF
 
     // Get a ptr to the prototype function for the first symbol (a function or operator)
-    lpPrimProto = PrimProtoFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
-    if (!lpPrimProto)
+    lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
+    if (!lpPrimProtoLft)
     {
         ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                   &lpYYFcnStr->tkToken);
@@ -110,8 +110,8 @@ LPYYSTYPE PrimProtoOpDieresisTilde_EM
     } // End IF
 
     // Set ptr to left operand,
-    //   skipping over the operator
-    lpYYFcnStrLft = &lpYYFcnStr[1];
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
@@ -120,54 +120,48 @@ LPYYSTYPE PrimProtoOpDieresisTilde_EM
         // Called monadically
         //***************************************************************
 
-        DbgBrk ();          // ***TESTME***
-
         // Execute the function between the right arg and itself
         // Note that we cast the function strand to LPTOKEN
         //   to bridge the two types of calls -- one to a primitive
         //   function which takes a function token, and one to a
         //   primitive operator which takes a function strand
-        return (*lpPrimProto) (lptkRhtArg,      // Ptr to left arg token
-                     (LPTOKEN) lpYYFcnStrLft,   // Ptr to left operand fnuction strand
-                               lptkRhtArg,      // Ptr to right arg token
-                               NULL);           // Ptr to axis token
+        return (*lpPrimProtoLft) (lptkRhtArg,       // Ptr to left arg token
+                        (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand fnuction strand
+                                  lptkRhtArg,       // Ptr to right arg token
+                                  NULL);            // Ptr to axis token
     } else
     {
         //***************************************************************
         // Called dyadically
         //***************************************************************
 
-        DbgBrk ();          // ***TESTME***
-
         // Execute the function between the two args switched
         // Note that we cast the function strand to LPTOKEN
         //   to bridge the two types of calls -- one to a primitive
         //   function which takes a function token, and one to a
         //   primitive operator which takes a function strand
-        return (*lpPrimProto) (lptkRhtArg,      // Ptr to left arg token
-                     (LPTOKEN) lpYYFcnStrLft,   // Ptr to left operand function strand
-                               lptkLftArg,      // Ptr to right arg token
-                               NULL);           // Ptr to axis token
+        return (*lpPrimProtoLft) (lptkRhtArg,       // Ptr to left arg token
+                        (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
+                                  lptkLftArg,       // Ptr to right arg token
+                                  NULL);            // Ptr to axis token
     } // End IF/ELSE
-
-    return lpYYRes;
-} // End PrimProtoOpDieresisTilde_EM
+} // End PrimProtoOpDieresisTilde_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimOpMonDieresisTilde_EM
+//  $PrimOpMonDieresisTilde_EM_YY
 //
 //  Primitive operator for monadic derived function from DieresisTilde ("ERROR")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonDieresisTilde_EM"
+#define APPEND_NAME     L" -- PrimOpMonDieresisTilde_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpMonDieresisTilde_EM
+LPYYSTYPE PrimOpMonDieresisTilde_EM_YY
     (LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg,          // Ptr to right arg token
      LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
@@ -180,26 +174,26 @@ LPYYSTYPE PrimOpMonDieresisTilde_EM
     lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
 
     // Execute the function between the right arg and itself
-    return ExecFuncStr_EM (lptkRhtArg,      // Ptr to left arg token
-                           lpYYFcnStrLft,   // Ptr to left operand function strand
-                           lptkRhtArg);     // Ptr to right arg token
-} // End PrimOpMonDieresisTilde_EM
+    return ExecFuncStr_EM_YY (lptkRhtArg,       // Ptr to left arg token
+                              lpYYFcnStrLft,    // Ptr to left operand function strand
+                              lptkRhtArg);      // Ptr to right arg token
+} // End PrimOpMonDieresisTilde_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimOpDydDieresisTilde_EM
+//  $PrimOpDydDieresisTilde_EM_YY
 //
 //  Primitive operator for dyadic derived function from DieresisTilde ("inner product")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydDieresisTilde_EM"
+#define APPEND_NAME     L" -- PrimOpDydDieresisTilde_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpDydDieresisTilde_EM
+LPYYSTYPE PrimOpDydDieresisTilde_EM_YY
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token
      LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg,          // Ptr to right arg token
@@ -213,10 +207,10 @@ LPYYSTYPE PrimOpDydDieresisTilde_EM
     lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
 
     // Execute the function between the two args switched
-    return ExecFuncStr_EM (lptkRhtArg,  // Ptr to left arg token
-                           lpYYFcnStr,  // Ptr to left operand function strand
-                           lptkLftArg); // Ptr to right arg token
-} // End PrimOpDydDieresisTilde_EM
+    return ExecFuncStr_EM_YY (lptkRhtArg,   // Ptr to left arg token
+                              lpYYFcnStr,   // Ptr to left operand function strand
+                              lptkLftArg);  // Ptr to right arg token
+} // End PrimOpDydDieresisTilde_EM_YY
 #undef  APPEND_NAME
 
 

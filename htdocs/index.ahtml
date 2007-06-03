@@ -398,8 +398,9 @@ code
           <ul>
             <li>Monadic operator each  ({each}) monadic and dyadic derived functions (each)
               with and without axis operator</li>
-            <li>Monadic operator frown ({frown}) monadic and dyadic derived functions (commute/reflex)</li>
+            <li>Monadic operator frown ({frown}) monadic and dyadic derived functions (commute and reflex)</li>
             <li>Monadic operator jot-dot ({jot}{dot}) dyadic derived function (outer product)</li>
+            <li>Monadic operator slash ({/}) monadic and dyadic derived functions (reduce and N-wise reduce)</li>
           </ul>
         </li>
         <li>Dyadic
@@ -603,11 +604,12 @@ code
     <div class="section">
       <h2 id="Discussion_Forums">Discussion Forums</h2>
 
-      <p>To facilitate discussion about this project, there is a bulletin
-      board available for your use.  This BB is for discussion relative
-      to this project, and is not meant to supplant other forums such as the
-      <a class="linkleft" href="news:comp.lang.apl">comp.lang.apl</a>
-      newsgroup.</p>
+      <p>To facilitate discussion about this project, there is a
+        <a class="linkleft" href="http://forums.nars2000.org">bulletin
+        board</a> available for your use.  This BB is for discussion
+        relative to this project, and is not meant to supplant other
+        forums such as the <a class="linkleft"
+        href="news:comp.lang.apl">comp.lang.apl</a> newsgroup.</p>
     </div>
 
     <div class="section">

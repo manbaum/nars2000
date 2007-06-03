@@ -20,7 +20,7 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecStile = {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecStileStorageTypeMon,
     NULL,   // &PrimFnMonStileAPA_EM, -- Can't happen w/Stile
 
@@ -37,7 +37,7 @@ PRIMSPEC PrimSpecStile = {
     &PrimFnMonStileFisF,
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecStileStorageTypeDyd,
     NULL,   // &PrimFnDydStileAPA_EM, -- Can't happen w/Stile
 
@@ -63,18 +63,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecStile};
 
 
 //***************************************************************************
-//  PrimFnStile_EM
+//  $PrimFnStile_EM_YY
 //
 //  Primitive function for monadic and dyadic Stile ("absolute value" and "modulus")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnStile_EM"
+#define APPEND_NAME     L" -- PrimFnStile_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnStile_EM
+LPYYSTYPE PrimFnStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -87,15 +87,15 @@ LPYYSTYPE PrimFnStile_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnStile_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnStile_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecStileStorageTypeMon
+//  $PrimSpecStileStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -130,7 +130,7 @@ APLSTYPE PrimSpecStileStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonStileBisB
+//  $PrimFnMonStileBisB
 //
 //  Primitive scalar function monadic Stile:  B {is} fn B
 //***************************************************************************
@@ -145,7 +145,7 @@ APLBOOL PrimFnMonStileBisB
 
 
 //***************************************************************************
-//  PrimFnMonStileIisI
+//  $PrimFnMonStileIisI
 //
 //  Primitive scalar function monadic Stile:  I {is} fn I
 //***************************************************************************
@@ -163,7 +163,7 @@ APLINT PrimFnMonStileIisI
 
 
 //***************************************************************************
-//  PrimFnMonStileFisF
+//  $PrimFnMonStileFisF
 //
 //  Primitive scalar function monadic Stile:  F {is} fn F
 //***************************************************************************
@@ -178,7 +178,7 @@ APLFLOAT PrimFnMonStileFisF
 
 
 //***************************************************************************
-//  PrimSpecStileStorageTypeDyd
+//  $PrimSpecStileStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -211,7 +211,7 @@ APLSTYPE PrimSpecStileStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydStileIisIvI
+//  $PrimFnDydStileIisIvI
 //
 //  Primitive scalar function dyadic Stile:  I {is} I fn I
 //***************************************************************************
@@ -252,7 +252,7 @@ APLINT PrimFnDydStileIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydStileFisFvF
+//  $PrimFnDydStileFisFvF
 //
 //  Primitive scalar function dyadic Stile:  F {is} F fn F
 //***************************************************************************

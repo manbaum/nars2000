@@ -46,7 +46,7 @@ In any case,
 
 
 //***************************************************************************
-//  SetAttrs
+//  $SetAttrs
 //
 //  Set attributes for a DC
 //***************************************************************************
@@ -74,7 +74,7 @@ void SetAttrs
 
 
 //***************************************************************************
-//  AppendLine
+//  $AppendLine
 //
 //  Append lpwszLine to the history buffer
 //***************************************************************************
@@ -108,7 +108,7 @@ void AppendLine
 
 
 //***************************************************************************
-//  ReplaceLine
+//  $ReplaceLine
 //
 //  Replace lpwszCurLine in the history buffer
 //***************************************************************************
@@ -147,7 +147,7 @@ void ReplaceLine
 
 
 //***************************************************************************
-//  IzitLastLine
+//  $IzitLastLine
 //
 //  Return TRUE iff the cursor is on the last line
 //***************************************************************************
@@ -178,7 +178,7 @@ BOOL IzitLastLine
 
 
 //// //***************************************************************************
-//// //  DrawLineCont
+//// //  $DrawLineCont
 //// //
 //// //  Draw a line continuation char
 //// //***************************************************************************
@@ -198,7 +198,7 @@ BOOL IzitLastLine
 
 
 //// //***************************************************************************
-//// //  DrawBitmap
+//// //  $DrawBitmap
 //// //
 //// //  Draw a bitmap
 //// //***************************************************************************
@@ -281,7 +281,7 @@ BOOL IzitLastLine
 
 
 //***************************************************************************
-//  strchrW
+//  $strchrW
 //
 //  The wide form of <strchr>
 //***************************************************************************
@@ -301,7 +301,7 @@ LPWCHAR strchrW
 
 
 //***************************************************************************
-//  MoveCaretEOB
+//  $MoveCaretEOB
 //
 //  Move the caret in an Edit Control to the end of the buffer
 //***************************************************************************
@@ -333,7 +333,7 @@ void MoveCaretEOB
 
 
 //***************************************************************************
-//  DisplayPrompt
+//  $DisplayPrompt
 //
 //  Display the usual six-space prompt
 //***************************************************************************
@@ -363,7 +363,7 @@ void DisplayPrompt
 
 
 //***************************************************************************
-//  GetSteZero
+//  $GetSteZero
 //
 //  Return the LPSYMENTRY corresponding to the constant zero
 //***************************************************************************
@@ -400,7 +400,7 @@ LPSYMENTRY GetSteZero
 
 
 //***************************************************************************
-//  GetSteBlank
+//  $GetSteBlank
 //
 //  Return the LPSYMENTRY corresponding to the constant blank
 //***************************************************************************
@@ -437,7 +437,7 @@ LPSYMENTRY GetSteBlank
 
 
 //***************************************************************************
-//  SM_Create
+//  $SM_Create
 //
 //  Perform window-specific initialization
 //***************************************************************************
@@ -450,7 +450,7 @@ void SM_Create
 
 
 //***************************************************************************
-//  SM_Delete
+//  $SM_Delete
 //
 //  Perform window-specific uninitialization
 //***************************************************************************
@@ -463,7 +463,7 @@ void SM_Delete
 
 
 //***************************************************************************
-//  SMWndProc
+//  $SMWndProc
 //
 //  Message processing routine for the Session Manager window
 //***************************************************************************
@@ -1185,9 +1185,14 @@ LRESULT APIENTRY SMWndProc
                 case VK_F5:             // Display outstanding global memory objects
                     // If it's Shift-, then display all
                     if (GetKeyState (VK_SHIFT) & 0x8000)
-                        DisplayGlobals (TRUE);
+                        DisplayGlobals (2);
                     else
-                        DisplayGlobals (FALSE);
+                    // If it's Ctl-, then display non-sysvars
+                    if (GetKeyState (VK_CONTROL) & 0x8000)
+                        DisplayGlobals (1);
+                    else
+                    // Otherwise, then display non-permanent non-sysvars
+                        DisplayGlobals (0);
 
                     return FALSE;
 #endif

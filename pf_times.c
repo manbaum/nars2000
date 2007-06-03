@@ -20,7 +20,7 @@
 PRIMSPEC PrimSpecTimes =
 {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecTimesStorageTypeMon,
     NULL,   // &PrimFnMonTimesAPA_EM, -- Can't happen w/Times
 
@@ -37,7 +37,7 @@ PRIMSPEC PrimSpecTimes =
     NULL,   // &PrimFnMonTimesFisF, -- Can't happen w/Times
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecTimesStorageTypeDyd,
     &PrimFnDydTimesAPA_EM,
 
@@ -63,18 +63,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTimes};
 
 
 //***************************************************************************
-//  PrimFnTimes_EM
+//  $PrimFnTimes_EM_YY
 //
 //  Primitive function for monadic and dyadic Times ("signum" and "multiplication")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnTimes_EM"
+#define APPEND_NAME     L" -- PrimFnTimes_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnTimes_EM
+LPYYSTYPE PrimFnTimes_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,15 +86,15 @@ LPYYSTYPE PrimFnTimes_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnTimes_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnTimes_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecTimesStorageTypeMon
+//  $PrimSpecTimesStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -130,7 +130,7 @@ APLSTYPE PrimSpecTimesStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonTimesBisB
+//  $PrimFnMonTimesBisB
 //
 //  Primitive scalar function monadic Times:  B {is} fn B
 //***************************************************************************
@@ -145,7 +145,7 @@ APLBOOL PrimFnMonTimesBisB
 
 
 //***************************************************************************
-//  PrimFnMonTimesIisI
+//  $PrimFnMonTimesIisI
 //
 //  Primitive scalar function monadic Times:  I {is} fn I
 //***************************************************************************
@@ -166,7 +166,7 @@ APLINT PrimFnMonTimesIisI
 
 
 //***************************************************************************
-//  PrimFnMonTimesIisF
+//  $PrimFnMonTimesIisF
 //
 //  Primitive scalar function monadic Times:  I {is} fn F
 //***************************************************************************
@@ -187,7 +187,7 @@ APLINT PrimFnMonTimesIisF
 
 
 //***************************************************************************
-//  PrimSpecTimesStorageTypeDyd
+//  $PrimSpecTimesStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -227,7 +227,7 @@ APLSTYPE PrimSpecTimesStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydTimesIisIvI
+//  $PrimFnDydTimesIisIvI
 //
 //  Primitive scalar function dyadic Times:  I {is} I fn I
 //***************************************************************************
@@ -243,7 +243,7 @@ APLINT PrimFnDydTimesIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydTimesFisIvI
+//  $PrimFnDydTimesFisIvI
 //
 //  Primitive scalar function dyadic Times:  F {is} I fn I
 //***************************************************************************
@@ -266,7 +266,7 @@ APLFLOAT PrimFnDydTimesFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydTimesFisFvF
+//  $PrimFnDydTimesFisFvF
 //
 //  Primitive scalar function dyadic Times:  F {is} F fn F
 //***************************************************************************
@@ -284,7 +284,7 @@ APLFLOAT PrimFnDydTimesFisFvF
 
 
 //***************************************************************************
-//  PrimFnDydTimesAPA_EM
+//  $PrimFnDydTimesAPA_EM
 //
 //  Dyadic Times, result is APA
 //***************************************************************************

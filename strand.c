@@ -38,7 +38,7 @@
  */
 
 //***************************************************************************
-//  InitVarStrand
+//  $InitVarStrand
 //
 //  Initialize the strand stack.
 //***************************************************************************
@@ -59,7 +59,7 @@ void InitVarStrand
 
 
 //***************************************************************************
-//  PushVarStrand_YY
+//  $PushVarStrand_YY
 //
 //  Push a variable token onto the strand stack.
 //***************************************************************************
@@ -103,7 +103,7 @@ LPYYSTYPE PushVarStrand_YY
 
 
 //***************************************************************************
-//  PushFcnStrand_YY
+//  $PushFcnStrand_YY
 //
 //  Push a function token onto the strand stack.
 //***************************************************************************
@@ -152,7 +152,7 @@ LPYYSTYPE PushFcnStrand_YY
 
 
 //***************************************************************************
-//  StripStrand
+//  $StripStrand
 //
 //  Strip a strand from the strand stack
 //***************************************************************************
@@ -183,7 +183,7 @@ void StripStrand
 
 
 //***************************************************************************
-//  FreeStrand
+//  $FreeStrand
 //
 //  Free the tokens on the strand stack
 //***************************************************************************
@@ -265,7 +265,7 @@ void FreeStrand
 
 
 //***************************************************************************
-//  MakeVarStrand_EM_YY
+//  $MakeVarStrand_EM_YY
 //
 //  Make the variable strand into an immediate token or a global memory array.
 //***************************************************************************
@@ -280,9 +280,11 @@ LPYYSTYPE MakeVarStrand_EM_YY
     (LPYYSTYPE lpYYArg)             // Ptr to incoming token
 
 {
-    int         iLen, iBitIndex;
-    APLUINT     ByteRes;
-    LPYYSTYPE   lpYYToken, lpYYStrand;
+    int         iLen,
+                iBitIndex;
+    APLUINT     ByteRes;                // # bytes needed for the result
+    LPYYSTYPE   lpYYToken,
+                lpYYStrand;
     HGLOBAL     hGlbStr,
                 hGlbData;
     LPVOID      lpMemStr;
@@ -1003,7 +1005,7 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  MakeFcnStrand_EM_YY
+//  $MakeFcnStrand_EM_YY
 //
 //  Make the function strand into an immediate token or a global memory array.
 //***************************************************************************
@@ -1022,7 +1024,7 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     int           iIniLen,
                   iActLen,
                   FcnCount = 0;
-    APLUINT       ByteRes;
+    APLUINT       ByteRes;                  // # bytes needed for the result
     LPYYSTYPE     lpYYStrand;
     HGLOBAL       hGlbStr;
     LPVOID        lpMemStr;
@@ -1181,7 +1183,7 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  CopyYYFcn
+//  $CopyYYFcn
 //
 //  Copy one or more YYSTYPE functions to a memory object
 //***************************************************************************
@@ -1318,7 +1320,7 @@ LPYYSTYPE CopyYYFcn
 
 
 //***************************************************************************
-//  ErrorMessageIndirectToken
+//  $ErrorMessageIndirectToken
 //
 //  Signal an error message, indirectly
 //    and set the error token
@@ -1338,7 +1340,7 @@ void ErrorMessageIndirectToken
 
 
 //***************************************************************************
-//  ErrorMessageSetToken
+//  $ErrorMessageSetToken
 //
 //  Set the error token for an error message
 //***************************************************************************
@@ -1358,7 +1360,7 @@ void ErrorMessageSetToken
 
 
 //***************************************************************************
-//  CopyString_EM_YY
+//  $CopyString_EM_YY
 //
 //  Copy a string value
 //***************************************************************************
@@ -1398,7 +1400,7 @@ LPYYSTYPE CopyString_EM_YY
 
 
 //***************************************************************************
-//  MakeAxis_YY
+//  $MakeAxis_YY
 //
 //  Make an axis value
 //***************************************************************************
@@ -1482,7 +1484,7 @@ LPYYSTYPE MakeAxis_YY
 
 
 //***************************************************************************
-//  MakePrimFcn_YY
+//  $MakePrimFcn_YY
 //
 //  Make a token a primitive function
 //***************************************************************************
@@ -1515,7 +1517,7 @@ LPYYSTYPE MakePrimFcn_YY
 
 
 //***************************************************************************
-//  MakeNameFcn_YY
+//  $MakeNameFcn_YY
 //
 //  Make a token for a named function
 //***************************************************************************
@@ -1555,7 +1557,7 @@ LPYYSTYPE MakeNameFcn_YY
 
 
 //***************************************************************************
-//  MakeOp1_YY
+//  $MakeOp1_YY
 //
 //  Make a monadic operator
 //***************************************************************************
@@ -1592,7 +1594,7 @@ LPYYSTYPE MakeOp1_YY
 
 
 //***************************************************************************
-//  MakeNameOp1_YY
+//  $MakeNameOp1_YY
 //
 //  Make a named monadic operator
 //***************************************************************************
@@ -1632,7 +1634,7 @@ LPYYSTYPE MakeNameOp1_YY
 
 
 //***************************************************************************
-//  MakeOp2_YY
+//  $MakeOp2_YY
 //
 //  Make a dyadic operator
 //***************************************************************************
@@ -1669,7 +1671,7 @@ LPYYSTYPE MakeOp2_YY
 
 
 //***************************************************************************
-//  MakeNameOp2_YY
+//  $MakeNameOp2_YY
 //
 //  Make a named dyadic operator
 //***************************************************************************
@@ -1709,7 +1711,7 @@ LPYYSTYPE MakeNameOp2_YY
 
 
 //***************************************************************************
-//  InitNameStrand
+//  $InitNameStrand
 //
 //  Initialize a name strand
 //***************************************************************************
@@ -1730,7 +1732,7 @@ void InitNameStrand
 
 
 //***************************************************************************
-//  PushNameStrand_YY
+//  $PushNameStrand_YY
 //
 //  Push a name strand
 //***************************************************************************
@@ -1771,7 +1773,7 @@ LPYYSTYPE PushNameStrand_YY
 
 
 //***************************************************************************
-//  MakeNameStrand_EM_YY
+//  $MakeNameStrand_EM_YY
 //
 //  Make a name strand
 //***************************************************************************
@@ -1787,7 +1789,7 @@ LPYYSTYPE MakeNameStrand_EM_YY
 
 {
     int           iLen;
-    APLUINT       ByteRes;
+    APLUINT       ByteRes;          // # bytes needed for the result
     LPYYSTYPE     lpYYStrand;
     HGLOBAL       hGlbStr;
     LPVOID        lpMemStr;
@@ -1878,7 +1880,7 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  InitList0_YY
+//  $InitList0_YY
 //
 //  Initialize a list starting with an empty token
 //***************************************************************************
@@ -1916,7 +1918,7 @@ LPYYSTYPE InitList0_YY
 
 
 //***************************************************************************
-//  InitList1_YY
+//  $InitList1_YY
 //
 //  Initialize a list starting with a single token
 //***************************************************************************
@@ -1954,7 +1956,7 @@ LPYYSTYPE InitList1_YY
 
 
 //***************************************************************************
-//  PushList_YY
+//  $PushList_YY
 //
 //  Push a token onto the list stack
 //***************************************************************************
@@ -2000,7 +2002,7 @@ LPYYSTYPE PushList_YY
 
 
 //***************************************************************************
-//  MakeList_EM_YY
+//  $MakeList_EM_YY
 //
 //  Make the listy into a global memory array.
 //***************************************************************************
@@ -2019,7 +2021,7 @@ LPYYSTYPE MakeList_EM_YY
     LPYYSTYPE  lpYYStrand,
                lpYYToken;
     int        iLen;
-    APLUINT    ByteRes;
+    APLUINT    ByteRes;             // # bytes needed for the result
     HGLOBAL    hGlbLst;
     LPVOID     lpMemLst;
     LPSYMENTRY lpSymEntry;
@@ -2135,7 +2137,7 @@ LPYYSTYPE MakeList_EM_YY
 
 
 //***************************************************************************
-//  CopyImmToken_EM
+//  $CopyImmToken_EM
 //
 //  Copy an immediate token as a LPSYMENTRY
 //***************************************************************************
@@ -2178,7 +2180,7 @@ LPSYMENTRY CopyImmToken_EM
 
 
 //***************************************************************************
-//  CopyToken_EM
+//  $CopyToken_EM
 //
 //  Make a copy of a token, incrementing ref count if not changing
 //***************************************************************************
@@ -2297,7 +2299,7 @@ LPTOKEN CopyToken_EM
 
 
 //***************************************************************************
-//  CopyYYSTYPE_EM_YY
+//  $CopyYYSTYPE_EM_YY
 //
 //  Make a copy of a YYSTYPE, incrementing ref count if not changing
 //***************************************************************************

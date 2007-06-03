@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  PrimFnIota_EM
+//  $PrimFnIota_EM_YY
 //
 //  Primitive function for monadic and dyadic iota ("index generator" and "index of")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnIota_EM"
+#define APPEND_NAME     L" -- PrimFnIota_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnIota_EM
+LPYYSTYPE PrimFnIota_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -52,26 +52,26 @@ LPYYSTYPE PrimFnIota_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonIota_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonIota_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydIota_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnIota_EM
+        return PrimFnDydIota_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnIota_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnIota_EM
+//  $PrimProtoFnIota_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Iota
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnIota_EM"
+#define APPEND_NAME     L" -- PrimProtoFnIota_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnIota_EM
+LPYYSTYPE PrimProtoFnIota_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -83,166 +83,28 @@ LPYYSTYPE PrimProtoFnIota_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnIota_EM,     // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-////     APLSTYPE  aplTypeLft,
-////               aplTypeRht,
-////               aplTypeRes;
-////     APLNELM   aplNELMLft,
-////               aplNELMRht;
-////     APLRANK   aplRankLft,
-////               aplRankRht;
-////     APLUINT   ByteRes;
-////     HGLOBAL   hGlbRht,
-////               hGlbRes;
-////     LPVOID    lpMemRht,
-////               lpMemRes;
-////     LPYYSTYPE lpYYRes;
-////
-////     //***************************************************************
-////     // This function is not sensitive to the axis operator,
-////     //   so signal a syntax error if present
-////     //***************************************************************
-////
-////     if (lptkAxis NE NULL)
-////     {
-////         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-////                                    lptkAxis);
-////         return NULL;
-////     } // End IF
-////
-////     // Get the attributes (Type, NELM, and Rank) of the right arg
-////     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-////
-////     // If the left arg is not present, ...
-////     if (lptkLftArg EQ NULL)
-////     {
-////         //***************************************************************
-////         // Called monadically
-////         //***************************************************************
-////
-////         // Only singletons allowed so far
-////         if (aplNELMRht > 1)
-////         {
-////             // If its rank is too high, it's a RANK ERROR,
-////             //   otherwise it's a LENGTH ERROR
-////             if (aplRankRht > 1)
-////                 ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-////                                            lptkFunc);
-////             else
-////                 ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-////                                            lptkFunc);
-////             return NULL;
-////         } // End IF
-////
-////         // Check for DOMAIN ERROR
-////         if (aplTypeRht EQ ARRAY_CHAR)
-////         {
-////             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-////                                        lptkFunc);
-////             return NULL;
-////         } // End IF
-////
-////         // The result is {zilde}
-////
-////         // Copy to result handle
-////         hGlbRes = hGlbZilde;
-////     } else
-////     {
-////         //***************************************************************
-////         // Called dyadically
-////         //***************************************************************
-////
-////         // Get the attributes (Type, NELM, and Rank) of the left arg
-////         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-////
-////         // Check for RANK ERROR
-////         if (aplRankLft NE 1)
-////         {
-////             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-////                                        lptkFunc);
-////             return NULL;
-////         } // End IF
-////
-////         // The result is ({rho} R){rho} 0
-////         aplTypeRes = ARRAY_BOOL;
-////
-////         // Calculate space needed for the result
-////         ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
-////
-////         // Allocate space for the result.
-////         // N.B. Conversion from APLUINT to UINT.
-////         Assert (ByteRes EQ (UINT) ByteRes);
-////         hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
-////         if (!hGlbRes)
-////         {
-////             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-////                                        lptkFunc);
-////             return FALSE;
-////         } // End IF
-////
-////         // Lock the memory to get a ptr to it
-////         lpMemRes = MyGlobalLock (hGlbRes);
-////
-//// #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-////
-////         // Fill in the header
-////         lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-////         lpHeader->ArrType    = aplTypeRes;
-//// ////////lpHeader->Perm       = 0;               // Already zero from GHND
-//// ////////lpHeader->SysVar     = 0;               // Already zero from GHND
-////         lpHeader->RefCnt     = 1;
-////         lpHeader->NELM       = aplNELMRht;
-////         lpHeader->Rank       = aplRankRht;
-////
-//// #undef  lpHeader
-////
-////         // Get right arg's global ptrs
-////         GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-////
-////         // Skip over the header to the dimensions
-////         lpMemRes = VarArrayBaseToDim (lpMemRes);
-////         lpMemRht = VarArrayBaseToDim (lpMemRht);
-////
-////         // Copy dimensions to the result
-////         CopyMemory (lpMemRes, lpMemRht, (UINT) aplRankRht * sizeof (APLDIM));
-////
-////         // We no longer need these ptrs
-////         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-////         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-////     } // End IF
-////
-////     // Allocate a new YYRes
-////     lpYYRes = YYAlloc ();
-////
-////     // Fill in the result token
-////     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-//// ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-//// ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-////     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-////     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-////
-////     return lpYYRes;
-} // End PrimProtoFnIota_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnIota_EM_YY,   // Ptr to primitive function routine
+                                    lptkLftArg,         // Ptr to left arg token
+                                    lptkFunc,           // Ptr to function token
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+} // End PrimProtoFnIota_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonIota_EM
+//  $PrimFnMonIota_EM_YY
 //
 //  Primitive function for monadic iota ("index generator")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonIota_EM"
+#define APPEND_NAME     L" -- PrimFnMonIota_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonIota_EM
+LPYYSTYPE PrimFnMonIota_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -363,7 +225,7 @@ LPYYSTYPE PrimFnMonIota_EM
     } // End SWITCH
 
     // Calculate space needed for the result
-    ByteRes = (UINT) CalcArraySize (ARRAY_APA, 0, 1);
+    ByteRes = (UINT) CalcArraySize (ARRAY_APA, aplNELMRes, 1);
 
     // Allocate space for an APA
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
@@ -418,12 +280,12 @@ LPYYSTYPE PrimFnMonIota_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End PrimFnMonIota_EM
+} // End PrimFnMonIota_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonIotaCon_EM
+//  $PrimFnMonIotaCon_EM
 //
 //  Monadic iota on a symbol table constant
 //***************************************************************************
@@ -499,7 +361,7 @@ BOOL PrimFnMonIotaCon_EM
 
 
 //***************************************************************************
-//  PrimFnMonIotaGlobal_EM
+//  $PrimFnMonIotaGlobal_EM
 //
 //  Monadic iota on a global memory object
 //***************************************************************************
@@ -628,18 +490,18 @@ BOOL PrimFnMonIotaGlb_EM
 
 
 //***************************************************************************
-//  PrimFnDydIota_EM
+//  $PrimFnDydIota_EM_YY
 //
 //  Primitive function for dyadic iota ("index of")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIota_EM"
+#define APPEND_NAME     L" -- PrimFnDydIota_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydIota_EM
+LPYYSTYPE PrimFnDydIota_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -715,7 +577,7 @@ ERROR_EXIT:
     {
         YYFree (lpYYRes); lpYYRes = NULL; return NULL;
     } // End IF/ELSE
-} // End PrimFnDydIota_EM
+} // End PrimFnDydIota_EM_YY
 #undef  APPEND_NAME
 
 

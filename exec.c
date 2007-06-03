@@ -724,7 +724,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
 
 
 //***************************************************************************
-//  ExecuteLine
+//  $ExecuteLine
 //
 //  Execute a line (sys/user command, fn defn, etc.)
 //***************************************************************************
@@ -888,7 +888,7 @@ HGLOBAL ExecuteLine
 
 
 //***************************************************************************
-//  UTLockAndSet
+//  $UTLockAndSet
 //
 //  Lock and set the variables in a UNION_TOKEN
 //***************************************************************************
@@ -904,7 +904,7 @@ void UTLockAndSet
 
 
 //***************************************************************************
-//  UTRelockAndSet
+//  $UTRelockAndSet
 //
 //  Relock and set the variables in a UNION_TOKEN
 //***************************************************************************
@@ -921,7 +921,7 @@ void UTRelockAndSet
 } // End UTRelockAndSet
 
 //***************************************************************************
-//  InitAccumVars
+//  $InitAccumVars
 //
 //  Initialize the accumulation variables for the next constant
 //***************************************************************************
@@ -942,7 +942,7 @@ void InitAccumVars
 
 
 //***************************************************************************
-//  NumAlpAccum
+//  $NumAlpAccum
 //
 //  Accumulate into lpszNumAlp, checking for
 //
@@ -978,7 +978,7 @@ BOOL NumAlpAccum_EM
 
 
 //***************************************************************************
-//  fnIntAccum
+//  $fnIntAccum
 //
 //  Start of or next digit in integer number
 //***************************************************************************
@@ -1034,7 +1034,7 @@ BOOL fnIntAccum
 
 
 //***************************************************************************
-//  fnIntDone
+//  $fnIntDone
 //
 //  Integer constant -- save as token
 //***************************************************************************
@@ -1080,7 +1080,7 @@ BOOL fnIntDone
 
 
 //***************************************************************************
-//  fnFPAccum
+//  $fnFPAccum
 //
 //  Start of or next digit in floating point number, fractional part.
 //***************************************************************************
@@ -1115,7 +1115,7 @@ BOOL fnFPAccum
 
 
 //***************************************************************************
-//  fnNegInit
+//  $fnNegInit
 //
 //  Start of negative number, integer part,
 //***************************************************************************
@@ -1152,7 +1152,7 @@ BOOL fnNegInit
 
 
 //***************************************************************************
-//  fnNegExp
+//  $fnNegExp
 //
 //  Start of negative number, exponent part,
 //***************************************************************************
@@ -1190,7 +1190,7 @@ BOOL fnNegExp
 
 
 //***************************************************************************
-//  fnFPDone
+//  $fnFPDone
 //
 //  Floating point constant -- save as token
 //***************************************************************************
@@ -1234,7 +1234,7 @@ BOOL fnFPDone
 
 
 //***************************************************************************
-//  fnAlpha
+//  $fnAlpha
 //
 //  Start of or next char in name
 //***************************************************************************
@@ -1270,7 +1270,7 @@ BOOL fnAlpha
 
 
 //***************************************************************************
-//  fnAlpDone
+//  $fnAlpDone
 //
 //  End of name
 //***************************************************************************
@@ -1344,7 +1344,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  fnAsnDone
+//  $fnAsnDone
 //
 //  Start and end of an assignment (monadic or dyadic)
 //***************************************************************************
@@ -1378,7 +1378,7 @@ BOOL fnAsnDone
 
 
 //***************************************************************************
-//  fnLstDone
+//  $fnLstDone
 //
 //  Start and end of a list
 //***************************************************************************
@@ -1412,7 +1412,7 @@ BOOL fnLstDone
 
 
 //***************************************************************************
-//  fnPrmDone
+//  $fnPrmDone
 //
 //  Start and end of a primitive function (niladic, monadic, or dyadic)
 //***************************************************************************
@@ -1459,7 +1459,7 @@ BOOL fnPrmDone
 
 
 //***************************************************************************
-//  fnInfinity
+//  $fnInfinity
 //
 //  Infinity symbol (_)
 //***************************************************************************
@@ -1498,7 +1498,7 @@ BOOL fnInfinity
 
 
 //***************************************************************************
-//  fnOp1Done
+//  $fnOp1Done
 //
 //  End of a monadic primitive operator
 //***************************************************************************
@@ -1546,7 +1546,7 @@ BOOL fnOp1Done
 
 
 //***************************************************************************
-//  fnOp2Done
+//  $fnOp2Done
 //
 //  End of a dyadic primitive operator
 //***************************************************************************
@@ -1578,7 +1578,7 @@ BOOL fnOp2Done
 
 
 //***************************************************************************
-//  fnJotDone
+//  $fnJotDone
 //
 //  End of a jot as a dyadic primitive operator
 //***************************************************************************
@@ -1612,7 +1612,7 @@ BOOL fnJotDone
 
 
 //***************************************************************************
-//  fnOutDone
+//  $fnOutDone
 //
 //  End of a jot dot as an outer product monadic primitive operator
 //***************************************************************************
@@ -1646,7 +1646,7 @@ BOOL fnOutDone
 
 
 //***************************************************************************
-//  fnComDone
+//  $fnComDone
 //
 //  Start (and end) of a comment
 //***************************************************************************
@@ -1722,7 +1722,7 @@ BOOL fnComDone
 
 
 //***************************************************************************
-//  fnQuoAccum
+//  $fnQuoAccum
 //
 //  Start of or next char in a string
 //***************************************************************************
@@ -1757,7 +1757,7 @@ BOOL fnQuoAccum
 
 
 //***************************************************************************
-//  fnQuoDone
+//  $fnQuoDone
 //
 //  End of a char or char vector
 //***************************************************************************
@@ -1887,7 +1887,7 @@ BOOL fnQuoDone
 
 
 //***************************************************************************
-//  fnParInit
+//  $fnParInit
 //
 //  Left end (start) of a parenthetical expression
 //***************************************************************************
@@ -1906,7 +1906,7 @@ BOOL fnParInit
 
 
 //***************************************************************************
-//  fnBrkInit
+//  $fnBrkInit
 //
 //  Left end (start) of a bracketed expression
 //***************************************************************************
@@ -1924,7 +1924,7 @@ BOOL fnBrkInit
 
 
 //***************************************************************************
-//  GroupInitCom
+//  $GroupInitCom
 //
 //  Group (Left paren/bracket) common initialization
 //
@@ -1964,7 +1964,7 @@ BOOL GroupInitCom
 
 
 //***************************************************************************
-//  fnParDone
+//  $fnParDone
 //
 //  Right end (stop) of a parenthetical expression
 //***************************************************************************
@@ -1982,7 +1982,7 @@ BOOL fnParDone
 
 
 //***************************************************************************
-//  fnBrkDone
+//  $fnBrkDone
 //
 //  Right end (stop) of a bracketed expression
 //***************************************************************************
@@ -2000,7 +2000,7 @@ BOOL fnBrkDone
 
 
 //***************************************************************************
-//  GroupDoneCom
+//  $GroupDoneCom
 //
 //  Group (Right paren/bracket) common ending
 //***************************************************************************
@@ -2059,7 +2059,7 @@ BOOL GroupDoneCom
 
 
 //***************************************************************************
-//  fnDiaDone
+//  $fnDiaDone
 //
 //  Done with this stmt
 //***************************************************************************
@@ -2082,7 +2082,7 @@ BOOL fnDiaDone
 
 
 //***************************************************************************
-//  ErrorMessageIndirect
+//  $ErrorMessageIndirect
 //
 //  Signal an error message, indirectly
 //***************************************************************************
@@ -2097,7 +2097,7 @@ void ErrorMessageIndirect
 
 
 //***************************************************************************
-//  IncorrectCommand
+//  $IncorrectCommand
 //
 //  Signal an incorrect command
 //***************************************************************************
@@ -2118,7 +2118,7 @@ void IncorrectCommand
 
 
 //***************************************************************************
-//  ErrorMessage
+//  $ErrorMessage
 //
 //  Signal an error message
 //***************************************************************************
@@ -2156,7 +2156,7 @@ void ErrorMessage
 
 
 //***************************************************************************
-//  WaitForInput
+//  $WaitForInput
 //
 //  Wait for either Quad or Quote-quad input
 //***************************************************************************
@@ -2167,10 +2167,10 @@ LPYYSTYPE WaitForInput
      LPTOKEN lptkFunc)              // Ptr to "function" token
 
 {
-    HANDLE   hTimer;
-    char     szTimer[32];
+    HANDLE        hTimer;
+    char          szTimer[32];
     LARGE_INTEGER waitTime;
-    DWORD    dwWaitRes = WAIT_TIMEOUT;
+    DWORD         dwWaitRes = WAIT_TIMEOUT;
     LPYYSTYPE     lpYYRes;
 
     DbgBrk ();
@@ -2195,7 +2195,6 @@ LPYYSTYPE WaitForInput
     while (dwWaitRes EQ WAIT_TIMEOUT)
         dwWaitRes = WaitForSingleObject (hTimer,    // Handle to timer object
                                          10000);    // 10000 x 1 millisecond = 10 second
-
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -2211,7 +2210,7 @@ LPYYSTYPE WaitForInput
 
 
 //***************************************************************************
-//  Tokenize_EM
+//  $Tokenize_EM
 //
 //  Tokenize a line of input
 //
@@ -2448,7 +2447,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  CheckGroupSymbols_EM
+//  $CheckGroupSymbols_EM
 //
 //  Check for mismatched or improperly nested grouping symbols
 //***************************************************************************
@@ -2476,7 +2475,7 @@ BOOL CheckGroupSymbols_EM
 
 
 //***************************************************************************
-//  Untokenize
+//  $Untokenize
 //
 //  Free allocated memory and other such resources in a tokenized line
 //***************************************************************************
@@ -2604,7 +2603,7 @@ void Untokenize
 
 
 //***************************************************************************
-//  AppendEOSToken
+//  $AppendEOSToken
 //
 //  Append an EOS Token
 //***************************************************************************
@@ -2649,7 +2648,7 @@ BOOL AppendEOSToken
 
 
 //***************************************************************************
-//  AppendNewToken_EM
+//  $AppendNewToken_EM
 //
 //  Attempt to append as new token, check for TOKEN TABLE FULL,
 //    and resize as necessary.
@@ -2716,7 +2715,7 @@ BOOL AppendNewToken_EM
 
 
 //***************************************************************************
-//  CharTrans
+//  $CharTrans
 //
 //  Translate a character in preparation for tokenizing
 //***************************************************************************
@@ -3030,7 +3029,7 @@ WCHAR CharTrans
 
 #ifdef DEBUG
 //***************************************************************************
-//  GetColName
+//  $GetColName
 //
 //  Convert a column number to a name
 //***************************************************************************

@@ -11,6 +11,49 @@ TO DO: General
 * Idiom recognition in the tokenizer
 * Test ± infinity code
 * Get permission to redistribute APL385 Unicode font
+* Finish dyadic epsilon
+* ...    dyadic down tack jot
+* ...    dyadic iota
+* ...    dyadic left shoe
+* ...    dyadic squad
+* ...    dyadic tilde
+* ...    N-wise reduction
+* ...    bracket indexing
+* ...    inner product
+* ...    scan
+* ...    fast Boolean reduction
+* ...    fast Boolean scan
+* ...    monadic grade-up
+* ...    monadic grade-down
+* ...    dyadic grade-up
+* ...    dyadic grade-down
+* ...    monadic up arrow
+* ...    dyadic up arrow
+* ...    monadic down shoe
+* ...    dyadic down tack
+* ...    dyadic epsilon underbar
+* ...    monadic up tack jot
+* ...    monadic right shoe
+* ...    dyadic right shoe
+* ...    dyadic up tack
+* ...    selective assignment
+* ...    quad/quote-quad input
+* ...    )SAVE
+* ...    )LOAD
+* ...    )COPY
+* ...    function editing
+* ...    function execution
+* ...    dynamic functions
+* ...    magic functions for primitive functions, operators, and datatypes
+* ...    complex numbers
+* ...    array predicates
+* ...    syntax highlighting
+* ...    control structures
+* ...    dyadic jot with variables (e.g. 3{jot}+)
+* ...    system functions
+* ...    3{jot}+4
+* ...    f{is}3{jot}+
+* ...
 
 
 TODO: Session Manager
@@ -23,6 +66,8 @@ TODO: Session Manager
 DONE:  General
 --------------
 * Demote arrays to a more compact storage type???
+* Is it a problem that TypeDemote doesn't demote from
+  TKT_VARARRAY to TKT_VARIMMED?
 *
 
 

@@ -21,7 +21,7 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecUpStile = {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecUpStileStorageTypeMon,
     &PrimFnMonUpStileAPA_EM,
 
@@ -38,7 +38,7 @@ PRIMSPEC PrimSpecUpStile = {
     &PrimFnMonUpStileFisF,
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecUpStileStorageTypeDyd,
     NULL,   // &PrimFnDydUpStileAPA_EM, -- Can't happen w/UpStile
 
@@ -64,18 +64,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecUpStile};
 
 
 //***************************************************************************
-//  PrimFnUpStile_EM
+//  $PrimFnUpStile_EM_YY
 //
 //  Primitive function for monadic and dyadic UpStile ("ceiling" and "maximum")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnUpStile_EM"
+#define APPEND_NAME     L" -- PrimFnUpStile_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnUpStile_EM
+LPYYSTYPE PrimFnUpStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -87,15 +87,15 @@ LPYYSTYPE PrimFnUpStile_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnUpStile_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecUpStileStorageTypeMon
+//  $PrimSpecUpStileStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -131,7 +131,7 @@ APLSTYPE PrimSpecUpStileStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonUpStileBisB
+//  $PrimFnMonUpStileBisB
 //
 //  Primitive scalar function monadic UpStile:  B {is} fn B
 //***************************************************************************
@@ -146,7 +146,7 @@ APLBOOL PrimFnMonUpStileBisB
 
 
 //***************************************************************************
-//  PrimFnMonUpStileIisI
+//  $PrimFnMonUpStileIisI
 //
 //  Primitive scalar function monadic UpStile:  I {is} fn I
 //***************************************************************************
@@ -161,7 +161,7 @@ APLINT PrimFnMonUpStileIisI
 
 
 //***************************************************************************
-//  PrimFnMonUpStileIisF
+//  $PrimFnMonUpStileIisF
 //
 //  Primitive scalar function monadic UpStile:  I {is} fn F
 //***************************************************************************
@@ -182,7 +182,7 @@ APLINT PrimFnMonUpStileIisF
 
 
 //***************************************************************************
-//  PrimFnMonUpStileFisF
+//  $PrimFnMonUpStileFisF
 //
 //  Primitive scalar function monadic UpStile:  F {is} fn F
 //***************************************************************************
@@ -197,7 +197,7 @@ APLFLOAT PrimFnMonUpStileFisF
 
 
 //***************************************************************************
-//  PrimFnMonUpStileAPA_EM
+//  $PrimFnMonUpStileAPA_EM
 //
 //  Monadic UpStile, result is APA
 //***************************************************************************
@@ -228,8 +228,7 @@ BOOL PrimFnMonUpStileAPA_EM
     // Axis may be anything
 
     // Copy the HGLOBAL to the result
-    // CopySymGlb below will increment the reference count
-    *lphGlbRes = hGlbRht;
+    *lphGlbRes = CopySymGlbDirGlb (hGlbRht);
 
     // Fill in the result token
     if (lpYYRes)
@@ -237,7 +236,7 @@ BOOL PrimFnMonUpStileAPA_EM
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirGlb (hGlbRht);
+        lpYYRes->tkToken.tkData.tkGlbData  = hGlbRht;
     } // End IF
 
     DBGLEAVE;
@@ -248,7 +247,7 @@ BOOL PrimFnMonUpStileAPA_EM
 
 
 //***************************************************************************
-//  PrimSpecUpStileStorageTypeDyd
+//  $PrimSpecUpStileStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -281,7 +280,7 @@ APLSTYPE PrimSpecUpStileStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydUpStileIisIvI
+//  $PrimFnDydUpStileIisIvI
 //
 //  Primitive scalar function dyadic UpStile:  I {is} I fn I
 //***************************************************************************
@@ -297,7 +296,7 @@ APLINT PrimFnDydUpStileIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydUpStileFisFvF
+//  $PrimFnDydUpStileFisFvF
 //
 //  Primitive scalar function dyadic UpStile:  F {is} F fn F
 //***************************************************************************

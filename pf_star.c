@@ -21,7 +21,7 @@
 PRIMSPEC PrimSpecStar =
 {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecStarStorageTypeMon,
     NULL,   // &PrimFnMonStarAPA_EM, -- Can't happen w/Star
 
@@ -38,7 +38,7 @@ PRIMSPEC PrimSpecStar =
     &PrimFnMonStarFisF,
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecStarStorageTypeDyd,
     NULL,   // &PrimFnDydStarAPA_EM, -- Can't happen w/Star
 
@@ -64,18 +64,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecStar};
 
 
 //***************************************************************************
-//  PrimFnStar_EM
+//  $PrimFnStar_EM_YY
 //
 //  Primitive function for monadic and dyadic Star ("exponential" and "power")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnStar_EM"
+#define APPEND_NAME     L" -- PrimFnStar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnStar_EM
+LPYYSTYPE PrimFnStar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -87,15 +87,15 @@ LPYYSTYPE PrimFnStar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnStar_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnStar_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecStarStorageTypeMon
+//  $PrimSpecStarStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -130,7 +130,7 @@ APLSTYPE PrimSpecStarStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonStarFisI
+//  $PrimFnMonStarFisI
 //
 //  Primitive scalar function monadic Star:  F {is} fn I
 //***************************************************************************
@@ -148,7 +148,7 @@ APLFLOAT PrimFnMonStarFisI
 
 
 //***************************************************************************
-//  PrimFnMonStarFisF
+//  $PrimFnMonStarFisF
 //
 //  Primitive scalar function monadic Star:  F {is} fn F
 //***************************************************************************
@@ -165,7 +165,7 @@ APLFLOAT PrimFnMonStarFisF
 
 
 //***************************************************************************
-//  PrimSpecStarStorageTypeDyd
+//  $PrimSpecStarStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -204,7 +204,7 @@ APLSTYPE PrimSpecStarStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydStarFisIvI
+//  $PrimFnDydStarFisIvI
 //
 //  Primitive scalar function dyadic Star:  F {is} I fn I
 //***************************************************************************
@@ -223,7 +223,7 @@ APLFLOAT PrimFnDydStarFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydStarFisFvF
+//  $PrimFnDydStarFisFvF
 //
 //  Primitive scalar function dyadic Star:  F {is} F fn F
 //***************************************************************************

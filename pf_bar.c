@@ -20,7 +20,7 @@
 PRIMSPEC PrimSpecBar =
 {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecBarStorageTypeMon,
     &PrimFnMonBarAPA_EM,
 
@@ -37,7 +37,7 @@ PRIMSPEC PrimSpecBar =
     &PrimFnMonBarFisF,
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecBarStorageTypeDyd,
     &PrimFnDydBarAPA_EM,
 
@@ -63,18 +63,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecBar};
 
 
 //***************************************************************************
-//  PrimFnBar_EM
+//  $PrimFnBar_EM_YY
 //
 //  Primitive function for monadic and dyadic Bar ("negation" and "subtraction")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnBar_EM"
+#define APPEND_NAME     L" -- PrimFnBar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnBar_EM
+LPYYSTYPE PrimFnBar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,15 +86,15 @@ LPYYSTYPE PrimFnBar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnBar_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnBar_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecBarStorageTypeMon
+//  $PrimSpecBarStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -129,7 +129,7 @@ APLSTYPE PrimSpecBarStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonBarIisI
+//  $PrimFnMonBarIisI
 //
 //  Primitive scalar function monadic Bar:  I {is} fn I
 //***************************************************************************
@@ -144,7 +144,7 @@ APLINT PrimFnMonBarIisI
 
 
 //***************************************************************************
-//  PrimFnMonBarFisF
+//  $PrimFnMonBarFisF
 //
 //  Primitive scalar function monadic Bar:  F {is} fn F
 //***************************************************************************
@@ -159,7 +159,7 @@ APLFLOAT PrimFnMonBarFisF
 
 
 //***************************************************************************
-//  PrimFnMonBarAPA_EM
+//  $PrimFnMonBarAPA_EM
 //
 //  Monadic Bar, result is APA
 //***************************************************************************
@@ -233,7 +233,7 @@ BOOL PrimFnMonBarAPA_EM
 
 
 //***************************************************************************
-//  PrimSpecBarStorageTypeDyd
+//  $PrimSpecBarStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -277,7 +277,7 @@ APLSTYPE PrimSpecBarStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydBarIisIvI
+//  $PrimFnDydBarIisIvI
 //
 //  Primitive scalar function dyadic Bar:  I {is} I fn I
 //***************************************************************************
@@ -293,7 +293,7 @@ APLINT PrimFnDydBarIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydBarFisIvI
+//  $PrimFnDydBarFisIvI
 //
 //  Primitive scalar function dyadic Bar:  F {is} I fn I
 //***************************************************************************
@@ -309,7 +309,7 @@ APLFLOAT PrimFnDydBarFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydBarFisFvF
+//  $PrimFnDydBarFisFvF
 //
 //  Primitive scalar function dyadic Bar:  F {is} F fn F
 //***************************************************************************
@@ -325,7 +325,7 @@ APLFLOAT PrimFnDydBarFisFvF
 
 
 //***************************************************************************
-//  PrimFnDydBarAPA_EM
+//  $PrimFnDydBarAPA_EM
 //
 //  Dyadic Bar, result is APA
 //***************************************************************************

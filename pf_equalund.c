@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  PrimFnEqualUnderbar_EM
+//  $PrimFnEqualUnderbar_EM_YY
 //
 //  Primitive function for monadic and dyadic EqualUnderbar ("depth" and "match")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnEqualUnderbar_EM"
+#define APPEND_NAME     L" -- PrimFnEqualUnderbar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnEqualUnderbar_EM
+LPYYSTYPE PrimFnEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -40,26 +40,26 @@ LPYYSTYPE PrimFnEqualUnderbar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonEqualUnderbar_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonEqualUnderbar_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydEqualUnderbar_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnEqualUnderbar_EM
+        return PrimFnDydEqualUnderbar_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnEqualUnderbar_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnEqualUnderbar_EM
+//  $PrimProtoFnEqualUnderbar_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic EqualUnderbar
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnEqualUnderbar_EM"
+#define APPEND_NAME     L" -- PrimProtoFnEqualUnderbar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnEqualUnderbar_EM
+LPYYSTYPE PrimProtoFnEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -71,59 +71,28 @@ LPYYSTYPE PrimProtoFnEqualUnderbar_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnEqualUnderbar_EM,// Ptr to primitive function routine
-                                 lptkLftArg,            // Ptr to left arg token
-                                 lptkFunc,              // Ptr to function token
-                                 lptkRhtArg,            // Ptr to right arg token
-                                 lptkAxis);             // Ptr to axis token (may be NULL)
-////     LPYYSTYPE lpYYRes;
-////
-////     //***************************************************************
-////     // This function is not sensitive to the axis operator,
-////     //   so signal a syntax error if present
-////     //***************************************************************
-////
-////     if (lptkAxis NE NULL)
-////     {
-////         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-////                                    lptkAxis);
-////         return NULL;
-////     } // End IF
-////
-////     //***************************************************************
-////     // Called monadically or dyadically
-////     //***************************************************************
-////
-////     // The result is 0
-////
-////     // Allocate a new YYRes
-////     lpYYRes = YYAlloc ();
-////
-////     // Fill in the result token
-////     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-////     lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
-//// ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-////     lpYYRes->tkToken.tkData.tkBoolean  = 0;
-////     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-////
-////     return lpYYRes;
+    return PrimProtoFnMixed_EM_YY (&PrimFnEqualUnderbar_EM_YY,  // Ptr to primitive function routine
+                                    lptkLftArg,                 // Ptr to left arg token
+                                    lptkFunc,                   // Ptr to function token
+                                    lptkRhtArg,                 // Ptr to right arg token
+                                    lptkAxis);                  // Ptr to axis token (may be NULL)
 } // End PrimProtoFnEqualUnderbar_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonEqualUnderbar_EM
+//  $PrimFnMonEqualUnderbar_EM_YY
 //
 //  Primitive function for monadic EqualUnderbar ("depth")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEqualUnderbar_EM"
+#define APPEND_NAME     L" -- PrimFnMonEqualUnderbar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonEqualUnderbar_EM
+LPYYSTYPE PrimFnMonEqualUnderbar_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -213,12 +182,12 @@ LPYYSTYPE PrimFnMonEqualUnderbar_EM
     } // End IF/ELSE
 
     return lpYYRes;
-} // End PrimFnMonEqualUnderbar_EM
+} // End PrimFnMonEqualUnderbar_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonEqualUnderBarGlb
+//  $PrimFnMonEqualUnderBarGlb
 //
 //  Common subroutine to determine the depth of a global memory handle.
 //***************************************************************************
@@ -309,18 +278,18 @@ APLINT PrimFnMonEqualUnderBarGlb
 
 
 //***************************************************************************
-//  PrimFnDydEqualUnderbar_EM
+//  $PrimFnDydEqualUnderbar_EM_YY
 //
 //  Primitive function for dyadic EqualUnderbar ("match")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEqualUnderbar_EM"
+#define APPEND_NAME     L" -- PrimFnDydEqualUnderbar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydEqualUnderbar_EM
+LPYYSTYPE PrimFnDydEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -490,12 +459,12 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM
     } // End IF
 
     return lpYYRes;
-} // End PrimFnDydEqualUnderbar_EM
+} // End PrimFnDydEqualUnderbar_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydEqualUnderbarSimple
+//  $PrimFnDydEqualUnderbarSimple
 //
 //  Subroutine to compare two simple arrays
 //***************************************************************************
@@ -996,7 +965,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 
 
 //***************************************************************************
-//  PrimFnDydEqualUnderbarNested
+//  $PrimFnDydEqualUnderbarNested
 //
 //  Subroutine to compare two nested arrays
 //***************************************************************************

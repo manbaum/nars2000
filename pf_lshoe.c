@@ -17,12 +17,12 @@
 
 
 //***************************************************************************
-//  PrimFnLeftShoe_EM
+//  $PrimFnLeftShoe_EM_YY
 //
 //  Primitive function for monadic and dyadic LeftShoe ("enclose" and "partitioned enclose")
 //***************************************************************************
 
-LPYYSTYPE PrimFnLeftShoe_EM
+LPYYSTYPE PrimFnLeftShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -34,25 +34,25 @@ LPYYSTYPE PrimFnLeftShoe_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonLeftShoe_EM             (lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonLeftShoe_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydLeftShoe_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydLeftShoe_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnLeftShoe_EM
 
 
 //***************************************************************************
-//  PrimProtoFnLeftShoe_EM
+//  $PrimProtoFnLeftShoe_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic LeftShoe
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnLeftShoe_EM"
+#define APPEND_NAME     L" -- PrimProtoFnLeftShoe_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnLeftShoe_EM
+LPYYSTYPE PrimProtoFnLeftShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -64,28 +64,28 @@ LPYYSTYPE PrimProtoFnLeftShoe_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnLeftShoe_EM, // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-} // End PrimProtoFnLeftShoe_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnLeftShoe_EM_YY,   // Ptr to primitive function routine
+                                    lptkLftArg,             // Ptr to left arg token
+                                    lptkFunc,               // Ptr to function token
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    lptkAxis);              // Ptr to axis token (may be NULL)
+} // End PrimProtoFnLeftShoe_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonLeftShoe_EM
+//  $PrimFnMonLeftShoe_EM_YY
 //
 //  Primitive function for monadic LeftShoe ("enclose")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonLeftShoe_EM"
+#define APPEND_NAME     L" -- PrimFnMonLeftShoe_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonLeftShoe_EM
+LPYYSTYPE PrimFnMonLeftShoe_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -104,30 +104,34 @@ LPYYSTYPE PrimFnMonLeftShoe_EM
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                return PrimFnMonLeftShoeGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                                lptkAxis,
-                                                lptkFunc);
+                return PrimFnMonLeftShoeGlb_EM_YY
+                       (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
+                        lptkAxis,                                                       // Ptr to axis token (may be NULL)
+                        lptkFunc);                                                      // Ptr to function token
             } // End IF
 
             // Handle the immediate case
-            return PrimFnMonLeftShoeCon_EM (lptkRhtArg->tkData.tkSym->stFlags.ImmType,
-                                            lptkRhtArg->tkData.tkSym->stData.stLongest,
-                                            lptkRhtArg,
-                                            lptkAxis,
-                                            lptkFunc);
+            return PrimFnMonLeftShoeCon_EM_YY
+                   (lptkRhtArg->tkData.tkSym->stFlags.ImmType,  // Immediate type
+                    lptkRhtArg->tkData.tkSym->stData.stLongest, // Immediate value
+                    lptkRhtArg,                                 // Ptr to right arg
+                    lptkAxis,                                   // Ptr to axis token (may be NULL)
+                    lptkFunc);                                  // Ptr to function token
         case TKT_VARIMMED:
-            return PrimFnMonLeftShoeCon_EM (lptkRhtArg->tkFlags.ImmType,
-                                            lptkRhtArg->tkData.tkLongest,
-                                            lptkRhtArg,
-                                            lptkAxis,
-                                            lptkFunc);
+            return PrimFnMonLeftShoeCon_EM_YY
+                   (lptkRhtArg->tkFlags.ImmType,                // Immediate type
+                    lptkRhtArg->tkData.tkLongest,               // Immediate value
+                    lptkRhtArg,                                 // Ptr to right arg
+                    lptkAxis,                                   // Ptr to axis token (may be NULL)
+                    lptkFunc);                                  // Ptr to function token
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
-            return PrimFnMonLeftShoeGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                            lptkAxis,
-                                            lptkFunc);
+            return PrimFnMonLeftShoeGlb_EM_YY
+                   (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
+                    lptkAxis,                                           // Ptr to axis token (may be NULL)
+                    lptkFunc);                                          // Ptr to function token
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                        lptkFunc);
@@ -136,23 +140,23 @@ LPYYSTYPE PrimFnMonLeftShoe_EM
         defstop
             return NULL;
     } // End SWITCH
-} // End PrimFnMonLeftShoe_EM
+} // End PrimFnMonLeftShoe_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonLeftShoeCon_EM
+//  $PrimFnMonLeftShoeCon_EM_YY
 //
 //  Monadic LeftShoe ("enclose") on an immediate value.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonLeftShoeCon_EM"
+#define APPEND_NAME     L" -- PrimFnMonLeftShoeCon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonLeftShoeCon_EM
+LPYYSTYPE PrimFnMonLeftShoeCon_EM_YY
     (UINT       ImmType,            // The immediate type
      APLLONGEST aplLongest,         // The immediate value
      LPTOKEN    lpTokenRht,         // Ptr to right arg token
@@ -191,23 +195,23 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM
     lpYYRes->tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
 
     return lpYYRes;
-} // End PrimFnMonLeftShoeCon_EM
+} // End PrimFnMonLeftShoeCon_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonLeftShoeGlb_EM
+//  $PrimFnMonLeftShoeGlb_EM_YY
 //
 //  Monadic LeftShoe ("enclose") on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonLeftShoeGlb_EM"
+#define APPEND_NAME     L" -- PrimFnMonLeftShoeGlb_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonLeftShoeGlb_EM
+LPYYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     (HGLOBAL hGlbRht,               // Handle to right arg
      LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
      LPTOKEN lptkFunc)              // Ptr to function token
@@ -229,7 +233,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
              lpMemGrUp = NULL,
              lpMemOdo = NULL,
              lpMemWVec = NULL;
-    APLUINT  ByteRes;           // # bytes needed in the result
+    APLUINT  ByteRes;           // # bytes needed for the result
     APLNELM  aplNELMAxis,
              aplNELMRes,
              aplNELMRht,
@@ -528,7 +532,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM
             goto NORMAL_EXIT;
         } // End IF
 
-        // Fill in the HGLOBALs with PTR_REUSED
+        // Fill nested result with PTR_REUSED
         //   in case we fail part way through
         for (uRes = 0; uRes < aplNELMRes; uRes++)
             ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
@@ -1020,8 +1024,11 @@ NORMAL_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
 ERROR_EXIT:
     if (lpMemRes)
     {
@@ -1075,12 +1082,12 @@ QUICK_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnMonLeftShoeGlb_EM
+} // End PrimFnMonLeftShoeGlb_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonLeftShoeProto_EM
+//  $PrimFnMonLeftShoeProto_EM
 //
 //  Subroutine to PrimFnMonLeftShoe_EM to handle prorotypes
 //***************************************************************************
@@ -1101,10 +1108,11 @@ BOOL PrimFnMonLeftShoeProto_EM
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    APLUINT ByteRes,
-            uRes;
-    LPVOID lpMemProto;
+    APLUINT ByteRes,                // # bytes needed for the result
+            uRes;                   // Result loop counter
+    LPVOID lpMemProto;              // Ptr to prototype global memory
 
+    // If the subarray is empty, the result is zilde
     if (aplNELMSub EQ 0)
         *lphGlbProto = hGlbMT;
     else
@@ -1159,7 +1167,7 @@ BOOL PrimFnMonLeftShoeProto_EM
 
 
 //***************************************************************************
-//  PrimFnMonLeftShoeGlbSub_EM
+//  $PrimFnMonLeftShoeGlbSub_EM
 //
 //  Subroutine to PrimFnMonLeftShoeGlb_EM
 //***************************************************************************
@@ -1171,7 +1179,7 @@ BOOL PrimFnMonLeftShoeProto_EM
 #endif
 
 BOOL PrimFnMonLeftShoeGlbSub_EM
-    (APLUINT     ByteRes,           // # bytes in result
+    (APLUINT     ByteRes,           // # bytes needed for the result
      APLSTYPE    aplTypeSub,        // Subarray type
      APLNELM     aplNELMSub,        // Subarray NELM
      APLNELM     aplNELMAxis,       // Axis NELM
@@ -1235,18 +1243,18 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
 
 
 //***************************************************************************
-//  PrimFnDydLeftShoe_EM
+//  $PrimFnDydLeftShoe_EM_YY
 //
 //  Primitive function for dyadic LeftShoe ("partitioned enclose")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydLeftShoe_EM"
+#define APPEND_NAME     L" -- PrimFnDydLeftShoe_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydLeftShoe_EM
+LPYYSTYPE PrimFnDydLeftShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -1297,12 +1305,12 @@ LPYYSTYPE PrimFnDydLeftShoe_EM
         defstop
             return NULL;
     } // End SWITCH
-} // End PrimFnDydLeftShoe_EM
+} // End PrimFnDydLeftShoe_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydLeftShoeGlb_EM
+//  $PrimFnDydLeftShoeGlb_EM_YY
 //
 //  Dyadic LeftShoe ("partitioned enclose") on a global memory object
 //***************************************************************************
@@ -1376,7 +1384,7 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydLeftShoeGlb_EM
+} // End PrimFnDydLeftShoeGlb_EM_YY
 
 
 //***************************************************************************

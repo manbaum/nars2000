@@ -17,12 +17,12 @@
 
 
 //***************************************************************************
-//  PrimFnComma_EM
+//  $PrimFnComma_EM
 //
 //  Primitive function for monadic and dyadic Comma ("ravel/table" and "catenate/laminate")
 //***************************************************************************
 
-LPYYSTYPE PrimFnComma_EM
+LPYYSTYPE PrimFnComma_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -35,25 +35,25 @@ LPYYSTYPE PrimFnComma_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonComma_EM             (lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonComma_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydComma_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnComma_EM
+        return PrimFnDydComma_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnComma_EM_YY
 
 
 //***************************************************************************
-//  PrimProtoFnComma_EM
+//  $PrimProtoFnComma_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Comma
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnComma_EM"
+#define APPEND_NAME     L" -- PrimProtoFnComma_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnComma_EM
+LPYYSTYPE PrimProtoFnComma_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -65,28 +65,28 @@ LPYYSTYPE PrimProtoFnComma_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnComma_EM,    // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-} // End PrimProtoFnComma_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnComma_EM_YY,  // Ptr to primitive function routine
+                                    lptkLftArg,         // Ptr to left arg token
+                                    lptkFunc,           // Ptr to function token
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+} // End PrimProtoFnComma_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonComma_EM
+//  $PrimFnMonComma_EM_YY
 //
 //  Primitive function for monadic Comma ("ravel/table")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonComma_EM"
+#define APPEND_NAME     L" -- PrimFnMonComma_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonComma_EM
+LPYYSTYPE PrimFnMonComma_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -118,28 +118,32 @@ LPYYSTYPE PrimFnMonComma_EM
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                return PrimFnMonCommaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                             lptkAxis,
-                                             lptkFunc);
+                return PrimFnMonCommaGlb_EM_YY
+                       (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
+                        lptkAxis,                                                       // Ptr to axis token (may be NULL)
+                        lptkFunc);                                                      // Ptr to function token
             } // End IF
 
             // Handle the immediate case
-            return PrimFnMonCommaImm_EM (lptkRhtArg->tkData.tkSym->stFlags.ImmType,
-                                         lptkRhtArg->tkData.tkSym->stData.stLongest,
-                                         lptkAxis,
-                                         lptkFunc);
+            return PrimFnMonCommaImm_EM_YY
+                   (lptkRhtArg->tkData.tkSym->stFlags.ImmType,  // Immediate type
+                    lptkRhtArg->tkData.tkSym->stData.stLongest, // Immediate value
+                    lptkAxis,                                   // Ptr to axis token (may be NULL)
+                    lptkFunc);                                  // Ptr to function token
         case TKT_VARIMMED:
-            return PrimFnMonCommaImm_EM (lptkRhtArg->tkFlags.ImmType,
-                                         lptkRhtArg->tkData.tkLongest,
-                                         lptkAxis,
-                                         lptkFunc);
+            return PrimFnMonCommaImm_EM_YY
+                   (lptkRhtArg->tkFlags.ImmType,                // Immediate type
+                    lptkRhtArg->tkData.tkLongest,               // Immediate value
+                    lptkAxis,                                   // Ptr to axis token (may be NULL)
+                    lptkFunc);                                  // Ptr to function token
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
-            return PrimFnMonCommaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                         lptkAxis,
-                                         lptkFunc);
+            return PrimFnMonCommaGlb_EM_YY
+                   (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
+                    lptkAxis,                                           // Ptr to axis token (may be NULL)
+                    lptkFunc);                                          // Ptr to function token
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                        lptkFunc);
@@ -148,36 +152,36 @@ LPYYSTYPE PrimFnMonComma_EM
         defstop
             return NULL;
     } // End SWITCH
-} // End PrimFnMonComma_EM
+} // End PrimFnMonComma_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonCommaImm_EM
+//  $PrimFnMonCommaImm_EM_YY
 //
 //  Monadic Comma ("ravel/table") on an immediate value.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonCommaImm_EM"
+#define APPEND_NAME     L" -- PrimFnMonCommaImm_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonCommaImm_EM
+LPYYSTYPE PrimFnMonCommaImm_EM_YY
     (UINT          ImmType,         // Right arg Immediate type
      APLLONGEST    aplLongest,      // Ptr to right arg value
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
      LPTOKEN       lptkFunc)        // Ptr to function token
 
 {
-    APLUINT   ByteRes;
-    HGLOBAL   hGlbRes;
-    APLRANK   aplRankRes;
-    LPVOID    lpMemRes;
-    BOOL      bFract = FALSE,
-              bTableRes;
-    LPYYSTYPE lpYYRes;
+    APLRANK   aplRankRes;           // Result rank
+    HGLOBAL   hGlbRes;              // Result global memory handle
+    LPVOID    lpMemRes;             // Ptr to result global memory
+    BOOL      bFract = FALSE,       // TRUE iff axis has fractional values
+              bTableRes;            // TRUE iff function is UTF16_COMMABAR
+    APLUINT   ByteRes;              // # bytes needed for the result
+    LPYYSTYPE lpYYRes;              // Ptr to the result
 
     // Check for axis present
     while (lptkAxis NE NULL)
@@ -279,59 +283,61 @@ LPYYSTYPE PrimFnMonCommaImm_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End PrimFnMonCommaImm_EM
+} // End PrimFnMonCommaImm_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonCommaGlb_EM
+//  $PrimFnMonCommaGlb_EM_YY
 //
 //  Monadic Comma ("ravel/table") on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonCommaGlb_EM"
+#define APPEND_NAME     L" -- PrimFnMonCommaGlb_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonCommaGlb_EM
+LPYYSTYPE PrimFnMonCommaGlb_EM_YY
     (HGLOBAL       hGlbRht,         // Handle to right arg
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
      LPTOKEN       lptkFunc)        // Ptr to function token
 
 {
-    HGLOBAL   hGlbRes = NULL,
-              hGlbAxis = NULL,
-              hGlbOdo = NULL,
-              hGlbWVec = NULL;
-    LPVOID    lpMemRes = NULL,
-              lpMemRht = NULL;
-    LPAPLDIM  lpMemDimRht = NULL;
-    LPAPLUINT lpMemAxis = NULL,
-              lpMemGrUp = NULL,
-              lpMemOdo = NULL,
-              lpMemWVec = NULL;
-    APLUINT   ByteRes;              // # bytes needed in the result
-    APLNELM   aplNELMAxis,
-              aplNELMRht;
-    APLRANK   aplRankRht,
-              aplRankRes;
-    APLNELM   uRes, uRht, uOdo;
-    APLDIM    aplDimNew;
-    APLSTYPE  aplTypeRht,
-              aplTypeRes;
-    APLNELMSIGN iRht;
-    APLINT    apaOff,
-              apaMul;
+    HGLOBAL   hGlbRes = NULL,       // Result global memory handle
+              hGlbAxis = NULL,      // Axis ...
+              hGlbOdo = NULL,       // Odometer ...
+              hGlbWVec = NULL;      // Weighting vector ...
+    LPVOID    lpMemRht = NULL,      // Ptr to right arg global memory
+              lpMemRes = NULL;      // Ptr to result    ...
+    LPAPLDIM  lpMemDimRht = NULL;   // Ptr to right arg dimensions
+    LPAPLUINT lpMemAxis = NULL,     // Ptr to axis global memory
+              lpMemGrUp = NULL,     // Ptr to grade up ...
+              lpMemOdo = NULL,      // Ptr to odometer ...
+              lpMemWVec = NULL;     // Ptr to weighting vector ...
+    APLUINT   ByteRes;              // # bytes needed for the result
+    APLNELM   aplNELMRht,           // Right arg NELM
+              aplNELMAxis;          // Axis      ...
+    APLRANK   aplRankRht,           // Right arg rank
+              aplRankRes;           // Result    ...
+    APLNELM   uRht,                 // Right arg loop counter
+              uRes,                 // Result    ...
+              uOdo;                 // Odometer  ...
+    APLDIM    aplDimNew;            //
+    APLSTYPE  aplTypeRht,           // Right arg storage type
+              aplTypeRes;           // Result    ...
+    APLNELMSIGN iRht;               // Right arg loop counter
+    APLINT    apaOffRht,            // Right arg APA offset
+              apaMulRht;            // ...           multiplier
     APLUINT   aplFirstAxis,         // First axis value (if contiguous, then lowest)
               aplLastAxis;          // Last ...                              highest
-    BOOL      bFract = FALSE,
-              bTableRes,
-              bRet = TRUE,
+    BOOL      bFract = FALSE,       // TRUE iff axis has fractional values
+              bTableRes,            // TRUE iff function is UTF16_COMMABAR
+              bRet = TRUE,          // TRUE iff result is valid
               bReorder = FALSE;     // TRUE iff the result values are reordered
                                     //   from those in the right arg
-    LPYYSTYPE lpYYRes;
+    LPYYSTYPE lpYYRes;              // Ptr to the result
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -586,8 +592,8 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
         if (aplTypeRht EQ ARRAY_APA)
         {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
-            apaOff = lpAPA->Off;
-            apaMul = lpAPA->Mul;
+            apaOffRht = lpAPA->Off;
+            apaMulRht = lpAPA->Mul;
 #undef  lpAPA
         } // End IF
 
@@ -784,7 +790,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
-                    ((LPAPLINT) lpMemRes)[uRes] = apaOff + apaMul * uRht;
+                    ((LPAPLINT) lpMemRes)[uRes] = apaOffRht + apaMulRht * uRht;
 
                     // Increment the odometer in lpMemOdo subject to
                     //   the values in lpMemDimRht[lpMemAxis]
@@ -861,23 +867,23 @@ ERROR_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnMonCommaGlb_EM
+} // End PrimFnMonCommaGlb_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydComma_EM
+//  $PrimFnDydComma_EM_YY
 //
 //  Primitive function for dyadic Comma ("catenate/laminate")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydComma_EM"
+#define APPEND_NAME     L" -- PrimFnDydComma_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydComma_EM
+LPYYSTYPE PrimFnDydComma_EM_YY
     (LPTOKEN       lptkLftArg,      // Ptr to left arg token
      LPTOKEN       lptkFunc,        // Ptr to function token
      LPTOKEN       lptkRhtArg,      // Ptr to right arg token
@@ -2014,7 +2020,7 @@ ERROR_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydComma_EM
+} // End PrimFnDydComma_EM_YY
 #undef  APPEND_NAME
 
 

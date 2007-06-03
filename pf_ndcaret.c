@@ -36,7 +36,7 @@ PRIMSPEC PrimSpecDownCaretTilde = {
     NULL,   // &PrimFnMonDownCaretTildeFisF, -- Can't happen w/DownCaretTilde
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecDownCaretTildeStorageTypeDyd,
     NULL,   // &PrimFnDydDownCaretTildeAPA_EM, -- Can't happen w/DownCaretTilde
 
@@ -62,18 +62,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownCaretTilde};
 
 
 //***************************************************************************
-//  PrimFnDownCaretTilde_EM
+//  $PrimFnDownCaretTilde_EM_YY
 //
 //  Primitive function for monadic and dyadic DownCaretTilde (ERROR and "nor")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDownCaretTilde_EM"
+#define APPEND_NAME     L" -- PrimFnDownCaretTilde_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDownCaretTilde_EM
+LPYYSTYPE PrimFnDownCaretTilde_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -85,15 +85,15 @@ LPYYSTYPE PrimFnDownCaretTilde_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnDownCaretTilde_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnDownCaretTilde_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecDownCaretTildeStorageTypeDyd
+//  $PrimSpecDownCaretTildeStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -130,7 +130,7 @@ APLSTYPE PrimSpecDownCaretTildeStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydDownCaretTildeBisBvB
+//  $PrimFnDydDownCaretTildeBisBvB
 //
 //  Primitive scalar function dyadic DownCaretTilde:  B {is} B fn B
 //***************************************************************************
@@ -146,7 +146,7 @@ APLBOOL PrimFnDydDownCaretTildeBisBvB
 
 
 //***************************************************************************
-//  PrimFnDydDownCaretTildeIisIvI
+//  $PrimFnDydDownCaretTildeIisIvI
 //
 //  Primitive scalar function dyadic DownCaretTilde:  B {is} I fn I
 //***************************************************************************
@@ -165,7 +165,7 @@ APLBOOL PrimFnDydDownCaretTildeBisIvI
 
 
 //***************************************************************************
-//  PrimFnDydDownCaretTildeBisFvF
+//  $PrimFnDydDownCaretTildeBisFvF
 //
 //  Primitive scalar function dyadic DownCaretTilde:  B {is} F fn F
 //***************************************************************************

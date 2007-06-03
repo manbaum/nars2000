@@ -15,7 +15,7 @@
 
 
 //***************************************************************************
-//  ChangeRefCntDir
+//  $ChangeRefCntDir
 //
 //  Increment or decrement the reference count
 //    of a direct reference to an LPSYMENTRY or an HGLOBAL
@@ -99,7 +99,7 @@ int ChangeRefCntDir
 
 
 //***************************************************************************
-//  IncrRefCntDir
+//  $IncrRefCntDir
 //
 //  Increment the reference count of a direct reference
 //    to an LPSYMENTRY or an HGLOBAL.
@@ -114,7 +114,7 @@ int IncrRefCntDir
 
 
 //***************************************************************************
-//  IncrRefCntInd
+//  $IncrRefCntInd
 //
 //  Increment the reference count of an indirect reference
 //    to an LPSYMENTRY or an HGLOBAL.
@@ -129,7 +129,7 @@ int IncrRefCntInd
 
 
 //***************************************************************************
-//  DecrRefCntDir
+//  $DecrRefCntDir
 //
 //  Decrement the reference count of a direct reference
 //    to an LPSYMENTRY or an HGLOBAL.
@@ -144,7 +144,7 @@ int DecrRefCntDir
 
 
 //***************************************************************************
-//  DecrRefCntInd
+//  $DecrRefCntInd
 //
 //  Decrement the reference count of an indirect reference
 //    to an LPSYMENTRY or an HGLOBAL.

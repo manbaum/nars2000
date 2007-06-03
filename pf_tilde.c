@@ -20,7 +20,7 @@
 PRIMSPEC PrimSpecTilde =
 {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecTildeStorageTypeMon,
     NULL,   // &PrimFnMonTildeAPA_EM, -- Can't happen w/Tilde
 
@@ -37,7 +37,7 @@ PRIMSPEC PrimSpecTilde =
     NULL,   // &PrimFnMonTildeFisF, -- can't happen w/Tilde
 
     // Dyadic functions
-    NULL,   // &PrimFnDyd_EM, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDyd_EM_YY, -- Can't happen w/Tilde
     NULL,   // &PrimSpecTildeStorageTypeDyd, -- Can't happen w/Tilde
     NULL,   // &PrimFnDydTildeAPA_EM, -- Can't happen w/Tilde
 
@@ -63,18 +63,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTilde};
 
 
 //***************************************************************************
-//  PrimFnTilde_EM
+//  $PrimFnTilde_EM_YY
 //
 //  Primitive function for monadic and dyadic Tilde ("not" and "without")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnTilde_EM"
+#define APPEND_NAME     L" -- PrimFnTilde_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnTilde_EM
+LPYYSTYPE PrimFnTilde_EM_YY
     (LPTOKEN lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,26 +86,26 @@ LPYYSTYPE PrimFnTilde_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return PrimFnDydTilde_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnTilde_EM
+        return PrimFnDydTilde_EM_YY           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnTilde_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnTilde_EM
+//  $PrimProtoFnTilde_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Tilde
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnTilde_EM"
+#define APPEND_NAME     L" -- PrimProtoFnTilde_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnTilde_EM
+LPYYSTYPE PrimProtoFnTilde_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -117,10 +117,11 @@ LPYYSTYPE PrimProtoFnTilde_EM
         //***************************************************************
         // Called monadically
         //***************************************************************
-        return PrimProtoFnScalar_EM (lptkLftArg,        // Ptr to left arg token
-                                     lptkFunc,          // Ptr to function token
-                                     lptkRhtArg,        // Ptr to right arg token
-                                     lptkAxis);         // Ptr to axis token (may be NULL)
+        return PrimProtoFnScalar_EM_YY
+               (lptkLftArg,         // Ptr to left arg token
+                lptkFunc,           // Ptr to function token
+                lptkRhtArg,         // Ptr to right arg token
+                lptkAxis);          // Ptr to axis token (may be NULL)
     else
     {
         //***************************************************************
@@ -128,18 +129,18 @@ LPYYSTYPE PrimProtoFnTilde_EM
         //***************************************************************
 
         // Convert to a prototype
-        return PrimProtoFnMixed_EM (&PrimFnTilde_EM,    // Ptr to primitive function routine
-                                     lptkLftArg,        // Ptr to left arg token
-                                     lptkFunc,          // Ptr to function token
-                                     lptkRhtArg,        // Ptr to right arg token
-                                     lptkAxis);         // Ptr to axis token (may be NULL)
+        return PrimProtoFnMixed_EM_YY (&PrimFnTilde_EM_YY,  // Ptr to primitive function routine
+                                        lptkLftArg,         // Ptr to left arg token
+                                        lptkFunc,           // Ptr to function token
+                                        lptkRhtArg,         // Ptr to right arg token
+                                        lptkAxis);          // Ptr to axis token (may be NULL)
     } // End IF/ELSE
-} // End PrimProtoFnTilde_EM
+} // End PrimProtoFnTilde_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecTildeStorageTypeMon
+//  $PrimSpecTildeStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -174,7 +175,7 @@ APLSTYPE PrimSpecTildeStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonTildeBisB
+//  $PrimFnMonTildeBisB
 //
 //  Primitive scalar function monadic Tilde:  B {is} fn B
 //***************************************************************************
@@ -189,7 +190,7 @@ APLBOOL PrimFnMonTildeBisB
 
 
 //***************************************************************************
-//  PrimFnMonTildeBisI
+//  $PrimFnMonTildeBisI
 //
 //  Primitive scalar function monadic Tilde:  B {is} fn I
 //***************************************************************************
@@ -206,7 +207,7 @@ APLBOOL PrimFnMonTildeBisI
 
 
 //***************************************************************************
-//  PrimFnMonTildeBisF
+//  $PrimFnMonTildeBisF
 //
 //  Primitive scalar function monadic Tilde:  B {is} fn F
 //***************************************************************************
@@ -223,18 +224,18 @@ APLBOOL PrimFnMonTildeBisF
 
 
 //***************************************************************************
-//  PrimFnDydTilde_EM
+//  $PrimFnDydTilde_EM_YY
 //
 //  Primitive function for dyadic Tilde ("without")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTilde_EM"
+#define APPEND_NAME     L" -- PrimFnDydTilde_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydTilde_EM
+LPYYSTYPE PrimFnDydTilde_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -320,7 +321,7 @@ ERROR_EXIT:
     {
         YYFree (lpYYRes); lpYYRes = NULL; return NULL;
     } // End IF/ELSE
-} // End PrimFnDydTilde_EM
+} // End PrimFnDydTilde_EM_YY
 
 
 //***************************************************************************

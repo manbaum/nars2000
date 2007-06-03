@@ -24,7 +24,7 @@
 PRIMSPEC PrimSpecQuoteDot =
 {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecQuoteDotStorageTypeMon,
     NULL,   // &PrimFnMonQuoteDotAPA_EM, -- Can't happen w/QuoteDot
 
@@ -41,7 +41,7 @@ PRIMSPEC PrimSpecQuoteDot =
     &PrimFnMonQuoteDotFisF,
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecQuoteDotStorageTypeDyd,
     NULL,   // &PrimFnDydQuoteDotAPA_EM, -- Can't happen w/QuoteDot
 
@@ -67,18 +67,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuoteDot};
 
 
 //***************************************************************************
-//  PrimFnQuoteDot_EM
+//  $PrimFnQuoteDot_EM_YY
 //
 //  Primitive function for monadic and dyadic QuoteDot ("factorial" and "binomial")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnQuoteDot_EM"
+#define APPEND_NAME     L" -- PrimFnQuoteDot_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnQuoteDot_EM
+LPYYSTYPE PrimFnQuoteDot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -90,15 +90,15 @@ LPYYSTYPE PrimFnQuoteDot_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnQuoteDot_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnQuoteDot_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecQuoteDotStorageTypeMon
+//  $PrimSpecQuoteDotStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -133,7 +133,7 @@ APLSTYPE PrimSpecQuoteDotStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonQuoteDotBisB
+//  $PrimFnMonQuoteDotBisB
 //
 //  Primitive scalar function monadic QuoteDot:  B {is} fn B
 //***************************************************************************
@@ -148,7 +148,7 @@ APLBOOL PrimFnMonQuoteDotBisB
 
 
 //***************************************************************************
-//  PrimFnMonQuoteDotIisI
+//  $PrimFnMonQuoteDotIisI
 //
 //  Primitive scalar function monadic QuoteDot:  I {is} fn I
 //***************************************************************************
@@ -197,7 +197,7 @@ APLINT PrimFnMonQuoteDotIisI
 
 
 //***************************************************************************
-//  PrimFnMonQuoteDotFisF
+//  $PrimFnMonQuoteDotFisF
 //
 //  Primitive scalar function monadic QuoteDot:  F {is} fn F
 //***************************************************************************
@@ -241,7 +241,7 @@ APLFLOAT PrimFnMonQuoteDotFisF
 
 
 //***************************************************************************
-//  PrimSpecQuoteDotStorageTypeDyd
+//  $PrimSpecQuoteDotStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -274,7 +274,7 @@ APLSTYPE PrimSpecQuoteDotStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydQuoteDotBisBvB
+//  $PrimFnDydQuoteDotBisBvB
 //
 //  Primitive scalar function dyadic QuoteDot:  B {is} B fn B
 //***************************************************************************
@@ -290,7 +290,7 @@ APLBOOL PrimFnDydQuoteDotBisBvB
 
 
 //***************************************************************************
-//  PrimFnDydQuoteDotIisIvI
+//  $PrimFnDydQuoteDotIisIvI
 //
 //  Primitive scalar function dyadic QuoteDot:  I {is} I fn I
 //***************************************************************************
@@ -364,7 +364,7 @@ APLINT PrimFnDydQuoteDotIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydQuoteDotFisIvI
+//  $PrimFnDydQuoteDotFisIvI
 //
 //  Primitive scalar function dyadic QuoteDot:  F {is} I fn I
 //***************************************************************************
@@ -476,7 +476,7 @@ APLFLOAT PrimFnDydQuoteDotFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydQuoteDotFisFvF
+//  $PrimFnDydQuoteDotFisFvF
 //
 //  Primitive scalar function dyadic QuoteDot:  F {is} F fn F
 //***************************************************************************

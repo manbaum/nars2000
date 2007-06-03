@@ -21,7 +21,7 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecCircle = {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecCircleStorageTypeMon,
     NULL,   // &PrimFnMonCircleAPA_EM, -- Can't happen w/Circle
 
@@ -38,7 +38,7 @@ PRIMSPEC PrimSpecCircle = {
     &PrimFnMonCircleFisF,
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecCircleStorageTypeDyd,
     NULL,   // &PrimFnDydCircleAPA_EM, -- Can't happen w/Circle
 
@@ -64,18 +64,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecCircle};
 
 
 //***************************************************************************
-//  PrimFnCircle_EM
+//  $PrimFnCircle_EM_YY
 //
 //  Primitive function for monadic and dyadic Circle ("pi times" and "circle functions")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnCircle_EM"
+#define APPEND_NAME     L" -- PrimFnCircle_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnCircle_EM
+LPYYSTYPE PrimFnCircle_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -87,15 +87,15 @@ LPYYSTYPE PrimFnCircle_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnCircle_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnCircle_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecCircleStorageTypeMon
+//  $PrimSpecCircleStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -130,7 +130,7 @@ APLSTYPE PrimSpecCircleStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonCircleFisI
+//  $PrimFnMonCircleFisI
 //
 //  Primitive scalar function monadic Circle:  F {is} fn I
 //***************************************************************************
@@ -162,7 +162,7 @@ APLFLOAT PrimFnMonCircleFisI
 
 
 //***************************************************************************
-//  PrimFnMonCircleFisF
+//  $PrimFnMonCircleFisF
 //
 //  Primitive scalar function monadic Circle:  F {is} fn F
 //***************************************************************************
@@ -193,7 +193,7 @@ APLFLOAT PrimFnMonCircleFisF
 
 
 //***************************************************************************
-//  PrimSpecCircleStorageTypeDyd
+//  $PrimSpecCircleStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -230,7 +230,7 @@ APLSTYPE PrimSpecCircleStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydCircleFisIvI
+//  $PrimFnDydCircleFisIvI
 //
 //  Primitive scalar function dyadic Circle:  F {is} I fn I
 //***************************************************************************
@@ -380,7 +380,7 @@ APLFLOAT PrimFnDydCircleFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydCircleFisFvF
+//  $PrimFnDydCircleFisFvF
 //
 //  Primitive scalar function dyadic Circle:  F {is} F fn F
 //***************************************************************************

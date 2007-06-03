@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  PrimFnUpArrow_EM
+//  $PrimFnUpArrow_EM_YY
 //
 //  Primitive function for monadic and dyadic UpArrow ("first" and "take")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnUpArrow_EM"
+#define APPEND_NAME     L" -- PrimFnUpArrow_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnUpArrow_EM
+LPYYSTYPE PrimFnUpArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -40,26 +40,26 @@ LPYYSTYPE PrimFnUpArrow_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonUpArrow_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonUpArrow_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydUpArrow_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnUpArrow_EM
+        return PrimFnDydUpArrow_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnUpArrow_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnUpArrow_EM
+//  $PrimProtoFnUpArrow_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic UpArrow
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnUpArrow_EM"
+#define APPEND_NAME     L" -- PrimProtoFnUpArrow_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnUpArrow_EM
+LPYYSTYPE PrimProtoFnUpArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -71,28 +71,28 @@ LPYYSTYPE PrimProtoFnUpArrow_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnUpArrow_EM,  // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-} // End PrimProtoFnUpArrow_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnUpArrow_EM_YY,// Ptr to primitive function routine
+                                    lptkLftArg,         // Ptr to left arg token
+                                    lptkFunc,           // Ptr to function token
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+} // End PrimProtoFnUpArrow_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonUpArrow_EM
+//  $PrimFnMonUpArrow_EM_YY
 //
 //  Primitive function for monadic UpArrow (ERROR)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonUpArrow_EM"
+#define APPEND_NAME     L" -- PrimFnMonUpArrow_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonUpArrow_EM
+LPYYSTYPE PrimFnMonUpArrow_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -146,12 +146,12 @@ LPYYSTYPE PrimFnMonUpArrow_EM
     } // End IF/ELSE
 
     return lpYYRes;
-} // End PrimFnMonUpArrow_EM
+} // End PrimFnMonUpArrow_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydUpArrowLftGlbValid_EM
+//  $PrimFnDydUpArrowLftGlbValid_EM
 //
 //  Dyadic UpArrow left argument validation on a global memory object
 //***************************************************************************
@@ -309,45 +309,45 @@ BOOL PrimFnDydUpArrowLftGlbValid_EM
 
 
 //***************************************************************************
-//  PrimFnDydUpArrow_EM
+//  $PrimFnDydUpArrow_EM_YY
 //
 //  Primitive function for dyadic UpArrow ("take")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydUpArrow_EM"
+#define APPEND_NAME     L" -- PrimFnDydUpArrow_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydUpArrow_EM
+LPYYSTYPE PrimFnDydUpArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht,
-              aplTypeRes;
-    APLNELM   aplNELMLft,
-              aplNELMRht,
-              aplNELMRes,
-              aplNELMAxis;
-    APLRANK   aplRankLft,
-              aplRankRht,
-              aplRankRes;
-    HGLOBAL   hGlbLft = NULL,
-              hGlbRht = NULL,
-              hGlbAxis = NULL,
-              hGlbRes = NULL;
-    LPVOID    lpMemLft = NULL,
-              lpMemRht = NULL,
-              lpMemRes = NULL;
-    APLUINT   ByteRes;
-    LPAPLUINT lpMemAxisHead,
-              lpMemAxisTail;
-    LPYYSTYPE lpYYRes = NULL;
+    APLSTYPE  aplTypeLft,           // Left arg storage type
+              aplTypeRht,           // Right ...
+              aplTypeRes;           // Result   ...
+    APLNELM   aplNELMLft,           // Left arg NELM
+              aplNELMRht,           // Right ...
+              aplNELMRes,           // Result   ...
+              aplNELMAxis;          // Axis     ...
+    APLRANK   aplRankLft,           // Left arg rank
+              aplRankRht,           // Right ...
+              aplRankRes;           // Result   ...
+    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
+              hGlbRht = NULL,       // Right ...
+              hGlbRes = NULL,       // Result   ...
+              hGlbAxis = NULL;      // Axis     ...
+    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
+              lpMemRht = NULL,      // Ptr to right ...
+              lpMemRes = NULL;      // Ptr to result   ...
+    APLUINT   ByteRes;              // # bytes needed for the result
+    LPAPLUINT lpMemAxisHead,        // Ptr to axis values, fleshed out
+              lpMemAxisTail;        // Ptr to grade up of AxisHead
+    LPYYSTYPE lpYYRes = NULL;       // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -535,7 +535,7 @@ NORMAL_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End PrimFnUpArrow_EM
+} // End PrimFnUpArrow_EM_YY
 #undef  APPEND_NAME
 
 

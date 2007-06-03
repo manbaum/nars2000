@@ -18,19 +18,19 @@
 
 
 //***************************************************************************
-//  PrimOpSlope_EM
+//  $PrimOpSlope_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from Slope
 //    ("scan" and "ERROR")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpSlope_EM"
+#define APPEND_NAME     L" -- PrimOpSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpSlope_EM
+LPYYSTYPE PrimOpSlope_EM_YY
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
      LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg,          // Ptr to right arg token
@@ -42,32 +42,32 @@ LPYYSTYPE PrimOpSlope_EM
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonSlope_EM (lpYYFcnStr,   // Ptr to operator function strand
-                                  lptkRhtArg,   // Ptr to right arg
-                                  lptkAxis);    // Ptr to axis token (may be NULL)
+        return PrimOpMonSlope_EM_YY (lpYYFcnStr,    // Ptr to operator function strand
+                                     lptkRhtArg,    // Ptr to right arg
+                                     lptkAxis);     // Ptr to axis token (may be NULL)
     else
-        return PrimOpDydSlope_EM (lptkLftArg,   // Ptr to left arg token
-                                  lpYYFcnStr,   // Ptr to operator function strand
-                                  lptkRhtArg,   // Ptr to right arg token
-                                  lptkAxis);    // Ptr to axis token (may be NULL)
-} // End PrimOpSlope_EM
+        return PrimOpDydSlope_EM_YY (lptkLftArg,    // Ptr to left arg token
+                                     lpYYFcnStr,    // Ptr to operator function strand
+                                     lptkRhtArg,    // Ptr to right arg token
+                                     lptkAxis);     // Ptr to axis token (may be NULL)
+} // End PrimOpSlope_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoOpSlope_EM
+//  $PrimProtoOpSlope_EM_YY
 //
 //  Generate a prototype for the derived functions from
 //    monadic operator Slope ("scan" and "ERROR")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpSlope_EM"
+#define APPEND_NAME     L" -- PrimProtoOpSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoOpSlope_EM
+LPYYSTYPE PrimProtoOpSlope_EM_YY
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token
      LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg,          // Ptr to right arg token
@@ -100,23 +100,23 @@ LPYYSTYPE PrimProtoOpSlope_EM
         // Called dyadically
         //***************************************************************
         return PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken);
-} // End PrimProtoOpSlope_EM
+} // End PrimProtoOpSlope_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimOpMonSlope_EM
+//  $PrimOpMonSlope_EM_YY
 //
 //  Primitive operator for monadic derived function from Slope ("scan")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonSlope_EM"
+#define APPEND_NAME     L" -- PrimOpMonSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpMonSlope_EM
+LPYYSTYPE PrimOpMonSlope_EM_YY
     (LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg,          // Ptr to right arg token
      LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
@@ -153,11 +153,11 @@ LPYYSTYPE PrimOpMonSlope_EM
             return NULL;
     } else
     {
-        // If Slope, use last axis
+        // If Slope, use last dimension
         if (lpYYFcnStr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE)
             aplAxis = aplRankRht - 1;
         else
-            // Otherwise, it's SlopeBar on the first axis
+            // Otherwise, it's SlopeBar on the first dimension
             aplAxis = 0;
     } // End IF/ELSE
 
@@ -176,23 +176,23 @@ LPYYSTYPE PrimOpMonSlope_EM
 
 
     return lpYYRes;
-} // End PrimOpMonSlope_EM
+} // End PrimOpMonSlope_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimOpDydSlope_EM
+//  $PrimOpDydSlope_EM_YY
 //
 //  Primitive operator for dyadic derived function from Slope ("ERROR")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydSlope_EM"
+#define APPEND_NAME     L" -- PrimOpDydSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpDydSlope_EM
+LPYYSTYPE PrimOpDydSlope_EM_YY
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
      LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg,          // Ptr to right arg token
@@ -200,7 +200,7 @@ LPYYSTYPE PrimOpDydSlope_EM
 
 {
     return PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken);
-} // End PrimOpDydSlope_EM
+} // End PrimOpDydSlope_EM_YY
 #undef  APPEND_NAME
 
 

@@ -19,7 +19,7 @@
 
 
 //***************************************************************************
-//  PrimFnSyntaxError_EM
+//  $PrimFnSyntaxError_EM
 //
 //  Primitive function SYNTAX ERROR
 //***************************************************************************
@@ -42,7 +42,7 @@ LPYYSTYPE PrimFnSyntaxError_EM
 
 
 //***************************************************************************
-//  PrimFnNonceError_EM
+//  $PrimFnNonceError_EM
 //
 //  Primitive function NONCE ERROR
 //***************************************************************************
@@ -65,7 +65,7 @@ LPYYSTYPE PrimFnNonceError_EM
 
 
 //***************************************************************************
-//  PrimFnValueError
+//  $PrimFnValueError
 //
 //  Primitive function VALUE ERROR
 //***************************************************************************
@@ -87,7 +87,7 @@ void PrimFnValueError
 
 
 //***************************************************************************
-//  PrimFnMonSyntaxError_EM
+//  $PrimFnMonSyntaxError_EM
 //
 //  Primitive scalar monadic function SYNTAX ERROR
 //***************************************************************************
@@ -113,7 +113,7 @@ LPYYSTYPE PrimFnMonSyntaxError_EM
 
 
 //// //***************************************************************************
-//// //  PrimFnDydSyntaxError_EM
+//// //  $PrimFnDydSyntaxError_EM
 //// //
 //// //  Primitive scalar dyadic function SYNTAX ERROR
 //// //***************************************************************************
@@ -140,12 +140,12 @@ LPYYSTYPE PrimFnMonSyntaxError_EM
 
 
 //***************************************************************************
-//  PrimProtoFnMixed_EM
+//  $PrimProtoFnMixed_EM_YY
 //
 //  Generate a prototype result for the monadic & dyadic primitive mixed functions
 //***************************************************************************
 
-LPYYSTYPE PrimProtoFnMixed_EM
+LPYYSTYPE PrimProtoFnMixed_EM_YY
     (LPPRIMFNS  lpPrimFn,           // Ptr to primitive function routine
      LPTOKEN    lptkLftArg,         // Ptr to left arg token
      LPTOKEN    lptkFunc,           // Ptr to function token
@@ -200,24 +200,24 @@ LPYYSTYPE PrimProtoFnMixed_EM
     } // End IF/SWITCH
 
     return lpYYRes;
-} // End PrimProtoFnMixed_EM
+} // End PrimProtoFnMixed_EM_YY
 #undef  APPEND_NAME
 
 
 #ifdef PRIMPROTOFNSCALAR
 //***************************************************************************
-//  PrimProtoFnScalar_EM
+//  $PrimProtoFnScalar_EM_YY
 //
 //  Generate a prototype result for the monadic & dyadic primitive scalar functions
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnScalar_EM"
+#define APPEND_NAME     L" -- PrimProtoFnScalar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnScalar_EM
+LPYYSTYPE PrimProtoFnScalar_EM_YY
     (LPTOKEN    lptkLftArg,         // Ptr to left arg token
      LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
@@ -258,7 +258,7 @@ LPYYSTYPE PrimProtoFnScalar_EM
         // Make the prototype
         hGlbRes = MakePrototype_EM (hGlbRht,    // Proto arg handle
                                     lptkFunc,   // Ptr to function token
-                                    MP_NUMONLY);// Numeric only
+                                    MP_NUMONLY);// Numerics only
     } else
     {
         //***************************************************************
@@ -316,8 +316,8 @@ LPYYSTYPE PrimProtoFnScalar_EM
             goto ERROR_EXIT;
         } // End IF
 
-        // Get left arg's global handle (if any)
-        hGlbLft = GetGlbHandle (lptkLftArg);
+////////// Get left arg's global handle (if any)
+////////hGlbLft = GetGlbHandle (lptkLftArg);
 
         // Check for RANK and LENGTH ERRORs
         if (!CheckRankLengthError_EM (aplRankRes,
@@ -348,6 +348,23 @@ LPYYSTYPE PrimProtoFnScalar_EM
 
 
 
+        // Check for both args immediate
+        if (hGlbLft EQ NULL
+         && hGlbRht EQ NULL)
+        {
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+            lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkInteger  = 0;
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+            goto NORMAL_EXIT;
+        } // End IF
+
         // By convention, use the prototype of the right arg
         //   if it is empty, the left arg if not
         hGlbRes = (aplNELMRht EQ 0) ? hGlbRht : hGlbLft;
@@ -374,7 +391,11 @@ LPYYSTYPE PrimProtoFnScalar_EM
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (lpMemLft)
     {
         // We no longer need this ptr
@@ -400,24 +421,24 @@ ERROR_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End PrimProtoFnScalar_EM
+} // End PrimProtoFnScalar_EM_YY
 #undef  APPEND_NAME
 #endif
 
 
 //***************************************************************************
-//  PrimFnMon_EM
+//  $PrimFnMon_EM_YY
 //
 //  Primitive scalar monadic function
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMon_EM"
+#define APPEND_NAME     L" -- PrimFnMon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMon_EM
+LPYYSTYPE PrimFnMon_EM_YY
     (LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
      LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
@@ -448,10 +469,10 @@ LPYYSTYPE PrimFnMon_EM
 #ifdef PRIMPROTOFNSCALAR
     // Handle prototypes separately
     if (aplNELMRht EQ 0)
-        return PrimProtoFnScalar_EM (NULL,
-                                     lptkFunc,
-                                     lptkRhtArg,
-                                     lptkAxis);
+        return PrimProtoFnScalar_EM_YY (NULL,       // Ptr to left arg token
+                                        lptkFunc,   // Ptr to function token
+                                        lptkRhtArg, // Ptr to right arg token
+                                        lptkAxis);  // Ptr to axis token (may be NULL)
 #endif
     // Get the storage type of the result
     aplTypeRes = (*lpPrimSpec->StorageTypeMon) (aplNELMRht,
@@ -825,12 +846,12 @@ RESTART_EXCEPTION_VARIMMED:
     DbgStop ();         // We should never get here
 
     YYFree (lpYYRes); lpYYRes = NULL; return NULL;
-} // End PrimFnMon_EM
+} // End PrimFnMon_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonGlb_EM
+//  $PrimFnMonGlb_EM
 //
 //  Primitive scalar monadic function on a global memory object
 //***************************************************************************
@@ -847,20 +868,20 @@ HGLOBAL PrimFnMonGlb_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    LPVOID   lpMemRes = NULL,
-             lpMemRht = NULL;
-    HGLOBAL  hGlbRes = NULL,
-             hGlbSub;
-    APLSTYPE aplTypeRht,        // The array storage type (see enum ARRAY_TYPES)
-             aplTypeRes;
+    LPVOID   lpMemRht = NULL,   // Ptr to right arg global memory
+             lpMemRes = NULL;   // Ptr to result    ...
+    HGLOBAL  hGlbRes = NULL,    // Result global memory handle
+             hGlbSub;           // Subarray ...
+    APLSTYPE aplTypeRht,        // Right arg storage type
+             aplTypeRes;        // Result    ...
     APLNELM  aplNELMRht;        // # elements in the array
     APLRANK  aplRankRht;        // The rank of the array
-    APLINT   uRes,
-             apaOffRht,
-             apaMulRht;
-    APLUINT  ByteRes;
-    BOOL     bRet = TRUE;
-    UINT     uBitIndex;
+    APLINT   uRes,              // Result loop counter
+             apaOffRht,         // Right arg APA offset
+             apaMulRht;         // ...           multiplier
+    APLUINT  ByteRes;           // # bytes needed for the result
+    BOOL     bRet = TRUE;       // TRUE iff result is valid
+    UINT     uBitIndex;         // Bit index when marching through Booleans
 
     DBGENTER;
 
@@ -951,8 +972,8 @@ RESTART_EXCEPTION:
     for (uRes = 0; uRes < (APLRANKSIGN) aplRankRht; uRes++)
         *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRht)++;
 
-    // lpMemRes now points to its data
-    // lpMemRht now points to its data
+    // lpMemRes now points to the result's data
+    // lpMemRht now points to the right arg's data
 
 #ifndef PRIMPROTOFNSCALAR
     // Handle prototypes separately
@@ -964,9 +985,9 @@ RESTART_EXCEPTION:
         *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
 
         // Make the prototype
-        hGlbProto = MakePrototype_EM (hGlbRht,          // Proto arg handle
-                                      lptkFunc,         // Ptr to function token
-                                      MP_NUMONLY);      // Numerics only
+        hGlbProto = MakePrototype_EM (hGlbRht,      // Proto arg handle
+                                      lptkFunc,     // Ptr to function token
+                                      MP_NUMONLY);  // Numerics only
         if (!hGlbProto)
             goto ERROR_EXIT;
 
@@ -1425,18 +1446,18 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  PrimFnDyd_EM
+//  $PrimFnDyd_EM_YY
 //
 //  Primitive scalar function for dyadic fns
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDyd_EM"
+#define APPEND_NAME     L" -- PrimFnDyd_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDyd_EM
+LPYYSTYPE PrimFnDyd_EM_YY
     (LPTOKEN    lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
@@ -1524,10 +1545,10 @@ LPYYSTYPE PrimFnDyd_EM
     if (aplNELMLft EQ 0
      || aplNELMRht EQ 0)
     {
-        lpYYRes = PrimProtoFnScalar_EM (lptkLftArg,
-                                        lptkFunc,
-                                        lptkRhtArg,
-                                        lptkAxis);
+        lpYYRes = PrimProtoFnScalar_EM_YY (lptkLftArg,  // Ptr to left arg token
+                                           lptkFunc,    // Ptr to function token
+                                           lptkRhtArg,  // Ptr to right arg token
+                                           lptkAxis);   // Ptr to axis token (may be NULL)
         bRet = (lpYYRes NE NULL);
 
         goto NORMAL_EXIT;
@@ -1724,12 +1745,12 @@ NORMAL_EXIT:
     DBGLEAVE;
 
     return lpYYRes;
-} // End PrimFnDyd_EM
+} // End PrimFnDyd_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydSimpNest_EM
+//  $PrimFnDydSimpNest_EM
 //
 //  Dyadic primitive scalar function, left simple, right nested
 //***************************************************************************
@@ -1829,9 +1850,10 @@ BOOL PrimFnDydSimpNest_EM
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    // Ensure the elements of the result are set to PTR_REUSED
-    //   in case we fail along the way
-    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+    // Fill nested result with PTR_REUSED
+    //   in case we fail part way through
+    *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
+    for (uRes = 1; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
         ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
 
 #ifndef PRIMPROTOFNSCALAR
@@ -2033,7 +2055,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  PrimFnDydNestSimp_EM
+//  $PrimFnDydNestSimp_EM
 //
 //  Dyadic primitive scalar function, left nested, right simple
 //***************************************************************************
@@ -2133,9 +2155,10 @@ BOOL PrimFnDydNestSimp_EM
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    // Ensure the elements of the result are set to PTR_REUSED
-    //   in case we fail along the way
-    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+    // Fill nested result with PTR_REUSED
+    //   in case we fail part way through
+    *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
+    for (uRes = 1; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
         ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
 
 #ifndef PRIMPROTOFNSCALAR
@@ -2335,7 +2358,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  PrimFnDydNestSimpSub_EM
+//  $PrimFnDydNestSimpSub_EM
 //
 //  Subroutine to PrimFnDydNestSimp_EM
 //***************************************************************************
@@ -2505,7 +2528,6 @@ HGLOBAL PrimFnDydNestSimpSub_EM
     } else
         DbgStop ();         // We should never get here
 
-
     if (bRet)
         goto NORMAL_EXIT;
 ERROR_EXIT:
@@ -2543,7 +2565,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  PrimFnDydNestNest_EM
+//  $PrimFnDydNestNest_EM
 //
 //  Dyadic primitive scalar function, left nested, right nested
 //***************************************************************************
@@ -2642,11 +2664,11 @@ BOOL PrimFnDydNestNest_EM
         tkRht.tkData.tkGlbData  = ((LPAPLNESTED) lpMemRht)[uRes % aplNELMRht];
         tkRht.tkCharIndex       = lptkRhtArg->tkCharIndex;
 
-        lpYYRes = (*lpPrimSpec->PrimFnDyd_EM) (&tkLft,
-                                                lptkFunc,
-                                               &tkRht,
-                                                NULL,
-                                                lpPrimSpec);
+        lpYYRes = (*lpPrimSpec->PrimFnDyd_EM_YY) (&tkLft,       // Ptr to left arg token
+                                                   lptkFunc,    // Ptr to function token
+                                                  &tkRht,       // Ptr to right arg token
+                                                   NULL,        // Ptr to axis token
+                                                   lpPrimSpec); // Ptr to local PRIMSPEC
         if (lpYYRes)
         {
             ((LPAPLNESTED) lpMemRes)[uRes] = lpYYRes->tkToken.tkData.tkGlbData;
@@ -2673,7 +2695,7 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  PrimFnDydSingMult_EM
+//  $PrimFnDydSingMult_EM
 //
 //  Primitive scalar dyadic function,
 //    left simple singleton, right simple multipleton
@@ -3410,7 +3432,7 @@ RESTART_EXCEPTION:
 
 
 //***************************************************************************
-//  PrimFnDydMultSing_EM
+//  $PrimFnDydMultSing_EM
 //
 //  Primitive scalar dyadic function,
 //    left simple multipleton, right simple singleton
@@ -4148,7 +4170,7 @@ RESTART_EXCEPTION:
 
 
 //***************************************************************************
-//  PrimFnDydSimpNestSub_EM
+//  $PrimFnDydSimpNestSub_EM
 //
 //  Subroutine to PrimFnDydSimpNest_EM
 //***************************************************************************
@@ -4355,7 +4377,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  PrimFnDydSimpSimp_EM
+//  $PrimFnDydSimpSimp_EM
 //
 //  Dyadic primitive scalar function, left simple, right simple
 //***************************************************************************
@@ -4399,7 +4421,7 @@ BOOL PrimFnDydSimpSimp_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    BOOL      bRet = TRUE;
+    BOOL      bRet = TRUE;      // TRUE iff result is valid
     APLSTYPE  aplTypeArg;
     APLINT    aplIntegerLft,
               aplIntegerRht;
@@ -4421,7 +4443,7 @@ BOOL PrimFnDydSimpSimp_EM
               iRht;
     UINT      uBitIndex = 0;
     LPVOID    lpMemResStart;
-    APLUINT   ByteRes;
+    APLUINT   ByteRes;          // # bytes needed for the result
     APLCHAR   aplCharLft,
               aplCharRht;
 
@@ -4522,7 +4544,14 @@ RESTART_EXCEPTION_IMMED:
                                                  aplFloatRht,
                                                  lpPrimSpec);
                     } else
-                        DbgStop ();         // We should never get here
+                    {
+                        // One arg is numeric, the other char
+                        Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                             || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                        // If the function is UTF16_NOTEQUAL, the result is one
+                        lpYYRes->tkToken.tkData.tkBoolean  = (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                    } // End IF/ELSE/...
+
                     break;
 
                 case ARRAY_INT:                     // Res = INT
@@ -5518,7 +5547,7 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  CalcLftRhtArgIndices
+//  $CalcLftRhtArgIndices
 //
 //  Calculate the left and right argument indices
 //***************************************************************************

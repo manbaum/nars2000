@@ -36,7 +36,7 @@ PRIMSPEC PrimSpecEqual = {
     NULL,   // &PrimFnMonEqualFisF, -- Can't happen w/Equal
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecEqualStorageTypeDyd,
     NULL,   // &PrimFnDydEqualAPA_EM, -- Can't happen w/Equal
 
@@ -62,18 +62,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecEqual};
 
 
 //***************************************************************************
-//  PrimFnEqual_EM
+//  $PrimFnEqual_EM_YY
 //
 //  Primitive function for monadic and dyadic Equal (ERROR and "equal")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnEqual_EM"
+#define APPEND_NAME     L" -- PrimFnEqual_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnEqual_EM
+LPYYSTYPE PrimFnEqual_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -85,15 +85,15 @@ LPYYSTYPE PrimFnEqual_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnEqual_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnEqual_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecEqualStorageTypeDyd
+//  $PrimSpecEqualStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -130,7 +130,7 @@ APLSTYPE PrimSpecEqualStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydEqualBisBvB
+//  $PrimFnDydEqualBisBvB
 //
 //  Primitive scalar function dyadic Equal:  B {is} B fn B
 //***************************************************************************
@@ -146,7 +146,7 @@ APLBOOL PrimFnDydEqualBisBvB
 
 
 //***************************************************************************
-//  PrimFnDydEqualBisIvI
+//  $PrimFnDydEqualBisIvI
 //
 //  Primitive scalar function dyadic Equal:  B {is} I fn I
 //***************************************************************************
@@ -162,7 +162,7 @@ APLBOOL PrimFnDydEqualBisIvI
 
 
 //***************************************************************************
-//  PrimFnDydEqualBisFvF
+//  $PrimFnDydEqualBisFvF
 //
 //  Primitive scalar function dyadic Equal:  B {is} F fn F
 //***************************************************************************
@@ -178,7 +178,7 @@ APLBOOL PrimFnDydEqualBisFvF
 
 
 //***************************************************************************
-//  CompareCT
+//  $CompareCT
 //
 //  Compare two floating point values with a Comparison Tolerance
 //***************************************************************************
@@ -240,7 +240,7 @@ APLBOOL CompareCT
 
 
 //***************************************************************************
-//  PrimFnDydEqualBisCvC
+//  $PrimFnDydEqualBisCvC
 //
 //  Primitive scalar function dyadic Equal:  B {is} C fn C
 //***************************************************************************

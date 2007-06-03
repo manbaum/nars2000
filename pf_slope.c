@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  PrimFnSlope_EM
+//  $PrimFnSlope_EM_YY
 //
 //  Primitive function for monadic and dyadic Slope (ERROR and "expand")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnSlope_EM"
+#define APPEND_NAME     L" -- PrimFnSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnSlope_EM
+LPYYSTYPE PrimFnSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -41,15 +41,15 @@ LPYYSTYPE PrimFnSlope_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonSlope_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonSlope_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydSlope_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnSlope_EM
+        return PrimFnDydSlope_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnSlope_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnSlope_EM
+//  $PrimProtoFnSlope_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Slope
 //***************************************************************************
@@ -60,7 +60,7 @@ LPYYSTYPE PrimFnSlope_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnSlope_EM
+LPYYSTYPE PrimProtoFnSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -72,51 +72,51 @@ LPYYSTYPE PrimProtoFnSlope_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnSlope_EM,    // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-} // End PrimProtoFnSlope_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnSlope_EM_YY,  // Ptr to primitive function routine
+                                    lptkLftArg,         // Ptr to left arg token
+                                    lptkFunc,           // Ptr to function token
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+} // End PrimProtoFnSlope_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonSlope_EM
+//  $PrimFnMonSlope_EM_YY
 //
 //  Primitive function for monadic Slope (ERROR)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonSlope_EM"
+#define APPEND_NAME     L" -- PrimFnMonSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonSlope_EM
+LPYYSTYPE PrimFnMonSlope_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return PrimFnSyntaxError_EM (lptkFunc);
-} // End PrimFnMonSlope_EM
+} // End PrimFnMonSlope_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydSlope_EM
+//  $PrimFnDydSlope_EM_YY
 //
 //  Primitive function for dyadic Slope ("expand")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSlope_EM"
+#define APPEND_NAME     L" -- PrimFnDydSlope_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydSlope_EM
+LPYYSTYPE PrimFnDydSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -755,7 +755,7 @@ NORMAL_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydSlope_EM
+} // End PrimFnDydSlope_EM_YY
 #undef  APPEND_NAME
 
 

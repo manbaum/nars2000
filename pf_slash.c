@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  PrimFnSlash_EM
+//  $PrimFnSlash_EM_YY
 //
 //  Primitive function for monadic and dyadic Slash (ERROR and "replicate")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnSlash_EM"
+#define APPEND_NAME     L" -- PrimFnSlash_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnSlash_EM
+LPYYSTYPE PrimFnSlash_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -41,26 +41,26 @@ LPYYSTYPE PrimFnSlash_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonSlash_EM    (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonSlash_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydSlash_EM    (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnSlash_EM
+        return PrimFnDydSlash_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnSlash_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnSlash_EM
+//  $PrimProtoFnSlash_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Slash
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnSlash_EM"
+#define APPEND_NAME     L" -- PrimProtoFnSlash_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnSlash_EM
+LPYYSTYPE PrimProtoFnSlash_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -72,259 +72,51 @@ LPYYSTYPE PrimProtoFnSlash_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnSlash_EM,    // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-////APLSTYPE  aplTypeLft,
-////          aplTypeRht,
-////          aplTypeRes;
-////APLNELM   aplNELMLft,
-////          aplNELMRht;
-////APLRANK   aplRankLft,
-////          aplRankRht,
-////          aplRankRes;
-////APLUINT   aplAxis,
-////          ByteRes;
-////HGLOBAL   hGlbLft = NULL,
-////          hGlbRht = NULL,
-////          hGlbRes = NULL;
-////LPVOID    lpMemLft = NULL,
-////          lpMemRht = NULL,
-////          lpMemRes = NULL;
-////LPAPLDIM  lpMemDimRht;
-////
-////HGLOBAL   hGlbLft,
-////          hGlbRht,
-////          hGlbLftProto,
-////          hGlbRhtProto;
-////LPYYSTYPE lpYYRes;
-////
-////         // Get the attributes (Type, NELM, and Rank) of the left & right args
-////         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-////         AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-////
-////         // The rank of the result is the same as that of the right arg
-////         //   with scalar right arg promoted to a vector
-////         aplRankRes = max (aplRankRht, 1);
-////
-////         // Check for axis present
-////         if (lptkAxis NE NULL)
-////         {
-////             // Replicate allows a single integer axis value only
-////             if (!CheckAxis_EM (lptkAxis,        // The axis token
-////                                aplRankRes,      // All values less than this
-////                                TRUE,            // TRUE iff scalar or one-element vector only
-////                                FALSE,           // TRUE iff want sorted axes
-////                                FALSE,           // TRUE iff axes must be contiguous
-////                                FALSE,           // TRUE iff duplicate axes are allowed
-////                                NULL,            // Return TRUE iff fractional values present
-////                               &aplAxis,         // Return last axis value
-////                                NULL,            // Return # elements in axis vector
-////                                NULL))           // Return HGLOBAL with APLINT axis values
-////                 return NULL;
-////         } else
-////         {
-////             // No axis specified:
-////             //   if Slash, use last dimension
-////             if (lptkFunc->tkData.tkChar EQ UTF16_SLASH)
-////                 aplAxis = aplRankRes - 1;
-////             else
-////                 // Otherwise, it's SlashBar on the first dimension
-////                 aplAxis = 0;
-////         } // End IF/ELSE
-////
-////         // Check for RANK ERROR
-////         if (aplRankLft > 1)
-////         {
-////             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-////                                        lptkLftArg);
-////             goto ERROR_EXIT;
-////         } // End IF
-////
-////         // Get left and right arg's global ptrs
-////         GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-////         GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-////
-////             // Skip over the header to the dimensions
-////         if (lpMemRht)
-////             lpMemDimRht = VarArrayBaseToDim (lpMemRht);
-////
-////         // Singleton left arg or scalar right arg matches everything
-////         if (aplNELMLft NE 1
-////          && aplRankRht NE 0)
-////         {
-////             // Check for LENGTH ERROR
-////             if (aplNELMLft NE lpMemDimRht[aplAxis])
-////             {
-////                 ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-////                                            lptkLftArg);
-////                 goto ERROR_EXIT;
-////             } // End IF
-////         } // End IF
-////
-////         // Check for DOMAIN ERROR
-////         if (!IsSimpleNum (aplTypeLft))
-////             goto DOMAIN_EXIT;
-////
-////         // The result is the same as the right arg
-////         //   with lpMemDimRht[aplAxis] set to zero
-////
-////         // Map APA right arg to INT result
-////         if (aplTypeRht EQ ARRAY_APA)
-////             aplTypeRes = ARRAY_INT;
-////         else
-////             aplTypeRes = aplTypeRht;
-////
-////         // Calculate space needed for the result
-////         ByteRes = CalcArraySize (aplTypeRes, 0, aplRankRes);
-////
-////         // Allocate space for the result
-////         // N.B. Conversion from APLUINT to UINT.
-////         Assert (ByteRes EQ (UINT) ByteRes);
-////         hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
-////         if (!hGlbRes)
-////         {
-////             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-////                                        lptkFunc);
-////             goto ERROR_EXIT;
-////         } // End IF
-////
-////         // Lock the memory to get a ptr to it
-////         lpMemRes = MyGlobalLock (hGlbRes);
-////
-//// #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-////
-////         // Fill in the header values
-////         lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-////         lpHeader->ArrType    = aplTypeRes;
-//// ////////lpHeader->Perm       = 0;       // Already zero from GHND
-//// ////////lpHeader->SysVar     = 0;       // Already zero from GHND
-////         lpHeader->RefCnt     = 1;
-////         lpHeader->NELM       = 0;
-////         lpHeader->Rank       = aplRankRes;
-////
-//// #undef  lpHeader
-////
-////         // Copy the dimensions from the right arg to the result
-////         if (lpMemRht)
-////             CopyMemory (VarArrayBaseToDim (lpMemRes),
-////                         VarArrayBaseToDim (lpMemRht),
-////                         (UINT) aplRankRht * sizeof (APLDIM));
-////
-////         // Fill in the axis dimension
-////         (VarArrayBaseToDim (lpMemRes))[aplAxis] = 0;
-////
-////         // Loop through the left arg
-////         DbgBrk ();      // ***FINISHME***
-////
-////
-////
-////
-////
-////
-////
-////
-////
-////
-////         // If the right arg is nested, copy its prototype
-////         //   to the result
-////         if (aplTypeRht EQ ARRAY_NESTED)
-////         {
-////             // Skip over the header and dimensions to the data
-////             lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
-////             lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-////
-////             *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
-////         } // End IF
-////
-////         // We no longer need this ptr
-////         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-////
-////         // Allocate a new YYRes
-////         lpYYRes = YYAlloc ();
-////
-////         // Fill in the result token
-////         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-//// ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-//// ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-////         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-////         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-////
-////         goto NORMAL_EXIT;
-////
-//// DOMAIN_EXIT:
-////         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-////                                    lptkFunc);
-////         goto ERROR_EXIT;
-////} // End IF/ELSE
-//// ERROR_EXIT:
-////     if (hGlbRes)
-////     {
-////         if (lpMemRes)
-////         {
-////             // We no longer need this ptr
-////             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-////         } // End IF
-////
-////         // We no longer need this storage
-////         FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
-////     } // End IF
-//// NORMAL_EXIT:
-////     if (hGlbLft && lpMemLft)
-////     {
-////         // We no longer need this ptr
-////         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-////     } // End IF
-////
-////     if (hGlbRht && lpMemRht)
-////     {
-////         // We no longer need this ptr
-////         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-////     } // End IF
-////
-////     return lpYYRes;
-} // End PrimProtoFnSlash_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnSlash_EM_YY,  // Ptr to primitive function routine
+                                    lptkLftArg,         // Ptr to left arg token
+                                    lptkFunc,           // Ptr to function token
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+} // End PrimProtoFnSlash_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonSlash_EM
+//  $PrimFnMonSlash_EM_YY
 //
 //  Primitive function for monadic Slash (ERROR)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonSlash_EM"
+#define APPEND_NAME     L" -- PrimFnMonSlash_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonSlash_EM
+LPYYSTYPE PrimFnMonSlash_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return PrimFnSyntaxError_EM (lptkFunc);
-} // End PrimFnMonSlash_EM
+} // End PrimFnMonSlash_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydSlash_EM
+//  $PrimFnDydSlash_EM
 //
 //  Primitive function for dyadic Slash ("replicate")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSlash_EM"
+#define APPEND_NAME     L" -- PrimFnDydSlash_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydSlash_EM
+LPYYSTYPE PrimFnDydSlash_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -613,19 +405,6 @@ LPYYSTYPE PrimFnDydSlash_EM
         // Calculate the NELM of the result
         aplNELMRes = uDimLo * uDimAxRes * uDimHi;
     } // End IF
-
-////// Handle prototypes separately
-////if (aplNELMRes EQ 0)
-////{
-////    lpYYRes = PrimProtoFnSlash_EM (lptkLftArg,      // Ptr to left arg token
-////                                   lptkFunc,        // Ptr to function strand
-////                                   lptkRhtArg,      // Ptr to right arg token
-////                                   lptkAxis);       // Ptr to axis token (may be NULL)
-////    if (lpYYRes)
-////        goto NORMAL_EXIT;
-////    else
-////        goto ERROR_EXIT;
-////} // End IF
 
     // Map APA right arg to INT result
     if (aplTypeRht EQ ARRAY_APA)
@@ -922,7 +701,7 @@ NORMAL_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydSlash_EM
+} // End PrimFnDydSlash_EM_YY
 #undef  APPEND_NAME
 
 

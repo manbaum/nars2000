@@ -20,18 +20,18 @@
 
 
 //***************************************************************************
-//  PrimFnDomino_EM
+//  $PrimFnDomino_EM_YY
 //
 //  Primitive function for monadic and dyadic Domino ("matrix inverse" and "matrix divide")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDomino_EM"
+#define APPEND_NAME     L" -- PrimFnDomino_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDomino_EM
+LPYYSTYPE PrimFnDomino_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -55,26 +55,26 @@ LPYYSTYPE PrimFnDomino_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonDomino_EM             (lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonDomino_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydDomino_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnDomino_EM
+        return PrimFnDydDomino_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnDomino_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnDomino_EM
+//  $PrimProtoFnDomino_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Domino
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDomino_EM"
+#define APPEND_NAME     L" -- PrimProtoFnDomino_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnDomino_EM
+LPYYSTYPE PrimProtoFnDomino_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,59 +86,59 @@ LPYYSTYPE PrimProtoFnDomino_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnDomino_EM,   // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-} // End PrimProtoFnDomino_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnDomino_EM_YY, // Ptr to primitive function routine
+                                    lptkLftArg,         // Ptr to left arg token
+                                    lptkFunc,           // Ptr to function token
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+} // End PrimProtoFnDomino_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonDomino_EM
+//  $PrimFnMonDomino_EM_YY
 //
 //  Primitive function for monadic Domino ("matrix inverse")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonDomino_EM"
+#define APPEND_NAME     L" -- PrimFnMonDomino_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonDomino_EM
+LPYYSTYPE PrimFnMonDomino_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    BOOL     bRet = TRUE;
-    APLSTYPE aplTypeRht;
-    APLNELM  aplNELMRht,
-             aplNELMRes;
-    APLRANK  aplRankRht,
-             aplRankRes;
-    HGLOBAL  hGlbRht = NULL,
-             hGlbRes = NULL;
-    LPVOID   lpMemRht = NULL,
-             lpMemRes = NULL;
-    APLUINT  ByteRes;
-    APLDIM   uNumRows,
-             uNumCols,
-             uRow,
-             uCol,
-             uTmp;
-    APLINT   apaOff,
-             apaMul;
-    APLFLOAT aplFloatRht;
-    LPYYSTYPE   lpYYRes;
-    UINT        uBitMask;
-    gsl_matrix      *lpGslMatrixU = NULL,
-                    *lpGslMatrixV = NULL;
-    gsl_vector      *lpGslVectorS = NULL,
-                    *lpGslVectorW = NULL;
-    int              ErrCode;
+    APLSTYPE    aplTypeRht;         // Right arg storage type
+    APLNELM     aplNELMRht,         // Right arg NELM
+                aplNELMRes;         // Result    ...
+    APLRANK     aplRankRht,         // Right arg rank
+                aplRankRes;         // Result    ...
+    HGLOBAL     hGlbRht = NULL,     // Right arg global memory handle
+                hGlbRes = NULL;     // Result    ...
+    LPVOID      lpMemRht = NULL,    // Ptr to right arg global memory
+                lpMemRes = NULL;    // Ptr to result    ...
+    APLUINT     ByteRes;            // # bytes needed for the result
+    APLDIM      uNumRows,
+                uNumCols,
+                uRow,
+                uCol,
+                uTmp;
+    APLINT      apaOffRht,          // Right arg APA offset
+                apaMulRht;          // ...           multiplier
+    APLFLOAT    aplFloatRht;        // Right arg temporary float
+    BOOL        bRet = TRUE;        // TRUE iff result is valid
+    LPYYSTYPE   lpYYRes;            // Ptr to the result
+    UINT        uBitMask;           // Bit mask for marching through Booleans
+    gsl_matrix *lpGslMatrixU = NULL,
+               *lpGslMatrixV = NULL;
+    gsl_vector *lpGslVectorS = NULL,
+               *lpGslVectorW = NULL;
+    int         ErrCode;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -331,11 +331,11 @@ LPYYSTYPE PrimFnMonDomino_EM
 
                 case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemRht)
-                    apaOff = lpAPA->Off;
-                    apaMul = lpAPA->Mul;
+                    apaOffRht = lpAPA->Off;
+                    apaMulRht = lpAPA->Mul;
 #undef  lpAPA
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
-                        lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOff + apaMul * uCol);
+                        lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
                     break;
 
                 defstop
@@ -520,67 +520,69 @@ NORMAL_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnMonDomino_EM
+} // End PrimFnMonDomino_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydDomino_EM
+//  $PrimFnDydDomino_EM_YY
 //
 //  Primitive function for dyadic Domino ("matrix divide")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDomino_EM"
+#define APPEND_NAME     L" -- PrimFnDydDomino_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydDomino_EM
+LPYYSTYPE PrimFnDydDomino_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    BOOL     bRet = TRUE;
-    APLSTYPE aplTypeLft,
-             aplTypeRht;
-    APLNELM  aplNELMLft,
-             aplNELMRht,
-             aplNELMRes;
-    APLRANK  aplRankLft,
-             aplRankRht,
-             aplRankRes;
-    HGLOBAL  hGlbLft = NULL,
-             hGlbRht = NULL,
-             hGlbRes = NULL;
-    LPVOID   lpMemLft = NULL,
-             lpMemRht = NULL,
-             lpMemRes = NULL;
-    APLUINT  ByteRes;
-    APLDIM   uNumRowsLft,
-             uNumColsLft,
-             uNumRowsRht,
-             uNumColsRht,
-             uNumRowsRes,
-             uNumColsRes,
-             uRow,
-             uCol;
-    APLINT   apaOff,
-             apaMul;
-    APLFLOAT aplFloatLft,
-             aplFloatRht,
-             aplFloatRes;
-    LPYYSTYPE  lpYYRes;
-    UINT       uBitMask;
-    gsl_matrix      *lpGslMatrixU = NULL,
-                    *lpGslMatrixV = NULL;
-    gsl_vector      *lpGslVectorS = NULL,
-                    *lpGslVectorW = NULL,
-                    *lpGslVectorX = NULL,
-                    *lpGslVectorB = NULL;
-    int              ErrCode;
+    APLSTYPE   aplTypeLft,          // Left arg storage type
+               aplTypeRht;          // Right ...
+    APLNELM    aplNELMLft,          // Left arg NELM
+               aplNELMRht,          // Right ...
+               aplNELMRes;          // Result   ...
+    APLRANK    aplRankLft,          // Left arg rank
+               aplRankRht,          // Right ...
+               aplRankRes;          // Result   ...
+    HGLOBAL    hGlbLft = NULL,      // Left arg global memory handle
+               hGlbRht = NULL,      // Right ...
+               hGlbRes = NULL;      // Result   ...
+    LPVOID     lpMemLft = NULL,     // Ptr to left arg global memory
+               lpMemRht = NULL,     // Ptr to right ...
+               lpMemRes = NULL;     // Ptr to result   ...
+    APLUINT    ByteRes;             // # bytes needed for the result
+    APLDIM     uNumRowsLft,         //
+               uNumColsLft,         //
+               uNumRowsRht,         //
+               uNumColsRht,         //
+               uNumRowsRes,         //
+               uNumColsRes,         //
+               uRow,                //
+               uCol;                //
+    APLINT     apaOffLft,           // Left arg APA offset
+               apaMulLft,           // ...           multiplier
+               apaOffRht,           // Right arg APA offset
+               apaMulRht;           // ...           multiplier
+    APLFLOAT   aplFloatLft,         //
+               aplFloatRht,         //
+               aplFloatRes;         //
+    BOOL       bRet = TRUE;         // TRUE iff result is valid
+    LPYYSTYPE  lpYYRes;             // Ptr to the result
+    UINT       uBitMask;            // Bit mask for marching through Booleans
+    gsl_matrix *lpGslMatrixU = NULL,
+               *lpGslMatrixV = NULL;
+    gsl_vector *lpGslVectorS = NULL,
+               *lpGslVectorW = NULL,
+               *lpGslVectorX = NULL,
+               *lpGslVectorB = NULL;
+    int         ErrCode;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -820,11 +822,11 @@ LPYYSTYPE PrimFnDydDomino_EM
 
                 case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemRht)
-                    apaOff = lpAPA->Off;
-                    apaMul = lpAPA->Mul;
+                    apaOffRht = lpAPA->Off;
+                    apaMulRht = lpAPA->Mul;
 #undef  lpAPA
                     for (uCol = 0; uCol < aplNELMRht; uCol++)
-                        lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOff + apaMul * uCol);
+                        lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
                     break;
 
                 defstop
@@ -900,11 +902,11 @@ LPYYSTYPE PrimFnDydDomino_EM
             case ARRAY_APA:
                 Assert (uNumRowsLft EQ lpGslVectorB->size);
 #define lpAPA       ((LPAPLAPA) lpMemLft)
-                    apaOff = lpAPA->Off;
-                    apaMul = lpAPA->Mul;
+                    apaOffLft = lpAPA->Off;
+                    apaMulLft = lpAPA->Mul;
 #undef  lpAPA
                 for (uRow = 0; uRow < uNumRowsLft; uRow++)
-                    lpGslVectorB->data[uRow] = (APLFLOAT) (APLINT) (apaOff + apaMul * (uRow * uNumColsLft + uCol));
+                    lpGslVectorB->data[uRow] = (APLFLOAT) (APLINT) (apaOffLft + apaMulLft * (uRow * uNumColsLft + uCol));
                 break;
 
             defstop
@@ -1039,7 +1041,7 @@ NORMAL_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydDomino_EM
+} // End PrimFnDydDomino_EM_YY
 #undef  APPEND_NAME
 
 

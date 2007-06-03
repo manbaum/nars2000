@@ -17,7 +17,7 @@
 
 
 //***************************************************************************
-//  TranslateFcnTypeToTknType
+//  $TranslateFcnTypeToTknType
 //
 //  Translate a function type (see FCN_TYPES enum) to
 //    a named token type (see TOKEN_TYPES enum).
@@ -46,7 +46,7 @@ STRAND_TYPES TranslateFcnTypeToTknTypeNamed
 
 
 //***************************************************************************
-//  TranslateImmTypeToTknType
+//  $TranslateImmTypeToTknType
 //
 //  Translate an immediate type (see IMM_TYPES enum) to
 //    a token type (see TOKEN_TYPES enum).
@@ -80,7 +80,7 @@ STRAND_TYPES TranslateImmTypeToTknType
 
 
 //***************************************************************************
-//  TranslateImmTypeToStrandType
+//  $TranslateImmTypeToStrandType
 //
 //  Translate an immediate type (see IMM_TYPES enum) to
 //    a strand type (see STRAND_TYPES enum).
@@ -111,7 +111,7 @@ STRAND_TYPES TranslateImmTypeToStrandType
 
 
 //***************************************************************************
-//  TranslateImmTypeToArrayType
+//  $TranslateImmTypeToArrayType
 //
 //  Translate an immediate type (see IMM_TYPES enum) to
 //    an array type (see ARRAY_TYPES enum).
@@ -142,7 +142,7 @@ APLSTYPE TranslateImmTypeToArrayType
 
 
 //***************************************************************************
-//  TranslateArrayTypeToImmType
+//  $TranslateArrayTypeToImmType
 //
 //  Translate an array type (see ARRAY_TYPES enum) to
 //    an immediate type (see IMM_TYPES enum).
@@ -177,7 +177,7 @@ IMM_TYPES TranslateArrayTypeToImmType
 
 
 //***************************************************************************
-//  TranslateArrayTypeToStrandType
+//  $TranslateArrayTypeToStrandType
 //
 //  Translate an array type (see ARRAY_TYPES enum) to
 //    a strand type (see STRAND_TYPES enum).
@@ -214,7 +214,7 @@ STRAND_TYPES TranslateArrayTypeToStrandType
 
 
 //***************************************************************************
-//  TranslateStrandTypeToArrayType
+//  $TranslateStrandTypeToArrayType
 //
 //  Translate a strand type (see STRAND_TYPES enum) to
 //    an array type (see ARRAY_TYPES enum).

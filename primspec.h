@@ -192,7 +192,7 @@ typedef APLFLOAT FISCVC (APLCHAR , APLCHAR , struct tagPrimSpec *lpPrimSpec);
 typedef struct tagPrimSpec
 {
     // Monadic functions
-    LPPRIMFN_MON        PrimFnMon_EM;       // Ptr to monadic primitive function
+    LPPRIMFN_MON        PrimFnMon_EM_YY;    // Ptr to monadic primitive function
     LPSTORAGE_TYPE_MON  StorageTypeMon;     // ...            storage type ...
     LPAPARESULT_MON     ApaResultMon_EM;    // ...            APA result ...
 
@@ -209,7 +209,7 @@ typedef struct tagPrimSpec
     FISF               *FisF;               // ...            F
 
     // Dyadic functions
-    LPPRIMFN_DYD        PrimFnDyd_EM;       // Ptr to dyadic primitive function
+    LPPRIMFN_DYD        PrimFnDyd_EM_YY;    // Ptr to dyadic primitive function
     LPSTORAGE_TYPE_DYD  StorageTypeDyd;     // ...           storage type ...
     LPAPARESULT_DYD     ApaResultDyd_EM;    // ...           APA result ...
 

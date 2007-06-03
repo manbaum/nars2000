@@ -20,7 +20,7 @@
 PRIMSPEC PrimSpecColonBar =
 {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecColonBarStorageTypeMon,
     NULL,   // &PrimFnMonColonBarAPA_EM, -- Can't happen w/ColonBar
 
@@ -37,7 +37,7 @@ PRIMSPEC PrimSpecColonBar =
     &PrimFnMonColonBarFisF,
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecColonBarStorageTypeDyd,
     NULL,   // &PrimFnDydColonBarAPA_EM, -- Can't happen w/ColonBar
 
@@ -63,18 +63,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecColonBar};
 
 
 //***************************************************************************
-//  PrimFnColonBar_EM
+//  $PrimFnColonBar_EM_YY
 //
 //  Primitive function for monadic and dyadic ColonBar ("reciprocal" and "division")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnColonBar_EM"
+#define APPEND_NAME     L" -- PrimFnColonBar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnColonBar_EM
+LPYYSTYPE PrimFnColonBar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,15 +86,15 @@ LPYYSTYPE PrimFnColonBar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnColonBar_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnColonBar_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecColonBarStorageTypeMon
+//  $PrimSpecColonBarStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -129,7 +129,7 @@ APLSTYPE PrimSpecColonBarStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonColonBarFisI
+//  $PrimFnMonColonBarFisI
 //
 //  Primitive scalar function monadic ColonBar:  F {is} fn I
 //***************************************************************************
@@ -145,7 +145,7 @@ APLFLOAT PrimFnMonColonBarFisI
 
 
 //***************************************************************************
-//  PrimFnMonColonBarFisF
+//  $PrimFnMonColonBarFisF
 //
 //  Primitive scalar function monadic ColonBar:  F {is} fn F
 //***************************************************************************
@@ -161,7 +161,7 @@ APLFLOAT PrimFnMonColonBarFisF
 
 
 //***************************************************************************
-//  PrimSpecColonBarStorageTypeDyd
+//  $PrimSpecColonBarStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -198,7 +198,7 @@ APLSTYPE PrimSpecColonBarStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydColonBarFisIvI
+//  $PrimFnDydColonBarFisIvI
 //
 //  Primitive scalar function dyadic ColonBar:  F {is} I fn I
 //***************************************************************************
@@ -215,7 +215,7 @@ APLFLOAT PrimFnDydColonBarFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydColonBarFisFvF
+//  $PrimFnDydColonBarFisFvF
 //
 //  Primitive scalar function dyadic ColonBar:  F {is} F fn F
 //***************************************************************************

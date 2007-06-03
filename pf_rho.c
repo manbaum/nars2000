@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  PrimFnRho_EM
+//  $PrimFnRho_EM_YY
 //
 //  Primitive function for monadic and dyadic Rho ("shape" and "reshape")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnRho_EM"
+#define APPEND_NAME     L" -- PrimFnRho_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnRho_EM
+LPYYSTYPE PrimFnRho_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -52,26 +52,26 @@ LPYYSTYPE PrimFnRho_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonRho_EM             (lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonRho_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydRho_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnRho_EM
+        return PrimFnDydRho_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnRho_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnRho_EM
+//  $PrimProtoFnRho_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Rho
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnRho_EM"
+#define APPEND_NAME     L" -- PrimProtoFnRho_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnRho_EM
+LPYYSTYPE PrimProtoFnRho_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -83,28 +83,28 @@ LPYYSTYPE PrimProtoFnRho_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnRho_EM,      // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-} // End PrimProtoFnRho_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnRho_EM_YY,    // Ptr to primitive function routine
+                                    lptkLftArg,         // Ptr to left arg token
+                                    lptkFunc,           // Ptr to function token
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+} // End PrimProtoFnRho_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonRho_EM
+//  $PrimFnMonRho_EM_YY
 //
 //  Primitive function for monadic Rho ("shape")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonRho_EM"
+#define APPEND_NAME     L" -- PrimFnMonRho_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonRho_EM
+LPYYSTYPE PrimFnMonRho_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -123,8 +123,9 @@ LPYYSTYPE PrimFnMonRho_EM
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                return PrimFnMonRhoGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                           lptkFunc);
+                return PrimFnMonRhoGlb_EM_YY
+                       (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
+                        lptkFunc);                                                      // Ptr to function token
             } // End IF
 
             // Handle the immediate case
@@ -132,14 +133,15 @@ LPYYSTYPE PrimFnMonRho_EM
             // Fall through to TKT_VARIMMED case to return {zilde}
 
         case TKT_VARIMMED:          // Return {zilde}
-            return PrimFnMonRhoCon_EM (lptkFunc);
+            return PrimFnMonRhoCon_EM_YY (lptkFunc);
 
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
-            return PrimFnMonRhoGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                       lptkFunc);
+            return PrimFnMonRhoGlb_EM_YY
+                   (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
+                    lptkFunc);                                          // Ptr to function token
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                        lptkFunc);
@@ -148,17 +150,17 @@ LPYYSTYPE PrimFnMonRho_EM
         defstop
             return NULL;
     } // End SWITCH
-} // End PrimFnMonRho_EM
+} // End PrimFnMonRho_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonRhoCon_EM
+//  $PrimFnMonRhoCon_EM_YY
 //
 //  Monadic Rho on a symbol table constant
 //***************************************************************************
 
-LPYYSTYPE PrimFnMonRhoCon_EM
+LPYYSTYPE PrimFnMonRhoCon_EM_YY
     (LPTOKEN lptkFunc)
 
 {
@@ -177,22 +179,22 @@ LPYYSTYPE PrimFnMonRhoCon_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End PrimFnMonRhoCon_EM
+} // End PrimFnMonRhoCon_EM_YY
 
 
 //***************************************************************************
-//  PrimFnMonRhoGlb_EM
+//  $PrimFnMonRhoGlb_EM_YY
 //
 //  Monadic Rho on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonRhoGlb_EM"
+#define APPEND_NAME     L" -- PrimFnMonRhoGlb_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonRhoGlb_EM
+LPYYSTYPE PrimFnMonRhoGlb_EM_YY
     (HGLOBAL hGlbRht,               // Right arg handle
      LPTOKEN lptkFunc)              // Ptr to function token
 
@@ -201,7 +203,7 @@ LPYYSTYPE PrimFnMonRhoGlb_EM
               lpMemRes;         // ...    result ...
     APLRANK aplRankRht;      // The rank of the array
     HGLOBAL   hGlbRes;          // Result global memory handle
-    APLUINT   ByteRes;          // # bytes in the result
+    APLUINT   ByteRes;          // # bytes needed for the result
     BOOL      bRet = TRUE;      // TRUE iff the result is valid
     UINT      uRes;             // Loop counter
     LPYYSTYPE lpYYRes = NULL;   // Ptr to result
@@ -290,29 +292,31 @@ ERROR_EXIT:
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
     return lpYYRes;
-} // End PrimFnMonRhoGlb_EM
+} // End PrimFnMonRhoGlb_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydRho_EM
+//  $PrimFnDydRho_EM_YY
 //
 //  Primitive function for dydadic Rho ("reshape")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRho_EM"
+#define APPEND_NAME     L" -- PrimFnDydRho_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydRho_EM
+LPYYSTYPE PrimFnDydRho_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    APLSTYPE aplTypeRht,    // Right arg storage type
+             aplTypeRes;    // Result    ...
     APLNELM  aplNELMRht,    // Right arg NELM
              aplNELMRes;    // Result ...
     APLRANK  aplRankRes;    // Result rank
@@ -320,10 +324,10 @@ LPYYSTYPE PrimFnDydRho_EM
              hGlbProto;     // ...                prototype
     LPVOID   lpMemRes;      // Ptr to result's global memory
     BOOL     bRet = TRUE,   // TRUE iff the result is valid
+             bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
              bPrototype = FALSE; // TRUE iff we're to generate a prototype
-    APLSTYPE aplTypeRes;    // Storage type of the result
-    APLUINT  ByteRes;       // # bytes needed in the result
-    LPYYSTYPE lpYYRes;      // Ptr to result
+    APLUINT  ByteRes;       // # bytes needed for the result
+    LPYYSTYPE lpYYRes;      // Ptr to the result
 
     //***************************************************************
     // Validate the left arg token
@@ -337,7 +341,10 @@ LPYYSTYPE PrimFnDydRho_EM
     //***************************************************************
     // Get the attributes (Type, NELM, and Rank) of the right arg
     //***************************************************************
-    AttrsOfToken (lptkRhtArg, &aplTypeRes, &aplNELMRht, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, NULL);
+
+    // Normally, the result storage type is the same as that of the right arg
+    aplTypeRes = aplTypeRht;
 
     //***************************************************************
     // Check for non-zero result NELM and zero right arg NELM
@@ -458,6 +465,13 @@ LPYYSTYPE PrimFnDydRho_EM
     //***************************************************************
     // Handle APAs specially
     //***************************************************************
+    if (IsSimpleInt (aplTypeRht)    // If right arg is simple integer (BOOL, INT, APA),
+     && aplNELMRht EQ 1             //   and a singleton, ...
+     && aplNELMRes NE 0)            //   and not an empty result
+    {
+        aplTypeRes = ARRAY_APA;     // Result is an APA
+        bReshapeSing = TRUE;        // Mark as special handling
+    } else
     if (aplTypeRes EQ ARRAY_APA)
     {
         // If the right arg is reused, we cannot
@@ -513,6 +527,26 @@ LPYYSTYPE PrimFnDydRho_EM
     //   to the result as its data
     //***************************************************************
 
+    // Check for reshaping an integer singleton
+    if (bReshapeSing)
+    {
+        // Get a ptr to the result's data
+        lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+
+#define lpAPA       ((LPAPLAPA) lpMemRes)
+        // Get the first value from the right arg
+        FirstValue (lptkRhtArg,     // Ptr to right arg token
+                   &lpAPA->Off,     // Ptr to integer result
+                    NULL,           // Ptr to float ...
+                    NULL,           // Ptr to WCHAR ...
+                    NULL,           // Ptr to longest ...
+                    NULL,           // Ptr to lpSym/Glb ...
+                    NULL,           // Ptr to ...immediate type ...
+                    NULL);          // Ptr to array type ...
+        lpAPA->Mul = 0;
+        lpAPA->Len = aplNELMRes;
+#undef  lpAPA
+    } else
     //***************************************************************
     // If the result is empty, but we need to generate
     //   a prototype, do so now
@@ -527,13 +561,11 @@ LPYYSTYPE PrimFnDydRho_EM
             bRet = FALSE;
         else
         {
-            LPAPLNESTED lpDataRes;
-
             // Get a ptr to the result's data
-            lpDataRes = VarArrayBaseToData (lpMemRes, aplRankRes);
+            lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
             // Save the handle
-            *lpDataRes = MakeGlbTypeGlb (hGlbProto);
+            *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbProto);
         } // End IF
     } else
     if (aplNELMRes)
@@ -557,8 +589,11 @@ LPYYSTYPE PrimFnDydRho_EM
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // See if it fits into a lower (but not necessarily smaller) datatype
+        lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
 
         return lpYYRes;
     } else
@@ -569,12 +604,12 @@ LPYYSTYPE PrimFnDydRho_EM
 
         return NULL;
     } // End IF
-} // End PrimFnDydRho_EM
+} // End PrimFnDydRho_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydRhoRhtCopyData
+//  $PrimFnDydRhoRhtCopyData
 //
 //  Copy data to the result
 //***************************************************************************
@@ -802,7 +837,7 @@ BOOL PrimFnDydRhoRhtCopyData
 
 
 //***************************************************************************
-//  PrimFnDydRhoCopyDim
+//  $PrimFnDydRhoCopyDim
 //
 //  Copy dimensions to the result of dyadic Rho
 //***************************************************************************
@@ -911,7 +946,7 @@ void PrimFnDydRhoCopyDim
 
 
 //***************************************************************************
-//  PrimFnDydRhoLftValid_EM
+//  $PrimFnDydRhoLftValid_EM
 //
 //  Validate the left argument as a simple numeric scalar or vector
 //    all of whose elements can be coerced to non-negative integers,
@@ -1095,7 +1130,7 @@ BOOL PrimFnDydRhoLftValid_EM
 
 
 //***************************************************************************
-//  PrimFnDydRhoLftGlbValid_EM
+//  $PrimFnDydRhoLftGlbValid_EM
 //
 //  Dyadic Rho left argument validation on a global memory object
 //***************************************************************************
@@ -1285,7 +1320,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
 
 
 //***************************************************************************
-//  PrimFnDydRhoLftGlbCopyDim
+//  $PrimFnDydRhoLftGlbCopyDim
 //
 //  Dyadic Rho left argument copying from the left global memory object
 //    to the result's dimensions
@@ -1377,7 +1412,7 @@ void PrimFnDydRhoLftGlbCopyDim
 
 
 //***************************************************************************
-//  PrimFnDydRhoRhtGlbCopyData_EM
+//  $PrimFnDydRhoRhtGlbCopyData_EM
 //
 //  Dyadic rho right argument copy data to the result
 //***************************************************************************

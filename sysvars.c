@@ -109,7 +109,7 @@ SYSNAME aSystemNames[] =
 
 
 //***************************************************************************
-//  MakePermVars
+//  $MakePermVars
 //
 //  Make various permanent variables
 //***************************************************************************
@@ -165,7 +165,7 @@ void MakePermVars
 
 
 //***************************************************************************
-//  MakePermCharVector
+//  $MakePermCharVector
 //
 //  Make a permanent character vector
 //***************************************************************************
@@ -223,7 +223,7 @@ HGLOBAL MakePermCharVector
 
 
 //***************************************************************************
-//  SymTabAppendSysName_EM
+//  $SymTabAppendSysName_EM
 //
 //  Append a system name to the symbol table
 //***************************************************************************
@@ -271,7 +271,7 @@ BOOL SymTabAppendSysName_EM
 
 
 //***************************************************************************
-//  AppendSystemNames_EM
+//  $AppendSystemNames_EM
 //
 //  Append all system names to the symbol table
 //***************************************************************************
@@ -298,7 +298,7 @@ BOOL AppendSystemNames_EM
 
 
 //***************************************************************************
-//  AssignCharVector_EM
+//  $AssignCharVector_EM
 //
 //  Assign a character vector to a name
 //***************************************************************************
@@ -352,7 +352,7 @@ BOOL AssignCharVector_EM
 
 
 //***************************************************************************
-//  AssignRealScalar_EM
+//  $AssignRealScalar_EM
 //
 //  Assign a real number scalar to a name
 //***************************************************************************
@@ -403,7 +403,7 @@ BOOL AssignRealScalar_EM
 
 
 //***************************************************************************
-//  AssignBoolScalar
+//  $AssignBoolScalar
 //
 //  Assign an Boolean scalar to a name
 //***************************************************************************
@@ -454,7 +454,7 @@ BOOL AssignBoolScalar_EM
 
 
 //***************************************************************************
-//  AssignIntScalar_EM
+//  $AssignIntScalar_EM
 //
 //  Assign an integer scalar to a name
 //***************************************************************************
@@ -505,7 +505,7 @@ BOOL AssignIntScalar_EM
 
 
 //***************************************************************************
-//  AssignCharScalar_EM
+//  $AssignCharScalar_EM
 //
 //  Assign a character scalar to a name
 //***************************************************************************
@@ -556,7 +556,7 @@ BOOL AssignCharScalar_EM
 
 
 //***************************************************************************
-//  ValidateBoolean_EM
+//  $ValidateBoolean_EM
 //
 //  Validate a value about to be assigned to a Boolean system var.
 //
@@ -782,7 +782,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  ValidateInteger_EM
+//  $ValidateInteger_EM
 //
 //  Validate a value about to be assigned to an integer system var.
 //
@@ -1042,7 +1042,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  ValidateFloat_EM
+//  $ValidateFloat_EM
 //
 //  Validate a value about to be assigned to a float system var.
 //
@@ -1300,7 +1300,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  ValidateCharVector_EM
+//  $ValidateCharVector_EM
 //
 //  Validate a value about to be assigned to a character vector system var.
 //
@@ -1530,7 +1530,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  ValidateALX_EM
+//  $ValidateALX_EM
 //
 //  Validate a value about to be assigned to Quad-ALX
 //***************************************************************************
@@ -1548,7 +1548,7 @@ BOOL ValidateALX_EM
 
 
 //***************************************************************************
-//  ValidateCT_EM
+//  $ValidateCT_EM
 //
 //  Validate a value about to be assigned to Quad-CT
 //***************************************************************************
@@ -1567,7 +1567,7 @@ BOOL ValidateCT_EM
 
 
 //***************************************************************************
-//  ValidateELX_EM
+//  $ValidateELX_EM
 //
 //  Validate a value about to be assigned to Quad-ELX
 //***************************************************************************
@@ -1585,7 +1585,7 @@ BOOL ValidateELX_EM
 
 
 //***************************************************************************
-//  ValidateIO_EM
+//  $ValidateIO_EM
 //
 //  Validate a value about to be assigned to Quad-IO
 //
@@ -1607,7 +1607,7 @@ BOOL ValidateIO_EM
 
 
 //***************************************************************************
-//  ValidateLX_EM
+//  $ValidateLX_EM
 //
 //  Validate a value about to be assigned to Quad-LX
 //***************************************************************************
@@ -1625,7 +1625,7 @@ BOOL ValidateLX_EM
 
 
 //***************************************************************************
-//  ValidatePP_EM
+//  $ValidatePP_EM
 //
 //  Validate a value about to be assigned to Quad-PP
 //***************************************************************************
@@ -1648,7 +1648,7 @@ BOOL ValidatePP_EM
 
 
 //***************************************************************************
-//  ValidatePR_EM
+//  $ValidatePR_EM
 //
 //  Validate a value about to be assigned to Quad-PR
 //***************************************************************************
@@ -1825,7 +1825,7 @@ MAKE_SCALAR:
 
 
 //***************************************************************************
-//  ValidatePW_EM
+//  $ValidatePW_EM
 //
 //  Validate a value about to be assigned to Quad-PW
 //***************************************************************************
@@ -1848,7 +1848,7 @@ BOOL ValidatePW_EM
 
 
 //***************************************************************************
-//  ValidateRL_EM
+//  $ValidateRL_EM
 //
 //  Validate a value about to be assigned to Quad-RL
 //***************************************************************************
@@ -1871,7 +1871,7 @@ BOOL ValidateRL_EM
 
 
 //***************************************************************************
-//  ValidateSA_EM
+//  $ValidateSA_EM
 //
 //  Validate a value about to be assigned to Quad-SA
 //***************************************************************************
@@ -2048,7 +2048,7 @@ BOOL ValidateSA_EM
 
 
 //***************************************************************************
-//  ValidateWSID_EM
+//  $ValidateWSID_EM
 //
 //  Validate a value about to be assigned to Quad-WSID
 //***************************************************************************
@@ -2081,7 +2081,7 @@ BOOL ValidateWSID_EM
 
 
 //***************************************************************************
-//  InitSystemVars
+//  $InitSystemVars
 //
 //  Initialize all system vars
 //***************************************************************************

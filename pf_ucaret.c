@@ -38,7 +38,7 @@ PRIMSPEC PrimSpecUpCaret = {
     NULL,   // &PrimFnMonUpCaretFisF, -- Can't happen w/UpCaret
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecUpCaretStorageTypeDyd,
     NULL,   // &PrimFnDydUpCaretAPA_EM, -- Can't happen w/UpCaret
 
@@ -64,18 +64,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecUpCaret};
 
 
 //***************************************************************************
-//  PrimFnUpCaret_EM
+//  $PrimFnUpCaret_EM_YY
 //
 //  Primitive function for monadic and dyadic UpCaret (ERROR and "and/LCM")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnUpCaret_EM"
+#define APPEND_NAME     L" -- PrimFnUpCaret_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnUpCaret_EM
+LPYYSTYPE PrimFnUpCaret_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -88,15 +88,15 @@ LPYYSTYPE PrimFnUpCaret_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnUpCaret_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecUpCaretStorageTypeDyd
+//  $PrimSpecUpCaretStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -129,7 +129,7 @@ APLSTYPE PrimSpecUpCaretStorageTypeDyd
 
 
 //***************************************************************************
-//  lcmAplInt
+//  $lcmAplInt
 //
 //  LCM (Least Common Multiple) for aplIntegers
 //***************************************************************************
@@ -162,7 +162,7 @@ APLINT lcmAplInt
 
 
 //***************************************************************************
-//  lcmAplFloat
+//  $lcmAplFloat
 //
 //  LCM (Least Common Multiple) for aplFloats
 //***************************************************************************
@@ -195,7 +195,7 @@ APLFLOAT lcmAplFloat
 
 
 //***************************************************************************
-//  PrimFnDydUpCaretBisBvB
+//  $PrimFnDydUpCaretBisBvB
 //
 //  Primitive scalar function dyadic UpCaret:  B {is} B fn B
 //***************************************************************************
@@ -211,7 +211,7 @@ APLBOOL PrimFnDydUpCaretBisBvB
 
 
 //***************************************************************************
-//  PrimFnDydUpCaretIisIvI
+//  $PrimFnDydUpCaretIisIvI
 //
 //  Primitive scalar function dyadic UpCaret:  I {is} I fn I
 //***************************************************************************
@@ -227,7 +227,7 @@ APLINT PrimFnDydUpCaretIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydUpCaretFisIvI
+//  $PrimFnDydUpCaretFisIvI
 //
 //  Primitive scalar function dyadic UpCaret:  F {is} I fn I
 //***************************************************************************
@@ -243,7 +243,7 @@ APLFLOAT PrimFnDydUpCaretFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydUpCaretFisFvF
+//  $PrimFnDydUpCaretFisFvF
 //
 //  Primitive scalar function dyadic UpCaret:  F {is} F fn F
 //***************************************************************************

@@ -20,7 +20,7 @@
 PRIMSPEC PrimSpecPlus =
 {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecPlusStorageTypeMon,
     &PrimFnMonPlusAPA_EM,
 
@@ -37,7 +37,7 @@ PRIMSPEC PrimSpecPlus =
     &PrimFnMonPlusFisF,
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecPlusStorageTypeDyd,
     &PrimFnDydPlusAPA_EM,
 
@@ -63,18 +63,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecPlus};
 
 
 //***************************************************************************
-//  PrimFnPlus_EM
+//  $PrimFnPlus_EM_YY
 //
 //  Primitive function for monadic and dyadic Plus ("conjugate" and "addition")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnPlus_EM"
+#define APPEND_NAME     L" -- PrimFnPlus_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnPlus_EM
+LPYYSTYPE PrimFnPlus_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,15 +86,15 @@ LPYYSTYPE PrimFnPlus_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnPlus_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnPlus_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecPlusStorageTypeMon
+//  $PrimSpecPlusStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -125,7 +125,7 @@ APLSTYPE PrimSpecPlusStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonPlusBisB
+//  $PrimFnMonPlusBisB
 //
 //  Primitive scalar function monadic Plus:  B {is} fn B
 //***************************************************************************
@@ -140,7 +140,7 @@ APLBOOL PrimFnMonPlusBisB
 
 
 //***************************************************************************
-//  PrimFnMonPlusIisI
+//  $PrimFnMonPlusIisI
 //
 //  Primitive scalar function monadic Plus:  I {is} fn I
 //***************************************************************************
@@ -155,7 +155,7 @@ APLINT PrimFnMonPlusIisI
 
 
 //***************************************************************************
-//  PrimFnMonPlusFisF
+//  $PrimFnMonPlusFisF
 //
 //  Primitive scalar function monadic Plus:  F {is} fn F
 //***************************************************************************
@@ -170,7 +170,7 @@ APLFLOAT PrimFnMonPlusFisF
 
 
 //***************************************************************************
-//  PrimFnMonPlusAPA_EM
+//  $PrimFnMonPlusAPA_EM
 //
 //  Monadic plus, result is APA
 //***************************************************************************
@@ -196,8 +196,7 @@ BOOL PrimFnMonPlusAPA_EM
     // Axis may be anything
 
     // Copy the HGLOBAL to the result
-    // CopySymGlb below will increment the reference count
-    *lphGlbRes = hGlbRht;
+    *lphGlbRes = CopySymGlbDirGlb (hGlbRht);
 
     // Fill in the result token
     if (lpYYRes)
@@ -205,7 +204,7 @@ BOOL PrimFnMonPlusAPA_EM
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirGlb (hGlbRht);
+        lpYYRes->tkToken.tkData.tkGlbData  = hGlbRht;
     } // End IF
 
     DBGLEAVE;
@@ -216,7 +215,7 @@ BOOL PrimFnMonPlusAPA_EM
 
 
 //***************************************************************************
-//  PrimSpecPlusStorageTypeDyd
+//  $PrimSpecPlusStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -260,7 +259,7 @@ APLSTYPE PrimSpecPlusStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydPlusIisIvI
+//  $PrimFnDydPlusIisIvI
 //
 //  Primitive scalar function dyadic Plus:  I {is} I fn I
 //***************************************************************************
@@ -278,7 +277,7 @@ APLINT PrimFnDydPlusIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydPlusFisIvI
+//  $PrimFnDydPlusFisIvI
 //
 //  Primitive scalar function dyadic Plus:  F {is} I fn I
 //***************************************************************************
@@ -296,7 +295,7 @@ APLFLOAT PrimFnDydPlusFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydPlusFisFvF
+//  $PrimFnDydPlusFisFvF
 //
 //  Primitive scalar function dyadic Plus:  F {is} F fn F
 //***************************************************************************
@@ -314,7 +313,7 @@ APLFLOAT PrimFnDydPlusFisFvF
 
 
 //***************************************************************************
-//  PrimFnDydPlusAPA_EM
+//  $PrimFnDydPlusAPA_EM
 //
 //  Dyadic plus, result is APA
 //***************************************************************************

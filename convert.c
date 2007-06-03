@@ -19,7 +19,7 @@
 
 
 //***************************************************************************
-//  FloatToAplint_SCT
+//  $FloatToAplint_SCT
 //
 //  Convert a Floating Point number to an APLINT
 //    using System Comparison Tolerance
@@ -64,7 +64,7 @@ APLINT FloatToAplint_SCT
 
 
 //***************************************************************************
-//  FloatToAplchar
+//  $FloatToAplchar
 //
 //  Convert a floating point number to APLCHARs
 //***************************************************************************
@@ -88,7 +88,7 @@ void FloatToAplchar
 
 
 //***************************************************************************
-//  sprintfW
+//  $sprintfW
 //
 //  sprintf for wide chars
 //***************************************************************************

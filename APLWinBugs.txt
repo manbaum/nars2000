@@ -27,3 +27,10 @@ but instead returns
 0{rho}{enclose} (0 0) 0
 
 
+3.  Incorrect Prototype
+
+2 +/{enclose} 1 2
+
+yields an empty character vector!
+
+

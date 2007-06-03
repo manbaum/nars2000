@@ -17,12 +17,12 @@
 
 
 //***************************************************************************
-//  PrimFnSquad_EM
+//  $PrimFnSquad_EM_YY
 //
 //  Primitive function for monadic and dyadic Squad (ERROR and "rectangular indexing")
 //***************************************************************************
 
-LPYYSTYPE PrimFnSquad_EM
+LPYYSTYPE PrimFnSquad_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -34,25 +34,25 @@ LPYYSTYPE PrimFnSquad_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonSquad_EM             (lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonSquad_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydSquad_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnSquad_EM
+        return PrimFnDydSquad_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnSquad_EM_YY
 
 
 //***************************************************************************
-//  PrimProtoFnSquad_EM
+//  $PrimProtoFnSquad_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Squad
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnSquad_EM"
+#define APPEND_NAME     L" -- PrimProtoFnSquad_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnSquad_EM
+LPYYSTYPE PrimProtoFnSquad_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -64,51 +64,51 @@ LPYYSTYPE PrimProtoFnSquad_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnSquad_EM,    // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-} // End PrimProtoFnSquad_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnSquad_EM_YY,  // Ptr to primitive function routine
+                                    lptkLftArg,         // Ptr to left arg token
+                                    lptkFunc,           // Ptr to function token
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+} // End PrimProtoFnSquad_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonSquad_EM
+//  $PrimFnMonSquad_EM_YY
 //
 //  Primitive function for monadic Squad (ERROR)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonSquad_EM"
+#define APPEND_NAME     L" -- PrimFnMonSquad_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonSquad_EM
+LPYYSTYPE PrimFnMonSquad_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return PrimFnSyntaxError_EM (lptkFunc);
-} // End PrimFnMonSquad_EM
+} // End PrimFnMonSquad_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydSquad_EM
+//  $PrimFnDydSquad_EM_YY
 //
 //  Primitive function for dyadic Squad ("rectangular indexing")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSquad_EM"
+#define APPEND_NAME     L" -- PrimFnDydSquad_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydSquad_EM
+LPYYSTYPE PrimFnDydSquad_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -135,10 +135,11 @@ LPYYSTYPE PrimFnDydSquad_EM
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                return PrimFnDydSquadGlb_EM (lptkLftArg,
-                                             ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                             lptkAxis,
-                                             lptkFunc);
+                return PrimFnDydSquadGlb_EM_YY
+                       (lptkLftArg,                                                     // Ptr to left arg token
+                        ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
+                        lptkAxis,                                                       // Ptr to axis token (may be NULL)
+                        lptkFunc);                                                      // Ptr to function token
             } // End IF
 
             // Handle the immediate case
@@ -161,10 +162,11 @@ LPYYSTYPE PrimFnDydSquad_EM
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
-            return PrimFnDydSquadGlb_EM (lptkLftArg,
-                                         ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                         lptkAxis,
-                                         lptkFunc);
+            return PrimFnDydSquadGlb_EM_YY
+                   (lptkLftArg,                                         // Ptr to left arg token
+                    ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
+                    lptkAxis,                                           // Ptr to axis token (may be NULL)
+                    lptkFunc);                                          // Ptr to function token
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                        lptkFunc);
@@ -216,23 +218,23 @@ LPYYSTYPE PrimFnDydSquad_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End PrimFnDydSquad_EM
+} // End PrimFnDydSquad_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydSquadGlb_EM
+//  $PrimFnDydSquadGlb_EM_YY
 //
 //  Dyadic Squad ("rectangular indexing") on a global memory object
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSquadGlb_EM"
+#define APPEND_NAME     L" -- PrimFnDydSquadGlb_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydSquadGlb_EM
+LPYYSTYPE PrimFnDydSquadGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      HGLOBAL hGlbRht,               // Right arg handle
      LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
@@ -319,12 +321,12 @@ LPYYSTYPE PrimFnDydSquadGlb_EM
     {
         YYFree (lpYYRes); lpYYRes = NULL; return NULL;
     } // End IF/ELSE
-} // End PrimFnDydSquadGlb_EM
+} // End PrimFnDydSquadGlb_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  ArrayIndex_EM
+//  $ArrayIndex_EM_YY
 //
 //  Index of an array, e.g., L[R]  or  L[R1;...;Rn]
 //  The form L[R] can use either (or both) Reach and Scatter indexing,
@@ -332,12 +334,12 @@ LPYYSTYPE PrimFnDydSquadGlb_EM
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndex_EM"
+#define APPEND_NAME     L" -- ArrayIndex_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ArrayIndex_EM
+LPYYSTYPE ArrayIndex_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
@@ -370,12 +372,12 @@ LPYYSTYPE ArrayIndex_EM
                 lpMemData;          // ...                    data  ...
     LPAPLDIM    lpMemDimLft;        // Ptr to the dimensions of the left arg
     LPAPLNESTED lpMemInd;           // Ptr to contents of the index arg
-    BOOL        bRet = TRUE;
-    LPYYSTYPE   lpYYRes;
-    APLNELM     uRht,
-                uDim,
-                uRes;
-    APLUINT     ByteRes;
+    BOOL        bRet = TRUE;        // TRUE iff result is valid
+    LPYYSTYPE   lpYYRes;            // Ptr to the result
+    APLNELM     uRht,               // Right arg loop counter
+                uDim,               // Dimension ...
+                uRes;               // Result    ...
+    APLUINT     ByteRes;            // # bytes needed for the result
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -531,8 +533,8 @@ LPYYSTYPE ArrayIndex_EM
         for (uDim = 0; uDim < aplRankRch; uDim++)
             *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRch)++;
 
-        // lpMemRch now points to the data
-        // lpMemRes now points to the data
+        // lpMemRch now points to the reach arg's data
+        // lpMemRes now points to the result's data
     } else
     {
         // Skip over the header and dimensions to the data
@@ -574,11 +576,12 @@ LPYYSTYPE ArrayIndex_EM
             } // End SWITCH
         } // End FOR
 
-        // lpMemRes now points to the data
+        // lpMemRes now points to the result's data
     } // End IF/ELSE
 
     //***************************************************************
-    // Fill nested result with PTR_REUSED in case we fail mid-copy
+    // Fill nested result with PTR_REUSED
+    //   in case we fail part way through
     //***************************************************************
     if (aplTypeRes EQ ARRAY_NESTED)
     for (uRes = 0; uRes < aplNELMRes; uRes++)
@@ -706,8 +709,11 @@ LPYYSTYPE ArrayIndex_EM
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (TypeDemote (hGlbRes));
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkLftArg->tkCharIndex;
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
 
@@ -754,12 +760,12 @@ NORMAL_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End ArrayIndex_EM
+} // End ArrayIndex_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  ReachIndex_EM
+//  $ReachIndex_EM
 //
 //  Given an index vector, trundle through its elements extracting
 //    the appropriate element from the left arg as this element of the result.
@@ -849,7 +855,7 @@ BOOL ReachIndex_EM
 
 
 //***************************************************************************
-//  ReachSymTabConst_EM
+//  $ReachSymTabConst_EM
 //
 //  Index the left arg with a symbol table constant
 //***************************************************************************
@@ -937,7 +943,7 @@ BOOL ReachSymTabConst_EM
 
 
 //***************************************************************************
-//  ValueAsSymentry
+//  $ValueAsSymentry
 //
 //  Extract a particular value from an array as a LPSYMENTRY
 //***************************************************************************
@@ -1016,7 +1022,7 @@ BOOL ValueAsSymentry
 
 
 //***************************************************************************
-//  ReachDown_EM
+//  $ReachDown_EM
 //
 //  Reach down recursively through the index vector & left args
 //    to put the reached for item into the result.
@@ -1274,7 +1280,7 @@ BOOL ReachDown_EM
 
 
 //***************************************************************************
-//  WeighIndex_EM
+//  $WeighIndex_EM
 //
 //  Weigh an index according to a dimension vector
 //***************************************************************************

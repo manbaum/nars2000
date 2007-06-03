@@ -37,7 +37,7 @@ PRIMSPEC PrimSpecRightCaretUnderbar = {
     NULL,   // &PrimFnMonRightCaretUnderbarFisF, -- Can't happen w/RightCaretUnderbar
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecRightCaretUnderbarStorageTypeDyd,
     NULL,   // &PrimFnDydRightCaretUnderbarAPA_EM, -- Can't happen w/RightCaretUnderbar
 
@@ -63,18 +63,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecRightCaretUnderbar};
 
 
 //***************************************************************************
-//  PrimFnRightCaretUnderbar_EM
+//  $PrimFnRightCaretUnderbar_EM_YY
 //
 //  Primitive function for monadic and dyadic RightCaretUnderbar (ERROR and "not less")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnRightCaretUnderbar_EM"
+#define APPEND_NAME     L" -- PrimFnRightCaretUnderbar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnRightCaretUnderbar_EM
+LPYYSTYPE PrimFnRightCaretUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,15 +86,15 @@ LPYYSTYPE PrimFnRightCaretUnderbar_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnRightCaretUnderbar_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnRightCaretUnderbar_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecRightCaretUnderbarStorageTypeDyd
+//  $PrimSpecRightCaretUnderbarStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -131,7 +131,7 @@ APLSTYPE PrimSpecRightCaretUnderbarStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydRightCaretUnderbarBisBvB
+//  $PrimFnDydRightCaretUnderbarBisBvB
 //
 //  Primitive scalar function dyadic RightCaretUnderbar:  B {is} B fn B
 //***************************************************************************
@@ -147,7 +147,7 @@ APLBOOL PrimFnDydRightCaretUnderbarBisBvB
 
 
 //***************************************************************************
-//  PrimFnDydRightCaretUnderbarBisIvI
+//  $PrimFnDydRightCaretUnderbarBisIvI
 //
 //  Primitive scalar function dyadic RightCaretUnderbar:  B {is} I fn I
 //***************************************************************************
@@ -163,7 +163,7 @@ APLBOOL PrimFnDydRightCaretUnderbarBisIvI
 
 
 //***************************************************************************
-//  PrimFnDydRightCaretUnderbarBisFvF
+//  $PrimFnDydRightCaretUnderbarBisFvF
 //
 //  Primitive scalar function dyadic RightCaretUnderbar:  B {is} F fn F
 //***************************************************************************

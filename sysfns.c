@@ -21,7 +21,7 @@ BOOL bUseLocalTime = TRUE;
 
 
 //***************************************************************************
-//  ExecuteFn0
+//  $ExecuteFn0
 //
 //  Execute a niladic function
 //***************************************************************************
@@ -44,14 +44,14 @@ LPYYSTYPE ExecuteFn0
                              NULL,
                              NULL);
     else
-        return ExecFuncGlb_EM (NULL,
-                               ClrPtrTypeDirGlb (lpNameFcn),
-                               NULL);
+        return ExecFuncGlb_EM_YY (NULL,                         // Ptr to left arg token
+                                  ClrPtrTypeDirGlb (lpNameFcn), // Function HGLOBAL
+                                  NULL);                        // Ptr to right arg token
 } // ExecuteFn0
 
 
 //***************************************************************************
-//  SysFnDR_EM
+//  $SysFnDR_EM
 //
 //  System function:  []DR -- Data Representation
 //***************************************************************************
@@ -72,7 +72,7 @@ LPYYSTYPE SysFnDR_EM
 
 
 //***************************************************************************
-//  SysFnMonDR_EM
+//  $SysFnMonDR_EM
 //
 //  Monadic []DR -- Data Representation
 //***************************************************************************
@@ -155,7 +155,7 @@ LPYYSTYPE SysFnMonDR_EM
                     return lpYYRes;
 
                 case IMMTYPE_CHAR:
-                    lpYYRes->tkToken.tkData.tkInteger = 162;
+                    lpYYRes->tkToken.tkData.tkInteger = DR_CHAR;
 
                     return lpYYRes;
 
@@ -274,7 +274,7 @@ LPYYSTYPE SysFnMonDR_EM
 
 
 //***************************************************************************
-//  SysFnDydDR_EM
+//  $SysFnDydDR_EM
 //
 //  Dyadic []DR -- Data Representation
 //***************************************************************************
@@ -406,7 +406,7 @@ LPYYSTYPE SysFnDydDR_EM
 
 
 //***************************************************************************
-//  DR_FloatToChar_EM
+//  $DR_FloatToChar_EM
 //
 //  QuadDR subroutine to convert FP to WCHAR
 //***************************************************************************
@@ -422,16 +422,16 @@ HGLOBAL DR_FloatToChar_EM
      LPTOKEN lptkFunc)
 
 {
-    APLSTYPE aplTypeRht;
-    APLNELM  aplNELMRht;
-    APLRANK  aplRankRht;
-    APLUINT  ByteRes,
-             uRes;
-    HGLOBAL  hGlbRht,
-             hGlbRes;
-    LPVOID   lpMemRht = NULL,
-             lpMemRes = NULL;
-    APLFLOAT aplFloatRht;
+    APLSTYPE aplTypeRht;        // Right arg storage type
+    APLNELM  aplNELMRht;        // Right arg NELM
+    APLRANK  aplRankRht;        // Right arg rank
+    APLUINT  ByteRes,           // # bytes needed for the result
+             uRes;              // Result loop counter
+    HGLOBAL  hGlbRht,           // Right arg global memory handle
+             hGlbRes;           // Result    ...
+    LPVOID   lpMemRht = NULL,   // Ptr to right arg global memory
+             lpMemRes = NULL;   // Ptr to result    ...
+    APLFLOAT aplFloatRht;       // Temporary float
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right args
@@ -497,7 +497,7 @@ HGLOBAL DR_FloatToChar_EM
     // The last dimension is 16
     *((LPAPLDIM) lpMemRes)++ = 16;
 
-    // lpMemRes now points to its data
+    // lpMemRes now points to the result's data
 
     // If the right arg is not an immediate, ...
     if (lpMemRht)
@@ -535,7 +535,7 @@ HGLOBAL DR_FloatToChar_EM
 
 
 //***************************************************************************
-//  SysFnSYSID_EM
+//  $SysFnSYSID_EM
 //
 //  System function:  []SYSID -- System Identifier
 //***************************************************************************
@@ -617,7 +617,7 @@ LPYYSTYPE SysFnSYSID_EM
 
 
 //***************************************************************************
-//  SysFnSYSVER_EM
+//  $SysFnSYSVER_EM
 //
 //  System function:  []SYSVER -- System Version
 //***************************************************************************
@@ -756,7 +756,7 @@ LPYYSTYPE SysFnSYSVER_EM
 
 
 //***************************************************************************
-//  SysFnTC_EM
+//  $SysFnTC_EM
 //
 //  System function:  []TC -- Terminal Control
 //***************************************************************************
@@ -840,7 +840,7 @@ LPYYSTYPE SysFnTC_EM
 
 
 //***************************************************************************
-//  SysFnTCCom
+//  $SysFnTCCom
 //
 //  System function:  []TCxxx -- Terminal Control, Common Routine
 //***************************************************************************
@@ -867,7 +867,7 @@ LPYYSTYPE SysFnTCCom
 
 
 //***************************************************************************
-//  SysFnTCBEL_EM
+//  $SysFnTCBEL_EM
 //
 //  System function:  []TCBEL -- Terminal Control, Bell
 //***************************************************************************
@@ -884,7 +884,7 @@ LPYYSTYPE SysFnTCBEL_EM
 
 
 //***************************************************************************
-//  SysFnTCBS_EM
+//  $SysFnTCBS_EM
 //
 //  System function:  []TCBS -- Terminal Control, Backspace
 //***************************************************************************
@@ -901,7 +901,7 @@ LPYYSTYPE SysFnTCBS_EM
 
 
 //***************************************************************************
-//  SysFnTCDEL_EM
+//  $SysFnTCDEL_EM
 //
 //  System function:  []TCDEL -- Terminal Control, Del
 //***************************************************************************
@@ -918,7 +918,7 @@ LPYYSTYPE SysFnTCDEL_EM
 
 
 //***************************************************************************
-//  SysFnTCESC_EM
+//  $SysFnTCESC_EM
 //
 //  System function:  []TCESC -- Terminal Control, Escape
 //***************************************************************************
@@ -935,7 +935,7 @@ LPYYSTYPE SysFnTCESC_EM
 
 
 //***************************************************************************
-//  SysFnTCFF_EM
+//  $SysFnTCFF_EM
 //
 //  System function:  []TCFF -- Terminal Control, Form Feed
 //***************************************************************************
@@ -952,7 +952,7 @@ LPYYSTYPE SysFnTCFF_EM
 
 
 //***************************************************************************
-//  SysFnTCHT_EM
+//  $SysFnTCHT_EM
 //
 //  System function:  []TCHT -- Terminal Control, Horizontal Tab
 //***************************************************************************
@@ -969,7 +969,7 @@ LPYYSTYPE SysFnTCHT_EM
 
 
 //***************************************************************************
-//  SysFnTCLF_EM
+//  $SysFnTCLF_EM
 //
 //  System function:  []TCLF -- Terminal Control, Linefeed
 //***************************************************************************
@@ -986,7 +986,7 @@ LPYYSTYPE SysFnTCLF_EM
 
 
 //***************************************************************************
-//  SysFnTCNL_EM
+//  $SysFnTCNL_EM
 //
 //  System function:  []TCNL -- Terminal Control, Newline
 //***************************************************************************
@@ -1003,7 +1003,7 @@ LPYYSTYPE SysFnTCNL_EM
 
 
 //***************************************************************************
-//  SysFnTCNUL_EM
+//  $SysFnTCNUL_EM
 //
 //  System function:  []TCNUL -- Terminal Control, Nul
 //***************************************************************************
@@ -1020,7 +1020,7 @@ LPYYSTYPE SysFnTCNUL_EM
 
 
 //***************************************************************************
-//  SysFnTS_EM
+//  $SysFnTS_EM
 //
 //  System function:  []TS -- Time Stamp
 //***************************************************************************
@@ -1115,7 +1115,7 @@ LPYYSTYPE SysFnTS_EM
 
 
 //***************************************************************************
-//  SysFnTYPE_EM
+//  $SysFnTYPE_EM
 //
 //  System function:  []TYPE -- Prototype
 //***************************************************************************
@@ -1136,7 +1136,7 @@ LPYYSTYPE SysFnTYPE_EM
 
 
 //***************************************************************************
-//  SysFnMonTYPE_EM
+//  $SysFnMonTYPE_EM
 //
 //  Monadic []TYPE -- Prototype
 //***************************************************************************
@@ -1284,7 +1284,7 @@ LPYYSTYPE SysFnMonTYPE_EM
 
 
 //***************************************************************************
-//  SysFnDydTYPE_EM
+//  $SysFnDydTYPE_EM
 //
 //  Dyadic []TYPE -- ERROR
 //***************************************************************************
@@ -1308,7 +1308,7 @@ LPYYSTYPE SysFnDydTYPE_EM
 
 
 //***************************************************************************
-//  ConvTime
+//  $ConvTime
 //
 //  Convert to ASCII string in the form of
 //    Wed Jan 02 02:03:55 1980

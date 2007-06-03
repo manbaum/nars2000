@@ -65,7 +65,7 @@ TABCOLORS crTab[] =
 
 
 //***************************************************************************
-//  ClearWsData
+//  $ClearWsData
 //
 //  Clear data in this WS to global default values
 //***************************************************************************
@@ -91,7 +91,7 @@ void ClearWsData
 
 
 //***************************************************************************
-//  SaveWsData
+//  $SaveWsData
 //
 //  Save data from the current WS into global memory
 //***************************************************************************
@@ -118,7 +118,7 @@ void SaveWsData
 
 
 //***************************************************************************
-//  RestWsData
+//  $RestWsData
 //
 //  Restore data into the current WS from global memory
 //***************************************************************************
@@ -148,7 +148,7 @@ void RestWsData
 
 
 //***************************************************************************
-//  EnumCallbackShowHide
+//  $EnumCallbackShowHide
 //
 //  Enum child proc for ShowChildWindows
 //***************************************************************************
@@ -173,7 +173,7 @@ BOOL CALLBACK EnumCallbackShowHide
 
 
 //***************************************************************************
-//  ShowHideChildWindows
+//  $ShowHideChildWindows
 //
 //  Show or hide the given window and all its children
 //***************************************************************************
@@ -205,7 +205,7 @@ void ShowHideChildWindows
 
 
 //***************************************************************************
-//  CreateNewTab
+//  $CreateNewTab
 //
 //  Create a new tab
 //***************************************************************************
@@ -248,7 +248,7 @@ BOOL CreateNewTab
 
 
 //***************************************************************************
-//  CreateNewTabInThread
+//  $CreateNewTabInThread
 //
 //  Create a new tab within a thread
 //***************************************************************************
@@ -536,7 +536,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  GetPerTabHandle
+//  $GetPerTabHandle
 //
 //  Return the per tab global memory handle
 //***************************************************************************
@@ -556,7 +556,7 @@ HGLOBAL GetPerTabHandle
 
 
 //***************************************************************************
-//  LclTabCtrlWndProc
+//  $LclTabCtrlWndProc
 //
 //  Local window procedure for the Tab Control
 //***************************************************************************
@@ -818,7 +818,7 @@ LRESULT WINAPI LclTabCtrlWndProc
 
 
 //***************************************************************************
-//  ClickOnClose
+//  $ClickOnClose
 //
 //  Did the user click on a close button?
 //***************************************************************************
@@ -862,7 +862,7 @@ BOOL ClickOnClose
 
 
 //***************************************************************************
-//  CloseTab
+//  $CloseTab
 //
 //  Close a given tab
 //***************************************************************************
@@ -885,7 +885,7 @@ BOOL CloseTab
 
 
 //***************************************************************************
-//  SetTabText
+//  $SetTabText
 //
 //  Set a given tab's text to highlight or normal
 //***************************************************************************
@@ -913,7 +913,7 @@ void SetTabText
 
 
 //***************************************************************************
-//  FillTabBackground
+//  $FillTabBackground
 //
 //  Fill in a tab's background
 //***************************************************************************
@@ -958,7 +958,7 @@ void FillTabBackground
 
 
 //***************************************************************************
-//  GetNextTabColorIndex
+//  $GetNextTabColorIndex
 //
 //  Get the next available tab color index.
 //***************************************************************************
@@ -986,7 +986,7 @@ int GetNextTabColorIndex
 
 
 //***************************************************************************
-//  GetTabColorIndex
+//  $GetTabColorIndex
 //
 //  Get a given tab's color index
 //***************************************************************************
@@ -1015,7 +1015,7 @@ int GetTabColorIndex
 
 
 //***************************************************************************
-//  ResetTabColorIndex
+//  $ResetTabColorIndex
 //
 //  Reset a given tab's color index bit
 //***************************************************************************
@@ -1030,7 +1030,7 @@ void ResetTabColorIndex
 
 
 //***************************************************************************
-//  AdjustTabRect
+//  $AdjustTabRect
 //
 //  Adjust a tab's bounding rectangle to avoid writing
 //    over (or under) the border.
@@ -1053,7 +1053,7 @@ void AdjustTabRect
 
 
 //***************************************************************************
-//  DrawTab
+//  $DrawTab
 //
 //  Draw the tab
 //***************************************************************************
@@ -1143,7 +1143,7 @@ void DrawTab
 
 
 //***************************************************************************
-//  GetImageRect
+//  $GetImageRect
 //
 //  Get the bounding rectangle for an image right-adjusted horizontally
 //    and centered vertically inside the given rectangle.

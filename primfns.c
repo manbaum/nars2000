@@ -45,96 +45,96 @@ extern PRIMSPEC PrimSpecUpStile;
 
 
 // Symbols for which there is no definition            Monadic      Dyadic
-#define PrimFnAlpha_EM              PrimFn_EM       // ERROR        ERROR
-#define PrimFnIotaUnderbar_EM       PrimFn_EM       // ERROR        ERROR
-#define PrimFnOmega_EM              PrimFn_EM       // ERROR        ERROR
-#define PrimFnUpShoe_EM             PrimFn_EM       // ERROR        ERROR
+#define PrimFnAlpha_EM_YY           PrimFn_EM       // ERROR        ERROR
+#define PrimFnIotaUnderbar_EM_YY    PrimFn_EM       // ERROR        ERROR
+#define PrimFnOmega_EM_YY           PrimFn_EM       // ERROR        ERROR
+#define PrimFnUpShoe_EM_YY          PrimFn_EM       // ERROR        ERROR
 
 
 // Primitives TO DO                                    Monadic      Dyadic
-#define PrimFnDelStile_EM           PrimFn_EM       // Mixed        Mixed
-#define PrimFnDeltaStile_EM         PrimFn_EM       // Mixed        Mixed
-#define PrimFnDownArrow_EM          PrimFn_EM       // ERROR        Mixed
-#define PrimFnDownShoe_EM           PrimFn_EM       // Mixed        ERROR
-#define PrimFnDownTack_EM           PrimFn_EM       // ERROR        Mixed
-#define PrimFnEpsilonUnderbar_EM    PrimFn_EM       // ERROR        Mixed
-#define PrimFnUpTackJot_EM          PrimFn_EM       // Mixed        ERROR
-#define PrimFnRightShoe_EM          PrimFn_EM       // Mixed        Mixed
-#define PrimFnUpTack_EM             PrimFn_EM       // ERROR        Mixed
+#define PrimFnDelStile_EM_YY        PrimFn_EM       // Mixed        Mixed
+#define PrimFnDeltaStile_EM_YY      PrimFn_EM       // Mixed        Mixed
+#define PrimFnDownArrow_EM_YY       PrimFn_EM       // ERROR        Mixed
+#define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed        ERROR
+#define PrimFnDownTack_EM_YY        PrimFn_EM       // ERROR        Mixed
+#define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR        Mixed
+#define PrimFnUpTackJot_EM_YY       PrimFn_EM       // Mixed        ERROR
+#define PrimFnRightShoe_EM_YY       PrimFn_EM       // Mixed        Mixed
+#define PrimFnUpTack_EM_YY          PrimFn_EM       // ERROR        Mixed
 
 
 // Operators TO DO                                     Monadic      Dyadic
-/////// PrimOpDot_EM                                // ERROR        Inner product
-/////// PrimOpSlash_EM                              // Reduction    N-wise reduction
-/////// PrimOpSlope_EM                              // Scan         ERROR
+/////// PrimOpDot_EM_YY                             // ERROR        Inner product
+/////// PrimOpSlash_EM_YY                           // Reduction    N-wise reduction
+/////// PrimOpSlope_EM_YY                           // Scan         ERROR
 
 
 // Primitives DONE                                     Monadic      Dyadic
-/////// PrimFnBar_EM                                // Scalar       Scalar
-/////// PrimFnCircle_EM                             // Scalar       Scalar
-/////// PrimFnCircleBar_EM                          // Mixed        Mixed
-/////// PrimFnCircleSlope_EM                        // Mixed        Mixed
-/////// PrimFnCircleStar_EM                         // Scalar       Scalar
-/////// PrimFnCircleStile_EM                        // Mixed        Mixed
-/////// PrimFnComma_EM                              // Mixed        Mixed
-/////// PrimFnCommaBar_EM                           // Mixed        Mixed
-/////// PrimFnColonBar_EM                           // Scalar       Scalar
-/////// PrimFnDomino_EM                             // Mixed        Mixed
-/////// PrimFnDownCaret_EM                          // ERROR        Scalar
-/////// PrimFnDownCaretTilde_EM                     // ERROR        Scalar
-/////// PrimFnDownStile_EM                          // Scalar       Scalar
-/////// PrimFnEpsilon_EM                            // Mixed        Mixed (*)
-/////// PrimFnEqual_EM                              // ERROR        Scalar
-/////// PrimFnEqualUnderbar_EM                      // Mixed        Mixed
-/////// PrimFnIota_EM                               // Mixed        Mixed (*)
-/////// PrimFnLeftCaret_EM                          // ERROR        Scalar
-/////// PrimFnLeftCaretUnderbar_EM                  // ERROR        Scalar
-/////// PrimFnLeftShoe_EM                           // Mixed        Mixed (*)
-/////// PrimFnLeftTack_EM                           // ERROR        Mixed
-/////// PrimFnNotEqual_EM                           // ERROR        Scalar
-/////// PrimFnPlus_EM                               // Scalar       Scalar
-/////// PrimFnQuoteDot_EM                           // Scalar       Scalar
-/////// PrimFnQuery_EM                              // Scalar       Mixed
-/////// PrimFnRightCaret_EM                         // ERROR        Scalar
-/////// PrimFnRightCaretUnderbar_EM                 // ERROR        Scalar
-/////// PrimFnRightTack_EM                          // ERROR        Mixed
-/////// PrimFnRho_EM                                // Mixed        Mixed
-/////// PrimFnSlash_EM                              // ERROR        Mixed
-/////// PrimFnSlashBar_EM                           // ERROR        Mixed
-/////// PrimFnSlope_EM                              // ERROR        Mixed
-/////// PrimFnSlopeBar_EM                           // ERROR        Mixed
-/////// PrimFnSquad_EM                              // ERROR        Mixed
-/////// PrimFnStar_EM                               // Scalar       Scalar
-/////// PrimFnStile_EM                              // Scalar       Scalar
-/////// PrimFnDownTackJot_EM                        // Mixed        Mixed (*)
-/////// PrimFnTilde_EM                              // Scalar       Mixed (*)
-/////// PrimFnTimes_EM                              // Scalar       Scalar
-/////// PrimFnUpArrow_EM                            // Mixed        Mixed (*)
-/////// PrimFnUpCaret_EM                            // ERROR        Scalar
-/////// PrimFnUpCaretTilde_EM                       // ERROR        Scalar
-/////// PrimFnUpStile_EM                            // Scalar       Scalar
+/////// PrimFnBar_EM_YY                             // Scalar       Scalar
+/////// PrimFnCircle_EM_YY                          // Scalar       Scalar
+/////// PrimFnCircleBar_EM_YY                       // Mixed        Mixed
+/////// PrimFnCircleSlope_EM_YY                     // Mixed        Mixed
+/////// PrimFnCircleStar_EM_YY                      // Scalar       Scalar
+/////// PrimFnCircleStile_EM_YY                     // Mixed        Mixed
+/////// PrimFnComma_EM_YY                           // Mixed        Mixed
+/////// PrimFnCommaBar_EM_YY                        // Mixed        Mixed
+/////// PrimFnColonBar_EM_YY                        // Scalar       Scalar
+/////// PrimFnDomino_EM_YY                          // Mixed        Mixed
+/////// PrimFnDownCaret_EM_YY                       // ERROR        Scalar
+/////// PrimFnDownCaretTilde_EM_YY                  // ERROR        Scalar
+/////// PrimFnDownStile_EM_YY                       // Scalar       Scalar
+/////// PrimFnEpsilon_EM_YY                         // Mixed        Mixed (*)
+/////// PrimFnEqual_EM_YY                           // ERROR        Scalar
+/////// PrimFnEqualUnderbar_EM_YY                   // Mixed        Mixed
+/////// PrimFnIota_EM_YY                            // Mixed        Mixed (*)
+/////// PrimFnLeftCaret_EM_YY                       // ERROR        Scalar
+/////// PrimFnLeftCaretUnderbar_EM_YY               // ERROR        Scalar
+/////// PrimFnLeftShoe_EM_YY                        // Mixed        Mixed (*)
+/////// PrimFnLeftTack_EM_YY                        // ERROR        Mixed
+/////// PrimFnNotEqual_EM_YY                        // ERROR        Scalar
+/////// PrimFnPlus_EM_YY                            // Scalar       Scalar
+/////// PrimFnQuoteDot_EM_YY                        // Scalar       Scalar
+/////// PrimFnQuery_EM_YY                           // Scalar       Mixed
+/////// PrimFnRightCaret_EM_YY                      // ERROR        Scalar
+/////// PrimFnRightCaretUnderbar_EM_YY              // ERROR        Scalar
+/////// PrimFnRightTack_EM_YY                       // ERROR        Mixed
+/////// PrimFnRho_EM_YY                             // Mixed        Mixed
+/////// PrimFnSlash_EM_YY                           // ERROR        Mixed
+/////// PrimFnSlashBar_EM_YY                        // ERROR        Mixed
+/////// PrimFnSlope_EM_YY                           // ERROR        Mixed
+/////// PrimFnSlopeBar_EM_YY                        // ERROR        Mixed
+/////// PrimFnSquad_EM_YY                           // ERROR        Mixed
+/////// PrimFnStar_EM_YY                            // Scalar       Scalar
+/////// PrimFnStile_EM_YY                           // Scalar       Scalar
+/////// PrimFnDownTackJot_EM_YY                     // Mixed        Mixed (*)
+/////// PrimFnTilde_EM_YY                           // Scalar       Mixed (*)
+/////// PrimFnTimes_EM_YY                           // Scalar       Scalar
+/////// PrimFnUpArrow_EM_YY                         // Mixed        Mixed (*)
+/////// PrimFnUpCaret_EM_YY                         // ERROR        Scalar
+/////// PrimFnUpCaretTilde_EM_YY                    // ERROR        Scalar
+/////// PrimFnUpStile_EM_YY                         // Scalar       Scalar
 
 // (*) = Unfinished
 
 
 // Operators DONE                                      Monadic      Dyadic
-/////// PrimOpDieresis_EM                           // Each         Each
-/////// PrimOpDieresisTilde_EM                      // Reflex       Commute
-/////// PrimOpJot_EM                                // Composition  Composition
-/////// PrimOpJotDot_EM                             // ERROR        Outer Product
+/////// PrimOpDieresis_EM_YY                        // Each         Each
+/////// PrimOpDieresisTilde_EM_YY                   // Reflex       Commute
+/////// PrimOpJot_EM_YY                             // Composition  Composition
+/////// PrimOpJotDot_EM_YY                          // ERROR        Outer Product
 
 
 // First coordinate functions handled by common function
-#define PrimFnCircleBar_EM      PrimFnCircleStile_EM
-#define PrimFnCommaBar_EM       PrimFnComma_EM
-#define PrimFnSlashBar_EM       PrimFnSlash_EM
-#define PrimFnSlopeBar_EM       PrimFnSlope_EM
-#define PrimOpSlashBar_EM       PrimOpSlash_EM
-#define PrimOpSlopeBar_EM       PrimOpSlope_EM
+#define PrimFnCircleBar_EM_YY   PrimFnCircleStile_EM_YY
+#define PrimFnCommaBar_EM_YY    PrimFnComma_EM_YY
+#define PrimFnSlashBar_EM_YY    PrimFnSlash_EM_YY
+#define PrimFnSlopeBar_EM_YY    PrimFnSlope_EM_YY
+#define PrimOpSlashBar_EM_YY    PrimOpSlash_EM_YY
+#define PrimOpSlopeBar_EM_YY    PrimOpSlope_EM_YY
 
 
 //***************************************************************************
-//  InitPrimTabs
+//  $InitPrimTabs
 //
 //  Initialize various primitive function, operator,
 //    prototype tables, and flags
@@ -151,6 +151,9 @@ void InitPrimTabs
     InitPrimSpecs ();
     InitPrimFlags ();
 
+    // Initialize identity elements
+    InitIdentityElements ();
+
 #define POS_INFINITY            (0x7FF0000000000000)
 #define NEG_INFINITY            (0xFFF0000000000000)
 #define QUIET_NAN               (0xFFF8000000000000)
@@ -160,12 +163,11 @@ void InitPrimTabs
     aplInteger = POS_INFINITY; PosInfinity = *(double *) &aplInteger;
     aplInteger = NEG_INFINITY; NegInfinity = *(double *) &aplInteger;
     aplInteger = FLOAT2POW53;  Float2Pow53 = *(double *) &aplInteger;
-
 } // End InitPrimTabs
 
 
 //***************************************************************************
-//  InitPrimFns
+//  $InitPrimFns
 //
 //  Initialize the primitive function and operator jump table
 //***************************************************************************
@@ -183,64 +185,64 @@ void InitPrimFns
     //****************************************************
     //  Primitive Functions
     //  Primitive operators are handled case-by-case in
-    //    ExecFunc_EM
+    //    ExecFunc_EM_YY
     //****************************************************
-    InitPrimFn (UTF16_ALPHA             , &PrimFnAlpha_EM             );    // Alt-'a' - alpha
-    InitPrimFn (UTF16_UPTACK            , &PrimFnUpTack_EM            );    // Alt-'b' - up tack
-    InitPrimFn (UTF16_UPSHOE            , &PrimFnUpShoe_EM            );    // Alt-'c' - up shoe
-    InitPrimFn (UTF16_DOWNSTILE         , &PrimFnDownStile_EM         );    // Alt-'d' - down stile
-    InitPrimFn (INDEX_EPSILON           , &PrimFnEpsilon_EM           );    // Alt-'e' - epsilon
+    InitPrimFn (UTF16_ALPHA             , &PrimFnAlpha_EM_YY             ); // Alt-'a' - alpha
+    InitPrimFn (UTF16_UPTACK            , &PrimFnUpTack_EM_YY            ); // Alt-'b' - up tack
+    InitPrimFn (UTF16_UPSHOE            , &PrimFnUpShoe_EM_YY            ); // Alt-'c' - up shoe
+    InitPrimFn (UTF16_DOWNSTILE         , &PrimFnDownStile_EM_YY         ); // Alt-'d' - down stile
+    InitPrimFn (INDEX_EPSILON           , &PrimFnEpsilon_EM_YY           ); // Alt-'e' - epsilon
 ////                                                                        // Alt-'f' - underbar
 ////                                                                        // Alt-'g' - del
 ////                                                                        // Alt-'h' - delta
-    InitPrimFn (UTF16_IOTA              , &PrimFnIota_EM              );    // Alt-'i' - iota
-    InitPrimFn (UTF16_JOT               , (LPPRIMFNS) -1              );    // Alt-'j' - jot
+    InitPrimFn (UTF16_IOTA              , &PrimFnIota_EM_YY              ); // Alt-'i' - iota
+    InitPrimFn (UTF16_JOT               , (LPPRIMFNS) -1                 ); // Alt-'j' - jot
 ////                                                                        // Alt-'k' - single quote
 ////                                                                        // Alt-'l' - quad
-    InitPrimFn (UTF16_STILE             , &PrimFnStile_EM             );    // Alt-'m' - stile
-    InitPrimFn (UTF16_DOWNTACK          , &PrimFnDownTack_EM          );    // Alt-'n' - down tack
-    InitPrimFn (UTF16_CIRCLE            , &PrimFnCircle_EM            );    // Alt-'o' - circle
-    InitPrimFn (UTF16_STAR              , &PrimFnStar_EM              );    // Alt-'p' - star
-    InitPrimFn (UTF16_QUERY             , &PrimFnQuery_EM             );    // Alt-'q' - question mark
-    InitPrimFn (UTF16_RHO               , &PrimFnRho_EM               );    // Alt-'r' - rho
-    InitPrimFn (UTF16_UPSTILE           , &PrimFnUpStile_EM           );    // Alt-'s' - up stile
-    InitPrimFn (UTF16_TILDE             , &PrimFnTilde_EM             );    // Alt-'t' - tilde
-    InitPrimFn (UTF16_DOWNARROW         , &PrimFnDownArrow_EM         );    // Alt-'u' - down arrow
-    InitPrimFn (INDEX_DOWNSHOE          , &PrimFnDownShoe_EM          );    // Alt-'v' - down shoe
-    InitPrimFn (UTF16_OMEGA             , &PrimFnOmega_EM             );    // Alt-'w' - omega
-    InitPrimFn (UTF16_RIGHTSHOE         , &PrimFnRightShoe_EM         );    // Alt-'x' - right shoe
-    InitPrimFn (UTF16_UPARROW           , &PrimFnUpArrow_EM           );    // Alt-'y' - up arrow
-    InitPrimFn (UTF16_LEFTSHOE          , &PrimFnLeftShoe_EM          );    // Alt-'z' - left shoe
-    InitPrimFn (UTF16_EQUALUNDERBAR     , &PrimFnEqualUnderbar_EM     );    // Alt-'!' - match
+    InitPrimFn (UTF16_STILE             , &PrimFnStile_EM_YY             ); // Alt-'m' - stile
+    InitPrimFn (UTF16_DOWNTACK          , &PrimFnDownTack_EM_YY          ); // Alt-'n' - down tack
+    InitPrimFn (UTF16_CIRCLE            , &PrimFnCircle_EM_YY            ); // Alt-'o' - circle
+    InitPrimFn (UTF16_STAR              , &PrimFnStar_EM_YY              ); // Alt-'p' - star
+    InitPrimFn (UTF16_QUERY             , &PrimFnQuery_EM_YY             ); // Alt-'q' - question mark
+    InitPrimFn (UTF16_RHO               , &PrimFnRho_EM_YY               ); // Alt-'r' - rho
+    InitPrimFn (UTF16_UPSTILE           , &PrimFnUpStile_EM_YY           ); // Alt-'s' - up stile
+    InitPrimFn (UTF16_TILDE             , &PrimFnTilde_EM_YY             ); // Alt-'t' - tilde
+    InitPrimFn (UTF16_DOWNARROW         , &PrimFnDownArrow_EM_YY         ); // Alt-'u' - down arrow
+    InitPrimFn (INDEX_DOWNSHOE          , &PrimFnDownShoe_EM_YY          ); // Alt-'v' - down shoe
+    InitPrimFn (UTF16_OMEGA             , &PrimFnOmega_EM_YY             ); // Alt-'w' - omega
+    InitPrimFn (UTF16_RIGHTSHOE         , &PrimFnRightShoe_EM_YY         ); // Alt-'x' - right shoe
+    InitPrimFn (UTF16_UPARROW           , &PrimFnUpArrow_EM_YY           ); // Alt-'y' - up arrow
+    InitPrimFn (UTF16_LEFTSHOE          , &PrimFnLeftShoe_EM_YY          ); // Alt-'z' - left shoe
+    InitPrimFn (UTF16_EQUALUNDERBAR     , &PrimFnEqualUnderbar_EM_YY     ); // Alt-'!' - match
 ////                                                                        // Alt-'"' - (none)
-    InitPrimFn (UTF16_DELSTILE          , &PrimFnDelStile_EM          );    // Alt-'#' - grade-down
-    InitPrimFn (UTF16_DELTASTILE        , &PrimFnDeltaStile_EM        );    // Alt-'$' - grade-up
-    InitPrimFn (INDEX_CIRCLESTILE       , &PrimFnCircleStile_EM       );    // Alt-'%' - rotate
-    InitPrimFn (UTF16_CIRCLESLOPE       , &PrimFnCircleSlope_EM       );    // Alt-'^' - transpose
-    InitPrimFn (UTF16_CIRCLEBAR         , &PrimFnCircleBar_EM         );    // Alt-'&' - circle-bar
-    InitPrimFn (UTF16_UPTACKJOT         , &PrimFnUpTackJot_EM         );    // Alt-'\''- execute
-    InitPrimFn (UTF16_DOWNCARETTILDE    , &PrimFnDownCaretTilde_EM    );    // Alt-'(' - nor
-    InitPrimFn (UTF16_UPCARETTILDE      , &PrimFnUpCaretTilde_EM      );    // Alt-')' - nand
-    InitPrimFn (UTF16_CIRCLESTAR        , &PrimFnCircleStar_EM        );    // Alt-'*' - log
-    InitPrimFn (UTF16_DOMINO            , &PrimFnDomino_EM            );    // Alt-'+' - domino
+    InitPrimFn (UTF16_DELSTILE          , &PrimFnDelStile_EM_YY          ); // Alt-'#' - grade-down
+    InitPrimFn (UTF16_DELTASTILE        , &PrimFnDeltaStile_EM_YY        ); // Alt-'$' - grade-up
+    InitPrimFn (INDEX_CIRCLESTILE       , &PrimFnCircleStile_EM_YY       ); // Alt-'%' - rotate
+    InitPrimFn (UTF16_CIRCLESLOPE       , &PrimFnCircleSlope_EM_YY       ); // Alt-'^' - transpose
+    InitPrimFn (UTF16_CIRCLEBAR         , &PrimFnCircleBar_EM_YY         ); // Alt-'&' - circle-bar
+    InitPrimFn (UTF16_UPTACKJOT         , &PrimFnUpTackJot_EM_YY         ); // Alt-'\''- execute
+    InitPrimFn (UTF16_DOWNCARETTILDE    , &PrimFnDownCaretTilde_EM_YY    ); // Alt-'(' - nor
+    InitPrimFn (UTF16_UPCARETTILDE      , &PrimFnUpCaretTilde_EM_YY      ); // Alt-')' - nand
+    InitPrimFn (UTF16_CIRCLESTAR        , &PrimFnCircleStar_EM_YY        ); // Alt-'*' - log
+    InitPrimFn (UTF16_DOMINO            , &PrimFnDomino_EM_YY            ); // Alt-'+' - domino
 ////                                                                        // Alt-',' - lamp
-    InitPrimFn (UTF16_TIMES             , &PrimFnTimes_EM             );    // Alt-'-' - times
-    InitPrimFn (UTF16_SLOPEBAR          , &PrimFnSlopeBar_EM          );    // Alt-'.' - slope-bar
-    InitPrimFn (INDEX_SLASHBAR          , &PrimFnSlashBar_EM          );    // Alt-'/' - slash-bar
-    InitPrimFn (UTF16_UPCARET           , &PrimFnUpCaret_EM           );    // Alt-'0' - and (94??)
-    InitPrimFn (UTF16_DIERESIS          , (LPPRIMFNS) -1              );    // Alt-'1' - dieresis
+    InitPrimFn (UTF16_TIMES             , &PrimFnTimes_EM_YY             ); // Alt-'-' - times
+    InitPrimFn (UTF16_SLOPEBAR          , &PrimFnSlopeBar_EM_YY          ); // Alt-'.' - slope-bar
+    InitPrimFn (INDEX_SLASHBAR          , &PrimFnSlashBar_EM_YY          ); // Alt-'/' - slash-bar
+    InitPrimFn (UTF16_UPCARET           , &PrimFnUpCaret_EM_YY           ); // Alt-'0' - and (94??)
+    InitPrimFn (UTF16_DIERESIS          , (LPPRIMFNS) -1                 ); // Alt-'1' - dieresis
 ////                                                                        // Alt-'2' - overbar
-    InitPrimFn (UTF16_LEFTCARET         , &PrimFnLeftCaret_EM         );    // Alt-'3' - less
-    InitPrimFn (UTF16_LEFTCARETUNDERBAR , &PrimFnLeftCaretUnderbar_EM );    // Alt-'4' - not more
-    InitPrimFn (UTF16_EQUAL             , &PrimFnEqual_EM             );    // Alt-'5' - equal
-    InitPrimFn (UTF16_RIGHTCARETUNDERBAR, &PrimFnRightCaretUnderbar_EM);    // Alt-'6' - not less
-    InitPrimFn (UTF16_RIGHTCARET        , &PrimFnRightCaret_EM        );    // Alt-'7' - more
-    InitPrimFn (UTF16_NOTEQUAL          , &PrimFnNotEqual_EM          );    // Alt-'8' - not equal
-    InitPrimFn (UTF16_DOWNCARET         , &PrimFnDownCaret_EM         );    // Alt-'9' - or
+    InitPrimFn (UTF16_LEFTCARET         , &PrimFnLeftCaret_EM_YY         ); // Alt-'3' - less
+    InitPrimFn (UTF16_LEFTCARETUNDERBAR , &PrimFnLeftCaretUnderbar_EM_YY ); // Alt-'4' - not more
+    InitPrimFn (UTF16_EQUAL             , &PrimFnEqual_EM_YY             ); // Alt-'5' - equal
+    InitPrimFn (UTF16_RIGHTCARETUNDERBAR, &PrimFnRightCaretUnderbar_EM_YY); // Alt-'6' - not less
+    InitPrimFn (UTF16_RIGHTCARET        , &PrimFnRightCaret_EM_YY        ); // Alt-'7' - more
+    InitPrimFn (UTF16_NOTEQUAL          , &PrimFnNotEqual_EM_YY          ); // Alt-'8' - not equal
+    InitPrimFn (UTF16_DOWNCARET         , &PrimFnDownCaret_EM_YY         ); // Alt-'9' - or
 ////                                                                        // Alt-':' - (none)
-    InitPrimFn (UTF16_DOWNTACKJOT       , &PrimFnDownTackJot_EM       );    // Alt-';' - format
+    InitPrimFn (UTF16_DOWNTACKJOT       , &PrimFnDownTackJot_EM_YY       ); // Alt-';' - format
 ////                                                                        // Alt-'<' - (none)
-    InitPrimFn (UTF16_COLONBAR          , &PrimFnColonBar_EM          );    // Alt-'=' - divide
+    InitPrimFn (UTF16_COLONBAR          , &PrimFnColonBar_EM_YY          ); // Alt-'=' - divide
 ////                                                                        // Alt-'>' - (none)
 ////                                                                        // Alt-'?' - (none)
 ////                                                                        // Alt-'@' - del-tilde
@@ -248,22 +250,22 @@ void InitPrimFns
 ////                                                                        // Alt-'B' - (none)
 ////                                                                        // Alt-'C' - (none)
 ////                                                                        // Alt-'D' - (none)
-    InitPrimFn (UTF16_EPSILONUNDERBAR   , &PrimFnEpsilonUnderbar_EM   );    // Alt-'E' - epsilon-underbar
+    InitPrimFn (UTF16_EPSILONUNDERBAR   , &PrimFnEpsilonUnderbar_EM_YY   ); // Alt-'E' - epsilon-underbar
 ////                                                                        // Alt-'F' - (none)
-    InitPrimFn (UTF16_DIERESISDEL       , (LPPRIMFNS) -1              );    // Alt-'G' - dieresis-del (dual)
+    InitPrimFn (UTF16_DIERESISDEL       , (LPPRIMFNS) -1                 ); // Alt-'G' - dieresis-del (dual)
 ////                                                                        // Alt-'H' - delta-underbar
-    InitPrimFn (UTF16_IOTAUNDERBAR      , &PrimFnIotaUnderbar_EM      );    // Alt-'I' - iota-underbar
-    InitPrimFn (INDEX_DIERESISJOT       , (LPPRIMFNS) -1              );    // Alt-'J' - dieresis-jot (rank)
+    InitPrimFn (UTF16_IOTAUNDERBAR      , &PrimFnIotaUnderbar_EM_YY      ); // Alt-'I' - iota-underbar
+    InitPrimFn (INDEX_DIERESISJOT       , (LPPRIMFNS) -1                 ); // Alt-'J' - dieresis-jot (rank)
 ////                                                                        // Alt-'K' - (none)
-    InitPrimFn (UTF16_SQUAD             , &PrimFnSquad_EM             );    // Alt-'L' - squad
-    InitPrimFn (UTF16_STILETILDE        , (LPPRIMFNS) -1              );    // Alt-'M' - stile-tilde (partition)
-    InitPrimFn (INDEX_DIERESISDOWNTACK  , (LPPRIMFNS) -1              );    // Alt-'N' - dieresis-downtack (convolution)
-    InitPrimFn (INDEX_DIERESISCIRCLE    , (LPPRIMFNS) -1              );    // Alt-'O' - dieresis-circle (holler)
-    InitPrimFn (UTF16_DIERESISSTAR      , (LPPRIMFNS) -1              );    // Alt-'P' - dieresis-star (power)
+    InitPrimFn (UTF16_SQUAD             , &PrimFnSquad_EM_YY             ); // Alt-'L' - squad
+    InitPrimFn (UTF16_STILETILDE        , (LPPRIMFNS) -1                 ); // Alt-'M' - stile-tilde (partition)
+    InitPrimFn (INDEX_DIERESISDOWNTACK  , (LPPRIMFNS) -1                 ); // Alt-'N' - dieresis-downtack (convolution)
+    InitPrimFn (INDEX_DIERESISCIRCLE    , (LPPRIMFNS) -1                 ); // Alt-'O' - dieresis-circle (holler)
+    InitPrimFn (UTF16_DIERESISSTAR      , (LPPRIMFNS) -1                 ); // Alt-'P' - dieresis-star (power)
 ////                                                                        // Alt-'Q' - (none)
 ////                                                                        // Alt-'R' - (none)
 ////                                                                        // Alt-'S' - (none)
-    InitPrimFn (UTF16_DIERESISTILDE     , (LPPRIMFNS) -1              );    // Alt-'T' - dieresis-tilde (commute/reflex)
+    InitPrimFn (UTF16_DIERESISTILDE     , (LPPRIMFNS) -1                 ); // Alt-'T' - dieresis-tilde (commute/reflex)
 ////                                                                        // Alt-'U' - (none)
 ////                                                                        // Alt-'V' - (none)
 ////                                                                        // Alt-'W' - (none)
@@ -271,29 +273,29 @@ void InitPrimFns
 ////                                                                        // Alt-'Y' - (none)
 ////                                                                        // Alt-'Z' - (none)
 ////                                                                        // Alt-'[' - left arrow
-    InitPrimFn (UTF16_LEFTTACK          , &PrimFnLeftTack_EM          );    // Alt-'\\'- left tack
+    InitPrimFn (UTF16_LEFTTACK          , &PrimFnLeftTack_EM_YY          ); // Alt-'\\'- left tack
 ////                                                                        // Alt-']' - right arrow
-    InitPrimFn (UTF16_QUOTEDOT          , &PrimFnQuoteDot_EM          );    // Alt-'_' - quote-dot
+    InitPrimFn (UTF16_QUOTEDOT          , &PrimFnQuoteDot_EM_YY          ); // Alt-'_' - quote-dot
 ////                                                                        // Alt-'`' - diamond
 ////                                                                        // Alt-'{' - quote-quad
-    InitPrimFn (UTF16_RIGHTTACK         , &PrimFnRightTack_EM         );    // Alt-'|' - right tack
+    InitPrimFn (UTF16_RIGHTTACK         , &PrimFnRightTack_EM_YY         ); // Alt-'|' - right tack
 ////                                                                        // Alt-'}' - zilde
-    InitPrimFn (UTF16_COMMABAR          , &PrimFnCommaBar_EM          );    // Alt-'~' - comma-bar
-    InitPrimFn (UTF16_CIRCUMFLEX        , &PrimFnUpCaret_EM           );
-    InitPrimFn (UTF16_BAR               , &PrimFnBar_EM               );
-    InitPrimFn (UTF16_PLUS              , &PrimFnPlus_EM              );
-    InitPrimFn (UTF16_STILE2            , &PrimFnStile_EM             );
-    InitPrimFn (UTF16_COMMA             , &PrimFnComma_EM             );
-    InitPrimFn (UTF16_SLASH             , &PrimFnSlash_EM             );
-    InitPrimFn (UTF16_SLOPE             , &PrimFnSlope_EM             );
-    InitPrimFn (UTF16_DOT               , (LPPRIMFNS) -1              );    //         - dot (inner product)
-    InitPrimFn (INDEX_JOTDOT            , (LPPRIMFNS) -1              );    //         - jotdot (outer product)
+    InitPrimFn (UTF16_COMMABAR          , &PrimFnCommaBar_EM_YY          ); // Alt-'~' - comma-bar
+    InitPrimFn (UTF16_CIRCUMFLEX        , &PrimFnUpCaret_EM_YY           );
+    InitPrimFn (UTF16_BAR               , &PrimFnBar_EM_YY               );
+    InitPrimFn (UTF16_PLUS              , &PrimFnPlus_EM_YY              );
+    InitPrimFn (UTF16_STILE2            , &PrimFnStile_EM_YY             );
+    InitPrimFn (UTF16_COMMA             , &PrimFnComma_EM_YY             );
+    InitPrimFn (UTF16_SLASH             , &PrimFnSlash_EM_YY             );
+    InitPrimFn (UTF16_SLOPE             , &PrimFnSlope_EM_YY             );
+    InitPrimFn (UTF16_DOT               , (LPPRIMFNS) -1                 ); //         - dot (inner product)
+    InitPrimFn (INDEX_JOTDOT            , (LPPRIMFNS) -1                 ); //         - jotdot (outer product)
 } // End InitPrimFns
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  InitPrimFn
+//  $InitPrimFn
 //
 //  Initialize a single primitive function/operator
 //***************************************************************************
@@ -311,7 +313,7 @@ void InitPrimFn
 
 
 //***************************************************************************
-//  PrimFn_EM
+//  $PrimFn_EM
 //
 //  Default function for symbols for which there is no corresponding
 //    primitive function/operator
@@ -337,102 +339,102 @@ LPYYSTYPE PrimFn_EM
 #undef  APPEND_NAME
 
 // Symbols for which there is no definition
-#define PrimProtoFnAlpha_EM                     PrimProtoFn_EM
-#define PrimProtoFnIotaUnderbar_EM              PrimProtoFn_EM
-#define PrimProtoFnOmega_EM                     PrimProtoFn_EM
-#define PrimProtoFnUpShoe_EM                    PrimProtoFn_EM
+#define PrimProtoFnAlpha_EM_YY                  PrimProtoFn_EM
+#define PrimProtoFnIotaUnderbar_EM_YY           PrimProtoFn_EM
+#define PrimProtoFnOmega_EM_YY                  PrimProtoFn_EM
+#define PrimProtoFnUpShoe_EM_YY                 PrimProtoFn_EM
 
 
 // Primitive functions TO DO
-#define PrimProtoFnDelStile_EM                  PrimProtoFn_EM
-#define PrimProtoFnDeltaStile_EM                PrimProtoFn_EM
-#define PrimProtoFnDownArrow_EM                 PrimProtoFn_EM
-#define PrimProtoFnDownShoe_EM                  PrimProtoFn_EM
-#define PrimProtoFnDownTack_EM                  PrimProtoFn_EM
-#define PrimProtoFnEpsilonUnderbar_EM           PrimProtoFn_EM
-#define PrimProtoFnRightShoe_EM                 PrimProtoFn_EM
-#define PrimProtoFnUpTack_EM                    PrimProtoFn_EM
-#define PrimProtoFnUpTackJot_EM                 PrimProtoFn_EM
+#define PrimProtoFnDelStile_EM_YY               PrimProtoFn_EM
+#define PrimProtoFnDeltaStile_EM_YY             PrimProtoFn_EM
+#define PrimProtoFnDownArrow_EM_YY              PrimProtoFn_EM
+#define PrimProtoFnDownShoe_EM_YY               PrimProtoFn_EM
+#define PrimProtoFnDownTack_EM_YY               PrimProtoFn_EM
+#define PrimProtoFnEpsilonUnderbar_EM_YY        PrimProtoFn_EM
+#define PrimProtoFnRightShoe_EM_YY              PrimProtoFn_EM
+#define PrimProtoFnUpTack_EM_YY                 PrimProtoFn_EM
+#define PrimProtoFnUpTackJot_EM_YY              PrimProtoFn_EM
 
 
 // Primitive operators TO DO
-#define PrimProtoOpDieresisCircle_EM            PrimProtoOp_EM
-#define PrimProtoOpDieresisDel_EM               PrimProtoOp_EM
-#define PrimProtoOpDieresisDownTack_EM          PrimProtoOp_EM
-#define PrimProtoOpDieresisJot_EM               PrimProtoOp_EM
-#define PrimProtoOpDieresisStar_EM              PrimProtoOp_EM
-#define PrimProtoOpStileTilde_EM                PrimProtoOp_EM
+#define PrimProtoOpDieresisCircle_EM_YY         PrimProtoOp_EM
+#define PrimProtoOpDieresisDel_EM_YY            PrimProtoOp_EM
+#define PrimProtoOpDieresisDownTack_EM_YY       PrimProtoOp_EM
+#define PrimProtoOpDieresisJot_EM_YY            PrimProtoOp_EM
+#define PrimProtoOpDieresisStar_EM_YY           PrimProtoOp_EM
+#define PrimProtoOpStileTilde_EM_YY             PrimProtoOp_EM
 
 
 // Primitive scalar functions DONE
-#define PrimProtoFnBar_EM                       PrimProtoFnScalar_EM
-#define PrimProtoFnCircle_EM                    PrimProtoFnScalar_EM
-#define PrimProtoFnCircleStar_EM                PrimProtoFnScalar_EM
-#define PrimProtoFnColonBar_EM                  PrimProtoFnScalar_EM
-#define PrimProtoFnDownCaret_EM                 PrimProtoFnScalar_EM
-#define PrimProtoFnDownCaretTilde_EM            PrimProtoFnScalar_EM
-#define PrimProtoFnDownStile_EM                 PrimProtoFnScalar_EM
-#define PrimProtoFnEqual_EM                     PrimProtoFnScalar_EM
-#define PrimProtoFnLeftCaret_EM                 PrimProtoFnScalar_EM
-#define PrimProtoFnLeftCaretUnderbar_EM         PrimProtoFnScalar_EM
-#define PrimProtoFnNotEqual_EM                  PrimProtoFnScalar_EM
-#define PrimProtoFnPlus_EM                      PrimProtoFnScalar_EM
-#define PrimProtoFnQuoteDot_EM                  PrimProtoFnScalar_EM
-#define PrimProtoFnQuery_EM                     PrimProtoFnQuery_EM
-#define PrimProtoFnRightCaret_EM                PrimProtoFnScalar_EM
-#define PrimProtoFnRightCaretUnderbar_EM        PrimProtoFnScalar_EM
-#define PrimProtoFnStar_EM                      PrimProtoFnScalar_EM
-#define PrimProtoFnStile_EM                     PrimProtoFnScalar_EM
-#define PrimProtoFnTilde_EM                     PrimProtoFnTilde_EM
-#define PrimProtoFnTimes_EM                     PrimProtoFnScalar_EM
-#define PrimProtoFnUpCaret_EM                   PrimProtoFnScalar_EM
-#define PrimProtoFnUpCaretTilde_EM              PrimProtoFnScalar_EM
-#define PrimProtoFnUpStile_EM                   PrimProtoFnScalar_EM
+#define PrimProtoFnBar_EM_YY                    PrimProtoFnScalar_EM_YY
+#define PrimProtoFnCircle_EM_YY                 PrimProtoFnScalar_EM_YY
+#define PrimProtoFnCircleStar_EM_YY             PrimProtoFnScalar_EM_YY
+#define PrimProtoFnColonBar_EM_YY               PrimProtoFnScalar_EM_YY
+#define PrimProtoFnDownCaret_EM_YY              PrimProtoFnScalar_EM_YY
+#define PrimProtoFnDownCaretTilde_EM_YY         PrimProtoFnScalar_EM_YY
+#define PrimProtoFnDownStile_EM_YY              PrimProtoFnScalar_EM_YY
+#define PrimProtoFnEqual_EM_YY                  PrimProtoFnScalar_EM_YY
+#define PrimProtoFnLeftCaret_EM_YY              PrimProtoFnScalar_EM_YY
+#define PrimProtoFnLeftCaretUnderbar_EM_YY      PrimProtoFnScalar_EM_YY
+#define PrimProtoFnNotEqual_EM_YY               PrimProtoFnScalar_EM_YY
+#define PrimProtoFnPlus_EM_YY                   PrimProtoFnScalar_EM_YY
+#define PrimProtoFnQuoteDot_EM_YY               PrimProtoFnScalar_EM_YY
+#define PrimProtoFnQuery_EM_YY                  PrimProtoFnQuery_EM_YY
+#define PrimProtoFnRightCaret_EM_YY             PrimProtoFnScalar_EM_YY
+#define PrimProtoFnRightCaretUnderbar_EM_YY     PrimProtoFnScalar_EM_YY
+#define PrimProtoFnStar_EM_YY                   PrimProtoFnScalar_EM_YY
+#define PrimProtoFnStile_EM_YY                  PrimProtoFnScalar_EM_YY
+#define PrimProtoFnTilde_EM_YY                  PrimProtoFnTilde_EM_YY
+#define PrimProtoFnTimes_EM_YY                  PrimProtoFnScalar_EM_YY
+#define PrimProtoFnUpCaret_EM_YY                PrimProtoFnScalar_EM_YY
+#define PrimProtoFnUpCaretTilde_EM_YY           PrimProtoFnScalar_EM_YY
+#define PrimProtoFnUpStile_EM_YY                PrimProtoFnScalar_EM_YY
 
 
 // Primitive mixed functions DONE
-/////// PrimProtoFnComma_EM
-/////// PrimProtoFnDomino_EM
-/////// PrimProtoFnCircleSlope_EM
-/////// PrimProtoFnCircleStile_EM
-/////// PrimProtoFnDomino_EM
-/////// PrimProtoFnDownTackJot_EM
-/////// PrimProtoFnEpsilon_EM
-/////// PrimProtoFnEqualUnderbar_EM
-/////// PrimProtoFnIota_EM
-/////// PrimProtoFnLeftShoe_EM
-/////// PrimProtoFnLeftTack_EM
-/////// PrimProtoFnQuery_EM
-/////// PrimProtoFnRho_EM
-/////// PrimProtoFnRightTack_EM
-/////// PrimProtoFnSlash_EM
-/////// PrimProtoFnSlope_EM
-/////// PrimProtoFnSquad_EM
-/////// PrimProtoFnTilde_EM
-/////// PrimProtoFnUpArrow_EM
+/////// PrimProtoFnComma_EM_YY
+/////// PrimProtoFnDomino_EM_YY
+/////// PrimProtoFnCircleSlope_EM_YY
+/////// PrimProtoFnCircleStile_EM_YY
+/////// PrimProtoFnDomino_EM_YY
+/////// PrimProtoFnDownTackJot_EM_YY
+/////// PrimProtoFnEpsilon_EM_YY
+/////// PrimProtoFnEqualUnderbar_EM_YY
+/////// PrimProtoFnIota_EM_YY
+/////// PrimProtoFnLeftShoe_EM_YY
+/////// PrimProtoFnLeftTack_EM_YY
+/////// PrimProtoFnQuery_EM_YY
+/////// PrimProtoFnRho_EM_YY
+/////// PrimProtoFnRightTack_EM_YY
+/////// PrimProtoFnSlash_EM_YY
+/////// PrimProtoFnSlope_EM_YY
+/////// PrimProtoFnSquad_EM_YY
+/////// PrimProtoFnTilde_EM_YY
+/////// PrimProtoFnUpArrow_EM_YY
 
 
 // Primitive operators DONE
-/////// PrimProtoOpDieresis_EM
-/////// PrimProtoOpDieresisTilde_EM
-/////// PrimProtoOpDot_EM
-/////// PrimProtoOpJot_EM
-/////// PrimProtoOpJotDot_EM
-/////// PrimProtoOpSlash_EM
-/////// PrimProtoOpSlope_EM
+/////// PrimProtoOpDieresis_EM_YY
+/////// PrimProtoOpDieresisTilde_EM_YY
+/////// PrimProtoOpDot_EM_YY
+/////// PrimProtoOpJot_EM_YY
+/////// PrimProtoOpJotDot_EM_YY
+/////// PrimProtoOpSlash_EM_YY
+/////// PrimProtoOpSlope_EM_YY
 
 
 // First coordinate functions handled by common function
-#define PrimProtoFnCircleBar_EM      PrimProtoFnCircleStile_EM
-#define PrimProtoFnCommaBar_EM       PrimProtoFnComma_EM
-#define PrimProtoFnSlashBar_EM       PrimProtoFnSlash_EM
-#define PrimProtoFnSlopeBar_EM       PrimProtoFnSlope_EM
-#define PrimProtoOpSlashBar_EM       PrimProtoOpSlash_EM
-#define PrimProtoOpSlopeBar_EM       PrimProtoOpSlope_EM
+#define PrimProtoFnCircleBar_EM_YY   PrimProtoFnCircleStile_EM_YY
+#define PrimProtoFnCommaBar_EM_YY    PrimProtoFnComma_EM_YY
+#define PrimProtoFnSlashBar_EM_YY    PrimProtoFnSlash_EM_YY
+#define PrimProtoFnSlopeBar_EM_YY    PrimProtoFnSlope_EM_YY
+#define PrimProtoOpSlashBar_EM_YY    PrimProtoOpSlash_EM_YY
+#define PrimProtoOpSlopeBar_EM_YY    PrimProtoOpSlope_EM_YY
 
 
 //***************************************************************************
-//  InitPrimProtoFns
+//  $InitPrimProtoFns
 //
 //  Initialize the primitive function and operator prototype jump table
 //***************************************************************************
@@ -451,119 +453,119 @@ void InitPrimProtoFns
     //  Primitive Functions & operators
     //****************************************************
 
-    InitPrimProtoFn (UTF16_ALPHA             , &PrimProtoFnAlpha_EM             );  // Alt-'a' - alpha
-    InitPrimProtoFn (UTF16_UPTACK            , &PrimProtoFnUpTack_EM            );  // Alt-'b' - up tack
-    InitPrimProtoFn (UTF16_UPSHOE            , &PrimProtoFnUpShoe_EM            );  // Alt-'c' - up shoe
-    InitPrimProtoFn (UTF16_DOWNSTILE         , &PrimProtoFnDownStile_EM         );  // Alt-'d' - down stile
-    InitPrimProtoFn (INDEX_EPSILON           , &PrimProtoFnEpsilon_EM           );  // Alt-'e' - epsilon
-////                                                                                // Alt-'f' - underbar
-////                                                                                // Alt-'g' - del
-////                                                                                // Alt-'h' - delta
-    InitPrimProtoFn (UTF16_IOTA              , &PrimProtoFnIota_EM              );  // Alt-'i' - iota
-    InitPrimProtoOp (UTF16_JOT               , &PrimProtoOpJot_EM               );  // Alt-'j' - jot
-////                                                                                // Alt-'k' - single quote
-////                                                                                // Alt-'l' - quad
-    InitPrimProtoFn (UTF16_STILE             , &PrimProtoFnStile_EM             );  // Alt-'m' - stile
-    InitPrimProtoFn (UTF16_DOWNTACK          , &PrimProtoFnDownTack_EM          );  // Alt-'n' - down tack
-    InitPrimProtoFn (UTF16_CIRCLE            , &PrimProtoFnCircle_EM            );  // Alt-'o' - circle
-    InitPrimProtoFn (UTF16_STAR              , &PrimProtoFnStar_EM              );  // Alt-'p' - star
-    InitPrimProtoFn (UTF16_QUERY             , &PrimProtoFnQuery_EM             );  // Alt-'q' - question mark
-    InitPrimProtoFn (UTF16_RHO               , &PrimProtoFnRho_EM               );  // Alt-'r' - rho
-    InitPrimProtoFn (UTF16_UPSTILE           , &PrimProtoFnUpStile_EM           );  // Alt-'s' - up stile
-    InitPrimProtoFn (UTF16_TILDE             , &PrimProtoFnTilde_EM             );  // Alt-'t' - tilde
-    InitPrimProtoFn (UTF16_DOWNARROW         , &PrimProtoFnDownArrow_EM         );  // Alt-'u' - down arrow
-    InitPrimProtoFn (INDEX_DOWNSHOE          , &PrimProtoFnDownShoe_EM          );  // Alt-'v' - down shoe
-    InitPrimProtoFn (UTF16_OMEGA             , &PrimProtoFnOmega_EM             );  // Alt-'w' - omega
-    InitPrimProtoFn (UTF16_RIGHTSHOE         , &PrimProtoFnRightShoe_EM         );  // Alt-'x' - right shoe
-    InitPrimProtoFn (UTF16_UPARROW           , &PrimProtoFnUpArrow_EM           );  // Alt-'y' - up arrow
-    InitPrimProtoFn (UTF16_LEFTSHOE          , &PrimProtoFnLeftShoe_EM          );  // Alt-'z' - left shoe
-    InitPrimProtoFn (UTF16_EQUALUNDERBAR     , &PrimProtoFnEqualUnderbar_EM     );  // Alt-'!' - match
-////                                                                                // Alt-'"' - (none)
-    InitPrimProtoFn (UTF16_DELSTILE          , &PrimProtoFnDelStile_EM          );  // Alt-'#' - grade-down
-    InitPrimProtoFn (UTF16_DELTASTILE        , &PrimProtoFnDeltaStile_EM        );  // Alt-'$' - grade-up
-    InitPrimProtoFn (INDEX_CIRCLESTILE       , &PrimProtoFnCircleStile_EM       );  // Alt-'%' - rotate
-    InitPrimProtoFn (UTF16_CIRCLESLOPE       , &PrimProtoFnCircleSlope_EM       );  // Alt-'^' - transpose
-    InitPrimProtoFn (UTF16_CIRCLEBAR         , &PrimProtoFnCircleBar_EM         );  // Alt-'&' - circle-bar
-    InitPrimProtoFn (UTF16_UPTACKJOT         , &PrimProtoFnUpTackJot_EM         );  // Alt-'\''- execute
-    InitPrimProtoFn (UTF16_DOWNCARETTILDE    , &PrimProtoFnDownCaretTilde_EM    );  // Alt-'(' - nor
-    InitPrimProtoFn (UTF16_UPCARETTILDE      , &PrimProtoFnUpCaretTilde_EM      );  // Alt-')' - nand
-    InitPrimProtoFn (UTF16_CIRCLESTAR        , &PrimProtoFnCircleStar_EM        );  // Alt-'*' - log
-    InitPrimProtoFn (UTF16_DOMINO            , &PrimProtoFnDomino_EM            );  // Alt-'+' - domino
-////                                                                                // Alt-',' - lamp
-    InitPrimProtoFn (UTF16_TIMES             , &PrimProtoFnTimes_EM             );  // Alt-'-' - times
-    InitPrimProtoFn (UTF16_SLOPEBAR          , &PrimProtoFnSlopeBar_EM          );  // Alt-'.' - slope-bar as Function
-    InitPrimProtoOp (INDEX_OPSLOPEBAR        , &PrimProtoOpSlopeBar_EM          );  // Alt-'.' - ...          Operator
-    InitPrimProtoFn (INDEX_SLASHBAR          , &PrimProtoFnSlashBar_EM          );  // Alt-'/' - slash-bar as Function
-    InitPrimProtoOp (INDEX_OPSLASHBAR        , &PrimProtoOpSlashBar_EM          );  // Alt-'/' - ...          Operator
-    InitPrimProtoFn (UTF16_UPCARET           , &PrimProtoFnUpCaret_EM           );  // Alt-'0' - and (94??)
-    InitPrimProtoOp (UTF16_DIERESIS          , &PrimProtoOpDieresis_EM          );  // Alt-'1' - dieresis
-////                                                                                // Alt-'2' - overbar
-    InitPrimProtoFn (UTF16_LEFTCARET         , &PrimProtoFnLeftCaret_EM         );  // Alt-'3' - less
-    InitPrimProtoFn (UTF16_LEFTCARETUNDERBAR , &PrimProtoFnLeftCaretUnderbar_EM );  // Alt-'4' - not more
-    InitPrimProtoFn (UTF16_EQUAL             , &PrimProtoFnEqual_EM             );  // Alt-'5' - equal
-    InitPrimProtoFn (UTF16_RIGHTCARETUNDERBAR, &PrimProtoFnRightCaretUnderbar_EM);  // Alt-'6' - not less
-    InitPrimProtoFn (UTF16_RIGHTCARET        , &PrimProtoFnRightCaret_EM        );  // Alt-'7' - more
-    InitPrimProtoFn (UTF16_NOTEQUAL          , &PrimProtoFnNotEqual_EM          );  // Alt-'8' - not equal
-    InitPrimProtoFn (UTF16_DOWNCARET         , &PrimProtoFnDownCaret_EM         );  // Alt-'9' - or
-////                                                                                // Alt-':' - (none)
-    InitPrimProtoFn (UTF16_DOWNTACKJOT       , &PrimProtoFnDownTackJot_EM       );  // Alt-';' - format
-////                                                                                // Alt-'<' - (none)
-    InitPrimProtoFn (UTF16_COLONBAR          , &PrimProtoFnColonBar_EM          );  // Alt-'=' - divide
-////                                                                                // Alt-'>' - (none)
-////                                                                                // Alt-'?' - (none)
-////                                                                                // Alt-'@' - del-tilde
-////                                                                                // Alt-'A' - (none)
-////                                                                                // Alt-'B' - (none)
-////                                                                                // Alt-'C' - (none)
-////                                                                                // Alt-'D' - (none)
-    InitPrimProtoFn (UTF16_EPSILONUNDERBAR   , &PrimProtoFnEpsilonUnderbar_EM   );  // Alt-'E' - epsilon-underbar
-////                                                                                // Alt-'F' - (none)
-    InitPrimProtoOp (UTF16_DIERESISDEL       , &PrimProtoOpDieresisDel_EM       );  // Alt-'G' - dieresis-del (dual)
-////                                                                                // Alt-'H' - delta-underbar
-    InitPrimProtoFn (UTF16_IOTAUNDERBAR      , &PrimProtoFnIotaUnderbar_EM      );  // Alt-'I' - iota-underbar
-    InitPrimProtoOp (INDEX_DIERESISJOT       , &PrimProtoOpDieresisJot_EM       );  // Alt-'J' - dieresis-jot (rank)
-////                                                                                // Alt-'K' - (none)
-    InitPrimProtoFn (UTF16_SQUAD             , &PrimProtoFnSquad_EM             );  // Alt-'L' - squad
-    InitPrimProtoOp (UTF16_STILETILDE        , &PrimProtoOpStileTilde_EM        );  // Alt-'M' - stile-tilde (partition)
-    InitPrimProtoOp (INDEX_DIERESISDOWNTACK  , &PrimProtoOpDieresisDownTack_EM  );  // Alt-'N' - dieresis-downtack (convolution)
-    InitPrimProtoOp (INDEX_DIERESISCIRCLE    , &PrimProtoOpDieresisCircle_EM    );  // Alt-'O' - dieresis-circle (holler)
-    InitPrimProtoOp (UTF16_DIERESISSTAR      , &PrimProtoOpDieresisStar_EM      );  // Alt-'P' - dieresis-star (power)
-////                                                                                // Alt-'Q' - (none)
-////                                                                                // Alt-'R' - (none)
-////                                                                                // Alt-'S' - (none)
-    InitPrimProtoOp (UTF16_DIERESISTILDE     , &PrimProtoOpDieresisTilde_EM     );  // Alt-'T' - dieresis-tilde (commute/reflex)
-////                                                                                // Alt-'U' - (none)
-////                                                                                // Alt-'V' - (none)
-////                                                                                // Alt-'W' - (none)
-////                                                                                // Alt-'X' - (none)
-////                                                                                // Alt-'Y' - (none)
-////                                                                                // Alt-'Z' - (none)
-////                                                                                // Alt-'[' - left arrow
-    InitPrimProtoFn (UTF16_LEFTTACK          , &PrimProtoFnLeftTack_EM          );  // Alt-'\\'- left tack
-////                                                                                // Alt-']' - right arrow
-    InitPrimProtoFn (UTF16_QUOTEDOT          , &PrimProtoFnQuoteDot_EM          );  // Alt-'_' - quote-dot
-////                                                                                // Alt-'`' - diamond
-////                                                                                // Alt-'{' - quote-quad
-    InitPrimProtoFn (UTF16_RIGHTTACK         , &PrimProtoFnRightTack_EM         );  // Alt-'|' - right tack
-////                                                                                // Alt-'}' - zilde
-    InitPrimProtoFn (UTF16_COMMABAR          , &PrimProtoFnCommaBar_EM          );  // Alt-'~' - comma-bar
-    InitPrimProtoFn (UTF16_CIRCUMFLEX        , &PrimProtoFnUpCaret_EM           );  //         -
-    InitPrimProtoFn (UTF16_BAR               , &PrimProtoFnBar_EM               );  //         -
-    InitPrimProtoFn (UTF16_PLUS              , &PrimProtoFnPlus_EM              );  //         -
-    InitPrimProtoFn (UTF16_STILE2            , &PrimProtoFnStile_EM             );  //         -
-    InitPrimProtoFn (UTF16_COMMA             , &PrimProtoFnComma_EM             );  //         -
-    InitPrimProtoFn (UTF16_SLASH             , &PrimProtoFnSlash_EM             );  //         - slash as Function
-    InitPrimProtoOp (INDEX_OPSLASH           , &PrimProtoOpSlash_EM             );  //         - ...      Operator
-    InitPrimProtoFn (UTF16_SLOPE             , &PrimProtoFnSlope_EM             );  //         - slope as Function
-    InitPrimProtoOp (INDEX_OPSLOPE           , &PrimProtoOpSlope_EM             );  //         - ...      Operator
-    InitPrimProtoOp (UTF16_DOT               , &PrimProtoOpDot_EM               );  //         - dot (inner product)
-    InitPrimProtoOp (INDEX_JOTDOT            , &PrimProtoOpJotDot_EM            );  //         - jotdot (outer product)
+    InitPrimProtoFn (UTF16_ALPHA             , &PrimProtoFnAlpha_EM_YY             );   // Alt-'a' - alpha
+    InitPrimProtoFn (UTF16_UPTACK            , &PrimProtoFnUpTack_EM_YY            );   // Alt-'b' - up tack
+    InitPrimProtoFn (UTF16_UPSHOE            , &PrimProtoFnUpShoe_EM_YY            );   // Alt-'c' - up shoe
+    InitPrimProtoFn (UTF16_DOWNSTILE         , &PrimProtoFnDownStile_EM_YY         );   // Alt-'d' - down stile
+    InitPrimProtoFn (INDEX_EPSILON           , &PrimProtoFnEpsilon_EM_YY           );   // Alt-'e' - epsilon
+////                                                                                    // Alt-'f' - underbar
+////                                                                                    // Alt-'g' - del
+////                                                                                    // Alt-'h' - delta
+    InitPrimProtoFn (UTF16_IOTA              , &PrimProtoFnIota_EM_YY              );   // Alt-'i' - iota
+    InitPrimProtoOp (UTF16_JOT               , &PrimProtoOpJot_EM_YY               );   // Alt-'j' - jot
+////                                                                                    // Alt-'k' - single quote
+////                                                                                    // Alt-'l' - quad
+    InitPrimProtoFn (UTF16_STILE             , &PrimProtoFnStile_EM_YY             );   // Alt-'m' - stile
+    InitPrimProtoFn (UTF16_DOWNTACK          , &PrimProtoFnDownTack_EM_YY          );   // Alt-'n' - down tack
+    InitPrimProtoFn (UTF16_CIRCLE            , &PrimProtoFnCircle_EM_YY            );   // Alt-'o' - circle
+    InitPrimProtoFn (UTF16_STAR              , &PrimProtoFnStar_EM_YY              );   // Alt-'p' - star
+    InitPrimProtoFn (UTF16_QUERY             , &PrimProtoFnQuery_EM_YY             );   // Alt-'q' - question mark
+    InitPrimProtoFn (UTF16_RHO               , &PrimProtoFnRho_EM_YY               );   // Alt-'r' - rho
+    InitPrimProtoFn (UTF16_UPSTILE           , &PrimProtoFnUpStile_EM_YY           );   // Alt-'s' - up stile
+    InitPrimProtoFn (UTF16_TILDE             , &PrimProtoFnTilde_EM_YY             );   // Alt-'t' - tilde
+    InitPrimProtoFn (UTF16_DOWNARROW         , &PrimProtoFnDownArrow_EM_YY         );   // Alt-'u' - down arrow
+    InitPrimProtoFn (INDEX_DOWNSHOE          , &PrimProtoFnDownShoe_EM_YY          );   // Alt-'v' - down shoe
+    InitPrimProtoFn (UTF16_OMEGA             , &PrimProtoFnOmega_EM_YY             );   // Alt-'w' - omega
+    InitPrimProtoFn (UTF16_RIGHTSHOE         , &PrimProtoFnRightShoe_EM_YY         );   // Alt-'x' - right shoe
+    InitPrimProtoFn (UTF16_UPARROW           , &PrimProtoFnUpArrow_EM_YY           );   // Alt-'y' - up arrow
+    InitPrimProtoFn (UTF16_LEFTSHOE          , &PrimProtoFnLeftShoe_EM_YY          );   // Alt-'z' - left shoe
+    InitPrimProtoFn (UTF16_EQUALUNDERBAR     , &PrimProtoFnEqualUnderbar_EM_YY     );   // Alt-'!' - match
+////                                                                                    // Alt-'"' - (none)
+    InitPrimProtoFn (UTF16_DELSTILE          , &PrimProtoFnDelStile_EM_YY          );   // Alt-'#' - grade-down
+    InitPrimProtoFn (UTF16_DELTASTILE        , &PrimProtoFnDeltaStile_EM_YY        );   // Alt-'$' - grade-up
+    InitPrimProtoFn (INDEX_CIRCLESTILE       , &PrimProtoFnCircleStile_EM_YY       );   // Alt-'%' - rotate
+    InitPrimProtoFn (UTF16_CIRCLESLOPE       , &PrimProtoFnCircleSlope_EM_YY       );   // Alt-'^' - transpose
+    InitPrimProtoFn (UTF16_CIRCLEBAR         , &PrimProtoFnCircleBar_EM_YY         );   // Alt-'&' - circle-bar
+    InitPrimProtoFn (UTF16_UPTACKJOT         , &PrimProtoFnUpTackJot_EM_YY         );   // Alt-'\''- execute
+    InitPrimProtoFn (UTF16_DOWNCARETTILDE    , &PrimProtoFnDownCaretTilde_EM_YY    );   // Alt-'(' - nor
+    InitPrimProtoFn (UTF16_UPCARETTILDE      , &PrimProtoFnUpCaretTilde_EM_YY      );   // Alt-')' - nand
+    InitPrimProtoFn (UTF16_CIRCLESTAR        , &PrimProtoFnCircleStar_EM_YY        );   // Alt-'*' - log
+    InitPrimProtoFn (UTF16_DOMINO            , &PrimProtoFnDomino_EM_YY            );   // Alt-'+' - domino
+////                                                                                    // Alt-',' - lamp
+    InitPrimProtoFn (UTF16_TIMES             , &PrimProtoFnTimes_EM_YY             );   // Alt-'-' - times
+    InitPrimProtoFn (UTF16_SLOPEBAR          , &PrimProtoFnSlopeBar_EM_YY          );   // Alt-'.' - slope-bar as Function
+    InitPrimProtoOp (INDEX_OPSLOPEBAR        , &PrimProtoOpSlopeBar_EM_YY          );   // Alt-'.' - ...          Operator
+    InitPrimProtoFn (INDEX_SLASHBAR          , &PrimProtoFnSlashBar_EM_YY          );   // Alt-'/' - slash-bar as Function
+    InitPrimProtoOp (INDEX_OPSLASHBAR        , &PrimProtoOpSlashBar_EM_YY          );   // Alt-'/' - ...          Operator
+    InitPrimProtoFn (UTF16_UPCARET           , &PrimProtoFnUpCaret_EM_YY           );   // Alt-'0' - and (94??)
+    InitPrimProtoOp (UTF16_DIERESIS          , &PrimProtoOpDieresis_EM_YY          );   // Alt-'1' - dieresis
+////                                                                                    // Alt-'2' - overbar
+    InitPrimProtoFn (UTF16_LEFTCARET         , &PrimProtoFnLeftCaret_EM_YY         );   // Alt-'3' - less
+    InitPrimProtoFn (UTF16_LEFTCARETUNDERBAR , &PrimProtoFnLeftCaretUnderbar_EM_YY );   // Alt-'4' - not more
+    InitPrimProtoFn (UTF16_EQUAL             , &PrimProtoFnEqual_EM_YY             );   // Alt-'5' - equal
+    InitPrimProtoFn (UTF16_RIGHTCARETUNDERBAR, &PrimProtoFnRightCaretUnderbar_EM_YY);   // Alt-'6' - not less
+    InitPrimProtoFn (UTF16_RIGHTCARET        , &PrimProtoFnRightCaret_EM_YY        );   // Alt-'7' - more
+    InitPrimProtoFn (UTF16_NOTEQUAL          , &PrimProtoFnNotEqual_EM_YY          );   // Alt-'8' - not equal
+    InitPrimProtoFn (UTF16_DOWNCARET         , &PrimProtoFnDownCaret_EM_YY         );   // Alt-'9' - or
+////                                                                                    // Alt-':' - (none)
+    InitPrimProtoFn (UTF16_DOWNTACKJOT       , &PrimProtoFnDownTackJot_EM_YY       );   // Alt-';' - format
+////                                                                                    // Alt-'<' - (none)
+    InitPrimProtoFn (UTF16_COLONBAR          , &PrimProtoFnColonBar_EM_YY          );   // Alt-'=' - divide
+////                                                                                    // Alt-'>' - (none)
+////                                                                                    // Alt-'?' - (none)
+////                                                                                    // Alt-'@' - del-tilde
+////                                                                                    // Alt-'A' - (none)
+////                                                                                    // Alt-'B' - (none)
+////                                                                                    // Alt-'C' - (none)
+////                                                                                    // Alt-'D' - (none)
+    InitPrimProtoFn (UTF16_EPSILONUNDERBAR   , &PrimProtoFnEpsilonUnderbar_EM_YY   );   // Alt-'E' - epsilon-underbar
+////                                                                                    // Alt-'F' - (none)
+    InitPrimProtoOp (UTF16_DIERESISDEL       , &PrimProtoOpDieresisDel_EM_YY       );   // Alt-'G' - dieresis-del (dual)
+////                                                                                    // Alt-'H' - delta-underbar
+    InitPrimProtoFn (UTF16_IOTAUNDERBAR      , &PrimProtoFnIotaUnderbar_EM_YY      );   // Alt-'I' - iota-underbar
+    InitPrimProtoOp (INDEX_DIERESISJOT       , &PrimProtoOpDieresisJot_EM_YY       );   // Alt-'J' - dieresis-jot (rank)
+////                                                                                    // Alt-'K' - (none)
+    InitPrimProtoFn (UTF16_SQUAD             , &PrimProtoFnSquad_EM_YY             );   // Alt-'L' - squad
+    InitPrimProtoOp (UTF16_STILETILDE        , &PrimProtoOpStileTilde_EM_YY        );   // Alt-'M' - stile-tilde (partition)
+    InitPrimProtoOp (INDEX_DIERESISDOWNTACK  , &PrimProtoOpDieresisDownTack_EM_YY  );   // Alt-'N' - dieresis-downtack (convolution)
+    InitPrimProtoOp (INDEX_DIERESISCIRCLE    , &PrimProtoOpDieresisCircle_EM_YY    );   // Alt-'O' - dieresis-circle (holler)
+    InitPrimProtoOp (UTF16_DIERESISSTAR      , &PrimProtoOpDieresisStar_EM_YY      );   // Alt-'P' - dieresis-star (power)
+////                                                                                    // Alt-'Q' - (none)
+////                                                                                    // Alt-'R' - (none)
+////                                                                                    // Alt-'S' - (none)
+    InitPrimProtoOp (UTF16_DIERESISTILDE     , &PrimProtoOpDieresisTilde_EM_YY     );   // Alt-'T' - dieresis-tilde (commute/reflex)
+////                                                                                    // Alt-'U' - (none)
+////                                                                                    // Alt-'V' - (none)
+////                                                                                    // Alt-'W' - (none)
+////                                                                                    // Alt-'X' - (none)
+////                                                                                    // Alt-'Y' - (none)
+////                                                                                    // Alt-'Z' - (none)
+////                                                                                    // Alt-'[' - left arrow
+    InitPrimProtoFn (UTF16_LEFTTACK          , &PrimProtoFnLeftTack_EM_YY          );   // Alt-'\\'- left tack
+////                                                                                    // Alt-']' - right arrow
+    InitPrimProtoFn (UTF16_QUOTEDOT          , &PrimProtoFnQuoteDot_EM_YY          );   // Alt-'_' - quote-dot
+////                                                                                    // Alt-'`' - diamond
+////                                                                                    // Alt-'{' - quote-quad
+    InitPrimProtoFn (UTF16_RIGHTTACK         , &PrimProtoFnRightTack_EM_YY         );   // Alt-'|' - right tack
+////                                                                                    // Alt-'}' - zilde
+    InitPrimProtoFn (UTF16_COMMABAR          , &PrimProtoFnCommaBar_EM_YY          );   // Alt-'~' - comma-bar
+    InitPrimProtoFn (UTF16_CIRCUMFLEX        , &PrimProtoFnUpCaret_EM_YY           );   //         -
+    InitPrimProtoFn (UTF16_BAR               , &PrimProtoFnBar_EM_YY               );   //         -
+    InitPrimProtoFn (UTF16_PLUS              , &PrimProtoFnPlus_EM_YY              );   //         -
+    InitPrimProtoFn (UTF16_STILE2            , &PrimProtoFnStile_EM_YY             );   //         -
+    InitPrimProtoFn (UTF16_COMMA             , &PrimProtoFnComma_EM_YY             );   //         -
+    InitPrimProtoFn (UTF16_SLASH             , &PrimProtoFnSlash_EM_YY             );   //         - slash as Function
+    InitPrimProtoOp (INDEX_OPSLASH           , &PrimProtoOpSlash_EM_YY             );   //         - ...      Operator
+    InitPrimProtoFn (UTF16_SLOPE             , &PrimProtoFnSlope_EM_YY             );   //         - slope as Function
+    InitPrimProtoOp (INDEX_OPSLOPE           , &PrimProtoOpSlope_EM_YY             );   //         - ...      Operator
+    InitPrimProtoOp (UTF16_DOT               , &PrimProtoOpDot_EM_YY               );   //         - dot (inner product)
+    InitPrimProtoOp (INDEX_JOTDOT            , &PrimProtoOpJotDot_EM_YY            );   //         - jotdot (outer product)
 } // End InitPrimProtoFns
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  InitPrimProtoFn
+//  $InitPrimProtoFn
 //
 //  Initialize a single primitive function prototype
 //***************************************************************************
@@ -581,7 +583,7 @@ void InitPrimProtoFn
 
 
 //***************************************************************************
-//  InitPrimProtoOp
+//  $InitPrimProtoOp
 //
 //  Initialize a single primitive operator prototype
 //***************************************************************************
@@ -599,7 +601,7 @@ void InitPrimProtoOp
 
 
 //***************************************************************************
-//  PrimProtoFn_EM
+//  $PrimProtoFn_EM
 //
 //  Default function for symbols for which there is no corresponding
 //    primitive function/operator prototype
@@ -626,7 +628,7 @@ LPYYSTYPE PrimProtoFn_EM
 
 
 //***************************************************************************
-//  PrimProtoOp_EM
+//  $PrimProtoOp_EM
 //
 //  Default function for symbols for which there is no corresponding
 //    primitive operator prototype
@@ -653,7 +655,7 @@ LPYYSTYPE PrimProtoOp_EM
 
 
 //***************************************************************************
-//  InitPrimSpecs
+//  $InitPrimSpecs
 //
 //  Initialize the table of PRIMSPECs
 //***************************************************************************
@@ -692,7 +694,7 @@ void InitPrimSpecs
 
 
 //***************************************************************************
-//  InitPrimSpec
+//  $InitPrimSpec
 //
 //  Initialize a single lpPrimSpec
 //***************************************************************************
@@ -710,7 +712,7 @@ void InitPrimSpec
 
 
 //***************************************************************************
-//  InitPrimFlags
+//  $InitPrimFlags
 //
 //  Initialize the table of primitive function/operator flags
 //***************************************************************************
@@ -719,36 +721,50 @@ void InitPrimFlags
     (void)
 
 {
-    InitPrimFlag (UTF16_BAR               , 0                     | PF_ALTER  | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_CIRCLE            , 0                                 | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_CIRCLESTAR        , 0                                 | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_CIRCUMFLEX        , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_COLONBAR          , 0                     | PF_ALTER  | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_DOWNCARET         , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_DOWNCARETTILDE    , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_DOWNSTILE         , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_EQUAL             , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_LEFTCARET         , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_LEFTCARETUNDERBAR , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_NOTEQUAL          , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_PLUS              , 0           | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_QUOTEDOT          , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_QUERY             , 0                                 | PF_MONSCALAR               );
-    InitPrimFlag (UTF16_RIGHTCARET        , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_RIGHTCARETUNDERBAR, PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_STAR              , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_STILE             , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_STILE2            , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_TILDE             , 0                                 | PF_MONSCALAR               );
-    InitPrimFlag (UTF16_TIMES             , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_UPCARET           , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_UPCARETTILDE      , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR);
-    InitPrimFlag (UTF16_UPSTILE           , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR);
+    PRIMFLAGS PrimFlag;
+    WORD      PF_FASTBOOL,
+              PF_ASSOC,
+              PF_ALTER,
+              PF_MONSCALAR,
+              PF_DYDSCALAR;
+
+    // Get the bits as masks
+    *((WORD *) &PrimFlag) = 0; PrimFlag.FastBool  = TRUE; PF_FASTBOOL  = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.Assoc     = TRUE; PF_ASSOC     = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.Alter     = TRUE; PF_ALTER     = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.MonScalar = TRUE; PF_MONSCALAR = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.DydScalar = TRUE; PF_DYDSCALAR = *(WORD *) &PrimFlag;
+
+    InitPrimFlag (UTF16_BAR               , 0                      | PF_ALTER | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MINUS      );
+    InitPrimFlag (UTF16_CIRCLE            , 0                                 | PF_MONSCALAR | PF_DYDSCALAR                     );
+    InitPrimFlag (UTF16_CIRCLESTAR        , 0                                 | PF_MONSCALAR | PF_DYDSCALAR                     );
+    InitPrimFlag (UTF16_CIRCUMFLEX        , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_AND        );
+    InitPrimFlag (UTF16_COLONBAR          , 0                      | PF_ALTER | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_DIVIDE     );
+    InitPrimFlag (UTF16_DOWNCARET         , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_OR         );
+    InitPrimFlag (UTF16_DOWNCARETTILDE    , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_NOR        );
+    InitPrimFlag (UTF16_DOWNSTILE         , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MIN        );
+    InitPrimFlag (UTF16_EQUAL             , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_EQUAL      );
+    InitPrimFlag (UTF16_LEFTCARET         , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESS       );
+    InitPrimFlag (UTF16_LEFTCARETUNDERBAR , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESSEQ     );
+    InitPrimFlag (UTF16_NOTEQUAL          , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_NOTEQUAL   );
+    InitPrimFlag (UTF16_PLUS              , 0           | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_PLUS       );
+    InitPrimFlag (UTF16_QUOTEDOT          , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESSEQ     );
+    InitPrimFlag (UTF16_QUERY             , 0                                 | PF_MONSCALAR                                    );
+    InitPrimFlag (UTF16_RIGHTCARET        , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MORE       );
+    InitPrimFlag (UTF16_RIGHTCARETUNDERBAR, PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MOREEQ     );
+    InitPrimFlag (UTF16_STAR              , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MOREEQ     );
+    InitPrimFlag (UTF16_STILE             , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESS       );
+    InitPrimFlag (UTF16_STILE2            , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESS       );
+    InitPrimFlag (UTF16_TILDE             , 0                                 | PF_MONSCALAR                                    );
+    InitPrimFlag (UTF16_TIMES             , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_AND        );
+    InitPrimFlag (UTF16_UPCARET           , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_AND        );
+    InitPrimFlag (UTF16_UPCARETTILDE      , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_NAND       );
+    InitPrimFlag (UTF16_UPSTILE           , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MAX        );
 } // End InitPrimFlags
 
 
 //***************************************************************************
-//  InitPrimFlag
+//  $InitPrimFlag
 //
 //  Initialize a single primitive flag
 //***************************************************************************
@@ -758,23 +774,76 @@ void InitPrimFlag
      UINT  uFlag)
 
 {
-    PrimFlags[(UCHAR) wchFn] |= uFlag;
+    *((WORD *) &PrimFlags[(UCHAR) wchFn]) |= uFlag;
 } // End InitPrimFlag
 
 
 //***************************************************************************
-//  ExecFunc_EM
+//  $InitIdentityElements
+//
+//  Initialize the table of primitive scalar function identity elements
+//***************************************************************************
+
+void InitIdentityElements
+    (void)
+
+{
+    APLFLOAT aplFloatPosInf,
+             aplFloatNegInf;
+    APLUINT  aplInteger;
+
+    aplInteger = POS_INFINITY; aplFloatPosInf = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = NEG_INFINITY; aplFloatNegInf = *(LPAPLFLOAT) &aplInteger;
+
+    InitIdentityElement (PF_IND_PLUS      , IMMTYPE_BOOL , 0.0);
+    InitIdentityElement (PF_IND_MINUS     , IMMTYPE_BOOL , 0.0);
+    InitIdentityElement (PF_IND_DIVIDE    , IMMTYPE_BOOL , 1.0);
+
+    InitIdentityElement (PF_IND_MIN       , IMMTYPE_FLOAT, aplFloatPosInf);
+    InitIdentityElement (PF_IND_MAX       , IMMTYPE_FLOAT, aplFloatNegInf);
+
+    InitIdentityElement (PF_IND_AND       , IMMTYPE_BOOL , 1.0);
+    InitIdentityElement (PF_IND_OR        , IMMTYPE_BOOL , 0.0);
+
+    InitIdentityElement (PF_IND_LESS      , IMMTYPE_BOOL , 0.0);
+    InitIdentityElement (PF_IND_LESSEQ    , IMMTYPE_BOOL , 1.0);
+    InitIdentityElement (PF_IND_EQUAL     , IMMTYPE_BOOL , 1.0);
+    InitIdentityElement (PF_IND_MOREEQ    , IMMTYPE_BOOL , 1.0);
+    InitIdentityElement (PF_IND_MORE      , IMMTYPE_BOOL , 0.0);
+
+    InitIdentityElement (PF_IND_NOTEQUAL  , IMMTYPE_BOOL , 0.0);
+} // End InitIdentityElements
+
+
+//***************************************************************************
+//  $InitIdentityElement
+//
+//  Initialize an identity element
+//***************************************************************************
+
+void InitIdentityElement
+    (WCHAR    wchFn,
+     UINT     immType,
+     APLFLOAT aplFloat)
+
+{
+    PrimIdent[(UCHAR) wchFn] = aplFloat;
+} // End InitIdentityElement
+
+
+//***************************************************************************
+//  $ExecFunc_EM_YY
 //
 //  Execute a user-defined, system, or primitive function
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ExecFunc_EM"
+#define APPEND_NAME     L" -- ExecFunc_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ExecFunc_EM
+LPYYSTYPE ExecFunc_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
@@ -835,9 +904,9 @@ LPYYSTYPE ExecFunc_EM
                 // stData is a valid HGLOBAL function array
                 Assert (IsGlbTypeFcnDir (hGlbFcn));
 
-                return ExecFuncGlb_EM (lptkLftArg,
-                                       ClrPtrTypeDirGlb (hGlbFcn),
-                                       lptkRhtArg);
+                return ExecFuncGlb_EM_YY (lptkLftArg,
+                                          ClrPtrTypeDirGlb (hGlbFcn),
+                                          lptkRhtArg);
             } // End IF
 
             // Handle the immediate case
@@ -875,25 +944,25 @@ LPYYSTYPE ExecFunc_EM
             // tkData is a valid HGLOBAL function array
             Assert (IsGlbTypeFcnDir (lptkFunc->tkData.tkGlbData));
 
-            return ExecFuncGlb_EM (lptkLftArg,
-                                   ClrPtrTypeDirGlb (lptkFunc->tkData.tkGlbData),
-                                   lptkRhtArg);
+            return ExecFuncGlb_EM_YY (lptkLftArg,
+                                      ClrPtrTypeDirGlb (lptkFunc->tkData.tkGlbData),
+                                      lptkRhtArg);
         defstop
             break;
     } // End SWITCH
 
     return NULL;
-} // End ExecFunc_EM
+} // End ExecFunc_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  ExecFuncGlb_EM
+//  $ExecFuncGlb_EM_YY
 //
 //  Execute a function in global memory
 //***************************************************************************
 
-LPYYSTYPE ExecFuncGlb_EM
+LPYYSTYPE ExecFuncGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      HGLOBAL hGlbFcn,               // Handle to function object
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
@@ -910,29 +979,29 @@ LPYYSTYPE ExecFuncGlb_EM
 
     // The contents of the global memory object consist of
     //   a series of YYSTYPEs in RPN order.
-    lpYYRes = ExecFuncStr_EM (lptkLftArg,
-                              lpYYFcnStr,
-                              lptkRhtArg);
+    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
+                                 lpYYFcnStr,    // Ptr to function strand
+                                 lptkRhtArg);   // Ptr to right arg token
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFcn); lpYYFcnStr = NULL;
 
     return lpYYRes;
-} // End ExecFuncGlb_EM
+} // End ExecFuncGlb_EM_YY
 
 
 //***************************************************************************
-//  ExecFuncStr_EM
+//  $ExecFuncStr_EM_YY
 //
 //  Execute a function strand
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ExecFuncStr_EM"
+#define APPEND_NAME     L" -- ExecFuncStr_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ExecFuncStr_EM
+LPYYSTYPE ExecFuncStr_EM_YY
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
      LPYYSTYPE lpYYFcnStr,          // Ptr to function strand
      LPTOKEN   lptkRhtArg)          // Ptr to right arg token
@@ -946,15 +1015,17 @@ LPYYSTYPE ExecFuncStr_EM
     {
         case TKT_OP1IMMED:
         case TKT_OP1NAMED:
-            return ExecOp1_EM (lptkLftArg,  // Ptr to left arg token
-                               lpYYFcnStr,  // Ptr to operator function strand
-                               lptkRhtArg); // Ptr to right arg token
+            return ExecOp1_EM_YY
+                   (lptkLftArg,     // Ptr to left arg token
+                    lpYYFcnStr,     // Ptr to operator function strand
+                    lptkRhtArg);    // Ptr to right arg token
         case TKT_OP2IMMED:
         case TKT_OP2NAMED:
         case TKT_OPJOTDOT:
-            return ExecOp2_EM (lptkLftArg,  // Ptr to left arg token
-                               lpYYFcnStr,  // Ptr to operator function strand
-                               lptkRhtArg); // Ptr to right arg token
+            return ExecOp2_EM_YY
+                   (lptkLftArg,     // Ptr to left arg token
+                    lpYYFcnStr,     // Ptr to operator function strand
+                    lptkRhtArg);    // Ptr to right arg token
         case TKT_FCNIMMED:  // Either F or F[X]
             Assert (lpYYFcnStr->FcnCount EQ 1
                  || lpYYFcnStr->FcnCount EQ 2);
@@ -980,23 +1051,23 @@ LPYYSTYPE ExecFuncStr_EM
         defstop
             return NULL;
     } // End SWITCH
-} // End ExecFuncStr_EM
+} // End ExecFuncStr_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  ExecOp1_EM
+//  $ExecOp1_EM_YY
 //
 //  Execute a monadic operator
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ExecOp1_EM"
+#define APPEND_NAME     L" -- ExecOp1_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ExecOp1_EM
+LPYYSTYPE ExecOp1_EM_YY
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
      LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
      LPTOKEN   lptkRhtArg)          // Ptr to right arg token
@@ -1017,16 +1088,16 @@ LPYYSTYPE ExecOp1_EM
     {
         case INDEX_OPSLASH:     // Reduction along the last coordinate
         case INDEX_OPSLASHBAR:  // Reduction along the first coordinate
-            return PrimOpSlash_EM (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
-                                   lpYYFcnStr,       // Ptr to operator function strand
-                                   lptkRhtArg,       // Ptr to right arg token
-                                   lptkAxis);        // Ptr to axis token (may be NULL)
+            return PrimOpSlash_EM_YY (lptkLftArg,   // Ptr to left arg token (may be NULL if monadic)
+                                      lpYYFcnStr,   // Ptr to operator function strand
+                                      lptkRhtArg,   // Ptr to right arg token
+                                      lptkAxis);    // Ptr to axis token (may be NULL)
         case INDEX_OPSLOPE:     // Scan along the last coordinate
         case INDEX_OPSLOPEBAR:  // Scan along the first coordinate
-            return PrimOpSlope_EM (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
-                                   lpYYFcnStr,       // Ptr to operator function strand
-                                   lptkRhtArg,       // Ptr to right arg token
-                                   lptkAxis);        // Ptr to axis token (may be NULL)
+            return PrimOpSlope_EM_YY (lptkLftArg,   // Ptr to left arg token (may be NULL if monadic)
+                                      lpYYFcnStr,   // Ptr to operator function strand
+                                      lptkRhtArg,   // Ptr to right arg token
+                                      lptkAxis);    // Ptr to axis token (may be NULL)
         case UTF16_STILETILDE:  // Partition
             DbgBrk ();          // ***FINISHME***
 
@@ -1034,24 +1105,24 @@ LPYYSTYPE ExecOp1_EM
             return NULL;
 
         case UTF16_DIERESIS:    // Each
-            return PrimOpDieresis_EM (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
-                                      lpYYFcnStr,       // Ptr to operator function strand
-                                      lptkRhtArg,       // Ptr to right arg token
-                                      lptkAxis);        // Ptr to axis token (may be NULL)
+            return PrimOpDieresis_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if monadic)
+                                         lpYYFcnStr,        // Ptr to operator function strand
+                                         lptkRhtArg,        // Ptr to right arg token
+                                         lptkAxis);         // Ptr to axis token (may be NULL)
         case UTF16_DIERESISTILDE:   // Commute/Reflex
-            return PrimOpDieresisTilde_EM (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
-                                          lpYYFcnStr,   // Ptr to operator function strand
-                                          lptkRhtArg,   // Ptr to right arg token
-                                          lptkAxis);    // Ptr to axis token (may be NULL)
+            return PrimOpDieresisTilde_EM_YY (lptkLftArg,   // Ptr to left arg token (may be NULL if monadic)
+                                             lpYYFcnStr,    // Ptr to operator function strand
+                                             lptkRhtArg,    // Ptr to right arg token
+                                             lptkAxis);     // Ptr to axis token (may be NULL)
         defstop
             return NULL;
     } // End SWITCH
-} // End ExecOp1_EM
+} // End ExecOp1_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  ExecOp2_EM
+//  $ExecOp2_EM_YY
 //
 //  Execute a dyadic operator
 //***************************************************************************
@@ -1062,7 +1133,7 @@ LPYYSTYPE ExecOp1_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ExecOp2_EM
+LPYYSTYPE ExecOp2_EM_YY
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
      LPYYSTYPE lpYYFcnStr,          // Ptr to function strand
      LPTOKEN   lptkRhtArg)          // Ptr to right arg token
@@ -1082,20 +1153,20 @@ LPYYSTYPE ExecOp2_EM
     switch (lpYYFcnStr->tkToken.tkData.tkChar)
     {
         case UTF16_JOTDOT:      // Outer product
-            return PrimOpJotDot_EM (lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
-                                    lpYYFcnStr,         // Ptr to operator function strand
-                                    lptkRhtArg,         // Ptr to right arg token
-                                    lptkAxis);          // Ptr to axis token (may be NULL)
+            return PrimOpJotDot_EM_YY (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
+                                       lpYYFcnStr,  // Ptr to operator function strand
+                                       lptkRhtArg,  // Ptr to right arg token
+                                       lptkAxis);   // Ptr to axis token (may be NULL)
         case UTF16_DOT:         // Inner product
-            return PrimOpDot_EM    (lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
-                                    lpYYFcnStr,         // Ptr to operator function strand
-                                    lptkRhtArg,         // Ptr to right arg token
-                                    lptkAxis);          // Ptr to axis token (may be NULL)
+            return PrimOpDot_EM_YY    (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
+                                       lpYYFcnStr,  // Ptr to operator function strand
+                                       lptkRhtArg,  // Ptr to right arg token
+                                       lptkAxis);   // Ptr to axis token (may be NULL)
         case UTF16_JOT:         // Compose
-            return PrimOpJot_EM    (lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
-                                    lpYYFcnStr,         // Ptr to operator function strand
-                                    lptkRhtArg,         // Ptr to right arg token
-                                    lptkAxis);          // Ptr to axis token (may be NULL)
+            return PrimOpJot_EM_YY    (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
+                                       lpYYFcnStr,  // Ptr to operator function strand
+                                       lptkRhtArg,  // Ptr to right arg token
+                                       lptkAxis);   // Ptr to axis token (may be NULL)
         case UTF16_DIERESISDEL: // Dual
             DbgBrk ();          // ***FINISHME***
 
@@ -1123,12 +1194,38 @@ LPYYSTYPE ExecOp2_EM
         defstop
             return NULL;
     } // End SWITCH
-} // End ExecOp2_EM
+} // End ExecOp2_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  TokenTypeFV
+//  $IsFcnOpr
+//
+//  Determine if a given token is a function or operator
+//***************************************************************************
+
+BOOL IsFcnOpr
+    (LPTOKEN lptk)
+
+{
+    switch (TokenTypeFV (lptk))
+    {
+        case 'F':
+        case '1':
+        case '2':
+            return TRUE;
+
+        case 'V':
+            return FALSE;
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // End IsFcnOpr
+
+
+//***************************************************************************
+//  $TokenTypeFV
 //
 //  Return the type of a token
 //
@@ -1136,6 +1233,7 @@ LPYYSTYPE ExecOp2_EM
 //  'V' = Variable
 //  '1' = Monadic operator
 //  '2' = Dyadic operator
+//  '?' = None of the above
 //
 //***************************************************************************
 
@@ -1159,27 +1257,30 @@ char TokenTypeFV
 
         case TKT_OP1IMMED:
         case TKT_OP1NAMED:
+        case TKT_OPJOTDOT:
             return '1';
 
         case TKT_OP2IMMED:
         case TKT_OP2NAMED:
             return '2';
 
-        case TKT_AXISIMMED:
-        case TKT_AXISARRAY:
-        case TKT_OPJOTDOT:
+        case TKT_COMMENT:
+        case TKT_ASSIGN:
+        case TKT_LISTSEP:
         case TKT_LPAREN:
         case TKT_RPAREN:
         case TKT_LBRACKET:
         case TKT_RBRACKET:
-        case TKT_COMMENT:
-        case TKT_ASSIGN:
-        case TKT_LISTSEP:
         case TKT_EOS:
         case TKT_EOL:
         case TKT_LINECONT:
+        case TKT_INPOUT:
         case TKT_STRAND:
+        case TKT_LISTINT:
         case TKT_LISTPAR:
+        case TKT_LISTBR:
+        case TKT_AXISIMMED:
+        case TKT_AXISARRAY:
         case TKT_STRNAMED:
         defstop
             return '?';
@@ -1188,7 +1289,7 @@ char TokenTypeFV
 
 
 //***************************************************************************
-//  RankOfGlb
+//  $RankOfGlb
 //
 //  Get the rank of a global memory object
 //***************************************************************************
@@ -1217,7 +1318,7 @@ APLRANK RankOfGlb
 
 
 //***************************************************************************
-//  AttrsOfToken
+//  $AttrsOfToken
 //
 //  Return the attributes (Type, NELM, and Rank) of a token.
 //***************************************************************************
@@ -1292,7 +1393,7 @@ void AttrsOfToken
 
 
 //***************************************************************************
-//  AttrsOfGlb
+//  $AttrsOfGlb
 //
 //  Return the attributes (Type, NELM, and Rank) of a global memory handle.
 //***************************************************************************
@@ -1338,7 +1439,7 @@ void AttrsOfGlb
 
 
 //***************************************************************************
-//  CheckAxisImm
+//  $CheckAxisImm
 //
 //  Subroutine to CheckAxis_EM for immediate values
 //***************************************************************************
@@ -1374,7 +1475,7 @@ BOOL CheckAxisImm
     APLRANK  aplRank;
     BOOL     bRet = TRUE;
     UINT     u;
-    LPAPLINT lpAxisTail;        // Ptr to second set of Axis values in *lphGlbAxis
+    LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
 
     // The immediate value minus []IO
     //   must be an integer in the range
@@ -1483,7 +1584,7 @@ BOOL CheckAxisImm
 
 
 //***************************************************************************
-//  CheckAxisGlb
+//  $CheckAxisGlb
 //
 //  Subroutine to CheckAxis_EM for global values
 //***************************************************************************
@@ -1530,7 +1631,7 @@ BOOL CheckAxisGlb
              u;
     APLSTYPE aplTypeLcl;
     APLRANK  aplRankLcl;
-    LPAPLINT lpAxisTail;        // Ptr to second set of Axis values in *lphGlbAxis
+    LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
 
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbData));
@@ -1915,7 +2016,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  CheckAxis_EM
+//  $CheckAxis_EM
 //
 //  Check an axis value against a given rank
 //***************************************************************************
@@ -2118,7 +2219,7 @@ BOOL CheckAxis_EM
 
 
 //***************************************************************************
-//  GradeUp
+//  $GradeUp
 //
 //  Grade up on a small number of APLUINTs
 //***************************************************************************
@@ -2157,7 +2258,7 @@ void GradeUp
 
 
 //***************************************************************************
-//  TestDupAxis
+//  $TestDupAxis
 //
 //  Test an axis value for duplicates
 //***************************************************************************
@@ -2187,7 +2288,7 @@ BOOL TestDupAxis
 
 
 //***************************************************************************
-//  StorageType
+//  $StorageType
 //
 //  Return the storage type for a dyadic scalar function
 //    given the left and right storage types and the function.
@@ -2266,7 +2367,7 @@ APLSTYPE StorageType
 
 
 //***************************************************************************
-//  FirstValue
+//  $FirstValue
 //
 //  Return the first value from a token as either
 //    both an integer and a float, or as a character,
@@ -2356,7 +2457,7 @@ void FirstValue
 
 
 //***************************************************************************
-//  FirstValueImm
+//  $FirstValueImm
 //
 //  Return the first value of an immediate
 //***************************************************************************
@@ -2428,7 +2529,7 @@ void FirstValueImm
 
 
 //***************************************************************************
-//  FirstValueGlb
+//  $FirstValueGlb
 //
 //  Return the first value from an HGLOBAL as either
 //    both an integer and a float, or as a character,
@@ -2612,7 +2713,94 @@ void FirstValueGlb
 
 
 //***************************************************************************
-//  GetGlbHandle
+//  $GetValueInToken
+//
+//  Get the next value from a variable into a token
+//***************************************************************************
+
+void GetValueInToken
+    (APLUINT  uArg,         // Index to use
+     LPVOID   lpMemArg,     // Ptr to global memory object to index
+     APLSTYPE aplTypeArg,   // Storage type of the arg
+     APLINT   apaOff,       // APA offset (if needed)
+     APLINT   apaMul,       // APA multiplier (if needed)
+     LPTOKEN  lptkArg)      // Ptr to token in which to place the value
+
+{
+    // Clear the NoDisplay flag
+    lptkArg->tkFlags.NoDisplay = 0;
+
+    // Split cases based upon the arg storage type
+    switch (aplTypeArg)
+    {
+        case ARRAY_BOOL:
+            lptkArg->tkFlags.TknType  = TKT_VARIMMED;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_BOOL;
+            lptkArg->tkData.tkInteger = BIT0 & (UCHAR) (((LPAPLBOOL) lpMemArg)[uArg >> LOG2NBIB] >> (uArg & MASKLOG2NBIB));
+
+            break;
+
+        case ARRAY_INT:
+            lptkArg->tkFlags.TknType      = TKT_VARIMMED;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_INT;
+            lptkArg->tkData.tkInteger = ((LPAPLINT) lpMemArg)[uArg];
+
+            break;
+
+        case ARRAY_FLOAT:
+            lptkArg->tkFlags.TknType      = TKT_VARIMMED;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_FLOAT;
+            lptkArg->tkData.tkFloat   = ((LPAPLFLOAT) lpMemArg)[uArg];
+
+            break;
+
+        case ARRAY_CHAR:
+            lptkArg->tkFlags.TknType  = TKT_VARIMMED;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_CHAR;
+            lptkArg->tkData.tkChar    = ((LPAPLCHAR) lpMemArg)[uArg];
+
+            break;
+
+        case ARRAY_APA:
+            lptkArg->tkFlags.TknType  = TKT_VARIMMED;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_INT;
+            lptkArg->tkData.tkInteger = (apaOff + apaMul * uArg);
+
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            // Split cases based upon the ptr type
+            switch (GetPtrTypeDir (((LPAPLNESTED) lpMemArg)[uArg]))
+            {
+                case PTRTYPE_STCONST:
+                    lptkArg->tkFlags.TknType  = TKT_VARIMMED;
+                    lptkArg->tkFlags.ImmType  = ((LPSYMENTRY *) lpMemArg)[uArg]->stFlags.ImmType;
+                    lptkArg->tkData.tkLongest = ((LPSYMENTRY *) lpMemArg)[uArg]->stData.stLongest;
+
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+                    lptkArg->tkFlags.ImmType  = 0;
+                    lptkArg->tkData.tkGlbData = CopySymGlbDir (((LPAPLNESTED) lpMemArg)[uArg]);
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End GetValueInToken
+
+
+//***************************************************************************
+//  $GetGlbHandle
 //
 //  Return the HGLOBAL from a token if it's an HGLOBAL
 //    NULL otherwise.
@@ -2632,7 +2820,7 @@ HGLOBAL GetGlbHandle
 
 
 //***************************************************************************
-//  GetGlbPtrs_LOCK
+//  $GetGlbPtrs_LOCK
 //
 //  Return the HGLOBAL and LPVOID from a token if it's an HGLOBAL
 //    NULL otherwise.
@@ -2702,7 +2890,7 @@ void GetGlbPtrs_LOCK
 
 
 //***************************************************************************
-//  GetNextInteger
+//  $GetNextInteger
 //
 //  Return the next value as an integer
 //***************************************************************************
@@ -2737,7 +2925,7 @@ APLINT GetNextInteger
 
 
 //***************************************************************************
-//  GetNextFloat
+//  $GetNextFloat
 //
 //  Return the next value as a float
 //***************************************************************************
@@ -2772,7 +2960,7 @@ APLFLOAT GetNextFloat
 
 
 //***************************************************************************
-//  GetNextHetero
+//  $GetNextHetero
 //
 //  Return the next value as Boolean/Integer, Float, or Char
 //***************************************************************************
@@ -2825,7 +3013,7 @@ APLSTYPE GetNextHetero
 
 
 //***************************************************************************
-//  IncrOdometer
+//  $IncrOdometer
 //
 //  Increment the odometer in lpMemOdo subject to the
 //    limits in lpMemDim[lpMemAxis] or lpMemDim, all
@@ -2865,7 +3053,7 @@ void IncrOdometer
 
 
 //***************************************************************************
-//  PrimScalarFnDydAllocate_EM
+//  $PrimScalarFnDydAllocate_EM
 //
 //  Allocate space for result of a primitive scalar dyadic function
 //***************************************************************************
@@ -2896,10 +3084,9 @@ BOOL PrimScalarFnDydAllocate_EM
      APLNELM    aplNELMRes)     // Result ...
 
 {
-    APLUINT  ByteRes;
-    APLNELM  aplNELMNested;
+    APLUINT  ByteRes;           // # bytes needed for the result
     LPAPLDIM lpMemDimArg;
-    APLINT   uRes;
+    APLUINT  uRes;
     LPVOID   lpMem;
 
     // Split cases based upon the singleton status
@@ -2946,9 +3133,6 @@ BOOL PrimScalarFnDydAllocate_EM
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, *lpaplRankRes);
 
-    // Take into account space for a prototype
-    aplNELMNested = max (aplNELMRes, 1);
-
     // Allocate space for the result.
     // N.B. Conversion from APLUINT to UINT.
     Assert (ByteRes EQ (UINT) ByteRes);
@@ -2981,7 +3165,7 @@ BOOL PrimScalarFnDydAllocate_EM
      && aplNELMRht EQ 1)
     {
         // Fill in the dimensions (all 1)
-        for (uRes = 0; uRes < (APLRANKSIGN) *lpaplRankRes; uRes++)
+        for (uRes = 0; uRes < *lpaplRankRes; uRes++)
             (VarArrayBaseToDim (*lplpMemRes))[uRes] = 1;
     } else
     if (aplNELMLft EQ 1
@@ -2995,7 +3179,7 @@ BOOL PrimScalarFnDydAllocate_EM
 
         // Copy the dimensions from the non-singleton arg
         //   to the result
-        for (uRes = 0; uRes < (APLRANKSIGN) *lpaplRankRes; uRes++)
+        for (uRes = 0; uRes < *lpaplRankRes; uRes++)
             (VarArrayBaseToDim (*lplpMemRes))[uRes] = (VarArrayBaseToDim (lpMemDimArg))[uRes];
     } else
     {
@@ -3007,21 +3191,21 @@ BOOL PrimScalarFnDydAllocate_EM
             lpMemDimArg = lpMemRht;
 
         // Copy the dimensions to the result
-        for (uRes = 0; uRes < (APLRANKSIGN) *lpaplRankRes; uRes++)
+        for (uRes = 0; uRes < *lpaplRankRes; uRes++)
             (VarArrayBaseToDim (*lplpMemRes))[uRes] = (VarArrayBaseToDim (lpMemDimArg))[uRes];
     } // End IF/ELSE/...
 
-    // If the result is nested, fill in the
-    //   elements with PTR_REUSED in case of failure
-    //   later so as not to fail in <FreeResultGlobal>.
+    // Fill nested result with PTR_REUSED
+    //   in case we fail part way through
     if (aplTypeRes EQ ARRAY_NESTED)
     {
         // Skip over the header and dimensions to the data
         lpMem = VarArrayBaseToData (*lplpMemRes, *lpaplRankRes);
 
-        // Mark the values as reused in case we fail later on
-        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMNested; uRes++)
-            *((LPAPLNESTED) lpMem)++ = PTR_REUSED;
+        // Fill in the prototype
+        *((LPAPLNESTED) lpMem) = PTR_REUSED;
+        for (uRes = 1; uRes < aplNELMRes; uRes++)
+            ((LPAPLNESTED) lpMem)[uRes] = PTR_REUSED;
     } // End IF
 
     return TRUE;
@@ -3030,7 +3214,7 @@ BOOL PrimScalarFnDydAllocate_EM
 
 
 //***************************************************************************
-//  MakePrototype_EM
+//  $MakePrototype_EM
 //
 //  Make a prototype copy of a global memory object
 //***************************************************************************
@@ -3056,8 +3240,8 @@ HGLOBAL MakePrototype_EM
     UINT        u;
     APLNELM     uLen;
     HGLOBAL     hGlbTmp;
-    BOOL        bRet = TRUE;
-    APLUINT     ByteRes;
+    BOOL        bRet = TRUE;        // TRUE iff result is valid
+    APLUINT     ByteRes;            // # bytes needed for the result
     LPSYMENTRY  lpSymArr,
                 lpSymRes;
 
@@ -3307,16 +3491,18 @@ NORMAL_EXIT:
 
     DBGLEAVE;
 
-    if (hGlbArr)
-        return TypeDemote (hGlbArr);
-    else
-        return hGlbArr;
+    // ***FIXME*** -- Do we still need to TypeDemote the result??
+////if (hGlbArr)
+////    return TypeDemote (hGlbArr);
+////else
+////    return hGlbArr;
+    return hGlbArr;
 } // End MakePrototype_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  IsFirstSimpleGlb
+//  $IsFirstSimpleGlb
 //
 //  Is the first element of a global simple?
 //***************************************************************************
@@ -3390,7 +3576,7 @@ BOOL IsFirstSimpleGlb
 
 
 //***************************************************************************
-//  CopySymGlbDir
+//  $CopySymGlbDir
 //
 //  Copy a direct LPSYMENTRY or HGLOBAL incrementing the reference count
 //***************************************************************************
@@ -3425,7 +3611,7 @@ HGLOBAL CopySymGlbDir
 
 
 //***************************************************************************
-//  CopySymGlbInd
+//  $CopySymGlbInd
 //
 //  Copy an indirect LPSYMENTRY or HGLOBAL incrementing the reference count
 //***************************************************************************
@@ -3439,7 +3625,7 @@ HGLOBAL CopySymGlbInd
 
 
 //***************************************************************************
-//  CopySymGlbDirGlb
+//  $CopySymGlbDirGlb
 //
 //  Copy a direct HGLOBAL incrementing the reference count
 //***************************************************************************
@@ -3453,7 +3639,7 @@ HGLOBAL CopySymGlbDirGlb
 
 
 //***************************************************************************
-//  CopyArray_EM
+//  $CopyArray_EM
 //
 //  Make a copy of a global memory ptr array
 //***************************************************************************
@@ -3540,9 +3726,8 @@ HGLOBAL CopyArray_EM
                 // Handle the empty case
                 aplNELM = max (aplNELM, 1);
 
-                // Loop through the destin array, setting all
-                //   HGLOBAL ptrs to PTR_REUSED so we can recover
-                //   if a CopyArray_EM fails
+                // Fill nested result with PTR_REUSED
+                //   in case we fail part way through
                 for (u = 0; u < aplNELM; u++)
                     *((LPAPLNESTED) lpMemDst)++ = PTR_REUSED;
 
@@ -3618,7 +3803,7 @@ HGLOBAL CopyArray_EM
 
 #ifdef DEBUG
 //***************************************************************************
-//  IsGlobalTypeArray
+//  $IsGlobalTypeArray
 //
 //  Confirm that an HGLOBAL is a valid variable or function array
 //***************************************************************************
@@ -3663,7 +3848,7 @@ BOOL IsGlobalTypeArray
 
 
 //***************************************************************************
-//  CheckRankLengthError_EM
+//  $CheckRankLengthError_EM
 //
 //  Check a dyadic scalar function for RANK and LENGTH ERRORs
 //***************************************************************************
@@ -3683,7 +3868,7 @@ BOOL CheckRankLengthError_EM
      APLNELM  aplNELMRht,           // ...       NELM
      LPVOID   lpMemRht,             // Ptr to right arg memory
      APLNELM  aplNELMAxis,          // Axis NELM
-     LPAPLINT lpMemAxisTail,        // Ptr to axis tail
+     LPAPLINT lpMemAxisTail,        // Ptr to grade up of AxisHead
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
@@ -3782,7 +3967,7 @@ BOOL CheckRankLengthError_EM
 
 
 //***************************************************************************
-//  RoundUpBits8
+//  $RoundUpBits8
 //
 //  Round up bits to a byte (8 bits/byte)
 //***************************************************************************
@@ -3796,7 +3981,7 @@ APLINT RoundUpBits8
 
 
 //***************************************************************************
-//  CheckException
+//  $CheckException
 //
 //  Check on a structured exception
 //***************************************************************************
@@ -3826,7 +4011,7 @@ UINT CheckException
 
 
 //***************************************************************************
-//  imul64
+//  $imul64
 //
 //  Multiply two 64-bit integers retaining maximum precision
 //***************************************************************************
@@ -3863,7 +4048,7 @@ APLINT imul64
 
 
 //***************************************************************************
-//  CalcArraySize
+//  $CalcArraySize
 //
 //  Calculate the size in bytes of an array
 //***************************************************************************
@@ -3874,7 +4059,7 @@ APLUINT CalcArraySize
      APLRANK  aplRank)
 
 {
-    APLUINT ByteRes;
+    APLUINT ByteRes;            // # bytes needed for the result
 
     Assert (0 <= aplType
          &&      aplType < ARRAY_LENGTH);
@@ -3922,14 +4107,29 @@ APLUINT CalcArraySize
     } // End SWITCH
 
     // Add in the size of the header and dimension
-    ByteRes += sizeof (VARARRAY_HEADER)
-             + sizeof (APLDIM) * aplRank;
+    ByteRes += CalcHeaderSize (aplRank);
+
     return ByteRes;
 } // End CalcArraySize
 
 
 //***************************************************************************
-//  TypeDemote
+//  $CalcHeaderSize
+//
+//  Calculate the size in bytes of the header of an array
+//***************************************************************************
+
+APLUINT CalcHeaderSize
+    (APLRANK aplRank)
+
+{
+    return sizeof (VARARRAY_HEADER)
+         + sizeof (APLDIM) * aplRank;
+} // End CalcHeaderSize
+
+
+//***************************************************************************
+//  $TypeDemote
 //
 //  Attempt to demote the type of a global memory handle
 //
@@ -3958,6 +4158,7 @@ APLUINT CalcArraySize
 //    each
 //    first
 //    outer product
+//    reduction w/ or w/o axis
 //    each
 //    indexing/squad
 //
@@ -3972,19 +4173,20 @@ APLUINT CalcArraySize
 #define APPEND_NAME
 #endif
 
-HGLOBAL TypeDemote
-    (HGLOBAL hGlbRht)
+LPTOKEN TypeDemote
+    (LPTOKEN lptkRhtArg)
 
 {
-    HGLOBAL           hGlbRes;
-    LPVOID            lpMemRht = NULL,
-                      lpMemRes;
-    APLNELM           aplNELMRht;
-    APLRANK           aplRankRht;
-    APLINT            uRht,
-                      aplInteger;
-    APLFLOAT          aplFloat;
-    APLUINT           ByteRes;
+    HGLOBAL           hGlbRht = NULL,   // Right arg global memory handle
+                      hGlbRes = NULL;   // Result    ...
+    LPVOID            lpMemRht = NULL,  // Ptr to right arg global memory
+                      lpMemRes = NULL;  // Ptr to result    ...
+    APLNELM           aplNELMRht;       // Right arg NELM
+    APLRANK           aplRankRht;       // Right arg rank
+    APLINT            uRht,             // Right arg loop counter
+                      aplInteger;       // Temporary integer
+    APLFLOAT          aplFloat;         // ...       float
+    APLUINT           ByteRes;          // # bytes needed for the result
     APLSTYPE          aplTypeRes,
                       aplTypeRht,
                       aplTypeSub;
@@ -4006,6 +4208,21 @@ HGLOBAL TypeDemote
      {ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_LIST  },  // INIT
     };
 
+    // Split cases based upon the arg token type
+    switch (lptkRhtArg->tkFlags.TknType)
+    {
+        case TKT_VARIMMED:
+            return lptkRhtArg;
+
+        case TKT_VARARRAY:
+            hGlbRht = ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
     // Copy to the result in case we don't demote
     hGlbRes = hGlbRht;
 
@@ -4023,6 +4240,33 @@ HGLOBAL TypeDemote
 
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRhtHdr, aplRankRht);
+
+    // Handle simple scalars up front
+    if (aplRankRht EQ 0
+     && IsSimple (aplTypeRht))
+    {
+        lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
+        lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+        lptkRhtArg->tkData.tkLongest = *(LPAPLLONGEST) lpMemRht;
+
+        // Free the right arg if not already freed
+        // Note that it might be the case that hGlbRht EQ hGlbRes,
+        //   so we need to free the HGLOBAL after copying its data
+        //   from lpMemRes in the above statement
+        if (hGlbRht)
+        {
+            if (lpMemRht)
+            {
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+            } // End IF
+
+            // Free the old array
+            FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
+        } // End IF
+
+        goto IMMED_EXIT;
+    } // End IF
 
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
@@ -4377,18 +4621,22 @@ HGLOBAL TypeDemote
             hGlbRes = hGlbRht;
     } // End IF/ELSE
 NORMAL_EXIT:
+    // Save the result in the right arg token
+    lptkRhtArg->tkData.tkGlbData = MakeGlbTypeGlb (hGlbRes);
+IMMED_EXIT:
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    return hGlbRes;
+    return lptkRhtArg;
 } // End TypeDemote
 #undef  APPEND_NAME
 
+
 //***************************************************************************
-//  YYAlloc
+//  $YYAlloc
 //
 //  Allocate a new YYRes entry
 //***************************************************************************
@@ -4431,7 +4679,7 @@ LPYYSTYPE YYAlloc
 
 
 //***************************************************************************
-//  YYCopy
+//  $YYCopy
 //
 //  Copy one YYSTYPE to another
 //    retaining the destination Inuse, Flag, and Index
@@ -4464,7 +4712,7 @@ void YYCopy
 
 
 //***************************************************************************
-//  YYCopyFreeDst
+//  $YYCopyFreeDst
 //
 //  Copy one YYSTYPE to another
 //    retaining the destination Inuse, Flag, and Index
@@ -4488,7 +4736,7 @@ void YYCopyFreeDst
 
 
 //***************************************************************************
-//  YYFree
+//  $YYFree
 //
 //  Free a YYRes entry
 //***************************************************************************
@@ -4510,7 +4758,7 @@ void YYFree
 
 
 //***************************************************************************
-//  YYResIsEmpty
+//  $YYResIsEmpty
 //
 //  Ensure that YYRes has no Inuse entries
 //***************************************************************************
@@ -4530,7 +4778,7 @@ BOOL YYResIsEmpty
 
 
 //***************************************************************************
-//  GetImmTypeFcn
+//  $GetImmTypeFcn
 //
 //  Get the IMMTYPE_PRIMFCN value corresponding to a primitive function
 //***************************************************************************

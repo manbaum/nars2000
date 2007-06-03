@@ -18,18 +18,18 @@
 
 
 //***************************************************************************
-//  PrimFnDownTackJot_EM
+//  $PrimFnDownTackJot_EM_YY
 //
 //  Primitive function for monadic and dyadic DownTackJot ("default format" and "format by example")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDownTackJot_EM"
+#define APPEND_NAME     L" -- PrimFnDownTackJot_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDownTackJot_EM
+LPYYSTYPE PrimFnDownTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -52,26 +52,26 @@ LPYYSTYPE PrimFnDownTackJot_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonDownTackJot_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonDownTackJot_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydDownTackJot_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnDownTackJot_EM
+        return PrimFnDydDownTackJot_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnDownTackJot_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnDownTackJot_EM
+//  $PrimProtoFnDownTackJot_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic DownTackJot
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDownTackJot_EM"
+#define APPEND_NAME     L" -- PrimProtoFnDownTackJot_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnDownTackJot_EM
+LPYYSTYPE PrimProtoFnDownTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -83,58 +83,58 @@ LPYYSTYPE PrimProtoFnDownTackJot_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnDownTackJot_EM,  // Ptr to primitive function routine
-                                 lptkLftArg,            // Ptr to left arg token
-                                 lptkFunc,              // Ptr to function token
-                                 lptkRhtArg,            // Ptr to right arg token
-                                 lptkAxis);             // Ptr to axis token (may be NULL)
+    return PrimProtoFnMixed_EM_YY (&PrimFnDownTackJot_EM_YY,// Ptr to primitive function routine
+                                    lptkLftArg,             // Ptr to left arg token
+                                    lptkFunc,               // Ptr to function token
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDownTackJot_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonDownTackJot_EM
+//  $PrimFnMonDownTackJot_EM_YY
 //
 //  Primitive function for monadic DownTackJot ("default format")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonDownTackJot_EM"
+#define APPEND_NAME     L" -- PrimFnMonDownTackJot_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonDownTackJot_EM
+LPYYSTYPE PrimFnMonDownTackJot_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE    aplTypeRht;
-    APLNELM     aplNELMRht,
-                aplNELMRes;
-    APLRANK     aplRankRht,
-                aplRankRes;
-    APLDIM      aplDimNCols,
-                aplDimNRows,
-                aplDimCol,
-                aplLastDim;
-    HGLOBAL     hGlbRht = NULL,
-                hGlbRes = NULL;
-    LPVOID      lpMemRht = NULL,
-                lpMemRes = NULL;
-    LPAPLDIM    lpMemDimRht = NULL;
-    APLINT      aplIntegerRht;
-    APLFLOAT    aplFloatRht;
-    APLCHAR     aplCharRht;
-    LPFMTHEADER lpFmtHeader;
-    LPFMTCOLSTR lpFmtColStr;
-    LPAPLCHAR   lpaplChar,
-                lpaplCharStart;
-    APLUINT     ByteRes;
-    BOOL        bRet = TRUE,
-                bSimpleScalar;
-    LPYYSTYPE   lpYYRes;
+    APLSTYPE    aplTypeRht;         // Right arg storage type
+    APLNELM     aplNELMRht,         // Right arg NELM
+                aplNELMRes;         // Result    ...
+    APLRANK     aplRankRht,         // Right arg rank
+                aplRankRes;         // Result    ...
+    APLDIM      aplDimNCols,        // # columns
+                aplDimNRows,        // # rows
+                aplDimCol,          // Col loop counter
+                aplLastDim;         // Lengthof the last dimension in the result
+    HGLOBAL     hGlbRht = NULL,     // Right arg global memory handle
+                hGlbRes = NULL;     // Result    ...
+    LPVOID      lpMemRht = NULL,    // Ptr to right arg global memory
+                lpMemRes = NULL;    // Ptr to result    ...
+    LPAPLDIM    lpMemDimRht = NULL; // Ptr to right arg dimensions
+    APLINT      aplIntegerRht;      // Right arg temporary integer
+    APLFLOAT    aplFloatRht;        // ...                 float
+    APLCHAR     aplCharRht;         // ...                 char
+    LPFMTHEADER lpFmtHeader;        // Ptr to format header struc
+    LPFMTCOLSTR lpFmtColStr;        // Ptr to column struc
+    LPAPLCHAR   lpaplChar,          // Ptr to output save area
+                lpaplCharStart;     // Ptr to start of output save area
+    APLUINT     ByteRes;            // # bytes needed for the result
+    BOOL        bRet = TRUE,        // TRUE iff result is valid
+                bSimpleScalar;      // TRUE if right arg is a simple scalar
+    LPYYSTYPE   lpYYRes;            // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank) of the right args
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
@@ -426,7 +426,7 @@ LPYYSTYPE PrimFnMonDownTackJot_EM
     // Fill in the last dimension
     *((LPAPLDIM) lpMemRes)++ = aplLastDim;
 
-    // lpMemRes now points to the data
+    // lpMemRes now points to the result's data
 #ifdef PREFILL
     // Fill it with all blanks
     for (lpaplChar = lpMemRes, aplDimCol = 0; aplDimCol < aplNELMRes; aplDimCol++)
@@ -450,7 +450,7 @@ LPYYSTYPE PrimFnMonDownTackJot_EM
         case ARRAY_APA:
         case ARRAY_HETERO:
 ////////////lpaplChar =
-            FormatArrSimple (lpFmtHeader,           // Prt to FMTHEADER
+            FormatArrSimple (lpFmtHeader,           // Ptr to FMTHEADER
                              lpFmtColStr,           // Ptr to vector of <aplDimNCols> FMTCOLSTRs
                              lpaplCharStart,        // Ptr to compiled input
                             &lpwszOut,              // Ptr to output string
@@ -512,12 +512,12 @@ QUICK_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnMonDownTackJot_EM
+} // End PrimFnMonDownTackJot_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  FormatArrSimple
+//  $FormatArrSimple
 //
 //  Format a simple array (this includes hetero) from its compiled form
 //***************************************************************************
@@ -726,7 +726,7 @@ LPAPLCHAR FormatArrSimple
 
 
 //***************************************************************************
-//  FormatArrNested
+//  $FormatArrNested
 //
 //  Format a nested array from its compiled form
 //***************************************************************************
@@ -854,7 +854,7 @@ LPAPLCHAR FormatArrNested
 
 
 //***************************************************************************
-//  FormatArrNestedGlb
+//  $FormatArrNestedGlb
 //
 //  Format a nested array global memory object from its compiled form
 //***************************************************************************
@@ -995,7 +995,7 @@ LPAPLCHAR FormatArrNestedGlb
 
 
 //***************************************************************************
-//  CompileArrBool
+//  $CompileArrBool
 //
 //  Compile an array of Booleans
 //***************************************************************************
@@ -1095,7 +1095,7 @@ LPAPLCHAR CompileArrBool
 
 
 //***************************************************************************
-//  CompileArrInteger
+//  $CompileArrInteger
 //
 //  Compile an array of integers
 //***************************************************************************
@@ -1186,7 +1186,7 @@ LPAPLCHAR CompileArrInteger
 
 
 //***************************************************************************
-//  CompileArrFloat
+//  $CompileArrFloat
 //
 //  Compile an array of floats
 //***************************************************************************
@@ -1310,7 +1310,7 @@ LPAPLCHAR CompileArrFloat
 
 
 //***************************************************************************
-//  CompileArrChar
+//  $CompileArrChar
 //
 //  Compile an array of chars
 //***************************************************************************
@@ -1382,7 +1382,7 @@ LPAPLCHAR CompileArrChar
 
 
 //***************************************************************************
-//  CompileArrAPA
+//  $CompileArrAPA
 //
 //  Compile an array of APA
 //***************************************************************************
@@ -1477,7 +1477,7 @@ LPAPLCHAR CompileArrAPA
 
 
 //***************************************************************************
-//  CompileArrHetero
+//  $CompileArrHetero
 //
 //  Compile an array of LPSYMENTRYs
 //***************************************************************************
@@ -1623,7 +1623,7 @@ LPAPLCHAR CompileArrHetero
 
 
 //***************************************************************************
-//  CompileArrNested
+//  $CompileArrNested
 //
 //  Compile an array of LPSYMENTRYs/NESTEDs
 //***************************************************************************
@@ -1765,7 +1765,7 @@ LPAPLCHAR CompileArrNested
 
 
 //***************************************************************************
-//  CompileArrNestedGlb
+//  $CompileArrNestedGlb
 //
 //  Compile a global memory object within a nested array
 //***************************************************************************
@@ -1987,7 +1987,7 @@ LPAPLCHAR CompileArrNestedGlb
 
 
 //***************************************************************************
-//  PropogateRowColCount
+//  $PropogateRowColCount
 //
 //  Propogate the row & col count up the line
 //***************************************************************************
@@ -2051,7 +2051,7 @@ void PropogateRowColCount
 
 
 //***************************************************************************
-//  AppendBlankRows
+//  $AppendBlankRows
 //
 //  Append blank rows to account for interdimensional spacing
 //***************************************************************************
@@ -2098,18 +2098,18 @@ LPAPLCHAR AppendBlankRows
 
 
 //***************************************************************************
-//  PrimFnDydDownTackJot_EM
+//  $PrimFnDydDownTackJot_EM_YY
 //
 //  Primitive function for dyadic DownTackJot ("format by example")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDownTackJot_EM"
+#define APPEND_NAME     L" -- PrimFnDydDownTackJot_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydDownTackJot_EM
+LPYYSTYPE PrimFnDydDownTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -2194,7 +2194,7 @@ ERROR_EXIT:
         YYFree (lpYYRes); lpYYRes = NULL;
         return NULL;
     } // End IF/ELSE
-} // End PrimFnDydDownTackJot_EM
+} // End PrimFnDydDownTackJot_EM_YY
 #undef  APPEND_NAME
 
 

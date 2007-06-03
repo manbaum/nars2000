@@ -153,6 +153,7 @@ $(O)editfcn.DEP         \
 $(O)editmat.DEP         \
 $(O)editvec.DEP         \
 $(O)exec.DEP            \
+$(O)fastbool.DEP        \
 $(O)free.DEP            \
 $(O)g_fmt.DEP           \
 $(O)main.DEP            \
@@ -293,6 +294,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)exec.DEP)
 !       include $(O)exec.DEP
+!endif
+!if exist ($(O)fastbool.DEP)
+!       include $(O)fastbool.DEP
 !endif
 !if exist ($(O)free.DEP)
 !       include $(O)free.DEP
@@ -515,6 +519,7 @@ $(O)editfcn.PRO         \
 $(O)editmat.PRO         \
 $(O)editvec.PRO         \
 $(O)exec.PRO            \
+$(O)fastbool.PRO        \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
 $(O)main.PRO            \
@@ -640,6 +645,7 @@ $(O)editfcn.OBJ:        $(@B).C         $(EDITFCN_DEP)
 $(O)editmat.OBJ:        $(@B).C         $(EDITMAT_DEP)
 $(O)editvec.OBJ:        $(@B).C         $(EDITVEC_DEP)
 $(O)exec.OBJ:           $(@B).C         $(EXEC_DEP)
+$(O)fastbool.OBJ:       $(@B).C         $(FASTBOOL_DEP)
 $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
 $(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
@@ -738,6 +744,7 @@ OBJS=                       \
      $(O)editmat.OBJ        \
      $(O)editvec.OBJ        \
      $(O)exec.OBJ           \
+     $(O)fastbool.OBJ       \
      $(O)free.OBJ           \
      $(O)g_fmt.obj          \
      $(O)main.OBJ           \

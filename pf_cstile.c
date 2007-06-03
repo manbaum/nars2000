@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  PrimFnCircleStile_EM
+//  $PrimFnCircleStile_EM_YY
 //
 //  Primitive function for monadic and dyadic CircleStile ("reverse" and "rotate")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnCircleStile_EM"
+#define APPEND_NAME     L" -- PrimFnCircleStile_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnCircleStile_EM
+LPYYSTYPE PrimFnCircleStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -41,20 +41,20 @@ LPYYSTYPE PrimFnCircleStile_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonCircleStile_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonCircleStile_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydCircleStile_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnCircleStile_EM
+        return PrimFnDydCircleStile_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnCircleStile_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnCircleStile_EM
+//  $PrimProtoFnCircleStile_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic CircleStile
 //***************************************************************************
 
-LPYYSTYPE PrimProtoFnCircleStile_EM
+LPYYSTYPE PrimProtoFnCircleStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -66,27 +66,27 @@ LPYYSTYPE PrimProtoFnCircleStile_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnCircleStile_EM,  // Ptr to primitive function routine
-                                 lptkLftArg,            // Ptr to left arg token
-                                 lptkFunc,              // Ptr to function token
-                                 lptkRhtArg,            // Ptr to right arg token
-                                 lptkAxis);             // Ptr to axis token (may be NULL)
-} // End PrimProtoFnCircleStile_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnCircleStile_EM_YY,// Ptr to primitive function routine
+                                    lptkLftArg,             // Ptr to left arg token
+                                    lptkFunc,               // Ptr to function token
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    lptkAxis);              // Ptr to axis token (may be NULL)
+} // End PrimProtoFnCircleStile_EM_YY
 
 
 //***************************************************************************
-//  PrimFnMonCircleStile_EM
+//  $PrimFnMonCircleStile_EM_YY
 //
 //  Primitive function for monadic CircleStile ("reverse")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonCircleStile_EM"
+#define APPEND_NAME     L" -- PrimFnMonCircleStile_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonCircleStile_EM
+LPYYSTYPE PrimFnMonCircleStile_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -148,11 +148,11 @@ LPYYSTYPE PrimFnMonCircleStile_EM
             return NULL;
     } else
     {
-        // If CircleStile, use last axis
+        // If CircleStile, use last dimension
         if (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE)
             aplAxis = aplRankRht - 1;
         else
-            // Otherwise, it's CircleBar on the first axis
+            // Otherwise, it's CircleBar on the first dimension
             aplAxis = 0;
     } // End IF/ELSE
 
@@ -377,23 +377,23 @@ IMMED_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End PrimFnMonCircleStile_EM
+} // End PrimFnMonCircleStile_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnDydCircleStile_EM
+//  $PrimFnDydCircleStile_EM_YY
 //
 //  Primitive function for dyadic CircleStile ("rotate")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydCircleStile_EM"
+#define APPEND_NAME     L" -- PrimFnDydCircleStile_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydCircleStile_EM
+LPYYSTYPE PrimFnDydCircleStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -459,11 +459,11 @@ LPYYSTYPE PrimFnDydCircleStile_EM
             return NULL;
     } else
     {
-        // If CircleStile, use last axis
+        // If CircleStile, use last dimension
         if (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE)
             aplAxis = aplRankRht - 1;
         else
-            // Otherwise, it's CircleBar on the first axis
+            // Otherwise, it's CircleBar on the first dimension
             aplAxis = 0;
     } // End IF/ELSE
 
@@ -708,8 +708,8 @@ LPYYSTYPE PrimFnDydCircleStile_EM
     for (uDim = 0; uDim < aplRankRht; uDim++)
         *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRht)++;;
 
-    // lpMemRes now points to the data
-    // lpMemRht now points to the data
+    // lpMemRes now points to the result's data
+    // lpMemRht now points to the right arg's data
 
     // Handle empty nested array results (prototypes)
     if (aplNELMRht EQ 0 && aplTypeRes EQ ARRAY_NESTED)
@@ -900,7 +900,7 @@ NORMAL_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydCircleStile_EM
+} // End PrimFnDydCircleStile_EM_YY
 #undef  APPEND_NAME
 
 

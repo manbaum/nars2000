@@ -305,7 +305,7 @@ ArrExpr1:
                                             YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken);
+                                         lpYYRes = ExecFunc_EM_YY (NULL, &lpYYFcn->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
@@ -335,7 +335,7 @@ ArrExpr1:
                                             YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ExecFunc_EM (NULL, &lpYYFcn->tkToken, &$1.tkToken);
+                                         lpYYRes = ExecFunc_EM_YY (NULL, &lpYYFcn->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
@@ -399,7 +399,7 @@ ArrExpr1:
                                              FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
                                              YYERROR;
                                          }
-                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+                                         lpYYRes = ExecFunc_EM_YY (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -458,7 +458,7 @@ ArrExpr1:
                                              YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ExecFunc_EM (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+                                         lpYYRes = ExecFunc_EM_YY (&lpYYStr->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
@@ -565,7 +565,7 @@ SimpExpr:
                                              YYERROR;
                                          } // End IF
 
-                                         lpYYRes = ArrayIndex_EM (&lpYYStr->tkToken, &$1.tkToken);
+                                         lpYYRes = ArrayIndex_EM_YY (&lpYYStr->tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -640,7 +640,7 @@ SimpExpr:
                                         }
     | ArrExpr ASSIGN LeftFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR LeftFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken);
+                                         lpYYRes = ExecFunc_EM_YY (&$4.tkToken, &$3.tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -660,7 +660,7 @@ SimpExpr:
     | ArrExpr ASSIGN AxisFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"ArrExpr");
                                          $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                         lpYYRes = ExecFunc_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken);
+                                         lpYYRes = ExecFunc_EM_YY (&$4.tkToken, &$3.tkToken, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
                                          FreeResult (&$3.tkToken);
 
@@ -2210,7 +2210,7 @@ PL_THREAD plThread;             // Temporary global
 
 
 //***************************************************************************
-//  ParseLine
+//  $ParseLine
 //
 //  Parse a line
 //***************************************************************************
@@ -2261,7 +2261,7 @@ void ParseLine
 
 
 //***************************************************************************
-//  ParseLineInThread
+//  $ParseLineInThread
 //
 //  Parse a line in a thread
 //***************************************************************************
@@ -2438,7 +2438,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  SymbTypeFV
+//  $SymbTypeFV
 //
 //  Get the type ('F' or 'V', or '?') of a symbol table name token.
 //  Used for TKT_VARNAMEDs.
@@ -2494,7 +2494,7 @@ char SymbTypeFV
 
 
 //***************************************************************************
-//  LookaheadDyadicOp
+//  $LookaheadDyadicOp
 //
 //  The current token is a variable, but it could be part of a function
 //    if the next non-grouping symbol is a dyadic operator.
@@ -2557,7 +2557,7 @@ BOOL LookaheadDyadicOp
 
 
 //***************************************************************************
-//  LookaheadSurround
+//  $LookaheadSurround
 //
 //  Lookahead (backwards) in the token stream to see if
 //    the next non-grouping symbol is a function or a var.
@@ -2653,7 +2653,7 @@ char LookaheadSurround
 
 
 //***************************************************************************
-//  LookaheadAdjacent
+//  $LookaheadAdjacent
 //
 //  Lookahead (backwards) in the token stream to see if
 //    the matching grouping symbol is adjacent to a function, variable,
@@ -2725,7 +2725,7 @@ char LookaheadAdjacent
 
 
 //***************************************************************************
-//  yylex
+//  $yylex
 //
 //  Lexical analyzer for Bison
 //***************************************************************************
@@ -2988,7 +2988,7 @@ int yylex
 
 
 //***************************************************************************
-//  yyerror
+//  $yyerror
 //
 //  Error callback from YACC
 //***************************************************************************
@@ -3028,7 +3028,7 @@ void yyerror                                // Called for yacc syntax error
 
 
 //***************************************************************************
-//  yyfprintf
+//  $yyfprintf
 //
 //  Debugger output
 //***************************************************************************

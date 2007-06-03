@@ -17,6 +17,7 @@
 #include "editmat.pro"
 #include "editvec.pro"
 #include "exec.pro"
+#include "fastbool.pro"
 #include "free.pro"
 #include "g_fmt.pro"
 #include "main.pro"

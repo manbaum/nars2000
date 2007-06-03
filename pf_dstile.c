@@ -21,7 +21,7 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecDownStile = {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecDownStileStorageTypeMon,
     &PrimFnMonDownStileAPA_EM,
 
@@ -38,7 +38,7 @@ PRIMSPEC PrimSpecDownStile = {
     &PrimFnMonDownStileFisF,
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecDownStileStorageTypeDyd,
     NULL,   // &PrimFnDydDownStileAPA_EM, -- Can't happen w/DownStile
 
@@ -64,18 +64,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownStile};
 
 
 //***************************************************************************
-//  PrimFnDownStile_EM
+//  $PrimFnDownStile_EM_YY
 //
 //  Primitive function for monadic and dyadic DownStile ("floor" and "minimum")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDownStile_EM"
+#define APPEND_NAME     L" -- PrimFnDownStile_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDownStile_EM
+LPYYSTYPE PrimFnDownStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -87,15 +87,15 @@ LPYYSTYPE PrimFnDownStile_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnDownStile_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnDownStile_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecDownStileStorageTypeMon
+//  $PrimSpecDownStileStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -131,7 +131,7 @@ APLSTYPE PrimSpecDownStileStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonDownStileBisB
+//  $PrimFnMonDownStileBisB
 //
 //  Primitive scalar function monadic DownStile:  B {is} fn B
 //***************************************************************************
@@ -146,7 +146,7 @@ APLBOOL PrimFnMonDownStileBisB
 
 
 //***************************************************************************
-//  PrimFnMonDownStileIisI
+//  $PrimFnMonDownStileIisI
 //
 //  Primitive scalar function monadic DownStile:  I {is} fn I
 //***************************************************************************
@@ -161,7 +161,7 @@ APLINT PrimFnMonDownStileIisI
 
 
 //***************************************************************************
-//  PrimFnMonDownStileIisF
+//  $PrimFnMonDownStileIisF
 //
 //  Primitive scalar function monadic DownStile:  I {is} fn F
 //***************************************************************************
@@ -182,7 +182,7 @@ APLINT PrimFnMonDownStileIisF
 
 
 //***************************************************************************
-//  PrimFnMonDownStileFisF
+//  $PrimFnMonDownStileFisF
 //
 //  Primitive scalar function monadic DownStile:  F {is} fn F
 //***************************************************************************
@@ -260,7 +260,7 @@ APLFLOAT PrimFnMonDownStileFisF
 
 
 //***************************************************************************
-//  PrimFnMonDownStileAPA_EM
+//  $PrimFnMonDownStileAPA_EM
 //
 //  Monadic downstile, result is APA
 //***************************************************************************
@@ -286,8 +286,7 @@ BOOL PrimFnMonDownStileAPA_EM
     // Axis may be anything
 
     // Copy the HGLOBAL to the result
-    // CopySymGlb below will increment the reference count
-    *lphGlbRes = hGlbRht;
+    *lphGlbRes = CopySymGlbDirGlb (hGlbRht);
 
     // Fill in the result token
     if (lpYYRes)
@@ -295,7 +294,7 @@ BOOL PrimFnMonDownStileAPA_EM
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirGlb (hGlbRht);
+        lpYYRes->tkToken.tkData.tkGlbData  = hGlbRht;
     } // End IF
 
     DBGLEAVE;
@@ -306,7 +305,7 @@ BOOL PrimFnMonDownStileAPA_EM
 
 
 //***************************************************************************
-//  PrimSpecDownStileStorageTypeDyd
+//  $PrimSpecDownStileStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -339,7 +338,7 @@ APLSTYPE PrimSpecDownStileStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydDownStileIisIvI
+//  $PrimFnDydDownStileIisIvI
 //
 //  Primitive scalar function dyadic DownStile:  I {is} I fn I
 //***************************************************************************
@@ -355,7 +354,7 @@ APLINT PrimFnDydDownStileIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydDownStileFisFvF
+//  $PrimFnDydDownStileFisFvF
 //
 //  Primitive scalar function dyadic DownStile:  F {is} F fn F
 //***************************************************************************

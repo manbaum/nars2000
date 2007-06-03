@@ -103,7 +103,7 @@ char pszNoCreateMFWnd[]     = "Unable to create Master Frame window",
 
 
 //***************************************************************************
-//  EnumCallbackPassMsg
+//  $EnumCallbackPassMsg
 //
 //  EnumChildWindows callback to pass a message to all child
 //    windows of MDI Clients
@@ -138,7 +138,7 @@ BOOL CALLBACK EnumCallbackPassMsg
 
 
 //***************************************************************************
-//  EnumCallbackSetFont
+//  $EnumCallbackSetFont
 //
 //  EnumChildWindows callback to set a window's font
 //***************************************************************************
@@ -176,7 +176,7 @@ BOOL CALLBACK EnumCallbackSetFont
 
 
 //***************************************************************************
-//  InitChooseFont
+//  $InitChooseFont
 //
 //  Initialize CHOOSEFONT values
 //***************************************************************************
@@ -218,7 +218,7 @@ void InitChooseFont
 
 
 //***************************************************************************
-//  MyChooseFont
+//  $MyChooseFont
 //
 //  Choose a font for the various windows.
 //***************************************************************************
@@ -237,7 +237,7 @@ void MyChooseFont
 
 
 //***************************************************************************
-//  CreateNewFontCom
+//  $CreateNewFontCom
 //
 //  Subroutine to CreateNewFontxx to set various variables
 //***************************************************************************
@@ -293,7 +293,7 @@ void CreateNewFontCom
 
 
 //***************************************************************************
-//  CreateNewFontTC
+//  $CreateNewFontTC
 //
 //  Create a new font for the TC window.
 //***************************************************************************
@@ -318,7 +318,7 @@ void CreateNewFontTC
 
 
 //***************************************************************************
-//  CreateNewFontSM
+//  $CreateNewFontSM
 //
 //  Create a new font for the SM windows.
 //***************************************************************************
@@ -355,7 +355,7 @@ void CreateNewFontSM
 
 
 //***************************************************************************
-//  CreateNewFontFE
+//  $CreateNewFontFE
 //
 //  Create a new font for the FE windows.
 //***************************************************************************
@@ -383,7 +383,7 @@ void CreateNewFontFE
 
 
 //***************************************************************************
-//  CreateNewFontME
+//  $CreateNewFontME
 //
 //  Create a new font for the ME windows.
 //***************************************************************************
@@ -411,7 +411,7 @@ void CreateNewFontME
 
 
 //***************************************************************************
-//  CreateNewFontVE
+//  $CreateNewFontVE
 //
 //  Create a new font for the VE windows.
 //***************************************************************************
@@ -439,7 +439,7 @@ void CreateNewFontVE
 
 
 //***************************************************************************
-//  CreateToolTip
+//  $CreateToolTip
 //
 //  Creates the ToolTip window and initializes it.
 //***************************************************************************
@@ -483,7 +483,7 @@ HWND CreateToolTip
 
 
 //***************************************************************************
-//  CreateChildWindows
+//  $CreateChildWindows
 //
 //  Create the child windows under the parent window
 //***************************************************************************
@@ -550,7 +550,7 @@ BOOL CreateChildWindows
 
 
 //***************************************************************************
-//  EnumCallbackRestoreAll
+//  $EnumCallbackRestoreAll
 //
 //  EnumChildWindows callback to restore all MDI Child windows
 //
@@ -582,7 +582,7 @@ BOOL CALLBACK EnumCallbackRestoreAll
 
 
 //***************************************************************************
-//  MF_Create
+//  $MF_Create
 //
 //  Perform window-specific initialization
 //***************************************************************************
@@ -597,7 +597,7 @@ void MF_Create
 
 
 //***************************************************************************
-//  MF_Delete
+//  $MF_Delete
 //
 //  Perform window-specific uninitialization
 //***************************************************************************
@@ -610,7 +610,7 @@ void MF_Delete
 
 
 //***************************************************************************
-//  MFWndProc
+//  $MFWndProc
 //
 //  Message processing routine for the Master Frame window
 //***************************************************************************
@@ -1246,7 +1246,7 @@ LRESULT APIENTRY MFWndProc
 
 
 //***************************************************************************
-//  GetActiveMC
+//  $GetActiveMC
 //
 //  Get the window handle of the currently active MDI Client
 //***************************************************************************
@@ -1292,7 +1292,7 @@ HWND GetActiveMC
 
 
 //***************************************************************************
-//  EnumCallbackQueryClose
+//  $EnumCallbackQueryClose
 //
 //  EnumChildWindows callback to qeury whether or not they can close
 //***************************************************************************
@@ -1314,7 +1314,7 @@ BOOL CALLBACK EnumCallbackQueryClose
 
 
 //***************************************************************************
-//  InitApplication
+//  $InitApplication
 //
 //  Initializes window data and registers window class
 //***************************************************************************
@@ -1472,7 +1472,7 @@ BOOL InitApplication
 
 
 //***************************************************************************
-//  UninitApplication
+//  $UninitApplication
 //
 //  Uninitialize application-specific resources
 //***************************************************************************
@@ -1485,7 +1485,7 @@ void UninitApplication
 
 
 //***************************************************************************
-//  InitInstance
+//  $InitInstance
 //
 //  Saves instance handle and creates main window
 //***************************************************************************
@@ -1628,7 +1628,7 @@ BOOL InitInstance
 
 
 //***************************************************************************
-//  UninitInstance
+//  $UninitInstance
 //
 //  Uninitialize instance-specific resources
 //***************************************************************************
@@ -1664,7 +1664,7 @@ void UninitInstance
 
 
 //***************************************************************************
-//  ParseCommandLine
+//  $ParseCommandLine
 //
 //  Parse any command line
 //***************************************************************************
@@ -1692,7 +1692,7 @@ BOOL ParseCommandLine
 
 
 //***************************************************************************
-//  WinMain
+//  $WinMain
 //
 //  Start the process
 //***************************************************************************
@@ -1754,7 +1754,7 @@ int PASCAL WinMain
     InitChooseFont (&cfME, &lfME, DEF_MEPTSIZE);
     InitChooseFont (&cfVE, &lfVE, DEF_VEPTSIZE);
 
-    // Initialize Primitive Fns, Operators, etc.
+    // Initialize tables for Primitive Fns, Operators, etc.
     InitPrimTabs ();
 
     // Get and save the current Thread Id

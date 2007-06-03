@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  PrimFnEpsilon_EM
+//  $PrimFnEpsilon_EM_YY
 //
 //  Primitive function for monadic and dyadic Epsilon ("enlist" and "member of")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnEpsilon_EM"
+#define APPEND_NAME     L" -- PrimFnEpsilon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnEpsilon_EM
+LPYYSTYPE PrimFnEpsilon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -40,26 +40,26 @@ LPYYSTYPE PrimFnEpsilon_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonEpsilon_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonEpsilon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydEpsilon_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnEpsilon_EM
+        return PrimFnDydEpsilon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnEpsilon_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnEpsilon_EM
+//  $PrimProtoFnEpsilon_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Epsilon
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnEpsilon_EM"
+#define APPEND_NAME     L" -- PrimProtoFnEpsilon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnEpsilon_EM
+LPYYSTYPE PrimProtoFnEpsilon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -71,139 +71,28 @@ LPYYSTYPE PrimProtoFnEpsilon_EM
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM (&PrimFnEpsilon_EM,  // Ptr to primitive function routine
-                                 lptkLftArg,        // Ptr to left arg token
-                                 lptkFunc,          // Ptr to function token
-                                 lptkRhtArg,        // Ptr to right arg token
-                                 lptkAxis);         // Ptr to axis token (may be NULL)
-////APLSTYPE  aplTypeLft,
-////          aplTypeRht,
-////          aplTypeRes;
-////APLNELM   aplNELMLft,
-////          aplNELMRht;
-////APLRANK   aplRankLft,
-////          aplRankRht;
-////APLUINT   ByteRes;
-////HGLOBAL   hGlbLft,
-////          hGlbRes;
-////LPVOID    lpMemLft,
-////          lpMemRes;
-////LPYYSTYPE lpYYRes;
-////
-////     //***************************************************************
-////     // This function is not sensitive to the axis operator,
-////     //   so signal a syntax error if present
-////     //***************************************************************
-////
-////     if (lptkAxis NE NULL)
-////     {
-////         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-////                                    lptkAxis);
-////         return NULL;
-////     } // End IF
-////
-////     // Get the attributes (Type, NELM, and Rank) of the right arg
-////     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-////
-////     // If the left arg is not present, ...
-////     if (lptkLftArg EQ NULL)
-////     {
-////         //***************************************************************
-////         // Called monadically
-////         //***************************************************************
-////
-////         // The result is {enlist} R
-////
-////         DbgBrk ();      // ***FINISHME***
-////
-////
-////
-////
-////     } else
-////     {
-////         //***************************************************************
-////         // Called dyadically
-////         //***************************************************************
-////
-////         // Get the attributes (Type, NELM, and Rank) of the left arg
-////         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-////
-////         // The result is ({rho} L){rho} 0
-////         aplTypeRes = ARRAY_BOOL;
-////
-////         // Calculate space needed for the result
-////         ByteRes = CalcArraySize (aplTypeRes, aplNELMLft, aplRankLft);
-////
-////         // Allocate space for the result.
-////         // N.B. Conversion from APLUINT to UINT.
-////         Assert (ByteRes EQ (UINT) ByteRes);
-////         hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
-////         if (!hGlbRes)
-////         {
-////             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-////                                        lptkFunc);
-////             return FALSE;
-////         } // End IF
-////
-////         // Lock the memory to get a ptr to it
-////         lpMemRes = MyGlobalLock (hGlbRes);
-////
-//// #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-////
-////         // Fill in the header
-////         lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
-////         lpHeader->ArrType    = aplTypeRes;
-//// ////////lpHeader->Perm       = 0;               // Already zero from GHND
-//// ////////lpHeader->SysVar     = 0;               // Already zero from GHND
-////         lpHeader->RefCnt     = 1;
-////         lpHeader->NELM       = aplNELMLft;
-////         lpHeader->Rank       = aplRankLft;
-////
-//// #undef  lpHeader
-////
-////         // Get left arg's global ptrs
-////         GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-////
-////         // Skip over the header to the dimensions
-////         lpMemRes = VarArrayBaseToDim (lpMemRes);
-////         lpMemLft = VarArrayBaseToDim (lpMemLft);
-////
-////         // Copy dimensions to the result
-////         CopyMemory (lpMemRes, lpMemLft, (UINT) aplRankLft * sizeof (APLDIM));
-////
-////         // We no longer need these ptrs
-////         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-////         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-////     } // End IF
-////
-////     // Allocate a new YYRes
-////     lpYYRes = YYAlloc ();
-////
-////     // Fill in the result token
-////     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-//// ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-//// ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-////     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-////     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-////
-////     return lpYYRes;
-} // End PrimProtoFnEpsilon_EM
+    return PrimProtoFnMixed_EM_YY (&PrimFnEpsilon_EM_YY,// Ptr to primitive function routine
+                                    lptkLftArg,         // Ptr to left arg token
+                                    lptkFunc,           // Ptr to function token
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    lptkAxis);          // Ptr to axis token (may be NULL)
+} // End PrimProtoFnEpsilon_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonEpsilon_EM
+//  $PrimFnMonEpsilon_EM_YY
 //
 //  Primitive function for monadic Epsilon ("enlist")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEpsilon_EM"
+#define APPEND_NAME     L" -- PrimFnMonEpsilon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonEpsilon_EM
+LPYYSTYPE PrimFnMonEpsilon_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -240,24 +129,28 @@ LPYYSTYPE PrimFnMonEpsilon_EM
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                return PrimFnMonEpsilonGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                               lptkFunc);
+                return PrimFnMonEpsilonGlb_EM_YY
+                       (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
+                        lptkFunc);                                                      // Ptr to function token
             } // End IF
 
             // Handle the immediate case
-            return PrimFnMonEpsilonImm_EM (TranslateImmTypeToArrayType (lptkRhtArg->tkData.tkSym->stFlags.ImmType),
-                                           lptkRhtArg->tkData.tkSym->stData.stLongest,
-                                           lptkFunc);
+            return PrimFnMonEpsilonImm_EM_YY
+                   (TranslateImmTypeToArrayType (lptkRhtArg->tkData.tkSym->stFlags.ImmType),    // Immediate type
+                    lptkRhtArg->tkData.tkSym->stData.stLongest,                                 // Immediate value
+                    lptkFunc);                                                                  // Ptr to function token
         case TKT_VARIMMED:
-            return PrimFnMonEpsilonImm_EM (TranslateImmTypeToArrayType (lptkRhtArg->tkFlags.ImmType),
-                                           lptkRhtArg->tkData.tkLongest,
-                                           lptkFunc);
+            return PrimFnMonEpsilonImm_EM_YY
+                   (TranslateImmTypeToArrayType (lptkRhtArg->tkFlags.ImmType),  // Immediate type
+                    lptkRhtArg->tkData.tkLongest,                               // Immediate value
+                    lptkFunc);                                                  // Ptr to function token
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
-            return PrimFnMonEpsilonGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                           lptkFunc);
+            return PrimFnMonEpsilonGlb_EM_YY
+                   (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
+                    lptkFunc);                                          // Ptr to function token
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                        lptkFunc);
@@ -266,32 +159,32 @@ LPYYSTYPE PrimFnMonEpsilon_EM
         defstop
             return NULL;
     } // End SWITCH
-} // End PrimFnMonEpsilon_EM
+} // End PrimFnMonEpsilon_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonEpsilonImm_EM
+//  $PrimFnMonEpsilonImm_EM_YY
 //
 //  Monadic Epsilon on an immediate value
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEpsilonImm_EM"
+#define APPEND_NAME     L" -- PrimFnMonEpsilonImm_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonEpsilonImm_EM
+LPYYSTYPE PrimFnMonEpsilonImm_EM_YY
     (APLSTYPE   aplTypeRes,         // Immediate type
      APLLONGEST aplLongest,         // Immediate value
      LPTOKEN    lptkFunc)           // Ptr to function token
 
 {
-    APLUINT ByteRes;
-    HGLOBAL hGlbRes;
-    LPVOID  lpMemRes;
-    LPYYSTYPE lpYYRes;
+    APLUINT   ByteRes;              // # bytes needed for the result
+    HGLOBAL   hGlbRes;              // Result global memory handle
+    LPVOID    lpMemRes;             // Ptr to result global memory
+    LPYYSTYPE lpYYRes;              // Ptr to the result
 
     // Calculate space needed for the result (a one-element vector)
     ByteRes = CalcArraySize (aplTypeRes, 1, 1);
@@ -374,12 +267,12 @@ LPYYSTYPE PrimFnMonEpsilonImm_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End PrimFnMonEpsilonImm_EM
+} // End PrimFnMonEpsilonImm_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonEpsilonGlb_EM
+//  $PrimFnMonEpsilonGlb_EM_YY
 //
 //  Monadic Epsilon on a global memory object:
 //     Count the # scalars and the common storage type
@@ -388,25 +281,25 @@ LPYYSTYPE PrimFnMonEpsilonImm_EM
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEpsilonGlb_EM"
+#define APPEND_NAME     L" -- PrimFnMonEpsilonGlb_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonEpsilonGlb_EM
+LPYYSTYPE PrimFnMonEpsilonGlb_EM_YY
     (HGLOBAL hGlbRht,               // Handle to right arg
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    LPVOID    lpMemRes;
     APLSTYPE  aplTypeRes;           // The storage type of the result
     APLNELM   aplNELMRes;           // # elements in the result
-    HGLOBAL   hGlbRes;
-    APLUINT   ByteRes;
-    UINT      uBitMask = 0x01,
-              uBitIndex = 0;
-    BOOL      bRet = TRUE;
-    LPYYSTYPE lpYYRes;
+    HGLOBAL   hGlbRes;              // Result global memory handle
+    LPVOID    lpMemRes;             // Ptr to result global memory
+    APLUINT   ByteRes;              // # bytes needed for the result
+    UINT      uBitMask = 0x01,      // Bit mask for marching through Booleans
+              uBitIndex = 0;        // Bit index ...
+    BOOL      bRet = TRUE;          // TRUE iff result is valid
+    LPYYSTYPE lpYYRes;              // Ptr to the result
 
     // Traverse the array counting the # simple scalars
     //   and keeping track of the common storage type --
@@ -471,12 +364,12 @@ LPYYSTYPE PrimFnMonEpsilonGlb_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End PrimFnMonEpsilonGlb_EM
+} // End PrimFnMonEpsilonGlb_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimFnMonEpsilonGlbCount
+//  $PrimFnMonEpsilonGlbCount
 //
 //  Count the # simple scalars in the global memory object
 //***************************************************************************
@@ -576,7 +469,7 @@ void PrimFnMonEpsilonGlbCount
 
 
 //***************************************************************************
-//  PrimFnMonEpsilonGlbCopy
+//  $PrimFnMonEpsilonGlbCopy
 //
 //  Copy the data from the right arg to the result
 //***************************************************************************
@@ -589,16 +482,16 @@ void PrimFnMonEpsilonGlbCopy
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    LPVOID     lpMemRht;
-    APLSTYPE   aplTypeRht;
-    APLNELM    aplNELMRht;
-    UINT       uBitMask = 0x01;
-    APLUINT    uRht;
-    APLRANK    aplRankRht;
-    APLUINT    ByteRes;
-    APLINT     apaOffRht,
-               apaMulRht;
-    APLLONGEST aplVal;
+    APLSTYPE   aplTypeRht;          // Right arg storage type
+    APLNELM    aplNELMRht;          // Right arg NELM
+    APLRANK    aplRankRht;          // Right arg rank
+    LPVOID     lpMemRht;            // Ptr to right arg global memory
+    UINT       uBitMask = 0x01;     // Bit mask for marching through Booleans
+    APLUINT    uRht;                // Right arg loop counter
+    APLUINT    ByteRes;             // # bytes needed for the result
+    APLINT     apaOffRht,           // Right arg APA offset
+               apaMulRht;           // ...           multiplier
+    APLLONGEST aplVal;              // Temporary value
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -1157,18 +1050,18 @@ void PrimFnMonEpsilonGlbCopy
 
 
 //***************************************************************************
-//  PrimFnDydEpsilon_EM
+//  $PrimFnDydEpsilon_EM_YY
 //
 //  Primitive function for dyadic Epsilon ("member of")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilon_EM"
+#define APPEND_NAME     L" -- PrimFnDydEpsilon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydEpsilon_EM
+LPYYSTYPE PrimFnDydEpsilon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -1254,7 +1147,7 @@ ERROR_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydEpsilon_EM
+} // End PrimFnDydEpsilon_EM_YY
 #undef  APPEND_NAME
 
 

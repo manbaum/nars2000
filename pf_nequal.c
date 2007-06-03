@@ -36,7 +36,7 @@ PRIMSPEC PrimSpecNotEqual = {
     NULL,   // &PrimFnMonNotEqualFisF, -- Can't happen w/NotEqual
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecNotEqualStorageTypeDyd,
     NULL,   // &PrimFnDydNotEqualAPA_EM, -- Can't happen w/NotEqual
 
@@ -62,18 +62,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecNotEqual};
 
 
 //***************************************************************************
-//  PrimFnNotEqual_EM
+//  $PrimFnNotEqual_EM_YY
 //
 //  Primitive function for monadic and dyadic NotEqual (ERROR and "NotEqual")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnNotEqual_EM"
+#define APPEND_NAME     L" -- PrimFnNotEqual_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnNotEqual_EM
+LPYYSTYPE PrimFnNotEqual_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -85,15 +85,15 @@ LPYYSTYPE PrimFnNotEqual_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnNotEqual_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnNotEqual_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecNotEqualStorageTypeDyd
+//  $PrimSpecNotEqualStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -130,7 +130,7 @@ APLSTYPE PrimSpecNotEqualStorageTypeDyd
 
 
 //***************************************************************************
-//  PrimFnDydNotEqualBisBvB
+//  $PrimFnDydNotEqualBisBvB
 //
 //  Primitive scalar function dyadic NotEqual:  B {is} B fn B
 //***************************************************************************
@@ -146,7 +146,7 @@ APLBOOL PrimFnDydNotEqualBisBvB
 
 
 //***************************************************************************
-//  PrimFnDydNotEqualBisIvI
+//  $PrimFnDydNotEqualBisIvI
 //
 //  Primitive scalar function dyadic NotEqual:  B {is} I fn I
 //***************************************************************************
@@ -162,7 +162,7 @@ APLBOOL PrimFnDydNotEqualBisIvI
 
 
 //***************************************************************************
-//  PrimFnDydNotEqualBisFvF
+//  $PrimFnDydNotEqualBisFvF
 //
 //  Primitive scalar function dyadic NotEqual:  B {is} F fn F
 //***************************************************************************
@@ -178,7 +178,7 @@ APLBOOL PrimFnDydNotEqualBisFvF
 
 
 //***************************************************************************
-//  PrimFnDydNotEqualBisCvC
+//  $PrimFnDydNotEqualBisCvC
 //
 //  Primitive scalar function dyadic NotEqual:  B {is} C fn C
 //***************************************************************************

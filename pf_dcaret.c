@@ -38,7 +38,7 @@ PRIMSPEC PrimSpecDownCaret = {
     NULL,   // &PrimFnMonDownCaretFisF, -- Can't happen w/DownCaret
 
     // Dyadic functions
-    &PrimFnDyd_EM,
+    &PrimFnDyd_EM_YY,
     &PrimSpecDownCaretStorageTypeDyd,
     NULL,   // &PrimFnDydDownCaretAPA_EM, -- Can't happen w/DownCaret
 
@@ -64,18 +64,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownCaret};
 
 
 //***************************************************************************
-//  PrimFnDownCaret_EM
+//  $PrimFnDownCaret_EM_YY
 //
 //  Primitive function for monadic and dyadic downCaret (ERROR and "or/GCD")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDownCaret_EM"
+#define APPEND_NAME     L" -- PrimFnDownCaret_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDownCaret_EM
+LPYYSTYPE PrimFnDownCaret_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -87,15 +87,15 @@ LPYYSTYPE PrimFnDownCaret_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-} // End PrimFnDownCaret_EM
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+} // End PrimFnDownCaret_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecDownCaretStorageTypeDyd
+//  $PrimSpecDownCaretStorageTypeDyd
 //
 //  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -128,7 +128,7 @@ APLSTYPE PrimSpecDownCaretStorageTypeDyd
 
 
 //***************************************************************************
-//  gcdAplInt
+//  $gcdAplInt
 //
 //  GCD (Greatest Common Divisor) for aplIntegers
 //***************************************************************************
@@ -161,7 +161,7 @@ APLINT gcdAplInt
 
 
 //***************************************************************************
-//  gcdAplFloat
+//  $gcdAplFloat
 //
 //  GCD (Greatest Common Divisor) for aplFloats
 //***************************************************************************
@@ -194,7 +194,7 @@ APLFLOAT gcdAplFloat
 
 
 //***************************************************************************
-//  PrimFnDydDownCaretBisBvB
+//  $PrimFnDydDownCaretBisBvB
 //
 //  Primitive scalar function dyadic DownCaret:  B {is} B fn B
 //***************************************************************************
@@ -210,7 +210,7 @@ APLBOOL PrimFnDydDownCaretBisBvB
 
 
 //***************************************************************************
-//  PrimFnDydDownCaretIisIvI
+//  $PrimFnDydDownCaretIisIvI
 //
 //  Primitive scalar function dyadic DownCaret:  I {is} I fn I
 //***************************************************************************
@@ -226,7 +226,7 @@ APLINT PrimFnDydDownCaretIisIvI
 
 
 //***************************************************************************
-//  PrimFnDydDownCaretFisIvI
+//  $PrimFnDydDownCaretFisIvI
 //
 //  Primitive scalar function dyadic DownCaret:  F {is} I fn I
 //***************************************************************************
@@ -242,7 +242,7 @@ APLFLOAT PrimFnDydDownCaretFisIvI
 
 
 //***************************************************************************
-//  PrimFnDydDownCaretFisFvF
+//  $PrimFnDydDownCaretFisFvF
 //
 //  Primitive scalar function dyadic DownCaret:  F {is} F fn F
 //***************************************************************************

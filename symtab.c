@@ -26,7 +26,7 @@ typedef unsigned char  uint8_t;
 
 
 //***************************************************************************
-//  MaskTheHash
+//  $MaskTheHash
 //
 //  Calculate the hash mask for a given hash.
 //
@@ -85,7 +85,7 @@ UINT MaskTheHash
 
 #ifdef DEBUG
 //***************************************************************************
-//  HshTabFrisk
+//  $HshTabFrisk
 //
 //  Frisk the hash table
 //***************************************************************************
@@ -269,7 +269,7 @@ BOOL HshTabFrisk
 
 
 //***************************************************************************
-//  HshTabDelink
+//  $HshTabDelink
 //
 //  Delink a hash table entry
 //***************************************************************************
@@ -307,7 +307,7 @@ void HshTabDelink
 
 
 //***************************************************************************
-//  HshTabLink
+//  $HshTabLink
 //
 //  Link the destination entry into the hash entry
 //***************************************************************************
@@ -365,7 +365,7 @@ void HshTabLink
 
 
 //***************************************************************************
-//  HshTabResize_EM
+//  $HshTabResize_EM
 //
 //  Resize the hash table
 //***************************************************************************
@@ -431,7 +431,7 @@ BOOL HshTabResize_EM
 
 
 //***************************************************************************
-//  SymTabResize_EM
+//  $SymTabResize_EM
 //
 //  Resize the symbol table
 //***************************************************************************
@@ -484,7 +484,7 @@ BOOL SymTabResize_EM
 
 //// #ifdef DEBUG
 //// //***************************************************************************
-//// //  GCD
+//// //  $GCD
 //// //
 //// //  Greatest Common Divisor using the tried and true Euclidean algorithm
 //// //***************************************************************************
@@ -512,7 +512,7 @@ BOOL SymTabResize_EM
 
 
 //***************************************************************************
-//  HshTabSplitNextEntry
+//  $HshTabSplitNextEntry
 //
 //  Split the entry pointed to by lpHshTabSplitNext .
 //
@@ -700,7 +700,7 @@ BOOL HshTabSplitNextEntry_EM
 
 
 //***************************************************************************
-//  FindNextFreeUsingHash_SPLIT_EM
+//  $FindNextFreeUsingHash_SPLIT_EM
 //
 //  Find the next free hash table entry after a give one.
 //  The search is first within the same block from low to high,
@@ -823,7 +823,7 @@ LPHSHENTRY FindNextFreeUsingHash_SPLIT_EM
 
 
 //***************************************************************************
-//  FindNextFreeUsingHTE_EM
+//  $FindNextFreeUsingHTE_EM
 //
 //  Find the next free hash table entry after a give one.
 //  The search is first within the same block from low to high,
@@ -930,7 +930,7 @@ LPHSHENTRY FindNextFreeUsingHTE_EM
 
 
 //***************************************************************************
-//  SymTabLookupChar
+//  $SymTabLookupChar
 //
 //  Lookup a char based upon hash, flags, and value
 //***************************************************************************
@@ -980,7 +980,7 @@ LPSYMENTRY SymTabLookupChar
 
 
 //***************************************************************************
-//  SymTabLookupNumber
+//  $SymTabLookupNumber
 //
 //  Lookup a number based upon hash, flags, and value
 //***************************************************************************
@@ -1030,7 +1030,7 @@ LPSYMENTRY SymTabLookupNumber
 
 
 //***************************************************************************
-//  SymTabLookupFloat
+//  $SymTabLookupFloat
 //
 //  Lookup a Floating Point number based upon hash, flags, and value
 //***************************************************************************
@@ -1080,7 +1080,7 @@ LPSYMENTRY SymTabLookupFloat
 
 
 //***************************************************************************
-//  SymTabLookupName
+//  $SymTabLookupName
 //
 //  Lookup a named entry based upon hash, flags, and value
 //***************************************************************************
@@ -1150,7 +1150,7 @@ LPSYMENTRY SymTabLookupName
 
 
 //***************************************************************************
-//  MakeSymEntry_EM
+//  $MakeSymEntry_EM
 //
 //  Make a SYMENTRY with a given type and value
 //***************************************************************************
@@ -1201,7 +1201,7 @@ LPSYMENTRY MakeSymEntry_EM
 
 
 //***************************************************************************
-//  CopyImmSymEntry_EM
+//  $CopyImmSymEntry_EM
 //
 //  Copy an immediate symbol table entry
 //***************************************************************************
@@ -1257,7 +1257,7 @@ LPSYMENTRY CopyImmSymEntry_EM
 
 
 //***************************************************************************
-//  SymTabAppendInteger_EM
+//  $SymTabAppendInteger_EM
 //
 //  Append a Boolean or long long integer to the symbol table
 //***************************************************************************
@@ -1347,7 +1347,7 @@ LPSYMENTRY SymTabAppendInteger_EM
 
 
 //***************************************************************************
-//  SymTabAppendFloat_EM
+//  $SymTabAppendFloat_EM
 //
 //  Append a Floating Point number to the symbol table
 //***************************************************************************
@@ -1433,7 +1433,7 @@ LPSYMENTRY SymTabAppendFloat_EM
 
 
 //***************************************************************************
-//  SymTabAppendChar_EM
+//  $SymTabAppendChar_EM
 //
 //  Append a character to the symbol table
 //***************************************************************************
@@ -1519,7 +1519,7 @@ LPSYMENTRY SymTabAppendChar_EM
 
 
 //***************************************************************************
-//  SymTabAppendName_EM
+//  $SymTabAppendName_EM
 //
 //  Append a name to the symbol table
 //***************************************************************************
@@ -1561,7 +1561,7 @@ LPSYMENTRY SymTabAppendName_EM
 
 
 //***************************************************************************
-//  SymTabAppendNewName_EM
+//  $SymTabAppendNewName_EM
 //
 //  Append a new name to the symbol table
 //    (no need to look it up as we know it isn't there)

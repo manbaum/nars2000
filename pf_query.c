@@ -22,7 +22,7 @@
 PRIMSPEC PrimSpecQuery =
 {
     // Monadic functions
-    &PrimFnMon_EM,
+    &PrimFnMon_EM_YY,
     &PrimSpecQueryStorageTypeMon,
     NULL,   // &PrimFnMonQueryAPA_EM, -- Can't happen w/Query
 
@@ -65,18 +65,18 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
 
 
 //***************************************************************************
-//  PrimFnQuery_EM
+//  $PrimFnQuery_EM_YY
 //
 //  Primitive function for monadic and dyadic Query ("roll" and "deal")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnQuery_EM"
+#define APPEND_NAME     L" -- PrimFnQuery_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnQuery_EM
+LPYYSTYPE PrimFnQuery_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -88,26 +88,26 @@ LPYYSTYPE PrimFnQuery_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
     else
-        return PrimFnDydQuery_EM           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnQuery_EM
+        return PrimFnDydQuery_EM_YY           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnQuery_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimProtoFnQuery_EM
+//  $PrimProtoFnQuery_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Query
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnQuery_EM"
+#define APPEND_NAME     L" -- PrimProtoFnQuery_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnQuery_EM
+LPYYSTYPE PrimProtoFnQuery_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -119,10 +119,10 @@ LPYYSTYPE PrimProtoFnQuery_EM
         //***************************************************************
         // Called monadically
         //***************************************************************
-        return PrimProtoFnScalar_EM (lptkLftArg,        // Ptr to left arg token
-                                     lptkFunc,          // Ptr to function token
-                                     lptkRhtArg,        // Ptr to right arg token
-                                     lptkAxis);         // Ptr to axis token (may be NULL)
+        return PrimProtoFnScalar_EM_YY (lptkLftArg,         // Ptr to left arg token
+                                        lptkFunc,           // Ptr to function token
+                                        lptkRhtArg,         // Ptr to right arg token
+                                        lptkAxis);          // Ptr to axis token (may be NULL)
     else
     {
         //***************************************************************
@@ -130,18 +130,18 @@ LPYYSTYPE PrimProtoFnQuery_EM
         //***************************************************************
 
         // Convert to a prototype
-        return PrimProtoFnMixed_EM (&PrimFnQuery_EM,    // Ptr to primitive function routine
-                                     lptkLftArg,        // Ptr to left arg token
-                                     lptkFunc,          // Ptr to function token
-                                     lptkRhtArg,        // Ptr to right arg token
-                                     lptkAxis);         // Ptr to axis token (may be NULL)
+        return PrimProtoFnMixed_EM_YY (&PrimFnQuery_EM_YY,  // Ptr to primitive function routine
+                                        lptkLftArg,         // Ptr to left arg token
+                                        lptkFunc,           // Ptr to function token
+                                        lptkRhtArg,         // Ptr to right arg token
+                                        lptkAxis);          // Ptr to axis token (may be NULL)
     } // End IF/ELSE
-} // End PrimProtoFnQuery_EM
+} // End PrimProtoFnQuery_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  PrimSpecQueryStorageTypeMon
+//  $PrimSpecQueryStorageTypeMon
 //
 //  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
@@ -175,7 +175,7 @@ APLSTYPE PrimSpecQueryStorageTypeMon
 
 
 //***************************************************************************
-//  PrimFnMonQueryIisI
+//  $PrimFnMonQueryIisI
 //
 //  Primitive scalar function monadic Query:  I {is} fn I
 //***************************************************************************
@@ -206,7 +206,7 @@ APLINT PrimFnMonQueryIisI
 
 
 //***************************************************************************
-//  PrimFnMonQueryIisF
+//  $PrimFnMonQueryIisF
 //
 //  Primitive scalar function monadic Query:  I {is} fn F
 //***************************************************************************
@@ -239,7 +239,7 @@ APLINT PrimFnMonQueryIisF
 
 
 //***************************************************************************
-//  PrimFnDydQuery_EM
+//  $PrimFnDydQuery_EM_YY
 //
 //  Primitive function for dyadic Query ("deal")
 //
@@ -249,41 +249,41 @@ APLINT PrimFnMonQueryIisF
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydQuery_EM"
+#define APPEND_NAME     L" -- PrimFnDydQuery_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydQuery_EM
+LPYYSTYPE PrimFnDydQuery_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE aplTypeLft,
-             aplTypeRht;
-    APLNELM  aplNELMLft,
-             aplNELMRht;
-    APLRANK  aplRankLft,
-             aplRankRht;
-    HGLOBAL  hGlbLft = NULL,
-             hGlbRht = NULL,
-             hGlbRes = NULL;
-    LPVOID   lpMemLft = NULL,
-             lpMemRht = NULL;
-    LPAPLINT lpMemRes = NULL;
-    APLINT   aplIntegerLft,
-             aplIntegerRht;
-    APLFLOAT aplFloatLft,
-             aplFloatRht;
-    APLUINT  ByteRes;
-    APLINT   uLft,
-             uRht,
-             uTmp,
-             uSub;
-    BOOL     bRet = TRUE;
-    LPYYSTYPE lpYYRes;
+    APLSTYPE  aplTypeLft,           // Left arg storage type
+              aplTypeRht;           // Right ...
+    APLNELM   aplNELMLft,           // Left arg NELM
+              aplNELMRht;           // Right ...
+    APLRANK   aplRankLft,           // Left arg rank
+              aplRankRht;           // Right ...
+    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
+              hGlbRht = NULL,       // Right ...
+              hGlbRes = NULL;       // Result   ...
+    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
+              lpMemRht = NULL;      // Ptr to right ...
+    LPAPLINT  lpMemRes = NULL;      // Ptr to result   ...
+    APLINT    aplIntegerLft,        // Left arg temporary integer
+              aplIntegerRht;        // Right ...
+    APLFLOAT  aplFloatLft,          // Left arg temporary float
+              aplFloatRht;          // Right ...
+    APLUINT   ByteRes;              // # bytes needed for the result
+    APLINT    uLft,                 // Left arg loop counter
+              uRht,                 // Right ...
+              uTmp,                 // Temporary ...
+              uSub;                 // Subarray  ...
+    BOOL      bRet = TRUE;          // TRUE iff result is valid
+    LPYYSTYPE lpYYRes;              // Ptr to the result
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -493,7 +493,7 @@ ERROR_EXIT:
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydQuery_EM
+} // End PrimFnDydQuery_EM_YY
 
 
 //***************************************************************************

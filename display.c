@@ -27,7 +27,7 @@ extern UINT auLinNumGLOBAL[MAXOBJ];
 #endif
 
 //***************************************************************************
-//  ArrayDisplay_EM
+//  $ArrayDisplay_EM
 //
 //  Display an array
 //***************************************************************************
@@ -145,7 +145,7 @@ BOOL ArrayDisplay_EM
 
 
 //***************************************************************************
-//  DisplayGlbArr
+//  $DisplayGlbArr
 //
 //  Display a global array
 //***************************************************************************
@@ -515,7 +515,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  FormatImmed
+//  $FormatImmed
 //
 //  Format an immediate constant
 //***************************************************************************
@@ -592,7 +592,7 @@ LPAPLCHAR FormatImmed
 
 
 //***************************************************************************
-//  FormatAplint
+//  $FormatAplint
 //
 //  Format an APLINT
 //***************************************************************************
@@ -640,7 +640,7 @@ LPAPLCHAR FormatAplint
 
 
 //***************************************************************************
-//  FormatFloat
+//  $FormatFloat
 //
 //  Format a floating point number
 //***************************************************************************
@@ -765,7 +765,7 @@ LPAPLCHAR FormatFloat
 
 
 //***************************************************************************
-//  FormatSymTabConst
+//  $FormatSymTabConst
 //
 //  Format a symbol table constant
 //***************************************************************************
@@ -785,7 +785,7 @@ LPAPLCHAR FormatSymTabConst
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplayHshTab
+//  $DisplayHshTab
 //
 //  Display the Hash Table entries
 //***************************************************************************
@@ -899,7 +899,7 @@ void DisplayHshTab
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplaySymTab
+//  $DisplaySymTab
 //
 //  Display the Symbol Table entries
 //
@@ -1061,12 +1061,14 @@ void DisplaySymTab
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplayGlobals
+//  $DisplayGlobals
 //
 //  Display outstanding global memory objects
 //***************************************************************************
 void DisplayGlobals
-    (BOOL bDispAll)
+    (UINT uDispGlb)     // 0 = Display non-permanent non-sysvars
+                        // 1 = ...     non-sysvars
+                        // 2 = ...     all globals
 
 {
     int       i;
@@ -1097,7 +1099,7 @@ void DisplayGlobals
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
         if (lpHeader->Sign.ature EQ VARARRAY_HEADER_SIGNATURE)
         {
-            if (bDispAll
+            if (uDispGlb EQ 2
              || !lpHeader->SysVar)
             {
                 // It's a valid HGLOBAL variable array
@@ -1149,18 +1151,24 @@ void DisplayGlobals
                         break;
                 } // End SWITCH
 
-                wsprintfW (lpwszDebug,
-                           L"hGlb=%08X, ArrType=%c%c, NELM=%3d, RC=%1d, Rank=%2d, Dim1=%3d, Line#=%4d, (%s)",
-                           hGlb,
-                           L"BIFCHNLA"[lpHeader->ArrType],
-                           L" *"[lpHeader->Perm],
-                           LODWORD (lpHeader->NELM),
-                           lpHeader->RefCnt,
-                           LODWORD (lpHeader->Rank),
-                           LODWORD (aplDim),
-                           auLinNumGLOBAL[i],
-                           aplArrChar);
-                DbgMsgW (lpwszDebug);
+                // Check for non-permanents
+                if (uDispGlb EQ 1
+                 || uDispGlb EQ 2
+                 || !lpHeader->Perm)
+                {
+                    wsprintfW (lpwszDebug,
+                               L"hGlb=%08X, ArrType=%c%c, NELM=%3d, RC=%1d, Rank=%2d, Dim1=%3d, Line#=%4d, (%s)",
+                               hGlb,
+                               L"BIFCHNLA"[lpHeader->ArrType],
+                               L" *"[lpHeader->Perm],
+                               LODWORD (lpHeader->NELM),
+                               lpHeader->RefCnt,
+                               LODWORD (lpHeader->Rank),
+                               LODWORD (aplDim),
+                               auLinNumGLOBAL[i],
+                               aplArrChar);
+                    DbgMsgW (lpwszDebug);
+                } // End IF
             } // End IF
         } else
 #undef  lpHeader
@@ -1180,7 +1188,7 @@ void DisplayGlobals
             DbgMsg (lpszDebug);
         } else
 #undef  lpHeader
-        if (bDispAll)
+        if (uDispGlb EQ 2)
         {
             wsprintf (lpszDebug,
                       "hGlb=%08X -- No NARS/FCNS Signature",
@@ -1201,7 +1209,7 @@ void DisplayGlobals
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplayTokens
+//  $DisplayTokens
 //
 //  Display the contents of the current token stream
 //***************************************************************************
@@ -1272,7 +1280,7 @@ void DisplayTokens
 
 #ifdef DEBUG
 //***************************************************************************
-//  GetTokenTypeName
+//  $GetTokenTypeName
 //
 //  Convert a token type value to a name
 //***************************************************************************
@@ -1337,7 +1345,7 @@ static TOKENNAMES tokenNames[] =
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplayFcnStrand
+//  $DisplayFcnStrand
 //
 //  Display a function strand
 //***************************************************************************
@@ -1420,7 +1428,7 @@ void DisplayFcnStrand
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplayFcnGlb
+//  $DisplayFcnGlb
 //
 //  Display a function from an HGLOBAL
 //***************************************************************************
@@ -1499,7 +1507,7 @@ LPWCHAR DisplayFcnGlb
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplayFcnSub
+//  $DisplayFcnSub
 //
 //  Display function subroutine
 //***************************************************************************
@@ -1781,7 +1789,7 @@ LPWCHAR DisplayFcnSub
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplayStrand
+//  $DisplayStrand
 //
 //  Display the strand stack
 //***************************************************************************
@@ -1851,7 +1859,7 @@ void DisplayStrand
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplayUndo
+//  $DisplayUndo
 //
 //  Display the Undo Buffer
 //***************************************************************************

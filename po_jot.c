@@ -99,45 +99,15 @@ LPYYSTYPE PrimOpJotCommon_EM_YY
 
     // Handle both monadic & dyadic derived functions together
 
-    // Split cases based upon the left operand's token type
-    switch (TokenTypeFV (&lpYYFcnStrLft->tkToken))
-    {
-        case 'F':
-            uLftArg = 0;
-
-            break;
-
-        case 'V':
-            uLftArg = 1;
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // Split cases based upon the right operand's token type
-    switch (TokenTypeFV (&lpYYFcnStrRht->tkToken))
-    {
-        case 'F':
-            uRhtArg = 0;
-
-            break;
-
-        case 'V':
-            uRhtArg = 1;
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
+    // Determine if the laft & right arg tokens are functions/operators
+    uLftArg = IsFcnOpr (&lpYYFcnStrLft->tkToken);
+    uRhtArg = IsFcnOpr (&lpYYFcnStrRht->tkToken);
 
     // Split cases based upon the type (V or F) of
     //   the left and right operands
     switch (uLftArg * 2 + uRhtArg * 1)
     {
-        case 0 * 2 + 0 * 1:     // F1 op2 F2 -> F1 F2 R or L F1 F2 R
+        case 1 * 2 + 1 * 1:     // F1 op2 F2 -> F1 F2 R or L F1 F2 R
             // Execute the right operand monadically
             //   on the right arg
             if (bPrototype)
@@ -159,10 +129,6 @@ LPYYSTYPE PrimOpJotCommon_EM_YY
                 //   between the (optional) left arg and the
                 //   above result from the right operand.
                 if (bPrototype)
-                    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,            // Ptr to left arg token
-                                                 lpYYFcnStrLft,         // Ptr to left operand function strand
-                                                &lpYYRes2->tkToken);    // Ptr to right arg token
-                else
                     // Note that we cast the function strand to LPTOKEN
                     //   to bridge the two types of calls -- one to a primitive
                     //   function which takes a function token, and one to a
@@ -171,13 +137,17 @@ LPYYSTYPE PrimOpJotCommon_EM_YY
                                        (LPTOKEN) lpYYFcnStrLft,         // Ptr to left operand function strand
                                                 &lpYYRes2->tkToken,     // Ptr to right arg token
                                                  lptkAxis);             // Ptr to axis token
+                else
+                    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,            // Ptr to left arg token
+                                                 lpYYFcnStrLft,         // Ptr to left operand function strand
+                                                &lpYYRes2->tkToken);    // Ptr to right arg token
                 FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
             } else
                 lpYYRes = NULL;
 
             break;
 
-        case 1 * 2 + 0 * 1:     // V op2 F -> V F R
+        case 0 * 2 + 1 * 1:     // V op2 F -> V F R
             // If there's a left arg, signal a SYNTAX ERROR
             if (lptkLftArg)
             {
@@ -203,7 +173,7 @@ LPYYSTYPE PrimOpJotCommon_EM_YY
                                               lptkRhtArg);              // Ptr to right arg token
             break;
 
-        case 0 * 2 + 1 * 1:     // F op2 V
+        case 1 * 2 + 0 * 1:     // F op2 V
             // If there's a left arg, signal a SYNTAX ERROR
             if (lptkLftArg)
             {
@@ -229,7 +199,7 @@ LPYYSTYPE PrimOpJotCommon_EM_YY
                                             &lpYYFcnStrRht->tkToken);   // Ptr to right arg token
             break;
 
-        case 1 * 2 + 1 * 1:     // V op2 V
+        case 0 * 2 + 0 * 1:     // V op2 V
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                       &lpYYFcnStrLft->tkToken);
             break;

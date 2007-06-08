@@ -4256,7 +4256,7 @@ static void EDIT_WM_Command(EDITSTATE *es, INT code, INT id, HWND control)
  *      (as we do in EDIT_WM_Command()).
  *
  */
-static void EDIT_WM_ContextMenu(EDITSTATE *es, INT x, INT y)
+static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
 {
 ////HMENU menu = LoadMenuA(user32_module, "EDITMENU");
 ////HMENU popup = GetSubMenu(menu, 0);
@@ -4286,6 +4286,18 @@ static void EDIT_WM_ContextMenu(EDITSTATE *es, INT x, INT y)
     /* select all */
     EnableMenuItem(popup, IDM_SELECTALL   , (start || (end != strlenW(es->text)) ? MF_ENABLED : MF_GRAYED));
 
+    // If we're editing a function, ...
+    if (IzitFE (es->hwndParent))
+    {
+        BOOL bItsaName;
+
+        bItsaName = SendMessageA (es->hwndParent, MYWM_IZITNAME, start, end);
+
+        AppendMenuA (popup, MF_SEPARATOR                           , 0             , NULL);
+        AppendMenuA (popup, MF_STRING | (bItsaName ? 0 : MF_GRAYED), IDM_LOCALIZE  , "&Localize");
+        AppendMenuA (popup, MF_STRING | (bItsaName ? 0 : MF_GRAYED), IDM_UNLOCALIZE, "Unl&ocalize");
+    } // End IF
+
         if (x == -1 && y == -1) /* passed via VK_APPS press/release */
         {
             RECT rc;
@@ -4296,9 +4308,10 @@ static void EDIT_WM_ContextMenu(EDITSTATE *es, INT x, INT y)
             y = rc.top + (rc.bottom - rc.top) / 2;
         }
 
-    TrackPopupMenu(popup, TPM_LEFTALIGN | TPM_RIGHTBUTTON, x, y, 0, es->hwndSelf, NULL);
-    DestroyMenu(menu);
-}
+    TrackPopupMenu (popup, TPM_LEFTALIGN | TPM_RIGHTBUTTON, x, y, 0, es->hwndSelf, NULL);
+    DestroyMenu (menu);
+    PostMessageW (GetParent (es->hwndSelf), MYWM_SETFOCUS, 0, 0);
+} // End EDIT_WM_ContextMenu
 
 
 /*********************************************************************

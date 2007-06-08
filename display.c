@@ -50,13 +50,13 @@ BOOL ArrayDisplay_EM
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRes->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRes->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, it's an array
             if (!lptkRes->tkData.tkSym->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRes->tkData.tkSym->stData.lpVoid));
+                Assert (IsGlbTypeVarDir (lptkRes->tkData.tkSym->stData.stVoid));
 
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)
@@ -74,7 +74,7 @@ BOOL ArrayDisplay_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRes->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRes->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // stData is immediate
             Assert (lptkRes->tkData.tkSym->stFlags.Imm);
@@ -92,7 +92,7 @@ BOOL ArrayDisplay_EM
             lpaplChar =
             FormatImmed (lpwszFormat,
                          lptkRes->tkFlags.ImmType,
-                         &lptkRes->tkData.lpVoid);
+                         &lptkRes->tkData.tkLongest);
             break;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
@@ -105,7 +105,7 @@ BOOL ArrayDisplay_EM
             if (lptkRes->tkFlags.NoDisplay)
                 return TRUE;
 
-            switch (GetPtrTypeDir (lptkRes->tkData.lpVoid))
+            switch (GetPtrTypeDir (lptkRes->tkData.tkVoid))
             {
                 case PTRTYPE_STCONST:
                     lpaplChar =
@@ -521,9 +521,9 @@ NORMAL_EXIT:
 //***************************************************************************
 
 LPAPLCHAR FormatImmed
-    (LPWCHAR    lpaplChar,
-     UINT       ImmType,
-     LPVOID     lpData)
+    (LPWCHAR      lpaplChar,
+     UINT         ImmType,
+     LPAPLLONGEST lpaplLongest)
 
 {
     WCHAR wc;
@@ -533,18 +533,18 @@ LPAPLCHAR FormatImmed
         case IMMTYPE_BOOL:
             lpaplChar =
             FormatAplint (lpaplChar,
-                          *(LPAPLBOOL) lpData);
+                          *(LPAPLBOOL) lpaplLongest);
             break;
 
         case IMMTYPE_INT:
             lpaplChar =
             FormatAplint (lpaplChar,
-                          *(LPAPLINT) lpData);
+                          *(LPAPLINT) lpaplLongest);
             break;
 
         case IMMTYPE_CHAR:
             // Get the char
-            wc = *(LPAPLCHAR) lpData;
+            wc = *(LPAPLCHAR) lpaplLongest;
 
             // Test for Terminal Control chars
             switch (wc)
@@ -579,7 +579,8 @@ LPAPLCHAR FormatImmed
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-            FormatFloat (lpaplChar, *(LPAPLFLOAT) lpData);
+            FormatFloat (lpaplChar,
+                         *(LPAPLFLOAT) lpaplLongest);
 
             break;
 
@@ -663,7 +664,7 @@ LPAPLCHAR FormatFloat
         // Use David Gay's routines
         g_fmt (lpszTemp,        // Output save area
                fFloat,          // # to convert to ASCII
-               2,               // Mode 2: max (1, ndigits)
+               2,               // Mode 2: max (ndigits, 1)
          (int) uQuadPP);        // ndigits
 
         // Convert from one-byte ASCII to two-byte UTF16
@@ -779,7 +780,7 @@ LPAPLCHAR FormatSymTabConst
 
     return FormatImmed (lpaplChar,
                         lpSymEntry->stFlags.ImmType,
-                       &lpSymEntry->stData.lpVoid);
+                       &lpSymEntry->stData.stLongest);
 } // End FormatSymTabConst
 
 
@@ -1035,7 +1036,7 @@ void DisplaySymTab
                                lpSymEntry,
                                wszName,
                                &wszFlags[1],
-                               lpSymEntry->stData.lpVoid,
+                               lpSymEntry->stData.stVoid,
                                lpHshEntry);
                 } else
                     wsprintfW (lpwszDebug,
@@ -1128,7 +1129,7 @@ void DisplayGlobals
                             lpwsz =
                             FormatImmed (aplArrChar,
                                          TranslateArrayTypeToImmType (lpHeader->ArrType),
-                                         lpData);
+                                         (LPAPLLONGEST) lpData);
                             // Delete the trailing blank
                             lpwsz[-1] = L'\0';
                         } // End IF/ELSE
@@ -1247,12 +1248,12 @@ void DisplayTokens
     wsprintf (lpszDebug,
               "lpToken = %08X, Version # = %d, TokenCnt = %d, PrevGroup = %d",
               lpToken,
-              lpHeader->iVersion,
-              lpHeader->iTokenCnt,
-              lpHeader->iPrevGroup);
+              lpHeader->Version,
+              lpHeader->TokenCnt,
+              lpHeader->PrevGroup);
     DbgMsg (lpszDebug);
 
-    iLen = lpHeader->iTokenCnt;
+    iLen = lpHeader->TokenCnt;
 
 #undef  lpHeader
 
@@ -1380,7 +1381,7 @@ void DisplayFcnStrand
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, ...
             if (!lpToken->tkData.tkSym->stFlags.Imm)
@@ -1593,7 +1594,7 @@ LPWCHAR DisplayFcnSub
             DbgBrk ();          // ***TESTME***
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpYYMem->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpYYMem->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not an immediate function, ...
             if (!lpYYMem->tkToken.tkData.tkSym->stFlags.Imm)
@@ -1741,7 +1742,7 @@ LPWCHAR DisplayFcnSub
 ////
 ////         case TKT_FCNNAMED:
 ////             // tkData is an LPSYMENTRY
-////             Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+////             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 ////
 ////             // If it's an immediate
 ////             if (lpToken->tkData.tkSym->stFlags.Imm)
@@ -1802,8 +1803,12 @@ void DisplayStrand
               lpLast;
     LPPLLOCALVARS lpplLocalVars;
 
+    // Check debug level
+    if (gDbgLvl <= 2)
+        return;
+
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     switch (strType)
     {

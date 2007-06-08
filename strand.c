@@ -50,7 +50,7 @@ void InitVarStrand
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Set the base of this strand to the next available location
     lpYYArg->unYYSTYPE.lpYYStrandBase        =
@@ -72,7 +72,7 @@ LPYYSTYPE PushVarStrand_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -81,12 +81,13 @@ LPYYSTYPE PushVarStrand_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_STRAND;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.lpVoid     = (LPVOID) -1;
+    lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
     lpYYRes->TknCount                  =
     lpYYRes->FcnCount                  = 0;
     lpYYRes->lpYYFcn                   = NULL;
 
+    // Copy the strand base to the result
     lpYYRes->unYYSTYPE.lpYYStrandBase  =
     lpYYArg->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[VARSTRAND];
 
@@ -119,13 +120,15 @@ LPYYSTYPE PushFcnStrand_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
     lpYYArg->TknCount = TknCount;
     lpYYArg->Indirect = bIndirect;
+
+    // Copy the strand base to the result
     lpYYArg->unYYSTYPE.lpYYStrandBase = lpplLocalVars->lpYYStrandBase[FCNSTRAND];
     if (!lpYYArg->lpYYFcn)
         lpYYArg->lpYYFcn = lpplLocalVars->lpYYStrandNext[FCNSTRAND];
@@ -165,7 +168,7 @@ void StripStrand
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // If we're not back at the beginning, set the new base
     //   to the base of the token previous to the current base
@@ -210,7 +213,7 @@ void FreeStrand
             case TKT_OP1NAMED:
             case TKT_OP2NAMED:
                 // tkData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                 // Does it have a value?
                 if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Value)
@@ -237,9 +240,10 @@ void FreeStrand
                     if (FreeResultGlobalVar (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.tkGlbData)))
                     {
 #ifdef DEBUG
-                        dprintf ("**Zapping in FreeStrand: %08X (%s#%d)",
-                                 ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
-                                 FNLN);
+                        if (gDbgLvl > 2)
+                            dprintf ("**Zapping in FreeStrand: %08X (%s#%d)",
+                                     ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
+                                     FNLN);
 #endif
                         lpYYToken->tkToken.tkData.tkGlbData = NULL;
                     } // End IF
@@ -320,7 +324,7 @@ static char tabConvert[][STRAND_LENGTH] =
     LPPLLOCALVARS lpplLocalVars;        // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     DBGENTER;
 
@@ -353,7 +357,7 @@ static char tabConvert[][STRAND_LENGTH] =
         {
             case TKT_VARNAMED:
                 // tkData is LPSYMENTRY
-                Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                 // Check for VALUE ERROR
                 if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Value)
@@ -393,7 +397,7 @@ static char tabConvert[][STRAND_LENGTH] =
                 // Handle the immediate case
 
                 // tkData is LPSYMENTRY
-                Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                 // stData is an immediate
                 Assert (lpYYToken->tkToken.tkData.tkSym->stFlags.Imm);
@@ -501,7 +505,7 @@ static char tabConvert[][STRAND_LENGTH] =
                 {
                     case TKT_VARNAMED:
                         // tkData is an LPSYMENTRY
-                        Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                        Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                         // Pass through the entire token
                         YYCopy (lpYYRes, lpYYStrand);
@@ -547,7 +551,7 @@ static char tabConvert[][STRAND_LENGTH] =
                 {
                     case TKT_VARNAMED:
                         // tkData is an LPSYMENTRY
-                        Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                        Assert (GetPtrTypeDir (lpYYStrand->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                         // It's not immediate (handled above)
                         Assert (!lpYYStrand->tkToken.tkData.tkSym->stFlags.Imm);
@@ -675,7 +679,7 @@ static char tabConvert[][STRAND_LENGTH] =
                 {
                     case TKT_VARNAMED:
                         // tkData is an LPSYMENTRY
-                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                         // If it's an immediate, ...
                         if (lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
@@ -685,7 +689,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         } else
                         {
                             // stData is an HGLOBAL
-                            Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkSym->stData.lpVoid) EQ PTRTYPE_HGLOBAL);
+                            Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkSym->stData.stVoid) EQ PTRTYPE_HGLOBAL);
 
                             DbgBrk ();          // ***FINISHME*** -- can we ever get here??
                                                 //   Only if we allow a named var to point to
@@ -729,7 +733,7 @@ static char tabConvert[][STRAND_LENGTH] =
             {
                 case TKT_VARNAMED:
                     // tkData is an LPSYMENTRY
-                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                     // If it's an immediate, ...
                     if (lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
@@ -739,7 +743,7 @@ static char tabConvert[][STRAND_LENGTH] =
                     } else
                     {
                         // stData is an HGLOBAL
-                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkSym->stData.lpVoid) EQ PTRTYPE_HGLOBAL);
+                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkSym->stData.stVoid) EQ PTRTYPE_HGLOBAL);
 
                         DbgBrk ();              // ***FINISHME*** -- can we ever get here??
                                                 //   Only if we allow a named var to point to
@@ -777,7 +781,7 @@ static char tabConvert[][STRAND_LENGTH] =
             {
                 case TKT_VARNAMED:
                     // tkData is an LPSYMENTRY
-                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                     // If it's an immediate, ...
                     if (lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
@@ -787,7 +791,7 @@ static char tabConvert[][STRAND_LENGTH] =
                     } else
                     {
                         // stData is an HGLOBAL
-                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkSym->stData.lpVoid) EQ PTRTYPE_HGLOBAL);
+                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkSym->stData.stVoid) EQ PTRTYPE_HGLOBAL);
 
                         DbgBrk ();              // ***FINISHME*** -- can we ever get here??
                                                 //   Only if we allow a named var to point to
@@ -824,7 +828,7 @@ static char tabConvert[][STRAND_LENGTH] =
             {
                 case TKT_VARNAMED:
                     // tkData is an LPSYMENTRY
-                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                    Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                     // If it's an immediate, ...
                     if (lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
@@ -916,7 +920,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         LPSYMENTRY lpSym;
 
                         // tkData is an LPSYMENTRY
-                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+                        Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                         // If the STE is immediate, make a copy of it
                         if (lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
@@ -1038,7 +1042,7 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     DBGENTER;
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -1158,6 +1162,7 @@ NORMAL_EXIT:
     lpYYRes->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[FCNSTRAND] = lpYYBase;
 
 #ifdef DEBUG
+    // Display the strand stack
     DisplayStrand (FCNSTRAND);
 #endif
 
@@ -1232,7 +1237,7 @@ LPYYSTYPE CopyYYFcn
          || lpToken->tkFlags.TknType EQ TKT_OP2NAMED)
         {
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's an immediate function/operator, copy it directly
             if (lpToken->tkData.tkSym->stFlags.Imm)
@@ -1277,7 +1282,7 @@ LPYYSTYPE CopyYYFcn
             YYFcn.FcnCount = FcnCount;
             YYFcn.Inuse = 0;
 #ifdef DEBUG
-            YYFcn.Index = (UINT) -1;
+            YYFcn.Index = NEG1U;
 #endif
             *lpYYMem++ = YYFcn;
 
@@ -1352,7 +1357,7 @@ void ErrorMessageSetToken
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Set the error token
     lpplLocalVars->tkErrorCharIndex = lpError->tkCharIndex;
@@ -1427,7 +1432,7 @@ LPYYSTYPE MakeAxis_YY
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpYYAxis->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpYYAxis->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not an immediate, ...
             if (!lpYYAxis->tkToken.tkData.tkSym->stFlags.Imm)
@@ -1585,7 +1590,7 @@ LPYYSTYPE MakeOp1_YY
     lpYYRes->FcnCount                =
     lpYYRes->Rsvd                    = 0;
 #ifdef DEBUG
-    lpYYRes->Index                   = (UINT) -1;
+    lpYYRes->Index                   = NEG1U;
     lpYYRes->Flag                    = 0;
 #endif
     return lpYYRes;
@@ -1625,7 +1630,7 @@ LPYYSTYPE MakeNameOp1_YY
     lpYYRes->FcnCount                =
     lpYYRes->Rsvd                    = 0;
 #ifdef DEBUG
-    lpYYRes->Index                   = (UINT) -1;
+    lpYYRes->Index                   = NEG1U;
     lpYYRes->Flag                    = 0;
 #endif
     return lpYYRes;
@@ -1662,7 +1667,7 @@ LPYYSTYPE MakeOp2_YY
     lpYYRes->FcnCount                =
     lpYYRes->Rsvd                    = 0;
 #ifdef DEBUG
-    lpYYRes->Index                   = (UINT) -1;
+    lpYYRes->Index                   = NEG1U;
     lpYYRes->Flag                    = 0;
 #endif
     return lpYYRes;
@@ -1702,7 +1707,7 @@ LPYYSTYPE MakeNameOp2_YY
     lpYYRes->FcnCount                =
     lpYYRes->Rsvd                    = 0;
 #ifdef DEBUG
-    lpYYRes->Index                   = (UINT) -1;
+    lpYYRes->Index                   = NEG1U;
     lpYYRes->Flag                    = 0;
 #endif
     return lpYYRes;
@@ -1723,7 +1728,7 @@ void InitNameStrand
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Set the base of this strand to the next available location
     lpYYArg->unYYSTYPE.lpYYStrandBase        =
@@ -1745,7 +1750,7 @@ LPYYSTYPE PushNameStrand_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -1754,7 +1759,7 @@ LPYYSTYPE PushNameStrand_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_STRAND;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.lpVoid     = (LPVOID) -1;
+    lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     lpYYRes->unYYSTYPE.lpYYStrandBase  =
@@ -1788,17 +1793,17 @@ LPYYSTYPE MakeNameStrand_EM_YY
     (LPYYSTYPE lpYYArg)             // Ptr to incoming token
 
 {
-    int           iLen;
+    int           iLen;             // # elements in the strand
     APLUINT       ByteRes;          // # bytes needed for the result
-    LPYYSTYPE     lpYYStrand;
-    HGLOBAL       hGlbStr;
-    LPVOID        lpMemStr;
-    BOOL          bRet = TRUE;
+    LPYYSTYPE     lpYYStrand;       // Ptr to base of strand
+    HGLOBAL       hGlbStr;          // Strand global memory handle
+    LPVOID        lpMemStr;         // Ptr to strand global memory
+    BOOL          bRet = TRUE;      // TRUE iff result is valid
     LPYYSTYPE     lpYYRes;          // Ptr to result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     DBGENTER;
 
@@ -1894,7 +1899,7 @@ LPYYSTYPE InitList0_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -1903,8 +1908,8 @@ LPYYSTYPE InitList0_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_LISTINT;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.lpVoid     = (LPVOID) -1;
-    lpYYRes->tkToken.tkCharIndex       = (UINT) -1 ;
+    lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
+    lpYYRes->tkToken.tkCharIndex       = NEG1U;
 
     // Set the base of this strand to the next available location
     lpYYRes->unYYSTYPE.lpYYStrandBase        =
@@ -1932,7 +1937,7 @@ LPYYSTYPE InitList1_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -1941,7 +1946,7 @@ LPYYSTYPE InitList1_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_LISTINT;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.lpVoid     = (LPVOID) -1;
+    lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     // Set the base of this strand to the next available location
@@ -1971,7 +1976,7 @@ LPYYSTYPE PushList_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -1983,8 +1988,8 @@ LPYYSTYPE PushList_YY
     if (lpYYArg EQ NULL)
     {
         YYTmp.tkToken.tkFlags.TknType   = TKT_LISTSEP;
-        YYTmp.tkToken.tkData.lpVoid     = (LPVOID) -1;
-        YYTmp.tkToken.tkCharIndex       = (UINT) -1;
+        YYTmp.tkToken.tkData.tkLongest  = NEG1U;        // Debug value
+        YYTmp.tkToken.tkCharIndex       = NEG1U;
         YYTmp.unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[VARSTRAND];
         lpYYArg = &YYTmp;
     } // End IF
@@ -2030,7 +2035,7 @@ LPYYSTYPE MakeList_EM_YY
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     DBGENTER;
 
@@ -2210,7 +2215,7 @@ LPTOKEN CopyToken_EM
     {
         case TKT_VARNAMED:      // tkData is LPSYMENTRY
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must traverse the array
             if (!lpToken->tkData.tkSym->stFlags.Imm)
@@ -2230,7 +2235,7 @@ LPTOKEN CopyToken_EM
         case TKT_OP1NAMED:      // tkData is LPSYMENTRY
         case TKT_OP2NAMED:      // tkData is LPSYMENTRY
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
             if (!lpToken->tkData.tkSym->stFlags.Imm)

@@ -31,7 +31,7 @@ typedef struct tagYYSTYPE
 
 #define YYSTYPE_IS_DECLARED 1
 
-// Define indices into lpYYStrandStart[2];
+// Define indices into lpYYStrandStart/Base/Nest[2];
 typedef enum tagINDSTRAND
 {
     VARSTRAND = 0,

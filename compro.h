@@ -18,6 +18,7 @@
 #include "editvec.pro"
 #include "exec.pro"
 #include "fastbool.pro"
+#include "fnhdr.pro"
 #include "free.pro"
 #include "g_fmt.pro"
 #include "main.pro"

@@ -950,7 +950,7 @@ LPSYMENTRY SymTabLookupChar
     stMaskFlags.Perm  =
     stMaskFlags.Value =
     stMaskFlags.Inuse = 1;
-    stMaskFlags.ImmType = (UINT) -1;
+    stMaskFlags.ImmType = NEG1U;
 
     // Save common value
     uHashMasked = MaskTheHash (uHash);
@@ -1000,7 +1000,7 @@ LPSYMENTRY SymTabLookupNumber
     stMaskFlags.Perm  =
     stMaskFlags.Value =
     stMaskFlags.Inuse = 1;
-    stMaskFlags.ImmType = (UINT) -1;
+    stMaskFlags.ImmType = NEG1U;
 
     // Save common value
     uHashMasked = MaskTheHash (uHash);
@@ -1050,7 +1050,7 @@ LPSYMENTRY SymTabLookupFloat
     stMaskFlags.Perm  =
     stMaskFlags.Value =
     stMaskFlags.Inuse = 1;
-    stMaskFlags.ImmType = (UINT) -1;
+    stMaskFlags.ImmType = NEG1U;
 
     // Save common value
     uHashMasked = MaskTheHash (uHash);
@@ -1147,6 +1147,57 @@ LPSYMENTRY SymTabLookupName
 
     return FALSE;
 } // End SymTabLookupName
+
+
+//***************************************************************************
+//  $MakePermSymEntry_EM
+//
+//  Make a permanent SYMENTRY with a given type and value
+//***************************************************************************
+
+LPSYMENTRY MakePermSymEntry_EM
+    (IMM_TYPES     immType,         // ImmType to use
+     LPAPLLONGEST  lpVal,           // Value to use
+     LPTOKEN       lptkFunc)        // Ptr to token to use in case of error
+
+{
+    LPSYMENTRY lpSymDst;
+
+    // Split cases based upon the immediate type
+    switch (immType)
+    {
+        case IMMTYPE_BOOL:
+            lpSymDst = SymTabAppendPermInteger_EM (*(LPAPLBOOL)  lpVal);
+
+            break;
+
+        case IMMTYPE_INT:
+            lpSymDst = SymTabAppendPermInteger_EM (*(LPAPLINT)   lpVal);
+
+            break;
+
+        case IMMTYPE_CHAR:
+            lpSymDst = SymTabAppendPermChar_EM    (*(LPAPLCHAR)  lpVal);
+
+            break;
+
+        case IMMTYPE_FLOAT:
+            lpSymDst = SymTabAppendPermFloat_EM   (*(LPAPLFLOAT) lpVal);
+
+            break;
+
+        defstop
+            lpSymDst = NULL;
+
+            break;
+    } // End SWITCH
+
+    // If it failed, set the error token
+    if (!lpSymDst)
+        ErrorMessageSetToken (lptkFunc);
+
+    return lpSymDst;
+} // End MakeSymPermEntry_EM
 
 
 //***************************************************************************
@@ -1266,6 +1317,35 @@ LPSYMENTRY SymTabAppendInteger_EM
     (APLINT aplInteger)
 
 {
+    return SymTabAppendIntegerCommon_EM (aplInteger, FALSE);
+} // End SymTabAppendInteger_EM
+
+
+//***************************************************************************
+//  $SymTabAppendPermInteger_EM
+//
+//  Append a permanent Boolean or long long integer to the symbol table
+//***************************************************************************
+
+LPSYMENTRY SymTabAppendPermInteger_EM
+    (APLINT aplInteger)
+
+{
+    return SymTabAppendIntegerCommon_EM (aplInteger, TRUE);
+} // End SymTabAppendPermInteger_EM
+
+
+//***************************************************************************
+//  $SymTabAppendIntegerCommon_EM
+//
+//  Append a Boolean or long long integer to the symbol table
+//***************************************************************************
+
+LPSYMENTRY SymTabAppendIntegerCommon_EM
+    (APLINT aplInteger,
+     BOOL   bPerm)
+
+{
     LPSYMENTRY  lpSymEntryDest;
     LPHSHENTRY  lpHshEntryDest;
     UINT        uHash;
@@ -1324,6 +1404,7 @@ LPSYMENTRY SymTabAppendInteger_EM
         lpSymEntryDest->stData.stInteger = aplInteger;
 
         // Save the symbol table flags
+        stFlags.Perm = bPerm;
         *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
 
         // Save hash value (so we don't have to rehash on split)
@@ -1343,7 +1424,7 @@ LPSYMENTRY SymTabAppendInteger_EM
     Assert (HshTabFrisk ());
 
     return lpSymEntryDest;
-} // End SymTabAppendInteger_EM
+} // End SymTabAppendIntegerCommon_EM
 
 
 //***************************************************************************
@@ -1353,7 +1434,36 @@ LPSYMENTRY SymTabAppendInteger_EM
 //***************************************************************************
 
 LPSYMENTRY SymTabAppendFloat_EM
-    (APLFLOAT fFloat)
+    (APLFLOAT aplFloat)
+
+{
+    return SymTabAppendFloatCommon_EM (aplFloat, FALSE);
+} // End SymTabAppendFloat_EM
+
+
+//***************************************************************************
+//  $SymTabAppendPermFloat_EM
+//
+//  Append a permanent Floating Point number to the symbol table
+//***************************************************************************
+
+LPSYMENTRY SymTabAppendPermFloat_EM
+    (APLFLOAT aplFloat)
+
+{
+    return SymTabAppendFloatCommon_EM (aplFloat, TRUE);
+} // End SymTabAppendPermFloat_EM
+
+
+//***************************************************************************
+//  $SymTabAppendFloatCommon_EM
+//
+//  Append a Floating Point number to the symbol table
+//***************************************************************************
+
+LPSYMENTRY SymTabAppendFloatCommon_EM
+    (APLFLOAT aplFloat,
+     BOOL     bPerm)
 
 {
     LPSYMENTRY  lpSymEntryDest;
@@ -1363,8 +1473,8 @@ LPSYMENTRY SymTabAppendFloat_EM
 
     // Hash the long long integer
     uHash = hashlittle
-           ((const uint32_t *) &fFloat,     // A ptr to the value to hash
-             sizeof (fFloat),               // The # values pointed to
+           ((const uint32_t *) &aplFloat,   // A ptr to the value to hash
+             sizeof (aplFloat),             // The # values pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
     stFlags.Imm   =
@@ -1374,7 +1484,7 @@ LPSYMENTRY SymTabAppendFloat_EM
     stFlags.ImmType = IMMTYPE_FLOAT;
 
     // Lookup the number in the symbol table
-    lpSymEntryDest = SymTabLookupFloat (uHash, fFloat, &stFlags);
+    lpSymEntryDest = SymTabLookupFloat (uHash, aplFloat, &stFlags);
     if (!lpSymEntryDest)
     {
         LPHSHENTRY lpHshEntryHash;
@@ -1407,9 +1517,10 @@ LPSYMENTRY SymTabAppendFloat_EM
         lpSymEntryDest = lpHshEntryDest->lpSymEntry = lpSymTabNext++;
 
         // Save the constant
-        lpSymEntryDest->stData.stFloat = fFloat;
+        lpSymEntryDest->stData.stFloat = aplFloat;
 
         // Save the symbol table flags
+        stFlags.Perm = bPerm;
         *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
 
         // Save hash value (so we don't have to rehash on split)
@@ -1429,7 +1540,7 @@ LPSYMENTRY SymTabAppendFloat_EM
     Assert (HshTabFrisk ());
 
     return lpSymEntryDest;
-} // End SymTabAppendFloat_EM
+} // End SymTabAppendFloatCommon_EM
 
 
 //***************************************************************************
@@ -1440,6 +1551,35 @@ LPSYMENTRY SymTabAppendFloat_EM
 
 LPSYMENTRY SymTabAppendChar_EM
     (APLCHAR aplChar)
+
+{
+    return SymTabAppendCharCommon_EM (aplChar, FALSE);
+} // End SymtabAppendChar_EM
+
+
+//***************************************************************************
+//  $SymTabAppendPermChar_EM
+//
+//  Append a permanent character to the symbol table
+//***************************************************************************
+
+LPSYMENTRY SymTabAppendPermChar_EM
+    (APLCHAR aplChar)
+
+{
+    return SymTabAppendCharCommon_EM (aplChar, TRUE);
+} // End SymtabAppendPermChar_EM
+
+
+//***************************************************************************
+//  $SymTabAppendCharCommon_EM
+//
+//  Append a character to the symbol table
+//***************************************************************************
+
+LPSYMENTRY SymTabAppendCharCommon_EM
+    (APLCHAR aplChar,
+     BOOL    bPerm)
 
 {
     LPSYMENTRY lpSymEntryDest;
@@ -1496,6 +1636,7 @@ LPSYMENTRY SymTabAppendChar_EM
         lpSymEntryDest->stData.stChar = aplChar;
 
         // Save the flags
+        stFlags.Perm = bPerm;
         *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
 
         // Save hash value (so we don't have to rehash on split)
@@ -1515,7 +1656,7 @@ LPSYMENTRY SymTabAppendChar_EM
     Assert (HshTabFrisk ());
 
     return lpSymEntryDest;
-} // End SymTabAppendChar_EM
+} // End SymTabAppendCharCommon_EM
 
 
 //***************************************************************************

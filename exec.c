@@ -125,7 +125,7 @@ char cComplexSep = 'j';             // Complex number separator (as well as uppe
                                     //   stored in var in case the user prefers 'i'
 
 // Defined constant for ...
-#define NO_PREVIOUS_GROUPING_SYMBOL -1
+#define NO_PREVIOUS_GROUPING_SYMBOL     NEG1U
 
 typedef struct tagTKLOCALVARS
 {
@@ -777,7 +777,7 @@ HGLOBAL ExecuteLine
         return NULL;        // Mark as failed
     } // End IF
 
-    // Specify the maximum # chars in the buffer
+    // Tell EM_GETLINE maximum # chars in the buffer
     ((LPWORD) lpwszCompLine)[0] = uLineLen;
 
     // Get the contents of the line
@@ -850,6 +850,8 @@ HGLOBAL ExecuteLine
 
             default:
                 // Tokenize, parse, and untokenize the line
+
+                // Tokenize it
                 hGlbToken = Tokenize_EM (lpwszCompLine);
 
                 // If it's invalid, ...
@@ -917,7 +919,7 @@ void UTRelockAndSet
     // Lock the handle and save the ptr
     UTLockAndSet (lptkLocalVars->hGlbToken, &lptkLocalVars->t2);
     lptkLocalVars->lpStart = TokenBaseToStart (lptkLocalVars->t2.lpBase);   // Skip over TOKEN_HEADER
-    lptkLocalVars->lpNext  = &lptkLocalVars->lpStart[lptkLocalVars->t2.lpHeader->iTokenCnt];
+    lptkLocalVars->lpNext  = &lptkLocalVars->lpStart[lptkLocalVars->t2.lpHeader->TokenCnt];
 } // End UTRelockAndSet
 
 //***************************************************************************
@@ -1951,13 +1953,13 @@ BOOL GroupInitCom
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    aplLongest = lptkLocalVars->t2.lpHeader->iPrevGroup;
+    aplLongest = lptkLocalVars->t2.lpHeader->PrevGroup;
     bRet = AppendNewToken_EM (lptkLocalVars,
                               &tkFlags,
                               &aplLongest,
                               0);
     // Save as location of previous left grouping symbol
-    lptkLocalVars->t2.lpHeader->iPrevGroup = lpNext - lptkLocalVars->lpStart;
+    lptkLocalVars->t2.lpHeader->PrevGroup = lpNext - lptkLocalVars->lpStart;
 
     return bRet;
 } // End GroupInitCom
@@ -2017,16 +2019,16 @@ BOOL GroupDoneCom
      TOKEN_TYPES   uTypePrev)
 
 {
-    int         iPrevGroup;
+    UINT        uPrevGroup;
     BOOL        bRet = TRUE;
     APLLONGEST  aplLongest;
 
     // Get the index of the previous grouping symbol
-    iPrevGroup = lptkLocalVars->t2.lpHeader->iPrevGroup;
+    uPrevGroup = lptkLocalVars->t2.lpHeader->PrevGroup;
 
     // Ensure proper nesting
-    if (iPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL
-     || lptkLocalVars->lpStart[iPrevGroup].tkFlags.TknType NE (UINT) uTypePrev)
+    if (uPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL
+     || lptkLocalVars->lpStart[uPrevGroup].tkFlags.TknType NE (UINT) uTypePrev)
     {
         ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 
@@ -2044,13 +2046,13 @@ BOOL GroupDoneCom
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
-        aplLongest = iPrevGroup;
+        aplLongest = uPrevGroup;
         bRet = AppendNewToken_EM (lptkLocalVars,
                                   &tkFlags,
                                   &aplLongest,
                                   0);
         // Save index of previous grouping symbol
-        lptkLocalVars->t2.lpHeader->iPrevGroup = lptkLocalVars->lpStart[iPrevGroup].tkData.tkIndex;
+        lptkLocalVars->t2.lpHeader->PrevGroup = lptkLocalVars->lpStart[uPrevGroup].tkData.tkIndex;
     } // End IF/ELSE
 
     return bRet;
@@ -2267,12 +2269,12 @@ HGLOBAL Tokenize_EM
 
     // Lock the memory and set variables in the UNION_TOKEN
     UTLockAndSet (tkLocalVars.hGlbToken, &tkLocalVars.t2);
-    tkLocalVars.t2.lpHeader->Signature  = TOKEN_HEADER_SIGNATURE;
-    tkLocalVars.t2.lpHeader->iVersion   = 1;    // Initialize version # of this header
-    tkLocalVars.t2.lpHeader->iTokenCnt  = 0;    // ...        count of tokens
-    tkLocalVars.t2.lpHeader->iPrevGroup = NO_PREVIOUS_GROUPING_SYMBOL; // Initialize index of previous grouping symbol
+    tkLocalVars.t2.lpHeader->Signature = TOKEN_HEADER_SIGNATURE;
+    tkLocalVars.t2.lpHeader->Version   = 1;     // Initialize version # of this header
+    tkLocalVars.t2.lpHeader->TokenCnt  = 0;     // ...        count of tokens
+    tkLocalVars.t2.lpHeader->PrevGroup = NO_PREVIOUS_GROUPING_SYMBOL; // Initialize index of previous grouping symbol
     tkLocalVars.lpStart = TokenBaseToStart (tkLocalVars.t2.lpBase); // Skip over TOKEN_HEADER
-    tkLocalVars.lpNext  = &tkLocalVars.lpStart[tkLocalVars.t2.lpHeader->iTokenCnt];
+    tkLocalVars.lpNext  = &tkLocalVars.lpStart[tkLocalVars.t2.lpHeader->TokenCnt];
     tkLocalVars.PrevWchar = L'\0';              // Initialize previous WCHAR
     tkLocalVars.lpwszOrig = lpwszLine;          // Save ptr to start of input line
 
@@ -2462,7 +2464,7 @@ BOOL CheckGroupSymbols_EM
     (LPTKLOCALVARS lptkLocalVars)
 
 {
-    if (lptkLocalVars->t2.lpHeader->iPrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
+    if (lptkLocalVars->t2.lpHeader->PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
     {
         ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 
@@ -2502,7 +2504,7 @@ void Untokenize
         Assert (lpHeader->Signature EQ TOKEN_HEADER_SIGNATURE);
 
         // Get the # tokens
-        iLen = lpHeader->iTokenCnt;
+        iLen = lpHeader->TokenCnt;
 
 #undef  lpHeader
 
@@ -2516,7 +2518,7 @@ void Untokenize
             case TKT_OP1NAMED:          // ...
             case TKT_OP2NAMED:          // ...
                 // tkData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+                Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                 // Skip it if no value
                 if (!lpToken->tkData.tkSym->stFlags.Value)
@@ -2671,7 +2673,7 @@ BOOL AppendNewToken_EM
 
 {
     // Check for TOKEN TABLE FULL
-    if (((lptkLocalVars->t2.lpHeader->iTokenCnt + 1) * sizeof (TOKEN) + sizeof (TOKEN_HEADER))
+    if (((lptkLocalVars->t2.lpHeader->TokenCnt + 1) * sizeof (TOKEN) + sizeof (TOKEN_HEADER))
       > (int) MyGlobalSize (lptkLocalVars->hGlbToken))
     {
         HGLOBAL hGlbToken;
@@ -2706,7 +2708,7 @@ BOOL AppendNewToken_EM
 
     // Save index in input line of this token
     lptkLocalVars->lpNext->tkCharIndex = iCharOffset + lptkLocalVars->lpwsz - lptkLocalVars->lpwszOrig;
-    lptkLocalVars->t2.lpHeader->iTokenCnt++;        // Count in another token
+    lptkLocalVars->t2.lpHeader->TokenCnt++;         // Count in another token
     lptkLocalVars->lpNext++;                        // Skip to next token
 
     return TRUE;

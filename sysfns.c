@@ -33,7 +33,7 @@ LPYYSTYPE ExecuteFn0
     LPPRIMFNS lpNameFcn;
 
     // tkData is an LPSYMENTRY
-    Assert (GetPtrTypeDir (lptkFcn0->tkData.lpVoid) EQ PTRTYPE_STCONST);
+    Assert (GetPtrTypeDir (lptkFcn0->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
     lpNameFcn = lptkFcn0->tkData.tkSym->stData.stNameFcn;
 
@@ -121,7 +121,7 @@ LPYYSTYPE SysFnMonDR_EM
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, it's an HGLOBAL
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
@@ -1165,7 +1165,7 @@ LPYYSTYPE SysFnMonTYPE_EM
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, it's an HGLOBAL
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)

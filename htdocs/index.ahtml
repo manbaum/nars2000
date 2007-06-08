@@ -273,9 +273,10 @@ code
       <h3>Feature Set Wish List</h3>
       <ul>
         <li>User-defined operators (e.g., <span class="APL">{del}
-         (Z1 Z2){is}[(L1 L2 L3)] (LO OP2 RO) (R1 R2 R3 R4)</span>)</li>
+         Z{is}L (LO OP2 RO) R</span>)</li>
         <li>Strand left and right arguments and result to user-defined
-          functions/operators</li>
+          functions/operators (e.g., <span class="APL">{del}
+         (Z1 Z2){is}[L1 L2 L3] (LO OP2 RO) (R1 R2 R3 R4)</span>)</li>
         <li>User-defined function prototypes
           (<span class="APL">{quad}PROTOTYPE:</span>)</li>
         <li>User-defined function singletons
@@ -380,8 +381,6 @@ code
             <li>Dyadic slash ({/}) (replicate)</li>
             <li>Dyadic slope ({\}) (expand)</li>
             <li>Dyadic left tack ({lev}) (left) and right tack ({dex}) (right)</li>
-            <li>Dyadic squad ({squad}) (indexing)</li>
-            <li>Dyadic right shoe ({pick}) (pick)</li>
             <li>Dyadic comma ({comma} and {commabar}) (catenate/laminate) with and without axis</li>
             <li>Dyadic equal-underbar ({equalunderbar}) (match)</li>
             <li>Dyadic circle-slope ({circleslope}) (transpose)</li>
@@ -400,7 +399,10 @@ code
               with and without axis operator</li>
             <li>Monadic operator frown ({frown}) monadic and dyadic derived functions (commute and reflex)</li>
             <li>Monadic operator jot-dot ({jot}{dot}) dyadic derived function (outer product)</li>
-            <li>Monadic operator slash ({/}) monadic and dyadic derived functions (reduce and N-wise reduce)</li>
+            <li>Monadic operator slash ({/}) monadic and dyadic derived functions
+               (reduce and N-wise reduce with and without axis operator)</li>
+            <li>Monadic operator slope ({\}) monadic derived function
+               (scan with and without axis operator)</li>
           </ul>
         </li>
         <li>Dyadic
@@ -438,6 +440,9 @@ code
           <span class="APL">R[{disclose}{jot}.,/L]</span></li>
         <li>Quad and Quote-Quad output, e.g., (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
         <li>Prototypes for primitive functions and operators</li>
+        <li>Fast Boolean reduction (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}</span>)
+          and scan (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}</span>)
+          along contiguous elements</li>
       </ul>
 
       <h3>Session Manager</h3>

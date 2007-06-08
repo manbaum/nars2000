@@ -5,6 +5,7 @@
 #define STRICT
 #define _WIN32_WINNT  0x0500
 #include <windows.h>
+#include <windowsx.h>
 #include <colors.h>
 
 #include "main.h"
@@ -339,7 +340,8 @@ void MoveCaretEOB
 //***************************************************************************
 
 void DisplayPrompt
-    (HWND hWndEC)       // Window handle of the Edit Control
+    (HWND hWndEC,       // Window handle of the Edit Control
+     BOOL bSetFocusSM)  // TRUE iff we're to set the focus to the Session Manager
 
 {
     UINT uCharPos,
@@ -357,8 +359,9 @@ void DisplayPrompt
         AppendLine (L"", FALSE, TRUE);
     AppendLine (wszIndent, FALSE, FALSE);
 
-    // Set the focus to the Session Manager so the prompt displays
-    PostMessage (GetParent (hWndEC), MYWM_SETFOCUS, 0, 0);
+    if (bSetFocusSM)
+        // Set the focus to the Session Manager so the prompt displays
+        PostMessage (GetParent (hWndEC), MYWM_SETFOCUS, 0, 0);
 } // End DisplayPrompt
 
 
@@ -381,7 +384,7 @@ LPSYMENTRY GetSteZero
     Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
 
     // Get the ptr to this thread's lpplLocalVars
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Get the PerTabData global handle
     hGlbPTD = lpplLocalVars->hGlbPTD;
@@ -418,7 +421,7 @@ LPSYMENTRY GetSteBlank
     Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
 
     // Get the ptr to this thread's lpplLocalVars
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsLocalVars);
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Get the PerTabData global handle
     hGlbPTD = lpplLocalVars->hGlbPTD;
@@ -739,8 +742,8 @@ LRESULT APIENTRY SMWndProc
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Initialize the Symbol table Entry for the constant zero and blank
-            lpMemPTD->steZero  = SymTabAppendInteger_EM (0);
-            lpMemPTD->steBlank = SymTabAppendChar_EM    (L' ');
+            lpMemPTD->steZero  = SymTabAppendPermInteger_EM (0);
+            lpMemPTD->steBlank = SymTabAppendPermChar_EM    (L' ');
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -865,7 +868,7 @@ LRESULT APIENTRY SMWndProc
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
             // Display the default prompt
-            DisplayPrompt (hWndEC);
+            DisplayPrompt (hWndEC, TRUE);
 
             return FALSE;           // We handled the msg
 
@@ -913,6 +916,19 @@ LRESULT APIENTRY SMWndProc
             SetFocus (hWndEC);
 
             break;                  // Continue with next handler ***MUST***
+
+        case WM_MDIACTIVATE:        // Activate/de-activate a child window
+            // If we're being activated, ...
+            if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
+            {
+                SendMessage (hWndMC,
+                             WM_MDISETMENU,
+                             GET_WM_MDISETMENU_MPS (hMenuSM, hMenuSMWindow));
+                SetMenu (hWndMF, hMenuSM);
+                DrawMenuBar (hWndMF);
+            } // End IF
+
+            break;                  // Continue with WM_MDIACTIVATE
 
         case MYWM_WFMO:             // hThread = (HANDLE) wParam;
                                     // hSemaphore = (HANDLE) lParam;
@@ -992,7 +1008,7 @@ LRESULT APIENTRY SMWndProc
                         CloseHandle (hThread);
 
                         // Display the default prompt
-                        DisplayPrompt (hWndEC);
+                        DisplayPrompt (hWndEC, TRUE);
 
                         return FALSE;           // We handled the msg
 
@@ -1105,6 +1121,9 @@ LRESULT APIENTRY SMWndProc
                     // Mark as immediate execution
                     esState.exType = EX_IMMEX;
                     ExecuteLine (uLineNum, &esState, hWndEC);
+
+                    // Display the default prompt
+                    DisplayPrompt (hWndEC, FALSE);
 
                     break;
 

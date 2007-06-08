@@ -20,7 +20,8 @@
 //***************************************************************************
 //  $PrimOpDieresisTilde_EM_YY
 //
-//  Primitive operator for monadic and dyadic derived functions from DieresisTilde ("ERROR" and "inner product")
+//  Primitive operator for monadic and dyadic derived functions from
+//    monadic operator DieresisTilde ("ERROR" and "inner product")
 //***************************************************************************
 
 #ifdef DEBUG

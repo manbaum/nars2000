@@ -115,7 +115,7 @@ LPYYSTYPE PrimFnMonRho_EM_YY
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must look inside the array
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
@@ -409,7 +409,7 @@ LPYYSTYPE PrimFnDydRho_EM_YY
                 {
                     case TKT_VARNAMED:
                         // tkData is an LPSYMENTRY
-                        Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+                        Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                         // stData is NOT an immediate
                         Assert (!lptkRhtArg->tkData.tkSym->stFlags.Imm);
@@ -634,7 +634,7 @@ BOOL PrimFnDydRhoRhtCopyData
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, stData is an HGLOBAL
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
@@ -653,7 +653,7 @@ BOOL PrimFnDydRhoRhtCopyData
             // Handle the immediate case
 
             // The tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // stData is immediate
             Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
@@ -857,7 +857,7 @@ void PrimFnDydRhoCopyDim
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkLftArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkLftArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, stData is an HGLOBAL
             if (!lptkLftArg->tkData.tkSym->stFlags.Imm)
@@ -874,7 +874,7 @@ void PrimFnDydRhoCopyDim
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkLftArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkLftArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // stData is immediate
             Assert (lptkLftArg->tkData.tkSym->stFlags.Imm);
@@ -978,7 +978,7 @@ BOOL PrimFnDydRhoLftValid_EM
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkLftArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkLftArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, stData is an HGLOBAL
             if (!lptkLftArg->tkData.tkSym->stFlags.Imm)
@@ -996,7 +996,7 @@ BOOL PrimFnDydRhoLftValid_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkLftArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkLftArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // stData is an immediate
             Assert (lptkLftArg->tkData.tkSym->stFlags.Imm);
@@ -1542,7 +1542,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             break;
 
         case ARRAY_NESTED:
-            // Take into account nested prototype
+            // Take into account the nested prototype
             aplNELMRes = max (aplNELMRes, 1);
         case ARRAY_HETERO:
             // Loop through the result and right arg copying the data

@@ -4,6 +4,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <windowsx.h>
 
 #include "colors.h"
 #include "main.h"
@@ -307,6 +308,18 @@ LRESULT APIENTRY FEWndProc
 
             return FALSE;           // We handled the msg
 
+        case MYWM_IZITNAME:         // start = (UINT) wParam
+                                    // end   = (UINT) lParam
+            // This message is sent whenever the user right clicks
+            //   inside a Function Edit window and the Edit Control
+            //   wants to nkow whether or not to enable the
+            //   Localize/Unlocalize menu items.
+////        DbgBrk ();      /// ***FINISHME***
+
+
+
+            return FALSE;           // Its not a name
+
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
             // Uninitialize window-specific resources
@@ -380,6 +393,19 @@ LRESULT APIENTRY FEWndProc
             SetFocus (hWndEC);
 
             break;
+
+        case WM_MDIACTIVATE:        // Activate/de-activate a child window
+            // If we're being activated, ...
+            if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
+            {
+                SendMessage (hWndMC,
+                             WM_MDISETMENU,
+                             GET_WM_MDISETMENU_MPS (hMenuFE, hMenuFEWindow));
+                SetMenu (hWndMF, hMenuFE);
+                DrawMenuBar (hWndMF);
+            } // End IF
+
+            break;                  // Continue with WM_MDIACTIVATE
 
         case WM_UNDO:
         case MYWM_REDO:
@@ -904,10 +930,38 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Check for Ctrl-Y (Redo)
             if (chCharCode EQ 25)
             {
-                DbgBrk ();
-
                 // Post to ourselves a request to Redo
                 PostMessage (hWnd, WM_REDO, 0, 0);
+
+                return FALSE;       // We handled the msg
+            } // End IF
+
+            // Check for Ctrl-S (Save)
+            if (chCharCode EQ 19)
+            {
+                // Send a message the the Master Frame where
+                //   menu processing is done
+                PostMessage (hWndMF, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_SAVE_FN, 0, NULL));
+
+                return FALSE;       // We handled the msg
+            } // End IF
+
+            // Check for Ctrl-E (Save and End)
+            if (chCharCode EQ 5)
+            {
+                // Send a message the the Master Frame where
+                //   menu processing is done
+                PostMessage (hWndMF, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_SAVECLOSE_FN, 0, NULL));
+
+                return FALSE;       // We handled the msg
+            } // End IF
+
+            // Check for Ctrl-Q (Close)
+            if (chCharCode EQ 17)
+            {
+                // Send a message the the Master Frame where
+                //   menu processing is done
+                PostMessage (hWndMF, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_CLOSE_FN, 0, NULL));
 
                 return FALSE;       // We handled the msg
             } // End IF
@@ -1847,11 +1901,7 @@ BOOL QueryCloseFE
     switch (MessageBox (hWnd, szCloseMessage, pszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
     {
         case IDYES:         // Save the function
-            DbgBrk ();      // ***FINISHME***
-
-
-
-            return TRUE;    // Now it's OK to close
+            return SaveFunction (hWnd);
 
         case IDNO:          // Do not save the function
             return TRUE;
@@ -1861,6 +1911,154 @@ BOOL QueryCloseFE
             return FALSE;
     } // End SWITCH
 } // End QueryClose
+
+
+//***************************************************************************
+//  SaveFunction
+//
+//  Attempt to save a function to the WS
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SaveFunction"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL SaveFunction (HWND hWndFE)
+
+{
+    HWND      hWndEC;           // Window handle to Edit Control
+    UINT      uLineLen;         // Line length
+    HGLOBAL   hGlbHdr,          // Header global memory handle
+              hGlbToken;        // Tokenized ...
+    LPAPLCHAR lpMemHdr;         // Ptr to header global memory
+    BOOL      bRet = FALSE;     // TRUE iff result is valid
+
+    Assert (IzitFE (hWndFE));
+
+    // Get the handle to the edit control
+    hWndEC = (HWND) GetWindowLong (hWndFE, GWLSF_HWNDEC);
+
+    // Get the length of the header line
+    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
+
+    // Allocate space for the text
+    //   (the first  "1 + " is for a leading WCHAR count
+    //    the second "1 + " is for a trailing zero)
+    hGlbHdr = DbgGlobalAlloc (GHND, (1 + 1 + uLineLen) * sizeof (APLCHAR));
+    if (!hGlbHdr)
+    {
+        DbgBrk ();      // ***FINISHME***
+
+
+
+
+        return bRet;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemHdr = MyGlobalLock (hGlbHdr);
+
+    // Save the WCHAR count
+    ((LPWORD) lpMemHdr)[0] = uLineLen;
+
+    // Tell EM_GETLINE maximum # chars in the buffer
+    ((LPWORD) lpMemHdr)[1] = uLineLen;
+
+    // Save the text in global memory
+    SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) &((LPWORD) lpMemHdr)[1]);
+
+    // Tokenize the line
+    hGlbToken = Tokenize_EM ((LPAPLCHAR) &((LPWORD) lpMemHdr)[1]);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbHdr); lpMemHdr = NULL;
+
+    if (!hGlbToken)
+    {
+        // We no longer need this storage
+        DbgGlobalFree (hGlbHdr); hGlbHdr = NULL;
+
+        return FALSE;
+    } // End IF
+
+    if (ParseHeader (hWndEC, hGlbToken))
+    {
+        DbgBrk ();      // ***FINISHME***
+
+        // Check to see if this function is already in global memory
+
+
+
+
+
+        // Allocate global memory for the function
+
+
+        // Save the various parts of the function into global memory
+
+
+
+
+        // Close the Function Editor window
+        SetWindowLong (hWndFE, GWLSF_CHANGED, FALSE);
+        SendMessage (GetParent (hWndFE), WM_MDIDESTROY, (WPARAM) hWndFE, 0);
+
+        bRet = TRUE;
+    } // End IF
+
+    return bRet;
+} // End SaveFunction
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  SaveAsFunction
+//
+//  Attempt to save a function to the WS using a different name
+//***************************************************************************
+
+BOOL SaveAsFunction (HWND hWndFE)
+
+{
+    DbgBrk ();          // ***FINISHME***
+
+    Assert (IzitFE (hWndFE));
+
+
+
+
+
+
+
+    return FALSE;
+} // End SaveAsFunction
+
+
+//***************************************************************************
+//  CloseFunction
+//
+//  Attempt to close a function
+//***************************************************************************
+
+BOOL CloseFunction (HWND hWndFE)
+
+{
+    Assert (IzitFE (hWndFE));
+
+    // If it's OK to close the window, do so, else ignore
+    if (QueryCloseFE (hWndFE))
+    {
+        // Close the Function Editor window
+        SetWindowLong (hWndFE, GWLSF_CHANGED, FALSE);
+        SendMessage (GetParent (hWndFE), WM_MDIDESTROY, (WPARAM) hWndFE, 0);
+
+        return TRUE;
+    } // End IF
+
+    return FALSE;
+} // End CloseFunction
 
 
 //***************************************************************************

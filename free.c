@@ -94,7 +94,7 @@ void FreeResultSub
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRes->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRes->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             if (!lptkRes->tkData.tkSym->stFlags.Value)
                 return;
@@ -138,12 +138,12 @@ void FreeResultSub
             if (bFreeName)
             {
                 // Set the flags we'll leave alone
-                stFlags.SysName =
-                stFlags.UsrName =
-                stFlags.Inuse   =
-                stFlags.NotCase =
-                stFlags.Perm    = 1;
-                stFlags.SysVarValid = (UINT) -1;
+                stFlags.SysName     =
+                stFlags.UsrName     =
+                stFlags.Inuse       =
+                stFlags.NotCase     =
+                stFlags.Perm        = 1;
+                stFlags.SysVarValid = NEG1U;
 
                 // Clear the symbol table flags
                 *(UINT *) &lptkRes->tkData.tkSym->stFlags &= *(UINT *) &stFlags;
@@ -253,8 +253,8 @@ BOOL FreeResultGlobalVar
         RefCnt = --lpHeader->RefCnt;
 
 #ifdef DEBUG
-        dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN);
-        dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, RefCnt, FNLN);
+        dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%s#%d)", ClrPtrTypeDir (hGlbData), FNLN);
+        dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%s#%d)", lpHeader, RefCnt, FNLN);
 #endif
 
 #undef  lpHeader
@@ -271,8 +271,8 @@ BOOL FreeResultGlobalVar
                 break;
 
             case ARRAY_NESTED:  // Free the LPSYMENTRYs and/or HGLOBALs
-                // Account for a prototype
-                aplNELM += (aplNELM EQ 0);
+                // Take into account nested prototype
+                aplNELM = max (aplNELM, 1);
 
                 // Fall through to common handling
 

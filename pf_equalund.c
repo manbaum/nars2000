@@ -145,7 +145,7 @@ LPYYSTYPE PrimFnMonEqualUnderbar_EM_YY
         {
             case TKT_VARNAMED:
                 // tkData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+                Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
                 // It can't be immediate as that's handled above
                 Assert (!lptkRhtArg->tkData.tkSym->stFlags.Imm);

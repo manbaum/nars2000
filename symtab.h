@@ -176,7 +176,7 @@ typedef union tagSYMTAB_DATA    // Immediate data or a handle to global data
     APLFLOAT   stFloat;         // A floating point number
     APLCHAR    stChar;          // A character
     HGLOBAL    stGlbData;       // Handle of the entry's data
-    LPVOID     lpVoid;          // An abritrary ptr
+    LPVOID     stVoid;          // An abritrary ptr
     LPPRIMFNS  stNameFcn;       // Ptr to a named function
     APLLONGEST stLongest;       // Longest datatype (so we can copy the entire data)
 } SYMTAB_DATA, *LPSYMTAB_DATA;

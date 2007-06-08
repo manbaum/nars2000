@@ -10,6 +10,7 @@
 
 #define TRUE    1
 #define FALSE   0
+#define NEG1U   ((UINT) -1)
 
 #define abs64(a)    (((a)>0)?a:-(a))
 #define MB(a)   MessageBox (NULL, a, "NARS2000", MB_OK)
@@ -41,30 +42,30 @@ default:    \
 
 #define LCLODSAPI   ODSAPI
 
-#define DBGENTER    DbgMsgW (L"Entering" APPEND_NAME)
-#define DBGLEAVE    DbgMsgW (L"Leaving " APPEND_NAME)
+#define DBGENTER    if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
+#define DBGLEAVE    if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
 
 #define DbgGlobalAlloc(uFlags,ByteRes) \
-DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
+DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%s#%d)", FNLN)
 
 #define DbgGlobalFree(hGlbToken) \
-dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \
+dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%s#%d)", hGlbToken, FNLN); \
 MyGlobalFree (hGlbToken);
 
 #define DbgIncrRefCntDir(hGlbData) \
-dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%s#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
 IncrRefCntDir (hGlbData);
 
 #define DbgIncrRefCntInd(hGlbData) \
-dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%s#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
 IncrRefCntInd (hGlbData);
 
 #define DbgDecrRefCntDir(hGlbData) \
-dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%s#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
 DecrRefCntDir (hGlbData);
 
 #define DbgDecrRefCntInd(hGlbData) \
-dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%s#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
 DecrRefCntInd (hGlbData);
 
 #else
@@ -126,6 +127,7 @@ DecrRefCntInd (hGlbData);
 #define MYWM_WFMO           (WM_APP+ 1) // SM (Wait For Multiple Objects)
 #define MYWM_PARSELINEDONE  (WM_APP+ 2) // SM (DisplayPrompt & CloseHandle)
 #define MYWM_SETFOCUS       (WM_APP+ 3) // SM (SetFocus)
+#define MYWM_IZITNAME       (WM_APP+ 4) // FE (Izit A Name)
 
 
 typedef enum tagEXTYPE
@@ -180,6 +182,13 @@ typedef enum tagMAKEPROTO
 
 // Define bit masks
 #define BIT0    0x00000001
+#define BIT1    0x00000010
+#define BIT2    0x00000100
+#define BIT3    0x00001000
+#define BIT4    0x00010000
+#define BIT5    0x00100000
+#define BIT6    0x01000000
+#define BIT7    0x10000000
 
 // # bits in a byte
 #define NBIB            8
@@ -189,6 +198,15 @@ typedef enum tagMAKEPROTO
 
 // Mask for LOG2NBIB bits
 #define MASKLOG2NBIB    ((1 << LOG2NBIB) - 1)
+
+// # bits in a dword
+#define NBID           32
+
+// Log base 2 of NBID
+#define LOG2NBID        5
+
+// Mask for LOG2NBID bits
+#define MASKLOG2NBID    ((1 << LOG2NBID) - 1)
 
 // End value for shift mask
 #define END_OF_BYTE     (1 << NBIB)

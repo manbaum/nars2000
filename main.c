@@ -640,6 +640,16 @@ LRESULT APIENTRY MFWndProc
         case WM_NCCREATE:       // lpcs = (LPCREATESTRUCT) lParam
             hWndMF = hWnd;
 
+            hMenuSM = LoadMenu (_hInstance, MAKEINTRESOURCE (IDR_SMMENU));
+            hMenuFE = LoadMenu (_hInstance, MAKEINTRESOURCE (IDR_FEMENU));
+////////////hMenuME = LoadMenu (_hInstance, MAKEINTRESOURCE (IDR_MEMENU));
+////////////hMenuVE = LoadMenu (_hInstance, MAKEINTRESOURCE (IDR_VEMENU));
+
+            hMenuSMWindow = GetSubMenu (hMenuSM, IDMPOS_SM_WINDOW);
+            hMenuFEWindow = GetSubMenu (hMenuFE, IDMPOS_FE_WINDOW);
+////////////hMenuMEWindow = GetSubMenu (hMenuME, IDMPOS_ME_WINDOW);
+////////////hMenuVEWindow = GetSubMenu (hMenuVE, IDMPOS_VE_WINDOW);
+
             break;                  // Continue with next handler
 
         case WM_CREATE:
@@ -1142,13 +1152,14 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_DUP_WS:
-                    // ***FINISHME***
+                    DbgBrk ();      // ***FINISHME***
+
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVECLOSE_WS:
-                    // ***FINISHME***
+                    DbgBrk ();      // ***FINISHME***
 
 
                     return FALSE;   // We handled the msg
@@ -1156,6 +1167,31 @@ LRESULT APIENTRY MFWndProc
                 case IDM_CLOSE_WS:
                     // Close the tab
                     CloseTab (iOverTab);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_CLOSE_FN:
+                    // Close the function (if allowed)
+                    CloseFunction (hWndActive);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_SAVE_FN:
+                    // Save the function (if well-formed)
+                    SaveFunction (hWndActive);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_SAVECLOSE_FN:
+                    // Save the function (if well-formed)
+                    if (SaveFunction (hWndActive))
+                        // Close the function (if allowed)
+                        CloseFunction (hWndActive);
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_SAVE_FN_AS:
+                    SaveAsFunction (hWndActive);
 
                     return FALSE;   // We handled the msg
             } // End SWITCH
@@ -1336,7 +1372,7 @@ BOOL InitApplication
     wc.hIconSm = hIconMF_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MENU);
+    wc.lpszMenuName = MAKEINTRESOURCE (IDR_SMMENU);
     wc.lpszClassName = szMFClass;
 
     // Register the Master Frame window class
@@ -1356,7 +1392,7 @@ BOOL InitApplication
     wc.hIconSm = hIconSM_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MENU);
+    wc.lpszMenuName = MAKEINTRESOURCE (IDR_SMMENU);
     wc.lpszClassName = szSMClass;
 
     // Register the Session Manager window class
@@ -1376,7 +1412,7 @@ BOOL InitApplication
     wc.hIconSm = hIconFE_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MENU);
+    wc.lpszMenuName = MAKEINTRESOURCE (IDR_FEMENU);
     wc.lpszClassName = szFEClass;
 
     // Register the Session Manager window class
@@ -1396,7 +1432,7 @@ BOOL InitApplication
     wc.hIconSm = hIconME_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MENU);
+    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MEMENU);
     wc.lpszClassName = szMEClass;
 
     // Register the Session Manager window class
@@ -1416,7 +1452,7 @@ BOOL InitApplication
     wc.hIconSm = hIconVE_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MENU);
+    wc.lpszMenuName = MAKEINTRESOURCE (IDR_VEMENU);
     wc.lpszClassName = szVEClass;
 
     // Register the Session Manager window class
@@ -1436,7 +1472,7 @@ BOOL InitApplication
     wc.hIconSm = hIconDB_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MENU);
+    wc.lpszMenuName = MAKEINTRESOURCE (IDR_SMMENU);
     wc.lpszClassName = szDBClass;
 
     // Register the Debugger window class
@@ -1719,9 +1755,10 @@ int PASCAL WinMain
     nMinState = nCmdShow;
 
     // Allocate TLS indices
-    dwTlsType = TlsAlloc ();        // Thread type ('MF', 'TC', 'PL', etc.)
-    dwTlsSemaphore = TlsAlloc ();   // Thread semaphore (for 'PL' only)
-    dwTlsLocalVars = TlsAlloc ();   // lpplLocalVars (for 'PL' only)
+    dwTlsType        = TlsAlloc ();     // Thread type ('MF', 'TC', 'PL', etc.)
+    dwTlsSemaphore   = TlsAlloc ();     // Thread semaphore (for 'PL' only)
+    dwTlsPlLocalVars = TlsAlloc ();     // lpplLocalVars (for 'PL' only)
+    dwTlsFhLocalVars = TlsAlloc ();     // lpfhLocalVars (for 'PL' or 'SM' only)
 
     // Save the thread type ('MF')
     TlsSetValue (dwTlsType, (LPVOID) 'MF');

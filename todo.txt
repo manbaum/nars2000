@@ -17,18 +17,15 @@ TO DO: General
 * ...    dyadic left shoe
 * ...    dyadic squad
 * ...    dyadic tilde
-* ...    N-wise reduction
 * ...    bracket indexing
 * ...    inner product
-* ...    scan
-* ...    fast Boolean reduction
-* ...    fast Boolean scan
 * ...    monadic grade-up
 * ...    monadic grade-down
 * ...    dyadic grade-up
 * ...    dyadic grade-down
 * ...    monadic up arrow
 * ...    dyadic up arrow
+* ...    dyadic down arrow
 * ...    monadic down shoe
 * ...    dyadic down tack
 * ...    dyadic epsilon underbar
@@ -41,6 +38,8 @@ TO DO: General
 * ...    )SAVE
 * ...    )LOAD
 * ...    )COPY
+* ...    )FNS
+* ...    )VARS
 * ...    function editing
 * ...    function execution
 * ...    dynamic functions
@@ -53,6 +52,7 @@ TO DO: General
 * ...    system functions
 * ...    3{jot}+4
 * ...    f{is}3{jot}+
+* ...    extend associativity to derived functions such as {jot}{dot}+ ??
 * ...
 
 
@@ -68,6 +68,10 @@ DONE:  General
 * Demote arrays to a more compact storage type???
 * Is it a problem that TypeDemote doesn't demote from
   TKT_VARARRAY to TKT_VARIMMED?
+* Finish scan
+* ...    fast Boolean reduction
+* ...    fast Boolean scan
+* ...    N-wise reduction
 *
 
 
@@ -125,6 +129,15 @@ QUESTIONS
   On APL+WIN systems 3.6 + 5.x, '' displays by skipping one blank line
   but 0{rho}{enclose}{zilde} displays without skipping a blank line.
 *
+
+
+Anomalous Results
+-----------------
+* =/'a' and =\'a' both return 'a' which isn't in the range
+  of "=" -- that seems odd.
+* Similarly, =\3 0{rho}'' returns its argument with a prototype
+  which isn't in the range of the derived function.
+* ...
 
 
 MISSING On Laptop

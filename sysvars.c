@@ -591,7 +591,7 @@ BOOL ValidateBoolean_EM
             DbgBrk ();      // ***TESTME***
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
@@ -604,7 +604,7 @@ BOOL ValidateBoolean_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
             switch (lpToken->tkData.tkSym->stFlags.ImmType)
@@ -819,7 +819,7 @@ BOOL ValidateInteger_EM
             DbgBrk ();      // ***TESTME***
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkExpr->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkExpr->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             if (!lptkExpr->tkData.tkSym->stFlags.Imm)
             {
@@ -832,7 +832,7 @@ BOOL ValidateInteger_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkExpr->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkExpr->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
             switch (lptkExpr->tkData.tkSym->stFlags.ImmType)
@@ -1079,7 +1079,7 @@ BOOL ValidateFloat_EM
             DbgBrk ();      // ***TESTME***
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
@@ -1092,7 +1092,7 @@ BOOL ValidateFloat_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
             switch (lpToken->tkData.tkSym->stFlags.ImmType)
@@ -1339,7 +1339,7 @@ BOOL ValidateCharVector_EM
             DbgBrk ();      // ***TESTME***
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
             if (!lpToken->tkData.tkSym->stFlags.Imm)
@@ -1353,7 +1353,7 @@ BOOL ValidateCharVector_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the symbol table immediate type
             switch (lpToken->tkData.tkSym->stFlags.ImmType)
@@ -1681,7 +1681,7 @@ BOOL ValidatePR_EM
             DbgBrk ();      // ***TESTME***
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
@@ -1694,7 +1694,7 @@ BOOL ValidatePR_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the token immediate type
             switch (lpToken->tkFlags.ImmType)
@@ -1904,7 +1904,7 @@ BOOL ValidateSA_EM
             DbgBrk ();      // ***TESTME***
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
@@ -1917,7 +1917,7 @@ BOOL ValidateSA_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Fall through to common error code
 

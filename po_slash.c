@@ -16,14 +16,14 @@
 #include "compro.h"
 #endif
 
-extern LPFASTBOOLFNS FastBoolFns;   // ***FIXME*** -- move into externs.h
+extern FASTBOOLFNS FastBoolFns[];   // ***FIXME*** -- move into externs.h
 
 
 //***************************************************************************
 //  $PrimOpSlash_EM_YY
 //
-//  Primitive operator for monadic and dyadic derived functions from Slash
-//    ("reduction" and "N-wise reduction")
+//  Primitive operator for monadic and dyadic derived functions from
+//    monadic operator Slash ("reduction" and "N-wise reduction")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -97,7 +97,6 @@ LPYYSTYPE PrimProtoOpSlash_EM_YY
         //***************************************************************
         // Called monadically
         //***************************************************************
-
         return PrimOpMonSlashCommon_EM_YY (lpYYFcnStrOpr,   // Ptr to operator function strand
                                            lptkRhtArg,      // Ptr to right arg token
                                            lptkAxis,        // Ptr to axis token (may be NULL)
@@ -106,7 +105,6 @@ LPYYSTYPE PrimProtoOpSlash_EM_YY
         //***************************************************************
         // Called dyadically
         //***************************************************************
-
         return PrimOpDydSlashCommon_EM_YY (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
                                            lpYYFcnStrOpr,   // Ptr to operator function strand
                                            lptkRhtArg,      // Ptr to right arg token
@@ -253,6 +251,18 @@ LPYYSTYPE PrimOpMonSlashCommon_EM_YY
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
+    // Skip over the header and dimensions to the data
+    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+    // Get APA parameters
+    if (aplTypeRht EQ ARRAY_APA)
+    {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+        apaOffRht = lpAPA->Off;
+        apaMulRht = lpAPA->Mul;
+#undef  lpAPA
+    } // End IF
+
     //***************************************************************
     // Calculate product of dimensions before, at, and after the axis dimension
     //***************************************************************
@@ -300,10 +310,11 @@ LPYYSTYPE PrimOpMonSlashCommon_EM_YY
     //   element for the left operand or signal a DOMAIN ERROR
     if (uDimAxRht EQ 0)
     {
-        // If it's an immediate primitive function,
-        //   and a
+        // If it's not an immediate primitive function,
+        //   or it is, but is without an identity element,
+        //   signal a DOMAIN ERROR
         if (!lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         || PrimFlags[SymTrans (&lpYYFcnStrLft->tkToken)].Index EQ PF_IND_UNK)
+         || !PrimFlags[SymTrans (&lpYYFcnStrLft->tkToken)].IdentElem)
         {
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                       &lpYYFcnStrOpr->tkToken);
@@ -324,21 +335,25 @@ LPYYSTYPE PrimOpMonSlashCommon_EM_YY
     // If the product of the dimensions above
     //   the axis dimension is one, and
     //   this is a primitive function, and
-    //   the right arg is Boolean, and
+    //   the right arg is Boolean or APA Boolean, and
     //   we're not doing prototypes, then
     //   check for the possibility of doing a
     //   Fast Boolean Reduction
     if (uDimHi EQ 1
      && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-     && aplTypeRht EQ ARRAY_BOOL
+     && (aplTypeRht EQ ARRAY_BOOL
+      || (aplTypeRht EQ ARRAY_APA
+       && (apaOffRht EQ 0 || apaOffRht EQ 1)
+       && apaMulRht EQ 0 ))
      && lpPrimProtoLft EQ NULL
+     && lpPrimFlags
      && (lpPrimFlags->FastBool || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PLUS))
     {
         // Mark as a Fast Boolean operation
         bFastBool = TRUE;
 
         // If this is "plus", then the storage type is Integer
-        if (lpPrimFlags->Index EQ PF_IND_PLUS)
+        if (lpPrimFlags->Index EQ PF_INDEX_PLUS)
             aplTypeRes = ARRAY_INT;
         else
         // Otherwise, it's Boolean
@@ -409,18 +424,6 @@ LPYYSTYPE PrimOpMonSlashCommon_EM_YY
 
     // lpMemRes now points to its data
 
-    // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-
-    // Get APA parameters
-    if (aplTypeRht EQ ARRAY_APA)
-    {
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-        apaOffRht = lpAPA->Off;
-        apaMulRht = lpAPA->Mul;
-#undef  lpAPA
-    } // End IF
-
     // If the axis dimension is zero, fill with the identity element
     if (uDimAxRht EQ 0)
     {
@@ -470,7 +473,7 @@ LPYYSTYPE PrimOpMonSlashCommon_EM_YY
                        lpMemRes,            // Ptr to result    memory
                        uDimLo,              // Product of dimensions below axis
                        uDimAxRht,           // Length of right arg axis dimension
-                       1,                   // ...       result    ...
+                       lpPrimFlags->Index,  // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
                        lpYYFcnStrOpr);      // Ptr to operator function strand
     } else
     {
@@ -825,7 +828,7 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
     // Handle prototypes specially
-    if (aplNELMRht EQ 0
+    if ((aplNELMLft EQ 0 || aplNELMRht EQ 0)
      && lpPrimProtoLft EQ NULL)
     {
         // Get a ptr to the prototype function for the first symbol (a function or operator)
@@ -907,7 +910,7 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
         // No axis specified:
         // if Slash, use last dimension
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH)
-            aplAxis = max (1, aplRankRht) - 1;
+            aplAxis = max (aplRankRht, 1) - 1;
         else
             // Otherwise, it's SlashBar on the first dimension
             aplAxis = 0;
@@ -957,7 +960,7 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
 
     // The rank of the result is the same as that of the right arg
     //   or 1 whichever is higher
-    aplRankRes = max (1, aplRankRht);
+    aplRankRes = max (aplRankRht, 1);
 
     // If the left arg is zero, or
     //    the absolute value of the left arg is (uDimAxRht + 1),
@@ -966,15 +969,18 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
     if (aplIntegerLft EQ 0
      || aplIntegerLftAbs EQ (APLINT) (uDimAxRht + 1))
     {
-        UINT uIdent;
+        UINT uIdent,
+             uIndex;
 
         // Get the index of the identity element (if any)
-        uIdent = PrimFlags[SymTrans (&lpYYFcnStrLft->tkToken)].Index;
+        uIndex = SymTrans (&lpYYFcnStrLft->tkToken);
+        uIdent = PrimFlags[uIndex].Index;
 
-        // If it's an immediate primitive function without
-        //   an identity element, signal a DOMAIN ERROR
+        // If it's not an immediate primitive function,
+        //   or it is, but is without an identity element,
+        //   signal a DOMAIN ERROR
         if (!lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         || uIdent EQ PF_IND_UNK)
+         || !PrimFlags[uIndex].IdentElem)
         {
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                       &lpYYFcnStrOpr->tkToken);
@@ -997,7 +1003,7 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
 
     // Calculate the result NELM
     aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
-    if (bRet)
+    if (bRet || uDimAxRes EQ 0)
         aplNELMRes = imul64 (aplNELMRes, uDimAxRes, &bRet);
     if (!bRet)
     {
@@ -1006,7 +1012,9 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
+    //***************************************************************
     // Pick off special cases of the left arg
+    //***************************************************************
 
     // If the left arg is zero, the result is
     //   ({rho} Result) {rho} LeftOperandIdentityElement
@@ -1016,7 +1024,7 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
         // Allocate storage for the result
         if (!PrimOpDydSlashAllocate_EM
              (aplTypeRht,           // Right arg storage type
-              max (1, aplRankRht),  // Right arg rank
+              max (aplRankRht, 1),  // Right arg rank
               aplTypeRes,           // Result storage type
               aplNELMRes,           // Result NELM
               aplRankRes,           // Result rank
@@ -1097,9 +1105,10 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
             goto ERROR_EXIT;
 
         // Reduce the reversed right arg along the specified axis
-        lpYYRes = PrimOpMonSlash_EM_YY (lpYYFcnStrOpr,      // Ptr to operator function strand
-                                       &lpYYRes2->tkToken,  // Ptr to right arg
-                                        lptkAxis);          // Ptr to axis token (may be NULL)
+        lpYYRes = PrimOpMonSlashCommon_EM_YY (lpYYFcnStrOpr,    // Ptr to operator function strand
+                                             &lpYYRes2->tkToken,// Ptr to right arg
+                                              lptkAxis,         // Ptr to axis token (may be NULL)
+                                              lpPrimProtoLft);  // Ptr to left operand prototype function
         // Free the result of the function execution
         FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
 
@@ -1127,7 +1136,7 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
         // Allocate storage for the result
         if (!PrimOpDydSlashAllocate_EM
              (aplTypeRht,           // Right arg storage type
-              max (1, aplRankRht),  // Right arg rank
+              max (aplRankRht, 1),  // Right arg rank
               aplTypeRes,           // Result storage type
               aplNELMRes,           // Result NELM
               aplRankRes,           // Result rank
@@ -1149,7 +1158,7 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
         // Allocate storage for the result
         if (!PrimOpDydSlashAllocate_EM
              (aplTypeRht,           // Right arg storage type
-              max (1, aplRankRht),  // Right arg rank
+              max (aplRankRht, 1),  // Right arg rank
               aplTypeRes,           // Result storage type
               aplNELMRes,           // Result NELM
               aplRankRes,           // Result rank
@@ -1230,9 +1239,19 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
                                          apaMulRht,     // APA multiplier (if needed)
                                         &tkLftArg);     // Ptr to token in which to place the value
                         // Execute the left operand between the left & right args
-                        lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
-                                                      lpYYFcnStrLft,    // Ptr to function strand
-                                                     &tkRhtArg);        // Ptr to right arg token
+                        if (lpPrimProtoLft)
+                            // Note that we cast the function strand to LPTOKEN
+                            //   to bridge the two types of calls -- one to a primitive
+                            //   function which takes a function token, and one to a
+                            //   primitive operator which takes a function strand
+                            lpYYRes = (*lpPrimProtoLft) (&tkLftArg,         // Ptr to left arg token
+                                                (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
+                                                         &tkRhtArg,         // Ptr to right arg token
+                                                          lptkAxis);        // Ptr to axis token (may be NULL)
+                        else
+                            lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
+                                                          lpYYFcnStrLft,    // Ptr to function strand
+                                                         &tkRhtArg);        // Ptr to right arg token
                         // Free the left & right arg tokens
                         FreeResult (&tkRhtArg);
                         FreeResult (&tkLftArg);
@@ -1274,9 +1293,19 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
                                          apaMulRht,     // APA multiplier (if needed)
                                         &tkLftArg);     // Ptr to token in which to place the value
                         // Execute the left operand between the left & right args
-                        lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
-                                                      lpYYFcnStrLft,    // Ptr to function strand
-                                                     &tkRhtArg);        // Ptr to right arg token
+                        if (lpPrimProtoLft)
+                            // Note that we cast the function strand to LPTOKEN
+                            //   to bridge the two types of calls -- one to a primitive
+                            //   function which takes a function token, and one to a
+                            //   primitive operator which takes a function strand
+                            lpYYRes = (*lpPrimProtoLft) (&tkLftArg,         // Ptr to left arg token
+                                                (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
+                                                         &tkRhtArg,         // Ptr to right arg token
+                                                          lptkAxis);        // Ptr to axis token (may be NULL)
+                        else
+                            lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
+                                                          lpYYFcnStrLft,    // Ptr to function strand
+                                                         &tkRhtArg);        // Ptr to right arg token
                         // Free the left & right arg tokens
                         FreeResult (&tkRhtArg);
                         FreeResult (&tkLftArg);

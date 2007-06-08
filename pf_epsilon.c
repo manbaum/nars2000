@@ -121,7 +121,7 @@ LPYYSTYPE PrimFnMonEpsilon_EM_YY
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must traverse the array
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)

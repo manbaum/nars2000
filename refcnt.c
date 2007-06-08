@@ -54,16 +54,16 @@ int ChangeRefCntDir
                     if (lpHeader->Perm)
                     {
 #ifdef DEBUG
-                        dprintfW (L"  RefCntNC in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);
+                        dprintfW (L"  RefCntNC in " APPEND_NAME L": %08X(res=%d) (%s#%d)", lpHeader, lpHeader->RefCnt, FNLN);
 #endif
-                        RefCnt = (UINT) -1;
+                        RefCnt = NEG1U;
 
                         break;
                     } // End IF
 
                     // Change the reference count
 #ifdef DEBUG
-                    dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
+                    dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%s#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;
@@ -75,7 +75,7 @@ int ChangeRefCntDir
 #define lpHeader        ((LPFCNARRAY_HEADER) lpSign)
                     // Change the reference count
 #ifdef DEBUG
-                    dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
+                    dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%s#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
 #endif
                     Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
                     lpHeader->RefCnt += iIncr;

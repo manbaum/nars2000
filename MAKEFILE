@@ -154,6 +154,7 @@ $(O)editmat.DEP         \
 $(O)editvec.DEP         \
 $(O)exec.DEP            \
 $(O)fastbool.DEP        \
+$(O)fnhdr.DEP           \
 $(O)free.DEP            \
 $(O)g_fmt.DEP           \
 $(O)main.DEP            \
@@ -297,6 +298,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)fastbool.DEP)
 !       include $(O)fastbool.DEP
+!endif
+!if exist ($(O)fnhdr.DEP)
+!       include $(O)fnhdr.DEP
 !endif
 !if exist ($(O)free.DEP)
 !       include $(O)free.DEP
@@ -520,6 +524,7 @@ $(O)editmat.PRO         \
 $(O)editvec.PRO         \
 $(O)exec.PRO            \
 $(O)fastbool.PRO        \
+$(O)fnhdr.PRO           \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
 $(O)main.PRO            \
@@ -628,6 +633,8 @@ $(O)dtoa.OBJ:           $(@B).C         $(DTOA_DEP)
 $(O)g_fmt.OBJ:          $(@B).C         $(G_FMT_DEP)
 
 ## Bison-generated files
+$(O)fnhdr.C:            $(@B).Y
+$(O)fnhdr.OBJ:          $(O)$(@B).C     $(FNHDR_DEP)
 $(O)parse.C:            $(@B).Y
 $(O)parse.OBJ:          $(O)$(@B).C     $(PARSE_DEP)
 
@@ -745,6 +752,7 @@ OBJS=                       \
      $(O)editvec.OBJ        \
      $(O)exec.OBJ           \
      $(O)fastbool.OBJ       \
+     $(O)fnhdr.OBJ          \
      $(O)free.OBJ           \
      $(O)g_fmt.obj          \
      $(O)main.OBJ           \

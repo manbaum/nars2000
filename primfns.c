@@ -722,44 +722,48 @@ void InitPrimFlags
 
 {
     PRIMFLAGS PrimFlag;
-    WORD      PF_FASTBOOL,
-              PF_ASSOC,
-              PF_ALTER,
-              PF_MONSCALAR,
-              PF_DYDSCALAR;
+    WORD      PF_FB,                // Fast Boolean reduction and/or scan
+              PF_AN,                // Function is associative on all numbers
+              PF_AB,                // ...         associative on Booleans only
+              PF_AL,                // ...         alternating
+              PF_MS,                // ...         monadic scalar
+              PF_DS,                // ...         dyadic  ...
+              PF_ID;                // ...      has an identity element
 
     // Get the bits as masks
-    *((WORD *) &PrimFlag) = 0; PrimFlag.FastBool  = TRUE; PF_FASTBOOL  = *(WORD *) &PrimFlag;
-    *((WORD *) &PrimFlag) = 0; PrimFlag.Assoc     = TRUE; PF_ASSOC     = *(WORD *) &PrimFlag;
-    *((WORD *) &PrimFlag) = 0; PrimFlag.Alter     = TRUE; PF_ALTER     = *(WORD *) &PrimFlag;
-    *((WORD *) &PrimFlag) = 0; PrimFlag.MonScalar = TRUE; PF_MONSCALAR = *(WORD *) &PrimFlag;
-    *((WORD *) &PrimFlag) = 0; PrimFlag.DydScalar = TRUE; PF_DYDSCALAR = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.FastBool  = TRUE; PF_FB = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.AssocBool = TRUE; PF_AB = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.AssocNumb = TRUE; PF_AN = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.Alter     = TRUE; PF_AL = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.MonScalar = TRUE; PF_MS = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.DydScalar = TRUE; PF_DS = *(WORD *) &PrimFlag;
+    *((WORD *) &PrimFlag) = 0; PrimFlag.IdentElem = TRUE; PF_ID = *(WORD *) &PrimFlag;
 
-    InitPrimFlag (UTF16_BAR               , 0                      | PF_ALTER | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MINUS      );
-    InitPrimFlag (UTF16_CIRCLE            , 0                                 | PF_MONSCALAR | PF_DYDSCALAR                     );
-    InitPrimFlag (UTF16_CIRCLESTAR        , 0                                 | PF_MONSCALAR | PF_DYDSCALAR                     );
-    InitPrimFlag (UTF16_CIRCUMFLEX        , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_AND        );
-    InitPrimFlag (UTF16_COLONBAR          , 0                      | PF_ALTER | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_DIVIDE     );
-    InitPrimFlag (UTF16_DOWNCARET         , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_OR         );
-    InitPrimFlag (UTF16_DOWNCARETTILDE    , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_NOR        );
-    InitPrimFlag (UTF16_DOWNSTILE         , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MIN        );
-    InitPrimFlag (UTF16_EQUAL             , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_EQUAL      );
-    InitPrimFlag (UTF16_LEFTCARET         , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESS       );
-    InitPrimFlag (UTF16_LEFTCARETUNDERBAR , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESSEQ     );
-    InitPrimFlag (UTF16_NOTEQUAL          , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_NOTEQUAL   );
-    InitPrimFlag (UTF16_PLUS              , 0           | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_PLUS       );
-    InitPrimFlag (UTF16_QUOTEDOT          , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESSEQ     );
-    InitPrimFlag (UTF16_QUERY             , 0                                 | PF_MONSCALAR                                    );
-    InitPrimFlag (UTF16_RIGHTCARET        , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MORE       );
-    InitPrimFlag (UTF16_RIGHTCARETUNDERBAR, PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MOREEQ     );
-    InitPrimFlag (UTF16_STAR              , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MOREEQ     );
-    InitPrimFlag (UTF16_STILE             , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESS       );
-    InitPrimFlag (UTF16_STILE2            , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_LESS       );
-    InitPrimFlag (UTF16_TILDE             , 0                                 | PF_MONSCALAR                                    );
-    InitPrimFlag (UTF16_TIMES             , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_AND        );
-    InitPrimFlag (UTF16_UPCARET           , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_AND        );
-    InitPrimFlag (UTF16_UPCARETTILDE      , PF_FASTBOOL                       | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_NAND       );
-    InitPrimFlag (UTF16_UPSTILE           , PF_FASTBOOL | PF_ASSOC            | PF_MONSCALAR | PF_DYDSCALAR | PF_IND_MAX        );
+    InitPrimFlag (UTF16_BAR               , 0                     | PF_AL | PF_MS | PF_DS | PF_ID | PF_INDEX_MINUS   );
+    InitPrimFlag (UTF16_CIRCLE            , 0                             | PF_MS | PF_DS                            );
+    InitPrimFlag (UTF16_CIRCLESTAR        , 0                             | PF_MS | PF_DS                            );
+    InitPrimFlag (UTF16_CIRCUMFLEX        , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
+    InitPrimFlag (UTF16_COLONBAR          , 0                     | PF_AL | PF_MS | PF_DS | PF_ID | PF_INDEX_DIVIDE  );
+    InitPrimFlag (UTF16_DOWNCARET         , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_OR      );
+    InitPrimFlag (UTF16_DOWNCARETTILDE    , PF_FB                         | PF_MS | PF_DS         | PF_INDEX_NOR     );
+    InitPrimFlag (UTF16_DOWNSTILE         , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_MIN     );
+    InitPrimFlag (UTF16_EQUAL             , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_EQUAL   );
+    InitPrimFlag (UTF16_LEFTCARET         , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
+    InitPrimFlag (UTF16_LEFTCARETUNDERBAR , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESSEQ  );
+    InitPrimFlag (UTF16_NOTEQUAL          , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_NOTEQUAL);
+    InitPrimFlag (UTF16_PLUS              , 0     | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_PLUS    );
+    InitPrimFlag (UTF16_QUOTEDOT          , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESSEQ  );
+    InitPrimFlag (UTF16_QUERY             , 0                             | PF_MS                                    );
+    InitPrimFlag (UTF16_RIGHTCARET        , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_MORE    );
+    InitPrimFlag (UTF16_RIGHTCARETUNDERBAR, PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_MOREEQ  );
+    InitPrimFlag (UTF16_STAR              , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_MOREEQ  );
+    InitPrimFlag (UTF16_STILE             , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
+    InitPrimFlag (UTF16_STILE2            , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_INDEX_LESS    );
+    InitPrimFlag (UTF16_TILDE             , 0                             | PF_MS                                    ); // Identity element:  {enclose}{zilde} ??
+    InitPrimFlag (UTF16_TIMES             , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
+    InitPrimFlag (UTF16_UPCARET           , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_INDEX_AND     );
+    InitPrimFlag (UTF16_UPCARETTILDE      , PF_FB                         | PF_MS | PF_DS         | PF_INDEX_NAND    );
+    InitPrimFlag (UTF16_UPSTILE           , PF_FB | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_INDEX_MAX     );
 } // End InitPrimFlags
 
 
@@ -795,23 +799,23 @@ void InitIdentityElements
     aplInteger = POS_INFINITY; aplFloatPosInf = *(LPAPLFLOAT) &aplInteger;
     aplInteger = NEG_INFINITY; aplFloatNegInf = *(LPAPLFLOAT) &aplInteger;
 
-    InitIdentityElement (PF_IND_PLUS      , IMMTYPE_BOOL , 0.0);
-    InitIdentityElement (PF_IND_MINUS     , IMMTYPE_BOOL , 0.0);
-    InitIdentityElement (PF_IND_DIVIDE    , IMMTYPE_BOOL , 1.0);
+    InitIdentityElement (PF_INDEX_PLUS    , 0.0);
+    InitIdentityElement (PF_INDEX_MINUS   , 0.0);
+    InitIdentityElement (PF_INDEX_DIVIDE  , 1.0);
 
-    InitIdentityElement (PF_IND_MIN       , IMMTYPE_FLOAT, aplFloatPosInf);
-    InitIdentityElement (PF_IND_MAX       , IMMTYPE_FLOAT, aplFloatNegInf);
+    InitIdentityElement (PF_INDEX_MIN     , aplFloatPosInf);
+    InitIdentityElement (PF_INDEX_MAX     , aplFloatNegInf);
 
-    InitIdentityElement (PF_IND_AND       , IMMTYPE_BOOL , 1.0);
-    InitIdentityElement (PF_IND_OR        , IMMTYPE_BOOL , 0.0);
+    InitIdentityElement (PF_INDEX_AND     , 1.0);
+    InitIdentityElement (PF_INDEX_OR      , 0.0);
 
-    InitIdentityElement (PF_IND_LESS      , IMMTYPE_BOOL , 0.0);
-    InitIdentityElement (PF_IND_LESSEQ    , IMMTYPE_BOOL , 1.0);
-    InitIdentityElement (PF_IND_EQUAL     , IMMTYPE_BOOL , 1.0);
-    InitIdentityElement (PF_IND_MOREEQ    , IMMTYPE_BOOL , 1.0);
-    InitIdentityElement (PF_IND_MORE      , IMMTYPE_BOOL , 0.0);
+    InitIdentityElement (PF_INDEX_LESS    , 0.0);
+    InitIdentityElement (PF_INDEX_LESSEQ  , 1.0);
+    InitIdentityElement (PF_INDEX_EQUAL   , 1.0);
+    InitIdentityElement (PF_INDEX_MOREEQ  , 1.0);
+    InitIdentityElement (PF_INDEX_MORE    , 0.0);
 
-    InitIdentityElement (PF_IND_NOTEQUAL  , IMMTYPE_BOOL , 0.0);
+    InitIdentityElement (PF_INDEX_NOTEQUAL, 0.0);
 } // End InitIdentityElements
 
 
@@ -822,12 +826,11 @@ void InitIdentityElements
 //***************************************************************************
 
 void InitIdentityElement
-    (WCHAR    wchFn,
-     UINT     immType,
+    (UINT     uIndex,
      APLFLOAT aplFloat)
 
 {
-    PrimIdent[(UCHAR) wchFn] = aplFloat;
+    PrimIdent[uIndex] = aplFloat;
 } // End InitIdentityElement
 
 
@@ -869,7 +872,7 @@ LPYYSTYPE ExecFunc_EM_YY
 
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkFunc->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
             if (!lptkFunc->tkData.tkSym->stFlags.Imm)
@@ -1337,7 +1340,7 @@ void AttrsOfToken
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must traverse the array
             if (!lpToken->tkData.tkSym->stFlags.Imm)
@@ -2077,7 +2080,7 @@ BOOL CheckAxis_EM
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkAxis->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkAxis->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, it's an HGLOBAL
             if (!lptkAxis->tkData.tkSym->stFlags.Imm)
@@ -2394,7 +2397,7 @@ void FirstValue
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must look inside the array
             if (!lpToken->tkData.tkSym->stFlags.Imm)
@@ -2839,7 +2842,7 @@ void GetGlbPtrs_LOCK
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must traverse the array
             if (!lpToken->tkData.tkSym->stFlags.Imm)
@@ -3396,7 +3399,7 @@ HGLOBAL MakePrototype_EM
                         case IMMTYPE_BOOL:
                         case IMMTYPE_INT:
                         case IMMTYPE_FLOAT:
-                            lpSymRes = SymTabAppendInteger_EM (0);
+                            lpSymRes = GetSteZero ();
 
                             break;
 
@@ -3405,7 +3408,7 @@ HGLOBAL MakePrototype_EM
                             switch (mpEnum)
                             {
                                 case MP_CHARS:
-                                    lpSymRes = SymTabAppendChar_EM (L' ');
+                                    lpSymRes = GetSteBlank ();
 
                                     break;
 
@@ -3415,7 +3418,7 @@ HGLOBAL MakePrototype_EM
                                     break;
 
                                 case MP_NUMCONV:
-                                    lpSymRes = SymTabAppendInteger_EM (0);
+                                    lpSymRes = GetSteZero ();
 
                                     break;
 
@@ -3976,8 +3979,22 @@ APLINT RoundUpBits8
     (APLNELM aplNELM)
 
 {
-    return ((aplNELM + (NBIB - 1)) >> LOG2NBIB);
+    return (aplNELM + (NBIB - 1)) & ~MASKLOG2NBIB;
 } // End RoundUpBits8
+
+
+//***************************************************************************
+//  $RoundUpBitsInArray
+//
+//  Round up bits to a dword (8 bits/byte)
+//***************************************************************************
+
+APLINT RoundUpBitsInArray
+    (APLNELM aplNELM)
+
+{
+    return (aplNELM + (NBID - 1)) & ~MASKLOG2NBID;
+} // End RoundUpBitsInArray
 
 
 //***************************************************************************
@@ -4067,7 +4084,7 @@ APLUINT CalcArraySize
     switch (aplType)
     {
         case ARRAY_BOOL:
-            ByteRes = sizeof (APLBOOL)   * RoundUpBits8 (aplNELM);
+            ByteRes = sizeof (APLBOOL)   * RoundUpBitsInArray (aplNELM);
 
             break;
 
@@ -4161,6 +4178,9 @@ APLUINT CalcHeaderSize
 //    reduction w/ or w/o axis
 //    each
 //    indexing/squad
+//    reduction
+//    N-wise reduction
+//    scan
 //
 //  must call this function to check their result to see if it
 //  can be stored more simply.  Note that more simply does not
@@ -4183,17 +4203,16 @@ LPTOKEN TypeDemote
                       lpMemRes = NULL;  // Ptr to result    ...
     APLNELM           aplNELMRht;       // Right arg NELM
     APLRANK           aplRankRht;       // Right arg rank
-    APLINT            uRht,             // Right arg loop counter
-                      aplInteger;       // Temporary integer
+    APLUINT           uRht,             // Right arg loop counter
+                      ByteRes;          // # bytes needed for the result
+    APLINT            aplInteger;       // Temporary integer
     APLFLOAT          aplFloat;         // ...       float
-    APLUINT           ByteRes;          // # bytes needed for the result
     APLSTYPE          aplTypeRes,
                       aplTypeRht,
                       aplTypeSub;
     LPSYMENTRY        lpSymEntry;
     LPVARARRAY_HEADER lpMemRhtHdr;
     DWORD             dwSize;
-    UINT              uBitIndex;
 
     // Note that neither ARRAY_APA not ARRAY_LIST can occur
     //   as an argument to this function.
@@ -4241,47 +4260,20 @@ LPTOKEN TypeDemote
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRhtHdr, aplRankRht);
 
-    // Handle simple scalars up front
-    if (aplRankRht EQ 0
-     && IsSimple (aplTypeRht))
-    {
-        lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
-        lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
-        lptkRhtArg->tkData.tkLongest = *(LPAPLLONGEST) lpMemRht;
-
-        // Free the right arg if not already freed
-        // Note that it might be the case that hGlbRht EQ hGlbRes,
-        //   so we need to free the HGLOBAL after copying its data
-        //   from lpMemRes in the above statement
-        if (hGlbRht)
-        {
-            if (lpMemRht)
-            {
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-            } // End IF
-
-            // Free the old array
-            FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
-        } // End IF
-
-        goto IMMED_EXIT;
-    } // End IF
-
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:        // No place to go
         case ARRAY_APA:         // No place to go
         case ARRAY_CHAR:        // No place to go
-            goto NORMAL_EXIT;
+            goto IMMED_EXIT;
 
         case ARRAY_INT:         // Demote to Boolean
             // Start with lowest type
             aplTypeRes = ARRAY_BOOL;
 
             // Loop through the elements
-            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 aplInteger = *((LPAPLINT) lpMemRht)++;
 
@@ -4301,7 +4293,7 @@ LPTOKEN TypeDemote
             aplTypeRes = ARRAY_BOOL;
 
             // Loop through the elements
-            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 aplFloat = *((LPAPLFLOAT) lpMemRht)++;
 
@@ -4333,7 +4325,7 @@ LPTOKEN TypeDemote
             aplTypeRes = ARRAY_LIST;
 
             // Loop through the elements
-            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
+            for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
             {
                 // Split cases based upon the ptr type of the element
                 switch (GetPtrTypeInd (lpMemRht))
@@ -4448,6 +4440,32 @@ LPTOKEN TypeDemote
     // Check for demotion to simple homogeneous
     if (uTypeMap[aplTypeRes] < min (uTypeMap[ARRAY_HETERO], uTypeMap[aplTypeRht]))
     {
+        // Handle simple scalars as immediates
+        if (aplRankRht EQ 0
+         && IsSimple (aplTypeRes))
+        {
+            lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
+            lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
+            lptkRhtArg->tkData.tkLongest = 0;
+
+            // Skip over header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRhtHdr, aplRankRht);
+
+            // Demote the data in the right arg, copying it to the result
+            DemoteData (aplTypeRes,
+                       &lptkRhtArg->tkData.tkLongest,
+                        aplTypeRht,
+                        aplNELMRht,
+                        lpMemRht);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+
+            // Free the old array
+            FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
+
+            goto IMMED_EXIT;
+        } // End IF
+
         // Calculate space needed for the result
         ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
 
@@ -4477,139 +4495,18 @@ LPTOKEN TypeDemote
             lpMemRes = VarArrayBaseToDim (lpMemRes);
 
             // Copy the dimensions to the result
-            for (uRht = 0; uRht < (APLINT) aplRankRht; uRht++)
+            for (uRht = 0; uRht < aplRankRht; uRht++)
                 *((LPAPLDIM) lpMemRes)++ = *((LPAPLDIM) lpMemRht)++;
 
             // Now, lpMemRes and lpMemRht both point to their
             //   respective data
 
-            // Split cases based upon the result's storage type
-            // Note that the result is always of lower type than
-            //   the right arg.
-            switch (aplTypeRes)
-            {
-                case ARRAY_BOOL:            // Res = BOOL, Rht = INT/FLOAT/HETERO/NESTED
-                    uBitIndex = 0;
-
-                    // Split cases based upon the right arg's storage type
-                    switch (aplTypeRht)
-                    {
-                        case ARRAY_INT:     // Res = BOOL, Rht = INT
-                            // Loop through the elements
-                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                            {
-                                *((LPAPLBOOL) lpMemRes) |= (*((LPAPLINT) lpMemRht)++) << uBitIndex;
-
-                                // Check for end-of-byte
-                                if (++uBitIndex EQ NBIB)
-                                {
-                                    uBitIndex = 0;              // Start over
-                                    ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
-                                } // End IF
-                            } // End FOR
-
-                            break;
-
-                        case ARRAY_FLOAT:   // Res = BOOL, Rht = FLOAT
-                            // Loop through the elements
-                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                            {
-                                *((LPAPLBOOL) lpMemRes) |= ((APLBOOL) *((LPAPLFLOAT) lpMemRht)++) << uBitIndex;
-
-                                // Check for end-of-byte
-                                if (++uBitIndex EQ NBIB)
-                                {
-                                    uBitIndex = 0;              // Start over
-                                    ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
-                                } // End IF
-                            } // End FOR
-
-                            break;
-
-                        case ARRAY_HETERO:  // Res = BOOL, Rht = HETERO
-                        case ARRAY_NESTED:  // Res = BOOL, Rht = NESTED
-                            // Loop through the elements
-                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                            {
-                                *((LPAPLBOOL) lpMemRes) |= ((*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger) << uBitIndex;
-
-                                // Check for end-of-byte
-                                if (++uBitIndex EQ NBIB)
-                                {
-                                    uBitIndex = 0;              // Start over
-                                    ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
-                                } // End IF
-                            } // End FOR
-
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
-
-                    break;
-
-                case ARRAY_INT:         // Res = INT, Rht = FLOAT/HETERO/NESTED
-                    // Split cases based upon the right arg's storage type
-                    switch (aplTypeRht)
-                    {
-                        case ARRAY_FLOAT:   // Res = INT , Rht = FLOAT
-                            // Loop through the elements
-                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                                *((LPAPLINT) lpMemRes)++ = (APLINT) *((LPAPLFLOAT) lpMemRht)++;
-                            break;
-
-                        case ARRAY_HETERO:  // Res = INT , Rht = HETERO
-                        case ARRAY_NESTED:  // Res = INT , Rht = NESTED
-                            // Loop through the elements
-                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                                *((LPAPLINT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger;
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
-
-                    break;
-
-                case ARRAY_FLOAT:       // Res = FLOAT, Rht = HETERO/NESTED
-                    // Split cases based upon the right arg's storage type
-                    switch (aplTypeRht)
-                    {
-                        case ARRAY_HETERO:  // Res = FLOAT, Rht = HETERO
-                        case ARRAY_NESTED:  // Res = FLOAT, Rht = NESTED
-                            // Loop through the elements
-                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                                *((LPAPLFLOAT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stFloat;
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
-
-                    break;
-
-                case ARRAY_CHAR:        // Res = CHAR, Rht = HETERO/NESTED
-                    // Split cases based upon the right arg's storage type
-                    switch (aplTypeRht)
-                    {
-                        case ARRAY_HETERO:  // Res = CHAR, Rht = HETERO
-                        case ARRAY_NESTED:  // Res = CHAR, Rht = NESTED
-                            // Loop through the elements
-                            for (uRht = 0; uRht < (APLINT) aplNELMRht; uRht++)
-                                *((LPAPLCHAR) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stChar;
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-
+            // Demote the data in the right arg, copying it to the result
+            DemoteData (aplTypeRes,
+                        lpMemRes,
+                        aplTypeRht,
+                        aplNELMRht,
+                        lpMemRht);
             // We no longer need these ptrs
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
             MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
@@ -4633,6 +4530,152 @@ IMMED_EXIT:
     return lptkRhtArg;
 } // End TypeDemote
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $DemoteData
+//
+//  Demote the data in the right arg, copying it to the result
+//***************************************************************************
+
+void DemoteData
+    (APLSTYPE aplTypeRes,           // Result storage type
+     LPVOID   lpMemRes,             // Ptr to result global memory
+     APLSTYPE aplTypeRht,           // Right arg storage type
+     APLNELM  aplNELMRht,           // Right arg NELM
+     LPVOID   lpMemRht)             // Ptr to right arg global memory
+
+{
+    APLUINT uRht;
+    UINT    uBitIndex;
+
+    // Split cases based upon the result's storage type
+    // Note that the result is always of lower type than
+    //   the right arg.
+    switch (aplTypeRes)
+    {
+        case ARRAY_BOOL:            // Res = BOOL, Rht = INT/FLOAT/HETERO/NESTED
+            uBitIndex = 0;
+
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_INT:     // Res = BOOL, Rht = INT
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        *((LPAPLBOOL) lpMemRes) |= (*((LPAPLINT) lpMemRht)++) << uBitIndex;
+
+                        // Check for end-of-byte
+                        if (++uBitIndex EQ NBIB)
+                        {
+                            uBitIndex = 0;              // Start over
+                            ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_FLOAT:   // Res = BOOL, Rht = FLOAT
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        *((LPAPLBOOL) lpMemRes) |= ((APLBOOL) *((LPAPLFLOAT) lpMemRht)++) << uBitIndex;
+
+                        // Check for end-of-byte
+                        if (++uBitIndex EQ NBIB)
+                        {
+                            uBitIndex = 0;              // Start over
+                            ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_HETERO:  // Res = BOOL, Rht = HETERO
+                case ARRAY_NESTED:  // Res = BOOL, Rht = NESTED
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        *((LPAPLBOOL) lpMemRes) |= ((*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger) << uBitIndex;
+
+                        // Check for end-of-byte
+                        if (++uBitIndex EQ NBIB)
+                        {
+                            uBitIndex = 0;              // Start over
+                            ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_INT:         // Res = INT, Rht = FLOAT/HETERO/NESTED
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_FLOAT:   // Res = INT , Rht = FLOAT
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                        *((LPAPLINT) lpMemRes)++ = (APLINT) *((LPAPLFLOAT) lpMemRht)++;
+                    break;
+
+                case ARRAY_HETERO:  // Res = INT , Rht = HETERO
+                case ARRAY_NESTED:  // Res = INT , Rht = NESTED
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                        *((LPAPLINT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_FLOAT:       // Res = FLOAT, Rht = HETERO/NESTED
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_HETERO:  // Res = FLOAT, Rht = HETERO
+                case ARRAY_NESTED:  // Res = FLOAT, Rht = NESTED
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                        *((LPAPLFLOAT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stFloat;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_CHAR:        // Res = CHAR, Rht = HETERO/NESTED
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_HETERO:  // Res = CHAR, Rht = HETERO
+                case ARRAY_NESTED:  // Res = CHAR, Rht = NESTED
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                        *((LPAPLCHAR) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stChar;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End DemoteData
 
 
 //***************************************************************************

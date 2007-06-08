@@ -1533,8 +1533,7 @@ LPAPLCHAR CompileArrHetero
             lpaplChar =
             FormatImmed (lpwszOut = lpaplChar,
                          immTypeCur,
-                        &(*lpSymEntry)->stData.lpVoid);
-
+                        &(*lpSymEntry)->stData.stLongest);
             // Skip to next entry
             lpSymEntry++;
 

@@ -359,7 +359,7 @@ BOOL CreateNewTabInThread
     rc.bottom = rcBottom;
 
     // Fill in the CLIENTCREATESTRUCT for the MDI Client
-    ccs.hWindowMenu = GetSubMenu (GetMenu (hWndParent), IDMPOS_WINDOW);
+    ccs.hWindowMenu = GetSubMenu (GetMenu (hWndParent), IDMPOS_SM_WINDOW);
     ccs.idFirstChild = IDM_CHILDWINDOW;
 
     // Create the MDI client window

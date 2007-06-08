@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Parser Grammar
+//  NARS2000 -- Parser Grammar for executable lines
 //***************************************************************************
 
 /****************************************************************************
@@ -9,7 +9,7 @@ Parse a line of pre-tokenized tokens.
 Based upon "The Syntax of APL:  An Old Approach Revisited" by
 Jean Jacques Giardot & Florence Rollin, ACM SIGAPL Quote-Quad APL 1987
 modified to work as an LALR grammar with the lookahead embedded
-in the lexical analyser (yylex).
+in the lexical analyser (pl_yylex).
 
 ****************************************************************************/
 
@@ -28,9 +28,18 @@ in the lexical analyser (yylex).
 #include "compro.h"
 #endif
 
+#ifdef DEBUG
 #define YYERROR_VERBOSE
 #define YYDEBUG 1
-#define YYFPRINTF yyfprintf
+#define YYFPRINTF               pl_yyfprintf
+#endif
+
+// The following #defines are needed to allow multiple parses
+//   to coexist in the same file
+#define yy_symbol_print         pl_yy_symbol_print
+#define yy_symbol_value_print   pl_yy_symbol_value_print
+#define yy_reduce_print         pl_yy_reduce_print
+#define yydestruct              pl_yydestruct
 
 LPYYSTYPE lpYYStr, lpYYStrL, lpYYStrR, lpYYRes, lpYYFcn, lpYYLst, lpYYAxis, lpYYOp1, lpYYOp2;
 BOOL      bRet;
@@ -41,6 +50,7 @@ BOOL      bRet;
 %}
 
 %pure-parser
+%name-prefix="pl_yy"
 %parse-param {LPPLLOCALVARS lpplLocalVars}
 %lex-param   {LPPLLOCALVARS lpplLocalVars}
 
@@ -94,7 +104,7 @@ BOOL      bRet;
 /* Statements */
 Stmts:
       // All errors propogate up to this point where we ABORT which ensures
-      //   that the call to yyparse terminates with a non-zero error code.
+      //   that the call to pl_yyparse terminates with a non-zero error code.
       error                             {DbgMsgW2 (L"%%Stmts:  error"); YYABORT;}
     | Stmt                              {DbgMsgW2 (L"%%Stmts:  Stmt");
                                          Assert (YYResIsEmpty ());  // Likely not TRUE with non-empty SI
@@ -2293,7 +2303,7 @@ void ParseLineInThread
     TlsSetValue (dwTlsSemaphore, (LPVOID) lpplThread->hSemaphore);
 
     // Save the thread's ptr to local vars
-    TlsSetValue (dwTlsLocalVars, (LPVOID) &plLocalVars);
+    TlsSetValue (dwTlsPlLocalVars, (LPVOID) &plLocalVars);
 
     DBGENTER;
 
@@ -2328,7 +2338,7 @@ void ParseLineInThread
     plLocalVars.lpNext  = &plLocalVars.lpStart[plLocalVars.lpStart->tkData.tkIndex];
 
     // Start off with no error
-    plLocalVars.tkErrorCharIndex = (UINT) -1;
+    plLocalVars.tkErrorCharIndex = NEG1U;
 
     // Allocate virtual memory for the Variable Strand accumulator
     plLocalVars.lpYYStrandStart[VARSTRAND] =
@@ -2392,13 +2402,13 @@ void ParseLineInThread
 
 
 
-#ifdef YYDEBUG
+#if YYDEBUG
     // Enable debugging
     yydebug = 1;
 #endif
 
     // Parse the file, check for errors
-    if (!yyparse (&plLocalVars))
+    if (!pl_yyparse (&plLocalVars))
         goto NORMAL_EXIT;
 
 //ERROR_EXIT:
@@ -2725,12 +2735,12 @@ char LookaheadAdjacent
 
 
 //***************************************************************************
-//  $yylex
+//  $pl_yylex
 //
 //  Lexical analyzer for Bison
 //***************************************************************************
 
-int yylex
+int pl_yylex
     (LPYYSTYPE     lpYYLval,        // Ptr to lval
      LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
@@ -2752,7 +2762,7 @@ int yylex
     lpYYLval->FcnCount = 0;
     lpYYLval->lpYYFcn  = NULL;
 #ifdef DEBUG
-    lpYYLval->Flag     = 1;         // Mark as a yylex Index
+    lpYYLval->Flag     = 1;         // Mark as a pl_yylex Index
     lpYYLval->Index    = ++Index;
 #endif
 
@@ -2844,7 +2854,7 @@ int yylex
 
         case TKT_COMMENT:
         case TKT_LINECONT:
-            return yylex (lpYYLval, lpplLocalVars); // Ignore these tokens
+            return pl_yylex (lpYYLval, lpplLocalVars); // Ignore these tokens
 
         case TKT_STRING:
             return STRING;
@@ -2984,22 +2994,22 @@ int yylex
         defstop
             return UNK;
     } // End SWITCH
-} // End yylex
+} // End pl_yylex
 
 
 //***************************************************************************
-//  $yyerror
+//  $pl_yyerror
 //
 //  Error callback from YACC
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- yyerror"
+#define APPEND_NAME     L" -- pl_yyerror"
 #else
 #define APPEND_NAME
 #endif
 
-void yyerror                                // Called for yacc syntax error
+void pl_yyerror                     // Called for yacc syntax error
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
      LPCHAR        s)               // Ptr to error msg
 
@@ -3023,17 +3033,17 @@ void yyerror                                // Called for yacc syntax error
     if (lstrcmp (szTemp, ERR) EQ 0)
         ErrorMessageIndirect (L"WS FULL" APPEND_NAME);
 #undef  ERR
-} // End yyerror
+} // End pl_yyerror
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $yyfprintf
+//  $pl_yyfprintf
 //
 //  Debugger output
 //***************************************************************************
 
-void yyfprintf
+void pl_yyfprintf
     (FILE  *hfile,          // Ignore this
      LPCHAR lpszFmt,        // Format string
      ...)                   // Zero or more arguments
@@ -3080,7 +3090,7 @@ void yyfprintf
 
     va_end (vl);
 #endif
-} // End yyfprintf
+} // End pl_yyfprintf
 
 
 //***************************************************************************

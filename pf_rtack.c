@@ -150,7 +150,7 @@ LPYYSTYPE PrimFnDydRightTack_EM_YY
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpYYRes->tkToken.tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpYYRes->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must look inside the array
             if (!lpYYRes->tkToken.tkData.tkSym->stFlags.Imm)

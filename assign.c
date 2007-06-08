@@ -79,7 +79,7 @@ BOOL AssignName_EM
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkExpr->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkExpr->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If the expression is not immediate, ...
             if (!lptkExpr->tkData.tkSym->stFlags.Imm)
@@ -127,7 +127,7 @@ BOOL AssignName_EM
             // Handle the immediate case
 
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkExpr->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkExpr->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // stData is immediate
             Assert (lptkExpr->tkData.tkSym->stFlags.Imm);
@@ -303,7 +303,7 @@ void SetNameType
     {
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, ...
             if (!lpToken->tkData.tkSym->stFlags.Imm)
@@ -354,7 +354,7 @@ FCN_TYPES GetFcnType
         case TKT_VARNAMED:
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not an immediate, ...
             if (!lpToken->tkData.tkSym->stFlags.Imm)
@@ -502,7 +502,7 @@ BOOL AssignNameSpec_EM
     {
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkVal->tkData.lpVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lptkVal->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must look inside the array
             if (!lptkVal->tkData.tkSym->stFlags.Imm)

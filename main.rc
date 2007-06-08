@@ -74,7 +74,7 @@ END
 // Menu
 //
 
-IDR_MENU MENU DISCARDABLE
+IDR_SMMENU MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
@@ -111,6 +111,61 @@ BEGIN
         MENUITEM "&Function Edit Font",         IDM_FEFONT
         MENUITEM "&Matrix Edit Font",           IDM_MEFONT
         MENUITEM "&Vector Edit Font",           IDM_VEFONT
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Contents...",                IDM_HELP_CONTENTS
+        MENUITEM "&About",                      IDM_ABOUT
+    END
+END
+
+IDR_FEMENU MENU DISCARDABLE
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Exit",                       IDM_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo",                       IDM_UNDO
+        MENUITEM "&Redo",                       IDM_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t",                        IDM_CUT
+        MENUITEM "&Copy",                       IDM_COPY
+        POPUP "&Paste"
+        BEGIN
+            MENUITEM "&Normal",                 IDM_PASTE
+            MENUITEM "Paste APL+&WIN",          IDM_PASTE_APLWIN
+            MENUITEM "Paste APL&2",             IDM_PASTE_APL2
+        END
+        MENUITEM "&Delete",                     IDM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All",                 IDM_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "&Localize",                   IDM_LOCALIZE
+        MENUITEM "Unl&ocalize",                 IDM_UNLOCALIZE
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
+        MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
+        MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
+        MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Screen Font",                IDM_SMFONT
+        MENUITEM "&Tab Font",                   IDM_TCFONT
+        MENUITEM "&Function Edit Font",         IDM_FEFONT
+        MENUITEM "&Matrix Edit Font",           IDM_MEFONT
+        MENUITEM "&Vector Edit Font",           IDM_VEFONT
+    END
+    POPUP "Ob&jects"
+    BEGIN
+        MENUITEM "&Close\tCtrl+Q",              IDM_CLOSE_FN
+        MENUITEM "&Save\tCtrl+S",               IDM_SAVE_FN
+        MENUITEM "Save and &End\tCtrl+E",       IDM_SAVECLOSE_FN
+        MENUITEM "Save &As\tCtrl+A",            IDM_SAVE_FN_AS
     END
     POPUP "&Help"
     BEGIN

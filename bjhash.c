@@ -6,11 +6,6 @@
 #define STRICT
 #include <windows.h>
 
-// Include prototypes unless prototyping
-#ifndef PROTO
-#include "compro.h"
-#endif
-
 typedef unsigned int   uint32_t;
 typedef unsigned short uint16_t;
 typedef unsigned char  uint8_t;

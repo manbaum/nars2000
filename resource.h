@@ -6,11 +6,17 @@
 // Microsoft Developer Studio generated include file.
 // Used by main.rc
 
-#define IDMPOS_FILE                       0
-#define IDMPOS_EDIT                       1
-#define IDMPOS_WINDOW                     2
-#define IDMPOS_OPTIONS                    3
-#define IDMPOS_HELP                       4
+#define IDMPOS_SM_FILE                    0
+#define IDMPOS_SM_EDIT                    1
+#define IDMPOS_SM_WINDOW                  2
+#define IDMPOS_SM_OPTIONS                 3
+#define IDMPOS_SM_HELP                    4
+
+#define IDMPOS_FE_FILE                    0
+#define IDMPOS_FE_EDIT                    1
+#define IDMPOS_FE_WINDOW                  2
+#define IDMPOS_FE_OPTIONS                 3
+#define IDMPOS_FE_HELP                    4
 
 #define IDWC_DB_LB                        1     // IDs to identify window controls
 #define IDWC_FE_EC                        2     // ...
@@ -19,8 +25,11 @@
 
 #define IDB_LINECONT                     90
 
-#define IDR_MENU                        100
-#define IDR_ACCEL                       101
+#define IDR_SMMENU                      100
+#define IDR_FEMENU                      101
+#define IDR_VEMENU                      102
+#define IDR_MEMENU                      103
+#define IDR_ACCEL                       110
 
 #define IDI_OF_LARGE                    100
 #define IDI_OF_SMALL                    101
@@ -73,6 +82,13 @@
 #define IDM_PASTE                       710
 #define IDM_PASTE_APLWIN                711
 #define IDM_PASTE_APL2                  712
+#define IDM_LOCALIZE                    720
+#define IDM_UNLOCALIZE                  721
+
+#define IDM_CLOSE_FN                    730
+#define IDM_SAVE_FN                     731
+#define IDM_SAVECLOSE_FN                732
+#define IDM_SAVE_FN_AS                  733
 
 #define IDC_VERSION                     800
 #define IDC_LINK                        801

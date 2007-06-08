@@ -20,7 +20,8 @@
 //***************************************************************************
 //  $PrimOpJotDot_EM_YY
 //
-//  Primitive operator for monadic and dyadic derived functions from JotDot ("ERROR" and "outer product")
+//  Primitive operator for monadic and dyadic derived functions from
+//    monadic operator JotDot ("ERROR" and "outer product")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -252,7 +253,7 @@ LPYYSTYPE PrimOpDydJotDotCommon_EM_YY
 
     // Handle prototypes separately
     if (aplNELMRes EQ 0
-     || lpPrimProtoRht EQ NULL)
+     && lpPrimProtoRht EQ NULL)
     {
         // Get a ptr to the prototype function for the first symbol (a function or operator)
         lpPrimProtoRht = PrimProtoFnsTab[SymTrans (&lpYYFcnStrRht->tkToken)];
@@ -423,7 +424,7 @@ LPYYSTYPE PrimOpDydJotDotCommon_EM_YY
                                   lpYYFcnStrRht,    // Ptr to function strand
                                  &tkRhtArg,         // Ptr to right arg token
                                   NULL,             // Ptr to axis token
-                                  NULL))            // Ptr to left operand prototype function
+                                  lpPrimProtoRht))  // Ptr to right operand prototype function
             goto ERROR_EXIT;
 
         // Free the left & right arg tokens

@@ -35,7 +35,7 @@ TKT_STRAND  Valid only during strand processing after which it
 TKT_STRING  Valid only during strand processing after which it
             is converted to TKT_VARARRAY.
 
-Outside strand processing, only the tokens TKT_STNAME, TKT_VARIMMED,
+Outside strand processing, only the tokens TKT_VARNAMED, TKT_VARIMMED,
 TKT_LIST, and TKT_VARARRAY are present in a token which points to a
 value.
 
@@ -100,6 +100,7 @@ typedef struct tagTKFLAGS
          ImmType:4,         // 000003C0:  Type of immediate data (see IMM_TYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
          NoDisplay:1,       // 00000400:  Do not display this token
          FcnDir:1;          // 00000800:  Function is direct (not HGLOBAL)
+                            // FFFFF000:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
 typedef union tagTOKEN_DATA
@@ -111,7 +112,7 @@ typedef union tagTOKEN_DATA
     APLINT     tkInteger;           // ...     an APLINT
     APLFLOAT   tkFloat;             // ...     a floating point number
     APLCHAR    tkChar;              // ...     an APLCHAR
-    LPVOID     lpVoid;              // ...     an abritrary ptr
+    LPVOID     tkVoid;              // ...     an abritrary ptr
     APLLONGEST tkLongest;           // Longest datatype (so we can copy the entire data)
 } TOKEN_DATA, *LPTOKEN_DATA;
 
@@ -126,10 +127,10 @@ typedef struct tagTOKEN
 
 typedef struct tagTOKEN_HEADER
 {
-    UINT    Signature;              // Token Header signature
-    int     iVersion,               // Version # of this header
-            iTokenCnt,              // # tokens in lpToken
-            iPrevGroup;             // Index of the previous (to the left) grouping symbol
+    UINT    Signature,              // Token Header signature
+            Version,                // Version # of this header
+            TokenCnt,               // # tokens in lpToken
+            PrevGroup;              // Index of the previous (to the left) grouping symbol
                                     //   (L/R paren, L/R bracket) where the index is relative
                                     //   to the first token after this header.
 } TOKEN_HEADER, *LPTOKEN_HEADER;

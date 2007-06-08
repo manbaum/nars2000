@@ -20,7 +20,8 @@
 //***************************************************************************
 //  $PrimOpDot_EM_YY
 //
-//  Primitive operator for monadic and dyadic derived functions from Dot ("ERROR" and "inner product")
+//  Primitive operator for monadic and dyadic derived functions from
+//    dyadic operator Dot ("ERROR" and "inner product")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -122,7 +123,7 @@ LPYYSTYPE PrimProtoOpDot_EM_YY
                                          lptkRhtArg,            // Ptr to right arg token
                                          lptkAxis,              // Ptr to axis token (may be NULL)
                                          lpPrimProtoLft,        // Ptr to left operand prototype function
-                                         lpPrimProtoLft);       // Ptr to right ...
+                                         lpPrimProtoRht);       // Ptr to right ...
 } // End PrimProtoOpDot_EM_YY
 #undef  APPEND_NAME
 

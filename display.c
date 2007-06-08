@@ -12,6 +12,7 @@
 #include "termcode.h"
 #include "externs.h"
 #include "display.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -1297,36 +1298,37 @@ typedef struct tagTOKENNAMES
 } TOKENNAMES, *LPTOKENNAMES;
 
 static TOKENNAMES tokenNames[] =
-{{"VARNAMED"  , TKT_VARNAMED }, //  1: Symbol table entry for a named var (data is LPSYMENTRY)
- {"STRING"    , TKT_STRING   }, //  2: String  (data is HGLOBAL)
- {"VARIMMED"  , TKT_VARIMMED }, //  3: Immediate data (data is immediate)
- {"COMMENT"   , TKT_COMMENT  }, //  4: Comment (data is HGLOBAL)
- {"ASSIGN"    , TKT_ASSIGN   }, //  5: Assignment symbol (data is UTF16_LEFTARROW)
- {"LISTSEP"   , TKT_LISTSEP  }, //  6: List separator    (data is ';')
- {"FCNIMMED"  , TKT_FCNIMMED }, //  7: Primitive function (any valence) (data is UTF16_***)
- {"OP1IMMED"  , TKT_OP1IMMED }, //  8: Monadic primitive operator (data is UTF16_***)
- {"OP2IMMED"  , TKT_OP2IMMED }, //  9: Dyadic  ...
- {"OPJOTDOT"  , TKT_OPJOTDOT }, // 10: Outer product monadic operator (with right scope) (data is NULL)
- {"LPAREN"    , TKT_LPAREN   }, // 11: Left paren (data is TKT_LPAREN)
- {"RPAREN"    , TKT_RPAREN   }, // 12: Right ...   ...         RPAREN
- {"LBRACKET"  , TKT_LBRACKET }, // 13: Left bracket ...        LBRACKET
- {"RBRACKET"  , TKT_RBRACKET }, // 14: Right ...   ...         RBRACKET
- {"EOS"       , TKT_EOS      }, // 15: End-of-Stmt (data is length of stmt including this token)
- {"EOL"       , TKT_EOL      }, // 16: End-of-Line  ...
- {"LINECONT"  , TKT_LINECONT }, // 17: Line continuation (data is NULL)
- {"INPOUT"    , TKT_INPOUT   }, // 18: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
- {"STRAND"    , TKT_STRAND   }, // 19: Strand accumulating (data is LPTOKEN)
- {"LISTINT"   , TKT_LISTINT  }, // 20: List in parens    (data is HGLOBAL)
- {"LISTPAR"   , TKT_LISTPAR  }, // 21: List in parens    (data is HGLOBAL)
- {"LISTBR"    , TKT_LISTBR   }, // 22: List in brackets  (data is HGLOBAL)
- {"VARARRAY"  , TKT_VARARRAY }, // 23: Array of data (data is HGLOBAL)
- {"FCNARRAY"  , TKT_FCNARRAY }, // 24: Array of functions (data is HGLOBAL)
- {"FCNNAMED"  , TKT_FCNNAMED }, // 25: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED" , TKT_AXISIMMED}, // 26: An immediate axis specification (data is immediate)
- {"AXISARRAY" , TKT_AXISARRAY}, // 27: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"  , TKT_OP1NAMED }, // 28: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"  , TKT_OP2NAMED }, // 29: ...     dyadic  ...
- {"STRNAMED"  , TKT_STRNAMED }, // 30: ...     strand  ...
+{{"VARNAMED"  , TKT_VARNAMED }, // 01: Symbol table entry for a named var (data is LPSYMENTRY)
+ {"STRING"    , TKT_STRING   }, // 02: String  (data is HGLOBAL)
+ {"VARIMMED"  , TKT_VARIMMED }, // 03: Immediate data (data is immediate)
+ {"COMMENT"   , TKT_COMMENT  }, // 04: Comment (data is HGLOBAL)
+ {"ASSIGN"    , TKT_ASSIGN   }, // 05: Assignment symbol (data is UTF16_LEFTARROW)
+ {"LISTSEP"   , TKT_LISTSEP  }, // 06: List separator    (data is ';')
+ {"COLON"     , TKT_COLON    }, // 07: Label ...         (data is ':')
+ {"FCNIMMED"  , TKT_FCNIMMED }, // 08: Primitive function (any valence) (data is UTF16_***)
+ {"OP1IMMED"  , TKT_OP1IMMED }, // 09: Monadic primitive operator (data is UTF16_***)
+ {"OP2IMMED"  , TKT_OP2IMMED }, // 0A: Dyadic  ...
+ {"OPJOTDOT"  , TKT_OPJOTDOT }, // 0B: Outer product monadic operator (with right scope) (data is NULL)
+ {"LPAREN"    , TKT_LPAREN   }, // 0C: Left paren (data is TKT_LPAREN)
+ {"RPAREN"    , TKT_RPAREN   }, // 0D: Right ...   ...         RPAREN
+ {"LBRACKET"  , TKT_LBRACKET }, // 0E: Left bracket ...        LBRACKET
+ {"RBRACKET"  , TKT_RBRACKET }, // 0F: Right ...   ...         RBRACKET
+ {"EOS"       , TKT_EOS      }, // 10: End-of-Stmt (data is length of stmt including this token)
+ {"EOL"       , TKT_EOL      }, // 11: End-of-Line  ...
+ {"LINECONT"  , TKT_LINECONT }, // 12: Line continuation (data is NULL)
+ {"INPOUT"    , TKT_INPOUT   }, // 13: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+ {"STRAND"    , TKT_STRAND   }, // 14: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"   , TKT_LISTINT  }, // 15: List in parens    (data is HGLOBAL)
+ {"LISTPAR"   , TKT_LISTPAR  }, // 16: List in parens    (data is HGLOBAL)
+ {"LISTBR"    , TKT_LISTBR   }, // 17: List in brackets  (data is HGLOBAL)
+ {"VARARRAY"  , TKT_VARARRAY }, // 18: Array of data (data is HGLOBAL)
+ {"FCNARRAY"  , TKT_FCNARRAY }, // 19: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"  , TKT_FCNNAMED }, // 1A: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED" , TKT_AXISIMMED}, // 1B: An immediate axis specification (data is immediate)
+ {"AXISARRAY" , TKT_AXISARRAY}, // 1C: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"  , TKT_OP1NAMED }, // 1D: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"  , TKT_OP2NAMED }, // 1E: ...     dyadic  ...
+ {"STRNAMED"  , TKT_STRNAMED }, // 1F: ...     strand  ...
 };
 
     if ((sizeof (tokenNames) / sizeof (tokenNames[0])) > (uType - TKT_FIRST))
@@ -1972,6 +1974,214 @@ void DisplayUndo
 
     DbgMsg ("********** End Undo Buffer *****************************");
 } // End DisplayUndo
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  DisplayFnHdr
+//
+//  Display the function header
+//***************************************************************************
+
+void DisplayFnHdr
+    (LPFHLOCALVARS lpfhLocalVars)
+
+{
+    WCHAR     wszTemp[1024];
+    HGLOBAL   hGlbName;
+    LPAPLCHAR lpMemName;
+    UINT      uLen, uItm;
+
+    // Initialize the output string
+    lstrcpyW (wszTemp, L"Saving function header:  " WS_UTF16_DEL L" ");
+
+    // Check for result
+    if (lpfhLocalVars->lpYYResult)
+    {
+        // Get the strand length
+        uLen = lpfhLocalVars->lpYYResult->uStrandLen;
+
+        // Append a separator
+        if (uLen > 1)
+            lstrcatW (wszTemp, L"(");
+
+        for (uItm = 0; uItm < uLen; uItm++)
+        {
+            // Get the Name's global memory handle
+            hGlbName = lpfhLocalVars->lpYYResult[uItm].tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLock (hGlbName);
+
+            // Copy the name
+            lstrcatW (wszTemp, lpMemName);
+
+            // If we're not at the last item, separate with a space
+            if (uItm < (uLen - 1))
+                lstrcatW (wszTemp, L" ");
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbName); lpMemName = NULL;
+        } // End FOR
+
+        // Append a separator
+        if (uLen > 1)
+            lstrcatW (wszTemp, L")");
+
+        // Append a left arrow
+        lstrcatW (wszTemp, WS_UTF16_LEFTARROW);
+    } // End IF
+
+    // Check for left argument
+    if (lpfhLocalVars->lpYYLftArg)
+    {
+        // Get the strand length
+        uLen = lpfhLocalVars->lpYYLftArg->uStrandLen;
+
+        // Append a separator
+        if (lpfhLocalVars->FcnValence EQ 3)
+            lstrcatW (wszTemp, L"[");
+        else
+        if (uLen > 1)
+            lstrcatW (wszTemp, L"(");
+
+        for (uItm = 0; uItm < uLen; uItm++)
+        {
+            // Get the Name's global memory handle
+            hGlbName = lpfhLocalVars->lpYYLftArg[uItm].tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLock (hGlbName);
+
+            // Copy the name
+            lstrcatW (wszTemp, lpMemName);
+
+            // If we're not at the last item, separate with a space
+            if (uItm < (uLen - 1))
+                lstrcatW (wszTemp, L" ");
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbName); lpMemName = NULL;
+        } // End FOR
+
+        // Append a separator
+        if (lpfhLocalVars->FcnValence EQ 3)
+            lstrcatW (wszTemp, L"]");
+        else
+        if (uLen > 1)
+            lstrcatW (wszTemp, L")");
+
+        // Append a separator
+        lstrcatW (wszTemp, L" ");
+    } // End IF
+
+    // Check for operator
+    if (lpfhLocalVars->OprValence > 0)
+    {
+        // Append a separator
+        lstrcatW (wszTemp, L"(");
+
+        // Check for left operand
+        if (lpfhLocalVars->lpYYLftOpr)
+        {
+            // Get the Name's global memory handle
+            hGlbName = lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLock (hGlbName);
+
+            // Copy the name
+            lstrcatW (wszTemp, lpMemName);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+            // Append a separator
+            lstrcatW (wszTemp, L" ");
+        } // End IF
+
+        // Get the Name's global memory handle
+        hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLock (hGlbName);
+
+        // Copy the name
+        lstrcatW (wszTemp, lpMemName);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+        // Get the Name's global memory handle
+        hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLock (hGlbName);
+
+        // Copy the name
+        lstrcatW (wszTemp, lpMemName);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+        // Append a separator
+        lstrcatW (wszTemp, L")");
+    } else
+    {
+        // Get the Name's global memory handle
+        hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLock (hGlbName);
+
+        // Copy the name
+        lstrcatW (wszTemp, lpMemName);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+    } // End IF/ELSE
+
+    // Check for right argument
+    if (lpfhLocalVars->lpYYRhtArg)
+    {
+        // Append a separator
+        lstrcatW (wszTemp, L" ");
+
+        // Get the strand length
+        uLen = lpfhLocalVars->lpYYRhtArg->uStrandLen;
+
+        // Append a separator
+        if (uLen > 1)
+            lstrcatW (wszTemp, L"(");
+
+        for (uItm = 0; uItm < uLen; uItm++)
+        {
+            // Get the Name's global memory handle
+            hGlbName = lpfhLocalVars->lpYYRhtArg[uItm].tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLock (hGlbName);
+
+            // Copy the name
+            lstrcatW (wszTemp, lpMemName);
+
+            // If we're not at the last item, separate with a space
+            if (uItm < (uLen - 1))
+                lstrcatW (wszTemp, L" ");
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbName); lpMemName = NULL;
+        } // End FOR
+
+        // Append a separator
+        if (uLen > 1)
+            lstrcatW (wszTemp, L")");
+    } // End IF
+
+    // Display it in the debug window
+    DbgMsgW (wszTemp);
+} // End DisplayFnHdr
 #endif
 
 

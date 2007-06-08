@@ -10,6 +10,7 @@
 #include "common.pro"
 #include "convert.pro"
 #include "debug.pro"
+#include "dfnhdr.pro"
 #include "display.pro"
 #include "dtoa.pro"
 ////lude "editctrl.pro"

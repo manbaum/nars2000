@@ -69,30 +69,32 @@ enum COL_INDICES
  COL_RATIONAL  ,        //  8: rational number separator
  COL_ASSIGN    ,        //  9: assignment symbol
  COL_SEMICOLON ,        // 10: semicolon symbol
- COL_PRIM_FN   ,        // 11: primitive monadic or dyadic function
- COL_PRIM_FN0  ,        // 12: ...       niladic function
- COL_PRIM_OP1  ,        // 13: ...       monadic operator
- COL_PRIM_OP2  ,        // 14: ...       dyadic  ...
- COL_JOT       ,        // 15: jot symbol
- COL_LPAREN    ,        // 16: left paren
- COL_RPAREN    ,        // 17: right ...
- COL_LBRACKET  ,        // 18: left bracket
- COL_RBRACKET  ,        // 19: right ...
- COL_SPACE     ,        // 20: White space (' ' or '\t')
- COL_QUOTE1    ,        // 21: single quote symbol
- COL_QUOTE2    ,        // 22: double ...
- COL_DIAMOND   ,        // 23: diamond symbol
- COL_LAMP      ,        // 24: comment symbol
- COL_EOL       ,        // 25: End-Of-Line
- COL_UNK       ,        // 26: unknown symbols
+ COL_COLON     ,        // 11: colon symbol
+ COL_PRIM_FN   ,        // 12: primitive monadic or dyadic function
+ COL_PRIM_FN0  ,        // 13: ...       niladic function
+ COL_PRIM_OP1  ,        // 14: ...       monadic operator
+ COL_PRIM_OP2  ,        // 15: ...       dyadic  ...
+ COL_JOT       ,        // 16: jot symbol
+ COL_LPAREN    ,        // 17: left paren
+ COL_RPAREN    ,        // 18: right ...
+ COL_LBRACKET  ,        // 19: left bracket
+ COL_RBRACKET  ,        // 20: right ...
+ COL_SPACE     ,        // 21: White space (' ' or '\t')
+ COL_QUOTE1    ,        // 22: single quote symbol
+ COL_QUOTE2    ,        // 23: double ...
+ COL_DIAMOND   ,        // 24: diamond symbol
+ COL_LAMP      ,        // 25: comment symbol
+ COL_EOL       ,        // 26: End-Of-Line
+ COL_UNK       ,        // 27: unknown symbols
 
- COL_LENGTH    ,        // 27: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
+ COL_LENGTH    ,        // 28: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
                         // Because these enums are origin-0, this value is the # valid columns.
 };
 
-// Whenever you add a new COL_*** define,
+// Whenever you add a new COL_*** entry,
 //   be sure to put code into CharTrans
-//   to return the newly defined value.
+//   to return the newly defined value,
+//   and insert a new entry into <GetColName>.
 
 
 // The order of the values of these constants *MUST* match the
@@ -195,6 +197,7 @@ BOOL fnBrkDone    (LPTKLOCALVARS);
 BOOL fnDiaDone    (LPTKLOCALVARS);
 BOOL fnAsnDone    (LPTKLOCALVARS);
 BOOL fnLstDone    (LPTKLOCALVARS);
+BOOL fnClnDone    (LPTKLOCALVARS);
 BOOL fnInfinity   (LPTKLOCALVARS);
 
 FSA_ACTION fsaColTable [][COL_LENGTH] =
@@ -210,6 +213,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_ALPHA   , NULL        , fnAlpInit   },   // 'R' or 'r'
   {FSA_INIT    , NULL        , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , NULL        , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , NULL        , fnClnDone   },   // Colon  ...
   {FSA_INIT    , NULL        , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , NULL        , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , NULL        , fnOp1Done   },   // ...       monadic operator
@@ -239,6 +243,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_NONCE   , NULL        , NULL        },   // 'R' or 'r'
   {FSA_INIT    , fnIntDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnIntDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnIntDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnIntDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnIntDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnIntDone   , fnOp1Done   },   // ...       monadic operator
@@ -268,6 +273,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_NONCE   , NULL        , NULL        },   // 'R' or 'r'
   {FSA_INIT    , fnIntDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnIntDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnIntDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnIntDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnIntDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnIntDone   , fnOp1Done   },   // ...       monadic operator
@@ -297,6 +303,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_NONCE   , NULL        , NULL        },   // 'R' or 'r'
   {FSA_INIT    , fnBigDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnBigDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnBigDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnBigDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnBigDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnBigDone   , fnOp1Done   },   // ...       monadic operator
@@ -326,6 +333,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_NONCE   , NULL        , NULL        },   // 'R' or 'r'
   {FSA_INIT    , fnFrcDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnFrcDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnFrcDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnFrcDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnFrcDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnFrcDone   , fnOp1Done   },   // ...       monadic operator
@@ -355,6 +363,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_NONCE   , NULL        , NULL        },   // 'R' or 'r'
   {FSA_INIT    , fnFrcDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnFrcDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnFrcDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnFrcDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnFrcDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnFrcDone   , fnOp1Done   },   // ...       monadic operator
@@ -384,6 +393,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_SYNTERR , NULL        , NULL        },   // 'R' or 'r'
   {FSA_SYNTERR , NULL        , NULL        },   // Assignment symbol
   {FSA_SYNTERR , NULL        , NULL        },   // Semicolon  ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Colon  ...
   {FSA_SYNTERR , NULL        , NULL        },   // Primitive monadic or dyadic function
   {FSA_SYNTERR , NULL        , NULL        },   // ...       niladic           ...
   {FSA_SYNTERR , NULL        , NULL        },   // ...       monadic operator
@@ -412,6 +422,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_SYNTERR , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_SYNTERR , NULL        , NULL        },   // Assignment symbol
   {FSA_SYNTERR , NULL        , NULL        },   // Semicolon  ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Colon  ...
   {FSA_SYNTERR , NULL        , NULL        },   // 'R' or 'r'
   {FSA_SYNTERR , NULL        , NULL        },   // Primitive monadic or dyadic function
   {FSA_SYNTERR , NULL        , NULL        },   // ...       niladic           ...
@@ -442,6 +453,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_NONCE   , NULL        , NULL        },   // 'R' or 'r'
   {FSA_INIT    , fnExpDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnExpDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnExpDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnExpDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnExpDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnExpDone   , fnOp1Done   },   // ...       monadic operator
@@ -471,6 +483,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_ALPHA   , fnAlpAccum  , NULL        },   // 'R' or 'r'
   {FSA_INIT    , fnAlpDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnAlpDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnAlpDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnAlpDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnAlpDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnAlpDone   , fnOp1Done   },   // ...       monadic operator
@@ -500,6 +513,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_SYSNAME , fnSysAccum  , NULL        },   // 'R' or 'r'
   {FSA_INIT    , fnSysDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnSysDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnSysDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnSysDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnSysDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnSysDone   , fnOp1Done   },   // ...       monadic operator
@@ -528,6 +542,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Complex separator (iIjJ)
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Assignment symbol
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Semicolon  ...
+  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Colon  ...
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // 'R' or 'r'
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Primitive monadic or dyadic function
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // ...       niladic           ...
@@ -558,6 +573,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_ALPHA   , fnQuo1Done  , fnAlpInit   },   // 'R' or 'r'
   {FSA_INIT    , fnQuo1Done  , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnQuo1Done  , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnQuo1Done  , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnQuo1Done  , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnQuo1Done  , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnQuo1Done  , fnOp1Done   },   // ...       monadic operator
@@ -586,6 +602,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Complex separator (iIjJ)
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Assignment symbol
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Semicolon  ...
+  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Colon  ...
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // 'R' or 'r'
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Primitive monadic or dyadic function
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // ...       niladic           ...
@@ -616,6 +633,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_ALPHA   , fnQuo2Done  , fnAlpInit   },   // 'R' or 'r'
   {FSA_INIT    , fnQuo2Done  , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnQuo2Done  , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnQuo2Done  , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnQuo2Done  , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnQuo2Done  , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnQuo2Done  , fnOp1Done   },   // ...       monadic operator
@@ -645,6 +663,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_ALPHA   , fnOp2Done   , fnAlpInit   },   // 'R' or 'r'
   {FSA_INIT    , fnOp2Done   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnOp2Done   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnOp2Done   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnOp2Done   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnOp2Done   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnOp2Done   , fnOp1Done   },   // ...       monadic operator
@@ -674,6 +693,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_ALPHA   , fnJotDone   , fnAlpInit   },   // 'R' or 'r'
   {FSA_INIT    , fnJotDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnJotDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnJotDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnJotDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnJotDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_INIT    , fnJotDone   , fnOp1Done   },   // ...       monadic operator
@@ -703,6 +723,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH] =
   {FSA_ALPHA   , fnOutDone   , fnAlpInit   },   // 'R' or 'r'
   {FSA_INIT    , fnOutDone   , fnAsnDone   },   // Assignment symbol
   {FSA_INIT    , fnOutDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnOutDone   , fnClnDone   },   // Colon  ...
   {FSA_INIT    , fnOutDone   , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , fnOutDone   , fnPrmDone   },   // ...       niladic           ...
   {FSA_SYNTERR , NULL        , NULL        },   // ...       monadic operator
@@ -836,6 +857,9 @@ HGLOBAL ExecuteLine
                 } // End IF
 
                 hGlbToken = NULL;
+
+                // Display the default prompt
+                DisplayPrompt (hWndEC, FALSE);
 
                 break;
 
@@ -1411,6 +1435,40 @@ BOOL fnLstDone
                               0);
     return bRet;
 } // End fnLstDone
+
+
+//***************************************************************************
+//  $fnClnDone
+//
+//  Start and end of a label or control structure
+//***************************************************************************
+
+BOOL fnClnDone
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    TKFLAGS     tkFlags = {0};
+    BOOL        bRet = TRUE;
+    APLLONGEST  aplLongest;
+
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsg ("fnClnDone");
+#endif
+
+    // Copy current WCHAR
+    aplLongest = *lptkLocalVars->lpwsz;
+
+    // Mark the data as an assignment
+    tkFlags.TknType = TKT_COLON;
+
+    // Attempt to append as new token, check for TOKEN TABLE FULL,
+    //   and resize as necessary.
+    bRet = AppendNewToken_EM (lptkLocalVars,
+                              &tkFlags,
+                              &aplLongest,
+                              0);
+    return bRet;
+} // End fnClnDone
 
 
 //***************************************************************************
@@ -2564,6 +2622,7 @@ void Untokenize
 
             case TKT_ASSIGN:            // Assignment symbol (data is UTF16_LEFTARROW)
             case TKT_LISTSEP:           // List separator    (...     ';')
+            case TKT_COLON:             // Label ...         (...     ':')
             case TKT_VARIMMED:          // Immediate data (data is immediate)
             case TKT_FCNIMMED:          // Immediate primitive function (any valence) (data is UTF16_***)
             case TKT_OP1IMMED:          // ...       Monadic primitive operator (data is UTF16_***)
@@ -2997,6 +3056,9 @@ WCHAR CharTrans
         case L';':                      // Lists (bracketed and otherwise)
             return COL_SEMICOLON;
 
+        case L':':                      // Control structures ***FIXME***
+            return COL_COLON;
+
         case UTF16_DELTILDE:            // Alt-'@' - del-tilde
         case UTF16_DEL:                 // Alt-'g' - del
         case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot)
@@ -3009,7 +3071,6 @@ WCHAR CharTrans
         case L'&':
         case L'{':
         case L'}':
-        case L':':                      // Control structures ***FIXME***
             return COL_UNK;
 
         default:
@@ -3058,22 +3119,23 @@ static COLNAMES colNames[] =
  {L"RATIONAL"  , COL_RATIONAL  },   //  8: rational number separator
  {L"ASSIGN"    , COL_ASSIGN    },   //  9: assignment symbol
  {L"SEMICOLON" , COL_SEMICOLON },   // 10: semicolon symbol
- {L"PRIM_FN"   , COL_PRIM_FN   },   // 11: primitive monadic or dyadic function
- {L"PRIM_FN0"  , COL_PRIM_FN0  },   // 12: ...       niladic function
- {L"PRIM_OP1"  , COL_PRIM_OP1  },   // 13: ...       monadic operator
- {L"PRIM_OP2"  , COL_PRIM_OP2  },   // 14: ...       dyadic  ...
- {L"JOT"       , COL_JOT       },   // 15: jot symbol
- {L"LPAREN"    , COL_LPAREN    },   // 16: left paren
- {L"RPAREN"    , COL_RPAREN    },   // 17: right ...
- {L"LBRACKET"  , COL_LBRACKET  },   // 18: left bracket
- {L"RBRACKET"  , COL_RBRACKET  },   // 19: right ...
- {L"SPACE"     , COL_SPACE     },   // 20: White space (' ' or '\t')
- {L"QUOTE1"    , COL_QUOTE1    },   // 21: single quote symbol
- {L"QUOTE2"    , COL_QUOTE2    },   // 22: double ...
- {L"DIAMOND"   , COL_DIAMOND   },   // 23: diamond symbol
- {L"LAMP"      , COL_LAMP      },   // 24: comment symbol
- {L"EOL"       , COL_EOL       },   // 25: End-Of-Line
- {L"UNK"       , COL_UNK       },   // 26: unknown symbols
+ {L"COLON"     , COL_COLON     },   // 11: colon symbol
+ {L"PRIM_FN"   , COL_PRIM_FN   },   // 12: primitive monadic or dyadic function
+ {L"PRIM_FN0"  , COL_PRIM_FN0  },   // 13: ...       niladic function
+ {L"PRIM_OP1"  , COL_PRIM_OP1  },   // 14: ...       monadic operator
+ {L"PRIM_OP2"  , COL_PRIM_OP2  },   // 15: ...       dyadic  ...
+ {L"JOT"       , COL_JOT       },   // 16: jot symbol
+ {L"LPAREN"    , COL_LPAREN    },   // 17: left paren
+ {L"RPAREN"    , COL_RPAREN    },   // 18: right ...
+ {L"LBRACKET"  , COL_LBRACKET  },   // 19: left bracket
+ {L"RBRACKET"  , COL_RBRACKET  },   // 20: right ...
+ {L"SPACE"     , COL_SPACE     },   // 21: White space (' ' or '\t')
+ {L"QUOTE1"    , COL_QUOTE1    },   // 22: single quote symbol
+ {L"QUOTE2"    , COL_QUOTE2    },   // 23: double ...
+ {L"DIAMOND"   , COL_DIAMOND   },   // 24: diamond symbol
+ {L"LAMP"      , COL_LAMP      },   // 25: comment symbol
+ {L"EOL"       , COL_EOL       },   // 26: End-Of-Line
+ {L"UNK"       , COL_UNK       },   // 27: unknown symbols
 };
     if (COL_LENGTH > (uType - COL_FIRST))
         return colNames[uType - COL_FIRST].lpwsz;

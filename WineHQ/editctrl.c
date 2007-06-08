@@ -4260,8 +4260,8 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
 {
 ////HMENU menu = LoadMenuA(user32_module, "EDITMENU");
 ////HMENU popup = GetSubMenu(menu, 0);
-    HMENU menu = LoadMenuA(user32_module, (LPSTR) MAKEINTRESOURCE (IDR_MENU));
-    HMENU popup = GetSubMenu(menu, IDMPOS_EDIT);
+    HMENU menu = LoadMenuA(user32_module, (LPSTR) MAKEINTRESOURCE (IDR_SMMENU));
+    HMENU popup = GetSubMenu(menu, IDMPOS_SM_EDIT);
     UINT start = es->selection_start;
     UINT end = es->selection_end;
 

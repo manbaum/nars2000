@@ -448,7 +448,7 @@ code
       <h3>Session Manager</h3>
       <ul>
         <li>Tabbed Workspaces</li>
-        <li>Function Editor (can't save function as yet, though)</li>
+        <li>Function Editor</li>
         <li>Character translation during Paste from APL+WIN</li>
       </ul>
 

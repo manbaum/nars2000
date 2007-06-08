@@ -3808,7 +3808,8 @@ HGLOBAL CopyArray_EM
 //***************************************************************************
 //  $IsGlobalTypeArray
 //
-//  Confirm that an HGLOBAL is a valid variable or function array
+//  Confirm that an HGLOBAL is a valid variable or function array, or a
+//    defined function.
 //***************************************************************************
 
 BOOL IsGlobalTypeArray
@@ -3820,8 +3821,17 @@ BOOL IsGlobalTypeArray
     BOOL   bRet = TRUE;
 
     // It's an HGLOBAL
-    if (GetPtrTypeDir (hGlb) NE PTRTYPE_HGLOBAL)
-        return FALSE;
+    switch (GetPtrTypeDir (hGlb))
+    {
+        case PTRTYPE_STCONST:
+            return FALSE;
+
+        case PTRTYPE_HGLOBAL:
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // Clear the PTRTYPE_*** flags
     hGlb = ClrPtrTypeDirGlb (hGlb);
@@ -3836,7 +3846,7 @@ BOOL IsGlobalTypeArray
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
-        // Ensure it's an array
+        // Ensure it has the correct signature
         bRet = (lpHeader->Sign.ature EQ Signature);
 
 #undef  lpHeader

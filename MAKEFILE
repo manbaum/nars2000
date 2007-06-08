@@ -146,6 +146,7 @@ $(O)bjhash.DEP          \
 $(O)common.DEP          \
 $(O)convert.DEP         \
 $(O)debug.DEP           \
+$(O)dfnhdr.DEP          \
 $(O)display.DEP         \
 $(O)dtoa.DEP            \
 $(O)editctrl.DEP        \
@@ -154,7 +155,6 @@ $(O)editmat.DEP         \
 $(O)editvec.DEP         \
 $(O)exec.DEP            \
 $(O)fastbool.DEP        \
-$(O)fnhdr.DEP           \
 $(O)free.DEP            \
 $(O)g_fmt.DEP           \
 $(O)main.DEP            \
@@ -275,6 +275,9 @@ $(O)version.DEV
 !if exist ($(O)debug.DEP)
 !       include $(O)debug.DEP
 !endif
+!if exist ($(O)dfnhdr.DEP)
+!       include $(O)dfnhdr.DEP
+!endif
 !if exist ($(O)display.DEP)
 !       include $(O)display.DEP
 !endif
@@ -298,9 +301,6 @@ $(O)version.DEV
 !endif
 !if exist ($(O)fastbool.DEP)
 !       include $(O)fastbool.DEP
-!endif
-!if exist ($(O)fnhdr.DEP)
-!       include $(O)fnhdr.DEP
 !endif
 !if exist ($(O)free.DEP)
 !       include $(O)free.DEP
@@ -516,6 +516,7 @@ $(O)bjhash.PRO          \
 $(O)common.PRO          \
 $(O)convert.PRO         \
 $(O)debug.PRO           \
+$(O)dfnhdr.PRO          \
 $(O)display.PRO         \
 $(O)dtoa.PRO            \
 $(O)editctrl.PRO        \
@@ -524,7 +525,6 @@ $(O)editmat.PRO         \
 $(O)editvec.PRO         \
 $(O)exec.PRO            \
 $(O)fastbool.PRO        \
-$(O)fnhdr.PRO           \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
 $(O)main.PRO            \
@@ -633,8 +633,8 @@ $(O)dtoa.OBJ:           $(@B).C         $(DTOA_DEP)
 $(O)g_fmt.OBJ:          $(@B).C         $(G_FMT_DEP)
 
 ## Bison-generated files
-$(O)fnhdr.C:            $(@B).Y
-$(O)fnhdr.OBJ:          $(O)$(@B).C     $(FNHDR_DEP)
+$(O)dfnhdr.C:           $(@B).Y
+$(O)dfnhdr.OBJ:         $(O)$(@B).C     $(DFNHDR_DEP)
 $(O)parse.C:            $(@B).Y
 $(O)parse.OBJ:          $(O)$(@B).C     $(PARSE_DEP)
 
@@ -744,6 +744,7 @@ OBJS=                       \
      $(O)common.OBJ         \
      $(O)convert.OBJ        \
      $(O)debug.OBJ          \
+     $(O)dfnhdr.OBJ         \
      $(O)display.OBJ        \
      $(O)dtoa.obj           \
      $(O)editctrl.OBJ       \
@@ -752,7 +753,6 @@ OBJS=                       \
      $(O)editvec.OBJ        \
      $(O)exec.OBJ           \
      $(O)fastbool.OBJ       \
-     $(O)fnhdr.OBJ          \
      $(O)free.OBJ           \
      $(O)g_fmt.obj          \
      $(O)main.OBJ           \

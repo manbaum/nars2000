@@ -8,6 +8,7 @@
 #include "main.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -89,8 +90,44 @@ void FreeResultSub
     // Split cases based upon the token type
     switch (lptkRes->tkFlags.TknType)
     {
-        case TKT_VARNAMED:
         case TKT_FCNNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkRes->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // stData is an HGLOBAL
+            Assert (!lptkRes->tkData.tkSym->stFlags.Imm);
+
+            // Get the global memory ptr
+            hGlbData = ClrPtrTypeDirGlb (lptkRes->tkData.tkSym->stData.stGlbData);
+
+            // Data is an valid HGLOBAL defined function
+            Assert (IsGlbTypeDfnDir (MakeGlbTypeGlb (hGlbData)));
+
+            if (FreeResultGlobalDfn (hGlbData))
+            {
+#ifdef DEBUG
+                dprintf ("**Zapping in FreeResultSub: Token=%08X, Value=%08X (%s#%d)",
+                         lptkRes,
+                         ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
+                         FNLN);
+#endif
+                lptkRes->tkData.tkSym->stData.stGlbData = NULL;
+
+                // Set the flags we'll leave alone
+                stFlags.SysName     =
+                stFlags.UsrName     =
+                stFlags.Inuse       =
+                stFlags.NotCase     =
+                stFlags.Perm        = 1;
+                stFlags.SysVarValid = NEG1U;
+
+                // Clear the symbol table flags
+                *(UINT *) &lptkRes->tkData.tkSym->stFlags &= *(UINT *) &stFlags;
+            } // End IF
+
+            break;
+
+        case TKT_VARNAMED:
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
             // tkData is an LPSYMENTRY
@@ -211,7 +248,7 @@ void FreeResultSub
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultGlobalVar_EM"
+#define APPEND_NAME     L" -- FreeResultGlobalVar"
 #else
 #define APPEND_NAME
 #endif
@@ -343,7 +380,7 @@ BOOL FreeResultGlobalVar
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultGlobalFcn_EM"
+#define APPEND_NAME     L" -- FreeResultGlobalFcn"
 #else
 #define APPEND_NAME
 #endif
@@ -352,14 +389,14 @@ BOOL FreeResultGlobalFcn
     (HGLOBAL hGlbData)
 
 {
-    LPVOID    lpMem;
-////APLSTYPE  cFcnType;         // The array storage type (see enum FCN_TYPES)
-    APLNELM   aplNELM;
-    UINT      u,
-              RefCnt;
-    BOOL      bRet;
-    LPYYSTYPE lpYYToken;
-    HGLOBAL   hGlbLcl;
+    LPVOID    lpMem;            // Ptr to the function array's global memory
+////APLSTYPE  cFcnType;         // The function array storage type (see enum FCN_TYPES)
+    APLNELM   aplNELM;          // The # elements in the function array
+    UINT      u,                // Loop counter
+              RefCnt;           // Reference count
+    BOOL      bRet;             // TRUE iff result is valid
+    LPYYSTYPE lpYYToken;        // Ptr to function array token
+    HGLOBAL   hGlbLcl;          // Global memory handle
 
     DBGENTER;
 
@@ -475,6 +512,112 @@ BOOL FreeResultGlobalFcn
 
     return bRet;
 } // End FreeResultGlobalFcn
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $FreeResultGlobalDfn
+//
+//  Free a global defined function
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FreeResultGlobalDfn"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL FreeResultGlobalDfn
+    (HGLOBAL hGlbData)
+
+{
+    LPDFN_HEADER lpMemDfn;          // Ptr to defined function header global memory
+    UINT         nLines,            // # lines in the function
+                 RefCnt;            // Reference count
+    LPFCNLINE    lpFcnLines;        // Ptr to the array of FCNLINEs
+
+    // Data is an valid HGLOBAL defined function
+    Assert (IsGlbTypeDfnDir (MakeGlbTypeGlb (hGlbData)));
+
+    // Lock the memory to get a ptr to it
+    lpMemDfn = MyGlobalLock (hGlbData);
+
+    // Get the reference count
+    RefCnt = lpMemDfn->RefCnt;
+
+    Assert (RefCnt > 0);
+
+    // Decrement it
+    // If the RefCnt is zero, free the globals
+    if (--RefCnt EQ 0)
+    {
+        // Check the static HGLOBALs
+        if (lpMemDfn->hGlbTxtHdr)
+        {
+            // We no longer need this storage
+            DbgGlobalFree (lpMemDfn->hGlbTxtHdr); lpMemDfn->hGlbTxtHdr = NULL;
+        } // End IF
+
+        if (lpMemDfn->hGlbTknHdr)
+        {
+            // Free the tokens
+            Untokenize (lpMemDfn->hGlbTknHdr);
+
+            // We no longer need this storage
+            DbgGlobalFree (lpMemDfn->hGlbTknHdr); lpMemDfn->hGlbTknHdr = NULL;
+        } // End IF
+
+        if (lpMemDfn->hGlbUndoBuff)
+        {
+            // We no longer need this storage
+            DbgGlobalFree (lpMemDfn->hGlbUndoBuff); lpMemDfn->hGlbUndoBuff = NULL;
+        } // End IF
+
+        // Get the # lines in the function
+        nLines = lpMemDfn->nLines;
+
+        // Get a ptr to the start of the function line structs (FCNLINE[nLines])
+        lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfn)[lpMemDfn->offFcnLines];
+
+        // Loop through the lines
+        while (nLines--)
+        {
+            if (lpFcnLines->hGlbTxtLine)
+            {
+                // We no longer need this storage
+                DbgGlobalFree (lpFcnLines->hGlbTxtLine); lpFcnLines->hGlbTxtLine = NULL;
+            } // End IF
+
+            if (lpFcnLines->hGlbTknLine)
+            {
+                // Free the tokens
+                Untokenize (lpFcnLines->hGlbTknLine);
+
+                // We no longer need this storage
+                DbgGlobalFree (lpFcnLines->hGlbTknLine); lpFcnLines->hGlbTknLine = NULL;
+            } // End IF
+
+            if (lpFcnLines->hGlbMonInfo)
+            {
+                DbgBrk ();      // ***FINISHME***
+
+
+
+
+
+
+            } // End IF
+
+            // Skip to the next struct
+            lpFcnLines++;
+        } // End WHILE
+    } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbData); lpMemDfn = NULL;
+
+    return (RefCnt EQ 0);
+} // End FreeResultGlobalDfn
 #undef  APPEND_NAME
 
 

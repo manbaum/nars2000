@@ -16,10 +16,11 @@
 #define MB(a)   MessageBox (NULL, a, "NARS2000", MB_OK)
 #define MBC(a)  if (MessageBox (NULL, a, "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
 #define IsGlbPtr(a) (GlobalFlags (a) NE GMEM_INVALID_HANDLE)
-#define IsGlbTypeVarDir(a) (IsGlobalTypeArray (a, VARARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeVarDir(a) (IsGlobalTypeArray (            a, VARARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeVarInd(a) (IsGlobalTypeArray (*(LPVOID *) a, VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnDir(a) (IsGlobalTypeArray (a, FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnDir(a) (IsGlobalTypeArray (            a, FCNARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeFcnInd(a) (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeDfnDir(a) (IsGlobalTypeArray (            a, DFN_HEADER_SIGNATURE))
 
 #define AplModI(m,a) PrimFnDydStileIisIvI (m, a, NULL)
 #define AplModF(m,a) PrimFnDydStileFisFvF (m, a, NULL)
@@ -101,7 +102,8 @@ DecrRefCntInd (hGlbData);
 // Define common offset between the Session Manager and Function Editor
 #define GWLSF_PERTAB    0                                   // HGLOBAL of corresponding PERTABDATA struc
 #define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (long)  // Handle of the matching Edit control
-#define GWLSF_UNDO_BEG  GWLSF_HWNDEC   + 1 * sizeof (long)  // Ptr to Undo stack, beginning
+#define GWLSF_UNDO_INI  GWLSF_HWNDEC   + 1 * sizeof (long)  // Ptr to Undo stack, initial (as allocated)
+#define GWLSF_UNDO_BEG  GWLSF_UNDO_INI + 1 * sizeof (long)  // ...                beginning
 #define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (long)  // ...                next
 #define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (long)  // ...                last
 #define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (long)  // Value of next Undo group index

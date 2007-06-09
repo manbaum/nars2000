@@ -1122,9 +1122,6 @@ LRESULT APIENTRY SMWndProc
                     esState.exType = EX_IMMEX;
                     ExecuteLine (uLineNum, &esState, hWndEC);
 
-                    // Display the default prompt
-                    DisplayPrompt (hWndEC, FALSE);
-
                     break;
 
                 case VK_UP:

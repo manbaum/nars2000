@@ -1190,10 +1190,10 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;   // We handled the msg
 
-                case IDM_SAVE_FN_AS:
-                    SaveAsFunction (hWndActive);
-
-                    return FALSE;   // We handled the msg
+////////////////case IDM_SAVE_FN_AS:            // ***FIXME*** -- Make this work??
+////////////////    SaveAsFunction (hWndActive);
+////////////////
+////////////////    return FALSE;   // We handled the msg
             } // End SWITCH
 
             break;                  // Continue with next handler ***MUST***

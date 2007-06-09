@@ -165,7 +165,7 @@ BEGIN
         MENUITEM "&Close\tCtrl+Q",              IDM_CLOSE_FN
         MENUITEM "&Save\tCtrl+S",               IDM_SAVE_FN
         MENUITEM "Save and &End\tCtrl+E",       IDM_SAVECLOSE_FN
-        MENUITEM "Save &As\tCtrl+A",            IDM_SAVE_FN_AS
+////////MENUITEM "Save &As\tCtrl+A",            IDM_SAVE_FN_AS      // ***FIXME*** -- Make this work??
     END
     POPUP "&Help"
     BEGIN

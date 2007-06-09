@@ -67,7 +67,7 @@ BOOL      bRet;
 %left  ASSIGN PRIMFCN NAMEFCN SYSFN12 GOTO
 %right NAMEOP1 OP1 NAMEOP2 OP2 JOTDOT
 
-%start Stmts
+%start Line
 
 %%
 
@@ -101,11 +101,20 @@ BOOL      bRet;
       as above, otherwise 1 2 op2 3 4 is way too ambiguous.
  */
 
+/* Line */
+Line:
+      Stmts                             {DbgMsgW2 (L"%%Line:  Stmts");}
+    | Stmts ':' NAMEUNK                 {DbgMsgW2 (L"%%Line:  NAMEUNK: Stmts");}
+    | Stmts ':' NAMEVAR                 {DbgMsgW2 (L"%%Line:  NAMEVAR: Stmts");}
+    ;
+
 /* Statements */
 Stmts:
       // All errors propogate up to this point where we ABORT which ensures
       //   that the call to pl_yyparse terminates with a non-zero error code.
-      error                             {DbgMsgW2 (L"%%Stmts:  error"); YYABORT;}
+      error                             {DbgMsgW2 (L"%%Stmts:  error");
+                                         YYABORT;
+                                        }
     | Stmt                              {DbgMsgW2 (L"%%Stmts:  Stmt");
                                          Assert (YYResIsEmpty ());  // Likely not TRUE with non-empty SI
                                         }
@@ -2431,7 +2440,10 @@ NORMAL_EXIT:
     // Untokenize and free hGlbToken if requested
     if (bFreeToken)
     {
+        // Free the tokens
         Untokenize (hGlbToken);
+
+        // We no longer need this storage
         DbgGlobalFree (hGlbToken); hGlbToken = NULL;
     } // End IF
 
@@ -2530,6 +2542,7 @@ BOOL LookaheadDyadicOp
         case TKT_EOL:
         case TKT_ASSIGN:
         case TKT_LISTSEP:
+        case TKT_COLON:
         case TKT_OP1IMMED:
         case TKT_LBRACKET:
         case TKT_VARARRAY:
@@ -2650,6 +2663,7 @@ char LookaheadSurround
             return SymbTypeFV (lpNext);
 
         case TKT_LISTSEP:
+        case TKT_COLON:
         case TKT_COMMENT:
         case TKT_LPAREN:
         case TKT_LBRACKET:
@@ -2709,6 +2723,7 @@ char LookaheadAdjacent
 
         case TKT_ASSIGN:
         case TKT_LISTSEP:
+        case TKT_COLON:
         case TKT_COMMENT:
         case TKT_LPAREN:
         case TKT_LBRACKET:
@@ -2845,6 +2860,9 @@ int pl_yylex
 
         case TKT_LISTSEP:
             return ';';
+
+        case TKT_COLON:
+            return ':';
 
         case TKT_FCNIMMED:
             if (lpplLocalVars->lpNext->tkData.tkIndex EQ UTF16_RIGHTARROW)
@@ -3000,7 +3018,7 @@ int pl_yylex
 //***************************************************************************
 //  $pl_yyerror
 //
-//  Error callback from YACC
+//  Error callback from Bison
 //***************************************************************************
 
 #ifdef DEBUG
@@ -3009,7 +3027,7 @@ int pl_yylex
 #define APPEND_NAME
 #endif
 
-void pl_yyerror                     // Called for yacc syntax error
+void pl_yyerror                     // Called for Bison syntax error
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
      LPCHAR        s)               // Ptr to error msg
 

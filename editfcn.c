@@ -14,6 +14,7 @@
 #include "externs.h"
 #include "editctrl.h"
 #include "Unitrans.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -196,6 +197,11 @@ LRESULT APIENTRY FEWndProc
     switch (message)
     {
         case WM_CREATE:             // lpcs = (LPCREATESTRUCT) lParam; // Structure with creation data
+        {
+            LPSYMENTRY   lpSymName;         // Ptr to function name STE
+            HGLOBAL      hGlbDfnHdr = NULL; // Defined function header global memory handle
+            LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header global memory
+
 
 #define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
 
@@ -206,6 +212,18 @@ LRESULT APIENTRY FEWndProc
             // Save in window extra bytes
             vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
             SetWindowLong (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
+
+            // See if there is an existing function
+            lpSymName = ParseFunctionName (hWnd, (LPAPLCHAR) lpMDIcs->lParam);
+            if (lpSymName
+             && lpSymName->stData.stGlbData)
+            {
+                // Get the global memory handle
+                hGlbDfnHdr = lpSymName->stData.stGlbData;
+
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+            } // End IF
 
             // At some point, we'll read in the undo buffer from
             //   the saved function and copy it to virtual memory
@@ -229,19 +247,51 @@ LRESULT APIENTRY FEWndProc
                           MEM_COMMIT,
                           PAGE_READWRITE);
             // Save in window extra bytes
-            SetWindowLong (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
-            SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
-            SetWindowLong (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
+            SetWindowLong (hWnd, GWLSF_UNDO_INI, (long) lpUndoBeg);
 ////////////SetWindowLong (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
 
-            // Start with an initial action of nothing
-            AppendUndo (hWnd,                       // FE Window handle
-                        GWLSF_UNDO_NXT,             // Offset in hWnd extra bytes of lpUndoNxt
-                        undoNone,                   // Action
-                        0,                          // Beginning char position
-                        0,                          // Ending    ...
-                        UNDO_NOGROUP,               // Group index
-                        0);                         // Character
+            // If there's a pre-existing function,
+            //   and there's an Undo Buffer
+            if (hGlbDfnHdr
+             && lpMemDfnHdr->hGlbUndoBuff)
+            {
+                LPUNDOBUF lpMemUndo;        // Ptr to Undo Buffer global memory
+                UINT      uUndoSize;        // Size of Undo Buffer in bytes
+
+                // Get the size in bytes
+                uUndoSize = MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff);
+
+                // Lock the memory to get a ptr to it
+                lpMemUndo = MyGlobalLock (lpMemDfnHdr->hGlbUndoBuff);
+
+                // Copy the previous Undo Buffer contents
+                CopyMemory (lpUndoBeg, lpMemUndo, uUndoSize);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
+
+                // Get the ptr to the next available entry
+                lpUndoNxt = (LPUNDOBUF) &((LPBYTE) lpUndoBeg)[uUndoSize];
+
+                // Save in window extra bytes
+                SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
+                SetWindowLong (hWnd, GWLSF_UNDO_LST, (long) lpUndoNxt);
+            } else
+            {
+                // Save in window extra bytes
+                SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
+                SetWindowLong (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
+
+                // Start with an initial action of nothing
+                AppendUndo (hWnd,                       // FE Window handle
+                            GWLSF_UNDO_NXT,             // Offset in hWnd extra bytes of lpUndoNxt
+                            undoNone,                   // Action
+                            0,                          // Beginning char position
+                            0,                          // Ending    ...
+                            UNDO_NOGROUP,               // Group index
+                            0);                         // Character
+            } // End IF/ELSE
+
             // Save incremented starting ptr in window extra bytes
             SetWindowLong (hWnd, GWLSF_UNDO_BEG, (long) ++lpUndoBeg);
 
@@ -286,10 +336,73 @@ LRESULT APIENTRY FEWndProc
                               GWL_WNDPROC,
                               (long) (WNDPROC) &LclEditCtrlWndProc);
             // Set the paint hook
-            SendMessage (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
+            SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
 
-            // Set the initial text
-            SendMessageW (hWndEC, WM_SETTEXT, 0, (LPARAM) lpMDIcs->lParam);
+            // If there's a pre-existing function,
+            //   read in its lines as the initial text
+            if (hGlbDfnHdr)
+            {
+                HGLOBAL   hGlbTxt;          // Line/header text global memory handle
+                LPVOID    lpMem;            // Ptr to global memory
+                UINT      nLines,           // # lines in the function
+                          uLineNum;         // Line #
+                LPFCNLINE lpFcnLines;       // Ptr to array function line structs (FCNLINE[nLines])
+
+                // Get the function header text global memory handle
+                hGlbTxt = lpMemDfnHdr->hGlbTxtHdr;
+
+                // Lock the memory to get a ptr to it
+                lpMem = MyGlobalLock (hGlbTxt);
+
+                // Append the text to the Edit Control
+                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpMem);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbTxt); lpMem = NULL;
+
+                // Get the # lines in the function
+                nLines = lpMemDfnHdr->nLines;
+
+                // Get ptr to array of function line structs (FCNLINE[nLines])
+                lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+
+                // Loop through the lines, appending the text to the Edit Control
+                for (uLineNum = 0; uLineNum < nLines; uLineNum++)
+                {
+                    // Append a CRLF to the Edit Control
+                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
+
+                    // Get the line text global memory handle
+                    hGlbTxt = lpFcnLines->hGlbTxtLine;
+
+                    // Lock the memory to get a ptr to it
+                    lpMem = MyGlobalLock (hGlbTxt);
+
+                    // Append the text to the Edit Control
+                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpMem);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbTxt); lpMem = NULL;
+
+                    // Skip to the next struct
+                    lpFcnLines++;
+                } // End FOR
+            } else
+                // Set the initial text
+                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpMDIcs->lParam);
+
+            // Set the selection to the start of the buffer
+            SendMessageW (hWndEC, EM_SETSEL, 0, 0);
+
+            // Mark as no changes so far
+            SetWindowLong (hWnd, GWLSF_CHANGED, FALSE);
+
+            // If there's a pre-existing function, ...
+            if (hGlbDfnHdr)
+            {
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+            } // End IF
 
             // Paint the window
             ShowWindow (hWndEC, SW_SHOWNORMAL);
@@ -301,6 +414,7 @@ LRESULT APIENTRY FEWndProc
 
             break;
 #undef  lpMDIcs
+        } // End WM_CREATE
 
         case MYWM_INIT_EC:
             // Draw the line #s
@@ -312,7 +426,7 @@ LRESULT APIENTRY FEWndProc
                                     // end   = (UINT) lParam
             // This message is sent whenever the user right clicks
             //   inside a Function Edit window and the Edit Control
-            //   wants to nkow whether or not to enable the
+            //   wants to know whether or not to enable the
             //   Localize/Unlocalize menu items.
 ////        DbgBrk ();      /// ***FINISHME***
 
@@ -966,6 +1080,16 @@ LRESULT WINAPI LclEditCtrlWndProc
                 return FALSE;       // We handled the msg
             } // End IF
 
+////////////// Check for Ctrl-A (SaveAs)        // ***FIXME*** -- Make this work??
+////////////if (chCharCode EQ 1)
+////////////{
+////////////    // Send a message the the Master Frame where
+////////////    //   menu processing is done
+////////////    PostMessage (hWndMF, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_SAVE_AS_FN, 0, NULL));
+////////////
+////////////    return FALSE;       // We handled the msg
+////////////} // End IF
+
             iChar = chCharCode - ' ';
             if (0 <= iChar
              &&      iChar < (sizeof (aCharCode) / sizeof (aCharCode[0])))
@@ -1156,7 +1280,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             return (lpUndoBeg NE lpUndoNxt);
 
         case WM_REDO:
-            DbgBrk ();              // ***FINISHME***
+            DbgBrk ();              // ***FINISHME*** -- Make Redo work??
 
 
 
@@ -1572,7 +1696,7 @@ WCHAR GetCharValue
     if (uLineOff >= uLineLen)
         return (uLineOff EQ uLineLen) ? L'\r' : L'\n';
 
-    // Specify the maximum # chars in the buffer
+    // Tell EM_GETLINE maximum # chars in the buffer
     ((LPWORD) lpwszTemp)[0] = uLineLen;
 
     // Get the current line
@@ -1914,7 +2038,85 @@ BOOL QueryCloseFE
 
 
 //***************************************************************************
-//  SaveFunction
+//  $ParseFunctionName
+//
+//  Parse a function header and return the LPSYMENTRY
+//    of the function name (if any)
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ParseFunctionName"
+#else
+#define APPEND_NAME
+#endif
+
+LPSYMENTRY ParseFunctionName
+    (HWND      hWndFE,          // Window handle to Function Editor
+     LPAPLCHAR lpaplChar)       // Ptr to header text
+
+{
+    HWND        hWndEC;             // Window handle to Edit Control
+    HGLOBAL     hGlbTknHdr = NULL;  // Tokenized header global memory handle
+    FHLOCALVARS fhLocalVars = {0};  // Re-entrant vars
+    LPSYMENTRY  lpSymName = NULL;   // Ptr to SYMENTRY for the function name
+
+    Assert (IzitFE (hWndFE));
+
+    // Get the handle to the edit control
+    hWndEC = (HWND) GetWindowLong (hWndFE, GWLSF_HWNDEC);
+
+    // Tokenize the line
+    hGlbTknHdr = Tokenize_EM (lpaplChar);
+    if (!hGlbTknHdr)
+        return NULL;
+
+    // Allocate virtual memory for the Variable Strand accumulator
+    fhLocalVars.lpYYStrandStart =
+        VirtualAlloc (NULL,      // Any address
+                      DEF_STRAND_MAXSIZE * sizeof (YYSTYPE),
+                      MEM_RESERVE,
+                      PAGE_READWRITE);
+    if (!fhLocalVars.lpYYStrandStart)
+    {
+        // ***FIXME*** -- WS FULL before we got started???
+        DbgMsg ("ParseHeader:  VirtualAlloc for <fhLocalVars.lpYYStrandStart> failed");
+
+        goto ERROR_EXIT;    // Mark as failed
+    } // End IF
+
+    // Commit the intial size
+    VirtualAlloc (fhLocalVars.lpYYStrandStart,
+                  DEF_STRAND_INITSIZE * sizeof (YYSTYPE),
+                  MEM_COMMIT,
+                  PAGE_READWRITE);
+    // Parse the header
+    if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars))
+        // Get the Name's symbol table entry
+        lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
+//NORMAL_EXIT:
+ERROR_EXIT:
+    // Free the virtual memory we allocated above
+    if (fhLocalVars.lpYYStrandStart)
+    {
+        VirtualFree (fhLocalVars.lpYYStrandStart, 0, MEM_RELEASE); fhLocalVars.lpYYStrandStart = NULL;
+    } // End IF
+
+    if (hGlbTknHdr)
+    {
+        // Free the tokens
+        Untokenize (hGlbTknHdr);
+
+        // We no longer need this storage
+        DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+    } // End IF
+
+    return lpSymName;
+} // End ParseFunctionName
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SaveFunction
 //
 //  Attempt to save a function to the WS
 //***************************************************************************
@@ -1925,15 +2127,20 @@ BOOL QueryCloseFE
 #define APPEND_NAME
 #endif
 
-BOOL SaveFunction (HWND hWndFE)
+BOOL SaveFunction
+    (HWND hWndFE)
 
 {
-    HWND      hWndEC;           // Window handle to Edit Control
-    UINT      uLineLen;         // Line length
-    HGLOBAL   hGlbHdr,          // Header global memory handle
-              hGlbToken;        // Tokenized ...
-    LPAPLCHAR lpMemHdr;         // Ptr to header global memory
-    BOOL      bRet = FALSE;     // TRUE iff result is valid
+    HWND         hWndEC;            // Window handle to Edit Control
+    UINT         uLineLen;          // Line length
+    HGLOBAL      hGlbTxtHdr = NULL, // Header text global memory handle
+                 hGlbTknHdr = NULL, // Tokenized header text ...
+                 hGlbDfnHdr = NULL; // Defined function header ...
+    LPAPLCHAR    lpMemTxtHdr;       // Ptr to header text global memory
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header ...
+    BOOL         bRet = FALSE;      // TRUE iff result is valid
+    FHLOCALVARS  fhLocalVars = {0}; // Re-entrant vars
+    LPSYMENTRY   lpSymName = NULL;  // Ptr to SYMENTRY for the function name
 
     Assert (IzitFE (hWndFE));
 
@@ -1944,105 +2151,296 @@ BOOL SaveFunction (HWND hWndFE)
     uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
 
     // Allocate space for the text
-    //   (the first  "1 + " is for a leading WCHAR count
-    //    the second "1 + " is for a trailing zero)
-    hGlbHdr = DbgGlobalAlloc (GHND, (1 + 1 + uLineLen) * sizeof (APLCHAR));
-    if (!hGlbHdr)
+    //   (the "+ 1" is for a trailing zero)
+    hGlbTxtHdr = DbgGlobalAlloc (GHND, (uLineLen + 1) * sizeof (APLCHAR));
+    if (!hGlbTxtHdr)
     {
-        DbgBrk ();      // ***FINISHME***
-
-
-
-
+        MessageBox (hWndEC,
+                    "Insufficient memory to save the function header text!!",
+                    pszAppName,
+                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
         return bRet;
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (hGlbHdr);
-
-    // Save the WCHAR count
-    ((LPWORD) lpMemHdr)[0] = uLineLen;
+    lpMemTxtHdr = MyGlobalLock (hGlbTxtHdr);
 
     // Tell EM_GETLINE maximum # chars in the buffer
-    ((LPWORD) lpMemHdr)[1] = uLineLen;
+    ((LPWORD) lpMemTxtHdr)[0] = uLineLen;
 
     // Save the text in global memory
-    SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) &((LPWORD) lpMemHdr)[1]);
+    SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpMemTxtHdr);
 
     // Tokenize the line
-    hGlbToken = Tokenize_EM ((LPAPLCHAR) &((LPWORD) lpMemHdr)[1]);
+    hGlbTknHdr = Tokenize_EM ((LPAPLCHAR) lpMemTxtHdr);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbHdr); lpMemHdr = NULL;
+    MyGlobalUnlock (hGlbTxtHdr); lpMemTxtHdr = NULL;
 
-    if (!hGlbToken)
+    if (!hGlbTknHdr)
+        goto ERROR_EXIT;
+
+    // Allocate virtual memory for the Variable Strand accumulator
+    fhLocalVars.lpYYStrandStart =
+        VirtualAlloc (NULL,      // Any address
+                      DEF_STRAND_MAXSIZE * sizeof (YYSTYPE),
+                      MEM_RESERVE,
+                      PAGE_READWRITE);
+    if (!fhLocalVars.lpYYStrandStart)
     {
-        // We no longer need this storage
-        DbgGlobalFree (hGlbHdr); hGlbHdr = NULL;
-
-        return FALSE;
+        MessageBox (hWndEC,
+                    "Insufficient memory to save the function header strand stack!!",
+                    pszAppName,
+                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        goto ERROR_EXIT;    // Mark as failed
     } // End IF
 
-    if (ParseHeader (hWndEC, hGlbToken))
+    // Commit the intial size
+    VirtualAlloc (fhLocalVars.lpYYStrandStart,
+                  DEF_STRAND_INITSIZE * sizeof (YYSTYPE),
+                  MEM_COMMIT,
+                  PAGE_READWRITE);
+    // Parse the header
+    if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars))
     {
-        DbgBrk ();      // ***FINISHME***
+        UINT      nLines,       // # lines in the function
+                  offFcnLines,  // Offset to start of function
+                                //   line structs (FCNLINE[nLines])
+                  uLineNum;     // Current line # in the Edit Control
+        LPFCNLINE lpFcnLines;   // Ptr to array of function line structs (FCNLINE[nLines])
+        LPUNDOBUF lpUndoBeg,    // Ptr to start of Undo buffer
+                  lpUndoLst;    // Ptr to end ...
 
         // Check to see if this function is already in global memory
+        lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
 
+        // If it's already in memory, free it
+        if (lpSymName->stData.stGlbData)
+            FreeResultGlobalDfn (lpSymName->stData.stGlbData);
 
+        // Get # lines in the function
+        nLines = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0) - 1;
 
-
+        // Get offset to start of function line structs
+        offFcnLines = sizeof (DFN_HEADER);
 
         // Allocate global memory for the function
+        hGlbDfnHdr = DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
+                                         + sizeof (FCNLINE) * nLines);
+        if (!hGlbDfnHdr)
+        {
+            MessageBox (hWndEC,
+                        "Insufficient memory to save the function header!!",
+                        pszAppName,
+                        MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            goto ERROR_EXIT;
+        } // End IF
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+        // Save the static parts of the function into global memory
+        lpMemDfnHdr->Sign.ature  = DFN_HEADER_SIGNATURE;
+        lpMemDfnHdr->Version     = 0;
+        lpMemDfnHdr->offFcnLines = offFcnLines;
+
+        // If it's an operator, ...
+        if (fhLocalVars.OprValence)
+        {
+            lpMemDfnHdr->Type       = fhLocalVars.OprValence;
+            lpMemDfnHdr->FcnValence = 0;
+        } else
+        // It's a function
+        {
+            lpMemDfnHdr->Type       = 3;
+            lpMemDfnHdr->FcnValence = fhLocalVars.FcnValence;
+        } // End IF/ELSE
+
+        lpMemDfnHdr->RefCnt         = 1;
+        lpMemDfnHdr->nLines         = nLines;
+        lpMemDfnHdr->nProtoLine     = NEG1U;
+        lpMemDfnHdr->nInverseLine   = NEG1U;
+        lpMemDfnHdr->nSingletonLine = NEG1U;
+        lpMemDfnHdr->hGlbTxtHdr     = hGlbTxtHdr;
+        lpMemDfnHdr->hGlbTknHdr     = hGlbTknHdr;
+
+        // Get the ptr to the start of the Undo Buffer
+        (long) lpUndoBeg = GetWindowLong (hWndFE, GWLSF_UNDO_BEG);
+        if (lpUndoBeg)
+        {
+            LPUNDOBUF lpMemUndo;        // Ptr to Undo Buffer global memory
+
+            // Get the ptr to the last entry in the Undo Buffer
+            (long) lpUndoLst = GetWindowLong (hWndFE, GWLSF_UNDO_LST);
+
+            // Allocate storage for the Undo buffer
+            lpMemDfnHdr->hGlbUndoBuff = DbgGlobalAlloc (GHND, (lpUndoLst - lpUndoBeg) * sizeof (UNDOBUF));
+            if (!lpMemDfnHdr->hGlbUndoBuff)
+            {
+                MessageBox (hWndEC,
+                            "Insufficient memory to save Undo buffer!!",
+                            pszAppName,
+                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                goto ERROR_EXIT;
+            } // End IF
+
+            // Lock the memory to get a ptr to it
+            lpMemUndo = MyGlobalLock (lpMemDfnHdr->hGlbUndoBuff);
+
+            // Copy the Undo Buffer to global memory
+            CopyMemory (lpMemUndo, lpUndoBeg, (lpUndoLst - lpUndoBeg) * sizeof (UNDOBUF));
+
+            // We no longer need this ptr
+            MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
+        } // End IF
+
+        // Save the dynamic parts of the function into global memory
+
+        // Get ptr to array of function line structs (FCNLINE[nLines])
+        lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+
+        // Loop through the lines
+        for (uLineNum = 0; uLineNum < nLines; uLineNum++)
+        {
+            HGLOBAL hGlbTxtLine;    // Line text global memory handle
+            LPVOID  lpMem;          // Ptr to global memory
+            UINT    uLineLen,       // Line length
+                    uLineNdx;       // Line index
+
+            // Get the char pos at the start of this line
+            uLineNdx = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum + 1, 0);
+
+            // Get the line length of the line
+            uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLineNdx, 0);
+
+            // Allocate global memory to hold this text
+            // The "+ 1" is to include a terminating zero
+            //   as well as handle GlobalLock's aversion to locking
+            //   zero-length arrays
+            hGlbTxtLine = DbgGlobalAlloc (GHND, (uLineLen + 1) * sizeof (APLCHAR));
+            if (!hGlbTxtLine)
+            {
+                MessageBox (hWndEC,
+                            "Insufficient memory to save a function line!!",
+                            pszAppName,
+                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                goto ERROR_EXIT;
+            } // End IF
+
+            // Lock the memory to get a ptr to it
+            lpMem = MyGlobalLock (hGlbTxtLine);
+
+            // Tell EM_GETLINE maximum # chars in the buffer
+            ((LPWORD) lpMem)[0] = uLineLen;
+
+            // Read in the line text
+            SendMessageW (hWndEC, EM_GETLINE, (WPARAM) (uLineNum + 1), (LPARAM) lpMem);
+
+            // Save the global memory handle
+            lpFcnLines->hGlbTxtLine = hGlbTxtLine;
+
+            // Tokenize the line
+            lpFcnLines->hGlbTknLine = Tokenize_EM (lpMem);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbTxtLine); lpMem = NULL;
+
+            // If tokenization failed, ...
+            if (!lpFcnLines->hGlbTknLine)
+            {
+                DbgBrk ();      // ***FINISHME*** -- What to do here??
 
 
-        // Save the various parts of the function into global memory
 
 
 
 
-        // Close the Function Editor window
+            } // End IF
+
+            // No monitor info as yet
+            lpFcnLines->hGlbMonInfo = NULL;
+
+            // Skip to the next struct
+            lpFcnLines++;
+        } // End WHILE
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+        // Save the global memory handle in the STE
+        lpSymName->stData.stGlbData = hGlbDfnHdr;
+
+        // Mark as unchanged since the last save
         SetWindowLong (hWndFE, GWLSF_CHANGED, FALSE);
-        SendMessage (GetParent (hWndFE), WM_MDIDESTROY, (WPARAM) hWndFE, 0);
 
         bRet = TRUE;
+
+        goto NORMAL_EXIT;
+    } // End IF
+ERROR_EXIT:
+    if (hGlbDfnHdr)
+    {
+        FreeResultGlobalDfn (hGlbDfnHdr); hGlbDfnHdr = NULL;
     } // End IF
 
+    // Free the virtual memory we allocated above
+    if (fhLocalVars.lpYYStrandStart)
+    {
+        VirtualFree (fhLocalVars.lpYYStrandStart, 0, MEM_RELEASE); fhLocalVars.lpYYStrandStart = NULL;
+    } // End IF
+
+    if (hGlbTknHdr)
+    {
+        // Free the tokens
+        Untokenize (hGlbTknHdr);
+
+        // We no longer need this storage
+        DbgGlobalFree (hGlbTknHdr); hGlbTknHdr = NULL;
+    } // End IF
+
+    if (hGlbTxtHdr)
+    {
+        // We no longer need this storage
+        DbgGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
+    } // End IF
+NORMAL_EXIT:
     return bRet;
 } // End SaveFunction
 #undef  APPEND_NAME
 
 
+//// //***************************************************************************
+//// //  $SaveAsFunction
+//// //
+//// //  Attempt to save a function to the WS using a different name
+//// //***************************************************************************
+////
+//// BOOL SaveAsFunction
+////     (HWND hWndFE)
+////
+//// {
+////     DbgBrk ();          // ***FINISHME***
+////
+////     Assert (IzitFE (hWndFE));
+////
+////
+////
+////
+////
+////
+////
+////     return FALSE;
+//// } // End SaveAsFunction
+
+
 //***************************************************************************
-//  SaveAsFunction
-//
-//  Attempt to save a function to the WS using a different name
-//***************************************************************************
-
-BOOL SaveAsFunction (HWND hWndFE)
-
-{
-    DbgBrk ();          // ***FINISHME***
-
-    Assert (IzitFE (hWndFE));
-
-
-
-
-
-
-
-    return FALSE;
-} // End SaveAsFunction
-
-
-//***************************************************************************
-//  CloseFunction
+//  $CloseFunction
 //
 //  Attempt to close a function
 //***************************************************************************
 
-BOOL CloseFunction (HWND hWndFE)
+BOOL CloseFunction
+    (HWND hWndFE)
 
 {
     Assert (IzitFE (hWndFE));
@@ -2051,7 +2449,6 @@ BOOL CloseFunction (HWND hWndFE)
     if (QueryCloseFE (hWndFE))
     {
         // Close the Function Editor window
-        SetWindowLong (hWndFE, GWLSF_CHANGED, FALSE);
         SendMessage (GetParent (hWndFE), WM_MDIDESTROY, (WPARAM) hWndFE, 0);
 
         return TRUE;

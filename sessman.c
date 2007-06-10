@@ -45,6 +45,11 @@ In any case,
 
 ////LPTOKEN lptkStackBase;          // Ptr to base of token stack used in parsing
 
+typedef struct tagSM_CREATEPARAMS
+{
+    HGLOBAL hGlbPTD;
+} SM_CREATEPARAMS, UNALIGNED *LPSM_CREATEPARAMS;
+
 
 //***************************************************************************
 //  $SetAttrs
@@ -86,10 +91,20 @@ void AppendLine
      BOOL    bEndingCR)
 
 {
-    HWND hWndEC;
+    HWND    hWndEC;         // Window handle to Edit Control
+    HGLOBAL hGlbPTD;        // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;  // Ptr to PerTabData global memory
+
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
+    hWndEC = (HWND) GetWindowLong (lpMemPTD->hWndSM, GWLSF_HWNDEC);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Move the caret to the end of the buffer
     MoveCaretEOB (hWndEC);
@@ -121,7 +136,8 @@ void AppendLine
 #endif
 
 void ReplaceLine
-    (LPWCHAR lpwszLine,
+    (HWND    hWndSM,
+     LPWCHAR lpwszLine,
      UINT    uLineNum)
 
 {
@@ -503,18 +519,36 @@ LRESULT APIENTRY SMWndProc
 ////LCLODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
     {
-        case WM_NCCREATE:           // lpcs = (LPCREATESTRUCT) lParam
-            hWndSM = hWnd;
+#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
+        case WM_NCCREATE:               // lpcs = (LPCREATESTRUCT) lParam
+        {
+            // Get the thread's PerTabData global memory handle
+            hGlbPTD = ((LPSM_CREATEPARAMS) (lpMDIcs->lParam))->hGlbPTD;
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             INIT_PERTABVARS
 
-            break;                  // Continue with next handler
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
+            break;                  // Continue with next handler
+        } // End WM_NCCREATE
+#undef  lpMDIcs
+
+#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
         case WM_CREATE:             // 0 = (int) wParam
                                     // lpcs = (LPCREATESTRUCT) lParam
-#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
         {
-            int i;
+            int    i;
+            LPVOID p;
+
+            // Get the thread's PerTabData global memory handle
+            hGlbPTD = ((LPSM_CREATEPARAMS) (lpMDIcs->lParam))->hGlbPTD;
+
+            // Save the thread's PerTabData global memory handle
+            TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
 
             // Initialize # threads
             SetProp (hWnd, "NTHREADS", 0);
@@ -571,12 +605,19 @@ LRESULT APIENTRY SMWndProc
 
             // *************** lpwszCurLine ****************************
 
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // Allocate memory for the current line
-            lpwszCurLine = VirtualAlloc (NULL,      // Any address
-                                         DEF_CURLINE_MAXSIZE,
-                                         MEM_RESERVE,
-                                         PAGE_READWRITE);
-            if (!lpwszCurLine)
+            p = lpMemPTD->lpwszCurLine =
+              VirtualAlloc (NULL,       // Any address
+                            DEF_CURLINE_MAXSIZE,
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszCurLine> failed");
@@ -585,19 +626,26 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // Commit the intial size
-            VirtualAlloc (lpwszCurLine,
+            VirtualAlloc (p,
                           DEF_CURLINE_INITSIZE,
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
             // *************** lpwszTmpLine ****************************
 
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // Allocate memory for the temporary line
-            lpwszTmpLine = VirtualAlloc (NULL,      // Any address
-                                         DEF_CURLINE_MAXSIZE,
-                                         MEM_RESERVE,
-                                         PAGE_READWRITE);
-            if (!lpwszTmpLine)
+            p = lpMemPTD->lpwszTmpLine =
+              VirtualAlloc (NULL,       // Any address
+                            DEF_CURLINE_MAXSIZE,
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszTmpLine> failed");
@@ -606,19 +654,26 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // Commit the intial size
-            VirtualAlloc (lpwszTmpLine,
+            VirtualAlloc (p,
                           DEF_CURLINE_INITSIZE,
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
 ////////////// *************** lptkStackBase ***************************
 ////////////
+////////////// Lock the memory to get a ptr to it
+////////////lpMemPTD = MyGlobalLock (hGlbPTD);
+////////////
 ////////////// Allocate virtual memory for the token stack used in parsing
-////////////lptkStackBase = VirtualAlloc (NULL,      // Any address
-////////////                              DEF_TOKENSTACK_MAXSIZE,
-////////////                              MEM_RESERVE,
-////////////                              PAGE_READWRITE);
-////////////if (!lptkStackBase)
+////////////p = lpMemPTD->lptkStackBase =
+////////////  VirtualAlloc (NULL,       // Any address
+////////////                DEF_TOKENSTACK_MAXSIZE,
+////////////                MEM_RESERVE,
+////////////                PAGE_READWRITE);
+////////////// We no longer need this ptr
+////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+////////////
+////////////if (!p)
 ////////////{
 ////////////    // ***FIXME*** -- WS FULL before we got started???
 ////////////    DbgMsg ("WM_CREATE:  VirtualAlloc for <lptkStackBase> failed");
@@ -627,19 +682,26 @@ LRESULT APIENTRY SMWndProc
 ////////////} // End IF
 ////////////
 ////////////// Commit the intial size
-////////////VirtualAlloc (lptkStackBase,
+////////////VirtualAlloc (p,
 ////////////              DEF_TOKENSTACK_INITSIZE,
 ////////////              MEM_COMMIT,
 ////////////              PAGE_READWRITE);
 
             // *************** lpszNumAlp ******************************
 
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // Allocate virtual memory for the Name & Number accumulator
-            lpszNumAlp = VirtualAlloc (NULL,      // Any address
-                                       DEF_NUMALP_MAXSIZE,
-                                       MEM_RESERVE,
-                                       PAGE_READWRITE);
-            if (!lpszNumAlp)
+            p = lpMemPTD->lpszNumAlp =
+              VirtualAlloc (NULL,       // Any address
+                            DEF_NUMALP_MAXSIZE,
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpszNumAlp> failed");
@@ -648,19 +710,26 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // Commit the intial size
-            VirtualAlloc (lpszNumAlp,
+            VirtualAlloc (p,
                           DEF_NUMALP_INITSIZE,
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
             // *************** lpwszString *****************************
 
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // Allocate virtual memory for the wide string accumulator
-            lpwszString = VirtualAlloc (NULL,       // Any address
-                                        DEF_STRING_MAXSIZE,
-                                        MEM_RESERVE,
-                                        PAGE_READWRITE);
-            if (!lpwszString)
+            p = lpMemPTD->lpwszString =
+              VirtualAlloc (NULL,       // Any address
+                            DEF_STRING_MAXSIZE,
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszString> failed");
@@ -669,19 +738,26 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // Commit the intial size
-            VirtualAlloc (lpwszString,
+            VirtualAlloc (p,
                           DEF_STRING_INITSIZE,
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
             // *************** lpHshTab ********************************
 
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // Allocate virtual memory for the hash table
-            lpHshTab = VirtualAlloc (NULL,      // Any address
-                                     DEF_HSHTAB_MAXSIZE,
-                                     MEM_RESERVE,
-                                     PAGE_READWRITE);
-            if (!lpHshTab)
+            p = lpMemPTD->lpHshTab =
+              VirtualAlloc (NULL,       // Any address
+                            DEF_HSHTAB_MAXSIZE,
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpHshTab> failed");
@@ -690,35 +766,48 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // Commit the intial size
-            VirtualAlloc (lpHshTab,
+            VirtualAlloc (p,
                           DEF_HSHTAB_INITSIZE,
                           MEM_COMMIT,
                           PAGE_READWRITE);
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Initialize the principal hash entry (1st one in each block).
             // This entry is never overwritten with an entry with a
             //   different hash value.
             for (i = 0; i < DEF_HSHTAB_INITSIZE; i += DEF_HSHTAB_EPB)
-                lpHshTab[i].htFlags.PrinHash = 1;
+                lpMemPTD->lpHshTab[i].htFlags.PrinHash = 1;
 
             // Initialize the next & prev same HTE values
             for (i = 0; i < DEF_HSHTAB_INITSIZE; i++)
             {
-                lpHshTab[i].NextSameHash =
-                lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
+                lpMemPTD->lpHshTab[i].NextSameHash =
+                lpMemPTD->lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
             } // End FOR
 
             // Initialize next split entry
-            lpHshTabSplitNext = lpHshTab;
+            lpMemPTD->lpHshTabSplitNext = lpMemPTD->lpHshTab;
+
+////////////// We no longer need this ptr
+////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // *************** lpSymTab ********************************
 
+////////////// Lock the memory to get a ptr to it
+////////////lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // Allocate virtual memory for the symbol table
-            lpSymTab = VirtualAlloc (NULL,      // Any address
-                                     DEF_SYMTAB_MAXSIZE,
-                                     MEM_RESERVE,
-                                     PAGE_READWRITE);
-            if (!lpSymTab)
+            p = lpMemPTD->lpSymTab =
+              VirtualAlloc (NULL,       // Any address
+                            DEF_SYMTAB_MAXSIZE,
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpSymTab> failed");
@@ -727,19 +816,16 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // Commit the intial size
-            VirtualAlloc (lpSymTab,
+            VirtualAlloc (p,
                           DEF_SYMTAB_INITSIZE,
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
-            // Initialize next available entry
-            lpSymTabNext = lpSymTab;
-
-            // Get the PerTabData handle
-            hGlbPTD = (HGLOBAL) (lpMDIcs->lParam);
-
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Initialize next available entry
+            lpMemPTD->lpSymTabNext = lpMemPTD->lpSymTab;
 
             // Initialize the Symbol table Entry for the constant zero and blank
             lpMemPTD->steZero  = SymTabAppendPermInteger_EM (0);
@@ -819,11 +905,17 @@ LRESULT APIENTRY SMWndProc
             // Save in window extra bytes
             SetWindowLong (hWnd, GWLSF_HWNDEC, (long) hWndEC);
 
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // Subclass the Edit Control so we can handle some of its messages
-            lpfnOldEditCtrlWndProc = (WNDPROC)
+            lpMemPTD->lpfnOldEditCtrlWndProc = (WNDPROC)
               SetWindowLongW (hWndEC,
                               GWL_WNDPROC,
                               (long) (WNDPROC) &LclEditCtrlWndProc);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
             // Set the paint hook
             SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
 
@@ -921,7 +1013,7 @@ LRESULT APIENTRY SMWndProc
             // If we're being activated, ...
             if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
             {
-                SendMessage (hWndMC,
+                SendMessage (GetParent (hWnd),
                              WM_MDISETMENU,
                              GET_WM_MDISETMENU_MPS (hMenuSM, hMenuSMWindow));
                 SetMenu (hWndMF, hMenuSM);
@@ -1065,6 +1157,9 @@ LRESULT APIENTRY SMWndProc
             UINT      uLineLen,
                       uLineCnt;
 
+            // Get the thread's PerTabData global memory handle
+            hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
             // Special cases for SM windows:
             //   * Up/Dn arrows:
             //     * Cache original line before it's changed
@@ -1092,12 +1187,15 @@ LRESULT APIENTRY SMWndProc
                     {
                         UINT uLastNum;
 
+                        // Lock the memory to get a ptr to it
+                        lpMemPTD = MyGlobalLock (hGlbPTD);
+
                         // Get the current line
-                        ((LPWORD) lpwszTmpLine)[0] = DEF_CURLINE_MAXLEN;
-                        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszTmpLine);
+                        ((LPWORD) lpMemPTD->lpwszTmpLine)[0] = DEF_CURLINE_MAXLEN;
+                        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemPTD->lpwszTmpLine);
 
                         // Append CRLF
-                        lstrcatW (lpwszTmpLine, L"\r\n");
+                        lstrcatW (lpMemPTD->lpwszTmpLine, L"\r\n");
 
                         // Move the caret to the end of the buffer
                         MoveCaretEOB (hWndEC);
@@ -1106,16 +1204,19 @@ LRESULT APIENTRY SMWndProc
                         uLastNum = SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
                         // Replace the last line in the buffer
-                        ReplaceLine (lpwszTmpLine, uLastNum);
+                        ReplaceLine (hWnd, lpMemPTD->lpwszTmpLine, uLastNum);
 
                         // Restore the original of the current line
-                        ReplaceLine (lpwszCurLine, uLineNum);
+                        ReplaceLine (hWnd, lpMemPTD->lpwszCurLine, uLineNum);
 
                         // Move the caret to the end of the buffer
                         MoveCaretEOB (hWndEC);
 
                         // Get the current line #
                         uLineNum = uLastNum;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
                     } // End IF
 
                     // Mark as immediate execution
@@ -1129,18 +1230,24 @@ LRESULT APIENTRY SMWndProc
                     if (uLineNum < 1)
                         break;
 
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
                     // Specify the maximum # chars for the buffer
-                    ((LPWORD) lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
+                    ((LPWORD) lpMemPTD->lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
 
                     // Save the (new) current line
                     uLineLen =
-                    SendMessageW (hWndEC, EM_GETLINE, max (uLineNum, 1) - 1, (LPARAM) lpwszCurLine);
+                    SendMessageW (hWndEC, EM_GETLINE, max (uLineNum, 1) - 1, (LPARAM) lpMemPTD->lpwszCurLine);
 
                     // Ensure properly terminated
-                    lpwszCurLine[uLineLen] = L'\0';
+                    lpMemPTD->lpwszCurLine[uLineLen] = L'\0';
 
                     // Reset the changed line flag
                     SetWindowLong (hWnd, GWLSF_CHANGED, FALSE);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     break;
 
@@ -1152,18 +1259,24 @@ LRESULT APIENTRY SMWndProc
                     if (uLineCnt <= (uLineNum + 1))
                         break;
 
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
                     // Specify the maximum # chars for the buffer
-                    ((LPWORD) lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
+                    ((LPWORD) lpMemPTD->lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
 
                     // Save the (new) current line
                     uLineLen =
-                    SendMessageW (hWndEC, EM_GETLINE, uLineNum + 1, (LPARAM) lpwszCurLine);
+                    SendMessageW (hWndEC, EM_GETLINE, uLineNum + 1, (LPARAM) lpMemPTD->lpwszCurLine);
 
                     // Ensure properly terminated
-                    lpwszCurLine[uLineLen] = L'\0';
+                    lpMemPTD->lpwszCurLine[uLineLen] = L'\0';
 
                     // Reset the changed line flag
                     SetWindowLong (hWnd, GWLSF_CHANGED, FALSE);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     break;
 #ifdef DEBUG
@@ -1215,10 +1328,15 @@ LRESULT APIENTRY SMWndProc
 #ifdef DEBUG
                 case VK_F9:             // Resize Debugger and Session Manager windows
                 {
-                    RECT rc;
-                    int  nWidthMC,  nHeightMC,
-                         nHeightDB, nHeightSM;
-                    HWND hWndMC;
+                    RECT         rc;
+                    int          nWidthMC,  nHeightMC,
+                                 nHeightDB, nHeightSM;
+                    HWND         hWndMC;
+                    // Get the thread's PerTabData global memory handle
+                    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
 
                     // Get the window handle to the MDI Client (our parent)
                     hWndMC = GetParent (hWnd);
@@ -1236,7 +1354,7 @@ LRESULT APIENTRY SMWndProc
 
                     // Resize the Debugger window
                     //   to the top of the client area
-                    SetWindowPos (hWndDB,           // Window handle to position
+                    SetWindowPos (lpMemPTD->hWndDB, // Window handle to position
                                   0,                // SWP_NOZORDER
                                   0,                // X-position
                                   0,                // Y-...
@@ -1247,7 +1365,7 @@ LRESULT APIENTRY SMWndProc
                                  );
                     // Resize the Session Manager window
                     //   to the bottom of the client area
-                    SetWindowPos (hWndSM,           // Window handle to position
+                    SetWindowPos (lpMemPTD->hWndSM, // Window handle to position
                                   0,                // SWP_NOZORDER
                                   0,                // X-position
                                   nHeightDB,        // Y-...
@@ -1256,6 +1374,9 @@ LRESULT APIENTRY SMWndProc
                                   SWP_NOZORDER      // Flags
                                 | SWP_SHOWWINDOW
                                  );
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
                     return FALSE;
                 } // End VK_F9
 #endif
@@ -1375,6 +1496,12 @@ LRESULT APIENTRY SMWndProc
 
         case WM_DESTROY:
         {
+            // Get the thread's PerTabData global memory handle
+            hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // *************** Undo Buffer *****************************
             // Get the ptr to the start of the Undo Buffer
             (long) lpUndoBeg = GetWindowLong (hWnd, GWLSF_UNDO_BEG);
@@ -1388,43 +1515,46 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // *************** lpSymTab ********************************
-            if (lpSymTab)
+            if (lpMemPTD->lpSymTab)
             {
-                VirtualFree (lpSymTab, 0, MEM_RELEASE); lpSymTab = NULL;
+                VirtualFree (lpMemPTD->lpSymTab, 0, MEM_RELEASE); lpMemPTD->lpSymTab = NULL;
             } // End IF
 
             // *************** lpwszString *****************************
-            if (lpwszString)
+            if (lpMemPTD->lpwszString)
             {
-                VirtualFree (lpwszString, 0, MEM_RELEASE); lpwszString = NULL;
+                VirtualFree (lpMemPTD->lpwszString, 0, MEM_RELEASE); lpMemPTD->lpwszString = NULL;
             } // End IF
 
             // *************** lpszNumAlp ******************************
-            if (lpszNumAlp)
+            if (lpMemPTD->lpszNumAlp)
             {
-                VirtualFree (lpszNumAlp, 0, MEM_RELEASE); lpszNumAlp = NULL;
+                VirtualFree (lpMemPTD->lpszNumAlp, 0, MEM_RELEASE); lpMemPTD->lpszNumAlp = NULL;
             } // End IF
 
 ////////////// *************** lptkStackBase ***************************
-////////////if (lptkStackBase)
+////////////if (lpMemPTD->lptkStackBase)
 ////////////{
-////////////    VirtualFree (lptkStackBase, 0, MEM_RELEASE); lptkStackBase = NULL;
+////////////    VirtualFree (lpMemPTD->lptkStackBase, 0, MEM_RELEASE); lpMemPTD->lptkStackBase = NULL;
 ////////////} // End IF
 
             // *************** lpwszTmpLine ****************************
-            if (lpwszTmpLine)
+            if (lpMemPTD->lpwszTmpLine)
             {
-                VirtualFree (lpwszTmpLine, 0, MEM_RELEASE); lpwszTmpLine = NULL;
+                VirtualFree (lpMemPTD->lpwszTmpLine, 0, MEM_RELEASE); lpMemPTD->lpwszTmpLine = NULL;
             } // End IF
 
             // *************** lpwszCurLine ****************************
-            if (lpwszCurLine)
+            if (lpMemPTD->lpwszCurLine)
             {
-                VirtualFree (lpwszCurLine, 0, MEM_RELEASE); lpwszCurLine = NULL;
+                VirtualFree (lpMemPTD->lpwszCurLine, 0, MEM_RELEASE); lpMemPTD->lpwszCurLine = NULL;
             } // End IF
 
             // Uninitialize window-specific resources
             SM_Delete (hWnd);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             return FALSE;           // We handled the msg
         } // End WM_DESTROY

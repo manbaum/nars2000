@@ -127,28 +127,28 @@ typedef enum tagIMM_TYPES
 // Symbol table flags
 typedef struct tagSTFLAGS
 {
-    UINT Imm:1,             // 000001:  The data in SYMENTRY is Immediate numeric or character scalar
-         ImmType:4,         // 00001E:  ...                     Immediate Boolean, Integer, Character, or Float (see IMM_TYPES)
-         SysName:1,         // 000020:  ...                     NULL unless some other .Usr*** is set
-         SysVar:1,          // 000040:  ...                     ...     System Variable
-         SysFn0:1,          // 000080:  ...                     ...     System Function, niladic
-         SysFn12:1,         // 000100:  ...                     ...     System Function, monadic or dyadic
-         NotCase:1,         // 000200:  Case-insensitive name
-         Perm:1,            // 000400:  Permanent entry
-         Inuse:1,           // 000800:  Inuse entry
-         Value:1,           // 001000:  Entry has a value
-         UsrName:1,         // 002000:  The data in SYMENTRY is NULL unless some other .Usr*** is set
-         UsrVar:1,          // 004000:  ...                     hGlb of Value, unless .Imm
-         UsrFn0:1,          // 008000:  User-defined niladic function
-         UsrFn12:1,         // 010000:  ...          monadic/dyadic function
-         UsrOp1:1,          // 020000:  ...          monadic operator
-         UsrOp2:1,          // 040000:  ...          dyadic operator
-         SysVarValid:4;     // 780000:  Index to validation routine for System Vars
+    UINT Imm:1,             // 00000001:  The data in SYMENTRY is Immediate numeric or character scalar
+         ImmType:4,         // 0000001E:  ...                     Immediate Boolean, Integer, Character, or Float (see IMM_TYPES)
+         SysName:1,         // 00000020:  ...                     NULL unless some other .Usr*** is set
+         SysVar:1,          // 00000040:  ...                     ...     System Variable
+         SysFn0:1,          // 00000080:  ...                     ...     System Function, niladic
+         SysFn12:1,         // 00000100:  ...                     ...     System Function, monadic or dyadic
+         NotCase:1,         // 00000200:  Case-insensitive name
+         Perm:1,            // 00000400:  Permanent entry
+         Inuse:1,           // 00000800:  Inuse entry
+         Value:1,           // 00001000:  Entry has a value
+         UsrName:1,         // 00002000:  The data in SYMENTRY is NULL unless some other .Usr*** is set
+         UsrVar:1,          // 00004000:  ...                     hGlb of Value, unless .Imm
+         UsrFn0:1,          // 00008000:  User-defined niladic function
+         UsrFn12:1,         // 00010000:  ...          monadic/dyadic function
+         UsrOp1:1,          // 00020000:  ...          monadic operator
+         UsrOp2:1,          // 00040000:  ...          dyadic operator
+         SysVarValid:4,     // 00780000:  Index to validation routine for System Vars
+         DfnSysLabel:1;     // 00800000:  Defined function system label
 } STFLAGS, *LPSTFLAGS;
 
 // When changing this struct, be sure to make
-//   corresponding changes to <astFlagNames> in <sessman.c>,
-//   and <TokenTypeFV> in <parse.y>.
+//   corresponding changes to <astFlagNames> in <display.c>.
 
 // .Inuse and .PrinHash are valid for all entries.
 // .Inuse   = 0 implies that all but .PrinHash are zero.
@@ -186,7 +186,7 @@ typedef struct tagSYMENTRY
 {
     STFLAGS     stFlags;        // Flags
     SYMTAB_DATA stData;         // For immediates, the data value; for others, the HGLOBAL
-    LPHSHENTRY  lpHshEntry;     // Ptr to the matching HSHENTRY
+    LPHSHENTRY  stHshEntry;     // Ptr to the matching HSHENTRY
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)

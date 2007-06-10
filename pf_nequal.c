@@ -52,9 +52,6 @@ PRIMSPEC PrimSpecNotEqual = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydNotEqualFisIvI, -- Can't happen w/NotEqual
     NULL,   // &PrimFnDydNotEqualFisFvF, -- Can't happen w/NotEqual
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecNotEqual};

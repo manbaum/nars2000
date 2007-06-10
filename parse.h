@@ -49,6 +49,7 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                 lpYYStrandBase[2],  // ...          base (dynamic)
                 lpYYStrandNext[2];  // ...          next token (dynamic)
     HGLOBAL     hGlbPTD;            // Handle to PerTabData
+    HWND        hWndSM;             // Window handle to Session Manager
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

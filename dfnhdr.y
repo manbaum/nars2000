@@ -360,8 +360,10 @@ BOOL ParseHeader
     // Save the thread's ptr to local vars
     TlsSetValue (dwTlsFhLocalVars, (LPVOID) lpfhLocalVars);
 
-    // Lock the handle and set variables
+    // Save the token header global memory handle
     lpfhLocalVars->hGlbTknHdr = hGlbTknHdr;
+
+    // Lock the handle to get a ptr to it, and set the variables
     UTLockAndSet (lpfhLocalVars->hGlbTknHdr, &lpfhLocalVars->t2);
 
     // Initialize the base & next strand ptrs

@@ -22,6 +22,7 @@ in the lexical analyser (pl_yylex).
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -55,7 +56,7 @@ BOOL      bRet;
 %lex-param   {LPPLLOCALVARS lpplLocalVars}
 
 %token UNK
-%token NAMEVAR NAMEUNK CONSTANT STRING USRFN0 SYSFN0 QUAD QUOTEQUAD
+%token NAMEVAR NAMEUNK CONSTANT STRING USRFN0 SYSFN0 QUAD QUOTEQUAD SYSLBL
 %token DIAMOND
 
 /*  Note that as we parse APL from right to left, these rules
@@ -106,6 +107,7 @@ Line:
       Stmts                             {DbgMsgW2 (L"%%Line:  Stmts");}
     | Stmts ':' NAMEUNK                 {DbgMsgW2 (L"%%Line:  NAMEUNK: Stmts");}
     | Stmts ':' NAMEVAR                 {DbgMsgW2 (L"%%Line:  NAMEVAR: Stmts");}
+    | Stmts ':' SYSLBL                  {DbgMsgW2 (L"%%Line:  SYSLBL: Stmts");}
     ;
 
 /* Statements */
@@ -495,7 +497,7 @@ Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
                                          YYERROR;
                                         }
     |             QUAD                  {DbgMsgW2 (L"%%Strand:  QUAD");
-                                         lpYYRes = WaitForInput (hWndSM, FALSE, &$1.tkToken);
+                                         lpYYRes = WaitForInput (lpplLocalVars->hWndSM, FALSE, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -504,7 +506,7 @@ Strand:           NAMEUNK               {DbgMsgW2 (L"%%Strand:  NAMEUNK");
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                         }
     |             QUOTEQUAD             {DbgMsgW2 (L"%%Strand:  QUOTEQUAD");
-                                         lpYYRes = WaitForInput (hWndSM, TRUE, &$1.tkToken);
+                                         lpYYRes = WaitForInput (lpplLocalVars->hWndSM, TRUE, &$1.tkToken);
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -2223,6 +2225,7 @@ typedef struct tagPL_THREAD
     LPWCHAR lpwszLine;          // Ptr to tokens of line to parse (GlobalLock of above)
     HGLOBAL hGlbPTD;            // Handle of PerTabData for this thread
     BOOL    bFreeToken;         // TRUE iff ParseLine is to free hGlbToken on exit
+    HWND    hWndSM;             // Window handle to Session Manager
 } PL_THREAD, *LPPL_THREAD;
 
 PL_THREAD plThread;             // Temporary global
@@ -2263,6 +2266,7 @@ void ParseLine
     plThread.lpwszLine  = lpwszLine;
     plThread.hGlbPTD    = hGlbPTD;
     plThread.bFreeToken = bFreeToken;
+    plThread.hWndSM     = hWndSM;
 
     // Create a new thread
     hThread = CreateThread (NULL,                   // No security attrs
@@ -2295,12 +2299,14 @@ void ParseLineInThread
     (LPPL_THREAD lpplThread)
 
 {
-    HANDLE      hSemaphore;     // Handle to the ParseLine semaphore
-    HGLOBAL     hGlbToken;      // Handle to sequence of tokens to parse
-    LPWCHAR     lpwszLine;      // Ptr to WCHARs in the line to parse
-    HGLOBAL     hGlbPTD;        // Handle to PerTabData
-    BOOL        bFreeToken;     // TRUE iff we should free hGlbToken on exit
-    PLLOCALVARS plLocalVars;    // Re-entrant vars
+    HANDLE       hSemaphore;    // Handle to the ParseLine semaphore
+    HGLOBAL      hGlbToken;     // Handle to sequence of tokens to parse
+    LPWCHAR      lpwszLine;     // Ptr to WCHARs in the line to parse
+    HGLOBAL      hGlbPTD;       // Handle to PerTabData
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bFreeToken;    // TRUE iff we should free hGlbToken on exit
+    PLLOCALVARS  plLocalVars;   // Re-entrant vars
+    HWND         hWndSM;        // Window handle to Session Manager
 
     // Make sure we can communicate between windows
     AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
@@ -2322,6 +2328,10 @@ void ParseLineInThread
     lpwszLine  = lpplThread->lpwszLine;
     hGlbPTD    = lpplThread->hGlbPTD;
     bFreeToken = lpplThread->bFreeToken;
+    hWndSM     = lpplThread->hWndSM;
+
+    // Save the thread's PerTabData global memory handle
+    TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
 
     // If we don't have a valid handle, ...
     if (!hGlbToken)
@@ -2333,11 +2343,12 @@ void ParseLineInThread
     } // ***DEBUG*** END
 #endif
 
-    // Save the PTD handle
+    // Save the handles
     plLocalVars.hGlbPTD = hGlbPTD;
-
-    // Lock the handle and set variables
+    plLocalVars.hWndSM  = hWndSM;
     plLocalVars.hGlbToken = hGlbToken;
+
+    // Lock the memory to get a ptr to it, and set the variables
     UTLockAndSet (plLocalVars.hGlbToken, &plLocalVars.t2);
 
     // Skip over TOKEN_HEADER
@@ -2421,8 +2432,14 @@ void ParseLineInThread
         goto NORMAL_EXIT;
 
 //ERROR_EXIT:
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Signal an error
-    ErrorMessage (lpwszErrorMessage, lpwszLine, plLocalVars.tkErrorCharIndex);
+    ErrorMessage (lpMemPTD->lpwszErrorMessage, lpwszLine, plLocalVars.tkErrorCharIndex);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 NORMAL_EXIT:
     if (plLocalVars.lpYYStrandStart[FCNSTRAND])
     {
@@ -2444,7 +2461,7 @@ NORMAL_EXIT:
         Untokenize (hGlbToken);
 
         // We no longer need this storage
-        DbgGlobalFree (hGlbToken); hGlbToken = NULL;
+        MyGlobalFree (hGlbToken); hGlbToken = NULL;
     } // End IF
 
     // Free the virtual memory for the complete line
@@ -2795,6 +2812,11 @@ int pl_yylex
                 return QUOTEQUAD;
 
         case TKT_VARNAMED:
+        {
+            STFLAGS stFlags;        // STE flags
+
+            stFlags = lpplLocalVars->lpNext->tkData.tkSym->stFlags;
+
             // We need a bit a lookahead here so handle the FCN vs. OP1 vs. OP2
             //   cases when the name is being assigned to.  In this case,
             //   because the current meaning of the name is irrelevant
@@ -2805,55 +2827,59 @@ int pl_yylex
 
             // If this is a UsrVar and either it has no value
             //   or the next token is ASSIGN, call it NAMEUNK.
-            if (lpplLocalVars->lpNext->tkData.tkSym->stFlags.UsrVar
-             && (!lpplLocalVars->lpNext->tkData.tkSym->stFlags.Value
+            if (stFlags.UsrVar
+             && (!stFlags.Value
               || lpplLocalVars->lpNext[1].tkFlags.TknType EQ TKT_ASSIGN))
                 return NAMEUNK;
             else
-            if (lpplLocalVars->lpNext->tkData.tkSym->stFlags.UsrVar
-             || lpplLocalVars->lpNext->tkData.tkSym->stFlags.SysVar)
+            if (stFlags.UsrVar
+             || stFlags.SysVar)
             {
 ////////////////lpplLocalVars->lpNext->tkFlags.TknType = TKT_VARNAMED;    // Already set
 
                 return NAMEVAR;
             } else
-            if (lpplLocalVars->lpNext->tkData.tkSym->stFlags.UsrFn0)
+            if (stFlags.UsrFn0)
                 return USRFN0;
             else
-            if (lpplLocalVars->lpNext->tkData.tkSym->stFlags.SysFn0)
+            if (stFlags.SysFn0)
                 return SYSFN0;
             else
-            if (lpplLocalVars->lpNext->tkData.tkSym->stFlags.UsrFn12)
+            if (stFlags.UsrFn12)
             {
                 lpplLocalVars->lpNext->tkFlags.TknType = TKT_FCNNAMED;
 
                 return NAMEFCN;
             } else
-            if (lpplLocalVars->lpNext->tkData.tkSym->stFlags.SysFn12)
+            if (stFlags.SysFn12)
             {
                 lpplLocalVars->lpNext->tkFlags.TknType = TKT_FCNNAMED;
                 lpplLocalVars->lpNext->tkFlags.FcnDir  = 1;
 
                 return SYSFN12;
             } else
-            if (lpplLocalVars->lpNext->tkData.tkSym->stFlags.UsrOp1)
+            if (stFlags.UsrOp1)
             {
                 lpplLocalVars->lpNext->tkFlags.TknType = TKT_OP1NAMED;
 
                 return NAMEOP1;
             } else
-            if (lpplLocalVars->lpNext->tkData.tkSym->stFlags.UsrOp2)
+            if (stFlags.UsrOp2)
             {
                 lpplLocalVars->lpNext->tkFlags.TknType = TKT_OP2NAMED;
 
                 return NAMEOP2;
             } else
-            if (lpplLocalVars->lpNext->tkData.tkSym->stFlags.UsrName)
+            if (stFlags.DfnSysLabel)
+                return SYSLBL;
+            else
+            if (stFlags.UsrName)
                 return NAMEUNK;
 
             DbgStop ();         // We should never get here
 
             return UNK;
+        } // End TKT_VARNAMED
 
         case TKT_ASSIGN:
             return ASSIGN;

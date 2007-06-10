@@ -57,9 +57,6 @@ PRIMSPEC PrimSpecQuoteDot =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydQuoteDotFisIvI,
     &PrimFnDydQuoteDotFisFvF,
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuoteDot};

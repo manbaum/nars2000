@@ -32,7 +32,7 @@ int ChangeRefCntDir
      int    iIncr)
 
 {
-    LPVOID lpSign;
+    LPVOID lpSig;
     UINT   RefCnt;
 
     // Split cases based upon the ptr type
@@ -43,13 +43,13 @@ int ChangeRefCntDir
 
         case PTRTYPE_HGLOBAL:
             // Get a ptr to the global memory
-            lpSign = MyGlobalLock (ClrPtrTypeDirGlb (lpMem));
+            lpSig = MyGlobalLock (ClrPtrTypeDirGlb (lpMem));
 
             // Split cases based upon the array signature
-            switch (((LPHEADER_SIGNATURE) lpSign)->ature)
+            switch (((LPHEADER_SIGNATURE) lpSig)->nature)
             {
                 case VARARRAY_HEADER_SIGNATURE:
-#define lpHeader        ((LPVARARRAY_HEADER) lpSign)
+#define lpHeader        ((LPVARARRAY_HEADER) lpSig)
                     // Don't change the reference count on Perms
                     if (lpHeader->Perm)
                     {
@@ -72,7 +72,7 @@ int ChangeRefCntDir
                     break;
 
                 case FCNARRAY_HEADER_SIGNATURE:
-#define lpHeader        ((LPFCNARRAY_HEADER) lpSign)
+#define lpHeader        ((LPFCNARRAY_HEADER) lpSig)
                     // Change the reference count
 #ifdef DEBUG
                     dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%s#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);

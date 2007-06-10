@@ -78,6 +78,15 @@ IDR_SMMENU MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
+        MENUITEM "&Load",                       IDM_LOAD_WS
+        MENUITEM "&Xload",                      IDM_XLOAD_WS
+        MENUITEM "&Copy",                       IDM_COPY_WS
+        MENUITEM "&Pcopy",                      IDM_PCOPY_WS
+        MENUITEM SEPARATOR
+        MENUITEM "&Save",                       IDM_SAVE_WS
+        MENUITEM "Save &As",                    IDM_SAVE_AS_WS
+        MENUITEM "&Drop",                       IDM_DROP_WS
+        MENUITEM SEPARATOR
         MENUITEM "&Exit",                       IDM_EXIT
     END
     POPUP "&Edit"

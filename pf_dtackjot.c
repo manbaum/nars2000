@@ -10,6 +10,7 @@
 #include "resdebug.h"
 #include "externs.h"
 #include "display.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -395,7 +396,7 @@ LPYYSTYPE PrimFnMonDownTackJot_EM_YY
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->Perm       = 0;           // Already zero from GHND
 ////lpHeader->SysVar     = 0;           // Already zero from GHND
@@ -536,19 +537,33 @@ LPAPLCHAR FormatArrSimple
      BOOL        bEndingCR)     // TRUE iff last line has CR
 
 {
-    APLDIM      aplDimRow,
-                aplDimCol;
-    UINT        uActLen,
-                uLead,
-                uCol,
-                uCmpWid,
-                uInts,
-                uFrcs;
-    LPWCHAR     lpw,
-                lpwszOut,
-                lpwszOutStart;
-    LPFMTROWSTR lpFmtRowStr;
-    LPAPLCHAR   lpaplChar = lpaplChar2;
+    APLDIM       aplDimRow,
+                 aplDimCol;
+    UINT         uActLen,
+                 uLead,
+                 uCol,
+                 uCmpWid,
+                 uInts,
+                 uFrcs;
+    LPWCHAR      lpw,
+                 lpwszOut,
+                 lpwszOutStart;
+    LPFMTROWSTR  lpFmtRowStr;
+    LPAPLCHAR    lpaplChar = lpaplChar2;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLUINT      uQuadPW;       // []PW
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    uQuadPW = lpMemPTD->uQuadPW;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Initialize local output string ptr
     lpwszOut = *lplpwszOut;

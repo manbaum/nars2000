@@ -341,7 +341,9 @@ HGLOBAL GetRegGlbChar
                 ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, uLen, 1);
 
                 // Allocate space for the data
-                hGlbVal = DbgGlobalAlloc (GHND, ByteRes);
+                // Note, we can't use DbgGlobalAlloc here as the
+                //   PTD has not been allocated as yet
+                hGlbVal = MyGlobalAlloc (GHND, ByteRes);
                 if (!hGlbVal)
                     return hGlbVal;
 
@@ -351,7 +353,7 @@ HGLOBAL GetRegGlbChar
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
                 // Fill in the header values
-                lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                 lpHeader->ArrType    = ARRAY_CHAR;
 ////////////////lpHeader->Perm       = 0;       // Already zero from GHND
 ////////////////lpHeader->SysVar     = 0;       // ...
@@ -387,7 +389,7 @@ HGLOBAL GetRegGlbChar
                 // If it's the default value, ...
                 if (uLen EQ (UINT) iActSize)
                 {
-                    DbgGlobalFree (hGlbVal); hGlbVal = NULL;
+                    MyGlobalFree (hGlbVal); hGlbVal = NULL;
                 } else
                     hDefVal = hGlbVal;
                 break;

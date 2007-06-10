@@ -10,6 +10,7 @@
 #include "resdebug.h"
 #include "sysvars.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -38,71 +39,77 @@ typedef struct tagSYSNAME
     UINT        uValence;       // For system functions, Niladic(0), All others (1)
     BOOL        bSysVar;        // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
     LPPRIMFNS   lpNameFcn;      // Ptr to execution routine
-    LPSYMENTRY *lplpSymEntry;   // Ptr to ptr to STE if to be saved globally (NULL if not interested)
+    SYSVARS     sysVarIndex;    // enum value of each System Var (0 = Unknown)
 } SYSNAME, *LPSYSNAME;
 
+#define SYSLBL      8
+#define SYSVAR      9
+
 SYSNAME aSystemNames[] =
-{ // Name                    Valence    Var?
-    {WS_UTF16_QUAD L"alx"   ,    9,      TRUE , NULL          , NULL        },  //  0:  Attention Latent Expression
-    {WS_UTF16_QUAD L"ct"    ,    9,      TRUE , NULL          , NULL        },  //  1:  Comparison Tolerance
-    {WS_UTF16_QUAD L"elx"   ,    9,      TRUE , NULL          , NULL        },  //  2:  Error Latent Expression
-    {WS_UTF16_QUAD L"io"    ,    9,      TRUE , NULL          , NULL        },  //  3:  Index Origin
-    {WS_UTF16_QUAD L"lx"    ,    9,      TRUE , NULL          , NULL        },  //  4:  Latent Expression
-    {WS_UTF16_QUAD L"pp"    ,    9,      TRUE , NULL          , NULL        },  //  5:  Printing Precision
-    {WS_UTF16_QUAD L"pr"    ,    9,      TRUE , NULL          , NULL        },  //  6:  Prompt Replacement
-    {WS_UTF16_QUAD L"pw"    ,    9,      TRUE , NULL          , NULL        },  //  7:  Printing Width
-    {WS_UTF16_QUAD L"rl"    ,    9,      TRUE , NULL          , &lpSymQuadRL},  //  8:  Random Link
-    {WS_UTF16_QUAD L"sa"    ,    9,      TRUE , NULL          , NULL        },  //  9:  Stop Action
-    {WS_UTF16_QUAD L"wsid"  ,    9,      TRUE , NULL          , NULL        },  // 10:  Workspace Identifier
+{ // Name                       Valence       Var?   Exec Routine    SYSVARS
+    {WS_UTF16_QUAD L"alx"      , SYSVAR,      TRUE , NULL          , SYSVAR_ALX },  //  0:  Attention Latent Expression
+    {WS_UTF16_QUAD L"ct"       , SYSVAR,      TRUE , NULL          , SYSVAR_CT  },  //  1:  Comparison Tolerance
+    {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , NULL          , SYSVAR_ELX },  //  2:  Error Latent Expression
+    {WS_UTF16_QUAD L"io"       , SYSVAR,      TRUE , NULL          , SYSVAR_IO  },  //  3:  Index Origin
+    {WS_UTF16_QUAD L"lx"       , SYSVAR,      TRUE , NULL          , SYSVAR_LX  },  //  4:  Latent Expression
+    {WS_UTF16_QUAD L"pp"       , SYSVAR,      TRUE , NULL          , SYSVAR_PP  },  //  5:  Printing Precision
+    {WS_UTF16_QUAD L"pr"       , SYSVAR,      TRUE , NULL          , SYSVAR_PR  },  //  6:  Prompt Replacement
+    {WS_UTF16_QUAD L"pw"       , SYSVAR,      TRUE , NULL          , SYSVAR_PW  },  //  7:  Printing Width
+    {WS_UTF16_QUAD L"rl"       , SYSVAR,      TRUE , NULL          , SYSVAR_RL  },  //  8:  Random Link
+    {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , NULL          , SYSVAR_SA  },  //  9:  Stop Action
+    {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL          , SYSVAR_WSID},  // 10:  Workspace Identifier
+    {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL          , 0          },  // 11:  Defined function entry point for Inverse
+    {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL          , 0          },  // 12:  ...                              Prototype
+    {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL          , 0          },  // 13:  ...                              Singleton
 
-    {WS_UTF16_QUAD L"ai"    ,    0,      FALSE, NULL          , NULL        },  // Accounting Information
-    {WS_UTF16_QUAD L"av"    ,    0,      FALSE, NULL          , NULL        },  // Atomic Vector
-    {WS_UTF16_QUAD L"dm"    ,    0,      FALSE, NULL          , NULL        },  // Diagnostic Message
-    {WS_UTF16_QUAD L"lc"    ,    0,      FALSE, NULL          , NULL        },  // Line Counter
-    {WS_UTF16_QUAD L"si"    ,    0,      FALSE, NULL          , NULL        },  // State Indicator
-    {WS_UTF16_QUAD L"sinl"  ,    0,      FALSE, NULL          , NULL        },  // State Indicator w/Name List
-    {WS_UTF16_QUAD L"sysid" ,    0,      FALSE, SysFnSYSID_EM , NULL        },  // System Identifier
-    {WS_UTF16_QUAD L"sysver",    0,      FALSE, SysFnSYSVER_EM, NULL        },  // System Version
-    {WS_UTF16_QUAD L"tc"    ,    0,      FALSE, SysFnTC_EM    , NULL        },  // Terminal Control Characters
-    {WS_UTF16_QUAD L"tcbel" ,    0,      FALSE, SysFnTCBEL_EM , NULL        },  // Terminal Control Character, Bell
-    {WS_UTF16_QUAD L"tcbs"  ,    0,      FALSE, SysFnTCBS_EM  , NULL        },  // Terminal Control Character, Backspace
-    {WS_UTF16_QUAD L"tcdel" ,    0,      FALSE, SysFnTCDEL_EM , NULL        },  // Terminal Control Character, Delete
-    {WS_UTF16_QUAD L"tcesc" ,    0,      FALSE, SysFnTCESC_EM , NULL        },  // Terminal Control Character, Escape
-    {WS_UTF16_QUAD L"tcff"  ,    0,      FALSE, SysFnTCFF_EM  , NULL        },  // Terminal Control Character, Form Feed
-    {WS_UTF16_QUAD L"tcht"  ,    0,      FALSE, SysFnTCHT_EM  , NULL        },  // Terminal Control Character, Horizontal Tab
-    {WS_UTF16_QUAD L"tclf"  ,    0,      FALSE, SysFnTCLF_EM  , NULL        },  // Terminal Control Character, Line Feed
-    {WS_UTF16_QUAD L"tcnl"  ,    0,      FALSE, SysFnTCNL_EM  , NULL        },  // Terminal Control Character, New Line
-    {WS_UTF16_QUAD L"tcnul" ,    0,      FALSE, SysFnTCNUL_EM , NULL        },  // Terminal Control Character, Null
-    {WS_UTF16_QUAD L"ts"    ,    0,      FALSE, SysFnTS_EM    , NULL        },  // Time Stamp
-    {WS_UTF16_QUAD L"wa"    ,    0,      FALSE, NULL          , NULL        },  // Workspace Available
+    {WS_UTF16_QUAD L"ai"       ,      0,      FALSE, NULL          , 0          },  // Accounting Information
+    {WS_UTF16_QUAD L"av"       ,      0,      FALSE, NULL          , 0          },  // Atomic Vector
+    {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, NULL          , 0          },  // Diagnostic Message
+    {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, NULL          , 0          },  // Line Counter
+    {WS_UTF16_QUAD L"si"       ,      0,      FALSE, NULL          , 0          },  // State Indicator
+    {WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, NULL          , 0          },  // State Indicator w/Name List
+    {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, SysFnSYSID_EM , 0          },  // System Identifier
+    {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, SysFnSYSVER_EM, 0          },  // System Version
+    {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, SysFnTC_EM    , 0          },  // Terminal Control Characters
+    {WS_UTF16_QUAD L"tcbel"    ,      0,      FALSE, SysFnTCBEL_EM , 0          },  // Terminal Control Character, Bell
+    {WS_UTF16_QUAD L"tcbs"     ,      0,      FALSE, SysFnTCBS_EM  , 0          },  // Terminal Control Character, Backspace
+    {WS_UTF16_QUAD L"tcdel"    ,      0,      FALSE, SysFnTCDEL_EM , 0          },  // Terminal Control Character, Delete
+    {WS_UTF16_QUAD L"tcesc"    ,      0,      FALSE, SysFnTCESC_EM , 0          },  // Terminal Control Character, Escape
+    {WS_UTF16_QUAD L"tcff"     ,      0,      FALSE, SysFnTCFF_EM  , 0          },  // Terminal Control Character, Form Feed
+    {WS_UTF16_QUAD L"tcht"     ,      0,      FALSE, SysFnTCHT_EM  , 0          },  // Terminal Control Character, Horizontal Tab
+    {WS_UTF16_QUAD L"tclf"     ,      0,      FALSE, SysFnTCLF_EM  , 0          },  // Terminal Control Character, Line Feed
+    {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, SysFnTCNL_EM  , 0          },  // Terminal Control Character, New Line
+    {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, SysFnTCNUL_EM , 0          },  // Terminal Control Character, Null
+    {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM    , 0          },  // Time Stamp
+    {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, NULL          , 0          },  // Workspace Available
 
-    {WS_UTF16_QUAD L"call"  ,    1,      FALSE, NULL          , NULL        },  // Call Assembler Code
-    {WS_UTF16_QUAD L"cr"    ,    1,      FALSE, NULL          , NULL        },  // Canonical Representation
-    {WS_UTF16_QUAD L"crl"   ,    1,      FALSE, NULL          , NULL        },  // Canonical Representation, Line
-    {WS_UTF16_QUAD L"crlpc" ,    1,      FALSE, NULL          , NULL        },  // Canonical Representation, Public Comment
-    {WS_UTF16_QUAD L"def"   ,    1,      FALSE, NULL          , NULL        },  // Define Function
-    {WS_UTF16_QUAD L"defl"  ,    1,      FALSE, NULL          , NULL        },  // Define Function Line
-    {WS_UTF16_QUAD L"dl"    ,    1,      FALSE, NULL          , NULL        },  // Delay Execution
-    {WS_UTF16_QUAD L"dr"    ,    1,      FALSE, SysFnDR_EM    , NULL        },  // Data Representation
-    {WS_UTF16_QUAD L"erase" ,    1,      FALSE, NULL          , NULL        },  // Erase Names
-    {WS_UTF16_QUAD L"error" ,    1,      FALSE, NULL          , NULL        },  // Signal Error
-    {WS_UTF16_QUAD L"ex"    ,    1,      FALSE, NULL          , NULL        },  // Erase Names
-    {WS_UTF16_QUAD L"fi"    ,    1,      FALSE, NULL          , NULL        },  // Format Items
-    {WS_UTF16_QUAD L"fmt"   ,    1,      FALSE, NULL          , NULL        },  // Format
-    {WS_UTF16_QUAD L"fx"    ,    1,      FALSE, NULL          , NULL        },  // Fix Function
-    {WS_UTF16_QUAD L"idlist",    1,      FALSE, NULL          , NULL        },  // Identifier List
-    {WS_UTF16_QUAD L"idloc" ,    1,      FALSE, NULL          , NULL        },  // Identifier Localization
-    {WS_UTF16_QUAD L"lock"  ,    1,      FALSE, NULL          , NULL        },  // Lock Functions
-    {WS_UTF16_QUAD L"mf"    ,    1,      FALSE, NULL          , NULL        },  // Monitor Function
-    {WS_UTF16_QUAD L"nc"    ,    1,      FALSE, NULL          , NULL        },  // Name Classification
-    {WS_UTF16_QUAD L"nl"    ,    1,      FALSE, NULL          , NULL        },  // Name List
-    {WS_UTF16_QUAD L"size"  ,    1,      FALSE, NULL          , NULL        },  // Size of an object
-    {WS_UTF16_QUAD L"ss"    ,    1,      FALSE, NULL          , NULL        },  // Search String
-    {WS_UTF16_QUAD L"stop"  ,    1,      FALSE, NULL          , NULL        },  // Manage Stop Points
-    {WS_UTF16_QUAD L"trace" ,    1,      FALSE, NULL          , NULL        },  // Manage Trace Points
-    {WS_UTF16_QUAD L"type"  ,    1,      FALSE, SysFnTYPE_EM  , NULL        },  // Manage Trace Points
-    {WS_UTF16_QUAD L"vi"    ,    1,      FALSE, NULL          , NULL        },  // Verify Items
-    {WS_UTF16_QUAD L"vr"    ,    1,      FALSE, NULL          , NULL        },  // Vector Representation of a Function
+    {WS_UTF16_QUAD L"call"     ,      1,      FALSE, NULL          , 0          },  // Call Assembler Code
+    {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, NULL          , 0          },  // Canonical Representation
+    {WS_UTF16_QUAD L"crl"      ,      1,      FALSE, NULL          , 0          },  // Canonical Representation, Line
+    {WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, NULL          , 0          },  // Canonical Representation, Public Comment
+    {WS_UTF16_QUAD L"def"      ,      1,      FALSE, NULL          , 0          },  // Define Function
+    {WS_UTF16_QUAD L"defl"     ,      1,      FALSE, NULL          , 0          },  // Define Function Line
+    {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, NULL          , 0          },  // Delay Execution
+    {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM    , 0          },  // Data Representation
+    {WS_UTF16_QUAD L"erase"    ,      1,      FALSE, NULL          , 0          },  // Erase Names
+    {WS_UTF16_QUAD L"error"    ,      1,      FALSE, NULL          , 0          },  // Signal Error
+    {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, NULL          , 0          },  // Erase Names
+    {WS_UTF16_QUAD L"fi"       ,      1,      FALSE, NULL          , 0          },  // Format Items
+    {WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, NULL          , 0          },  // Format
+    {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, NULL          , 0          },  // Fix Function
+    {WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, NULL          , 0          },  // Identifier List
+    {WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, NULL          , 0          },  // Identifier Localization
+    {WS_UTF16_QUAD L"lock"     ,      1,      FALSE, NULL          , 0          },  // Lock Functions
+    {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, NULL          , 0          },  // Monitor Function
+    {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, NULL          , 0          },  // Name Classification
+    {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, NULL          , 0          },  // Name List
+    {WS_UTF16_QUAD L"size"     ,      1,      FALSE, NULL          , 0          },  // Size of an object
+    {WS_UTF16_QUAD L"ss"       ,      1,      FALSE, NULL          , 0          },  // Search String
+    {WS_UTF16_QUAD L"stop"     ,      1,      FALSE, NULL          , 0          },  // Manage Stop Points
+    {WS_UTF16_QUAD L"trace"    ,      1,      FALSE, NULL          , 0          },  // Manage Trace Points
+    {WS_UTF16_QUAD L"type"     ,      1,      FALSE, SysFnTYPE_EM  , 0          },  // Manage Trace Points
+    {WS_UTF16_QUAD L"vi"       ,      1,      FALSE, NULL          , 0          },  // Verify Items
+    {WS_UTF16_QUAD L"vr"       ,      1,      FALSE, NULL          , 0          },  // Vector Representation of a Function
 
     // ***FIXME*** Add more entries
 };
@@ -127,7 +134,9 @@ void MakePermVars
     LPVARARRAY_HEADER lpHeader;
 
     // Create zilde
-    hGlbZilde = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_BOOL, 0, 1));
+    // Note, we can't use DbgGlobalAlloc here as the
+    //   PTD has not been allocated as yet
+    hGlbZilde = MyGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_BOOL, 0, 1));
     if (!hGlbZilde)
     {
         DbgStop ();         // We should never get here
@@ -137,7 +146,7 @@ void MakePermVars
     lpHeader = MyGlobalLock (hGlbZilde);
 
     // Fill in the header values
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
     lpHeader->Perm       = 1;       // So we don't free it
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
@@ -187,7 +196,9 @@ HGLOBAL MakePermCharVector
     // Get the string length
     uLen = lstrlenW (lpwc);
 
-    hGlbRes = DbgGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, uLen, 1));
+    // Note, we can't use DbgGlobalAlloc here as the
+    //   PTD has not been allocated as yet
+    hGlbRes = MyGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, uLen, 1));
     if (!hGlbRes)
     {
         DbgStop ();         // We should never get here
@@ -197,7 +208,7 @@ HGLOBAL MakePermCharVector
     lpHeader = MyGlobalLock (hGlbRes);
 
     // Fill in the header values
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
     lpHeader->Perm       = 1;       // So we don't free it
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
@@ -229,7 +240,8 @@ HGLOBAL MakePermCharVector
 //***************************************************************************
 
 BOOL SymTabAppendSysName_EM
-    (LPSYSNAME lpSysName)
+    (LPSYSNAME   lpSysName,
+     LPSYMENTRY *lplpSysVarSym)
 
 {
     STFLAGS    stFlags = {0};
@@ -240,6 +252,7 @@ BOOL SymTabAppendSysName_EM
     {
         stFlags.SysVar =
         stFlags.Value  = 1;
+        stFlags.DfnSysLabel = (lpSysName->uValence EQ SYSLBL);
     } else
     {
         if (lpSysName->uValence EQ 0)
@@ -253,6 +266,7 @@ BOOL SymTabAppendSysName_EM
     stFlags.NotCase =
     stFlags.Inuse   = 1;
 
+    // Append the name as new
     lpSymEntry = SymTabAppendNewName_EM (lpSysName->lpwszName, &stFlags);
 
     // Check for error
@@ -260,8 +274,8 @@ BOOL SymTabAppendSysName_EM
         return FALSE;
 
     // Save the LPSYMENTRY if requested
-    if (lpSysName->lplpSymEntry)
-        *lpSysName->lplpSymEntry = lpSymEntry;
+    if (lplpSysVarSym)
+        *lplpSysVarSym = lpSymEntry;
 
     // Save the address of the execution routine
     lpSymEntry->stData.stNameFcn = lpSysName->lpNameFcn;
@@ -280,20 +294,48 @@ BOOL AppendSystemNames_EM
     (void)
 
 {
-    int i;
+    int          i;             // Loop counter
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet = TRUE;   // TRUE iff result is valid
+    LPSYMENTRY  *ptdSysVarSym[SYSVAR_LENGTH];
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    ptdSysVarSym[SYSVAR_UNK ] = NULL                    ;
+    ptdSysVarSym[SYSVAR_ALX ] = &lpMemPTD->lpSymQuadALX ;
+    ptdSysVarSym[SYSVAR_CT  ] = &lpMemPTD->lpSymQuadCT  ;
+    ptdSysVarSym[SYSVAR_ELX ] = &lpMemPTD->lpSymQuadELX ;
+    ptdSysVarSym[SYSVAR_IO  ] = &lpMemPTD->lpSymQuadIO  ;
+    ptdSysVarSym[SYSVAR_LX  ] = &lpMemPTD->lpSymQuadLX  ;
+    ptdSysVarSym[SYSVAR_PP  ] = &lpMemPTD->lpSymQuadPP  ;
+    ptdSysVarSym[SYSVAR_PR  ] = &lpMemPTD->lpSymQuadPR  ;
+    ptdSysVarSym[SYSVAR_PW  ] = &lpMemPTD->lpSymQuadPW  ;
+    ptdSysVarSym[SYSVAR_RL  ] = &lpMemPTD->lpSymQuadRL  ;
+    ptdSysVarSym[SYSVAR_SA  ] = &lpMemPTD->lpSymQuadSA  ;
+    ptdSysVarSym[SYSVAR_WSID] = &lpMemPTD->lpSymQuadWSID;
 
     Assert (HshTabFrisk ());
 
     // Append all system names
     for (i = 0; i < sizeof (aSystemNames) / sizeof (aSystemNames[0]); i++)
+    if (!SymTabAppendSysName_EM (&aSystemNames[i], ptdSysVarSym[aSystemNames[i].sysVarIndex]))
     {
-        if (!SymTabAppendSysName_EM (&aSystemNames[i]))
-            return FALSE;
-    } // End FOR
+        bRet = FALSE;
+
+        break;
+    } // End FOR/IF
 
     Assert (HshTabFrisk ());
 
-    return TRUE;
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End AppendSystemNames_EM
 
 
@@ -1489,7 +1531,7 @@ MAKE_VECTOR:
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
         // Fill in the header values
-        lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
 ////////lpHeader->Perm       = 0;       // Already zero from GHND
 ////////lpHeader->SysVar     = 0;       // Already zero from GHND
@@ -1540,10 +1582,25 @@ BOOL ValidateALX_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadALX);
+    bRet = ValidateCharVector_EM (lptkName, lpToken, &lpMemPTD->hGlbQuadALX);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End ValidateALX_EM
 
 
@@ -1558,11 +1615,26 @@ BOOL ValidateCT_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Ensure the argument is a real scalar or
     //   one-element vector (demoted to a scalar)
     //   between 0 and 1E-10 inclusive.
 
-    return ValidateFloat_EM (lptkName, lpToken, 0, 1E-10, &fQuadCT);
+    bRet = ValidateFloat_EM (lptkName, lpToken, 0, 1E-10, &lpMemPTD->fQuadCT);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End ValidateCT_EM
 
 
@@ -1577,10 +1649,25 @@ BOOL ValidateELX_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector
 
-    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadELX);
+    bRet = ValidateCharVector_EM (lptkName, lpToken, &lpMemPTD->hGlbQuadELX);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End ValidateELX_EM
 
 
@@ -1599,10 +1686,25 @@ BOOL ValidateIO_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Ensure the argument is a Boolean scalar or
     //   one-element vector (demoted to a scalar).
 
-    return ValidateBoolean_EM (lptkName, lpToken, &bQuadIO);
+    bRet = ValidateBoolean_EM (lptkName, lpToken, &lpMemPTD->bQuadIO);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End ValidateIO_EM
 
 
@@ -1617,10 +1719,25 @@ BOOL ValidateLX_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
 
-    return ValidateCharVector_EM (lptkName, lpToken, &hGlbQuadLX);
+    bRet = ValidateCharVector_EM (lptkName, lpToken, &lpMemPTD->hGlbQuadLX);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End ValidateLX_EM
 
 
@@ -1635,15 +1752,30 @@ BOOL ValidatePP_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to 17, inclusive.
 
-    return ValidateInteger_EM (lptkName,        // Ptr to token name
-                               lpToken,         // Ptr to token value
-                               DEF_MIN_QUADPP,  // Minimum value
-                               DEF_MAX_QUADPP,  // Maximum ...
-                              &uQuadPP);        // Global output save area
+    bRet = ValidateInteger_EM (lptkName,            // Ptr to token name
+                               lpToken,             // Ptr to token value
+                               DEF_MIN_QUADPP,      // Minimum value
+                               DEF_MAX_QUADPP,      // Maximum ...
+                              &lpMemPTD->uQuadPP);  // Global output save area
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End ValidatePP_EM
 
 
@@ -1664,11 +1796,19 @@ BOOL ValidatePR_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
-    HGLOBAL hGlbData;
-    LPVOID  lpMem,
-            lpData;
-    BOOL    bRet = TRUE;
-    LPWCHAR lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
+    HGLOBAL      hGlbData;
+    LPVOID       lpMem,
+                 lpData;
+    BOOL         bRet = TRUE;   // TRUE iff result is valid
+    LPWCHAR      lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Ensure the argument is a character scalar, or
     //   one-element vector (demoted to a scalar), or
@@ -1707,7 +1847,7 @@ BOOL ValidatePR_EM
                     break;
 
                 case IMMTYPE_CHAR:
-                    cQuadPR = lpToken->tkData.tkSym->stData.stChar;
+                    lpMemPTD->cQuadPR = lpToken->tkData.tkSym->stData.stChar;
 
                     goto MAKE_SCALAR;
             } // End SWITCH
@@ -1726,7 +1866,7 @@ BOOL ValidatePR_EM
                     break;
 
                 case IMMTYPE_CHAR:
-                    cQuadPR = lpToken->tkData.tkChar;
+                    lpMemPTD->cQuadPR = lpToken->tkData.tkChar;
 
                     goto MAKE_SCALAR;
             } // End SWITCH
@@ -1789,9 +1929,9 @@ BOOL ValidatePR_EM
         case ARRAY_CHAR:
             // Izit an empty vector?
             if (lpHeader->Rank EQ 1 && lpHeader->NELM EQ 0)
-                cQuadPR = 0;
+                lpMemPTD->cQuadPR = 0;
             else
-                cQuadPR = *(LPAPLCHAR) lpData;
+                lpMemPTD->cQuadPR = *(LPAPLCHAR) lpData;
             break;
 
         defstop
@@ -1811,13 +1951,16 @@ MAKE_SCALAR:
                                    lpToken);
     else
     {
-        lptkName->tkData.tkSym->stFlags.Imm = (cQuadPR NE 0);
-        if (cQuadPR EQ 0)
+        lptkName->tkData.tkSym->stFlags.Imm = (lpMemPTD->cQuadPR NE 0);
+        if (lpMemPTD->cQuadPR EQ 0)
             lptkName->tkData.tkSym->stData.stGlbData = hGlbMTChar;
         else
-            lptkName->tkData.tkSym->stData.stChar = cQuadPR;
+            lptkName->tkData.tkSym->stData.stChar = lpMemPTD->cQuadPR;
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End ValidatePR_EM
@@ -1835,15 +1978,30 @@ BOOL ValidatePW_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 30 to 255, inclusive.
 
-    return ValidateInteger_EM (lptkName,        // Ptr to token name
-                               lpToken,         // Ptr to token value
-                               DEF_MIN_QUADPW,  // Minimum value
-                               DEF_MAX_QUADPW,  // Maximum ...
-                              &uQuadPW);        // Global output save area
+    bRet = ValidateInteger_EM (lptkName,            // Ptr to token name
+                               lpToken,             // Ptr to token value
+                               DEF_MIN_QUADPW,      // Minimum value
+                               DEF_MAX_QUADPW,      // Maximum ...
+                              &lpMemPTD->uQuadPW);  // Global output save area
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End ValidatePW_EM
 
 
@@ -1858,15 +2016,30 @@ BOOL ValidateRL_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to (-2)+2*31, inclusive.
 
-    return ValidateInteger_EM (lptkName,        // Ptr to token name
-                               lpToken,         // Ptr to token value
-                               DEF_MIN_QUADRL,  // Minimum value
-                               DEF_MAX_QUADRL,  // Maximum ...
-                              &uQuadRL);        // Global output save area
+    bRet = ValidateInteger_EM (lptkName,            // Ptr to token name
+                               lpToken,             // Ptr to token value
+                               DEF_MIN_QUADRL,      // Minimum value
+                               DEF_MAX_QUADRL,      // Maximum ...
+                              &lpMemPTD->uQuadRL);  // Global output save area
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End ValidateRL_EM
 
 
@@ -1887,11 +2060,19 @@ BOOL ValidateSA_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
-    LPVOID   lpMem, lpData;
-    BOOL     bRet = TRUE;
-    LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
-    HGLOBAL  hGlbData,
-             hGlbRes;
+    LPVOID       lpMem, lpData;
+    BOOL         bRet = TRUE;   // TRUE iff result is valid
+    LPWCHAR      lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
+    HGLOBAL      hGlbData,
+                 hGlbRes;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector, and a valid Stop Action value
@@ -1969,7 +2150,7 @@ BOOL ValidateSA_EM
             {
                 case 0:     // ""
                     hGlbRes = hGlbSAEmpty;
-                    bQuadxSA = SAVAL_Empty;
+                    lpMemPTD->bQuadxSA = SAVAL_Empty;
 
                     break;
 
@@ -1977,7 +2158,7 @@ BOOL ValidateSA_EM
                     if (memcmp (lpData, SAOff, sizeof (SAOff) - 1) EQ 0)
                     {
                         hGlbRes = hGlbSAOff;
-                        bQuadxSA = SAVAL_Off;
+                        lpMemPTD->bQuadxSA = SAVAL_Off;
                     } else
                         bRet = FALSE;
                     break;
@@ -1986,7 +2167,7 @@ BOOL ValidateSA_EM
                     if (memcmp (lpData, SAExit, sizeof (SAExit) - 1) EQ 0)
                     {
                         hGlbRes = hGlbSAExit;
-                        bQuadxSA = SAVAL_Exit;
+                        lpMemPTD->bQuadxSA = SAVAL_Exit;
                     } else
                         bRet = FALSE;
                     break;
@@ -1995,12 +2176,12 @@ BOOL ValidateSA_EM
                     if (memcmp (lpData, SAClear, sizeof (SAClear) - 1) EQ 0)
                     {
                         hGlbRes = hGlbSAClear;
-                        bQuadxSA = SAVAL_Clear;
+                        lpMemPTD->bQuadxSA = SAVAL_Clear;
                     } else
                     if (memcmp (lpData, SAError, sizeof (SAError) - 1) EQ 0)
                     {
                         hGlbRes = hGlbSAError;
-                        bQuadxSA = SAVAL_Error;
+                        lpMemPTD->bQuadxSA = SAVAL_Error;
                     } else
                         bRet = FALSE;
                     break;
@@ -2041,6 +2222,9 @@ BOOL ValidateSA_EM
         lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeGlb (hGlbRes);
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End ValidateSA_EM
@@ -2090,40 +2274,52 @@ BOOL InitSystemVars
     (void)
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Assign the validation routines
-    aSysVarValid[SYSVAR_VALID_ALX ] = ValidateALX_EM ;
-    aSysVarValid[SYSVAR_VALID_CT  ] = ValidateCT_EM  ;
-    aSysVarValid[SYSVAR_VALID_ELX ] = ValidateELX_EM ;
-    aSysVarValid[SYSVAR_VALID_IO  ] = ValidateIO_EM  ;
-    aSysVarValid[SYSVAR_VALID_LX  ] = ValidateLX_EM  ;
-    aSysVarValid[SYSVAR_VALID_PP  ] = ValidatePP_EM  ;
-    aSysVarValid[SYSVAR_VALID_PR  ] = ValidatePR_EM  ;
-    aSysVarValid[SYSVAR_VALID_PW  ] = ValidatePW_EM  ;
-    aSysVarValid[SYSVAR_VALID_RL  ] = ValidateRL_EM  ;
-    aSysVarValid[SYSVAR_VALID_SA  ] = ValidateSA_EM  ;
-    aSysVarValid[SYSVAR_VALID_WSID] = ValidateWSID_EM;
+    aSysVarValid[SYSVAR_ALX ] = ValidateALX_EM ;
+    aSysVarValid[SYSVAR_CT  ] = ValidateCT_EM  ;
+    aSysVarValid[SYSVAR_ELX ] = ValidateELX_EM ;
+    aSysVarValid[SYSVAR_IO  ] = ValidateIO_EM  ;
+    aSysVarValid[SYSVAR_LX  ] = ValidateLX_EM  ;
+    aSysVarValid[SYSVAR_PP  ] = ValidatePP_EM  ;
+    aSysVarValid[SYSVAR_PR  ] = ValidatePR_EM  ;
+    aSysVarValid[SYSVAR_PW  ] = ValidatePW_EM  ;
+    aSysVarValid[SYSVAR_RL  ] = ValidateRL_EM  ;
+    aSysVarValid[SYSVAR_SA  ] = ValidateSA_EM  ;
+    aSysVarValid[SYSVAR_WSID] = ValidateWSID_EM;
 
     // Assign default values to the system vars
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"alx" , hGlbQuadALX_CWS   , SYSVAR_VALID_ALX , &hGlbQuadALX )) return FALSE;   // Attention Latent Expression
-    if (!AssignRealScalar_EM (WS_UTF16_QUAD L"ct"  , fQuadCT_CWS       , SYSVAR_VALID_CT  , &fQuadCT     )) return FALSE;   // Comparison Tolerance
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"elx" , hGlbQuadELX_CWS   , SYSVAR_VALID_ELX , &hGlbQuadELX )) return FALSE;   // Error Latent Expression
-    if (!AssignBoolScalar_EM (WS_UTF16_QUAD L"io"  , bQuadIO_CWS       , SYSVAR_VALID_IO  , &bQuadIO     )) return FALSE;   // Index Origin
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"lx"  , hGlbQuadLX_CWS    , SYSVAR_VALID_LX  , &hGlbQuadLX  )) return FALSE;   // Latent Expression
-    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"pp"  , uQuadPP_CWS       , SYSVAR_VALID_PP  , &uQuadPP     )) return FALSE;   // Printing Precision
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"alx" , hGlbQuadALX_CWS   , SYSVAR_ALX , &lpMemPTD->hGlbQuadALX )) return FALSE;   // Attention Latent Expression
+    if (!AssignRealScalar_EM (WS_UTF16_QUAD L"ct"  , fQuadCT_CWS       , SYSVAR_CT  , &lpMemPTD->fQuadCT     )) return FALSE;   // Comparison Tolerance
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"elx" , hGlbQuadELX_CWS   , SYSVAR_ELX , &lpMemPTD->hGlbQuadELX )) return FALSE;   // Error Latent Expression
+    if (!AssignBoolScalar_EM (WS_UTF16_QUAD L"io"  , bQuadIO_CWS       , SYSVAR_IO  , &lpMemPTD->bQuadIO     )) return FALSE;   // Index Origin
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"lx"  , hGlbQuadLX_CWS    , SYSVAR_LX  , &lpMemPTD->hGlbQuadLX  )) return FALSE;   // Latent Expression
+    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"pp"  , uQuadPP_CWS       , SYSVAR_PP  , &lpMemPTD->uQuadPP     )) return FALSE;   // Printing Precision
     if (cQuadPR_CWS EQ 0)
     {
-        if (!AssignCharVector_EM (WS_UTF16_QUAD L"pr", hGlbQuadPR_CWS  , SYSVAR_VALID_PR  , &hGlbQuadPR  )) return FALSE;   // Prompt Replacement
+        if (!AssignCharVector_EM (WS_UTF16_QUAD L"pr", hGlbQuadPR_CWS  , SYSVAR_PR  , &lpMemPTD->hGlbQuadPR  )) return FALSE;   // Prompt Replacement
     } else
     {
-        if (!AssignCharScalar_EM (WS_UTF16_QUAD L"pr", cQuadPR_CWS     , SYSVAR_VALID_PR  , &cQuadPR     )) return FALSE;   // Prompt Replacement
+        if (!AssignCharScalar_EM (WS_UTF16_QUAD L"pr", cQuadPR_CWS     , SYSVAR_PR  , &lpMemPTD->cQuadPR     )) return FALSE;   // Prompt Replacement
     } // End IF
-    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"pw"  , uQuadPW_CWS       , SYSVAR_VALID_PW  , &uQuadPW     )) return FALSE;   // Printing Width
-    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"rl"  , uQuadRL_CWS       , SYSVAR_VALID_RL  , &uQuadRL     )) return FALSE;   // Random Link
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"sa"  , hGlbQuadSA_CWS    , SYSVAR_VALID_SA  , &hGlbQuadSA  )) return FALSE;   // Stop Action
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"wsid", hGlbQuadWSID_CWS  , SYSVAR_VALID_WSID, &hGlbQuadWSID)) return FALSE;   // Workspace Identifier
+    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"pw"  , uQuadPW_CWS       , SYSVAR_PW  , &lpMemPTD->uQuadPW     )) return FALSE;   // Printing Width
+    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"rl"  , uQuadRL_CWS       , SYSVAR_RL  , &lpMemPTD->uQuadRL     )) return FALSE;   // Random Link
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"sa"  , hGlbQuadSA_CWS    , SYSVAR_SA  , &lpMemPTD->hGlbQuadSA  )) return FALSE;   // Stop Action
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"wsid", hGlbQuadWSID_CWS  , SYSVAR_WSID, &lpMemPTD->hGlbQuadWSID)) return FALSE;   // Workspace Identifier
 
     // Save the index value
-    bQuadxSA = bQuadxSA_CWS;
+    lpMemPTD->bQuadxSA = bQuadxSA_CWS;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return TRUE;
 } // End InitSystemVars

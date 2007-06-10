@@ -297,7 +297,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         goto QUICK_EXIT;
     } // End IF
 
-    // Lock the right arg to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
@@ -329,7 +329,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 ////if (hGlbAxis)
     if (lptkAxis NE NULL)
     {
-        // Lock the axis memory to get a ptr to it
+        // Lock the memory to get a ptr to it
         lpMemAxis = MyGlobalLock (hGlbAxis);
 
         // Point to the grade-up of the first
@@ -373,13 +373,13 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_NESTED;
 ////lpHeaderRes->Perm       = 0;            // Already zero from GHND
 ////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
@@ -477,7 +477,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemProto)
 
                         // Fill in the header
-                        lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+                        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                         lpHeader->ArrType    = ARRAY_NESTED;
 ////////////////////////lpHeader->Perm       = 0;       // Already zero from GHND
 ////////////////////////lpHeader->SysVar     = 0;       // Already zero from GHND
@@ -626,7 +626,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             goto ERROR_EXIT;
         } // End IF
 
-        // Lock the global memory to get a ptr to it
+        // Lock the memory to get a ptr to it
         lpMemOdo = MyGlobalLock (hGlbOdo);
 
         //***************************************************************
@@ -1136,7 +1136,7 @@ BOOL PrimFnMonLeftShoeProto_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemProto)
 
         // Fill in the header
-        lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplType;
 ////////lpHeader->Perm       = 0;   // ALready zero from GHND
 ////////lpHeader->SysVar     = 0;   // Already zero from GHND
@@ -1211,13 +1211,13 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
     // Save the HGLOBAL in the result
     *lpMemRes = MakeGlbTypeGlb (*lphGlbSub);
 
-    // Lock the subarray memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     *lplpMemSub = MyGlobalLock (*lphGlbSub);
 
 #define lpHeader    (*(LPVARARRAY_HEADER *) lplpMemSub)
 
     // Fill in the subarray header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeSub;
 ////lpHeader->Perm       = 0;       // Already zero from GHND
 ////lpHeader->SysVar     = 0;       // Already zero from GHND

@@ -846,7 +846,7 @@ $(L)$(ENAME).EXE:       $(O)$(ENAME).EXE
         @ff $(B)$(ENAME)
 
 zip:
-        pkzip $(ZIPNAME) makefile $(A)*.bmp *.c *.h $(BC)*.hlp $(A)*.ico *.rc *.rtf *.y *.def *.asm *.bat *.dsw *.dsp *.dep *.php *.txt
+        pkzip $(ZIPNAME) @nars2000.inp
 
 
 $(O)$(MV).obj:          $(@B).c

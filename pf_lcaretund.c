@@ -53,9 +53,6 @@ PRIMSPEC PrimSpecLeftCaretUnderbar = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydLeftCaretUnderbarFisIvI, -- Can't happen w/LeftCaretUnderbar
     NULL,   // &PrimFnDydLeftCaretUnderbarFisFvF, -- Can't happen w/LeftCaretUnderbar
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecLeftCaretUnderbar};

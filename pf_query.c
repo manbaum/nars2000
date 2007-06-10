@@ -11,6 +11,7 @@
 #include "resdebug.h"
 #include "externs.h"
 #include "sysvars.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -55,9 +56,6 @@ PRIMSPEC PrimSpecQuery =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydQueryFisIvI, -- Can't happen w/Query
     NULL,   // &PrimFnDydQueryFisFvF, -- Can't happen w/Query
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
@@ -185,6 +183,23 @@ APLINT PrimFnMonQueryIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLBOOL      bQuadIO;       // []IO
+    APLUINT      uQuadRL;       // []RL
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    bQuadIO = lpMemPTD->bQuadIO;
+    uQuadRL = lpMemPTD->uQuadRL;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     // Check for DOMAIN ERROR
     if (aplIntegerRht < bQuadIO)
         RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
@@ -192,9 +207,14 @@ APLINT PrimFnMonQueryIisI
     // Calculate new QuadRL
     uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
 
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Save uQuadRL back into the system variable
-    // ***FIXME*** -- do this in PostProcessing
-    lpSymQuadRL->stData.stInteger = uQuadRL;
+    lpMemPTD->lpSymQuadRL->stData.stInteger = uQuadRL;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Reduce the argument if too large
     if (aplIntegerRht > QUADRL_MODULUS)
@@ -216,6 +236,23 @@ APLINT PrimFnMonQueryIisF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLBOOL      bQuadIO;       // []IO
+    APLUINT      uQuadRL;       // []RL
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    bQuadIO = lpMemPTD->bQuadIO;
+    uQuadRL = lpMemPTD->uQuadRL;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     // Check for DOMAIN ERROR
     if (aplFloatRht < bQuadIO
      || aplFloatRht NE floor (aplFloatRht)
@@ -225,9 +262,14 @@ APLINT PrimFnMonQueryIisF
     // Calculate new QuadRL
     uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
 
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Save uQuadRL back into the system variable
-    // ***FIXME*** -- do this in PostProcessing
-    lpSymQuadRL->stData.stInteger = uQuadRL;
+    lpMemPTD->lpSymQuadRL->stData.stInteger = uQuadRL;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Reduce the argument if too large
     if (aplFloatRht > QUADRL_MODULUS)
@@ -261,29 +303,43 @@ LPYYSTYPE PrimFnDydQuery_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,           // Left arg storage type
-              aplTypeRht;           // Right ...
-    APLNELM   aplNELMLft,           // Left arg NELM
-              aplNELMRht;           // Right ...
-    APLRANK   aplRankLft,           // Left arg rank
-              aplRankRht;           // Right ...
-    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
-              hGlbRht = NULL,       // Right ...
-              hGlbRes = NULL;       // Result   ...
-    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
-              lpMemRht = NULL;      // Ptr to right ...
-    LPAPLINT  lpMemRes = NULL;      // Ptr to result   ...
-    APLINT    aplIntegerLft,        // Left arg temporary integer
-              aplIntegerRht;        // Right ...
-    APLFLOAT  aplFloatLft,          // Left arg temporary float
-              aplFloatRht;          // Right ...
-    APLUINT   ByteRes;              // # bytes needed for the result
-    APLINT    uLft,                 // Left arg loop counter
-              uRht,                 // Right ...
-              uTmp,                 // Temporary ...
-              uSub;                 // Subarray  ...
-    BOOL      bRet = TRUE;          // TRUE iff result is valid
-    LPYYSTYPE lpYYRes;              // Ptr to the result
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht;        // Right ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht;        // Right ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht;        // Right ...
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRht = NULL,    // Right ...
+                 hGlbRes = NULL;    // Result   ...
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL;   // Ptr to right ...
+    LPAPLINT     lpMemRes = NULL;   // Ptr to result   ...
+    APLINT       aplIntegerLft,     // Left arg temporary integer
+                 aplIntegerRht;     // Right ...
+    APLFLOAT     aplFloatLft,       // Left arg temporary float
+                 aplFloatRht;       // Right ...
+    APLUINT      ByteRes;           // # bytes needed for the result
+    APLINT       uLft,              // Left arg loop counter
+                 uRht,              // Right ...
+                 uTmp,              // Temporary ...
+                 uSub;              // Subarray  ...
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPYYSTYPE    lpYYRes;           // Ptr to the result
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    APLBOOL      bQuadIO;           // []IO
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    bQuadIO = lpMemPTD->bQuadIO;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -406,7 +462,7 @@ LPYYSTYPE PrimFnDydQuery_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
 ////lpHeader->Perm       = 0;           // Already zero from GHND
 ////lpHeader->SysVar     = 0;           // Already zero from GHND

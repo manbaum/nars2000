@@ -266,7 +266,7 @@ LPYYSTYPE PrimOpMonDieresisCommon_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header values
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->Perm       = 0;       // Already zero from GHND
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
@@ -726,10 +726,10 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
     if (!CheckRankLengthError_EM (aplRankRes,
                                   aplRankLft,
                                   aplNELMLft,
-                                  lpMemLft,         // Ptr to left arg memory sign.ature
+                                  lpMemLft,         // Ptr to left arg memory Sig.nature
                                   aplRankRht,
                                   aplNELMRht,
-                                  lpMemRht,         // Ptr to right arg memory sign.ature
+                                  lpMemRht,         // Ptr to right arg memory Sig.nature
                                   aplNELMAxis,
                                   lpMemAxisTail,
                                  &lpYYFcnStr->tkToken))
@@ -761,7 +761,7 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
     // Allocate space for result
     if (!PrimScalarFnDydAllocate_EM (&lpYYFcnStrLft->tkToken,
                                      &hGlbRes,
-                                      lpMemLft,     // Ptr to left arg memory sign.ature
+                                      lpMemLft,     // Ptr to left arg memory Sig.nature
                                       lpMemRht,     // ...    right ...
                                      &lpMemRes,
                                       aplRankLft,
@@ -883,7 +883,7 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
             goto ERROR_EXIT;
         } // End IF
 
-        // Lock the global memory to get a ptr to it
+        // Lock the memory to get a ptr to it
         lpMemOdo = MyGlobalLock (hGlbOdo);
     } // End IF
 

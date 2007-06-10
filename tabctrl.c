@@ -74,77 +74,89 @@ void ClearWsData
     (void)
 
 {
-    hGlbQuadALX     = hGlbQuadALX_CWS;
-    hGlbQuadELX     = hGlbQuadELX_CWS;
-    hGlbQuadLX      = hGlbQuadLX_CWS;
-    hGlbQuadSA      = hGlbQuadSA_CWS;
-    hGlbQuadWSID    = hGlbQuadWSID_CWS;
-    hGlbQuadPR      = hGlbQuadPR_CWS;
-    fQuadCT         = fQuadCT_CWS;
-    bQuadIO         = bQuadIO_CWS;
-    uQuadPP         = uQuadPP_CWS;
-    uQuadPW         = uQuadPW_CWS;
-    uQuadRL         = uQuadRL_CWS;
-    cQuadPR         = cQuadPR_CWS;
-    bQuadxSA        = bQuadxSA_CWS;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    lpMemPTD->hGlbQuadALX     = hGlbQuadALX_CWS;
+    lpMemPTD->hGlbQuadELX     = hGlbQuadELX_CWS;
+    lpMemPTD->hGlbQuadLX      = hGlbQuadLX_CWS;
+    lpMemPTD->hGlbQuadSA      = hGlbQuadSA_CWS;
+    lpMemPTD->hGlbQuadWSID    = hGlbQuadWSID_CWS;
+    lpMemPTD->hGlbQuadPR      = hGlbQuadPR_CWS;
+    lpMemPTD->fQuadCT         = fQuadCT_CWS;
+    lpMemPTD->bQuadIO         = bQuadIO_CWS;
+    lpMemPTD->uQuadPP         = uQuadPP_CWS;
+    lpMemPTD->uQuadPW         = uQuadPW_CWS;
+    lpMemPTD->uQuadRL         = uQuadRL_CWS;
+    lpMemPTD->cQuadPR         = cQuadPR_CWS;
+    lpMemPTD->bQuadxSA        = bQuadxSA_CWS;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End ClearWsData
 
 
-//***************************************************************************
-//  $SaveWsData
-//
-//  Save data from the current WS into global memory
-//***************************************************************************
-
-void SaveWsData
-    (HGLOBAL hGlbPTD)       // Handle to PerTabData
-
-{
-    LPPERTABDATA lpMemPTD;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-#define Assign(a)   lpMemPTD->a = a;
-    PERTABVARS
-#undef  Assign
-
-    // Get the handle of the active MDI window
-    lpMemPTD->hWndActive = (HWND) SendMessage (lpMemPTD->hWndMC, WM_MDIGETACTIVE, 0, 0);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End SaveWsData
-
-
-//***************************************************************************
-//  $RestWsData
-//
-//  Restore data into the current WS from global memory
-//***************************************************************************
-
-void RestWsData
-    (HGLOBAL hGlbPTD)       // Handle to PerTabData
-
-{
-    LPPERTABDATA lpMemPTD;
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-#define Assign(a)   a = lpMemPTD->a;
-    PERTABVARS
-#undef  Assign
-
-    // Set the active MDI window
-    SendMessage (lpMemPTD->hWndMC, WM_MDIACTIVATE, (WPARAM) lpMemPTD->hWndActive, 0);
-
-    // Give it the keyboard focus
-    SetFocus (lpMemPTD->hWndActive);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End RestWsData
+//// //***************************************************************************
+//// //  $SaveWsData
+//// //
+//// //  Save data from the current WS into global memory
+//// //***************************************************************************
+////
+//// void SaveWsData
+////     (HGLOBAL hGlbPTD)       // Handle to PerTabData
+////
+//// {
+////     LPPERTABDATA lpMemPTD;
+////
+////     // Lock the memory to get a ptr to it
+////     lpMemPTD = MyGlobalLock (hGlbPTD);
+////
+//// #define Assign(a)   lpMemPTD->a = a;
+////     PERTABVARS
+//// #undef  Assign
+////
+////     // Get the handle of the active MDI window
+////     lpMemPTD->hWndActive = (HWND) SendMessage (lpMemPTD->hWndMC, WM_MDIGETACTIVE, 0, 0);
+////
+////     // We no longer need this ptr
+////     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+//// } // End SaveWsData
+////
+////
+//// //***************************************************************************
+//// //  $RestWsData
+//// //
+//// //  Restore data into the current WS from global memory
+//// //***************************************************************************
+////
+//// void RestWsData
+////     (HGLOBAL hGlbPTD)       // Handle to PerTabData
+////
+//// {
+////     LPPERTABDATA lpMemPTD;
+////
+////     // Lock the memory to get a ptr to it
+////     lpMemPTD = MyGlobalLock (hGlbPTD);
+////
+//// #define Assign(a)   a = lpMemPTD->a;
+////     PERTABVARS
+//// #undef  Assign
+////
+////     // Set the active MDI window
+////     SendMessage (lpMemPTD->hWndMC, WM_MDIACTIVATE, (WPARAM) lpMemPTD->hWndActive, 0);
+////
+////     // Give it the keyboard focus
+////     SetFocus (lpMemPTD->hWndActive);
+////
+////     // We no longer need this ptr
+////     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+//// } // End RestWsData
 
 
 //***************************************************************************
@@ -294,22 +306,28 @@ BOOL CreateNewTabInThread
     // Get the size and position of the parent window.
     GetClientRect (hWndParent, &rc);
 
-    // Save data from the current WS into global memory
-    SaveWsData (hGlbCurTab);
+////// Save data from the current WS into global memory
+////SaveWsData (hGlbCurTab);
 
-    // Lock the per-tab data to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbCurTab);
+    if (hGlbCurTab)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbCurTab);
 
-    // Hide the child windows of the outgoing tab
-    ShowHideChildWindows (lpMemPTD->hWndMC, FALSE);
+        // Hide the child windows of the outgoing tab
+        ShowHideChildWindows (lpMemPTD->hWndMC, FALSE);
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbCurTab); lpMemPTD = NULL;
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbCurTab); lpMemPTD = NULL;
+    } // End IF
 
     // Allocate per tab data
     hGlbPTD = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
     if (!hGlbPTD)
         return FALSE;       // Stop the whole process
+
+    // Save the thread's PerTabData global memory handle
+    TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
 
     // Calculate the offset to the label text
     q = lpszDPFE;
@@ -333,7 +351,7 @@ BOOL CreateNewTabInThread
         goto ERROR_EXIT;
     } // End IF
 
-    // Lock the per-tab data to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Save the DPFE
@@ -438,7 +456,7 @@ BOOL CreateNewTabInThread
                      CW_USEDEFAULT,         // Width
                      lpMemPTD->hWndMC,      // Parent
                      _hInstance,            // Instance
-                     (long) hGlbPTD);       // Extra data
+                     (long) &hGlbPTD);      // Extra data
     if (lpMemPTD->hWndSM EQ NULL)
     {
         MB (pszNoCreateSMWnd);
@@ -464,7 +482,7 @@ BOOL CreateNewTabInThread
 ////hWndDB = lpMemPTD->hWndDB;  // ...
 
     // Set the handle of the active window
-    lpMemPTD->hWndActive = hWndSM;
+    lpMemPTD->hWndActive = lpMemPTD->hWndSM;
 
     // Save the handle
     hGlbCurTab = hGlbPTD;
@@ -575,8 +593,8 @@ LRESULT WINAPI LclTabCtrlWndProc
     UINT           uCloseState,
                    uOverTabState;
     int            iTmpTab;
-    HGLOBAL        hGlbPTD;
-    LPPERTABDATA   lpMemPTD;
+    HGLOBAL        hGlbPTD;         // PerTabData global memory handle
+    LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
 
 ////LCLODSAPI ("TC: ", hWnd, message, wParam, lParam);
     // Split cases
@@ -738,14 +756,14 @@ LRESULT WINAPI LclTabCtrlWndProc
                     iNewTab++;
             } // End IF
 
-            // Save data from the current WS into global memory
-            SaveWsData (hGlbCurTab);
+////////////// Save data from the current WS into global memory
+////////////SaveWsData (hGlbCurTab);
 
-            // Get the per tab global memory handle
+            // Get the outgoing per tab global memory handle
             hGlbPTD = GetPerTabHandle (iTab);
 
-            // Restore data into the current WS from global memory
-            RestWsData (hGlbPTD);
+////////////// Restore data into the current WS from global memory
+////////////RestWsData (hGlbPTD);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -763,12 +781,12 @@ LRESULT WINAPI LclTabCtrlWndProc
 #endif
 
             // Free global storage
-            FreeResultGlobalVar (hGlbQuadALX ); hGlbQuadALX  = NULL;
-            FreeResultGlobalVar (hGlbQuadELX ); hGlbQuadELX  = NULL;
-            FreeResultGlobalVar (hGlbQuadLX  ); hGlbQuadLX   = NULL;
-            FreeResultGlobalVar (hGlbQuadSA  ); hGlbQuadSA   = NULL;
-            FreeResultGlobalVar (hGlbQuadWSID); hGlbQuadWSID = NULL;
-            FreeResultGlobalVar (hGlbQuadPR  ); hGlbQuadPR   = NULL;
+            FreeResultGlobalVar (lpMemPTD->hGlbQuadALX ); lpMemPTD->hGlbQuadALX  = NULL;
+            FreeResultGlobalVar (lpMemPTD->hGlbQuadELX ); lpMemPTD->hGlbQuadELX  = NULL;
+            FreeResultGlobalVar (lpMemPTD->hGlbQuadLX  ); lpMemPTD->hGlbQuadLX   = NULL;
+            FreeResultGlobalVar (lpMemPTD->hGlbQuadSA  ); lpMemPTD->hGlbQuadSA   = NULL;
+            FreeResultGlobalVar (lpMemPTD->hGlbQuadWSID); lpMemPTD->hGlbQuadWSID = NULL;
+            FreeResultGlobalVar (lpMemPTD->hGlbQuadPR  ); lpMemPTD->hGlbQuadPR   = NULL;
 
 #undef  APPEND_NAME
 
@@ -792,8 +810,8 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Get the per tab global memory handle
             hGlbCurTab = GetPerTabHandle (iNewTab);
 
-            // Restore data into the current WS from global memory
-            RestWsData (hGlbCurTab);
+////////////// Restore data into the current WS from global memory
+////////////RestWsData (hGlbCurTab);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbCurTab);
@@ -896,19 +914,19 @@ void SetTabText
 
 {
     HGLOBAL      hGlbPTD;
-    LPPERTABDATA lpMem;
+    LPPERTABDATA lpMemPTD;
 
     // Get the per tab global memory handle
     hGlbPTD = GetPerTabHandle (iCurTab);
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbPTD);
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Save the text state
-    lpMem->bTabTextState = bHighlight;
+    lpMemPTD->bTabTextState = bHighlight;
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMem = NULL;
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End SetTabText
 
 

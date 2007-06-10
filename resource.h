@@ -66,6 +66,13 @@
 #define IDM_DUP_WS                      501
 #define IDM_SAVECLOSE_WS                502
 #define IDM_CLOSE_WS                    503
+#define IDM_LOAD_WS                     504
+#define IDM_XLOAD_WS                    505
+#define IDM_COPY_WS                     506
+#define IDM_PCOPY_WS                    507
+#define IDM_SAVE_WS                     508
+#define IDM_SAVE_AS_WS                  509
+#define IDM_DROP_WS                     510
 
 #define IDM_SMFONT                      600
 #define IDM_TCFONT                      602

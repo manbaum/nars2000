@@ -467,7 +467,7 @@ HGLOBAL DR_FloatToChar_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->Perm       = 0;   // Already zero from GHND
 ////lpHeader->SysVar     = 0;   // Already zero from GHND
@@ -579,7 +579,7 @@ LPYYSTYPE SysFnSYSID_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->Perm       = 0;
 ////lpHeader->SysVar     = 0;
@@ -664,7 +664,7 @@ LPYYSTYPE SysFnSYSVER_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->Perm       = 0;
 ////lpHeader->SysVar     = 0;
@@ -797,7 +797,7 @@ LPYYSTYPE SysFnTC_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
 ////lpHeader->Perm       = 0;
 ////lpHeader->SysVar     = 0;
@@ -1062,7 +1062,7 @@ LPYYSTYPE SysFnTS_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
 ////lpHeader->Perm       = 0;
 ////lpHeader->SysVar     = 0;

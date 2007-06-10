@@ -208,7 +208,7 @@ LPYYSTYPE PrimFnMonRhoGlb_EM_YY
     UINT      uRes;             // Loop counter
     LPYYSTYPE lpYYRes = NULL;   // Ptr to result
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeaderRht     ((LPVARARRAY_HEADER) lpMemRht)
@@ -239,13 +239,13 @@ LPYYSTYPE PrimFnMonRhoGlb_EM_YY
             goto ERROR_EXIT;
         } // End IF
 
-        // Lock the global memory to get a ptr to it
+        // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
 
         // Fill in the header
-        lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+        lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeaderRes->ArrType    = ARRAY_INT;
 ////////lpHeaderRes->Perm       = 0;                // Already zero from GHND
 ////////lpHeaderRes->SysVar     = 0;                // Already zero from GHND
@@ -498,13 +498,13 @@ LPYYSTYPE PrimFnDydRho_EM_YY
         return NULL;
     } // End IF
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
 ////lpHeaderRes->Perm       = 0;        // ALready zero from GHND
 ////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
@@ -1160,7 +1160,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
     APLINT   aplIntTmp;
     LPWCHAR  lpErrMsg;
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
 
 #define lpHeaderLft     ((LPVARARRAY_HEADER) lpMemLft)
@@ -1336,7 +1336,7 @@ void PrimFnDydRhoLftGlbCopyDim
     APLNELM  aplNELMLft;
     UINT     uLft, uBitMaskLft;
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
 
 #define lpHeaderLft     ((LPVARARRAY_HEADER) lpMemLft)
@@ -1435,7 +1435,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
     BOOL    bRet = TRUE;
     APLINT  aplNELMRht;
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemRhtBase = MyGlobalLock (hGlbRht);
 
 #define lpHeaderRht     ((LPVARARRAY_HEADER) lpMemRhtBase)

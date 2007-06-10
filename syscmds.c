@@ -6,7 +6,9 @@
 #include <windows.h>
 
 #include "main.h"
+#include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -14,7 +16,7 @@
 #endif
 
 typedef BOOL (SYSCMD) (LPWCHAR);
-typedef SYSCMD * LPSYSCMD;
+typedef SYSCMD *LPSYSCMD;
 
 typedef struct tagSYSCMDSTAB
 {
@@ -29,21 +31,23 @@ SYSCMDSTAB SysCmdsTab[]
 {
     {L"clear" ,     &CmdClear_EM    },
     {L"close" ,     &CmdClose_EM    },
-////{L"copy"  ,     &CmdCopy_EM     },
-////{L"drop"  ,     &CmdDrop_EM     },
-////{L"erase" ,     &CmdErase_EM    },
+////{L"copy"  ,     &CmdCopyName_EM },
+////{L"drop"  ,     &CmdDropWS_EM   },
+    {L"edit"  ,     &CmdEdit_EM     },
+////{L"erase" ,     &CmdEraseName_EM},
     {L"exit"  ,     &CmdExit_EM     },
 ////{L"fns"   ,     &CmdFns_EM      },
 ////{L"lib"   ,     &CmdLib_EM      },
-////{L"load"  ,     &CmdLoad_EM     },
-    {L"newtab",     &CmdNewtab_EM   },
+////{L"load"  ,     &CmdLoadWS_EM   },
+    {L"newtab",     &CmdNewTab_EM   },
 ////{L"nms"   ,     &CmdNms_EM      },
 ////{L"ops"   ,     &CmdOps_EM      },
-////{L"save"  ,     &CmdSave_EM     },
+    {L"save"  ,     &CmdSaveWS_EM   },
 ////{L"si"    ,     &CmdSi_EM       },
 ////{L"sic"   ,     &CmdSic_EM      },
 ////{L"sinl"  ,     &CmdSinl_EM     },
 ////{L"vars"  ,     &CmdVars_EM     },
+////{L"xload" ,     &CmdXloadWS_EM  },
 ////{L"wsid"  ,     &CmdWsid_EM     },
 }
 #endif
@@ -134,6 +138,39 @@ BOOL CmdClose_EM
 
 
 //***************************************************************************
+//  $CmdEdit_EM
+//
+//  Execute the system command:  )EDIT
+//***************************************************************************
+
+BOOL CmdEdit_EM
+    (LPWCHAR lpwszTail)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // ***FIXME*** -- Make sensitive to user option to edit a
+    //                function, vector, or matrix by default
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Open a Function Editor window
+    bRet = CreateFcnWindow (lpwszTail, lpMemPTD->hWndMC);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
+} // End CmdEdit_EM
+
+
+//***************************************************************************
 //  $CmdExit_EM
 //
 //  Execute the system command:  )EXIT
@@ -149,19 +186,43 @@ BOOL CmdExit_EM
 
 
 //***************************************************************************
-//  $CmdNewtab_EM
+//  $CmdNewTab_EM
 //
 //  Execute the system command:  )NEWTAB
 //***************************************************************************
 
-BOOL CmdNewtab_EM
+BOOL CmdNewTab_EM
     (LPWCHAR lpwszTail)
 
 {
     return CreateNewTab (hWndMF,
                          "CLEAR WS",
                          TabCtrl_GetItemCount (hWndTC));
-} // End CmdNewtab_EM
+} // End CmdNewTab_EM
+
+
+//***************************************************************************
+//  $CmdSaveWS_EM
+//
+//  Execute the system command:  )SAVE
+//***************************************************************************
+
+BOOL CmdSaveWS_EM
+    (LPWCHAR lpwszTail)
+
+{
+    DbgBrk ();          // ***FINISHME***
+
+
+
+
+
+
+
+
+
+    return FALSE;
+} // End CmdSaveWS_EM
 
 
 //***************************************************************************

@@ -54,9 +54,6 @@ PRIMSPEC PrimSpecStar =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydStarFisIvI,
     &PrimFnDydStarFisFvF,
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecStar};

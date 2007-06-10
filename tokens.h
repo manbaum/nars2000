@@ -91,8 +91,9 @@ typedef enum tagTOKEN_TYPES
 //   corresponding change to <Untokenize> in <exec.c>,
 //   <LookaheadDyadicOp>, <LookaheadAdjacent>,
 //   <LookaheadSurround>, and <pl_yylex> in <parse.y>,
-//   <MakeVarStrand_EM_YY> in <strand.c>, and
-//   <GetTokenTypeName> in <display.c>.
+//   <MakeVarStrand_EM_YY> in <strand.c>,
+//   <GetTokenTypeName> in <display.c>,
+//   and <TokenTypeFV> in <primfns.c>.
 
 
 typedef struct tagTKFLAGS

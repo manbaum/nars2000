@@ -396,7 +396,7 @@ FCN_TYPES GetFcnType
 
     hGlbData = ClrPtrTypeDirGlb (hGlbData);
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMem)

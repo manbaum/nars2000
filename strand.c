@@ -8,6 +8,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -634,13 +635,13 @@ static char tabConvert[][STRAND_LENGTH] =
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemStr = MyGlobalLock (hGlbStr);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType = aplType;
 ////lpHeader->Perm    = 0;
 ////lpHeader->SysVar  = 0;
@@ -1106,13 +1107,13 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemStr = MyGlobalLock (hGlbStr);
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
 
     // Fill in the header
-    lpHeader->Sign.ature = FCNARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = FCNARRAY_HEADER_SIGNATURE;
     lpHeader->FcnType    = cFcnType;
     lpHeader->RefCnt     = 1;
 ////lpHeader->NELM       =              // To be filled in below
@@ -1337,8 +1338,20 @@ void ErrorMessageIndirectToken
      LPTOKEN  lpError)
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Save in global for later reference
-    lpwszErrorMessage = lpwszMsg;
+    lpMemPTD->lpwszErrorMessage = lpwszMsg;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Set the error token
     ErrorMessageSetToken (lpError);
@@ -1844,13 +1857,13 @@ LPYYSTYPE MakeNameStrand_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemStr = MyGlobalLock (hGlbStr);
 
 #define lpHeader    ((LPVARNAMED_HEADER) lpMemStr)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARNAMED_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARNAMED_HEADER_SIGNATURE;
     lpHeader->NELM       = iLen;
 
 #undef  lpHeader
@@ -2075,13 +2088,13 @@ LPYYSTYPE MakeList_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbLst);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
-    // Lock the global memory
+    // Lock the memory to get a ptr to it
     lpMemLst = MyGlobalLock (hGlbLst);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemLst)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_LIST;
 ////lpHeader->Perm       = 0;       // Already zero from GHND
 ////lpHeader->SysVar     = 0;       // Already zero from GHND

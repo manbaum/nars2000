@@ -9,6 +9,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -52,9 +53,6 @@ PRIMSPEC PrimSpecEqual = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydEqualFisIvI, -- Can't happen w/Equal
     NULL,   // &PrimFnDydEqualFisFvF, -- Can't happen w/Equal
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecEqual};
@@ -173,6 +171,21 @@ APLBOOL PrimFnDydEqualBisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLFLOAT     fQuadCT;       // []CT
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    fQuadCT = lpMemPTD->fQuadCT;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     return CompareCT (aplFloatLft, aplFloatRht, fQuadCT, lpPrimSpec);
 } // End PrimFnDydEqualBisFvF
 

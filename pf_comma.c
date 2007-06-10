@@ -248,7 +248,7 @@ LPYYSTYPE PrimFnMonCommaImm_EM_YY
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = TranslateImmTypeToArrayType (ImmType);
 ////lpHeader->Perm       = 0;               // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
@@ -411,7 +411,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM_YY
     else
         aplRankRes = aplRankRht + 1 - aplNELMAxis;
 
-    // Lock the right arg to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
@@ -495,13 +495,13 @@ LPYYSTYPE PrimFnMonCommaGlb_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
 ////lpHeaderRes->Perm       = 0;            // Already zero from GHND
 ////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
@@ -646,7 +646,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM_YY
             goto ERROR_EXIT;
         } // End IF
 
-        // Lock the global memory to get a ptr to it
+        // Lock the memory to get a ptr to it
         lpMemOdo = MyGlobalLock (hGlbOdo);
 
         // Split cases based upon the storage type of the right arg/result
@@ -1243,7 +1243,7 @@ LPYYSTYPE PrimFnDydComma_EM_YY
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
 ////lpHeaderRes->Perm       = 0;            // Already zero from GHND
 ////lpHeaderRes->SysVar     = 0;            // Already zero from GHND

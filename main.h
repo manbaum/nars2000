@@ -130,6 +130,10 @@ DecrRefCntInd (hGlbData);
 #define MYWM_PARSELINEDONE  (WM_APP+ 2) // SM (DisplayPrompt & CloseHandle)
 #define MYWM_SETFOCUS       (WM_APP+ 3) // SM (SetFocus)
 #define MYWM_IZITNAME       (WM_APP+ 4) // FE (Izit A Name)
+#define MYWM_SAVE_FN        (WM_APP+ 5) // FE (SaveFunction)
+#define MYWM_SAVECLOSE_FN   (WM_APP+ 6) // FE (SaveFunction/CloseFunction)
+#define MYWM_SAVE_AS_FN     (WM_APP+ 7) // FE (SaveAsFunction)
+#define MYWM_CLOSE_FN       (WM_APP+ 8) // FE (CloseFunction)
 
 
 typedef enum tagEXTYPE
@@ -137,11 +141,19 @@ typedef enum tagEXTYPE
     EX_IMMEX, EX_FN
 } EXTYPE;
 
+typedef enum tagEXEC_CODES
+{
+    EXEC_SUCCESS = 0 ,          // All OK
+////EXEC_RESULT_BOOL ,          // Result should be Boolean
+////EXEC_RESULT_INT  ,          // ...              Integer
+    EXEC_RESULT_FLOAT,          // ...              Float
+    EXEC_DOMAIN_ERROR,          // Signal a DOMAIN ERROR
+} EXEC_CODES;
+
 typedef struct tagEXECSTATE
 {
     EXTYPE exType;
 } EXECSTATE, *LPEXECSTATE;
-
 
 typedef struct tagGLBHIST
 {

@@ -974,7 +974,7 @@ LPYYSTYPE ExecFuncGlb_EM_YY
     LPYYSTYPE lpYYFcnStr,
               lpYYRes;
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpYYFcnStr = MyGlobalLock (hGlbFcn);
 
     // Skip over the header to the data
@@ -1270,6 +1270,7 @@ char TokenTypeFV
         case TKT_COMMENT:
         case TKT_ASSIGN:
         case TKT_LISTSEP:
+        case TKT_COLON:
         case TKT_LPAREN:
         case TKT_RPAREN:
         case TKT_LBRACKET:
@@ -1304,7 +1305,7 @@ APLRANK RankOfGlb
     LPVOID  lpMem;
     APLRANK aplRank;
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlb);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
@@ -1411,7 +1412,7 @@ void AttrsOfGlb
 {
     LPVOID  lpMem;
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
@@ -1474,11 +1475,26 @@ BOOL CheckAxisImm
      LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
 
 {
-    APLUINT  ByteAxis;
-    APLRANK  aplRank;
-    BOOL     bRet = TRUE;
-    UINT     u;
-    LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
+    APLUINT      ByteAxis;      // # bytes for the axis global
+    APLRANK      aplRank;       // Maximum rank for comparison
+    BOOL         bRet = TRUE;   // TRUE iff result is valid
+    UINT         u;             // Loop counter
+    LPAPLINT     lpAxisTail;    // Ptr to grade up of AxisHead
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLBOOL      bQuadIO;       // []IO
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    bQuadIO = lpMemPTD->bQuadIO;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
 
     // The immediate value minus []IO
     //   must be an integer in the range
@@ -1511,7 +1527,7 @@ BOOL CheckAxisImm
             return FALSE;
         } // End IF
 
-        // Lock the memory to get a ptr to the axis storage area
+        // Lock the memory to get a ptr it
         *lplpAxisStart = *lplpAxisHead = MyGlobalLock (*lphGlbAxis);
 
         // Point to the start of the trailing axes
@@ -1624,22 +1640,36 @@ BOOL CheckAxisGlb
      LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
 
 {
-    BOOL     bRet = TRUE;
-    LPVOID   lpMem,
-             lpDup = NULL;
-    HGLOBAL  hGlbDup = NULL;
-    UINT     uBitMask;
-    APLUINT  ByteDup,
-             ByteAxis,
-             u;
-    APLSTYPE aplTypeLcl;
-    APLRANK  aplRankLcl;
-    LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
+    BOOL         bRet = TRUE;
+    LPVOID       lpMem,
+                 lpDup = NULL;
+    HGLOBAL      hGlbDup = NULL;
+    UINT         uBitMask;
+    APLUINT      ByteDup,
+                 ByteAxis,
+                 u;
+    APLSTYPE     aplTypeLcl;
+    APLRANK      aplRankLcl;
+    LPAPLINT     lpAxisTail;    // Ptr to grade up of AxisHead
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLBOOL      bQuadIO;       // []IO
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    bQuadIO = lpMemPTD->bQuadIO;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbData));
 
-    // Lock the global memory object to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (ClrPtrTypeDirGlb (hGlbData));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
@@ -1679,7 +1709,7 @@ BOOL CheckAxisGlb
             goto ERROR_EXIT;
         } // End IF
 
-        // Lock the memory to get a ptr to the axis storage area
+        // Lock the memory to get a ptr to it
         *lplpAxisStart = *lplpAxisHead = MyGlobalLock (*lphGlbAxis);
 
         // Point to the start of the trailing axes
@@ -3153,7 +3183,7 @@ BOOL PrimScalarFnDydAllocate_EM
 #define lpHeader    ((LPVARARRAY_HEADER) *lplpMemRes)
 
     // Fill in the header
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->Perm       = 0;               // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
@@ -3330,7 +3360,7 @@ HGLOBAL MakePrototype_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
                     // Fill in the header
-                    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+                    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                     lpHeader->ArrType    = ARRAY_BOOL;
 ////////////////////lpHeader->Perm       = 0;   // Already zero from GHND
 ////////////////////lpHeader->SysVar     = 0;   // Already zero from GHND
@@ -3847,7 +3877,7 @@ BOOL IsGlobalTypeArray
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
         // Ensure it has the correct signature
-        bRet = (lpHeader->Sign.ature EQ Signature);
+        bRet = (lpHeader->Sig.nature EQ Signature);
 
 #undef  lpHeader
 
@@ -4018,10 +4048,10 @@ UINT CheckException
      LPPRIMSPEC           lpPrimSpec)
 
 {
-    *lpPrimSpec->lpExecCode = lpExcept->ExceptionRecord->ExceptionCode;
+    SetExecCode (lpExcept->ExceptionRecord->ExceptionCode);
 
     // Split cases based upon the exception code
-    switch (*lpPrimSpec->lpExecCode)
+    switch (GetExecCode ())
     {
 ////////case EXEC_RESULT_BOOL:
 ////////case EXEC_RESULT_INT:
@@ -4490,7 +4520,7 @@ LPTOKEN TypeDemote
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
             // Fill in the header
-            lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeRes;
         ////lpHeader->Perm       = 0;               // Already zero from GHND
         ////lpHeader->SysVar     = 0;               // Already zero from GHND
@@ -4698,36 +4728,51 @@ LPYYSTYPE YYAlloc
     (void)
 
 {
-    UINT u;
+    UINT         u;             // Loop counter
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPYYSTYPE    lpYYRes = NULL;// Ptr to the result
+
 #ifdef DEBUG
     static UINT Index = 0;
 #endif
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Search for an empty YYRes slot,
     //   zero it,
     //   mark it as inuse,
     //   and return a ptr to it
     for (u = 0; u < NUMYYRES; u++)
-    if (!YYRes[u].Inuse)
+    if (!lpMemPTD->YYRes[u].Inuse)
     {
         // Zero it
-        ZeroMemory (&YYRes[u], sizeof (YYRes[0]));
+        ZeroMemory (&lpMemPTD->YYRes[u], sizeof (lpMemPTD->YYRes[0]));
 
         // Mark as inuse
-        YYRes[u].Inuse = 1;
+        lpMemPTD->YYRes[u].Inuse = 1;
 #ifdef DEBUG
-        YYRes[u].Flag = 0;          // Mark as a YYAlloc Index
+        lpMemPTD->YYRes[u].Flag = 0;    // Mark as a YYAlloc Index
 
         // Save unique number for debugging/tracking purposes
-        YYRes[u].Index = ++Index;
+        lpMemPTD->YYRes[u].Index = ++Index;
 #endif
-        return &YYRes[u];
+        lpYYRes = &lpMemPTD->YYRes[u];
+
+        goto NORMAL_EXIT;
     } // End FOR/IF
 
     // If we get here, we ran out of indices
     DbgStop ();
+NORMAL_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    return NULL;
+    return lpYYRes;
 } // End YYAlloc
 
 
@@ -4798,15 +4843,26 @@ void YYFree
     (LPYYSTYPE lpYYRes)         // Ptr to the YYRes entry
 
 {
-#ifdef DEBUG
-    UINT u;                     // ***DEBUG***
+#ifdef DEBUG                    // ***DEBUG***
+    UINT         u;             // Index into lpMemPTD->YYRes
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    u = lpYYRes - YYRes;        // ***DEBUG***
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    u = lpYYRes - lpMemPTD->YYRes;
     Assert (u < NUMYYRES);
     Assert (lpYYRes->Inuse EQ 1);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
 ////lpYYRes->Inuse = 0;         // Free it
-    ZeroMemory (lpYYRes, sizeof (YYRes[0]));
+    ZeroMemory (lpYYRes, sizeof (YYSTYPE));
 } // End YYFree
 
 
@@ -4820,13 +4876,30 @@ BOOL YYResIsEmpty
     (void)
 
 {
-    UINT u;
+    UINT         u;             // Loop counter
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet = TRUE;   // TRUE iff result is valid
 
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Loop through the YYRes entries
     for (u = 0; u < NUMYYRES; u++)
-    if (YYRes[u].Inuse)
-        return FALSE;
+    if (lpMemPTD->YYRes[u].Inuse)
+    {
+        bRet = FALSE;
 
-    return TRUE;
+        break;
+    } // End FOR/IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End YYResIsEmpty
 
 

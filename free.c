@@ -532,9 +532,9 @@ BOOL FreeResultGlobalDfn
 
 {
     LPDFN_HEADER lpMemDfn;          // Ptr to defined function header global memory
-    UINT         nLines,            // # lines in the function
+    UINT         numFcnLines,       // # lines in the function
                  RefCnt;            // Reference count
-    LPFCNLINE    lpFcnLines;        // Ptr to the array of FCNLINEs
+    LPFCNLINE    lpFcnLines;        // Ptr to the array of structs (FCNLINE[numFcnLine])
 
     // Data is an valid HGLOBAL defined function
     Assert (IsGlbTypeDfnDir (MakeGlbTypeGlb (hGlbData)));
@@ -574,13 +574,13 @@ BOOL FreeResultGlobalDfn
         } // End IF
 
         // Get the # lines in the function
-        nLines = lpMemDfn->nLines;
+        numFcnLines = lpMemDfn->numFcnLines;
 
-        // Get a ptr to the start of the function line structs (FCNLINE[nLines])
+        // Get a ptr to the start of the function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfn)[lpMemDfn->offFcnLines];
 
         // Loop through the lines
-        while (nLines--)
+        while (numFcnLines--)
         {
             if (lpFcnLines->hGlbTxtLine)
             {

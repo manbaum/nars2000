@@ -53,9 +53,6 @@ PRIMSPEC PrimSpecLeftCaret = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydLeftCaretFisIvI, -- Can't happen w/LeftCaret
     NULL,   // &PrimFnDydLeftCaretFisFvF, -- Can't happen w/LeftCaret
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecLeftCaret};

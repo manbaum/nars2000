@@ -15,6 +15,7 @@
 #include "editctrl.h"
 #include "Unitrans.h"
 #include "dfnhdr.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -59,6 +60,11 @@ char szCloseMessage[] = "You have changed the body of this function;"
 COLORREF crLineNum = RGB (143,188,143),   // Darkseagreen
          crLineTxt = RGB ( 65,105,225);   // Royalblue
 
+typedef struct tagFE_CREATESTRUCT
+{
+    LPAPLCHAR lpwszLine;
+} FE_CREATESTRUCT, *LPFE_CREATESTRUCT;
+
 
 //***************************************************************************
 //  $CreateFcnWindow
@@ -72,6 +78,18 @@ BOOL CreateFcnWindow
 
 {
     HWND hWnd;
+    FE_CREATESTRUCT feCreateStruct;
+
+    // Skip over the initial UTF16_DEL, if present
+    if (lpwszLine[0] EQ UTF16_DEL)
+        lpwszLine++;
+
+    // Skip over leading blanks
+    while (*lpwszLine EQ L' ')
+        lpwszLine++;
+
+    // Save a ptr to the line
+    feCreateStruct.lpwszLine = lpwszLine;
 
     // ***FIXME*** -- What do we do with this handle??
 
@@ -85,7 +103,7 @@ BOOL CreateFcnWindow
                       CW_USEDEFAULT,        // Width
                       hWndMC,               // Parent
                       _hInstance,           // Instance
-                      (LPARAM) &lpwszLine[1]);  // Extra data, skip over the initial UTF16_DEL
+                      (LPARAM) &feCreateStruct);// Extra data,
     if (hWnd EQ NULL)
     {
         MB (pszNoCreateFEWnd);
@@ -196,14 +214,14 @@ LRESULT APIENTRY FEWndProc
 
     switch (message)
     {
+#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
         case WM_CREATE:             // lpcs = (LPCREATESTRUCT) lParam; // Structure with creation data
         {
             LPSYMENTRY   lpSymName;         // Ptr to function name STE
             HGLOBAL      hGlbDfnHdr = NULL; // Defined function header global memory handle
             LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header global memory
-
-
-#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
+            HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+            LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
             // Initialize variables
             cfFE.hwndOwner = hWnd;
@@ -214,7 +232,7 @@ LRESULT APIENTRY FEWndProc
             SetWindowLong (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
 
             // See if there is an existing function
-            lpSymName = ParseFunctionName (hWnd, (LPAPLCHAR) lpMDIcs->lParam);
+            lpSymName = ParseFunctionName (hWnd, ((LPFE_CREATESTRUCT) (lpMDIcs->lParam))->lpwszLine);
             if (lpSymName
              && lpSymName->stData.stGlbData)
             {
@@ -325,16 +343,23 @@ LRESULT APIENTRY FEWndProc
             } // End IF
 
             // Save the PTD handle with the window
-            SetProp (hWnd, "PTD", (HGLOBAL) GetProp (GetParent (hWnd), "PTD"));
+            hGlbPTD = GetProp (GetParent (hWnd), "PTD");
+            SetProp (hWnd, "PTD", (HGLOBAL) hGlbPTD);
 
             // Save in window extra bytes
             SetWindowLong (hWnd, GWLSF_HWNDEC, (long) hWndEC);
 
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // Subclass the Edit Control so we can handle some of its messages
-            lpfnOldEditCtrlWndProc = (WNDPROC)
+            lpMemPTD->lpfnOldEditCtrlWndProc = (WNDPROC)
               SetWindowLongW (hWndEC,
                               GWL_WNDPROC,
                               (long) (WNDPROC) &LclEditCtrlWndProc);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
             // Set the paint hook
             SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
 
@@ -344,9 +369,9 @@ LRESULT APIENTRY FEWndProc
             {
                 HGLOBAL   hGlbTxt;          // Line/header text global memory handle
                 LPVOID    lpMem;            // Ptr to global memory
-                UINT      nLines,           // # lines in the function
+                UINT      numFcnLines,      // # lines in the function
                           uLineNum;         // Line #
-                LPFCNLINE lpFcnLines;       // Ptr to array function line structs (FCNLINE[nLines])
+                LPFCNLINE lpFcnLines;       // Ptr to array function line structs (FCNLINE[numFcnLines])
 
                 // Get the function header text global memory handle
                 hGlbTxt = lpMemDfnHdr->hGlbTxtHdr;
@@ -361,13 +386,13 @@ LRESULT APIENTRY FEWndProc
                 MyGlobalUnlock (hGlbTxt); lpMem = NULL;
 
                 // Get the # lines in the function
-                nLines = lpMemDfnHdr->nLines;
+                numFcnLines = lpMemDfnHdr->numFcnLines;
 
-                // Get ptr to array of function line structs (FCNLINE[nLines])
+                // Get ptr to array of function line structs (FCNLINE[numFcnLines])
                 lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
 
                 // Loop through the lines, appending the text to the Edit Control
-                for (uLineNum = 0; uLineNum < nLines; uLineNum++)
+                for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
                 {
                     // Append a CRLF to the Edit Control
                     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
@@ -389,7 +414,10 @@ LRESULT APIENTRY FEWndProc
                 } // End FOR
             } else
                 // Set the initial text
-                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpMDIcs->lParam);
+                SendMessageW (hWndEC,
+                              EM_REPLACESEL,
+                              FALSE,
+                              (LPARAM) (((LPFE_CREATESTRUCT) (lpMDIcs->lParam))->lpwszLine));
 
             // Set the selection to the start of the buffer
             SendMessageW (hWndEC, EM_SETSEL, 0, 0);
@@ -413,8 +441,8 @@ LRESULT APIENTRY FEWndProc
             PostMessage (hWnd, MYWM_INIT_EC, 0, 0);
 
             break;
-#undef  lpMDIcs
         } // End WM_CREATE
+#undef  lpMDIcs
 
         case MYWM_INIT_EC:
             // Draw the line #s
@@ -432,7 +460,35 @@ LRESULT APIENTRY FEWndProc
 
 
 
+
+
             return FALSE;           // Its not a name
+
+        case MYWM_SAVE_FN:
+            // Save the function (if well-formed)
+            SaveFunction (hWnd);
+
+            return FALSE;           // We handled the msg
+
+        case MYWM_SAVECLOSE_FN:
+            // Save the function (if well-formed)
+            if (SaveFunction (hWnd))
+                // Close the function (if allowed)
+                CloseFunction (hWnd);
+
+            return FALSE;           // We handled the msg
+
+        case MYWM_CLOSE_FN:
+            // Close the function (if allowed)
+            CloseFunction (hWnd);
+
+            return FALSE;           // We handled the msg
+
+////////case MYWM_SAVE_AS_FN:
+////////    // Save the function (if well-formed) under a different name
+////////    SaveAsFunction (hWnd);
+////////
+////////    return FALSE;           // We handled the msg
 
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
@@ -512,7 +568,7 @@ LRESULT APIENTRY FEWndProc
             // If we're being activated, ...
             if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
             {
-                SendMessage (hWndMC,
+                SendMessage (GetParent (hWndEC),
                              WM_MDISETMENU,
                              GET_WM_MDISETMENU_MPS (hMenuFE, hMenuFEWindow));
                 SetMenu (hWndMF, hMenuFE);
@@ -678,27 +734,32 @@ LRESULT WINAPI LclEditCtrlWndProc
 {
 #define TABSTOP     8
 
-    VKSTATE   vkState;      // Virtual key state (Shift, Alt, Ctrl)
-    long      lvkState;     // Temporary var for vkState
-    HWND      hWndParent;   // Handle of parent (SM/FE) window
-    LRESULT   lResult;      // Result from calling original handler
-    LPUNDOBUF lpUndoNxt,    // Ptr to next available slot in the Undo Buffer
-              lpUndoBeg;    // ...    first          ...
-    UINT      uCharPosBeg,  // Pos of the beginning char
-              uCharPosEnd,  // ...        ending    ...
-              uCharPos,     // ...    a character position
-              uLinePos,     // Char position of start of line
-              uLineNum,     // Line #
-              uLineLen,     // Line length
-              uSpaces,      // # spaces to insert
-              uGroupIndex;  // Group index
-    WCHAR     wChar[TABSTOP + 1],
-              uChar;
-    BOOL      bSelection;   // TRUE iff there's a selection
-    HANDLE    hGlbClip;     // Handle to the clipboard
-    LPWCHAR   lpMemClip;    // Memory ptr
-    UINT      ksShft,       // TRUE iff VK_CONTROL is pressed
-              ksCtrl;       // ...      VK_SHIFT   ...
+    VKSTATE      vkState;       // Virtual key state (Shift, Alt, Ctrl)
+    long         lvkState;      // Temporary var for vkState
+    HWND         hWndParent;    // Handle of parent (SM/FE) window
+    LRESULT      lResult;       // Result from calling original handler
+    LPUNDOBUF    lpUndoNxt,     // Ptr to next available slot in the Undo Buffer
+                 lpUndoBeg;     // ...    first          ...
+    UINT         uCharPosBeg,   // Pos of the beginning char
+                 uCharPosEnd,   // ...        ending    ...
+                 uCharPos,      // ...    a character position
+                 uLinePos,      // Char position of start of line
+                 uLineNum,      // Line #
+                 uLineLen,      // Line length
+                 uSpaces,       // # spaces to insert
+                 uGroupIndex;   // Group index
+    WCHAR        wChar[TABSTOP + 1],
+                 uChar;
+    BOOL         bSelection;    // TRUE iff there's a selection
+    HANDLE       hGlbClip;      // Handle to the clipboard
+    LPWCHAR      lpMemClip;     // Memory ptr
+    UINT         ksShft,        // TRUE iff VK_CONTROL is pressed
+                 ksCtrl;        // ...      VK_SHIFT   ...
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
 
 ////LCLODSAPI ("EC: ", hWnd, message, wParam, lParam);
     // Split cases
@@ -1053,9 +1114,8 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Check for Ctrl-S (Save)
             if (chCharCode EQ 19)
             {
-                // Send a message the the Master Frame where
-                //   menu processing is done
-                PostMessage (hWndMF, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_SAVE_FN, 0, NULL));
+                // Post a request to ourselves to save the function
+                PostMessage (hWnd, MYWM_SAVE_FN, wParam, lParam);
 
                 return FALSE;       // We handled the msg
             } // End IF
@@ -1063,9 +1123,8 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Check for Ctrl-E (Save and End)
             if (chCharCode EQ 5)
             {
-                // Send a message the the Master Frame where
-                //   menu processing is done
-                PostMessage (hWndMF, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_SAVECLOSE_FN, 0, NULL));
+                // Post a request to ourselves to save & close the function
+                PostMessage (hWnd, MYWM_SAVECLOSE_FN, wParam, lParam);
 
                 return FALSE;       // We handled the msg
             } // End IF
@@ -1073,9 +1132,8 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Check for Ctrl-Q (Close)
             if (chCharCode EQ 17)
             {
-                // Send a message the the Master Frame where
-                //   menu processing is done
-                PostMessage (hWndMF, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_CLOSE_FN, 0, NULL));
+                // Post a request to ourselves to close the function
+                PostMessage (hWnd, MYWM_CLOSE_FN, wParam, lParam);
 
                 return FALSE;       // We handled the msg
             } // End IF
@@ -1083,9 +1141,8 @@ LRESULT WINAPI LclEditCtrlWndProc
 ////////////// Check for Ctrl-A (SaveAs)        // ***FIXME*** -- Make this work??
 ////////////if (chCharCode EQ 1)
 ////////////{
-////////////    // Send a message the the Master Frame where
-////////////    //   menu processing is done
-////////////    PostMessage (hWndMF, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_SAVE_AS_FN, 0, NULL));
+////////////    // Post a request to ourselves to save the function under a different name
+////////////    PostMessage (hWnd, MYWM_SAVE_AS_FN, wParam, lParam);
 ////////////
 ////////////    return FALSE;       // We handled the msg
 ////////////} // End IF
@@ -1109,11 +1166,17 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // Otherwise, DbgMsg it
                 {
 #ifdef DEBUG
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
                     wsprintfW (lpwszDebug,
                                L"CHAR:  chCharCode = %d, %c",
                                chCharCode,
                                chCharCode);
                     DbgMsgW (lpwszDebug);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
                 } // End IF/ELSE
             } // End IF/ELSE
@@ -1150,21 +1213,33 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // Otherwise, DbgMsg it
                 {
 #ifdef DEBUG
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
                     wsprintfW (lpwszDebug,
                                L"SYSCHAR:  chCharCode = %d, %c",
                                chCharCode,
                                chCharCode);
                     DbgMsgW (lpwszDebug);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
                 } // End IF/ELSE
             } else
             {
 #ifdef DEBUG
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
                 wsprintfW (lpwszDebug,
                            L"SYSCHAR:  chCharCode = %d, %c",
                            chCharCode,
                            chCharCode);
                 DbgMsgW (lpwszDebug);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
             } // End IF/ELSE
 
@@ -1336,14 +1411,20 @@ LRESULT WINAPI LclEditCtrlWndProc
                             0,                              // Ending    ...
                             uGroupIndex,                    // Group index
                             GetCharValue (hWnd, uCharPos)); // Character
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // We need to call the original handler first before
             //   drawing the line #s as this operation might change
             //   the count.
-            lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
+            lResult = CallWindowProcW (lpMemPTD->lpfnOldEditCtrlWndProc,
                                        hWnd,
                                        message,
                                        wParam,
                                        lParam); // Pass on down the line
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
             // Draw the line #s
             DrawLineNumsFE (hWnd);
 
@@ -1416,14 +1497,20 @@ LRESULT WINAPI LclEditCtrlWndProc
                         uCharPosEnd,                    // Ending    ...
                         uGroupIndex,                    // Group index
                         0);                             // Character
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // We need to call the original handler first before
             //   drawing the line #s as this operation might change
             //   the count.
-            lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
+            lResult = CallWindowProcW (lpMemPTD->lpfnOldEditCtrlWndProc,
                                        hWnd,
                                        message,
                                        wParam,
                                        lParam); // Pass on down the line
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
             // Draw the line #s
             DrawLineNumsFE (hWnd);
 
@@ -1438,6 +1525,15 @@ LRESULT WINAPI LclEditCtrlWndProc
             PasteAPLChars (hWnd, UNITRANS_APL2);
 
             return FALSE;           // We handled the msg
+
+        case MYWM_SAVE_FN:
+        case MYWM_SAVECLOSE_FN:
+        case MYWM_CLOSE_FN:
+        case MYWM_SAVE_AS_FN:
+            PostMessage (GetParent (hWnd), message, wParam, lParam);
+
+            return FALSE;           // We handled the msg
+
 
 #define wNotifyCode     (HIWORD (wParam))
 #define wID             (LOWORD (wParam))
@@ -1501,11 +1597,16 @@ LRESULT WINAPI LclEditCtrlWndProc
             return TRUE;            // We erased the background
 
         case WM_PAINT:              // hdc = (HDC) wParam; // The device context to draw in
-            lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            lResult = CallWindowProcW (lpMemPTD->lpfnOldEditCtrlWndProc,
                                        hWnd,
                                        message,
                                        wParam,
                                        lParam); // Pass on down the line
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Draw the line #s
             DrawLineNumsFE (hWnd);
@@ -1513,11 +1614,18 @@ LRESULT WINAPI LclEditCtrlWndProc
             return lResult;
     } // End SWITCH
 
-    return CallWindowProcW (lpfnOldEditCtrlWndProc,
-                            hWnd,
-                            message,
-                            wParam,
-                            lParam); // Pass on down the line
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    lResult = CallWindowProcW (lpMemPTD->lpfnOldEditCtrlWndProc,
+                               hWnd,
+                               message,
+                               wParam,
+                               lParam); // Pass on down the line
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lResult;
 } // End LclEditCtrlWndProc
 
 
@@ -2140,7 +2248,6 @@ BOOL SaveFunction
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header ...
     BOOL         bRet = FALSE;      // TRUE iff result is valid
     FHLOCALVARS  fhLocalVars = {0}; // Re-entrant vars
-    LPSYMENTRY   lpSymName = NULL;  // Ptr to SYMENTRY for the function name
 
     Assert (IzitFE (hWndFE));
 
@@ -2152,7 +2259,11 @@ BOOL SaveFunction
 
     // Allocate space for the text
     //   (the "+ 1" is for a trailing zero)
-    hGlbTxtHdr = DbgGlobalAlloc (GHND, (uLineLen + 1) * sizeof (APLCHAR));
+    // Note, we can't use DbgGlobalAlloc here as we
+    //   might have been called from the Master Frame
+    //   via a system command, in which case there is
+    //   no PTD for that thread.
+    hGlbTxtHdr = MyGlobalAlloc (GHND, (uLineLen + 1) * sizeof (APLCHAR));
     if (!hGlbTxtHdr)
     {
         MessageBox (hWndEC,
@@ -2203,13 +2314,19 @@ BOOL SaveFunction
     // Parse the header
     if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars))
     {
-        UINT      nLines,       // # lines in the function
-                  offFcnLines,  // Offset to start of function
-                                //   line structs (FCNLINE[nLines])
-                  uLineNum;     // Current line # in the Edit Control
-        LPFCNLINE lpFcnLines;   // Ptr to array of function line structs (FCNLINE[nLines])
-        LPUNDOBUF lpUndoBeg,    // Ptr to start of Undo buffer
-                  lpUndoLst;    // Ptr to end ...
+        UINT        uLineNum,           // Current line # in the Edit Control
+                    uOffset,            // Cumulative offset
+                    numResultSTE,       // # result STEs (may be zero)
+                    numLftArgSTE,       // # left arg ...
+                    numRhtArgSTE,       // # right ...
+                    numLocalsSTE,       // # locals ...
+                    numFcnLines,        // # lines in the function
+                    numSTE;             // Loop counter
+        LPFCNLINE   lpFcnLines;         // Ptr to array of function line structs (FCNLINE[numFcnLines])
+        LPUNDOBUF   lpUndoBeg,          // Ptr to start of Undo buffer
+                    lpUndoLst;          // Ptr to end ...
+        LPSYMENTRY  lpSymName = NULL,   // Ptr to SYMENTRY for the function name
+                   *lplpSymDfnHdr;      // Ptr to LPSYMENTRYs at end of defined function header
 
         // Check to see if this function is already in global memory
         lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
@@ -2218,15 +2335,44 @@ BOOL SaveFunction
         if (lpSymName->stData.stGlbData)
             FreeResultGlobalDfn (lpSymName->stData.stGlbData);
 
-        // Get # lines in the function
-        nLines = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0) - 1;
+        // Get # extra result STEs
+        if (fhLocalVars.lpYYResult)
+            // Save in global memory
+            numResultSTE = fhLocalVars.lpYYResult->uStrandLen;
+        else
+            numResultSTE = 0;
 
-        // Get offset to start of function line structs
-        offFcnLines = sizeof (DFN_HEADER);
+        // Get # extra left arg STEs
+        if (fhLocalVars.lpYYLftArg)
+            // Save in global memory
+            numLftArgSTE = fhLocalVars.lpYYLftArg->uStrandLen;
+        else
+            numLftArgSTE = 0;
+
+        // Get # extra right arg STEs
+        if (fhLocalVars.lpYYRhtArg)
+            // Save in global memory
+            numRhtArgSTE = fhLocalVars.lpYYRhtArg->uStrandLen;
+        else
+            numRhtArgSTE = 0;
+
+        // Get # locals STEs
+        if (fhLocalVars.lpYYLocals)
+            // Save in global memory
+            numLocalsSTE = fhLocalVars.lpYYLocals->uStrandLen;
+        else
+            numLocalsSTE = 0;
+
+        // Get # lines in the function
+        numFcnLines = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0) - 1;
 
         // Allocate global memory for the function
         hGlbDfnHdr = DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
-                                         + sizeof (FCNLINE) * nLines);
+                                         + sizeof (LPSYMENTRY) * (numResultSTE
+                                                                + numLftArgSTE
+                                                                + numRhtArgSTE
+                                                                + numLocalsSTE)
+                                         + sizeof (FCNLINE) * numFcnLines);
         if (!hGlbDfnHdr)
         {
             MessageBox (hWndEC,
@@ -2239,10 +2385,14 @@ BOOL SaveFunction
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
+        // Save numbers in global memory
+        lpMemDfnHdr->numResultSTE = numResultSTE;
+        lpMemDfnHdr->numLftArgSTE = numLftArgSTE;
+        lpMemDfnHdr->numRhtArgSTE = numRhtArgSTE;
+
         // Save the static parts of the function into global memory
-        lpMemDfnHdr->Sign.ature  = DFN_HEADER_SIGNATURE;
+        lpMemDfnHdr->Sig.nature  = DFN_HEADER_SIGNATURE;
         lpMemDfnHdr->Version     = 0;
-        lpMemDfnHdr->offFcnLines = offFcnLines;
 
         // If it's an operator, ...
         if (fhLocalVars.OprValence)
@@ -2257,10 +2407,7 @@ BOOL SaveFunction
         } // End IF/ELSE
 
         lpMemDfnHdr->RefCnt         = 1;
-        lpMemDfnHdr->nLines         = nLines;
-        lpMemDfnHdr->nProtoLine     = NEG1U;
-        lpMemDfnHdr->nInverseLine   = NEG1U;
-        lpMemDfnHdr->nSingletonLine = NEG1U;
+        lpMemDfnHdr->numFcnLines    = numFcnLines;
         lpMemDfnHdr->hGlbTxtHdr     = hGlbTxtHdr;
         lpMemDfnHdr->hGlbTknHdr     = hGlbTknHdr;
 
@@ -2296,11 +2443,79 @@ BOOL SaveFunction
 
         // Save the dynamic parts of the function into global memory
 
-        // Get ptr to array of function line structs (FCNLINE[nLines])
+        // Initialize cumulative offset
+        uOffset = sizeof (DFN_HEADER);
+
+        // Initialize ptr to ptr to SYMENTRYs at end of header
+        lplpSymDfnHdr = (LPSYMENTRY *) &((LPBYTE) lpMemDfnHdr)[uOffset];
+
+        // If there's a result, ...
+        if (fhLocalVars.lpYYResult)
+        {
+            lpMemDfnHdr->offResultSTE = uOffset;
+
+            // Copy STEs to global memory
+            for (numSTE = 0; numSTE < numResultSTE; numSTE++)
+            {
+                *lplpSymDfnHdr++ = fhLocalVars.lpYYResult[numSTE].tkToken.tkData.tkSym;
+                uOffset += sizeof (LPSYMENTRY);
+            } // End FOR
+        } else
+            lpMemDfnHdr->offResultSTE = 0;
+
+        // If there's a left arg, ...
+        if (fhLocalVars.lpYYLftArg)
+        {
+            lpMemDfnHdr->offLftArgSTE = uOffset;
+
+            // Copy STEs to global memory
+            for (numSTE = 0; numSTE < numLftArgSTE; numSTE++)
+            {
+                *lplpSymDfnHdr++ = fhLocalVars.lpYYLftArg[numSTE].tkToken.tkData.tkSym;
+                uOffset += sizeof (LPSYMENTRY);
+            } // End FOR
+        } else
+            lpMemDfnHdr->offLftArgSTE = 0;
+
+        // If there's a right arg, ...
+        if (fhLocalVars.lpYYRhtArg)
+        {
+            lpMemDfnHdr->offRhtArgSTE = uOffset;
+
+            // Copy STEs to global memory
+            for (numSTE = 0; numSTE < numRhtArgSTE; numSTE++)
+            {
+                *lplpSymDfnHdr++ = fhLocalVars.lpYYRhtArg[numSTE].tkToken.tkData.tkSym;
+                uOffset += sizeof (LPSYMENTRY);
+            } // End FOR
+        } else
+            lpMemDfnHdr->offRhtArgSTE = 0;
+
+        // If there are any locals, ...
+        if (fhLocalVars.lpYYLocals)
+        {
+            lpMemDfnHdr->offLocalsSTE = uOffset;
+
+            // Copy STEs to global memory
+            for (numSTE = 0; numSTE < numLocalsSTE; numSTE++)
+            {
+                *lplpSymDfnHdr++ = fhLocalVars.lpYYLocals[numSTE].tkToken.tkData.tkSym;
+                uOffset += sizeof (LPSYMENTRY);
+            } // End FOR
+        } else
+            lpMemDfnHdr->offLocalsSTE = 0;
+
+        // Save offset to start of function line structs
+        if (lpMemDfnHdr->numFcnLines)
+            lpMemDfnHdr->offFcnLines = uOffset;
+        else
+            lpMemDfnHdr->offFcnLines = 0;
+
+        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
 
         // Loop through the lines
-        for (uLineNum = 0; uLineNum < nLines; uLineNum++)
+        for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
         {
             HGLOBAL hGlbTxtLine;    // Line text global memory handle
             LPVOID  lpMem;          // Ptr to global memory
@@ -2364,6 +2579,9 @@ BOOL SaveFunction
             lpFcnLines++;
         } // End WHILE
 
+        // Check for special labels ([]PROTOTYPE, []INVERSE, and []SINGLETON)
+        GetSpecialLabelNums (lpMemDfnHdr);
+
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
@@ -2401,12 +2619,92 @@ ERROR_EXIT:
     if (hGlbTxtHdr)
     {
         // We no longer need this storage
-        DbgGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
+        MyGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
     } // End IF
 NORMAL_EXIT:
     return bRet;
 } // End SaveFunction
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  GetSpecialLabelNums
+//
+//  Return the line #s (or zero if not found) of the special line labels
+//***************************************************************************
+
+void GetSpecialLabelNums
+    (LPDFN_HEADER  lpMemDfnHdr)     // Ptr to defined function header
+
+{
+    UINT           numFcnLines,  // # lines in the function
+                   uLineNum;     // Loop counter
+    LPFCNLINE      lpFcnLines;   // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    LPTOKEN_HEADER lptkHdr;      // Ptr to header of tokenized line
+    LPTOKEN        lptkLine;     // Ptr to tokenized line
+
+    // Get # lines in the function
+    numFcnLines = lpMemDfnHdr->numFcnLines;
+
+    // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+    lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+
+    // Loop through the function lines
+    for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+    {
+        UINT numTokens;     // # tokens in the line
+
+        // Lock the memory to get a ptr to it
+        lptkHdr = MyGlobalLock (lpFcnLines->hGlbTknLine);
+
+        // Get the # tokens in the line
+        numTokens = lptkHdr->TokenCnt;
+
+        // Get ptr to the tokens in the line
+        lptkLine = (LPTOKEN) &((LPBYTE) lptkHdr)[sizeof (TOKEN_HEADER)];
+
+        Assert (lptkLine[0].tkFlags.TknType EQ TKT_EOL);
+
+        // If there are at least three tokens
+        //   (TKT_EOL, TKT_VARNAMED, TKT_COLON)
+        if (numTokens < 3)
+            continue;
+
+        if (lptkLine[2].tkFlags.TknType EQ TKT_COLON
+         && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED)
+        {
+            HGLOBAL   hGlbName;     // Name's global memory handle
+            LPAPLCHAR lpMemName;    // Ptr to the name
+
+            // stData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkLine[1].tkData.tkSym) EQ PTRTYPE_STCONST);
+
+            // Get the Name's global memory handle
+            hGlbName = lptkLine[1].tkData.tkSym->stHshEntry->hGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLock (hGlbName);
+
+            if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"prototype") EQ 0)
+                lpMemDfnHdr->nPrototypeLine = uLineNum + 1;
+
+            if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"inverse") EQ 0)
+                lpMemDfnHdr->nInverseLine   = uLineNum + 1;
+
+            if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"singleton") EQ 0)
+                lpMemDfnHdr->nSingletonLine = uLineNum + 1;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbName); lpMemName = NULL;
+        } // End IF
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lpFcnLines->hGlbTknLine); lptkHdr = NULL; lptkLine = NULL;
+
+        // Skip to the next struct
+        lpFcnLines++;
+    } // End FOR
+} // End GetSpecialLabelNums
 
 
 //// //***************************************************************************

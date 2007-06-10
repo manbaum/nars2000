@@ -53,9 +53,6 @@ PRIMSPEC PrimSpecStile = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydStileFisIvI, -- Can't happen w/Stile
     &PrimFnDydStileFisFvF,
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecStile};

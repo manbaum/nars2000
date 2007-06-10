@@ -9,6 +9,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -110,13 +111,27 @@ LPYYSTYPE PrimFnMonIota_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLNELM aplNELMRes;
-    HGLOBAL hGlbRes;
-    UINT    ByteRes;
-    LPVOID  lpMemRes;
-    BOOL    bRet = TRUE;
-    APLINT  aplIntTmp;
-    LPYYSTYPE lpYYRes;
+    APLNELM      aplNELMRes;    // Result NELM
+    HGLOBAL      hGlbRes;       // Result global memory handle
+    UINT         ByteRes;       // # bytes in result
+    LPVOID       lpMemRes;      // Ptr to result global memory
+    BOOL         bRet = TRUE;   // TRUE iff result is valid
+    APLINT       aplIntTmp;     // Temporary integer
+    LPYYSTYPE    lpYYRes;       // Ptr to result
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLBOOL      bQuadIO;       // []IO
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    bQuadIO = lpMemPTD->bQuadIO;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     //***************************************************************
     // Check the right argument for RANK, LENGTH, and DOMAIN ERRORs
@@ -237,13 +252,13 @@ LPYYSTYPE PrimFnMonIota_EM_YY
         return NULL;
     } // End IF
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
-    lpHeaderRes->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_APA;
 ////lpHeaderRes->Perm       = 0;
 ////lpHeaderRes->SysVar     = 0;
@@ -390,7 +405,7 @@ BOOL PrimFnMonIotaGlb_EM
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
     // It's an array
-    Assert (lpHeader->Sign.ature EQ VARARRAY_HEADER_SIGNATURE);
+    Assert (lpHeader->Sig.nature EQ VARARRAY_HEADER_SIGNATURE);
 
     // Save the Type, NELM, and Rank
     aplType = lpHeader->ArrType;

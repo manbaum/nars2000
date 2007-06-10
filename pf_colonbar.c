@@ -53,9 +53,6 @@ PRIMSPEC PrimSpecColonBar =
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydColonBarFisIvI,
     &PrimFnDydColonBarFisFvF,
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecColonBar};

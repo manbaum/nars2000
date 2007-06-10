@@ -184,7 +184,7 @@ ARRAY_APA       An APA is a representation of a1 + a2 {times} {iota} a3
 
 typedef struct tagHEADER_SIGNATURE
 {
-    UINT             ature;     // Array header signature (common to all types of arrays)
+    UINT             nature;    // Array header signature (common to all types of arrays)
 } HEADER_SIGNATURE, * LPHEADER_SIGNATURE;
 
 // Variable array header
@@ -192,7 +192,7 @@ typedef struct tagHEADER_SIGNATURE
 
 typedef struct tagVARARRAY_HEADER
 {
-    HEADER_SIGNATURE Sign;      // Array header signature
+    HEADER_SIGNATURE Sig;       // Array header signature
     UINT             ArrType:4, // The type of the array (see ARRAY_TYPES)
                      Perm:1,    // Permanent array (e.g., {zilde})
                      SysVar:1;  // Izit for a Sysvar (***DEBUG*** only)?
@@ -222,7 +222,7 @@ typedef enum tagFCN_TYPES
 
 typedef struct tagFCNARRAY_HEADER
 {
-    HEADER_SIGNATURE Sign;      // Array header signature
+    HEADER_SIGNATURE Sig;       // Array header signature
     UINT             FcnType:4; // The type of the array (see FCN_TYPES)
     UINT             RefCnt;    // Reference count
     APLNELM          NELM;      // # elements in the array
@@ -236,7 +236,7 @@ typedef struct tagFCNARRAY_HEADER
 
 typedef struct tagVARNAMED_HEADER
 {
-    HEADER_SIGNATURE Sign;      // Array header signature
+    HEADER_SIGNATURE Sig;       // Array header signature
     APLNELM          NELM;      // # elements in the array
 } VARNAMED_HEADER, *LPVARNAMED_HEADER;
 

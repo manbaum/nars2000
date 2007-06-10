@@ -9,6 +9,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -98,14 +99,29 @@ LPYYSTYPE PrimFnMonCircleSlope_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeRht;
-    APLNELM   aplNELMRht;
-    APLRANK   aplRankRht;
-    HGLOBAL   hGlbLft;
-    LPVOID    lpMemLft;
-    LPYYSTYPE lpYYRes,
-              lpYYRes2;
-    UINT      ByteRes;
+    APLSTYPE     aplTypeRht;    // Right arg storage type
+    APLNELM      aplNELMRht;    // ...       NELM
+    APLRANK      aplRankRht;    // ...       rank
+    HGLOBAL      hGlbLft;       // Left arg global memory handle
+    LPVOID       lpMemLft;      // Ptr to left arg global memory
+    LPYYSTYPE    lpYYRes,       // Ptr to the result
+                 lpYYRes2;      // Ptr to secondary result
+    UINT         ByteRes;       // # bytes in result
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLBOOL      bQuadIO;       // []IO
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    bQuadIO = lpMemPTD->bQuadIO;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -148,7 +164,7 @@ LPYYSTYPE PrimFnMonCircleSlope_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemLft)
 
     // Fill in the header values
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_APA;
 ////lpHeader->Perm       = 0;       // Already zero from GHND
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
@@ -424,7 +440,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header values
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->Perm       = 0;       // Already zero from GHND
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
@@ -525,7 +541,7 @@ LPYYSTYPE PrimFnDydCircleSlope_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
-    // Lock the global memory to get a ptr to it
+    // Lock the memory to get a ptr to it
     lpMemOdo = MyGlobalLock (hGlbOdo);
 
     // Copy the data to the result

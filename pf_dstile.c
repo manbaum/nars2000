@@ -11,6 +11,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -54,9 +55,6 @@ PRIMSPEC PrimSpecDownStile = {
 ////                   FisBvB,  // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydDownStileFisIvI, -- Can't happen w/DownStile
     &PrimFnDydDownStileFisFvF,
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownStile};
@@ -192,7 +190,23 @@ APLFLOAT PrimFnMonDownStileFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLFLOAT aplFloor, aplCeil, aplNear;
+    APLFLOAT     aplFloor,
+                 aplCeil,
+                 aplNear;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLFLOAT     fQuadCT;       // []CT
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    fQuadCT = lpMemPTD->fQuadCT;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Check for ± infinity
     if (!_finite (aplFloatRht))

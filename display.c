@@ -13,6 +13,7 @@
 #include "externs.h"
 #include "display.h"
 #include "dfnhdr.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -156,26 +157,42 @@ void DisplayGlbArr
      BOOL      bEndingCR)       // TRUE iff last line has CR
 
 {
-    LPVOID      lpMem;
-    LPAPLCHAR   lpaplCharIni = NULL,
-                lpaplChar,
-                lpaplCharStart,
-                lpwsz;
-    APLSTYPE    aplType;
-    APLNELM     aplNELM;
-    APLRANK     aplRank;
-    LPAPLDIM    lpMemDim;
-    APLDIM      aplDimNCols,
-                aplDimNRows,
-                aplDimCol,
-                aplLastDim;
-    APLNELM     aplNELMRes;
-    LPFMTHEADER lpFmtHeader;
-    LPFMTCOLSTR lpFmtColStr;
-    UINT        uCol;
+    LPVOID       lpMem;
+    LPAPLCHAR    lpaplCharIni = NULL,
+                 lpaplChar,
+                 lpaplCharStart,
+                 lpwsz;
+    APLSTYPE     aplType;
+    APLNELM      aplNELM;
+    APLRANK      aplRank;
+    LPAPLDIM     lpMemDim;
+    APLDIM       aplDimNCols,
+                 aplDimNRows,
+                 aplDimCol,
+                 aplLastDim;
+    APLNELM      aplNELMRes;
+    LPFMTHEADER  lpFmtHeader;
+    LPFMTCOLSTR  lpFmtColStr;
+    UINT         uCol;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLUINT      uQuadPP,       // []PP
+                 uQuadPW;       // []PW
 
 #define DEF_DISPLAY_INITSIZE    65536
 #define DEF_DISPLAY_MAXSIZE     65536
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    uQuadPP = lpMemPTD->uQuadPP;
+    uQuadPW = lpMemPTD->uQuadPW;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Allocate space for the display
     lpaplCharIni =
@@ -652,6 +669,21 @@ LPAPLCHAR FormatFloat
      APLFLOAT fFloat)
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLUINT      uQuadPP;       // []PP
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    uQuadPP = lpMemPTD->uQuadPP;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     if (!_finite (fFloat))
     {
         if (fFloat < 0)
@@ -796,8 +828,10 @@ void DisplayHshTab
     (void)
 
 {
-    LPHSHENTRY lpHshEntry;
-    int        i, j;
+    LPHSHENTRY   lpHshEntry;
+    int          i, j;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     typedef struct tagHT_FLAGNAMES
     {
@@ -813,18 +847,24 @@ void DisplayHshTab
      {0x00004,  L" SymCopy"  },
     };
 
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     DbgMsg ("********** Hash Table **********************************");
 
     wsprintf (lpszDebug,
               "lpHshTab = %08X, SplitNext = %08X, Last = %08X",
-              lpHshTab,
-              lpHshTabSplitNext,
-              &lpHshTab[iHshTabTotalSize]);
+              lpMemPTD->lpHshTab,
+              lpMemPTD->lpHshTabSplitNext,
+             &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize]);
     DbgMsg (lpszDebug);
 
     // Display the hash table
-    for (lpHshEntry = lpHshTab, i = 0;
-         i < iHshTabTotalSize;
+    for (lpHshEntry = lpMemPTD->lpHshTab, i = 0;
+         i < lpMemPTD->iHshTabTotalSize;
          lpHshEntry++, i++)
     {
         WCHAR wszFlags[128] = {L'\0'};
@@ -856,7 +896,7 @@ void DisplayHshTab
                            i,
                            lpHshEntry->uHash,
                            lpHshEntry->uHashAndMask,
-                           &wszFlags[1],
+                          &wszFlags[1],
                            HIDWORD (lpSymEntry->stData.stInteger),
                            LODWORD (lpSymEntry->stData.stInteger),
                            lpSymEntry);
@@ -866,6 +906,7 @@ void DisplayHshTab
             {
                 LPCHAR lpGlbName;
 
+                // Lock the memory to get a ptr to it
                 lpGlbName = GlobalLock (lpHshEntry->hGlbName); Assert (lpGlbName NE NULL);
 
                 wsprintfW (lpwszDebug,
@@ -873,7 +914,7 @@ void DisplayHshTab
                            i,
                            lpHshEntry->uHash,
                            lpHshEntry->uHashAndMask,
-                           &wszFlags[1],
+                          &wszFlags[1],
                            lpGlbName,
                            lpSymEntry,
                            lpHshEntry->NextSameHash,
@@ -885,7 +926,7 @@ void DisplayHshTab
             wsprintfW (lpwszDebug,
                        L"HT:%3d (EMPTY) <%s>, Sym=%08X, <%08X-%08X>",
                        i,
-                       &wszFlags[1],
+                      &wszFlags[1],
                        lpHshEntry->lpSymEntry,
                        lpHshEntry->NextSameHash,
                        lpHshEntry->PrevSameHash);
@@ -894,7 +935,10 @@ void DisplayHshTab
 
     DbgMsg ("********** End Hash Table ******************************");
 
-    UpdateWindow (hWndDB);
+    UpdateDBWindow ();
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayHshTab
 #endif
 
@@ -913,8 +957,10 @@ void DisplaySymTab
     (BOOL bDispAll)
 
 {
-    LPSYMENTRY lpSymEntry;
-    int        i, j;
+    LPSYMENTRY   lpSymEntry;    // Ptr to current SYMENTRY
+    int          i, j;          // Loop counters
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     typedef struct tagST_FLAGNAMES
     {
@@ -925,24 +971,31 @@ void DisplaySymTab
     // Symbol Table flag names
     static ST_FLAGNAMES astFlagNames[] =
     {
-//// {0x000001,  L" Imm"        },
-//// {0x00001E,  L" ImmType"    },
-     {0x000020,  L" SysName"    },
-     {0x000040,  L" SysVar"     },
-     {0x000080,  L" SysFn0"     },
-     {0x000100,  L" SysFn12"    },
-     {0x000200,  L" NotCase"    },
-     {0x000400,  L" Perm"       },
-     {0x000800,  L" Inuse"      },
-     {0x001000,  L" Value"      },
-     {0x002000,  L" UsrName"    },
-     {0x004000,  L" UsrVar"     },
-     {0x008000,  L" UsrFn0"     },
-     {0x010000,  L" UsrFn12"    },
-     {0x020000,  L" UsrOp1"     },
-     {0x040000,  L" UsrOp2"     },
-//// {0x780000,  L" SysVarValid"},
+//// {0x00000001,  L" Imm"        },
+//// {0x0000001E,  L" ImmType"    },
+     {0x00000020,  L" SysName"    },
+     {0x00000040,  L" SysVar"     },
+     {0x00000080,  L" SysFn0"     },
+     {0x00000100,  L" SysFn12"    },
+     {0x00000200,  L" NotCase"    },
+     {0x00000400,  L" Perm"       },
+     {0x00000800,  L" Inuse"      },
+     {0x00001000,  L" Value"      },
+     {0x00002000,  L" UsrName"    },
+     {0x00004000,  L" UsrVar"     },
+     {0x00008000,  L" UsrFn0"     },
+     {0x00010000,  L" UsrFn12"    },
+     {0x00020000,  L" UsrOp1"     },
+     {0x00040000,  L" UsrOp2"     },
+//// {0x00780000,  L" SysVarValid"},
+     {0x00800000,  L" DfnSysLabel"},
     };
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     if (bDispAll)
         DbgMsg ("********** Symbol Table ********************************");
@@ -951,13 +1004,13 @@ void DisplaySymTab
 
     wsprintf (lpszDebug,
               "lpSymTab = %08X, Last = %08X",
-              lpSymTab,
-              &lpSymTab[iSymTabTotalSize]);
+              lpMemPTD->lpSymTab,
+              &lpMemPTD->lpSymTab[lpMemPTD->iSymTabTotalSize]);
     DbgMsg (lpszDebug);
 
     // Display the symbol table
-    for (lpSymEntry = lpSymTab, i = 0;
-         lpSymEntry NE lpSymTabNext;
+    for (lpSymEntry = lpMemPTD->lpSymTab, i = 0;
+         lpSymEntry NE lpMemPTD->lpSymTabNext;
          lpSymEntry++, i++)
     if (bDispAll ||
         !lpSymEntry->stFlags.SysName)
@@ -999,7 +1052,7 @@ void DisplaySymTab
             {
                 LPHSHENTRY lpHshEntry;
 
-                lpHshEntry = lpSymEntry->lpHshEntry;
+                lpHshEntry = lpSymEntry->stHshEntry;
 
                 if (lpHshEntry)
                 {
@@ -1018,17 +1071,17 @@ void DisplaySymTab
                            L"ST:%08X <%s> <%s>, ull=%08X%08X, Hsh=%08X",
                            lpSymEntry,
                            wszName,
-                           &wszFlags[1],
+                          &wszFlags[1],
                            HIDWORD (lpSymEntry->stData.stInteger),
                            LODWORD (lpSymEntry->stData.stInteger),
-                           lpSymEntry->lpHshEntry);
+                           lpSymEntry->stHshEntry);
             } else
             if (lpSymEntry->stFlags.UsrName
              || lpSymEntry->stFlags.SysName)
             {
                 LPHSHENTRY lpHshEntry;
 
-                lpHshEntry = lpSymEntry->lpHshEntry;
+                lpHshEntry = lpSymEntry->stHshEntry;
 
                 if (lpHshEntry)
                 {
@@ -1036,28 +1089,59 @@ void DisplaySymTab
                                L"ST:%08X <%s>, <%s>, Data=%08X, Hsh=%08X",
                                lpSymEntry,
                                wszName,
-                               &wszFlags[1],
+                              &wszFlags[1],
                                lpSymEntry->stData.stVoid,
                                lpHshEntry);
                 } else
                     wsprintfW (lpwszDebug,
                                L"ST:%08X <******>, <%s>, Hsh=0",
                                lpSymEntry,
-                               &wszFlags[1]);
+                              &wszFlags[1]);
             } // End IF/ELSE/IF
         } else
             wsprintfW (lpwszDebug,
                        L"ST:%08X (EMPTY) <%s>, Hsh=%08X",
                        lpSymEntry,
-                       &wszFlags[1],
-                       lpSymEntry->lpHshEntry);
+                      &wszFlags[1],
+                       lpSymEntry->stHshEntry);
         DbgMsgW (lpwszDebug);
     } // End FOR
 
     DbgMsg ("********** End Symbol Table ****************************");
 
-    UpdateWindow (hWndDB);
+    UpdateDBWindow ();
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplaySymTab
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  UpdateDBWindow
+//
+//  Call UpdateWindow on the DB window
+//***************************************************************************
+
+void UpdateDBWindow
+    (void)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    UpdateWindow (lpMemPTD->hWndDB);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End UpdateDBWindow
 #endif
 
 
@@ -1073,13 +1157,23 @@ void DisplayGlobals
                         // 2 = ...     all globals
 
 {
-    int       i;
-    HGLOBAL   hGlb;
-    LPVOID    lpMem;
-    APLDIM    aplDim;
-    LPVOID    lpData;
-    APLCHAR   aplArrChar[19];
-    LPAPLCHAR lpwsz;
+    int          i;
+    HGLOBAL      hGlb;
+    LPVOID       lpMem;
+    APLDIM       aplDim;
+    LPVOID       lpData;
+    APLCHAR      aplArrChar[19];
+    LPAPLCHAR    lpwsz;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    // Because we're inside DisplayGlobals, don't use
+    //   MyGlobalLock/Unlock so as not to pollute the result
+    lpMemPTD = GlobalLock (hGlbPTD);
 
     DbgMsg ("********** Globals *************************************");
 
@@ -1099,7 +1193,7 @@ void DisplayGlobals
         } // End IF
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-        if (lpHeader->Sign.ature EQ VARARRAY_HEADER_SIGNATURE)
+        if (lpHeader->Sig.nature EQ VARARRAY_HEADER_SIGNATURE)
         {
             if (uDispGlb EQ 2
              || !lpHeader->SysVar)
@@ -1175,7 +1269,7 @@ void DisplayGlobals
         } else
 #undef  lpHeader
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
-        if (lpHeader->Sign.ature EQ FCNARRAY_HEADER_SIGNATURE)
+        if (lpHeader->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE)
         {
             // It's a valid HGLOBAL function array
             Assert (IsGlbTypeFcnDir (MakeGlbTypeGlb (hGlb)));
@@ -1204,7 +1298,10 @@ void DisplayGlobals
 
     DbgMsg ("********** End Globals *********************************");
 
-    UpdateWindow (hWndDB);
+    UpdateDBWindow ();
+
+    // We no longer need this ptr
+    GlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayGlobals
 #endif
 
@@ -1220,8 +1317,10 @@ void DisplayTokens
     (HGLOBAL hGlbToken)
 
 {
-    LPTOKEN lpToken;
-    int i, iLen;
+    LPTOKEN      lpToken;
+    int          i, iLen;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     DbgMsg ("********** Tokens **************************************");
 
@@ -1232,17 +1331,21 @@ void DisplayTokens
         return;
     } // End IF
 
-    // Note we don't use MyGlobalLock & MyGlobalUnlock
-    //   as they expect the lock count to be zero
-    //   which need not be the way our caller left it.
-    lpToken = GlobalLock (hGlbToken); Assert (lpToken NE NULL);
+    // Lock the memory to get a ptr to it
+    lpToken = MyGlobalLock (hGlbToken);
 
-    // Ensure it's valid
-    if (!lpToken)
-    {
-        DbgMsg ("DisplayTokens:  ***INAVLID HANDLE***:  GlobalLock failed");
-        return;
-    } // End IF
+////// Ensure it's valid
+////if (!lpToken)
+////{
+////    DbgMsg ("DisplayTokens:  ***INAVLID HANDLE***:  GlobalLock failed");
+////    return;
+////} // End IF
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
 #define lpHeader    ((LPTOKEN_HEADER) lpToken)
 
@@ -1275,7 +1378,10 @@ void DisplayTokens
     DbgMsg ("********** End Tokens **********************************");
 
     // We no longer need this ptr
-    GlobalUnlock (hGlbToken); lpToken = NULL;
+    MyGlobalUnlock (hGlbToken); lpToken = NULL;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayTokens
 #endif
 
@@ -1357,8 +1463,18 @@ void DisplayFcnStrand
     (LPTOKEN lpToken)
 
 {
-    HGLOBAL hGlbData;
-    LPWCHAR lpaplChar = lpwszDebug;
+    HGLOBAL      hGlbData;
+    LPWCHAR      lpaplChar;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    lpaplChar = lpwszDebug;
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -1425,6 +1541,9 @@ void DisplayFcnStrand
 
     // Display the line in the debugging window
     DbgMsgW (lpwszDebug);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayFcnStrand
 #endif
 
@@ -1801,13 +1920,21 @@ void DisplayStrand
     (int strType)               // Strand type (VARSTRAND or FCNSTRAND)
 
 {
-    LPYYSTYPE lp,
-              lpLast;
+    LPYYSTYPE     lp,
+                  lpLast;
     LPPLLOCALVARS lpplLocalVars;
+    HGLOBAL       hGlbPTD;      // PerTabData global memory handle
+    LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory
 
     // Check debug level
     if (gDbgLvl <= 2)
         return;
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get this thread's LocalVars ptr
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
@@ -1860,6 +1987,9 @@ void DisplayStrand
     } // End FOR
 
     DbgMsg ("********** End Strands *********************************");
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayStrand
 #endif
 
@@ -1875,14 +2005,16 @@ void DisplayUndo
     (HWND hWnd)         // Window handle of the Edit Control
 
 {
-    UINT      uCharPos,
-              uLineCount;
-    HGLOBAL   hGlbEC;
-    LPWCHAR   lpwsz, p;
-    HWND      hWndParent;
-    LPUNDOBUF lpUndoBeg,    // Ptr to start of Undo Buffer
-              lpUndoNxt;    // ...    next available slot in the Undo Buffer
-    BOOL      bShift;
+    UINT         uCharPos,
+                 uLineCount;
+    HGLOBAL      hGlbEC;
+    LPWCHAR      lpwsz, p;
+    HWND         hWndParent;
+    LPUNDOBUF    lpUndoBeg,     // Ptr to start of Undo Buffer
+                 lpUndoNxt;     // ...    next available slot in the Undo Buffer
+    BOOL         bShift;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     static LPWCHAR Actions[]={L"None",
                               L"Ins",
                               L"Rep",
@@ -1890,6 +2022,12 @@ void DisplayUndo
                               L"Sel",
                               L"Back",
                               L"InsToggle"};
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     DbgMsg ("********** Undo Buffer *********************************");
 
@@ -1973,6 +2111,9 @@ void DisplayUndo
     } // End FOR
 
     DbgMsg ("********** End Undo Buffer *****************************");
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DisplayUndo
 #endif
 
@@ -2009,7 +2150,7 @@ void DisplayFnHdr
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYResult[uItm].tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYResult[uItm].tkToken.tkData.tkSym->stHshEntry->hGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);
@@ -2049,7 +2190,7 @@ void DisplayFnHdr
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYLftArg[uItm].tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYLftArg[uItm].tkToken.tkData.tkSym->stHshEntry->hGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);
@@ -2086,7 +2227,7 @@ void DisplayFnHdr
         if (lpfhLocalVars->lpYYLftOpr)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry->hGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);
@@ -2102,7 +2243,7 @@ void DisplayFnHdr
         } // End IF
 
         // Get the Name's global memory handle
-        hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+        hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->hGlbName;
 
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (hGlbName);
@@ -2114,7 +2255,7 @@ void DisplayFnHdr
         MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
         // Get the Name's global memory handle
-        hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+        hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry->hGlbName;
 
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (hGlbName);
@@ -2130,7 +2271,7 @@ void DisplayFnHdr
     } else
     {
         // Get the Name's global memory handle
-        hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+        hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->hGlbName;
 
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (hGlbName);
@@ -2158,7 +2299,7 @@ void DisplayFnHdr
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYRhtArg[uItm].tkToken.tkData.tkSym->lpHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYRhtArg[uItm].tkToken.tkData.tkSym->stHshEntry->hGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);

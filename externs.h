@@ -51,7 +51,6 @@
 #include "Unicode.h"
 
 // Define variables which are also used in the per tab structure
-#include "pertabdefs.h"
 #include "primspec.h"
 
 
@@ -63,7 +62,8 @@
 
 //***************************************************************************
 //  Below this point, define variables which do not need to be saved
-//    in the per tab structure
+//    in the per tab structure.  By definition, these vars are all static
+//    in valud.
 //***************************************************************************
 
 //***************************************************************************
@@ -92,9 +92,6 @@ APLUINT  uQuadPP_CWS        ,           // []PP
 
 EXTERN
 APLCHAR  cQuadPR_CWS        ;           // []PR     (' ') (When a char scalar)
-
-EXTERN
-LPSYMENTRY lpSymQuadRL;                 // Ptr to STE for QuadRL
 
 //***************************************************************************
 //  Application values
@@ -149,9 +146,10 @@ DWORD dwTlsType,                        // Thread type (e.g.
                                         //   'TC' for Tab Control,
                                         //   'PL' for ParseLine,
                                         //   etc.)
-      dwTlsSemaphore,                   // Handle to semaphore for PL thread only
+      dwTlsSemaphore,                   // Handle to semaphore  for PL thread only
       dwTlsPlLocalVars,                 // Ptr to lpplLocalVars for PL thread only
-      dwTlsFhLocalVars;                 // Ptr to lpfhLocalVars for SM and PL thread only
+      dwTlsFhLocalVars,                 // Ptr to lpfhLocalVars for SM and PL threads
+      dwTlsPerTabData;                  // Ptr to PerTabData    for TC, SM, and PL threads
 
 //***************************************************************************
 // Temporary storage
@@ -171,14 +169,13 @@ LPCHAR lpszDebug;                       // Used for temporary storage of char
 EXTERN
 LPWCHAR lpwszDebug;                     // Used for temporary storage of WCHAR
                                         //   debug output
-#endif
-
 EXTERN
 UCHAR gDbgLvl                           // Debug level 0 = none
 #ifdef DEFINE_VALUES
  = 0
 #endif
 ;
+#endif
 
 //***************************************************************************
 //  Primitive function and operator tables
@@ -575,7 +572,11 @@ WCHAR wszIndent[DEF_INDENT + 1]
 ;
 
 EXTERN
-HGLOBAL hGlbCurTab;                     // Global handle of current tab
+HGLOBAL hGlbCurTab                      // Global handle of current tab ***FIXME*** -- Make PerTabData
+#ifdef DEFINE_VALUES
+ = NULL
+#endif
+;
 
 EXTERN
 HWND hWndTC,                            // Global Tab Control window handle
@@ -598,30 +599,26 @@ APLFLOAT PosInfinity,                   // Positive infinity
          NegInfinity,                   // Negative ...
          Float2Pow53;                   // 2*53 in floating point
 
-#ifndef ENUMS_DEFINED
-typedef enum tagSYSVAR_VALID
+typedef enum tagSYSVARS
 {
-    SYSVAR_VALID_ALX = 0,               //  0:
-    SYSVAR_VALID_CT  ,                  //  1:
-    SYSVAR_VALID_DF  ,                  //  2:
-    SYSVAR_VALID_ELX ,                  //  3:
-    SYSVAR_VALID_IF  ,                  //  4:
-    SYSVAR_VALID_IO  ,                  //  5:
-    SYSVAR_VALID_LX  ,                  //  6:
-    SYSVAR_VALID_PP  ,                  //  7:
-    SYSVAR_VALID_PR  ,                  //  8:
-    SYSVAR_VALID_PW  ,                  //  9:
-    SYSVAR_VALID_RL  ,                  // 10:
-    SYSVAR_VALID_SA  ,                  // 11:
-    SYSVAR_VALID_WSID,                  // 12:
-
-    SYSVAR_VALID_LENGTH                 // 13: Length of the enum *MUST* be last
-} SYSVAR_VALID;
-#endif
+    SYSVAR_UNK = 0,         // 00:  Unknown name
+    SYSVAR_ALX ,            // 01:  []ALX
+    SYSVAR_CT  ,            // 02:  []CT
+    SYSVAR_ELX ,            // 03:  []ELX
+    SYSVAR_IO  ,            // 04:  []IO
+    SYSVAR_LX  ,            // 05:  []LX
+    SYSVAR_PP  ,            // 06:  []PP
+    SYSVAR_PR  ,            // 07:  []PR
+    SYSVAR_PW  ,            // 08:  []PW
+    SYSVAR_RL  ,            // 09:  []RL
+    SYSVAR_SA  ,            // 0A:  []SA
+    SYSVAR_WSID,            // 0B:  []WSID
+    SYSVAR_LENGTH           // 0C:  # entries in the enum
+} SYSVARS;
 
 EXTERN
-// Use as in:  (*aSysVarValid[SYSVAR_VALID_IO]) (lptkName, lptkExpr);
-BOOL (*aSysVarValid[SYSVAR_VALID_LENGTH]) (LPTOKEN, LPTOKEN);
+// Use as in:  (*aSysVarValid[SYSVAR_IO]) (lptkName, lptkExpr);
+BOOL (*aSysVarValid[SYSVAR_LENGTH]) (LPTOKEN, LPTOKEN);
 
 EXTERN
 char lpszVersion[]

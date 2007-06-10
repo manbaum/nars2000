@@ -705,12 +705,12 @@ LRESULT APIENTRY MFWndProc
             // Initialize window-specific resources
             MF_Create (hWnd);
 
-            // Allocate per tab data as a dummy holder
-            //   so that the first call to SaveWsData
-            //   has something to save into.
-            hGlbCurTab = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
-            if (!hGlbCurTab)
-                return -1;          // Stop the whole process
+////////////// Allocate per tab data as a dummy holder
+//////////////   so that the first call to SaveWsData
+//////////////   has something to save into.
+////////////hGlbCurTab = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
+////////////if (!hGlbCurTab)
+////////////    return -1;          // Stop the whole process
 
             // Load a CLEAR WS
             if (!CreateNewTab (hWnd,
@@ -905,9 +905,9 @@ LRESULT APIENTRY MFWndProc
 
                 case TCN_SELCHANGING:   // idTabCtl = (int) LOWORD(wParam);
                                         // hwndTabCtl = (HWND) lParam;
-                    // Save data from the current WS into global memory
-                    SaveWsData (hGlbCurTab);
-
+////////////////////// Save data from the current WS into global memory
+////////////////////SaveWsData (hGlbCurTab);
+////////////////////
                     DestroyCaret ();    // 'cause we just lost the focus
 
                     // If the user clicked on the close button,
@@ -918,7 +918,7 @@ LRESULT APIENTRY MFWndProc
                 case TCN_SELCHANGE:     // idTabCtl = (int) LOWORD(wParam);
                                         // hwndTabCtl = (HWND) lParam;
                 {
-                    int iCurTab;
+////////////////////int iCurTab;
 
                     // Get the window handle of the currently active MDI Client
                     hWndMC = GetActiveMC (hWndTC);
@@ -926,14 +926,14 @@ LRESULT APIENTRY MFWndProc
                     // Hide the child windows of the outgoing tab
                     ShowHideChildWindows (hWndMC, FALSE);
 
-                    // Get the index of the currently selected tab
-                    iCurTab = TabCtrl_GetCurSel (hWndTC);
-
-                    // Get the per tab global memory handle
-                    hGlbCurTab = GetPerTabHandle (iCurTab);
-
-                    // Restore data into the current WS from global memory
-                    RestWsData (hGlbCurTab);
+////////////////////// Get the index of the currently selected tab
+////////////////////iCurTab = TabCtrl_GetCurSel (hWndTC);
+////////////////////
+////////////////////// Get the per tab global memory handle
+////////////////////hGlbCurTab = GetPerTabHandle (iCurTab);
+////////////////////
+////////////////////// Restore data into the current WS from global memory
+////////////////////RestWsData (hGlbCurTab);
 
                     // Show the child windows of the incoming tab
                     ShowHideChildWindows (hWndMC, TRUE);
@@ -1151,6 +1151,53 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;   // We handled the msg
 
+                case IDM_LOAD_WS:
+                    DbgBrk ();      // ***FINISHME***
+
+
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_XLOAD_WS:
+                    DbgBrk ();      // ***FINISHME***
+
+
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_COPY_WS:
+                    DbgBrk ();      // ***FINISHME***
+
+
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_PCOPY_WS:
+                    DbgBrk ();      // ***FINISHME***
+
+
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_SAVE_WS:
+                    CmdSaveWS_EM (L"");  // Handle the same as )SAVE
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_SAVE_AS_WS:
+                    DbgBrk ();      // ***FINISHME***
+
+
+
+                    return FALSE;   // We handled the msg
+
+                case IDM_DROP_WS:
+                    DbgBrk ();      // ***FINISHME***
+
+
+
+                    return FALSE;   // We handled the msg
+
                 case IDM_DUP_WS:
                     DbgBrk ();      // ***FINISHME***
 
@@ -1171,22 +1218,20 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_CLOSE_FN:
-                    // Close the function (if allowed)
-                    CloseFunction (hWndActive);
+                    // Tell the active window to handle it
+                    PostMessage (hWndActive, MYWM_CLOSE_FN, wParam, lParam);
 
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVE_FN:
-                    // Save the function (if well-formed)
-                    SaveFunction (hWndActive);
+                    // Tell the active window to handle it
+                    PostMessage (hWndActive, MYWM_SAVE_FN, wParam, lParam);
 
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVECLOSE_FN:
-                    // Save the function (if well-formed)
-                    if (SaveFunction (hWndActive))
-                        // Close the function (if allowed)
-                        CloseFunction (hWndActive);
+                    // Tell the active window to handle it
+                    PostMessage (hWndActive, MYWM_SAVECLOSE_FN, wParam, lParam);
 
                     return FALSE;   // We handled the msg
 
@@ -1759,6 +1804,7 @@ int PASCAL WinMain
     dwTlsSemaphore   = TlsAlloc ();     // Thread semaphore (for 'PL' only)
     dwTlsPlLocalVars = TlsAlloc ();     // lpplLocalVars (for 'PL' only)
     dwTlsFhLocalVars = TlsAlloc ();     // lpfhLocalVars (for 'PL' or 'SM' only)
+    dwTlsPerTabData  = TlsAlloc ();     // PerTabData    (for 'PL' or 'SM' only)
 
     // Save the thread type ('MF')
     TlsSetValue (dwTlsType, (LPVOID) 'MF');

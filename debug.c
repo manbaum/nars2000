@@ -123,12 +123,19 @@ LRESULT APIENTRY DBWndProc
 
     switch (message)
     {
-        case WM_NCCREATE:           // lpcs = (LPCREATESTRUCT) lParam
-            hWndDB = hWnd;
+#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
+////////case WM_NCCREATE:           // lpcs = (LPCREATESTRUCT) lParam
 
-            break;                  // Continue with next handler
 
+////////    break;                  // Continue with next handler
+#undef  lpMDIcs
+
+#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
         case WM_CREATE:
+        {
+            HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
             iLineNum = 0;
             SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
@@ -159,13 +166,22 @@ LRESULT APIENTRY DBWndProc
             ShowWindow (hWndLB, SW_SHOWNORMAL);
             ShowWindow (hWnd,   SW_SHOWNORMAL);
 
+            // Get the thread's PerTabData global memory handle
+            hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // Subclass the List Box so we can pass
             //   certain WM_KEYDOWN messages to the
             //   session manager.
-            lpfnOldListboxWndProc = (WNDPROC)
+            lpMemPTD->lpfnOldListboxWndProc = (WNDPROC)
               SetWindowLongW (hWndLB,
                               GWL_WNDPROC,
                               (long) (WNDPROC) &LclListboxWndProc);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
             // Initialize window-specific resources
             DB_Create (hWnd);
 
@@ -174,6 +190,8 @@ LRESULT APIENTRY DBWndProc
             PostMessage (hWnd, MYWM_INIT_DB, 0, 0);
 
             return FALSE;           // We handled the msg
+        } // End WM_CREATE
+#undef  lpMDIcs
 
         case MYWM_INIT_DB:
             // Tell the Listbox Control about its font
@@ -317,16 +335,20 @@ LRESULT WINAPI LclListboxWndProc
      LPARAM lParam)
 
 {
-    HMENU hMenu;
-    int   iSelCnt,
-          mfState,
-          i,
-          iTotalBytes;
-    POINT ptScr;
-    HGLOBAL hGlbInd,
-            hGlbSel;
-    LPINT lpInd;
-    LPWCHAR lpSel, p;
+    HMENU        hMenu;
+    int          iSelCnt,
+                 mfState,
+                 i,
+                 iTotalBytes;
+    POINT        ptScr;
+    HGLOBAL      hGlbInd,
+                 hGlbSel;
+    LPINT        lpInd;
+    LPWCHAR      lpSel,
+                 p;
+    LRESULT      lResult;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Split cases
     switch (message)
@@ -478,6 +500,9 @@ LRESULT WINAPI LclListboxWndProc
                                     // lKeyData = lParam;           // Key data
 #define nVirtKey ((int) wParam)
         {
+            HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
             // Process the virtual key
             switch (nVirtKey)
             {
@@ -493,7 +518,16 @@ LRESULT WINAPI LclListboxWndProc
                 case VK_F10:
                 case VK_F11:
                 case VK_F12:
-                    SendMessage (hWndSM, message, wParam, lParam);
+                    // Get the thread's PerTabData global memory handle
+                    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                    SendMessage (lpMemPTD->hWndSM, message, wParam, lParam);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     return FALSE;   // We handled the msg
             } // End SWITCH
@@ -503,11 +537,22 @@ LRESULT WINAPI LclListboxWndProc
 #undef  nVirtKey
     } // End SWITCH
 
-    return CallWindowProcW (lpfnOldListboxWndProc,
-                            hWnd,
-                            message,
-                            wParam,
-                            lParam); // Pass on down the line
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    lResult = CallWindowProcW (lpMemPTD->lpfnOldListboxWndProc,
+                               hWnd,
+                               message,
+                               wParam,
+                               lParam); // Pass on down the line
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lResult;
 } // End LclListboxWndProc
 #endif
 
@@ -523,15 +568,26 @@ void DbgMsg
     (LPCHAR szTemp)
 
 {
-    WCHAR wszTemp[1024];
+    WCHAR        wszTemp[1024];
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    if (hWndDB)
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    if (lpMemPTD->hWndDB)
     {
         // Convert the string from A to W
         A2W (wszTemp, szTemp, sizeof (wszTemp) - 1);
 
         DbgMsgW (wszTemp);
     } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DbgMsg
 #endif
 
@@ -547,11 +603,19 @@ void DbgMsgW
     (LPWCHAR wszTemp)
 
 {
-    BOOL   bParseLine;      // TRUE iff the current thread is ParseLine
-    HANDLE hSemaphore;      // Handle to ParseLine semaphore
-    BOOL   bRet;            // TRUE iff <RelaseSemaphore> worked
+    BOOL         bParseLine,    // TRUE iff the current thread is ParseLine
+                 bRet;          // TRUE iff <RelaseSemaphore> worked
+    HANDLE       hSemaphore;    // Handle to ParseLine semaphore
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    if (hWndDB)
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    if (lpMemPTD->hWndDB)
     {
         bParseLine = ('PL' EQ (UINT) TlsGetValue (dwTlsType));
         if (bParseLine)
@@ -569,17 +633,20 @@ void DbgMsgW
             } // End IF
 
             // Display the debug message
-            SendMessageW (hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
+            SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
 
             // Start the wait again if the semaphore handle is valid
             if (bRet)
-                PostMessage (GetParent (hWndDB),
+                PostMessage (GetParent (lpMemPTD->hWndDB),
                              MYWM_WFMO,
                              (WPARAM) GetCurrentThreadId (),
                              (LPARAM) hSemaphore);
         } else
-            SendMessageW (hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
+            SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
     } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DbgMsgW
 #endif
 
@@ -595,7 +662,19 @@ void DbgClr
     (void)
 
 {
-    PostMessage (hWndDB, MYWM_DBGMSG_CLR, 0, 0);
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    PostMessage (lpMemPTD->hWndDB, MYWM_DBGMSG_CLR, 0, 0);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End DbgClr
 #endif
 

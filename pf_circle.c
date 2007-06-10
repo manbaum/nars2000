@@ -54,9 +54,6 @@ PRIMSPEC PrimSpecCircle = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydCircleFisIvI,
     &PrimFnDydCircleFisFvF,
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecCircle};

@@ -487,6 +487,7 @@ code
       <ul>
         <li><span class="APL">)CLEAR</span></li>
         <li><span class="APL">)CLOSE</span></li>
+        <li><span class="APL">)EDIT</span></li>
         <li><span class="APL">)EXIT</span></li>
         <li><span class="APL">)NEWTAB</span></li>
       </ul>

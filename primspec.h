@@ -33,7 +33,7 @@ typedef BOOL PRIMFN_DYD_SNvSN
      HGLOBAL   hGlbRht,                     // ...       right ...
      HGLOBAL  *lphGlbRes,                   // Ptr to handle to result
 
-     LPVOID    lpMemLft,                    // Points to sign.ature
+     LPVOID    lpMemLft,                    // Points to Sig.nature
      LPVOID    lpMemRht,                    // ...
      LPVOID    lpMemRes,                    // ...
 
@@ -83,7 +83,7 @@ typedef BOOL APARESULT_MON
          HGLOBAL   hGlbRht,                 // HGLOBAL of right arg
          HGLOBAL  *lphGlbRes,               // ...        result
 
-         LPVOID   *lplpMemRes,              // Ptr to ptr to result memory (initially at sign.ature)
+         LPVOID   *lplpMemRes,              // Ptr to ptr to result memory (initially at Sig.nature)
 
          APLRANK   aplRankRht,              // Right arg rank
 
@@ -101,7 +101,7 @@ typedef BOOL APARESULT_DYD
          HGLOBAL   hGlbRht,                 // ...        right ...
          HGLOBAL  *lphGlbRes,               // ...        result
 
-         LPVOID   *lplpMemRes,              // Ptr to ptr to result memory (initially at sign.ature)
+         LPVOID   *lplpMemRes,              // Ptr to ptr to result memory (initially at Sig.nature)
 
          APLRANK   aplRankLft,              // Left arg rank
          APLRANK   aplRankRht,              // Right ...
@@ -225,9 +225,6 @@ typedef struct tagPrimSpec
 ////FISBVB             *FisBvB;             // Handled via type promotion (to FisFvF)
     FISIVI             *FisIvI;             // Dyadic F {is} I vs I
     FISFVF             *FisFvF;             // ...           F vs F
-
-    // Miscellaneous
-    EXEC_CODES         *lpExecCode;         // Ptr to Exception Code
 } PRIMSPEC, *LPPRIMSPEC;
 
 

@@ -52,9 +52,6 @@ PRIMSPEC PrimSpecDownCaretTilde = {
 ////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydDownCaretTildeFisIvI, -- Can't happen w/DownCaretTilde
     NULL,   // &PrimFnDydDownCaretTildeFisFvF, -- Can't happen w/DownCaretTilde
-
-    // Miscellaneous
-    &ExecCode,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownCaretTilde};

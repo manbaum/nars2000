@@ -9,6 +9,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -296,27 +297,41 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE aplTypeLft,
-             aplTypeRht,
-             aplTypeTmp;
-    APLNELM  aplNELMLft,
-             aplNELMRht;
-    APLRANK  aplRankLft,
-             aplRankRht;
-    HGLOBAL  hGlbLft,
-             hGlbRht;
-    LPVOID   lpMemLft,
-             lpMemRht;
-    LPTOKEN  lptkTmpArg;
-    BOOL     bNumLft,
-             bNumRht;
-    APLINT   aplIntegerLft,
-             aplIntegerRht;
-    APLFLOAT aplFloatLft,
-             aplFloatRht;
-    APLCHAR  aplCharLft,
-             aplCharRht;
-    LPYYSTYPE lpYYRes;
+    APLSTYPE     aplTypeLft,    // Left arg storage type
+                 aplTypeRht,    // Right ...
+                 aplTypeTmp;    // Temp ...
+    APLNELM      aplNELMLft,    // Left arg NELM
+                 aplNELMRht;    // Right ...
+    APLRANK      aplRankLft,    // Left arg rank
+                 aplRankRht;    // Right ...
+    HGLOBAL      hGlbLft,       // Left arg global memory handle
+                 hGlbRht;       // Right ...
+    LPVOID       lpMemLft,      // Ptr to left arg global memory
+                 lpMemRht;      // Ptr to right ...
+    LPTOKEN      lptkTmpArg;    // Ptr to temp arg token
+    BOOL         bNumLft,       // TRUE iff left arg is simple numeric
+                 bNumRht;       // ...      right ...
+    APLINT       aplIntegerLft, // Left arg as integer
+                 aplIntegerRht; // Right ...
+    APLFLOAT     aplFloatLft,   // Left arg as float
+                 aplFloatRht;   // Right ...
+    APLCHAR      aplCharLft,    // Left arg as char
+                 aplCharRht;    // Right ...
+    LPYYSTYPE    lpYYRes;       // Ptr to the result
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLFLOAT     fQuadCT;       // []CT
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    fQuadCT = lpMemPTD->fQuadCT;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -480,16 +495,30 @@ BOOL PrimFnDydEqualUnderbarSimple
      APLRANK  aplRankRht)
 
 {
-    APLINT   uDim,
-             apaOff,
-             apaMul;
-    UINT     uBitMask = 0x01;
-    APLINT   aplIntegerLft,
-             aplIntegerRht;
-    APLFLOAT aplFloatLft,
-             aplFloatRht;
-    APLCHAR  aplCharLft,
-             aplCharRht;
+    APLINT       uDim,
+                 apaOff,
+                 apaMul;
+    UINT         uBitMask = 0x01;
+    APLINT       aplIntegerLft,
+                 aplIntegerRht;
+    APLFLOAT     aplFloatLft,
+                 aplFloatRht;
+    APLCHAR      aplCharLft,
+                 aplCharRht;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLFLOAT     fQuadCT;       // []CT
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    fQuadCT = lpMemPTD->fQuadCT;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Ensure same rank and # elements
     if (aplRankLft NE aplRankRht
@@ -981,19 +1010,33 @@ BOOL PrimFnDydEqualUnderbarNested
      APLRANK  aplRankRht)
 
 {
-    APLUINT  uDim;
-    APLNELM  aplNELMLft2,
-             aplNELMRht2;
-    LPVOID   lpMemLft2,
-             lpMemRht2;
-    APLINT   aplIntegerLft,
-             aplIntegerRht;
-    APLFLOAT aplFloatLft,
-             aplFloatRht;
-    APLCHAR  aplCharLft,
-             aplCharRht;
-    UINT     ptrType;
-    BOOL     bRet = TRUE;
+    APLUINT      uDim;
+    APLNELM      aplNELMLft2,
+                 aplNELMRht2;
+    LPVOID       lpMemLft2,
+                 lpMemRht2;
+    APLINT       aplIntegerLft,
+                 aplIntegerRht;
+    APLFLOAT     aplFloatLft,
+                 aplFloatRht;
+    APLCHAR      aplCharLft,
+                 aplCharRht;
+    UINT         ptrType;
+    BOOL         bRet = TRUE;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLFLOAT     fQuadCT;       // []CT
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    fQuadCT = lpMemPTD->fQuadCT;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Ensure same rank and # elements
     if (aplRankLft NE aplRankRht

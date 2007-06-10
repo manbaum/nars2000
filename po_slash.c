@@ -403,7 +403,7 @@ LPYYSTYPE PrimOpMonSlashCommon_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header values
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->Perm       = 0;       // Already zero from GHND
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
@@ -1531,7 +1531,7 @@ BOOL PrimOpDydSlashAllocate_EM
 #define lpHeader    ((LPVARARRAY_HEADER) *lplpMemRes)
 
     // Fill in the header values
-    lpHeader->Sign.ature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->Perm       = 0;       // Already zero from GHND
 ////lpHeader->SysVar     = 0;       // Already zero from GHND

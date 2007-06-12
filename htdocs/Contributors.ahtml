@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>NARS2000 Contributors</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta name="Braces2APL" content="font" />
+  <link rel="stylesheet"
+        href="http://www.sudleyplace.com/styles/common.css"
+        type="text/css" />
+  <link rel="stylesheet"
+        href="http://www.nars2000.org/styles/common.css"
+        type="text/css" />
+</head>
+
+<body><!--#config timefmt="%d %B %Y %H:%M:%S" -->
+
+<div class="title">
+<img src="/art/NARS-Title.jpg"
+     alt="NARS2000: An Experimental APL Interpreter"
+     title="Last Changed <!--#echo var='LAST_MODIFIED' -->" />
+</div>
+
+<div class="menu">&nbsp;&nbsp;
+<a href="/">Home</a> |
+<a href="/Download.html">Download</a> |
+<a href="/GetInvolved.html">Get Involved</a> |
+<a href="http://wiki.nars2000.org">Documentation</a> |
+<a href="/Contributors.html">Contributors</a> |
+<a href="/LICENSE">License</a> |
+<a href="/ContactUs.html">Contact Us</a> |
+<a href="http://wiki.nars2000.org/index.php/NARS2000:About">About</a>
+</div>
+
+<table class="pagetable" summary="">
+<tr>
+  <td class="pagecolumn1">
+    <h4>On this page:</h4>
+
+    <ul class="bookmarks">
+      <li><a href="#Borrowed_Code">Borrowed Code</a></li>
+      <li><a href="#Borrowed_Ideas">Borrowed Ideas</a></li>
+      <li><a href="#Contributors">Contributors</a></li>
+    </ul>
+
+    <br />
+    <br />
+    <br />
+
+    <script type="text/javascript">
+      <!--
+      google_ad_client = "pub-5069729984191471";
+      google_ad_width = 120;
+      google_ad_height = 600;
+      google_ad_format = "120x600_as";
+      google_color_border = "000000";
+      //-->
+    </script>
+    <div style="margin-left:  1em;">
+    <script type="text/javascript"
+            src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+    </script>
+    </div>
+  </td>
+
+  <td class="pagecolumn2">
+    <div class="section">
+      <h2 id="Borrowed_Code">Borrowed Code</h2>
+
+      <p>The Internet is a great resource, espeically for software
+        developers who need some expert help in the guise of
+        well-crafted code.  This project is no exception having
+        borrowed with great thanks from the following projects:</p>
+
+      <ul>
+        <li><a class="linkleft" href="http://www.gnu.org/software/gsl/">GNU
+          Scientific Library</a> for the monadic and dyadic
+          quote-dot (<span class="APL">{!}</span>) (factorial/binomial
+          functions)
+          as well as Singular Value Decomposition code for monadic and
+          dyadic domino (<span class="APL">{domino}</span>) (matrix
+          inverse/matrix divide)</li>
+
+        <li><a class="linkleft" href="http://www.burtleburtle.net/bob/c/lookup3.c">Hash
+          routines</a> by Bob Jenkins.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2 id="Borrowed_Ideas">Borrowed Ideas</h2>
+      <ul>
+        <li>Linear Hashing by Witold Litwin, Linear hashing: A new tool for file and table addressing,
+          Proc. 6th Conference on Very Large Databases, pages 212-223, 1980.
+          The ideas in this paper were invaluable in creating the Hash and
+          Symbol tables.</li>
+
+        <li>This project benefited by discussions with some of the
+          many great APL implementors who went before me.  A few of
+          them stand out in my memory:  Larry Breed, Gene McDonnell,
+          Bob Bernecky, Clark Wiedmann, Bill Rutiser, Mark Osborne,
+          Bob Beilstein, etc.
+        </li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2 id="Contributors">Contributors</h2>
+
+      <p>Here's where your name will be when you help us make this
+        project to be an even better APL interpreter.</p>
+    </div>
+  </td>
+</tr>
+</table>
+
+<hr />
+
+<!--#include virtual="/ValidXHTML-CSS.html" -->
+<!--#include virtual="/footer.html" -->
+</body></html>

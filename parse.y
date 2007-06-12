@@ -924,7 +924,7 @@ LeftFunc:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);  // Function
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -940,7 +940,7 @@ LeftFunc:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);  // Function
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -956,7 +956,7 @@ LeftFunc:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);  // Function
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -966,7 +966,7 @@ LeftFunc:
                                         }
     |     SimpFunc                      {DbgMsgW2 (L"%%LeftFunc:  SimpFunc");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$1, 1, TRUE);        // Function
+                                         PushFcnStrand_YY (&$1, 1, TRUE);       // Function
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -976,7 +976,7 @@ LeftFunc:
                                         }
     |     RightFunc    JOTDOT           {DbgMsgW2 (L"%%LeftFunc:  " WS_UTF16_JOT L". RightFunc");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 2, FALSE);       // Monadic operator
+                                         PushFcnStrand_YY (&$2, 2, FALSE);      // Monadic operator
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -988,7 +988,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$1, 1, TRUE);        // Operand
+                                         PushFcnStrand_YY (&$1, 1, TRUE);       // Operand
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -998,7 +998,7 @@ LeftFunc:
                                         }
     |                  MonOp LeftFunc   {DbgMsgW2 (L"%%LeftFunc:  LeftFunc MonOp");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$1, 2, TRUE);        // Monadic operator
+                                         PushFcnStrand_YY (&$1, 2, TRUE);       // Monadic operator
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1010,7 +1010,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Operand
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1020,7 +1020,7 @@ LeftFunc:
                                         }
     |              MonOpAxis LeftFunc   {DbgMsgW2 (L"%%LeftFunc:  LeftFunc MonOpAxis");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$1, 2, TRUE);        // Monadic operator
+                                         PushFcnStrand_YY (&$1, 2, TRUE);       // Monadic operator
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1032,7 +1032,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Operand
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1042,7 +1042,7 @@ LeftFunc:
                                         }
     |                  MonOp AxisFunc   {DbgMsgW2 (L"%%LeftFunc:  AxisFunc MonOp");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$1, 2, TRUE);        // Monadic operator
+                                         PushFcnStrand_YY (&$1, 2, TRUE);       // Monadic operator
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1054,7 +1054,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Operand
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1064,7 +1064,7 @@ LeftFunc:
                                         }
     |              MonOpAxis AxisFunc   {DbgMsgW2 (L"%%LeftFunc:  AxisFunc MonOpAxis");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$1, 2, TRUE);        // Monadic operator
+                                         PushFcnStrand_YY (&$1, 2, TRUE);       // Monadic operator
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1076,7 +1076,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Operand
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1095,7 +1095,7 @@ LeftFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 2, TRUE);        // Monadic operator
+                                         PushFcnStrand_YY (&$2, 2, TRUE);       // Monadic operator
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1107,7 +1107,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);  // Operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1126,7 +1126,7 @@ LeftFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 2, TRUE);        // Monadic operator
+                                         PushFcnStrand_YY (&$2, 2, TRUE);       // Monadic operator
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1138,7 +1138,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);  // Operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1148,7 +1148,7 @@ LeftFunc:
                                         }
     |     RightFunc DydOp LeftFunc      {DbgMsgW2 (L"%%LeftFunc:  LeftFunc DydOp RightFunc");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 3, TRUE);        // Dyadic operator
+                                         PushFcnStrand_YY (&$2, 3, TRUE);       // Dyadic operator
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1161,7 +1161,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$3, 1, TRUE);        // Left operand
+                                         PushFcnStrand_YY (&$3, 1, TRUE);       // Left operand
                                          FreeResult (&$3.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1173,7 +1173,7 @@ LeftFunc:
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$1, 1, TRUE);        // Right operand
+                                         PushFcnStrand_YY (&$1, 1, TRUE);       // Right operand
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1183,7 +1183,7 @@ LeftFunc:
                                         }
     |     RightFunc DydOp AxisFunc      {DbgMsgW2 (L"%%LeftFunc:  AxisFunc DydOp RightFunc");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 3, TRUE);        // Dyadic operator
+                                         PushFcnStrand_YY (&$2, 3, TRUE);       // Dyadic operator
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1196,7 +1196,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$3, 1, TRUE);        // Left operand
+                                         PushFcnStrand_YY (&$3, 1, TRUE);       // Left operand
                                          FreeResult (&$3.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1207,7 +1207,7 @@ LeftFunc:
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$1, 1, TRUE);        // Right operand
+                                         PushFcnStrand_YY (&$1, 1, TRUE);       // Right operand
                                          FreeResult (&$1.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1228,7 +1228,7 @@ LeftFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$3, 3, TRUE);        // Dyadic operator
+                                         PushFcnStrand_YY (&$3, 3, TRUE);       // Dyadic operator
                                          FreeResult (&$3.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1241,7 +1241,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$4, 1, TRUE);        // Left operand
+                                         PushFcnStrand_YY (&$4, 1, TRUE);       // Left operand
                                          FreeResult (&$4.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1253,7 +1253,7 @@ LeftFunc:
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Right operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);  // Right operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1264,7 +1264,7 @@ LeftFunc:
     | '>' '>' SimpExpr '(' DydOp LeftFunc '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (LeftFunc DydOp (SimpExpr))");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$5, 3, TRUE);        // Dyadic operator
+                                         PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
                                          FreeResult (&$5.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1277,7 +1277,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$6, 1, TRUE);        // Left operand
+                                         PushFcnStrand_YY (&$6, 1, TRUE);       // Left operand
                                          FreeResult (&$6.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1289,7 +1289,7 @@ LeftFunc:
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$3, 1, FALSE);       // Right operand
+                                         PushFcnStrand_YY (&$3, 1, FALSE);      // Right operand
                                          FreeResult (&$3.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1300,7 +1300,7 @@ LeftFunc:
     | '>' '>' SimpExpr '(' DydOp AxisFunc '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp (SimpExpr))");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$5, 3, TRUE);        // Dyadic operator
+                                         PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
                                          FreeResult (&$5.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1313,7 +1313,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$6, 1, TRUE);        // Left operand
+                                         PushFcnStrand_YY (&$6, 1, TRUE);       // Left operand
                                          FreeResult (&$6.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1325,7 +1325,7 @@ LeftFunc:
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$3, 1, FALSE);       // Right operand
+                                         PushFcnStrand_YY (&$3, 1, FALSE);      // Right operand
                                          FreeResult (&$3.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1345,7 +1345,7 @@ LeftFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$3, 3, TRUE);        // Dyadic operator
+                                         PushFcnStrand_YY (&$3, 3, TRUE);       // Dyadic operator
                                          FreeResult (&$3.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1358,7 +1358,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$4, 1, TRUE);        // Left operand
+                                         PushFcnStrand_YY (&$4, 1, TRUE);       // Left operand
                                          FreeResult (&$4.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1389,7 +1389,7 @@ LeftFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$3, 3, TRUE);        // Dyadic operator
+                                         PushFcnStrand_YY (&$3, 3, TRUE);       // Dyadic operator
                                          FreeResult (&$3.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1402,7 +1402,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Left operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);  // Left operand
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1414,7 +1414,7 @@ LeftFunc:
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Right operand
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Right operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1434,7 +1434,7 @@ LeftFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$5, 3, TRUE);        // Dyadic operator
+                                         PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
                                          FreeResult (&$5.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1447,7 +1447,7 @@ LeftFunc:
                                          $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);   // Left operand
+                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);  // Left operand
                                          FreeResult (&$3.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1459,7 +1459,7 @@ LeftFunc:
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$3, 1, FALSE);       // Right operand
+                                         PushFcnStrand_YY (&$3, 1, FALSE);      // Right operand
                                          FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1493,7 +1493,7 @@ LeftFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$3, 3, TRUE);        // Dyadic operator
+                                         PushFcnStrand_YY (&$3, 3, TRUE);       // Dyadic operator
                                          FreeResult (&$3.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1518,7 +1518,7 @@ LeftFunc:
                                          YYFree (lpYYRes); lpYYRes = NULL;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYStrR, 1, FALSE);  // Right operand
+                                         PushFcnStrand_YY (lpYYStrR, 1, FALSE); // Right operand
                                          FreeResult (&lpYYStrR->tkToken); YYFree (lpYYStrR); lpYYStrR = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1532,7 +1532,7 @@ LeftFunc:
 SimpFunc:
       '>' LeftFunc '('                  {DbgMsgW2 (L"%%SimpFunc:  (LeftFunc)");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Function
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1542,7 +1542,7 @@ SimpFunc:
                                         }
     | '>' AxisFunc '('                  {DbgMsgW2 (L"%%SimpFunc:  (AxisFunc)");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Function
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1552,7 +1552,7 @@ SimpFunc:
                                         }
     | '>' FcnSpec '('                   {DbgMsgW2 (L"%%SimpFunc:  (FcnSpec)");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Function
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1572,7 +1572,7 @@ RightFunc:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);  // Function
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1588,7 +1588,7 @@ RightFunc:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);  // Function
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1604,7 +1604,7 @@ RightFunc:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Function
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);  // Function
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1620,7 +1620,7 @@ RightFunc:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 1, TRUE);    // Function
+                                         PushFcnStrand_YY (lpYYFcn, 1, TRUE);   // Function
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1630,7 +1630,7 @@ RightFunc:
                                         }
     | '>' FcnSpec  '('                  {DbgMsgW2 (L"%%RightFunc:  (FcnSpec)");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Function
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1640,7 +1640,7 @@ RightFunc:
                                         }
     | '>' AxisFunc  '('                 {DbgMsgW2 (L"%%RightFunc:  (AxisFunc)");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Function
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Function
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1663,7 +1663,7 @@ AxisFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 2, FALSE);   // Function
+                                         PushFcnStrand_YY (lpYYFcn, 2, FALSE);  // Function
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1681,7 +1681,7 @@ AxisFunc:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE);   // Axis
+                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE); // Axis
                                          FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1700,7 +1700,7 @@ AxisFunc:
                                          } // End IF
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 2, FALSE);   // Function
+                                         PushFcnStrand_YY (lpYYFcn, 2, FALSE);  // Function
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1728,7 +1728,7 @@ AxisFunc:
                                         }
     | '}' ArrExpr '['  SYSFN12          {DbgMsgW2 (L"%%AxisFunc:  SYSFN12[ArrExpr]");
                                          lpYYFcn = MakeNameFcn_YY (&$4);
-                                         FreeResult (&$4.tkToken);
+                                         FreeResult (&$1.tkToken);
 
                                          if (!lpYYFcn)          // If not defined, free args and YYERROR
                                          {
@@ -1803,7 +1803,7 @@ AxisFunc:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE);   // Axis
+                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE); // Axis
                                          FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1823,7 +1823,7 @@ MonOp:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYOp1, 1, FALSE);   // Monadic operator
+                                         PushFcnStrand_YY (lpYYOp1, 1, FALSE);  // Monadic operator
                                          FreeResult (&lpYYOp1->tkToken); YYFree (lpYYOp1); lpYYOp1 = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1839,7 +1839,7 @@ MonOp:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);   // Monadic operator
+                                         PushFcnStrand_YY (lpYYFcn, 1, FALSE);  // Monadic operator
                                          FreeYYFcn1 (lpYYFcn); lpYYFcn = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1849,7 +1849,7 @@ MonOp:
                                         }
     |              '>' MonOp '('        {DbgMsgW2 (L"%%MonOp:  (MonOp)");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, TRUE);        // Monadic operator
+                                         PushFcnStrand_YY (&$2, 1, TRUE);       // Monadic operator
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1873,7 +1873,7 @@ MonOp:
 MonOpAxis:
       '}' ArrExpr '['  MonOp            {DbgMsgW2 (L"%%MonOpAxis:  MonOp[ArrExpr]");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$4, 2, TRUE);        // Monadic operator
+                                         PushFcnStrand_YY (&$4, 2, TRUE);       // Monadic operator
                                          FreeResult (&$4.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1891,7 +1891,7 @@ MonOpAxis:
                                              YYERROR;
 
                                          lpYYRes =
-                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE);   // Axis
+                                         PushFcnStrand_YY (lpYYAxis, 1, FALSE); // Axis
                                          FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1910,7 +1910,7 @@ MonOpAxis:
 ////                                     } // End IF
 ////
 ////                                     lpYYRes =
-////                                     PushFcnStrand_YY (lpYYOp1, 2, FALSE);   // Monadic operator
+////                                     PushFcnStrand_YY (lpYYOp1, 2, FALSE);  // Monadic operator
 ////                                     FreeResult (&lpYYOp1->tkToken); YYFree (lpYYOp1); lpYYOp1 = NULL;
 ////
 ////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1928,7 +1928,7 @@ MonOpAxis:
 ////                                         YYERROR;
 ////
 ////                                     lpYYRes =
-////                                     PushFcnStrand_YY (lpYYAxis, 1, FALSE);  // Axis
+////                                     PushFcnStrand_YY (lpYYAxis, 1, FALSE); // Axis
 ////                                     FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
 ////
 ////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1947,7 +1947,7 @@ MonOpAxis:
 ////                                     } // End IF
 ////
 ////                                     lpYYRes =
-////                                     PushFcnStrand_YY (lpYYOp1, 2, FALSE);   // Monadic operator
+////                                     PushFcnStrand_YY (lpYYOp1, 2, FALSE);  // Monadic operator
 ////                                     FreeResult (&lpYYOp1->tkToken); YYFree (lpYYOp1); lpYYOp1 = NULL;
 ////
 ////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1975,7 +1975,7 @@ MonOpAxis:
 ////                                    }
 ////| '}' ArrExpr '[' '>' MonOp '('     {DbgMsgW2 (L"%%MonOpAxis:  (MonOp)[ArrExpr]");
 ////                                     lpYYRes =
-////                                     PushFcnStrand_YY (&$5, 2, TRUE);        // Monadic operator
+////                                     PushFcnStrand_YY (&$5, 2, TRUE);       // Monadic operator
 ////                                     FreeResult (&$5.tkToken);
 ////
 ////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -2039,7 +2039,7 @@ DydOp:
                                         }
     |              '#' DydOp '('        {DbgMsgW2 (L"%%DydOp:  (DydOp)");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, FALSE);       // Dyadic operator
+                                         PushFcnStrand_YY (&$2, 1, FALSE);      // Dyadic operator
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -2049,7 +2049,7 @@ DydOp:
                                         }
     |              '#' Op2Spec '('      {DbgMsgW2 (L"%%DydOp:  (Op2Spec)");
                                          lpYYRes =
-                                         PushFcnStrand_YY (&$2, 1, FALSE);       // Dyadic operator
+                                         PushFcnStrand_YY (&$2, 1, FALSE);      // Dyadic operator
                                          FreeResult (&$2.tkToken);
 
                                          if (!lpYYRes)          // If not defined, free args and YYERROR

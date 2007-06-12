@@ -6,6 +6,8 @@
 #include <windows.h>
 #include <math.h>
 
+#define __GSL_MATRIX_COMPLEX_LONG_DOUBLE_H__
+
 #include "main.h"
 #include "aplerrors.h"
 #include "resdebug.h"

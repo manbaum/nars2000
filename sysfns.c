@@ -103,6 +103,7 @@ LPYYSTYPE SysFnMonDR_EM
 ////lpYYRes->tkToken.tkData.tkInteger  =   (filled in below)
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
+#define DR_SHOW             0   // Return a character vector representation
 #define DR_BOOL           100   //    1 bit  per value
 #define DR_CHAR          1601   //   16 bits ...
 #define DR_INT           6402   //   64 ...
@@ -359,6 +360,10 @@ LPYYSTYPE SysFnDydDR_EM
     // Ensure the left arg is valid
     switch (aplIntegerLft)
     {
+        case DR_SHOW:
+            // Return a character representation
+            return SysFnDydDR_SHOW_EM (aplTypeRht, lptkFunc);
+
         case DR_BOOL:
         case DR_CHAR:
         case DR_INT:
@@ -402,6 +407,137 @@ LPYYSTYPE SysFnDydDR_EM
 
     return lpYYRes;
 } // End SysFnDydDR_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  SysFnDydDR_SHOW_EM
+//
+//  Return a character representation of the storage type
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnDydDR_SHOW_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE SysFnDydDR_SHOW_EM
+    (APLSTYPE aplTypeRht,
+     LPTOKEN  lptkFunc)
+
+{
+    LPAPLCHAR wp;           // Ptr to WCHAR text
+    APLUINT   ByteRes;      // # bytes in the result
+    HGLOBAL   hGlbRes;      // Result global memory handle
+    LPVOID    lpMemRes;     // Ptr to result global memory
+    LPYYSTYPE lpYYRes;      // Ptr to the result
+    APLNELM   aplNELMRes;   // Result NELM
+
+    // Split cases based upon the rigth arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+            wp = L"Boolean:  1 bit per element";
+
+            break;
+
+        case ARRAY_INT:
+            wp = L"Integer:  64 bits per element";
+
+            break;
+
+        case ARRAY_FLOAT:
+            wp = L"Floating Point:  64 bits per element";
+
+            break;
+
+        case ARRAY_CHAR:
+            wp = L"Character:  16 bits per element";
+
+            break;
+
+        case ARRAY_APA:
+            wp = L"Arithemtic Progression Array:  192 bits total";
+
+            break;
+
+        case ARRAY_LIST:
+            wp = L"List:  32 bits per element";
+
+            break;
+
+        case ARRAY_NESTED:
+            wp = L"Nested Array:  32 bits per element";
+
+            break;
+
+        case ARRAY_HETERO:
+            wp = L"Heterogeneous Array:  32 bits per element";
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Get the result NELM
+    aplNELMRes = lstrlenW (wp);
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
+
+    // Allocate space for the result
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+
+    // Fill in the header
+    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeaderRes->ArrType    = ARRAY_CHAR;
+////lpHeaderRes->Perm       = 0;
+////lpHeaderRes->SysVar     = 0;
+    lpHeaderRes->RefCnt     = 1;
+    lpHeaderRes->NELM       = aplNELMRes;
+    lpHeaderRes->Rank       = 1;
+
+#undef  lpHeaderRes
+
+    // Save the dimension in the result
+    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+
+    // Point to the data (APLAPA struct)
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+    // Copy the text to the result
+    CopyMemory (lpMemRes, wp, (UINT) aplNELMRes * sizeof (APLCHAR));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+} // End SysFnDydDR_SHOW_EM
 #undef  APPEND_NAME
 
 

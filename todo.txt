@@ -1,5 +1,6 @@
 TO DO:  General:  Important
 ---------------------------
+* Make <dtoa.c> multiple-threaded
 * Implement dyadic epsilon
 * ...       dyadic down tack jot
 * ...       dyadic iota
@@ -48,7 +49,7 @@ TO DO:  General:  Wish List
 * Get permission to redistribute APL385 Unicode font
 * Reference count on symbol table entries??
 * Strings in the symbol table??
-* Remove non-double code from GSL functions
+* Remove non-"double" code from GSL functions
 * Implement user/session options dialog
 * ...       selective assignment
 * ...       dynamic functions
@@ -139,6 +140,20 @@ QUESTIONS
   On APL+WIN systems 3.6 + 5.x, '' displays by skipping one blank line
   but 0{rho}{enclose}{zilde} displays without skipping a blank line.
 *
+
+
+File Extensions
+---------------
+
+All files will end in the extension ".nars".  There will be a secondary
+extension to the left of the global extension such as .ws.nars for workspaces,
+(e.g. porsche.ws.nars).
+
+Workspaces              .ws.nars
+File Systems            .file.nars
+Plugins                 .plugin.nars
+Initialization File     .ini
+
 
 
 Anomalous Results

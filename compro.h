@@ -74,6 +74,7 @@
 #include "refcnt.pro"
 #include "reg.pro"
 //nclude "resdebug.pro"
+#include "savews.pro"
 #include "sessman.pro"
 #include "strand.pro"
 #include "symtab.pro"

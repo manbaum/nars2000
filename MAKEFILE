@@ -211,6 +211,7 @@ $(O)qdwa.DEP            \
 $(O)refcnt.DEP          \
 $(O)reg.DEP             \
 $(O)resdebug.DEP        \
+$(O)savews.DEP          \
 $(O)sessman.DEP         \
 $(O)strand.DEP          \
 $(O)symtab.DEP          \
@@ -467,6 +468,9 @@ $(O)version.DEV
 !if exist ($(O)resdebug.DEP)
 !       include $(O)resdebug.DEP
 !endif
+!if exist ($(O)savews.DEP)
+!       include $(O)savews.DEP
+!endif
 !if exist ($(O)sessman.DEP)
 !       include $(O)sessman.DEP
 !endif
@@ -581,6 +585,7 @@ $(O)qdwa.PRO            \
 $(O)refcnt.PRO          \
 $(O)reg.PRO             \
 $(O)resdebug.PRO        \
+$(O)savews.PRO          \
 $(O)sessman.PRO         \
 $(O)strand.PRO          \
 $(O)symtab.PRO          \
@@ -709,6 +714,7 @@ $(O)reg.OBJ:            $(@B).C         $(REG_DEP)
 !if "$(RESDEBUG)" == "1"
 $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
 !endif
+$(O)savews.OBJ:         $(@B).C         $(SAVEWS_DEP)
 $(O)sessman.OBJ:        $(@B).C         $(SESSMAN_DEP)
 $(O)strand.OBJ:         $(@B).C         $(STRAND_DEP)
 $(O)symtab.OBJ:         $(@B).C         $(SYMTAB_DEP)
@@ -811,6 +817,7 @@ OBJS=                       \
 !if "$(RESDEBUG)" == "1"
      $(O)resdebug.OBJ       \
 !endif
+     $(O)savews.OBJ         \
      $(O)sessman.OBJ        \
      $(O)strand.OBJ         \
      $(O)symtab.OBJ         \

@@ -100,6 +100,10 @@ void FreeResultSub
             // Get the global memory ptr
             hGlbData = ClrPtrTypeDirGlb (lptkRes->tkData.tkSym->stData.stGlbData);
 
+            // Check for internal functions
+            if (!IsBadCodePtr (hGlbData))
+                break;
+
             // Data is an valid HGLOBAL defined function
             Assert (IsGlbTypeDfnDir (MakeGlbTypeGlb (hGlbData)));
 

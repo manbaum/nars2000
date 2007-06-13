@@ -322,7 +322,7 @@ BOOL AppendSystemNames_EM
     Assert (HshTabFrisk ());
 
     // Append all system names
-    for (i = 0; i < sizeof (aSystemNames) / sizeof (aSystemNames[0]); i++)
+    for (i = 0; bRet && i < sizeof (aSystemNames) / sizeof (aSystemNames[0]); i++)
     if (!SymTabAppendSysName_EM (&aSystemNames[i], ptdSysVarSym[aSystemNames[i].sysVarIndex]))
     {
         bRet = FALSE;
@@ -531,7 +531,10 @@ BOOL AssignIntScalar_EM
     } // End IF
 
     // Save the constant
-    *((LPAPLINT) lpGlbVal) = lpSymEntryDest->stData.stInteger = aplInteger;
+    lpSymEntryDest->stData.stInteger = aplInteger;
+
+    if (lpGlbVal)
+        *((LPAPLINT) lpGlbVal) = aplInteger;
 
     // Mark as immediate Integer constant
     stFlags.Imm     = 1;
@@ -2314,6 +2317,9 @@ BOOL InitSystemVars
     if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"rl"  , uQuadRL_CWS       , SYSVAR_RL  , &lpMemPTD->uQuadRL     )) return FALSE;   // Random Link
     if (!AssignCharVector_EM (WS_UTF16_QUAD L"sa"  , hGlbQuadSA_CWS    , SYSVAR_SA  , &lpMemPTD->hGlbQuadSA  )) return FALSE;   // Stop Action
     if (!AssignCharVector_EM (WS_UTF16_QUAD L"wsid", hGlbQuadWSID_CWS  , SYSVAR_WSID, &lpMemPTD->hGlbQuadWSID)) return FALSE;   // Workspace Identifier
+    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"inverse"  , 0            , 0          , NULL                   )) return FALSE;   // Entry for function inverse
+    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"prototype", 0            , 0          , NULL                   )) return FALSE;   // ...                prototype
+    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"singleton", 0            , 0          , NULL                   )) return FALSE;   // ...                singleton
 
     // Save the index value
     lpMemPTD->bQuadxSA = bQuadxSA_CWS;

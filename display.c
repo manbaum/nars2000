@@ -1031,7 +1031,8 @@ void DisplaySymTab
         if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
             lstrcatW (wszFlags, astFlagNames[j].lpwszName);
 
-        if (stFlags.SysVar)
+        if (stFlags.SysVar
+         && !stFlags.DfnSysLabel)
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
                        L" SysVarValid=%d",
                        stFlags.SysVarValid);

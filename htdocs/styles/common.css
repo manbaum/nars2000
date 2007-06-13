@@ -11,6 +11,10 @@ img
 {
   border: none;
 }
+h1
+{
+  background-color: rgb(180,193,205);
+}
 h2
 {
   background-color: rgb(204,213,221);
@@ -94,6 +98,11 @@ ul, ol
 .pagecolumn2
 {
   padding: 1em 2em;
+}
+.header
+{
+  color:  inherit;
+  background-color:  inherit;
 }
 .section
 {

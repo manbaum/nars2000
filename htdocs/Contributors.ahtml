@@ -24,10 +24,10 @@
 
 <div class="menu">&nbsp;&nbsp;
 <a href="/">Home</a> |
-<a href="/Download.html">Download</a> |
+<a href="/download/">Download</a> |
 <a href="/GetInvolved.html">Get Involved</a> |
 <a href="http://wiki.nars2000.org">Documentation</a> |
-<a href="/Contributors.html">Contributors</a> |
+<a href="/Contributors.ahtml">Contributors</a> |
 <a href="/LICENSE">License</a> |
 <a href="/ContactUs.html">Contact Us</a> |
 <a href="http://wiki.nars2000.org/index.php/NARS2000:About">About</a>
@@ -65,11 +65,15 @@
   </td>
 
   <td class="pagecolumn2">
+    <div class="header">
+      <h1>Contributors</h1>
+    </div>
+
     <div class="section">
       <h2 id="Borrowed_Code">Borrowed Code</h2>
 
-      <p>The Internet is a great resource, espeically for software
-        developers who need some expert help in the guise of
+      <p>The Internet is a great resource, especially for software
+        developers who need expert help in the guise of
         well-crafted code.  This project is no exception having
         borrowed with great thanks from the following projects:</p>
 
@@ -95,11 +99,10 @@
           The ideas in this paper were invaluable in creating the Hash and
           Symbol tables.</li>
 
-        <li>This project benefited by discussions with some of the
-          many great APL implementors who went before me.  A few of
-          them stand out in my memory:  Larry Breed, Gene McDonnell,
-          Bob Bernecky, Clark Wiedmann, Bill Rutiser, Mark Osborne,
-          Bob Beilstein, etc.
+        <li>This project benefited greatly by discussions with some
+          of the many great APL implementors who went before me.  A
+          few of them stand out in my memory:  Larry Breed, Gene McDonnell,
+          Jim Brown, Bob Bernecky, etc.
         </li>
       </ul>
     </div>
@@ -107,8 +110,8 @@
     <div class="section">
       <h2 id="Contributors">Contributors</h2>
 
-      <p>Here's where your name will be when you help us make this
-        project to be an even better APL interpreter.</p>
+      <p>OK, what is it going to take to get your name here?  Don't
+        make me beg.</p>
     </div>
   </td>
 </tr>

@@ -144,7 +144,8 @@ typedef struct tagSTFLAGS
          UsrOp1:1,          // 00020000:  ...          monadic operator
          UsrOp2:1,          // 00040000:  ...          dyadic operator
          SysVarValid:4,     // 00780000:  Index to validation routine for System Vars
-         DfnSysLabel:1;     // 00800000:  Defined function system label
+         DfnLabel:1,        // 00800000:  Defined function system label
+         DfnSysLabel:1;     // 01000000:  Defined function label
 } STFLAGS, *LPSTFLAGS;
 
 // When changing this struct, be sure to make

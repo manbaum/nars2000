@@ -42,6 +42,7 @@ SYSCMDSTAB SysCmdsTab[]
     {L"newtab",     &CmdNewTab_EM   },
 ////{L"nms"   ,     &CmdNms_EM      },
 ////{L"ops"   ,     &CmdOps_EM      },
+////{L"reset" ,     &CmdReset_EM    },
     {L"save"  ,     &CmdSaveWS_EM   },
 ////{L"si"    ,     &CmdSi_EM       },
 ////{L"sic"   ,     &CmdSic_EM      },

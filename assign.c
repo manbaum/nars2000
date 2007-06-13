@@ -55,6 +55,15 @@ BOOL AssignName_EM
     //   before we free the old value
     if (lptkName->tkData.tkSym->stFlags.SysVar)
     {
+        // If this is a defined function system label, signal a SYNTAX ERROR
+        if (lptkName->tkData.tkSym->stFlags.DfnSysLabel)
+        {
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lptkName);
+            DBGLEAVE;
+            return FALSE;
+        } // End IF
+
         // Validate the value
         if (!(*aSysVarValid[lptkName->tkData.tkSym->stFlags.SysVarValid]) (lptkName, lptkExpr))
             return FALSE;
@@ -80,6 +89,15 @@ BOOL AssignName_EM
         case TKT_OP2NAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkExpr->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If this is a defined function label, signal a SYNTAX ERROR
+            if (lptkName->tkData.tkSym->stFlags.DfnLabel)
+            {
+                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                           lptkName);
+                DBGLEAVE;
+                return FALSE;
+            } // End IF
 
             // If the expression is not immediate, ...
             if (!lptkExpr->tkData.tkSym->stFlags.Imm)

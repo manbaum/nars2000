@@ -12,9 +12,11 @@ RESDEBUG=1
 A=$(PROJPATH)Images\            # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
-GS=gsl\                         # GSL Source
-GSP=$(GS)specfunc\              # GSL Special Functions
 OLDPATH = $(PATH)               # Save the current path
+CYGWIN=C:\cygwin\               # Dir for cygwin
+GSLINC=$(CYGWIN)usr\src\gsl-1.9-1\src\gsl-1.9\ # Directory of GSL includes
+##GSLLIB=$(CYGWIN)usr\src\gsl-1.9-1\src\gsl-1.9\ # Directory of GSL libs
+GSLLIB=gsl\                     # Directory of GSL libs
 
 MV=makever
 
@@ -29,15 +31,23 @@ CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
 
 CFLAGS_WEXE = /nologo /Gs /GA /W3 /WX /Zp1 $(CFLAGS_DEBUG) /D $(WDEF)
 LFLAGS_WEXE = /NOLOGO /MAP
-LIBS_WEXE = GDI32.LIB   \
-            USER32.LIB  \
-            VERSION.LIB \
-            COMDLG32.LIB\
-            SHELL32.LIB \
-            ADVAPI32.LIB\
-            COMCTL32.LIB\
-            R:\GSL\LIB\libgsl.a \
-            R:\GSL\LIB\libgslcblas.a
+LIBS_WEXE = GDI32.LIB           \
+            USER32.LIB          \
+            VERSION.LIB         \
+            COMDLG32.LIB        \
+            SHELL32.LIB         \
+            ADVAPI32.LIB        \
+            COMCTL32.LIB        \
+            libc.lib            \
+            libgsl-double.a     \
+            libgslcblas-double.a\
+####        libcygwin.a
+
+####        libpthread.a
+####        libcygwin.a
+
+####        R:\GSL\LIB\libgsl.a \
+####        R:\GSL\LIB\libgslcblas.a
 
 ####        libgsl.lib
 
@@ -73,8 +83,9 @@ L=$(SRCROOT)LIB\                # .LIB directory
 
 M98=N:\                         # Win98 build
 ###M98=L:\VC98\                    # Win98 build
-I98=$(PROJPATH);$(M98)INCLUDE;$(MSVC)INCLUDE;$(SRCROOT)GSL\INCLUDE
-L98=$(M98)LIB;$(MSVC)LIB;$(SRCROOT)GSL\LIB
+I98=$(PROJPATH);$(M98)INCLUDE;$(MSVC)INCLUDE;$(GSLINC)
+L98=$(M98)LIB;$(MSVC)LIB;$(CYGWIN)lib;$(GSLLIB).libs\;$(GSLLIB)cblas\.libs\
+
 LD=$(M98)BIN\link
 CC=$(M98)BIN\cl
 RC=$(M98)BIN\rc
@@ -126,17 +137,6 @@ DIR:
         @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
         @if exist $@ del $@
         $(CC) $(CFLAGS_WEXE) /Fo$@ /c /D "UNICODE" %s
-
-{$(GSP)}.c{$(O)}.obj:
-        @Set INCLUDE=$(GS).;$(GSP).;.\;.\specfunc\$(I98).
-        @if exist $@ del $@
-        $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
-
-{$(GS)}.c{$(O)}.obj:
-        @Set INCLUDE=$(GS).;$(I98).
-        @if exist $@ del $@
-        $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
-
 
 ####################### DEPENDENCY GENERATION #################
 
@@ -238,13 +238,6 @@ $(O)version.DEV
     @Set PATH=$(BC)
     @echo depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s
     @     depscan -q -s$(PROJPATH)$(O)=$$(O),$(WS)=$$(WS) %s > $@
-    @Set PATH=$(OLDPATH)
-
-{$(GSP)}.C{$(O)}.DEP:
-    @Set INCLUDE=$(GS).;$(GSP).;$(I98).
-    @Set PATH=$(BC)
-    @echo depscan -q -s$(PROJPATH)$(O)=$$(O),$(GS)=$$(GS),$(GSP)=$$(GSP) %s
-    @     depscan -q -s$(PROJPATH)$(O)=$$(O),$(GS)=$$(GS),$(GSP)=$$(GSP) %s > $@
     @Set PATH=$(OLDPATH)
 
 {}.C{$(O)}.DEP:
@@ -609,11 +602,6 @@ $(O)ver.PRO
         @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
         $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO /D "UNICODE" %s > $@
 
-{$(GSP)}.C{$(O)}.PRO:
-        @Set INCLUDE=$(GS).;$(GSP).;$(I98).
-        $(CC) $(CFLAGS_WEXE) /c /Zg /DPROTO %s > $@
-
-
 ########################## UTILITY ROUTINES ##########################
 
 $(O)DBGBRK.OBJ:         DBGBRK.ASM
@@ -632,6 +620,9 @@ ICONS=$(A)About.ico     \
       $(A)ME.ico        \
       $(A)VE.ico        \
       $(A)LineCont.bmp
+
+## Cygwin-specific files
+$(O)getreent.OBJ:       $(@B).C
 
 ## FP-specific files
 $(O)dtoa.OBJ:           $(@B).C         $(DTOA_DEP)
@@ -761,6 +752,7 @@ OBJS=                       \
      $(O)fastbool.OBJ       \
      $(O)free.OBJ           \
      $(O)g_fmt.obj          \
+     $(O)getreent.OBJ       \
      $(O)main.OBJ           \
      $(O)parse.OBJ          \
      $(O)pf_bar.OBJ         \
@@ -844,6 +836,7 @@ $(LIBS_WEXE) $(LIBS_EXT)
         @Set LIB=$(L98);$(L)
         @if exist $@ del $@
         @$(LD) $(LFLAGS_WEXE) @$(O)main.CRF
+####    @strip -s $@
         @del $(O)$(@B).exp
         @del $(O)$(@B).lib
         @pkzip $(B)$(ENAME) $@ LICENSE $(BC)$(ENAME).HLP >NUL

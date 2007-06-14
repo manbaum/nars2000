@@ -229,6 +229,9 @@ typedef enum tagMAKEPROTO
 #define IMAGE_CX        16
 #define IMAGE_CY        16
 
+// Extensions
+#define WKSEXT          ".ws.nars"
+#define WS_WKSEXT       L".ws.nars"
 
 //***************************************************************************
 //  End of File: main.h

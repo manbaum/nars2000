@@ -22,7 +22,9 @@ char lpszRegKeyRoot[]               = "Software\\NARS2000",
      lpszRegStrXSizeName[]          = "xSize",
      lpszRegStrYSizeName[]          = "ySize",
      lpszRegStrSizeStateName[]      = "SizeState",
-     lpszRegStrInitDirName[]        = "InitDir",
+/////lpszRegStrInitDirName[]        = "InitDir",
+     lpszRegStrLoadDirName[]        = "LoadDir",
+     lpszRegStrSaveDirName[]        = "SaveDir",
      lpszRegStrLFTCName[]           = "LogfontTC",
      lpszRegStrLFSMName[]           = "LogfontSM",
      lpszRegStrLFFEName[]           = "LogfontFE",
@@ -50,52 +52,68 @@ void ReadRegGlb
     (void)
 
 {
-    // Read in File Open/Save Initial Dir
-    GetRegStr (HKEY_CURRENT_USER,
-               lpszRegKeyRoot,
-               lpszRegStrInitDirName,
-               szInitDir,
-               sizeof (szInitDir),
-               szInitDir);
+////// Read in File Open/Save Initial Dir
+////GetRegStr (HKEY_CURRENT_USER,
+////           lpszRegKeyRoot,
+////           lpszRegStrInitDirName,
+////           szInitDir,
+////           sizeof (szInitDir),
+////           szInitDir);
+
+    // Read in Load Workspaces Dir
+    GetRegBinary (HKEY_CURRENT_USER,
+                  lpszRegKeyRoot,
+                  lpszRegStrLoadDirName,
+                  wszLoadDir,
+                  sizeof (wszLoadDir),
+                  wszLoadDir);
+
+    // Read in Save Workspaces Dir
+    GetRegBinary (HKEY_CURRENT_USER,
+                  lpszRegKeyRoot,
+                  lpszRegStrSaveDirName,
+                  wszSaveDir,
+                  sizeof (wszSaveDir),
+                  wszSaveDir);
 
     // Read in LOGFONT struc for TC
     GetRegBinary (HKEY_CURRENT_USER,
                   lpszRegKeyRoot,
                   lpszRegStrLFTCName,
-                  sizeof (lfTC),
                   &lfTC,
+                  sizeof (lfTC),
                   &lfTC);
 
     // Read in LOGFONT struc for SM
     GetRegBinary (HKEY_CURRENT_USER,
                   lpszRegKeyRoot,
                   lpszRegStrLFSMName,
-                  sizeof (lfSM),
                   &lfSM,
+                  sizeof (lfSM),
                   &lfSM);
 
     // Read in LOGFONT struc for FE
     GetRegBinary (HKEY_CURRENT_USER,
                   lpszRegKeyRoot,
                   lpszRegStrLFFEName,
-                  sizeof (lfFE),
                   &lfFE,
+                  sizeof (lfFE),
                   &lfFE);
 
     // Read in LOGFONT struc for ME
     GetRegBinary (HKEY_CURRENT_USER,
                   lpszRegKeyRoot,
                   lpszRegStrLFMEName,
-                  sizeof (lfME),
                   &lfME,
+                  sizeof (lfME),
                   &lfME);
 
     // Read in LOGFONT struc for VE
     GetRegBinary (HKEY_CURRENT_USER,
                   lpszRegKeyRoot,
                   lpszRegStrLFVEName,
-                  sizeof (lfVE),
                   &lfVE,
+                  sizeof (lfVE),
                   &lfVE);
 
     // Read in default values for system variables in a CLEAR WS
@@ -307,12 +325,26 @@ void SaveEnvironment
                    (LPBYTE) &MFSizeState, // Ptr to value
                    sizeof (MFSizeState)); // Size of value
 
+////RegSetValueEx (hKeyRoot,            // Handle of key to set
+////               lpszRegStrInitDirName,// Name of value to set
+////               0,                   // Reserved
+////               REG_SZ,              // Flag for type
+////               szInitDir,           // Ptr to value
+////               lstrlen (szInitDir) + 1);// Size of value (including terminating zero)
+
     RegSetValueEx (hKeyRoot,            // Handle of key to set
-                   lpszRegStrInitDirName,// Name of value to set
+                   lpszRegStrLoadDirName,// Name of value to set
                    0,                   // Reserved
-                   REG_SZ,              // Flag for type
-                   szInitDir,           // Ptr to value
-                   lstrlen (szInitDir) + 1);// Size of value (including terminating zero)
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) wszLoadDir, // Ptr to value
+                   lstrlenW (wszLoadDir) + 1);// Size of value (including terminating zero)
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrSaveDirName,// Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) wszSaveDir, // Ptr to value
+                   lstrlenW (wszSaveDir) + 1);// Size of value (including terminating zero)
 
     RegSetValueEx (hKeyRoot,            // Handle of key to set
                    lpszRegStrLFTCName,  // Name of value to set

@@ -946,7 +946,7 @@ void FillTabBackground
     int      i, nBands;
     RECT     rcBand;
     COLORREF crBand;
-    COLORREF rgbStart = RGB (255, 255, 255);    // White at the top
+    COLORREF rgbStart = RGB (255, 255, 255);    // White at the Bottom
     float    fRStep, fGStep, fBStep;
 
     // Calculate the # bands
@@ -962,9 +962,9 @@ void FillTabBackground
         // Fill the rectangle with one band
         SetRect (&rcBand,
                  lpRect->left,
-                 i + lpRect->top,
+                 (nBands - i) + lpRect->top,
                  lpRect->right + 1,
-                 i + lpRect->top + 1);
+                 (nBands - i) + lpRect->top + 1);
         crBand = RGB ((int) (((float) GetRValue (rgbStart)) - fRStep * i),
                       (int) (((float) GetGValue (rgbStart)) - fGStep * i),
                       (int) (((float) GetBValue (rgbStart)) - fBStep * i));

@@ -2251,18 +2251,25 @@ BOOL ValidateWSID_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    BOOL         bRet;          // TRUE iff result is valid
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     // Ensure the argument is a character scalar (promoted to a vector)
-    //   or vector, and a valid workspace name
+    //   or vector
 
-    // ***FINISHME***
+    bRet = ValidateCharVector_EM (lptkName, lpToken, &lpMemPTD->hGlbQuadWSID);
 
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-
-
-
-    ErrorMessageIndirect (ERRMSG_NONCE_ERROR APPEND_NAME);
-
-    return FALSE;
+    return bRet;
 } // End ValidateWSID_EM
 #undef  APPEND_NAME
 

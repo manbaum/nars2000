@@ -38,6 +38,16 @@
 #define DEF_TOKENSTACK_MAXSIZE 64*1024*sizeof (TOKEN)   // Maximum size of token stack
 #define DEF_TOKENSTACK_INITSIZE 64*1024*sizeof (TOKEN)  // Initial ...
 
+// Size of storage areas
+#define DEF_CTEMP_MAXSIZE   65536       // Maximum size of char  temporary storage
+#define DEF_CTEMP_INITSIZE  65536       // Initial ...
+#define DEF_WTEMP_MAXSIZE   65536       // Maximum size of WCHAR ...
+#define DEF_WTEMP_INITSIZE  65536       // Initial ...
+#define DEF_DEBUG_MAXSIZE   65536       // Maximum size of debug ...
+#define DEF_DEBUG_INITSIZE  65536       // Initial ...
+#define DEF_WFORMAT_MAXSIZE   1024*1024 // Maximum size of WCHAR Formatting storage
+#define DEF_WFORMAT_INITSIZE    64*1024 // Initial ...
+
 // Global Options
 #define DEF_NEWTABONCLEAR   TRUE
 #define DEF_NEWTABONLOAD    TRUE
@@ -76,7 +86,7 @@ HGLOBAL  hGlbQuadALX_CWS    ,           // []ALX    ([]dm)
          hGlbQuadELX_CWS    ,           // []ELX    ([]dm)
          hGlbQuadLX_CWS     ,           // []LX     ("")
          hGlbQuadSA_CWS     ,           // []SA     ("")
-         hGlbQuadWSID_CWS   ,           // []WSID   ("")
+         hGlbQuadWSID_CWS   ,           // []WSID   ("\0")
          hGlbQuadPR_CWS     ;           // []PR     ("") (When an empty vector)
 EXTERN
 APLFLOAT fQuadCT_CWS        ;           // []CT
@@ -132,8 +142,15 @@ char pszAppName[]                       // Application name for MessageBox
 ,
      szAppDPFE  [_MAX_PATH],            // .EXE drive, path, filename.ext
      szHlpDPFE  [_MAX_PATH],            // .HLP ...
-     szInitDir  [_MAX_PATH],            // Initial directory for File Open & Save
+/////szInitDir  [_MAX_PATH],            // Initial directory for File Open & Save
      szOpenFile [_MAX_PATH];            // Save area for multiple files to open
+
+EXTERN
+WCHAR wszLoadDir[_MAX_PATH],            // Load workspaces directory
+      wszSaveDir[_MAX_PATH],            // Save ...
+      wszDefDrive[_MAX_DRIVE];          // Default drive letter
+
+#define WKSNAME "workspaces"            // Name of Workspaces subdirectory under main dir
 
 
 //***************************************************************************

@@ -4,6 +4,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <direct.h>
 
 #include "main.h"
 #include "resdebug.h"
@@ -417,12 +418,12 @@ HGLOBAL GetRegGlbChar
 #define APPEND_NAME
 #endif
 void GetRegBinary
-    (HKEY    hKey,
-     LPCHAR  pSubKey,
-     LPCHAR  pKeyStr,
-     UINT    uLen,
-     LPVOID  pActVal,
-     LPVOID  pDefVal)
+    (HKEY    hKey,          // Main key
+     LPCHAR  pSubKey,       // Ptr to sub key
+     LPCHAR  pKeyStr,       // Ptr to key name
+     LPVOID  pActVal,       // Ptr to actual value
+     UINT    uLen,          // Length of ...
+     LPVOID  pDefVal)       // Ptr to default value
 
 {
     HKEY  hKey2;
@@ -449,17 +450,18 @@ void GetRegBinary
 //***************************************************************************
 //  $GetFileNames
 //
-//  Construct some filenames
+//  Construct some file and directory names
 //***************************************************************************
 
 void GetFileNames
     (HINSTANCE hInstance)
 
 {
-    char szDrive[_MAX_DRIVE],
-         szDir[_MAX_DIR],
+    char szDir  [_MAX_DIR],
+         szDrive[_MAX_DRIVE],
          szFname[_MAX_FNAME],
-         szExt[_MAX_EXT];
+         szExt  [_MAX_EXT],
+         szTemp [_MAX_PATH];
 
     if (GetModuleFileName (hInstance, szAppDPFE, sizeof (szAppDPFE)))
     {
@@ -469,8 +471,22 @@ void GetFileNames
         // Create the .HLP file name
         _makepath  (szHlpDPFE, szDrive, szDir, szFname, ".HLP");
 
-        // Create the initial directory for File Open & Save
-        _makepath  (szInitDir, szDrive, szDir, NULL,    NULL);
+        // Create the Load and the Save Workspace directory names
+        _makepath  (szTemp, szDrive, szDir, NULL, NULL);
+        lstrcat    (szTemp, WKSNAME "\\");      // Must end with a backslash
+
+        // Ensure the directory exists
+        _mkdir (szTemp);
+
+        // Convert to wide
+        A2W (wszLoadDir, szTemp, _MAX_PATH);
+        lstrcpyW (wszSaveDir, wszLoadDir);
+
+        // Save the default drive letter for later use
+        A2W (wszDefDrive, szDrive, _MAX_DRIVE);
+
+////////// Create the initial directory for File Open & Save
+////////_makepath  (szInitDir, szDrive, szDir, NULL,    NULL);
     } // End IF
 } // End GetFileNames
 

@@ -11,6 +11,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "gsl\gsl_sys.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -438,7 +439,7 @@ APLFLOAT PrimFnDydCircleFisFvF
 
         case -5:        // asinh (R)
                         // ln (R + sqrt (1 + R * 2))
-            aplFloatTmp = log (aplFloatRht + sqrt (1 + aplFloatRht * aplFloatRht));
+            aplFloatTmp = gsl_asinh (aplFloatRht);
 
             // Check for NaN
             if (_isnan (aplFloatTmp))
@@ -447,7 +448,7 @@ APLFLOAT PrimFnDydCircleFisFvF
 
         case -6:        // acosh (R)
                         // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5)
-            aplFloatTmp = 2 * log (sqrt ((aplFloatRht + 1) / 2) + sqrt ((aplFloatRht - 1) / 2));
+            aplFloatTmp = gsl_acosh (aplFloatRht);
 
             // Check for NaN
             if (_isnan (aplFloatTmp))
@@ -456,7 +457,7 @@ APLFLOAT PrimFnDydCircleFisFvF
 
         case -7:        // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
-            aplFloatTmp = (log (1 + aplFloatRht) - log (1 - aplFloatRht)) / 2;
+            aplFloatTmp = gsl_atanh (aplFloatRht);
 
             // Check for NaN
             if (_isnan (aplFloatTmp))

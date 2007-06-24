@@ -1408,78 +1408,78 @@ LeftFunc:
 
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
-    | '>' '>' ArrExpr1 '(' DydOp LeftFunc '('
-                                        {DbgMsgW2 (L"%%LeftFunc:  (LeftFunc DydOp (SimpExpr))");
-                                         lpYYRes =
-                                         PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
-                                         FreeResult (&$5.tkToken);
-
-                                         if (!lpYYRes)          // If not defined, free args and YYERROR
-                                         {
-                                             FreeResult (&$6.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } // End IF
-
-                                         $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
-
-                                         lpYYRes =
-                                         PushFcnStrand_YY (&$6, 1, TRUE);       // Left operand
-                                         FreeResult (&$6.tkToken);
-
-                                         if (!lpYYRes)          // If not defined, free args and YYERROR
-                                         {
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } // End IF
-
-                                         YYFree (lpYYRes); lpYYRes = NULL;
-
-                                         lpYYRes =
-                                         PushFcnStrand_YY (&$3, 1, FALSE);      // Right operand
-                                         FreeResult (&$3.tkToken);
-
-                                         if (!lpYYRes)          // If not defined, free args and YYERROR
-                                             YYERROR;
-
-                                         YYFree (lpYYRes); lpYYRes = NULL;
-                                        }
-    | '>' '>' ArrExpr1 '(' DydOp AxisFunc '('
-                                        {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp (SimpExpr))");
-                                         lpYYRes =
-                                         PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
-                                         FreeResult (&$5.tkToken);
-
-                                         if (!lpYYRes)          // If not defined, free args and YYERROR
-                                         {
-                                             FreeResult (&$6.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } // End IF
-
-                                         $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
-
-                                         lpYYRes =
-                                         PushFcnStrand_YY (&$6, 1, TRUE);       // Left operand
-                                         FreeResult (&$6.tkToken);
-
-                                         if (!lpYYRes)          // If not defined, free args and YYERROR
-                                         {
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
-                                         } // End IF
-
-                                         YYFree (lpYYRes); lpYYRes = NULL;
-
-                                         lpYYRes =
-                                         PushFcnStrand_YY (&$3, 1, FALSE);      // Right operand
-                                         FreeResult (&$3.tkToken);
-
-                                         if (!lpYYRes)          // If not defined, free args and YYERROR
-                                             YYERROR;
-
-                                         YYFree (lpYYRes); lpYYRes = NULL;
-                                        }
+////| '>' ')' ArrExpr  '(' DydOp LeftFunc '('
+////                                    {DbgMsgW2 (L"%%LeftFunc:  (LeftFunc DydOp (SimpExpr))");
+////                                     lpYYRes =
+////                                     PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
+////                                     FreeResult (&$5.tkToken);
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                     {
+////                                         FreeResult (&$6.tkToken);
+////                                         FreeResult (&$3.tkToken);
+////                                         YYERROR;
+////                                     } // End IF
+////
+////                                     $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
+////
+////                                     lpYYRes =
+////                                     PushFcnStrand_YY (&$6, 1, TRUE);       // Left operand
+////                                     FreeResult (&$6.tkToken);
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                     {
+////                                         FreeResult (&$3.tkToken);
+////                                         YYERROR;
+////                                     } // End IF
+////
+////                                     YYFree (lpYYRes); lpYYRes = NULL;
+////
+////                                     lpYYRes =
+////                                     PushFcnStrand_YY (&$3, 1, FALSE);      // Right operand
+////                                     FreeResult (&$3.tkToken);
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                         YYERROR;
+////
+////                                     YYFree (lpYYRes); lpYYRes = NULL;
+////                                    }
+////| '>' ')' ArrExpr  '(' DydOp AxisFunc '('
+////                                    {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp (SimpExpr))");
+////                                     lpYYRes =
+////                                     PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
+////                                     FreeResult (&$5.tkToken);
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                     {
+////                                         FreeResult (&$6.tkToken);
+////                                         FreeResult (&$3.tkToken);
+////                                         YYERROR;
+////                                     } // End IF
+////
+////                                     $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
+////
+////                                     lpYYRes =
+////                                     PushFcnStrand_YY (&$6, 1, TRUE);       // Left operand
+////                                     FreeResult (&$6.tkToken);
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                     {
+////                                         FreeResult (&$3.tkToken);
+////                                         YYERROR;
+////                                     } // End IF
+////
+////                                     YYFree (lpYYRes); lpYYRes = NULL;
+////
+////                                     lpYYRes =
+////                                     PushFcnStrand_YY (&$3, 1, FALSE);      // Right operand
+////                                     FreeResult (&$3.tkToken);
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                         YYERROR;
+////
+////                                     YYFree (lpYYRes); lpYYRes = NULL;
+////                                    }
     | '>'     Strand       DydOp AxisFunc '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp Strand)");
                                          lpYYStr = MakeVarStrand_EM_YY (&$2);
@@ -1569,51 +1569,51 @@ LeftFunc:
 
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
-    | '>' '>' ArrExpr1 '(' DydOp Strand '('
-                                        {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp (SimpExpr))");
-                                         lpYYStr = MakeVarStrand_EM_YY (&$6);
-                                         FreeResult (&$6.tkToken);
-                                         if (!lpYYStr)          // If not defined, free args and YYERROR
-                                         {
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$5.tkToken);
-                                             YYERROR;
-                                         } // End IF
-
-                                         lpYYRes =
-                                         PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
-                                         FreeResult (&$5.tkToken);
-
-                                         if (!lpYYRes)          // If not defined, free args and YYERROR
-                                         {
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
-                                             YYERROR;
-                                         } // End IF
-
-                                         $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
-
-                                         lpYYRes =
-                                         PushFcnStrand_YY (lpYYStr, 1, FALSE);  // Left operand
-                                         FreeResult (&$3.tkToken);
-
-                                         if (!lpYYRes)          // If not defined, free args and YYERROR
-                                         {
-                                             FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
-                                             YYERROR;
-                                         } // End IF
-
-                                         YYFree (lpYYRes); lpYYRes = NULL;
-
-                                         lpYYRes =
-                                         PushFcnStrand_YY (&$3, 1, FALSE);      // Right operand
-                                         FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
-
-                                         if (!lpYYRes)          // If not defined, free args and YYERROR
-                                             YYERROR;
-
-                                         YYFree (lpYYRes); lpYYRes = NULL;
-                                        }
+////| '>' ')' ArrExpr  '(' DydOp Strand '('
+////                                    {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp (SimpExpr))");
+////                                     lpYYStr = MakeVarStrand_EM_YY (&$6);
+////                                     FreeResult (&$6.tkToken);
+////                                     if (!lpYYStr)          // If not defined, free args and YYERROR
+////                                     {
+////                                         FreeResult (&$3.tkToken);
+////                                         FreeResult (&$5.tkToken);
+////                                         YYERROR;
+////                                     } // End IF
+////
+////                                     lpYYRes =
+////                                     PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
+////                                     FreeResult (&$5.tkToken);
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                     {
+////                                         FreeResult (&$3.tkToken);
+////                                         FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+////                                         YYERROR;
+////                                     } // End IF
+////
+////                                     $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
+////
+////                                     lpYYRes =
+////                                     PushFcnStrand_YY (lpYYStr, 1, FALSE);  // Left operand
+////                                     FreeResult (&$3.tkToken);
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                     {
+////                                         FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+////                                         YYERROR;
+////                                     } // End IF
+////
+////                                     YYFree (lpYYRes); lpYYRes = NULL;
+////
+////                                     lpYYRes =
+////                                     PushFcnStrand_YY (&$3, 1, FALSE);      // Right operand
+////                                     FreeResult (&lpYYStr->tkToken); YYFree (lpYYStr); lpYYStr = NULL;
+////
+////                                     if (!lpYYRes)          // If not defined, free args and YYERROR
+////                                         YYERROR;
+////
+////                                     YYFree (lpYYRes); lpYYRes = NULL;
+////                                    }
     | '>'     Strand       DydOp Strand '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp Strand)");
                                          lpYYStrL = MakeVarStrand_EM_YY (&$4);
@@ -1884,26 +1884,6 @@ AxisFunc:
 
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
-    // ***FIXME*** -- what does this double index mean?
-////| '}' ArrExpr '['  AxisFunc         {DbgMsgW2 (L"%%AxisFunc:  AxisFunc[ArrExpr]");
-////                                     lpYYAxis = MakeAxis_YY (&$2);
-////                                     FreeResult (&$2.tkToken);
-////
-////                                     if (!lpYYAxis)         // If not defined, free args and YYERROR
-////                                     {
-////                                     FreeResult (&$4.tkToken);
-////                                        YYERROR;
-////                                     } // End IF
-////
-////                                     lpYYFcn = MakeArrayFn2_EM (&$4, lpYYAxis);
-////                                     FreeResult (&$4.tkToken);
-////                                     FreeResult (&lpYYAxis->tkToken); YYFree (lpYYAxis); lpYYAxis = NULL;
-////
-////                                     if (!lpYYFcn)          // If not defined, free args and YYERROR
-////                                        YYERROR;
-////
-////                                     $$ = *lpYYFcn; YYFree (lpYYFcn); lpYYFcn = NULL;
-////                                    }
     | '}' ArrExpr '[' '>' FcnSpec '('   {DbgMsgW2 (L"%%AxisFunc:  (FcnSpec)[ArrExpr]");
                                          lpYYRes =
                                          PushFcnStrand_YY (&$5, 2, TRUE);         // Function

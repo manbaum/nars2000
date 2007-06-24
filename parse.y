@@ -1408,7 +1408,7 @@ LeftFunc:
 
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
-    | '>' '>' SimpExpr '(' DydOp LeftFunc '('
+    | '>' '>' ArrExpr1 '(' DydOp LeftFunc '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (LeftFunc DydOp (SimpExpr))");
                                          lpYYRes =
                                          PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
@@ -1444,7 +1444,7 @@ LeftFunc:
 
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
-    | '>' '>' SimpExpr '(' DydOp AxisFunc '('
+    | '>' '>' ArrExpr1 '(' DydOp AxisFunc '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (AxisFunc DydOp (SimpExpr))");
                                          lpYYRes =
                                          PushFcnStrand_YY (&$5, 3, TRUE);       // Dyadic operator
@@ -1569,7 +1569,7 @@ LeftFunc:
 
                                          YYFree (lpYYRes); lpYYRes = NULL;
                                         }
-    | '>' '>' SimpExpr '(' DydOp Strand '('
+    | '>' '>' ArrExpr1 '(' DydOp Strand '('
                                         {DbgMsgW2 (L"%%LeftFunc:  (Strand DydOp (SimpExpr))");
                                          lpYYStr = MakeVarStrand_EM_YY (&$6);
                                          FreeResult (&$6.tkToken);

@@ -30,8 +30,9 @@ TO DO:  General:  Important
 * ...       )FNS
 * ...       )VARS
 * ...       function execution
-* ...       dyadic jot with variables (e.g. 3{jot}+)
-* ...       f{is}3{jot}+
+* ...       (+{jot}(2+3))4
+* ...       (+{jot}(2 3))4
+* ...       (+{jot} 2 3 )4
 * ...
 
 
@@ -49,7 +50,7 @@ TO DO:  General:  Wish List
 * Get permission to redistribute APL385 Unicode font
 * Reference count on symbol table entries??
 * Strings in the symbol table??
-* Remove non-"double" code from GSL functions
+* Test all occurrences of a list as the right arg to a primitive or system function
 * Implement user/session options dialog
 * ...       selective assignment
 * ...       dynamic functions
@@ -78,11 +79,14 @@ DONE:  General
 * Is it a problem that TypeDemote doesn't demote from
   TKT_VARARRAY to TKT_VARIMMED?
 * Check floating point accuracy in input and output
+* Remove non-"double" code from GSL functions
 * Finish scan
 * ...    fast Boolean reduction
 * ...    fast Boolean scan
 * ...    N-wise reduction
 * ...    function editing
+* ...    dyadic jot with variables (e.g. 3{jot}+)
+* ...    f{is}3{jot}+
 *
 
 

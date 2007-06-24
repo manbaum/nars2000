@@ -14,7 +14,8 @@ BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
 OLDPATH = $(PATH)               # Save the current path
 CYGWIN=C:\cygwin\               # Dir for cygwin
-GSLINC=$(CYGWIN)usr\src\gsl-1.9-1\src\gsl-1.9\ # Directory of GSL includes
+GSLINC=$(CYGWIN)usr\include\    # Directory of GSL includes
+##GSLINC=$(CYGWIN)usr\src\gsl-1.9-1\src\gsl-1.9\ # Directory of GSL includes
 ##GSLLIB=$(CYGWIN)usr\src\gsl-1.9-1\src\gsl-1.9\ # Directory of GSL libs
 GSLLIB=gsl\                     # Directory of GSL libs
 

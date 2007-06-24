@@ -302,6 +302,7 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
 
+    // Get the Array Type and NELM
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
 

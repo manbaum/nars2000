@@ -51,11 +51,11 @@ BOOL AssignName_EM
          || lptkName->tkFlags.TknType EQ TKT_OP1NAMED
          || lptkName->tkFlags.TknType EQ TKT_OP2NAMED);
 
-    // If this is a system var, validate the assignment
+    // If the target is a system var, validate the assignment
     //   before we free the old value
     if (lptkName->tkData.tkSym->stFlags.SysVar)
     {
-        // If this is a defined function system label, signal a SYNTAX ERROR
+        // If the target is a defined function system label, signal a SYNTAX ERROR
         if (lptkName->tkData.tkSym->stFlags.DfnSysLabel)
         {
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
@@ -65,16 +65,7 @@ BOOL AssignName_EM
         } // End IF
 
         // Validate the value
-        if (!(*aSysVarValid[lptkName->tkData.tkSym->stFlags.SysVarValid]) (lptkName, lptkExpr))
-            return FALSE;
-
-        // If the result is immediate (a scalar), quit as we
-        //   might have extracted a scalar from a singleton array.
-        if (lptkName->tkData.tkSym->stFlags.Imm)
-        {
-            DBGLEAVE;
-            return TRUE;
-        } // End IF
+        return (*aSysVarValid[lptkName->tkData.tkSym->stFlags.SysVarValid]) (lptkName, lptkExpr);
     } // End IF
 
     // Note that we have to wait until all errors have been
@@ -90,7 +81,7 @@ BOOL AssignName_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkExpr->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-            // If this is a defined function label, signal a SYNTAX ERROR
+            // If the target is a defined function label, signal a SYNTAX ERROR
             if (lptkName->tkData.tkSym->stFlags.DfnLabel)
             {
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
@@ -163,11 +154,13 @@ BOOL AssignName_EM
             stFlags = lptkExpr->tkData.tkSym->stFlags;
 
             // Include the expression's .Imm & .ImmType flags
-            lptkName->tkData.tkSym->stFlags.Imm     = stFlags.Imm;
-            lptkName->tkData.tkSym->stFlags.ImmType = stFlags.ImmType;
-
+            lptkName->tkData.tkSym->stFlags.Imm      =
+                                    stFlags.Imm;
+            lptkName->tkData.tkSym->stFlags.ImmType  =
+                                    stFlags.ImmType;
             // Copy the constant data
-            lptkName->tkData.tkSym->stData          = lptkExpr->tkData.tkSym->stData;
+            lptkName->tkData.tkSym->stData.stLongest =
+            lptkExpr->tkData.tkSym->stData.stLongest;
 
             break;
 
@@ -211,7 +204,7 @@ BOOL AssignName_EM
             // Free the old value for this name
             FreeResultName (lptkName);
 
-            // It's an immediate primitive function
+            // It's an immediate primitive operator
             lptkName->tkData.tkSym->stFlags.Imm     = 1;
             lptkName->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP1;
             lptkName->tkData.tkSym->stFlags.UsrOp1  = 1;
@@ -225,7 +218,7 @@ BOOL AssignName_EM
             // Free the old value for this name
             FreeResultName (lptkName);
 
-            // It's an immediate primitive function
+            // It's an immediate primitive operator
             lptkName->tkData.tkSym->stFlags.Imm     = 1;
             lptkName->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP2;
             lptkName->tkData.tkSym->stFlags.UsrOp2  = 1;
@@ -564,7 +557,7 @@ BOOL AssignNameSpec_EM
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemVal)
 
-    // Save the Type, NELM, and Rank
+    // Get the Type, NELM, and Rank
     aplTypeVal = lpHeader->ArrType;
     aplRankVal = lpHeader->Rank;
     aplNELMVal = lpHeader->NELM;

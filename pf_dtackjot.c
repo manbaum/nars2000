@@ -560,7 +560,7 @@ LPAPLCHAR FormatArrSimple
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    uQuadPW = lpMemPTD->uQuadPW;
+    uQuadPW = lpMemPTD->lpSymQuadPW->stData.stInteger;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

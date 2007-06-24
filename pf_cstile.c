@@ -117,8 +117,6 @@ LPYYSTYPE PrimFnMonCircleStile_EM_YY
     UINT       ByteRes,         // # bytes to allocate for the result
                uBitMask,
                uBitIndex;
-    UCHAR      immType;
-    APLLONGEST aplLongest;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
@@ -156,28 +154,14 @@ LPYYSTYPE PrimFnMonCircleStile_EM_YY
             aplAxis = 0;
     } // End IF/ELSE
 
-    // Check for simple scalar
-    if (IsSimpleNH (aplTypeRht)
-     && aplRankRht EQ 0)
+    // Check for singleton
+    if (aplNELMRht EQ 1)
     {
-        // Get the first value
-        FirstValue (lptkRhtArg,         // Ptr to right arg token
-                    NULL,               // Ptr to integer result
-                    NULL,               // Ptr to float ...
-                    NULL,               // Ptr to WCHAR ...
-                   &aplLongest,         // Ptr to longest ...
-                    NULL,               // Ptr to lpSym/Glb ...
-                   &immType,            // Ptr to ...immediate type ...
-                    NULL);              // Ptr to array type ...
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
 
-        // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-        lpYYRes->tkToken.tkFlags.ImmType   = immType;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
-        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        // Copy the right arg token
+        lpYYRes->tkToken = *CopyToken_EM (lptkRhtArg, FALSE);
 
         goto IMMED_EXIT;
     } // End IF

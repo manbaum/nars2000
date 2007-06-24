@@ -117,7 +117,7 @@ LPYYSTYPE PrimFnMonCircleSlope_EM_YY
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    bQuadIO = lpMemPTD->bQuadIO;
+    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

@@ -223,7 +223,7 @@ APLINT PrimFnMonEqualUnderBarGlb
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
 
-            // Save the type, NELM, and rank
+            // Get the Array Type, NELM, and Rank
             aplTypeRht = lpHeader->ArrType;
             aplNELMRht = lpHeader->NELM;
             aplRankRht = lpHeader->Rank;
@@ -328,7 +328,7 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM_YY
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    fQuadCT = lpMemPTD->fQuadCT;
+    fQuadCT = lpMemPTD->lpSymQuadCT->stData.stFloat;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -515,7 +515,7 @@ BOOL PrimFnDydEqualUnderbarSimple
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    fQuadCT = lpMemPTD->fQuadCT;
+    fQuadCT = lpMemPTD->lpSymQuadCT->stData.stFloat;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1033,7 +1033,7 @@ BOOL PrimFnDydEqualUnderbarNested
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    fQuadCT = lpMemPTD->fQuadCT;
+    fQuadCT = lpMemPTD->lpSymQuadCT->stData.stFloat;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

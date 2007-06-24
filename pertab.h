@@ -2,16 +2,15 @@
 //  NARS2000 -- Per Tab Header
 //***************************************************************************
 
-#define INIT_PERTABVARS                                                 \
-    lpMemPTD->iMaxNumAlp       = DEF_NUMALP_MAXSIZE;                    \
-    lpMemPTD->iMaxString       = DEF_STRING_MAXSIZE;                    \
-    lpMemPTD->hGlbQuadWSID     = CopySymGlbDirGlb (hGlbQuadWSID_CWS);   \
-    lpMemPTD->uHashMask        = DEF_HSHTAB_HASHMASK;                   \
-    lpMemPTD->iSymTabTotalSize = DEF_SYMTAB_INITSIZE;                   \
-    lpMemPTD->iHshTabTotalSize = DEF_HSHTAB_INITSIZE;                   \
-    lpMemPTD->iHshTabBaseSize  = DEF_HSHTAB_INITSIZE;                   \
-    lpMemPTD->iHshTabIncr      = DEF_HSHTAB_INCR;                       \
-    lpMemPTD->ExecCode         = EXEC_SUCCESS;                          \
+#define INIT_PERTABVARS                                 \
+    lpMemPTD->iMaxNumAlp       = DEF_NUMALP_MAXSIZE;    \
+    lpMemPTD->iMaxString       = DEF_STRING_MAXSIZE;    \
+    lpMemPTD->uHashMask        = DEF_HSHTAB_HASHMASK;   \
+    lpMemPTD->iSymTabTotalSize = DEF_SYMTAB_INITSIZE;   \
+    lpMemPTD->iHshTabTotalSize = DEF_HSHTAB_INITSIZE;   \
+    lpMemPTD->iHshTabBaseSize  = DEF_HSHTAB_INITSIZE;   \
+    lpMemPTD->iHshTabIncr      = DEF_HSHTAB_INCR;       \
+    lpMemPTD->ExecCode         = EXEC_SUCCESS;          \
     lpMemPTD->bTabTextState    = FALSE;
 
 // Structure for Per Tab Control Data
@@ -22,40 +21,23 @@ typedef struct tagPERTABDATA
 #define NUMYYRES    10              // # YYRes elements in the array
     YYSTYPE YYRes[NUMYYRES];        // The result token
 
-    // Hash table variables
-    LPHSHENTRY  lpHshTab,           // Ptr to start of hash table
-                lpHshTabSplitNext;  // ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
-
-    UINT        uHashMask;          // Mask for all hash lookups
-
     // Symbol & hash table variables
-    LPSYMENTRY  lpSymTab,           // Ptr to start of symbol table
-                lpSymTabNext;       // Ptr to next available STE
+    LPSYMENTRY lpSymTab,            // Ptr to start of symbol table
+               lpSymTabNext;        // Ptr to next available STE
+    int        iSymTabTotalSize,    // # STEs, currently
+               iHshTabTotalSize,    // # HTEs, currently, including EPBs
+               iHshTabBaseSize,     // Base size of hash table
+               iHshTabIncr;         // Increment when looping through HT
+    LPHSHENTRY lpHshTab,            // Ptr to start of hash table
+               lpHshTabSplitNext;   // ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
+    UINT       uHashMask;           // Mask for all hash lookups
 
-    int         iSymTabTotalSize,   // # STEs currently
-                iHshTabTotalSize,   // # HTEs currently including EPBs
-                iHshTabBaseSize,    // Base size of hash table
-                iHshTabIncr;        // Increment when looping through ST
+    APLBOOL bQuadxSA;               // []SA (in its index form)
+    APLCHAR cQuadPR;                // []PR     (' ') (When a char scalar)
 
-    // Current global values of system variables so we can use them
-    //   without having to access the actual system variable.
-    HGLOBAL  hGlbQuadALX,           // []ALX    ([]dm)
-             hGlbQuadELX,           // []ELX    ([]dm)
-             hGlbQuadLX,            // []LX     ("")
-             hGlbQuadSA,            // []SA     ("")
-             hGlbQuadWSID,          // []WSID   ("")
-             hGlbQuadPR;            // []PR     ("") (When an empty vector)
-    APLFLOAT fQuadCT;               // []CT
-    APLBOOL  bQuadIO,               // []IO
-             bQuadxSA;              // []SA (in its index form)
-    APLUINT  uQuadPP,               // []PP
-             uQuadPW,               // []PW
-             uQuadRL;               // []RL
-    APLCHAR  cQuadPR;               // []PR     (' ') (When a char scalar)
-
-    HWND hWndMC,                    // Global MDI Client window handle
-         hWndSM,                    // ...    Session Manager ...
-         hWndDB;                    // ...    Debugger     ...
+    HWND hWndMC,                    // MDI Client window handle
+         hWndSM,                    // Session Manager ...
+         hWndDB;                    // Debugger     ...
 
     BOOL bTabTextState;             // Tab's text state:  Highlight (TRUE) or Normal (FALSE)
 
@@ -79,7 +61,7 @@ typedef struct tagPERTABDATA
             bNegExp;                // ...          exponent ...
 
     LPSYMENTRY steZero,             // Ptr to STE for constant zero
-               steBlank,            // ...                     blank
+               steBlank,            // ...            ...      blank
                lpSymQuadALX ,       // ...            []ALX
                lpSymQuadCT  ,       // ...            []CT
                lpSymQuadELX ,       // ...            []ELX

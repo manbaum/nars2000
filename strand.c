@@ -365,9 +365,6 @@ static char tabConvert[][STRAND_LENGTH] =
                 {
                     ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                                               &lpYYToken->tkToken);
-                    // Mark as in error
-                    bRet = FALSE;
-
                     goto ERROR_EXIT;
                 } // End IF
 
@@ -450,9 +447,6 @@ static char tabConvert[][STRAND_LENGTH] =
             case TKT_LISTBR:
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                           &lpYYArg->tkToken);
-                // Mark as in error
-                bRet = FALSE;
-
                 goto ERROR_EXIT;
 
             case TKT_ASSIGN:
@@ -622,9 +616,6 @@ static char tabConvert[][STRAND_LENGTH] =
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                   &lpYYArg->tkToken);
-        // Mark as in error
-        bRet = FALSE;
-
         goto ERROR_EXIT;
     } // End IF
 
@@ -988,6 +979,9 @@ static char tabConvert[][STRAND_LENGTH] =
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbStr); lpMemStr = NULL;
+
+    if (!bRet)
+        goto ERROR_EXIT;
 NORMAL_EXIT:
     // Free the tokens on this portion of the strand stack
     FreeStrand (lpplLocalVars->lpYYStrandNext[VARSTRAND], lpplLocalVars->lpYYStrandBase[VARSTRAND]);
@@ -1258,13 +1252,18 @@ LPYYSTYPE CopyYYFcn
 ////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
             } else
             {
+                // Get the global memory handle or function address if direct
                 hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
-                //stData is a valid HGLOBAL function array
-                Assert (IsGlbTypeFcnDir (hGlbData));
+                // If it's not an internal function, ...
+                if (!lpToken->tkFlags.FcnDir)
+                {
+                    //stData is a valid HGLOBAL function array
+                    Assert (IsGlbTypeFcnDir (hGlbData));
 
-                // Increment the reference count in global memory
-                DbgIncrRefCntDir (hGlbData);
+                    // Increment the reference count in global memory
+                    DbgIncrRefCntDir (hGlbData);
+                } // End IF
 
                 YYFcn = lpYYArg[i];
                 YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
@@ -1561,7 +1560,7 @@ LPYYSTYPE MakeNameFcn_YY
     //   change its type to TKT_FCNNAMED.
     lpYYFcn->tkToken.tkFlags.TknType = TKT_FCNNAMED;
 
-    // If it's a System Function, mark is as direct
+    // If it's a System Function, mark it as direct
     if (lpYYFcn->tkToken.tkData.tkSym->stFlags.SysFn12)
         lpYYFcn->tkToken.tkFlags.FcnDir = 1;
 

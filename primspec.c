@@ -374,9 +374,6 @@ LPYYSTYPE PrimProtoFnScalar_EM_YY
             goto ERROR_EXIT;
         } // End IF
 
-////////// Get left arg's global handle (if any)
-////////hGlbLft = GetGlbHandle (lptkLftArg);
-
         // Check for RANK and LENGTH ERRORs
         if (!CheckRankLengthError_EM (aplRankRes,
                                       aplRankLft,
@@ -398,6 +395,12 @@ LPYYSTYPE PrimProtoFnScalar_EM_YY
         // For example, adding empty vectors whose prototypes are
         //   0 (0 0) and (0 0) 0 should produce an empty vector
         //   whose prototype is (0 0) (0 0) by scalar extension.
+        // Also, adding empty vectors whose prototypes are
+        //   (0 0) and (0 0 0) should produce a LENGTH ERROR.
+
+
+
+
 
 
 
@@ -948,7 +951,7 @@ HGLOBAL PrimFnMonGlb_EM
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
 
-    // Save the Type, NELM, and Rank
+    // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
@@ -1523,29 +1526,31 @@ LPYYSTYPE PrimFnDyd_EM_YY
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRANK     aplRankLft,
-                aplRankRht,
-                aplRankRes;
-    APLNELM     aplNELMAxis,
-                aplNELMLft,
-                aplNELMRht,
-                aplNELMRes;
-    HGLOBAL     hGlbAxis = NULL,
-                hGlbRes = NULL,
-                hGlbRht = NULL,
-                hGlbLft = NULL;
-    APLSTYPE    aplTypeLft,
-                aplTypeRht,
-                aplTypeRes;
-    LPAPLUINT   lpMemAxisHead = NULL,
-                lpMemAxisTail = NULL;
-    LPVOID      lpMemLft = NULL,
-                lpMemRht = NULL,
-                lpMemRes = NULL;
-    APLINT      aplInteger;
-    BOOL        bRet = TRUE;
-    LPPRIMFN_DYD_SNvSN PrimFn;
-    LPYYSTYPE   lpYYRes = NULL;
+    APLRANK     aplRankLft,             // Left arg rank
+                aplRankRht,             // Right ...
+                aplRankRes;             // Result   ...
+    APLNELM     aplNELMLft,             // Left arg NELM
+                aplNELMRht,             // Right ...
+                aplNELMRes,             // Result   ...
+                aplNELMAxis;            // Axis     ...
+    APLLONGEST  aplLongestLft,          // Left arg longest value
+                aplLongestRht;          // Right ...
+    HGLOBAL     hGlbLft = NULL,         // Left arg global memory handle
+                hGlbRht = NULL,         // Right ...
+                hGlbRes = NULL,         // Result   ...
+                hGlbAxis = NULL;        // Axis     ...
+    APLSTYPE    aplTypeLft,             // Left arg storage type
+                aplTypeRht,             // Right ...
+                aplTypeRes;             // Result   ...
+    LPAPLUINT   lpMemAxisHead = NULL,   // Ptr to axis head
+                lpMemAxisTail = NULL;   // Ptr to axis tail
+    LPVOID      lpMemLft = NULL,        // Ptr to left arg global memory
+                lpMemRht = NULL,        // Ptr to right ...
+                lpMemRes = NULL;        // Ptr to result   ...
+    APLINT      aplInteger;             // Temporary integer value
+    BOOL        bRet = TRUE;            // TRUE iff result is valid
+    LPPRIMFN_DYD_SNvSN PrimFn;          // Ptr to dyadic scalar SimpNest vs. SimpNest function
+    LPYYSTYPE   lpYYRes = NULL;         // Ptr to the result
 
     DBGENTER;
 
@@ -1614,8 +1619,8 @@ LPYYSTYPE PrimFnDyd_EM_YY
 #endif
 
     // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for RANK and LENGTH ERRORs
     if (!CheckRankLengthError_EM (aplRankRes,
@@ -1644,23 +1649,9 @@ LPYYSTYPE PrimFnDyd_EM_YY
     if (aplTypeRes EQ ARRAY_APA)
     {
         if (aplTypeLft EQ ARRAY_APA)
-            FirstValue (lptkRhtArg,     // Ptr to right arg token
-                       &aplInteger,     // Ptr to integer result
-                        NULL,           // Ptr to float ...
-                        NULL,           // Ptr to WCHAR ...
-                        NULL,           // Ptr to longest ...
-                        NULL,           // Ptr to lpSym/Glb ...
-                        NULL,           // Ptr to ...immediate type ...
-                        NULL);          // Ptr to array type ...
+            aplInteger = aplLongestRht;
         else
-            FirstValue (lptkLftArg,     // Ptr to right arg token
-                       &aplInteger,     // Ptr to integer result
-                        NULL,           // Ptr to float ...
-                        NULL,           // Ptr to WCHAR ...
-                        NULL,           // Ptr to longest ...
-                        NULL,           // Ptr to lpSym/Glb ...
-                        NULL,           // Ptr to ...immediate type ...
-                        NULL);          // Ptr to array type ...
+            aplInteger = aplLongestLft;
         if (!(*lpPrimSpec->ApaResultDyd_EM) (lpYYRes,
                                              lptkFunc,
                                              hGlbLft,
@@ -2469,6 +2460,7 @@ HGLOBAL PrimFnDydNestSimpSub_EM
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemLft)
 
+    // Get the Array Type, NELM, and Rank
     aplTypeLft = lpHeader->ArrType;
     aplNELMLft = lpHeader->NELM;
     aplRankLft = lpHeader->Rank;
@@ -4281,6 +4273,7 @@ HGLOBAL PrimFnDydSimpNestSub_EM
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
 
+    // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;

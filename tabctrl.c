@@ -64,42 +64,41 @@ TABCOLORS crTab[] =
 #define NUM_CRTABS  (sizeof (crTab) / sizeof (crTab[0]))
 
 
-//***************************************************************************
-//  $ClearWsData
-//
-//  Clear data in this WS to global default values
-//***************************************************************************
-
-void ClearWsData
-    (void)
-
-{
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    lpMemPTD->hGlbQuadALX     = hGlbQuadALX_CWS;
-    lpMemPTD->hGlbQuadELX     = hGlbQuadELX_CWS;
-    lpMemPTD->hGlbQuadLX      = hGlbQuadLX_CWS;
-    lpMemPTD->hGlbQuadSA      = hGlbQuadSA_CWS;
-    lpMemPTD->hGlbQuadWSID    = hGlbQuadWSID_CWS;
-    lpMemPTD->hGlbQuadPR      = hGlbQuadPR_CWS;
-    lpMemPTD->fQuadCT         = fQuadCT_CWS;
-    lpMemPTD->bQuadIO         = bQuadIO_CWS;
-    lpMemPTD->uQuadPP         = uQuadPP_CWS;
-    lpMemPTD->uQuadPW         = uQuadPW_CWS;
-    lpMemPTD->uQuadRL         = uQuadRL_CWS;
-    lpMemPTD->cQuadPR         = cQuadPR_CWS;
-    lpMemPTD->bQuadxSA        = bQuadxSA_CWS;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End ClearWsData
+//// //***************************************************************************
+//// //  $ClearWsData
+//// //
+//// //  Clear data in this WS to global default values
+//// //***************************************************************************
+////
+//// void ClearWsData
+////     (void)
+////
+//// {
+////     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+////     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+////
+////     // Get the thread's PerTabData global memory handle
+////     hGlbPTD = TlsGetValue (dwTlsPerTabData);
+////
+////     // Lock the memory to get a ptr to it
+////     lpMemPTD = MyGlobalLock (hGlbPTD);
+////
+////     lpMemPTD->lpSymQuadALX ->stData.stGlbData = MakeGlbTypeGlb (hGlbQuadALX_CWS);
+////     lpMemPTD->lpSymQuadELX ->stData.stGlbData = MakeGlbTypeGlb (hGlbQuadELX_CWS);
+////     lpMemPTD->lpSymQuadLX  ->stData.stGlbData = MakeGlbTypeGlb (hGlbQuadLX_CWS);
+////     lpMemPTD->lpSymQuadSA  ->stData.stGlbData = MakeGlbTypeGlb (hGlbQuadSA_CWS);
+////     lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakeGlbTypeGlb (hGlbQuadWSID_CWS);
+////     lpMemPTD->lpSymQuadPR  ->stData.stGlbData = MakeGlbTypeGlb (hGlbQuadPR_CWS);
+////     lpMemPTD->lpSymQuadCT  ->stData.stFloat   = fQuadCT_CWS;
+////     lpMemPTD->lpSymQuadIO  ->stData.stBoolean = bQuadIO_CWS;
+////     lpMemPTD->lpSymQuadPP  ->stData.stInteger = uQuadPP_CWS;
+////     lpMemPTD->lpSymQuadPW  ->stData.stInteger = uQuadPW_CWS;
+////     lpMemPTD->lpSymQuadRL  ->stData.stInteger = uQuadRL_CWS;
+////     lpMemPTD->bQuadxSA                        = bQuadxSA_CWS;
+////
+////     // We no longer need this ptr
+////     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+//// } // End ClearWsData
 
 
 //// //***************************************************************************
@@ -488,8 +487,8 @@ BOOL CreateNewTabInThread
     hGlbCurTab = hGlbPTD;
     SetWindowLong (lpMemPTD->hWndSM, GWLSF_PERTAB, (long) hGlbPTD);
 
-    // Clear data in this WS to global default values
-    ClearWsData ();
+////// Clear data in this WS to global default values
+////ClearWsData ();
 
     // Show the child windows of the incoming tab
     ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
@@ -781,12 +780,12 @@ LRESULT WINAPI LclTabCtrlWndProc
 #endif
 
             // Free global storage
-            FreeResultGlobalVar (lpMemPTD->hGlbQuadALX ); lpMemPTD->hGlbQuadALX  = NULL;
-            FreeResultGlobalVar (lpMemPTD->hGlbQuadELX ); lpMemPTD->hGlbQuadELX  = NULL;
-            FreeResultGlobalVar (lpMemPTD->hGlbQuadLX  ); lpMemPTD->hGlbQuadLX   = NULL;
-            FreeResultGlobalVar (lpMemPTD->hGlbQuadSA  ); lpMemPTD->hGlbQuadSA   = NULL;
-            FreeResultGlobalVar (lpMemPTD->hGlbQuadWSID); lpMemPTD->hGlbQuadWSID = NULL;
-            FreeResultGlobalVar (lpMemPTD->hGlbQuadPR  ); lpMemPTD->hGlbQuadPR   = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadALX ->stData.stGlbData)); lpMemPTD->lpSymQuadALX ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadELX ->stData.stGlbData)); lpMemPTD->lpSymQuadELX ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadLX  ->stData.stGlbData)); lpMemPTD->lpSymQuadLX  ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadSA  ->stData.stGlbData)); lpMemPTD->lpSymQuadSA  ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadPR  ->stData.stGlbData)); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
 
 #undef  APPEND_NAME
 

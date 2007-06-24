@@ -783,7 +783,7 @@ HGLOBAL ExecuteLine
          lpwszLine++)
     {};
 
-    // Split off system commands
+    // Split off immediate execution mode
     if (esState->exType EQ EX_IMMEX)
     {
         switch (lpwszLine[0])
@@ -800,9 +800,6 @@ HGLOBAL ExecuteLine
                 } // End IF
 
                 hGlbToken = NULL;
-
-                // Display the default prompt
-                DisplayPrompt (hWndEC, FALSE);
 
                 break;
 
@@ -830,9 +827,6 @@ HGLOBAL ExecuteLine
                 } // End IF
 
                 hGlbToken = NULL;
-
-                // Display the default prompt
-                DisplayPrompt (hWndEC, FALSE);
 
                 break;
 
@@ -880,6 +874,11 @@ HGLOBAL ExecuteLine
     // Now done in <ParseLine>
 ////// Free the virtual memory for the complete line
 ////VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
+
+    // If we failed, ...
+    if (hGlbToken EQ NULL)
+        // Display the default prompt
+        DisplayPrompt (hWndEC, FALSE);
 
     return hGlbToken;
 } // End ExecuteLine
@@ -2409,16 +2408,9 @@ LPYYSTYPE WaitForInput
 /*
 
 A tokenized line consists of a count and length, followed by
-a series of one or two tokens.
+a series of tokens.
 
-A single token consists of flags.
-A double token consists of flags preceded by data.
-
-Double tokens have the data precede the flags because the
-tokenized line is parsed from right to left, so the flags
-indicate whether or not there is a preceding data token.
-
-The flags are defined in tokens.h
+The format of a token is defined in tokens.h
 
 */
 
@@ -2590,6 +2582,10 @@ HGLOBAL Tokenize_EM
 
             case FSA_EXIT:
             {
+                UINT uStart,            // Offset from Base to Start in units of sizeof (TOKEN)
+                     uNext,             // ...                 Next
+                     uLastEOS;          // ...                 LastEOS
+
                 // Test for mismatched or improperly nested grouping symbols
                 if (!CheckGroupSymbols_EM (&tkLocalVars))
                     goto ERROR_EXIT;
@@ -2597,7 +2593,24 @@ HGLOBAL Tokenize_EM
                 // Calculate the # tokens in this last stmt
                 AppendEOSToken (&tkLocalVars, FALSE);
 
-                goto NORMAL_EXIT;
+                uStart   = tkLocalVars.lpStart   - tkLocalVars.t2.lpBase;
+                uNext    = tkLocalVars.lpNext    - tkLocalVars.t2.lpBase;
+                uLastEOS = tkLocalVars.lpLastEOS - tkLocalVars.t2.lpBase;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (tkLocalVars.hGlbToken);
+                tkLocalVars.t2.lpBase   = NULL;
+////////////////tkLocalVars.t2.lpHeader = NULL;
+                tkLocalVars.lpStart     = NULL;
+                tkLocalVars.lpNext      = NULL;
+                tkLocalVars.lpLastEOS   = NULL;
+
+                // Reallocate the tokenized line to the actual size
+                tkLocalVars.hGlbToken =
+                MyGlobalReAlloc (tkLocalVars.hGlbToken,
+                                 (1 + uNext) * sizeof (TOKEN),
+                                 GHND);
+                goto UNLOCKED_EXIT;
             } // End FSA_EXIT
         } // End SWITCH
 
@@ -2630,13 +2643,16 @@ ERROR_EXIT:
 
     bFreeGlb = TRUE;
 NORMAL_EXIT:
-    // Unlock the handle
+    // We no longer need this ptr
     MyGlobalUnlock (tkLocalVars.hGlbToken);
     tkLocalVars.t2.lpBase   = NULL;
+////tkLocalVars.t2.lpHeader = NULL;
     tkLocalVars.lpStart     = NULL;
     tkLocalVars.lpNext      = NULL;
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    tkLocalVars.lpLastEOS   = NULL;
+UNLOCKED_EXIT:
+////#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+#ifdef DEBUG
     // Display the tokens so far
     DisplayTokens (tkLocalVars.hGlbToken);
     DbgMsg ("*** Tokenize_EM End");

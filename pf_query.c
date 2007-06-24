@@ -194,8 +194,8 @@ APLINT PrimFnMonQueryIisI
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    bQuadIO = lpMemPTD->bQuadIO;
-    uQuadRL = lpMemPTD->uQuadRL;
+    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
+    uQuadRL = lpMemPTD->lpSymQuadRL->stData.stInteger;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -247,8 +247,8 @@ APLINT PrimFnMonQueryIisF
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    bQuadIO = lpMemPTD->bQuadIO;
-    uQuadRL = lpMemPTD->uQuadRL;
+    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
+    uQuadRL = lpMemPTD->lpSymQuadRL->stData.stInteger;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -336,7 +336,7 @@ LPYYSTYPE PrimFnDydQuery_EM_YY
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    bQuadIO = lpMemPTD->bQuadIO;
+    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

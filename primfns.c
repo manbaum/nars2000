@@ -944,11 +944,21 @@ LPYYSTYPE ExecFunc_EM_YY
             } // End SWITCH
 
         case TKT_FCNARRAY:
+            // Get the global memory handle or function address if direct
+            lpPrimFn = lptkFunc->tkData.tkVoid;
+
+            // Check for internal functions
+            if (lptkFunc->tkFlags.FcnDir)
+            {
+                DbgBrk ();      // ***TESTME*** -- When does this occur??
+                return (*lpPrimFn) (lptkLftArg, lptkFunc, lptkRhtArg, NULL);
+            } // End IF
+
             // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lptkFunc->tkData.tkGlbData));
+            Assert (IsGlbTypeFcnDir (lpPrimFn));
 
             return ExecFuncGlb_EM_YY (lptkLftArg,
-                                      ClrPtrTypeDirGlb (lptkFunc->tkData.tkGlbData),
+                                      ClrPtrTypeDirGlb (lpPrimFn),
                                       lptkRhtArg);
         defstop
             break;
@@ -1010,8 +1020,8 @@ LPYYSTYPE ExecFuncStr_EM_YY
      LPTOKEN   lptkRhtArg)          // Ptr to right arg token
 
 {
-    LPTOKEN   lptkAxis;
-    LPPRIMFNS lpPrimFn;
+    LPTOKEN   lptkAxis;         // Ptr to axis token
+    LPPRIMFNS lpPrimFn;         // Ptr to function address
 
     // Split cases based upon the type of the first token
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)
@@ -1022,6 +1032,7 @@ LPYYSTYPE ExecFuncStr_EM_YY
                    (lptkLftArg,     // Ptr to left arg token
                     lpYYFcnStr,     // Ptr to operator function strand
                     lptkRhtArg);    // Ptr to right arg token
+
         case TKT_OP2IMMED:
         case TKT_OP2NAMED:
         case TKT_OPJOTDOT:
@@ -1029,6 +1040,7 @@ LPYYSTYPE ExecFuncStr_EM_YY
                    (lptkLftArg,     // Ptr to left arg token
                     lpYYFcnStr,     // Ptr to operator function strand
                     lptkRhtArg);    // Ptr to right arg token
+
         case TKT_FCNIMMED:  // Either F or F[X]
             Assert (lpYYFcnStr->FcnCount EQ 1
                  || lpYYFcnStr->FcnCount EQ 2);
@@ -1051,6 +1063,31 @@ LPYYSTYPE ExecFuncStr_EM_YY
 
             return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
 
+        case TKT_FCNARRAY:
+            Assert (lpYYFcnStr->FcnCount EQ 1
+                 || lpYYFcnStr->FcnCount EQ 2);
+
+            // Check for axis operator
+            if (lpYYFcnStr->FcnCount > 1
+             && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+              || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+                lptkAxis = &lpYYFcnStr[1].tkToken;
+            else
+                lptkAxis = NULL;
+
+            // Get the global memory handle or function address if direct
+            lpPrimFn = lpYYFcnStr->tkToken.tkData.tkVoid;
+
+            // Check for internal functions
+            if (lpYYFcnStr->tkToken.tkFlags.FcnDir)
+                return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
+
+            // tkData is a valid HGLOBAL function array
+            Assert (IsGlbTypeFcnDir (lpPrimFn));
+
+            return ExecFuncGlb_EM_YY (lptkLftArg,
+                                      ClrPtrTypeDirGlb (lpPrimFn),
+                                      lptkRhtArg);
         defstop
             return NULL;
     } // End SWITCH
@@ -1490,7 +1527,7 @@ BOOL CheckAxisImm
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    bQuadIO = lpMemPTD->bQuadIO;
+    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1661,7 +1698,7 @@ BOOL CheckAxisGlb
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    bQuadIO = lpMemPTD->bQuadIO;
+    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -2857,11 +2894,13 @@ HGLOBAL GetGlbHandle
 //
 //  Return the HGLOBAL and LPVOID from a token if it's an HGLOBAL
 //    NULL otherwise.
+//  If the arg is immediate, return the APLLONGEST value.
+//
 //  The "_LOCK" suffix is a reminder that this function locks
 //    a global memory handle and the caller must unlock it.
 //***************************************************************************
 
-void GetGlbPtrs_LOCK
+APLLONGEST GetGlbPtrs_LOCK
     (LPTOKEN  lpToken,          // Ptr to token
      HGLOBAL *lphGlb,           // Ptr to ptr to HGLOBAL
      LPVOID  *lplpMem)          // Ptr to ptr to memory (may be NULL)
@@ -2886,8 +2925,12 @@ void GetGlbPtrs_LOCK
             } // End IF
 
             // Handle the immediate case
+            *lphGlb  = NULL;
 
-            // Fall through to handle immediate case
+            if (lplpMem)
+                *lplpMem = NULL;
+
+            return lpToken->tkData.tkSym->stData.stLongest;
 
         case TKT_VARIMMED:
             *lphGlb  = NULL;
@@ -2895,7 +2938,7 @@ void GetGlbPtrs_LOCK
             if (lplpMem)
                 *lplpMem = NULL;
 
-            return;
+            return lpToken->tkData.tkLongest;
 
         case TKT_VARARRAY:
         case TKT_LISTBR:
@@ -2919,6 +2962,8 @@ void GetGlbPtrs_LOCK
         if (lplpMem)
             *lplpMem = MyGlobalLock (*lphGlb);
     } // End IF
+
+    return (APLLONGEST) 0;
 } // End GetGlbPtrs_LOCK
 
 
@@ -4522,8 +4567,8 @@ LPTOKEN TypeDemote
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeRes;
-        ////lpHeader->Perm       = 0;               // Already zero from GHND
-        ////lpHeader->SysVar     = 0;               // Already zero from GHND
+////////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////////lpHeader->SysVar     = 0;               // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMRht;
             lpHeader->Rank       = aplRankRht;

@@ -29,24 +29,6 @@
 #define MYWM_DBGMSG_CLR     (WM_USER + 4)
 
 
-//***************************************************************************
-//  $DbgBrk
-//***************************************************************************
-
-//// void __declspec (naked) __cdecl DbgBrk
-////    (void)
-//// {
-////     _asm {  int     1           };
-////     _asm {  ret             };
-//// } // End DbgBrk
-
-//// void DbgBrk (void)
-////
-//// {
-////     _asm int 1;
-//// } // End DbgBrk
-
-
 #ifdef DEBUG
 //***************************************************************************
 //  $Assert
@@ -349,6 +331,18 @@ LRESULT WINAPI LclListboxWndProc
     LRESULT      lResult;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    WNDPROC      lpfnOldListboxWndProc;
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    lpfnOldListboxWndProc = lpMemPTD->lpfnOldListboxWndProc;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Split cases
     switch (message)
@@ -537,21 +531,11 @@ LRESULT WINAPI LclListboxWndProc
 #undef  nVirtKey
     } // End SWITCH
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    lResult = CallWindowProcW (lpMemPTD->lpfnOldListboxWndProc,
+    lResult = CallWindowProcW (lpfnOldListboxWndProc,
                                hWnd,
                                message,
                                wParam,
                                lParam); // Pass on down the line
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     return lResult;
 } // End LclListboxWndProc
 #endif
@@ -747,12 +731,12 @@ int dprintfW
     i3 = va_arg (vl, int);
     i4 = va_arg (vl, int);
 
-    iRet = sprintfW (wszTemp,
-                     lpwszFmt,
-                     i1, i2, i3, i4);
-    DbgMsgW (wszTemp);
-
     va_end (vl);
+
+    iRet = wsprintfW (wszTemp,
+                      lpwszFmt,
+                      i1, i2, i3, i4);
+    DbgMsgW (wszTemp);
 
     return iRet;
 } // End dprintfW

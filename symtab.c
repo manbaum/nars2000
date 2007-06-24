@@ -1225,10 +1225,27 @@ LPSYMENTRY SymTabLookupName
      LPSTFLAGS lpstFlags)
 
 {
+    return SymTabLookupNameLength (lpwszString,
+                                   lstrlenW (lpwszString),
+                                   lpstFlags);
+} // End SymTabLookupName
+
+
+//***************************************************************************
+//  $SymTabLookupNameLength
+//
+//  Lookup a named entry based upon hash, flags, and value
+//***************************************************************************
+
+LPSYMENTRY SymTabLookupNameLength
+    (LPWCHAR   lpwszString,
+     int       iLen,
+     LPSTFLAGS lpstFlags)
+
+{
     LPHSHENTRY   lpHshEntry;
     STFLAGS      stMaskFlags = {0};
     UINT         uHash;
-    int          iLen;
     LPSYMENTRY   lpSymEntry = NULL;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
@@ -1239,8 +1256,12 @@ LPSYMENTRY SymTabLookupName
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Get the string length in units of WCHAR
-    iLen = lstrlenW (lpwszString);
+    // Skip over trailing white space
+    while (iLen && lpwszString[iLen - 1] EQ L' ')
+        iLen--;
+
+    if (iLen EQ 0)
+        return NULL;
 
     // Hash the name
     uHash = hashlittle
@@ -1249,7 +1270,7 @@ LPSYMENTRY SymTabLookupName
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
     if (lpwszString[0] EQ UTF16_QUAD
-      || lpwszString[0] EQ UTF16_QUOTEQUAD)
+     || lpwszString[0] EQ UTF16_QUOTEQUAD)
         lpstFlags->SysName = 1;
     else
         lpstFlags->UsrName = 1;
@@ -1284,9 +1305,9 @@ LPSYMENTRY SymTabLookupName
 
             // Compare with or without sensitivity to case
             if (lpHshEntry->lpSymEntry->stFlags.NotCase)
-                iCmp = lstrcmpiW (lpGlbName, lpwszString);
+                iCmp = _wcsnicmp (lpGlbName, lpwszString, iLen);
             else
-                iCmp = lstrcmpW  (lpGlbName, lpwszString);
+                iCmp =  wcsncmp  (lpGlbName, lpwszString, iLen);
 
             // We no longer need this ptr
             MyGlobalUnlock (lpHshEntry->hGlbName); lpGlbName = NULL;
@@ -1305,7 +1326,7 @@ LPSYMENTRY SymTabLookupName
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpSymEntry;
-} // End SymTabLookupName
+} // End SymTabLookupNameLength
 
 
 //***************************************************************************

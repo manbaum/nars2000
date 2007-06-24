@@ -18,6 +18,8 @@
 #include "compro.h"
 #endif
 
+// State Indicator level
+int SILevel = 0;
 
 
 //***************************************************************************
@@ -72,17 +74,20 @@ BOOL CmdSaveWS_EM
     (LPWCHAR lpwszTail)     // Command line tail with NO leading blanks
 
 {
-    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
+    HGLOBAL      hGlbPTD,               // PerTabData global memory handle
+                 hGlbName;              // STE name global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPVOID       lpMemWSID;             // Ptr to []WSID global memory
     WCHAR        wszTailDPFE[_MAX_PATH],// ...           canonical form of given ws name
                  wszWsidDPFE[_MAX_PATH],// ...           ...               []WSID
                  wszTempDPFE[_MAX_PATH];// ...           temporary
-    LPWCHAR      lpSaveWSID;            // WSID to save to
+    LPWCHAR      lpSaveWSID,            // WSID to save to
+                 lpMemName;             // Ptr to STE name
     APLNELM      aplNELMWSID;           // []WSID NELM
     APLRANK      aplRankWSID;           // ...    rank
     BOOL         bRet = FALSE;          // TRUE iff result is valid
-    int          iCmp;                  // Comparison result
+    int          iCmp,                  // Comparison result
+                 iSym;                  // Symbol table loop counter
     FILE        *fStream;               // Ptr to file stream
 
     // Get the thread's PerTabData global memory handle
@@ -92,7 +97,7 @@ BOOL CmdSaveWS_EM
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Lock the memory to get a ptr to it
-    lpMemWSID = MyGlobalLock (lpMemPTD->hGlbQuadWSID);
+    lpMemWSID = MyGlobalLock (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemWSID)
 
@@ -135,6 +140,8 @@ BOOL CmdSaveWS_EM
         {
             // Attempt to open the workspace
             fStream = _wfopen (wszTailDPFE, L"r");
+
+            // If it already exists, display an error
             if (fStream NE NULL)
             {
                 // We no longer need this handle
@@ -144,7 +151,10 @@ BOOL CmdSaveWS_EM
                 lstrcpyW (lpwszTemp, ERRMSG_NOT_SAVED);
 
                 // Followed by the actual []WSID
-                lstrcpynW (&lpwszTemp[lstrlenW (lpwszTemp)], lpSaveWSID, (UINT) aplNELMWSID + 1);
+                if (aplNELMWSID EQ 0)
+                    lstrcpyW  (&lpwszTemp[lstrlenW (lpwszTemp)], L"CLEAR WS");
+                else
+                    lstrcpynW (&lpwszTemp[lstrlenW (lpwszTemp)], lpSaveWSID, (UINT) aplNELMWSID + 1);
 
                 AppendLine (lpwszTemp, FALSE, TRUE);
 
@@ -192,8 +202,6 @@ BOOL CmdSaveWS_EM
     //   separate section [nnn.Name], for example,
     //   [0.Name]     (The contents of the name "Name" at level 0)
 
-    DbgBrk ();          // ***FINISHME***
-
     // Create (or truncate the file)
     fStream = _wfopen (wszTailDPFE, L"w");
     fclose (fStream); fStream = NULL;
@@ -201,10 +209,72 @@ BOOL CmdSaveWS_EM
     // Write out the [General] section
     WritePrivateProfileStringW (L"General",     // Section name
                                 L"Version",     // Key name
-                                L"0.0",         // Key value
+                                L"0.01",        // Key value
                                 wszTailDPFE);   // File name
 
+    DbgBrk ();          // ***FINISHME***
 
+    // Trundle through the Symbol Table
+    for (iSym = 0; iSym < lpMemPTD->iSymTabTotalSize; iSym++)
+    {
+        LPSYMENTRY lpSymEntry;
+
+        // Save the LPSYMENTRY
+        lpSymEntry = &lpMemPTD->lpSymTab[iSym];
+
+        if (lpSymEntry->stFlags.Inuse)
+        {
+            if (lpSymEntry->stFlags.SysVar          // Save the current value
+             || lpSymEntry->stFlags.UsrVar)
+            {
+                DbgBrk ();
+
+                // Get the symbol name's global memory handle
+                hGlbName = lpSymEntry->stHshEntry->hGlbName;
+
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLock (hGlbName);
+
+                // Format the name as an ASCII string with non-ASCII chars
+                //   represented as \XXXX where XXX is a four-digit hex number
+
+
+
+
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbName); lpMemName = NULL;
+            } else
+            if (lpSymEntry->stFlags.UsrFn0)
+            {
+
+
+
+            } else
+            if (lpSymEntry->stFlags.UsrFn12)
+            {
+
+
+
+            } else
+            if (lpSymEntry->stFlags.UsrOp1)
+            {
+
+
+
+            } else
+            if (lpSymEntry->stFlags.UsrOp2)
+            {
+
+
+
+            } // End IF/ELSE/...
+
+
+
+
+        } // End FOR/IF
+    } // End FOR/IF
 
 
 
@@ -227,7 +297,7 @@ BOOL CmdSaveWS_EM
     bRet = TRUE;
 ERROR_EXIT:
     // We no longer need this ptr
-    MyGlobalUnlock (lpMemPTD->hGlbQuadWSID); lpMemWSID = NULL;
+    MyGlobalUnlock (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

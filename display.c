@@ -188,8 +188,8 @@ void DisplayGlbArr
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    uQuadPP = lpMemPTD->uQuadPP;
-    uQuadPW = lpMemPTD->uQuadPW;
+    uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
+    uQuadPW = lpMemPTD->lpSymQuadPW->stData.stInteger;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -679,7 +679,7 @@ LPAPLCHAR FormatFloat
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    uQuadPP = lpMemPTD->uQuadPP;
+    uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -2070,7 +2070,7 @@ void DisplayUndo
         *p = VIS_HT;
 
     // Display it
-    dprintfW (L"Text = <%S>",
+    dprintfW (L"Text = <%s>",
               lpwsz);
 
     // Restore L'\t'

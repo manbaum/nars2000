@@ -416,8 +416,9 @@ LPYYSTYPE PrimFnMonCommaGlb_EM_YY
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
 
+    // Get the Array Type and NELM
     aplTypeRht = lpHeader->ArrType;
-    aplNELMRht  = lpHeader->NELM;
+    aplNELMRht = lpHeader->NELM;
 
 #undef  lpHeader
 

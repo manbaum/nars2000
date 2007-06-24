@@ -203,7 +203,7 @@ APLFLOAT PrimFnMonDownStileFisF
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    fQuadCT = lpMemPTD->fQuadCT;
+    fQuadCT = lpMemPTD->lpSymQuadCT->stData.stFloat;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

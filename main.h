@@ -47,26 +47,26 @@ default:    \
 #define DBGLEAVE    if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
 
 #define DbgGlobalAlloc(uFlags,ByteRes) \
-DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%s#%d)", FNLN)
+DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
 
 #define DbgGlobalFree(hGlbToken) \
-dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%s#%d)", hGlbToken, FNLN); \
+dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \
 MyGlobalFree (hGlbToken);
 
 #define DbgIncrRefCntDir(hGlbData) \
-dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%s#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
 IncrRefCntDir (hGlbData);
 
 #define DbgIncrRefCntInd(hGlbData) \
-dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%s#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
 IncrRefCntInd (hGlbData);
 
 #define DbgDecrRefCntDir(hGlbData) \
-dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%s#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
 DecrRefCntDir (hGlbData);
 
 #define DbgDecrRefCntInd(hGlbData) \
-dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%s#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
 DecrRefCntInd (hGlbData);
 
 #else

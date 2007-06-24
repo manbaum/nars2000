@@ -11,6 +11,7 @@
 #include "resdebug.h"
 #include "termcode.h"
 #include "externs.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -458,7 +459,7 @@ LPYYSTYPE SysFnDydDR_SHOW_EM
             break;
 
         case ARRAY_APA:
-            wp = L"Arithemtic Progression Array:  192 bits total";
+            wp = L"Arithmetic Progression Array:  192 bits total";
 
             break;
 
@@ -668,6 +669,491 @@ HGLOBAL DR_FloatToChar_EM
     return hGlbRes;
 } // End DR_FloatToChar_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CalcNumIDs
+//
+//  Calculate the # identifiers in an arg
+//***************************************************************************
+
+void CalcNumIDs
+    (APLNELM    aplNELMRht,         // Right arg NELM
+     APLRANK    aplRankRht,         // Right arg rank
+     APLLONGEST aplLongestRht,      // Right arg longest
+     LPAPLCHAR  lpMemRht,           // Ptr to right arg global memory
+     LPAPLNELM  lpaplNELMRes,       // Ptr to # right arg IDs
+     LPAPLNELM  lpaplNELMCol)       // Ptr to # right arg cols (matrix only)
+
+{
+    APLUINT uRht;               // Loop counter
+
+    // Split cases based upon the right arg rank
+    switch (aplRankRht)
+    {
+        case 0:
+            *lpaplNELMRes = (L' ' NE (APLCHAR) aplLongestRht);
+
+            break;
+
+        case 1:
+            *lpaplNELMRes = 0;      // Initialize
+
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+            // Loop throught the right arg looking for identifiers
+            uRht = 0;
+            while (TRUE)
+            {
+                // Skip over white space
+                while (uRht < aplNELMRht && lpMemRht[uRht] EQ L' ')
+                    uRht++;
+                if (uRht < aplNELMRht)
+                {
+                    // Count in another element in the result
+                    (*lpaplNELMRes)++;
+
+                    // Skip over black space
+                    while (uRht < aplNELMRht && lpMemRht[uRht] NE L' ')
+                        uRht++;
+                } else
+                    break;
+            } // End FOR
+
+            break;
+
+        case 2:
+            *lpaplNELMRes = (VarArrayBaseToDim (lpMemRht))[0];
+            *lpaplNELMCol = (VarArrayBaseToDim (lpMemRht))[1];
+
+            break;
+
+        defstop
+            break;
+    } // End IF
+} // End CalcNumIDs
+
+
+//***************************************************************************
+//  $SysFnSIZE_EM
+//
+//  System function:  []SIZE -- Size of an identifier
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnSIZE_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE SysFnSIZE_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token
+
+{
+    APLSTYPE   aplTypeRht;      // Right arg storage type
+    APLNELM    aplNELMRht,      // Right arg NELM
+               aplNELMRes,      // Result    ...
+               aplNELMCol;      // Result column NELM
+    APLRANK    aplRankRht;      // Right arg Rank
+    LPYYSTYPE  lpYYRes = NULL;  // Ptr to the result
+    APLLONGEST aplLongestRht;   // Right arg longest if immediate
+    HGLOBAL    hGlbRht = NULL,  // Right arg global memory handle
+               hGlbRes = NULL;  // Result    ...
+    LPVOID     lpMemRht = NULL, // Ptr to right arg global memory
+               lpMemRes = NULL; // Ptr to result    ...
+    LPAPLCHAR  lpMemDataRht,    // Ptr to right arg char data
+               lpMemDataStart;  // Ptr to start of identifier
+    LPAPLINT   lpMemDataRes;    // Ptr to result integer data
+    APLUINT    uRht,            // Loop counter
+               uCol,            // ...
+               ByteRes;         // # bytes in the result
+    LPSYMENTRY lpSymEntry;      // Ptr to SYMENTRY
+    STFLAGS    stFlags;         // STE flags
+
+    // This function is monadic only, so if there's a left arg, signal an error
+    if (lptkLftArg)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // The right arg may be of two forms:
+    //   1.  a vector of names as in 'a b c'
+    //   2.  a matrix of names as in 3 1{rho}'abc'
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+
+    // Check for RANK ERRORs
+    if (aplRankRht > 2)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Check for DOMAIN ERRORs
+    if (!IsSimple (aplTypeRht)
+     || (aplTypeRht NE ARRAY_CHAR
+      && aplNELMRht NE 0))
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Get right arg's global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // Calculate the result NELM
+    CalcNumIDs (aplNELMRht,         // Right arg NELM
+                aplRankRht,         // Right arg rank
+                aplLongestRht,      // Right arg longest
+                lpMemRht,           // Ptr to right arg global memory
+               &aplNELMRes,         // Ptr to # right arg IDs
+               &aplNELMCol);        // Ptr to # right arg cols (matrix only)
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
+
+    // Allocate space for the result
+    // N.B. Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_INT;
+////lpHeader->Perm       = 0;
+////lpHeader->SysVar     = 0;
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
+
+#undef  lpHeader
+
+    // Fill in the dimension
+    *(VarArrayBaseToDim (lpMemRes)) = aplNELMRes;
+
+    // Skip over the header and dimensions to the data
+    lpMemDataRes = VarArrayBaseToData (lpMemRes, 1);
+
+    // Calculate the size of each element
+
+    // Split cases based upon the right arg rank
+    switch (aplRankRht)
+    {
+        case 0:
+            // Lookup the name in the symbol table
+            // SymTabLookupName sets the .SysName or .UsrName flag,
+            //   and the .Inuse flag
+            ZeroMemory (&stFlags, sizeof (stFlags));
+            lpSymEntry = SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
+                                                 1,
+                                                &stFlags);
+            // If not found, return zero
+            if (!lpSymEntry)
+                *lpMemDataRes++ = 0;
+            else
+                *lpMemDataRes++ = CalcSymentrySize (lpSymEntry);
+            break;
+
+        case 1:
+            // Skip over the header and dimensions to the data
+            lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+            // Loop throught the right arg looking for identifiers
+            uRht = 0;
+            while (TRUE)
+            {
+                // Skip over white space
+                while (uRht < aplNELMRht && lpMemDataRht[uRht] EQ L' ')
+                    uRht++;
+                if (uRht < aplNELMRht)
+                {
+                    // Save the starting ptr
+                    lpMemDataStart = &lpMemDataRht[uRht];
+
+                    // Skip over black space
+                    while (uRht < aplNELMRht && lpMemDataRht[uRht] NE L' ')
+                        uRht++;
+                    // Lookup the name in the symbol table
+                    // SymTabLookupName sets the .SysName or .UsrName flag,
+                    //   and the .Inuse flag
+                    ZeroMemory (&stFlags, sizeof (stFlags));
+                    lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
+                                                        &lpMemDataRht[uRht] - lpMemDataStart,
+                                                        &stFlags);
+                    // If not found, return 0
+                    if (!lpSymEntry)
+                        *lpMemDataRes++ = 0;
+                    else
+                        *lpMemDataRes++ = CalcSymentrySize (lpSymEntry);
+                } else
+                    break;
+            } // End FOR
+
+            break;
+
+        case 2:
+            // Skip over the header and dimensions to the data
+            lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+            for (uRht = 0; uRht < aplNELMRes; uRht++)
+            {
+                // Point to the start of the data
+                lpMemDataStart = &lpMemDataRht[aplNELMCol * uRht];
+
+                // Skip over leading white space
+                uCol = 0;
+                while (uCol < aplNELMCol && lpMemDataStart[uCol] EQ L' ')
+                    uCol++;
+
+                // Lookup the name in the symbol table
+                // SymTabLookupName sets the .SysName or .UsrName flag,
+                //   and the .Inuse flag
+                ZeroMemory (&stFlags, sizeof (stFlags));
+                lpSymEntry = SymTabLookupNameLength (&lpMemDataStart[uCol],
+                                                      (UINT) (aplNELMCol - uCol),
+                                                     &stFlags);
+                // If not found, return 0
+                if (!lpSymEntry)
+                    *lpMemDataRes++ = 0;
+                else
+                    *lpMemDataRes++ = CalcSymentrySize (lpSymEntry);
+            } // End FOR
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    if (hGlbRes)
+    {
+        // We no longer need this storage
+        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    // We no longer need this ptr
+    if (hGlbRht && lpMemRht)
+    {
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End SysFnSize_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CalcSymentrySize
+//
+//  Calculate the size of a SYMENTRY
+//***************************************************************************
+
+APLINT CalcSymentrySize
+    (LPSYMENTRY lpSymEntry)
+
+{
+    APLUINT aplSize = 0;        // The result
+
+    // If it's an immediate (any type), ...
+    if (lpSymEntry->stFlags.Imm)
+        aplSize = sizeof (SYMENTRY);
+    else
+    // If it has no value, ...
+    if (!lpSymEntry->stFlags.Value)
+        aplSize = 0;
+    else
+    // If it is a user variable, ...
+    if (lpSymEntry->stFlags.UsrVar)
+    {
+        // Start with the size of the SYMENTRY
+        aplSize = sizeof (SYMENTRY);
+
+        // Recurse through the array returning the total size
+        aplSize += CalcGlbSize (lpSymEntry->stData.stGlbData);
+    } else
+    // If it is a user function/operator, ...
+    if (lpSymEntry->stFlags.UsrFn0
+     || lpSymEntry->stFlags.UsrFn12
+     || lpSymEntry->stFlags.UsrOp1
+     || lpSymEntry->stFlags.UsrOp2)
+    {
+        HGLOBAL      hGlbDfnHdr;        // Defined function header global memory handle
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header ...
+        LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
+        UINT         uLine;             // Loop counter
+
+        // Get the global memory handle
+        hGlbDfnHdr = lpSymEntry->stData.stGlbData;
+
+        // stData is a valid HGLOBAL function array
+        Assert (IsGlbTypeDfnDir (MakeGlbTypeGlb (hGlbDfnHdr)));
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+        // Start with the size of the DFN_HEADER
+        aplSize =   sizeof (DFN_HEADER)
+                  + sizeof (LPSYMENTRY) * (lpMemDfnHdr->numResultSTE
+                                         + lpMemDfnHdr->numLftArgSTE
+                                         + lpMemDfnHdr->numRhtArgSTE
+                                         + lpMemDfnHdr->numLocalsSTE)
+                  + sizeof (FCNLINE) * lpMemDfnHdr->numFcnLines;
+        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+        lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+
+        // Loop through the function lines
+        for (uLine = 0; uLine < lpMemDfnHdr->numFcnLines; uLine++)
+        {
+            if (lpFcnLines->hGlbTxtLine)
+                aplSize += MyGlobalSize (lpFcnLines->hGlbTxtLine);
+
+            if (lpFcnLines->hGlbTknLine)
+                aplSize += MyGlobalSize (lpFcnLines->hGlbTknLine);
+
+            if (lpFcnLines->hGlbMonInfo)
+                aplSize += MyGlobalSize (lpFcnLines->hGlbMonInfo);
+
+            // Skip to the next struct
+            lpFcnLines++;
+        } // End FOR
+
+        // Add in the size of the function header text
+        if (lpMemDfnHdr->hGlbTxtHdr)
+            aplSize += MyGlobalSize (lpMemDfnHdr->hGlbTxtHdr);
+
+        // Add in the size of the function header tokenized
+        if (lpMemDfnHdr->hGlbTknHdr)
+            aplSize += MyGlobalSize (lpMemDfnHdr->hGlbTknHdr);
+
+        // Add in the size of the function Undo buffer
+        if (lpMemDfnHdr->hGlbUndoBuff)
+            aplSize += MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } else
+    // Otherwise, its size is zero
+        aplSize = 0;
+
+    return aplSize;
+} // End CalcSymentrySize
+
+
+//***************************************************************************
+//  $CalcGlbSize
+//
+//  Calculate the size of a global memory variable
+//***************************************************************************
+
+APLUINT CalcGlbSize
+    (HGLOBAL hGlbData)
+
+{
+    APLUINT     aplSize = 0;        // The result
+    LPAPLNESTED lpMemData;          // Ptr to the global memory
+    APLSTYPE    aplType;            // Data storage type
+    APLNELM     aplNELM;            // Data NELM
+    APLRANK     aplRank;            // Data rank
+    APLUINT     uData;              // Loop counter
+
+    // stData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir (hGlbData));
+
+    hGlbData = ClrPtrTypeDirGlb (hGlbData);
+
+    aplSize += MyGlobalSize (hGlbData);
+
+    // Lock the memory to get a ptr to it
+    lpMemData = MyGlobalLock (hGlbData);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemData)
+
+    // Get the Array Type, NELM, and Rank
+    aplType = lpHeader->ArrType;
+    aplNELM = lpHeader->NELM;
+    aplRank = lpHeader->Rank;
+
+#undef  lpHeader
+
+    // If the array is simple, that's all
+    if (IsSimple (aplType))
+        goto NORMAL_EXIT;
+
+    // Skip over the header and dimensions to the data
+    lpMemData = VarArrayBaseToData (lpMemData, aplRank);
+
+    // Loop through the array adding the sizes
+    for (uData = 0; uData < aplNELM; uData++)
+    // Split cases based upon the pointer type
+    switch (GetPtrTypeDir (lpMemData[uData]))
+    {
+        case PTRTYPE_STCONST:
+            aplSize += sizeof (SYMENTRY);
+
+            break;
+
+        case PTRTYPE_HGLOBAL:
+            aplSize += CalcGlbSize (lpMemData[uData]);
+
+            break;
+
+        defstop
+            break;
+    } // End FOR/SWITCH
+NORMAL_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbData); lpMemData = NULL;
+
+    return aplSize;
+} // End CalcGlbSize
 
 
 //***************************************************************************

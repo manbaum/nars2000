@@ -1098,9 +1098,15 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             // Check for Return
             if (chCharCode EQ L'\r'         // It's CR
-             && IzitSM (GetParent (hWnd))   // Parent is SM
-             && !IzitEOB (hWnd))            // Not at End-of-Buffer
-                return FALSE;       // We handled the msg
+             && IzitSM (GetParent (hWnd)))  // Parent is SM
+            {
+                // If it's on the last line, move the caret to the EOL (EOB)
+                if (IzitLastLine (hWnd))
+                    MoveCaretEOB (hWnd);        // Move to the End-of-Buffer
+                else
+                // Otherwise, let the SM handle copying and restoring the lines
+                    return FALSE;
+            } // End IF
 
             // Check for Ctrl-Y (Redo)
             if (chCharCode EQ 25)
@@ -2187,7 +2193,7 @@ LPSYMENTRY ParseFunctionName
     if (!fhLocalVars.lpYYStrandStart)
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("ParseHeader:  VirtualAlloc for <fhLocalVars.lpYYStrandStart> failed");
+        DbgMsg ("ParseFunctionName:  VirtualAlloc for <fhLocalVars.lpYYStrandStart> failed");
 
         goto ERROR_EXIT;    // Mark as failed
     } // End IF
@@ -2201,8 +2207,10 @@ LPSYMENTRY ParseFunctionName
     if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars))
         // Get the Name's symbol table entry
         lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
-//NORMAL_EXIT:
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // Free the virtual memory we allocated above
     if (fhLocalVars.lpYYStrandStart)
     {
@@ -2420,25 +2428,31 @@ BOOL SaveFunction
             // Get the ptr to the last entry in the Undo Buffer
             (long) lpUndoLst = GetWindowLong (hWndFE, GWLSF_UNDO_LST);
 
-            // Allocate storage for the Undo buffer
-            lpMemDfnHdr->hGlbUndoBuff = DbgGlobalAlloc (GHND, (lpUndoLst - lpUndoBeg) * sizeof (UNDOBUF));
-            if (!lpMemDfnHdr->hGlbUndoBuff)
+            // Check for empty Undo buffer
+            if (lpUndoLst EQ lpUndoBeg)
+                lpMemDfnHdr->hGlbUndoBuff = NULL;
+            else
             {
-                MessageBox (hWndEC,
-                            "Insufficient memory to save Undo buffer!!",
-                            pszAppName,
-                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                goto ERROR_EXIT;
-            } // End IF
+                // Allocate storage for the Undo buffer
+                lpMemDfnHdr->hGlbUndoBuff = DbgGlobalAlloc (GHND, (lpUndoLst - lpUndoBeg) * sizeof (UNDOBUF));
+                if (!lpMemDfnHdr->hGlbUndoBuff)
+                {
+                    MessageBox (hWndEC,
+                                "Insufficient memory to save Undo buffer!!",
+                                pszAppName,
+                                MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                    goto ERROR_EXIT;
+                } // End IF
 
-            // Lock the memory to get a ptr to it
-            lpMemUndo = MyGlobalLock (lpMemDfnHdr->hGlbUndoBuff);
+                // Lock the memory to get a ptr to it
+                lpMemUndo = MyGlobalLock (lpMemDfnHdr->hGlbUndoBuff);
 
-            // Copy the Undo Buffer to global memory
-            CopyMemory (lpMemUndo, lpUndoBeg, (lpUndoLst - lpUndoBeg) * sizeof (UNDOBUF));
+                // Copy the Undo Buffer to global memory
+                CopyMemory (lpMemUndo, lpUndoBeg, (lpUndoLst - lpUndoBeg) * sizeof (UNDOBUF));
 
-            // We no longer need this ptr
-            MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
+                // We no longer need this ptr
+                MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
+            } // End IF/ELSE
         } // End IF
 
         // Save the dynamic parts of the function into global memory
@@ -2582,14 +2596,59 @@ BOOL SaveFunction
         // Check for special labels ([]PROTOTYPE, []INVERSE, and []SINGLETON)
         GetSpecialLabelNums (lpMemDfnHdr);
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
-
         // Save the global memory handle in the STE
         lpSymName->stData.stGlbData = hGlbDfnHdr;
 
+        // Mark as valued
+        lpSymName->stFlags.Value = 1;
+
+        // Mark as with the proper valence
+
+        // Split cases based upon the function type
+        switch (lpMemDfnHdr->Type)
+        {
+            case 1:         // Monadic operator
+                lpSymName->stFlags.UsrOp1 = 1;
+
+                break;
+
+            case 2:         // Dyadic operator
+                lpSymName->stFlags.UsrOp2 = 1;
+
+                break;
+
+            case 3:         // Function
+                // Split cases based upon the function valence
+                switch (lpMemDfnHdr->FcnValence)
+                {
+                    case 0:         // Niladic function
+                        lpSymName->stFlags.UsrFn0 = 1;
+
+                        break;
+
+                    case 1:         // Monadic function
+                    case 2:         // Dyadic function
+                    case 3:         // Ambivalent function
+                        lpSymName->stFlags.UsrFn12 = 1;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                break;
+
+            case 0:         // Unknown
+            defstop
+                break;
+        } // End SWITCH
+
         // Mark as unchanged since the last save
         SetWindowLong (hWndFE, GWLSF_CHANGED, FALSE);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
         bRet = TRUE;
 

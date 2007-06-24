@@ -17,6 +17,7 @@
 #include "compro.h"
 #else
 #define SysFnDR_EM      NULL
+#define SysFnSIZE_EM    NULL
 #define SysFnSYSID_EM   NULL
 #define SysFnSYSVER_EM  NULL
 #define SysFnTC_EM      NULL
@@ -62,12 +63,12 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL          , 0          },  // 12:  ...                              Prototype
     {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL          , 0          },  // 13:  ...                              Singleton
 
-    {WS_UTF16_QUAD L"ai"       ,      0,      FALSE, NULL          , 0          },  // Accounting Information
-    {WS_UTF16_QUAD L"av"       ,      0,      FALSE, NULL          , 0          },  // Atomic Vector
-    {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, NULL          , 0          },  // Diagnostic Message
-    {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, NULL          , 0          },  // Line Counter
-    {WS_UTF16_QUAD L"si"       ,      0,      FALSE, NULL          , 0          },  // State Indicator
-    {WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, NULL          , 0          },  // State Indicator w/Name List
+////{WS_UTF16_QUAD L"ai"       ,      0,      FALSE, NULL          , 0          },  // Accounting Information
+////{WS_UTF16_QUAD L"av"       ,      0,      FALSE, NULL          , 0          },  // Atomic Vector
+////{WS_UTF16_QUAD L"dm"       ,      0,      FALSE, NULL          , 0          },  // Diagnostic Message
+////{WS_UTF16_QUAD L"lc"       ,      0,      FALSE, NULL          , 0          },  // Line Counter
+////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, NULL          , 0          },  // State Indicator
+////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, NULL          , 0          },  // State Indicator w/Name List
     {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, SysFnSYSID_EM , 0          },  // System Identifier
     {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, SysFnSYSVER_EM, 0          },  // System Version
     {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, SysFnTC_EM    , 0          },  // Terminal Control Characters
@@ -81,35 +82,35 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, SysFnTCNL_EM  , 0          },  // Terminal Control Character, New Line
     {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, SysFnTCNUL_EM , 0          },  // Terminal Control Character, Null
     {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM    , 0          },  // Time Stamp
-    {WS_UTF16_QUAD L"wa"       ,      0,      FALSE, NULL          , 0          },  // Workspace Available
+////{WS_UTF16_QUAD L"wa"       ,      0,      FALSE, NULL          , 0          },  // Workspace Available
 
-    {WS_UTF16_QUAD L"call"     ,      1,      FALSE, NULL          , 0          },  // Call Assembler Code
-    {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, NULL          , 0          },  // Canonical Representation
-    {WS_UTF16_QUAD L"crl"      ,      1,      FALSE, NULL          , 0          },  // Canonical Representation, Line
-    {WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, NULL          , 0          },  // Canonical Representation, Public Comment
-    {WS_UTF16_QUAD L"def"      ,      1,      FALSE, NULL          , 0          },  // Define Function
-    {WS_UTF16_QUAD L"defl"     ,      1,      FALSE, NULL          , 0          },  // Define Function Line
-    {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, NULL          , 0          },  // Delay Execution
+////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, NULL          , 0          },  // Call Assembler Code
+////{WS_UTF16_QUAD L"cr"       ,      1,      FALSE, NULL          , 0          },  // Canonical Representation
+////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, NULL          , 0          },  // Canonical Representation, Line
+////{WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, NULL          , 0          },  // Canonical Representation, Public Comment
+////{WS_UTF16_QUAD L"def"      ,      1,      FALSE, NULL          , 0          },  // Define Function
+////{WS_UTF16_QUAD L"defl"     ,      1,      FALSE, NULL          , 0          },  // Define Function Line
+////{WS_UTF16_QUAD L"dl"       ,      1,      FALSE, NULL          , 0          },  // Delay Execution
     {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM    , 0          },  // Data Representation
-    {WS_UTF16_QUAD L"erase"    ,      1,      FALSE, NULL          , 0          },  // Erase Names
-    {WS_UTF16_QUAD L"error"    ,      1,      FALSE, NULL          , 0          },  // Signal Error
-    {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, NULL          , 0          },  // Erase Names
-    {WS_UTF16_QUAD L"fi"       ,      1,      FALSE, NULL          , 0          },  // Format Items
-    {WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, NULL          , 0          },  // Format
-    {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, NULL          , 0          },  // Fix Function
-    {WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, NULL          , 0          },  // Identifier List
-    {WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, NULL          , 0          },  // Identifier Localization
-    {WS_UTF16_QUAD L"lock"     ,      1,      FALSE, NULL          , 0          },  // Lock Functions
-    {WS_UTF16_QUAD L"mf"       ,      1,      FALSE, NULL          , 0          },  // Monitor Function
-    {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, NULL          , 0          },  // Name Classification
-    {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, NULL          , 0          },  // Name List
-    {WS_UTF16_QUAD L"size"     ,      1,      FALSE, NULL          , 0          },  // Size of an object
-    {WS_UTF16_QUAD L"ss"       ,      1,      FALSE, NULL          , 0          },  // Search String
-    {WS_UTF16_QUAD L"stop"     ,      1,      FALSE, NULL          , 0          },  // Manage Stop Points
-    {WS_UTF16_QUAD L"trace"    ,      1,      FALSE, NULL          , 0          },  // Manage Trace Points
+////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, NULL          , 0          },  // Erase Names
+////{WS_UTF16_QUAD L"error"    ,      1,      FALSE, NULL          , 0          },  // Signal Error
+////{WS_UTF16_QUAD L"ex"       ,      1,      FALSE, NULL          , 0          },  // Erase Names
+////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, NULL          , 0          },  // Format Items
+////{WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, NULL          , 0          },  // Format
+////{WS_UTF16_QUAD L"fx"       ,      1,      FALSE, NULL          , 0          },  // Fix Function
+////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, NULL          , 0          },  // Identifier List
+////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, NULL          , 0          },  // Identifier Localization
+////{WS_UTF16_QUAD L"lock"     ,      1,      FALSE, NULL          , 0          },  // Lock Functions
+////{WS_UTF16_QUAD L"mf"       ,      1,      FALSE, NULL          , 0          },  // Monitor Function
+////{WS_UTF16_QUAD L"nc"       ,      1,      FALSE, NULL          , 0          },  // Name Classification
+////{WS_UTF16_QUAD L"nl"       ,      1,      FALSE, NULL          , 0          },  // Name List
+    {WS_UTF16_QUAD L"size"     ,      1,      FALSE, SysFnSIZE_EM  , 0          },  // Size of an object
+////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, NULL          , 0          },  // Search String
+////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, NULL          , 0          },  // Manage Stop Points
+////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, NULL          , 0          },  // Manage Trace Points
     {WS_UTF16_QUAD L"type"     ,      1,      FALSE, SysFnTYPE_EM  , 0          },  // Manage Trace Points
-    {WS_UTF16_QUAD L"vi"       ,      1,      FALSE, NULL          , 0          },  // Verify Items
-    {WS_UTF16_QUAD L"vr"       ,      1,      FALSE, NULL          , 0          },  // Vector Representation of a Function
+////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, NULL          , 0          },  // Verify Items
+////{WS_UTF16_QUAD L"vr"       ,      1,      FALSE, NULL          , 0          },  // Vector Representation of a Function
 
     // ***FIXME*** Add more entries
 };
@@ -250,8 +251,8 @@ BOOL SymTabAppendSysName_EM
     // Set the flags of the entry we're appending
     if (lpSysName->bSysVar)
     {
-        stFlags.SysVar =
-        stFlags.Value  = 1;
+        stFlags.SysVar      = 1;
+        stFlags.Value       = (lpSysName->uValence NE SYSLBL);
         stFlags.DfnSysLabel = (lpSysName->uValence EQ SYSLBL);
     } else
     {
@@ -261,6 +262,7 @@ BOOL SymTabAppendSysName_EM
             stFlags.SysFn12 = 1;
     } // End IF/ELSE
 
+    // Set the flags for what we're appending
     stFlags.SysName =
     stFlags.Perm    =
     stFlags.NotCase =
@@ -352,41 +354,18 @@ BOOL AppendSystemNames_EM
 #endif
 
 BOOL AssignCharVector_EM
-    (LPWCHAR lpwszName,
-     HGLOBAL hGlbVal_CWS,
-     UINT    SysVarValid,
-     LPVOID  lpGlbVal)
+    (LPWCHAR    lpwszName,
+     HGLOBAL    hGlbVal_CWS,
+     UINT       SysVarValid,
+     LPSYMENTRY lpSymEntryDest)
 
 {
-    LPSYMENTRY lpSymEntryDest;
-    STFLAGS    stFlags = {0};
-    HGLOBAL    hGlb;
+    // Make a copy of the CLEAR WS value, and
+    //   save the global memory ptr
+    lpSymEntryDest->stData.stGlbData = CopySymGlbDirGlb (hGlbVal_CWS);
 
-    // Lookup the name in the symbol table
-    // SymTabLookupName sets the .SysName or .UsrName flag,
-    //   and the .Inuse flag
-    lpSymEntryDest = SymTabLookupName (lpwszName, &stFlags);
-    if (!lpSymEntryDest)        // It's not found???
-    {
-        ErrorMessageIndirect (ERRMSG_PROGRAM_ERROR APPEND_NAME);
-
-        DbgStop ();             // We should never get here
-
-        return FALSE;
-    } // End IF
-
-    // Make a copy of the CLEAR WS value
-    hGlb = CopySymGlbDirGlb (hGlbVal_CWS);
-
-    // Save the global memory ptr
-    lpSymEntryDest->stData.stGlbData = hGlb;
-
-    // Save in global ptr
-    *((HGLOBAL *) lpGlbVal) = ClrPtrTypeDirGlb (hGlb);
-
-    // Save the flags
-    stFlags.SysVarValid = SysVarValid;
-    *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
+    // Save the validate index
+    lpSymEntryDest->stFlags.SysVarValid = SysVarValid;
 
     return TRUE;
 } // End AssignCharVector_EM
@@ -406,30 +385,16 @@ BOOL AssignCharVector_EM
 #endif
 
 BOOL AssignRealScalar_EM
-    (LPWCHAR  lpwszName,
-     APLFLOAT fFloat,
-     UINT     SysVarValid,
-     LPVOID  lpGlbVal)
+    (LPWCHAR    lpwszName,
+     APLFLOAT   fFloat,
+     UINT       SysVarValid,
+     LPSYMENTRY lpSymEntryDest)
 
 {
-    LPSYMENTRY lpSymEntryDest;
-    STFLAGS    stFlags = {0};
-
-    // Lookup the name in the symbol table
-    // SymTabLookupName sets the .SysName or .UsrName flag,
-    //   and the .Inuse flag
-    lpSymEntryDest = SymTabLookupName (lpwszName, &stFlags);
-    if (!lpSymEntryDest)        // It's not found???
-    {
-        ErrorMessageIndirect (ERRMSG_PROGRAM_ERROR APPEND_NAME);
-
-        DbgStop ();             // We should never get here
-
-        return FALSE;
-    } // End IF
+    STFLAGS stFlags = {0};
 
     // Save the constant
-    *((LPAPLFLOAT) lpGlbVal) = lpSymEntryDest->stData.stFloat = fFloat;
+    lpSymEntryDest->stData.stFloat = fFloat;
 
     // Mark as immediate floating point constant
     stFlags.Imm     = 1;
@@ -457,30 +422,16 @@ BOOL AssignRealScalar_EM
 #endif
 
 BOOL AssignBoolScalar_EM
-    (LPWCHAR lpwszName,
-     APLBOOL aplBoolean,
-     UINT    SysVarValid,
-     LPVOID  lpGlbVal)
+    (LPWCHAR    lpwszName,
+     APLBOOL    aplBoolean,
+     UINT       SysVarValid,
+     LPSYMENTRY lpSymEntryDest)
 
 {
-    LPSYMENTRY lpSymEntryDest;
-    STFLAGS    stFlags = {0};
-
-    // Lookup the name in the symbol table
-    // SymTabLookupName sets the .SysName or .UsrName flag,
-    //   and the .Inuse flag
-    lpSymEntryDest = SymTabLookupName (lpwszName, &stFlags);
-    if (!lpSymEntryDest)        // It's not found???
-    {
-        ErrorMessageIndirect (ERRMSG_PROGRAM_ERROR APPEND_NAME);
-
-        DbgStop ();             // We should never get here
-
-        return FALSE;
-    } // End IF
+    STFLAGS stFlags = {0};
 
     // Save the constant
-    *((LPAPLBOOL) lpGlbVal) = lpSymEntryDest->stData.stBoolean = aplBoolean;
+    lpSymEntryDest->stData.stBoolean = aplBoolean;
 
     // Mark as immediate Boolean constant
     stFlags.Imm     = 1;
@@ -508,33 +459,16 @@ BOOL AssignBoolScalar_EM
 #endif
 
 BOOL AssignIntScalar_EM
-    (LPWCHAR lpwszName,
-     APLINT  aplInteger,
-     UINT    SysVarValid,
-     LPVOID  lpGlbVal)
+    (LPWCHAR    lpwszName,
+     APLINT     aplInteger,
+     UINT       SysVarValid,
+     LPSYMENTRY lpSymEntryDest)
 
 {
-    LPSYMENTRY lpSymEntryDest;
-    STFLAGS    stFlags = {0};
-
-    // Lookup the name in the symbol table
-    // SymTabLookupName sets the .SysName or .UsrName flag,
-    //   and the .Inuse flag
-    lpSymEntryDest = SymTabLookupName (lpwszName, &stFlags);
-    if (!lpSymEntryDest)        // It's not found???
-    {
-        ErrorMessageIndirect (ERRMSG_PROGRAM_ERROR APPEND_NAME);
-
-        DbgStop ();             // We should never get here
-
-        return FALSE;
-    } // End IF
+    STFLAGS stFlags = {0};
 
     // Save the constant
     lpSymEntryDest->stData.stInteger = aplInteger;
-
-    if (lpGlbVal)
-        *((LPAPLINT) lpGlbVal) = aplInteger;
 
     // Mark as immediate Integer constant
     stFlags.Imm     = 1;
@@ -562,30 +496,16 @@ BOOL AssignIntScalar_EM
 #endif
 
 BOOL AssignCharScalar_EM
-    (LPWCHAR lpwszName,
-     WCHAR   aplChar,
-     UINT    SysVarValid,
-     LPVOID  lpGlbVal)
+    (LPWCHAR    lpwszName,
+     APLCHAR    aplChar,
+     UINT       SysVarValid,
+     LPSYMENTRY lpSymEntryDest)
 
 {
-    LPSYMENTRY lpSymEntryDest;
-    STFLAGS    stFlags = {0};
-
-    // Lookup the name in the symbol table
-    // SymTabLookupName sets the .SysName or .UsrName flag,
-    //   and the .Inuse flag
-    lpSymEntryDest = SymTabLookupName (lpwszName, &stFlags);
-    if (!lpSymEntryDest)        // It's not found???
-    {
-        ErrorMessageIndirect (ERRMSG_PROGRAM_ERROR APPEND_NAME);
-
-        DbgStop ();             // We should never get here
-
-        return FALSE;
-    } // End IF
+    STFLAGS stFlags = {0};
 
     // Save the constant
-    *((LPAPLCHAR) lpGlbVal) = lpSymEntryDest->stData.stChar = aplChar;
+    lpSymEntryDest->stData.stChar = aplChar;
 
     // Mark as immediate Character constant
     stFlags.Imm     = 1;
@@ -618,23 +538,24 @@ BOOL AssignCharScalar_EM
 
 BOOL ValidateBoolean_EM
     (LPTOKEN   lptkName,            // Ptr to name token
-     LPTOKEN   lpToken,             // Ptr to value token
-     LPAPLBOOL lpVal)               // Ptr to global var
+     LPTOKEN   lpToken)             // Ptr to value token
 
 {
+    APLSTYPE aplTypeRht;        // Right arg storage type
+    APLNELM  aplNELMRht;        // Right arg NELM
+    APLRANK  aplRankRht;        // Right arg rank
     LPVOID   lpMem,
              lpData;
     BOOL     bRet = TRUE;
     LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     APLINT   aplInteger;
+    APLBOOL  aplBoolean;
     HGLOBAL  hGlbData;
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:
-            DbgBrk ();      // ***TESTME***
-
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -655,7 +576,7 @@ BOOL ValidateBoolean_EM
             switch (lpToken->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    *lpVal = lpToken->tkData.tkSym->stData.stBoolean;
+                    aplBoolean = lpToken->tkData.tkSym->stData.stBoolean;
 
                     break;
 
@@ -664,7 +585,7 @@ BOOL ValidateBoolean_EM
                     bRet = (lpToken->tkData.tkSym->stData.stInteger EQ 0
                          || lpToken->tkData.tkSym->stData.stInteger EQ 1);
                     if (bRet)
-                        *lpVal = (APLBOOL) (lpToken->tkData.tkSym->stData.stInteger);
+                        aplBoolean = (APLBOOL) (lpToken->tkData.tkSym->stData.stInteger);
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -675,7 +596,7 @@ BOOL ValidateBoolean_EM
                     bRet = bRet && (aplInteger EQ 0 || aplInteger EQ 1);
 
                     if (bRet)
-                        *lpVal = (APLBOOL) aplInteger;
+                        aplBoolean = (APLBOOL) aplInteger;
                     break;
 
                 case IMMTYPE_CHAR:
@@ -691,7 +612,7 @@ BOOL ValidateBoolean_EM
             switch (lpToken->tkFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    *lpVal = lpToken->tkData.tkBoolean;
+                    aplBoolean = lpToken->tkData.tkBoolean;
 
                     break;
 
@@ -700,7 +621,7 @@ BOOL ValidateBoolean_EM
                     bRet = (lpToken->tkData.tkInteger EQ 0
                          || lpToken->tkData.tkInteger EQ 1);
                     if (bRet)
-                        *lpVal = (APLBOOL) (lpToken->tkData.tkInteger);
+                        aplBoolean = (APLBOOL) (lpToken->tkData.tkInteger);
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -711,7 +632,7 @@ BOOL ValidateBoolean_EM
                     bRet = bRet && (aplInteger EQ 0 || aplInteger EQ 1);
 
                     if (bRet)
-                        *lpVal = (APLBOOL) aplInteger;
+                        aplBoolean = (APLBOOL) aplInteger;
                     break;
 
                 case IMMTYPE_CHAR:
@@ -746,28 +667,35 @@ BOOL ValidateBoolean_EM
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
+    // Get the Array Type, NELM, and Rank
+    aplTypeRht = lpHeader->ArrType;
+    aplNELMRht = lpHeader->NELM;
+    aplRankRht = lpHeader->Rank;
+
+#undef  lpHeader
+
     // Skip over the header and dimensions to the data
-    lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
+    lpData = VarArrayBaseToData (lpMem, aplRankRht);
 
     // Check for scalar or vector
-    if (lpHeader->Rank > 1)
+    if (aplRankRht > 1)
     {
         lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
 
         bRet = FALSE;
     } else
     // Check for singleton
-    if (lpHeader->NELM NE 1)
+    if (aplNELMRht NE 1)
     {
         lpwErrMsg = ERRMSG_LENGTH_ERROR APPEND_NAME;
 
         bRet = FALSE;
     } else
     // Split cases based upon the array type
-    switch (lpHeader->ArrType)
+    switch (aplTypeRht)
     {
         case ARRAY_BOOL:
-            *lpVal = *(LPAPLBOOL) lpData;
+            aplBoolean = *(LPAPLBOOL) lpData;
 
             break;
 
@@ -779,7 +707,7 @@ BOOL ValidateBoolean_EM
             bRet = (aplInteger EQ 0
                  || aplInteger EQ 1);
             if (bRet)
-                *lpVal = (APLBOOL) (*(LPAPLINT) lpData);
+                aplBoolean = (APLBOOL) (*(LPAPLINT) lpData);
             break;
 
         case ARRAY_CHAR:
@@ -797,7 +725,7 @@ BOOL ValidateBoolean_EM
             bRet = (aplInteger EQ 0
                  || aplInteger EQ 1);
             if (bRet)
-                *lpVal = (APLBOOL) aplInteger;
+                aplBoolean = (APLBOOL) aplInteger;
             break;
 
         defstop
@@ -806,9 +734,6 @@ BOOL ValidateBoolean_EM
 
     // We no longer need this ptr
     MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbData)); lpMem= NULL;
-
-#undef  lpHeader
-
 NORMAL_EXIT:
     // If in error, set error message;
     //   otherwise, save the value in the name
@@ -817,7 +742,7 @@ NORMAL_EXIT:
                                    lpToken);
     else
     {
-        lptkName->tkData.tkSym->stData.stBoolean = *lpVal;
+        lptkName->tkData.tkSym->stData.stBoolean = aplBoolean;
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -847,11 +772,14 @@ BOOL ValidateInteger_EM
     (LPTOKEN  lptkName,             // Ptr to name token
      LPTOKEN  lptkExpr,             // Ptr to value token
      UINT     uValidLo,             // Low range value (inclusive)
-     UINT     uValidHi,             // High ...
-     LPAPLINT lpVal)                // Ptr to global var
+     UINT     uValidHi)             // High ...
 
 {
-    LPVOID   lpMem, lpData;
+    APLSTYPE aplTypeRht;        // Right arg storage type
+    APLNELM  aplNELMRht;        // Right arg NELM
+    APLRANK  aplRankRht;        // Right arg rank
+    LPVOID   lpMem,
+             lpData;
     BOOL     bRet = TRUE;
     LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     APLINT   aplInteger;
@@ -861,8 +789,6 @@ BOOL ValidateInteger_EM
     switch (lptkExpr->tkFlags.TknType)
     {
         case TKT_VARNAMED:
-            DbgBrk ();      // ***TESTME***
-
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkExpr->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -887,11 +813,8 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkSym->stData.stBoolean;
 
                     // Test the value
-                    if (uValidLo <= aplInteger
-                     &&             aplInteger <= uValidHi)
-                        *lpVal = aplInteger;
-                    else
-                        bRet = FALSE;
+                    bRet = (uValidLo <= aplInteger
+                         &&             aplInteger <= uValidHi);
                     break;
 
                 case IMMTYPE_INT:
@@ -899,11 +822,8 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkSym->stData.stInteger;
 
                     // Test the value
-                    if (uValidLo <= aplInteger
-                     &&             aplInteger <= uValidHi)
-                        *lpVal = aplInteger;
-                    else
-                        bRet = FALSE;
+                    bRet = (uValidLo <= aplInteger
+                         &&             aplInteger <= uValidHi);
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -911,11 +831,8 @@ BOOL ValidateInteger_EM
                     aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkSym->stData.stFloat,
                                                     &bRet);
                     // Test the value
-                    if (uValidLo <= aplInteger
-                     &&             aplInteger <= uValidHi)
-                        *lpVal = aplInteger;
-                    else
-                        bRet = FALSE;
+                    bRet = (uValidLo <= aplInteger
+                         &&             aplInteger <= uValidHi);
                     break;
 
                 case IMMTYPE_CHAR:
@@ -935,11 +852,8 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkBoolean;
 
                     // Test the value
-                    if (uValidLo <= aplInteger
-                     &&             aplInteger <= uValidHi)
-                        *lpVal = aplInteger;
-                    else
-                        bRet = FALSE;
+                    bRet = (uValidLo <= aplInteger
+                         &&             aplInteger <= uValidHi);
                     break;
 
                 case IMMTYPE_INT:
@@ -947,11 +861,8 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkInteger;
 
                     // Test the value
-                    if (uValidLo <= aplInteger
-                     &&             aplInteger <= uValidHi)
-                        *lpVal = aplInteger;
-                    else
-                        bRet = FALSE;
+                    bRet = (uValidLo <= aplInteger
+                         &&             aplInteger <= uValidHi);
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -959,11 +870,8 @@ BOOL ValidateInteger_EM
                     aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkFloat,
                                                     &bRet);
                     // Test the value
-                    if (uValidLo <= aplInteger
-                     &&             aplInteger <= uValidHi)
-                        *lpVal = aplInteger;
-                    else
-                        bRet = FALSE;
+                    bRet = (uValidLo <= aplInteger
+                         &&             aplInteger <= uValidHi);
                     break;
 
                 case IMMTYPE_CHAR:
@@ -999,36 +907,40 @@ BOOL ValidateInteger_EM
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
+    // Get the Array Type, NELM, and Rank
+    aplTypeRht = lpHeader->ArrType;
+    aplNELMRht = lpHeader->NELM;
+    aplRankRht = lpHeader->Rank;
+
+#undef  lpHeader
+
     // Skip over the header and dimensions to the data
-    lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
+    lpData = VarArrayBaseToData (lpMem, aplRankRht);
 
     // Check for scalar or vector
-    if (lpHeader->Rank > 1)
+    if (aplRankRht > 1)
     {
         lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
 
         bRet = FALSE;
     } else
     // Check for singleton
-    if (lpHeader->NELM NE 1)
+    if (aplNELMRht NE 1)
     {
         lpwErrMsg = ERRMSG_LENGTH_ERROR APPEND_NAME;
 
         bRet = FALSE;
     } else
     // Split cases based upon the array type
-    switch (lpHeader->ArrType)
+    switch (aplTypeRht)
     {
         case ARRAY_BOOL:
             // Get the value
             aplInteger = *(LPAPLBOOL) lpData;
 
             // Test the value
-            if (uValidLo <= aplInteger
-             &&             aplInteger <= uValidHi)
-                *lpVal = aplInteger;
-            else
-                bRet = FALSE;
+            bRet = (uValidLo <= aplInteger
+                 &&             aplInteger <= uValidHi);
             break;
 
         case ARRAY_INT:
@@ -1036,11 +948,8 @@ BOOL ValidateInteger_EM
             aplInteger = *(LPAPLINT) lpData;
 
             // Test the value
-            if (uValidLo <= aplInteger
-             &&             aplInteger <= uValidHi)
-                *lpVal = aplInteger;
-            else
-                bRet = FALSE;
+            bRet = (uValidLo <= aplInteger
+                 &&             aplInteger <= uValidHi);
             break;
 
         case ARRAY_CHAR:
@@ -1055,11 +964,8 @@ BOOL ValidateInteger_EM
             aplInteger = FloatToAplint_SCT (*(LPAPLFLOAT) lpData,
                                             &bRet);
             // Test the value
-            if (uValidLo <= aplInteger
-             &&             aplInteger <= uValidHi)
-                *lpVal = aplInteger;
-            else
-                bRet = FALSE;
+            bRet = (uValidLo <= aplInteger
+                 &&             aplInteger <= uValidHi);
             break;
 
         defstop
@@ -1076,12 +982,11 @@ NORMAL_EXIT:
                                    lptkExpr);
     else
     {
-        lptkName->tkData.tkSym->stData.stInteger = *lpVal;
+        lptkName->tkData.tkSym->stData.stInteger = aplInteger;
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
     return bRet;
-#undef  lpHeader
 } // End ValidateInteger_EM
 #undef  APPEND_NAME
 
@@ -1107,8 +1012,7 @@ BOOL ValidateFloat_EM
     (LPTOKEN    lptkName,           // Ptr to name token
      LPTOKEN    lpToken,            // Ptr to value token
      APLFLOAT   fValidLo,           // Low range value (inclusive)
-     APLFLOAT   fValidHi,           // High ...
-     LPAPLFLOAT lpVal)              // Ptr to global value handle
+     APLFLOAT   fValidHi)           // High ...
 
 {
     LPVOID   lpMem, lpData;
@@ -1121,8 +1025,6 @@ BOOL ValidateFloat_EM
     switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:
-            DbgBrk ();      // ***TESTME***
-
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -1147,11 +1049,8 @@ BOOL ValidateFloat_EM
                     aplFloat = lpToken->tkData.tkSym->stData.stBoolean;
 
                     // Test the value
-                    if (fValidLo <= aplFloat
-                     &&             aplFloat <= fValidHi)
-                        *lpVal = aplFloat;
-                    else
-                        bRet = FALSE;
+                    bRet = (fValidLo <= aplFloat
+                         &&             aplFloat <= fValidHi);
                     break;
 
                 case IMMTYPE_INT:
@@ -1159,22 +1058,16 @@ BOOL ValidateFloat_EM
                     aplFloat = (APLFLOAT) (lpToken->tkData.tkSym->stData.stInteger);
 
                     // Test the value
-                    if (fValidLo <= aplFloat
-                     &&             aplFloat <= fValidHi)
-                        *lpVal = aplFloat;
-                    else
-                        bRet = FALSE;
+                    bRet = (fValidLo <= aplFloat
+                         &&             aplFloat <= fValidHi);
                     break;
 
                 case IMMTYPE_FLOAT:
                     aplFloat = lpToken->tkData.tkSym->stData.stFloat;
 
                     // Test the value
-                    if (fValidLo <= aplFloat
-                     &&             aplFloat <= fValidHi)
-                        *lpVal = aplFloat;
-                    else
-                        bRet = FALSE;
+                    bRet = (fValidLo <= aplFloat
+                         &&             aplFloat <= fValidHi);
                     break;
 
                 case IMMTYPE_CHAR:
@@ -1194,11 +1087,8 @@ BOOL ValidateFloat_EM
                     aplFloat = lpToken->tkData.tkBoolean;
 
                     // Test the value
-                    if (fValidLo <= aplFloat
-                     &&             aplFloat <= fValidHi)
-                        *lpVal = aplFloat;
-                    else
-                        bRet = FALSE;
+                    bRet = (fValidLo <= aplFloat
+                         &&             aplFloat <= fValidHi);
                     break;
 
                 case IMMTYPE_INT:
@@ -1206,11 +1096,8 @@ BOOL ValidateFloat_EM
                     aplFloat = (APLFLOAT) (lpToken->tkData.tkInteger);
 
                     // Test the value
-                    if (fValidLo <= aplFloat
-                     &&             aplFloat <= fValidHi)
-                        *lpVal = aplFloat;
-                    else
-                        bRet = FALSE;
+                    bRet = (fValidLo <= aplFloat
+                         &&             aplFloat <= fValidHi);
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -1218,11 +1105,8 @@ BOOL ValidateFloat_EM
                     aplFloat = lpToken->tkData.tkFloat;
 
                     // Test the value
-                    if (fValidLo <= aplFloat
-                     &&             aplFloat <= fValidHi)
-                        *lpVal = aplFloat;
-                    else
-                        bRet = FALSE;
+                    bRet = (fValidLo <= aplFloat
+                         &&             aplFloat <= fValidHi);
                     break;
 
                 case IMMTYPE_CHAR:
@@ -1282,11 +1166,8 @@ BOOL ValidateFloat_EM
             aplFloat = *(LPAPLBOOL) lpData;
 
             // Test the value
-            if (fValidLo <= aplFloat
-             &&             aplFloat <= fValidHi)
-                *lpVal = aplFloat;
-            else
-                bRet = FALSE;
+            bRet = (fValidLo <= aplFloat
+                 &&             aplFloat <= fValidHi);
             break;
 
         case ARRAY_INT:
@@ -1294,11 +1175,8 @@ BOOL ValidateFloat_EM
             aplFloat = (APLFLOAT) *(LPAPLINT) lpData;
 
             // Test the value
-            if (fValidLo <= aplFloat
-             &&             aplFloat <= fValidHi)
-                *lpVal = aplFloat;
-            else
-                bRet = FALSE;
+            bRet = (fValidLo <= aplFloat
+                 &&             aplFloat <= fValidHi);
             break;
 
         case ARRAY_CHAR:
@@ -1313,11 +1191,8 @@ BOOL ValidateFloat_EM
             aplFloat = *(LPAPLFLOAT) lpData;
 
             // Test the value
-            if (fValidLo <= aplFloat
-             &&             aplFloat <= fValidHi)
-                *lpVal = aplFloat;
-            else
-                bRet = FALSE;
+            bRet = (fValidLo <= aplFloat
+                 &&             aplFloat <= fValidHi);
             break;
 
         defstop
@@ -1334,7 +1209,7 @@ NORMAL_EXIT:
                                    lpToken);
     else
     {
-        lptkName->tkData.tkSym->stData.stFloat = *lpVal;
+        lptkName->tkData.tkSym->stData.stFloat = aplFloat;
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -1363,26 +1238,25 @@ NORMAL_EXIT:
 BOOL ValidateCharVector_EM
     (LPTOKEN  lptkName,             // Ptr to name token
      LPTOKEN  lpToken,              // Ptr to value token
-     HGLOBAL *lpVal)                // Ptr to global value handle
+     BOOL     bWSID)                // TRUE iff this is []WSID
 
 {
     LPVOID   lpMem, lpData;
     BOOL     bRet = TRUE,
              bScalar = FALSE;
     LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
-    APLCHAR  aplChar;
-    APLRANK  aplRank;
-    HGLOBAL  hGlbData;
-    UINT     ByteRes;
-
-    DbgBrk ();
+    APLCHAR  aplChar;               // Right arg first char
+    APLNELM  aplNELMRht,            // Right arg NELM
+             aplNELMRes;            // Result    ...
+    APLRANK  aplRankRht;            // Right arg rank
+    HGLOBAL  hGlbRht,               // Right arg global memory handle
+             hGlbRes;               // Result    ...
+    APLUINT  ByteRes;               // # bytes in the result
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:
-            DbgBrk ();      // ***TESTME***
-
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -1390,7 +1264,7 @@ BOOL ValidateCharVector_EM
             if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
                 // Get the HGLOBAL
-                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
+                hGlbRht = lpToken->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL processing
             } // End IF
@@ -1449,7 +1323,7 @@ BOOL ValidateCharVector_EM
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
         case TKT_VARARRAY:  // tkData is an HGLOBAL of an array of ???
             // Get the HGLOBAL
-            hGlbData = lpToken->tkData.tkGlbData;
+            hGlbRht = lpToken->tkData.tkGlbData;
 
             break;          // Continue with HGLOBAL processing
 
@@ -1458,19 +1332,22 @@ BOOL ValidateCharVector_EM
     } // End SWITCH
 
     // st/tkData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbData));
+    Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (ClrPtrTypeDirGlb (hGlbData));
+    lpMem = MyGlobalLock (ClrPtrTypeDirGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
+    // Get the right arg NELM & rank
+    aplNELMRht = lpHeader->NELM;
+    aplRankRht = lpHeader->Rank;
+
     // Skip over the header and dimensions to the data
-    lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
+    lpData = VarArrayBaseToData (lpHeader, aplRankRht);
 
     // Check for scalar or vector
-    aplRank = lpHeader->Rank;
-    if (aplRank > 1)
+    if (aplRankRht > 1)
     {
         lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
 
@@ -1491,7 +1368,7 @@ BOOL ValidateCharVector_EM
         case ARRAY_CHAR:
             aplChar = *(LPAPLCHAR) lpData;
 
-            bScalar = (aplRank EQ 0);
+            bScalar = (aplRankRht EQ 0);
 
             break;
 
@@ -1502,34 +1379,74 @@ BOOL ValidateCharVector_EM
 #undef  lpHeader
 
     // We no longer need this ptr
-    MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbData)); lpMem= NULL;
+    MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbRht)); lpMem= NULL;
 
-    if (bRet)
+    if (!bRet)
+        goto ERROR_EXIT;
+
+    // If the argument is a scalar, make a vector out of it
+    if (bScalar)
+        goto MAKE_VECTOR;
+
+    // If this is []WSID, expand the name
+    if (bWSID)
     {
-        // If the argument is a vector, copy it
-        if (aplRank EQ 1)
-            *lpVal = CopySymGlbDir (hGlbData);
-        else
-        {
-            // ***FINISHME***
-            DbgBrk ();
+        // Lock the memory to get a ptr to it
+        lpMem = MyGlobalLock (ClrPtrTypeDirGlb (hGlbRht));
 
+        // Skip over the header and dimensions to the data
+        lpMem = VarArrayBaseToData (lpMem, 1);
 
+        // Copy the right arg to a location with a terminating zero
+        CopyMemory (lpwszTemp, lpMem, (UINT) aplNELMRht * sizeof (APLCHAR));
+        lpwszTemp[aplNELMRht] = L'\0';
 
-        } // End IF
+        // Convert the []WSID workspace name into a canonical form
+        MakeWorkspaceNameCanonical (lpwszTemp, lpwszTemp, wszSaveDir);
+
+        // Get length of the name as the NELM
+        aplNELMRes = lstrlenW (lpwszTemp);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbRht)); lpMem= NULL;
+
+        goto ALLOC_VECTOR;
     } // End IF
+
+    // Copy the right arg global as the result
+    hGlbRes = CopySymGlbDir (hGlbRht);
 
     goto NORMAL_EXIT;
 
 MAKE_VECTOR:
+    aplNELMRes = 1;
+
+    // If the Quad-var is []WSID, expand the name to be fully-qualified
+    if (bWSID)
+    {
+        WCHAR wsz[2];
+
+        // Save the char as a string
+        wsz[0] = aplChar;
+        wsz[1] = L'\0';
+
+        // Convert the []WSID workspace name into a canonical form
+        MakeWorkspaceNameCanonical (lpwszTemp, wsz, wszSaveDir);
+
+        // Get length of the name as the NELM
+        aplNELMRes = lstrlenW (lpwszTemp);
+    } // End IF
+ALLOC_VECTOR:
     // Calculate space needed for the result
-    //   (a one-element character vctor)
-    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 1, 1);
-    *lpVal = DbgGlobalAlloc (GHND, ByteRes);
-    if (*lpVal NE NULL)
+    //   (a character vector)
+    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
+
+    // Allocate space for the result
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (hGlbRes NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMem = MyGlobalLock (*lpVal);
+        lpMem = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
@@ -1538,24 +1455,28 @@ MAKE_VECTOR:
         lpHeader->ArrType    = ARRAY_CHAR;
 ////////lpHeader->Perm       = 0;       // Already zero from GHND
 ////////lpHeader->SysVar     = 0;       // Already zero from GHND
-////////lpHeader->RefCnt     = 0;       // Already zero from GHND
-        lpHeader->NELM       = 1;
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = 1;
 
 #undef  lpHeader
 
         // Save the dimension
-        *VarArrayBaseToDim (lpMem) = 1;
+        *VarArrayBaseToDim (lpMem) = aplNELMRes;
 
         // Skip over the header and dimensions to the data
         lpMem = VarArrayBaseToData (lpMem, 1);
 
-        *((LPAPLCHAR) lpMem) = aplChar;
+        if (bWSID)
+            CopyMemory (lpMem, lpwszTemp, (UINT) aplNELMRes * sizeof (APLCHAR));
+        else
+            *((LPAPLCHAR) lpMem) = aplChar;
 
         // We no longer need this ptr
-        MyGlobalUnlock (*lpVal); lpMem = NULL;
+        MyGlobalUnlock (hGlbRes); lpMem = NULL;
     } else
         bRet = FALSE;
+ERROR_EXIT:
 NORMAL_EXIT:
     // If in error, set error message;
     //   otherwise, save the value in the name
@@ -1564,7 +1485,11 @@ NORMAL_EXIT:
                                    lpToken);
     else
     {
-        lptkName->tkData.tkSym->stData.stGlbData = *lpVal;
+        // Free the old value
+        FreeResultGlobalVar (ClrPtrTypeDirGlb (lptkName->tkData.tkSym->stData.stGlbData));
+
+        // Save as new value
+        lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeGlb (hGlbRes);
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -1597,8 +1522,7 @@ BOOL ValidateALX_EM
 
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
-
-    bRet = ValidateCharVector_EM (lptkName, lpToken, &lpMemPTD->hGlbQuadALX);
+    bRet = ValidateCharVector_EM (lptkName, lpToken, FALSE);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1631,8 +1555,7 @@ BOOL ValidateCT_EM
     // Ensure the argument is a real scalar or
     //   one-element vector (demoted to a scalar)
     //   between 0 and 1E-10 inclusive.
-
-    bRet = ValidateFloat_EM (lptkName, lpToken, 0, 1E-10, &lpMemPTD->fQuadCT);
+    bRet = ValidateFloat_EM (lptkName, lpToken, 0, 1E-10);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1663,9 +1586,8 @@ BOOL ValidateELX_EM
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Ensure the argument is a character scalar (promoted to a vector)
-    //   or vector
-
-    bRet = ValidateCharVector_EM (lptkName, lpToken, &lpMemPTD->hGlbQuadELX);
+    //   or vector.
+    bRet = ValidateCharVector_EM (lptkName, lpToken, FALSE);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1701,8 +1623,7 @@ BOOL ValidateIO_EM
 
     // Ensure the argument is a Boolean scalar or
     //   one-element vector (demoted to a scalar).
-
-    bRet = ValidateBoolean_EM (lptkName, lpToken, &lpMemPTD->bQuadIO);
+    bRet = ValidateBoolean_EM (lptkName, lpToken);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1734,8 +1655,7 @@ BOOL ValidateLX_EM
 
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector.
-
-    bRet = ValidateCharVector_EM (lptkName, lpToken, &lpMemPTD->hGlbQuadLX);
+    bRet = ValidateCharVector_EM (lptkName, lpToken, FALSE);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1768,13 +1688,10 @@ BOOL ValidatePP_EM
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to 17, inclusive.
-
     bRet = ValidateInteger_EM (lptkName,            // Ptr to token name
                                lpToken,             // Ptr to token value
                                DEF_MIN_QUADPP,      // Minimum value
-                               DEF_MAX_QUADPP,      // Maximum ...
-                              &lpMemPTD->uQuadPP);  // Global output save area
-
+                               DEF_MAX_QUADPP);     // Maximum ...
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1821,8 +1738,6 @@ BOOL ValidatePR_EM
     switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:
-            DbgBrk ();      // ***TESTME***
-
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -1840,7 +1755,7 @@ BOOL ValidatePR_EM
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // Split cases based upon the token immediate type
-            switch (lpToken->tkFlags.ImmType)
+            switch (lpToken->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
                 case IMMTYPE_INT:
@@ -1956,7 +1871,7 @@ MAKE_SCALAR:
     {
         lptkName->tkData.tkSym->stFlags.Imm = (lpMemPTD->cQuadPR NE 0);
         if (lpMemPTD->cQuadPR EQ 0)
-            lptkName->tkData.tkSym->stData.stGlbData = hGlbMTChar;
+            lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeGlb (hGlbMTChar);
         else
             lptkName->tkData.tkSym->stData.stChar = lpMemPTD->cQuadPR;
         lptkName->tkFlags.NoDisplay = 1;
@@ -1994,13 +1909,10 @@ BOOL ValidatePW_EM
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 30 to 255, inclusive.
-
     bRet = ValidateInteger_EM (lptkName,            // Ptr to token name
                                lpToken,             // Ptr to token value
                                DEF_MIN_QUADPW,      // Minimum value
-                               DEF_MAX_QUADPW,      // Maximum ...
-                              &lpMemPTD->uQuadPW);  // Global output save area
-
+                               DEF_MAX_QUADPW);     // Maximum ...
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -2032,13 +1944,10 @@ BOOL ValidateRL_EM
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range from 1 to (-2)+2*31, inclusive.
-
     bRet = ValidateInteger_EM (lptkName,            // Ptr to token name
                                lpToken,             // Ptr to token value
                                DEF_MIN_QUADRL,      // Minimum value
-                               DEF_MAX_QUADRL,      // Maximum ...
-                              &lpMemPTD->uQuadRL);  // Global output save area
-
+                               DEF_MAX_QUADRL);     // Maximum ...
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -2063,7 +1972,11 @@ BOOL ValidateSA_EM
      LPTOKEN lpToken)               // Ptr to value token
 
 {
-    LPVOID       lpMem, lpData;
+    APLSTYPE     aplTypeRht;    // Right arg storage type
+    APLNELM      aplNELMRht;    // Right arg NELM
+    APLRANK      aplRankRht;    // Right arg rank
+    LPVOID       lpMem,
+                 lpData;
     BOOL         bRet = TRUE;   // TRUE iff result is valid
     LPWCHAR      lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     HGLOBAL      hGlbData,
@@ -2079,14 +1992,12 @@ BOOL ValidateSA_EM
 
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or vector, and a valid Stop Action value
-    //   ('', 'EXIT', 'ERROR', 'CLEAR', 'OFF')
+    //   ('', 'EXIT', 'ERROR', 'CLEAR', 'OFF') uppercase only
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:
-            DbgBrk ();      // ***TESTME***
-
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -2134,22 +2045,29 @@ BOOL ValidateSA_EM
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
 
+    // Get the Array Type, NELM, and Rank
+    aplTypeRht = lpHeader->ArrType;
+    aplNELMRht = lpHeader->NELM;
+    aplRankRht = lpHeader->Rank;
+
+#undef  lpHeader
+
     // Skip over the header and dimensions to the data
-    lpData = VarArrayBaseToData (lpHeader, lpHeader->Rank);
+    lpData = VarArrayBaseToData (lpMem, aplRankRht);
 
     // Check for vector
-    if (lpHeader->Rank NE 1)
+    if (aplRankRht NE 1)
     {
         lpwErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
 
         bRet = FALSE;
     } else
     // Split cases based upon the array type
-    switch (lpHeader->ArrType)
+    switch (aplTypeRht)
     {
         case ARRAY_CHAR:
             // Check for the various possible values for []SA
-            switch (lpHeader->NELM)
+            switch (aplNELMRht)
             {
                 case 0:     // ""
                     hGlbRes = hGlbSAEmpty;
@@ -2158,7 +2076,7 @@ BOOL ValidateSA_EM
                     break;
 
                 case 3:     // "OFF"
-                    if (memcmp (lpData, SAOff, sizeof (SAOff) - 1) EQ 0)
+                    if (memcmp (lpData, SAOff  , sizeof (SAOff)   - sizeof (APLCHAR)) EQ 0)
                     {
                         hGlbRes = hGlbSAOff;
                         lpMemPTD->bQuadxSA = SAVAL_Off;
@@ -2167,7 +2085,7 @@ BOOL ValidateSA_EM
                     break;
 
                 case 4:     // "EXIT"
-                    if (memcmp (lpData, SAExit, sizeof (SAExit) - 1) EQ 0)
+                    if (memcmp (lpData, SAExit , sizeof (SAExit)  - sizeof (APLCHAR)) EQ 0)
                     {
                         hGlbRes = hGlbSAExit;
                         lpMemPTD->bQuadxSA = SAVAL_Exit;
@@ -2176,12 +2094,12 @@ BOOL ValidateSA_EM
                     break;
 
                 case 5:     // "CLEAR", "ERROR"
-                    if (memcmp (lpData, SAClear, sizeof (SAClear) - 1) EQ 0)
+                    if (memcmp (lpData, SAClear, sizeof (SAClear) - sizeof (APLCHAR)) EQ 0)
                     {
                         hGlbRes = hGlbSAClear;
                         lpMemPTD->bQuadxSA = SAVAL_Clear;
                     } else
-                    if (memcmp (lpData, SAError, sizeof (SAError) - 1) EQ 0)
+                    if (memcmp (lpData, SAError, sizeof (SAError) - sizeof (APLCHAR)) EQ 0)
                     {
                         hGlbRes = hGlbSAError;
                         lpMemPTD->bQuadxSA = SAVAL_Error;
@@ -2221,7 +2139,10 @@ BOOL ValidateSA_EM
                                    lpToken);
     else
     {
-        FreeResultGlobalVar (lptkName->tkData.tkSym->stData.stGlbData);
+        // Free the old value
+        FreeResultGlobalVar (ClrPtrTypeDirGlb (lptkName->tkData.tkSym->stData.stGlbData));
+
+        // Save as new value
         lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeGlb (hGlbRes);
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
@@ -2262,9 +2183,8 @@ BOOL ValidateWSID_EM
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Ensure the argument is a character scalar (promoted to a vector)
-    //   or vector
-
-    bRet = ValidateCharVector_EM (lptkName, lpToken, &lpMemPTD->hGlbQuadWSID);
+    //   or vector.
+    bRet = ValidateCharVector_EM (lptkName, lpToken, TRUE);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -2293,7 +2213,7 @@ BOOL InitSystemVars
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Assign the validation routines
+    // Set the validation routines
     aSysVarValid[SYSVAR_ALX ] = ValidateALX_EM ;
     aSysVarValid[SYSVAR_CT  ] = ValidateCT_EM  ;
     aSysVarValid[SYSVAR_ELX ] = ValidateELX_EM ;
@@ -2307,26 +2227,23 @@ BOOL InitSystemVars
     aSysVarValid[SYSVAR_WSID] = ValidateWSID_EM;
 
     // Assign default values to the system vars
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"alx" , hGlbQuadALX_CWS   , SYSVAR_ALX , &lpMemPTD->hGlbQuadALX )) return FALSE;   // Attention Latent Expression
-    if (!AssignRealScalar_EM (WS_UTF16_QUAD L"ct"  , fQuadCT_CWS       , SYSVAR_CT  , &lpMemPTD->fQuadCT     )) return FALSE;   // Comparison Tolerance
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"elx" , hGlbQuadELX_CWS   , SYSVAR_ELX , &lpMemPTD->hGlbQuadELX )) return FALSE;   // Error Latent Expression
-    if (!AssignBoolScalar_EM (WS_UTF16_QUAD L"io"  , bQuadIO_CWS       , SYSVAR_IO  , &lpMemPTD->bQuadIO     )) return FALSE;   // Index Origin
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"lx"  , hGlbQuadLX_CWS    , SYSVAR_LX  , &lpMemPTD->hGlbQuadLX  )) return FALSE;   // Latent Expression
-    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"pp"  , uQuadPP_CWS       , SYSVAR_PP  , &lpMemPTD->uQuadPP     )) return FALSE;   // Printing Precision
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"alx" , hGlbQuadALX_CWS   , SYSVAR_ALX , lpMemPTD->lpSymQuadALX      )) return FALSE;   // Attention Latent Expression
+    if (!AssignRealScalar_EM (WS_UTF16_QUAD L"ct"  , fQuadCT_CWS       , SYSVAR_CT  , lpMemPTD->lpSymQuadCT       )) return FALSE;   // Comparison Tolerance
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"elx" , hGlbQuadELX_CWS   , SYSVAR_ELX , lpMemPTD->lpSymQuadELX      )) return FALSE;   // Error Latent Expression
+    if (!AssignBoolScalar_EM (WS_UTF16_QUAD L"io"  , bQuadIO_CWS       , SYSVAR_IO  , lpMemPTD->lpSymQuadIO       )) return FALSE;   // Index Origin
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"lx"  , hGlbQuadLX_CWS    , SYSVAR_LX  , lpMemPTD->lpSymQuadLX       )) return FALSE;   // Latent Expression
+    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"pp"  , uQuadPP_CWS       , SYSVAR_PP  , lpMemPTD->lpSymQuadPP       )) return FALSE;   // Printing Precision
     if (cQuadPR_CWS EQ 0)
     {
-        if (!AssignCharVector_EM (WS_UTF16_QUAD L"pr", hGlbQuadPR_CWS  , SYSVAR_PR  , &lpMemPTD->hGlbQuadPR  )) return FALSE;   // Prompt Replacement
+        if (!AssignCharVector_EM (WS_UTF16_QUAD L"pr", hGlbQuadPR_CWS  , SYSVAR_PR  , lpMemPTD->lpSymQuadPR       )) return FALSE;   // Prompt Replacement
     } else
     {
-        if (!AssignCharScalar_EM (WS_UTF16_QUAD L"pr", cQuadPR_CWS     , SYSVAR_PR  , &lpMemPTD->cQuadPR     )) return FALSE;   // Prompt Replacement
+        if (!AssignCharScalar_EM (WS_UTF16_QUAD L"pr", cQuadPR_CWS     , SYSVAR_PR  , lpMemPTD->lpSymQuadPR       )) return FALSE;   // Prompt Replacement
     } // End IF
-    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"pw"  , uQuadPW_CWS       , SYSVAR_PW  , &lpMemPTD->uQuadPW     )) return FALSE;   // Printing Width
-    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"rl"  , uQuadRL_CWS       , SYSVAR_RL  , &lpMemPTD->uQuadRL     )) return FALSE;   // Random Link
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"sa"  , hGlbQuadSA_CWS    , SYSVAR_SA  , &lpMemPTD->hGlbQuadSA  )) return FALSE;   // Stop Action
-    if (!AssignCharVector_EM (WS_UTF16_QUAD L"wsid", hGlbQuadWSID_CWS  , SYSVAR_WSID, &lpMemPTD->hGlbQuadWSID)) return FALSE;   // Workspace Identifier
-    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"inverse"  , 0            , 0          , NULL                   )) return FALSE;   // Entry for function inverse
-    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"prototype", 0            , 0          , NULL                   )) return FALSE;   // ...                prototype
-    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"singleton", 0            , 0          , NULL                   )) return FALSE;   // ...                singleton
+    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"pw"  , uQuadPW_CWS       , SYSVAR_PW  , lpMemPTD->lpSymQuadPW       )) return FALSE;   // Printing Width
+    if (!AssignIntScalar_EM  (WS_UTF16_QUAD L"rl"  , uQuadRL_CWS       , SYSVAR_RL  , lpMemPTD->lpSymQuadRL       )) return FALSE;   // Random Link
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"sa"  , hGlbQuadSA_CWS    , SYSVAR_SA  , lpMemPTD->lpSymQuadSA       )) return FALSE;   // Stop Action
+    if (!AssignCharVector_EM (WS_UTF16_QUAD L"wsid", hGlbQuadWSID_CWS  , SYSVAR_WSID, lpMemPTD->lpSymQuadWSID     )) return FALSE;   // Workspace Identifier
 
     // Save the index value
     lpMemPTD->bQuadxSA = bQuadxSA_CWS;

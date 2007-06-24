@@ -372,7 +372,10 @@ void DisplayPrompt
     // If the char position of the caret
     //   is not at the left, put it there
     if (uLinePos NE uCharPos)
+    {
+        DbgBrk ();
         AppendLine (L"", FALSE, TRUE);
+    } // End IF
     AppendLine (wszIndent, FALSE, FALSE);
 
     if (bSetFocusSM)
@@ -1175,11 +1178,11 @@ LRESULT APIENTRY SMWndProc
             {
                 case VK_RETURN:
                     // Check for Quad or Quote-quad input
-////                if ()       // ***FIXME***
-                    {
-
-
-                    } // End IF
+////                if ()       // ***FINISHME***
+////                {
+////
+////
+////                } // End IF
 
                     // If we're not on the last line,
                     //   copy it and append it to the buffer

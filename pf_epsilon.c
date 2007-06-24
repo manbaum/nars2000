@@ -402,7 +402,7 @@ void PrimFnMonEpsilonGlbCount
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
 
-    // Save the type and NELM
+    // Get the Array Type and NELM
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
@@ -498,7 +498,7 @@ void PrimFnMonEpsilonGlbCopy
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
 
-    // Save the Type, NELM, and Rank
+    // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;

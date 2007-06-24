@@ -358,6 +358,7 @@
         <li>Monadic
           <ul>
             <li><span class="APL">{quad}DR</span></li>
+            <li><span class="APL">{quad}SIZE</span></li>
             <li><span class="APL">{quad}TYPE</span></li>
           </ul>
         </li>

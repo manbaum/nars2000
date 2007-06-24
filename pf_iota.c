@@ -128,7 +128,7 @@ LPYYSTYPE PrimFnMonIota_EM_YY
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    bQuadIO = lpMemPTD->bQuadIO;
+    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -407,7 +407,7 @@ BOOL PrimFnMonIotaGlb_EM
     // It's an array
     Assert (lpHeader->Sig.nature EQ VARARRAY_HEADER_SIGNATURE);
 
-    // Save the Type, NELM, and Rank
+    // Get the Type, NELM, and Rank
     aplType = lpHeader->ArrType;
     aplNELM = lpHeader->NELM;
     aplRank = lpHeader->Rank;

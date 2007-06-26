@@ -135,6 +135,14 @@ DecrRefCntInd (hGlbData);
 #define MYWM_SAVE_AS_FN     (WM_APP+ 7) // FE (SaveAsFunction)
 #define MYWM_CLOSE_FN       (WM_APP+ 8) // FE (CloseFunction)
 
+// Define Debug window messages
+#define MYWM_INIT_DB        (WM_APP + 0)
+#define MYWM_DBGMSGA        (WM_APP + 1)
+#define MYWM_DBGMSGW        (WM_APP + 2)
+#define MYWM_DBGMSG_COM     (WM_APP + 3)
+#define MYWM_DBGMSG_CLR     (WM_APP + 4)
+#define MYWM_DBGMSG_SCROLL  (WM_APP + 5)
+
 
 typedef enum tagEXTYPE
 {

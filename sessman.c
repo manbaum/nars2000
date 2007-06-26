@@ -1377,6 +1377,9 @@ LRESULT APIENTRY SMWndProc
                                   SWP_NOZORDER      // Flags
                                 | SWP_SHOWWINDOW
                                  );
+                    // Tell the debugger window to scroll the last line into view
+                    SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSG_SCROLL, (WPARAM) -1, 0);
+
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 

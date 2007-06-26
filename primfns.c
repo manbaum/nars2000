@@ -2514,15 +2514,15 @@ void FirstValue
             return;
     } // End SWITCH
 
-    // Handle the global case
-    FirstValueGlb (ClrPtrTypeDirGlb (hGlbData),
-                   lpaplInteger,
-                   lpaplFloat,
-                   lpaplChar,
-                   lpaplLongest,
-                   lpSymGlb,
-                   lpImmType,
-                   lpArrType);
+    // Handle the LPSYMENTRY/HGLOBAL case
+    FirstValueSymGlb (hGlbData,
+                      lpaplInteger,
+                      lpaplFloat,
+                      lpaplChar,
+                      lpaplLongest,
+                      lpSymGlb,
+                      lpImmType,
+                      lpArrType);
 } // End FirstValue
 
 
@@ -2599,16 +2599,16 @@ void FirstValueImm
 
 
 //***************************************************************************
-//  $FirstValueGlb
+//  $FirstValueSymGlb
 //
-//  Return the first value from an HGLOBAL as either
+//  Return the first value from an LPSYMENTRY/HGLOBAL as either
 //    both an integer and a float, or as a character,
 //    or as an LPSYMENTRY/HGLOBAL.  The HGLOBAL may be
 //    an empty array in which case the value of the
 //    prototype is returned.
 //***************************************************************************
 
-void FirstValueGlb
+void FirstValueSymGlb
     (HGLOBAL      hGlbData,     // The global memory handle
      LPAPLINT     lpaplInteger, // Return the integer (or Boolean) (may be NULL)
      LPAPLFLOAT   lpaplFloat,   // ...        float (may be NULL)
@@ -2626,6 +2626,30 @@ void FirstValueGlb
     APLFLOAT   aplFloat;
     APLCHAR    aplChar;
     LPSYMENTRY lpSym;
+
+    // Split cases based upon the ptr type
+    switch (GetPtrTypeDir (hGlbData))
+    {
+        case PTRTYPE_STCONST:
+            FirstValueImm (((LPSYMENTRY) hGlbData)->stFlags.ImmType,
+                           ((LPSYMENTRY) hGlbData)->stData.stLongest,
+                           lpaplInteger,
+                           lpaplFloat,
+                           lpaplChar,
+                           lpaplLongest,
+                           lpSymGlb,
+                           lpImmType,
+                           lpArrType);
+            return;
+
+        case PTRTYPE_HGLOBAL:
+            hGlbData = ClrPtrTypeDirGlb (hGlbData);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
@@ -2779,16 +2803,16 @@ void FirstValueGlb
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
-} // End FirstValueGlb
+} // End FirstValueSymGlb
 
 
 //***************************************************************************
-//  $GetValueInToken
+//  $GetValueIntoToken
 //
 //  Get the next value from a variable into a token
 //***************************************************************************
 
-void GetValueInToken
+void GetValueIntoToken
     (APLUINT  uArg,         // Index to use
      LPVOID   lpMemArg,     // Ptr to global memory object to index
      APLSTYPE aplTypeArg,   // Storage type of the arg
@@ -2866,7 +2890,7 @@ void GetValueInToken
         defstop
             break;
     } // End SWITCH
-} // End GetValueInToken
+} // End GetValueIntoToken
 
 
 //***************************************************************************

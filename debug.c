@@ -22,12 +22,6 @@
 #include "compro.h"
 #endif
 
-#define MYWM_INIT_DB        (WM_USER + 0)
-#define MYWM_DBGMSGA        (WM_USER + 1)
-#define MYWM_DBGMSGW        (WM_USER + 2)
-#define MYWM_DBGMSG_COM     (WM_USER + 3)
-#define MYWM_DBGMSG_CLR     (WM_USER + 4)
-
 
 #ifdef DEBUG
 //***************************************************************************
@@ -149,7 +143,7 @@ LRESULT APIENTRY DBWndProc
             ShowWindow (hWnd,   SW_SHOWNORMAL);
 
             // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData);
+            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -187,7 +181,7 @@ LRESULT APIENTRY DBWndProc
         case WM_SETFONT:
         case WM_MOUSEWHEEL:
             // Pass these message through to the ListBox
-            SendMessage (hWndLB, message, wParam, lParam);
+            SendMessageW (hWndLB, message, wParam, lParam);
 
             return FALSE;           // We handled the msg
 
@@ -258,16 +252,28 @@ LRESULT APIENTRY DBWndProc
         case MYWM_DBGMSG_COM:       // Common code
             iIndex = SendMessageW (hWndLB, LB_ADDSTRING, 0, lParam);
 
+            // Scroll this item into view
+            SendMessageW (hWnd, MYWM_DBGMSG_SCROLL, iIndex, 0);
+
+            return FALSE;           // We handled the msg
+
+        case MYWM_DBGMSG_SCROLL:    // Scroll item into view
+            iIndex = (int) wParam;  // Get the item #
+
+            // Check for last line #
+            if (iIndex EQ -1)
+                iIndex = SendMessageW (hWndLB, LB_GETCOUNT, 0, 0);
+
             // Ensure the item just added is visible
             GetClientRect (hWndLB, &rcClient);
 
             // Common item height
-            iHeight = SendMessage (hWndLB, LB_GETITEMHEIGHT, 0, 0);
+            iHeight = SendMessageW (hWndLB, LB_GETITEMHEIGHT, 0, 0);
 
             // Less # whole items we can display
             iIndex -= (rcClient.bottom / iHeight) - 1;
 
-            SendMessage (hWndLB, LB_SETTOPINDEX, max (0, iIndex), 0);
+            SendMessageW (hWndLB, LB_SETTOPINDEX, max (0, iIndex), 0);
 
             UpdateWindow (hWnd);    // Redraw the screen now
 
@@ -275,7 +281,7 @@ LRESULT APIENTRY DBWndProc
 
         case MYWM_DBGMSG_CLR:
             // Start over again
-            SendMessage (hWndLB, LB_RESETCONTENT, 0, 0);
+            SendMessageW (hWndLB, LB_RESETCONTENT, 0, 0);
 ////////////iLineNum = (int) GetProp (PROP_LINENUM);
             iLineNum = 0;
             SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
@@ -334,7 +340,7 @@ LRESULT WINAPI LclListboxWndProc
     WNDPROC      lpfnOldListboxWndProc;
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -352,8 +358,8 @@ LRESULT WINAPI LclListboxWndProc
             {
                 case IDM_COPY:
                     // Get the # selected items
-////////////////////iSelCnt = SendMessage (hWndLB, LB_GETSELCOUNT, 0, 0);
-                    iSelCnt = SendMessage (hWnd, LB_GETSELCOUNT, 0, 0);
+////////////////////iSelCnt = SendMessageW (hWndLB, LB_GETSELCOUNT, 0, 0);
+                    iSelCnt = SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
 
                     // Allocate space for that many indices
                     hGlbInd = GlobalAlloc (GHND, iSelCnt * sizeof (int));
@@ -362,15 +368,15 @@ LRESULT WINAPI LclListboxWndProc
                     lpInd = GlobalLock (hGlbInd);
 
                     // Populate the array
-////////////////////SendMessage (hWndLB, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
-                    SendMessage (hWnd, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
+////////////////////SendMessageW (hWndLB, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
+                    SendMessageW (hWnd, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
 
                     // Loop through the selected items and calculate
                     //   the storage requirement for the collection
                     for (iTotalBytes = i = 0; i < iSelCnt; i++)
                         // The "2 +" is for the '\r' and '\n' at the end of each line
-////////////////////////iTotalBytes += sizeof (WCHAR) * (2 + SendMessage (hWndLB, LB_GETTEXTLEN, lpInd[i], 0));
-                        iTotalBytes += sizeof (WCHAR) * (2 + SendMessage (hWnd, LB_GETTEXTLEN, lpInd[i], 0));
+////////////////////////iTotalBytes += sizeof (WCHAR) * (2 + SendMessageW (hWndLB, LB_GETTEXTLEN, lpInd[i], 0));
+                        iTotalBytes += sizeof (WCHAR) * (2 + SendMessageW (hWnd, LB_GETTEXTLEN, lpInd[i], 0));
 
                     // Allocate storage for the entire collection
                     hGlbSel = GlobalAlloc (GHND | GMEM_DDESHARE, iTotalBytes);
@@ -428,8 +434,8 @@ LRESULT WINAPI LclListboxWndProc
 
                 case IDM_SELECTALL:
                     // Select all items
-////////////////////if (LB_ERR EQ SendMessage (hWndLB,
-                    if (LB_ERR EQ SendMessage (hWnd,
+////////////////////if (LB_ERR EQ SendMessageW (hWndLB,
+                    if (LB_ERR EQ SendMessageW (hWnd,
                                                LB_SELITEMRANGE,
                                                TRUE,
                                                MAKELPARAM (0, -1)))
@@ -444,7 +450,7 @@ LRESULT WINAPI LclListboxWndProc
                                             // yPos = HIWORD(lParam);  // vertical position of cursor
 
             // Ensure there are items selected
-            iSelCnt = SendMessage (hWnd, LB_GETSELCOUNT, 0, 0);
+            iSelCnt = SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
 
             mfState = (iSelCnt EQ 0) ? MF_GRAYED : MF_ENABLED;
 
@@ -513,7 +519,7 @@ LRESULT WINAPI LclListboxWndProc
                 case VK_F11:
                 case VK_F12:
                     // Get the thread's PerTabData global memory handle
-                    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+                    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -557,7 +563,7 @@ void DbgMsg
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -594,7 +600,7 @@ void DbgMsgW
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -650,7 +656,7 @@ void DbgClr
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

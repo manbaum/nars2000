@@ -2651,8 +2651,7 @@ NORMAL_EXIT:
     tkLocalVars.lpNext      = NULL;
     tkLocalVars.lpLastEOS   = NULL;
 UNLOCKED_EXIT:
-////#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-#ifdef DEBUG
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
     // Display the tokens so far
     DisplayTokens (tkLocalVars.hGlbToken);
     DbgMsg ("*** Tokenize_EM End");

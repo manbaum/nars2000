@@ -505,12 +505,12 @@ LPYYSTYPE PrimOpMonSlashCommon_EM_YY
             uRht = uDimRht + (uDimAxRht - 1) * uDimHi;
 
             // Get the last element as the right arg
-            GetValueInToken (uRht,              // Index to use
-                             lpMemRht,          // Ptr to global memory object to index
-                             aplTypeRht,        // Storage type of the arg
-                             apaOffRht,         // APA offset (if needed)
-                             apaMulRht,         // APA multiplier (if needed)
-                            &tkRhtArg);         // Ptr to token in which to place the value
+            GetValueIntoToken (uRht,            // Index to use
+                               lpMemRht,        // Ptr to global memory object to index
+                               aplTypeRht,      // Storage type of the arg
+                               apaOffRht,       // APA offset (if needed)
+                               apaMulRht,       // APA multiplier (if needed)
+                              &tkRhtArg);       // Ptr to token in which to place the value
             // Loop backwards through the elements along the specified axis
             for (iDim = uDimAxRht - 2; iDim >= 0; iDim--)
             {
@@ -518,12 +518,12 @@ LPYYSTYPE PrimOpMonSlashCommon_EM_YY
                 uRht = uDimRht + iDim * uDimHi;
 
                 // Get the previous element as the left arg
-                GetValueInToken (uRht,          // Index to use
-                                 lpMemRht,      // Ptr to global memory object to index
-                                 aplTypeRht,    // Storage type of the arg
-                                 apaOffRht,     // APA offset (if needed)
-                                 apaMulRht,     // APA multiplier (if needed)
-                                &tkLftArg);     // Ptr to token in which to place the value
+                GetValueIntoToken (uRht,        // Index to use
+                                   lpMemRht,    // Ptr to global memory object to index
+                                   aplTypeRht,  // Storage type of the arg
+                                   apaOffRht,   // APA offset (if needed)
+                                   apaMulRht,   // APA multiplier (if needed)
+                                  &tkLftArg);   // Ptr to token in which to place the value
                 // Execute the left operand between the left & right args
                 if (lpPrimProtoLft)
                     // Note that we cast the function strand to LPTOKEN
@@ -1219,12 +1219,12 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
                     uRht = uDimRht + (uAx + aplIntegerLftAbs - 1) * uDimHi;
 
                     // Get the last element as the right arg
-                    GetValueInToken (uRht,              // Index to use
-                                     lpMemRht,          // Ptr to global memory object to index
-                                     aplTypeRht,        // Storage type of the arg
-                                     apaOffRht,         // APA offset (if needed)
-                                     apaMulRht,         // APA multiplier (if needed)
-                                    &tkRhtArg);         // Ptr to token in which to place the value
+                    GetValueIntoToken (uRht,            // Index to use
+                                       lpMemRht,        // Ptr to global memory object to index
+                                       aplTypeRht,      // Storage type of the arg
+                                       apaOffRht,       // APA offset (if needed)
+                                       apaMulRht,       // APA multiplier (if needed)
+                                      &tkRhtArg);       // Ptr to token in which to place the value
                     // Loop backwards through the elements along the specified axis
                     for (iDim = aplIntegerLftAbs - 2; iDim >= 0; iDim--)
                     {
@@ -1232,12 +1232,12 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
                         uRht = uDimRht + (uAx + iDim) * uDimHi;
 
                         // Get the previous element as the left arg
-                        GetValueInToken (uRht,          // Index to use
-                                         lpMemRht,      // Ptr to global memory object to index
-                                         aplTypeRht,    // Storage type of the arg
-                                         apaOffRht,     // APA offset (if needed)
-                                         apaMulRht,     // APA multiplier (if needed)
-                                        &tkLftArg);     // Ptr to token in which to place the value
+                        GetValueIntoToken (uRht,        // Index to use
+                                           lpMemRht,    // Ptr to global memory object to index
+                                           aplTypeRht,  // Storage type of the arg
+                                           apaOffRht,   // APA offset (if needed)
+                                           apaMulRht,   // APA multiplier (if needed)
+                                          &tkLftArg);   // Ptr to token in which to place the value
                         // Execute the left operand between the left & right args
                         if (lpPrimProtoLft)
                             // Note that we cast the function strand to LPTOKEN
@@ -1273,12 +1273,12 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
                     uRht = uDimRht + uAx * uDimHi;
 
                     // Get the first element as the right arg
-                    GetValueInToken (uRht,              // Index to use
-                                     lpMemRht,          // Ptr to global memory object to index
-                                     aplTypeRht,        // Storage type of the arg
-                                     apaOffRht,         // APA offset (if needed)
-                                     apaMulRht,         // APA multiplier (if needed)
-                                    &tkRhtArg);         // Ptr to token in which to place the value
+                    GetValueIntoToken (uRht,            // Index to use
+                                       lpMemRht,        // Ptr to global memory object to index
+                                       aplTypeRht,      // Storage type of the arg
+                                       apaOffRht,       // APA offset (if needed)
+                                       apaMulRht,       // APA multiplier (if needed)
+                                      &tkRhtArg);       // Ptr to token in which to place the value
                     // Loop forwards through the elements along the specified axis
                     for (iDim = 1; iDim < aplIntegerLftAbs; iDim++)
                     {
@@ -1286,12 +1286,12 @@ LPYYSTYPE PrimOpDydSlashCommon_EM_YY
                         uRht = uDimRht + (uAx + iDim) * uDimHi;
 
                         // Get the next element as the left arg
-                        GetValueInToken (uRht,          // Index to use
-                                         lpMemRht,      // Ptr to global memory object to index
-                                         aplTypeRht,    // Storage type of the arg
-                                         apaOffRht,     // APA offset (if needed)
-                                         apaMulRht,     // APA multiplier (if needed)
-                                        &tkLftArg);     // Ptr to token in which to place the value
+                        GetValueIntoToken (uRht,        // Index to use
+                                           lpMemRht,    // Ptr to global memory object to index
+                                           aplTypeRht,  // Storage type of the arg
+                                           apaOffRht,   // APA offset (if needed)
+                                           apaMulRht,   // APA multiplier (if needed)
+                                          &tkLftArg);   // Ptr to token in which to place the value
                         // Execute the left operand between the left & right args
                         if (lpPrimProtoLft)
                             // Note that we cast the function strand to LPTOKEN

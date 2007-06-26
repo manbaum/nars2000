@@ -34,20 +34,40 @@ typedef struct tagYYSTYPE
 // Define indices into lpYYStrandStart/Base/Nest[2];
 typedef enum tagINDSTRAND
 {
-    VARSTRAND = 0,
-    FCNSTRAND,
+    STRAND_VAR = 0,                 // Index for var strands
+    STRAND_FCN,                     // Index for function strands
+    STRAND_LEN                      // # elements in this enum
 } INDSTRAND;
+
+typedef enum tagOBJTYPE
+{
+    OBJTYPE_VAR = 0,                // Object type is Variable
+    OBJTYPE_OP1,                    // ...            Monadic Operator
+    OBJTYPE_OP2,                    // ...            Dyadic Operator
+    OBJTYPE_FCN,                    // ...            Function (primitive or defined)
+} OBJTYPE;
+
+typedef enum tagLOOKAHEAD
+{
+    LOOKAHEAD_NRM = 0,              // No lookahead
+    LOOKAHEAD_SUR,                  // Lookahead for within surrounding parens
+    LOOKAHEAD_ADJ,                  // ...           adjacent to brackets
+} LOOKAHEAD;
 
 typedef struct tagPLLOCALVARS       // ParseLine Local Vars
 {
     HGLOBAL     hGlbToken;          // Global memory handle
     UNION_TOKEN t2;                 // Locked base of hGlbToken
-    LPTOKEN     lpStart,            // First available entry after the header
-                lpNext;             // Next  ...
+    LPTOKEN     lpStart,            // Ptr to first available entry after the header
+                lpNext,             // Ptr to next  ...
+                lpStop;             // Ptr to stop token if LookAhead
     UINT        tkErrorCharIndex;   // Error char index
-    LPYYSTYPE   lpYYStrandStart[2], // Strand stack start (static)
-                lpYYStrandBase[2],  // ...          base (dynamic)
-                lpYYStrandNext[2];  // ...          next token (dynamic)
+    UINT        InitAhead:1,        // TRUE iff we're to initialize (SOL)
+                ObjType:2,          // Object type (see enum tagOBJTYPE)
+                LookAhead:2;        // TRUE iff looking for object type within surrounding parens
+    LPYYSTYPE   lpYYStrandStart[STRAND_LEN],    // Strand stack start (static)
+                lpYYStrandBase [STRAND_LEN],    // ...          base (dynamic)
+                lpYYStrandNext [STRAND_LEN];    // ...          next token (dynamic)
     HGLOBAL     hGlbPTD;            // Handle to PerTabData
     HWND        hWndSM;             // Window handle to Session Manager
 } PLLOCALVARS, *LPPLLOCALVARS;

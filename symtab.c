@@ -1089,9 +1089,9 @@ LPSYMENTRY SymTabLookupChar
 //***************************************************************************
 
 LPSYMENTRY SymTabLookupNumber
-    (UINT      uHash,
-     APLINT    aplInteger,
-     LPSTFLAGS lpstFlags)
+    (UINT      uHash,           // The hashed value
+     APLINT    aplInteger,      // The integer/Boolean to lookup
+     LPSTFLAGS lpstNeedFlags)   // The flags we require
 
 {
     LPHSHENTRY   lpHshEntry;
@@ -1117,6 +1117,9 @@ LPSYMENTRY SymTabLookupNumber
     // Save common value
     uHashMasked = MaskTheHash (uHash);
 
+#ifdef DEBUG
+    DisplayHshTab ();
+#endif
     for (lpHshEntry = &lpMemPTD->lpHshTab[uHashMasked];
          lpHshEntry NE LPHSHENTRY_NONE;
          lpHshEntry = lpHshEntry->NextSameHash)
@@ -1132,7 +1135,7 @@ LPSYMENTRY SymTabLookupNumber
         if (lpHshEntry->htFlags.Inuse
          && (!lpHshEntry->htFlags.SymCopy)
          && ((*(UINT *) &lpHshEntry->lpSymEntry->stFlags) & *(UINT *) &stMaskFlags)
-             EQ *(UINT *) lpstFlags
+             EQ *(UINT *) lpstNeedFlags
          && aplInteger EQ lpHshEntry->lpSymEntry->stData.stInteger)
         {
             lpSymEntry = lpHshEntry->lpSymEntry;
@@ -1392,7 +1395,7 @@ LPSYMENTRY MakeSymEntry_EM
      LPTOKEN       lptkFunc)        // Ptr to token to use in case of error
 
 {
-    LPSYMENTRY lpSymDst;
+    LPSYMENTRY lpSymDst;        // Ptr to dest SYMENTRY
 
     // Split cases based upon the immediate type
     switch (immType)
@@ -1526,12 +1529,12 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
      BOOL   bPerm)
 
 {
-    LPSYMENTRY   lpSymEntryDest;
-    LPHSHENTRY   lpHshEntryDest;
-    UINT         uHash;
-    STFLAGS      stFlags = {0};
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPSYMENTRY   lpSymEntryDest;    // Ptr to dest SYMENTRY
+    LPHSHENTRY   lpHshEntryDest;    // Ptr to dest HSHENTRY
+    UINT         uHash;             // The hased value
+    STFLAGS      stNeedFlags = {0}; // The flags we require
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -1545,18 +1548,18 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
              IsBooleanValue (aplInteger) ? sizeof (APLBOOL) : sizeof (APLINT), // The # values pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
-    stFlags.Imm   =
-    stFlags.Perm  =
-    stFlags.Value =
-    stFlags.Inuse = 1;
+    stNeedFlags.Perm  = bPerm;
+    stNeedFlags.Imm   =
+    stNeedFlags.Value =
+    stNeedFlags.Inuse = 1;
 
     if (IsBooleanValue (aplInteger))
-        stFlags.ImmType = IMMTYPE_BOOL;
+        stNeedFlags.ImmType = IMMTYPE_BOOL;
     else
-        stFlags.ImmType = IMMTYPE_INT;
+        stNeedFlags.ImmType = IMMTYPE_INT;
 
     // Lookup the number in the symbol table
-    lpSymEntryDest = SymTabLookupNumber (uHash, aplInteger, &stFlags);
+    lpSymEntryDest = SymTabLookupNumber (uHash, aplInteger, &stNeedFlags);
     if (!lpSymEntryDest)
     {
         LPHSHENTRY lpHshEntryHash;
@@ -1592,8 +1595,8 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
         lpSymEntryDest->stData.stInteger = aplInteger;
 
         // Save the symbol table flags
-        stFlags.Perm = bPerm;
-        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
+        stNeedFlags.Perm = bPerm;
+        *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stNeedFlags;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;

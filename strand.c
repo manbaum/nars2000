@@ -55,7 +55,7 @@ void InitVarStrand
 
     // Set the base of this strand to the next available location
     lpYYArg->unYYSTYPE.lpYYStrandBase        =
-    lpplLocalVars->lpYYStrandBase[VARSTRAND] = lpplLocalVars->lpYYStrandNext[VARSTRAND];
+    lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
 } // End InitVarStrand
 
 
@@ -90,15 +90,15 @@ LPYYSTYPE PushVarStrand_YY
 
     // Copy the strand base to the result
     lpYYRes->unYYSTYPE.lpYYStrandBase  =
-    lpYYArg->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[VARSTRAND];
+    lpYYArg->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
 
     // Save this token on the strand stack
     //   and skip over it
-    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[VARSTRAND]++, lpYYArg);
+    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_VAR]++, lpYYArg);
 
 #ifdef DEBUG
     // Display the strand stack
-    DisplayStrand (VARSTRAND);
+    DisplayStrand (STRAND_VAR);
 #endif
     return lpYYRes;
 } // End PushVarStrand_YY
@@ -130,26 +130,26 @@ LPYYSTYPE PushFcnStrand_YY
     lpYYArg->Indirect = bIndirect;
 
     // Copy the strand base to the result
-    lpYYArg->unYYSTYPE.lpYYStrandBase = lpplLocalVars->lpYYStrandBase[FCNSTRAND];
+    lpYYArg->unYYSTYPE.lpYYStrandBase = lpplLocalVars->lpYYStrandBase[STRAND_FCN];
     if (!lpYYArg->lpYYFcn)
-        lpYYArg->lpYYFcn = lpplLocalVars->lpYYStrandNext[FCNSTRAND];
+        lpYYArg->lpYYFcn = lpplLocalVars->lpYYStrandNext[STRAND_FCN];
 
     // Fill in the result token
     YYCopy (lpYYRes, lpYYArg);
 
     // Return our own position so the next user
     //   of this token can refer to it.
-    lpYYRes->lpYYFcn = lpplLocalVars->lpYYStrandNext[FCNSTRAND];
+    lpYYRes->lpYYFcn = lpplLocalVars->lpYYStrandNext[STRAND_FCN];
 
     // Save this token on the strand stack
     //   and skip over it
     lpYYCopy = CopyYYSTYPE_EM_YY (lpYYArg, FALSE);
-    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[FCNSTRAND]++, lpYYCopy);
+    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_FCN]++, lpYYCopy);
     YYFree (lpYYCopy); lpYYCopy = NULL;
 
 #ifdef DEBUG
     // Display the strand stack
-    DisplayStrand (FCNSTRAND);
+    DisplayStrand (STRAND_FCN);
 #endif
     return lpYYRes;
 } // End PushFcnStrand_YY
@@ -163,7 +163,7 @@ LPYYSTYPE PushFcnStrand_YY
 
 void StripStrand
     (LPYYSTYPE lpYYStrand,          // Ptr to base of strand to strip
-     int       strType)             // Strand type (VARSTRAND or FCNSTRAND)
+     int       strType)             // Strand type (STRAND_VAR or STRAND_FCN)
 
 {
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
@@ -340,7 +340,7 @@ static char tabConvert[][STRAND_LENGTH] =
     lpYYRes->lpYYFcn = (LPYYSTYPE) -1;  // For debugging
 
     // Get the # elements in the strand
-    iLen = lpplLocalVars->lpYYStrandNext[VARSTRAND] - lpYYStrand;
+    iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
 
     // Trundle through the strand stack converting
     //   to a common memory allocation type
@@ -984,10 +984,10 @@ static char tabConvert[][STRAND_LENGTH] =
         goto ERROR_EXIT;
 NORMAL_EXIT:
     // Free the tokens on this portion of the strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[VARSTRAND], lpplLocalVars->lpYYStrandBase[VARSTRAND]);
+    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandBase[STRAND_VAR]);
 
     // Strip the tokens on this portion of the strand stack
-    StripStrand (lpYYRes, VARSTRAND);
+    StripStrand (lpYYRes, STRAND_VAR);
 
     DBGLEAVE;
 
@@ -995,7 +995,7 @@ NORMAL_EXIT:
 
 ERROR_EXIT:
     // Free the entire strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[VARSTRAND], lpplLocalVars->lpYYStrandStart[VARSTRAND]);
+    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandStart[STRAND_VAR]);
 
     DBGLEAVE;
 
@@ -1048,7 +1048,7 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     lpYYRes->unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
 
     // Get the (maximum) # elements in the strand
-    iIniLen = lpplLocalVars->lpYYStrandNext[FCNSTRAND] - lpYYStrand;
+    iIniLen = lpplLocalVars->lpYYStrandNext[STRAND_FCN] - lpYYStrand;
 
     //***********************************************************************
     //********** Single Element Case ****************************************
@@ -1155,18 +1155,18 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     lpYYRes->TknCount = iActLen;
     lpYYRes->FcnCount = FcnCount;
 NORMAL_EXIT:
-    lpYYRes->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[FCNSTRAND] = lpYYBase;
+    lpYYRes->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_FCN] = lpYYBase;
 
 #ifdef DEBUG
     // Display the strand stack
-    DisplayStrand (FCNSTRAND);
+    DisplayStrand (STRAND_FCN);
 #endif
 
     // Free the tokens on this portion of the strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[FCNSTRAND], lpplLocalVars->lpYYStrandBase[FCNSTRAND]);
+    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_FCN], lpplLocalVars->lpYYStrandBase[STRAND_FCN]);
 
     // Strip the tokens on this portion of the strand stack
-    StripStrand (lpYYRes, FCNSTRAND);
+    StripStrand (lpYYRes, STRAND_FCN);
 
     DBGLEAVE;
 
@@ -1174,7 +1174,7 @@ NORMAL_EXIT:
 
 ERROR_EXIT:
     // Free the entire function strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[FCNSTRAND], lpplLocalVars->lpYYStrandStart[FCNSTRAND]);
+    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_FCN], lpplLocalVars->lpYYStrandStart[STRAND_FCN]);
 
     DBGLEAVE;
 
@@ -1227,87 +1227,85 @@ LPYYSTYPE CopyYYFcn
         // Calculate the earlier function base
         *lpYYBase = min (*lpYYBase, lpYYArg[i].lpYYFcn);
 
-        // Special case for named functions/operators
-        if (lpToken->tkFlags.TknType EQ TKT_FCNNAMED
-         || lpToken->tkFlags.TknType EQ TKT_OP1NAMED
-         || lpToken->tkFlags.TknType EQ TKT_OP2NAMED)
-        {
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-            // If it's an immediate function/operator, copy it directly
-            if (lpToken->tkData.tkSym->stFlags.Imm)
-            {
-                YYFcn = lpYYArg[i];
-                YYFcn.tkToken.tkFlags.TknType   = TranslateImmTypeToTknType (lpToken->tkData.tkSym->stFlags.ImmType);
-                YYFcn.tkToken.tkFlags.ImmType   = lpToken->tkData.tkSym->stFlags.ImmType;
-////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
-                YYFcn.tkToken.tkData.tkLongest  = 0;        // Keep the extraneous data clear
-                YYFcn.tkToken.tkData.tkChar     = lpToken->tkData.tkSym->stData.stChar;
-////////////////YYFcn.tkToken.tkCharIndex       =
-////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
-////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
-////////////////YYFcn.Indirect                  =
-////////////////YYFcn.lpYYFcn                   =
-////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
-            } else
-            {
-                // Get the global memory handle or function address if direct
-                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
-
-                // If it's not an internal function, ...
-                if (!lpToken->tkFlags.FcnDir)
-                {
-                    //stData is a valid HGLOBAL function array
-                    Assert (IsGlbTypeFcnDir (hGlbData));
-
-                    // Increment the reference count in global memory
-                    DbgIncrRefCntDir (hGlbData);
-                } // End IF
-
-                YYFcn = lpYYArg[i];
-                YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-////////////////YYFcn.tkToken.tkFlags.ImmType   = 0;        // Already zero from = {0}
-////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
-                YYFcn.tkToken.tkData.tkGlbData  = hGlbData;
-////////////////YYFcn.tkToken.tkCharIndex       =
-////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
-////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
-////////////////YYFcn.Indirect                  =
-////////////////YYFcn.lpYYFcn                   =
-////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
-            } // End IF/ELSE
-
-            FcnCount = 1;
-            YYFcn.TknCount = lpYYArg[i].TknCount;
-            YYFcn.FcnCount = FcnCount;
-            YYFcn.Inuse = 0;
-#ifdef DEBUG
-            YYFcn.Index = NEG1U;
-#endif
-            *lpYYMem++ = YYFcn;
-
-            // Save the function count
-            lpYYMem[-1].FcnCount = FcnCount;
-        } else
         if (lpYYArg[i].Indirect)
         {
-            FcnCount = 0;
+            FcnCount = 0;   // Initialize as it is incremented in CopyYYFcn
             lpYYMem = CopyYYFcn (lpYYMem, lpYYArg[i].lpYYFcn, lpYYBase, &FcnCount);
         } else
         {
-            FcnCount = 1;
-            lpYYCopy = CopyYYSTYPE_EM_YY (&lpYYArg[i], FALSE);
-            if (lpYYMem->Inuse)
-                YYCopy (lpYYMem++, lpYYCopy);
-            else
-                YYCopyFreeDst (lpYYMem++, lpYYCopy);
-            YYFree (lpYYCopy); lpYYCopy = NULL;
+            // Special case for named functions/operators
+            if (lpToken->tkFlags.TknType EQ TKT_FCNNAMED
+             || lpToken->tkFlags.TknType EQ TKT_OP1NAMED
+             || lpToken->tkFlags.TknType EQ TKT_OP2NAMED)
+            {
+                // tkData is an LPSYMENTRY
+                Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                // If it's an immediate function/operator, copy it directly
+                if (lpToken->tkData.tkSym->stFlags.Imm)
+                {
+                    YYFcn = lpYYArg[i];
+                    YYFcn.tkToken.tkFlags.TknType   = TranslateImmTypeToTknType (lpToken->tkData.tkSym->stFlags.ImmType);
+                    YYFcn.tkToken.tkFlags.ImmType   = lpToken->tkData.tkSym->stFlags.ImmType;
+////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
+                    YYFcn.tkToken.tkData.tkLongest  = 0;        // Keep the extraneous data clear
+                    YYFcn.tkToken.tkData.tkChar     = lpToken->tkData.tkSym->stData.stChar;
+////////////////////YYFcn.tkToken.tkCharIndex       =
+////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
+////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
+////////////////////YYFcn.Indirect                  =
+////////////////////YYFcn.lpYYFcn                   =
+////////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
+                } else
+                {
+                    // Get the global memory handle or function address if direct
+                    hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
+
+                    // If it's not an internal function, ...
+                    if (!lpToken->tkFlags.FcnDir)
+                    {
+                        //stData is a valid HGLOBAL function array
+                        Assert (IsGlbTypeFcnDir (hGlbData));
+
+                        // Increment the reference count in global memory
+                        DbgIncrRefCntDir (hGlbData);
+                    } // End IF
+
+                    YYFcn = lpYYArg[i];
+                    YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+////////////////////YYFcn.tkToken.tkFlags.ImmType   = 0;        // Already zero from = {0}
+////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
+                    YYFcn.tkToken.tkData.tkGlbData  = hGlbData;
+////////////////////YYFcn.tkToken.tkCharIndex       =
+////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
+////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
+////////////////////YYFcn.Indirect                  =
+////////////////////YYFcn.lpYYFcn                   =
+////////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
+                } // End IF/ELSE
+
+                YYFcn.TknCount = lpYYArg[i].TknCount;
+                YYFcn.Inuse = 0;
+    #ifdef DEBUG
+                YYFcn.Index = NEG1U;
+    #endif
+                *lpYYMem++ = YYFcn;
+            } else
+            {
+                lpYYCopy = CopyYYSTYPE_EM_YY (&lpYYArg[i], FALSE);
+                if (lpYYMem->Inuse)
+                    YYCopy (lpYYMem++, lpYYCopy);
+                else
+                    YYCopyFreeDst (lpYYMem++, lpYYCopy);
+                YYFree (lpYYCopy); lpYYCopy = NULL;
+            } // End IF/ELSE
 
             // Save the function count
+            FcnCount = 1;
             lpYYMem[-1].FcnCount = FcnCount;
-        } // End IF/ELSE/...
+        } // End IF/ELSE
 
+        // Accumulate into the total function count
         TotalFcnCount += FcnCount;
     } // End FOR
 
@@ -1745,7 +1743,7 @@ void InitNameStrand
 
     // Set the base of this strand to the next available location
     lpYYArg->unYYSTYPE.lpYYStrandBase        =
-    lpplLocalVars->lpYYStrandBase[VARSTRAND] = lpplLocalVars->lpYYStrandNext[VARSTRAND];
+    lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
 } // End InitNameStrand
 
 
@@ -1776,15 +1774,15 @@ LPYYSTYPE PushNameStrand_YY
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     lpYYRes->unYYSTYPE.lpYYStrandBase  =
-    lpYYArg->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[VARSTRAND];
+    lpYYArg->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
 
     // Save this token on the strand stack
     //   and skip over it
-    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[VARSTRAND]++, lpYYArg);
+    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_VAR]++, lpYYArg);
 
 #ifdef DEBUG
     // Display the strand stack
-    DisplayStrand (VARSTRAND);
+    DisplayStrand (STRAND_VAR);
 #endif
     return lpYYRes;
 } // End PushNameStrand_YY
@@ -1828,7 +1826,7 @@ LPYYSTYPE MakeNameStrand_EM_YY
     lpYYRes->unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
 
     // Get the # elements in the strand
-    iLen = lpplLocalVars->lpYYStrandNext[VARSTRAND] - lpYYStrand;
+    iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
 
     // Save these tokens in global memory
 
@@ -1877,10 +1875,10 @@ LPYYSTYPE MakeNameStrand_EM_YY
     MyGlobalUnlock (hGlbStr); lpMemStr = NULL;
 
     // Free the tokens on this portion of the strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[VARSTRAND], lpplLocalVars->lpYYStrandBase[VARSTRAND]);
+    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandBase[STRAND_VAR]);
 
     // Strip the tokens on this portion of the strand stack
-    StripStrand (lpYYRes, VARSTRAND);
+    StripStrand (lpYYRes, STRAND_VAR);
 
     DBGLEAVE;
 
@@ -1888,7 +1886,7 @@ LPYYSTYPE MakeNameStrand_EM_YY
 
 ERROR_EXIT:
     // Free the entire strand stack
-    FreeStrand (lpplLocalVars->lpYYStrandNext[VARSTRAND], lpplLocalVars->lpYYStrandStart[VARSTRAND]);
+    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandStart[STRAND_VAR]);
 
     DBGLEAVE;
 
@@ -1926,7 +1924,7 @@ LPYYSTYPE InitList0_YY
 
     // Set the base of this strand to the next available location
     lpYYRes->unYYSTYPE.lpYYStrandBase        =
-    lpplLocalVars->lpYYStrandBase[VARSTRAND] = lpplLocalVars->lpYYStrandNext[VARSTRAND];
+    lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
 
     lpYYLst = PushList_YY (lpYYRes, NULL);
     FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
@@ -1964,7 +1962,7 @@ LPYYSTYPE InitList1_YY
 
     // Set the base of this strand to the next available location
     lpYYRes->unYYSTYPE.lpYYStrandBase        =
-    lpplLocalVars->lpYYStrandBase[VARSTRAND] = lpplLocalVars->lpYYStrandNext[VARSTRAND];
+    lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
 
     lpYYLst = PushList_YY (lpYYRes, lpYYArg);
     FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
@@ -2003,17 +2001,17 @@ LPYYSTYPE PushList_YY
         YYTmp.tkToken.tkFlags.TknType   = TKT_LISTSEP;
         YYTmp.tkToken.tkData.tkLongest  = NEG1U;        // Debug value
         YYTmp.tkToken.tkCharIndex       = NEG1U;
-        YYTmp.unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[VARSTRAND];
+        YYTmp.unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
         lpYYArg = &YYTmp;
     } // End IF
 
     // Save this token on the strand stack
     //   and skip over it
-    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[VARSTRAND]++, lpYYArg);
+    YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_VAR]++, lpYYArg);
 
 #ifdef DEBUG
     // Display the strand stack
-    DisplayStrand (VARSTRAND);
+    DisplayStrand (STRAND_VAR);
 #endif
     return lpYYRes;
 } // End PushList_YY
@@ -2062,7 +2060,7 @@ LPYYSTYPE MakeList_EM_YY
     lpYYRes->unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
 
     // Get the # elements in the strand
-    iLen = lpplLocalVars->lpYYStrandNext[VARSTRAND] - lpYYStrand;
+    iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_NESTED, iLen, 1);
@@ -2145,7 +2143,7 @@ LPYYSTYPE MakeList_EM_YY
     MyGlobalUnlock (hGlbLst); lpMemLst = NULL;
 
     // Strip from the strand stack
-    StripStrand (lpYYRes, VARSTRAND);
+    StripStrand (lpYYRes, STRAND_VAR);
 
     DBGLEAVE;
 

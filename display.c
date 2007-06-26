@@ -94,7 +94,7 @@ BOOL ArrayDisplay_EM
             lpaplChar =
             FormatImmed (lpwszFormat,
                          lptkRes->tkFlags.ImmType,
-                         &lptkRes->tkData.tkLongest);
+                        &lptkRes->tkData.tkLongest);
             break;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
@@ -1918,7 +1918,7 @@ LPWCHAR DisplayFcnSub
 //***************************************************************************
 
 void DisplayStrand
-    (int strType)               // Strand type (VARSTRAND or FCNSTRAND)
+    (int strType)               // Strand type (STRAND_VAR or STRAND_FCN)
 
 {
     LPYYSTYPE     lp,
@@ -1942,12 +1942,12 @@ void DisplayStrand
 
     switch (strType)
     {
-        case VARSTRAND:
+        case STRAND_VAR:
             DbgMsg ("********** Variable Strands ****************************");
 
             break;
 
-        case FCNSTRAND:
+        case STRAND_FCN:
             DbgMsg ("********** Function Strands ****************************");
 
             break;

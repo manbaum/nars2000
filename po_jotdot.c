@@ -404,21 +404,21 @@ LPYYSTYPE PrimOpDydJotDotCommon_EM_YY
         // If the left arg is not immediate, get the next value
         if (lpMemLft)
             // Get the next value from the left arg
-            GetValueInToken (uLft,                  // Index to use
-                             lpMemLft,              // Ptr to global memory object to i
-                             aplTypeLft,            // Storage type of the arg
-                             apaOffLft,             // APA offset (if needed)
-                             apaMulLft,             // APA multiplier (if needed)
-                            &tkLftArg);             // Ptr to token in which to place t
+            GetValueIntoToken (uLft,                // Index to use
+                               lpMemLft,            // Ptr to global memory object to i
+                               aplTypeLft,          // Storage type of the arg
+                               apaOffLft,           // APA offset (if needed)
+                               apaMulLft,           // APA multiplier (if needed)
+                              &tkLftArg);           // Ptr to token in which to place t
         // If the right arg is not immediate, get the next value
         if (lpMemRht)
             // Get the next value from the right arg
-            GetValueInToken (uRht,                  // Index to use
-                             lpMemRht,              // Ptr to global memory object to i
-                             aplTypeRht,            // Storage type of the arg
-                             apaOffRht,             // APA offset (if needed)
-                             apaMulRht,             // APA multiplier (if needed)
-                            &tkRhtArg);             // Ptr to token in which to place t
+            GetValueIntoToken (uRht,                // Index to use
+                               lpMemRht,            // Ptr to global memory object to i
+                               aplTypeRht,          // Storage type of the arg
+                               apaOffRht,           // APA offset (if needed)
+                               apaMulRht,           // APA multiplier (if needed)
+                              &tkRhtArg);           // Ptr to token in which to place t
         if (!ExecFuncOnToken_EM (&lpMemRes,         // Ptr to output storage
                                  &tkLftArg,         // Ptr to left arg token
                                   lpYYFcnStrRht,    // Ptr to function strand

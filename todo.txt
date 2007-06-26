@@ -1,6 +1,6 @@
 TO DO:  General:  Important
 ---------------------------
-* Make <dtoa.c> multiple-threaded
+* Make <dtoa.c> multi-threaded
 * Implement dyadic epsilon
 * ...       dyadic down tack jot
 * ...       dyadic iota
@@ -30,15 +30,12 @@ TO DO:  General:  Important
 * ...       )FNS
 * ...       )VARS
 * ...       function execution
-* ...       (+{jot}(2+3))4
-* ...       (+{jot}(2 3))4
-* ...       (+{jot} 2 3 )4
 * ...
 
 
 TO DO:  General:  Wish List
 ---------------------------
-* Check for stack overflow (recursion depth)
+* Check for stack overflow (recursion depth in parser)
 * Check for bison stack overflow
 * Allocate bison stack from virtual memory
 * Implement Garbage Collection???
@@ -87,6 +84,9 @@ DONE:  General
 * ...    function editing
 * ...    dyadic jot with variables (e.g. 3{jot}+)
 * ...    f{is}3{jot}+
+* ...    (+{jot}(2+3))4
+* ...    (+{jot}(2 3))4
+* ...    (+{jot} 2 3 )4
 *
 
 

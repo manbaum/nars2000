@@ -1846,11 +1846,13 @@ BOOL PrimFnDydSimpNest_EM
     BOOL       bRet = TRUE;
     APLINT     uRes;
     APLINT     aplIntegerLft,
+               aplIntegerRht,
                apaOffLft,
                apaMulLft,
                iDim;
     APLUINT    ByteAlloc;
-    APLFLOAT   aplFloatLft;
+    APLFLOAT   aplFloatLft,
+               aplFloatRht;
     HGLOBAL    hGlbWVec = NULL,
                hGlbOdo = NULL,
                hGlbSub;
@@ -1859,7 +1861,8 @@ BOOL PrimFnDydSimpNest_EM
                lpMemDimRht,
                lpMemDimRes,
                lpMemOdo = NULL;
-    APLCHAR    aplCharLft;
+    APLCHAR    aplCharLft,
+               aplCharRht;
 
     DBGENTER;
 
@@ -1976,13 +1979,14 @@ BOOL PrimFnDydSimpNest_EM
         } // End IF
 
         // Loop through the result
-        for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
         {
             APLINT   uLft, uRht, uArg;
-            APLSTYPE aplTypeHet;
+            APLSTYPE aplTypeHetLft,
+                     aplTypeHetRht;
 
-            // Copy in case we are hetrogeneous
-            aplTypeHet = aplTypeLft;
+            // Copy in case we are heterogeneous
+            aplTypeHetLft = aplTypeLft;
 
             // If the left arg is not immediate, get the next value
             if (lpMemLft)
@@ -2036,7 +2040,7 @@ BOOL PrimFnDydSimpNest_EM
                         break;
 
                     case ARRAY_HETERO:
-                        aplTypeHet = GetNextHetero (lpMemLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                        aplTypeHetLft = GetNextHetero (lpMemLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft);
 
                         break;
 
@@ -2046,17 +2050,55 @@ BOOL PrimFnDydSimpNest_EM
             } else
                 uRht = uRes;
 
-            hGlbSub = PrimFnDydSimpNestSub_EM (lptkFunc,
-                                               aplTypeHet,
-                                               aplIntegerLft,
-                                               aplFloatLft,
-                                               aplCharLft,
-                                               ((LPAPLNESTED) lpMemRht)[uRht],
-                                               lpPrimSpec);
-            if (!hGlbSub)
-                goto ERROR_EXIT;
-            else
-                *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+            // Get the right arg element
+            hGlbSub = ((LPAPLNESTED) lpMemRht)[uRht];
+
+            // Split cases based upon the ptr type of the nested right arg
+            switch (GetPtrTypeDir (hGlbSub))
+            {
+                case PTRTYPE_STCONST:
+                    FirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                   ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                  &aplIntegerRht,
+                                  &aplFloatRht,
+                                  &aplCharRht,
+                                   NULL,
+                                   NULL,
+                                   NULL,
+                                  &aplTypeHetRht);
+                    hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                    aplTypeHetLft,
+                                                    aplIntegerLft,
+                                                    aplFloatLft,
+                                                    aplCharLft,
+                                                    aplTypeHetRht,
+                                                    aplIntegerRht,
+                                                    aplFloatRht,
+                                                    aplCharRht,
+                                                    lpPrimSpec);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    else
+                        *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    hGlbSub = PrimFnDydSiScNest_EM (lptkFunc,
+                                                    aplTypeHetLft,
+                                                    aplIntegerLft,
+                                                    aplFloatLft,
+                                                    aplCharLft,
+                                                    hGlbSub,
+                                                    lpPrimSpec);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    else
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
         } // End FOR
     } // End IF/ELSE/...
 
@@ -2150,12 +2192,14 @@ BOOL PrimFnDydNestSimp_EM
 {
     BOOL       bRet = TRUE;
     APLINT     uRes;
-    APLINT     aplIntegerRht,
+    APLINT     aplIntegerLft,
+               aplIntegerRht,
                apaOffRht,
                apaMulRht,
                ByteAlloc,
                iDim;
-    APLFLOAT   aplFloatRht;
+    APLFLOAT   aplFloatLft,
+               aplFloatRht;
     HGLOBAL    hGlbWVec = NULL,
                hGlbOdo = NULL,
                hGlbSub;
@@ -2164,7 +2208,8 @@ BOOL PrimFnDydNestSimp_EM
                lpMemDimRht,
                lpMemDimRes,
                lpMemOdo = NULL;
-    APLCHAR    aplCharRht;
+    APLCHAR    aplCharLft,
+               aplCharRht;
 
     DBGENTER;
 
@@ -2279,13 +2324,14 @@ BOOL PrimFnDydNestSimp_EM
         } // End IF
 
         // Loop through the result
-        for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
         {
             APLINT   uLft, uRht, uArg;
-            APLSTYPE aplTypeHet;
+            APLSTYPE aplTypeHetLft,
+                     aplTypeHetRht;
 
-            // Copy in case we are hetrogeneous
-            aplTypeHet = aplTypeRht;
+            // Copy in case we are heterogeneous
+            aplTypeHetRht = aplTypeRht;
 
             // If the right arg is not immediate, get the next value
             if (lpMemRht)
@@ -2339,7 +2385,7 @@ BOOL PrimFnDydNestSimp_EM
                         break;
 
                     case ARRAY_HETERO:
-                        aplTypeHet = GetNextHetero (lpMemRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                        aplTypeHetRht = GetNextHetero (lpMemRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht);
 
                         break;
 
@@ -2349,17 +2395,55 @@ BOOL PrimFnDydNestSimp_EM
             } else
                 uLft = uRes;
 
-            hGlbSub = PrimFnDydNestSimpSub_EM (lptkFunc,
-                                               aplTypeHet,
-                                               aplIntegerRht,
-                                               aplFloatRht,
-                                               aplCharRht,
-                                               ((LPAPLNESTED) lpMemLft)[uLft],
-                                               lpPrimSpec);
-            if (!hGlbSub)
-                goto ERROR_EXIT;
-            else
-                *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+            // Get the left arg element
+            hGlbSub = ((LPAPLNESTED) lpMemLft)[uLft];
+
+            // Split cases based upon the ptr type of the nested left arg
+            switch (GetPtrTypeDir (hGlbSub))
+            {
+                case PTRTYPE_STCONST:
+                    FirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                   ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                  &aplIntegerLft,
+                                  &aplFloatLft,
+                                  &aplCharLft,
+                                   NULL,
+                                   NULL,
+                                   NULL,
+                                  &aplTypeHetLft);
+                    hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                    aplTypeHetLft,
+                                                    aplIntegerLft,
+                                                    aplFloatLft,
+                                                    aplCharLft,
+                                                    aplTypeHetRht,
+                                                    aplIntegerRht,
+                                                    aplFloatRht,
+                                                    aplCharRht,
+                                                    lpPrimSpec);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    else
+                        *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
+                                                    aplTypeHetRht,
+                                                    aplIntegerRht,
+                                                    aplFloatRht,
+                                                    aplCharRht,
+                                                    hGlbSub,
+                                                    lpPrimSpec);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    else
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
         } // End FOR
     } // End IF/ELSE/...
 
@@ -2407,18 +2491,18 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $PrimFnDydNestSimpSub_EM
+//  $PrimFnDydNestSiSc_EM
 //
-//  Subroutine to PrimFnDydNestSimp_EM
+//  Subroutine to PrimFnDydNestSimp_EM to handle right arg simple scalars
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydNestSimpSub_EM"
+#define APPEND_NAME     L" -- PrimFnDydNestSiSc_EM"
 #else
 #define APPEND_NAME
 #endif
 
-HGLOBAL PrimFnDydNestSimpSub_EM
+HGLOBAL PrimFnDydNestSiSc_EM
     (LPTOKEN    lptkFunc,           // Ptr to function token
      APLSTYPE   aplTypeRht,         // Right arg type
      APLINT     aplIntegerRht,      // ...       integer value
@@ -2442,9 +2526,12 @@ HGLOBAL PrimFnDydNestSimpSub_EM
     APLRANK  aplRankLft,
              aplRankRht = 0,
              aplRankRes;
-    APLINT   uLft,
+    APLINT   aplIntegerLft,
+             uLft,
              apaOffLft,
              apaMulLft;
+    APLFLOAT aplFloatLft;
+    APLCHAR  aplCharLft;
     UINT     uBitIndex = 0;
 
     DBGENTER;
@@ -2536,7 +2623,6 @@ HGLOBAL PrimFnDydNestSimpSub_EM
 
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
-    {
         bRet = PrimFnDydMultSing_EM (aplTypeRes,
                                      lpMemRes,
                                      aplNELMRes,
@@ -2551,29 +2637,71 @@ HGLOBAL PrimFnDydNestSimpSub_EM
                                      lptkFunc,
                                      lpPrimSpec);
 
-    } else
+    else
     // If nested result, ...
     if (aplTypeRes EQ ARRAY_NESTED)
     {
-////case ARRAY_NESTED:              // Res = NESTED, Lft = NESTED, Rht = BOOL/INT/FLOAT(S)
 #ifndef PRIMPROTOFNSCALAR
         // Handle the prototype case
         aplNELMLft = max (aplNELMLft, 1);
 #endif
         // Loop through the left arg/result
-        for (uLft = 0; bRet && uLft < (APLNELMSIGN) aplNELMLft; uLft++)
+        for (uLft = 0; uLft < (APLNELMSIGN) aplNELMLft; uLft++)
         {
-            hGlbSub = PrimFnDydNestSimpSub_EM (lptkFunc,
-                                               aplTypeRht,
-                                               aplIntegerRht,
-                                               aplFloatRht,
-                                               aplCharRht,
-                                               *((LPAPLNESTED) lpMemLft)++,
-                                               lpPrimSpec);
-            if (!hGlbSub)
-                bRet = FALSE;
-            else
-                *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+            APLSTYPE aplTypeHetLft;
+
+            // Copy in case we are heterogeneous
+            aplTypeHetLft = aplTypeLft;
+
+            // Get the left arg element
+            hGlbSub = ((LPAPLNESTED) lpMemLft)[uLft];
+
+            // Split cases based upon the ptr type of the nested left arg
+            switch (GetPtrTypeDir (hGlbSub))
+            {
+                case PTRTYPE_STCONST:
+                    FirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                   ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                  &aplIntegerLft,
+                                  &aplFloatLft,
+                                  &aplCharLft,
+                                   NULL,
+                                   NULL,
+                                   NULL,
+                                  &aplTypeHetLft);
+                    hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                    aplTypeHetLft,
+                                                    aplIntegerLft,
+                                                    aplFloatLft,
+                                                    aplCharLft,
+                                                    aplTypeRht,
+                                                    aplIntegerRht,
+                                                    aplFloatRht,
+                                                    aplCharRht,
+                                                    lpPrimSpec);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    else
+                        *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
+                                                    aplTypeRht,
+                                                    aplIntegerRht,
+                                                    aplFloatRht,
+                                                    aplCharRht,
+                                                    hGlbSub,
+                                                    lpPrimSpec);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    else
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
         } // End FOR
     } else
         DbgStop ();         // We should never get here
@@ -2610,7 +2738,7 @@ NORMAL_EXIT:
         return hGlbRes;
     else
         return NULL;
-} // End PrimFnDydNestSimpSub_EM
+} // End PrimFnDydNestSiSc_EM
 #undef  APPEND_NAME
 
 
@@ -2664,7 +2792,7 @@ BOOL PrimFnDydNestNest_EM
 
     DBGENTER;
 
-    DbgBrk ();
+    DbgBrk ();      // ***TESTME***
 
     // Check for INNER RANK and LENGTH ERRORs
     if (!CheckRankLengthError_EM (aplRankRes,
@@ -2777,7 +2905,7 @@ BOOL PrimFnDydSingMult_EM
     UINT     uBitIndex = 0;
     LPVOID   lpMemResStart,
              lpMemRhtStart;
-    APLSTYPE aplTypeHet;
+    APLSTYPE aplTypeHetRht;
     APLINT   aplIntegerRht;
     APLFLOAT aplFloatRht;
     APLCHAR  aplCharRht;
@@ -2861,10 +2989,10 @@ RESTART_EXCEPTION:
                             // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
-                                aplTypeHet = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
 
                                 // Split cases based upon the right arg's item's storage type
-                                switch (aplTypeHet)
+                                switch (aplTypeHetRht)
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = BOOL/INT (S), Rht = BOOL (M)
                                     case ARRAY_INT:     // Res = BOOL, Lft = BOOL/INT (S), Rht = INT  (M)
@@ -2904,10 +3032,10 @@ RESTART_EXCEPTION:
                             // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
-                                aplTypeHet = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
 
                                 // Split cases based upon the right arg's item's storage type
-                                switch (aplTypeHet)
+                                switch (aplTypeHetRht)
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = FLOAT (S), Rht = BOOL (M)
                                     case ARRAY_INT:     // Res = BOOL, Lft = FLOAT (S), Rht = INT  (M)
@@ -2941,10 +3069,10 @@ RESTART_EXCEPTION:
                             // Loop through the right arg
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
-                                aplTypeHet = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+                                aplTypeHetRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
 
                                 // Split cases based upon the right arg's item's storage type
-                                switch (aplTypeHet)
+                                switch (aplTypeHetRht)
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = CHAR  (S), Rht = BOOL (M)
                                     case ARRAY_INT:     // Res = BOOL, Lft = CHAR  (S), Rht = INT  (M)
@@ -3514,7 +3642,7 @@ BOOL PrimFnDydMultSing_EM
     UINT     uBitIndex = 0;
     LPVOID   lpMemResStart,
              lpMemLftStart;
-    APLSTYPE aplTypeHet;
+    APLSTYPE aplTypeHetLft;
     APLINT   aplIntegerLft;
     APLFLOAT aplFloatLft;
     APLCHAR  aplCharLft;
@@ -3598,10 +3726,10 @@ RESTART_EXCEPTION:
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
-                                aplTypeHet = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
 
                                 // Split cases based upon the left arg's item's storage type
-                                switch (aplTypeHet)
+                                switch (aplTypeHetLft)
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = BOOL (M), Rht = BOOL/INT (S)
                                     case ARRAY_INT:     // Res = BOOL, Lft = INT  (M), Rht = BOOL/INT (S)
@@ -3641,10 +3769,10 @@ RESTART_EXCEPTION:
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
-                                aplTypeHet = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
 
                                 // Split cases based upon the left arg's item's storage type
-                                switch (aplTypeHet)
+                                switch (aplTypeHetLft)
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = BOOL (M), Rht = FLOAT (S)
                                     case ARRAY_INT:     // Res = BOOL, Lft = INT  (M), Rht = FLOAT (S)
@@ -3678,10 +3806,10 @@ RESTART_EXCEPTION:
                             // Loop through the left argument
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                             {
-                                aplTypeHet = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                                aplTypeHetLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
 
                                 // Split cases based upon the left arg's item's storage type
-                                switch (aplTypeHet)
+                                switch (aplTypeHetLft)
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Lft = BOOL (M), Rht = CHAR  (S)
                                     case ARRAY_INT:     // Res = BOOL, Lft = INT  (M), Rht = CHAR  (S)
@@ -4220,18 +4348,18 @@ RESTART_EXCEPTION:
 
 
 //***************************************************************************
-//  $PrimFnDydSimpNestSub_EM
+//  $PrimFnDydSiScNest_EM
 //
-//  Subroutine to PrimFnDydSimpNest_EM
+//  Subroutine to PrimFnDydSimpNest_EM to handle left arg simple scalars
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSimpNestSub_EM"
+#define APPEND_NAME     L" -- PrimFnDydSiScNest_EM"
 #else
 #define APPEND_NAME
 #endif
 
-HGLOBAL PrimFnDydSimpNestSub_EM
+HGLOBAL PrimFnDydSiScNest_EM
     (LPTOKEN    lptkFunc,           // Ptr to function token
      APLSTYPE   aplTypeLft,         // Left arg type
      APLINT     aplIntegerLft,      // ...      integer value
@@ -4255,9 +4383,12 @@ HGLOBAL PrimFnDydSimpNestSub_EM
     APLRANK  aplRankLft = 0,
              aplRankRht,
              aplRankRes;
-    APLINT   uRht,
+    APLINT   aplIntegerRht,
+             uRht,
              apaOffRht,
              apaMulRht;
+    APLFLOAT aplFloatRht;
+    APLCHAR  aplCharRht;
     UINT     uBitIndex = 0;
 
     DBGENTER;
@@ -4350,7 +4481,6 @@ HGLOBAL PrimFnDydSimpNestSub_EM
 
     // If simple result, ...
     if (IsSimpleNum (aplTypeRes))
-    {
         bRet = PrimFnDydSingMult_EM (aplTypeRes,
                                      lpMemRes,
                                      aplNELMRes,
@@ -4364,29 +4494,71 @@ HGLOBAL PrimFnDydSimpNestSub_EM
                                      lpMemRht,
                                      lptkFunc,
                                      lpPrimSpec);
-    } else
+    else
     // If nested result, ...
     if (aplTypeRes EQ ARRAY_NESTED)
     {
-////case ARRAY_NESTED:              // Res = NESTED, Lft = BOOL/INT/FLOAT(S), Rht = NESTED
 #ifndef PRIMPROTOFNSCALAR
         // Handle the prototype case
         aplNELMRht = max (aplNELMRht, 1);
 #endif
         // Loop through the right arg/result
-        for (uRht = 0; bRet && uRht < (APLNELMSIGN) aplNELMRht; uRht++)
+        for (uRht = 0; uRht < (APLNELMSIGN) aplNELMRht; uRht++)
         {
-            hGlbSub = PrimFnDydSimpNestSub_EM (lptkFunc,
-                                               aplTypeLft,
-                                               aplIntegerLft,
-                                               aplFloatLft,
-                                               aplCharLft,
-                                               *((LPAPLNESTED) lpMemRht)++,
-                                               lpPrimSpec);
-            if (!hGlbSub)
-                bRet = FALSE;
-            else
-                *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+            APLSTYPE aplTypeHetRht;
+
+            // Copy in case we are heterogeneous
+            aplTypeHetRht = aplTypeRht;
+
+            // Get the right arg element
+            hGlbSub = ((LPAPLNESTED) lpMemRht)[uRht];
+
+            // Split cases based upon the ptr type of the nested right arg
+            switch (GetPtrTypeDir (hGlbSub))
+            {
+                case PTRTYPE_STCONST:
+                    FirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                   ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                  &aplIntegerRht,
+                                  &aplFloatRht,
+                                  &aplCharRht,
+                                   NULL,
+                                   NULL,
+                                   NULL,
+                                  &aplTypeHetRht);
+                    hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                    aplTypeLft,
+                                                    aplIntegerLft,
+                                                    aplFloatLft,
+                                                    aplCharLft,
+                                                    aplTypeHetRht,
+                                                    aplIntegerRht,
+                                                    aplFloatRht,
+                                                    aplCharRht,
+                                                    lpPrimSpec);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    else
+                        *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
+                                                    aplTypeLft,
+                                                    aplIntegerLft,
+                                                    aplFloatLft,
+                                                    aplCharLft,
+                                                    hGlbSub,
+                                                    lpPrimSpec);
+                    if (!hGlbSub)
+                        goto ERROR_EXIT;
+                    else
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
         } // End FOR
     } else
         DbgStop ();         // We should never get here
@@ -4423,7 +4595,265 @@ NORMAL_EXIT:
         return hGlbRes;
     else
         return NULL;
-} // End PrimFnDydSimpNestSub_EM
+} // End PrimFnDydSiScNest_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydSiScSiSc_EM
+//
+//  Dyadic primitive scalar function, left simple scalar, right simple scalar
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydSiScSiSc_EM"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL PrimFnDydSiScSiSc_EM
+    (LPTOKEN    lptkFunc,           // Ptr to function token
+     APLSTYPE   aplTypeLft,         // Left arg storage type
+     APLINT     aplIntegerLft,      // ...      as integer
+     APLFLOAT   aplFloatLft,        // ...         float
+     APLCHAR    aplCharLft,         // ...         char
+     APLSTYPE   aplTypeRht,         // Right arg storage type
+     APLINT     aplIntegerRht,      // ...       as integer
+     APLFLOAT   aplFloatRht,        // ...          float
+     APLCHAR    aplCharRht,         // ...          char
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    TOKEN    tkRes = {0};   // Result token
+    APLSTYPE aplTypeRes;    // Result storage type
+
+    // Calculate the storage type of the result
+    aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (1,
+                                               &aplTypeLft,
+                                                lptkFunc,
+                                                1,
+                                               &aplTypeRht);
+    if (aplTypeRes EQ ARRAY_ERROR)
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    if (PrimFnDydSiScSiScSub_EM (&tkRes,
+                                  lptkFunc,
+                                  aplTypeRes,
+                                  aplTypeLft,
+                                  aplIntegerLft,
+                                  aplFloatLft,
+                                  aplCharLft,
+                                  aplTypeRht,
+                                  aplIntegerRht,
+                                  aplFloatRht,
+                                  aplCharRht,
+                                  lpPrimSpec))
+        // Convert the immediate type and value in tkRes
+        //   into an LPSYMENTRY
+        return MakeSymEntry_EM (tkRes.tkFlags.ImmType,
+                               &tkRes.tkData.tkLongest,
+                                lptkFunc);
+    else
+        return NULL;
+} // End PrimDydSiScSiSc_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydSiScSiScSub_EM
+//
+//  Subroutine to PrimFnDydSiScSiSc_EM
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydSiScSiScSub_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL PrimFnDydSiScSiScSub_EM
+    (LPTOKEN    lptkRes,            // Ptr to result token
+     LPTOKEN    lptkFunc,           // Ptr to function token
+     APLSTYPE   aplTypeRes,         // Result storage type
+     APLSTYPE   aplTypeLft,         // Left arg storage type
+     APLINT     aplIntegerLft,      // ...      as an integer
+     APLFLOAT   aplFloatLft,        // ...            float
+     APLCHAR    aplCharLft,         // ...            char
+     APLSTYPE   aplTypeRht,         // Right arg storage type
+     APLINT     aplIntegerRht,      // ...       as an integer
+     APLFLOAT   aplFloatRht,        // ...             float
+     APLCHAR    aplCharRht,         // ...             char
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    UINT immType;               // Result immediate type
+    BOOL bRet = TRUE;           // TRUE iff result is valid
+RESTART_EXCEPTION_IMMED:
+    // Get the immediate type for the token
+    immType = TranslateArrayTypeToImmType (aplTypeRes);
+
+    Assert (IMMTYPE_BOOL  EQ immType
+         || IMMTYPE_INT   EQ immType
+         || IMMTYPE_FLOAT EQ immType);
+
+    // Fill in the result token
+    lptkRes->tkFlags.TknType   = TKT_VARIMMED;
+    lptkRes->tkFlags.ImmType   = immType;
+////lptkRes->tkFlags.NoDisplay = 0; // Already zero from YYAlloc
+    lptkRes->tkCharIndex       = lptkFunc->tkCharIndex;
+
+    __try
+    {
+        // Split cases based upon the result's storage type
+        switch (aplTypeRes)
+        {
+            case ARRAY_BOOL:                    // Res = BOOL
+                // If both arguments are BOOL,
+                //   use BisBvB
+                if (aplTypeLft EQ ARRAY_BOOL
+                 && aplTypeRht EQ ARRAY_BOOL)  // Res = BOOL, Lft = BOOL(S), Rht = BOOL(S)
+                {
+                    lptkRes->tkData.tkBoolean  =
+                      (*lpPrimSpec->BisBvB) ((APLBOOL) aplIntegerLft,
+                                             (APLBOOL) aplIntegerRht,
+                                             lpPrimSpec);
+                } else
+                // If both arguments are integer-like (BOOL, INT, or APA),
+                //   use BisIvI
+                if (IsSimpleInt (aplTypeLft)
+                 && IsSimpleInt (aplTypeRht))  // Res = BOOL, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
+                {
+                    lptkRes->tkData.tkBoolean  =
+                      (*lpPrimSpec->BisIvI) (aplIntegerLft,
+                                             aplIntegerRht,
+                                             lpPrimSpec);
+                } else
+                // If both arguments are CHAR,
+                //   use BisCvC
+                if (aplTypeLft EQ ARRAY_CHAR
+                 && aplTypeRht EQ ARRAY_CHAR)  // Res = BOOL, Lft = CHAR(S), Rht = CHAR(S)
+                {
+                    lptkRes->tkData.tkBoolean  =
+                      (*lpPrimSpec->BisCvC) (aplCharLft,
+                                             aplCharRht,
+                                             lpPrimSpec);
+                } else
+                // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
+                //   use BisFvF
+                if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = BOOL, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
+                 || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = BOOL, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
+                {
+                    lptkRes->tkData.tkBoolean  =
+                      (*lpPrimSpec->BisFvF) (aplFloatLft,
+                                             aplFloatRht,
+                                             lpPrimSpec);
+                } else
+                {
+                    // One arg is numeric, the other char
+                    Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                         || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                    // If the function is UTF16_NOTEQUAL, the result is one
+                    lptkRes->tkData.tkBoolean  = (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                } // End IF/ELSE/...
+
+                break;
+
+            case ARRAY_INT:                     // Res = INT
+                // If both left and right arguments are integer-like (BOOL, INT, or APA),
+                //   use IisIvI
+                if (IsSimpleInt (aplTypeLft)
+                 && IsSimpleInt (aplTypeRht))  // Res = INT, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
+                {
+                    lptkRes->tkData.tkInteger  =
+                      (*lpPrimSpec->IisIvI) (aplIntegerLft,
+                                             aplIntegerRht,
+                                             lpPrimSpec);
+                } else
+                // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
+                //   use IisFvF
+                if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
+                 || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
+                {
+                    lptkRes->tkData.tkInteger  =
+                      (*lpPrimSpec->IisFvF) (aplFloatLft,
+                                             aplFloatRht,
+                                             lpPrimSpec);
+                } else
+                    DbgStop ();         // We should never get here
+                break;
+
+            case ARRAY_FLOAT:                   // Res = FLOAT
+                // If both arguments are simple integer (BOOL, INT, APA),
+                //   use FisIvI
+                if (IsSimpleInt (aplTypeLft)
+                 && IsSimpleInt (aplTypeRht))  // Res = FLOAT, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
+                {
+                    lptkRes->tkData.tkFloat    =
+                      (*lpPrimSpec->FisIvI) (aplIntegerLft,
+                                             aplIntegerRht,
+                                             lpPrimSpec);
+                } else
+                // If both arguments are simple numeric (BOOL, INT, APA, FLOAT),
+                //   use FisFvF
+                if (IsSimpleNum (aplTypeLft)
+                 && IsSimpleNum (aplTypeRht))  // Res = FLOAT, Lft = BOOL/INT/APA/FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
+                {
+                    lptkRes->tkData.tkFloat    =
+                      (*lpPrimSpec->FisFvF) (aplFloatLft,
+                                             aplFloatRht,
+                                             lpPrimSpec);
+                } else
+                    DbgStop ();         // We should never get here
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+    {
+#ifdef DEBUG
+        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+#endif
+        // Split cases based upon the ExecCode
+        switch (GetExecCode ())
+        {
+            case EXEC_DOMAIN_ERROR:
+            case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+            case EXCEPTION_INT_DIVIDE_BY_ZERO:
+                SetExecCode (EXEC_SUCCESS); // Reset
+
+                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                           lptkFunc);
+                bRet = FALSE;
+
+                goto ERROR_EXIT;
+
+            case EXEC_RESULT_FLOAT:
+                SetExecCode (EXEC_SUCCESS); // Reset
+
+                if (IsSimpleNum (aplTypeRes)
+                 && aplTypeRes NE ARRAY_FLOAT)
+                {
+                    aplTypeRes = ARRAY_FLOAT;
+#ifdef DEBUG
+                    dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+#endif
+                    goto RESTART_EXCEPTION_IMMED;
+                } // End IF
+
+                // Fall through to never-never-land
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End __try/__except
+ERROR_EXIT:
+    return bRet;
+} // End PrimDydSiScSiScSub_EM
 #undef  APPEND_NAME
 
 
@@ -4516,8 +4946,6 @@ BOOL PrimFnDydSimpSimp_EM
         // If the result is a scalar, ...
         if (aplRankRes EQ 0)
         {
-            UINT     immType;
-
             // Get the respective first values
             FirstValue (lptkLftArg,         // Ptr to right arg token
                        &aplIntegerLft,      // Ptr to integer result
@@ -4535,165 +4963,18 @@ BOOL PrimFnDydSimpSimp_EM
                         NULL,               // Ptr to lpSym/Glb ...
                         NULL,               // Ptr to ...immediate type ...
                         NULL);              // Ptr to array type ...
-RESTART_EXCEPTION_IMMED:
-            // Get the immediate type for the token
-            immType = TranslateArrayTypeToImmType (aplTypeRes);
-
-            Assert (IMMTYPE_BOOL  EQ immType
-                 || IMMTYPE_INT   EQ immType
-                 || IMMTYPE_FLOAT EQ immType);
-
-            // Fill in the result token
-            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-            lpYYRes->tkToken.tkFlags.ImmType   = immType;
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
-            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-            __try
-            {
-            // Split cases based upon the result's storage type
-            switch (aplTypeRes)
-            {
-                case ARRAY_BOOL:                    // Res = BOOL
-                    // If both arguments are BOOL,
-                    //   use BisBvB
-                    if (aplTypeLft EQ ARRAY_BOOL
-                     && aplTypeRht EQ ARRAY_BOOL)  // Res = BOOL, Lft = BOOL(S), Rht = BOOL(S)
-                    {
-                        lpYYRes->tkToken.tkData.tkBoolean  =
-                          (*lpPrimSpec->BisBvB) ((APLBOOL) aplIntegerLft,
-                                                 (APLBOOL) aplIntegerRht,
-                                                 lpPrimSpec);
-                    } else
-                    // If both arguments are integer-like (BOOL, INT, or APA),
-                    //   use BisIvI
-                    if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeRht))  // Res = BOOL, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
-                    {
-                        lpYYRes->tkToken.tkData.tkBoolean  =
-                          (*lpPrimSpec->BisIvI) (aplIntegerLft,
-                                                 aplIntegerRht,
-                                                 lpPrimSpec);
-                    } else
-                    // If both arguments are CHAR,
-                    //   use BisCvC
-                    if (aplTypeLft EQ ARRAY_CHAR
-                     && aplTypeRht EQ ARRAY_CHAR)  // Res = BOOL, Lft = CHAR(S), Rht = CHAR(S)
-                    {
-                        lpYYRes->tkToken.tkData.tkBoolean  =
-                          (*lpPrimSpec->BisCvC) (aplCharLft,
-                                                 aplCharRht,
-                                                 lpPrimSpec);
-                    } else
-                    // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
-                    //   use BisFvF
-                    if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = BOOL, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
-                     || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = BOOL, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
-                    {
-                        lpYYRes->tkToken.tkData.tkBoolean  =
-                          (*lpPrimSpec->BisFvF) (aplFloatLft,
-                                                 aplFloatRht,
-                                                 lpPrimSpec);
-                    } else
-                    {
-                        // One arg is numeric, the other char
-                        Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
-                             || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
-                        // If the function is UTF16_NOTEQUAL, the result is one
-                        lpYYRes->tkToken.tkData.tkBoolean  = (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
-                    } // End IF/ELSE/...
-
-                    break;
-
-                case ARRAY_INT:                     // Res = INT
-                    // If both left and right arguments are integer-like (BOOL, INT, or APA),
-                    //   use IisIvI
-                    if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeRht))  // Res = INT, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
-                    {
-                        lpYYRes->tkToken.tkData.tkInteger  =
-                          (*lpPrimSpec->IisIvI) (aplIntegerLft,
-                                                 aplIntegerRht,
-                                                 lpPrimSpec);
-                    } else
-                    // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
-                    //   use IisFvF
-                    if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
-                     || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
-                    {
-                        lpYYRes->tkToken.tkData.tkInteger  =
-                          (*lpPrimSpec->IisFvF) (aplFloatLft,
-                                                 aplFloatRht,
-                                                 lpPrimSpec);
-                    } else
-                        DbgStop ();         // We should never get here
-                    break;
-
-                case ARRAY_FLOAT:                   // Res = FLOAT
-                    // If both arguments are simple integer (BOOL, INT, APA),
-                    //   use FisIvI
-                    if (IsSimpleInt (aplTypeLft)
-                     && IsSimpleInt (aplTypeRht))  // Res = FLOAT, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
-                    {
-                        lpYYRes->tkToken.tkData.tkFloat    =
-                          (*lpPrimSpec->FisIvI) (aplIntegerLft,
-                                                 aplIntegerRht,
-                                                 lpPrimSpec);
-                    } else
-                    // If both arguments are simple numeric (BOOL, INT, APA, FLOAT),
-                    //   use FisFvF
-                    if (IsSimpleNum (aplTypeLft)
-                     && IsSimpleNum (aplTypeRht))  // Res = FLOAT, Lft = BOOL/INT/APA/FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
-                    {
-                        lpYYRes->tkToken.tkData.tkFloat    =
-                          (*lpPrimSpec->FisFvF) (aplFloatLft,
-                                                 aplFloatRht,
-                                                 lpPrimSpec);
-                    } else
-                        DbgStop ();         // We should never get here
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
-            {
-#ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
-#endif
-                // Split cases based upon the ExecCode
-                switch (GetExecCode ())
-                {
-                    case EXEC_DOMAIN_ERROR:
-                    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-                    case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                        SetExecCode (EXEC_SUCCESS); // Reset
-
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                           lptkFunc);
-                        bRet = FALSE;
-
-                        goto ERROR_EXIT;
-
-                    case EXEC_RESULT_FLOAT:
-                        SetExecCode (EXEC_SUCCESS); // Reset
-
-                        if (IsSimpleNum (aplTypeRes)
-                         && aplTypeRes NE ARRAY_FLOAT)
-                        {
-                            aplTypeRes = ARRAY_FLOAT;
-#ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
-#endif
-                            goto RESTART_EXCEPTION_IMMED;
-                        } // End IF
-
-                        // Fall through to never-never-land
-
-                    defstop
-                        break;
-                } // End SWITCH
-            } // End __try/__except
+            PrimFnDydSiScSiScSub_EM (&lpYYRes->tkToken,
+                                      lptkFunc,
+                                      aplTypeRes,
+                                      aplTypeLft,
+                                      aplIntegerLft,
+                                      aplFloatLft,
+                                      aplCharLft,
+                                      aplTypeRht,
+                                      aplIntegerRht,
+                                      aplFloatRht,
+                                      aplCharRht,
+                                      lpPrimSpec);
         } else
         // It's a singleton array
         {

@@ -320,8 +320,7 @@ BOOL FreeResultGlobalVar
         RefCnt = --lpHeader->RefCnt;
 
 #ifdef DEBUG
-        dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN);
-        dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, RefCnt, FNLN);
+        dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X(res=%d) (%S#%d)", ClrPtrTypeDir (hGlbData), RefCnt, FNLN);
 #endif
 
 #undef  lpHeader
@@ -452,7 +451,7 @@ BOOL FreeResultGlobalFcn
 #undef  lpHeader
 
 #ifdef DEBUG
-    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN);
+    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X(res=%d) (%S#%d)", ClrPtrTypeDir (hGlbData), RefCnt, FNLN);
 #endif
 
     if (RefCnt EQ 0)

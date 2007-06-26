@@ -252,6 +252,27 @@ void FreeStrand
 
                 break;
 
+            case TKT_FCNARRAY:
+                // Check for reused ptrs
+                if (!PtrReusedDir (lpYYToken->tkToken.tkData.tkGlbData))
+                {
+                    // tkData is a valid HGLOBAL function array
+                    Assert (IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkGlbData));
+
+                    if (FreeResultGlobalFcn (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.tkGlbData)))
+                    {
+#ifdef DEBUG
+                        if (gDbgLvl > 2)
+                            dprintf ("**Zapping in FreeStrand: %08X (%s#%d)",
+                                     ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
+                                     FNLN);
+#endif
+                        lpYYToken->tkToken.tkData.tkGlbData = NULL;
+                    } // End IF
+                } // End IF
+
+                break;
+
             case TKT_AXISIMMED:
             case TKT_VARIMMED:
             case TKT_FCNIMMED:

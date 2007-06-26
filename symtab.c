@@ -1571,7 +1571,7 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
         if (!lpHshEntryDest)
             goto ERROR_EXIT;
 
-        // We *MUST NOT* call this function until after the call
+        // We *MUST NOT* call MaskTheHash until after the call
         //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
         //   split a STE and change lpHshTabSplitNext and uHashMask,
         //   and thus the result of MaskTheHash.
@@ -1698,7 +1698,7 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
         if (!lpHshEntryDest)
             goto ERROR_EXIT;
 
-        // We *MUST NOT* call this function until after the call
+        // We *MUST NOT* call MaskTheHash until after the call
         //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
         //   split a STE and change lpHshTabSplitNext and uHashMask,
         //   and thus the result of MaskTheHash.
@@ -1825,7 +1825,7 @@ LPSYMENTRY SymTabAppendCharCommon_EM
         if (!lpHshEntryDest)
             goto ERROR_EXIT;
 
-        // We *MUST NOT* call this function until after the call
+        // We *MUST NOT* call MaskTheHash until after the call
         //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
         //   split a STE and change lpHshTabSplitNext and uHashMask,
         //   and thus the result of MaskTheHash.

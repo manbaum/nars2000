@@ -77,7 +77,6 @@
 #include "savews.pro"
 #include "sessman.pro"
 #include "strand.pro"
-#include "surround.pro"
 #include "symtab.pro"
 #include "symtrans.pro"
 #include "syscmds.pro"

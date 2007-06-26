@@ -215,7 +215,6 @@ $(O)resdebug.DEP        \
 $(O)savews.DEP          \
 $(O)sessman.DEP         \
 $(O)strand.DEP          \
-$(O)surround.DEP        \
 $(O)symtab.DEP          \
 $(O)symtrans.DEP        \
 $(O)syscmds.DEP         \
@@ -472,9 +471,6 @@ $(O)version.DEV
 !if exist ($(O)strand.DEP)
 !       include $(O)strand.DEP
 !endif
-!if exist ($(O)surround.DEP)
-!       include $(O)surround.DEP
-!endif
 !if exist ($(O)symtab.DEP)
 !       include $(O)symtab.DEP
 !endif
@@ -586,7 +582,6 @@ $(O)resdebug.PRO        \
 $(O)savews.PRO          \
 $(O)sessman.PRO         \
 $(O)strand.PRO          \
-$(O)surround.PRO        \
 $(O)symtab.PRO          \
 $(O)symtrans.PRO        \
 $(O)syscmds.PRO         \
@@ -639,8 +634,6 @@ $(O)dfnhdr.C:           $(@B).Y
 $(O)dfnhdr.OBJ:         $(O)$(@B).C     $(DFNHDR_DEP)
 $(O)parse.C:            $(@B).Y
 $(O)parse.OBJ:          $(O)$(@B).C     $(PARSE_DEP)
-$(O)surround.C:         $(@B).Y
-$(O)surround.OBJ:       $(O)$(@B).C     $(SURROUND_DEP)
 
 ## WineHQ-specific files
 $(O)editctrl.OBJ:       $(WS)$(@B).C    $(EDITCTRL_DEP)
@@ -820,7 +813,6 @@ OBJS=                       \
      $(O)savews.OBJ         \
      $(O)sessman.OBJ        \
      $(O)strand.OBJ         \
-#####$(O)surround.OBJ       \
      $(O)symtab.OBJ         \
      $(O)symtrans.OBJ       \
      $(O)syscmds.OBJ        \

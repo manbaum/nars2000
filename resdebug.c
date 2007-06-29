@@ -610,6 +610,7 @@ LPVOID _MyGlobalAlloc
     {
         MyDbgBrk ("MyGlobalAlloc");
         GetLastError ();
+        CheckMemStat ();
     } else
         _SaveObj (OBJ_GLOBAL, lpVoid, uLine);
 
@@ -764,7 +765,7 @@ HGLOBAL _MyGlobalFree
 
 {
     // GlobalFlags returns the lock count in the low-order byte
-    if (_MyGlobalFlags (hGlb, uLine) & 0xFF)
+    if (_MyGlobalFlags (hGlb, uLine) & GMEM_LOCKCOUNT)
         MyDbgBrk ("MyGlobalFree"); // We should never get here
     else
         _DeleObj (OBJ_GLOBAL, hGlb, uLine);
@@ -795,6 +796,33 @@ HANDLE _MyQueryObject
 
     return &lpaah[dwType - 1][(*lpiCount) - 1];
 } // End MyQueryObject
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $_CheckMemStat
+//
+//  Check on memory status
+//***************************************************************************
+
+void _CheckMemStat
+    (void)
+
+{
+////MEMORYSTATUS memStat;
+////
+////memStat.dwLength = sizeof (memStat);
+////
+////// Check the status
+////GlobalMemoryStatus (&memStat);
+////
+////if (memStat.dwMemoryLoad EQ 100)
+////    DbgBrk ();
+////
+    if (!HeapValidate (GetProcessHeap (), 0, NULL))
+        DbgBrk ();
+} // End _CheckMemStat
+#endif
 
 
 //***************************************************************************

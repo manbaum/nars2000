@@ -41,16 +41,7 @@ LIBS_WEXE = GDI32.LIB           \
             COMCTL32.LIB        \
             libc.lib            \
             libgsl-double.a     \
-            libgslcblas-double.a\
-####        libcygwin.a
-
-####        libpthread.a
-####        libcygwin.a
-
-####        R:\GSL\LIB\libgsl.a \
-####        R:\GSL\LIB\libgslcblas.a
-
-####        libgsl.lib
+            libgslcblas-double.a
 
 RCFLAGS =
 RESFLAGS =
@@ -68,13 +59,17 @@ RCDEFINES = /D $(WDEF)
 
 ASM=masm
 AFLAGS=/Mu /DDEBUG=$(DEBUG)
-OEM=RET\                        # default OEM directory
-!if "$(DEBUG)" == "1"
-O=$(OEM)D\                      # define output directory for OEM-specifics
+!if "$(VS)" == "1"
+O=DEBUG\                        # define output directory for intermediate files
 B=$(BIN)D\                      # ...                         binaries
 !else
-O=$(OEM)ND\                     # define output directory for OEM-specifics
+!if "$(DEBUG)" == "1"
+O=RET\D\                        # define output directory for intermediate files
+B=$(BIN)D\                      # ...                         binaries
+!else
+O=RET\ND\                       # define output directory for intermediate files
 B=$(BIN)ND\                     # ...                         binaries
+!endif
 !endif
 HLP=$(HCDIR)HCRTF.EXE           # Path to HCRTF
 P=R:\$(NAME)\                   # Full path to . dir for HCRTF

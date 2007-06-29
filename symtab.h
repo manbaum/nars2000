@@ -129,23 +129,24 @@ typedef struct tagSTFLAGS
 {
     UINT Imm:1,             // 00000001:  The data in SYMENTRY is Immediate numeric or character scalar
          ImmType:4,         // 0000001E:  ...                     Immediate Boolean, Integer, Character, or Float (see IMM_TYPES)
-         SysName:1,         // 00000020:  ...                     NULL unless some other .Usr*** is set
-         SysVar:1,          // 00000040:  ...                     ...     System Variable
-         SysFn0:1,          // 00000080:  ...                     ...     System Function, niladic
-         SysFn12:1,         // 00000100:  ...                     ...     System Function, monadic or dyadic
+         SysName:1,         // 00000020:  ...                     NULL unless some other .Sys*** is set
+         SysVar:1,          // 00000040:  ...                     value   of System Variable
+         SysFn0:1,          // 00000080:  ...                     address of System Function, niladic
+         SysFn12:1,         // 00000100:  ...                     ...        System Function, monadic or dyadic
          NotCase:1,         // 00000200:  Case-insensitive name
          Perm:1,            // 00000400:  Permanent entry
          Inuse:1,           // 00000800:  Inuse entry
          Value:1,           // 00001000:  Entry has a value
          UsrName:1,         // 00002000:  The data in SYMENTRY is NULL unless some other .Usr*** is set
          UsrVar:1,          // 00004000:  ...                     hGlb of Value, unless .Imm
-         UsrFn0:1,          // 00008000:  User-defined niladic function
-         UsrFn12:1,         // 00010000:  ...          monadic/dyadic function
-         UsrOp1:1,          // 00020000:  ...          monadic operator
-         UsrOp2:1,          // 00040000:  ...          dyadic operator
-         SysVarValid:4,     // 00780000:  Index to validation routine for System Vars
-         DfnLabel:1,        // 00800000:  Defined function system label
-         DfnSysLabel:1;     // 01000000:  Defined function label
+         UsrFn0:1,          // 00008000:  ...                     ...     niladic function
+         UsrFn12:1,         // 00010000:  ...                     ...     monadic/dyadic function
+         UsrOp1:1,          // 00020000:  ...                     ...     monadic operator, unless .Imm
+         UsrOp2:1,          // 00040000:  ...                     ...     dyadic operator,  ...
+         UsrDfn:1,          // 00080000:  ...                     ...     defined function
+         SysVarValid:4,     // 00F00000:  Index to validation routine for System Vars
+         DfnLabel:1,        // 01000000:  Defined function system label
+         DfnSysLabel:1;     // 02000000:  Defined function label
 } STFLAGS, *LPSTFLAGS;
 
 // When changing this struct, be sure to make
@@ -165,6 +166,8 @@ typedef struct tagSTFLAGS
 //          It is also set for a variable with no value.
 // .UsrVar, .SysVar, .SysFn0, .SysFn12, .UsrFn0, .UsrFn12, .UsrOp1, and .UsrOp2
 //          are mutually exclusive.
+// .UsrDfn  is set when the function is user-defined.  Also, one and only one of
+//          .UsrFn0, .UsrFn12, .UsrOp1, or .UsrOp2 must be set.
 // hGlbName in SYMENTRY is set for .UsrVar, .UsrFn0, .UsrFn12, .UsrOp1, .UsrName,
 //                                 .SysVar, .SysFn0, .SysFn12, .UsrOp2.
 // .SysFn0 and .SysFn12 are both direct pointers to the code.  All other functions

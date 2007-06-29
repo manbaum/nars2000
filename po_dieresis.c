@@ -499,6 +499,18 @@ LPYYSTYPE PrimOpMonDieresisCommon_EM_YY
 
 ERROR_EXIT:
     bRet = FALSE;
+
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (lpMemRht)
     {

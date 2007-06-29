@@ -7,6 +7,7 @@
 #include "main.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -28,22 +29,22 @@
 #endif
 
 int ChangeRefCntDir
-    (LPVOID lpMem,
-     int    iIncr)
+    (HGLOBAL hGlb,              // Global memory handle
+     int     iIncr)             // Increment/decrement amount
 
 {
-    LPVOID lpSig;
-    UINT   RefCnt;
+    LPVOID lpSig;               // Ptr to signature
+    UINT   RefCnt;              // Reference count
 
     // Split cases based upon the ptr type
-    switch (GetPtrTypeDir (lpMem))
+    switch (GetPtrTypeDir (hGlb))
     {
         case PTRTYPE_STCONST:
             return 1;
 
         case PTRTYPE_HGLOBAL:
-            // Get a ptr to the global memory
-            lpSig = MyGlobalLock (ClrPtrTypeDirGlb (lpMem));
+            // Lock the memory to get a ptr to it
+            lpSig = MyGlobalLock (ClrPtrTypeDirGlb (hGlb));
 
             // Split cases based upon the array signature
             switch (((LPHEADER_SIGNATURE) lpSig)->nature)
@@ -83,11 +84,23 @@ int ChangeRefCntDir
 #undef  lpHeader
                     break;
 
+                case DFN_HEADER_SIGNATURE:
+#define lpHeader        ((LPDFN_HEADER) lpSig)
+
+#ifdef DEBUG
+                    dprintfW (L"  RefCnt   in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt + iIncr, FNLN);
+#endif
+                    Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
+                    lpHeader->RefCnt += iIncr;
+                    RefCnt = lpHeader->RefCnt;
+#undef  lpHeader
+                    break;
+
                 defstop
                     return -1;
             } // End SWITCH
 
-            MyGlobalUnlock (ClrPtrTypeDirGlb (lpMem)); lpMem = NULL;
+            MyGlobalUnlock (ClrPtrTypeDirGlb (hGlb)); lpSig = NULL;
 
             return RefCnt;
 

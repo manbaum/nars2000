@@ -16,6 +16,7 @@
 #ifndef PROTO
 #include "compro.h"
 #else
+#define SysFnCR_EM      NULL
 #define SysFnDR_EM      NULL
 #define SysFnSIZE_EM    NULL
 #define SysFnSYSID_EM   NULL
@@ -63,12 +64,12 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL          , 0          },  // 12:  ...                              Prototype
     {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL          , 0          },  // 13:  ...                              Singleton
 
-////{WS_UTF16_QUAD L"ai"       ,      0,      FALSE, NULL          , 0          },  // Accounting Information
-////{WS_UTF16_QUAD L"av"       ,      0,      FALSE, NULL          , 0          },  // Atomic Vector
-////{WS_UTF16_QUAD L"dm"       ,      0,      FALSE, NULL          , 0          },  // Diagnostic Message
-////{WS_UTF16_QUAD L"lc"       ,      0,      FALSE, NULL          , 0          },  // Line Counter
-////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, NULL          , 0          },  // State Indicator
-////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, NULL          , 0          },  // State Indicator w/Name List
+////{WS_UTF16_QUAD L"ai"       ,      0,      FALSE, SysFnAI_EM    , 0          },  // Accounting Information
+////{WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM    , 0          },  // Atomic Vector
+////{WS_UTF16_QUAD L"dm"       ,      0,      FALSE, SysFnDM_EM    , 0          },  // Diagnostic Message
+////{WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM    , 0          },  // Line Counter
+////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, SysFnSI_EM    , 0          },  // State Indicator
+////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, SysFnSINL_EM  , 0          },  // State Indicator w/Name List
     {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, SysFnSYSID_EM , 0          },  // System Identifier
     {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, SysFnSYSVER_EM, 0          },  // System Version
     {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, SysFnTC_EM    , 0          },  // Terminal Control Characters
@@ -82,35 +83,35 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, SysFnTCNL_EM  , 0          },  // Terminal Control Character, New Line
     {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, SysFnTCNUL_EM , 0          },  // Terminal Control Character, Null
     {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM    , 0          },  // Time Stamp
-////{WS_UTF16_QUAD L"wa"       ,      0,      FALSE, NULL          , 0          },  // Workspace Available
+////{WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM    , 0          },  // Workspace Available
 
-////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, NULL          , 0          },  // Call Assembler Code
-////{WS_UTF16_QUAD L"cr"       ,      1,      FALSE, NULL          , 0          },  // Canonical Representation
-////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, NULL          , 0          },  // Canonical Representation, Line
-////{WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, NULL          , 0          },  // Canonical Representation, Public Comment
-////{WS_UTF16_QUAD L"def"      ,      1,      FALSE, NULL          , 0          },  // Define Function
-////{WS_UTF16_QUAD L"defl"     ,      1,      FALSE, NULL          , 0          },  // Define Function Line
-////{WS_UTF16_QUAD L"dl"       ,      1,      FALSE, NULL          , 0          },  // Delay Execution
+////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM  , 0          },  // Call Assembler Code
+    {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM    , 0          },  // Canonical Representation
+////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, SysFnCRL_EM   , 0          },  // Canonical Representation, Line
+////{WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, SysFnCRLPC_EM , 0          },  // Canonical Representation, Public Comment
+////{WS_UTF16_QUAD L"def"      ,      1,      FALSE, SysFnDEF_EM   , 0          },  // Define Function
+////{WS_UTF16_QUAD L"defl"     ,      1,      FALSE, SysFnDEFL_EM  , 0          },  // Define Function Line
+////{WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM    , 0          },  // Delay Execution
     {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM    , 0          },  // Data Representation
-////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, NULL          , 0          },  // Erase Names
-////{WS_UTF16_QUAD L"error"    ,      1,      FALSE, NULL          , 0          },  // Signal Error
-////{WS_UTF16_QUAD L"ex"       ,      1,      FALSE, NULL          , 0          },  // Erase Names
-////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, NULL          , 0          },  // Format Items
-////{WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, NULL          , 0          },  // Format
-////{WS_UTF16_QUAD L"fx"       ,      1,      FALSE, NULL          , 0          },  // Fix Function
-////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, NULL          , 0          },  // Identifier List
-////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, NULL          , 0          },  // Identifier Localization
-////{WS_UTF16_QUAD L"lock"     ,      1,      FALSE, NULL          , 0          },  // Lock Functions
-////{WS_UTF16_QUAD L"mf"       ,      1,      FALSE, NULL          , 0          },  // Monitor Function
-////{WS_UTF16_QUAD L"nc"       ,      1,      FALSE, NULL          , 0          },  // Name Classification
-////{WS_UTF16_QUAD L"nl"       ,      1,      FALSE, NULL          , 0          },  // Name List
+////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, SysFnERASE_EM , 0          },  // Erase Names
+////{WS_UTF16_QUAD L"error"    ,      1,      FALSE, SysFnERROR_EM , 0          },  // Signal Error
+////{WS_UTF16_QUAD L"ex"       ,      1,      FALSE, SysFnEX_EM    , 0          },  // Erase Names
+////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, SysFnFI_EM    , 0          },  // Format Items
+////{WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM   , 0          },  // Format
+////{WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM    , 0          },  // Fix Function
+////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM, 0          },  // Identifier List
+////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM , 0          },  // Identifier Localization
+////{WS_UTF16_QUAD L"lock"     ,      1,      FALSE, SysFnLOCK_EM  , 0          },  // Lock Functions
+////{WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM    , 0          },  // Monitor Function
+////{WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM    , 0          },  // Name Classification
+////{WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM    , 0          },  // Name List
     {WS_UTF16_QUAD L"size"     ,      1,      FALSE, SysFnSIZE_EM  , 0          },  // Size of an object
-////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, NULL          , 0          },  // Search String
-////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, NULL          , 0          },  // Manage Stop Points
-////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, NULL          , 0          },  // Manage Trace Points
+////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, SysFnSS_EM    , 0          },  // Search String
+////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM  , 0          },  // Manage Stop Points
+////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, SysFnTRACE_EM , 0          },  // Manage Trace Points
     {WS_UTF16_QUAD L"type"     ,      1,      FALSE, SysFnTYPE_EM  , 0          },  // Manage Trace Points
-////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, NULL          , 0          },  // Verify Items
-////{WS_UTF16_QUAD L"vr"       ,      1,      FALSE, NULL          , 0          },  // Vector Representation of a Function
+////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, StsFnVI_EM    , 0          },  // Verify Items
+////{WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM    , 0          },  // Vector Representation of a Function
 
     // ***FIXME*** Add more entries
 };

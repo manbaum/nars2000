@@ -76,7 +76,7 @@ typedef enum tagTOKEN_TYPES
  TKT_LISTPAR  ,             // 16: List in parens    (data is HGLOBAL)
  TKT_LISTBR   ,             // 17: List in brackets  (data is HGLOBAL)
  TKT_VARARRAY ,             // 18: Array of data (data is HGLOBAL)
- TKT_FCNARRAY ,             // 19: Array of functions or monadic operators (data is HGLOBAL)
+ TKT_FCNARRAY ,             // 19: Array of functions and/or operators (data is HGLOBAL)
  TKT_FCNNAMED ,             // 1A: Symbol table entry for a named function (data is LPSYMENTRY)
  TKT_AXISIMMED,             // 1B: An immediate axis specification (data is immediate)
  TKT_AXISARRAY,             // 1C: An array of  ...   (data is HGLOBAL)
@@ -89,8 +89,7 @@ typedef enum tagTOKEN_TYPES
 
 // Whenever changing the above <enum>, be sure to make a
 //   corresponding change to <Untokenize> in <exec.c>,
-//   <LookaheadDyadicOp>, <LookaheadAdjacent>,
-//   <LookaheadSurround>, and <pl_yylex> in <parse.y>,
+//   <LookaheadDyadicOp>, <LookaheadAdjacent>, and <pl_yylex> in <parse.y>,
 //   <MakeVarStrand_EM_YY> in <strand.c>,
 //   <GetTokenTypeName> in <display.c>,
 //   and <TokenTypeFV> in <primfns.c>.

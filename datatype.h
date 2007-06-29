@@ -185,7 +185,7 @@ ARRAY_APA       An APA is a representation of a1 + a2 {times} {iota} a3
 typedef struct tagHEADER_SIGNATURE
 {
     UINT             nature;    // Array header signature (common to all types of arrays)
-} HEADER_SIGNATURE, * LPHEADER_SIGNATURE;
+} HEADER_SIGNATURE, *LPHEADER_SIGNATURE;
 
 // Variable array header
 #define VARARRAY_HEADER_SIGNATURE   'SRAV'
@@ -207,25 +207,26 @@ typedef struct tagVARARRAY_HEADER
 #define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * aplRank)
 
 // Function types
-#define FCNTYPE_FIRST 1
-
-typedef enum tagFCN_TYPES
+typedef enum tagFCNTYPES
 {
-    FCNTYPE_FCN = FCNTYPE_FIRST,// 01:  Primitive and user-defined functions
-    FCNTYPE_OP1,                // 02:  ...                        monadic operators
-    FCNTYPE_OP2,                // 03:  ...                        dyadic  ...
-    FCNTYPE_AXISFCN,            // 04:  Primitive axis functions (is this useful?)
-} FCN_TYPES;
+    FCNTYPE_UNK = 0,                // 00:  Unknown
+    FCNTYPE_FCN0,                   // 01:  Primitive and user-defined niladic functions
+    FCNTYPE_FCN12,                  // 02:  ...                        monadic/dyadic functions
+    FCNTYPE_OP1,                    // 03:  ...                        monadic operators
+    FCNTYPE_OP2,                    // 04:  ...                        dyadic  ...
+    FCNTYPE_AXISFCN,                // 05:  Primitive axis functions (is this useful?)
+} FCNTYPES;
 
 // Function array header
 #define FCNARRAY_HEADER_SIGNATURE   'SNCF'
 
 typedef struct tagFCNARRAY_HEADER
 {
-    HEADER_SIGNATURE Sig;       // Array header signature
-    UINT             FcnType:4; // The type of the array (see FCN_TYPES)
-    UINT             RefCnt;    // Reference count
-    APLNELM          NELM;      // # elements in the array
+    HEADER_SIGNATURE Sig;           // 00:  Array header signature
+    UINT             FcnType:4;     // 04:  The type of the array (see FCNTYPES enum)
+    UINT             RefCnt;        // 08:  Reference count
+    APLNELM          NELM;          // 0C:  # elements in the array
+    HGLOBAL          hGlbTxtLine;   // 10:  Line text global memory handle (may be NULL)
 } FCNARRAY_HEADER, *LPFCNARRAY_HEADER;
 
 // Macros to skip from the array base to the data

@@ -1193,8 +1193,12 @@ LRESULT APIENTRY SMWndProc
                         // Lock the memory to get a ptr to it
                         lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                        // Get the current line
+                        // Tell EM_GETLINE maximum # chars in the buffer
+                        // The output array is a temporary so we don't have to
+                        //   worry about overwriting outside the allocated buffer
                         ((LPWORD) lpMemPTD->lpwszTmpLine)[0] = DEF_CURLINE_MAXLEN;
+
+                        // Get the current line
                         SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemPTD->lpwszTmpLine);
 
                         // Append CRLF
@@ -1236,7 +1240,9 @@ LRESULT APIENTRY SMWndProc
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                    // Specify the maximum # chars for the buffer
+                    // Tell EM_GETLINE maximum # chars in the buffer
+                    // The output array is a temporary so we don't have to
+                    //   worry about overwriting outside the allocated buffer
                     ((LPWORD) lpMemPTD->lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
 
                     // Save the (new) current line
@@ -1265,7 +1271,9 @@ LRESULT APIENTRY SMWndProc
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                    // Specify the maximum # chars for the buffer
+                    // Tell EM_GETLINE maximum # chars in the buffer
+                    // The output array is a temporary so we don't have to
+                    //   worry about overwriting outside the allocated buffer
                     ((LPWORD) lpMemPTD->lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
 
                     // Save the (new) current line
@@ -1394,8 +1402,12 @@ LRESULT APIENTRY SMWndProc
 #endif
 #ifdef DEBUG
                 case VK_F12:            // Clear the debugging display
-                    // Clear the debugger listbox
-                    DbgClr ();
+                    // If it's Shift-, then set the gDbgLvl to 3
+                    if (GetKeyState (VK_SHIFT) & 0x8000)
+                        gDbgLvl = 3;
+                    else
+                        // Clear the debugger listbox
+                        DbgClr ();
 
                     return FALSE;
 #endif

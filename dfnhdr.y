@@ -194,7 +194,8 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  MakeHdrStrand (&$1);
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
-                                 lpfhLocalVars->FcnValence = 0;         // Mark as niladic
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
                                 }
 
     |         NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK RhtArg");         // Monadic function
@@ -207,7 +208,8 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
-                                 lpfhLocalVars->FcnValence = 1;         // Mark as monadic
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
 
     | NAMEUNK NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK NAMEUNK RhtArg"); // Dyadic function
@@ -225,7 +227,8 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
-                                 lpfhLocalVars->FcnValence = 2;         // Mark as dyadic
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
     | List    NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  List NAMEUNK RhtArg");    // Dyadic function
                                  if (!ValidUsrName (&$2.tkToken))
@@ -238,7 +241,8 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
-                                 lpfhLocalVars->FcnValence = 2;         // Mark as dyadic
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
     | OptArg  NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  OptArg NAMEUNK RhtArg");  // Bivalent function
                                  if (!ValidUsrName (&$2.tkToken))
@@ -251,16 +255,17 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
-                                 lpfhLocalVars->FcnValence = 3;         // Mark as ambivalent
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
                                 }
-    |         List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  List RhtArg");            // Mon/Dyd operator, monadic function
+    |         List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  List RhtArg");            // Mon/Dyd operator, monadic derived function
                                  if (!GetOprName (&$1))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
-                                 lpfhLocalVars->FcnValence = 1;         // Mark as monadic
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
-    | NAMEUNK List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK List RhtArg");    // Mon/Dyd operator, dyadic function
+    | NAMEUNK List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK List RhtArg");    // Mon/Dyd operator, dyadic derived function
                                  if (!ValidUsrName (&$1.tkToken))
                                     YYERROR;
                                  if (!GetOprName (&$2))
@@ -268,23 +273,26 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
-                                 lpfhLocalVars->FcnValence = 2;         // Mark as dyadic
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
-    | List    List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  List List RhtArg");       // Mon/Dyd operator, dyadic function
+    | List    List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  List List RhtArg");       // Mon/Dyd operator, dyadic derived function
                                  if (!GetOprName (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
-                                 lpfhLocalVars->FcnValence = 2;         // Mark as dyadic
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
-    | OptArg  List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  OptArg List RhtArg");     // Mon/Dyd operator, bivalent function
+    | OptArg  List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  OptArg List RhtArg");     // Mon/Dyd operator, ambivalent derived function
                                  if (!GetOprName (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
-                                 lpfhLocalVars->FcnValence = 3;         // Mark as ambivalent
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
                                 }
     ;
 
@@ -352,7 +360,7 @@ BOOL ParseHeader
      LPFHLOCALVARS lpfhLocalVars)   // Local vars
 
 {
-    BOOL        bRet = FALSE;   // TRUE iff result is valid
+    BOOL bRet = FALSE;          // TRUE iff result is valid
 
     // Save the window handle
     lpfhLocalVars->hWndEC = hWndEC;
@@ -376,8 +384,8 @@ BOOL ParseHeader
     // Skip over the starting EOL
     lpfhLocalVars->lpNext  = &lpfhLocalVars->lpStart[1];
 
-    // Put a terminating EOL at the end
-    lpfhLocalVars->lpStart[lpfhLocalVars->lpStart->tkData.tkChar] = *lpfhLocalVars->lpStart;
+    // Mark the stopping point
+    lpfhLocalVars->lpStop  = &lpfhLocalVars->lpStart[lpfhLocalVars->lpStart->tkData.tkChar];
 
     // Start off with no error
     lpfhLocalVars->tkErrorCharIndex = NEG1U;
@@ -457,6 +465,10 @@ int fh_yylex
     lpYYLval->uStrandLen     = 0;
     lpYYLval->lpYYStrandBase = lpfhLocalVars->lpYYStrandBase;
 
+    // Check for stopping point
+    if (lpfhLocalVars->lpStop EQ lpfhLocalVars->lpNext)
+        return '\0';
+
     // Split cases based upon the token type
     switch (lpfhLocalVars->lpNext++->tkFlags.TknType)
     {
@@ -480,9 +492,6 @@ int fh_yylex
 
         case TKT_RBRACKET:
             return ']';
-
-        case TKT_EOL:
-            return '\0';
 
         default:
             return UNK;
@@ -590,6 +599,8 @@ void fh_yyfprintf
     i2 = va_arg (vl, int);
     i3 = va_arg (vl, int);
 
+    va_end (vl);
+
     wsprintf (lpszDebug,
               lpszFmt,
               i1, i2, i3);
@@ -612,8 +623,6 @@ void fh_yyfprintf
 
         szTemp[0] = '\0';       // Restart the buffer
     } // End IF/ELSE
-
-    va_end (vl);
 #endif
 } // End fh_yyfprintf
 
@@ -700,7 +709,7 @@ LPYYSTYPE MakeHdrStrand
 
 
 //***************************************************************************
-//  GetOprName
+//  $GetOprName
 //
 //  Extract the operator name and valence from a list
 //***************************************************************************
@@ -718,14 +727,14 @@ BOOL GetOprName
     switch (lpYYArg->uStrandLen)
     {
         case 2:         // Monadic operator
-            lpfhLocalVars->OprValence  = 1;
+            lpfhLocalVars->DfnType     = DFNTYPE_OP1;
             lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[0];
             lpfhLocalVars->lpYYRhtOpr  = &lpYYArg->lpYYStrandBase[1];
 
             return TRUE;
 
         case 3:         // Dyadic operator
-            lpfhLocalVars->OprValence  = 2;
+            lpfhLocalVars->DfnType     = DFNTYPE_OP2;
             lpfhLocalVars->lpYYLftOpr  = &lpYYArg->lpYYStrandBase[0];
             lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[1];
             lpfhLocalVars->lpYYRhtOpr  = &lpYYArg->lpYYStrandBase[2];
@@ -739,5 +748,5 @@ BOOL GetOprName
 
 
 //***************************************************************************
-//  End of File: fnhdr.y
+//  End of File: dfnhdr.y
 //***************************************************************************

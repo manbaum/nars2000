@@ -3932,7 +3932,7 @@ BOOL IsGlobalTypeArray
             break;
     } // End SWITCH
 
-    // Clear the PTRTYPE_*** flags
+    // Clear the ptr type bits
     hGlb = ClrPtrTypeDirGlb (hGlb);
 
     // It's a valid ptr

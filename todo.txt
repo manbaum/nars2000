@@ -77,16 +77,16 @@ DONE:  General
   TKT_VARARRAY to TKT_VARIMMED?
 * Check floating point accuracy in input and output
 * Remove non-"double" code from GSL functions
-* Finish scan
-* ...    fast Boolean reduction
-* ...    fast Boolean scan
-* ...    N-wise reduction
-* ...    function editing
-* ...    dyadic jot with variables (e.g. 3{jot}+)
-* ...    f{is}3{jot}+
-* ...    (+{jot}(2+3))4
-* ...    (+{jot}(2 3))4
-* ...    (+{jot} 2 3 )4
+* Implement scan
+* ...       fast Boolean reduction
+* ...       fast Boolean scan
+* ...       N-wise reduction
+* ...       function editing
+* ...       dyadic jot with variables (e.g. 3{jot}+)
+* ...       f{is}3{jot}+
+* ...       (+{jot}(2+3))4
+* ...       (+{jot}(2 3))4
+* ...       (+{jot} 2 3 )4
 *
 
 

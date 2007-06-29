@@ -41,18 +41,14 @@ typedef enum tagINDSTRAND
 
 typedef enum tagOBJTYPE
 {
-    OBJTYPE_VAR = 0,                // Object type is Variable
-    OBJTYPE_OP1,                    // ...            Monadic Operator
-    OBJTYPE_OP2,                    // ...            Dyadic Operator
-    OBJTYPE_FCN,                    // ...            Function (primitive or defined)
+    OBJTYPE_VAR = 0,                // 00:  Object type is Variable
+    OBJTYPE_OP1,                    // 01:  ...            Monadic Operator (primitive or defined)
+    OBJTYPE_OP2,                    // 02:  ...            Dyadic Operator   ...
+    OBJTYPE_FCN0,                   // 03:  ...            Niladic Defined Function
+    OBJTYPE_FCN12,                  // 04:  ...            Monadic/Dyadic Function (primitive or defined)
 } OBJTYPE;
 
-typedef enum tagLOOKAHEAD
-{
-    LOOKAHEAD_NRM = 0,              // No lookahead
-    LOOKAHEAD_SUR,                  // Lookahead for within surrounding parens
-    LOOKAHEAD_ADJ,                  // ...           adjacent to brackets
-} LOOKAHEAD;
+#define OBJTYPE_STRING  "V120F"
 
 typedef struct tagPLLOCALVARS       // ParseLine Local Vars
 {
@@ -61,10 +57,10 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     LPTOKEN     lpStart,            // Ptr to first available entry after the header
                 lpNext,             // Ptr to next  ...
                 lpStop;             // Ptr to stop token if LookAhead
+    LPAPLCHAR   lpwszLine;          // Ptr to line text (zero-terminated)
     UINT        tkErrorCharIndex;   // Error char index
-    UINT        InitAhead:1,        // TRUE iff we're to initialize (SOL)
-                ObjType:2,          // Object type (see enum tagOBJTYPE)
-                LookAhead:2;        // TRUE iff looking for object type within surrounding parens
+    UINT        ObjType:3,          // Object type (see enum tagOBJTYPE)
+                bLookAhead:1;       // TRUE iff looking for object type within surrounding parens
     LPYYSTYPE   lpYYStrandStart[STRAND_LEN],    // Strand stack start (static)
                 lpYYStrandBase [STRAND_LEN],    // ...          base (dynamic)
                 lpYYStrandNext [STRAND_LEN];    // ...          next token (dynamic)

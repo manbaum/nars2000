@@ -2002,6 +2002,8 @@ LPSYMENTRY SymTabAppendNewName_EM
 
     // Copy the name to the global memory
     lstrcpyW (lpGlbName, lpwszString);
+
+    // We no longer need this ptr
     MyGlobalUnlock (lpHshEntryDest->hGlbName); lpGlbName = NULL;
 
     // Save the flags

@@ -10,6 +10,22 @@ typedef struct tagFCNLINE
     HGLOBAL         hGlbMonInfo;    // Monitor information (??)   ... (may be NULL)
 } FCNLINE, *LPFCNLINE;
 
+typedef enum tagDFNTYPES        // Defined Function Types
+{
+    DFNTYPE_UNK = 0,            // 00:  Unknown
+    DFNTYPE_OP1,                // 01:  Monadic operator
+    DFNTYPE_OP2,                // 02:  Dyadic operator
+    DFNTYPE_FCN,                // 03:  Niladic/monadic/dyadic/ambivalent function
+} DFNTYPES;
+
+typedef enum tagFCNVALENCES     // Defined/Derived Function Valence
+{
+    FCNVALENCE_NIL = 0,         // 00:  Niladic function
+    FCNVALENCE_MON,             // 01:  Monadic function/derived function
+    FCNVALENCE_DYD,             // 02:  Dyadic  ...
+    FCNVALENCE_AMB,             // 03:  Ambivalent ...
+} FCNVALENCES;
+
 
 // Defined function header signature
 #define DFN_HEADER_SIGNATURE   'SNFD'
@@ -19,14 +35,8 @@ typedef struct tagDFN_HEADER
 {
     HEADER_SIGNATURE Sig;           // 00:  Defined function header signature
     UINT             Version;       // 04:  Version # of this header
-    UINT             Type:2,        // 08:  Type:  0 = Unknown
-                                    //             1 = Monadic operator
-                                    //             2 = Dyadic operator
-                                    //             3 = Function
-                     FcnValence:2;  //      Function Valence:  0 = Niladic function
-                                    //                         1 = Monadic function/derived function
-                                    //                         2 = Dyadic  ...
-                                    //                         3 = Ambivalent ...
+    UINT             DfnType:2,     // 08:  Defined Function Type (see DFNTYPES enum)
+                     FcnValence:2;  //      Defined/Derived Function Valence (see FCNVALENCES enum)
     UINT             RefCnt,        // 0C:  Reference count
                      nPrototypeLine,// 10:  Line # of the []PROTOTYPE label (0 if not present)
                      nInverseLine,  // 14:  Line # of the []INVERSE label (0 if not present)
@@ -42,11 +52,12 @@ typedef struct tagDFN_HEADER
                      numFcnLines,   // 3C:  # lines in the function (not counting the header)
                      offFcnLines;   // 40:  Offset to start of function lines (FCNLINE[nLines])
     LPSYMENTRY       steLftOpr,     // 44:  Left operand STE (may be NULL)
-                     steRhtOpr;     // 48:  Right ...
-    HGLOBAL          hGlbTxtHdr,    // 4C:  Text of function header (APLCHAR) ...
-                     hGlbTknHdr,    // 50:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff;  // 54:  Undo buffer                       ... (may be NULL)
-                                    // 58:  Array of function line structures (FCNLINE[nLines])
+                     steFcnName,    // 48:  Function name STE
+                     steRhtOpr;     // 4C:  Right operand STE (may be NULL)
+    HGLOBAL          hGlbTxtHdr,    // 50:  Text of function header (APLCHAR) ...
+                     hGlbTknHdr,    // 54:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff;  // 58:  Undo buffer                       ... (may be NULL)
+                                    // 5C:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 
@@ -68,16 +79,11 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  hGlbUndoBuff;      // Undo buffer      ...
     UNION_TOKEN  t2;                // Locked base of hGlbToken
     LPTOKEN      lpStart,           // First available entry after the header
-                 lpNext;            // Next  ...
-    UINT         tkErrorCharIndex,  // Error char index
-                 FcnValence,        // Function valence:  0 = niladic
-                                    //                    1 = monadic
-                                    //                    2 = dyadic
-                                    //                    3 = ambivalent
-                 OprValence;        // Operator ...       0 = not an operator (it's a function)
-                                    //                    1 = monadic operator
-                                    //                    2 = dyadic  ...
-                                    //                    3 = unknown
+                 lpNext,            // Next  ...
+                 lpStop;            // Stopping token
+    UINT         tkErrorCharIndex;  // Error char index
+    UINT         DfnType:2,         // 08:  Defined Function Type (see enum tagDFNTYPE)
+                 FcnValence:2;      //      Defined/Derived Function Valence (see enum tagFCNVALENCE)
     FH_LPYYSTYPE lpYYStrandStart,   // Strand stack start (static)
                  lpYYStrandBase,    // ...          base (dynamic)
                  lpYYStrandNext,    // ...          next token (dynamic)

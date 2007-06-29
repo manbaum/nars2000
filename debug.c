@@ -229,8 +229,11 @@ LRESULT APIENTRY DBWndProc
 
             SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
-            // Call common code
-            SendMessageW (hWnd, MYWM_DBGMSG_COM, 0, (LPARAM) wszTemp);
+            // Add the string to the ListBox
+            iIndex = SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
+
+            // Scroll this item into view
+            SendMessageW (hWnd, MYWM_DBGMSG_SCROLL, iIndex, 0);
 
             return FALSE;           // We handled the msg
 
@@ -242,15 +245,11 @@ LRESULT APIENTRY DBWndProc
                        L"%4d:  %s",
                        ++iLineNum,
                        (LPWCHAR) lParam);
+
             SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
-            // Call common code
-            SendMessageW (hWnd, MYWM_DBGMSG_COM, 0, (LPARAM) wszTemp);
-
-            return FALSE;           // We handled the msg
-
-        case MYWM_DBGMSG_COM:       // Common code
-            iIndex = SendMessageW (hWndLB, LB_ADDSTRING, 0, lParam);
+            // Add the string to the ListBox
+            iIndex = SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
 
             // Scroll this item into view
             SendMessageW (hWnd, MYWM_DBGMSG_SCROLL, iIndex, 0);
@@ -677,7 +676,8 @@ void DbgClr
 //***************************************************************************
 
 int dprintf
-    (LPCHAR lpszFmt, ...)
+    (LPCHAR lpszFmt,
+     ...)
 
 {
     va_list vl;
@@ -697,12 +697,12 @@ int dprintf
     i3 = va_arg (vl, int);
     i4 = va_arg (vl, int);
 
+    va_end (vl);
+
     iRet = sprintf (szTemp,
                     lpszFmt,
                     i1, i2, i3, i4);
     DbgMsg (szTemp);
-
-    va_end (vl);
 
     return iRet;
 } // End dprintf
@@ -713,11 +713,12 @@ int dprintf
 //***************************************************************************
 //  $dprintfW
 //
-//  Display a debug message a la printf
+//  Display a debug message a la printfW
 //***************************************************************************
 
 int dprintfW
-    (LPWCHAR lpwszFmt, ...)
+    (LPWCHAR lpwszFmt,
+     ...)
 
 {
     va_list vl;

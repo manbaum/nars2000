@@ -596,7 +596,7 @@ LPYYSTYPE PrimFnDydDomino_EM_YY
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // Check for RANK ERRORs
+    // Check for RANK ERROR
     if (aplRankLft > 2 || aplRankRht > 2)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,

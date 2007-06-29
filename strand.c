@@ -8,6 +8,7 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "dfnhdr.h"
 #include "pertab.h"
 
 // Include prototypes unless prototyping
@@ -222,9 +223,10 @@ void FreeStrand
 
                 if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
                 {
-                    // stData is a valid HGLOBAL variable or function array
+                    // stData is a valid HGLOBAL variable or function array, or defined function
                     Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
-                         || IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData));
+                         || IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
+                         || IsGlbTypeDfnDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData));
                 } // End IF
 
                 break;          // Don't free names
@@ -655,8 +657,8 @@ static char tabConvert[][STRAND_LENGTH] =
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType = aplType;
-////lpHeader->Perm    = 0;
-////lpHeader->SysVar  = 0;
+////lpHeader->Perm    = 0;          // Already zero from GHND
+////lpHeader->SysVar  = 0;          // Already zero from GHND
     lpHeader->RefCnt  = 1;
     lpHeader->NELM    = iLen;
     lpHeader->Rank    = 1;
@@ -1038,18 +1040,19 @@ ERROR_EXIT:
 #endif
 
 LPYYSTYPE MakeFcnStrand_EM_YY
-    (LPYYSTYPE     lpYYArg,         // Ptr to incoming token
-     FCN_TYPES     cFcnType)        // Type of the strand
+    (LPYYSTYPE lpYYArg,         // Ptr to incoming token
+     FCNTYPES  cFcnType,        // Type of the strand
+     BOOL      bSaveTxtLine)    // TRUE iff we should save the line text
 
 {
     int           iIniLen,
                   iActLen,
                   FcnCount = 0;
     APLUINT       ByteRes;                  // # bytes needed for the result
-    LPYYSTYPE     lpYYStrand;
     HGLOBAL       hGlbStr;
     LPVOID        lpMemStr;
-    LPYYSTYPE     lpYYMemStart,
+    LPYYSTYPE     lpYYStrand,
+                  lpYYMemStart,
                   lpYYMemData,
                   lpYYBase = (LPYYSTYPE) -1,
                   lpYYRes;
@@ -1104,7 +1107,7 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     ByteRes = sizeof (FCNARRAY_HEADER)      // For the header
             + sizeof (YYSTYPE) * iIniLen;   // For the data
 
-    // Allocate global memory for a length <iLen> vector of type <YYSTYPE>.
+    // Allocate global memory for a length <iIniLen> vector of type <YYSTYPE>.
     // N.B.: Conversion from APLUINT to UINT.
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbStr = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -1128,10 +1131,32 @@ LPYYSTYPE MakeFcnStrand_EM_YY
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
 
     // Fill in the header
-    lpHeader->Sig.nature = FCNARRAY_HEADER_SIGNATURE;
-    lpHeader->FcnType    = cFcnType;
-    lpHeader->RefCnt     = 1;
-////lpHeader->NELM       =              // To be filled in below
+    lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
+    lpHeader->FcnType     = cFcnType;
+    lpHeader->RefCnt      = 1;
+////lpHeader->NELM        =             // To be filled in below
+    if (bSaveTxtLine)
+    {
+        UINT   uLineLen;        // Line length
+        LPVOID lpMemTxtLine;    // Ptr to line text global memory
+
+        // Get the line length
+        uLineLen = lstrlenW (lpplLocalVars->lpwszLine);
+
+        // Allocate global memory for a length <uLineLen> vector of type <APLCHAR>.
+        lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, (uLineLen + 1) * sizeof (APLCHAR));
+        if (lpHeader->hGlbTxtLine)
+        {
+            // Lock the memory to get a ptr to it
+            lpMemTxtLine = MyGlobalLock (lpHeader->hGlbTxtLine);
+
+            // Copy the line text to global memory
+            CopyMemory (lpMemTxtLine, lpplLocalVars->lpwszLine, uLineLen * sizeof (APLCHAR));
+
+            // We no longer need this ptr
+            MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
+        } // End IF
+    } // End IF
 
 #undef  lpHeader
 
@@ -1285,8 +1310,9 @@ LPYYSTYPE CopyYYFcn
                     // If it's not an internal function, ...
                     if (!lpToken->tkFlags.FcnDir)
                     {
-                        //stData is a valid HGLOBAL function array
-                        Assert (IsGlbTypeFcnDir (hGlbData));
+                        //stData is a valid HGLOBAL function array or defined function
+                        Assert (IsGlbTypeFcnDir (hGlbData)
+                             || IsGlbTypeDfnDir (hGlbData));
 
                         // Increment the reference count in global memory
                         DbgIncrRefCntDir (hGlbData);
@@ -1494,7 +1520,7 @@ LPYYSTYPE MakeAxis_YY
         case TKT_VARIMMED:
             // Copy the token and rename it
             YYCopy (lpYYRes, lpYYAxis);     // No need to CopyYYSTYPE_EM_YY immediates
-            lpYYRes->tkToken.tkFlags.TknType = TKT_AXISIMMED;
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_AXISIMMED;
 
             break;
 

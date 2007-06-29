@@ -260,8 +260,8 @@ LPYYSTYPE PrimFnMonIota_EM_YY
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_APA;
-////lpHeaderRes->Perm       = 0;
-////lpHeaderRes->SysVar     = 0;
+////lpHeaderRes->Perm       = 0;        // Already zero from GHND
+////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = 1;
@@ -399,7 +399,7 @@ BOOL PrimFnMonIotaGlb_EM
     APLRANK  aplRank;           // The rank of the array
     BOOL     bRet = TRUE;
 
-    // Traverse the array looking for DOMAIN ERRORs
+    // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
@@ -418,7 +418,7 @@ BOOL PrimFnMonIotaGlb_EM
     lpMem = VarArrayBaseToData (lpMem, aplRank);
 
     // Only singletons allowed so far
-    if (aplNELM > 1)
+    if (aplNELM NE 1)
     {
         // If its rank is too high, it's a RANK ERROR,
         //   otherwise it's a LENGTH ERROR
@@ -430,6 +430,7 @@ BOOL PrimFnMonIotaGlb_EM
                                        lptkFunc);
         bRet = FALSE;
     } else
+    // Traverse the array checking for DOMAIN ERROR
     // Split cases based upon the array storage type
     switch (aplType)
     {

@@ -764,6 +764,11 @@ char pszNoInsertTCTab[]
  = "Unable to create a new Tab"
 #endif
 ,
+     pszNoEditPrimFn[]
+#ifdef DEFINE_VALUES
+ = "NONCE ERROR:  Unable to edit named primitive function/operator"
+#endif
+,
      pszNoCreateFEEditCtrl[]
 #ifdef DEFINE_VALUES
  = "Unable to create the Edit Control in the Function Editor"
@@ -1074,6 +1079,15 @@ typedef struct tagUNDOBUF
     WCHAR Char;         // The character (if any),
                         //   0 = none
 } UNDOBUF, *LPUNDOBUF;
+
+
+typedef union tagLPMEMTXTUNION
+{
+    LPAPLCHAR C;                // As an APLCHAR ptr
+    LPUINT    U;                // ...   UINT    ...
+    LPVOID    V;                // ...   VOID    ...
+    LPWORD    W;                // ...   WORD    ...
+} LPMEMTXTUNION;
 
 
 #define ENUMS_DEFINED

@@ -215,7 +215,7 @@ APLINT PrimFnMonEqualUnderBarGlb
             // It's a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (hGlbRht));
 
-            // Clear the ptr bits
+            // Clear the ptr type bits
             hGlbRht = ClrPtrTypeDirGlb (hGlbRht);
 
             // Lock the memory to get a ptr to it

@@ -12,13 +12,14 @@
 #include "resdebug.h"
 #include "externs.h"
 #include "pertab.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
 
-//#define EXEC_TRACE
+#define EXEC_TRACE
 
 /*
 
@@ -52,36 +53,36 @@ ToDo
 #define COL_FIRST 0             // It's origin-0
 
 enum COL_INDICES
-{COL_DIGIT = COL_FIRST, //  0: digit
- COL_DOT       ,        //  1: decimal number, inner & outer product separator
- COL_FPEXP     ,        //  2: floating point exponent separator
- COL_ALPHA     ,        //  3: alphabetic
- COL_Q_QQ      ,        //  4: quad
- COL_UNDERBAR  ,        //  5: underbar (infinity)
- COL_OVERBAR   ,        //  6: overbar
- COL_COMPLEX   ,        //  7: complex number separator
- COL_RATIONAL  ,        //  8: rational number separator
- COL_ASSIGN    ,        //  9: assignment symbol
- COL_SEMICOLON ,        // 10: semicolon symbol
- COL_COLON     ,        // 11: colon symbol
- COL_PRIM_FN   ,        // 12: primitive monadic or dyadic function
- COL_PRIM_FN0  ,        // 13: ...       niladic function
- COL_PRIM_OP1  ,        // 14: ...       monadic operator
- COL_PRIM_OP2  ,        // 15: ...       dyadic  ...
- COL_JOT       ,        // 16: jot symbol
- COL_LPAREN    ,        // 17: left paren
- COL_RPAREN    ,        // 18: right ...
- COL_LBRACKET  ,        // 19: left bracket
- COL_RBRACKET  ,        // 20: right ...
- COL_SPACE     ,        // 21: White space (' ' or '\t')
- COL_QUOTE1    ,        // 22: single quote symbol
- COL_QUOTE2    ,        // 23: double ...
- COL_DIAMOND   ,        // 24: diamond symbol
- COL_LAMP      ,        // 25: comment symbol
- COL_EOL       ,        // 26: End-Of-Line
- COL_UNK       ,        // 27: unknown symbols
+{COL_DIGIT = COL_FIRST, // 00: digit
+ COL_DOT       ,        // 01: decimal number, inner & outer product separator
+ COL_FPEXP     ,        // 02: floating point exponent separator
+ COL_ALPHA     ,        // 03: alphabetic
+ COL_Q_QQ      ,        // 04: quad
+ COL_UNDERBAR  ,        // 05: underbar (infinity)
+ COL_OVERBAR   ,        // 06: overbar
+ COL_COMPLEX   ,        // 07: complex number separator
+ COL_RATIONAL  ,        // 08: rational number separator
+ COL_ASSIGN    ,        // 09: assignment symbol
+ COL_SEMICOLON ,        // 0A: semicolon symbol
+ COL_COLON     ,        // 0B: colon symbol
+ COL_PRIM_FN   ,        // 0C: primitive monadic or dyadic function
+ COL_PRIM_FN0  ,        // 0D: ...       niladic function
+ COL_PRIM_OP1  ,        // 0E: ...       monadic operator
+ COL_PRIM_OP2  ,        // 0F: ...       dyadic  ...
+ COL_JOT       ,        // 10: jot symbol
+ COL_LPAREN    ,        // 11: left paren
+ COL_RPAREN    ,        // 12: right ...
+ COL_LBRACKET  ,        // 13: left bracket
+ COL_RBRACKET  ,        // 14: right ...
+ COL_SPACE     ,        // 15: White space (' ' or '\t')
+ COL_QUOTE1    ,        // 16: single quote symbol
+ COL_QUOTE2    ,        // 17: double ...
+ COL_DIAMOND   ,        // 18: diamond symbol
+ COL_LAMP      ,        // 19: comment symbol
+ COL_EOL       ,        // 1A: End-Of-Line
+ COL_UNK       ,        // 1B: unknown symbols
 
- COL_LENGTH    ,        // 28: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
+ COL_LENGTH    ,        // 1C: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
                         // Because these enums are origin-0, this value is the # valid columns.
 };
 
@@ -757,7 +758,7 @@ HGLOBAL ExecuteLine
 
     // Allocate virtual memory for the line (along with its continuations)
     lpwszCompLine = VirtualAlloc (NULL,             // Any address
-                                  (uLineLen + 1) * sizeof (WCHAR),  // "+1" for the terminating zero
+                                  (uLineLen + 1) * sizeof (WCHAR),  // "+ 1" for the terminating zero
                                   MEM_COMMIT,
                                   PAGE_READWRITE);
     if (!lpwszCompLine)
@@ -769,7 +770,10 @@ HGLOBAL ExecuteLine
     } // End IF
 
     // Tell EM_GETLINE maximum # chars in the buffer
-    ((LPWORD) lpwszCompLine)[0] = uLineLen;
+    // Because we allocated space for the terminating zero,
+    //   we don't have to worry about overwriting the
+    //   allocation limmits of the buffer
+    ((LPWORD) lpwszCompLine)[0] = (WORD) uLineLen;
 
     // Get the contents of the line
     SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszCompLine);
@@ -843,7 +847,7 @@ HGLOBAL ExecuteLine
                 // Tokenize, parse, and untokenize the line
 
                 // Tokenize it
-                hGlbToken = Tokenize_EM (lpwszCompLine);
+                hGlbToken = Tokenize_EM (lpwszCompLine, lstrlenW (lpwszCompLine));
 
                 // If it's invalid, ...
                 if (hGlbToken EQ NULL)
@@ -863,7 +867,7 @@ HGLOBAL ExecuteLine
     } else
     {
         // Tokenize and parse the line
-        hGlbToken = Tokenize_EM (lpwszCompLine);
+        hGlbToken = Tokenize_EM (lpwszCompLine, lstrlenW (lpwszCompLine));
         ParseLine (hWndSM,
                    hGlbToken,
                    lpwszCompLine,
@@ -2421,10 +2425,11 @@ The format of a token is defined in tokens.h
 #endif
 
 HGLOBAL Tokenize_EM
-    (LPWCHAR lpwszLine)
+    (LPAPLCHAR lpwszLine,       // The line to tokenize (not necessarily zero-terminated)
+     UINT      uLen)            // The length of the above line
 
 {
-    int          i, iLen;
+    UINT         u;
     WCHAR        wchOrig,       // The original char
                  wchColNum;     // The translated char for tokenization as a COL_*** value
     BOOL         (*fnAction1) (LPTKLOCALVARS);
@@ -2479,18 +2484,13 @@ HGLOBAL Tokenize_EM
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
 
-    // Loop through the chars including the
-    //   terminating zero so we can catch
-    //   endings in mid-state.
-    iLen = 1 + lstrlenW (lpwszLine);
-
     // Skip over leading blanks (more to reduce clutter
     //   in the debugging window)
-    for (i = 0; i < iLen; i++)
-    if (lpwszLine[i] NE L' ')
+    for (u = 0; u < uLen; u++)
+    if (lpwszLine[u] NE L' ')
         break;
 
-    for (     ; i < iLen; i++)
+    for (     ; u <= uLen; u++)
     {
         // Use a FSA to tokenize the line
 
@@ -2504,7 +2504,10 @@ HGLOBAL Tokenize_EM
            4.  Repeat until EOL or an error occurs.
          */
 
-        wchOrig = lpwszLine[i];
+        if (u EQ uLen)
+            wchOrig = L'\0';
+        else
+            wchOrig = lpwszLine[u];
 
         // Check for line continuation char
         if (wchOrig EQ '\n')
@@ -2550,10 +2553,10 @@ HGLOBAL Tokenize_EM
         tkLocalVars.State = fsaColTable[tkLocalVars.State][wchColNum].iNewState;
 
         // Save pointer to current wch
-        tkLocalVars.lpwsz = &lpwszLine[i];
+        tkLocalVars.lpwsz = &lpwszLine[u];
 
         // Save current index (may be modified by an action)
-        tkLocalVars.iNdex = i;
+        tkLocalVars.iNdex = u;
 
         // Check for primary action
         tkLocalVars.ActionNum = 1;
@@ -2608,14 +2611,14 @@ HGLOBAL Tokenize_EM
                 // Reallocate the tokenized line to the actual size
                 tkLocalVars.hGlbToken =
                 MyGlobalReAlloc (tkLocalVars.hGlbToken,
-                                 (1 + uNext) * sizeof (TOKEN),
+                                 uNext * sizeof (TOKEN),
                                  GHND);
                 goto UNLOCKED_EXIT;
             } // End FSA_EXIT
         } // End SWITCH
 
         // Get next index (may have been modified by an action)
-        i = tkLocalVars.iNdex;
+        u = tkLocalVars.iNdex;
 
         // Save this character as the previous one
         tkLocalVars.PrevWchar = wchOrig;
@@ -2636,7 +2639,7 @@ ERROR_EXIT:
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Signal an error
-    ErrorMessage (lpMemPTD->lpwszErrorMessage, lpwszLine, i);
+    ErrorMessage (lpMemPTD->lpwszErrorMessage, lpwszLine, u);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -2751,9 +2754,10 @@ void Untokenize
                 // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
                 if (!lpToken->tkData.tkSym->stFlags.Imm)
                 {
-                    // stData is a valid HGLOBAL variable or function array
+                    // stData is a valid HGLOBAL variable or function array, or defined function
                     Assert (IsGlbTypeVarDir (lpToken->tkData.tkSym->stData.stGlbData)
-                         || IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData));
+                         || IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData)
+                         || IsGlbTypeDfnDir (lpToken->tkData.tkSym->stData.stGlbData));
                 } // End IF
 
                 // Don't free a name's contents

@@ -69,6 +69,8 @@ DecrRefCntDir (hGlbData);
 dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
 DecrRefCntInd (hGlbData);
 
+#define CheckMemStat()      _CheckMemStat ()
+
 #else
 
 #define LCLODSAPI
@@ -90,6 +92,8 @@ DecrRefCntInd (hGlbData);
 
 #define DbgMsg(a)
 #define DbgMsgW(a)
+
+#define CheckMemStat()
 
 #endif
 
@@ -139,9 +143,8 @@ DecrRefCntInd (hGlbData);
 #define MYWM_INIT_DB        (WM_APP + 0)
 #define MYWM_DBGMSGA        (WM_APP + 1)
 #define MYWM_DBGMSGW        (WM_APP + 2)
-#define MYWM_DBGMSG_COM     (WM_APP + 3)
-#define MYWM_DBGMSG_CLR     (WM_APP + 4)
-#define MYWM_DBGMSG_SCROLL  (WM_APP + 5)
+#define MYWM_DBGMSG_CLR     (WM_APP + 3)
+#define MYWM_DBGMSG_SCROLL  (WM_APP + 4)
 
 
 typedef enum tagEXTYPE

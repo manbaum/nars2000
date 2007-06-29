@@ -9,6 +9,7 @@
 
 #include "main.h"
 #include "externs.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -24,12 +25,13 @@
 //***************************************************************************
 
 STRAND_TYPES TranslateFcnTypeToTknTypeNamed
-    (FCN_TYPES fcnType)
+    (FCNTYPES cFcnType)
 
 {
-    switch (fcnType)
+    switch (cFcnType)
     {
-        case FCNTYPE_FCN:
+        case FCNTYPE_FCN0:
+        case FCNTYPE_FCN12:
         case FCNTYPE_AXISFCN:
             return TKT_FCNNAMED;
 
@@ -43,6 +45,50 @@ STRAND_TYPES TranslateFcnTypeToTknTypeNamed
             return -1;              // To keep the compiler happy
     } // End SWITCH
 } // End TranslateFcnTypeToTknTypeNamed
+
+
+//***************************************************************************
+//  TranslateDfnToFcnType
+//
+//  Translate a defined function type (see DFNTYPES enum and FCNVALENCES enum)
+//    to a function type (see FCNTYPES enum).
+//***************************************************************************
+
+FCNTYPES TranslateDfnToFcnType
+    (DFNTYPES    cDfnType,      // Defined function type (see DFNTYPES enum)
+     FCNVALENCES cFcnValence)   // Function valance (see FCNVALENCES enum)
+
+{
+    // Split cases based upon the defined function type
+    switch (cDfnType)
+    {
+        case DFNTYPE_OP1:
+            return FCNTYPE_OP1;
+
+        case DFNTYPE_OP2:
+            return FCNTYPE_OP2;
+
+        case DFNTYPE_FCN:
+            // Split cases based upon the function valence
+            switch (cFcnValence)
+            {
+                case FCNVALENCE_NIL:
+                    return FCNTYPE_FCN0;
+
+                case FCNVALENCE_MON:
+                case FCNVALENCE_DYD:
+                case FCNVALENCE_AMB:
+                    return FCNTYPE_FCN12;
+
+                defstop
+                    return FCNTYPE_UNK;
+            } // End SWITCH
+
+        case DFNTYPE_UNK:
+        defstop
+            return FCNTYPE_UNK;
+    } // End SWITCH
+} // End TranslateDfnToFcnType
 
 
 //***************************************************************************

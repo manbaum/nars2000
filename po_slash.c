@@ -1430,7 +1430,7 @@ BOOL PrimOpDydSlashInsertDim_EM
 
     Assert (IsGlbTypeVarDir (hGlbTmp));
 
-    // Clear the ptr bits
+    // Clear the ptr type bits
     hGlbTmp = ClrPtrTypeDirGlb (hGlbTmp);
 
     // The result is the same as lpYYRes except we need

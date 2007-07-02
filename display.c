@@ -973,24 +973,19 @@ void DisplaySymTab
     {
 //// {0x00000001,  L" Imm"        },
 //// {0x0000001E,  L" ImmType"    },
-     {0x00000020,  L" SysName"    },
-     {0x00000040,  L" SysVar"     },
-     {0x00000080,  L" SysFn0"     },
-     {0x00000100,  L" SysFn12"    },
-     {0x00000200,  L" NotCase"    },
-     {0x00000400,  L" Perm"       },
-     {0x00000800,  L" Inuse"      },
-     {0x00001000,  L" Value"      },
-     {0x00002000,  L" UsrName"    },
-     {0x00004000,  L" UsrVar"     },
-     {0x00008000,  L" UsrFn0"     },
-     {0x00010000,  L" UsrFn12"    },
-     {0x00020000,  L" UsrOp1"     },
-     {0x00040000,  L" UsrOp2"     },
-     {0x00080000,  L" UsrDfn"     },
-//// {0x00F00000,  L" SysVarValid"},
-     {0x01000000,  L" DfnLabel"   },
-     {0x02000000,  L" DfnSysLabel"},
+     {0x00000020,  L" NotCase"    },
+     {0x00000040,  L" Perm"       },
+     {0x00000080,  L" Inuse"      },
+     {0x00000100,  L" Value"      },
+     {0x00000200,  L" SysName"    },
+//// {0x00001C00,  L" SysType"    },
+//// {0x0001E000,  L" SysVarValid"},
+     {0x00020000,  L" UsrName"    },
+//// {0x001C0000,  L" UsrType"    },
+     {0x00200000,  L" UsrDfn"     },
+     {0x00400000,  L" DfnLabel"   },
+     {0x00800000,  L" DfnSysLabel"},
+     {0x01000000,  L" FcnDir"     },
     };
 
     // Get the thread's PerTabData global memory handle
@@ -1027,13 +1022,21 @@ void DisplaySymTab
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
                        L" Imm/Type=%d",
                        stFlags.ImmType);
+        if (stFlags.SysType NE NAMETYPE_UNK)
+            wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+                       L" SysType=%s",
+                       lpwNameTypeStr[stFlags.SysType]);
+        if (stFlags.UsrType NE NAMETYPE_UNK)
+            wsprintfW (&wszFlags[lstrlenW (wszFlags)],
+                       L" UsrType=%s",
+                       lpwNameTypeStr[stFlags.UsrType]);
         for (j = 0;
              j < (sizeof (astFlagNames) / sizeof (astFlagNames[0]));
              j++)
         if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
             lstrcatW (wszFlags, astFlagNames[j].lpwszName);
 
-        if (stFlags.SysVar
+        if (stFlags.SysType EQ NAMETYPE_VAR
          && !stFlags.DfnSysLabel)
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
                        L" SysVarValid=%d",
@@ -1283,10 +1286,10 @@ void DisplayGlobals
             Assert (IsGlbTypeFcnDir (MakeGlbTypeGlb (hGlb)));
 
             wsprintf (lpszDebug,
-                      "hGlb=%08X, FcnType=%1d,  NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
+                      "hGlb=%08X, NameType=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
                       hGlb,
-                      lpHeader->FcnType,
-                      LODWORD (lpHeader->NELM),
+                      lpNameTypeStr[lpHeader->NameType],
+                      lpHeader->fcnNELM,
                       lpHeader->RefCnt,
                       (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
                       auLinNumGLOBAL[i]);
@@ -1503,8 +1506,8 @@ void DisplayFcnStrand
         case TKT_OP1IMMED:
         case TKT_OP2IMMED:
             lpaplChar += wsprintfW (lpaplChar,
-                                    L"FcnType=%1d, NELM=%3d, RC=%2d, Fn:  ",
-                                    FCNTYPE_FCN12,  // lpHeader->FcnType,
+                                    L"NameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
+                                    NAMETYPE_FN12,  // lpHeader->NameType,
                                     1,              // LODWORD (lpHeader->NELM),
                                     0);             // lpHeader->RefCnt);
             *lpaplChar++ = lptkFunc->tkData.tkChar;
@@ -1522,17 +1525,31 @@ void DisplayFcnStrand
             {
                 hGlbData = lptkFunc->tkData.tkSym->stData.stGlbData;
 
-                // stData is an HGLOBAL function array or defined function
-                Assert (IsGlbTypeFcnDir (hGlbData)
+                // stData is an internal function or a HGLOBAL function array or defined function
+                Assert (lptkFunc->tkData.tkSym->stFlags.FcnDir
+                     || IsGlbTypeFcnDir (hGlbData)
                      || IsGlbTypeDfnDir (hGlbData));
 
+                // Check for internal functions
+                if (lptkFunc->tkData.tkSym->stFlags.FcnDir)
+                {
+                    // Start off with the header
+                    lpaplChar += wsprintfW (lpaplChar,
+                                            L"NameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
+                                            NAMETYPE_FN12,  // lpHeader->NameType,
+                                            1,              // LODWORD (lpHeader->NELM),
+                                            0);             // lpHeader->RefCnt);
+                    // Display the function name from the symbol table
+                    lpaplChar = CopyFcnName (lpaplChar, lptkFunc->tkData.tkSym->stHshEntry->hGlbName);
+                } else
                 if (!lptkFunc->tkData.tkSym->stFlags.UsrDfn)
                     lpaplChar = DisplayFcnGlb (lpaplChar, ClrPtrTypeDirGlb (hGlbData), TRUE);
             } else
             {
+                // Start off with the header
                 lpaplChar += wsprintfW (lpaplChar,
-                                        L"FcnType=%1d, NELM=%3d, RC=%2d, Fn:  ",
-                                        FCNTYPE_FCN12,  // lpHeader->FcnType,
+                                        L"NameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
+                                        NAMETYPE_FN12,  // lpHeader->NameType,
                                         1,              // LODWORD (lpHeader->NELM),
                                         0);             // lpHeader->RefCnt);
                 *lpaplChar++ = lptkFunc->tkData.tkSym->stData.stChar;
@@ -1576,29 +1593,30 @@ NORMAL_EXIT:
 LPWCHAR DisplayFcnGlb
     (LPWCHAR lpaplChar,         // Ptr to output save area
      HGLOBAL hGlbFcnArr,        // Function array global memory handle
-     BOOL    bDispHeader)       // TRUE iff we're to display the header (FcnType=...)
+     BOOL    bDispHeader)       // TRUE iff we're to display the header (NameType=...)
 
 {
     LPVOID  lpMemFcnArr;    // Ptr to function array global memory
-    APLNELM aplNELM;        // Function array NELM
+    UINT    fcnNELM;        // Function array NELM
 
     // Lock the memory to get a ptr to it
     lpMemFcnArr = MyGlobalLock (hGlbFcnArr);
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemFcnArr)
-    aplNELM = lpHeader->NELM;
+    fcnNELM = lpHeader->fcnNELM;
 
     if (bDispHeader)
         lpaplChar += wsprintfW (lpaplChar,
-                                L"FcnType=%1d, NELM=%3d, RC=%2d, Fn:  ",
-                                lpHeader->FcnType,
-                                LODWORD (aplNELM),
+                                L"NameType=%s, NELM=%3d, RC=%2d, Fn:  ",
+                                lpwNameTypeStr[lpHeader->NameType],
+                                fcnNELM,
                                 lpHeader->RefCnt);
 #undef  lpHeader
 
-    lpaplChar = DisplayFcnSub (lpaplChar,
-                               FcnArrayBaseToData (lpMemFcnArr),    // Skip over the header to the data
-                               aplNELM);
+    lpaplChar =
+      DisplayFcnSub (lpaplChar,
+                     FcnArrayBaseToData (lpMemFcnArr),  // Skip over the header to the data
+                     fcnNELM);
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFcnArr); lpMemFcnArr = NULL;
 
@@ -1617,36 +1635,33 @@ LPWCHAR DisplayFcnGlb
 LPWCHAR DisplayFcnSub
     (LPWCHAR   lpaplChar,       // Ptr to output save area
      LPYYSTYPE lpYYMem,         // Ptr to function array
-     APLNELM   aplNELM)         // Function NELM
+     UINT      fcnNELM)         // Function NELM
 
 {
-    HGLOBAL hGlbData,           // Function array global memory handle
-            hGlbName;           // Function name global memory handle
-    LPVOID  lpMemData,          // Ptr to function array global memory
-            lpMemName;          // Ptr to function name global memory
-    UINT    FcnCount,           // Function count
-            uNameLen;           // Function name length
+    HGLOBAL hGlbData;           // Function array global memory handle
+    LPVOID  lpMemData;          // Ptr to function array global memory
+    UINT    FcnCount;           // Function count
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
     {
         case TKT_OP1IMMED:
             // Check for axis operator
-            if (aplNELM > 1
+            if (fcnNELM > 1
              && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
               || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
             {
                 // If there's a function, ...
-                if (aplNELM > 2)
+                if (fcnNELM > 2)
                     lpaplChar =
-                      DisplayFcnSub (lpaplChar, &lpYYMem[2], aplNELM - 2);  // fcn
+                      DisplayFcnSub (lpaplChar, &lpYYMem[2], fcnNELM - 2);  // fcn
                 *lpaplChar++ = lpYYMem[0].tkToken.tkData.tkChar;            // Op1
                 lpaplChar =
                   DisplayFcnSub (lpaplChar, &lpYYMem[1], 1);                // [X]
             } else
             {
                 lpaplChar =
-                  DisplayFcnSub (lpaplChar, &lpYYMem[1], aplNELM - 1);      // fcn
+                  DisplayFcnSub (lpaplChar, &lpYYMem[1], fcnNELM - 1);      // fcn
                 *lpaplChar++ = lpYYMem[0].tkToken.tkData.tkChar;            // Op1
             } // End IF/ELSE/...
 
@@ -1669,13 +1684,11 @@ LPWCHAR DisplayFcnSub
             *lpaplChar++ = lpYYMem[0].tkToken.tkData.tkChar;                // fcn
 
             // Check for axis operator
-            if (aplNELM > 1
+            if (fcnNELM > 1
              && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
               || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-            {
                 lpaplChar =
                   DisplayFcnSub (lpaplChar, &lpYYMem[1], 1);                // [X]
-            } // End IF
 
             break;
 
@@ -1699,28 +1712,36 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_FCNNAMED:
-            DbgBrk ();          // ***TESTME***
-
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYMem->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not an immediate function, ...
             if (!lpYYMem->tkToken.tkData.tkSym->stFlags.Imm)
             {
-                hGlbData = lpYYMem->tkToken.tkData.tkSym->stData.stGlbData;
+                // Check for internal functions
+                if (lpYYMem->tkToken.tkData.tkSym->stFlags.FcnDir)
+                    // Copy the internal function name
+                    lpaplChar =
+                      CopyFcnName (lpaplChar,
+                                   lpYYMem->tkToken.tkData.tkSym->stHshEntry->hGlbName);
+                else
+                {
+                    // Get the function array global memory handle
+                    hGlbData = lpYYMem->tkToken.tkData.tkSym->stData.stGlbData;
 
-                // stData is a valid HGLOBAL function array
-                Assert (IsGlbTypeFcnDir (hGlbData));
+                    // stData is a valid HGLOBAL function array
+                    Assert (IsGlbTypeFcnDir (hGlbData));
 
-                // Display the function strand in global memory
-                lpaplChar =
-                  DisplayFcnGlb (lpaplChar, ClrPtrTypeDirGlb (hGlbData), FALSE);
+                    // Display the function strand in global memory
+                    lpaplChar =
+                      DisplayFcnGlb (lpaplChar, ClrPtrTypeDirGlb (hGlbData), FALSE);
+                } // End IF/ELSE
             } else
                 // Handle the immediate case
                 *lpaplChar++ = lpYYMem->tkToken.tkData.tkSym->stData.stChar;
 
             // Check for axis operator
-            if (aplNELM > 1
+            if (fcnNELM > 1
              && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
               || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
                 lpaplChar =
@@ -1733,11 +1754,11 @@ LPWCHAR DisplayFcnSub
             *lpaplChar++ = L'.';
 
             // Surround with parens if more than one token
-            if (aplNELM > 2)
+            if (fcnNELM > 2)
                 *lpaplChar++ = L'(';
             lpaplChar =
-              DisplayFcnSub (lpaplChar, &lpYYMem[1], aplNELM - 1);
-            if (aplNELM > 2)
+              DisplayFcnSub (lpaplChar, &lpYYMem[1], fcnNELM - 1);
+            if (fcnNELM > 2)
                 *lpaplChar++ = L')';
 
             break;
@@ -1813,35 +1834,25 @@ LPWCHAR DisplayFcnSub
             switch (((LPHEADER_SIGNATURE) lpMemData)->nature)
             {
                 case FCNARRAY_HEADER_SIGNATURE:
-                    DbgBrk ();      // ***FINISHME***
-
-
-
-
-
-
-
+#define lpHeader    ((LPFCNARRAY_HEADER) lpMemData)
+                    fcnNELM = lpHeader->fcnNELM;
+#undef  lpHeader
+                    // Surround with parens if more than one token
+                    if (fcnNELM > 1)
+                        *lpaplChar++ = L'(';
+                    lpaplChar =
+                      DisplayFcnSub (lpaplChar,
+                                     FcnArrayBaseToData (lpMemData),    // Skip over the header to the data
+                                     fcnNELM);
+                    if (fcnNELM > 1)
+                        *lpaplChar++ = L')';
                     break;
 
                 case DFN_HEADER_SIGNATURE:
-                    // Get the defined function header global memory handle
-                    hGlbName = ((LPDFN_HEADER) lpMemData)->steFcnName->stHshEntry->hGlbName;
-
-                    // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLock (hGlbName);
-
-                    // Get the name length
-                    uNameLen = lstrlenW (lpMemName);
-
-                    // Copy to output
-                    CopyMemory (lpaplChar, lpMemName, uNameLen * sizeof (APLCHAR));
-
-                    // Skip over the name
-                    lpaplChar += uNameLen;
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
-
+                    // Copy the defined function name
+                    lpaplChar =
+                      CopyFcnName (lpaplChar,
+                                   ((LPDFN_HEADER) lpMemData)->steFcnName->stHshEntry->hGlbName);
                     break;
 
                 defstop
@@ -1871,88 +1882,36 @@ LPWCHAR DisplayFcnSub
             break;
     } // End SWITCH
 
+    // Ensure properly terminated
+    *lpaplChar = L'\0';
+
     return lpaplChar;
 } // End DisplayFcnSub
 #endif
 
 
-//// #ifdef DEBUG
-//// //***************************************************************************
-//// //  DisplayFcnSub
-//// //
-//// //  Display function subroutine
-//// //***************************************************************************
-////
-//// LPWCHAR DisplayFcnSub
-////     (LPWCHAR lpaplChar,
-////      LPTOKEN lpToken,
-////      BOOL    bParensIfGlb)
-////
-//// {
-////     // Split cases based upon the token type
-////     switch (lpToken->tkFlags.TknType)
-////     {
-////         case TKT_OPJOTDOT:
-////             *lpaplChar++ = UTF16_JOT;
-////             *lpaplChar++ = L'.';
-////
-////             break;
-////
-////         case TKT_FCNIMMED:
-////         case TKT_OP1IMMED:
-////         case TKT_OP2IMMED:
-////         case TKT_LPAREN:
-////         case TKT_RPAREN:
-////             *lpaplChar++ = lpToken->tkData.tkChar;
-////
-////             break;
-////
-////         case TKT_FCNNAMED:
-////             // tkData is an LPSYMENTRY
-////             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
-////
-////             // If it's an immediate
-////             if (lpToken->tkData.tkSym->stFlags.Imm)
-////                 *lpaplChar++ = lpToken->tkData.tkSym->stData.stChar;
-////             else
-////             {
-////                 // stData is a valid HGLOBAL function array
-////                 Assert (IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData));
-////
-////                 if (bParensIfGlb)
-////                     *lpaplChar++ = L'(';
-////
-////                 lpaplChar =
-////                 DisplayFcnGlb (lpaplChar,
-////                                ClrPtrTypeDirGlb (lpToken->tkData.tkSym->stData.stGlbData),
-////                                FALSE);
-////                 if (bParensIfGlb)
-////                     *lpaplChar++ = L')';
-////             } // End IF/ELSE
-////
-////             break;
-////
-////         case TKT_FCNARRAY:
-////             // tkData is a valid HGLOBAL function array
-////             Assert (IsGlbTypeFcnDir (lpToken->tkData.tkGlbData));
-////
-////             *lpaplChar++ = L'(';
-////
-////             lpaplChar =
-////             DisplayFcnGlb (lpaplChar,
-////                            ClrPtrTypeDirGlb (lpToken->tkData.tkGlbData),
-////                            FALSE);
-////             *lpaplChar++ = L')';
-////
-////             break;
-////
-////         defstop
-////             break;
-////     } // End SWITCH
-////
-////     return lpaplChar;
-//// } // End DisplayFcnSub
-//// #endif
+#ifdef DEBUG
+//***************************************************************************
+//  $DisplayFcnArr
+//
+//  Display a Function Array
+//***************************************************************************
+
+void DisplayFcnArr
+    (HGLOBAL hGlbStr)           // Function array global memory handle
+
+{
+    Assert (IsGlbTypeFcnDir (MakeGlbTypeGlb (hGlbStr)));
+
+    DbgMsgW (L"********** Function Array ******************************");
+
+    DisplayFcnGlb (lpwszDebug, hGlbStr, TRUE);
+
+    DbgMsgW (lpwszDebug);
+
+    DbgMsgW (L"********** End Function Array **************************");
+} // End DisplayFcnArr
+#endif
 
 
 #ifdef DEBUG
@@ -2026,7 +1985,7 @@ void DisplayStrand
                   lp->tkToken.tkCharIndex,
                   lp->TknCount,
                   lp->FcnCount,
-                  lp->Indirect,
+                  lp->YYIndirect,
                   lp->lpYYFcn,
                   lpLast);
         DbgMsg (lpszDebug);

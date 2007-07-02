@@ -137,5 +137,27 @@ void FloatToAplchar
 
 
 //***************************************************************************
+//  $ConvertWideToHex
+//
+//  Convert wide chars to ASCII or hex
+//***************************************************************************
+
+void ConvertWideToHex
+    (LPWCHAR lpwszOut,
+     LPWCHAR lpwszInp)
+
+{
+    // Loop through the wide chars
+    while (*lpwszInp)
+    if (HIBYTE (*lpwszInp) EQ 0)
+        *lpwszOut++ = *lpwszInp++;
+    else
+        lpwszOut += wsprintfW (lpwszOut,
+                               L"\\%04X",
+                              *lpwszInp++);
+} // End ConvertWideToHex
+
+
+//***************************************************************************
 //  End of File: convert.c
 //***************************************************************************

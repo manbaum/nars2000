@@ -77,11 +77,14 @@ http://portal.acm.org/citation.cfm?id=3324
 // Hash table flags
 typedef struct tagHTFLAGS
 {
-    UINT Inuse:1,           // 01:  Inuse entry
-         PrinHash:1,        // 02:  Entry with principal hash
-         SymCopy:1          // 04:  Symbol table entry copy
+    UINT Inuse:1,           // 00000001:  Inuse entry
+         PrinHash:1,        // 00000002:  Entry with principal hash
+         SymCopy:1          // 00000004:  Symbol table entry copy
 #ifdef DEBUG
-        ,Temp:1             // 08:  Temporary flag used for debugging
+        ,Temp:1             // 00000008:  Temporary flag used for debugging
+                            // FFFFFFF0:  Available bits
+#else
+                            // FFFFFFF8:  Available bits
 #endif
          ;
 } HTFLAGS, *LPHTFLAGS;
@@ -90,14 +93,15 @@ typedef struct tagHTFLAGS
 typedef struct tagHSHENTRY
 {
     struct tagHSHENTRY
-            *NextSameHash,  // Next entry with same hash
-            *PrevSameHash;  // Prev ...
-    HTFLAGS htFlags;        // Flags
-    UINT    uHash,          // The hash value for this entry
-            uHashAndMask;   // uHash & the current mask
-    HGLOBAL hGlbName;       // Handle of the entry's name (NULL if none)
+            *NextSameHash,  // 00:  Next entry with same hash
+            *PrevSameHash;  // 04:  Prev ...
+    HTFLAGS htFlags;        // 08:  Flags
+    UINT    uHash,          // 0C:  The hash value for this entry
+            uHashAndMask;   // 10:  uHash & the current mask
+    HGLOBAL hGlbName;       // 14:  Handle of the entry's name (NULL if none)
     struct tagSYMENTRY
-            *lpSymEntry;    // Ptr to the matching SYMENTRY
+            *lpSymEntry;    // 18:  Ptr to the matching SYMENTRY
+                            // 1C:  Length
 } HSHENTRY, *LPHSHENTRY;
 
 #define LPHSHENTRY_NONE     ((LPHSHENTRY) -1)
@@ -113,7 +117,7 @@ typedef struct tagHSHENTRY
 // Amount to resize
 #define DEF_SYMTAB_RESIZE   DEF_SYMTAB_INITSIZE
 
-typedef enum tagIMM_TYPES
+typedef enum tagIMMTYPES
 {
     IMMTYPE_BOOL = 0,       // 00:  Boolean
     IMMTYPE_INT,            // 01:  Integer
@@ -122,34 +126,56 @@ typedef enum tagIMM_TYPES
     IMMTYPE_PRIMFCN,        // 04:  Primitive monadic/dyadic function
     IMMTYPE_PRIMOP1,        // 05:  Primitive monadic operator
     IMMTYPE_PRIMOP2,        // 06:  ...       dyadic  ...
-} IMM_TYPES;
+                            // 07-0F:  Available entries (4 bits)
+} IMMTYPES;
+
+// Name types
+typedef enum tagNAMETYPES
+{
+    NAMETYPE_UNK = 0,       // 00:  Name is unknown
+    NAMETYPE_VAR,           // 01:  ...     a variable
+    NAMETYPE_FN0,           // 02:  ...       niladic function
+    NAMETYPE_FN12,          // 03:  ...       monadic/dyadic/ambivalent function
+    NAMETYPE_OP1,           // 04:  ...       monadic operator
+    NAMETYPE_OP2,           // 05:  ...       dyadic operator
+                            // 06-07:  Available entries (3 bits)
+} NAMETYPES;
+
+#define NAMETYPE_STRING     "?VNF12"
+#define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2"}
+#define NAMETYPE_WSTRPTR    {L"Unk", L"Var", L"Nil", L"Fcn", L"Op1", L"Op2"}
+
+// The above enum is constructed so as to allow the following masks to be used:
+#define NAMETYPEMASK_FN     0x02    // Name is a function
+#define NAMETYPEMASK_OP     0x04    // Name is an operator
+
+// ... along with the following macros
+#define IsNameTypeFn(a)     ((a) &  NAMETYPEMASK_FN                   )
+#define IsNameTypeOp(a)     ((a) &                    NAMETYPEMASK_OP )
+#define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
 
 // Symbol table flags
 typedef struct tagSTFLAGS
 {
-    UINT Imm:1,             // 00000001:  The data in SYMENTRY is Immediate numeric or character scalar
-         ImmType:4,         // 0000001E:  ...                     Immediate Boolean, Integer, Character, or Float (see IMM_TYPES)
-         SysName:1,         // 00000020:  ...                     NULL unless some other .Sys*** is set
-         SysVar:1,          // 00000040:  ...                     value   of System Variable
-         SysFn0:1,          // 00000080:  ...                     address of System Function, niladic
-         SysFn12:1,         // 00000100:  ...                     ...        System Function, monadic or dyadic
-         NotCase:1,         // 00000200:  Case-insensitive name
-         Perm:1,            // 00000400:  Permanent entry
-         Inuse:1,           // 00000800:  Inuse entry
-         Value:1,           // 00001000:  Entry has a value
-         UsrName:1,         // 00002000:  The data in SYMENTRY is NULL unless some other .Usr*** is set
-         UsrVar:1,          // 00004000:  ...                     hGlb of Value, unless .Imm
-         UsrFn0:1,          // 00008000:  ...                     ...     niladic function
-         UsrFn12:1,         // 00010000:  ...                     ...     monadic/dyadic function
-         UsrOp1:1,          // 00020000:  ...                     ...     monadic operator, unless .Imm
-         UsrOp2:1,          // 00040000:  ...                     ...     dyadic operator,  ...
-         UsrDfn:1,          // 00080000:  ...                     ...     defined function
-         SysVarValid:4,     // 00F00000:  Index to validation routine for System Vars
-         DfnLabel:1,        // 01000000:  Defined function system label
-         DfnSysLabel:1;     // 02000000:  Defined function label
+    UINT Imm:1,             // 00000001:  The data in .stData is Immediate simple numeric or character scalar
+         ImmType:4,         // 0000001E:  ...                    Immediate Boolean, Integer, Character, or Float (see IMMTYPES)
+         NotCase:1,         // 00000020:  Case-insensitive name
+         Perm:1,            // 00000040:  Permanent entry
+         Inuse:1,           // 00000080:  Inuse entry
+         Value:1,           // 00000100:  Entry has a value
+         SysName:1,         // 00000200:  The data in .stData is NULL unless some other .Sys*** is set
+         SysType:3,         // 00001C00:  ...                    value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise) (see enum NAMETYPES)
+         SysVarValid:4,     // 0001E000:  Index to validation routine for System Vars
+         UsrName:1,         // 00020000:  ...                 is NULL unless some other .Usr*** is set
+         UsrType:3,         // 001C0000:  ...                    value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise) (see enum NAMETYPES)
+         UsrDfn:1,          // 00200000:  Defined function/operator
+         DfnLabel:1,        // 00400000:  Defined function/operator label        (valid only if .Value is set)
+         DfnSysLabel:1,     // 00800000:  Defined function/operator system label (valid only if .Value is set)
+         FcnDir:1;          // 01000000:  Direct function/operator               (stNameFcn is valid)
+                            // FE000000:  Available bits
 } STFLAGS, *LPSTFLAGS;
 
-// When changing this struct, be sure to make
+// When changing the above struct (STFLAGS), be sure to make
 //   corresponding changes to <astFlagNames> in <display.c>.
 
 // .Inuse and .PrinHash are valid for all entries.
@@ -157,61 +183,58 @@ typedef struct tagSTFLAGS
 // .Imm     implies one and only one of the IMMTYPE_***s
 // .Imm     = 1 implies that one and only one of aplBoolean, aplInteger, aplChar, or aplFloat is valid.
 // .Imm     = 0 implies that stGlbData is valid.
-// .Perm    is valid for .SysVar, .SysFn0, and .SysFn12 only.
-// .NotCase is valid for .SysVar, .SysFn0, and .SysFn12 only.
-// .Value   is valid for .SysVar and .UsrVar only, however
-//          .SysVar should never be without a value.
-// .SysName implies one and only one of .SysVar, .SysFn0, .SysFn12 is set.
-// .UsrName is set for .UsrVar, .UsrFn0, .UsrFn12, .UsrOp1, .UsrOp2.
-//          It is also set for a variable with no value.
-// .UsrVar, .SysVar, .SysFn0, .SysFn12, .UsrFn0, .UsrFn12, .UsrOp1, and .UsrOp2
-//          are mutually exclusive.
-// .UsrDfn  is set when the function is user-defined.  Also, one and only one of
-//          .UsrFn0, .UsrFn12, .UsrOp1, or .UsrOp2 must be set.
-// hGlbName in SYMENTRY is set for .UsrVar, .UsrFn0, .UsrFn12, .UsrOp1, .UsrName,
-//                                 .SysVar, .SysFn0, .SysFn12, .UsrOp2.
-// .SysFn0 and .SysFn12 are both direct pointers to the code.  All other functions
-//          are indirect (HGLOBAL) pointers.
+// .Perm    is valid for .SysType only.
+// .NotCase is valid for .SysType only.
+// .Value   is valid for NAMETYPE_VAR only, however .SysType EQ NAMETYPE_VAR
+//          should never be without a value.
+// .SysName or .UsrName is set, but not both.
+// .SysName is set for .SysType.
+// .UsrName is set for .UsrType; it is also set for a variable with no value.
+// .UsrDfn  is set for .UsrType when the function is user-defined.
+// .FcnDir  may be set for any function/operator in .SysType or .UsrType; it is a
+//          direct pointer to the code.
+// hGlbName in SYMENTRY is set for .UsrType and .SysType when .Imm and .FcnDir are clear.
 
 typedef union tagSYMTAB_DATA    // Immediate data or a handle to global data
 {
-    APLBOOL    stBoolean;       // A number (Boolean)
-    APLINT     stInteger;       // A number (Integer)
-    APLFLOAT   stFloat;         // A floating point number
-    APLCHAR    stChar;          // A character
-    HGLOBAL    stGlbData;       // Handle of the entry's data
-    LPVOID     stVoid;          // An abritrary ptr
-    LPPRIMFNS  stNameFcn;       // Ptr to a named function
-    APLLONGEST stLongest;       // Longest datatype (so we can copy the entire data)
+    APLBOOL    stBoolean;       // 00:  A number (Boolean)
+    APLINT     stInteger;       // 00:  A number (Integer)
+    APLFLOAT   stFloat;         // 00:  A floating point number
+    APLCHAR    stChar;          // 00:  A character
+    HGLOBAL    stGlbData;       // 00:  Handle of the entry's data
+    LPVOID     stVoid;          // 00:  An abritrary ptr
+    LPPRIMFNS  stNameFcn;       // 00:  Ptr to a named function
+    APLLONGEST stLongest;       // 00:  Longest datatype (so we can copy the entire data)
+                                // 08:  Length
 } SYMTAB_DATA, *LPSYMTAB_DATA;
 
 // Symbol table entry
 typedef struct tagSYMENTRY
 {
-    STFLAGS     stFlags;        // Flags
-    SYMTAB_DATA stData;         // For immediates, the data value; for others, the HGLOBAL
-    LPHSHENTRY  stHshEntry;     // Ptr to the matching HSHENTRY
+    STFLAGS     stFlags;        // 00:  Flags
+    SYMTAB_DATA stData;         // 04:  For immediates, the data value; for others, the HGLOBAL
+    LPHSHENTRY  stHshEntry;     // 0C:  Ptr to the matching HSHENTRY
+                                // 10:  Length
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)
 
 /*
 
-Reference Counts -- STEs & Arrays
----------------------------------
+Reference Counts -- HGLOBALs
+----------------------------
 
-In a named array (TKT_STNAME) only, the array reference
-count is used.
+In any HGLOBAL, the array reference count is used.
 
-A named array is referenced (and its count incremented) when it is
+An HGLOBAL is referenced (and its count incremented) when it is
 
-* assigned to a user (not system) named variable
+* assigned to any part of a variable or function
 
-A STE or an array is dereferenced (and its count decremented) when
+An HGLOBAL is dereferenced (and its count decremented) when
 
-* the named variable to which it is assigned is erased or reassigned, or
+* the variable or function to which it is assigned is erased or reassigned
 
-When a named array is dereferenced and the reference count goes to zero,
+When an array is dereferenced and the reference count goes to zero,
 the array may be freed.
 
  */

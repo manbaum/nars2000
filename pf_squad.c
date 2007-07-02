@@ -120,7 +120,7 @@ LPYYSTYPE PrimFnDydSquad_EM_YY
     APLSTYPE   aplTypeLft;      // The storage type of the left arg
     APLNELM    aplNELMLft;      // The # elements in the left arg
     APLRANK    aplRankLft;      // The rank of the left arg
-    IMM_TYPES  immTypeRht;      // The immediate type of the right arg
+    IMMTYPES   immTypeRht;      // The immediate type of the right arg
     LPYYSTYPE  lpYYRes;
 
     // Split cases based upon the right arg's token type

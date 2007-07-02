@@ -154,11 +154,11 @@ typedef enum tagEXTYPE
 
 typedef enum tagEXEC_CODES
 {
-    EXEC_SUCCESS = 0 ,          // All OK
+    EXEC_SUCCESS = 0 ,          // 00:  All OK
 ////EXEC_RESULT_BOOL ,          // Result should be Boolean
 ////EXEC_RESULT_INT  ,          // ...              Integer
-    EXEC_RESULT_FLOAT,          // ...              Float
-    EXEC_DOMAIN_ERROR,          // Signal a DOMAIN ERROR
+    EXEC_RESULT_FLOAT,          // 01:  ...              Float
+    EXEC_DOMAIN_ERROR,          // 02:  Signal a DOMAIN ERROR
 } EXEC_CODES;
 
 typedef struct tagEXECSTATE
@@ -168,31 +168,34 @@ typedef struct tagEXECSTATE
 
 typedef struct tagGLBHIST
 {
-    HGLOBAL *hGlb;
-    UINT    First:1,            // This line is the first one in the array
-            ContPrev:1,         // This line is connected to the previous line
-            ContNext:1;         // ...                           next     ...
+    HGLOBAL *hGlb;              // 00:  Ptr to HGLOBAL
+    UINT    First:1,            // 04:  00000001:  This line is the first one in the array
+            ContPrev:1,         //      00000002:  This line is connected to the previous line
+            ContNext:1;         //      00000004:  ...                           next     ...
+                                //      FFFFFFF8:  Available bits
+                                // 08:  Length
 } GLBHIST, *LPGLBHIST;
 
 typedef struct tagVKSTATE
 {
-    ULONG Shift:1,              // Left- or right-shift key up(0) or down(1)
+    ULONG Shift:1,              // 00000001:  Left- or right-shift key up(0) or down(1)
 ////     lShift:1,
 ////     rShift:1,
-          Alt:1,                // Left- or right-Alt key up(0) or down(1)
+          Alt:1,                // 00000002:  Left- or right-Alt key up(0) or down(1)
 ////     lAlt:1,
 ////     rAlt:1,
-          Ctl:1,                // Left or -right Ctl key up(0) or down(1)
+          Ctl:1,                // 00000004:  Left or -right Ctl key up(0) or down(1)
 ////     lCtl:1,
 ////     rCtl:1,
-          Ins:1;                // Replace(0) or insert(1)
+          Ins:1;                // 00000008:  Replace(0) or insert(1)
+                                // FFFFFFF0:  Available bits
 } VKSTATE, *LPVKSTATE;
 
 typedef enum tagMAKEPROTO
 {
-    MP_CHARS,                   // Chars allowed in MakePrototype arg
-    MP_NUMONLY,                 // Numerics only ...
-    MP_NUMCONV                  // Convert chars to numerics ...
+    MP_CHARS,                   // 00:  Chars allowed in MakePrototype arg
+    MP_NUMONLY,                 // 01:  Numerics only ...
+    MP_NUMCONV                  // 02:  Convert chars to numerics ...
 } MAKEPROTO;
 
 #ifndef DEBUG

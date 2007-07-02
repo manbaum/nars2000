@@ -127,8 +127,8 @@ LPYYSTYPE PushFcnStrand_YY
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
-    lpYYArg->TknCount = TknCount;
-    lpYYArg->Indirect = bIndirect;
+    lpYYArg->TknCount   = TknCount;
+    lpYYArg->YYIndirect = bIndirect;
 
     // Copy the strand base to the result
     lpYYArg->unYYSTYPE.lpYYStrandBase = lpplLocalVars->lpYYStrandBase[STRAND_FCN];
@@ -223,8 +223,9 @@ void FreeStrand
 
                 if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
                 {
-                    // stData is a valid HGLOBAL variable or function array, or defined function
-                    Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
+                    // stData is an internal function, a valid HGLOBAL variable or function array, or defined function
+                    Assert (lpYYToken->tkToken.tkData.tkSym->stFlags.FcnDir
+                         || IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
                          || IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
                          || IsGlbTypeDfnDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData));
                 } // End IF
@@ -1041,7 +1042,7 @@ ERROR_EXIT:
 
 LPYYSTYPE MakeFcnStrand_EM_YY
     (LPYYSTYPE lpYYArg,         // Ptr to incoming token
-     FCNTYPES  cFcnType,        // Type of the strand
+     NAMETYPES cNameType,       // Type of the strand
      BOOL      bSaveTxtLine)    // TRUE iff we should save the line text
 
 {
@@ -1132,16 +1133,24 @@ LPYYSTYPE MakeFcnStrand_EM_YY
 
     // Fill in the header
     lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
-    lpHeader->FcnType     = cFcnType;
+    lpHeader->NameType    = cNameType;
     lpHeader->RefCnt      = 1;
 ////lpHeader->NELM        =             // To be filled in below
     if (bSaveTxtLine)
     {
-        UINT   uLineLen;        // Line length
-        LPVOID lpMemTxtLine;    // Ptr to line text global memory
+        UINT      uLineLen;     // Line length
+        LPVOID    lpMemTxtLine; // Ptr to line text global memory
+        LPAPLCHAR lpMemTxtSrc;  // Ptr to line text source
+
+        // Get the ptr to the source line text
+        lpMemTxtSrc = lpplLocalVars->lpwszLine;
+
+        // Skip over leading blanks
+        while (*lpMemTxtSrc EQ L' ')
+            lpMemTxtSrc++;
 
         // Get the line length
-        uLineLen = lstrlenW (lpplLocalVars->lpwszLine);
+        uLineLen = lstrlenW (lpMemTxtSrc);
 
         // Allocate global memory for a length <uLineLen> vector of type <APLCHAR>.
         lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, (uLineLen + 1) * sizeof (APLCHAR));
@@ -1151,7 +1160,7 @@ LPYYSTYPE MakeFcnStrand_EM_YY
             lpMemTxtLine = MyGlobalLock (lpHeader->hGlbTxtLine);
 
             // Copy the line text to global memory
-            CopyMemory (lpMemTxtLine, lpplLocalVars->lpwszLine, uLineLen * sizeof (APLCHAR));
+            CopyMemory (lpMemTxtLine, lpMemTxtSrc, uLineLen * sizeof (APLCHAR));
 
             // We no longer need this ptr
             MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
@@ -1168,7 +1177,7 @@ LPYYSTYPE MakeFcnStrand_EM_YY
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
 
-    lpHeader->NELM = iActLen = lpYYMemData - lpYYMemStart;
+    lpHeader->fcnNELM = iActLen = lpYYMemData - lpYYMemStart;
 
 #undef  lpHeader
 
@@ -1200,6 +1209,11 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     // Save the token & function counts
     lpYYRes->TknCount = iActLen;
     lpYYRes->FcnCount = FcnCount;
+#ifdef DEBUG
+    if (hGlbStr)
+        // Display the function array
+        DisplayFcnArr (hGlbStr);
+#endif
 NORMAL_EXIT:
     lpYYRes->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_FCN] = lpYYBase;
 
@@ -1268,17 +1282,24 @@ LPYYSTYPE CopyYYFcn
     // Loop through the tokens associated with this symbol
     for (i = 0; i < iLen; i++)
     {
-        lpToken = &lpYYArg[i].tkToken;
+#ifdef DEBUG
+        LPYYSTYPE lpYYArgI;
 
+        lpYYArgI = &lpYYArg[i];
+#endif
         // Calculate the earlier function base
         *lpYYBase = min (*lpYYBase, lpYYArg[i].lpYYFcn);
 
-        if (lpYYArg[i].Indirect)
+        // If the function is indirect, recurse
+        if (lpYYArg[i].YYIndirect)
         {
             FcnCount = 0;   // Initialize as it is incremented in CopyYYFcn
             lpYYMem = CopyYYFcn (lpYYMem, lpYYArg[i].lpYYFcn, lpYYBase, &FcnCount);
         } else
         {
+            // Get the function arg token
+            lpToken = &lpYYArg[i].tkToken;
+
             // Special case for named functions/operators
             if (lpToken->tkFlags.TknType EQ TKT_FCNNAMED
              || lpToken->tkFlags.TknType EQ TKT_OP1NAMED
@@ -1290,7 +1311,6 @@ LPYYSTYPE CopyYYFcn
                 // If it's an immediate function/operator, copy it directly
                 if (lpToken->tkData.tkSym->stFlags.Imm)
                 {
-                    YYFcn = lpYYArg[i];
                     YYFcn.tkToken.tkFlags.TknType   = TranslateImmTypeToTknType (lpToken->tkData.tkSym->stFlags.ImmType);
                     YYFcn.tkToken.tkFlags.ImmType   = lpToken->tkData.tkSym->stFlags.ImmType;
 ////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
@@ -1299,48 +1319,51 @@ LPYYSTYPE CopyYYFcn
 ////////////////////YYFcn.tkToken.tkCharIndex       =
 ////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
 ////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
-////////////////////YYFcn.Indirect                  =
+////////////////////YYFcn.YYIndirect                  =
 ////////////////////YYFcn.lpYYFcn                   =
 ////////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
                 } else
                 {
-                    // Get the global memory handle or function address if direct
-                    hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
+                    // Copy the argument
+                    YYFcn = lpYYArg[i];
 
                     // If it's not an internal function, ...
-                    if (!lpToken->tkFlags.FcnDir)
+                    if (!lpToken->tkData.tkSym->stFlags.FcnDir)
                     {
+                        // Get the global memory handle or function address if direct
+                        hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
+
                         //stData is a valid HGLOBAL function array or defined function
                         Assert (IsGlbTypeFcnDir (hGlbData)
                              || IsGlbTypeDfnDir (hGlbData));
 
                         // Increment the reference count in global memory
                         DbgIncrRefCntDir (hGlbData);
-                    } // End IF
 
-                    YYFcn = lpYYArg[i];
-                    YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-////////////////////YYFcn.tkToken.tkFlags.ImmType   = 0;        // Already zero from = {0}
-////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
-                    YYFcn.tkToken.tkData.tkGlbData  = hGlbData;
-////////////////////YYFcn.tkToken.tkCharIndex       =
-////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
-////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
-////////////////////YYFcn.Indirect                  =
-////////////////////YYFcn.lpYYFcn                   =
-////////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
+                        // Fill in the token
+                        YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+////////////////////////YYFcn.tkToken.tkFlags.ImmType   = 0;        // Already zero from = {0}
+////////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
+                        YYFcn.tkToken.tkData.tkGlbData  = hGlbData;
+////////////////////////YYFcn.tkToken.tkCharIndex       =
+////////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
+////////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
+////////////////////////YYFcn.YYIndirect                  =
+////////////////////////YYFcn.lpYYFcn                   =
+////////////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
+                    } // End IF
                 } // End IF/ELSE
 
                 YYFcn.TknCount = lpYYArg[i].TknCount;
-                YYFcn.Inuse = 0;
+                YYFcn.YYInuse  = 0;
     #ifdef DEBUG
-                YYFcn.Index = NEG1U;
+                YYFcn.YYIndex  = NEG1U;
     #endif
                 *lpYYMem++ = YYFcn;
             } else
             {
                 lpYYCopy = CopyYYSTYPE_EM_YY (&lpYYArg[i], FALSE);
-                if (lpYYMem->Inuse)
+                if (lpYYMem->YYInuse)
                     YYCopy (lpYYMem++, lpYYCopy);
                 else
                     YYCopyFreeDst (lpYYMem++, lpYYCopy);
@@ -1599,16 +1622,6 @@ LPYYSTYPE MakeNameFcn_YY
 
     DBGENTER;
 
-    // Because when the tokens are first created we don't
-    //   know the type of a name, it is arbitrarily typed
-    //   as TKT_VARNAMED.  Now that we know it's a function,
-    //   change its type to TKT_FCNNAMED.
-    lpYYFcn->tkToken.tkFlags.TknType = TKT_FCNNAMED;
-
-    // If it's a System Function, mark it as direct
-    if (lpYYFcn->tkToken.tkData.tkSym->stFlags.SysFn12)
-        lpYYFcn->tkToken.tkFlags.FcnDir = 1;
-
     lpYYRes = CopyYYSTYPE_EM_YY (lpYYFcn, FALSE);
     lpYYRes->lpYYFcn = NULL;
 
@@ -1641,15 +1654,14 @@ LPYYSTYPE MakeOp1_YY
     lpYYRes = YYAlloc ();
 
     YYCopy (lpYYRes, lpYYOp1);      // No need to CopyYYSTYPE_EM_YY immediates
-    lpYYRes->tkToken.tkFlags.TknType = TKT_OP1IMMED;
     lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP1;
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
-    lpYYRes->Rsvd                    = 0;
+    lpYYRes->YYRsvd                  = 0;
 #ifdef DEBUG
-    lpYYRes->Index                   = NEG1U;
-    lpYYRes->Flag                    = 0;
+    lpYYRes->YYIndex                 = NEG1U;
+    lpYYRes->YYFlag                  = 0;
 #endif
     return lpYYRes;
 } // End MakeOp1_YY
@@ -1674,22 +1686,14 @@ LPYYSTYPE MakeNameOp1_YY
 {
     LPYYSTYPE lpYYRes;
 
-    // Because when the tokens are first created we don't
-    //   know the type of a name, it is arbitrarily typed
-    //   as TKT_VARNAMED.  Now that we know it's a monadic operator,
-    //   change its type to TKT_OP1NAMED.
-
-    lpYYOp1->tkToken.tkFlags.TknType = TKT_OP1NAMED;
-
     lpYYRes = CopyYYSTYPE_EM_YY (lpYYOp1, FALSE);
-    lpYYRes->tkToken.tkFlags.TknType = TKT_OP1NAMED;
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
-    lpYYRes->Rsvd                    = 0;
+    lpYYRes->YYRsvd                  = 0;
 #ifdef DEBUG
-    lpYYRes->Index                   = NEG1U;
-    lpYYRes->Flag                    = 0;
+    lpYYRes->YYIndex                 = NEG1U;
+    lpYYRes->YYFlag                  = 0;
 #endif
     return lpYYRes;
 } // End MakeNameOp1_YY
@@ -1718,15 +1722,14 @@ LPYYSTYPE MakeOp2_YY
     lpYYRes = YYAlloc ();
 
     YYCopy (lpYYRes, lpYYOp2);      // No need to CopyYYSTYPE_EM_YY immediates
-    lpYYRes->tkToken.tkFlags.TknType = TKT_OP2IMMED;
     lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP2;
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
-    lpYYRes->Rsvd                    = 0;
+    lpYYRes->YYRsvd                  = 0;
 #ifdef DEBUG
-    lpYYRes->Index                   = NEG1U;
-    lpYYRes->Flag                    = 0;
+    lpYYRes->YYIndex                 = NEG1U;
+    lpYYRes->YYFlag                  = 0;
 #endif
     return lpYYRes;
 } // End MakeOp2_YY
@@ -1751,22 +1754,14 @@ LPYYSTYPE MakeNameOp2_YY
 {
     LPYYSTYPE lpYYRes;
 
-    // Because when the tokens are first created we don't
-    //   know the type of a name, it is arbitrarily typed
-    //   as TKT_VARNAMED.  Now that we know it's a dyadic operator,
-    //   change its type to TKT_OP2NAMED.
-
-    lpYYOp2->tkToken.tkFlags.TknType = TKT_OP2NAMED;
-
     lpYYRes = CopyYYSTYPE_EM_YY (lpYYOp2, FALSE);
-    lpYYRes->tkToken.tkFlags.TknType = TKT_OP2NAMED;
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
-    lpYYRes->Rsvd                    = 0;
+    lpYYRes->YYRsvd                  = 0;
 #ifdef DEBUG
-    lpYYRes->Index                   = NEG1U;
-    lpYYRes->Flag                    = 0;
+    lpYYRes->YYIndex                 = NEG1U;
+    lpYYRes->YYFlag                  = 0;
 #endif
     return lpYYRes;
 } // End MakeNameOp2_YY
@@ -2300,14 +2295,10 @@ LPTOKEN CopyToken_EM
             {
                 STFLAGS stFlags;
 
-                // Skip assertion if it's some kind of function
+                // Skip assertion if it's some kind of function/operator
                 stFlags = lpToken->tkData.tkSym->stFlags;
-                if (stFlags.SysFn0
-                 || stFlags.SysFn12
-                 || stFlags.UsrFn0
-                 || stFlags.UsrFn12
-                 || stFlags.UsrOp1
-                 || stFlags.UsrOp2)
+                if (IsNameTypeFnOp (stFlags.SysType)
+                 || IsNameTypeFnOp (stFlags.UsrType))
                     break;
 
                 // stData is a valid HGLOBAL function array

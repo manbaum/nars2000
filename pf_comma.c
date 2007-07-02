@@ -169,7 +169,7 @@ LPYYSTYPE PrimFnMonComma_EM_YY
 #endif
 
 LPYYSTYPE PrimFnMonCommaImm_EM_YY
-    (UINT          ImmType,         // Right arg Immediate type
+    (IMMTYPES      ImmType,         // Right arg Immediate type
      APLLONGEST    aplLongest,      // Ptr to right arg value
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
      LPTOKEN       lptkFunc)        // Ptr to function token

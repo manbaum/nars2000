@@ -251,11 +251,8 @@ LRESULT APIENTRY FEWndProc
             lpSymName = ParseFunctionName (hWnd, ((LPFE_CREATESTRUCT) (lpMDIcs->lParam))->lpwszLine);
             if (lpSymName)
             {
-                // If it's a function but not a defined function, ...
-                if ((lpSymName->stFlags.UsrFn0
-                  || lpSymName->stFlags.UsrFn12
-                  || lpSymName->stFlags.UsrOp1
-                  || lpSymName->stFlags.UsrOp2)
+                // If it's a function/operator but not a defined function, ...
+                if (IsNameTypeFnOp (lpSymName->stFlags.UsrType)
                  && !lpSymName->stFlags.UsrDfn)
                 {
                     // ***FIXME*** -- Allow the user to edit the function array
@@ -2674,12 +2671,12 @@ BOOL SaveFunction
         switch (lpMemDfnHdr->DfnType)
         {
             case DFNTYPE_OP1:   // Monadic operator
-                lpSymName->stFlags.UsrOp1 = 1;
+                lpSymName->stFlags.UsrType = NAMETYPE_OP1;
 
                 break;
 
             case DFNTYPE_OP2:   // Dyadic operator
-                lpSymName->stFlags.UsrOp2 = 1;
+                lpSymName->stFlags.UsrType = NAMETYPE_OP2;
 
                 break;
 
@@ -2688,14 +2685,14 @@ BOOL SaveFunction
                 switch (lpMemDfnHdr->FcnValence)
                 {
                     case FCNVALENCE_NIL:    // Niladic function
-                        lpSymName->stFlags.UsrFn0 = 1;
+                        lpSymName->stFlags.UsrType = NAMETYPE_FN0;
 
                         break;
 
                     case FCNVALENCE_MON:    // Monadic function
                     case FCNVALENCE_DYD:    // Dyadic function
                     case FCNVALENCE_AMB:    // Ambivalent function
-                        lpSymName->stFlags.UsrFn12 = 1;
+                        lpSymName->stFlags.UsrType = NAMETYPE_FN12;
 
                         break;
 

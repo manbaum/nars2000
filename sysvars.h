@@ -46,11 +46,11 @@
 
 typedef enum tagSA_VALUES
 {
-    SAVAL_Empty = 0,
-    SAVAL_Clear,
-    SAVAL_Error,
-    SAVAL_Exit,
-    SAVAL_Off
+    SAVAL_Empty = 0,        // 00:  ""
+    SAVAL_Clear,            // 01:  "CLEAR"
+    SAVAL_Error,            // 02:  "ERROR"
+    SAVAL_Exit,             // 03:  "EXIT"
+    SAVAL_Off               // 04:  "OFF"
 } SA_VALUES;
 
 

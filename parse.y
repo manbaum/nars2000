@@ -212,7 +212,7 @@ Stmt:
     |     ArrExpr EOL                   {DbgMsgW2 (L"%%Stmt:  EOL ArrExpr");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_VAR;
+                                             lpplLocalVars->NameType = NAMETYPE_VAR;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -220,7 +220,7 @@ Stmt:
     |     FcnSpec EOL                   {DbgMsgW2 (L"%%Stmt:  EOL FcnSpec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_FCN12;
+                                             lpplLocalVars->NameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -228,7 +228,7 @@ Stmt:
     |     Op1Spec EOL                   {DbgMsgW2 (L"%%Stmt:  EOL Op1Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_OP1;
+                                             lpplLocalVars->NameType = NAMETYPE_OP1;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -236,7 +236,7 @@ Stmt:
     |     Op2Spec EOL                   {DbgMsgW2 (L"%%Stmt:  EOL Op2Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_OP2;
+                                             lpplLocalVars->NameType = NAMETYPE_OP2;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -244,7 +244,7 @@ Stmt:
     |     MonOp   EOL                   {DbgMsgW2 (L"%%Stmt:  EOL MonOp");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_OP1;
+                                             lpplLocalVars->NameType = NAMETYPE_OP1;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -252,7 +252,7 @@ Stmt:
     |     DydOp   EOL                   {DbgMsgW2 (L"%%Stmt:  EOL DydOp");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_OP2;
+                                             lpplLocalVars->NameType = NAMETYPE_OP2;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -260,7 +260,7 @@ Stmt:
     |     LeftOper EOL                  {DbgMsgW2 (L"%%Stmt:  EOL LeftOper");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_FCN12;
+                                             lpplLocalVars->NameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -268,7 +268,7 @@ Stmt:
     |     AxisFunc EOL                  {DbgMsgW2 (L"%%Stmt:  EOL AxisFunc");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_FCN12;
+                                             lpplLocalVars->NameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -276,7 +276,7 @@ Stmt:
     |     Drv1Func EOL                  {DbgMsgW2 (L"%%Stmt:  EOL Drv1Func");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_FCN12;
+                                             lpplLocalVars->NameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -284,7 +284,7 @@ Stmt:
     |     Drv2Func EOL                  {DbgMsgW2 (L"%%Stmt:  EOL Drv2Func");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->ObjType = OBJTYPE_FCN12;
+                                             lpplLocalVars->NameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -298,10 +298,7 @@ NameAnyVar:
                                         }
     | NAMEVAR                           {DbgMsgW2 (L"%%NameAnyVar:  NAMEVAR");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
                                              $$ = $1;
-                                         } // End IF
                                         }
     ;
 
@@ -312,10 +309,7 @@ NameAnyFcn:
                                         }
     | NAMEFCN                           {DbgMsgW2 (L"%%NameAnyFcn:  NAMEFCN");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             $1.tkToken.tkFlags.TknType = TKT_FCNNAMED;
                                              $$ = $1;
-                                         } // End IF
                                         }
     ;
 
@@ -324,12 +318,18 @@ NameAnyOp1:
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
+    | NAMEFCN                           {DbgMsgW2 (L"%%NameAnyOp1:  NAMEFCN");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
     | NAMEOP1                           {DbgMsgW2 (L"%%NameAnyOp1:  NAMEOP1");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             $1.tkToken.tkFlags.TknType = TKT_OP1NAMED;
                                              $$ = $1;
-                                         } // End IF
+                                        }
+    | NAMEOP2                           {DbgMsgW2 (L"%%NameAnyOp1:  NAMEOP2");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
                                         }
     ;
 
@@ -338,12 +338,17 @@ NameAnyOp2:
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
+    | NAMEFCN                           {DbgMsgW2 (L"%%NameAnyOp1:  NAMEFCN");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
+    | NAMEOP1                           {DbgMsgW2 (L"%%NameAnyOp1:  NAMEOP1");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
     | NAMEOP2                           {DbgMsgW2 (L"%%NameAnyOp2:  NAMEOP2");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             $1.tkToken.tkFlags.TknType = TKT_OP2NAMED;
                                              $$ = $1;
-                                         } // End IF
                                         }
     ;
 
@@ -353,7 +358,7 @@ FcnSpec:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$1, FCNTYPE_FCN12, TRUE);
+                                             MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -374,7 +379,7 @@ FcnSpec:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$1, FCNTYPE_FCN12, TRUE);
+                                             MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -395,7 +400,7 @@ FcnSpec:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$1, FCNTYPE_FCN12, TRUE);
+                                             MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -416,7 +421,7 @@ FcnSpec:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$1, FCNTYPE_AXISFCN, TRUE);
+                                             MakeFcnStrand_EM_YY (&$1, NAMETYPE_FN12, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -441,7 +446,7 @@ Op1Spec:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$1, FCNTYPE_OP1, TRUE);
+                                             MakeFcnStrand_EM_YY (&$1, NAMETYPE_OP1, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -466,7 +471,7 @@ Op2Spec:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$1, FCNTYPE_OP2, TRUE);
+                                             MakeFcnStrand_EM_YY (&$1, NAMETYPE_OP2, TRUE);
                                              FreeResult (&$1.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -499,7 +504,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN12, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (lpYYFcn)           // If defined, free it
@@ -514,7 +519,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN12, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -537,7 +542,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN12, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (lpYYFcn)           // If defined, free it
@@ -552,7 +557,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN12, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -575,7 +580,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (lpYYFcn)           // If defined, free it
@@ -590,7 +595,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -615,7 +620,7 @@ ArrExpr:
                                              FreeResult (&$1.tkToken);
 
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN12, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (lpYYFcn)           // If defined, free it
@@ -632,7 +637,7 @@ ArrExpr:
                                              FreeResult (&$3.tkToken);
 
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN12, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (lpYYFcn)           // If defined, free it
@@ -647,7 +652,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_FCN12, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -675,7 +680,7 @@ ArrExpr:
                                              FreeResult (&$1.tkToken);
 
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (lpYYFcn)           // If defined, free it
@@ -692,7 +697,7 @@ ArrExpr:
                                              FreeResult (&$3.tkToken);
 
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (lpYYFcn)           // If defined, free it
@@ -707,7 +712,7 @@ ArrExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$2, FCNTYPE_AXISFCN, FALSE);
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (!lpYYFcn)          // If not defined, free args and YYERROR
@@ -2108,7 +2113,7 @@ AxisFunc:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$4, FCNTYPE_FCN12, FALSE);
+                                             MakeFcnStrand_EM_YY (&$4, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$4.tkToken);
 
                                              if (lpYYFcn)           // If defined, free it
@@ -2242,7 +2247,7 @@ MonOpAxis:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpYYFcn =
-                                             MakeFcnStrand_EM_YY (&$4, FCNTYPE_FCN12, FALSE);
+                                             MakeFcnStrand_EM_YY (&$4, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$4.tkToken);
 
                                              if (lpYYFcn)           // If defined, free it
@@ -2538,17 +2543,11 @@ SingTokn:
                                         }
     | NAMEVAR                           {DbgMsgW2 (L"%%SingTokn:  NAMEVAR");
                                          if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             $1.tkToken.tkFlags.TknType = TKT_VARNAMED;
                                              $$ = $1;
-                                         } // End IF
                                         }
     | USRFN0                            {DbgMsgW2 (L"%%SingTokn:  USRFN0");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             $1.tkToken.tkFlags.TknType = TKT_FCNNAMED;
-                                             $1.tkToken.tkFlags.FcnDir  = 0;
-
                                              lpYYRes =
                                              ExecuteFn0 (&$1.tkToken);
 
@@ -2561,9 +2560,6 @@ SingTokn:
     | SYSFN0                            {DbgMsgW2 (L"%%SingTokn:  SYSFN0");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             $1.tkToken.tkFlags.TknType = TKT_FCNNAMED;
-                                             $1.tkToken.tkFlags.FcnDir  = 1;
-
                                              lpYYRes =
                                              ExecuteFn0 (&$1.tkToken);
 
@@ -2717,10 +2713,6 @@ void ParseLineInThread
     } // ***DEBUG*** END
 #endif
 
-    // Delete leading blanks in the line
-    while (*lpwszLine EQ L' ')
-        lpwszLine++;
-
     // Save values in the LocalVars
     plLocalVars.hGlbPTD    = hGlbPTD;
     plLocalVars.hWndSM     = hWndSM;
@@ -2857,23 +2849,23 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $SymbTypeFV
+//  $SymbTypeVFO
 //
-//  Get the type ('F' or 'V', or '?') of a symbol table name token.
+//  Get the type ('V', 'F', '1', '2', or '?') of a symbol table name token.
 //  Used for TKT_VARNAMEDs.
 //***************************************************************************
 
-char SymbTypeFV
+char SymbTypeVFO
     (LPTOKEN lpNext)
 
 {
-    LPSTFLAGS lpstFlags;
+    STFLAGS stFlags;
 
-    // Get a ptr to the symbol table flags
-    lpstFlags = &lpNext->tkData.tkSym->stFlags;
+    // Get the symbol table flags
+    stFlags = lpNext->tkData.tkSym->stFlags;
 
-    if (lpstFlags->Imm)     // IMMTYPE_BOOL, IMMTYPE_INT, IMMTYPE_CHAR, IMMTYPE_FLOAT, IMMTYPE_PRIMFCN, ...
-    switch (lpstFlags->ImmType)
+    if (stFlags.Imm)        // IMMTYPE_BOOL, IMMTYPE_INT, IMMTYPE_CHAR, IMMTYPE_FLOAT, IMMTYPE_PRIMFCN, ...
+    switch (stFlags.ImmType)
     {
         case IMMTYPE_BOOL:
         case IMMTYPE_INT:
@@ -2882,34 +2874,46 @@ char SymbTypeFV
             return 'V';
 
         case IMMTYPE_PRIMFCN:
-        case IMMTYPE_PRIMOP1:
-        case IMMTYPE_PRIMOP2:
             return 'F';
+
+        case IMMTYPE_PRIMOP1:
+            return '1';
+
+        case IMMTYPE_PRIMOP2:
+            return '2';
 
         defstop
             return '?';
     } // End IF/SWITCH
 
-    if (lpstFlags->UsrVar
-     || lpstFlags->UsrFn0
-     || lpstFlags->SysVar
-     || lpstFlags->SysFn0)
+    if (stFlags.UsrType EQ NAMETYPE_VAR
+     || stFlags.UsrType EQ NAMETYPE_FN0
+     || stFlags.SysType EQ NAMETYPE_VAR
+     || stFlags.SysType EQ NAMETYPE_FN0)
         return 'V';
 
-    if (lpstFlags->SysFn12
-     || lpstFlags->UsrFn12
-     || lpstFlags->UsrOp1
-     || lpstFlags->UsrOp2)
+    // Note we must perform the following test
+    //   AFTER the one above so as not to catch the FN0 case.
+    if (IsNameTypeFn (stFlags.SysType)
+     || IsNameTypeFn (stFlags.UsrType))
         return 'F';
+
+    if (stFlags.SysType EQ NAMETYPE_OP1
+     || stFlags.UsrType EQ NAMETYPE_OP1)
+        return '1';
+
+    if (stFlags.SysType EQ NAMETYPE_OP2
+     || stFlags.UsrType EQ NAMETYPE_OP2)
+        return '2';
 
     // After having checked all the other .Usrxxx possibilities,
     //   if it's a UsrName, then it's really a VALUE ERROR, but this
     //   isn't the time to signal that.
-    if (lpstFlags->UsrName)
+    if (stFlags.UsrName)
         return 'V';
 
     return '?';             // SYNTAX ERROR
-} // SymbTypeFV
+} // SymbTypeVFO
 
 
 //***************************************************************************
@@ -2953,7 +2957,7 @@ char LookaheadSurround
     if (pl_yyparse (&plLocalVars))
         cRes = '?';
     else
-        cRes = OBJTYPE_STRING[plLocalVars.ObjType];
+        cRes = NAMETYPE_STRING[plLocalVars.NameType];
 
 #ifdef DEBUG
     dprintfW (L"==Exiting  LookaheadSurround:  %c", cRes);
@@ -3045,7 +3049,7 @@ char LookaheadAdjacent
 
         case TKT_VARNAMED:
             // Get the token type of the symbol table name
-            cRes = SymbTypeFV (plLocalVars.lpNext);
+            cRes = SymbTypeVFO (plLocalVars.lpNext);
 
             goto NORMAL_EXIT;
 
@@ -3151,7 +3155,7 @@ BOOL LookaheadDyadicOp
 
         case TKT_VARNAMED:
             // Look inside the symbol table entry
-            bRet = lpNext->tkData.tkSym->stFlags.UsrOp2;
+            bRet = (lpNext->tkData.tkSym->stFlags.UsrType EQ NAMETYPE_OP2);
 
             goto NORMAL_EXIT;
 
@@ -3193,7 +3197,7 @@ int pl_yylex
 
 {
 #ifdef DEBUG
-    static UINT Index = 0;
+    static UINT YYIndex = 0;
 #endif
     WCHAR       wchFn;
 
@@ -3201,16 +3205,16 @@ int pl_yylex
     lpplLocalVars->lpNext--;
 
     // Return the current token
-    lpYYLval->tkToken  = *lpplLocalVars->lpNext;
-    lpYYLval->Inuse    =
-    lpYYLval->Indirect =
-    lpYYLval->Rsvd     =
-    lpYYLval->TknCount =
-    lpYYLval->FcnCount = 0;
-    lpYYLval->lpYYFcn  = NULL;
+    lpYYLval->tkToken    = *lpplLocalVars->lpNext;
+    lpYYLval->YYInuse    =
+    lpYYLval->YYIndirect =
+    lpYYLval->YYRsvd     =
+    lpYYLval->TknCount   =
+    lpYYLval->FcnCount   = 0;
+    lpYYLval->lpYYFcn    = NULL;
 #ifdef DEBUG
-    lpYYLval->Flag     = 1;         // Mark as a pl_yylex Index
-    lpYYLval->Index    = ++Index;
+    lpYYLval->YYFlag     = 1;         // Mark as a pl_yylex Index
+    lpYYLval->YYIndex    = ++YYIndex;
 #endif
 
     // Split cases based upon the token type
@@ -3226,62 +3230,86 @@ int pl_yylex
             else
                 return QUOTEQUAD;
 
+        case TKT_FCNNAMED:
+            return NAMEFCN;
+
         case TKT_VARNAMED:
         {
             STFLAGS stFlags;        // STE flags
 
+            // Get the STE flags
             stFlags = lpplLocalVars->lpNext->tkData.tkSym->stFlags;
 
-            // We need a bit a lookahead here so handle the FCN vs. OP1 vs. OP2
-            //   cases when the name is being assigned to.  In this case,
-            //   because the current meaning of the name is irrelevant
-            //   (it's about to be reassigned), we can accept any kind of name.
-            //   LALR grammars have a hard time dealing with this, so we
-            //   lookahead one token to see if it is ASSIGN.  If so, we return
-            //   NAMEUNK, a universal named token.
-
-            // If this is a UsrVar and either it has no value
-            //   or the next token is ASSIGN, call it NAMEUNK.
-            if (stFlags.UsrVar
-             && (!stFlags.Value
-              || lpplLocalVars->lpNext[1].tkFlags.TknType EQ TKT_ASSIGN))
-                return NAMEUNK;
-            else
-            if (stFlags.UsrVar
-             || stFlags.SysVar)
+////////////// We need a bit a lookahead here so handle the FCN vs. OP1 vs. OP2
+//////////////   cases when the name is being assigned to.  In this case,
+//////////////   because the current meaning of the name is irrelevant
+//////////////   (it's about to be reassigned), we can accept any kind of name.
+//////////////   LALR grammars have a hard time dealing with this, so we
+//////////////   lookahead one token to see if it is ASSIGN.  If so, we return
+//////////////   NAMEUNK, a universal named token.
+////////////
+////////////// If this is a UsrVar and either it has no value
+//////////////   or the next token is ASSIGN, call it NAMEUNK.
+////////////if (stFlags.UsrType EQ NAMETYPE_VAR
+//////////// && (!stFlags.Value
+////////////  || lpplLocalVars->lpNext[1].tkFlags.TknType EQ TKT_ASSIGN))
+////////////    return NAMEUNK;
+////////////else
+            if (stFlags.UsrType EQ NAMETYPE_VAR
+             || stFlags.SysType EQ NAMETYPE_VAR)
             {
-////////////////lpplLocalVars->lpNext->tkFlags.TknType = TKT_VARNAMED;    // Already set
+////////////////lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
+////////////////lpplLocalVars->lpNext->tkFlags.TknType              = TKT_VARNAMED;    // Already set
 
                 return NAMEVAR;
             } else
-            if (stFlags.UsrFn0)
-                return USRFN0;
-            else
-            if (stFlags.SysFn0)
-                return SYSFN0;
-            else
-            if (stFlags.UsrFn12)
+            if (stFlags.UsrType EQ NAMETYPE_FN0)
             {
-                lpplLocalVars->lpNext->tkFlags.TknType = TKT_FCNNAMED;
+                lpYYLval->tkToken.tkFlags.TknType                   =
+                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
+                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_FCNNAMED;
+
+                return USRFN0;
+            } else
+            if (stFlags.SysType EQ NAMETYPE_FN0)
+            {
+                lpYYLval->tkToken.tkFlags.TknType                   =
+                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
+                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_FCNNAMED;
+                lpplLocalVars->lpNext->tkData.tkSym->stFlags.FcnDir = 1;
+
+                return SYSFN0;
+            } else
+            if (stFlags.UsrType EQ NAMETYPE_FN12)
+            {
+                lpYYLval->tkToken.tkFlags.TknType                   =
+                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
+                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_FCNNAMED;
 
                 return NAMEFCN;
             } else
-            if (stFlags.SysFn12)
+            if (stFlags.SysType EQ NAMETYPE_FN12)
             {
-                lpplLocalVars->lpNext->tkFlags.TknType = TKT_FCNNAMED;
-                lpplLocalVars->lpNext->tkFlags.FcnDir  = 1;
+                lpYYLval->tkToken.tkFlags.TknType                   =
+                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
+                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_FCNNAMED;
+                lpplLocalVars->lpNext->tkData.tkSym->stFlags.FcnDir = 1;
 
                 return SYSFN12;
             } else
-            if (stFlags.UsrOp1)
+            if (stFlags.UsrType EQ NAMETYPE_OP1)
             {
-                lpplLocalVars->lpNext->tkFlags.TknType = TKT_OP1NAMED;
+                lpYYLval->tkToken.tkFlags.TknType                   =
+                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
+                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_OP1NAMED;
 
                 return NAMEOP1;
             } else
-            if (stFlags.UsrOp2)
+            if (stFlags.UsrType EQ NAMETYPE_OP2)
             {
-                lpplLocalVars->lpNext->tkFlags.TknType = TKT_OP2NAMED;
+                lpYYLval->tkToken.tkFlags.TknType                   =
+                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
+                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_OP2NAMED;
 
                 return NAMEOP2;
             } else

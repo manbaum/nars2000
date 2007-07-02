@@ -252,15 +252,15 @@ BOOL SymTabAppendSysName_EM
     // Set the flags of the entry we're appending
     if (lpSysName->bSysVar)
     {
-        stFlags.SysVar      = 1;
+        stFlags.SysType     = NAMETYPE_VAR;
         stFlags.Value       = (lpSysName->uValence NE SYSLBL);
         stFlags.DfnSysLabel = (lpSysName->uValence EQ SYSLBL);
     } else
     {
         if (lpSysName->uValence EQ 0)
-            stFlags.SysFn0 = 1;
+            stFlags.SysType = NAMETYPE_FN0;
         else
-            stFlags.SysFn12 = 1;
+            stFlags.SysType = NAMETYPE_FN12;
     } // End IF/ELSE
 
     // Set the flags for what we're appending
@@ -1398,20 +1398,49 @@ BOOL ValidateCharVector_EM
         // Skip over the header and dimensions to the data
         lpMem = VarArrayBaseToData (lpMem, 1);
 
-        // Copy the right arg to a location with a terminating zero
-        CopyMemory (lpwszTemp, lpMem, (UINT) aplNELMRht * sizeof (APLCHAR));
-        lpwszTemp[aplNELMRht] = L'\0';
+#define lpMemChar       ((LPAPLCHAR) lpMem)
 
-        // Convert the []WSID workspace name into a canonical form
-        MakeWorkspaceNameCanonical (lpwszTemp, lpwszTemp, wszSaveDir);
+        // Delete leading blanks
+        aplNELMRes = aplNELMRht;
+        while (aplNELMRes && *lpMemChar EQ L' ')
+        {
+            aplNELMRes--;
+            lpMemChar++;
+        } // End WHILE
 
-        // Get length of the name as the NELM
-        aplNELMRes = lstrlenW (lpwszTemp);
+        // Delete trailing blanks
+        while (aplNELMRes && lpMemChar[aplNELMRes - 1] EQ L' ')
+            aplNELMRes--;
 
-        // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbRht)); lpMem= NULL;
+#undef  lpMemChar
 
-        goto ALLOC_VECTOR;
+        // If there's anything left, ...
+        if (aplNELMRes)
+        {
+            // Copy the right arg to a location with a terminating zero
+            CopyMemory (lpwszTemp, lpMem, (UINT) aplNELMRht * sizeof (APLCHAR));
+            lpwszTemp[aplNELMRht] = L'\0';
+
+            // Convert the []WSID workspace name into a canonical form
+            MakeWorkspaceNameCanonical (lpwszTemp, lpwszTemp, wszSaveDir);
+
+            // Get length of the name as the NELM
+            aplNELMRes = lstrlenW (lpwszTemp);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbRht)); lpMem= NULL;
+
+            goto ALLOC_VECTOR;
+        } else
+        {
+            // The result is an empry char vector
+            hGlbRes = hGlbMTChar;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbRht)); lpMem= NULL;
+
+            goto NORMAL_EXIT;
+        } // End IF/ELSE
     } // End IF
 
     // Copy the right arg global as the result

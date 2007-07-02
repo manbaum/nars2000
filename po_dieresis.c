@@ -167,7 +167,7 @@ LPYYSTYPE PrimOpMonDieresisCommon_EM_YY
               lpMemRes;             // Ptr to result    ...
     APLUINT   uRht,                 // Right arg loop counter
               uRes;                 // Result    ...
-    LPYYSTYPE lpYYRes,              // Ptr to the result
+    LPYYSTYPE lpYYRes = NULL,       // Ptr to the result
               lpYYRes2;             // Ptr to secondary result
     APLINT    apaOff,               // Right arg APA offset
               apaMul;               // ...           multiplier
@@ -524,10 +524,7 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimOpMonDieresisCommon_EM_YY
 #undef  APPEND_NAME
 

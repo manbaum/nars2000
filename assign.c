@@ -34,17 +34,18 @@ BOOL AssignName_EM
      LPTOKEN lptkSrc)               // Ptr to source token
 
 {
-    STFLAGS stSrcFlags = {0};   // Copy of the source's STE flags
+    STFLAGS stSrcFlags = {0},   // Copy of the source's STE flags
+            stNamFlags;         // ...         name's   ...
     HGLOBAL hGlbSrc;            // Source's global memory handle
     BOOL    bFcnOpr;            // TRUE iff the source is a function/operator
 
     DBGENTER;
 
-    // Because when the tokens are first created we don't
-    //   know the type of a name, it is arbitrarily typed
-    //   as TKT_VARNAMED.  Now is the time to set the record
-    //   straight.
-    SetNameType (lptkNam);
+////// Because when the tokens are first created we don't
+//////   know the type of a name, it is arbitrarily typed
+//////   as TKT_VARNAMED.  Now is the time to set the record
+//////   straight.
+////SetNameType (lptkNam, lptkSrc);
 
     // It's a named variable or function
     Assert (lptkNam->tkFlags.TknType EQ TKT_VARNAMED
@@ -55,7 +56,7 @@ BOOL AssignName_EM
 
     // If the target is a system var, validate the assignment
     //   before we free the old value
-    if (lptkNam->tkData.tkSym->stFlags.SysVar)
+    if (lptkNam->tkData.tkSym->stFlags.SysType EQ NAMETYPE_VAR)
     {
         // If the target is a defined function system label, signal a SYNTAX ERROR
         if (lptkNam->tkData.tkSym->stFlags.DfnSysLabel)
@@ -95,19 +96,29 @@ BOOL AssignName_EM
             // If the source is not immediate, ...
             if (!lptkSrc->tkData.tkSym->stFlags.Imm)
             {
-                // stData is a valid HGLOBAL variable or function array, or defined function
-                Assert (IsGlbTypeVarDir (lptkSrc->tkData.tkSym->stData.stGlbData)
+                // stData is an internal function, a valid HGLOBAL variable or function array, or defined function
+                Assert (lptkSrc->tkData.tkSym->stFlags.FcnDir
+                     || IsGlbTypeVarDir (lptkSrc->tkData.tkSym->stData.stGlbData)
                      || IsGlbTypeFcnDir (lptkSrc->tkData.tkSym->stData.stGlbData)
                      || IsGlbTypeDfnDir (lptkSrc->tkData.tkSym->stData.stGlbData));
 
-                // ***FIXME*** -- Do we need the tests below??
-                //                Try []WSID {is} []SA
-                //                and []WSID {is} []WSID
+                // Check for internal functions
+                if (lptkSrc->tkData.tkSym->stFlags.FcnDir)
+                {
+                    // Free the old value for this name
+                    FreeResultName (lptkNam);
 
-////////////////// There are no reference counts on .SysName variables
-////////////////if (lptkNam->tkData.tkSym->stFlags.SysVar
-//////////////// || lptkSrc->tkData.tkSym->stFlags.SysVar)
-////////////////{
+                    // Copy the SYMENTRY's data
+                    lptkNam->tkData.tkSym->stData =
+                    lptkSrc->tkData.tkSym->stData;
+
+                    // Copy the direct function flag
+                    lptkNam->lptkOrig->tkData.tkSym->stFlags.FcnDir =
+                    lptkNam->          tkData.tkSym->stFlags.FcnDir =
+                    lptkSrc->          tkData.tkSym->stFlags.FcnDir;
+                } else
+                {
+                    // Copy the source global memory handle
                     hGlbSrc = CopySymGlbDir (lptkSrc->tkData.tkSym->stData.stGlbData);
 
                     // Free the old value for this name
@@ -119,25 +130,9 @@ BOOL AssignName_EM
                     // Transfer defined function flag
                     lptkNam->tkData.tkSym->stFlags.UsrDfn =
                     lptkSrc->tkData.tkSym->stFlags.UsrDfn;
+                } // End IF
 
-                    break;
-////////////////} // End IF
-////////////////
-////////////////// If the global memory ptrs are different, there's no
-//////////////////   need to copy the source's ptr and it would be
-//////////////////   a mistake to increment the reference count
-////////////////if (lptkNam->tkData.tkSym->stData.stGlbData NE
-////////////////    lptkSrc->tkData.tkSym->stData.stGlbData)
-////////////////{
-////////////////    // Copy the global memory ptr
-////////////////    lptkNam->tkData.tkSym->stData.stGlbData =
-////////////////    lptkSrc->tkData.tkSym->stData.stGlbData;
-////////////////
-////////////////    // Increment the reference count in global memory
-////////////////    DbgIncrRefCntDir (lptkNam->tkData.tkSym->stData.stGlbData);
-////////////////} // End IF
-////////////////
-////////////////break;
+                break;
             } // End IF
 
             // Handle the immediate case
@@ -162,9 +157,9 @@ BOOL AssignName_EM
 
             // Include the source's .Imm & .ImmType flags
             lptkNam->tkData.tkSym->stFlags.Imm      =
-                                    stSrcFlags.Imm;
+                                stSrcFlags.Imm;
             lptkNam->tkData.tkSym->stFlags.ImmType  =
-                                    stSrcFlags.ImmType;
+                                stSrcFlags.ImmType;
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest =
             lptkSrc->tkData.tkSym->stData.stLongest;
@@ -200,7 +195,7 @@ BOOL AssignName_EM
             // It's an immediate primitive function
             lptkNam->tkData.tkSym->stFlags.Imm     = 1;
             lptkNam->tkData.tkSym->stFlags.ImmType = GetImmTypeFcn (lptkSrc->tkData.tkChar);
-            lptkNam->tkData.tkSym->stFlags.UsrFn12 = 1;
+            lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_FN12;
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
@@ -214,7 +209,7 @@ BOOL AssignName_EM
             // It's an immediate primitive operator
             lptkNam->tkData.tkSym->stFlags.Imm     = 1;
             lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP1;
-            lptkNam->tkData.tkSym->stFlags.UsrOp1  = 1;
+            lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_OP1;
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
@@ -228,7 +223,7 @@ BOOL AssignName_EM
             // It's an immediate primitive operator
             lptkNam->tkData.tkSym->stFlags.Imm     = 1;
             lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP2;
-            lptkNam->tkData.tkSym->stFlags.UsrOp2  = 1;
+            lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_OP2;
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
@@ -236,11 +231,19 @@ BOOL AssignName_EM
             break;
 
         case TKT_VARARRAY:
+            // tkData is a valid HGLOBAL variable
+            Assert (IsGlbTypeVarDir (lptkSrc->tkData.tkVoid));
+
+            // Call function common to TKT_VARARRAY and TKT_FCNARRAY
             AssignArrayCommon (lptkNam, lptkSrc, TKT_VARNAMED);
 
             break;
 
         case TKT_FCNARRAY:
+            // tkData is a valid HGLOBAL function array
+            Assert (IsGlbTypeFcnDir (lptkSrc->tkData.tkVoid));
+
+            // Call function common to TKT_VARARRAY and TKT_FCNARRAY
             AssignArrayCommon (lptkNam, lptkSrc, TKT_FCNNAMED);
 
             break;
@@ -249,43 +252,16 @@ BOOL AssignName_EM
             break;
     } // End SWITCH
 
-    // If the source is a named function or operator,
+    // If the source is not an internal function
+    //   and is a named function or operator,
     //   mark the source with its type
-    if (lptkSrc->tkFlags.TknType EQ TKT_FCNNAMED
-     || lptkSrc->tkFlags.TknType EQ TKT_OP1NAMED
-     || lptkSrc->tkFlags.TknType EQ TKT_OP2NAMED)
-    {
-        // Split cases based upon the underlying FCNTYPE_xxx
-        switch (GetFcnType (lptkSrc))
-        {
-            case FCNTYPE_FCN0:
-                lptkSrc->tkData.tkSym->stFlags.UsrFn0  = 1;
+    if ((lptkSrc->tkFlags.TknType EQ TKT_FCNNAMED
+      || lptkSrc->tkFlags.TknType EQ TKT_OP1NAMED
+      || lptkSrc->tkFlags.TknType EQ TKT_OP2NAMED)
+     && !lptkSrc->tkData.tkSym->stFlags.FcnDir)     // Valid as the TknType is TKT_xxxNAMED
+        lptkSrc->tkData.tkSym->stFlags.UsrType = GetNameType (lptkSrc);
 
-                break;
-
-            case FCNTYPE_FCN12:
-            case FCNTYPE_AXISFCN:
-                lptkSrc->tkData.tkSym->stFlags.UsrFn12 = 1;
-
-                break;
-
-            case FCNTYPE_OP1:
-                lptkSrc->tkData.tkSym->stFlags.UsrOp1 = 1;
-
-                break;
-
-            case FCNTYPE_OP2:
-                lptkSrc->tkData.tkSym->stFlags.UsrOp2 = 1;
-
-                break;
-
-            case FCNTYPE_UNK:
-            defstop
-                break;
-        } // End SWITCH
-    } // End IF
-
-    // If the source is a function or operator,
+    // If the source is a function or operator
     //   mark the name as such
     bFcnOpr = (lptkSrc->tkFlags.TknType EQ TKT_FCNNAMED
             || lptkSrc->tkFlags.TknType EQ TKT_FCNIMMED
@@ -296,27 +272,30 @@ BOOL AssignName_EM
             || lptkSrc->tkFlags.TknType EQ TKT_OP2IMMED);
     if (bFcnOpr)
     {
-        // Split cases based upon the underlying FCNTYPE_xxx
-        switch (GetFcnType (lptkSrc))
+        // Split cases based upon the underlying NAMETYPE_xxx
+        switch (GetNameType (lptkSrc))
         {
-            case FCNTYPE_FCN0:
-                lptkNam->tkData.tkSym->stFlags.UsrFn0  = 1;
+            case NAMETYPE_FN0:
+                lptkNam->tkFlags.TknType = TKT_FCNNAMED;
+                lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_FN0;
 
                 break;
 
-            case FCNTYPE_FCN12:
-            case FCNTYPE_AXISFCN:
-                lptkNam->tkData.tkSym->stFlags.UsrFn12 = 1;
+            case NAMETYPE_FN12:
+                lptkNam->tkFlags.TknType = TKT_FCNNAMED;
+                lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_FN12;
 
                 break;
 
-            case FCNTYPE_OP1:
-                lptkNam->tkData.tkSym->stFlags.UsrOp1 = 1;
+            case NAMETYPE_OP1:
+                lptkNam->tkFlags.TknType = TKT_OP1NAMED;
+                lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_OP1;
 
                 break;
 
-            case FCNTYPE_OP2:
-                lptkNam->tkData.tkSym->stFlags.UsrOp2 = 1;
+            case NAMETYPE_OP2:
+                lptkNam->tkFlags.TknType = TKT_OP2NAMED;
+                lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_OP2;
 
                 break;
 
@@ -328,16 +307,15 @@ BOOL AssignName_EM
     // Mark as valued
     lptkNam->tkData.tkSym->stFlags.Value = 1;
 
-    // Ensure either .SysVar or .UsrVar is set
-    if (lptkNam->tkData.tkSym->stFlags.SysName
-     && !lptkNam->tkData.tkSym->stFlags.SysFn12)
-        lptkNam->tkData.tkSym->stFlags.SysVar = 1;
+    // If it's a var, ensure NAMETYPE_VAR is set for either .SysType or .UsrType
+    stNamFlags = lptkNam->tkData.tkSym->stFlags;
+    if (stNamFlags.SysName
+     && !IsNameTypeFnOp (stNamFlags.SysType))
+        lptkNam->tkData.tkSym->stFlags.SysType = NAMETYPE_VAR;
     else
-    if (lptkNam->tkData.tkSym->stFlags.UsrName
-     && !lptkNam->tkData.tkSym->stFlags.UsrFn12
-     && !lptkNam->tkData.tkSym->stFlags.UsrOp1
-     && !lptkNam->tkData.tkSym->stFlags.UsrOp2)
-        lptkNam->tkData.tkSym->stFlags.UsrVar = 1;
+    if (stNamFlags.UsrName
+     && !IsNameTypeFnOp (stNamFlags.UsrType))
+        lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_VAR;
 
     // Mark as not displayable
     lptkNam->tkFlags.NoDisplay = 1;
@@ -362,59 +340,68 @@ BOOL AssignName_EM
 //***************************************************************************
 
 void SetNameType
-    (LPTOKEN lptkNam)
+    (LPTOKEN lptkNam,           // Ptr to name token
+     LPTOKEN lptkSrc)           // Ptr to source token
 
 {
-    // Split cases based upon the token type
-    switch (lptkNam->tkFlags.TknType)
-    {
-        case TKT_FCNNAMED:
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkNam->tkData.tkVoid) EQ PTRTYPE_STCONST);
+    // Set the new token type in the name as well as the original
+    //   token so we can Untokenize it properly
+    lptkNam->lptkOrig->tkFlags.TknType =
+    lptkNam->tkFlags.TknType           = TranslateTknTypeToTknTypeNamed (lptkSrc->tkFlags.TknType);
 
-            // If it's not immediate, ...
-            if (!lptkNam->tkData.tkSym->stFlags.Imm)
-            {
-                // If it has no value, exit
-                if (!lptkNam->tkData.tkSym->stFlags.Value)
-                    return;
-
-                // stData is an HGLOBAL function array or defined function
-                Assert (IsGlbTypeFcnDir (lptkNam->tkData.tkSym->stData.stGlbData)
-                     || IsGlbTypeDfnDir (lptkNam->tkData.tkSym->stData.stGlbData));
-
-                // Set the new token type
-                lptkNam->tkFlags.TknType =
-                  TranslateFcnTypeToTknTypeNamed (GetFcnType (lptkNam));
-            } else
-                lptkNam->tkFlags.TknType =
-                  TranslateImmTypeToTknType (lptkNam->tkData.tkSym->stFlags.ImmType);
-            break;
-
-        case TKT_VARNAMED:      // Nothing to do
-        case TKT_OP1NAMED:      // ...
-        case TKT_OP2NAMED:      // ...
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
+////// Split cases based upon the token type
+////switch (lptkNam->tkFlags.TknType)
+////{
+////    case TKT_FCNNAMED:
+////        // tkData is an LPSYMENTRY
+////        Assert (GetPtrTypeDir (lptkNam->tkData.tkVoid) EQ PTRTYPE_STCONST);
+////
+////        // If it's not immediate, ...
+////        if (!lptkNam->tkData.tkSym->stFlags.Imm)
+////        {
+////            // If it has no value, exit
+////            if (!lptkNam->tkData.tkSym->stFlags.Value)
+////                return;
+////
+////            // stData is an HGLOBAL function array or defined function
+////            Assert (IsGlbTypeFcnDir (lptkNam->tkData.tkSym->stData.stGlbData)
+////                 || IsGlbTypeDfnDir (lptkNam->tkData.tkSym->stData.stGlbData));
+////
+////            // Set the new token type in the name as well as the original
+////            //   token so we can Untokenize it properly
+////            lptkNam->lptkOrig->tkFlags.TknType =
+////            lptkNam->tkFlags.TknType           =
+////              TranslateNameTypeToTknTypeNamed (GetNameType (lptkNam));
+////        } else
+////            lptkNam->lptkOrig->tkFlags.TknType =
+////            lptkNam->tkFlags.TknType           =
+////              TranslateImmTypeToTknTypeNamed (lptkNam->tkData.tkSym->stFlags.ImmType);
+////        break;
+////
+////    case TKT_VARNAMED:      // Nothing to do
+////    case TKT_OP1NAMED:      // ...
+////    case TKT_OP2NAMED:      // ...
+////        break;
+////
+////    defstop
+////        break;
+////} // End SWITCH
 } // End SetNameType
 
 
 //***************************************************************************
-//  $GetFcnType
+//  $GetNameType
 //
-//  Return the FCNTYPE_xxx of a function token
+//  Return the NAMETYPE_xxx of a function token
 //***************************************************************************
 
-FCNTYPES GetFcnType
+NAMETYPES GetNameType
     (LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL  hGlbData;          // Function array global memory handle
-    LPVOID   lpMem;             // Ptr to function array global memory
-    FCNTYPES cFcnType;          // Function array type (see FCNTYPES enum)
+    HGLOBAL   hGlbData;             // Function array global memory handle
+    LPVOID    lpMem;                // Ptr to function array global memory
+    NAMETYPES cNameType;            // Function name type (see NAMETYPES enum)
 
     // Split cases based upon the token type
     switch (lptkFunc->tkFlags.TknType)
@@ -427,6 +414,27 @@ FCNTYPES GetFcnType
             // If it's not an immediate, ...
             if (!lptkFunc->tkData.tkSym->stFlags.Imm)
             {
+                // Check for internal functions
+                if (lptkFunc->tkData.tkSym->stFlags.FcnDir)
+                {
+                    // This means that stGlbData is a direct function address
+
+                    // Check for niladic functions
+                    if (lptkFunc->tkData.tkSym->stFlags.SysType EQ NAMETYPE_FN0
+                     || lptkFunc->tkData.tkSym->stFlags.UsrType EQ NAMETYPE_FN0)
+                        return NAMETYPE_FN0;
+
+                    // Check for monadic/dyadic/ambivalent functions
+                    if (lptkFunc->tkData.tkSym->stFlags.SysType EQ NAMETYPE_FN12
+                     || lptkFunc->tkData.tkSym->stFlags.UsrType EQ NAMETYPE_FN12)
+                        return NAMETYPE_FN12;
+
+                    DbgStop ();         // We should never get here
+                                        //   unless we define some
+                                        //   internal operators
+                } // End IF
+
+                // Get the HGLOBAL
                 hGlbData = lptkFunc->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with common hGlbData code
@@ -436,13 +444,13 @@ FCNTYPES GetFcnType
             switch (lptkFunc->tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_PRIMFCN:
-                    return FCNTYPE_FCN12;
+                    return NAMETYPE_FN12;
 
                 case IMMTYPE_PRIMOP1:
-                    return FCNTYPE_OP1;
+                    return NAMETYPE_OP1;
 
                 case IMMTYPE_PRIMOP2:
-                    return FCNTYPE_OP2;
+                    return NAMETYPE_OP2;
 
                 defstop
                     break;
@@ -451,15 +459,15 @@ FCNTYPES GetFcnType
             return -1;
 
         case TKT_FCNIMMED:
-            return FCNTYPE_FCN12;
+            return NAMETYPE_FN12;
 
         case TKT_OP1NAMED:
         case TKT_OP1IMMED:
-            return FCNTYPE_OP1;
+            return NAMETYPE_OP1;
 
         case TKT_OP2NAMED:
         case TKT_OP2IMMED:
-            return FCNTYPE_OP2;
+            return NAMETYPE_OP2;
 
         case TKT_FCNARRAY:
             hGlbData = lptkFunc->tkData.tkGlbData;
@@ -485,14 +493,14 @@ FCNTYPES GetFcnType
     {
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
         case FCNARRAY_HEADER_SIGNATURE:
-            cFcnType = lpHeader->FcnType;
+            cNameType = lpHeader->NameType;
 
             break;
 #undef  lpHeader
 
 #define lpHeader    ((LPDFN_HEADER) lpMem)
         case DFN_HEADER_SIGNATURE:
-            cFcnType = TranslateDfnToFcnType (lpHeader->DfnType, lpHeader->FcnValence);
+            cNameType = TranslateDfnToNameType (lpHeader->DfnType, lpHeader->FcnValence);
 
             break;
 #undef  lpHeader
@@ -504,8 +512,8 @@ FCNTYPES GetFcnType
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
 
-    return cFcnType;
-} // End GetFcnType
+    return cNameType;
+} // End GetNameType
 
 
 //***************************************************************************
@@ -523,7 +531,7 @@ FCNTYPES GetFcnType
 void AssignArrayCommon
     (LPTOKEN     lptkName,
      LPTOKEN     lptkSrc,
-     TOKEN_TYPES TknType)
+     TOKENTYPES TknType)
 
 {
     // Free the old value for this name

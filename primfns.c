@@ -880,33 +880,30 @@ LPYYSTYPE ExecFunc_EM_YY
                 STFLAGS stFlags;
                 HGLOBAL hGlbFcn;
 
-                // Skip assertion if it's some kind of function
+                // Skip assertion if it's some kind of function/operator
                 stFlags = lptkFunc->tkData.tkSym->stFlags;
-                if (stFlags.SysFn0
-                 || stFlags.SysFn12
-                 || stFlags.UsrFn0
-                 || stFlags.UsrFn12
-                 || stFlags.UsrOp1
-                 || stFlags.UsrOp2)
+                if (IsNameTypeFnOp (stFlags.SysType)
+                 || IsNameTypeFnOp (stFlags.UsrType))
                 {
                     LPPRIMFNS lpNameFcn;
 
                     // Get the address of the execution routine
                     lpNameFcn = lptkFunc->tkData.tkSym->stData.stNameFcn;
 
-                    // If it's a direct function, go there
-                    if (lptkFunc->tkFlags.FcnDir)
+                    // If it's an internal function, go there
+                    if (stFlags.FcnDir)
                         return (*lpNameFcn) (lptkLftArg, lptkFunc, lptkRhtArg, NULL);
 
-                    // Save the HGLOBAL
+                    // Use the HGLOBAL
                     hGlbFcn = lpNameFcn;
                 } else
-                    // Save the HGLOBAL
+                    // Use the HGLOBAL
                     hGlbFcn = lptkFunc->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL function array
                 Assert (IsGlbTypeFcnDir (hGlbFcn));
 
+                // Execute a function array global memory handle
                 return ExecFuncGlb_EM_YY (lptkLftArg,
                                           ClrPtrTypeDirGlb (hGlbFcn),
                                           lptkRhtArg);
@@ -944,21 +941,11 @@ LPYYSTYPE ExecFunc_EM_YY
             } // End SWITCH
 
         case TKT_FCNARRAY:
-            // Get the global memory handle or function address if direct
-            lpPrimFn = lptkFunc->tkData.tkVoid;
-
-            // Check for internal functions
-            if (lptkFunc->tkFlags.FcnDir)
-            {
-                DbgBrk ();      // ***TESTME*** -- When does this occur??
-                return (*lpPrimFn) (lptkLftArg, lptkFunc, lptkRhtArg, NULL);
-            } // End IF
-
             // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lpPrimFn));
+            Assert (IsGlbTypeFcnDir (lptkFunc->tkData.tkVoid));
 
             return ExecFuncGlb_EM_YY (lptkLftArg,
-                                      ClrPtrTypeDirGlb (lpPrimFn),
+                                      ClrPtrTypeDirGlb (lptkFunc->tkData.tkGlbData),
                                       lptkRhtArg);
         defstop
             break;
@@ -1020,8 +1007,9 @@ LPYYSTYPE ExecFuncStr_EM_YY
      LPTOKEN   lptkRhtArg)          // Ptr to right arg token
 
 {
-    LPTOKEN   lptkAxis;         // Ptr to axis token
-    LPPRIMFNS lpPrimFn;         // Ptr to function address
+    LPTOKEN    lptkAxis;        // Ptr to axis token
+    LPPRIMFNS  lpPrimFn;        // Ptr to function address
+////LPSYMENTRY lpSymEntry;      // Ptr to SYMENTRY if TKT_FCNNAMED and direct
 
     // Split cases based upon the type of the first token
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)
@@ -1064,6 +1052,37 @@ LPYYSTYPE ExecFuncStr_EM_YY
             return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
 
         case TKT_FCNARRAY:
+////        Assert (lpYYFcnStr->FcnCount EQ 1
+////             || lpYYFcnStr->FcnCount EQ 2);
+////
+////        // Check for axis operator
+////        if (lpYYFcnStr->FcnCount > 1
+////         && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+////          || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+////            lptkAxis = &lpYYFcnStr[1].tkToken;
+////        else
+////            lptkAxis = NULL;
+////
+////        // Get the global memory handle or function address if direct
+////        lpPrimFn = lpYYFcnStr->tkToken.tkData.tkVoid;
+////
+////        // Check for internal functions
+////        if (lpYYFcnStr->tkToken.tkData.tkSym->stFlags.FcnDir)
+////            return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
+////
+////        // tkData is a valid HGLOBAL function array
+////        Assert (IsGlbTypeFcnDir (lpPrimFn));
+////
+////        return ExecFuncGlb_EM_YY (lptkLftArg,
+////                                  ClrPtrTypeDirGlb (lpPrimFn),
+////                                  lptkRhtArg);
+            // tkData is a valid HGLOBAL function array
+            Assert (IsGlbTypeFcnDir (lpYYFcnStr->tkToken.tkData.tkVoid));
+
+            return ExecFuncGlb_EM_YY (lptkLftArg,
+                                      ClrPtrTypeDirGlb (lpYYFcnStr->tkToken.tkData.tkVoid),
+                                      lptkRhtArg);
+        case TKT_FCNNAMED:
             Assert (lpYYFcnStr->FcnCount EQ 1
                  || lpYYFcnStr->FcnCount EQ 2);
 
@@ -1075,19 +1094,24 @@ LPYYSTYPE ExecFuncStr_EM_YY
             else
                 lptkAxis = NULL;
 
-            // Get the global memory handle or function address if direct
-            lpPrimFn = lpYYFcnStr->tkToken.tkData.tkVoid;
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpYYFcnStr->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // Get the function address
+            lpPrimFn = lpYYFcnStr->tkToken.tkData.tkSym->stData.stNameFcn;
 
             // Check for internal functions
-            if (lpYYFcnStr->tkToken.tkFlags.FcnDir)
+            if (lpYYFcnStr->tkToken.tkData.tkSym->stFlags.FcnDir)
                 return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
 
-            // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lpPrimFn));
+            DbgStop ();         // We should never get here
 
-            return ExecFuncGlb_EM_YY (lptkLftArg,
-                                      ClrPtrTypeDirGlb (lpPrimFn),
-                                      lptkRhtArg);
+////////////// tkData is a valid HGLOBAL function array
+////////////Assert (IsGlbTypeFcnDir (lpPrimFn));
+////////////
+////////////return ExecFuncGlb_EM_YY (lptkLftArg,
+////////////                          ClrPtrTypeDirGlb (lpPrimFn),
+////////////                          lptkRhtArg);
         defstop
             return NULL;
     } // End SWITCH
@@ -1140,6 +1164,10 @@ LPYYSTYPE ExecOp1_EM_YY
                                       lptkAxis);    // Ptr to axis token (may be NULL)
         case UTF16_STILETILDE:  // Partition
             DbgBrk ();          // ***FINISHME***
+
+
+
+
 
 
             return NULL;
@@ -1211,10 +1239,18 @@ LPYYSTYPE ExecOp2_EM_YY
             DbgBrk ();          // ***FINISHME***
 
 
+
+
+
+
             return NULL;        // break;
 
         case UTF16_DIERESISJOT: // Rank
             DbgBrk ();          // ***FINISHME***
+
+
+
+
 
 
             return NULL;        // break;
@@ -1223,10 +1259,18 @@ LPYYSTYPE ExecOp2_EM_YY
             DbgBrk ();          // ***FINISHME***
 
 
+
+
+
+
             return NULL;        // break;
 
         case UTF16_DIERESISSTAR:// Power
             DbgBrk ();          // ***FINISHME***
+
+
+
+
 
 
             return NULL;        // break;
@@ -2453,7 +2497,7 @@ void FirstValue
      LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
      LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
      LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
-     LPUCHAR      lpImmType,    // ...        immediate type:  IMM_TYPES (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type:  IMMTYPES (may be NULL)
      LPAPLSTYPE   lpArrType)    // ...        array type:  ARRAY_TYPES (may be NULL)
 
 {
@@ -2540,7 +2584,7 @@ void FirstValueImm
      LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
      LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
      LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
-     LPUCHAR      lpImmType,    // ...        immediate type:  IMM_TYPES (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type:  IMMTYPES (may be NULL)
      LPAPLSTYPE   lpArrType)    // ...        array type:  ARRAY_TYPES (may be NULL)
 {
     if (lpImmType)
@@ -2615,7 +2659,7 @@ void FirstValueSymGlb
      LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
      LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
      LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
-     LPUCHAR      lpImmType,    // ...        immediate type IMM_TYPES (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type IMMTYPES (may be NULL)
      LPAPLSTYPE   lpArrType)    // ...        array type -- ARRAY_TYPES (may be NULL)
 
 {
@@ -4180,9 +4224,9 @@ APLINT imul64
 //***************************************************************************
 
 APLUINT CalcArraySize
-    (APLSTYPE aplType,
-     APLNELM  aplNELM,
-     APLRANK  aplRank)
+    (ARRAY_TYPES aplType,       // Result storage type
+     APLNELM     aplNELM,       // ...    NELM
+     APLRANK     aplRank)       // ...    rank
 
 {
     APLUINT ByteRes;            // # bytes needed for the result
@@ -4190,6 +4234,7 @@ APLUINT CalcArraySize
     Assert (0 <= aplType
          &&      aplType < ARRAY_LENGTH);
 
+    // Split cases based upon the result storage type
     switch (aplType)
     {
         case ARRAY_BOOL:
@@ -4803,7 +4848,7 @@ LPYYSTYPE YYAlloc
     LPYYSTYPE    lpYYRes = NULL;// Ptr to the result
 
 #ifdef DEBUG
-    static UINT Index = 0;
+    static UINT YYIndex = 0;
 #endif
 
     // Get the thread's PerTabData global memory handle
@@ -4817,18 +4862,18 @@ LPYYSTYPE YYAlloc
     //   mark it as inuse,
     //   and return a ptr to it
     for (u = 0; u < NUMYYRES; u++)
-    if (!lpMemPTD->YYRes[u].Inuse)
+    if (!lpMemPTD->YYRes[u].YYInuse)
     {
         // Zero it
         ZeroMemory (&lpMemPTD->YYRes[u], sizeof (lpMemPTD->YYRes[0]));
 
         // Mark as inuse
-        lpMemPTD->YYRes[u].Inuse = 1;
+        lpMemPTD->YYRes[u].YYInuse = 1;
 #ifdef DEBUG
-        lpMemPTD->YYRes[u].Flag = 0;    // Mark as a YYAlloc Index
+        lpMemPTD->YYRes[u].YYFlag = 0;  // Mark as a YYAlloc Index
 
         // Save unique number for debugging/tracking purposes
-        lpMemPTD->YYRes[u].Index = ++Index;
+        lpMemPTD->YYRes[u].YYIndex = ++YYIndex;
 #endif
         lpYYRes = &lpMemPTD->YYRes[u];
 
@@ -4858,22 +4903,22 @@ void YYCopy
 
 {
 #ifdef DEBUG
-    UINT Index,
-         Flag;
+    UINT YYIndex,
+         YYFlag;
 #endif
 
-    Assert (lpYYDst->Inuse);
+    Assert (lpYYDst->YYInuse);
 
 #ifdef DEBUG
     // Save the old index & flag
-    Index = lpYYDst->Index;
-    Flag  = lpYYDst->Flag;
+    YYIndex = lpYYDst->YYIndex;
+    YYFlag  = lpYYDst->YYFlag;
 #endif
     *lpYYDst = *lpYYSrc;            // Copy the YYSTYPE
-    lpYYDst->Inuse = 1;             // Retain Inuse flag
+    lpYYDst->YYInuse = 1;           // Retain YYInuse flag
 #ifdef DEBUG
-    lpYYDst->Index = Index;         // Retain Index
-    lpYYDst->Flag  = Flag;          // ...    Flag
+    lpYYDst->YYIndex = YYIndex;     // Retain YYIndex
+    lpYYDst->YYFlag  = YYFlag;      // ...    YYFlag
 #endif
 } // End YYCopy
 
@@ -4891,13 +4936,13 @@ void YYCopyFreeDst
      LPYYSTYPE lpYYSrc)
 
 {
-    if (lpYYDst->Inuse)
+    if (lpYYDst->YYInuse)
         YYCopy (lpYYDst, lpYYSrc);
     else
     {
-        lpYYDst->Inuse = 1;         // Mark as in use for YYCopy
+        lpYYDst->YYInuse = 1;       // Mark as in use for YYCopy
         YYCopy (lpYYDst, lpYYSrc);
-        lpYYDst->Inuse = 0;         // Mark as no longer in use
+        lpYYDst->YYInuse = 0;       // Mark as no longer in use
     } // End IF/ELSE
 } // End YYCopyFreeDst
 
@@ -4925,12 +4970,12 @@ void YYFree
 
     u = lpYYRes - lpMemPTD->YYRes;
     Assert (u < NUMYYRES);
-    Assert (lpYYRes->Inuse EQ 1);
+    Assert (lpYYRes->YYInuse EQ 1);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
-////lpYYRes->Inuse = 0;         // Free it
+////lpYYRes->YYInuse = 0;       // Free it
     ZeroMemory (lpYYRes, sizeof (YYSTYPE));
 } // End YYFree
 
@@ -4958,7 +5003,7 @@ BOOL YYResIsEmpty
 
     // Loop through the YYRes entries
     for (u = 0; u < NUMYYRES; u++)
-    if (lpMemPTD->YYRes[u].Inuse)
+    if (lpMemPTD->YYRes[u].YYInuse)
     {
         bRet = FALSE;
 

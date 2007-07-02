@@ -16,10 +16,10 @@
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
 {
-    EXEC_CODES ExecCode;            // Exception code
+    EXEC_CODES ExecCode;            // 00:  Exception code
 
 #define NUMYYRES    10              // # YYRes elements in the array
-    YYSTYPE YYRes[NUMYYRES];        // The result token
+    YYSTYPE YYRes[NUMYYRES];        // 04:  The result token
 
     // Symbol & hash table variables
     LPSYMENTRY lpSymTab,            // Ptr to start of symbol table

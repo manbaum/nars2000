@@ -192,6 +192,21 @@ UCHAR gDbgLvl                           // Debug level 0 = none
  = 0
 #endif
 ;
+
+EXTERN
+LPWCHAR lpwNameTypeStr[]
+#ifdef DEFINE_VALUES
+ = NAMETYPE_WSTRPTR
+#endif
+;
+
+EXTERN
+LPCHAR lpNameTypeStr[]
+#ifdef DEFINE_VALUES
+ = NAMETYPE_STRPTR
+#endif
+;
+
 #endif
 
 //***************************************************************************
@@ -209,15 +224,16 @@ LPPRIMSPEC PrimSpecTab[256];            // The table of corresponding LPPRIMSPEC
                                         //   for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
-    WORD Index:4,                       // Function index (see enum tagFBFNINDS)
-         Available:5,                   // Available flag bits
-         IdentElem:1,                   // TRUE iff this function has an identity element
-         DydScalar:1,                   // ...                    is scalar dyadic
-         MonScalar:1,                   // ...                       ...    monadic
-         Alter:1,                       // ...                       alternating
-         AssocBool:1,                   // ...                       associative on Booleans only
-         AssocNumb:1,                   // ...                       associative on all numbers
-         FastBool:1;                    // Boolean function w/reduction & scan can be sped up
+    WORD Index:4,                       // 000F:  Function index (see enum tagFBFNINDS)
+         Available:5,                   // 01F0:  Available flag bits
+         IdentElem:1,                   // 0200:  TRUE iff this function has an identity element
+         DydScalar:1,                   // 0400:  ...                    is scalar dyadic
+         MonScalar:1,                   // 0800:  ...                       ...    monadic
+         Alter:1,                       // 1000:  ...                       alternating
+         AssocBool:1,                   // 2000:  ...                       associative on Booleans only
+         AssocNumb:1,                   // 4000:  ...                       associative on all numbers
+         FastBool:1;                    // 8000:  Boolean function w/reduction & scan can be sped up
+                                        // 0000:  Available bits
 } PRIMFLAGS, *LPPRIMFLAGS;
 
 EXTERN
@@ -245,7 +261,7 @@ typedef enum tagFBFNINDS                // Fast Boolean function indices
     PF_INDEX_PLUS    ,                  // 0D = ...       "plus"  ...
     PF_INDEX_MINUS   ,                  // 0E = ...       "minus" ...
     PF_INDEX_DIVIDE  ,                  // 0F = ...       "divide" ...
-    PF_INDEX_NEXT                       // 10 = Next available index
+    PF_INDEX_NEXT                       // 10 = No available entries
                                         // If another entry is made, be sure
                                         //   to increase Index:4 to Index:5
                                         //   in tagPRIMFLAGS
@@ -911,8 +927,8 @@ UINT uTypeMap[]
 
 typedef struct
 {
-    char  nrm;      // Normal           (shifted & unshifted) (unused)
-    WCHAR alt;      // Alt key pressed  (shifted & unshifted)
+    char  nrm;      // 00:  Normal           (shifted & unshifted) (unused)
+    WCHAR alt;      // 01:  Alt key pressed  (shifted & unshifted)
 } CHARCODE;
 
 // If you are looking for places on the keyboard to put new symbols,
@@ -1058,35 +1074,37 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 
 typedef enum tagUNDOACTS
 {
-    undoNone = 0,       // No action
-    undoIns,            // Insert a character
-    undoRep,            // Replace a character
-    undoDel,            // Delete one or more characters
-    undoSel,            // Select one or more characters
-    undoInsToggle,      // Toggle the insert mode
+    undoNone = 0,       // 0000:  No action
+    undoIns,            // 0001:  Insert a character
+    undoRep,            // 0002:  Replace a character
+    undoDel,            // 0003:  Delete one or more characters
+    undoSel,            // 0004:  Select one or more characters
+    undoInsToggle,      // 0005:  Toggle the insert mode
+                        // 0006-FFFF:  Available entries (16 bits)
 } UNDOACTS;
 
 #define UNDO_NOGROUP    0
 
 typedef struct tagUNDOBUF
 {
-    UINT  CharPosBeg,   // Beginning character position (from start of text),
-                        //  -1 = current position
-          CharPosEnd,   // Ending    ...
-          Group;        // Group index identifies actions to be performed together,
-                        //   0 = no grouping
-    short Action;       // Action (see enum UNDOACTS)
-    WCHAR Char;         // The character (if any),
-                        //   0 = none
+    UINT  CharPosBeg,   // 00:  Beginning character position (from start of text),
+                        //      -1 = current position
+          CharPosEnd,   // 04:  Ending    ...
+          Group;        // 08:  Group index identifies actions to be performed together,
+                        //      0 = no grouping
+    short Action;       // 0C:  Action (see enum UNDOACTS)
+    WCHAR Char;         // 0E:  The character (if any),
+                        //       0 = none
+                        // 10:  Length
 } UNDOBUF, *LPUNDOBUF;
 
 
 typedef union tagLPMEMTXTUNION
 {
-    LPAPLCHAR C;                // As an APLCHAR ptr
-    LPUINT    U;                // ...   UINT    ...
-    LPVOID    V;                // ...   VOID    ...
-    LPWORD    W;                // ...   WORD    ...
+    LPAPLCHAR C;        // 00:  As an APLCHAR ptr
+    LPUINT    U;        // 00:  ...   UINT    ...
+    LPVOID    V;        // 00:  ...   VOID    ...
+    LPWORD    W;        // 00:  ...   WORD    ...
 } LPMEMTXTUNION;
 
 

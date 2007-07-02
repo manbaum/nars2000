@@ -7,11 +7,11 @@
 
 typedef enum tagUNITRANS
 {
-    UNITRANS_APLWIN = 0,    // APL+WIN 3.6 (and maybe later)
-    UNITRANS_APL2,          // APL2 ???     ***FINISHME***
-    UNITRANS_DYALOG,        // Dyalog ???   ***FINISHME***
-    UNITRANS_NARS,          // NARS2000
-    UNITRANS_LENGTH,        // Length of the enum *MUST* be last
+    UNITRANS_APLWIN = 0,    // 00:  APL+WIN 3.6 (and maybe later)
+    UNITRANS_APL2,          // 01:  APL2 ???     ***FINISHME***
+    UNITRANS_DYALOG,        // 02:  Dyalog ???   ***FINISHME***
+    UNITRANS_NARS,          // 03:  NARS2000
+    UNITRANS_LENGTH,        // 04:  Length of the enum *MUST* be last
 } UNITRANS;
 
 WCHAR uniTrans[][UNITRANS_LENGTH] =

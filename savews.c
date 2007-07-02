@@ -23,7 +23,7 @@ int SILevel = 0;
 
 
 //***************************************************************************
-//  MakeWorkspaceNameCanonical
+//  $MakeWorkspaceNameCanonical
 //
 // Convert a workspace name into a canonical form
 //***************************************************************************
@@ -57,10 +57,11 @@ void MakeWorkspaceNameCanonical
             wszDrive[0] = L'\0';        // Because wszSaveDir includes the drive letter
         } else
             lstrcpyW (wszTmpDir, wszDir);
-    } // End IF
 
-    // Put it back together into a DPFE
-    _wmakepath (wszOut, wszDrive, wszTmpDir, wszFname, wszExt);
+        // Put it back together into a DPFE
+        _wmakepath (wszOut, wszDrive, wszTmpDir, wszFname, wszExt);
+    } else
+        lstrcpyW (wszOut, wszInp);
 } //  End MakeWorkspaceNameCanonical
 
 
@@ -78,17 +79,21 @@ BOOL CmdSaveWS_EM
                  hGlbName;              // STE name global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPVOID       lpMemWSID;             // Ptr to []WSID global memory
-    WCHAR        wszTailDPFE[_MAX_PATH],// ...           canonical form of given ws name
+    WCHAR        wszTailDPFE[_MAX_PATH],// Save area for canonical form of given ws name
                  wszWsidDPFE[_MAX_PATH],// ...           ...               []WSID
-                 wszTempDPFE[_MAX_PATH];// ...           temporary
+                 wszTempDPFE[_MAX_PATH],// ...           temporary
+                 wszSectName[8];        // ...           section name
     LPWCHAR      lpSaveWSID,            // WSID to save to
                  lpMemName;             // Ptr to STE name
     APLNELM      aplNELMWSID;           // []WSID NELM
     APLRANK      aplRankWSID;           // ...    rank
     BOOL         bRet = FALSE;          // TRUE iff result is valid
     int          iCmp,                  // Comparison result
-                 iSym;                  // Symbol table loop counter
+                 iSym;                  // STE loop counter
     FILE        *fStream;               // Ptr to file stream
+    LPSYMENTRY   lpSymEntry;             // Ptr to STE
+    BOOL         bNameTypeFn,           // TRUE iff the name type is a function
+                 bNameTypeOp;           // ...                         operator
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -211,69 +216,110 @@ BOOL CmdSaveWS_EM
                                 L"Version",     // Key name
                                 L"0.01",        // Key value
                                 wszTailDPFE);   // File name
-
-    DbgBrk ();          // ***FINISHME***
-
     // Trundle through the Symbol Table
-    for (iSym = 0; iSym < lpMemPTD->iSymTabTotalSize; iSym++)
+    for (lpSymEntry = lpMemPTD->lpSymTab, iSym = 0;
+         lpSymEntry < lpMemPTD->lpSymTabNext;
+         lpSymEntry++)
+    if (lpSymEntry->stFlags.Inuse
+     && lpSymEntry->stFlags.Value)
     {
-        LPSYMENTRY lpSymEntry;
-
-        // Save the LPSYMENTRY
-        lpSymEntry = &lpMemPTD->lpSymTab[iSym];
-
-        if (lpSymEntry->stFlags.Inuse)
+        if (lpSymEntry->stFlags.SysType EQ NAMETYPE_VAR
+         || lpSymEntry->stFlags.UsrType EQ NAMETYPE_VAR)
         {
-            if (lpSymEntry->stFlags.SysVar          // Save the current value
-             || lpSymEntry->stFlags.UsrVar)
+            WCHAR wszCount[4];
+
+            DbgBrk ();          // ***FINISHME***
+
+            // Format the counter
+            wsprintfW (wszCount, L"%d", iSym++);
+
+            // Get the symbol name's global memory handle
+            hGlbName = lpSymEntry->stHshEntry->hGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLock (hGlbName);
+
+            // Format the name as an ASCII string with non-ASCII chars
+            //   represented as \XXXX where XXXX is a four-digit hex number
+            ConvertWideToHex (lpwszTemp, lpMemName);
+
+            // Format the section name
+
+            // Get the name type (Fn or Op)
+            bNameTypeFn = IsNameTypeFn (lpSymEntry->stFlags.UsrType);   // No need to test for System Functions
+            bNameTypeOp = IsNameTypeOp (lpSymEntry->stFlags.UsrType);   // No need to test for System Operators
+
+            // Split cases based upon the name type (Fns or Vars)
+            if (bNameTypeFn)
+                wsprintfW (wszSectName, L"Fns.%d", SILevel);
+            else
+            if (bNameTypeOp)
+                wsprintfW (wszSectName, L"Ops.%d", SILevel);
+            else
+                wsprintfW (wszSectName, L"Vars.%d", SILevel);
+
+            // Write out the entry in the [Fns.nnn] or [Vars.nnn] section
+            WritePrivateProfileStringW (wszSectName,
+                                        wszCount,
+                                        lpwszTemp,
+                                        wszTailDPFE);
+            // Display the contents of the object
+            if (bNameTypeFn)
             {
-                DbgBrk ();
-
-                // Get the symbol name's global memory handle
-                hGlbName = lpSymEntry->stHshEntry->hGlbName;
-
-                // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLock (hGlbName);
-
-                // Format the name as an ASCII string with non-ASCII chars
-                //   represented as \XXXX where XXX is a four-digit hex number
+                // stData is a user-defined function/operator
+                Assert (lpSymEntry->stFlags.UsrDfn);
 
 
 
 
 
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbName); lpMemName = NULL;
             } else
-            if (lpSymEntry->stFlags.UsrFn0)
-            {
-
-
-
-            } else
-            if (lpSymEntry->stFlags.UsrFn12)
-            {
-
-
-
-            } else
-            if (lpSymEntry->stFlags.UsrOp1)
-            {
-
-
-
-            } else
-            if (lpSymEntry->stFlags.UsrOp2)
-            {
-
-
-
-            } // End IF/ELSE/...
+            if (bNameTypeOp)
 
 
 
 
-        } // End FOR/IF
+
+
+
+
+
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbName); lpMemName = NULL;
+        } else
+        if (lpSymEntry->stFlags.UsrType EQ NAMETYPE_FN0)
+        {
+            DbgBrk ();      // ***FINISHEME***
+
+
+
+        } else
+        if (lpSymEntry->stFlags.UsrType EQ NAMETYPE_FN12)
+        {
+            DbgBrk ();      // ***FINISHEME***
+
+
+
+        } else
+        if (lpSymEntry->stFlags.UsrType EQ NAMETYPE_OP1)
+        {
+            DbgBrk ();      // ***FINISHEME***
+
+
+
+        } else
+        if (lpSymEntry->stFlags.UsrType EQ NAMETYPE_OP2)
+        {
+            DbgBrk ();      // ***FINISHEME***
+
+
+
+
+
+
+
+        } // End IF/ELSE/...
     } // End FOR/IF
 
 

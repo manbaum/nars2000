@@ -4,16 +4,18 @@
 
 typedef struct tagCNT_THREAD
 {
-    HWND   hWndParent;          // Window handle of the parent
-    LPSTR  lpszDPFE;            // Drive, Path, Filename, Ext of the workspace
-    int    iTab;                // Insert the new tab to the left of this one
-    HANDLE hThread;             // Handle to the current thread
+    HWND   hWndParent;          // 00:  Window handle of the parent
+    LPSTR  lpszDPFE;            // 04:  Drive, Path, Filename, Ext of the workspace
+    int    iTab;                // 08:  Insert the new tab to the left of this one
+    HANDLE hThread;             // 0C:  Handle to the current thread
+                                // 10:  Length
 } CNT_THREAD, *LPCNT_THREAD;
 
 typedef struct tagCDB_THREAD
 {
-    HGLOBAL hGlbPTD;            // Handle to PerTabData
-    HANDLE  hTimer;             // Handle to waitable timer
+    HGLOBAL hGlbPTD;            // 00:  Handle to PerTabData
+    HANDLE  hTimer;             // 04:  Handle to waitable timer
+                                // 08:  Length
 } CDB_THREAD, *LPCDB_THREAD;
 
 

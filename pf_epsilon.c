@@ -176,9 +176,9 @@ LPYYSTYPE PrimFnMonEpsilon_EM_YY
 #endif
 
 LPYYSTYPE PrimFnMonEpsilonImm_EM_YY
-    (APLSTYPE   aplTypeRes,         // Immediate type
-     APLLONGEST aplLongest,         // Immediate value
-     LPTOKEN    lptkFunc)           // Ptr to function token
+    (ARRAY_TYPES aplTypeRes,    // Right arg storage type
+     APLLONGEST  aplLongest,    // Right arg immediate value
+     LPTOKEN     lptkFunc)      // Ptr to function token
 
 {
     APLUINT   ByteRes;              // # bytes needed for the result
@@ -222,7 +222,7 @@ LPYYSTYPE PrimFnMonEpsilonImm_EM_YY
     // Skip over the header and dimension to the data
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-    // Split cases based upon the result's storage type
+    // Split cases based upon the result storage type
     switch (aplTypeRes)
     {
         case ARRAY_BOOL:

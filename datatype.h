@@ -20,7 +20,7 @@ typedef UCHAR       APLSTYPE;   // Storage type (see ARRAY_TYPES)
 // APLLIST, APLHETERO, and APLNESTED may be either an LPSYMENTRY or
 //   an HGLOBAL.
 
-typedef ULONGLONG   APLLONGEST;         // Longest datatype in tagTOKEN_DATA & tagSYMTAB_DATA
+typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMTAB_DATA
 
 #define MAX_APLNELM 0xFFFFFFFFFFFFFFFF  // Largest APLNELM
 #define MAX_APLDIM  0xFFFFFFFFFFFFFFFF  // ...     APLDIM
@@ -83,6 +83,7 @@ typedef enum tagARRAY_TYPES
 
  ARRAY_LENGTH,              // 08:  # elements in this enum
                             //      *MUST* be the last non-error entry
+                            // 09-0F:  Available entries (4 bits)
  ARRAY_MIXED = (APLSTYPE) -2,
  ARRAY_ERROR = (APLSTYPE) -1,
 
@@ -184,7 +185,7 @@ ARRAY_APA       An APA is a representation of a1 + a2 {times} {iota} a3
 
 typedef struct tagHEADER_SIGNATURE
 {
-    UINT             nature;    // Array header signature (common to all types of arrays)
+    UINT             nature;    // 00:  Array header signature (common to all types of arrays)
 } HEADER_SIGNATURE, *LPHEADER_SIGNATURE;
 
 // Variable array header
@@ -192,41 +193,35 @@ typedef struct tagHEADER_SIGNATURE
 
 typedef struct tagVARARRAY_HEADER
 {
-    HEADER_SIGNATURE Sig;       // Array header signature
-    UINT             ArrType:4, // The type of the array (see ARRAY_TYPES)
-                     Perm:1,    // Permanent array (e.g., {zilde})
-                     SysVar:1;  // Izit for a Sysvar (***DEBUG*** only)?
-    UINT             RefCnt;    // Reference count
-    APLNELM          NELM;      // # elements in the array
-    APLRANK          Rank;      // The rank of the array
-                                //   followed by the dimensions
+    HEADER_SIGNATURE Sig;       // 00:  Array header signature
+    UINT             ArrType:4, // 04:  0000000F:  The type of the array (see ARRAY_TYPES)
+                     Perm:1,    //      00000010:  Permanent array (e.g., {zilde})
+                     SysVar:1;  //      00000020:  Izit for a Sysvar (***DEBUG*** only)?
+                                //      FFFFFFC0:  available bits
+    UINT             RefCnt;    // 08:  Reference count
+    APLNELM          NELM;      // 0C:  # elements in the array
+    APLRANK          Rank;      // 10:  The rank of the array
+                                //      followed by the dimensions
+                                // 14:  Length
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
 
 // Macros to skip from the array base to either the dimensions or the data
 #define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER)                            )
 #define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * aplRank)
 
-// Function types
-typedef enum tagFCNTYPES
-{
-    FCNTYPE_UNK = 0,                // 00:  Unknown
-    FCNTYPE_FCN0,                   // 01:  Primitive and user-defined niladic functions
-    FCNTYPE_FCN12,                  // 02:  ...                        monadic/dyadic functions
-    FCNTYPE_OP1,                    // 03:  ...                        monadic operators
-    FCNTYPE_OP2,                    // 04:  ...                        dyadic  ...
-    FCNTYPE_AXISFCN,                // 05:  Primitive axis functions (is this useful?)
-} FCNTYPES;
-
-// Function array header
+// Function array header signature
 #define FCNARRAY_HEADER_SIGNATURE   'SNCF'
 
+// Function array header
 typedef struct tagFCNARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;           // 00:  Array header signature
-    UINT             FcnType:4;     // 04:  The type of the array (see FCNTYPES enum)
-    UINT             RefCnt;        // 08:  Reference count
-    APLNELM          NELM;          // 0C:  # elements in the array
+    UINT             NameType:3;    // 04:  00000007:  The type of the array (see NAMETYPES enum)
+                                    //      FFFFFFF8:  Available bits
+    UINT             RefCnt,        // 08:  Reference count
+                     fcnNELM;       // 0C:  # elements in the array
     HGLOBAL          hGlbTxtLine;   // 10:  Line text global memory handle (may be NULL)
+                                    // 14:  Length
 } FCNARRAY_HEADER, *LPFCNARRAY_HEADER;
 
 // Macros to skip from the array base to the data
@@ -237,8 +232,9 @@ typedef struct tagFCNARRAY_HEADER
 
 typedef struct tagVARNAMED_HEADER
 {
-    HEADER_SIGNATURE Sig;       // Array header signature
-    APLNELM          NELM;      // # elements in the array
+    HEADER_SIGNATURE Sig;       // 00:  Array header signature
+    APLNELM          NELM;      // 04:  # elements in the array
+                                // 08:  Length
 } VARNAMED_HEADER, *LPVARNAMED_HEADER;
 
 // Macros to skip from the array base to the data
@@ -249,8 +245,8 @@ typedef enum tagPTR_TYPES
 {
  PTRTYPE_STCONST = 0,   // 00:  *MUST* be first (and thus zero) as we can't afford to clear all the time
  PTRTYPE_HGLOBAL,       // 01:  This ptr is an HGLOBAL
- PTRTYPE_UNUSED2,       // 02:  Unused and available
- PTRTYPE_UNUSED3,       // 03:  Unused and available
+ PTRTYPE_AVAIL,         // 02:  Available entries (2 bits)
+ PTRTYPE_REUSED,        // 03:  Used by PTR_REUSED
 } PTR_TYPES;
 
 #define PTRTYPE_MASK     3      // This masks the two low-order bits
@@ -283,7 +279,7 @@ typedef enum tagPTR_TYPES
 //   those values can be re-used in another array without having
 //   to make a copy.  In that case, the original value is replaced
 //   by this which is checked for before trying to free it.
-#define PTR_REUSED  ((LPVOID) 0xFFFFFFF3)
+#define PTR_REUSED  ((LPVOID) (0xFFFFFFF0 + PTRTYPE_REUSED))
 
 #define PtrReusedDir(lpMem)                  (lpMem  EQ PTR_REUSED)
 #define PtrReusedInd(lpMem)     ((*(LPVOID *) lpMem) EQ PTR_REUSED)

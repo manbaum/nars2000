@@ -227,7 +227,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE2A , fnIntDone   , fnQuo2Init  },   // Double ...
   {FSA_INIT    , fnIntDone   , fnDiaDone   },   // Diamond symbol
   {FSA_INIT    , fnIntDone   , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnIntDone   , NULL        },   // EOL
+  {FSA_SYNTERR , NULL        , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
  },
     // FSA_INTEGER  Number, integer part ('n')
@@ -2193,8 +2193,8 @@ BOOL fnBrkDone
 
 BOOL GroupDoneCom
     (LPTKLOCALVARS lptkLocalVars,
-     TOKEN_TYPES   uTypeCurr,
-     TOKEN_TYPES   uTypePrev)
+     TOKENTYPES    uTypeCurr,
+     TOKENTYPES    uTypePrev)
 
 {
     UINT        uPrevGroup;
@@ -2585,9 +2585,7 @@ HGLOBAL Tokenize_EM
 
             case FSA_EXIT:
             {
-                UINT uStart,            // Offset from Base to Start in units of sizeof (TOKEN)
-                     uNext,             // ...                 Next
-                     uLastEOS;          // ...                 LastEOS
+                UINT uNext;             // Offset from Start to Next in units of sizeof (TOKEN)
 
                 // Test for mismatched or improperly nested grouping symbols
                 if (!CheckGroupSymbols_EM (&tkLocalVars))
@@ -2596,9 +2594,7 @@ HGLOBAL Tokenize_EM
                 // Calculate the # tokens in this last stmt
                 AppendEOSToken (&tkLocalVars, FALSE);
 
-                uStart   = tkLocalVars.lpStart   - tkLocalVars.t2.lpBase;
-                uNext    = tkLocalVars.lpNext    - tkLocalVars.t2.lpBase;
-                uLastEOS = tkLocalVars.lpLastEOS - tkLocalVars.t2.lpBase;
+                uNext = tkLocalVars.lpNext - tkLocalVars.lpStart;
 
                 // We no longer need this ptr
                 MyGlobalUnlock (tkLocalVars.hGlbToken);
@@ -2611,7 +2607,8 @@ HGLOBAL Tokenize_EM
                 // Reallocate the tokenized line to the actual size
                 tkLocalVars.hGlbToken =
                 MyGlobalReAlloc (tkLocalVars.hGlbToken,
-                                 uNext * sizeof (TOKEN),
+                                 sizeof (TOKEN_HEADER)
+                               + uNext * sizeof (TOKEN),
                                  GHND);
                 goto UNLOCKED_EXIT;
             } // End FSA_EXIT
@@ -2747,15 +2744,17 @@ void Untokenize
                 // tkData is an LPSYMENTRY
                 Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-                // Skip it if no value
-                if (!lpToken->tkData.tkSym->stFlags.Value)
+                // Skip it if a variable with no value
+                if (lpToken->tkFlags.TknType EQ TKT_VARNAMED
+                 && !lpToken->tkData.tkSym->stFlags.Value)
                     break;
 
                 // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
                 if (!lpToken->tkData.tkSym->stFlags.Imm)
                 {
-                    // stData is a valid HGLOBAL variable or function array, or defined function
-                    Assert (IsGlbTypeVarDir (lpToken->tkData.tkSym->stData.stGlbData)
+                    // stData is an internal function, a valid HGLOBAL variable or function array, or defined function
+                    Assert (lpToken->tkData.tkSym->stFlags.FcnDir
+                         || IsGlbTypeVarDir (lpToken->tkData.tkSym->stData.stGlbData)
                          || IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData)
                          || IsGlbTypeDfnDir (lpToken->tkData.tkSym->stData.stGlbData));
                 } // End IF
@@ -2955,8 +2954,15 @@ BOOL AppendNewToken_EM
 
     // Save index in input line of this token
     lptkLocalVars->lpNext->tkCharIndex = iCharOffset + lptkLocalVars->lpwsz - lptkLocalVars->lpwszOrig;
-    lptkLocalVars->t2.lpHeader->TokenCnt++;         // Count in another token
-    lptkLocalVars->lpNext++;                        // Skip to next token
+
+    // Save the ptr to the original token
+    lptkLocalVars->lpNext->lptkOrig = lptkLocalVars->lpNext;
+
+    // Count in another token
+    lptkLocalVars->t2.lpHeader->TokenCnt++;
+
+    // Skip to next token
+    lptkLocalVars->lpNext++;
 
     return TRUE;
 } // End AppendNewToken_EM

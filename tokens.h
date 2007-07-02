@@ -44,7 +44,7 @@ value.
 // Data Token Types
 #define TKT_FIRST 1         // This way, we can catch uninitialized
                             //   token types (i.e., .TknType EQ 0)
-typedef enum tagTOKEN_TYPES
+typedef enum tagTOKENTYPES
 {TKT_VARNAMED = TKT_FIRST,  // 01: Symbol table entry for a named var (data is LPSYMENTRY)
  TKT_STRING   ,             // 02: String  (data is HGLOBAL)
  TKT_VARIMMED ,             // 03: An immediate constant (Boolean, Integer, Character, or Floating point,
@@ -83,11 +83,12 @@ typedef enum tagTOKEN_TYPES
  TKT_OP1NAMED ,             // 1D: A named monadic primitive operator (data is LPSYMENTRY)
  TKT_OP2NAMED ,             // 1E: ...     dyadic  ...
  TKT_STRNAMED ,             // 1F: A named strand
-} TOKEN_TYPES;
+                            // 20-FF:  Available entries (6 bits)
+} TOKENTYPES;
 
 #define TKT_LENGTH      (TKT_LENGTHp1 - 1)
 
-// Whenever changing the above <enum>, be sure to make a
+// Whenever changing the above <enum> (TOKENTYPES), be sure to make a
 //   corresponding change to <Untokenize> in <exec.c>,
 //   <LookaheadDyadicOp>, <LookaheadAdjacent>, and <pl_yylex> in <parse.y>,
 //   <MakeVarStrand_EM_YY> in <strand.c>,
@@ -97,51 +98,55 @@ typedef enum tagTOKEN_TYPES
 
 typedef struct tagTKFLAGS
 {
-    UINT TknType:6,         // 0000003F:  Data token type (see TOKEN_TYPES)
-         ImmType:4,         // 000003C0:  Type of immediate data (see IMM_TYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
-         NoDisplay:1,       // 00000400:  Do not display this token
-         FcnDir:1;          // 00000800:  Function is direct (not HGLOBAL)
-                            // FFFFF000:  Available bits
+    UINT TknType:6,         // 0000003F:  Data token type (see TOKENTYPES)
+         ImmType:4,         // 000003C0:  Type of immediate data (see IMMTYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
+         NoDisplay:1;       // 00000400:  Do not display this token
+                            // FFFFF800:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
 typedef union tagTOKEN_DATA
 {
-    struct tagSYMENTRY *tkSym;      // Data is an LPSYMENTRY
-    HGLOBAL    tkGlbData;           // ...     an HGLOBAL
-    UINT       tkIndex;             // ...     an index
-    APLBOOL    tkBoolean;           // ...     an APLBOOL
-    APLINT     tkInteger;           // ...     an APLINT
-    APLFLOAT   tkFloat;             // ...     a floating point number
-    APLCHAR    tkChar;              // ...     an APLCHAR
-    LPVOID     tkVoid;              // ...     an abritrary ptr
-    APLLONGEST tkLongest;           // Longest datatype (so we can copy the entire data)
+    struct tagSYMENTRY *tkSym;      // 00:  Data is an LPSYMENTRY
+    HGLOBAL    tkGlbData;           // 00:  ...     an HGLOBAL
+    UINT       tkIndex;             // 00:  ...     an index
+    APLBOOL    tkBoolean;           // 00:  ...     an APLBOOL
+    APLINT     tkInteger;           // 00:  ...     an APLINT
+    APLFLOAT   tkFloat;             // 00:  ...     a floating point number
+    APLCHAR    tkChar;              // 00:  ...     an APLCHAR
+    LPVOID     tkVoid;              // 00:  ...     an abritrary ptr
+    APLLONGEST tkLongest;           // 00:  Longest datatype (so we can copy the entire data)
+                                    // 08:  Length
 } TOKEN_DATA, *LPTOKEN_DATA;
 
 typedef struct tagTOKEN
 {
-    struct tagTKFLAGS tkFlags;      // The flags part
-    TOKEN_DATA        tkData;       // The data part
-    int               tkCharIndex;  // Index into the input line of this token
+    TKFLAGS          tkFlags;       // 00:  The flags part
+    TOKEN_DATA       tkData;        // 04:  The data part
+    int              tkCharIndex;   // 0C:  Index into the input line of this token
+    struct tagTOKEN *lptkOrig;      // 10:  Ptr to original token
+                                    // 14:  Length
 } TOKEN, *LPTOKEN;
 
 #define TOKEN_HEADER_SIGNATURE      'NKOT'
 
 typedef struct tagTOKEN_HEADER
 {
-    UINT    Signature,              // Token Header signature
-            Version,                // Version # of this header
-            TokenCnt,               // # tokens in lpToken
-            PrevGroup;              // Index of the previous (to the left) grouping symbol
+    UINT    Signature,              // 00:  Token Header signature
+            Version,                // 04:  Version # of this header
+            TokenCnt,               // 08:  # tokens in lpToken
+            PrevGroup;              // 0C:  Index of the previous (to the left) grouping symbol
                                     //   (L/R paren, L/R bracket) where the index is relative
                                     //   to the first token after this header.
+                                    // 10:  Length
 } TOKEN_HEADER, *LPTOKEN_HEADER;
 
 #define TokenBaseToStart(base)  (LPTOKEN) (((LPCHAR) base) + sizeof (TOKEN_HEADER))
 
 typedef union tagUNION_TOKEN
 {
-    LPTOKEN        lpBase;          // Locked base of hGlbToken
-    LPTOKEN_HEADER lpHeader;        // Token header
+    LPTOKEN        lpBase;          // 00:  Locked base of hGlbToken
+    LPTOKEN_HEADER lpHeader;        // 00:  Token header
+                                    // 04:  Length
 } UNION_TOKEN, *LPUNION_TOKEN;
 
 

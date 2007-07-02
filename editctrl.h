@@ -31,9 +31,10 @@ typedef PAINTHOOK *LPPAINTHOOK;
 
 typedef struct tagNMEDITCTRL
 {
-    NMHDR  nmHdr;                   // Initial struc
-    UINT   cbSize;                  // Byte size of NMCARETWIDTH struc
-    UINT  *lpCaretWidth;            // Ptr to default caret width
+    NMHDR  nmHdr;           // 00:  Initial struc
+    UINT   cbSize;          // 0C:  Byte size of NMCARETWIDTH struc
+    UINT  *lpCaretWidth;    // 10:  Ptr to default caret width
+                            // 14:  Length
 } NMEDITCTRL, *LPNMEDITCTRL;
 
 

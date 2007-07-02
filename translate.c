@@ -18,88 +18,124 @@
 
 
 //***************************************************************************
-//  $TranslateFcnTypeToTknType
+//  $TranslateTknTypeToTknTypeNamed
 //
-//  Translate a function type (see FCN_TYPES enum) to
-//    a named token type (see TOKEN_TYPES enum).
+//  Translate a token type (see TOKENTYPES enum) to
+//    a named token type (see TOKENTYPES enum).
 //***************************************************************************
 
-STRAND_TYPES TranslateFcnTypeToTknTypeNamed
-    (FCNTYPES cFcnType)
+TOKENTYPES TranslateTknTypeToTknTypeNamed
+    (TOKENTYPES tknType)
 
 {
-    switch (cFcnType)
+    switch (tknType)
     {
-        case FCNTYPE_FCN0:
-        case FCNTYPE_FCN12:
-        case FCNTYPE_AXISFCN:
+        case TKT_VARNAMED:
+        case TKT_VARIMMED:
+        case TKT_VARARRAY:
+            return TKT_VARNAMED;
+
+        case TKT_FCNNAMED:
+        case TKT_FCNIMMED:
+        case TKT_FCNARRAY:
             return TKT_FCNNAMED;
 
-        case FCNTYPE_OP1:
+        case TKT_OP1NAMED:
+        case TKT_OP1IMMED:
             return TKT_OP1NAMED;
 
-        case FCNTYPE_OP2:
+        case TKT_OP2NAMED:
+        case TKT_OP2IMMED:
             return TKT_OP2NAMED;
 
         defstop
             return -1;              // To keep the compiler happy
     } // End SWITCH
-} // End TranslateFcnTypeToTknTypeNamed
+} // End TranslateTknTypeToTknTypeNamed
+
+
+//// //***************************************************************************
+//// //  $TranslateNameTypeToTknTypeNamed
+//// //
+//// //  Translate a name type (see NAMETYPES enum) to
+//// //    a named token type (see TOKENTYPES enum).
+//// //***************************************************************************
+////
+//// TOKENTYPES TranslateNameTypeToTknTypeNamed
+////     (NAMETYPES nameType)
+////
+//// {
+////     switch (nameType)
+////     {
+////         case NAMETYPE_FN0:
+////         case FNAMEYPE_FCN12:
+////             return TKT_FCNNAMED;
+////
+////         case NAMETYPE_OP1:
+////             return TKT_OP1NAMED;
+////
+////         case NAMETYPE_OP2:
+////             return TKT_OP2NAMED;
+////
+////         defstop
+////             return -1;              // To keep the compiler happy
+////     } // End SWITCH
+//// } // End TranslateNameTypeToTknTypeNamed
 
 
 //***************************************************************************
-//  TranslateDfnToFcnType
+//  TranslateDfnToNameType
 //
 //  Translate a defined function type (see DFNTYPES enum and FCNVALENCES enum)
-//    to a function type (see FCNTYPES enum).
+//    to a function type (see NAMETYPES enum).
 //***************************************************************************
 
-FCNTYPES TranslateDfnToFcnType
-    (DFNTYPES    cDfnType,      // Defined function type (see DFNTYPES enum)
-     FCNVALENCES cFcnValence)   // Function valance (see FCNVALENCES enum)
+NAMETYPES TranslateDfnToNameType
+    (DFNTYPES    dfnType,       // Defined function type (see DFNTYPES enum)
+     FCNVALENCES fcnValence)    // Function valance (see FCNVALENCES enum)
 
 {
     // Split cases based upon the defined function type
-    switch (cDfnType)
+    switch (dfnType)
     {
         case DFNTYPE_OP1:
-            return FCNTYPE_OP1;
+            return NAMETYPE_OP1;
 
         case DFNTYPE_OP2:
-            return FCNTYPE_OP2;
+            return NAMETYPE_OP2;
 
         case DFNTYPE_FCN:
             // Split cases based upon the function valence
-            switch (cFcnValence)
+            switch (fcnValence)
             {
                 case FCNVALENCE_NIL:
-                    return FCNTYPE_FCN0;
+                    return NAMETYPE_FN0;
 
                 case FCNVALENCE_MON:
                 case FCNVALENCE_DYD:
                 case FCNVALENCE_AMB:
-                    return FCNTYPE_FCN12;
+                    return NAMETYPE_FN12;
 
                 defstop
-                    return FCNTYPE_UNK;
+                    return NAMETYPE_UNK;
             } // End SWITCH
 
         case DFNTYPE_UNK:
         defstop
-            return FCNTYPE_UNK;
+            return NAMETYPE_UNK;
     } // End SWITCH
-} // End TranslateDfnToFcnType
+} // End TranslateDfnToNameType
 
 
 //***************************************************************************
 //  $TranslateImmTypeToTknType
 //
-//  Translate an immediate type (see IMM_TYPES enum) to
-//    a token type (see TOKEN_TYPES enum).
+//  Translate an immediate type (see IMMTYPES enum) to
+//    a token type (see TOKENTYPES enum).
 //***************************************************************************
 
-STRAND_TYPES TranslateImmTypeToTknType
-    (IMM_TYPES immType)
+TOKENTYPES TranslateImmTypeToTknType
+    (IMMTYPES immType)
 
 {
     switch (immType)
@@ -125,15 +161,49 @@ STRAND_TYPES TranslateImmTypeToTknType
 } // End TranslateImmTypeToTknType
 
 
+//// //***************************************************************************
+//// //  $TranslateImmTypeToTknTypeNamed
+//// //
+//// //  Translate an immediate type (see IMMTYPES enum) to
+//// //    a named token type (see TOKENTYPES enum).
+//// //***************************************************************************
+////
+//// TOKENTYPES TranslateImmTypeToTknTypeNamed
+////     (IMMTYPES immType)
+////
+//// {
+////     switch (immType)
+////     {
+////         case IMMTYPE_BOOL:
+////         case IMMTYPE_INT:
+////         case IMMTYPE_CHAR:
+////         case IMMTYPE_FLOAT:
+////             return TKT_VARNAMED;
+////
+////         case IMMTYPE_PRIMFCN:
+////             return TKT_FCNNAMED;
+////
+////         case IMMTYPE_PRIMOP1:
+////             return TKT_OP1NAMED;
+////
+////         case IMMTYPE_PRIMOP2:
+////             return TKT_OP2NAMED;
+////
+////         defstop
+////             return -1;              // To keep the compiler happy
+////     } // End SWITCH
+//// } // End TranslateImmTypeToTknTypeNamed
+
+
 //***************************************************************************
 //  $TranslateImmTypeToStrandType
 //
-//  Translate an immediate type (see IMM_TYPES enum) to
+//  Translate an immediate type (see IMMTYPES enum) to
 //    a strand type (see STRAND_TYPES enum).
 //***************************************************************************
 
 STRAND_TYPES TranslateImmTypeToStrandType
-    (IMM_TYPES immType)
+    (IMMTYPES immType)
 
 {
     switch (immType)
@@ -159,12 +229,12 @@ STRAND_TYPES TranslateImmTypeToStrandType
 //***************************************************************************
 //  $TranslateImmTypeToArrayType
 //
-//  Translate an immediate type (see IMM_TYPES enum) to
+//  Translate an immediate type (see IMMTYPES enum) to
 //    an array type (see ARRAY_TYPES enum).
 //***************************************************************************
 
-APLSTYPE TranslateImmTypeToArrayType
-    (IMM_TYPES immType)
+ARRAY_TYPES TranslateImmTypeToArrayType
+    (IMMTYPES immType)
 
 {
     switch (immType)
@@ -191,10 +261,10 @@ APLSTYPE TranslateImmTypeToArrayType
 //  $TranslateArrayTypeToImmType
 //
 //  Translate an array type (see ARRAY_TYPES enum) to
-//    an immediate type (see IMM_TYPES enum).
+//    an immediate type (see IMMTYPES enum).
 //***************************************************************************
 
-IMM_TYPES TranslateArrayTypeToImmType
+IMMTYPES TranslateArrayTypeToImmType
     (ARRAY_TYPES arrayType)
 
 {

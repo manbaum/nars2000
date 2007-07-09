@@ -452,9 +452,9 @@ LPYYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 case ARRAY_HETERO:
                 case ARRAY_NESTED:
                     if (aplNELMSub EQ 0)
-                        hGlbProto = MakePrototype_EM (ClrPtrTypeIndGlb (lpMemRht),// Proto arg handle
-                                                      lptkFunc,     // Ptr to function token
-                                                      MP_CHARS);    // CHARs allowed
+                        hGlbProto = MakeMonPrototype_EM (ClrPtrTypeIndGlb (lpMemRht),// Proto arg handle
+                                                         lptkFunc,  // Ptr to function token
+                                                         MP_CHARS); // CHARs allowed
                     else
                     {
                         // Calculate space needed for the result
@@ -1358,7 +1358,7 @@ LPYYSTYPE PrimFnDydLeftShoeGlb_EM
         aplAxis = max (0, (APLINT) aplRankRht - 1);
     } // End IF/ELSE
 
-    DbgBrk ();              // ***FINISHME***
+    DbgBrk ();              // ***FINISHME*** -- PrimFnDydLeftShoeGlb_EM
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();

@@ -889,7 +889,7 @@ BOOL CloseTab
 
 {
     // Close any and all thread handles associated with the SM
-    DbgBrk ();      // ***FINISHME***
+    DbgBrk ();      // ***FINISHME*** -- CloseTab
 
 
 

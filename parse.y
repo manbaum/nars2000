@@ -372,7 +372,7 @@ FcnSpec:
                                                  YYERROR;
 
                                              // The result is always the root of the function tree
-                                             $$ = $1;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | Drv1Func ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAny" WS_UTF16_LEFTARROW L"Drv1Func");
@@ -393,7 +393,7 @@ FcnSpec:
                                                  YYERROR;
 
                                              // The result is always the root of the function tree
-                                             $$ = $1;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | Drv2Func ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAny" WS_UTF16_LEFTARROW L"Drv2Func");
@@ -414,7 +414,7 @@ FcnSpec:
                                                  YYERROR;
 
                                              // The result is always the root of the function tree
-                                             $$ = $1;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | AxisFunc ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAny" WS_UTF16_LEFTARROW L"AxisFunc");
@@ -435,7 +435,7 @@ FcnSpec:
                                                  YYERROR;
 
                                              // The result is always the root of the function tree
-                                             $$ = $1;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     ;
@@ -460,7 +460,7 @@ Op1Spec:
                                                  YYERROR;
 
                                              // The result is always the root of the function tree
-                                             $$ = $1;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     ;
@@ -485,7 +485,7 @@ Op2Spec:
                                                  YYERROR;
 
                                              // The result is always the root of the function tree
-                                             $$ = $1;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     ;
@@ -740,9 +740,11 @@ ArrExpr:
 SingVar:
                   NAMEUNK               {DbgMsgW2 (L"%%SingVar:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
-                                             PrimFnValueError (&$1.tkToken);
+                                         {
+                                             PrimFnValueError_EM (&$1.tkToken);
 
-                                         YYERROR;
+                                             YYERROR;
+                                         } // End IF
                                         }
     |             QUAD                  {DbgMsgW2 (L"%%SingVar:  QUAD");
                                          if (!lpplLocalVars->bLookAhead)
@@ -959,7 +961,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             $$ = $1;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | error   ASSIGN   ')' ILBR NAMEVAR '('
@@ -988,7 +990,15 @@ SimpExpr:
     | error   ASSIGN LeftOper  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
+
+                                             if (lpYYFcn)          // If defined, free it
+                                             {
+                                                 FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             } // End IF
+
                                              FreeResult (&$4.tkToken);          // Validation only
                                              YYERROR;
                                          } else
@@ -998,9 +1008,21 @@ SimpExpr:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
-                                             lpYYRes = ExecFunc_EM_YY (&$4.tkToken, &$3.tkToken, &$1.tkToken);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
+
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
+
+                                             if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$4.tkToken);      // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpYYRes = ExecFunc_EM_YY (&$4.tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 /////////////////////////////////////////////FreeResult (&$4.tkToken);                  // DO NOT FREE:  Used below
 
                                              if (!lpYYRes)          // If not defined, free args and YYERROR
@@ -1012,19 +1034,27 @@ SimpExpr:
 
                                              bRet = AssignName_EM (&$4.tkToken, &lpYYRes->tkToken);
                                              FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
-                                             FreeResult (&$4.tkToken);
+                                             FreeResult (&$4.tkToken);          // Validation only
 
                                              if (!bRet)
                                                  YYERROR;
 
-                                             $$ = $1;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | error   ASSIGN AxisFunc  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR AxisFunc" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$4.tkToken);
+
+                                             if (lpYYFcn)          // If defined, free it
+                                             {
+                                                 FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             } // End IF
+
+                                             FreeResult (&$4.tkToken);          // Validation only
                                              YYERROR;
                                          } else
                                              YYERROR;
@@ -1034,25 +1064,37 @@ SimpExpr:
                                          {
                                              $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-                                             lpYYRes = ExecFunc_EM_YY (&$4.tkToken, &$3.tkToken, &$1.tkToken);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
+
+                                             if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$4.tkToken);      // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpYYRes = ExecFunc_EM_YY (&$4.tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 /////////////////////////////////////////////FreeResult (&$4.tkToken);                  // DO NOT FREE:  Used below
 
                                              if (!lpYYRes)          // If not defined, free args and YYERROR
                                              {
                                                  FreeResult (&$1.tkToken);
-                                                 FreeResult (&$4.tkToken);
+                                                 FreeResult (&$4.tkToken);      // Validation only
                                                  YYERROR;
                                              } // End IF
 
                                              bRet = AssignName_EM (&$4.tkToken, &lpYYRes->tkToken);
                                              FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
-                                             FreeResult (&$4.tkToken);
+                                             FreeResult (&$4.tkToken);          // Validation only
 
                                              if (!bRet)
                                                  YYERROR;
-                                             $$ = $1;
+
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | error   ASSIGN LeftOper ')' NameVals '('
@@ -1067,7 +1109,15 @@ SimpExpr:
                                                  FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
                                              } // End IF
 
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
+
+                                             if (lpYYFcn)           // If defined, free it
+                                             {
+                                                 FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             } // End IF
+
                                              YYERROR;
                                          } else
                                              YYERROR;
@@ -1079,17 +1129,36 @@ SimpExpr:
                                              lpYYStrN = MakeNameStrand_EM_YY (&$5);
                                              FreeResult (&$5.tkToken);
 
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
+                                             FreeResult (&$3.tkToken);
 
-                                             PrimFnNonceError_EM (&$1.tkToken);
-
-                                             if (lpYYStrN)          // If defined, free it
+                                             if (!lpYYStrN          // If not defined, free args and YYERROR
+                                              || !lpYYFcn)
                                              {
-                                                 FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
+                                                 if (lpYYStrN)      // If defined, free it
+                                                 {
+                                                     FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
+                                                 } // End IF
+
+                                                 if (lpYYFcn)       // If defined, free it
+                                                 {
+                                                     FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                                 } // End IF
+
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR;
                                              } // End IF
 
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
+                                             bRet = ModifyAssignNameVals_EM (&lpYYStrN->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
+
+                                             if (!bRet)
+                                                 YYERROR;
+
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | error   ASSIGN AxisFunc ')' NameVals '('
@@ -1104,7 +1173,15 @@ SimpExpr:
                                                  FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
                                              } // End IF
 
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
+
+                                             if (lpYYFcn)           // If defined, free it
+                                             {
+                                                 FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             } // End IF
+
                                              YYERROR;
                                          } else
                                              YYERROR;
@@ -1116,24 +1193,51 @@ SimpExpr:
                                              lpYYStrN = MakeNameStrand_EM_YY (&$5);
                                              FreeResult (&$5.tkToken);
 
-                                             PrimFnNonceError_EM (&$1.tkToken);
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
+                                             FreeResult (&$3.tkToken);
 
-
-                                             if (lpYYStrN)          // If defined, free it
+                                             if (!lpYYStrN          // If not defined, free args and YYERROR
+                                              || !lpYYFcn)
                                              {
-                                                 FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
+                                                 if (lpYYStrN)      // If defined, free it
+                                                 {
+                                                     FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
+                                                 } // End IF
+
+                                                 if (lpYYFcn)       // If defined, free it
+                                                 {
+                                                     FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                                 } // End IF
+
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR;
                                              } // End IF
 
-                                             FreeResult (&$1.tkToken);
-                                             FreeResult (&$3.tkToken);
-                                             YYERROR;
+                                             bRet = ModifyAssignNameVals_EM (&lpYYStrN->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
+
+                                             if (!bRet)
+                                                 YYERROR;
+
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | error   ASSIGN LeftOper ILBR NAMEVAR
                                         {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR ILBR LeftOper" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
+
+                                             if (lpYYFcn)           // If defined, free it
+                                             {
+                                                 FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             } // End IF
+
                                              FreeResult (&$5.tkToken);          // Validation only
                                              YYERROR;
                                          } else
@@ -1145,13 +1249,27 @@ SimpExpr:
                                          {
                                              $5.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-
-
-                                             PrimFnNonceError_EM (&$1.tkToken);
-
-                                             FreeResult (&$1.tkToken);
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
-                                             FreeResult (&$5.tkToken);
+
+                                             if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                                 FreeResult (&$5.tkToken);          // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             bRet = FALSE;
+                                             PrimFnNonceError_EM (&$4.tkToken);
+                                             FreeResult (&$5.tkToken);          // Validation only
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!bRet)
+                                                 YYERROR;
+
                                              YYERROR;
                                          } // End IF
                                         }
@@ -1159,7 +1277,15 @@ SimpExpr:
                                         {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR ILBR AxisFunc" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
+
+                                             if (lpYYFcn)           // If defined, free it
+                                             {
+                                                 FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             } // End IF
+
                                              FreeResult (&$5.tkToken);          // Validation only
                                              YYERROR;
                                          } // End IF
@@ -1170,12 +1296,27 @@ SimpExpr:
                                          {
                                              $5.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-
-
-                                             PrimFnNonceError_EM (&$1.tkToken);
-
-                                             FreeResult (&$1.tkToken);
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$3, NAMETYPE_FN12, FALSE);
                                              FreeResult (&$3.tkToken);
+
+                                             if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                                 FreeResult (&$5.tkToken);          // Validation only
+                                                 YYERROR;
+                                             } // End IF
+
+                                             bRet = FALSE;
+                                             PrimFnNonceError_EM (&$4.tkToken);
+                                             FreeResult (&$5.tkToken);          // Validation only
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             FreeResult (&$1.tkToken);
+
+                                             if (!bRet)
+                                                 YYERROR;
+
                                              YYERROR;
                                          } // End IF
                                         }
@@ -1198,50 +1339,84 @@ NameSpec:
     | NameSpec LeftOper                 {DbgMsgW2 (L"%%NameSpec:  LeftOper NameSpec");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
+                                             FreeResult (&$2.tkToken);
 
-
+                                             if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR;
+                                             } // End IF
 
                                              PrimFnNonceError_EM (&$1.tkToken);
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             FreeResult (&$1.tkToken);
 
-                                             FreeResult (&$2.tkToken);
                                              YYERROR;
                                          } // End IF
                                         }
     | NameSpec AxisFunc                 {DbgMsgW2 (L"%%NameSpec:  AxisFunc NameSpec");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
+                                             FreeResult (&$2.tkToken);
 
-
+                                             if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR;
+                                             } // End IF
 
                                              PrimFnNonceError_EM (&$1.tkToken);
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                             FreeResult (&$1.tkToken);
 
-                                             FreeResult (&$2.tkToken);
                                              YYERROR;
                                          } // End IF
                                         }
     | NameSpec LeftOper StrandInst      {DbgMsgW2 (L"%%NameSpec:  StrandInst LeftOper NameSpec");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
+                                             FreeResult (&$2.tkToken);
 
-
+                                             if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR;
+                                             } // End IF
 
                                              PrimFnNonceError_EM (&$1.tkToken);
-
-                                             FreeResult (&$2.tkToken);
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
+                                             FreeResult (&$1.tkToken);
+
                                              YYERROR;
                                          } // End IF
                                         }
     | NameSpec AxisFunc StrandInst      {DbgMsgW2 (L"%%NameSpec:  StrandInst AxisFunc NameSpec");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             lpYYFcn =
+                                             MakeFcnStrand_EM_YY (&$2, NAMETYPE_FN12, FALSE);
+                                             FreeResult (&$2.tkToken);
 
-
+                                             if (!lpYYFcn)          // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR;
+                                             } // End IF
 
                                              PrimFnNonceError_EM (&$1.tkToken);
-
-                                             FreeResult (&$2.tkToken);
+                                             FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
+                                             FreeResult (&$1.tkToken);
+
                                              YYERROR;
                                          } // End IF
                                         }
@@ -1256,7 +1431,7 @@ NameVals:
                                              InitNameStrand (&$1);
 
                                              lpYYRes = PushNameStrand_YY (&$1);
-                                             FreeResult (&$1.tkToken);
+                                             FreeResult (&$1.tkToken);          // Validation only
 
                                              if (!lpYYRes)          // If not defined, free args and YYERROR
                                                  YYERROR;
@@ -1264,18 +1439,44 @@ NameVals:
                                              $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
                                          } // End IF
                                         }
-    | NameVals       NAMEVAR            {DbgMsgW2 (L"%%NameVals:  NameVals NAMEVAR");
+    | NAMEUNK                           {DbgMsgW2 (L"%%NameVals:  NAMEUNK");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             PrimFnValueError_EM (&$1.tkToken);
+                                             FreeResult (&$1.tkToken);          // Validation only
+
+                                             YYERROR;
+                                         } // End IF
+                                        }
+    | NameVals       NAMEVAR            {DbgMsgW2 (L"%%NameVals:  NAMEVAR NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $2.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
                                              lpYYRes = PushNameStrand_YY (&$2);
-                                             FreeResult (&$2.tkToken);
+                                             FreeResult (&$2.tkToken);          // Validation only
 
                                              if (!lpYYRes)          // If not defined, free args and YYERROR
                                                  YYERROR;
 
                                              $$ = *lpYYRes; YYFree (lpYYRes); lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    | NameVals       NAMEUNK            {DbgMsgW2 (L"%%NameVals:  NAMEUNK NameVals");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpYYStrN = MakeNameStrand_EM_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (lpYYStrN)          // If defined, free it
+                                             {
+                                                 FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
+                                             } // End IF
+
+                                             PrimFnValueError_EM (&$2.tkToken);
+                                             FreeResult (&$2.tkToken);          // Validation only
+
+                                             YYERROR;
                                          } // End IF
                                         }
     |       ')' ILBR NAMEVAR '('        {DbgMsgW2 (L"%%NameVals:  (NAMEVAR ILBR)");
@@ -1286,10 +1487,22 @@ NameVals:
 
 
 
-                                             PrimFnNonceError_EM (&$3.tkToken); YYERROR;
+                                             PrimFnNonceError_EM (&$3.tkToken);
+                                             FreeResult (&$3.tkToken);          // Validation only
+
+                                             YYERROR;
                                          } // End IF
                                         }
-    | NameVals ')' ILBR NAMEVAR '('     {DbgMsgW2 (L"%%NameVals:  NameVals (NAMEVAR ILBR)");
+    |       ')' ILBR NAMEUNK '('        {DbgMsgW2 (L"%%NameVals:  (NAMEUNK ILBR)");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             PrimFnValueError_EM (&$3.tkToken);
+                                             FreeResult (&$3.tkToken);          // Validation only
+
+                                             YYERROR;
+                                         } // End IF
+                                        }
+    | NameVals ')' ILBR NAMEVAR '('     {DbgMsgW2 (L"%%NameVals:  (NAMEVAR ILBR) NameVals");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
@@ -1297,7 +1510,25 @@ NameVals:
 
 
 
-                                             PrimFnNonceError_EM (&$4.tkToken); YYERROR;
+                                             PrimFnNonceError_EM (&$4.tkToken);
+                                             YYERROR;
+                                         } // End IF
+                                        }
+    | NameVals ')' ILBR NAMEUNK '('     {DbgMsgW2 (L"%%NameVals:  (NAMEUNK ILBR) NameVals");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpYYStrN = MakeNameStrand_EM_YY (&$1);
+                                             FreeResult (&$1.tkToken);
+
+                                             if (lpYYStrN)          // If defined, free it
+                                             {
+                                                 FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
+                                             } // End IF
+
+                                             PrimFnValueError_EM (&$4.tkToken);
+                                             FreeResult (&$4.tkToken);          // Validation only
+
+                                             YYERROR;
                                          } // End IF
                                         }
     ;
@@ -2595,7 +2826,8 @@ typedef struct tagPL_THREAD
     LPWCHAR lpwszLine;          // Ptr to tokens of line to parse (GlobalLock of above)
     HGLOBAL hGlbPTD;            // Handle of PerTabData for this thread
     BOOL    bFreeToken;         // TRUE iff ParseLine is to free hGlbToken on exit
-    HWND    hWndSM;             // Window handle to Session Manager
+    HWND    hWndSM,             // Window handle to Session Manager
+            hWndEC;             // Window handle to Edit Control
 } PL_THREAD, *LPPL_THREAD;
 
 PL_THREAD plThread;             // Temporary global
@@ -2615,6 +2847,7 @@ PL_THREAD plThread;             // Temporary global
 
 void ParseLine
     (HWND    hWndSM,            // Window handle to Session Manager
+     HWND    hWndEC,            // Window handle to Edit Control
      HGLOBAL hGlbToken,         // The token handle
      LPWCHAR lpwszLine,         // The line to parse
      HGLOBAL hGlbPTD,           // PTD handle
@@ -2637,6 +2870,7 @@ void ParseLine
     plThread.hGlbPTD    = hGlbPTD;
     plThread.bFreeToken = bFreeToken;
     plThread.hWndSM     = hWndSM;
+    plThread.hWndEC     = hWndEC;
 
     // Create a new thread
     hThread = CreateThread (NULL,                   // No security attrs
@@ -2676,7 +2910,8 @@ void ParseLineInThread
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     BOOL         bFreeToken;        // TRUE iff we should free hGlbToken on exit
     PLLOCALVARS  plLocalVars = {0}; // Re-entrant vars
-    HWND         hWndSM;            // Window handle to Session Manager
+    HWND         hWndSM,            // Window handle to Session Manager
+                 hWndEC;            // Window handle to Edit Control
 
     // Make sure we can communicate between windows
     AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
@@ -2697,6 +2932,7 @@ void ParseLineInThread
     hGlbPTD    = lpplThread->hGlbPTD;
     bFreeToken = lpplThread->bFreeToken;
     hWndSM     = lpplThread->hWndSM;
+    hWndEC     = lpplThread->hWndEC;
 
     // Save the thread's PerTabData global memory handle
     TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
@@ -2808,8 +3044,10 @@ void ParseLineInThread
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Signal an error
-    ErrorMessage (lpMemPTD->lpwszErrorMessage, lpwszLine, plLocalVars.tkErrorCharIndex);
-
+    ErrorMessage (lpMemPTD->lpwszErrorMessage,
+                  lpwszLine,
+                  plLocalVars.tkErrorCharIndex,
+                  hWndEC);
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 NORMAL_EXIT:
@@ -2886,30 +3124,25 @@ char SymbTypeVFO
             return '?';
     } // End IF/SWITCH
 
-    if (stFlags.UsrType EQ NAMETYPE_VAR
-     || stFlags.UsrType EQ NAMETYPE_FN0
-     || stFlags.SysType EQ NAMETYPE_VAR
-     || stFlags.SysType EQ NAMETYPE_FN0)
+    if (stFlags.ObjType EQ NAMETYPE_VAR
+     || stFlags.ObjType EQ NAMETYPE_FN0)
         return 'V';
 
     // Note we must perform the following test
     //   AFTER the one above so as not to catch the FN0 case.
-    if (IsNameTypeFn (stFlags.SysType)
-     || IsNameTypeFn (stFlags.UsrType))
+    if (IsNameTypeFn (stFlags.ObjType))
         return 'F';
 
-    if (stFlags.SysType EQ NAMETYPE_OP1
-     || stFlags.UsrType EQ NAMETYPE_OP1)
+    if (stFlags.ObjType EQ NAMETYPE_OP1)
         return '1';
 
-    if (stFlags.SysType EQ NAMETYPE_OP2
-     || stFlags.UsrType EQ NAMETYPE_OP2)
+    if (stFlags.ObjType EQ NAMETYPE_OP2)
         return '2';
 
-    // After having checked all the other .Usrxxx possibilities,
-    //   if it's a UsrName, then it's really a VALUE ERROR, but this
+    // After having checked all the other .ObjType possibilities,
+    //   if it's a OBJNAME_NONE, then it's really a VALUE ERROR, but this
     //   isn't the time to signal that.
-    if (stFlags.UsrName)
+    if (stFlags.ObjName EQ OBJNAME_NONE)
         return 'V';
 
     return '?';             // SYNTAX ERROR
@@ -3155,7 +3388,7 @@ BOOL LookaheadDyadicOp
 
         case TKT_VARNAMED:
             // Look inside the symbol table entry
-            bRet = (lpNext->tkData.tkSym->stFlags.UsrType EQ NAMETYPE_OP2);
+            bRet = (lpNext->tkData.tkSym->stFlags.ObjType EQ NAMETYPE_OP2);
 
             goto NORMAL_EXIT;
 
@@ -3208,7 +3441,7 @@ int pl_yylex
     lpYYLval->tkToken    = *lpplLocalVars->lpNext;
     lpYYLval->YYInuse    =
     lpYYLval->YYIndirect =
-    lpYYLval->YYRsvd     =
+    lpYYLval->Avail      =
     lpYYLval->TknCount   =
     lpYYLval->FcnCount   = 0;
     lpYYLval->lpYYFcn    = NULL;
@@ -3250,54 +3483,43 @@ int pl_yylex
 ////////////
 ////////////// If this is a UsrVar and either it has no value
 //////////////   or the next token is ASSIGN, call it NAMEUNK.
-////////////if (stFlags.UsrType EQ NAMETYPE_VAR
+////////////if (stFlags.ObjType EQ NAMETYPE_VAR
 //////////// && (!stFlags.Value
 ////////////  || lpplLocalVars->lpNext[1].tkFlags.TknType EQ TKT_ASSIGN))
 ////////////    return NAMEUNK;
 ////////////else
-            if (stFlags.UsrType EQ NAMETYPE_VAR
-             || stFlags.SysType EQ NAMETYPE_VAR)
+            if (stFlags.ObjType EQ NAMETYPE_VAR)
             {
 ////////////////lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
 ////////////////lpplLocalVars->lpNext->tkFlags.TknType              = TKT_VARNAMED;    // Already set
 
                 return NAMEVAR;
             } else
-            if (stFlags.UsrType EQ NAMETYPE_FN0)
+            if (stFlags.ObjType EQ NAMETYPE_FN0)
+            {
+                lpYYLval->tkToken.tkFlags.TknType                   =
+                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
+                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_VARNAMED; // Instead of TKT_FCNNAMED because it'll be executed right away
+                lpplLocalVars->lpNext->tkData.tkSym->stFlags.FcnDir = (stFlags.ObjName EQ OBJNAME_SYS);
+
+                if (stFlags.ObjName EQ OBJNAME_SYS)
+                    return SYSFN0;
+                else
+                    return USRFN0;
+            } else
+            if (stFlags.ObjType EQ NAMETYPE_FN12)
             {
                 lpYYLval->tkToken.tkFlags.TknType                   =
                 lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
                 lpplLocalVars->lpNext->tkFlags.TknType              = TKT_FCNNAMED;
+                lpplLocalVars->lpNext->tkData.tkSym->stFlags.FcnDir = (stFlags.ObjName EQ OBJNAME_SYS);
 
-                return USRFN0;
+                if (stFlags.ObjName EQ OBJNAME_SYS)
+                    return SYSFN12;
+                else
+                    return NAMEFCN;
             } else
-            if (stFlags.SysType EQ NAMETYPE_FN0)
-            {
-                lpYYLval->tkToken.tkFlags.TknType                   =
-                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
-                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_FCNNAMED;
-                lpplLocalVars->lpNext->tkData.tkSym->stFlags.FcnDir = 1;
-
-                return SYSFN0;
-            } else
-            if (stFlags.UsrType EQ NAMETYPE_FN12)
-            {
-                lpYYLval->tkToken.tkFlags.TknType                   =
-                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
-                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_FCNNAMED;
-
-                return NAMEFCN;
-            } else
-            if (stFlags.SysType EQ NAMETYPE_FN12)
-            {
-                lpYYLval->tkToken.tkFlags.TknType                   =
-                lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
-                lpplLocalVars->lpNext->tkFlags.TknType              = TKT_FCNNAMED;
-                lpplLocalVars->lpNext->tkData.tkSym->stFlags.FcnDir = 1;
-
-                return SYSFN12;
-            } else
-            if (stFlags.UsrType EQ NAMETYPE_OP1)
+            if (stFlags.ObjType EQ NAMETYPE_OP1)
             {
                 lpYYLval->tkToken.tkFlags.TknType                   =
                 lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
@@ -3305,7 +3527,7 @@ int pl_yylex
 
                 return NAMEOP1;
             } else
-            if (stFlags.UsrType EQ NAMETYPE_OP2)
+            if (stFlags.ObjType EQ NAMETYPE_OP2)
             {
                 lpYYLval->tkToken.tkFlags.TknType                   =
                 lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
@@ -3316,12 +3538,7 @@ int pl_yylex
             if (stFlags.DfnSysLabel)
                 return SYSLBL;
             else
-            if (stFlags.UsrName)
                 return NAMEUNK;
-
-            DbgStop ();         // We should never get here
-
-            return UNK;
         } // End TKT_VARNAMED
 
         case TKT_ASSIGN:
@@ -3545,7 +3762,8 @@ void pl_yyfprintf
      ...)                   // Zero or more arguments
 
 {
-#ifdef DEBUG
+///#ifdef DEBUG
+#if FALSE
     va_list vl;
     int     i1,
             i2,

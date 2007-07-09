@@ -576,7 +576,7 @@ LPAPLCHAR FormatImmed
                 case TCLF:      // LF
                 case TCNL:      // NL
                 case TCNUL:     // NUL
-                    DbgBrk ();  // ***FINISHME***
+                    DbgBrk ();  // ***FINISHME*** -- []TCxxx
 
 
 
@@ -597,9 +597,9 @@ LPAPLCHAR FormatImmed
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-            FormatFloat (lpaplChar,
-                         *(LPAPLFLOAT) lpaplLongest);
-
+            FormatFloat (lpaplChar,                 // Prt to output save area
+                         *(LPAPLFLOAT) lpaplLongest,// The value to format
+                         0);                        // Use default precision
             break;
 
         defstop
@@ -665,8 +665,9 @@ LPAPLCHAR FormatAplint
 //***************************************************************************
 
 LPAPLCHAR FormatFloat
-    (LPWCHAR  lpaplChar,
-     APLFLOAT fFloat)
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     APLFLOAT fFloat,           // The value to format
+     APLUINT  uPrecision)       // Precision to use (0 = default)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -679,7 +680,10 @@ LPAPLCHAR FormatFloat
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
+    if (uPrecision EQ 0)
+        uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
+    else
+        uQuadPP = uPrecision;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -842,10 +846,14 @@ void DisplayHshTab
     // Hash Table flag names
     static HT_FLAGNAMES ahtFlagNames[] =
     {
-     {0x00001,  L" Inuse"    },
-     {0x00002,  L" PrinHash" },
-     {0x00004,  L" SymCopy"  },
+     {0x00001,  L" Inuse"      },
+     {0x00002,  L" PrinHash"   },
+     {0x00004,  L" CharIsValid"},
+     {0x00008,  L" Temp"       },
     };
+
+// The # rows in the above table
+#define HT_FLAGNAMES_NROWS  (sizeof (ahtFlagNames) / sizeof (ahtFlagNames[0]))
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -873,7 +881,7 @@ void DisplayHshTab
         // Format the flags
         htFlags = *(UINT *) &lpHshEntry->htFlags;
         for (j = 0;
-             j < (sizeof (ahtFlagNames) / sizeof (ahtFlagNames[0]));
+             j < HT_FLAGNAMES_NROWS;
              j++)
         if (htFlags & ahtFlagNames[j].uMask)
             lstrcatW (wszFlags, ahtFlagNames[j].lpwszName);
@@ -885,11 +893,12 @@ void DisplayHshTab
         if (wszFlags[0] EQ L'\0')
             wszFlags[1] =  L'\0';
 
-        if (lpHshEntry->htFlags.Inuse)
+        if (lpHshEntry->htFlags.Inuse
+         && lpHshEntry->htSymEntry)
         {
             LPSYMENTRY lpSymEntry;
 
-            lpSymEntry = lpHshEntry->lpSymEntry;
+            lpSymEntry = lpHshEntry->htSymEntry;
             if (lpSymEntry->stFlags.Imm)
                 wsprintfW (lpwszDebug,
                            L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%08X%08X, Sym=%08X",
@@ -901,13 +910,12 @@ void DisplayHshTab
                            LODWORD (lpSymEntry->stData.stInteger),
                            lpSymEntry);
             else
-            if (lpSymEntry->stFlags.UsrName
-             || lpSymEntry->stFlags.SysName)
+            if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
             {
                 LPCHAR lpGlbName;
 
                 // Lock the memory to get a ptr to it
-                lpGlbName = GlobalLock (lpHshEntry->hGlbName); Assert (lpGlbName NE NULL);
+                lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
 
                 wsprintfW (lpwszDebug,
                            L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%08X, %08X-%08X",
@@ -920,14 +928,14 @@ void DisplayHshTab
                            lpHshEntry->NextSameHash,
                            lpHshEntry->PrevSameHash);
                 // We no longer need this ptr
-                GlobalUnlock (lpHshEntry->hGlbName); lpGlbName = NULL;
+                GlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
             } // End IF/ELSE/IF
         } else
             wsprintfW (lpwszDebug,
                        L"HT:%3d (EMPTY) <%s>, Sym=%08X, <%08X-%08X>",
                        i,
                       &wszFlags[1],
-                       lpHshEntry->lpSymEntry,
+                       lpHshEntry->htSymEntry,
                        lpHshEntry->NextSameHash,
                        lpHshEntry->PrevSameHash);
         DbgMsgW (lpwszDebug);
@@ -949,7 +957,7 @@ void DisplayHshTab
 //
 //  Display the Symbol Table entries
 //
-//  If bDispAll is FALSE, display only those non-SysName entries
+//  If bDispAll is FALSE, display only those non-OBJNAME_SYS entries
 //    with a non-zero reference count.
 //***************************************************************************
 
@@ -977,16 +985,18 @@ void DisplaySymTab
      {0x00000040,  L" Perm"       },
      {0x00000080,  L" Inuse"      },
      {0x00000100,  L" Value"      },
-     {0x00000200,  L" SysName"    },
-//// {0x00001C00,  L" SysType"    },
-//// {0x0001E000,  L" SysVarValid"},
-     {0x00020000,  L" UsrName"    },
-//// {0x001C0000,  L" UsrType"    },
-     {0x00200000,  L" UsrDfn"     },
-     {0x00400000,  L" DfnLabel"   },
-     {0x00800000,  L" DfnSysLabel"},
-     {0x01000000,  L" FcnDir"     },
+/////{0x00000600,  L" ObjName"    },
+//// {0x00003800,  L" UsrType"    },
+//// {0x0003C000,  L" SysVarValid"},
+     {0x00040000,  L" UsrDfn"     },
+     {0x00080000,  L" DfnLabel"   },
+     {0x00100000,  L" DfnSysLabel"},
+     {0x00200000,  L" DfnAxis"    },
+     {0x00400000,  L" FcnDir"     },
     };
+
+// The # rows in the above table
+#define ST_FLAGNAMES_NROWS  (sizeof (astFlagNames) / sizeof (astFlagNames[0]))
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -997,7 +1007,7 @@ void DisplaySymTab
     if (bDispAll)
         DbgMsg ("********** Symbol Table ********************************");
     else
-        DbgMsg ("********** Symbol Table Referenced Non-SysNames ******** ");
+        DbgMsg ("********** Symbol Table Referenced Non-SysNames ********");
 
     wsprintf (lpszDebug,
               "lpSymTab = %08X, Last = %08X",
@@ -1010,7 +1020,7 @@ void DisplaySymTab
          lpSymEntry NE lpMemPTD->lpSymTabNext;
          lpSymEntry++, i++)
     if (bDispAll ||
-        !lpSymEntry->stFlags.SysName)
+        lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
     {
         WCHAR   wszFlags[128] = {L'\0'};
         STFLAGS stFlags;
@@ -1022,21 +1032,22 @@ void DisplaySymTab
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
                        L" Imm/Type=%d",
                        stFlags.ImmType);
-        if (stFlags.SysType NE NAMETYPE_UNK)
+        if (stFlags.ObjName NE OBJNAME_NONE)
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                       L" SysType=%s",
-                       lpwNameTypeStr[stFlags.SysType]);
-        if (stFlags.UsrType NE NAMETYPE_UNK)
+                       L" ObjName=%s",
+                       lpwObjNameStr[stFlags.ObjName]);
+        if (stFlags.ObjType NE NAMETYPE_UNK)
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                       L" UsrType=%s",
-                       lpwNameTypeStr[stFlags.UsrType]);
+                       L" ObjType=%s",
+                       lpwNameTypeStr[stFlags.ObjType]);
+
         for (j = 0;
-             j < (sizeof (astFlagNames) / sizeof (astFlagNames[0]));
+             j < ST_FLAGNAMES_NROWS;
              j++)
         if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
             lstrcatW (wszFlags, astFlagNames[j].lpwszName);
 
-        if (stFlags.SysType EQ NAMETYPE_VAR
+        if (stFlags.ObjType EQ NAMETYPE_VAR
          && !stFlags.DfnSysLabel)
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
                        L" SysVarValid=%d",
@@ -1051,10 +1062,10 @@ void DisplaySymTab
 
         if (lpSymEntry->stFlags.Inuse)
         {
-            WCHAR wszName[128] = {'\0'};
+#define WSZNAME_LEN     128
+            WCHAR wszName[WSZNAME_LEN] = {'\0'};
 
-            if (lpSymEntry->stFlags.UsrName
-             || lpSymEntry->stFlags.SysName)
+            if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
             {
                 LPHSHENTRY lpHshEntry;
 
@@ -1062,12 +1073,12 @@ void DisplaySymTab
 
                 if (lpHshEntry)
                 {
-                    lpGlbName = GlobalLock (lpHshEntry->hGlbName); Assert (lpGlbName NE NULL);
+                    lpGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpGlbName NE NULL);
 
-                    lstrcpynW (wszName, lpGlbName, sizeof (wszName) / sizeof (wszName[0]));
+                    lstrcpynW (wszName, lpGlbName, WSZNAME_LEN);
 
                     // We no longer need this ptr
-                    GlobalUnlock (lpHshEntry->hGlbName); lpGlbName = NULL;
+                    GlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
                 } // End IF
             } // End IF
 
@@ -1082,8 +1093,7 @@ void DisplaySymTab
                            LODWORD (lpSymEntry->stData.stInteger),
                            lpSymEntry->stHshEntry);
             } else
-            if (lpSymEntry->stFlags.UsrName
-             || lpSymEntry->stFlags.SysName)
+            if (lpSymEntry->stFlags.ObjName NE OBJNAME_NONE)
             {
                 LPHSHENTRY lpHshEntry;
 
@@ -1449,7 +1459,10 @@ static TOKENNAMES tokenNames[] =
  {"STRNAMED"  , TKT_STRNAMED }, // 1F: ...     strand  ...
 };
 
-    if ((sizeof (tokenNames) / sizeof (tokenNames[0])) > (uType - TKT_FIRST))
+// The # rows in the above table
+#define TOKENNAMES_NROWS    (sizeof (tokenNames) / sizeof (tokenNames[0]))
+
+    if (TOKENNAMES_NROWS > (uType - TKT_FIRST))
         return tokenNames[uType - TKT_FIRST].lpsz;
     else
     {
@@ -1493,7 +1506,7 @@ void DisplayFcnStrand
     {
         case TKT_VARNAMED:          // Because we don't distinguish between
                                     //   functions and variables in AssignName_EM
-            DbgBrk ();          // ***FINISHME***
+            DbgBrk ();          // ***FINISHME*** -- TKT_VARNAMED in DisplayFcnStrand
 
 
 
@@ -1540,7 +1553,7 @@ void DisplayFcnStrand
                                             1,              // LODWORD (lpHeader->NELM),
                                             0);             // lpHeader->RefCnt);
                     // Display the function name from the symbol table
-                    lpaplChar = CopyFcnName (lpaplChar, lptkFunc->tkData.tkSym->stHshEntry->hGlbName);
+                    lpaplChar = CopySteName (lpaplChar, lptkFunc->tkData.tkSym);
                 } else
                 if (!lptkFunc->tkData.tkSym->stFlags.UsrDfn)
                     lpaplChar = DisplayFcnGlb (lpaplChar, ClrPtrTypeDirGlb (hGlbData), TRUE);
@@ -1693,7 +1706,7 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_OP1NAMED:
-            DbgBrk ();          // ***FINISHME***
+            DbgBrk ();          // ***FINISHME*** -- TKT_OP1NAMED in DisplayFcnSub
 
 
 
@@ -1703,7 +1716,7 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_OP2NAMED:
-            DbgBrk ();          // ***FINISHME***
+            DbgBrk ();          // ***FINISHME*** -- TKT_OP2NAMED in DisplayFcnSub
 
 
 
@@ -1722,8 +1735,8 @@ LPWCHAR DisplayFcnSub
                 if (lpYYMem->tkToken.tkData.tkSym->stFlags.FcnDir)
                     // Copy the internal function name
                     lpaplChar =
-                      CopyFcnName (lpaplChar,
-                                   lpYYMem->tkToken.tkData.tkSym->stHshEntry->hGlbName);
+                      CopySteName (lpaplChar,
+                                   lpYYMem->tkToken.tkData.tkSym);
                 else
                 {
                     // Get the function array global memory handle
@@ -1851,8 +1864,8 @@ LPWCHAR DisplayFcnSub
                 case DFN_HEADER_SIGNATURE:
                     // Copy the defined function name
                     lpaplChar =
-                      CopyFcnName (lpaplChar,
-                                   ((LPDFN_HEADER) lpMemData)->steFcnName->stHshEntry->hGlbName);
+                      CopySteName (lpaplChar,
+                                   ((LPDFN_HEADER) lpMemData)->steFcnName);
                     break;
 
                 defstop
@@ -1865,17 +1878,13 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_VARNAMED:
-            DbgBrk ();      // ***FINISHME***
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpYYMem->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-
-
-
-
-
-
-
-
-
+            // Copy the STE name
+            lpaplChar =
+              CopySteName (lpaplChar,
+                           lpYYMem->tkToken.tkData.tkSym);
             break;
 
         defstop
@@ -2155,7 +2164,7 @@ void DisplayFnHdr
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYResult[uItm].tkToken.tkData.tkSym->stHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYResult[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);
@@ -2195,7 +2204,7 @@ void DisplayFnHdr
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYLftArg[uItm].tkToken.tkData.tkSym->stHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYLftArg[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);
@@ -2234,7 +2243,7 @@ void DisplayFnHdr
             if (lpfhLocalVars->lpYYLftOpr)
             {
                 // Get the Name's global memory handle
-                hGlbName = lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry->hGlbName;
+                hGlbName = lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
                 // Lock the memory to get a ptr to it
                 lpMemName = MyGlobalLock (hGlbName);
@@ -2250,7 +2259,7 @@ void DisplayFnHdr
             } // End IF
 
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);
@@ -2262,7 +2271,7 @@ void DisplayFnHdr
             MyGlobalUnlock (hGlbName); lpMemName = NULL;
 
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);
@@ -2280,7 +2289,7 @@ void DisplayFnHdr
 
         case DFNTYPE_FCN:
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);
@@ -2314,7 +2323,7 @@ void DisplayFnHdr
         for (uItm = 0; uItm < uLen; uItm++)
         {
             // Get the Name's global memory handle
-            hGlbName = lpfhLocalVars->lpYYRhtArg[uItm].tkToken.tkData.tkSym->stHshEntry->hGlbName;
+            hGlbName = lpfhLocalVars->lpYYRhtArg[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);

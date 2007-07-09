@@ -666,9 +666,9 @@ LPYYSTYPE PrimFnDydSlope_EM_YY
                        &aplNestRht,         // Ptr to lpSym/Glb ...
                         NULL,               // Ptr to ...immediate type ...
                         NULL);              // Ptr to array type ...
-            aplNestProto = MakePrototype_EM (aplNestRht,    // Proto arg handle
-                                             lptkFunc,      // Ptr to function token
-                                             MP_CHARS);     // CHARs allowed
+            aplNestProto = MakeMonPrototype_EM (aplNestRht,   // Proto arg handle
+                                                lptkFunc,     // Ptr to function token
+                                                MP_CHARS);    // CHARs allowed
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)

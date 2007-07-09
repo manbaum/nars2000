@@ -4281,6 +4281,8 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     EnableMenuItem(popup, IDM_PASTE_APLWIN, (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* paste APL2 */
     EnableMenuItem(popup, IDM_PASTE_APL2  , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
+    /* paste ISO */
+    EnableMenuItem(popup, IDM_PASTE_ISO   , (IsClipboardFormatAvailable(CF_TEXT) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* delete */
     EnableMenuItem(popup, IDM_DELETE      , ((end - start) && !(es->style & ES_READONLY) ? MF_ENABLED : MF_GRAYED));
     /* select all */
@@ -5133,11 +5135,19 @@ static void EDIT_WM_Paste(EDITSTATE *es)
         return;
 
     OpenClipboard(es->hwndSelf);
+
+    // First try our private format
+    if ((hsrc = GetClipboardData(CF_PRIVATEFIRST))) {
+        src = (LPWSTR)GlobalLock(hsrc);
+        EDIT_EM_ReplaceSel(es, TRUE, src, TRUE, TRUE);
+        GlobalUnlock(hsrc);
+    } else
     if ((hsrc = GetClipboardData(CF_UNICODETEXT))) {
         src = (LPWSTR)GlobalLock(hsrc);
         EDIT_EM_ReplaceSel(es, TRUE, src, TRUE, TRUE);
         GlobalUnlock(hsrc);
     }
+
     CloseClipboard();
 } // End EDIT_WM_Paste
 

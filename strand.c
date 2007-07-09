@@ -1138,9 +1138,9 @@ LPYYSTYPE MakeFcnStrand_EM_YY
 ////lpHeader->NELM        =             // To be filled in below
     if (bSaveTxtLine)
     {
-        UINT      uLineLen;     // Line length
-        LPVOID    lpMemTxtLine; // Ptr to line text global memory
-        LPAPLCHAR lpMemTxtSrc;  // Ptr to line text source
+        UINT          uLineLen;     // Line length
+        LPMEMTXTUNION lpMemTxtLine; // Ptr to line text global memory
+        LPAPLCHAR     lpMemTxtSrc;  // Ptr to line text source
 
         // Get the ptr to the source line text
         lpMemTxtSrc = lpplLocalVars->lpwszLine;
@@ -1153,17 +1153,20 @@ LPYYSTYPE MakeFcnStrand_EM_YY
         uLineLen = lstrlenW (lpMemTxtSrc);
 
         // Allocate global memory for a length <uLineLen> vector of type <APLCHAR>.
-        lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, (uLineLen + 1) * sizeof (APLCHAR));
+        lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine.U) + (uLineLen + 1) * sizeof (lpMemTxtLine.C));
         if (lpHeader->hGlbTxtLine)
         {
             // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (lpHeader->hGlbTxtLine);
+            lpMemTxtLine.V = MyGlobalLock (lpHeader->hGlbTxtLine);
+
+            // Save the line length
+            lpMemTxtLine.U[0] = uLineLen;
 
             // Copy the line text to global memory
-            CopyMemory (lpMemTxtLine, lpMemTxtSrc, uLineLen * sizeof (APLCHAR));
+            CopyMemory (&lpMemTxtLine.U[1], lpMemTxtSrc, uLineLen * sizeof (lpMemTxtLine.C));
 
             // We no longer need this ptr
-            MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
+            MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine.V = NULL;
         } // End IF
     } // End IF
 
@@ -1316,19 +1319,19 @@ LPYYSTYPE CopyYYFcn
 ////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
                     YYFcn.tkToken.tkData.tkLongest  = 0;        // Keep the extraneous data clear
                     YYFcn.tkToken.tkData.tkChar     = lpToken->tkData.tkSym->stData.stChar;
-////////////////////YYFcn.tkToken.tkCharIndex       =
+                    YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
 ////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
 ////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
-////////////////////YYFcn.YYIndirect                  =
-////////////////////YYFcn.lpYYFcn                   =
-////////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
+////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
+////////////////////YYFcn.lpYYFcn                   = NULL;     // Already zero from = {0}
+                    YYFcn.unYYSTYPE.lpYYStrandBase  = lpYYArg[i].unYYSTYPE.lpYYStrandBase;
                 } else
                 {
-                    // Copy the argument
-                    YYFcn = lpYYArg[i];
-
-                    // If it's not an internal function, ...
-                    if (!lpToken->tkData.tkSym->stFlags.FcnDir)
+                    // If it's an internal function, ...
+                    if (lpToken->tkData.tkSym->stFlags.FcnDir)
+                        // Copy the argument
+                        YYFcn = lpYYArg[i];
+                    else
                     {
                         // Get the global memory handle or function address if direct
                         hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
@@ -1345,20 +1348,20 @@ LPYYSTYPE CopyYYFcn
 ////////////////////////YYFcn.tkToken.tkFlags.ImmType   = 0;        // Already zero from = {0}
 ////////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
                         YYFcn.tkToken.tkData.tkGlbData  = hGlbData;
-////////////////////////YYFcn.tkToken.tkCharIndex       =
+                        YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
 ////////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
 ////////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
-////////////////////////YYFcn.YYIndirect                  =
-////////////////////////YYFcn.lpYYFcn                   =
-////////////////////////YYFcn.unYYSTYPE.lpYYStrandBase  =
+////////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
+////////////////////////YYFcn.lpYYFcn                   = NULL;     // Already zero from = {0}
+                        YYFcn.unYYSTYPE.lpYYStrandBase  = lpYYArg[i].unYYSTYPE.lpYYStrandBase;
                     } // End IF
                 } // End IF/ELSE
 
                 YYFcn.TknCount = lpYYArg[i].TknCount;
                 YYFcn.YYInuse  = 0;
-    #ifdef DEBUG
+#ifdef DEBUG
                 YYFcn.YYIndex  = NEG1U;
-    #endif
+#endif
                 *lpYYMem++ = YYFcn;
             } else
             {
@@ -1658,7 +1661,7 @@ LPYYSTYPE MakeOp1_YY
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
-    lpYYRes->YYRsvd                  = 0;
+    lpYYRes->Avail                   = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex                 = NEG1U;
     lpYYRes->YYFlag                  = 0;
@@ -1690,7 +1693,7 @@ LPYYSTYPE MakeNameOp1_YY
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
-    lpYYRes->YYRsvd                  = 0;
+    lpYYRes->Avail                   = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex                 = NEG1U;
     lpYYRes->YYFlag                  = 0;
@@ -1726,7 +1729,7 @@ LPYYSTYPE MakeOp2_YY
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
-    lpYYRes->YYRsvd                  = 0;
+    lpYYRes->Avail                   = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex                 = NEG1U;
     lpYYRes->YYFlag                  = 0;
@@ -1758,7 +1761,7 @@ LPYYSTYPE MakeNameOp2_YY
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
-    lpYYRes->YYRsvd                  = 0;
+    lpYYRes->Avail                   = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex                 = NEG1U;
     lpYYRes->YYFlag                  = 0;
@@ -1851,7 +1854,6 @@ LPYYSTYPE MakeNameStrand_EM_YY
     LPYYSTYPE     lpYYStrand;       // Ptr to base of strand
     HGLOBAL       hGlbStr;          // Strand global memory handle
     LPVOID        lpMemStr;         // Ptr to strand global memory
-    BOOL          bRet = TRUE;      // TRUE iff result is valid
     LPYYSTYPE     lpYYRes;          // Ptr to result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
@@ -1883,9 +1885,6 @@ LPYYSTYPE MakeNameStrand_EM_YY
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                   &lpYYArg->tkToken);
-        // Mark as in error
-        bRet = FALSE;
-
         goto ERROR_EXIT;
     } // End IF
 
@@ -2297,8 +2296,7 @@ LPTOKEN CopyToken_EM
 
                 // Skip assertion if it's some kind of function/operator
                 stFlags = lpToken->tkData.tkSym->stFlags;
-                if (IsNameTypeFnOp (stFlags.SysType)
-                 || IsNameTypeFnOp (stFlags.UsrType))
+                if (IsNameTypeFnOp (stFlags.ObjType))
                     break;
 
                 // stData is a valid HGLOBAL function array

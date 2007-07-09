@@ -196,8 +196,8 @@ typedef struct tagVARARRAY_HEADER
     HEADER_SIGNATURE Sig;       // 00:  Array header signature
     UINT             ArrType:4, // 04:  0000000F:  The type of the array (see ARRAY_TYPES)
                      Perm:1,    //      00000010:  Permanent array (e.g., {zilde})
-                     SysVar:1;  //      00000020:  Izit for a Sysvar (***DEBUG*** only)?
-                                //      FFFFFFC0:  available bits
+                     SysVar:1,  //      00000020:  Izit for a Sysvar (***DEBUG*** only)?
+                     Avail:26;  //      FFFFFFC0:  Available bits
     UINT             RefCnt;    // 08:  Reference count
     APLNELM          NELM;      // 0C:  # elements in the array
     APLRANK          Rank;      // 10:  The rank of the array
@@ -216,8 +216,8 @@ typedef struct tagVARARRAY_HEADER
 typedef struct tagFCNARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;           // 00:  Array header signature
-    UINT             NameType:3;    // 04:  00000007:  The type of the array (see NAMETYPES enum)
-                                    //      FFFFFFF8:  Available bits
+    UINT             NameType:3,    // 04:  00000007:  The type of the array (see NAMETYPES enum)
+                     Avail:29;      //      FFFFFFF8:  Available bits
     UINT             RefCnt,        // 08:  Reference count
                      fcnNELM;       // 0C:  # elements in the array
     HGLOBAL          hGlbTxtLine;   // 10:  Line text global memory handle (may be NULL)
@@ -234,7 +234,7 @@ typedef struct tagVARNAMED_HEADER
 {
     HEADER_SIGNATURE Sig;       // 00:  Array header signature
     APLNELM          NELM;      // 04:  # elements in the array
-                                // 08:  Length
+                                // 0C:  Length
 } VARNAMED_HEADER, *LPVARNAMED_HEADER;
 
 // Macros to skip from the array base to the data

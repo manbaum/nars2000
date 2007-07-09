@@ -15,11 +15,11 @@ typedef struct tagYYSTYPE
     UINT    YYInuse:1,      // 1C:  00000001:  This entry is in use
             YYIndirect:1,   //      00000002:  Arg is indirect
 #ifdef DEBUG
-            YYRsvd:6,       //      000000FC:  Unused as yet
+            Avail:6,        //      000000FC:  Available bits
             YYIndex:23,     //      7FFFFF00:  Index #
             YYFlag:1;       //      80000000:  Flag to distinguish YYAlloc from yylex
 #else
-            YYRsvd:30;      //      FFFFFFFC:  Unused as yet
+            Avail:30;       //      FFFFFFFC:  Available bits
 #endif
     struct tagYYSTYPE *lpYYFcn; // 20:  Ptr to function/operator
     union
@@ -49,8 +49,8 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     LPAPLCHAR   lpwszLine;          // 14:  Ptr to line text (zero-terminated)
     UINT        tkErrorCharIndex;   // 18:  Error char index
     UINT        NameType:3,         // 1C:  00000007:  Object type (see enum NAMETYPE)
-                bLookAhead:1;       //      00000008:  TRUE iff looking for object type within surrounding parens
-                                    //      FFFFFFF0:  Available bits
+                bLookAhead:1,       //      00000008:  TRUE iff looking for object type within surrounding parens
+                Avail:28;           //      FFFFFFF0:  Available bits
     LPYYSTYPE   lpYYStrandStart[STRAND_LEN],    // 20:  Strand stack start (static)
                 lpYYStrandBase [STRAND_LEN],    // 28:  ...          base (dynamic)
                 lpYYStrandNext [STRAND_LEN];    // 30:  ...          next token (dynamic)

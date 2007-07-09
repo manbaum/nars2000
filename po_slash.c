@@ -657,9 +657,9 @@ LPYYSTYPE PrimOpMonSlashScalar_EM_YY
 
         // Make a copy of the right arg
         if (lpPrimProtoLft)
-            hGlbRht = MakePrototype_EM (hGlbRht,                // Proto arg global memory handle
-                                       &lpYYFcnStrOpr->tkToken, // Ptr to function token
-                                        MP_NUMONLY);            // Numerics only
+            hGlbRht = MakeMonPrototype_EM (hGlbRht,                 // Proto arg global memory handle
+                                          &lpYYFcnStrOpr->tkToken,  // Ptr to function token
+                                           MP_NUMONLY);             // Numerics only
         else
             hGlbRht = CopySymGlbDir (hGlbRht);
 

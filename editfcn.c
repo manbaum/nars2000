@@ -68,6 +68,13 @@ typedef struct tagFE_CREATESTRUCT
 } FE_CREATESTRUCT, *LPFE_CREATESTRUCT;
 
 
+typedef struct tagCLIPFMTS
+{
+    UINT    uFmtNum;                // Format #
+    HGLOBAL hGlbFmt;                // Handle for this format #
+} CLIPFMTS, *LPCLIPFMTS;
+
+
 //***************************************************************************
 //  $CreateFcnWindow
 //
@@ -252,7 +259,7 @@ LRESULT APIENTRY FEWndProc
             if (lpSymName)
             {
                 // If it's a function/operator but not a defined function, ...
-                if (IsNameTypeFnOp (lpSymName->stFlags.UsrType)
+                if (IsNameTypeFnOp (lpSymName->stFlags.ObjType)
                  && !lpSymName->stFlags.UsrDfn)
                 {
                     // ***FIXME*** -- Allow the user to edit the function array
@@ -353,7 +360,6 @@ LRESULT APIENTRY FEWndProc
                            | WS_VSCROLL
                            | ES_MULTILINE
                            | ES_WANTRETURN
-                           | ES_NOHIDESEL           // ***TESTME***
                            | ES_AUTOHSCROLL
                            | ES_AUTOVSCROLL
                              ,                      // Styles
@@ -487,7 +493,7 @@ LRESULT APIENTRY FEWndProc
             //   inside a Function Edit window and the Edit Control
             //   wants to know whether or not to enable the
             //   Localize/Unlocalize menu items.
-////        DbgBrk ();      /// ***FINISHME***
+////        DbgBrk ();      /// ***FINISHME*** -- Localize/Unlocalize
 
 
 
@@ -615,6 +621,7 @@ LRESULT APIENTRY FEWndProc
         case WM_PASTE:
         case MYWM_PASTE_APLWIN:
         case MYWM_PASTE_APL2:
+        case MYWM_PASTE_ISO:
         case WM_CLEAR:
         case MYWM_SELECTALL:
             // Pass on the the edit control
@@ -734,7 +741,7 @@ int LclECPaintHook
 
     // To do this, we use a FSA to parse the line from the start
     //   through the last char to display
-    // ***FINISHME***
+    // ***FINISHME*** -- Syntax coloring
 
 
 
@@ -1186,10 +1193,10 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             iChar = chCharCode - ' ';
             if (0 <= iChar
-             &&      iChar < (sizeof (aCharCode) / sizeof (aCharCode[0])))
+             &&      iChar < ACHARCODES_NROWS)
             {
                 // Get the Nrm- char code
-                wChar[0] = aCharCode[iChar].nrm;
+                wChar[0] = aCharCodes[iChar].nrm;
                 wChar[1] = L'\0';
 
                 // If it's valid, insert/replace it
@@ -1233,10 +1240,10 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             iChar = chCharCode - ' ';
             if (0 <= iChar
-             &&      iChar < (sizeof (aCharCode) / sizeof (aCharCode[0])))
+             &&      iChar < ACHARCODES_NROWS)
             {
                 // Get the Alt- char code
-                wChar[0] = aCharCode[iChar].alt;
+                wChar[0] = aCharCodes[iChar].alt;
                 wChar[1] = L'\0';
 
                 // If it's valid, insert/replace it
@@ -1510,7 +1517,9 @@ LRESULT WINAPI LclEditCtrlWndProc
             OpenClipboard (hWnd);
 
             // Get a handle to the clipboard data
-            hGlbClip = GetClipboardData (CF_UNICODETEXT);
+            hGlbClip = GetClipboardData (CF_PRIVATEFIRST);
+            if (!hGlbClip)
+                hGlbClip = GetClipboardData (CF_UNICODETEXT);
 
             // Lock the memory to get a ptr to it
             // Note we can't use MyGlobalLock/Unlock as the lock count
@@ -1560,6 +1569,11 @@ LRESULT WINAPI LclEditCtrlWndProc
 
         case MYWM_PASTE_APL2:
             PasteAPLChars (hWnd, UNITRANS_APL2);
+
+            return FALSE;           // We handled the msg
+
+        case MYWM_PASTE_ISO:
+            PasteAPLChars (hWnd, UNITRANS_ISO);
 
             return FALSE;           // We handled the msg
 
@@ -1616,6 +1630,11 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                     return FALSE;   // We handled the msg
 
+                case IDM_PASTE_ISO:
+                    SendMessageW (hWnd, MYWM_PASTE_ISO, 0, 0);
+
+                    return FALSE;   // We handled the msg
+
                 case IDM_DELETE:
                     SendMessageW (hWnd, WM_CLEAR, 0, 0);
 
@@ -1667,6 +1686,47 @@ LRESULT WINAPI LclEditCtrlWndProc
 
 
 //***************************************************************************
+//  $CopyGlbMemory
+//
+//  Copy global memory from one handle to another
+//***************************************************************************
+
+HGLOBAL CopyGlbMemory
+    (HGLOBAL hGlbSrc)
+
+{
+    HGLOBAL hGlbDst;        // The result global memory handle
+    DWORD   dwSize;         // The size of the source
+    LPVOID  lpMemSrc,       // Ptr to source global memory
+            lpMemDst;       // Ptr to result ...
+
+    // Get the size of the global memory object
+    dwSize = GlobalSize (hGlbSrc);
+
+    // Allocate space for the result
+    hGlbDst = MyGlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
+    if (hGlbDst)
+    {
+        // We don't use MyGlobalLock/Unlock on the source
+        //   as we might not own the handle.
+
+        // Lock both memory blocks
+        lpMemDst = GlobalLock (hGlbDst);
+        lpMemSrc = GlobalLock (hGlbSrc);
+
+        // Copy source to destin
+        CopyMemory (lpMemDst, lpMemSrc, dwSize);
+
+        // We no longer need these ptrs
+        GlobalUnlock (hGlbDst); lpMemDst = NULL;
+        GlobalUnlock (hGlbSrc); lpMemSrc = NULL;
+    } // End IF
+
+    return hGlbDst;
+} // End CopyGlbMemory
+
+
+//***************************************************************************
 //  $PasteAPLChars
 //
 //  Paste APL chars from another APL system
@@ -1677,18 +1737,58 @@ void PasteAPLChars
      UNITRANS uIndex)       // ENUM tagUNITRANS index
 
 {
-    DWORD   dwSize;
-    HGLOBAL hGlbClip,
-            hGlbCopy;
-    LPWCHAR lpMemClip,
-            lpMemCopy;
-    UINT    uCopy,
-            uTran;
+    DWORD      dwSize;
+    HGLOBAL    hGlbFmts = NULL,     // Clipboard formats global memory handle
+               hGlbClip = NULL,
+               hGlbText = NULL;
+    LPCLIPFMTS lpMemFmts = NULL;    // Ptr to clipboard format global memory
+    LPWCHAR    lpMemClip = NULL,    // Ptr to
+               lpMemText = NULL;    // Ptr to
+    UINT       uTran,               // Loop counter
+               uText,               // Loop counter
+               uFmt,                // Loop counter
+               uFmtNum,             // Clipbaord format #
+               uCount;              // # formats on the clipboard
 
     // Open the clipboard so we can read from it
     OpenClipboard (hWndEC);
 
-    // Get a handle to the clipboard data
+    // Get the # formats on the clipboard
+    uCount = CountClipboardFormats ();
+
+    // Allocate memory to hold the format # and the matching handle
+    hGlbFmts = MyGlobalAlloc (GHND, uCount * sizeof (CLIPFMTS));
+    if (!hGlbFmts)
+    {
+        MessageBox (hWndEC,
+                    "Unable to allocate memory for the clipboard formats",
+                    lpszAppName,
+                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemFmts = MyGlobalLock (hGlbFmts);
+
+    // Enumerate the clipboard formats and save the format # and handle
+    for (uFmtNum = uFmt = 0; uFmt < uCount; uFmt++)
+    {
+        uFmtNum = EnumClipboardFormats (uFmtNum);
+        if (uFmtNum NE 0
+         && uFmtNum NE CF_PRIVATEFIRST)
+        {
+            // Save the format #
+            lpMemFmts[uFmt].uFmtNum = uFmtNum;
+
+            // Get a handle to the clipboard data
+            //   and make a copy of the data
+            lpMemFmts[uFmt].hGlbFmt =
+              CopyGlbMemory (GetClipboardData (uFmtNum));
+        } else
+            break;
+    } // End FOR
+
+    // Get a handle to the clipboard data for CF_UNICODETEXT
     hGlbClip = GetClipboardData (CF_UNICODETEXT);
 
     // Get the memory size
@@ -1698,20 +1798,24 @@ void PasteAPLChars
     // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
     //   because after we pass this handle to the clipboard
     //   we won't own it anymore.
-    hGlbCopy = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
-    if (!hGlbCopy)
+    hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
+    if (!hGlbText)
     {
-        DbgMsg ("Unable to allocate memory for clipboard in <PasteAPLChars>");
+        MessageBox (hWndEC,
+                    "Unable to allocate memory for the copy of CF_UNICODETEXT format",
+                    lpszAppName,
+                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        goto ERROR_EXIT;
     } else
     {
         // Lock the memory to get a ptr to it
         // Note we can't use MyGlobalLock/Unlock as the lock count
         //   is not modified for a clipboard (non-owned) handle
         lpMemClip = GlobalLock (hGlbClip); Assert (lpMemClip NE NULL);
-        lpMemCopy = GlobalLock (hGlbCopy); Assert (lpMemCopy NE NULL);
+        lpMemText = GlobalLock (hGlbText); Assert (lpMemText NE NULL);
 
         // Make a copy of the clipboard data
-        CopyMemory (lpMemCopy, lpMemClip, dwSize);
+        CopyMemory (lpMemText, lpMemClip, dwSize);
 
         // We no longer need this ptr
         GlobalUnlock (hGlbClip); lpMemClip = NULL;
@@ -1720,30 +1824,95 @@ void PasteAPLChars
         dwSize /= sizeof (WCHAR);
 
         // Translate the APL charset to the NARS charset
-        for (uCopy = 0; uCopy < dwSize; uCopy++, lpMemCopy++)
-        for (uTran = 0; uTran < (sizeof (uniTrans) / sizeof (uniTrans[0])); uTran++)
-        if (*lpMemCopy EQ uniTrans[uTran][uIndex])
+        for (uText = 0; uText < dwSize; uText++, lpMemText++)
+        if (*lpMemText)
+        for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
+        if (*lpMemText EQ uniTrans[uTran][uIndex])
         {
-            *lpMemCopy  = uniTrans[uTran][UNITRANS_NARS];
+            *lpMemText  = uniTrans[uTran][UNITRANS_NARS];
 
             break;      // out of the innermost loop
         } // End FOR/FOR/IF
 
         // We no longer need this ptr
-        GlobalUnlock (hGlbCopy); lpMemCopy = NULL;
+        GlobalUnlock (hGlbText); lpMemText = NULL;
 
         // Empty the clipboard
         EmptyClipboard (); hGlbClip = NULL;
 
-        // Place the changed data onto the clipboard
-        SetClipboardData (CF_UNICODETEXT, hGlbCopy); hGlbCopy = NULL;
+        // Place all the other formats on the clipboard first
+        for (uFmt = 0; uFmt < uCount; uFmt++)
+            SetClipboardData (lpMemFmts[uFmt].uFmtNum, lpMemFmts[uFmt].hGlbFmt);
 
-        // We're done with the clipboard
-        CloseClipboard ();
+        // Place the changed data onto the clipboard
+        SetClipboardData (CF_PRIVATEFIRST, hGlbText); hGlbText = NULL;
 
         // Pass on to the Edit Control
         SendMessageW (hWndEC, WM_PASTE, 0, 0);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;
+
+        // We no longer need this storage
+        MyGlobalFree (hGlbFmts); hGlbFmts = NULL;
     } // End IF/ELSE
+ERROR_EXIT:
+    if (hGlbText && lpMemText)
+    {
+        // We no longer need this ptr
+        GlobalUnlock (hGlbText); lpMemText = NULL;
+    } // End IF
+
+    if (hGlbClip && lpMemClip)
+    {
+        // We no longer need this ptr
+        GlobalUnlock (hGlbClip); lpMemClip = NULL;
+    } // End IF
+
+    // We're done with the clipboard
+    CloseClipboard ();
+
+    if (hGlbFmts)
+    {
+        // Loop through the formats freeing them as appropriate
+        for (uFmt = 0; uFmt < uCount; uFmt++)
+        switch (lpMemFmts[uFmt].uFmtNum)
+        {
+            case 0:             // Ignore empty slots
+                break;
+
+            case CF_DSPENHMETAFILE:
+            case CF_DSPMETAFILEPICT:
+            case CF_ENHMETAFILE:
+            case CF_METAFILEPICT:
+                DeleteMetaFile (lpMemFmts[uFmt].hGlbFmt);
+
+                break;
+
+            case CF_BITMAP:
+            case CF_DSPBITMAP:
+            case CF_PALETTE:
+                DeleteObject (lpMemFmts[uFmt].hGlbFmt);
+
+                break;
+
+            case CF_DIB:
+            case CF_DSPTEXT:
+            case CF_OEMTEXT:
+            case CF_TEXT:
+            case CF_UNICODETEXT:
+            default:
+                GlobalFree (lpMemFmts[uFmt].hGlbFmt);
+
+                break;
+        } // End FOR/SWITCH
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;
+
+        // We no longer need this storage
+        MyGlobalFree (hGlbFmts); hGlbFmts = NULL;
+    } // End IF
 } // End PasteAPLChars
 
 
@@ -2169,7 +2338,7 @@ BOOL QueryCloseFE
         return TRUE;
 
     // Ask the user what to do
-    switch (MessageBox (hWnd, szCloseMessage, pszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
+    switch (MessageBox (hWnd, szCloseMessage, lpszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
     {
         case IDYES:         // Save the function
             return SaveFunction (hWnd);
@@ -2182,6 +2351,38 @@ BOOL QueryCloseFE
             return FALSE;
     } // End SWITCH
 } // End QueryClose
+
+
+//***************************************************************************
+//  $ErrorHandler
+//
+//  Error handler for calls to Tokenize_EM when parsing
+//    a function header and its lines.
+//***************************************************************************
+
+void ErrorHandler
+    (LPWCHAR lpwszMsg,          // Ptr to error message text
+     LPWCHAR lpwszLine,         // Ptr to the line which generated the error
+     UINT    uCaret,            // Position of caret (origin-0)
+     HWND    hWndEC)            // Window handle to the Edit Control
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Save in global for later reference
+    lpMemPTD->lpwszErrorMessage = lpwszMsg;
+    lpMemPTD->uCaret = uCaret;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End ErrorHandler
 
 
 //***************************************************************************
@@ -2213,7 +2414,10 @@ LPSYMENTRY ParseFunctionName
     hWndEC = (HWND) GetWindowLong (hWndFE, GWLSF_HWNDEC);
 
     // Tokenize the line
-    hGlbTknHdr = Tokenize_EM (lpaplChar, lstrlenW (lpaplChar));
+    hGlbTknHdr = Tokenize_EM (lpaplChar,
+                              lstrlenW (lpaplChar),
+                              hWndEC,
+                              NULL);
     if (!hGlbTknHdr)
         return NULL;
 
@@ -2289,8 +2493,13 @@ BOOL SaveFunction
     LPDFN_HEADER  lpMemDfnHdr;          // Ptr to defined function header ...
     BOOL          bRet = FALSE;         // TRUE iff result is valid
     FHLOCALVARS   fhLocalVars = {0};    // Re-entrant vars
+    HGLOBAL       hGlbPTD;              // PerTabData global memory handle
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
 
     Assert (IzitFE (hWndFE));
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
 
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLong (hWndFE, GWLSF_HWNDEC);
@@ -2305,19 +2514,20 @@ BOOL SaveFunction
     //   might have been called from the Master Frame
     //   via a system command, in which case there is
     //   no PTD for that thread.
-    hGlbTxtHdr = MyGlobalAlloc (GHND, sizeof (uLineLen) + (uLineLen + 1) * sizeof (APLCHAR));
+    hGlbTxtHdr = MyGlobalAlloc (GHND, sizeof (lpMemTxtLine.W) + (uLineLen + 1) * sizeof (lpMemTxtLine.C));
     if (!hGlbTxtHdr)
     {
         MessageBox (hWndEC,
                     "Insufficient memory to save the function header text!!",
-                    pszAppName,
+                    lpszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
         return bRet;
     } // End IF
 
     // The following test isn't an optimzation, but avoids
     //   overwriting the allocation limits of the buffer
-    //   when filling in the leading WORD with uLineLen.
+    //   when filling in the leading WORD with uLineLen
+    //   on the call to EM_GETLINE.
 
     // If the line is non-empty, ...
     if (uLineLen)
@@ -2338,16 +2548,66 @@ BOOL SaveFunction
         SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpMemTxtLine.C);
 
         // Tokenize the line
-        hGlbTknHdr = Tokenize_EM (lpMemTxtLine.C, uLineLen);
-
+        hGlbTknHdr = Tokenize_EM (lpMemTxtLine.C,
+                                  uLineLen,
+                                  hWndEC,
+                                 &ErrorHandler);
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine.V = NULL;
     } else
         // Tokenize the (empty) line
-        hGlbTknHdr = Tokenize_EM (L"", 0);
-
+        hGlbTknHdr = Tokenize_EM (L"",
+                                  0,
+                                  hWndEC,
+                                  NULL);
     if (!hGlbTknHdr)
+    {
+////////LPWCHAR          lpwszMsg;
+////////UINT             uCaret;
+////////NONCLIENTMETRICS ncMetrics;
+////////LOGFONT          lfMessageFont;
+        WCHAR            wszTemp[1024];
+
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+////////// Get the error message
+////////lpwszMsg = lpMemPTD->lpwszErrorMessage;
+////////
+////////// Get the caret position
+////////uCaret = lpMemPTD->uCaret;
+////////
+////////// Fill in the size as required for call to SPI
+////////ncMetrics.cbSize = sizeof (NONCLIENTMETRICS);
+////////
+////////// Get the system parameters
+////////SystemParametersInfo (SPI_GETNONCLIENTMETRICS, 0, &ncMetrics, 0);
+////////
+////////// Save the font for the call to MessageBox
+////////lfMessageFont = ncMetrics.lfMessageFont;
+////////
+////////// Change the font for the MessageBox
+////////GetObject (hFontSM, sizeof (LOGFONT), &ncMetrics.lfMessageFont);
+////////SystemParametersInfo (SPI_SETNONCLIENTMETRICS, 0, &ncMetrics, 0);
+
+        // Format the error message
+        wsprintfW (wszTemp,
+                   L"SYNTAX ERROR in function header, position %d -- function not saved",
+                   lpMemPTD->uCaret);
+        // Display the error message
+        MessageBoxW (hWndEC,
+                    wszTemp,
+                    lpwszAppName,
+                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+////////// Restore the normal MessageBox font
+////////ncMetrics.lfMessageFont = lfMessageFont;
+////////SystemParametersInfo (SPI_SETNONCLIENTMETRICS, 0, &ncMetrics, 0);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
         goto ERROR_EXIT;
+    } // End IF
 
     // Allocate virtual memory for the Variable Strand accumulator
     fhLocalVars.lpYYStrandStart =
@@ -2359,7 +2619,7 @@ BOOL SaveFunction
     {
         MessageBox (hWndEC,
                     "Insufficient memory to save the function header strand stack!!",
-                    pszAppName,
+                    lpszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
         goto ERROR_EXIT;    // Mark as failed
     } // End IF
@@ -2435,7 +2695,7 @@ BOOL SaveFunction
         {
             MessageBox (hWndEC,
                         "Insufficient memory to save the function header!!",
-                        pszAppName,
+                        lpszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             goto ERROR_EXIT;
         } // End IF
@@ -2453,6 +2713,7 @@ BOOL SaveFunction
         lpMemDfnHdr->Version      = 0;
         lpMemDfnHdr->DfnType      = fhLocalVars.DfnType;
         lpMemDfnHdr->FcnValence   = fhLocalVars.FcnValence;
+        lpMemDfnHdr->DfnAxis      = fhLocalVars.DfnAxis;
         lpMemDfnHdr->RefCnt       = 1;
         lpMemDfnHdr->numFcnLines  = numFcnLines;
         lpMemDfnHdr->steLftOpr    = fhLocalVars.lpYYLftOpr
@@ -2485,7 +2746,7 @@ BOOL SaveFunction
                 {
                     MessageBox (hWndEC,
                                 "Insufficient memory to save Undo buffer!!",
-                                pszAppName,
+                                lpszAppName,
                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
                     goto ERROR_EXIT;
                 } // End IF
@@ -2597,7 +2858,7 @@ BOOL SaveFunction
             {
                 MessageBox (hWndEC,
                             "Insufficient memory to save a function line!!",
-                            pszAppName,
+                            lpszAppName,
                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
                 goto ERROR_EXIT;
             } // End IF
@@ -2616,7 +2877,8 @@ BOOL SaveFunction
 
             // The following test isn't an optimzation, but avoids
             //   overwriting the allocation limits of the buffer
-            //   when filling in the leading WORD with uLineLen.
+            //   when filling in the leading WORD with uLineLen
+            //   on the call to EM_GETLINE.
 
             // If the line is non-empty, ...
             if (uLineLen)
@@ -2628,20 +2890,28 @@ BOOL SaveFunction
                 SendMessageW (hWndEC, EM_GETLINE, (WPARAM) (uLineNum + 1), (LPARAM) lpMemTxtLine.C);
 
                 // Tokenize the line
-                lpFcnLines->hGlbTknLine = Tokenize_EM (lpMemTxtLine.C, uLineLen);
+                lpFcnLines->hGlbTknLine = Tokenize_EM (lpMemTxtLine.C,
+                                                       uLineLen,
+                                                       hWndEC,
+                                                      &ErrorHandler);
             } else
                 // Tokenize the (empty) line
-                lpFcnLines->hGlbTknLine = Tokenize_EM (L"", 0);
-
+                lpFcnLines->hGlbTknLine = Tokenize_EM (L"",
+                                                       0,
+                                                       hWndEC,
+                                                      &ErrorHandler);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine.V = NULL;
 
             // If tokenization failed, ...
             if (!lpFcnLines->hGlbTknLine)
             {
-                DbgBrk ();      // ***FINISHME*** -- What to do here??
+                DbgBrk ();      // ***FINISHME*** -- What to do if Tokenize_EM fails??
 
-
+                // We can display a MessageBox with an error msg
+                //   as we have the error message text in
+                //   lpMemPTD->lpwszErrorMessage, the line in hGlbTxtLine,
+                //   and the caret position in lpMemPTD->uCaret.
 
 
 
@@ -2665,18 +2935,21 @@ BOOL SaveFunction
         lpSymName->stFlags.Value  =
         lpSymName->stFlags.UsrDfn = 1;
 
+        // Transfer flag for accepts quad-axis
+        lpSymName->stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;
+
         // Mark as with the proper type and valence
 
         // Split cases based upon the function type
         switch (lpMemDfnHdr->DfnType)
         {
             case DFNTYPE_OP1:   // Monadic operator
-                lpSymName->stFlags.UsrType = NAMETYPE_OP1;
+                lpSymName->stFlags.ObjType = NAMETYPE_OP1;
 
                 break;
 
             case DFNTYPE_OP2:   // Dyadic operator
-                lpSymName->stFlags.UsrType = NAMETYPE_OP2;
+                lpSymName->stFlags.ObjType = NAMETYPE_OP2;
 
                 break;
 
@@ -2685,14 +2958,14 @@ BOOL SaveFunction
                 switch (lpMemDfnHdr->FcnValence)
                 {
                     case FCNVALENCE_NIL:    // Niladic function
-                        lpSymName->stFlags.UsrType = NAMETYPE_FN0;
+                        lpSymName->stFlags.ObjType = NAMETYPE_FN0;
 
                         break;
 
                     case FCNVALENCE_MON:    // Monadic function
                     case FCNVALENCE_DYD:    // Dyadic function
                     case FCNVALENCE_AMB:    // Ambivalent function
-                        lpSymName->stFlags.UsrType = NAMETYPE_FN12;
+                        lpSymName->stFlags.ObjType = NAMETYPE_FN12;
 
                         break;
 
@@ -2803,7 +3076,7 @@ void GetSpecialLabelNums
             Assert (GetPtrTypeDir (lptkLine[1].tkData.tkSym) EQ PTRTYPE_STCONST);
 
             // Get the Name's global memory handle
-            hGlbName = lptkLine[1].tkData.tkSym->stHshEntry->hGlbName;
+            hGlbName = lptkLine[1].tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (hGlbName);
@@ -2840,7 +3113,7 @@ void GetSpecialLabelNums
 ////     (HWND hWndFE)
 ////
 //// {
-////     DbgBrk ();          // ***FINISHME***
+////     DbgBrk ();          // ***FINISHME*** -- Save As Function
 ////
 ////     Assert (IzitFE (hWndFE));
 ////

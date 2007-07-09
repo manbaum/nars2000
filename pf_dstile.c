@@ -290,7 +290,6 @@ BOOL PrimFnMonDownStileAPA_EM
      LPTOKEN    lptkFunc,           // Ptr to function token
      HGLOBAL    hGlbRht,            // Right arg handle
      HGLOBAL   *lphGlbRes,          // Ptr to result handle
-     LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
      APLRANK    aplRankRht,         // Rank fo the right arg
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 

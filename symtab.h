@@ -34,7 +34,8 @@ http://portal.acm.org/citation.cfm?id=3324
 // Starting # blocks in hash table -- must be a power of two
 //   so the hash mask is a contiguous series of 1s
 //   (one less than a power of two).
-#define DEF_HSHTAB_NBLKS       4    // 1024
+////ine DEF_HSHTAB_NBLKS       4    // 4096
+#define DEF_HSHTAB_NBLKS       4096
 #if (DEF_HSHTAB_NBLKS & (DEF_HSHTAB_NBLKS - 1)) != 0
 #error DEF_HSHTAB_NBLKS is not a power of two.
 #endif
@@ -44,7 +45,8 @@ http://portal.acm.org/citation.cfm?id=3324
 //   overflow entry in each block so we never assign
 //   a value to the PrinHash entry which doesn't have
 //   the same hash value.
-#define DEF_HSHTAB_EPB         2    //    8
+////ine DEF_HSHTAB_EPB         2    //    8
+#define DEF_HSHTAB_EPB         8
 
 // Maximum hash table size (# entries)
 #define DEF_HSHTAB_MAXSIZE  (1024 * 1024 * DEF_HSHTAB_EPB)
@@ -79,15 +81,19 @@ typedef struct tagHTFLAGS
 {
     UINT Inuse:1,           // 00000001:  Inuse entry
          PrinHash:1,        // 00000002:  Entry with principal hash
-         SymCopy:1          // 00000004:  Symbol table entry copy
+         CharIsValid:1,     // 00000004:  htChar is valid (and hGlbname is a ptr to the name)
 #ifdef DEBUG
-        ,Temp:1             // 00000008:  Temporary flag used for debugging
-                            // FFFFFFF0:  Available bits
+         Temp:1,            // 00000008:  Temporary flag used for debugging
+         Avail:11,          // 0000FFF0:  Available bits
 #else
-                            // FFFFFFF8:  Available bits
+         Avail:12,          // 0000FFF8:  Available bits
 #endif
-         ;
+         htChar:16;         // FFFF0000:  Char if CharIsValid is set
 } HTFLAGS, *LPHTFLAGS;
+
+// N.B.:  Whenever changing the above struct (HTFLAGS),
+//   be sure to make a corresponding change to
+//   <ahtFlagNames> in <display.c>.
 
 // Hash table entry
 typedef struct tagHSHENTRY
@@ -98,9 +104,9 @@ typedef struct tagHSHENTRY
     HTFLAGS htFlags;        // 08:  Flags
     UINT    uHash,          // 0C:  The hash value for this entry
             uHashAndMask;   // 10:  uHash & the current mask
-    HGLOBAL hGlbName;       // 14:  Handle of the entry's name (NULL if none)
+    HGLOBAL htGlbName;      // 14:  Handle of the entry's name (NULL if none)
     struct tagSYMENTRY
-            *lpSymEntry;    // 18:  Ptr to the matching SYMENTRY
+            *htSymEntry;    // 18:  Ptr to the matching SYMENTRY
                             // 1C:  Length
 } HSHENTRY, *LPHSHENTRY;
 
@@ -154,6 +160,16 @@ typedef enum tagNAMETYPES
 #define IsNameTypeOp(a)     ((a) &                    NAMETYPEMASK_OP )
 #define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
 
+typedef enum tagOBJNAMES
+{
+    OBJNAME_NONE = 0,       // 00:  Unnamed
+    OBJNAME_USR,            // 01:  User name
+    OBJNAME_SYS,            // 02:  System name (starts with a Quad or Quote-quad)
+                            // 03:  Available entry (2 bits)
+} OBJNAMES;
+
+#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS"}
+
 // Symbol table flags
 typedef struct tagSTFLAGS
 {
@@ -163,20 +179,23 @@ typedef struct tagSTFLAGS
          Perm:1,            // 00000040:  Permanent entry
          Inuse:1,           // 00000080:  Inuse entry
          Value:1,           // 00000100:  Entry has a value
-         SysName:1,         // 00000200:  The data in .stData is NULL unless some other .Sys*** is set
-         SysType:3,         // 00001C00:  ...                    value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise) (see enum NAMETYPES)
-         SysVarValid:4,     // 0001E000:  Index to validation routine for System Vars
-         UsrName:1,         // 00020000:  ...                 is NULL unless some other .Usr*** is set
-         UsrType:3,         // 001C0000:  ...                    value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise) (see enum NAMETYPES)
-         UsrDfn:1,          // 00200000:  Defined function/operator
-         DfnLabel:1,        // 00400000:  Defined function/operator label        (valid only if .Value is set)
-         DfnSysLabel:1,     // 00800000:  Defined function/operator system label (valid only if .Value is set)
-         FcnDir:1;          // 01000000:  Direct function/operator               (stNameFcn is valid)
-                            // FE000000:  Available bits
+         ObjName:2,         // 00000600:  The data in .stData is NULL if .ObjType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
+                            //            (see OBJNAMES)
+         ObjType:3,         // 00003800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
+                            //            (see NAMETYPES)
+         SysVarValid:4,     // 0003C000:  Index to validation routine for System Vars
+                            //            (see SYSVARS)
+         UsrDfn:1,          // 00040000:  Defined function/operator
+         DfnLabel:1,        // 00080000:  Defined function/operator label        (valid only if .Value is set)
+         DfnSysLabel:1,     // 00100000:  Defined function/operator system label (valid only if .Value is set)
+         DfnAxis:1,         // 00200000:  Defined function/operator accepts axis value
+         FcnDir:1,          // 00400000:  Direct function/operator               (stNameFcn is valid)
+         Avail:9;           // FF800000:  Available bits
 } STFLAGS, *LPSTFLAGS;
 
-// When changing the above struct (STFLAGS), be sure to make
-//   corresponding changes to <astFlagNames> in <display.c>.
+// N.B.:  Whenever changing the above struct (STFLAGS),
+//   be sure to make a corresponding change to
+//   <astFlagNames> in <display.c>.
 
 // .Inuse and .PrinHash are valid for all entries.
 // .Inuse   = 0 implies that all but .PrinHash are zero.
@@ -187,9 +206,6 @@ typedef struct tagSTFLAGS
 // .NotCase is valid for .SysType only.
 // .Value   is valid for NAMETYPE_VAR only, however .SysType EQ NAMETYPE_VAR
 //          should never be without a value.
-// .SysName or .UsrName is set, but not both.
-// .SysName is set for .SysType.
-// .UsrName is set for .UsrType; it is also set for a variable with no value.
 // .UsrDfn  is set for .UsrType when the function is user-defined.
 // .FcnDir  may be set for any function/operator in .SysType or .UsrType; it is a
 //          direct pointer to the code.

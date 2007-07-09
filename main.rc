@@ -101,6 +101,7 @@ BEGIN
             MENUITEM "&Normal",                 IDM_PASTE
             MENUITEM "Paste APL+&WIN",          IDM_PASTE_APLWIN
             MENUITEM "Paste APL&2",             IDM_PASTE_APL2
+            MENUITEM "Paste &ISO",              IDM_PASTE_ISO
         END
         MENUITEM "&Delete",                     IDM_DELETE
         MENUITEM SEPARATOR
@@ -146,6 +147,7 @@ BEGIN
             MENUITEM "&Normal",                 IDM_PASTE
             MENUITEM "Paste APL+&WIN",          IDM_PASTE_APLWIN
             MENUITEM "Paste APL&2",             IDM_PASTE_APL2
+            MENUITEM "Paste &ISO",              IDM_PASTE_ISO
         END
         MENUITEM "&Delete",                     IDM_DELETE
         MENUITEM SEPARATOR

@@ -11,14 +11,13 @@
 #include "resdebug.h"
 #include "termcode.h"
 #include "externs.h"
+#include "pertab.h"
 #include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
-
-BOOL bUseLocalTime = TRUE;
 
 
 //***************************************************************************
@@ -48,7 +47,7 @@ LPYYSTYPE ExecuteFn0
         return ExecFuncGlb_EM_YY (NULL,                         // Ptr to left arg token
                                   ClrPtrTypeDirGlb (lpNameFcn), // Function HGLOBAL
                                   NULL);                        // Ptr to right arg token
-} // ExecuteFn0
+} // End ExecuteFn0
 
 
 //***************************************************************************
@@ -57,6 +56,12 @@ LPYYSTYPE ExecuteFn0
 //  System function:  []CR -- Canonical Representation
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnCR_EM"
+#else
+#define APPEND_NAME
+#endif
+
 LPYYSTYPE SysFnCR_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -64,12 +69,25 @@ LPYYSTYPE SysFnCR_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonCR_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydCR_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnCR_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -138,7 +156,7 @@ LPYYSTYPE SysFnMonCR_EM
     // Split cases based upon the right arg rank
     if (aplRankRht EQ 0)
         // Lookup the name in the symbol table
-        // SymTabLookupName sets the .SysName or .UsrName flag,
+        // SymTabLookupName sets the .ObjName enum,
         //   and the .Inuse flag
         lpSymEntry = SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
                                              (UINT) aplNELMRht,
@@ -149,7 +167,7 @@ LPYYSTYPE SysFnMonCR_EM
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
         // Lookup the name in the symbol table
-        // SymTabLookupName sets the .SysName or .UsrName flag,
+        // SymTabLookupName sets the .ObjName enum,
         //   and the .Inuse flag
         lpSymEntry = SymTabLookupNameLength ((LPAPLCHAR) lpMemRht,
                                              (UINT) aplNELMRht,
@@ -157,11 +175,11 @@ LPYYSTYPE SysFnMonCR_EM
     } // End IF/ELSE
 
     // If not found,
-    //   or not a User Name,
-    //   or not with a value,
+    //   or it's a System Name,
+    //   or without a value,
     //   return 0 x 0 char matrix
     if (!lpSymEntry
-     || !lpSymEntry->stFlags.UsrName
+     ||  lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
      || !lpSymEntry->stFlags.Value)
         // Not the signature of anything we know
         // Return a 0 x 0 char matric
@@ -171,7 +189,7 @@ LPYYSTYPE SysFnMonCR_EM
     if (lpSymEntry->stFlags.Imm)
     {
         // Copy the function name
-        lpw = CopyFcnName (lpwszTemp, lpSymEntry->stHshEntry->hGlbName);
+        lpw = CopySteName (lpwszTemp, lpSymEntry);
 
         // Append a left arrow
         *lpw++ = UTF16_LEFTARROW;
@@ -190,7 +208,7 @@ LPYYSTYPE SysFnMonCR_EM
         if (lpSymEntry->stFlags.FcnDir)
         {
             // Append the function name from the symbol table
-            lpw = CopyFcnName (lpwszTemp, lpSymEntry->stHshEntry->hGlbName);
+            lpw = CopySteName (lpwszTemp, lpSymEntry);
 
             // Calculate the result NELM
             aplNELMRes = lpw - lpwszTemp;
@@ -493,30 +511,30 @@ HGLOBAL SysFnMonCR_ALLOC_EM
 
 
 //***************************************************************************
-//  $CopyFcnName
+//  $CopySteName
 //
-//  Copy a function name
+//  Copy a STE name
 //***************************************************************************
 
-LPAPLCHAR CopyFcnName
-    (LPAPLCHAR lpMemRes,        // Ptr to result global memory
-     HGLOBAL   hGlbName)        // Function name global memory handle
+LPAPLCHAR CopySteName
+    (LPAPLCHAR  lpMemRes,       // Ptr to result global memory
+     LPSYMENTRY lpSymEntry)     // Function name global memory handle
 
 {
     LPAPLCHAR lpMemName;        // Ptr to function name global memory
 
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (hGlbName);
+    lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
 
     // Copy the function name
     lstrcpyW (lpMemRes, lpMemName);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+    MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
 
     // Point to the end
     return &lpMemRes[lstrlenW (lpMemRes)];
-} // End CopyFcnName
+} // End CopySteName
 
 
 //***************************************************************************
@@ -544,10 +562,82 @@ LPYYSTYPE SysFnDydCR_EM
 
 
 //***************************************************************************
+//  $SysFnDM_EM
+//
+//  System function:  []DM -- Diagnostic Message
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnDM_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE SysFnDM_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token  (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    LPYYSTYPE    lpYYRes;       // Ptr to the result
+    HGLOBAL      hGlbRes;       // Result global memory handle
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the global memory handle for quad-DM
+    hGlbRes = CopySymGlbDir (MakeGlbTypeGlb (lpMemPTD->hGlbQuadDM));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Allocate a YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = hGlbRes;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+} // End SysFnDM_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $SysFnDR_EM
 //
 //  System function:  []DR -- Data Representation
 //***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnDR_EM"
+#else
+#define APPEND_NAME
+#endif
 
 LPYYSTYPE SysFnDR_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -556,6 +646,18 @@ LPYYSTYPE SysFnDR_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonDR_EM (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -866,7 +968,7 @@ LPYYSTYPE SysFnDydDR_EM
                                        lptkFunc);
             return NULL;
 
-            DbgBrk ();      // ***FINISHME***
+            DbgBrk ();      // ***FINISHME*** -- SysFnMonDR_EM
 
 
 
@@ -1199,7 +1301,7 @@ void CalcNumIDs
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-            // Loop throught the right arg looking for identifiers
+            // Loop through the right arg looking for identifiers
             uRht = 0;
             while (TRUE)
             {
@@ -1238,6 +1340,12 @@ void CalcNumIDs
 //  System function:  []SIZE -- Size of an identifier
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnSIZE_EM"
+#else
+#define APPEND_NAME
+#endif
+
 LPYYSTYPE SysFnSIZE_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -1245,12 +1353,25 @@ LPYYSTYPE SysFnSIZE_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonSIZE_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydSIZE_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnSIZE_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1371,7 +1492,7 @@ LPYYSTYPE SysFnMonSIZE_EM
     {
         case 0:
             // Lookup the name in the symbol table
-            // SymTabLookupName sets the .SysName or .UsrName flag,
+            // SymTabLookupName sets the .ObjName enum,
             //   and the .Inuse flag
             ZeroMemory (&stFlags, sizeof (stFlags));
             lpSymEntry = SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
@@ -1388,7 +1509,7 @@ LPYYSTYPE SysFnMonSIZE_EM
             // Skip over the header and dimensions to the data
             lpMemDataRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-            // Loop throught the right arg looking for identifiers
+            // Loop through the right arg looking for identifiers
             uRht = 0;
             while (TRUE)
             {
@@ -1404,7 +1525,7 @@ LPYYSTYPE SysFnMonSIZE_EM
                     while (uRht < aplNELMRht && lpMemDataRht[uRht] NE L' ')
                         uRht++;
                     // Lookup the name in the symbol table
-                    // SymTabLookupName sets the .SysName or .UsrName flag,
+                    // SymTabLookupName sets the .ObjName enum,
                     //   and the .Inuse flag
                     ZeroMemory (&stFlags, sizeof (stFlags));
                     lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
@@ -1436,7 +1557,7 @@ LPYYSTYPE SysFnMonSIZE_EM
                     uCol++;
 
                 // Lookup the name in the symbol table
-                // SymTabLookupName sets the .SysName or .UsrName flag,
+                // SymTabLookupName sets the .ObjName enum,
                 //   and the .Inuse flag
                 ZeroMemory (&stFlags, sizeof (stFlags));
                 lpSymEntry = SymTabLookupNameLength (&lpMemDataStart[uCol],
@@ -1546,7 +1667,7 @@ APLINT CalcSymentrySize
         aplSize = 0;
     else
     // If it is a user variable, ...
-    if (lpSymEntry->stFlags.UsrType EQ NAMETYPE_VAR)
+    if (lpSymEntry->stFlags.ObjType EQ NAMETYPE_VAR)
     {
         // Start with the size of the SYMENTRY
         aplSize = sizeof (SYMENTRY);
@@ -1555,7 +1676,7 @@ APLINT CalcSymentrySize
         aplSize += CalcGlbSize (lpSymEntry->stData.stGlbData);
     } else
     // If it is a user function/operator, ...
-    if (IsNameTypeFnOp (lpSymEntry->stFlags.UsrType))
+    if (IsNameTypeFnOp (lpSymEntry->stFlags.ObjType))
     {
         HGLOBAL      hGlbDfnHdr;        // Defined function header global memory handle
         LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header ...
@@ -1731,6 +1852,18 @@ LPYYSTYPE SysFnSYSID_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
 #define SYSID   L"NARS2000"
 #define SYSID_NELM    (sizeof (SYSID) / sizeof (APLCHAR) - 1)
 
@@ -1818,6 +1951,18 @@ LPYYSTYPE SysFnSYSVER_EM
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
 
 #define SYSVER  L"0.00.001.0799  Tue Jan 16 17:43:45 2007  Win/32"
 #define SYSVER_NELM    ((sizeof (SYSVER) / sizeof (APLCHAR)) - 1)
@@ -1958,6 +2103,18 @@ LPYYSTYPE SysFnTC_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
     // Calculate space needed for the result
     ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 3, 1);
 
@@ -2019,17 +2176,36 @@ LPYYSTYPE SysFnTC_EM
 
 
 //***************************************************************************
-//  $SysFnTCCom
+//  $SysFnTCCom_EM
 //
 //  System function:  []TCxxx -- Terminal Control, Common Routine
 //***************************************************************************
 
-LPYYSTYPE SysFnTCCom
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnTCCOM_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPYYSTYPE SysFnTCCom_EM
     (WCHAR   wc,
-     LPTOKEN lptkFunc)
+     LPTOKEN lptkFunc,
+     LPTOKEN lptkAxis)
 
 {
     LPYYSTYPE lpYYRes;
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -2042,7 +2218,8 @@ LPYYSTYPE SysFnTCCom
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnTCCom
+} // End SysFnTCCom_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2061,7 +2238,7 @@ LPYYSTYPE SysFnTCBEL_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom (TCBEL, lptkFunc);
+    return SysFnTCCom_EM (TCBEL, lptkFunc, lptkAxis);
 } // End SysFnTCBEL_EM
 
 
@@ -2081,7 +2258,7 @@ LPYYSTYPE SysFnTCBS_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom (TCBS, lptkFunc);
+    return SysFnTCCom_EM (TCBS, lptkFunc, lptkAxis);
 } // End SysFnTCBS_EM
 
 
@@ -2101,7 +2278,7 @@ LPYYSTYPE SysFnTCDEL_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom (TCDEL, lptkFunc);
+    return SysFnTCCom_EM (TCDEL, lptkFunc, lptkAxis);
 } // End SysFnTCDEL_EM
 
 
@@ -2121,7 +2298,7 @@ LPYYSTYPE SysFnTCESC_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom (TCESC, lptkFunc);
+    return SysFnTCCom_EM (TCESC, lptkFunc, lptkAxis);
 } // End SysFnTCESC_EM
 
 
@@ -2141,7 +2318,7 @@ LPYYSTYPE SysFnTCFF_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom (TCFF, lptkFunc);
+    return SysFnTCCom_EM (TCFF, lptkFunc, lptkAxis);
 } // End SysFnTCFF_EM
 
 
@@ -2161,7 +2338,7 @@ LPYYSTYPE SysFnTCHT_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom (TCHT, lptkFunc);
+    return SysFnTCCom_EM (TCHT, lptkFunc, lptkAxis);
 } // End SysFnTCHT_EM
 
 
@@ -2181,7 +2358,7 @@ LPYYSTYPE SysFnTCLF_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom (TCLF, lptkFunc);
+    return SysFnTCCom_EM (TCLF, lptkFunc, lptkAxis);
 } // End SysFnTCLF_EM
 
 
@@ -2201,7 +2378,7 @@ LPYYSTYPE SysFnTCNL_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom (TCNL, lptkFunc);
+    return SysFnTCCom_EM (TCNL, lptkFunc, lptkAxis);
 } // End SysFnTCNL_EM
 
 
@@ -2221,7 +2398,7 @@ LPYYSTYPE SysFnTCNUL_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom (TCNUL, lptkFunc);
+    return SysFnTCCom_EM (TCNUL, lptkFunc, lptkAxis);
 } // End SysFnTCNUL_EM
 
 
@@ -2252,6 +2429,18 @@ LPYYSTYPE SysFnTS_EM
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
 
     // Calculate space needed for the result
     ByteRes = (UINT) CalcArraySize (ARRAY_INT, 7, 1);
@@ -2329,6 +2518,12 @@ LPYYSTYPE SysFnTS_EM
 //  System function:  []TYPE -- Prototype
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnTYPE_EM"
+#else
+#define APPEND_NAME
+#endif
+
 LPYYSTYPE SysFnTYPE_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -2336,12 +2531,25 @@ LPYYSTYPE SysFnTYPE_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonTYPE_EM (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydTYPE_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnTYPE_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2474,9 +2682,9 @@ LPYYSTYPE SysFnMonTYPE_EM
     Assert (IsGlbTypeVarDir (hGlbData));
 
     // Make the prototype
-    hGlbRes = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbData),// Proto arg handle
-                                lptkFunc,       // Ptr to function token
-                                MP_CHARS);      // CHARs allowed
+    hGlbRes = MakeMonPrototype_EM (ClrPtrTypeDirGlb (hGlbData),// Proto arg handle
+                                   lptkFunc,        // Ptr to function token
+                                   MP_CHARS);       // CHARs allowed
     if (!hGlbRes)
         return NULL;
 

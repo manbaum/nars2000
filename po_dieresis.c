@@ -661,13 +661,13 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
                 hGlbWVec = NULL,        // Weighting vector ...
                 hGlbOdo = NULL;         // Odometer ...
     LPAPLUINT   lpMemAxisHead = NULL,   // Ptr to axis values, fleshed out
-                lpMemAxisTail = NULL,   // Ptr to grade up of Axishead
+                lpMemAxisTail = NULL,   // Ptr to grade up of AxisHead
                 lpMemOdo = NULL,        // Ptr to odometer global memory
                 lpMemWVec = NULL;       // Ptr to weighting vector ...
     LPVOID      lpMemLft = NULL,        // Ptr to left arg global memory
                 lpMemRht = NULL,        // Ptr to right ...
                 lpMemRes = NULL;        // Ptr to result   ...
-    LPAPLINT    lpMemDimRes;            // Ptr to result dimensions
+    LPAPLDIM    lpMemDimRes;            // Ptr to result dimensions
     BOOL        bRet = TRUE;            // TRUE iff result is valid
     APLUINT     uLft,                   // Left arg loop counter
                 uRht,                   // Right ...
@@ -772,7 +772,6 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
                                      &hGlbRes,
                                       lpMemLft,     // Ptr to left arg memory Sig.nature
                                       lpMemRht,     // ...    right ...
-                                     &lpMemRes,
                                       aplRankLft,
                                       aplRankRht,
                                      &aplRankRes,
@@ -781,6 +780,9 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
                                       aplNELMRht,
                                       aplNELMRes))
         goto ERROR_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);      // ***FIXME***
 
     // Fill in the arg tokens
     tkLftArg.tkCharIndex =

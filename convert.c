@@ -137,25 +137,47 @@ void FloatToAplchar
 
 
 //***************************************************************************
-//  $ConvertWideToHex
+//  $ConvertWideToName
 //
-//  Convert wide chars to ASCII or hex
+//  Convert wide chars to ASCII or {name}
 //***************************************************************************
 
-void ConvertWideToHex
+UINT ConvertWideToName
     (LPWCHAR lpwszOut,
      LPWCHAR lpwszInp)
 
 {
+    WCHAR   wc;             // A wide char
+    LPCHAR  lpSymbolName;   // Ptr to symbol name
+    LPWCHAR lpwsz;          // Ptr to output save area
+
+    // Initialize the ptr to the output save area
+    lpwsz = lpwszOut;
+
     // Loop through the wide chars
-    while (*lpwszInp)
-    if (HIBYTE (*lpwszInp) EQ 0)
-        *lpwszOut++ = *lpwszInp++;
+    while (wc = *lpwszInp++)
+    if (wc < 0x80)
+        *lpwsz++ = wc;
     else
-        lpwszOut += wsprintfW (lpwszOut,
-                               L"\\%04X",
-                              *lpwszInp++);
-} // End ConvertWideToHex
+    {
+        // Check for name in hash table
+        lpSymbolName = SymbolToName (wc);
+        if (lpSymbolName)
+            lpwsz += wsprintfW (lpwsz,
+                                L"%S",
+                                lpSymbolName);
+        else
+            lpwsz += wsprintfW (lpwsz,
+                                L"\\x%04X",
+                                wc);
+
+    } // End IF/ELSE
+
+    // Ensure properly terminated
+    *lpwsz = L'\0';
+
+    return (lpwsz - lpwszOut);
+} // End ConvertWideToName
 
 
 //***************************************************************************

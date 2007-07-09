@@ -127,7 +127,7 @@ UINT SymTrans
     (LPTOKEN lptkFunc)      // Ptr to function token
 
 {
-    WCHAR wch;
+    WCHAR wch;              // The symbol
 
     Assert (lptkFunc->tkFlags.TknType EQ TKT_FCNIMMED
          || lptkFunc->tkFlags.TknType EQ TKT_OP1IMMED
@@ -137,11 +137,19 @@ UINT SymTrans
     // Get the symbol
     wch = lptkFunc->tkData.tkChar;
 
-    // If it's a function, ...
-    if (lptkFunc->tkFlags.TknType EQ TKT_FCNIMMED)
-        return FcnTrans (wch);
-    else
-        return OprTrans (wch);
+    // Split cases based upon the token type
+    switch (lptkFunc->tkFlags.TknType)
+    {
+        case TKT_FCNIMMED:
+            return FcnTrans (wch);
+
+        case TKT_OP1IMMED:
+        case TKT_OP2IMMED:
+            return OprTrans (wch);
+
+        defstop
+            return 0;
+    } // End SWITCH
 } // End SymTrans
 
 

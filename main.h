@@ -21,6 +21,7 @@
 #define IsGlbTypeFcnDir(a) (IsGlobalTypeArray (            a, FCNARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeFcnInd(a) (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeDfnDir(a) (IsGlobalTypeArray (            a, DFN_HEADER_SIGNATURE))
+#define IsGlbTypeNamDir(a) (IsGlobalTypeArray (            a, VARNAMED_HEADER_SIGNATURE))
 
 #define AplModI(m,a) PrimFnDydStileIisIvI (m, a, NULL)
 #define AplModF(m,a) PrimFnDydStileFisFvF (m, a, NULL)
@@ -171,8 +172,8 @@ typedef struct tagGLBHIST
     HGLOBAL *hGlb;              // 00:  Ptr to HGLOBAL
     UINT    First:1,            // 04:  00000001:  This line is the first one in the array
             ContPrev:1,         //      00000002:  This line is connected to the previous line
-            ContNext:1;         //      00000004:  ...                           next     ...
-                                //      FFFFFFF8:  Available bits
+            ContNext:1,         //      00000004:  ...                           next     ...
+            Avail:29;           //      FFFFFFF8:  Available bits
                                 // 08:  Length
 } GLBHIST, *LPGLBHIST;
 
@@ -187,8 +188,8 @@ typedef struct tagVKSTATE
           Ctl:1,                // 00000004:  Left or -right Ctl key up(0) or down(1)
 ////     lCtl:1,
 ////     rCtl:1,
-          Ins:1;                // 00000008:  Replace(0) or insert(1)
-                                // FFFFFFF0:  Available bits
+          Ins:1,                // 00000008:  Replace(0) or insert(1)
+          Avail:28;             // FFFFFFF0:  Available bits
 } VKSTATE, *LPVKSTATE;
 
 typedef enum tagMAKEPROTO

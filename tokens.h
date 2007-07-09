@@ -88,8 +88,9 @@ typedef enum tagTOKENTYPES
 
 #define TKT_LENGTH      (TKT_LENGTHp1 - 1)
 
-// Whenever changing the above <enum> (TOKENTYPES), be sure to make a
-//   corresponding change to <Untokenize> in <exec.c>,
+// N.B.:  Whenever changing the above enum (TOKENTYPES),
+//   be sure to make a corresponding change to
+//   <Untokenize> in <exec.c>,
 //   <LookaheadDyadicOp>, <LookaheadAdjacent>, and <pl_yylex> in <parse.y>,
 //   <MakeVarStrand_EM_YY> in <strand.c>,
 //   <GetTokenTypeName> in <display.c>,
@@ -100,8 +101,8 @@ typedef struct tagTKFLAGS
 {
     UINT TknType:6,         // 0000003F:  Data token type (see TOKENTYPES)
          ImmType:4,         // 000003C0:  Type of immediate data (see IMMTYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
-         NoDisplay:1;       // 00000400:  Do not display this token
-                            // FFFFF800:  Available bits
+         NoDisplay:1,       // 00000400:  Do not display this token
+         Avail:21;          // FFFFF800:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
 typedef union tagTOKEN_DATA

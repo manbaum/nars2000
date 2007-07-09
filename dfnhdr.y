@@ -48,7 +48,7 @@
 %name-prefix="fh_yy"
 %parse-param {LPFHLOCALVARS lpfhLocalVars}
 %lex-param   {LPFHLOCALVARS lpfhLocalVars}
-%token NAMEUNK ASSIGN LINECONT UNK
+%token NAMEUNK NAMESYS ASSIGN LINECONT UNK
 
 %start Header
 
@@ -128,14 +128,10 @@ that makes 3 x 55 = 165 cases.
 
 OpenList:
                NAMEUNK          {DbgMsgW2 (L"%%OpenList:  NAMEUNK");
-                                 if (!ValidUsrName (&$1.tkToken))
-                                     YYERROR;
                                  InitHdrStrand (&$1);
                                  $$ = *PushHdrStrand (&$1);
                                 }
     | OpenList NAMEUNK          {DbgMsgW2 (L"%%OpenList:  OpenList NAMEUNK");
-                                 if (!ValidUsrName (&$2.tkToken))
-                                     YYERROR;
                                  $$ = *PushHdrStrand (&$2);
                                 }
     ;
@@ -152,8 +148,6 @@ Result:
                                  $$ = $1;
                                 }
     | NAMEUNK ASSIGN            {DbgMsgW2 (L"%%Result:  NAMEUNK ASSIGN");
-                                 if (!ValidUsrName (&$1.tkToken))
-                                     YYERROR;
                                  InitHdrStrand (&$1);
                                  PushHdrStrand (&$1);
                                  $$ = *MakeHdrStrand (&$1);
@@ -175,8 +169,6 @@ RhtArg:
                                  $$ = $1;
                                 }
     | NAMEUNK                   {DbgMsgW2 (L"%%RhtArg:  NAMEUNK");
-                                 if (!ValidUsrName (&$1.tkToken))
-                                     YYERROR;
                                  InitHdrStrand (&$1);
                                  PushHdrStrand (&$1);
                                  $$ = *MakeHdrStrand (&$1);
@@ -187,8 +179,6 @@ NoResHdr:                       // N.B. that this production does not need to re
                                 //   because it calculates all the information we need into
                                 //   lpfhLocalVars->lpYY... and lpfhLocalVars->u???Valence
               NAMEUNK           {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK");                // Niladic function
-                                 if (!ValidUsrName (&$1.tkToken))
-                                     YYERROR;
                                  InitHdrStrand (&$1);
                                  PushHdrStrand (&$1);
                                  MakeHdrStrand (&$1);
@@ -199,9 +189,6 @@ NoResHdr:                       // N.B. that this production does not need to re
                                 }
 
     |         NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK RhtArg");         // Monadic function
-                                 if (!ValidUsrName (&$1.tkToken))
-                                     YYERROR;
-
                                  InitHdrStrand (&$1);
                                  PushHdrStrand (&$1);
                                  MakeHdrStrand (&$1);
@@ -213,9 +200,6 @@ NoResHdr:                       // N.B. that this production does not need to re
                                 }
 
     | NAMEUNK NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK NAMEUNK RhtArg"); // Dyadic function
-                                 if (!ValidUsrName (&$1.tkToken)
-                                  || !ValidUsrName (&$2.tkToken))
-                                     YYERROR;
                                  InitHdrStrand (&$1);
                                  PushHdrStrand (&$1);
                                  MakeHdrStrand (&$1);
@@ -231,9 +215,6 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
     | List    NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  List NAMEUNK RhtArg");    // Dyadic function
-                                 if (!ValidUsrName (&$2.tkToken))
-                                     YYERROR;
-
                                  InitHdrStrand (&$2);
                                  PushHdrStrand (&$2);
                                  MakeHdrStrand (&$2);
@@ -245,9 +226,6 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
     | OptArg  NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  OptArg NAMEUNK RhtArg");  // Bivalent function
-                                 if (!ValidUsrName (&$2.tkToken))
-                                     YYERROR;
-
                                  InitHdrStrand (&$2);
                                  PushHdrStrand (&$2);
                                  MakeHdrStrand (&$2);
@@ -266,8 +244,6 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
     | NAMEUNK List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK List RhtArg");    // Mon/Dyd operator, dyadic derived function
-                                 if (!ValidUsrName (&$1.tkToken))
-                                    YYERROR;
                                  if (!GetOprName (&$2))
                                      YYERROR;
 
@@ -300,15 +276,29 @@ Locals:
               LINECONT          {DbgMsgW2 (L"%%Locals:  LINECONT");
                                 }
     |         ';'      NAMEUNK  {DbgMsgW2 (L"%%Locals:  ':' NAMEUNK");
-                                 if (!ValidUsrName (&$2.tkToken)
-                                  && !ValidSysName (&$2.tkToken))
+                                 InitHdrStrand (&$2);
+                                 $$ = *PushHdrStrand (&$2);
+                                }
+    |         ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  ':' NAMESYS");
+                                 if (NameIsAxis (&$2.tkToken))
+                                     lpfhLocalVars->DfnAxis = 1;
+                                 else
+                                 if (!$2.tkToken.tkData.tkSym->stFlags.Value)
                                      YYERROR;
                                  InitHdrStrand (&$2);
                                  $$ = *PushHdrStrand (&$2);
                                 }
     | Locals  LINECONT          {DbgMsgW2 (L"%%Locals:  Locals LINECONT");
                                 }
-    | Locals  ';'      NAMEUNK  {DbgMsgW2 (L"%%Locals:  Locals ':' NAMEUNK");
+    | Locals  ';'      NAMEUNK  {DbgMsgW2 (L"%%Locals:  Locals ';' NAMEUNK");
+                                 $$ = *PushHdrStrand (&$3);
+                                }
+    | Locals  ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  Locals ':' NAMESYS");
+                                 if (NameIsAxis (&$3.tkToken))
+                                     lpfhLocalVars->DfnAxis = 1;
+                                 else
+                                 if (!$3.tkToken.tkData.tkSym->stFlags.Value)
+                                     YYERROR;
                                  $$ = *PushHdrStrand (&$3);
                                 }
     ;
@@ -422,31 +412,50 @@ BOOL ParseHeader
 
 
 //***************************************************************************
-//  $ValidUsrName
-//
-//  Validate the name as a user variable name
-//***************************************************************************
-
-BOOL ValidUsrName
-    (LPTOKEN lptkName)
-
-{
-    return lptkName->tkData.tkSym->stFlags.UsrName;
-} // End ValidUsrName
-
-
-//***************************************************************************
 //  $ValidSysName
 //
 //  Validate the name as a system variable name
 //***************************************************************************
 
 BOOL ValidSysName
-    (LPTOKEN lptkName)
+    (LPTOKEN lptkName)      // Ptr to name token
 
 {
-    return lptkName->tkData.tkSym->stFlags.SysName;
+    return (lptkName->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS);
 } // End ValidSysName
+
+
+//***************************************************************************
+//  $NameIsAxis
+//
+//  Return TRUE if the token's name is {quad}axis
+//***************************************************************************
+
+BOOL NameIsAxis
+    (LPTOKEN lptkName)      // Ptr to name token
+
+{
+    HGLOBAL   hGlbName;     // HTE name global memory handle
+    LPAPLCHAR lpMemName;    // Ptr to STE name global memory
+    BOOL      bRet;         // TRUE iff the name is {quad}axis
+
+    // tkData is an LPSYMENTRY
+    Assert (GetPtrTypeDir (lptkName->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+    // Get the STE name's global memory handle
+    hGlbName = lptkName->tkData.tkSym->stHshEntry->htGlbName;
+
+    // Lock the memory to get a ptr to it
+    lpMemName = MyGlobalLock (hGlbName);
+
+    // Compare the two names, case insensitive
+    bRet = lstrcmpiW (lpMemName, WS_UTF16_QUAD L"axis") EQ 0;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+    return bRet;
+} // End NameIsAxis
 
 
 //***************************************************************************
@@ -473,7 +482,10 @@ int fh_yylex
     switch (lpfhLocalVars->lpNext++->tkFlags.TknType)
     {
         case TKT_VARNAMED:
-            return NAMEUNK;
+            if (lpfhLocalVars->lpNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
+                return NAMESYS;
+            else
+                return NAMEUNK;
 
         case TKT_ASSIGN:
             return ASSIGN;
@@ -565,7 +577,7 @@ DISPLAY:
     // Display a message box
     MessageBox (lpfhLocalVars->hWndEC,
                 p,
-                pszAppName,
+                lpszAppName,
                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
 } // End fh_yyerror
 #undef  APPEND_NAME
@@ -583,7 +595,7 @@ void fh_yyfprintf
      ...)                   // Zero or more arguments
 
 {
-#if FALSE
+#ifdef DEBUG
     va_list vl;
     int     i1, i2, i3;
     static char szTemp[256] = {'\0'};

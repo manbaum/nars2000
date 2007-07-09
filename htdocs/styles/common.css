@@ -7,14 +7,17 @@ body
   font-family: "trebuchet ms", arial, sans-serif;
   margin: 0;
 }
+
 img
 {
   border: none;
 }
+
 h1
 {
   background-color: rgb(180,193,205);
 }
+
 h2
 {
   background-color: rgb(204,213,221);
@@ -24,6 +27,7 @@ h2
   border-bottom: dotted 1px rgb(180,193,205);
   font-size: 110%;
 }
+
 h3
 {
   padding: 2px 0.5em 2px 0.5em;
@@ -31,6 +35,7 @@ h3
   font-size: 100%;
   font-weight: bold;
 }
+
 h4
 {
   padding: 2px 0.5em 2px 0.5em;
@@ -39,6 +44,7 @@ h4
   font-weight: bold;
   background-color: inherit;
 }
+
 p
 {
   padding: 0.25em 0 0.50em 0.5em;
@@ -50,16 +56,19 @@ ul, ol
   padding: 0 0 0 0.5em;
   margin: 0 0 0 0.2in;
 }
+
 .title
 {
   background-image: url(/art/NARS-TitleExt.jpg);
   background-repeat:  repeat-x;
 }
+
 .menu
 {
   background:  black;
   color:  white;
 }
+
 .menu a, .menu a:visited
 {
   font-size:  small;
@@ -68,42 +77,51 @@ ul, ol
   color:  white;
   text-decoration:  none;
 }
+
 .menu a:hover
 {
   text-decoration:  underline;
 }
+
 .pagetable tr
 {
   vertical-align: top;
 }
+
 .pagetable
 {
   width: 100%;
 }
+
 .pagecolumn1
 {
   width: 175px;
   padding: 1em 0 0 0;
 }
+
 .pagecolumn1 a, .pagecolumn1 a:visited
 {
   color: rgb(0,0,164);
   background-color:  inherit;
   text-decoration: none;
 }
+
 .pagecolumn1 a:hover
 {
   text-decoration: underline;
 }
+
 .pagecolumn2
 {
   padding: 1em 2em;
 }
+
 .header
 {
   color:  inherit;
   background-color:  inherit;
 }
+
 .section
 {
   color:  inherit;
@@ -115,13 +133,20 @@ ul, ol
   padding-right: 0.5em;
   margin-bottom: 1.5em;
 }
+
 .bookmarks
 {
   padding-left: 0.5em;
   font-size: 80%;
   white-space: nowrap;
 }
+
 code
 {
   font-weight: bold;
+}
+
+.APL
+{
+  white-space: nowrap;
 }

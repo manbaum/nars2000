@@ -3,6 +3,7 @@
 //***************************************************************************
 
 #define INIT_PERTABVARS                                 \
+    lpMemPTD->hGlbQuadDM       = hGlbMTChar;            \
     lpMemPTD->iMaxNumAlp       = DEF_NUMALP_MAXSIZE;    \
     lpMemPTD->iMaxString       = DEF_STRING_MAXSIZE;    \
     lpMemPTD->uHashMask        = DEF_HSHTAB_HASHMASK;   \
@@ -34,6 +35,7 @@ typedef struct tagPERTABDATA
 
     APLBOOL bQuadxSA;               // []SA (in its index form)
     APLCHAR cQuadPR;                // []PR     (' ') (When a char scalar)
+    HGLOBAL hGlbQuadDM;             // quad-DM global memory handle
 
     HWND hWndMC,                    // MDI Client window handle
          hWndSM,                    // Session Manager ...
@@ -50,6 +52,7 @@ typedef struct tagPERTABDATA
             lpwszErrorMessage;      // Ptr to error message to signal
     LPCHAR  lpszNumAlp;             // Accumulator for integers & floating points & names
     LPWCHAR lpwszString;            // ...             strings
+    UINT    uCaret;                 // Position of the caret in the current line on error
     int     iMaxNumAlp,             // Maximum # chars in lpszNumAlp
             iMaxString,             // Maximum # WCHARs in lpwszString
             iNumAlpLen,             // # chars in lpszNumAlp
@@ -72,7 +75,8 @@ typedef struct tagPERTABDATA
                lpSymQuadPW  ,       // ...            []PW
                lpSymQuadRL  ,       // ...            []RL
                lpSymQuadSA  ,       // ...            []SA
-               lpSymQuadWSID;       // ...            []WSID
+               lpSymQuadWSID,       // ...            []WSID
+               lpSymQuadAXIS;       // ...            []AXIS
 
     int        iLabelText;          // Offset in DPFE of the label text
     HWND       hWndActive;          // Active MDI window when last switched out

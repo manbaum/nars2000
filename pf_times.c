@@ -301,8 +301,6 @@ BOOL PrimFnDydTimesAPA_EM
      HGLOBAL    hGlbRht,            // ...        right ...
      HGLOBAL   *lphGlbRes,          // Ptr to result handle
 
-     LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
-
      APLRANK    aplRankLft,         // Left arg rank
      APLRANK    aplRankRht,         // Right ...
 
@@ -313,7 +311,8 @@ BOOL PrimFnDydTimesAPA_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRANK aplRankRes;
+    APLRANK aplRankRes;     // Result rank
+    LPVOID  lpMemRes;       // Ptr to result global memory
 
     DBGENTER;
 
@@ -354,12 +353,12 @@ BOOL PrimFnDydTimesAPA_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    *lplpMemRes = MyGlobalLock (*lphGlbRes);
+    lpMemRes = MyGlobalLock (*lphGlbRes);
 
     // Skip over the header and dimensions to the data
-    *lplpMemRes = VarArrayBaseToData (*lplpMemRes, aplRankRes);
+    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-#define lpAPA       ((LPAPLAPA) *lplpMemRes)
+#define lpAPA       ((LPAPLAPA) lpMemRes)
 
     // Multiply the singleton's value to the result offset and multiplier
     lpAPA->Off *= aplInteger;
@@ -368,7 +367,7 @@ BOOL PrimFnDydTimesAPA_EM
 #undef  lpAPA
 
     // We no longer need this ptr
-    MyGlobalUnlock (*lphGlbRes); *lplpMemRes = NULL;
+    MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
 
     // Fill in the result token
     if (lpYYRes)

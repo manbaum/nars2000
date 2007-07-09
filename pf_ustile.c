@@ -213,8 +213,6 @@ BOOL PrimFnMonUpStileAPA_EM
      HGLOBAL    hGlbRht,            // Right arg handle
      HGLOBAL   *lphGlbRes,          // Ptr to result handle
 
-     LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
-
      APLRANK    aplRankRht,         // Right arg rank
 
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC

@@ -32,7 +32,7 @@ SYSCMDSTAB SysCmdsTab[]
     {L"clear" ,     &CmdClear_EM    },
     {L"close" ,     &CmdClose_EM    },
 ////{L"copy"  ,     &CmdCopyName_EM },
-////{L"drop"  ,     &CmdDropWS_EM   },
+    {L"drop"  ,     &CmdDropWS_EM   },
     {L"edit"  ,     &CmdEdit_EM     },
 ////{L"erase" ,     &CmdEraseName_EM},
     {L"exit"  ,     &CmdExit_EM     },
@@ -53,6 +53,9 @@ SYSCMDSTAB SysCmdsTab[]
 }
 #endif
 ;
+
+// The # rows in the above table
+#define SYSCMDSTAB_NROWS    (sizeof (SysCmdsTab) / sizeof (SysCmdsTab[0]))
 
 
 //***************************************************************************
@@ -88,7 +91,7 @@ BOOL ExecSysCmd
     } // End IF/ELSE
 
     // Search for this command in the table
-    for (i = 0; i < (sizeof (SysCmdsTab) / sizeof (SysCmdsTab[0])); i++)
+    for (i = 0; i < SYSCMDSTAB_NROWS; i++)
     if (lstrcmpiW (SysCmdsTab[i].lpszName, lpwszLine) EQ 0)
         return (*SysCmdsTab[i].lpSysCmd_EM) (wp);
 

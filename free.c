@@ -199,11 +199,10 @@ void FreeResultSub
             if (bFreeName)
             {
                 // Set the flags we'll leave alone
-                stFlags.SysName     =
-                stFlags.UsrName     =
                 stFlags.Inuse       =
                 stFlags.NotCase     =
                 stFlags.Perm        = 1;
+                stFlags.ObjName     =
                 stFlags.SysVarValid = NEG1U;
 
                 // Clear the symbol table flags
@@ -574,6 +573,33 @@ BOOL FreeResultGlobalFcn
 
                 break;
 
+            case TKT_VARNAMED:
+                // tkData is an LPSYMENTRY
+                Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                // Get the global handle
+                hGlbLcl = lpYYToken->tkToken.tkData.tkSym->stData.stGlbData;
+
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbLcl));
+
+                // Clear the ptr type bits
+                hGlbLcl = ClrPtrTypeDirGlb (hGlbLcl);
+
+                // Free the global variable
+                if (FreeResultGlobalVar (hGlbLcl))
+                {
+#ifdef DEBUG
+                    dprintf ("**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%s#%d)",
+                             hGlbData,
+                             hGlbLcl,
+                             FNLN);
+#endif
+                    lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = NULL;
+                } // End IF
+
+                break;
+
             defstop
                 break;
         } // End FOR/SWITCH
@@ -639,11 +665,10 @@ BOOL FreeResultGlobalDfn
         STFLAGS stFlags = {0};
 
         // Set the flags we'll leave alone
-        stFlags.SysName     =
-        stFlags.UsrName     =
         stFlags.Inuse       =
         stFlags.NotCase     =
         stFlags.Perm        = 1;
+        stFlags.ObjName     =
         stFlags.SysVarValid = NEG1U;
 
         // Clear the symbol table flags for the function name
@@ -697,7 +722,7 @@ BOOL FreeResultGlobalDfn
 
             if (lpFcnLines->hGlbMonInfo)
             {
-                DbgBrk ();      // ***FINISHME***
+                DbgBrk ();      // ***FINISHME*** -- Monitor Info in DFN
 
 
 

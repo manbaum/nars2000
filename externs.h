@@ -135,7 +135,14 @@ HMENU hMenuSM,                          // Handle for Session Manager menu
 #endif
 
 EXTERN
-char pszAppName[]                       // Application name for MessageBox
+WCHAR lpwszAppName[]                    // Application name for MessageBox
+#ifdef DEFINE_VALUES
+ = L"NARS2000" LAPPEND_DEBUG
+#endif
+;
+
+EXTERN
+char lpszAppName[]                      // Application name for MessageBox
 #ifdef DEFINE_VALUES
  = "NARS2000" APPEND_DEBUG
 #endif
@@ -207,6 +214,13 @@ LPCHAR lpNameTypeStr[]
 #endif
 ;
 
+EXTERN
+LPWCHAR lpwObjNameStr[]
+#ifdef DEFINE_VALUES
+ = OBJNAME_WSTRPTR
+#endif
+;
+
 #endif
 
 //***************************************************************************
@@ -233,7 +247,7 @@ typedef struct tagPRIMFLAGS
          AssocBool:1,                   // 2000:  ...                       associative on Booleans only
          AssocNumb:1,                   // 4000:  ...                       associative on all numbers
          FastBool:1;                    // 8000:  Boolean function w/reduction & scan can be sped up
-                                        // 0000:  Available bits
+                                        // 0000:  No available bits
 } PRIMFLAGS, *LPPRIMFLAGS;
 
 EXTERN
@@ -282,17 +296,19 @@ typedef FASTBOOLFCN *LPFASTBOOLFCN;
 
 typedef struct tagFASTBOOLFNS
 {
-    LPFASTBOOLFCN lpReduction;          // Ptr to Fast Boolean reduction routine
-    LPFASTBOOLFCN lpScan;               // ...                 scan      ...
-    UINT          NotMarker:1,          // Complement of Marker
-                  IdentElem:1,          // Identity element (if it exists)
-                  Suffix:1;             // Suffix equivalence value
+    LPFASTBOOLFCN lpReduction;          // 00:  Ptr to Fast Boolean reduction routine
+    LPFASTBOOLFCN lpScan;               // 04:  ...                 scan      ...
+    UINT          NotMarker:1,          // 08:  00000001:  Complement of Marker
+                  IdentElem:1,          //      00000002:  Identity element (if it exists)
+                  Suffix:1;             //      00000004:  Suffix equivalence value
+                                        //      FFFFFFF8:  Available bits
+                                        // 0C:  Length
 } FASTBOOLFNS, *LPFASTBOOLFNS;
 
 // This array translates a byte index into
-//   [byte][0] = the index of the first 0 in the byte,
-//   [byte][1] = the index of the first 1 in the byte, and
-//   [byte][2] = the sum of the bits in the byte.
+//   [byte][0] = the index of the first 0 in the byte (from right to left)
+//   [byte][1] = the index of the first 1 in the byte (from right to left)
+//   [byte][2] = the sum of the bits in the byte
 //   [byte][3] = its {notequal} scan
 //   [byte][4] = its {equal} scan
 EXTERN
@@ -634,19 +650,21 @@ APLFLOAT PosInfinity,                   // Positive infinity
 
 typedef enum tagSYSVARS
 {
-    SYSVAR_UNK = 0,         // 00:  Unknown name
-    SYSVAR_ALX ,            // 01:  []ALX
-    SYSVAR_CT  ,            // 02:  []CT
-    SYSVAR_ELX ,            // 03:  []ELX
-    SYSVAR_IO  ,            // 04:  []IO
-    SYSVAR_LX  ,            // 05:  []LX
-    SYSVAR_PP  ,            // 06:  []PP
-    SYSVAR_PR  ,            // 07:  []PR
-    SYSVAR_PW  ,            // 08:  []PW
-    SYSVAR_RL  ,            // 09:  []RL
-    SYSVAR_SA  ,            // 0A:  []SA
-    SYSVAR_WSID,            // 0B:  []WSID
-    SYSVAR_LENGTH           // 0C:  # entries in the enum
+    SYSVAR_UNK = 0,             // 00:  Unknown name
+    SYSVAR_ALX ,                // 01:  []ALX
+    SYSVAR_CT  ,                // 02:  []CT
+    SYSVAR_ELX ,                // 03:  []ELX
+    SYSVAR_IO  ,                // 04:  []IO
+    SYSVAR_LX  ,                // 05:  []LX
+    SYSVAR_PP  ,                // 06:  []PP
+    SYSVAR_PR  ,                // 07:  []PR
+    SYSVAR_PW  ,                // 08:  []PW
+    SYSVAR_RL  ,                // 09:  []RL
+    SYSVAR_SA  ,                // 0A:  []SA
+    SYSVAR_WSID,                // 0B:  []WSID
+    SYSVAR_AXIS,                // 0C:  []AXIS
+    SYSVAR_LENGTH               // 0D:  # entries in the enum
+                                // 0E-0F:  Available entries (4 bits)
 } SYSVARS;
 
 EXTERN
@@ -768,9 +786,14 @@ BOOL bNewTabOnClear
  = DEF_NEWTABONCLEAR
 #endif
 ,
-    bNewTabOnLoad
+     bNewTabOnLoad
 #ifdef DEFINE_VALUES
  = DEF_NEWTABONLOAD
+#endif
+,
+     bUseLocalTime
+#ifdef DEFINE_VALUES
+ = TRUE;
 #endif
 ;
 
@@ -967,7 +990,7 @@ typedef struct
 //     Up Caret (Circumflex)
 
 EXTERN
-CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
+CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
                                 //   from 32 to 126 inclusive
 #ifdef DEFINE_VALUES
 =
@@ -1072,6 +1095,160 @@ CHARCODE aCharCode[1+126-32]    // This ordering follows the ASCII charset
 #endif
 ;
 
+// The # rows in the above table
+#define ACHARCODES_NROWS    (sizeof (aCharCodes) / sizeof (aCharCodes[0]))
+
+typedef struct tagSYMBOLNAMES
+{
+    WCHAR  Symbol;      // Symbol
+    LPCHAR lpName;      // Ptr to name
+} SYMBOLNAMES, *LPSYMBOLNAMES;
+
+// The # rows in the above table
+#define ASYMBOLNAMES_NROWS  89
+
+// Translate table for symbols to names
+EXTERN
+SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
+#ifdef DEFINE_VALUES
+=
+{
+// No keystroke equivalents for these as yet
+  {UTF16_DIERESISDOT          , "{dieresisdot}"         },
+  {UTF16_NOTEQUALUNDERBAR     , "{notequalunderbar}"    },
+  {UTF16_IBEAM                , "{ibeam}"               },
+  {UTF16_QUADJOT              , "{quadjot}"             },
+  {UTF16_QUADSLOPE            , "{quadslope}"           },
+  {UTF16_QUADLEFTARROW        , "{quadleftarrow}"       },
+  {UTF16_QUADRIGHTARROW       , "{quadrightarrow}"      },
+  {UTF16_QUADUPARROW          , "{quaduparrow}"         },
+  {UTF16_QUADDOWNARROW        , "{quaddownarrow}"       },
+
+// The alphabet, unshifted
+  {UTF16_ALPHA                , "{alpha}"               },  // Alt-'a' - alpha
+  {UTF16_UPTACK               , "{uptack}"              },  // Alt-'b' - base
+  {UTF16_UPSHOE               , "{upshoe}"              },  // Alt-'c' - intersection
+  {UTF16_DOWNSTILE            , "{downstile}"           },  // Alt-'d' - floor
+  {UTF16_EPSILON              , "{epsilon}"             },  // Alt-'e' - epsilon
+  {UTF16_UNDERBAR             , "{underbar}"            },  // Alt-'f' - underbar
+  {UTF16_DEL                  , "{del}"                 },  // Alt-'g' - del
+  {UTF16_DELTA                , "{delta}"               },  // Alt-'h' - delta
+  {UTF16_IOTA                 , "{iota}"                },  // Alt-'i' - iota
+  {UTF16_JOT                  , "{jot}"                 },  // Alt-'j' - jot
+  {UTF16_APOSTROPHE           , "{apostrophe}"          },  // Alt-'k' - single-quote
+  {UTF16_QUAD                 , "{quad}"                },  // Alt-'l' - quad (9109??)
+  {UTF16_STILE                , "{stile}"               },  // Alt-'m' - modulus
+  {UTF16_DOWNTACK             , "{downtack}"            },  // Alt-'n' - representation
+  {UTF16_CIRCLE               , "{circle}"              },  // Alt-'o' - circle
+  {UTF16_STAR                 , "{star}"                },  // Alt-'p' - power
+  {UTF16_QUERY                , "{query}"               },  // Alt-'q' - question-mark
+  {UTF16_RHO                  , "{rho}"                 },  // Alt-'r' - rho
+  {UTF16_UPSTILE              , "{upstile}"             },  // Alt-'s' - ceiling
+  {UTF16_TILDE                , "{tilde}"               },  // Alt-'t' - tilde
+  {UTF16_DOWNARROW            , "{downarrow}"           },  // Alt-'u' - down arrow
+  {UTF16_DOWNSHOE             , "{downshoe}"            },  // Alt-'v' - union
+  {UTF16_OMEGA                , "{omega}"               },  // Alt-'w' - omega
+  {UTF16_RIGHTSHOE            , "{rightshoe}"           },  // Alt-'x' - disclose
+  {UTF16_UPARROW              , "{uparrow}"             },  // Alt-'y' - up arrow
+  {UTF16_LEFTSHOE             , "{leftshoe}"            },  // Alt-'z' - enclose
+
+// The alphabet, shifted
+//{UTF16_                     ,                         },  // Alt-'A' - (none)
+//{UTF16_                     ,                         },  // Alt-'B' - (none)
+//{UTF16_                     ,                         },  // Alt-'C' - (none)
+//{UTF16_                     ,                         },  // Alt-'D' - (none)
+  {UTF16_EPSILONUNDERBAR      , "{epsilonunderbar}"     },  // Alt-'E' - epsilon-underbar
+//{UTF16_                     ,                         },  // Alt-'F' - (none)
+  {UTF16_DIERESISDEL          , "{dieresisdel}"         },  // Alt-'G' - Dual operator        (frog)
+  {UTF16_DELTAUNDERBAR        , "{deltaunderbar}"       },  // Alt-'H' - delta-underbar
+  {UTF16_IOTAUNDERBAR         , "{iotaunderbar}"        },  // Alt-'I' - iota-underbar
+  {UTF16_DIERESISJOT          , "{dieresisjot}"         },  // Alt-'J' - Rank operator        (hoot)
+//{UTF16_                     ,                         },  // Alt-'K' - (none)
+  {UTF16_SQUAD                , "{squad}"               },  // Alt-'L' - squad
+  {UTF16_STILETILDE           , "{stiletilde}"          },  // Alt-'M' - Partition operator   (dagger)
+  {UTF16_DIERESISDOWNTACK     , "{dieresisdowntack}"    },  // Alt-'N' - Convolution operator (snout)
+  {UTF16_DIERESISCIRCLE       , "{dieresiscircle}"      },  // Alt-'O' -                      (holler)
+  {UTF16_DIERESISSTAR         , "{dieresisstar}"        },  // Alt-'P' - Power operator       (sourpuss)
+//{UTF16_                     ,                         },  // Alt-'Q' - (none)
+//{UTF16_                     ,                         },  // Alt-'R' - (none)
+//{UTF16_                     ,                         },  // Alt-'S' - (none)
+  {UTF16_DIERESISTILDE        , "{dieresistilde}"       },  // Alt-'T' - Commute operator     (frown)
+//{UTF16_                     ,                         },  // Alt-'U' - (none)
+//{UTF16_                     ,                         },  // Alt-'V' - (none)
+//{UTF16_                     ,                         },  // Alt-'W' - (none)
+//{UTF16_                     ,                         },  // Alt-'X' - (none)
+//{UTF16_                     ,                         },  // Alt-'Y' - (none)
+//{UTF16_                     ,                         },  // Alt-'Z' - (none)
+
+// Top row, unshifted
+  {UTF16_DIAMOND              , "{diamond}"             },  // Alt-'`' - diamond (9674??)
+  {UTF16_DIERESIS             , "{dieresis}"            },  // Alt-'1' - dieresis
+  {UTF16_OVERBAR              , "{overbar}"             },  // Alt-'2' - high minus
+  {UTF16_LEFTCARET            , "{leftcaret}"           },  // Alt-'3' - less
+  {UTF16_LEFTCARETUNDERBAR    , "{leftcaretunderbar}"   },  // Alt-'4' - not more
+  {UTF16_EQUAL                , "{equal}"               },  // Alt-'5' - equal
+  {UTF16_RIGHTCARETUNDERBAR   , "{rightcaretunderbar}"  },  // Alt-'6' - not less
+  {UTF16_RIGHTCARET           , "{rightcaret}"          },  // Alt-'7' - more
+  {UTF16_NOTEQUAL             , "{notequal}"            },  // Alt-'8' - not equal
+  {UTF16_DOWNCARET            , "{downcaret}"           },  // Alt-'9' - or
+  {UTF16_UPCARET              , "{upcaret}"             },  // Alt-'0' - and (94??)
+  {UTF16_TIMES                , "{times}"               },  // Alt-'-' - times
+  {UTF16_COLONBAR             , "{colonbar}"            },  // Alt-'=' - divide
+
+// Top row, shifted
+  {UTF16_COMMABAR             , "{commabar}"            },  // Alt-'~' - comma-bar
+  {UTF16_EQUALUNDERBAR        , "{equalunderbar}"       },  // Alt-'!' - match
+  {UTF16_DELTILDE             , "{deltilde}"            },  // Alt-'@' - del-tilde
+  {UTF16_DELSTILE             , "{delstile}"            },  // Alt-'#' - grade-down
+  {UTF16_DELTASTILE           , "{deltastile}"          },  // Alt-'$' - grade-up
+  {UTF16_CIRCLESTILE          , "{circlestile}"         },  // Alt-'%' - rotate
+  {UTF16_CIRCLESLOPE          , "{circleslope}"         },  // Alt-'^' - transpose
+  {UTF16_CIRCLEBAR            , "{circlebar}"           },  // Alt-'&' - circle-bar
+  {UTF16_CIRCLESTAR           , "{circlestar}"          },  // Alt-'*' - log
+  {UTF16_DOWNCARETTILDE       , "{downcarettilde}"      },  // Alt-'(' - nor
+  {UTF16_UPCARETTILDE         , "{upcarettilde}"        },  // Alt-')' - nand
+  {UTF16_QUOTEDOT             , "{quotedot}"            },  // Alt-'_' - quote-dot
+  {UTF16_DOMINO               , "{domino}"              },  // Alt-'+' - domino
+
+// Second row, unshifted
+  {UTF16_LEFTARROW            , "{leftarrow}"           },  // Alt-'[' - left arrow
+  {UTF16_RIGHTARROW           , "{rightarrow}"          },  // Alt-']' - right arrow
+  {UTF16_LEFTTACK             , "{lefttack}"            },  // Alt-'\\'- left tack
+
+// Second row, shifted
+  {UTF16_QUOTEQUAD            , "{quotequad}"           },  // Alt-'{' - quote-quad
+  {UTF16_ZILDE                , "{zilde}"               },  // Alt-'}' - zilde
+  {UTF16_RIGHTTACK            , "{righttack}"           },  // Alt-'|' - right tack
+
+// Third row, unshifted
+  {UTF16_UPTACKJOT            , "{uptackjot}"           },  // Alt-';' - execute
+  {UTF16_DOWNTACKJOT          , "{downtackjot}"         },  // Alt-'\''- format
+
+// Third row, shifted
+//{UTF16_                     ,                         },  // Alt-':' - (none)
+//{UTF16_                     ,                         },  // Alt-'"' - (none)
+
+// Fourth row, unshifted
+  {UTF16_LAMP                 , "{lamp}"                },  // Alt-',' - comment
+  {UTF16_SLOPEBAR             , "{slopebar}"            },  // Alt-'.' - slope-bar
+  {UTF16_SLASHBAR             , "{slashbar}"            },  // Alt-'/' - slash-bar
+
+// Fourth row, shifted
+//{UTF16_                     ,                         },  // Alt-'<' - (none)
+//{UTF16_                     ,                         },  // Alt-'>' - (none)
+//{UTF16_                     ,                         },  // Alt-'?' - (none)
+
+// Non-Alt key equivalents (these are the only ones we need for SaveWS)
+  {UTF16_LBRACE               , "{leftbrace}"           },  // Left brace
+  {UTF16_RBRACE               , "{rightbrace}"          },  // Right brace
+  {UTF16_SLOPE                , "{slope}"               },  // Slope
+  {UTF16_STILE2               , "|"                     },  // Stile (a.k.a. 0x2223)
+  {UTF16_CIRCUMFLEX           , "^"                     },  // Circumflex
+  {UTF16_DOUBLEQUOTE          , "{doublequote}"         },  // Double quote
+}
+#endif
+;
+
 typedef enum tagUNDOACTS
 {
     undoNone = 0,       // 0000:  No action
@@ -1107,7 +1284,10 @@ typedef union tagLPMEMTXTUNION
     LPWORD    W;        // 00:  ...   WORD    ...
 } LPMEMTXTUNION;
 
-
+typedef void (*LPERRHANDFN) (LPWCHAR lpwszMsg,
+                             LPWCHAR lpwszLine,
+                             UINT uCaret,
+                             HWND hWndEC);
 #define ENUMS_DEFINED
 #undef  EXTERN
 

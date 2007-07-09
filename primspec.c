@@ -123,24 +123,24 @@ LPYYSTYPE PrimFnNonceError_EM
 
 
 //***************************************************************************
-//  $PrimFnValueError
+//  $PrimFnValueError_EM
 //
 //  Primitive function VALUE ERROR
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnValueError"
+#define APPEND_NAME     L" -- PrimFnValueError_EM"
 #else
 #define APPEND_NAME
 #endif
 
-void PrimFnValueError
+void PrimFnValueError_EM
     (LPTOKEN lptkFunc)
 
 {
     ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                                lptkFunc);
-} // End PrimFnValueError
+} // End PrimFnValueError_EM
 #undef  APPEND_NAME
 
 
@@ -241,9 +241,9 @@ LPYYSTYPE PrimProtoFnMixed_EM_YY
             hGlbRes = ClrPtrTypeDirGlb (lpYYRes->tkToken.tkData.tkGlbData);
 
             // Make the prototype
-            hGlbResProto = MakePrototype_EM (hGlbRes,   // Proto arg handle
-                                             lptkFunc,  // Ptr to function token
-                                             MP_CHARS); // CHARs allowed
+            hGlbResProto = MakeMonPrototype_EM (hGlbRes,    // Proto arg handle
+                                                lptkFunc,   // Ptr to function token
+                                                MP_CHARS);  // CHARs allowed
             // Save back into the result
             lpYYRes->tkToken.tkData.tkGlbData =
               MakeGlbTypeGlb (hGlbResProto);
@@ -282,132 +282,32 @@ LPYYSTYPE PrimProtoFnScalar_EM_YY
      LPTOKEN    lptkAxis)           // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL    hGlbLft = NULL,
-               hGlbRht = NULL,
-               hGlbRes = NULL,
-               hGlbAxis = NULL;
-    LPVOID     lpMemLft = NULL,
-               lpMemRht = NULL;
-    APLSTYPE   aplTypeLft,
-               aplTypeRht,
-               aplTypeRes;
-    APLRANK    aplRankLft,
-               aplRankRht,
-               aplRankRes;
-    APLNELM    aplNELMAxis,
-               aplNELMLft,
-               aplNELMRht;
-    LPAPLUINT  lpMemAxisHead = NULL,
-               lpMemAxisTail = NULL;
-    LPYYSTYPE  lpYYRes = NULL;
-    LPPRIMSPEC lpPrimSpec;
-    BOOL       bBoolFn;
+    HGLOBAL    hGlbLft = NULL,          // Left arg global memory handle
+               hGlbRht = NULL,          // Right ...
+               hGlbRes = NULL;          // Result   ...
+    LPYYSTYPE  lpYYRes = NULL;          // Ptr to the result
 
-    // Get right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    // Get right arg's global memory handle
+    hGlbRht = GetGlbHandle (lptkRhtArg);
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
-    {
         //***************************************************************
         // Called monadically
         //***************************************************************
 
         // Make the prototype
-        hGlbRes = MakePrototype_EM (hGlbRht,    // Proto arg handle
-                                    lptkFunc,   // Ptr to function token
-                                    MP_NUMONLY);// Numerics only
-    } else
+        hGlbRes = MakeMonPrototype_EM (hGlbRht,     // Proto arg handle
+                                       lptkFunc,    // Ptr to function token
+                                       MP_NUMONLY); // Numerics only
+    else
     {
         //***************************************************************
         // Called dyadically
         //***************************************************************
 
-        // Get the attributes (Type, NELM, and Rank)
-        //   of the left & right args
-        AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-        AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-
-        // Get left arg's global ptrs
-        GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-
-        // The rank of the result is the larger of the two args
-        aplRankRes = max (aplRankLft, aplRankRht);
-
-        // Check for axis present
-        if (lptkAxis NE NULL)
-        {
-            // Check the axis values, fill in # elements in axis
-            if (!CheckAxis_EM (lptkAxis,        // The axis token
-                               aplRankRes,      // All values less than this
-                               FALSE,           // TRUE iff scalar or one-element vector only
-                               TRUE,            // TRUE iff want sorted axes
-                               FALSE,           // TRUE iff axes must be contiguous
-                               FALSE,           // TRUE iff duplicate axes are allowed
-                               NULL,            // TRUE iff fractional values allowed
-                               NULL,            // Return last axis value
-                              &aplNELMAxis,     // Return # elements in axis vector
-                              &hGlbAxis))       // Return HGLOBAL with APLINT axis values
-                goto ERROR_EXIT;
-            // Lock the memory to get a ptr to it
-            lpMemAxisHead = MyGlobalLock (hGlbAxis);
-
-            // Get pointer to the axis tail (where the [X] values are)
-            lpMemAxisTail = &lpMemAxisHead[aplRankRes - aplNELMAxis];
-        } else
-            // No axis is the same as all axes
-            aplNELMAxis = aplRankRes;
-
-        // Get the corresponding lpPrimSpec
-        lpPrimSpec = PrimSpecTab[SymTrans (lptkFunc)];
-
-        // Calculate the storage type of the result
-        aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMLft,
-                                                   &aplTypeLft,
-                                                    lptkFunc,
-                                                    aplNELMRht,
-                                                   &aplTypeRht);
-        if (aplTypeRes EQ ARRAY_ERROR)
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
-
-        // Check for RANK and LENGTH ERRORs
-        if (!CheckRankLengthError_EM (aplRankRes,
-                                      aplRankLft,
-                                      aplNELMLft,
-                                      lpMemLft,
-                                      aplRankRht,
-                                      aplNELMRht,
-                                      lpMemRht,
-                                      aplNELMAxis,
-                                      lpMemAxisTail,
-                                      lptkFunc))
-            goto ERROR_EXIT;
-
-        // ***FIXME***
-        // Instead of returning one of the args as the result,
-        //   we should create a result by trundling through
-        //   the args using scalar extension as well as checking
-        //   for RANK and LENGTH ERRORs between the args.
-        // For example, adding empty vectors whose prototypes are
-        //   0 (0 0) and (0 0) 0 should produce an empty vector
-        //   whose prototype is (0 0) (0 0) by scalar extension.
-        // Also, adding empty vectors whose prototypes are
-        //   (0 0) and (0 0 0) should produce a LENGTH ERROR.
-
-
-
-
-
-
-
-
-
-
-
+        // Get left arg's global memory handle
+        hGlbLft = GetGlbHandle (lptkLftArg);
 
         // Check for both args immediate
         if (hGlbLft EQ NULL
@@ -426,19 +326,14 @@ LPYYSTYPE PrimProtoFnScalar_EM_YY
             goto NORMAL_EXIT;
         } // End IF
 
-        // By convention, use the prototype of the right arg
-        //   if it is empty, the left arg if not
-        hGlbRes = (aplNELMRht EQ 0) ? hGlbRht : hGlbLft;
-
-        // Get the function type
-        bBoolFn = lptkFunc->tkData.tkChar EQ UTF16_EQUAL
-               || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL;
-
-        // Make the prototype
-        hGlbRes = MakePrototype_EM (hGlbRes,    // Proto arg handle
-                                    lptkFunc,   // Ptr to function token
-                                    bBoolFn ? MP_NUMCONV : MP_NUMONLY);
-    } // End IF/ELSE
+        // Handle as dyadic prototype
+        hGlbRes = MakeDydPrototype_EM (hGlbLft,                     // Left arg global memory handle (may be NULL if immediate)
+                                       lptkLftArg->tkFlags.ImmType, // Left arg immediate type
+                                       lptkFunc,                    // Ptr to function token
+                                       hGlbRht,                     // Right arg global memory handle
+                                       lptkRhtArg->tkFlags.ImmType, // Left arg immediate type
+                                       lptkAxis);                   // Ptr to axis value token
+    } // End IF
 
     if (!hGlbRes)
         goto ERROR_EXIT;
@@ -457,30 +352,6 @@ LPYYSTYPE PrimProtoFnScalar_EM_YY
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (lpMemLft)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-    } // End IF
-
-    if (lpMemRht)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-    } // End IF
-
-    if (hGlbAxis)
-    {
-        if (lpMemAxisHead)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxisHead = lpMemAxisTail = NULL;
-        } // End IF
-
-        // We no longer need this storage
-        DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
-    } // End IF
-
     return lpYYRes;
 } // End PrimProtoFnScalar_EM_YY
 #undef  APPEND_NAME
@@ -558,9 +429,10 @@ LPYYSTYPE PrimFnMon_EM_YY
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-            // If it's not immediate, we must traverse the array
+            // If it's not immediate, we must trundle through the array
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
+                // Get the global memory handle
                 hGlbRes = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
@@ -875,6 +747,7 @@ RESTART_EXCEPTION_VARIMMED:
             return lpYYRes;
 
         case TKT_VARARRAY:
+            // Get the global memory handle
             hGlbRes = lptkRhtArg->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
@@ -982,7 +855,6 @@ HGLOBAL PrimFnMonGlb_EM
                                              lptkFunc,
                                              hGlbRht,
                                             &hGlbRes,
-                                            &lpMemRes,
                                              aplRankRht,
                                              lpPrimSpec))
             goto ERROR_EXIT;
@@ -1046,9 +918,9 @@ RESTART_EXCEPTION:
         *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
 
         // Make the prototype
-        hGlbProto = MakePrototype_EM (hGlbRht,      // Proto arg handle
-                                      lptkFunc,     // Ptr to function token
-                                      MP_NUMONLY);  // Numerics only
+        hGlbProto = MakeMonPrototype_EM (hGlbRht,       // Proto arg handle
+                                         lptkFunc,      // Ptr to function token
+                                         MP_NUMONLY);   // Numerics only
         if (!hGlbProto)
             goto ERROR_EXIT;
 
@@ -1545,11 +1417,10 @@ LPYYSTYPE PrimFnDyd_EM_YY
     LPAPLUINT   lpMemAxisHead = NULL,   // Ptr to axis head
                 lpMemAxisTail = NULL;   // Ptr to axis tail
     LPVOID      lpMemLft = NULL,        // Ptr to left arg global memory
-                lpMemRht = NULL,        // Ptr to right ...
-                lpMemRes = NULL;        // Ptr to result   ...
+                lpMemRht = NULL;        // Ptr to right ...
     APLINT      aplInteger;             // Temporary integer value
     BOOL        bRet = TRUE;            // TRUE iff result is valid
-    LPPRIMFN_DYD_SNvSN PrimFn;          // Ptr to dyadic scalar SimpNest vs. SimpNest function
+    LPPRIMFN_DYD_SNvSN lpPrimFn;        // Ptr to dyadic scalar SimpNest vs. SimpNest function
     LPYYSTYPE   lpYYRes = NULL;         // Ptr to the result
 
     DBGENTER;
@@ -1558,6 +1429,21 @@ LPYYSTYPE PrimFnDyd_EM_YY
     //   of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+
+#ifdef PRIMPROTOFNSCALAR
+    // Handle prototypes separately
+    if (aplNELMLft EQ 0
+     || aplNELMRht EQ 0)
+    {
+        lpYYRes = PrimProtoFnScalar_EM_YY (lptkLftArg,  // Ptr to left arg token
+                                           lptkFunc,    // Ptr to function token
+                                           lptkRhtArg,  // Ptr to right arg token
+                                           lptkAxis);   // Ptr to axis token (may be NULL)
+        bRet = (lpYYRes NE NULL);
+
+        goto NORMAL_EXIT;
+    } // End IF
+#endif
 
     // The rank of the result is the larger of the two args
     aplRankRes = max (aplRankLft, aplRankRht);
@@ -1569,7 +1455,7 @@ LPYYSTYPE PrimFnDyd_EM_YY
         if (!CheckAxis_EM (lptkAxis,        // The axis token
                            aplRankRes,      // All values less than this
                            FALSE,           // TRUE iff scalar or one-element vector only
-                           TRUE,            // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff want sorted axes
                            FALSE,           // TRUE iff axes must be contiguous
                            FALSE,           // TRUE iff duplicate axes are allowed
                            NULL,            // TRUE iff fractional values allowed
@@ -1602,21 +1488,6 @@ LPYYSTYPE PrimFnDyd_EM_YY
 
     Assert (IsSimpleNum (aplTypeRes)
          || aplTypeRes EQ ARRAY_NESTED);
-
-#ifdef PRIMPROTOFNSCALAR
-    // Handle prototypes separately
-    if (aplNELMLft EQ 0
-     || aplNELMRht EQ 0)
-    {
-        lpYYRes = PrimProtoFnScalar_EM_YY (lptkLftArg,  // Ptr to left arg token
-                                           lptkFunc,    // Ptr to function token
-                                           lptkRhtArg,  // Ptr to right arg token
-                                           lptkAxis);   // Ptr to axis token (may be NULL)
-        bRet = (lpYYRes NE NULL);
-
-        goto NORMAL_EXIT;
-    } // End IF
-#endif
 
     // Get left and right arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -1657,7 +1528,6 @@ LPYYSTYPE PrimFnDyd_EM_YY
                                              hGlbLft,
                                              hGlbRht,
                                             &hGlbRes,
-                                            &lpMemRes,
                                              aplRankLft,
                                              aplRankRht,
                                              aplNELMLft,
@@ -1674,7 +1544,6 @@ LPYYSTYPE PrimFnDyd_EM_YY
                                     &hGlbRes,
                                      lpMemLft,
                                      lpMemRht,
-                                    &lpMemRes,
                                      aplRankLft,
                                      aplRankRht,
                                     &aplRankRes,
@@ -1696,22 +1565,22 @@ LPYYSTYPE PrimFnDyd_EM_YY
     if (aplTypeLft EQ ARRAY_NESTED
      && aplTypeRht EQ ARRAY_NESTED)
         // Left arg is NESTED, right arg is NESTED
-        PrimFn = PrimFnDydNestNest_EM;
+        lpPrimFn = &PrimFnDydNestNest_EM;
     else
     if (aplTypeLft NE ARRAY_NESTED
      && aplTypeRht EQ ARRAY_NESTED)
         // Left arg is SIMPLE, right arg is NESTED
-        PrimFn = PrimFnDydSimpNest_EM;
+        lpPrimFn = &PrimFnDydSimpNest_EM;
     else
     if (aplTypeLft EQ ARRAY_NESTED
      && aplTypeRht NE ARRAY_NESTED)
         // Left arg is NESTED, right arg is SIMPLE
-        PrimFn = PrimFnDydNestSimp_EM;
+        lpPrimFn = &PrimFnDydNestSimp_EM;
     else
     if (aplTypeLft NE ARRAY_NESTED
      && aplTypeRht NE ARRAY_NESTED)
         // Left arg is SIMPLE, right arg is SIMPLE
-        PrimFn = PrimFnDydSimpSimp_EM;
+        lpPrimFn = &PrimFnDydSimpSimp_EM;
     else
     {
         DbgStop ();     // We should never get here
@@ -1720,29 +1589,28 @@ LPYYSTYPE PrimFnDyd_EM_YY
     } // Endf IF/ELSE/...
 
     // Call the appropriate function
-    if (!(*PrimFn) (lpYYRes,
-                    lptkLftArg,
-                    lptkFunc,
-                    lptkRhtArg,
-                    hGlbLft,
-                    hGlbRht,
-                   &hGlbRes,
-                    lpMemLft,           // Points to Sig.nature
-                    lpMemRht,           // ...
-                    lpMemRes,           // ...
-                    lpMemAxisHead,
-                    lpMemAxisTail,
-                    aplRankLft,
-                    aplRankRht,
-                    aplRankRes,
-                    aplTypeLft,
-                    aplTypeRht,
-                    aplTypeRes,
-                    aplNELMLft,
-                    aplNELMRht,
-                    aplNELMRes,
-                    aplNELMAxis,
-                    lpPrimSpec))
+    if (!(*lpPrimFn) (lpYYRes,
+                      lptkLftArg,
+                      lptkFunc,
+                      lptkRhtArg,
+                      hGlbLft,
+                      hGlbRht,
+                     &hGlbRes,
+                      lpMemLft,         // Points to Sig.nature
+                      lpMemRht,         // ...
+                      lpMemAxisHead,
+                      lpMemAxisTail,
+                      aplRankLft,
+                      aplRankRht,
+                      aplRankRes,
+                      aplTypeLft,
+                      aplTypeRht,
+                      aplTypeRes,
+                      aplNELMLft,
+                      aplNELMRht,
+                      aplNELMRes,
+                      aplNELMAxis,
+                      lpPrimSpec))
         goto ERROR_EXIT;
     else
         goto NORMAL_EXIT;
@@ -1751,22 +1619,10 @@ ERROR_EXIT:
 
     if (hGlbRes)
     {
-        if (lpMemRes)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-        } // End IF
-
         // We no longer need this storage
         FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes && lpMemRes)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-    } // End IF
-
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
@@ -1823,7 +1679,6 @@ BOOL PrimFnDydSimpNest_EM
 
      LPVOID        lpMemLft,        // Points to Sig.nature
      LPVOID        lpMemRht,        // ...
-     LPVOID        lpMemRes,        // ...
 
      LPAPLUINT     lpMemAxisHead,   //
      LPAPLUINT     lpMemAxisTail,   //
@@ -1843,8 +1698,9 @@ BOOL PrimFnDydSimpNest_EM
      LPPRIMSPEC    lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
-    BOOL       bRet = TRUE;
-    APLINT     uRes;
+    LPVOID     lpMemRes = NULL;     // Ptr to result global memory
+    BOOL       bRet = TRUE;         // TRUE iff result is valid
+    APLINT     uRes;                // Loop counter
     APLINT     aplIntegerLft,
                aplIntegerRht,
                apaOffLft,
@@ -1894,6 +1750,9 @@ BOOL PrimFnDydSimpNest_EM
 #undef  lpAPA
     } // End IF
 
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (*lphGlbRes);
+
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
@@ -1915,9 +1774,9 @@ BOOL PrimFnDydSimpNest_EM
         HGLOBAL hGlbProto;
 
         // Make the prototype
-        hGlbProto = MakePrototype_EM (hGlbRht,          // Proto arg handle
-                                      lptkFunc,         // Ptr to function token
-                                      MP_NUMCONV);      // Convert to numerics
+        hGlbProto = MakeMonPrototype_EM (hGlbRht,       // Proto arg handle
+                                         lptkFunc,      // Ptr to function token
+                                         MP_NUMCONV);   // Convert to numerics
         if (hGlbProto)
             // Save the handle
             *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbProto);
@@ -2114,6 +1973,12 @@ BOOL PrimFnDydSimpNest_EM
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:
+    if (*lphGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+    } // End IF
+
     if (lpMemWVec)
     {
         // We no longer need this ptr
@@ -2170,7 +2035,6 @@ BOOL PrimFnDydNestSimp_EM
 
      LPVOID        lpMemLft,        // Points to Sig.nature
      LPVOID        lpMemRht,        // ...
-     LPVOID        lpMemRes,        // ...
 
      LPAPLUINT     lpMemAxisHead,   //
      LPAPLUINT     lpMemAxisTail,   //
@@ -2190,8 +2054,9 @@ BOOL PrimFnDydNestSimp_EM
      LPPRIMSPEC    lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
-    BOOL       bRet = TRUE;
-    APLINT     uRes;
+    LPVOID     lpMemRes = NULL;     // Ptr to result global memory
+    BOOL       bRet = TRUE;         // TRUE iff result is valid
+    APLINT     uRes;                // Loop counter
     APLINT     aplIntegerLft,
                aplIntegerRht,
                apaOffRht,
@@ -2241,6 +2106,9 @@ BOOL PrimFnDydNestSimp_EM
 #undef  lpAPA
     } // End IF
 
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (*lphGlbRes);
+
     // Skip over the header to the dimensions
     lpMemDimLft = VarArrayBaseToDim (lpMemLft);
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
@@ -2260,9 +2128,9 @@ BOOL PrimFnDydNestSimp_EM
     if (aplNELMRes EQ 0)
     {
         // Make the prototype
-        hGlbSub = MakePrototype_EM (hGlbLft,        // Proto arg handle
-                                    lptkFunc,       // Ptr to function token
-                                    MP_NUMCONV);    // Convert to numerics
+        hGlbSub = MakeMonPrototype_EM (hGlbLft,     // Proto arg handle
+                                       lptkFunc,    // Ptr to function token
+                                       MP_NUMCONV); // Convert to numerics
         if (hGlbSub)
             // Save the handle
             *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbSub);
@@ -2459,6 +2327,12 @@ BOOL PrimFnDydNestSimp_EM
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:
+    if (*lphGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+    } // End IF
+
     if (lpMemWVec)
     {
         // We no longer need this ptr
@@ -2578,7 +2452,6 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                              hGlbLft,
                                              NULL,
                                             &hGlbRes,
-                                            &lpMemRes,
                                              aplRankLft,
                                              aplRankRht,
                                              aplNELMLft,
@@ -2598,7 +2471,6 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                     &hGlbRes,
                                      NULL,
                                      lpMemLft,
-                                    &lpMemRes,
                                      aplRankRht,
                                      aplRankLft,
                                     &aplRankRes,
@@ -2608,11 +2480,14 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                      aplNELMRes))
         goto ERROR_EXIT;
 
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
     // Skip over the header and dimensions to the data
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    // In case the left arg is APA
+    // If the left arg is an APA, get its parameters
     if (aplTypeLft EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
@@ -2743,6 +2618,45 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $FillToken
+//
+//  Fill in a token
+//***************************************************************************
+
+void FillToken
+    (LPTOKEN lptkArg,           // Ptr to arg token
+     LPVOID  lpMem,             // Ptr to either HGLOBAL or LPSYMENTRY
+     UINT    tkCharIndex)       // Character index in case of error
+
+{
+    // Split cases based upon the ptr type
+    switch (GetPtrTypeDir (lpMem))
+    {
+        case PTRTYPE_STCONST:
+            lptkArg->tkFlags.TknType   = TKT_VARIMMED;
+            lptkArg->tkFlags.ImmType   = ((LPSYMENTRY) lpMem)->stFlags.ImmType;
+////////////lptkArg->tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+            lptkArg->tkData.tkLongest  = ((LPSYMENTRY) lpMem)->stData.stLongest;
+            lptkArg->tkCharIndex       = tkCharIndex;
+
+            break;
+
+        case PTRTYPE_HGLOBAL:
+            lptkArg->tkFlags.TknType   = TKT_VARARRAY;
+////////////lptkArg->tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////////lptkArg->tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+            lptkArg->tkData.tkGlbData  = lpMem;
+            lptkArg->tkCharIndex       = tkCharIndex;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End FillToken
+
+
+//***************************************************************************
 //  $PrimFnDydNestNest_EM
 //
 //  Dyadic primitive scalar function, left nested, right nested
@@ -2767,7 +2681,6 @@ BOOL PrimFnDydNestNest_EM
 
      LPVOID     lpMemLft,           // Points to Sig.nature
      LPVOID     lpMemRht,           // ...
-     LPVOID     lpMemRes,           // ...
 
      LPAPLUINT  lpMemAxisHead,      // Ptr to axis values, fleshed out
      LPAPLUINT  lpMemAxisTail,      // Ptr to grade up of AxisHead
@@ -2787,12 +2700,11 @@ BOOL PrimFnDydNestNest_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    BOOL   bRet = TRUE;
-    APLINT uRes;
+    BOOL   bRet = TRUE;             // TRUE iff result is valid
+    APLINT uRes;                    // Loop counter
+    LPVOID lpMemRes = NULL;         // Ptr to result global memory
 
     DBGENTER;
-
-    DbgBrk ();      // ***TESTME***
 
     // Check for INNER RANK and LENGTH ERRORs
     if (!CheckRankLengthError_EM (aplRankRes,
@@ -2807,6 +2719,9 @@ BOOL PrimFnDydNestNest_EM
                                   lptkFunc))
         goto ERROR_EXIT;
 
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (*lphGlbRes);
+
     // Skip over the headers and dimensions to the data
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
@@ -2816,7 +2731,7 @@ BOOL PrimFnDydNestNest_EM
     // Handle prototypes separately
     if (aplNELMRes EQ 0)
     {
-        DbgBrk ();      // ***FINISHME***
+        DbgBrk ();      // ***FINISHME*** -- Should we delete this??
 
 
 
@@ -2830,18 +2745,15 @@ BOOL PrimFnDydNestNest_EM
                   tkRht = {0};
         LPYYSTYPE lpYYRes;
 
-        tkLft.tkFlags.TknType   = TKT_VARARRAY;
-////////tkLft.TknType.ImmType   = 0;    // Already zero from YYAlloc
-////////tkLft.TknType.NoDisplay = 0;    // Already zero from YYAlloc
-        tkLft.tkData.tkGlbData  = ((LPAPLNESTED) lpMemLft)[uRes % aplNELMLft];
-        tkLft.tkCharIndex       = lptkLftArg->tkCharIndex;
-
-        tkRht.tkFlags.TknType   = TKT_VARARRAY;
-////////tkRht.TknType.ImmType   = 0;    // Already zero from YYAlloc
-////////tkRht.TknType.NoDisplay = 0;    // Already zero from YYAlloc
-        tkRht.tkData.tkGlbData  = ((LPAPLNESTED) lpMemRht)[uRes % aplNELMRht];
-        tkRht.tkCharIndex       = lptkRhtArg->tkCharIndex;
-
+        // Fill in the left arg token
+        FillToken (&tkLft,
+                    ((LPAPLNESTED) lpMemLft)[uRes % aplNELMLft],
+                    lptkLftArg->tkCharIndex);
+        // Fill in the right arg token
+        FillToken (&tkRht,
+                    ((LPAPLNESTED) lpMemRht)[uRes % aplNELMRht],
+                    lptkRhtArg->tkCharIndex);
+        // Call as dyadic function
         lpYYRes = (*lpPrimSpec->PrimFnDyd_EM_YY) (&tkLft,       // Ptr to left arg token
                                                    lptkFunc,    // Ptr to function token
                                                   &tkRht,       // Ptr to right arg token
@@ -2854,6 +2766,9 @@ BOOL PrimFnDydNestNest_EM
         } else
             bRet = FALSE;
     } // End FOR
+
+    // We no longer need this ptr
+    MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
 
     if (bRet)
     {
@@ -3115,6 +3030,7 @@ RESTART_EXCEPTION:
                     if (aplTypeRht EQ ARRAY_BOOL)
                     {
                         // ***FIXME*** -- Optimize by chunking
+
                         // Loop through the right arg/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
@@ -4435,7 +4351,6 @@ HGLOBAL PrimFnDydSiScNest_EM
                                              NULL,
                                              hGlbRht,
                                             &hGlbRes,
-                                            &lpMemRes,
                                              aplRankLft,
                                              aplRankRht,
                                              aplNELMLft,
@@ -4455,7 +4370,6 @@ HGLOBAL PrimFnDydSiScNest_EM
                                     &hGlbRes,
                                      NULL,
                                      lpMemRht,
-                                    &lpMemRes,
                                      aplRankLft,
                                      aplRankRht,
                                     &aplRankRes,
@@ -4465,12 +4379,14 @@ HGLOBAL PrimFnDydSiScNest_EM
                                      aplNELMRes))
         goto ERROR_EXIT;
 
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
     // If the right arg is an APA, get its parameters
-
     if (aplTypeRht EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
@@ -4882,7 +4798,6 @@ BOOL PrimFnDydSimpSimp_EM
 
      LPVOID     lpMemLft,           // Points to Sig.nature
      LPVOID     lpMemRht,           // ...
-     LPVOID     lpMemRes,           // ...
 
      LPAPLUINT  lpMemAxisHead,      // Ptr to axis values, fleshed out
      LPAPLUINT  lpMemAxisTail,      // Ptr to grade up of AxisHead
@@ -4902,6 +4817,7 @@ BOOL PrimFnDydSimpSimp_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+    LPVOID    lpMemRes = NULL;  // Ptr to result global memory
     BOOL      bRet = TRUE;      // TRUE iff result is valid
     APLSTYPE  aplTypeArg;
     APLINT    aplIntegerLft,
@@ -4933,6 +4849,10 @@ BOOL PrimFnDydSimpSimp_EM
     //***************************************************************
     // Both arguments are simple
     //***************************************************************
+
+    // Lock the memory to get a ptr to it
+    if (*lphGlbRes)
+        lpMemRes = MyGlobalLock (*lphGlbRes);
 
     if (aplNELMLft EQ 1
      && aplNELMRht EQ 1)
@@ -5825,9 +5745,9 @@ RESTART_EXCEPTION_NOAXIS:
 
                             // Restart the pointers
                             lpMemRes = lpMemResStart;
-        #ifdef DEBUG
+#ifdef DEBUG
                             dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
-        #endif
+#endif
                             goto RESTART_EXCEPTION_NOAXIS;
                         } // End IF
 
@@ -5846,7 +5766,22 @@ RESTART_EXCEPTION_NOAXIS:
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE/...
+
+    if (lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
 ERROR_EXIT:
+    if (*lphGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+    } // End IF
+
     if (hGlbOdo && lpMemOdo)
     {
         // We no longer need this ptr

@@ -210,7 +210,7 @@ LPYYSTYPE PrimOpDydDotCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
     lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->FcnCount];
 
-    DbgBrk ();      // ***FINISHME***
+    DbgBrk ();      // ***FINISHME*** -- PrimOpDydDotCommon_EM_YY
 
 
 

@@ -37,15 +37,10 @@ BOOL AssignName_EM
     STFLAGS stSrcFlags = {0},   // Copy of the source's STE flags
             stNamFlags;         // ...         name's   ...
     HGLOBAL hGlbSrc;            // Source's global memory handle
-    BOOL    bFcnOpr;            // TRUE iff the source is a function/operator
+    BOOL    bFcnOpr,            // TRUE iff source is a function/operator
+            bRet = TRUE;        // TRUE iff result is valid
 
     DBGENTER;
-
-////// Because when the tokens are first created we don't
-//////   know the type of a name, it is arbitrarily typed
-//////   as TKT_VARNAMED.  Now is the time to set the record
-//////   straight.
-////SetNameType (lptkNam, lptkSrc);
 
     // It's a named variable or function
     Assert (lptkNam->tkFlags.TknType EQ TKT_VARNAMED
@@ -56,7 +51,7 @@ BOOL AssignName_EM
 
     // If the target is a system var, validate the assignment
     //   before we free the old value
-    if (lptkNam->tkData.tkSym->stFlags.SysType EQ NAMETYPE_VAR)
+    if (lptkNam->tkData.tkSym->stFlags.ObjType EQ NAMETYPE_VAR)
     {
         // If the target is a defined function system label, signal a SYNTAX ERROR
         if (lptkNam->tkData.tkSym->stFlags.DfnSysLabel)
@@ -89,18 +84,56 @@ BOOL AssignName_EM
             {
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                            lptkNam);
-                DBGLEAVE;
-                return FALSE;
+                bRet = FALSE;
+
+                goto ERROR_EXIT;
             } // End IF
 
-            // If the source is not immediate, ...
-            if (!lptkSrc->tkData.tkSym->stFlags.Imm)
+            // If the source is immediate, ...
+            if (lptkSrc->tkData.tkSym->stFlags.Imm)
             {
+                // Handle the immediate case
+
+                // tkData is an LPSYMENTRY
+                Assert (GetPtrTypeDir (lptkSrc->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+                // stData is immediate
+                Assert (lptkSrc->tkData.tkSym->stFlags.Imm);
+
+                // Free the old value for this name
+                FreeResultName (lptkNam);
+
+                // Because the source and the destination
+                //   may well have very different characteristics
+                //   (SysVar vs. UsrVar), we can't re-use the
+                //   source LPSYMENTRY, so we copy the values
+                //   into the target's LPSYMENTRY.
+
+                // Copy the source's flags
+                stSrcFlags = lptkSrc->tkData.tkSym->stFlags;
+
+                // Include the source's .Imm & .ImmType flags
+                lptkNam->tkData.tkSym->stFlags.Imm      =
+                                    stSrcFlags.Imm;
+                lptkNam->tkData.tkSym->stFlags.ImmType  =
+                                    stSrcFlags.ImmType;
+                // Copy the constant data
+                lptkNam->tkData.tkSym->stData.stLongest =
+                lptkSrc->tkData.tkSym->stData.stLongest;
+            } else
+            {
+                // Handle the global case
+
                 // stData is an internal function, a valid HGLOBAL variable or function array, or defined function
                 Assert (lptkSrc->tkData.tkSym->stFlags.FcnDir
                      || IsGlbTypeVarDir (lptkSrc->tkData.tkSym->stData.stGlbData)
                      || IsGlbTypeFcnDir (lptkSrc->tkData.tkSym->stData.stGlbData)
                      || IsGlbTypeDfnDir (lptkSrc->tkData.tkSym->stData.stGlbData));
+
+                // Copy the "Accepts Quad-axis" flag
+                lptkNam->lptkOrig->tkData.tkSym->stFlags.DfnAxis =
+                lptkNam->          tkData.tkSym->stFlags.DfnAxis =
+                lptkSrc->          tkData.tkSym->stFlags.DfnAxis;
 
                 // Check for internal functions
                 if (lptkSrc->tkData.tkSym->stFlags.FcnDir)
@@ -130,39 +163,8 @@ BOOL AssignName_EM
                     // Transfer defined function flag
                     lptkNam->tkData.tkSym->stFlags.UsrDfn =
                     lptkSrc->tkData.tkSym->stFlags.UsrDfn;
-                } // End IF
-
-                break;
-            } // End IF
-
-            // Handle the immediate case
-
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkSrc->tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-            // stData is immediate
-            Assert (lptkSrc->tkData.tkSym->stFlags.Imm);
-
-            // Free the old value for this name
-            FreeResultName (lptkNam);
-
-            // Because the source and the destination
-            //   may well have very different characteristics
-            //   (SysVar vs. UsrVar), we can't re-use the
-            //   source LPSYMENTRY, so we copy the values
-            //   into the target's LPSYMENTRY.
-
-            // Copy the source's flags
-            stSrcFlags = lptkSrc->tkData.tkSym->stFlags;
-
-            // Include the source's .Imm & .ImmType flags
-            lptkNam->tkData.tkSym->stFlags.Imm      =
-                                stSrcFlags.Imm;
-            lptkNam->tkData.tkSym->stFlags.ImmType  =
-                                stSrcFlags.ImmType;
-            // Copy the constant data
-            lptkNam->tkData.tkSym->stData.stLongest =
-            lptkSrc->tkData.tkSym->stData.stLongest;
+                } // End IF/ELSE
+            } // End IF/ELSE
 
             break;
 
@@ -195,7 +197,7 @@ BOOL AssignName_EM
             // It's an immediate primitive function
             lptkNam->tkData.tkSym->stFlags.Imm     = 1;
             lptkNam->tkData.tkSym->stFlags.ImmType = GetImmTypeFcn (lptkSrc->tkData.tkChar);
-            lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_FN12;
+            lptkNam->tkData.tkSym->stFlags.ObjType = NAMETYPE_FN12;
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
@@ -209,7 +211,7 @@ BOOL AssignName_EM
             // It's an immediate primitive operator
             lptkNam->tkData.tkSym->stFlags.Imm     = 1;
             lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP1;
-            lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_OP1;
+            lptkNam->tkData.tkSym->stFlags.ObjType = NAMETYPE_OP1;
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
@@ -223,7 +225,7 @@ BOOL AssignName_EM
             // It's an immediate primitive operator
             lptkNam->tkData.tkSym->stFlags.Imm     = 1;
             lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP2;
-            lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_OP2;
+            lptkNam->tkData.tkSym->stFlags.ObjType = NAMETYPE_OP2;
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest=
@@ -259,7 +261,7 @@ BOOL AssignName_EM
       || lptkSrc->tkFlags.TknType EQ TKT_OP1NAMED
       || lptkSrc->tkFlags.TknType EQ TKT_OP2NAMED)
      && !lptkSrc->tkData.tkSym->stFlags.FcnDir)     // Valid as the TknType is TKT_xxxNAMED
-        lptkSrc->tkData.tkSym->stFlags.UsrType = GetNameType (lptkSrc);
+        lptkSrc->tkData.tkSym->stFlags.ObjType = GetNameType (lptkSrc);
 
     // If the source is a function or operator
     //   mark the name as such
@@ -272,30 +274,29 @@ BOOL AssignName_EM
             || lptkSrc->tkFlags.TknType EQ TKT_OP2IMMED);
     if (bFcnOpr)
     {
+        // Set the object type
+        lptkNam->tkData.tkSym->stFlags.ObjType = GetNameType (lptkSrc);
+
         // Split cases based upon the underlying NAMETYPE_xxx
-        switch (GetNameType (lptkSrc))
+        switch (lptkNam->tkData.tkSym->stFlags.ObjType)
         {
             case NAMETYPE_FN0:
                 lptkNam->tkFlags.TknType = TKT_FCNNAMED;
-                lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_FN0;
 
                 break;
 
             case NAMETYPE_FN12:
                 lptkNam->tkFlags.TknType = TKT_FCNNAMED;
-                lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_FN12;
 
                 break;
 
             case NAMETYPE_OP1:
                 lptkNam->tkFlags.TknType = TKT_OP1NAMED;
-                lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_OP1;
 
                 break;
 
             case NAMETYPE_OP2:
                 lptkNam->tkFlags.TknType = TKT_OP2NAMED;
-                lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_OP2;
 
                 break;
 
@@ -307,15 +308,10 @@ BOOL AssignName_EM
     // Mark as valued
     lptkNam->tkData.tkSym->stFlags.Value = 1;
 
-    // If it's a var, ensure NAMETYPE_VAR is set for either .SysType or .UsrType
+    // If it's a var, ensure NAMETYPE_VAR is set for either .ObjType
     stNamFlags = lptkNam->tkData.tkSym->stFlags;
-    if (stNamFlags.SysName
-     && !IsNameTypeFnOp (stNamFlags.SysType))
-        lptkNam->tkData.tkSym->stFlags.SysType = NAMETYPE_VAR;
-    else
-    if (stNamFlags.UsrName
-     && !IsNameTypeFnOp (stNamFlags.UsrType))
-        lptkNam->tkData.tkSym->stFlags.UsrType = NAMETYPE_VAR;
+    if (!IsNameTypeFnOp (stNamFlags.ObjType))
+        lptkNam->tkData.tkSym->stFlags.ObjType = NAMETYPE_VAR;
 
     // Mark as not displayable
     lptkNam->tkFlags.NoDisplay = 1;
@@ -326,67 +322,12 @@ BOOL AssignName_EM
     if (bFcnOpr)
         DisplayFcnStrand (lptkSrc);
 #endif
+ERROR_EXIT:
     DBGLEAVE;
 
-    return TRUE;
+    return bRet;
 } // End AssignName_EM
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $SetNameType
-//
-//  Set the name type (TKT_xxx) for a named variable
-//***************************************************************************
-
-void SetNameType
-    (LPTOKEN lptkNam,           // Ptr to name token
-     LPTOKEN lptkSrc)           // Ptr to source token
-
-{
-    // Set the new token type in the name as well as the original
-    //   token so we can Untokenize it properly
-    lptkNam->lptkOrig->tkFlags.TknType =
-    lptkNam->tkFlags.TknType           = TranslateTknTypeToTknTypeNamed (lptkSrc->tkFlags.TknType);
-
-////// Split cases based upon the token type
-////switch (lptkNam->tkFlags.TknType)
-////{
-////    case TKT_FCNNAMED:
-////        // tkData is an LPSYMENTRY
-////        Assert (GetPtrTypeDir (lptkNam->tkData.tkVoid) EQ PTRTYPE_STCONST);
-////
-////        // If it's not immediate, ...
-////        if (!lptkNam->tkData.tkSym->stFlags.Imm)
-////        {
-////            // If it has no value, exit
-////            if (!lptkNam->tkData.tkSym->stFlags.Value)
-////                return;
-////
-////            // stData is an HGLOBAL function array or defined function
-////            Assert (IsGlbTypeFcnDir (lptkNam->tkData.tkSym->stData.stGlbData)
-////                 || IsGlbTypeDfnDir (lptkNam->tkData.tkSym->stData.stGlbData));
-////
-////            // Set the new token type in the name as well as the original
-////            //   token so we can Untokenize it properly
-////            lptkNam->lptkOrig->tkFlags.TknType =
-////            lptkNam->tkFlags.TknType           =
-////              TranslateNameTypeToTknTypeNamed (GetNameType (lptkNam));
-////        } else
-////            lptkNam->lptkOrig->tkFlags.TknType =
-////            lptkNam->tkFlags.TknType           =
-////              TranslateImmTypeToTknTypeNamed (lptkNam->tkData.tkSym->stFlags.ImmType);
-////        break;
-////
-////    case TKT_VARNAMED:      // Nothing to do
-////    case TKT_OP1NAMED:      // ...
-////    case TKT_OP2NAMED:      // ...
-////        break;
-////
-////    defstop
-////        break;
-////} // End SWITCH
-} // End SetNameType
 
 
 //***************************************************************************
@@ -420,13 +361,11 @@ NAMETYPES GetNameType
                     // This means that stGlbData is a direct function address
 
                     // Check for niladic functions
-                    if (lptkFunc->tkData.tkSym->stFlags.SysType EQ NAMETYPE_FN0
-                     || lptkFunc->tkData.tkSym->stFlags.UsrType EQ NAMETYPE_FN0)
+                    if (lptkFunc->tkData.tkSym->stFlags.ObjType EQ NAMETYPE_FN0)
                         return NAMETYPE_FN0;
 
                     // Check for monadic/dyadic/ambivalent functions
-                    if (lptkFunc->tkData.tkSym->stFlags.SysType EQ NAMETYPE_FN12
-                     || lptkFunc->tkData.tkSym->stFlags.UsrType EQ NAMETYPE_FN12)
+                    if (lptkFunc->tkData.tkSym->stFlags.ObjType EQ NAMETYPE_FN12)
                         return NAMETYPE_FN12;
 
                     DbgStop ();         // We should never get here
@@ -529,9 +468,9 @@ NAMETYPES GetNameType
 #endif
 
 void AssignArrayCommon
-    (LPTOKEN     lptkName,
-     LPTOKEN     lptkSrc,
-     TOKENTYPES TknType)
+    (LPTOKEN    lptkName,       // Ptr to name token
+     LPTOKEN    lptkSrc,        // Ptr to source token
+     TOKENTYPES TknType)        // Incoming token type for name
 
 {
     // Free the old value for this name
@@ -541,7 +480,6 @@ void AssignArrayCommon
     lptkName->tkFlags.TknType = TknType;
 
     // Copy the HGLOBAL
-////lptkName->tkData.tkSym->stData.stNameFcn = ...
     lptkName->tkData.tkSym->stData.stGlbData = CopySymGlbDir (lptkSrc->tkData.tkGlbData);
 } // End AssignArrayCommon
 #undef  APPEND_NAME
@@ -564,22 +502,22 @@ BOOL AssignNameSpec_EM
      LPTOKEN       lptkVal)         // Ptr to value token
 
 {
-    BOOL     bRet = TRUE;
-    HGLOBAL  hGlbStr,
-             hGlbVal,
-             hGlbSub;
-    LPVOID   lpMemStr,
-             lpMemVal;
-    APLNELM  aplNELMStr,
-             aplNELMVal,
-             aplName;
-    APLRANK  aplRankVal;
-    APLSTYPE aplTypeVal;
-    TOKEN    tkToken = {0};
-    UINT     uBitMaskVal;
+    BOOL       bRet = TRUE;     // TRUE iff result is valid
+    HGLOBAL    hGlbStr,         // Name strand global memory handle
+               hGlbVal,         // Value       ...
+               hGlbSub;         // Subarray    ...
+    LPVOID     lpMemNam,        // Ptr to name strand global memory
+               lpMemVal;        // Ptr to value
+    APLNELM    aplNELMNam,      // Name strand NELM
+               aplNELMVal,      // Value ...
+               aplName;         // Loop counter
+    APLRANK    aplRankVal;
+    APLSTYPE   aplTypeVal;
+    TOKEN      tkToken = {0};
+    UINT       uBitMaskVal;
     LPSYMENTRY lpSymVal;
-    APLINT   apaOffVal,
-             apaMulVal;
+    APLINT     apaOffVal,
+               apaMulVal;
 
     DBGENTER;
 
@@ -589,17 +527,17 @@ BOOL AssignNameSpec_EM
     hGlbStr = ClrPtrTypeDirGlb (lptkStr->tkData.tkGlbData);
 
     // Lock the memory to get a ptr to it
-    lpMemStr = MyGlobalLock (hGlbStr);
+    lpMemNam = MyGlobalLock (hGlbStr);
 
-#define lpHeader    ((LPVARNAMED_HEADER) lpMemStr)
+#define lpHeader    ((LPVARNAMED_HEADER) lpMemNam)
 
     // Get the # names in the strand
-    aplNELMStr = lpHeader->NELM;
+    aplNELMNam = lpHeader->NELM;
 
 #undef  lpHeader
 
     // Skip over the name strand header to the data
-    lpMemStr = VarNamedBaseToData (lpMemStr);
+    lpMemNam = VarNamedBaseToData (lpMemNam);
 
     // Split cases based upon the value's token type
     switch (lptkVal->tkFlags.TknType)
@@ -623,8 +561,8 @@ BOOL AssignNameSpec_EM
 
         case TKT_VARIMMED:
             // Assign this immediate value to each name
-            for (aplName = 0; aplName < aplNELMStr; aplName++)
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[aplName].tkToken, lptkVal);
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
+                AssignName_EM (&((LPYYSTYPE) lpMemNam)[aplName].tkToken, lptkVal);
             goto NORMAL_EXIT;
 
         case TKT_VARARRAY:
@@ -670,7 +608,7 @@ BOOL AssignNameSpec_EM
 
     // Check for LENGTH ERROR
     if (aplNELMVal NE 1
-     && aplNELMVal NE aplNELMStr)
+     && aplNELMVal NE aplNELMNam)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                    lptkVal);
@@ -712,13 +650,13 @@ BOOL AssignNameSpec_EM
             uBitMaskVal = 0x01;
 
             // Loop through the names/values
-            for (aplName = 0; aplName < aplNELMStr; aplName++)
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
             {
                 // Save the next value into the token
                 tkToken.tkData.tkBoolean = (uBitMaskVal & *(LPAPLBOOL) lpMemVal) ? 1 : 0;
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
 
                 // If there's more than one value, ...
                 if (aplNELMVal NE 1)
@@ -743,13 +681,13 @@ BOOL AssignNameSpec_EM
             tkToken.tkFlags.ImmType = IMMTYPE_INT;
 
             // Loop through the names/values
-            for (aplName = 0; aplName < aplNELMStr; aplName++)
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
             {
                 // Save the next value into the token
                 tkToken.tkData.tkInteger = ((LPAPLINT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -760,13 +698,13 @@ BOOL AssignNameSpec_EM
             tkToken.tkFlags.ImmType = IMMTYPE_FLOAT;
 
             // Loop through the names/values
-            for (aplName = 0; aplName < aplNELMStr; aplName++)
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
             {
                 // Save the next value into the token
                 tkToken.tkData.tkFloat = ((LPAPLFLOAT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -777,13 +715,13 @@ BOOL AssignNameSpec_EM
             tkToken.tkFlags.ImmType = IMMTYPE_CHAR;
 
             // Loop through the names/values
-            for (aplName = 0; aplName < aplNELMStr; aplName++)
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
             {
                 // Save the next value into the token
                 tkToken.tkData.tkChar = ((LPAPLCHAR) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -793,7 +731,7 @@ BOOL AssignNameSpec_EM
             tkToken.tkFlags.TknType = TKT_VARIMMED;
 
             // Loop through the names/values
-            for (aplName = 0; aplName < aplNELMStr; aplName++)
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
             {
                 // Get a ptr to the next value
                 lpSymVal = ((LPAPLHETERO) lpMemVal)[aplName % aplNELMVal];
@@ -809,14 +747,14 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkLongest = lpSymVal->stData.stLongest;
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
 
         case ARRAY_NESTED:
             // Loop through the names/values
-            for (aplName = 0; aplName < aplNELMStr; aplName++)
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
             {
                 LPVOID lpVal;
 
@@ -859,7 +797,7 @@ BOOL AssignNameSpec_EM
                 } // End SWITCH
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -870,13 +808,13 @@ BOOL AssignNameSpec_EM
             tkToken.tkFlags.ImmType = IMMTYPE_INT;
 
             // Loop through the names/values
-            for (aplName = 0; aplName < aplNELMStr; aplName++)
+            for (aplName = 0; aplName < aplNELMNam; aplName++)
             {
                 // Save the next value into the token
                 tkToken.tkData.tkInteger = apaOffVal + apaMulVal * (aplName % aplNELMVal);
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemStr)[(aplNELMStr - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -890,7 +828,7 @@ ERROR_EXIT:
     MyGlobalUnlock (hGlbVal); lpMemVal = NULL;
 NORMAL_EXIT:
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbStr); lpMemStr = NULL;
+    MyGlobalUnlock (hGlbStr); lpMemNam = NULL;
 
     // Mark as not displayable
     lptkVal->tkFlags.NoDisplay = 1;
@@ -899,6 +837,81 @@ NORMAL_EXIT:
 
     return bRet;
 } // End AssignNameSpec_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ModifyAssignNameVals_EM
+//
+//  Assign modified values to a name strand
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ModifyAssignNameVals_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL ModifyAssignNameVals_EM
+    (LPTOKEN       lptkStrN,        // Ptr to name strand token
+     LPTOKEN       lptkFcnStr,      // Ptr to function array
+     LPTOKEN       lptkVal)         // Ptr to value token
+
+{
+    HGLOBAL   hGlbName;         // Name strand global memory handle
+    LPYYSTYPE lpMemName;        // Ptr to name strand global memory
+    APLNELM   aplNELMNam;       // Name strand NELM
+    APLUINT   uName;            // Loop counter
+    BOOL      bRet = FALSE;     // TRUE iff result is valid
+
+    // Get the name strand global memory handle
+    hGlbName = lptkStrN->tkData.tkGlbData;
+
+    // tkData is a valid HGLOBAL name strand
+    Assert (IsGlbTypeNamDir (hGlbName));
+
+    // Clear the ptr type bits
+    hGlbName = ClrPtrTypeDirGlb (hGlbName);
+
+    // Lock the memory to get a ptr to it
+    lpMemName = MyGlobalLock (hGlbName);
+
+#define lpHeader        ((LPVARNAMED_HEADER) lpMemName)
+
+    aplNELMNam = lpHeader->NELM;
+
+#undef  lpHeader
+
+    // Skip over the header to the data
+    lpMemName = VarNamedBaseToData (lpMemName);
+
+    // Loop through the names
+    for (uName = 0; uName < aplNELMNam; uName++)
+    {
+        LPYYSTYPE lpYYRes;
+
+        lpYYRes =
+        ExecFunc_EM_YY (&lpMemName[uName].tkToken, lptkFcnStr, lptkVal);
+
+        if (lpYYRes)
+        {
+            bRet = AssignName_EM (&lpMemName[uName].tkToken, &lpYYRes->tkToken);
+            YYFree (lpYYRes); lpYYRes = NULL;
+
+            if (!bRet)
+                goto ERROR_EXIT;
+        } else
+            goto ERROR_EXIT;
+    } // End FOR
+
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+
+    return bRet;
+} // End ModifyAssignNameVals_EM
 #undef  APPEND_NAME
 
 

@@ -1243,8 +1243,9 @@ LPAPLCHAR CompileArrFloat
         {
             // Format the float
             lpaplChar =
-            FormatFloat (lpwszOut = lpaplChar,
-                         *((LPAPLFLOAT) lpMem)++);
+            FormatFloat (lpwszOut = lpaplChar,      // Ptr to output save area
+                         *((LPAPLFLOAT) lpMem)++,   // The floating point value
+                         0);                        // Use default precision
             // Zap the trailing blank
             lpaplChar[-1] = L'\0';
 
@@ -2143,7 +2144,7 @@ LPYYSTYPE PrimFnDydDownTackJot_EM_YY
     BOOL      bRet = TRUE;
     LPYYSTYPE lpYYRes = NULL;
 
-    DbgBrk ();          // ***FINISHME***
+    DbgBrk ();          // ***FINISHME*** -- PrimFnDydDownTackJot_EM_YY
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);

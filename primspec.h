@@ -35,7 +35,6 @@ typedef BOOL PRIMFN_DYD_SNvSN
 
      LPVOID    lpMemLft,                    // Points to Sig.nature
      LPVOID    lpMemRht,                    // ...
-     LPVOID    lpMemRes,                    // ...
 
      LPAPLUINT lpMemAxisHead,               // Ptr to axis values, fleshed out
      LPAPLUINT lpMemAxisTail,               // Ptr to grade up of AxisHead
@@ -83,8 +82,6 @@ typedef BOOL APARESULT_MON
          HGLOBAL   hGlbRht,                 // HGLOBAL of right arg
          HGLOBAL  *lphGlbRes,               // ...        result
 
-         LPVOID   *lplpMemRes,              // Ptr to ptr to result memory (initially at Sig.nature)
-
          APLRANK   aplRankRht,              // Right arg rank
 
          struct tagPrimSpec *lpPrimSpec);   // Ptr to local PRIMSPEC
@@ -100,8 +97,6 @@ typedef BOOL APARESULT_DYD
          HGLOBAL   hGlbLft,                 // HGLOBAL of left arg (may be NULL if simple)
          HGLOBAL   hGlbRht,                 // ...        right ...
          HGLOBAL  *lphGlbRes,               // ...        result
-
-         LPVOID   *lplpMemRes,              // Ptr to ptr to result memory (initially at Sig.nature)
 
          APLRANK   aplRankLft,              // Left arg rank
          APLRANK   aplRankRht,              // Right ...

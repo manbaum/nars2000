@@ -183,7 +183,6 @@ BOOL PrimFnMonPlusAPA_EM
      LPTOKEN    lptkFunc,           // Ptr to function token
      HGLOBAL    hGlbRht,            // Right arg handle
      HGLOBAL   *lphGlbRes,          // Ptr to result handle
-     LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
      APLRANK    aplRankRht,         // Right arg rank
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
@@ -330,8 +329,6 @@ BOOL PrimFnDydPlusAPA_EM
      HGLOBAL    hGlbRht,            // ...        right ...
      HGLOBAL   *lphGlbRes,          // Ptr to result handle
 
-     LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
-
      APLRANK    aplRankLft,         // Left arg rank
      APLRANK    aplRankRht,         // Right ...
 
@@ -342,7 +339,8 @@ BOOL PrimFnDydPlusAPA_EM
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRANK aplRankRes;
+    APLRANK aplRankRes;         // Result rank
+    LPVOID  lpMemRes;           // Ptr to result global memory
 
     DBGENTER;
 
@@ -383,12 +381,12 @@ BOOL PrimFnDydPlusAPA_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    *lplpMemRes = MyGlobalLock (*lphGlbRes);
+    lpMemRes = MyGlobalLock (*lphGlbRes);
 
     // Skip over the header and dimensions to the data
-    *lplpMemRes = VarArrayBaseToData (*lplpMemRes, aplRankRes);
+    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-#define lpAPA       ((LPAPLAPA) *lplpMemRes)
+#define lpAPA       ((LPAPLAPA) lpMemRes)
 
     // Add in the singleton's value to the result offset
     lpAPA->Off += aplInteger;
@@ -396,7 +394,7 @@ BOOL PrimFnDydPlusAPA_EM
 #undef  lpAPA
 
     // We no longer need this ptr
-    MyGlobalUnlock (*lphGlbRes); *lplpMemRes = NULL;
+    MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
 
     // Fill in the result token
     if (lpYYRes)

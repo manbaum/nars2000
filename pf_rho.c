@@ -204,7 +204,7 @@ LPYYSTYPE PrimFnMonRhoGlb_EM_YY
     APLRANK aplRankRht;      // The rank of the array
     HGLOBAL   hGlbRes;          // Result global memory handle
     APLUINT   ByteRes;          // # bytes needed for the result
-    BOOL      bRet = TRUE;      // TRUE iff the result is valid
+    BOOL      bRet = TRUE;      // TRUE iff result is valid
     UINT      uRes;             // Loop counter
     LPYYSTYPE lpYYRes = NULL;   // Ptr to result
 
@@ -323,7 +323,7 @@ LPYYSTYPE PrimFnDydRho_EM_YY
     HGLOBAL  hGlbRes,       // Handle of result's global memory
              hGlbProto;     // ...                prototype
     LPVOID   lpMemRes;      // Ptr to result's global memory
-    BOOL     bRet = TRUE,   // TRUE iff the result is valid
+    BOOL     bRet = TRUE,   // TRUE iff result is valid
              bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
              bPrototype = FALSE; // TRUE iff we're to generate a prototype
     APLUINT  ByteRes;       // # bytes needed for the result
@@ -554,9 +554,9 @@ LPYYSTYPE PrimFnDydRho_EM_YY
     if (bPrototype)
     {
         // Make the prototype
-        hGlbProto = MakePrototype_EM (ClrPtrTypeDirGlb (hGlbProto),
-                                      lptkFunc,
-                                      FALSE);   // Allow CHARs
+        hGlbProto = MakeMonPrototype_EM (ClrPtrTypeDirGlb (hGlbProto),// Proto arg handle
+                                         lptkFunc,  // Ptr to function token
+                                         FALSE);    // Allow CHARs
         if (!hGlbProto)
             bRet = FALSE;
         else

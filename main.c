@@ -1048,6 +1048,11 @@ LRESULT APIENTRY MFWndProc
 
                     return FALSE;       // We handled the msg
 
+                case IDM_PASTE_ISO:
+                    SendMessage (hWndActive, MYWM_PASTE_ISO, 0, 0);
+
+                    return FALSE;       // We handled the msg
+
                 case IDM_DELETE:
                     SendMessage (hWndActive, WM_CLEAR, 0, 0);
 
@@ -1143,28 +1148,28 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_LOAD_WS:
-                    DbgBrk ();      // ***FINISHME***
+                    DbgBrk ();      // ***FINISHME*** -- IDM_LOAD_WS
 
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_XLOAD_WS:
-                    DbgBrk ();      // ***FINISHME***
+                    DbgBrk ();      // ***FINISHME*** -- IDM_XLOAD_WS
 
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_COPY_WS:
-                    DbgBrk ();      // ***FINISHME***
+                    DbgBrk ();      // ***FINISHME*** -- IDM_COPY_WS
 
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_PCOPY_WS:
-                    DbgBrk ();      // ***FINISHME***
+                    DbgBrk ();      // ***FINISHME*** -- IDM_PCOPY_WS
 
 
 
@@ -1176,29 +1181,30 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVE_AS_WS:
-                    DbgBrk ();      // ***FINISHME***
+                    DbgBrk ();      // ***FINISHME*** -- IDM_SAVE_AS_WS
 
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_DROP_WS:
-                    DbgBrk ();      // ***FINISHME***
+                    DbgBrk ();      // ***FINISHME*** -- IDM_DROP_WS
 
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_DUP_WS:
-                    DbgBrk ();      // ***FINISHME***
+                    DbgBrk ();      // ***FINISHME*** -- IDM_DUP_WS
 
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVECLOSE_WS:
-                    DbgBrk ();      // ***FINISHME***
-
+                    if (CmdSaveWS_EM (L""))  // Handle the same as )SAVE
+                        // Close the tab
+                        CloseTab (iOverTab);
 
                     return FALSE;   // We handled the msg
 

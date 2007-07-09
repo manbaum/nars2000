@@ -19,6 +19,7 @@ typedef PAINTHOOK *LPPAINTHOOK;
 #define MYWM_KEYDOWN        (WM_USER + 3)
 #define MYWM_PASTE_APLWIN   (WM_USER + 4)
 #define MYWM_PASTE_APL2     (WM_USER + 5)
+#define MYWM_PASTE_ISO      (WM_USER + 6)
 
 #define FCN_INDENT  6
 

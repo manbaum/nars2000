@@ -20,6 +20,8 @@
 
 #define ERRMSG_NOT_SAVED            L"NOT SAVED, THIS WS IS "
 #define ERRMSG_NOT_SAVED_CLEAR_WS   L"NOT SAVED, THIS WS IS CLEAR WS"
+#define ERRMSG_NOT_SAVED_WS_FULL    L"NOT SAVED, WS FULL"
+#define ERRMSG_WS_NOT_FOUND         L"WS NOT FOUND"
 
 
 //***************************************************************************

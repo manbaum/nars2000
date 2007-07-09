@@ -335,7 +335,7 @@ LPYYSTYPE PrimFnMonCommaGlb_EM_YY
     BOOL      bFract = FALSE,       // TRUE iff axis has fractional values
               bTableRes,            // TRUE iff function is UTF16_COMMABAR
               bRet = TRUE,          // TRUE iff result is valid
-              bReorder = FALSE;     // TRUE iff the result values are reordered
+              bReorder = FALSE;     // TRUE iff result values are reordered
                                     //   from those in the right arg
     LPYYSTYPE lpYYRes;              // Ptr to the result
 

@@ -579,14 +579,22 @@ LRESULT APIENTRY SMWndProc
             //    Redo entries are between _NXT and _LST[-1], inclusive.
 
             // Allocate virtual memory for the Undo Buffer
-            lpUndoBeg =
+            p = lpUndoBeg =
             VirtualAlloc (NULL,          // Any address
-                          DEF_UNDOBUF_MAXSIZE * sizeof (UNDOBUF),
+                          DEF_UNDOBUF_MAXSIZE * sizeof (lpUndoBeg[0]),
                           MEM_RESERVE,
                           PAGE_READWRITE);
+            if (!p)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpUndoBeg> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
             // Commit the intial size
             VirtualAlloc (lpUndoBeg,
-                          DEF_UNDOBUF_INITSIZE * sizeof (UNDOBUF),
+                          DEF_UNDOBUF_INITSIZE * sizeof (lpUndoBeg[0]),
                           MEM_COMMIT,
                           PAGE_READWRITE);
             // Save in window extra bytes
@@ -614,7 +622,7 @@ LRESULT APIENTRY SMWndProc
             // Allocate memory for the current line
             p = lpMemPTD->lpwszCurLine =
               VirtualAlloc (NULL,       // Any address
-                            DEF_CURLINE_MAXSIZE,
+                            DEF_CURLINE_MAXSIZE * sizeof (lpMemPTD->lpwszCurLine[0]),
                             MEM_RESERVE,
                             PAGE_READWRITE);
             // We no longer need this ptr
@@ -623,14 +631,14 @@ LRESULT APIENTRY SMWndProc
             if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszCurLine> failed");
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszCurLine> failed");
 
                 return -1;          // Mark as failed
             } // End IF
 
             // Commit the intial size
             VirtualAlloc (p,
-                          DEF_CURLINE_INITSIZE,
+                          DEF_CURLINE_INITSIZE * sizeof (lpMemPTD->lpwszCurLine[0]),
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
@@ -642,7 +650,7 @@ LRESULT APIENTRY SMWndProc
             // Allocate memory for the temporary line
             p = lpMemPTD->lpwszTmpLine =
               VirtualAlloc (NULL,       // Any address
-                            DEF_CURLINE_MAXSIZE,
+                            DEF_CURLINE_MAXSIZE * sizeof (lpMemPTD->lpwszTmpLine[0]),
                             MEM_RESERVE,
                             PAGE_READWRITE);
             // We no longer need this ptr
@@ -651,14 +659,14 @@ LRESULT APIENTRY SMWndProc
             if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszTmpLine> failed");
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszTmpLine> failed");
 
                 return -1;          // Mark as failed
             } // End IF
 
             // Commit the intial size
             VirtualAlloc (p,
-                          DEF_CURLINE_INITSIZE,
+                          DEF_CURLINE_INITSIZE * sizeof (lpMemPTD->lpwszTmpLine[0]),
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
@@ -698,7 +706,7 @@ LRESULT APIENTRY SMWndProc
             // Allocate virtual memory for the Name & Number accumulator
             p = lpMemPTD->lpszNumAlp =
               VirtualAlloc (NULL,       // Any address
-                            DEF_NUMALP_MAXSIZE,
+                            DEF_NUMALP_MAXSIZE * sizeof (lpMemPTD->lpszNumAlp[0]),
                             MEM_RESERVE,
                             PAGE_READWRITE);
             // We no longer need this ptr
@@ -714,7 +722,7 @@ LRESULT APIENTRY SMWndProc
 
             // Commit the intial size
             VirtualAlloc (p,
-                          DEF_NUMALP_INITSIZE,
+                          DEF_NUMALP_INITSIZE * sizeof (lpMemPTD->lpszNumAlp[0]),
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
@@ -726,7 +734,7 @@ LRESULT APIENTRY SMWndProc
             // Allocate virtual memory for the wide string accumulator
             p = lpMemPTD->lpwszString =
               VirtualAlloc (NULL,       // Any address
-                            DEF_STRING_MAXSIZE,
+                            DEF_STRING_MAXSIZE * sizeof (lpMemPTD->lpwszString[0]),
                             MEM_RESERVE,
                             PAGE_READWRITE);
             // We no longer need this ptr
@@ -735,14 +743,14 @@ LRESULT APIENTRY SMWndProc
             if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpwszString> failed");
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszString> failed");
 
                 return -1;          // Mark as failed
             } // End IF
 
             // Commit the intial size
             VirtualAlloc (p,
-                          DEF_STRING_INITSIZE,
+                          DEF_STRING_INITSIZE * sizeof (lpMemPTD->lpwszString[0]),
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
@@ -754,7 +762,7 @@ LRESULT APIENTRY SMWndProc
             // Allocate virtual memory for the hash table
             p = lpMemPTD->lpHshTab =
               VirtualAlloc (NULL,       // Any address
-                            DEF_HSHTAB_MAXSIZE,
+                            DEF_HSHTAB_MAXSIZE * sizeof (lpMemPTD->lpHshTab[0]),
                             MEM_RESERVE,
                             PAGE_READWRITE);
             // We no longer need this ptr
@@ -763,14 +771,14 @@ LRESULT APIENTRY SMWndProc
             if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpHshTab> failed");
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpHshTab> failed");
 
                 return -1;          // Mark as failed
             } // End IF
 
             // Commit the intial size
             VirtualAlloc (p,
-                          DEF_HSHTAB_INITSIZE,
+                          DEF_HSHTAB_INITSIZE * sizeof (lpMemPTD->lpHshTab[0]),
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
@@ -804,7 +812,7 @@ LRESULT APIENTRY SMWndProc
             // Allocate virtual memory for the symbol table
             p = lpMemPTD->lpSymTab =
               VirtualAlloc (NULL,       // Any address
-                            DEF_SYMTAB_MAXSIZE,
+                            DEF_SYMTAB_MAXSIZE * sizeof (lpMemPTD->lpSymTab[0]),
                             MEM_RESERVE,
                             PAGE_READWRITE);
             // We no longer need this ptr
@@ -813,14 +821,14 @@ LRESULT APIENTRY SMWndProc
             if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpSymTab> failed");
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSymTab> failed");
 
                 return -1;          // Mark as failed
             } // End IF
 
             // Commit the intial size
             VirtualAlloc (p,
-                          DEF_SYMTAB_INITSIZE,
+                          DEF_SYMTAB_INITSIZE * sizeof (lpMemPTD->lpSymTab[0]),
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
@@ -857,10 +865,10 @@ LRESULT APIENTRY SMWndProc
 
             // *************** System Names ****************************
 
-            // Append all system names (functions and variables) as reserved
-            if (!AppendSystemNames_EM ())
+            // Initialize all system names (functions and variables) as reserved
+            if (!InitSystemNames_EM ())
             {
-                DbgMsg ("WM_CREATE:  AppendSystemNames_EM failed");
+                DbgMsg ("WM_CREATE:  InitSystemNames_EM failed");
 
                 return -1;          // Mark as failed
             } // End IF
@@ -871,6 +879,16 @@ LRESULT APIENTRY SMWndProc
             if (!InitSystemVars ())
             {
                 DbgMsg ("WM_CREATE:  InitSystemVars failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // *************** Symbol Names ****************************
+
+            // Initialize all symbol names
+            if (!InitSymbolNames ())
+            {
+                DbgMsg ("WM_CREATE:  InitSymbolNames failed");
 
                 return -1;          // Mark as failed
             } // End IF
@@ -1144,6 +1162,7 @@ LRESULT APIENTRY SMWndProc
         case WM_PASTE:
         case MYWM_PASTE_APLWIN:
         case MYWM_PASTE_APL2:
+        case MYWM_PASTE_ISO:
         case WM_CLEAR:
         case MYWM_SELECTALL:
             // Pass on to the Edit Control
@@ -1178,7 +1197,7 @@ LRESULT APIENTRY SMWndProc
             {
                 case VK_RETURN:
                     // Check for Quad or Quote-quad input
-////                if ()       // ***FINISHME***
+////                if ()       // ***FINISHME*** -- Quad and/or quote-quad input
 ////                {
 ////
 ////

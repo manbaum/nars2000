@@ -116,10 +116,18 @@
 
         <li>Consistent Extensions to ISO/IEC 13751
           <ul>
-            <li>Composite assignment (e.g.,
+            <li>Strand Assignment (e.g., <span class="APL">(A B){is}1 2</span> is the same as
+              <span class="APL">A{is}1</span> and
+              <span class="APL">B{is}2</span>)</li>
+            <li>Modify Assignment (e.g.,
               <span class="APL">A+{is}1</span> is the same as <span class="APL">A{is}A+1</span>)</li>
+            <li>Modify Strand Assignment (e.g.
+              <span class="APL">(A B)+{is}1</span> is the same as
+              <span class="APL">A{is}A+1</span> and
+              <span class="APL">B{is}B+1</span>)</li>
             <li>Function/operator assignment (e.g.,
               <span class="APL">F{is}+.{times}</span>, or
+              <span class="APL">F{is}{dieresis}</span>, or
               <span class="APL">F{is}{jot}</span>)</li>
             <li>Sink (monadic {is}<span class="APL">A</span>
               to suppress the display of <span class="APL">A</span>)</li>
@@ -131,6 +139,10 @@
               <span class="APL">R[{disclose}{jot}.,/L]</span></li>
             <li>Dyadic operator jot ({jot}) (composition) (e.g.,
               <span class="APL">f{is},{jot}{gradeup}{jot}{gradeup}{jot},</span>)</li>
+            <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
+              <span class="APL">1 2+[1] 2 3{rho}{iota}6</span>)</li>
+            <li>Axis operator to primitive scalar dyadic functions may transpose coordinates (e.g.,
+              <span class="APL">((2 3{rho}0)+[1 2] 2 3 4{rho}1) {match} (3 2{rho}0)+[2 1] 2 3 4{rho}1</span>)</li>
             <li>Axis operator to Ravel may transpose coordinates (e.g.,
               <span class="APL">(,[2 1] R) {notmatch} ,[1 2] R</span>)</li>
             <li>Axis operator is allowed on the Each operator (e.g.,
@@ -160,12 +172,13 @@
         <li>Strand left and right arguments and result to user-defined
           functions/operators (e.g., <span class="APL">{del}
          (Z1 Z2){is}[L1 L2 L3] (LO OP2 RO) (R1 R2 R3 R4)</span>)</li>
-        <li>User-defined function prototypes
+        <li>User defined function prototypes
           (<span class="APL">{quad}PROTOTYPE:</span>)</li>
-        <li>User-defined function singletons
+        <li>User defined function singletons
           (<span class="APL">{quad}SINGLETON:</span>)</li>
-        <li>User-defined function inverses
+        <li>User defined function inverses
           (<span class="APL">{quad}INVERSE:</span>)</li>
+        <li>User defined function local variable <span class="APL">{quad}AXIS</span></li>
         <li>Dynamic functions (e.g.,
           <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
         <li>Selective assignment (e.g.,
@@ -280,7 +293,7 @@
           <ul>
             <li>Monadic operator each  ({each}) monadic and dyadic derived functions (each)
               with and without axis operator</li>
-            <li>Monadic operator frown ({frown}) monadic and dyadic derived functions (commute and reflex)</li>
+            <li>Monadic operator frown ({frown}) monadic and dyadic derived functions (commute and duplicate)</li>
             <li>Monadic operator jot-dot ({jot}{dot}) dyadic derived function (outer product)</li>
             <li>Monadic operator slash ({/}) monadic and dyadic derived functions
                (reduce and N-wise reduce with and without axis operator)</li>
@@ -312,8 +325,16 @@
 
       <h3>Miscellaneous</h3>
       <ul>
-        <li>Strands, e.g., <span class="APL">(1 2 3) 'abcd' ({iota}4)</span></li>
-        <li>Strand Assignment, e.g., <span class="APL">(a b c d){is}{iota}4</span></li>
+        <li>Strands (e.g., <span class="APL">(1 2 3) 'abcd' ({iota}4)</span>)</li>
+        <li>Strand Assignment (e.g., <span class="APL">(A B){is}1 2</span> is the same as
+          <span class="APL">A{is}1</span> and
+          <span class="APL">B{is}2</span>)</li>
+        <li>Modify Assignment (e.g.,
+          <span class="APL">A+{is}1</span> is the same as <span class="APL">A{is}A+1</span>)</li>
+        <li>Modify Strand Assignment (e.g.
+          <span class="APL">(A B)+{is}1</span> is the same as
+          <span class="APL">A{is}A+1</span> and
+          <span class="APL">B{is}B+1</span>)</li>
         <li>Raw output</li>
         <li>Unified indexing such that <span class="APL">R[L]</span>
           allows both Reach and Scatter indexing &mdash; that is, if
@@ -326,6 +347,14 @@
         <li>Fast Boolean reduction (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}</span>)
           and scan (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}</span>)
           along contiguous elements</li>
+        <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
+          <span class="APL">1 2+[1] 2 3{rho}{iota}6</span>)</li>
+        <li>Axis operator to primitive scalar dyadic functions may transpose coordinates
+          (e.g., <span class="APL">((2 3{rho}0)+[1 2] 2 3 4{rho}1) {match} (3 2{rho}0)+[2 1] 2 3 4{rho}1</span>)</li>
+        <li>Axis operator to Ravel may transpose coordinates (e.g.,
+          <span class="APL">(,[2 1] R) {notmatch} ,[1 2] R</span>)</li>
+        <li>Axis operator is allowed on the Each operator (e.g.,
+          <span class="APL">1 2{rho}{each}[1] 2 3{rho}{iota}6</span>)</li>
       </ul>
 
       <h3>Session Manager</h3>

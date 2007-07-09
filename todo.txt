@@ -1,35 +1,38 @@
 TO DO:  General:  Important
 ---------------------------
 * Make <dtoa.c> multi-threaded
-* Implement dyadic epsilon
-* ...       dyadic down tack jot
-* ...       dyadic iota
-* ...       dyadic left shoe
-* ...       dyadic tilde
-* ...       inner product
-* ...       monadic grade-up
-* ...       monadic grade-down
-* ...       dyadic grade-up
-* ...       dyadic grade-down
-* ...       monadic up arrow
-* ...       dyadic up arrow
-* ...       dyadic down arrow
-* ...       monadic down shoe
-* ...       dyadic down tack
-* ...       dyadic epsilon underbar
-* ...       monadic up tack jot
-* ...       monadic right shoe
-* ...       dyadic right shoe
+* Implement dyadic epsilon              (member of)
+* ...       dyadic down tack jot        (format by specification)
+* ...       dyadic iota                 (index of)
+* ...       dyadic tilde                (without)
+* ...       dyadic dot                  (inner product)
+* ...       monadic grade-up            (grade on rank > 1)
+* ...       monadic grade-down          (grade on rank > 1)
+* ...       monadic up arrow            (first)
+* ...       monadic down shoe           (unique)
+* ...       monadic up tack jot         (execute)
+* ...       monadic right shoe          (disclose)
+* ...       dyadic grade-up             (char grades)
+* ...       dyadic grade-down           (char grades)
+* ...       dyadic up arrow             (take)
+* ...       dyadic down arrow           (drop)
+* ...       dyadic down tack            (representation)
+* ...       dyadic right shoe           (pick)
+* ...       dyadic up tack              (base value)
 * ...       bracket indexing
-* ...       dyadic squad
-* ...       dyadic up tack
+* ...       bracket indexed assignment
 * ...       quad/quote-quad input
 * ...       )SAVE
 * ...       )LOAD
 * ...       )COPY
 * ...       )FNS
+* ...       )OPS
 * ...       )VARS
 * ...       function execution
+* ...       goto
+* ...       goto Line #
+* ...       minimum set of system functions
+* ...       event handling
 * ...
 
 
@@ -39,7 +42,6 @@ TO DO:  General:  Wish List
 * Check for bison stack overflow
 * Allocate bison stack from virtual memory
 * Implement Garbage Collection???
-* Delete <InitPrimFns> and put into <CharTrans>???
 * Test implementation limits (stack, FP, Integer, etc.)
 * Check on freeing intermediate variables on error
 * Idiom recognition in the tokenizer
@@ -48,6 +50,7 @@ TO DO:  General:  Wish List
 * Reference count on symbol table entries??
 * Strings in the symbol table??
 * Test all occurrences of a list as the right arg to a primitive or system function
+* Move registry info into <nars2000.ini> file
 * Implement user/session options dialog
 * ...       selective assignment
 * ...       dynamic functions
@@ -58,8 +61,14 @@ TO DO:  General:  Wish List
 * ...       array predicates
 * ...       syntax highlighting
 * ...       control structures
-* ...       system functions
+* ...       expanded set of system functions
 * ...       extend associativity to derived functions such as {jot}{dot}+ ??
+* ...       component file system
+* ...       dyadic left shoe            (partitioned enclose)
+* ...       dyadic squad                (indexing)
+* ...       dyadic epsilon underbar     (find)
+* ...       vector editor
+* ...       matrix editor
 * ...
 
 
@@ -72,7 +81,7 @@ TODO: Session Manager
 
 DONE:  General
 --------------
-* Demote arrays to a more compact storage type???
+* Demote arrays to a more compact storage type
 * Is it a problem that TypeDemote doesn't demote from
   TKT_VARARRAY to TKT_VARIMMED?
 * Check floating point accuracy in input and output
@@ -87,12 +96,17 @@ DONE:  General
 * ...       (+{jot}(2+3))4
 * ...       (+{jot}(2 3))4
 * ...       (+{jot} 2 3 )4
+* When adding two empty vectors whose prototypes are
+  0 (0 0) and (0 0) 0, the resulting empty vector's prototype
+  should be (0 0) (0 0).  Also, the sum of an empty vector
+  whose prototype is 0 0 and an empty vector whose prototype
+  is 0 0 0 should be a LENGTH ERROR.
 *
 
 
 DONE:  Session Manager
 ----------------------
-* Mouse selection in session manager:  line, sentence, block
+* Mouse selection in session manager:  line & sentence
 * CUA keystrokes:  e.g. Ctrl-RightArrow, etc.
 * Tabs for workspaces
 *
@@ -133,13 +147,10 @@ QUESTIONS
   f{is}+
   g{is}f[1]
 
-  should <g> reference
-  what happens to <g> if we change <f>
+  what should <g> reference?
+  what happens to <g> if we change <f>?
 * Should we allow f {is} {jot}{dot}   ?? (right operator)
 * Should we allow f {is} {jot}fn      ?? (left operator)
-* When adding two empty vectors whose prototypes are
-  0 (0 0) and (0 0) 0, the resulting empty vector's prototype
-  should be (0 0) (0 0).
 * How should an empty vector display?
   On APL+WIN systems 3.6 + 5.x, '' displays by skipping one blank line
   but 0{rho}{enclose}{zilde} displays without skipping a blank line.

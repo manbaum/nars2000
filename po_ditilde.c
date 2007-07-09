@@ -21,7 +21,7 @@
 //  $PrimOpDieresisTilde_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    monadic operator DieresisTilde ("ERROR" and "inner product")
+//    monadic operator DieresisTilde ("duplicate" and "commute")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -69,7 +69,7 @@ LPYYSTYPE PrimOpDieresisTilde_EM_YY
 //  $PrimProtoOpDieresisTilde_EM_YY
 //
 //  Generate a prototype for the derived functions from
-//    monadic operator DieresisTilde ("ERROR" and "inner product")
+//    monadic operator DieresisTilde ("duplicate" and "commute")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -153,7 +153,7 @@ LPYYSTYPE PrimProtoOpDieresisTilde_EM_YY
 //***************************************************************************
 //  $PrimOpMonDieresisTilde_EM_YY
 //
-//  Primitive operator for monadic derived function from DieresisTilde ("ERROR")
+//  Primitive operator for monadic derived function from DieresisTilde ("duplicate")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -185,7 +185,7 @@ LPYYSTYPE PrimOpMonDieresisTilde_EM_YY
 //***************************************************************************
 //  $PrimOpDydDieresisTilde_EM_YY
 //
-//  Primitive operator for dyadic derived function from DieresisTilde ("inner product")
+//  Primitive operator for dyadic derived function from DieresisTilde ("commute")
 //***************************************************************************
 
 #ifdef DEBUG

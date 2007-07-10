@@ -2144,6 +2144,8 @@ LPYYSTYPE PrimFnDydDownTackJot_EM_YY
     BOOL      bRet = TRUE;
     LPYYSTYPE lpYYRes = NULL;
 
+    return PrimFnNonceError_EM (lptkFunc);
+
     DbgBrk ();          // ***FINISHME*** -- PrimFnDydDownTackJot_EM_YY
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args

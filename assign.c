@@ -51,7 +51,7 @@ BOOL AssignName_EM
 
     // If the target is a system var, validate the assignment
     //   before we free the old value
-    if (lptkNam->tkData.tkSym->stFlags.ObjType EQ NAMETYPE_VAR)
+    if (IsNameTypeVar (lptkNam->tkData.tkSym->stFlags.ObjType))
     {
         // If the target is a defined function system label, signal a SYNTAX ERROR
         if (lptkNam->tkData.tkSym->stFlags.DfnSysLabel)

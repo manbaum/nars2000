@@ -282,7 +282,7 @@ BOOL CmdSaveWS_EM
             case NAMETYPE_VAR:
             {
                 // stData is a variable
-                Assert (stFlags.ObjType EQ NAMETYPE_VAR);
+                Assert (IsNameTypeVar (stFlags.ObjType));
 
                 // Format the counter
                 wsprintfW (wszCount, L"%d", uSymVar++);
@@ -494,7 +494,7 @@ BOOL CmdSaveWS_EM
             defstop
                 break;
         } // End SWITCH
-    } // End IF
+    } // End FOR/IF
 
     // Format the Var count
     wsprintfW (wszCount,

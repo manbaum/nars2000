@@ -239,21 +239,18 @@ LPYYSTYPE PrimFnDydTilde_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE aplTypeLft,
-             aplTypeRht;
-    APLNELM  aplNELMLft,
-             aplNELMRht;
-    APLRANK  aplRankLft,
-             aplRankRht;
-    HGLOBAL  hGlbLft,
-             hGlbRht;
-    LPVOID   lpMemLft,
-             lpMemRht;
-    BOOL     bRet = TRUE;
-    LPYYSTYPE lpYYRes;
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
+    APLSTYPE  aplTypeLft,           // Left arg storage type
+              aplTypeRht;           // Right ...
+    APLNELM   aplNELMLft,           // Left arg NELM
+              aplNELMRht;           // Right ...
+    APLRANK   aplRankLft,           // Left arg rank
+              aplRankRht;           // Right ...
+    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
+              hGlbRht = NULL;       // Right ...
+    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
+              lpMemRht = NULL;      // Ptr to right ...
+    BOOL      bRet = TRUE;          // TRUE iff result is valid
+    LPYYSTYPE lpYYRes = NULL;       // Ptr to result
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -264,18 +261,12 @@ LPYYSTYPE PrimFnDydTilde_EM_YY
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                    lptkAxis);
-        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+        goto ERROR_EXIT;
     } // End IF
-
-    DbgBrk ();          // ***FINISHME*** -- PrimFnDydTilde_EM_YY
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-
-    // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for RANK ERROR
     if (aplRankLft > 1)
@@ -287,6 +278,13 @@ LPYYSTYPE PrimFnDydTilde_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
+    return PrimFnNonceError_EM (lptkFunc);
+
+    // Get left and right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    DbgBrk ();          // ***FINISHME*** -- PrimFnDydTilde_EM_YY
 
 
 
@@ -296,6 +294,14 @@ LPYYSTYPE PrimFnDydTilde_EM_YY
 
 
 
+
+
+
+
+
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
 
 
@@ -312,12 +318,7 @@ ERROR_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-    {
-        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
-    } // End IF/ELSE
+    return lpYYRes;
 } // End PrimFnDydTilde_EM_YY
 
 

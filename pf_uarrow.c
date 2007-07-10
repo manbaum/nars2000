@@ -179,6 +179,9 @@ BOOL PrimFnDydUpArrowLftGlbValid_EM
     UINT     uBits;
     APLINT   aplIntTmp;
 
+    if (!hGlbLft)
+        DbgBrk ();          // ***FIXME*** -- Could be immediate (hGlbLft EQ NULL)
+
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
 
@@ -348,6 +351,8 @@ LPYYSTYPE PrimFnDydUpArrow_EM_YY
     LPAPLUINT lpMemAxisHead,        // Ptr to axis values, fleshed out
               lpMemAxisTail;        // Ptr to grade up of AxisHead
     LPYYSTYPE lpYYRes = NULL;       // Ptr to the result
+
+    return PrimFnNonceError_EM (lptkFunc);
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args

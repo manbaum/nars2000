@@ -1667,7 +1667,7 @@ APLINT CalcSymentrySize
         aplSize = 0;
     else
     // If it is a user variable, ...
-    if (lpSymEntry->stFlags.ObjType EQ NAMETYPE_VAR)
+    if (IsNameTypeVar (lpSymEntry->stFlags.ObjType))
     {
         // Start with the size of the SYMENTRY
         aplSize = sizeof (SYMENTRY);

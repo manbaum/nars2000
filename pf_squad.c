@@ -242,28 +242,21 @@ LPYYSTYPE PrimFnDydSquadGlb_EM_YY
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    APLSTYPE aplTypeLft,        // The storage type of the left arg
-             aplTypeRht;        // ...                     right ...
-    APLNELM  aplNELMLft,        // The # elements in left arg
-             aplNELMRht;        // ...               right ...
-    APLRANK  aplRankLft,        // The rank of the left arg
-             aplRankRht;        // ...             right ...
-    HGLOBAL  hGlbLft = NULL;
-    LPVOID   lpMemLft = NULL,
-             lpMemRht = NULL;
-    BOOL     bRet = TRUE;
-    LPYYSTYPE lpYYRes;
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
+    APLSTYPE  aplTypeLft,       // The storage type of the left arg
+              aplTypeRht;       // ...                     right ...
+    APLNELM   aplNELMLft,       // The # elements in left arg
+              aplNELMRht;       // ...               right ...
+    APLRANK   aplRankLft,       // The rank of the left arg
+              aplRankRht;       // ...             right ...
+    HGLOBAL   hGlbLft = NULL;   // Left arg global memory handle
+    LPVOID    lpMemLft = NULL,  // Ptr to left arg global memory
+              lpMemRht = NULL;  // Ptr to right ...
+    BOOL      bRet = TRUE;      // TRUE iff result is valid
+    LPYYSTYPE lpYYRes = NULL;   // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
     AttrsOfGlb   (hGlbRht   , &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
-
-    // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    lpMemRht = MyGlobalLock (hGlbRht);
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -279,12 +272,16 @@ LPYYSTYPE PrimFnDydSquadGlb_EM_YY
                            NULL,            // Return last axis value
                            NULL,            // Return # elements in axis vector
                            NULL))           // Return HGLOBAL with APLINT axis values
-        {
-            YYFree (lpYYRes); lpYYRes = NULL; return NULL;
-        } // End IF
+            goto ERROR_EXIT;
     } // End IF/ELSE
 
+    return PrimFnNonceError_EM (lptkFunc);
+
     DbgBrk ();              // ***FINISHME*** -- PrimFnDydSquadGlb_EM_YY
+
+    // Get left and right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    lpMemRht = MyGlobalLock (hGlbRht);
 
     // Split cases based upon the
 
@@ -301,9 +298,15 @@ LPYYSTYPE PrimFnDydSquadGlb_EM_YY
 
 
 
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
 
 
+
+
+
+ERROR_EXIT:
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
@@ -316,12 +319,7 @@ LPYYSTYPE PrimFnDydSquadGlb_EM_YY
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-    {
-        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
-    } // End IF/ELSE
+    return lpYYRes;
 } // End PrimFnDydSquadGlb_EM_YY
 #undef  APPEND_NAME
 
@@ -389,6 +387,8 @@ LPYYSTYPE ArrayIndex_EM_YY
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = aplTypeLft;
+
+    return PrimFnNonceError_EM (lptkLftArg);
 
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);

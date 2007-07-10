@@ -1093,6 +1093,8 @@ LPYYSTYPE PrimFnDydEpsilon_EM_YY
         return NULL;
     } // End IF
 
+    return PrimFnNonceError_EM (lptkFunc);
+
     DbgBrk ();          // ***FINISHME*** -- PrimFnDydEpsilon_EM_YY
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
@@ -1103,15 +1105,6 @@ LPYYSTYPE PrimFnDydEpsilon_EM_YY
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // Check for RANK ERROR
-    if (aplRankLft NE 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
 
 
 
@@ -1132,7 +1125,10 @@ LPYYSTYPE PrimFnDydEpsilon_EM_YY
 
 
 
-ERROR_EXIT:
+
+
+
+
     if (hGlbLft && lpMemLft)
     {
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;

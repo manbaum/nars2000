@@ -842,8 +842,35 @@ LRESULT APIENTRY SMWndProc
             lpMemPTD->steZero  = SymTabAppendPermInteger_EM (0);
             lpMemPTD->steBlank = SymTabAppendPermChar_EM    (L' ');
 
+////////////// We no longer need this ptr
+////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            // *************** State Indicator Stack *******************
+////////////// Lock the memory to get a ptr to it
+////////////lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Allocate virtual memory for the symbol table
+            p = lpMemPTD->lpSISBeg = lpMemPTD->lpSISNxt =
+              VirtualAlloc (NULL,       // Any address
+                            DEF_SIS_MAXSIZE,
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpStateInd> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Commit the intial size
+            VirtualAlloc (p,
+                          DEF_SIS_INITSIZE,
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
 
 ////////////// *************** Fonts ***********************************
 ////////////

@@ -2477,18 +2477,21 @@ void ErrorMessage
     // If the caret is not -1, display a caret
     if (uCaret NE NEG1U)
     {
-        UINT u;
+        UINT    u;
+        LPWCHAR lpw;
 
-        for (u = 0; u < uCaret; u++)
-            lpwszTemp[u] = L' ';
-        lpwszTemp[u] = UTF16_CIRCUMFLEX;    // UTF16_UPCARET;
-        lpwszTemp[u + 1] = L'\0';
+        // Get a ptr to the terminating zero
+        lpw = &lpMemRes[lstrlenW (lpMemRes)];
 
         // Close the last line
-        lstrcatW (lpMemRes, L"\r\n");
+        *lpw++ = L'\r';
+        *lpw++ = L'\n';
 
         // Append the caret
-        lstrcatW (lpMemRes, lpwszTemp);
+        for (u = 0; u < uCaret; u++)
+            *lpw++ = L' ';
+        *lpw++ = UTF16_CIRCUMFLEX;          // UTF16_UPCARET;
+        *lpw++ = L'\0';
     } // End IF
 
     // We no longer need this ptr
@@ -2541,6 +2544,8 @@ LPYYSTYPE WaitForInput
     LARGE_INTEGER waitTime;
     DWORD         dwWaitRes = WAIT_TIMEOUT;
     LPYYSTYPE     lpYYRes;
+
+    return PrimFnNonceError_EM (lptkFunc);
 
     DbgBrk ();          // ***FINISHME*** -- WaitForInput
 

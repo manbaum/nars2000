@@ -45,7 +45,7 @@ typedef struct tagDFN_HEADER        // Function header structure
                      nInverseLine,  // 14:  Line # of the []INVERSE label (0 if not present)
                      nSingletonLine,// 18:  Line # of the []SINGLETON label (0 if not present)
                      numResultSTE,  // 1C:  # result STEs (may be zero if no result)
-                     offResultSTE,  // 20:  Offset to result STEs (ignored if numResSTE is zero)
+                     offResultSTE,  // 20:  Offset to result STEs (ignored if numResultSTE is zero)
                      numLftArgSTE,  // 24:  # left arg STEs (may be zero if niladic/monadic)
                      offLftArgSTE,  // 28:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
                      numRhtArgSTE,  // 2C:  # right arg STEs (may be zero if niladic)
@@ -54,14 +54,14 @@ typedef struct tagDFN_HEADER        // Function header structure
                      offLocalsSTE,  // 38:  Offset to start of function lines (FCNLINE[nLines])
                      numFcnLines,   // 3C:  # lines in the function (not counting the header)
                      offFcnLines;   // 40:  Offset to start of function lines (FCNLINE[nLines])
-    LPSYMENTRY       steLftOpr,     // 44:  Left operand STE (may be NULL)
+    LPSYMENTRY       steLftOpr,     // 44:  Left operand STE (may be NULL if not an operator)
                      steFcnName,    // 48:  Function name STE
-                     steRhtOpr;     // 4C:  Right operand STE (may be NULL)
+                     steRhtOpr;     // 4C:  Right operand STE (may be NULL if monadic operator or not an operator)
     HGLOBAL          hGlbTxtHdr,    // 50:  Text of function header (APLCHAR) ...
                      hGlbTknHdr,    // 54:  Tokenized function header (TOKEN) ...
                      hGlbUndoBuff;  // 58:  Undo buffer                       ... (may be NULL)
+                                    // 5C:  Length
                                     // 5C:  Array of function line structures (FCNLINE[nLines])
-                                    // 60:  Length
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a

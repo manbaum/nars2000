@@ -216,11 +216,13 @@ void FreeResultSub
         case TKT_STRAND:    // Occurs if MakeStrand fails -- data freed by <FreeStrand>
         case TKT_LISTPAR:   // tkData is -1
         case TKT_LISTINT:   // tkData is -1
+        case TKT_INPOUT:    // tkData is UTF16_xxx
             return;
 
         case TKT_VARARRAY:  // tkData contains an HGLOBAL of an array of LPSYMENTRYs and HGLOBALs
         case TKT_AXISARRAY: // ...
         case TKT_FCNARRAY:  // ...
+        case TKT_LISTBR:    // ...
             // Check for ptr reuse
             if (!PtrReusedDir (lptkRes->tkData.tkGlbData))
             {

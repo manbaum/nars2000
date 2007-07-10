@@ -77,7 +77,10 @@ typedef struct tagPERTABDATA
                lpSymQuadSA  ,       // ...            []SA
                lpSymQuadWSID,       // ...            []WSID
                lpSymQuadAXIS;       // ...            []AXIS
-
+    struct tagSIS_HEADER
+              *lpSISBeg,            // Ptr to State Indicator Stack beginning
+              *lpSISCur,            // ...                          current (may be NULL if SI is empty)
+              *lpSISNxt;            // ...                          next
     int        iLabelText;          // Offset in DPFE of the label text
     HWND       hWndActive;          // Active MDI window when last switched out
     int        crIndex;             // Tab's color index

@@ -1047,7 +1047,7 @@ void DisplaySymTab
         if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
             lstrcatW (wszFlags, astFlagNames[j].lpwszName);
 
-        if (stFlags.ObjType EQ NAMETYPE_VAR
+        if (IsNameTypeVar (stFlags.ObjType)
          && !stFlags.DfnSysLabel)
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
                        L" SysVarValid=%d",
@@ -1260,6 +1260,11 @@ void DisplayGlobals
                     case ARRAY_CHAR:
                         lstrcpynW (aplArrChar, lpData, 1 + (UINT) min (6, lpHeader->NELM));
                         aplArrChar[min (6, lpHeader->NELM)] = L'\0';
+
+                        break;
+
+                    case ARRAY_LIST:
+                        lstrcpyW (aplArrChar, L"[...]");
 
                         break;
 

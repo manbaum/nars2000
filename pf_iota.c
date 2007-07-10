@@ -524,31 +524,22 @@ LPYYSTYPE PrimFnDydIota_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE aplTypeLft,
-             aplTypeRht;
-    APLNELM  aplNELMLft,
-             aplNELMRht;
-    APLRANK  aplRankLft,
-             aplRankRht;
-    HGLOBAL  hGlbLft,
-             hGlbRht;
-    LPVOID   lpMemLft,
-             lpMemRht;
-    BOOL     bRet = TRUE;
-    LPYYSTYPE lpYYRes;
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    DbgBrk ();          // ***FINISHME*** -- PrimFnDydIota_EM_YY
+    APLSTYPE  aplTypeLft,           // Left arg storage type
+              aplTypeRht;           // Right ...
+    APLNELM   aplNELMLft,           // Left arg NELM
+              aplNELMRht;           // Right ...
+    APLRANK   aplRankLft,           // Left arg rank
+              aplRankRht;           // Right ...
+    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
+              hGlbRht = NULL;       // Right ...
+    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
+              lpMemRht = NULL;      // Ptr to right ...
+    BOOL      bRet = TRUE;          // TRUE iff result is valid
+    LPYYSTYPE lpYYRes = NULL;       // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-
-    // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for RANK ERROR
     if (aplRankLft NE 1)
@@ -560,6 +551,13 @@ LPYYSTYPE PrimFnDydIota_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
+    return PrimFnNonceError_EM (lptkFunc);
+
+    DbgBrk ();          // ***FINISHME*** -- PrimFnDydIota_EM_YY
+
+    // Get left and right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
 
 
@@ -570,6 +568,13 @@ LPYYSTYPE PrimFnDydIota_EM_YY
 
 
 
+
+
+
+
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
 
 
@@ -587,12 +592,7 @@ ERROR_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-    {
-        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
-    } // End IF/ELSE
+    return lpYYRes;
 } // End PrimFnDydIota_EM_YY
 #undef  APPEND_NAME
 

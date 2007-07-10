@@ -117,13 +117,25 @@ Stmts:
       // All errors propogate up to this point where we ABORT which ensures
       //   that the call to pl_yyparse terminates with a non-zero error code.
       error                             {DbgMsgW2 (L"%%Stmts:  error");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             Assert (YYResIsEmpty ());  // Likely not TRUE with non-empty SI
+                                         } // End IF
+
                                          YYABORT;
                                         }
     | Stmt                              {DbgMsgW2 (L"%%Stmts:  Stmt");
                                          if (!lpplLocalVars->bLookAhead)
+                                         {
                                              Assert (YYResIsEmpty ());  // Likely not TRUE with non-empty SI
+                                         } // End IF
                                         }
-    | Stmts DIAMOND Stmt                {DbgMsgW2 (L"%%Stmts:  Stmts " WS_UTF16_DIAMOND L" Stmt");}
+    | Stmts DIAMOND Stmt                {DbgMsgW2 (L"%%Stmts:  Stmts " WS_UTF16_DIAMOND L" Stmt");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             Assert (YYResIsEmpty ());  // Likely not TRUE with non-empty SI
+                                         } // End IF
+                                        }
     ;
 
 // Statement
@@ -922,6 +934,7 @@ SimpExpr:
     | error   ASSIGN ILBR  NAMEVAR      {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR ILBR" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             FreeResult (&$3.tkToken);
                                              FreeResult (&$4.tkToken);          // Validation only
                                              YYERROR;
                                          } else
@@ -934,8 +947,9 @@ SimpExpr:
 
 
 
-                                             PrimFnNonceError_EM (&$1.tkToken);
+                                             PrimFnNonceError_EM (&$3.tkToken);
                                              FreeResult (&$1.tkToken);
+                                             FreeResult (&$3.tkToken);
                                              FreeResult (&$4.tkToken);          // Validation only
                                              YYERROR;
                                          } // End IF
@@ -968,6 +982,7 @@ SimpExpr:
                                         {DbgMsgW2 (L"%%SimpExpr:  (NAMEVAR ILBR)" WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             FreeResult (&$4.tkToken);
                                              FreeResult (&$5.tkToken);          // Validation only
                                              YYERROR;
                                          } else
@@ -981,8 +996,9 @@ SimpExpr:
 
 
 
-                                             PrimFnNonceError_EM (&$1.tkToken);
+                                             PrimFnNonceError_EM (&$4.tkToken);
                                              FreeResult (&$1.tkToken);
+                                             FreeResult (&$4.tkToken);
                                              FreeResult (&$5.tkToken);          // Validation only
                                              YYERROR;
                                          } // End IF
@@ -1238,6 +1254,7 @@ SimpExpr:
                                                  FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              } // End IF
 
+                                             FreeResult (&$4.tkToken);
                                              FreeResult (&$5.tkToken);          // Validation only
                                              YYERROR;
                                          } else
@@ -1257,13 +1274,15 @@ SimpExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                                 FreeResult (&$4.tkToken);
                                                  FreeResult (&$5.tkToken);          // Validation only
                                                  YYERROR;
                                              } // End IF
 
                                              bRet = FALSE;
                                              PrimFnNonceError_EM (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);          // Validation only
+                                             FreeResult (&$5.tkToken);              // Validation only
+                                             FreeResult (&$4.tkToken);
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              FreeResult (&$1.tkToken);
 
@@ -1286,6 +1305,7 @@ SimpExpr:
                                                  FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              } // End IF
 
+                                             FreeResult (&$4.tkToken);
                                              FreeResult (&$5.tkToken);          // Validation only
                                              YYERROR;
                                          } // End IF
@@ -1304,6 +1324,7 @@ SimpExpr:
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
+                                                 FreeResult (&$4.tkToken);
                                                  FreeResult (&$5.tkToken);          // Validation only
                                                  YYERROR;
                                              } // End IF
@@ -1311,6 +1332,7 @@ SimpExpr:
                                              bRet = FALSE;
                                              PrimFnNonceError_EM (&$4.tkToken);
                                              FreeResult (&$5.tkToken);          // Validation only
+                                             FreeResult (&$4.tkToken);
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              FreeResult (&$1.tkToken);
 
@@ -1487,7 +1509,8 @@ NameVals:
 
 
 
-                                             PrimFnNonceError_EM (&$3.tkToken);
+                                             PrimFnNonceError_EM (&$2.tkToken);
+                                             FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);          // Validation only
 
                                              YYERROR;
@@ -1496,7 +1519,8 @@ NameVals:
     |       ')' ILBR NAMEUNK '('        {DbgMsgW2 (L"%%NameVals:  (NAMEUNK ILBR)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             PrimFnValueError_EM (&$3.tkToken);
+                                             PrimFnValueError_EM (&$2.tkToken);
+                                             FreeResult (&$2.tkToken);
                                              FreeResult (&$3.tkToken);          // Validation only
 
                                              YYERROR;
@@ -1510,7 +1534,9 @@ NameVals:
 
 
 
-                                             PrimFnNonceError_EM (&$4.tkToken);
+                                             PrimFnNonceError_EM (&$3.tkToken);
+                                             FreeResult (&$3.tkToken);
+                                             FreeResult (&$4.tkToken);          // Validation only
                                              YYERROR;
                                          } // End IF
                                         }
@@ -1526,6 +1552,7 @@ NameVals:
                                              } // End IF
 
                                              PrimFnValueError_EM (&$4.tkToken);
+                                             FreeResult (&$3.tkToken);
                                              FreeResult (&$4.tkToken);          // Validation only
 
                                              YYERROR;
@@ -2610,14 +2637,14 @@ ILBR:
                                              $$ = *lpYYLst; YYFree (lpYYLst); lpYYLst = NULL;
                                          } // End IF
                                         }
-    | ILBR ']' ILWE '['                 {DbgMsgW2 (L"%%ILBR:  ILBR [ILWE]");
+    | ILBR ']' ILWE '['                 {DbgMsgW2 (L"%%ILBR:  [ILWE] ILBR ");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
 
 
 
 
-                                             PrimFnNonceError_EM (&$3.tkToken);
+                                             PrimFnNonceError_EM (&$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$3.tkToken);
                                              YYERROR;
@@ -3124,7 +3151,7 @@ char SymbTypeVFO
             return '?';
     } // End IF/SWITCH
 
-    if (stFlags.ObjType EQ NAMETYPE_VAR
+    if (IsNameTypeVar (stFlags.ObjType)
      || stFlags.ObjType EQ NAMETYPE_FN0)
         return 'V';
 
@@ -3483,12 +3510,12 @@ int pl_yylex
 ////////////
 ////////////// If this is a UsrVar and either it has no value
 //////////////   or the next token is ASSIGN, call it NAMEUNK.
-////////////if (stFlags.ObjType EQ NAMETYPE_VAR
+////////////if (IsNameTypeVar (stFlags.ObjType)
 //////////// && (!stFlags.Value
 ////////////  || lpplLocalVars->lpNext[1].tkFlags.TknType EQ TKT_ASSIGN))
 ////////////    return NAMEUNK;
 ////////////else
-            if (stFlags.ObjType EQ NAMETYPE_VAR)
+            if (IsNameTypeVar (stFlags.ObjType))
             {
 ////////////////lpplLocalVars->lpNext->lptkOrig->tkFlags.TknType    =
 ////////////////lpplLocalVars->lpNext->tkFlags.TknType              = TKT_VARNAMED;    // Already set

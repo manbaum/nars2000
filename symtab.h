@@ -159,6 +159,7 @@ typedef enum tagNAMETYPES
 #define IsNameTypeFn(a)     ((a) &  NAMETYPEMASK_FN                   )
 #define IsNameTypeOp(a)     ((a) &                    NAMETYPEMASK_OP )
 #define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
+#define IsNameTypeVar(a)    ((a) EQ NAMETYPE_VAR)
 
 typedef enum tagOBJNAMES
 {

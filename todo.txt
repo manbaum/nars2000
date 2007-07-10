@@ -1,6 +1,7 @@
 TO DO:  General:  Important
 ---------------------------
 * Make <dtoa.c> multi-threaded
+* Move registry info into <nars2000.ini> file
 * Implement dyadic epsilon              (member of)
 * ...       dyadic down tack jot        (format by specification)
 * ...       dyadic iota                 (index of)
@@ -19,20 +20,18 @@ TO DO:  General:  Important
 * ...       dyadic down tack            (representation)
 * ...       dyadic right shoe           (pick)
 * ...       dyadic up tack              (base value)
-* ...       bracket indexing
-* ...       bracket indexed assignment
+* ...       dyadic squad                (indexing)
+* ...       bracket indexing             A[B]
+* ...       bracket indexed assignment   A[B]{is}C
 * ...       quad/quote-quad input
-* ...       )SAVE
 * ...       )LOAD
 * ...       )COPY
-* ...       )FNS
-* ...       )OPS
-* ...       )VARS
 * ...       function execution
 * ...       goto
 * ...       goto Line #
 * ...       minimum set of system functions
 * ...       event handling
+* ...       Ctrl-Break
 * ...
 
 
@@ -50,7 +49,6 @@ TO DO:  General:  Wish List
 * Reference count on symbol table entries??
 * Strings in the symbol table??
 * Test all occurrences of a list as the right arg to a primitive or system function
-* Move registry info into <nars2000.ini> file
 * Implement user/session options dialog
 * ...       selective assignment
 * ...       dynamic functions
@@ -96,6 +94,10 @@ DONE:  General
 * ...       (+{jot}(2+3))4
 * ...       (+{jot}(2 3))4
 * ...       (+{jot} 2 3 )4
+* ...       )SAVE
+* ...       )FNS
+* ...       )OPS
+* ...       )VARS
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

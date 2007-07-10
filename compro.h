@@ -76,6 +76,7 @@
 //nclude "resdebug.pro"
 #include "savews.pro"
 #include "sessman.pro"
+#include "sort.pro"
 #include "strand.pro"
 #include "symtab.pro"
 #include "symtrans.pro"

@@ -209,6 +209,7 @@ $(O)reg.DEP             \
 $(O)resdebug.DEP        \
 $(O)savews.DEP          \
 $(O)sessman.DEP         \
+$(O)sort.DEP            \
 $(O)strand.DEP          \
 $(O)symtab.DEP          \
 $(O)symtrans.DEP        \
@@ -463,6 +464,9 @@ $(O)version.DEV
 !if exist ($(O)sessman.DEP)
 !       include $(O)sessman.DEP
 !endif
+!if exist ($(O)sort.DEP)
+!       include $(O)sort.DEP
+!endif
 !if exist ($(O)strand.DEP)
 !       include $(O)strand.DEP
 !endif
@@ -576,6 +580,7 @@ $(O)reg.PRO             \
 $(O)resdebug.PRO        \
 $(O)savews.PRO          \
 $(O)sessman.PRO         \
+$(O)sort.PRO            \
 $(O)strand.PRO          \
 $(O)symtab.PRO          \
 $(O)symtrans.PRO        \
@@ -703,6 +708,7 @@ $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
 !endif
 $(O)savews.OBJ:         $(@B).C         $(SAVEWS_DEP)
 $(O)sessman.OBJ:        $(@B).C         $(SESSMAN_DEP)
+$(O)sort.OBJ:           $(@B).C         $(SORT_DEP)
 $(O)strand.OBJ:         $(@B).C         $(STRAND_DEP)
 $(O)symtab.OBJ:         $(@B).C         $(SYMTAB_DEP)
 $(O)symtrans.OBJ:       $(@B).C         $(SYMTRANS_DEP)
@@ -807,6 +813,7 @@ OBJS=                       \
 !endif
      $(O)savews.OBJ         \
      $(O)sessman.OBJ        \
+     $(O)sort.OBJ           \
      $(O)strand.OBJ         \
      $(O)symtab.OBJ         \
      $(O)symtrans.OBJ       \

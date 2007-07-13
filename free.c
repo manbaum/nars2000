@@ -94,8 +94,9 @@ void FreeResultSub
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkRes->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-            // stData is an HGLOBAL
-            Assert (!lptkRes->tkData.tkSym->stFlags.Imm);
+            // If stData is immediate, exit
+            if (lptkRes->tkData.tkSym->stFlags.Imm)
+                break;
 
             // Check for internal functions,
             //   or no value
@@ -163,9 +164,10 @@ void FreeResultSub
                 // Get the global memory ptr
                 hGlbData = lptkRes->tkData.tkSym->stData.stGlbData;
 
-                // stData is a valid HGLOBAL variable or function array
+                // stData is a valid HGLOBAL variable or function array or defined function
                 Assert (IsGlbTypeVarDir (hGlbData)
-                     || IsGlbTypeFcnDir (hGlbData));
+                     || IsGlbTypeFcnDir (hGlbData)
+                     || IsGlbTypeDfnDir (hGlbData));
 
                 // The call to FreeResult after ArrayDisplay_EM needs the
                 //   following if-statement.
@@ -413,17 +415,15 @@ BOOL FreeResultGlobalFcn
     (HGLOBAL hGlbData)
 
 {
-    LPVOID    lpMemData,        // Ptr to the function array's global memory
-              lpMemLcl;         // Ptr to
-////APLSTYPE  cNameType;        // The function array name type (see NAMETYPES enum)
-    UINT      fcnNELM,          // The # elements in the function array
-              u,                // Loop counter
-              RefCnt,           // Reference count
-              Sig;              // Signature
-    BOOL      bRet;             // TRUE iff result is valid
-    LPYYSTYPE lpYYToken;        // Ptr to function array token
-    HGLOBAL   hGlbLcl,          // Global memory handle
-              hGlbTxtLine;      // Line text gobal memory handle
+    LPVOID       lpMemData;     // Ptr to the function array's global memory
+////APLSTYPE     cNameType;     // The function array name type (see NAMETYPES enum)
+    UINT         fcnNELM,       // The # elements in the function array
+                 u,             // Loop counter
+                 RefCnt;        // Reference count
+    BOOL         bRet;          // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYToken;     // Ptr to function array token
+    HGLOBAL      hGlbLcl,       // Global memory handle
+                 hGlbTxtLine;   // Line text gobal memory handle
 
     DBGENTER;
 
@@ -464,10 +464,10 @@ BOOL FreeResultGlobalFcn
             DbgGlobalFree (hGlbTxtLine); hGlbTxtLine = NULL;
         } // End IF
 
-        // Point to the array data (YYSTYPEs)
+        // Point to the array data (PL_YYSTYPEs)
         lpYYToken = FcnArrayBaseToData (lpMemData);
 
-        // Loop through the YYSTYPEs
+        // Loop through the PL_YYSTYPEs
         for (u = 0; u < fcnNELM; u++, lpYYToken++)
         // Split cases based upon the token type
         switch (lpYYToken->tkToken.tkFlags.TknType)
@@ -503,20 +503,11 @@ BOOL FreeResultGlobalFcn
                 // Clear the ptr type bits
                 hGlbLcl = ClrPtrTypeDirGlb (hGlbLcl);
 
-                // Lock the memory to get a ptr to it
-                lpMemLcl = MyGlobalLock (hGlbLcl);
-
-                // Get the signature
-                Sig = ((LPHEADER_SIGNATURE) lpMemLcl)->nature;
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbLcl); lpMemLcl = NULL;
-
                 // Split cases based upon the array signature
-                switch (Sig)
+                switch (GetSignatureGlb (hGlbLcl))
                 {
                     case FCNARRAY_HEADER_SIGNATURE:
-                        // Free the global function
+                        // Free the function array
                         if (FreeResultGlobalFcn (hGlbLcl))
                         {
 #ifdef DEBUG
@@ -531,7 +522,8 @@ BOOL FreeResultGlobalFcn
                         break;
 
                     case DFN_HEADER_SIGNATURE:
-                        if (FreeResultGlobalDfn (hGlbData))
+                        // Free the defined function
+                        if (FreeResultGlobalDfn (hGlbLcl))
                         {
 #ifdef DEBUG
                             dprintf ("**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%s#%d)",
@@ -626,6 +618,32 @@ BOOL FreeResultGlobalFcn
 
 
 //***************************************************************************
+//  $GetSignatureGlb
+//
+//  Get the signature of a gloabl object
+//***************************************************************************
+
+UINT GetSignatureGlb
+    (HGLOBAL hGlbLcl)
+
+{
+    LPHEADER_SIGNATURE lpMemLcl;            // Ptr to signature global memory
+    UINT               Sig;                 // The signature
+
+    // Lock the memory to get a ptr to it
+    lpMemLcl = MyGlobalLock (hGlbLcl);
+
+    // Get the signature
+    Sig = lpMemLcl->nature;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbLcl); lpMemLcl = NULL;
+
+    return Sig;
+} // End GetSignatureGlb
+
+
+//***************************************************************************
 //  $FreeResultGlobalDfn
 //
 //  Free a global defined function
@@ -647,7 +665,7 @@ BOOL FreeResultGlobalDfn
     LPFCNLINE    lpFcnLines;        // Ptr to the array of structs (FCNLINE[numFcnLine])
 
     // Data is an valid HGLOBAL defined function
-    Assert (IsGlbTypeDfnDir (hGlbData));
+    Assert (IsGlbTypeDfnDir (MakeGlbTypeGlb (hGlbData)));
 
     // Clear the ptr type bits
     hGlbData = ClrPtrTypeDirGlb (hGlbData);
@@ -753,7 +771,7 @@ BOOL FreeResultGlobalDfn
 //***************************************************************************
 
 void FreeYYFcn
-    (LPYYSTYPE lpYYFcn)
+    (LPPL_YYSTYPE lpYYFcn)
 
 {
     UINT u;
@@ -774,7 +792,7 @@ void FreeYYFcn
 //***************************************************************************
 
 void FreeYYFcn1
-    (LPYYSTYPE lpYYFcn)
+    (LPPL_YYSTYPE lpYYFcn)
 
 {
     Assert (lpYYFcn->TknCount NE 0);

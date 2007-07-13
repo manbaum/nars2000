@@ -27,7 +27,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnRightTack_EM_YY
+LPPL_YYSTYPE PrimFnRightTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -69,7 +69,7 @@ LPYYSTYPE PrimFnRightTack_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnRightTack_EM_YY
+LPPL_YYSTYPE PrimProtoFnRightTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -102,7 +102,7 @@ LPYYSTYPE PrimProtoFnRightTack_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonRightTack_EM_YY
+LPPL_YYSTYPE PrimFnMonRightTack_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -125,15 +125,15 @@ LPYYSTYPE PrimFnMonRightTack_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydRightTack_EM_YY
+LPPL_YYSTYPE PrimFnDydRightTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL   hGlbData;
-    LPYYSTYPE lpYYRes;
+    HGLOBAL      hGlbData;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTTACK);

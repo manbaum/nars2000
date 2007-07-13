@@ -56,12 +56,13 @@ typedef struct tagDFN_HEADER        // Function header structure
                      offFcnLines;   // 40:  Offset to start of function lines (FCNLINE[nLines])
     LPSYMENTRY       steLftOpr,     // 44:  Left operand STE (may be NULL if not an operator)
                      steFcnName,    // 48:  Function name STE
-                     steRhtOpr;     // 4C:  Right operand STE (may be NULL if monadic operator or not an operator)
-    HGLOBAL          hGlbTxtHdr,    // 50:  Text of function header (APLCHAR) ...
-                     hGlbTknHdr,    // 54:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff;  // 58:  Undo buffer                       ... (may be NULL)
-                                    // 5C:  Length
-                                    // 5C:  Array of function line structures (FCNLINE[nLines])
+                     steAxisOpr,    // 4C:  Axis operator STE
+                     steRhtOpr;     // 50:  Right operand STE (may be NULL if monadic operator or not an operator)
+    HGLOBAL          hGlbTxtHdr,    // 54:  Text of function header (APLCHAR) ...
+                     hGlbTknHdr,    // 58:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff;  // 5C:  Undo buffer                       ... (may be NULL)
+                                    // 60:  Length
+                                    // 60:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a
@@ -75,11 +76,15 @@ typedef struct tagDFN_HEADER        // Function header structure
 typedef struct tagFH_YYSTYPE        // YYSTYPE for Function Header parser
 {
     TOKEN  tkToken;                 // 00:  Token info
-    UINT   uStrandLen;              // 14:  # elements in this strand
+    UINT   uStrandLen:31,           // 14:  7FFFFFFF:  # elements in this strand
+           Indirect:1;              //      80000000:  Indirect entry
+                                    //      00000000:  No available bits
+    struct tagFH_YYSTYPE *
+           lpYYStrandIndirect;      // 18:  Ptr to the indirect strand if .Indirect is set
     struct tagFH_YYSTYPE *
            lpYYStrandBase;          // 18:  Ptr to this token's strand base
                                     // 1C:  Length
-} FH_YYSTYPE, *FH_LPYYSTYPE;        // Data type of yacc stack
+} FH_YYSTYPE, *LPFH_YYSTYPE;        // Data type of yacc stack
 
 #define YYSTYPE_IS_DECLARED 1
 
@@ -98,17 +103,18 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  FcnValence:2,      //      0000000C:  Defined/Derived Function Valence (see FCNVALENCES enum)
                  DfnAxis:1,         //      00000010:  Defined/Derived Function accepts axis value
                  Avail:27;          //      FFFFFFE0:  Available bits
-    FH_LPYYSTYPE lpYYStrandStart,   // 24:  Strand stack start (static)
+    LPFH_YYSTYPE lpYYStrandStart,   // 24:  Strand stack start (static)
                  lpYYStrandBase,    // 28:  ...          base (dynamic)
                  lpYYStrandNext,    // 2C:  ...          next token (dynamic)
                  lpYYResult,        // 30:  Ptr to result name or list
                  lpYYLftArg,        // 34:  ...    left arg name or list
                  lpYYLftOpr,        // 38:  ...    left operand name
                  lpYYFcnName,       // 3C:  ...    function/operator name
-                 lpYYRhtOpr,        // 40:  ...    right operand name
-                 lpYYRhtArg,        // 44:  ...    right arg name or list
-                 lpYYLocals;        // 48:  ...    locals name or list
-                                    // 4C:  Length
+                 lpYYAxisOpr,       // 40:  ...    axis operator name
+                 lpYYRhtOpr,        // 44:  ...    right operand name
+                 lpYYRhtArg,        // 48:  ...    right arg name or list
+                 lpYYLocals;        // 4C:  ...    locals name or list
+                                    // 50:  Length
 } FHLOCALVARS, *LPFHLOCALVARS;
 
 

@@ -71,7 +71,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTimes};
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnTimes_EM_YY
+LPPL_YYSTYPE PrimFnTimes_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -293,22 +293,22 @@ APLFLOAT PrimFnDydTimesFisFvF
 #endif
 
 BOOL PrimFnDydTimesAPA_EM
-    (LPYYSTYPE  lpYYRes,            // Ptr to result token (may be NULL)
+    (LPPL_YYSTYPE lpYYRes,          // Ptr to result token (may be NULL)
 
-     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPTOKEN      lptkFunc,         // Ptr to function token
 
-     HGLOBAL    hGlbLft,            // HGLOBAL of left arg (may be NULL if simple)
-     HGLOBAL    hGlbRht,            // ...        right ...
-     HGLOBAL   *lphGlbRes,          // Ptr to result handle
+     HGLOBAL      hGlbLft,          // HGLOBAL of left arg (may be NULL if simple)
+     HGLOBAL      hGlbRht,          // ...        right ...
+     HGLOBAL     *lphGlbRes,        // Ptr to result handle
 
-     APLRANK    aplRankLft,         // Left arg rank
-     APLRANK    aplRankRht,         // Right ...
+     APLRANK      aplRankLft,       // Left arg rank
+     APLRANK      aplRankRht,       // Right ...
 
-     APLNELM    aplNELMLft,         // Left arg NELM
-     APLNELM    aplNELMRht,         // Right ...
+     APLNELM      aplNELMLft,       // Left arg NELM
+     APLNELM      aplNELMRht,       // Right ...
 
-     APLINT     aplInteger,         // The integer from the simple side
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+     APLINT       aplInteger,       // The integer from the simple side
+     LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
     APLRANK aplRankRes;     // Result rank

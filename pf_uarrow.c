@@ -28,7 +28,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnUpArrow_EM_YY
+LPPL_YYSTYPE PrimFnUpArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -59,7 +59,7 @@ LPYYSTYPE PrimFnUpArrow_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnUpArrow_EM_YY
+LPPL_YYSTYPE PrimProtoFnUpArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -92,16 +92,16 @@ LPYYSTYPE PrimProtoFnUpArrow_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonUpArrow_EM_YY
+LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLLONGEST aplLongest;
-    HGLOBAL    lpSymGlb;
-    UCHAR      immType;
-    LPYYSTYPE  lpYYRes;
+    APLLONGEST   aplLongest;
+    HGLOBAL      lpSymGlb;
+    UCHAR        immType;
+    LPPL_YYSTYPE lpYYRes;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -323,34 +323,34 @@ BOOL PrimFnDydUpArrowLftGlbValid_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydUpArrow_EM_YY
+LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,           // Left arg storage type
-              aplTypeRht,           // Right ...
-              aplTypeRes;           // Result   ...
-    APLNELM   aplNELMLft,           // Left arg NELM
-              aplNELMRht,           // Right ...
-              aplNELMRes,           // Result   ...
-              aplNELMAxis;          // Axis     ...
-    APLRANK   aplRankLft,           // Left arg rank
-              aplRankRht,           // Right ...
-              aplRankRes;           // Result   ...
-    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
-              hGlbRht = NULL,       // Right ...
-              hGlbRes = NULL,       // Result   ...
-              hGlbAxis = NULL;      // Axis     ...
-    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
-              lpMemRht = NULL,      // Ptr to right ...
-              lpMemRes = NULL;      // Ptr to result   ...
-    APLUINT   ByteRes;              // # bytes needed for the result
-    LPAPLUINT lpMemAxisHead,        // Ptr to axis values, fleshed out
-              lpMemAxisTail;        // Ptr to grade up of AxisHead
-    LPYYSTYPE lpYYRes = NULL;       // Ptr to the result
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht,        // Right ...
+                 aplTypeRes;        // Result   ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht,        // Right ...
+                 aplNELMRes,        // Result   ...
+                 aplNELMAxis;       // Axis     ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht,        // Right ...
+                 aplRankRes;        // Result   ...
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRht = NULL,    // Right ...
+                 hGlbRes = NULL,    // Result   ...
+                 hGlbAxis = NULL;   // Axis     ...
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL,   // Ptr to right ...
+                 lpMemRes = NULL;   // Ptr to result   ...
+    APLUINT      ByteRes;           // # bytes needed for the result
+    LPAPLUINT    lpMemAxisHead,     // Ptr to axis values, fleshed out
+                 lpMemAxisTail;     // Ptr to grade up of AxisHead
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     return PrimFnNonceError_EM (lptkFunc);
 

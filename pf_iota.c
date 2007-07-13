@@ -29,7 +29,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnIota_EM_YY
+LPPL_YYSTYPE PrimFnIota_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -72,7 +72,7 @@ LPYYSTYPE PrimFnIota_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnIota_EM_YY
+LPPL_YYSTYPE PrimProtoFnIota_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -105,7 +105,7 @@ LPYYSTYPE PrimProtoFnIota_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonIota_EM_YY
+LPPL_YYSTYPE PrimFnMonIota_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -117,7 +117,7 @@ LPYYSTYPE PrimFnMonIota_EM_YY
     LPVOID       lpMemRes;      // Ptr to result global memory
     BOOL         bRet = TRUE;   // TRUE iff result is valid
     APLINT       aplIntTmp;     // Temporary integer
-    LPYYSTYPE    lpYYRes;       // Ptr to result
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     APLBOOL      bQuadIO;       // []IO
@@ -517,25 +517,25 @@ BOOL PrimFnMonIotaGlb_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydIota_EM_YY
+LPPL_YYSTYPE PrimFnDydIota_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,           // Left arg storage type
-              aplTypeRht;           // Right ...
-    APLNELM   aplNELMLft,           // Left arg NELM
-              aplNELMRht;           // Right ...
-    APLRANK   aplRankLft,           // Left arg rank
-              aplRankRht;           // Right ...
-    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
-              hGlbRht = NULL;       // Right ...
-    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
-              lpMemRht = NULL;      // Ptr to right ...
-    BOOL      bRet = TRUE;          // TRUE iff result is valid
-    LPYYSTYPE lpYYRes = NULL;       // Ptr to the result
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht;        // Right ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht;        // Right ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht;        // Right ...
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRht = NULL;    // Right ...
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL;   // Ptr to right ...
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);

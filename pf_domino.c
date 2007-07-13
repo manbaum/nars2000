@@ -34,7 +34,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDomino_EM_YY
+LPPL_YYSTYPE PrimFnDomino_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -77,7 +77,7 @@ LPYYSTYPE PrimFnDomino_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnDomino_EM_YY
+LPPL_YYSTYPE PrimProtoFnDomino_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -110,38 +110,38 @@ LPYYSTYPE PrimProtoFnDomino_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonDomino_EM_YY
+LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE    aplTypeRht;         // Right arg storage type
-    APLNELM     aplNELMRht,         // Right arg NELM
-                aplNELMRes;         // Result    ...
-    APLRANK     aplRankRht,         // Right arg rank
-                aplRankRes;         // Result    ...
-    HGLOBAL     hGlbRht = NULL,     // Right arg global memory handle
-                hGlbRes = NULL;     // Result    ...
-    LPVOID      lpMemRht = NULL,    // Ptr to right arg global memory
-                lpMemRes = NULL;    // Ptr to result    ...
-    APLUINT     ByteRes;            // # bytes needed for the result
-    APLDIM      uNumRows,
-                uNumCols,
-                uRow,
-                uCol,
-                uTmp;
-    APLINT      apaOffRht,          // Right arg APA offset
-                apaMulRht;          // ...           multiplier
-    APLFLOAT    aplFloatRht;        // Right arg temporary float
-    BOOL        bRet = TRUE;        // TRUE iff result is valid
-    LPYYSTYPE   lpYYRes;            // Ptr to the result
-    UINT        uBitMask;           // Bit mask for marching through Booleans
-    gsl_matrix *lpGslMatrixU = NULL,
-               *lpGslMatrixV = NULL;
-    gsl_vector *lpGslVectorS = NULL,
-               *lpGslVectorW = NULL;
-    int         ErrCode;
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMRht,        // Right arg NELM
+                 aplNELMRes;        // Result    ...
+    APLRANK      aplRankRht,        // Right arg rank
+                 aplRankRes;        // Result    ...
+    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbRes = NULL;    // Result    ...
+    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
+                 lpMemRes = NULL;   // Ptr to result    ...
+    APLUINT      ByteRes;           // # bytes needed for the result
+    APLDIM       uNumRows,
+                 uNumCols,
+                 uRow,
+                 uCol,
+                 uTmp;
+    APLINT       apaOffRht,         // Right arg APA offset
+                 apaMulRht;         // ...           multiplier
+    APLFLOAT     aplFloatRht;       // Right arg temporary float
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    UINT         uBitMask;          // Bit mask for marching through Booleans
+    gsl_matrix  *lpGslMatrixU = NULL,
+                *lpGslMatrixV = NULL;
+    gsl_vector  *lpGslVectorS = NULL,
+                *lpGslVectorW = NULL;
+    int          ErrCode;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -539,51 +539,51 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydDomino_EM_YY
+LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE   aplTypeLft,          // Left arg storage type
-               aplTypeRht;          // Right ...
-    APLNELM    aplNELMLft,          // Left arg NELM
-               aplNELMRht,          // Right ...
-               aplNELMRes;          // Result   ...
-    APLRANK    aplRankLft,          // Left arg rank
-               aplRankRht,          // Right ...
-               aplRankRes;          // Result   ...
-    HGLOBAL    hGlbLft = NULL,      // Left arg global memory handle
-               hGlbRht = NULL,      // Right ...
-               hGlbRes = NULL;      // Result   ...
-    LPVOID     lpMemLft = NULL,     // Ptr to left arg global memory
-               lpMemRht = NULL,     // Ptr to right ...
-               lpMemRes = NULL;     // Ptr to result   ...
-    APLUINT    ByteRes;             // # bytes needed for the result
-    APLDIM     uNumRowsLft,         //
-               uNumColsLft,         //
-               uNumRowsRht,         //
-               uNumColsRht,         //
-               uNumRowsRes,         //
-               uNumColsRes,         //
-               uRow,                //
-               uCol;                //
-    APLINT     apaOffLft,           // Left arg APA offset
-               apaMulLft,           // ...           multiplier
-               apaOffRht,           // Right arg APA offset
-               apaMulRht;           // ...           multiplier
-    APLFLOAT   aplFloatLft,         //
-               aplFloatRht,         //
-               aplFloatRes;         //
-    BOOL       bRet = TRUE;         // TRUE iff result is valid
-    LPYYSTYPE  lpYYRes;             // Ptr to the result
-    UINT       uBitMask;            // Bit mask for marching through Booleans
-    gsl_matrix *lpGslMatrixU = NULL,
-               *lpGslMatrixV = NULL;
-    gsl_vector *lpGslVectorS = NULL,
-               *lpGslVectorW = NULL,
-               *lpGslVectorX = NULL,
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht;        // Right ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht,        // Right ...
+                 aplNELMRes;        // Result   ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht,        // Right ...
+                 aplRankRes;        // Result   ...
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRht = NULL,    // Right ...
+                 hGlbRes = NULL;    // Result   ...
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL,   // Ptr to right ...
+                 lpMemRes = NULL;   // Ptr to result   ...
+    APLUINT      ByteRes;           // # bytes needed for the result
+    APLDIM       uNumRowsLft,       //
+                 uNumColsLft,       //
+                 uNumRowsRht,       //
+                 uNumColsRht,       //
+                 uNumRowsRes,       //
+                 uNumColsRes,       //
+                 uRow,              //
+                 uCol;              //
+    APLINT       apaOffLft,         // Left arg APA offset
+                 apaMulLft,         // ...           multiplier
+                 apaOffRht,         // Right arg APA offset
+                 apaMulRht;         // ...           multiplier
+    APLFLOAT     aplFloatLft,       //
+                 aplFloatRht,       //
+                 aplFloatRes;       //
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    UINT         uBitMask;          // Bit mask for marching through Booleans
+    gsl_matrix  *lpGslMatrixU = NULL,
+                *lpGslMatrixV = NULL;
+    gsl_vector  *lpGslVectorS = NULL,
+                *lpGslVectorW = NULL,
+                *lpGslVectorX = NULL,
                *lpGslVectorB = NULL;
     int         ErrCode;
 

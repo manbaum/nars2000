@@ -287,13 +287,13 @@ EXTERN
 APLFLOAT PrimIdent[PF_INDEX_NEXT];      // Primitive scalar function identity elements
                                         //   in the same order as enum tagFBFNINDS
 
-typedef void (FASTBOOLFCN) (APLSTYPE  aplTypeRht,       // Right arg storage type
-                            LPVOID    lpMemRht,         // Ptr to right arg global memory
-                            LPVOID    lpMemRes,         // Ptr to result    ...
-                            APLUINT   uDimLo,           // Product of dimensions below axis
-                            APLUINT   uDimAxRht,        // Length of right arg axis dimension
-                            UINT      uIndex,           // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
-                            LPYYSTYPE lpYYFcnStrOpr);   // Ptr to operator function strand
+typedef void (FASTBOOLFCN) (APLSTYPE     aplTypeRht,        // Right arg storage type
+                            LPVOID       lpMemRht,          // Ptr to right arg global memory
+                            LPVOID       lpMemRes,          // Ptr to result    ...
+                            APLUINT      uDimLo,            // Product of dimensions below axis
+                            APLUINT      uDimAxRht,         // Length of right arg axis dimension
+                            UINT         uIndex,            // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+                            LPPL_YYSTYPE lpYYFcnStrOpr);    // Ptr to operator function strand
 typedef FASTBOOLFCN *LPFASTBOOLFCN;
 
 typedef struct tagFASTBOOLFNS
@@ -664,9 +664,8 @@ typedef enum tagSYSVARS
     SYSVAR_RL  ,                // 09:  []RL
     SYSVAR_SA  ,                // 0A:  []SA
     SYSVAR_WSID,                // 0B:  []WSID
-    SYSVAR_AXIS,                // 0C:  []AXIS
-    SYSVAR_LENGTH               // 0D:  # entries in the enum
-                                // 0E-0F:  Available entries (4 bits)
+    SYSVAR_LENGTH               // 0C:  # entries in the enum
+                                // 0D-0F:  Available entries (4 bits)
 } SYSVARS;
 
 EXTERN
@@ -1278,13 +1277,18 @@ typedef struct tagUNDOBUF
 } UNDOBUF, *LPUNDOBUF;
 
 
-typedef union tagLPMEMTXTUNION
+typedef union tagMEMTXTUNION
 {
-    LPAPLCHAR C;        // 00:  As an APLCHAR ptr
-    LPUINT    U;        // 00:  ...   UINT    ...
-    LPVOID    V;        // 00:  ...   VOID    ...
-    LPWORD    W;        // 00:  ...   WORD    ...
-} LPMEMTXTUNION;
+    struct
+    {
+        UINT U;             // 00:  The line length
+        union
+        {
+            APLCHAR C;      // 04:  Followed by an APLCHAR
+            WORD    W;      // 04:  ...          a WORD
+        };
+    };
+} MEMTXTUNION, *LPMEMTXTUNION;
 
 typedef void (*LPERRHANDFN) (LPWCHAR lpwszMsg,
                              LPWCHAR lpwszLine,

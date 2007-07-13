@@ -70,7 +70,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecUpCaretTilde};
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnUpCaretTilde_EM_YY
+LPPL_YYSTYPE PrimFnUpCaretTilde_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token

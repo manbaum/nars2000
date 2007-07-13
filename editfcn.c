@@ -49,14 +49,8 @@
 
  */
 
-////WCHAR debugText[] =
-////L"(Z1 Z2)" WS_UTF16_LEFTARROW L"[(L1 L2 L3)] (LO FOO RO) (R1 R2 R3 R4)\r\n"
-////L"Z1" WS_UTF16_LEFTARROW WS_UTF16_DELTASTILE WS_UTF16_DELTASTILE L"R1"
-////;
-
 char szCloseMessage[] = "You have changed the body of this function;"
                         " save the changes?";
-
 
 COLORREF crLineNum = RGB (143,188,143),   // Darkseagreen
          crLineTxt = RGB ( 65,105,225);   // Royalblue
@@ -414,13 +408,13 @@ LRESULT APIENTRY FEWndProc
                 hGlbTxtLine = lpMemDfnHdr->hGlbTxtHdr;
 
                 // Lock the memory to get a ptr to it
-                lpMemTxtLine.V = MyGlobalLock (hGlbTxtLine);
+                lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
                 // Append the text to the Edit Control
-                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) &lpMemTxtLine.U[1]);
+                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) &lpMemTxtLine->C);
 
                 // We no longer need this ptr
-                MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine.V = NULL;
+                MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
                 // Get the # lines in the function
                 numFcnLines = lpMemDfnHdr->numFcnLines;
@@ -438,13 +432,13 @@ LRESULT APIENTRY FEWndProc
                     hGlbTxtLine = lpFcnLines->hGlbTxtLine;
 
                     // Lock the memory to get a ptr to it
-                    lpMemTxtLine.V = MyGlobalLock (hGlbTxtLine);
+                    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
                     // Append the text to the Edit Control
-                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) &lpMemTxtLine.U[1]);
+                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) &lpMemTxtLine->C);
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine.V = NULL;
+                    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
                     // Skip to the next struct
                     lpFcnLines++;
@@ -2424,7 +2418,7 @@ LPSYMENTRY ParseFunctionName
     // Allocate virtual memory for the Variable Strand accumulator
     fhLocalVars.lpYYStrandStart =
         VirtualAlloc (NULL,      // Any address
-                      DEF_STRAND_MAXSIZE * sizeof (YYSTYPE),
+                      DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
                       MEM_RESERVE,
                       PAGE_READWRITE);
     if (!fhLocalVars.lpYYStrandStart)
@@ -2437,11 +2431,12 @@ LPSYMENTRY ParseFunctionName
 
     // Commit the intial size
     VirtualAlloc (fhLocalVars.lpYYStrandStart,
-                  DEF_STRAND_INITSIZE * sizeof (YYSTYPE),
+                  DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
                   MEM_COMMIT,
                   PAGE_READWRITE);
     // Parse the header
-    if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars))
+    if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars)
+     && fhLocalVars.lpYYFcnName)
         // Get the Name's symbol table entry
         lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
     goto NORMAL_EXIT;
@@ -2514,7 +2509,7 @@ BOOL SaveFunction
     //   might have been called from the Master Frame
     //   via a system command, in which case there is
     //   no PTD for that thread.
-    hGlbTxtHdr = MyGlobalAlloc (GHND, sizeof (lpMemTxtLine.W) + (uLineLen + 1) * sizeof (lpMemTxtLine.C));
+    hGlbTxtHdr = MyGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (!hGlbTxtHdr)
     {
         MessageBox (hWndEC,
@@ -2533,27 +2528,24 @@ BOOL SaveFunction
     if (uLineLen)
     {
         // Lock the memory to get a ptr to it
-        lpMemTxtLine.V = MyGlobalLock (hGlbTxtHdr);
+        lpMemTxtLine = MyGlobalLock (hGlbTxtHdr);
 
         // Save the line length
-        *lpMemTxtLine.U = uLineLen;
-
-        // Skip over the line length
-        lpMemTxtLine.V = &lpMemTxtLine.U[1];
+        lpMemTxtLine->U = uLineLen;
 
         // Tell EM_GETLINE maximum # chars in the buffer
-        *lpMemTxtLine.W = (WORD) uLineLen;
+        lpMemTxtLine->W = (WORD) uLineLen;
 
         // Read in the line text
-        SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpMemTxtLine.C);
+        SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) &lpMemTxtLine->C);
 
         // Tokenize the line
-        hGlbTknHdr = Tokenize_EM (lpMemTxtLine.C,
-                                  uLineLen,
-                                  hWndEC,
-                                 &ErrorHandler);
+        hGlbTknHdr = Tokenize_EM (&lpMemTxtLine->C,
+                                   uLineLen,
+                                   hWndEC,
+                                  &ErrorHandler);
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine.V = NULL;
+        MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } else
         // Tokenize the (empty) line
         hGlbTknHdr = Tokenize_EM (L"",
@@ -2612,7 +2604,7 @@ BOOL SaveFunction
     // Allocate virtual memory for the Variable Strand accumulator
     fhLocalVars.lpYYStrandStart =
         VirtualAlloc (NULL,      // Any address
-                      DEF_STRAND_MAXSIZE * sizeof (YYSTYPE),
+                      DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
                       MEM_RESERVE,
                       PAGE_READWRITE);
     if (!fhLocalVars.lpYYStrandStart)
@@ -2626,7 +2618,7 @@ BOOL SaveFunction
 
     // Commit the intial size
     VirtualAlloc (fhLocalVars.lpYYStrandStart,
-                  DEF_STRAND_INITSIZE * sizeof (YYSTYPE),
+                  DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
                   MEM_COMMIT,
                   PAGE_READWRITE);
     // Parse the header
@@ -2684,7 +2676,7 @@ BOOL SaveFunction
         // Get # lines in the function
         numFcnLines = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0) - 1;
 
-        // Allocate global memory for the function
+        // Allocate global memory for the function header
         hGlbDfnHdr = DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
                                          + sizeof (LPSYMENTRY) * (numResultSTE
                                                                 + numLftArgSTE
@@ -2720,6 +2712,9 @@ BOOL SaveFunction
                                   ? fhLocalVars.lpYYLftOpr ->tkToken.tkData.tkSym
                                   : NULL;
         lpMemDfnHdr->steFcnName   = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
+        lpMemDfnHdr->steAxisOpr   = fhLocalVars.lpYYAxisOpr
+                                  ? fhLocalVars.lpYYAxisOpr->tkToken.tkData.tkSym
+                                  : NULL;
         lpMemDfnHdr->steRhtOpr    = fhLocalVars.lpYYRhtOpr
                                   ? fhLocalVars.lpYYRhtOpr ->tkToken.tkData.tkSym
                                   : NULL;
@@ -2867,13 +2862,10 @@ BOOL SaveFunction
             lpFcnLines->hGlbTxtLine = hGlbTxtLine;
 
             // Lock the memory to get a ptr to it
-            lpMemTxtLine.V = MyGlobalLock (hGlbTxtLine);
+            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
             // Save the line length
-            *lpMemTxtLine.U = uLineLen;
-
-            // Skip over the line length
-            lpMemTxtLine.V = &lpMemTxtLine.U[1];
+            lpMemTxtLine->U = uLineLen;
 
             // The following test isn't an optimzation, but avoids
             //   overwriting the allocation limits of the buffer
@@ -2884,16 +2876,16 @@ BOOL SaveFunction
             if (uLineLen)
             {
                 // Tell EM_GETLINE maximum # chars in the buffer
-                *lpMemTxtLine.W = (WORD) uLineLen;
+                lpMemTxtLine->W = (WORD) uLineLen;
 
                 // Read in the line text
-                SendMessageW (hWndEC, EM_GETLINE, (WPARAM) (uLineNum + 1), (LPARAM) lpMemTxtLine.C);
+                SendMessageW (hWndEC, EM_GETLINE, (WPARAM) (uLineNum + 1), (LPARAM) &lpMemTxtLine->C);
 
                 // Tokenize the line
-                lpFcnLines->hGlbTknLine = Tokenize_EM (lpMemTxtLine.C,
-                                                       uLineLen,
-                                                       hWndEC,
-                                                      &ErrorHandler);
+                lpFcnLines->hGlbTknLine = Tokenize_EM (&lpMemTxtLine->C,
+                                                        uLineLen,
+                                                        hWndEC,
+                                                       &ErrorHandler);
             } else
                 // Tokenize the (empty) line
                 lpFcnLines->hGlbTknLine = Tokenize_EM (L"",
@@ -2901,7 +2893,7 @@ BOOL SaveFunction
                                                        hWndEC,
                                                       &ErrorHandler);
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine.V = NULL;
+            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
             // If tokenization failed, ...
             if (!lpFcnLines->hGlbTknLine)
@@ -2935,8 +2927,11 @@ BOOL SaveFunction
         lpSymName->stFlags.Value  =
         lpSymName->stFlags.UsrDfn = 1;
 
-        // Transfer flag for accepts quad-axis
+        // Copy the "Accepts Axis Operator" flag
         lpSymName->stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;
+
+        // Set the object name
+        lpSymName->stFlags.ObjName = OBJNAME_USR;
 
         // Mark as with the proper type and valence
 
@@ -3061,37 +3056,37 @@ void GetSpecialLabelNums
         Assert (lptkLine[0].tkFlags.TknType EQ TKT_EOL
              || lptkLine[0].tkFlags.TknType EQ TKT_EOS);
 
-        // If there are at least three tokens
+        // If there are at least three tokens, ...
         //   (TKT_EOL, TKT_VARNAMED, TKT_COLON)
-        if (numTokens < 3)
-            continue;
-
-        if (lptkLine[2].tkFlags.TknType EQ TKT_COLON
-         && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED)
+        if (numTokens >= 3)
         {
-            HGLOBAL   hGlbName;     // Name's global memory handle
-            LPAPLCHAR lpMemName;    // Ptr to the name
+            if (lptkLine[2].tkFlags.TknType EQ TKT_COLON
+             && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED)
+            {
+                HGLOBAL   hGlbName;     // Name's global memory handle
+                LPAPLCHAR lpMemName;    // Ptr to the name
 
-            // stData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkLine[1].tkData.tkSym) EQ PTRTYPE_STCONST);
+                // stData is an LPSYMENTRY
+                Assert (GetPtrTypeDir (lptkLine[1].tkData.tkSym) EQ PTRTYPE_STCONST);
 
-            // Get the Name's global memory handle
-            hGlbName = lptkLine[1].tkData.tkSym->stHshEntry->htGlbName;
+                // Get the Name's global memory handle
+                hGlbName = lptkLine[1].tkData.tkSym->stHshEntry->htGlbName;
 
-            // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (hGlbName);
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLock (hGlbName);
 
-            if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"prototype") EQ 0)
-                lpMemDfnHdr->nPrototypeLine = uLineNum + 1;
+                if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"prototype") EQ 0)
+                    lpMemDfnHdr->nPrototypeLine = uLineNum + 1;
 
-            if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"inverse") EQ 0)
-                lpMemDfnHdr->nInverseLine   = uLineNum + 1;
+                if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"inverse") EQ 0)
+                    lpMemDfnHdr->nInverseLine   = uLineNum + 1;
 
-            if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"singleton") EQ 0)
-                lpMemDfnHdr->nSingletonLine = uLineNum + 1;
+                if (lstrcmpiW (lpMemName, WS_UTF16_QUAD L"singleton") EQ 0)
+                    lpMemDfnHdr->nSingletonLine = uLineNum + 1;
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbName); lpMemName = NULL;
+            } // End IF
         } // End IF
 
         // We no longer need this ptr

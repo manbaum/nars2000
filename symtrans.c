@@ -111,6 +111,9 @@ UINT OprTrans
         case UTF16_DIERESISCIRCLE:          // 0x2365
             return INDEX_DIERESISCIRCLE;    // Use special index
 
+        case UTF16_JOTDOT:                  // 0x0001
+            return INDEX_JOTDOT;            // Use special index
+
         default:                            // All others
             return (UCHAR) wchOpr;          // Use the low-order byte
     } // End SWITCH
@@ -145,6 +148,7 @@ UINT SymTrans
 
         case TKT_OP1IMMED:
         case TKT_OP2IMMED:
+        case TKT_OPJOTDOT:
             return OprTrans (wch);
 
         defstop

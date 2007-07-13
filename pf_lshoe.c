@@ -22,7 +22,7 @@
 //  Primitive function for monadic and dyadic LeftShoe ("enclose" and "partitioned enclose")
 //***************************************************************************
 
-LPYYSTYPE PrimFnLeftShoe_EM_YY
+LPPL_YYSTYPE PrimFnLeftShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -52,7 +52,7 @@ LPYYSTYPE PrimFnLeftShoe_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnLeftShoe_EM_YY
+LPPL_YYSTYPE PrimProtoFnLeftShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -85,7 +85,7 @@ LPYYSTYPE PrimProtoFnLeftShoe_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonLeftShoe_EM_YY
+LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -156,7 +156,7 @@ LPYYSTYPE PrimFnMonLeftShoe_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonLeftShoeCon_EM_YY
+LPPL_YYSTYPE PrimFnMonLeftShoeCon_EM_YY
     (UINT       ImmType,            // The immediate type
      APLLONGEST aplLongest,         // The immediate value
      LPTOKEN    lpTokenRht,         // Ptr to right arg token
@@ -164,7 +164,7 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM_YY
      LPTOKEN    lptkFunc)           // Ptr to function token
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -211,42 +211,42 @@ LPYYSTYPE PrimFnMonLeftShoeCon_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonLeftShoeGlb_EM_YY
+LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     (HGLOBAL hGlbRht,               // Handle to right arg
      LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL  hGlbRes = NULL,
-             hGlbAxis = NULL,
-             hGlbSub = NULL,
-             hGlbProto = NULL,
-             hGlbRhtProto = NULL,
-             hGlbOdo = NULL,
-             hGlbWVec = NULL;
-    LPVOID   lpMemRes = NULL,
-             lpMemRht = NULL,
-             lpMemSub = NULL,
-             lpMemProto = NULL;
-    LPAPLDIM lpMemDimRht = NULL;
-    LPAPLINT lpMemAxis = NULL,
-             lpMemGrUp = NULL,
-             lpMemOdo = NULL,
-             lpMemWVec = NULL;
-    APLUINT  ByteRes;           // # bytes needed for the result
-    APLNELM  aplNELMAxis,
-             aplNELMRes,
-             aplNELMRht,
-             aplNELMSub;
-    APLRANK  aplRankRht,
-             aplRankRes;
-    BOOL     bRet = TRUE;
-    APLNELM  uRes, uRht, uSub, uOdo, uRhtOff;
-    APLSTYPE aplTypeRht;
-    APLNELMSIGN iRht;
-    APLINT   apaOff,
-                apaMul;
-    LPYYSTYPE   lpYYRes;
+    HGLOBAL      hGlbRes = NULL,
+                 hGlbAxis = NULL,
+                 hGlbSub = NULL,
+                 hGlbProto = NULL,
+                 hGlbRhtProto = NULL,
+                 hGlbOdo = NULL,
+                 hGlbWVec = NULL;
+    LPVOID       lpMemRes = NULL,
+                 lpMemRht = NULL,
+                 lpMemSub = NULL,
+                 lpMemProto = NULL;
+    LPAPLDIM     lpMemDimRht = NULL;
+    LPAPLINT     lpMemAxis = NULL,
+                 lpMemGrUp = NULL,
+                 lpMemOdo = NULL,
+                 lpMemWVec = NULL;
+    APLUINT      ByteRes;           // # bytes needed for the result
+    APLNELM      aplNELMAxis,
+                 aplNELMRes,
+                 aplNELMRht,
+                 aplNELMSub;
+    APLRANK      aplRankRht,
+                 aplRankRes;
+    BOOL         bRet = TRUE;
+    APLNELM      uRes, uRht, uSub, uOdo, uRhtOff;
+    APLSTYPE     aplTypeRht;
+    APLNELMSIGN  iRht;
+    APLINT       apaOff,
+                 apaMul;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -1090,7 +1090,7 @@ QUICK_EXIT:
 //***************************************************************************
 //  $PrimFnMonLeftShoeProto_EM
 //
-//  Subroutine to PrimFnMonLeftShoe_EM to handle prorotypes
+//  Subroutine to PrimFnMonLeftShoe_EM to handle prototypes
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1255,7 +1255,7 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydLeftShoe_EM_YY
+LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -1322,17 +1322,17 @@ LPYYSTYPE PrimFnDydLeftShoe_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydLeftShoeGlb_EM
+LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      HGLOBAL hGlbRht,               // Handle to right arg
      LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    APLINT  aplAxis;        // The (one and only) axis value
-    APLRANK aplRankRht;     // The rank of the right arg
-    BOOL    bRet = TRUE;
-    LPYYSTYPE lpYYRes;
+    APLINT       aplAxis;           // The (one and only) axis value
+    APLRANK      aplRankRht;        // The rank of the right arg
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);

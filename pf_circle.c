@@ -73,7 +73,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecCircle};
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnCircle_EM_YY
+LPPL_YYSTYPE PrimFnCircle_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token

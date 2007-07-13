@@ -30,7 +30,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDownTackJot_EM_YY
+LPPL_YYSTYPE PrimFnDownTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -72,7 +72,7 @@ LPYYSTYPE PrimFnDownTackJot_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnDownTackJot_EM_YY
+LPPL_YYSTYPE PrimProtoFnDownTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -105,37 +105,37 @@ LPYYSTYPE PrimProtoFnDownTackJot_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonDownTackJot_EM_YY
+LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE    aplTypeRht;         // Right arg storage type
-    APLNELM     aplNELMRht,         // Right arg NELM
-                aplNELMRes;         // Result    ...
-    APLRANK     aplRankRht,         // Right arg rank
-                aplRankRes;         // Result    ...
-    APLDIM      aplDimNCols,        // # columns
-                aplDimNRows,        // # rows
-                aplDimCol,          // Col loop counter
-                aplLastDim;         // Lengthof the last dimension in the result
-    HGLOBAL     hGlbRht = NULL,     // Right arg global memory handle
-                hGlbRes = NULL;     // Result    ...
-    LPVOID      lpMemRht = NULL,    // Ptr to right arg global memory
-                lpMemRes = NULL;    // Ptr to result    ...
-    LPAPLDIM    lpMemDimRht = NULL; // Ptr to right arg dimensions
-    APLINT      aplIntegerRht;      // Right arg temporary integer
-    APLFLOAT    aplFloatRht;        // ...                 float
-    APLCHAR     aplCharRht;         // ...                 char
-    LPFMTHEADER lpFmtHeader;        // Ptr to format header struc
-    LPFMTCOLSTR lpFmtColStr;        // Ptr to column struc
-    LPAPLCHAR   lpaplChar,          // Ptr to output save area
-                lpaplCharStart;     // Ptr to start of output save area
-    APLUINT     ByteRes;            // # bytes needed for the result
-    BOOL        bRet = TRUE,        // TRUE iff result is valid
-                bSimpleScalar;      // TRUE if right arg is a simple scalar
-    LPYYSTYPE   lpYYRes;            // Ptr to the result
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMRht,        // Right arg NELM
+                 aplNELMRes;        // Result    ...
+    APLRANK      aplRankRht,        // Right arg rank
+                 aplRankRes;        // Result    ...
+    APLDIM       aplDimNCols,       // # columns
+                 aplDimNRows,       // # rows
+                 aplDimCol,         // Col loop counter
+                 aplLastDim;        // Lengthof the last dimension in the result
+    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbRes = NULL;    // Result    ...
+    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
+                 lpMemRes = NULL;   // Ptr to result    ...
+    LPAPLDIM     lpMemDimRht = NULL;// Ptr to right arg dimensions
+    APLINT       aplIntegerRht;     // Right arg temporary integer
+    APLFLOAT     aplFloatRht;       // ...                 float
+    APLCHAR      aplCharRht;        // ...                 char
+    LPFMTHEADER  lpFmtHeader;       // Ptr to format header struc
+    LPFMTCOLSTR  lpFmtColStr;       // Ptr to column struc
+    LPAPLCHAR    lpaplChar,         // Ptr to output save area
+                 lpaplCharStart;    // Ptr to start of output save area
+    APLUINT      ByteRes;           // # bytes needed for the result
+    BOOL         bRet = TRUE,       // TRUE iff result is valid
+                 bSimpleScalar;     // TRUE if right arg is a simple scalar
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank) of the right args
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
@@ -2124,25 +2124,25 @@ LPAPLCHAR AppendBlankRows
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydDownTackJot_EM_YY
+LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht;
-    APLNELM   aplNELMLft,
-              aplNELMRht;
-    APLRANK   aplRankLft,
-              aplRankRht;
-    HGLOBAL   hGlbLft,
-              hGlbRht;
-    LPVOID    lpMemLft,
-              lpMemRht;
-    BOOL      bRet = TRUE;
-    LPYYSTYPE lpYYRes = NULL;
+    APLSTYPE     aplTypeLft,
+                 aplTypeRht;
+    APLNELM      aplNELMLft,
+                 aplNELMRht;
+    APLRANK      aplRankLft,
+                 aplRankRht;
+    HGLOBAL      hGlbLft,
+                 hGlbRht;
+    LPVOID       lpMemLft,
+                 lpMemRht;
+    BOOL         bRet = TRUE;
+    LPPL_YYSTYPE lpYYRes = NULL;
 
     return PrimFnNonceError_EM (lptkFunc);
 

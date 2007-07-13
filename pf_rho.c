@@ -28,7 +28,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnRho_EM_YY
+LPPL_YYSTYPE PrimFnRho_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -71,7 +71,7 @@ LPYYSTYPE PrimFnRho_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnRho_EM_YY
+LPPL_YYSTYPE PrimProtoFnRho_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -104,7 +104,7 @@ LPYYSTYPE PrimProtoFnRho_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonRho_EM_YY
+LPPL_YYSTYPE PrimFnMonRho_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -160,11 +160,11 @@ LPYYSTYPE PrimFnMonRho_EM_YY
 //  Monadic Rho on a symbol table constant
 //***************************************************************************
 
-LPYYSTYPE PrimFnMonRhoCon_EM_YY
-    (LPTOKEN lptkFunc)
+LPPL_YYSTYPE PrimFnMonRhoCon_EM_YY
+    (LPTOKEN lptkFunc)                  // Ptr to function token
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;               // Prt to the result
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -194,19 +194,19 @@ LPYYSTYPE PrimFnMonRhoCon_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonRhoGlb_EM_YY
+LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
     (HGLOBAL hGlbRht,               // Right arg handle
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    LPVOID    lpMemRht,         // Ptr to right arg memory
-              lpMemRes;         // ...    result ...
-    APLRANK aplRankRht;      // The rank of the array
-    HGLOBAL   hGlbRes;          // Result global memory handle
-    APLUINT   ByteRes;          // # bytes needed for the result
-    BOOL      bRet = TRUE;      // TRUE iff result is valid
-    UINT      uRes;             // Loop counter
-    LPYYSTYPE lpYYRes = NULL;   // Ptr to result
+    LPVOID       lpMemRht,          // Ptr to right arg memory
+                 lpMemRes;          // ...    result ...
+    APLRANK      aplRankRht;        // The rank of the array
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    APLUINT      ByteRes;           // # bytes needed for the result
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UINT         uRes;              // Loop counter
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -308,26 +308,26 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydRho_EM_YY
+LPPL_YYSTYPE PrimFnDydRho_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE aplTypeRht,    // Right arg storage type
-             aplTypeRes;    // Result    ...
-    APLNELM  aplNELMRht,    // Right arg NELM
-             aplNELMRes;    // Result ...
-    APLRANK  aplRankRes;    // Result rank
-    HGLOBAL  hGlbRes,       // Handle of result's global memory
-             hGlbProto;     // ...                prototype
-    LPVOID   lpMemRes;      // Ptr to result's global memory
-    BOOL     bRet = TRUE,   // TRUE iff result is valid
-             bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
-             bPrototype = FALSE; // TRUE iff we're to generate a prototype
-    APLUINT  ByteRes;       // # bytes needed for the result
-    LPYYSTYPE lpYYRes;      // Ptr to the result
+    APLSTYPE     aplTypeRht,        // Right arg storage type
+                 aplTypeRes;        // Result    ...
+    APLNELM      aplNELMRht,        // Right arg NELM
+                 aplNELMRes;        // Result ...
+    APLRANK      aplRankRes;        // Result rank
+    HGLOBAL      hGlbRes,           // Handle of result's global memory
+                 hGlbProto;         // ...                prototype
+    LPVOID       lpMemRes;          // Ptr to result's global memory
+    BOOL         bRet = TRUE,       // TRUE iff result is valid
+                 bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
+                 bPrototype = FALSE; // TRUE iff we're to generate a prototype
+    APLUINT      ByteRes;           // # bytes needed for the result
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     //***************************************************************
     // Validate the left arg token

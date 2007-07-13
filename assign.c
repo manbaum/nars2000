@@ -130,7 +130,7 @@ BOOL AssignName_EM
                      || IsGlbTypeFcnDir (lptkSrc->tkData.tkSym->stData.stGlbData)
                      || IsGlbTypeDfnDir (lptkSrc->tkData.tkSym->stData.stGlbData));
 
-                // Copy the "Accepts Quad-axis" flag
+                // Copy the "Accepts Axis Operator" flag
                 lptkNam->lptkOrig->tkData.tkSym->stFlags.DfnAxis =
                 lptkNam->          tkData.tkSym->stFlags.DfnAxis =
                 lptkSrc->          tkData.tkSym->stFlags.DfnAxis;
@@ -562,7 +562,7 @@ BOOL AssignNameSpec_EM
         case TKT_VARIMMED:
             // Assign this immediate value to each name
             for (aplName = 0; aplName < aplNELMNam; aplName++)
-                AssignName_EM (&((LPYYSTYPE) lpMemNam)[aplName].tkToken, lptkVal);
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[aplName].tkToken, lptkVal);
             goto NORMAL_EXIT;
 
         case TKT_VARARRAY:
@@ -656,7 +656,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkBoolean = (uBitMaskVal & *(LPAPLBOOL) lpMemVal) ? 1 : 0;
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
 
                 // If there's more than one value, ...
                 if (aplNELMVal NE 1)
@@ -687,7 +687,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkInteger = ((LPAPLINT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -704,7 +704,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkFloat = ((LPAPLFLOAT) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -721,7 +721,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkChar = ((LPAPLCHAR) lpMemVal)[aplName % aplNELMVal];
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -747,7 +747,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkLongest = lpSymVal->stData.stLongest;
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -797,7 +797,7 @@ BOOL AssignNameSpec_EM
                 } // End SWITCH
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -814,7 +814,7 @@ BOOL AssignNameSpec_EM
                 tkToken.tkData.tkInteger = apaOffVal + apaMulVal * (aplName % aplNELMVal);
 
                 // Assign this token to this name
-                AssignName_EM (&((LPYYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
+                AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
             } // End FOR
 
             break;
@@ -854,15 +854,15 @@ NORMAL_EXIT:
 
 BOOL ModifyAssignNameVals_EM
     (LPTOKEN       lptkStrN,        // Ptr to name strand token
-     LPTOKEN       lptkFcnStr,      // Ptr to function array
+     LPPL_YYSTYPE  lpYYFcnStr,      // Ptr to function strand
      LPTOKEN       lptkVal)         // Ptr to value token
 
 {
-    HGLOBAL   hGlbName;         // Name strand global memory handle
-    LPYYSTYPE lpMemName;        // Ptr to name strand global memory
-    APLNELM   aplNELMNam;       // Name strand NELM
-    APLUINT   uName;            // Loop counter
-    BOOL      bRet = FALSE;     // TRUE iff result is valid
+    HGLOBAL      hGlbName;          // Name strand global memory handle
+    LPPL_YYSTYPE lpMemName;         // Ptr to name strand global memory
+    APLNELM      aplNELMNam;        // Name strand NELM
+    APLUINT      uName;             // Loop counter
+    BOOL         bRet = FALSE;      // TRUE iff result is valid
 
     // Get the name strand global memory handle
     hGlbName = lptkStrN->tkData.tkGlbData;
@@ -888,10 +888,10 @@ BOOL ModifyAssignNameVals_EM
     // Loop through the names
     for (uName = 0; uName < aplNELMNam; uName++)
     {
-        LPYYSTYPE lpYYRes;
+        LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
         lpYYRes =
-        ExecFunc_EM_YY (&lpMemName[uName].tkToken, lptkFcnStr, lptkVal);
+        ExecFunc_EM_YY (&lpMemName[uName].tkToken, lpYYFcnStr, lptkVal);
 
         if (lpYYRes)
         {

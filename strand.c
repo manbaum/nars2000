@@ -46,7 +46,7 @@
 //***************************************************************************
 
 void InitVarStrand
-    (LPYYSTYPE lpYYArg)             // Ptr to the incoming argument
+    (LPPL_YYSTYPE lpYYArg)          // Ptr to the incoming argument
 
 {
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
@@ -55,7 +55,7 @@ void InitVarStrand
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Set the base of this strand to the next available location
-    lpYYArg->unYYSTYPE.lpYYStrandBase        =
+    lpYYArg->lpYYStrandBase                   =
     lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
 } // End InitVarStrand
 
@@ -66,11 +66,11 @@ void InitVarStrand
 //  Push a variable token onto the strand stack.
 //***************************************************************************
 
-LPYYSTYPE PushVarStrand_YY
-    (LPYYSTYPE lpYYArg)             // Ptr to the incoming argument
+LPPL_YYSTYPE PushVarStrand_YY
+    (LPPL_YYSTYPE lpYYArg)          // Ptr to the incoming argument
 
 {
-    LPYYSTYPE     lpYYRes;
+    LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -90,8 +90,8 @@ LPYYSTYPE PushVarStrand_YY
     lpYYRes->lpYYFcn                   = NULL;
 
     // Copy the strand base to the result
-    lpYYRes->unYYSTYPE.lpYYStrandBase  =
-    lpYYArg->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
+    lpYYRes->lpYYStrandBase  =
+    lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
 
     // Save this token on the strand stack
     //   and skip over it
@@ -111,29 +111,29 @@ LPYYSTYPE PushVarStrand_YY
 //  Push a function token onto the strand stack.
 //***************************************************************************
 
-LPYYSTYPE PushFcnStrand_YY
-    (LPYYSTYPE lpYYArg,             // Ptr to the incoming argument
-     int       TknCount,            // Token count
-     BOOL      bIndirect)           // TRUE iff lpYYArg is indirect
+LPPL_YYSTYPE PushFcnStrand_YY
+    (LPPL_YYSTYPE lpYYArg,          // Ptr to the incoming argument
+     int          TknCount,         // Token count
+     BOOL         bIndirect)        // TRUE iff lpYYArg is indirect
 
 {
-    LPYYSTYPE     lpYYRes,          // Ptr to result
+    LPPL_YYSTYPE  lpYYRes,          // Ptr to the result
                   lpYYCopy;         // Ptr to local copy
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
     lpYYArg->TknCount   = TknCount;
     lpYYArg->YYIndirect = bIndirect;
 
     // Copy the strand base to the result
-    lpYYArg->unYYSTYPE.lpYYStrandBase = lpplLocalVars->lpYYStrandBase[STRAND_FCN];
+    lpYYArg->lpYYStrandBase = lpplLocalVars->lpYYStrandBase[STRAND_FCN];
     if (!lpYYArg->lpYYFcn)
         lpYYArg->lpYYFcn = lpplLocalVars->lpYYStrandNext[STRAND_FCN];
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
     // Fill in the result token
     YYCopy (lpYYRes, lpYYArg);
@@ -144,7 +144,7 @@ LPYYSTYPE PushFcnStrand_YY
 
     // Save this token on the strand stack
     //   and skip over it
-    lpYYCopy = CopyYYSTYPE_EM_YY (lpYYArg, FALSE);
+    lpYYCopy = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
     YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_FCN]++, lpYYCopy);
     YYFree (lpYYCopy); lpYYCopy = NULL;
 
@@ -163,8 +163,8 @@ LPYYSTYPE PushFcnStrand_YY
 //***************************************************************************
 
 void StripStrand
-    (LPYYSTYPE lpYYStrand,          // Ptr to base of strand to strip
-     int       strType)             // Strand type (STRAND_VAR or STRAND_FCN)
+    (LPPL_YYSTYPE lpYYStrand,       // Ptr to base of strand to strip
+     int          strType)          // Strand type (STRAND_VAR or STRAND_FCN)
 
 {
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
@@ -175,10 +175,10 @@ void StripStrand
     // If we're not back at the beginning, set the new base
     //   to the base of the token previous to the current base
     if (lpplLocalVars->lpYYStrandBase[strType] NE lpplLocalVars->lpYYStrandStart[strType])
-        lpplLocalVars->lpYYStrandBase[strType] = lpplLocalVars->lpYYStrandBase[strType][-1].unYYSTYPE.lpYYStrandBase;
+        lpplLocalVars->lpYYStrandBase[strType] =  lpplLocalVars->lpYYStrandBase[strType][-1].lpYYStrandBase;
 
     // Set next available slot to this YYtoken's base
-    lpplLocalVars->lpYYStrandNext[strType] = lpYYStrand->unYYSTYPE.lpYYStrandBase;
+    lpplLocalVars->lpYYStrandNext[strType] = lpYYStrand->lpYYStrandBase;
 
 #ifdef DEBUG
     // Display the strand stack
@@ -194,12 +194,12 @@ void StripStrand
 //***************************************************************************
 
 void FreeStrand
-    (LPYYSTYPE lpYYStrandNext,      // Ptr to next strand element
-     LPYYSTYPE lpYYStrand)          // Ptr to strand base
+    (LPPL_YYSTYPE lpYYStrandNext,       // Ptr to next strand element
+     LPPL_YYSTYPE lpYYStrand)           // Ptr to strand base
 
 {
-    int       iLen;
-    LPYYSTYPE lpYYToken;
+    int          iLen;
+    LPPL_YYSTYPE lpYYToken;
 
     // Get the # elements in the strand
     iLen = lpYYStrandNext - lpYYStrand;
@@ -305,18 +305,18 @@ void FreeStrand
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeVarStrand_EM_YY
-    (LPYYSTYPE lpYYArg)             // Ptr to incoming token
+LPPL_YYSTYPE MakeVarStrand_EM_YY
+    (LPPL_YYSTYPE lpYYArg)              // Ptr to incoming token
 
 {
-    int         iLen,
-                iBitIndex;
-    APLUINT     ByteRes;                // # bytes needed for the result
-    LPYYSTYPE   lpYYToken,
-                lpYYStrand;
-    HGLOBAL     hGlbStr,
-                hGlbData;
-    LPVOID      lpMemStr;
+    int          iLen,
+                 iBitIndex;
+    APLUINT      ByteRes;               // # bytes needed for the result
+    LPPL_YYSTYPE lpYYToken,
+                 lpYYStrand;
+    HGLOBAL      hGlbStr,
+                 hGlbData;
+    LPVOID       lpMemStr;
     union tagLPAPL
     {
         LPAPLBOOL   Bool;
@@ -345,7 +345,7 @@ static char tabConvert[][STRAND_LENGTH] =
                   cStrandNxtType,
                   aplType;
     BOOL          bRet = TRUE;
-    LPYYSTYPE     lpYYRes;
+    LPPL_YYSTYPE  lpYYRes;              // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;        // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -359,9 +359,9 @@ static char tabConvert[][STRAND_LENGTH] =
     // The strand needs to be saved to global memory
 
     // Save the base of this strand
-    lpYYStrand                        =
-    lpYYRes->unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
-    lpYYRes->lpYYFcn = (LPYYSTYPE) -1;  // For debugging
+    lpYYStrand              =
+    lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
+    lpYYRes->lpYYFcn = (LPPL_YYSTYPE) -1;  // For debugging
 
     // Get the # elements in the strand
     iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
@@ -1040,22 +1040,22 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeFcnStrand_EM_YY
-    (LPYYSTYPE lpYYArg,         // Ptr to incoming token
-     NAMETYPES cNameType,       // Type of the strand
-     BOOL      bSaveTxtLine)    // TRUE iff we should save the line text
+LPPL_YYSTYPE MakeFcnStrand_EM_YY
+    (LPPL_YYSTYPE lpYYArg,          // Ptr to incoming token
+     NAMETYPES    cNameType,        // Type of the strand
+     BOOL         bSaveTxtLine)     // TRUE iff we should save the line text
 
 {
-    int           iIniLen,
-                  iActLen,
+    int           iIniLen,          // Initial strand length
+                  iActLen,          // Actual  ...
                   FcnCount = 0;
     APLUINT       ByteRes;                  // # bytes needed for the result
     HGLOBAL       hGlbStr;
     LPVOID        lpMemStr;
-    LPYYSTYPE     lpYYStrand,
+    LPPL_YYSTYPE  lpYYStrand,
                   lpYYMemStart,
                   lpYYMemData,
-                  lpYYBase = (LPYYSTYPE) -1,
+                  lpYYBase = (LPPL_YYSTYPE) -1,
                   lpYYRes;
     BOOL          bRet = TRUE;
     LPPLLOCALVARS lpplLocalVars;   // Ptr to local plLocalVars
@@ -1069,8 +1069,8 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     lpYYRes = YYAlloc ();
 
     // Save the base of this strand
-    lpYYStrand                        =
-    lpYYRes->unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
+    lpYYStrand              =
+    lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
 
     // Get the (maximum) # elements in the strand
     iIniLen = lpplLocalVars->lpYYStrandNext[STRAND_FCN] - lpYYStrand;
@@ -1082,12 +1082,12 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     // If there is a single element, pass through the entire token
     if (iIniLen EQ 1)
     {
-        // Free the allocated result as CopyYYSTYPE_EM_YY
+        // Free the allocated result as CopyPL_YYSTYPE_EM_YY
         //   will allocate a result
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Copy the entire token
-        lpYYRes = CopyYYSTYPE_EM_YY (lpYYArg->lpYYFcn, FALSE);
+        lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg->lpYYFcn, FALSE);
         lpYYRes->FcnCount = 1;
 
         lpYYBase = lpYYArg->lpYYFcn;
@@ -1105,10 +1105,10 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     //   and later on once for LeftFunc).  The overcount is harmless and ignored.
 
     // Calculate the # bytes we'll need for the header and data
-    ByteRes = sizeof (FCNARRAY_HEADER)      // For the header
-            + sizeof (YYSTYPE) * iIniLen;   // For the data
+    ByteRes = sizeof (FCNARRAY_HEADER)          // For the header
+            + sizeof (PL_YYSTYPE) * iIniLen;    // For the data
 
-    // Allocate global memory for a length <iIniLen> vector of type <YYSTYPE>.
+    // Allocate global memory for a length <iIniLen> vector of type <PL_YYSTYPE>.
     // N.B.: Conversion from APLUINT to UINT.
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbStr = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -1153,20 +1153,20 @@ LPYYSTYPE MakeFcnStrand_EM_YY
         uLineLen = lstrlenW (lpMemTxtSrc);
 
         // Allocate global memory for a length <uLineLen> vector of type <APLCHAR>.
-        lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine.U) + (uLineLen + 1) * sizeof (lpMemTxtLine.C));
+        lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
         if (lpHeader->hGlbTxtLine)
         {
             // Lock the memory to get a ptr to it
-            lpMemTxtLine.V = MyGlobalLock (lpHeader->hGlbTxtLine);
+            lpMemTxtLine = MyGlobalLock (lpHeader->hGlbTxtLine);
 
             // Save the line length
-            lpMemTxtLine.U[0] = uLineLen;
+            lpMemTxtLine->U = uLineLen;
 
             // Copy the line text to global memory
-            CopyMemory (&lpMemTxtLine.U[1], lpMemTxtSrc, uLineLen * sizeof (lpMemTxtLine.C));
+            CopyMemory (&lpMemTxtLine->C, lpMemTxtSrc, uLineLen * sizeof (lpMemTxtLine->C));
 
             // We no longer need this ptr
-            MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine.V = NULL;
+            MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
         } // End IF
     } // End IF
 
@@ -1175,7 +1175,7 @@ LPYYSTYPE MakeFcnStrand_EM_YY
     // Skip over the header and dimensions to the data
     lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
 
-    // Copy the YYSTYPEs to the global memory object
+    // Copy the PL_YYSTYPEs to the global memory object
     lpYYMemData = CopyYYFcn (lpYYMemData, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount);
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
@@ -1205,7 +1205,7 @@ LPYYSTYPE MakeFcnStrand_EM_YY
         // Resize the block downwards
         hGlbStr =
         MyGlobalReAlloc (hGlbStr,
-                         (UINT) ByteRes - (iIniLen - iActLen) * sizeof (YYSTYPE),
+                         (UINT) ByteRes - (iIniLen - iActLen) * sizeof (PL_YYSTYPE),
                          GHND);
     } // End IF/ELSE/IF
 
@@ -1218,7 +1218,7 @@ LPYYSTYPE MakeFcnStrand_EM_YY
         DisplayFcnArr (hGlbStr);
 #endif
 NORMAL_EXIT:
-    lpYYRes->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_FCN] = lpYYBase;
+    lpYYRes->lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_FCN] = lpYYBase;
 
 #ifdef DEBUG
     // Display the strand stack
@@ -1249,7 +1249,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $CopyYYFcn
 //
-//  Copy one or more YYSTYPE functions to a memory object
+//  Copy one or more PL_YYSTYPE functions to a memory object
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1258,22 +1258,22 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE CopyYYFcn
-    (LPYYSTYPE  lpYYMem,            // Ptr to result memory object
-     LPYYSTYPE  lpYYArg,            // Ptr to function arg
-     LPYYSTYPE *lpYYBase,           // Ptr to ptr to YY base address
-     LPINT      lpFcnCount)         // Ptr to resulting function count
+LPPL_YYSTYPE CopyYYFcn
+    (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
+     LPPL_YYSTYPE  lpYYArg,             // Ptr to function arg
+     LPPL_YYSTYPE *lpYYBase,            // Ptr to ptr to YY base address
+     LPINT         lpFcnCount)          // Ptr to resulting function count
 
 {
-    int       i,
-              iLen,
-              FcnCount,
-              TotalFcnCount = 0;
-    YYSTYPE   YYFcn = {0};
-    HGLOBAL   hGlbData;
-    LPTOKEN   lpToken;
-    LPYYSTYPE lpYYMem0,
-              lpYYCopy;
+    int          i,
+                 iLen,
+                 FcnCount,
+                 TotalFcnCount = 0;
+    PL_YYSTYPE   YYFcn = {0};
+    HGLOBAL      hGlbData;
+    LPTOKEN      lpToken;
+    LPPL_YYSTYPE lpYYMem0,
+                 lpYYCopy;
 
     // Get the token count in this function strand
     iLen = lpYYArg->TknCount;
@@ -1286,7 +1286,7 @@ LPYYSTYPE CopyYYFcn
     for (i = 0; i < iLen; i++)
     {
 #ifdef DEBUG
-        LPYYSTYPE lpYYArgI;
+        LPPL_YYSTYPE lpYYArgI;
 
         lpYYArgI = &lpYYArg[i];
 #endif
@@ -1324,7 +1324,7 @@ LPYYSTYPE CopyYYFcn
 ////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
 ////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
 ////////////////////YYFcn.lpYYFcn                   = NULL;     // Already zero from = {0}
-                    YYFcn.unYYSTYPE.lpYYStrandBase  = lpYYArg[i].unYYSTYPE.lpYYStrandBase;
+                    YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
                 } else
                 {
                     // If it's an internal function, ...
@@ -1353,7 +1353,7 @@ LPYYSTYPE CopyYYFcn
 ////////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
 ////////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
 ////////////////////////YYFcn.lpYYFcn                   = NULL;     // Already zero from = {0}
-                        YYFcn.unYYSTYPE.lpYYStrandBase  = lpYYArg[i].unYYSTYPE.lpYYStrandBase;
+                        YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
                     } // End IF
                 } // End IF/ELSE
 
@@ -1365,7 +1365,7 @@ LPYYSTYPE CopyYYFcn
                 *lpYYMem++ = YYFcn;
             } else
             {
-                lpYYCopy = CopyYYSTYPE_EM_YY (&lpYYArg[i], FALSE);
+                lpYYCopy = CopyPL_YYSTYPE_EM_YY (&lpYYArg[i], FALSE);
                 if (lpYYMem->YYInuse)
                     YYCopy (lpYYMem++, lpYYCopy);
                 else
@@ -1460,11 +1460,11 @@ void ErrorMessageSetToken
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE CopyString_EM_YY
-    (LPYYSTYPE lpYYStr)
+LPPL_YYSTYPE CopyString_EM_YY
+    (LPPL_YYSTYPE lpYYStr)
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     DBGENTER;
 
@@ -1500,11 +1500,11 @@ LPYYSTYPE CopyString_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeAxis_YY
-    (LPYYSTYPE lpYYAxis)    // Ptr to axis value
+LPPL_YYSTYPE MakeAxis_YY
+    (LPPL_YYSTYPE lpYYAxis)     // Ptr to axis value
 
 {
-    LPYYSTYPE lpYYRes;      // Ptr to result
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
     DBGENTER;
 
@@ -1545,18 +1545,18 @@ LPYYSTYPE MakeAxis_YY
 
         case TKT_VARIMMED:
             // Copy the token and rename it
-            YYCopy (lpYYRes, lpYYAxis);     // No need to CopyYYSTYPE_EM_YY immediates
+            YYCopy (lpYYRes, lpYYAxis);     // No need to CopyPL_YYSTYPE_EM_YY immediates
             lpYYRes->tkToken.tkFlags.TknType   = TKT_AXISIMMED;
 
             break;
 
         case TKT_VARARRAY:
-            // Free the result as CopyYYSTYPE_EM_YY
+            // Free the result as CopyPL_YYSTYPE_EM_YY
             //   will allocate a result
             YYFree (lpYYRes); lpYYRes = NULL;
 
             // Copy the token and rename it
-            lpYYRes = CopyYYSTYPE_EM_YY (lpYYAxis, FALSE);
+            lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYAxis, FALSE);
             lpYYRes->tkToken.tkFlags.TknType = TKT_AXISARRAY;
 
             break;
@@ -1584,15 +1584,15 @@ LPYYSTYPE MakeAxis_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakePrimFcn_YY
-    (LPYYSTYPE lpYYFcn)
+LPPL_YYSTYPE MakePrimFcn_YY
+    (LPPL_YYSTYPE lpYYFcn)
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     DBGENTER;
 
-    lpYYRes = CopyYYSTYPE_EM_YY (lpYYFcn, FALSE);
+    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcn, FALSE);
     lpYYRes->tkToken.tkFlags.TknType = TKT_FCNIMMED;
     lpYYRes->tkToken.tkFlags.ImmType = GetImmTypeFcn (lpYYFcn->tkToken.tkData.tkChar);
     lpYYRes->lpYYFcn = NULL;
@@ -1617,15 +1617,15 @@ LPYYSTYPE MakePrimFcn_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeNameFcn_YY
-    (LPYYSTYPE lpYYFcn)
+LPPL_YYSTYPE MakeNameFcn_YY
+    (LPPL_YYSTYPE lpYYFcn)
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     DBGENTER;
 
-    lpYYRes = CopyYYSTYPE_EM_YY (lpYYFcn, FALSE);
+    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcn, FALSE);
     lpYYRes->lpYYFcn = NULL;
 
     DBGLEAVE;
@@ -1647,16 +1647,16 @@ LPYYSTYPE MakeNameFcn_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeOp1_YY
-    (LPYYSTYPE lpYYOp1)
+LPPL_YYSTYPE MakeOp1_YY
+    (LPPL_YYSTYPE lpYYOp1)
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
-    YYCopy (lpYYRes, lpYYOp1);      // No need to CopyYYSTYPE_EM_YY immediates
+    YYCopy (lpYYRes, lpYYOp1);      // No need to CopyPL_YYSTYPE_EM_YY immediates
     lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP1;
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
@@ -1683,13 +1683,13 @@ LPYYSTYPE MakeOp1_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeNameOp1_YY
-    (LPYYSTYPE lpYYOp1)
+LPPL_YYSTYPE MakeNameOp1_YY
+    (LPPL_YYSTYPE lpYYOp1)
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
-    lpYYRes = CopyYYSTYPE_EM_YY (lpYYOp1, FALSE);
+    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYOp1, FALSE);
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
@@ -1715,16 +1715,16 @@ LPYYSTYPE MakeNameOp1_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeOp2_YY
-    (LPYYSTYPE lpYYOp2)
+LPPL_YYSTYPE MakeOp2_YY
+    (LPPL_YYSTYPE lpYYOp2)
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
-    YYCopy (lpYYRes, lpYYOp2);      // No need to CopyYYSTYPE_EM_YY immediates
+    YYCopy (lpYYRes, lpYYOp2);      // No need to CopyPL_YYSTYPE_EM_YY immediates
     lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP2;
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
@@ -1751,13 +1751,13 @@ LPYYSTYPE MakeOp2_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeNameOp2_YY
-    (LPYYSTYPE lpYYOp2)
+LPPL_YYSTYPE MakeNameOp2_YY
+    (LPPL_YYSTYPE lpYYOp2)
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
-    lpYYRes = CopyYYSTYPE_EM_YY (lpYYOp2, FALSE);
+    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYOp2, FALSE);
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
@@ -1778,7 +1778,7 @@ LPYYSTYPE MakeNameOp2_YY
 //***************************************************************************
 
 void InitNameStrand
-    (LPYYSTYPE lpYYArg)             // Ptr to the incoming argument
+    (LPPL_YYSTYPE lpYYArg)          // Ptr to the incoming argument
 
 {
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
@@ -1787,7 +1787,7 @@ void InitNameStrand
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Set the base of this strand to the next available location
-    lpYYArg->unYYSTYPE.lpYYStrandBase        =
+    lpYYArg->lpYYStrandBase                   =
     lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
 } // End InitNameStrand
 
@@ -1798,11 +1798,11 @@ void InitNameStrand
 //  Push a name strand
 //***************************************************************************
 
-LPYYSTYPE PushNameStrand_YY
-    (LPYYSTYPE lpYYArg)             // Ptr to the incoming argument
+LPPL_YYSTYPE PushNameStrand_YY
+    (LPPL_YYSTYPE lpYYArg)          // Ptr to the incoming argument
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -1818,8 +1818,8 @@ LPYYSTYPE PushNameStrand_YY
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
-    lpYYRes->unYYSTYPE.lpYYStrandBase  =
-    lpYYArg->unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
+    lpYYRes->lpYYStrandBase  =
+    lpYYArg->lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
 
     // Save this token on the strand stack
     //   and skip over it
@@ -1845,16 +1845,16 @@ LPYYSTYPE PushNameStrand_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeNameStrand_EM_YY
-    (LPYYSTYPE lpYYArg)             // Ptr to incoming token
+LPPL_YYSTYPE MakeNameStrand_EM_YY
+    (LPPL_YYSTYPE lpYYArg)          // Ptr to incoming token
 
 {
     int           iLen;             // # elements in the strand
     APLUINT       ByteRes;          // # bytes needed for the result
-    LPYYSTYPE     lpYYStrand;       // Ptr to base of strand
+    LPPL_YYSTYPE  lpYYStrand;       // Ptr to base of strand
     HGLOBAL       hGlbStr;          // Strand global memory handle
     LPVOID        lpMemStr;         // Ptr to strand global memory
-    LPYYSTYPE     lpYYRes;          // Ptr to result
+    LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -1866,8 +1866,8 @@ LPYYSTYPE MakeNameStrand_EM_YY
     lpYYRes = YYAlloc ();
 
     // Save the base of this strand
-    lpYYStrand                        =
-    lpYYRes->unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
+    lpYYStrand              =
+    lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
 
     // Get the # elements in the strand
     iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
@@ -1942,12 +1942,12 @@ ERROR_EXIT:
 //  Initialize a list starting with an empty token
 //***************************************************************************
 
-LPYYSTYPE InitList0_YY
+LPPL_YYSTYPE InitList0_YY
     (void)
 
 {
-    LPYYSTYPE lpYYRes,
-              lpYYLst;
+    LPPL_YYSTYPE  lpYYRes,          // Ptr to the result
+                  lpYYLst;
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -1964,7 +1964,7 @@ LPYYSTYPE InitList0_YY
     lpYYRes->tkToken.tkCharIndex       = NEG1U;
 
     // Set the base of this strand to the next available location
-    lpYYRes->unYYSTYPE.lpYYStrandBase        =
+    lpYYRes->lpYYStrandBase                   =
     lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
 
     lpYYLst = PushList_YY (lpYYRes, NULL);
@@ -1980,12 +1980,12 @@ LPYYSTYPE InitList0_YY
 //  Initialize a list starting with a single token
 //***************************************************************************
 
-LPYYSTYPE InitList1_YY
-    (LPYYSTYPE lpYYArg)             // Ptr to incoming token
+LPPL_YYSTYPE InitList1_YY
+    (LPPL_YYSTYPE lpYYArg)          // Ptr to incoming token
 
 {
-    LPYYSTYPE lpYYRes,
-              lpYYLst;
+    LPPL_YYSTYPE  lpYYRes,          // Ptr to the result
+                  lpYYLst;
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -2002,7 +2002,7 @@ LPYYSTYPE InitList1_YY
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     // Set the base of this strand to the next available location
-    lpYYRes->unYYSTYPE.lpYYStrandBase        =
+    lpYYRes->lpYYStrandBase                   =
     lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
 
     lpYYLst = PushList_YY (lpYYRes, lpYYArg);
@@ -2018,13 +2018,13 @@ LPYYSTYPE InitList1_YY
 //  Push a token onto the list stack
 //***************************************************************************
 
-LPYYSTYPE PushList_YY
-    (LPYYSTYPE lpYYStrand,          // Ptr to base of strand
-     LPYYSTYPE lpYYArg)             // Ptr to incoming token
+LPPL_YYSTYPE PushList_YY
+    (LPPL_YYSTYPE lpYYStrand,        // Ptr to base of strand
+     LPPL_YYSTYPE lpYYArg)           // Ptr to incoming token
 
 {
-    LPYYSTYPE     lpYYRes;
-    YYSTYPE       YYTmp;
+    LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
+    PL_YYSTYPE    YYTmp;
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -2039,10 +2039,10 @@ LPYYSTYPE PushList_YY
     // If the token is NULL, push an empty token
     if (lpYYArg EQ NULL)
     {
-        YYTmp.tkToken.tkFlags.TknType   = TKT_LISTSEP;
-        YYTmp.tkToken.tkData.tkLongest  = NEG1U;        // Debug value
-        YYTmp.tkToken.tkCharIndex       = NEG1U;
-        YYTmp.unYYSTYPE.lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
+        YYTmp.tkToken.tkFlags.TknType  = TKT_LISTSEP;
+        YYTmp.tkToken.tkData.tkLongest = NEG1U;         // Debug value
+        YYTmp.tkToken.tkCharIndex      = NEG1U;
+        YYTmp.lpYYStrandBase           = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
         lpYYArg = &YYTmp;
     } // End IF
 
@@ -2070,20 +2070,20 @@ LPYYSTYPE PushList_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeList_EM_YY
-    (LPYYSTYPE lpYYArg,             // Ptr to incoming token
-     BOOL      bBrackets)           // TRUE iff surrounding brackets (otherwise parens)
+LPPL_YYSTYPE MakeList_EM_YY
+    (LPPL_YYSTYPE lpYYArg,          // Ptr to incoming token
+     BOOL         bBrackets)        // TRUE iff surrounding brackets (otherwise parens)
 
 {
-    LPYYSTYPE  lpYYStrand,
-               lpYYToken;
-    int        iLen;
-    APLUINT    ByteRes;             // # bytes needed for the result
-    HGLOBAL    hGlbLst;
-    LPVOID     lpMemLst;
-    LPSYMENTRY lpSymEntry;
-    BOOL       bRet = TRUE;
-    LPYYSTYPE  lpYYRes;
+    LPPL_YYSTYPE  lpYYStrand,
+                  lpYYToken;
+    int           iLen;
+    APLUINT       ByteRes;          // # bytes needed for the result
+    HGLOBAL       hGlbLst;
+    LPVOID        lpMemLst;
+    LPSYMENTRY    lpSymEntry;
+    BOOL          bRet = TRUE;
+    LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -2097,8 +2097,8 @@ LPYYSTYPE MakeList_EM_YY
     // The list needs to be saved to global memory
 
     // Save the base of this strand
-    lpYYStrand                        =
-    lpYYRes->unYYSTYPE.lpYYStrandBase = lpYYArg->unYYSTYPE.lpYYStrandBase;
+    lpYYStrand              =
+    lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
 
     // Get the # elements in the strand
     iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
@@ -2351,23 +2351,23 @@ LPTOKEN CopyToken_EM
 
 
 //***************************************************************************
-//  $CopyYYSTYPE_EM_YY
+//  $CopyPL_YYSTYPE_EM_YY
 //
-//  Make a copy of a YYSTYPE, incrementing ref count if not changing
+//  Make a copy of a PL_YYSTYPE, incrementing ref count if not changing
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- CopyYYSTYPE_EM_YY"
+#define APPEND_NAME     L" -- CopyPL_YYSTYPE_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE CopyYYSTYPE_EM_YY
-    (LPYYSTYPE lpYYArg,
-     BOOL      bChanging)   // TRUE iff we're going to change the HGLOBAL
+LPPL_YYSTYPE CopyPL_YYSTYPE_EM_YY
+    (LPPL_YYSTYPE lpYYArg,
+     BOOL         bChanging)    // TRUE iff we're going to change the HGLOBAL
 
 {
-    LPYYSTYPE  lpYYRes;
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
     DBGENTER;
 
@@ -2376,7 +2376,7 @@ LPYYSTYPE CopyYYSTYPE_EM_YY
 
     Assert (bChanging EQ FALSE);
 
-    // Copy the YYSTYPE
+    // Copy the PL_YYSTYPE
     YYCopy (lpYYRes, lpYYArg);
 
     // Make a copy of the token within
@@ -2385,7 +2385,7 @@ LPYYSTYPE CopyYYSTYPE_EM_YY
     DBGLEAVE;
 
     return lpYYRes;
-} // End CopyYYSTYPE_EM_YY
+} // End CopyPL_YYSTYPE_EM_YY
 #undef  APPEND_NAME
 
 

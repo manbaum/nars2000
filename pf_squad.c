@@ -23,7 +23,7 @@
 //  Primitive function for monadic and dyadic Squad (ERROR and "rectangular indexing")
 //***************************************************************************
 
-LPYYSTYPE PrimFnSquad_EM_YY
+LPPL_YYSTYPE PrimFnSquad_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -53,7 +53,7 @@ LPYYSTYPE PrimFnSquad_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnSquad_EM_YY
+LPPL_YYSTYPE PrimProtoFnSquad_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,7 +86,7 @@ LPYYSTYPE PrimProtoFnSquad_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonSquad_EM_YY
+LPPL_YYSTYPE PrimFnMonSquad_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -109,19 +109,19 @@ LPYYSTYPE PrimFnMonSquad_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydSquad_EM_YY
+LPPL_YYSTYPE PrimFnDydSquad_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLLONGEST aplLongestRht;   // The value of the right arg
-    APLSTYPE   aplTypeLft;      // The storage type of the left arg
-    APLNELM    aplNELMLft;      // The # elements in the left arg
-    APLRANK    aplRankLft;      // The rank of the left arg
-    IMMTYPES   immTypeRht;      // The immediate type of the right arg
-    LPYYSTYPE  lpYYRes;
+    APLLONGEST   aplLongestRht;     // The value of the right arg
+    APLSTYPE     aplTypeLft;        // The storage type of the left arg
+    APLNELM      aplNELMLft;        // The # elements in the left arg
+    APLRANK      aplRankLft;        // The rank of the left arg
+    IMMTYPES     immTypeRht;        // The immediate type of the right arg
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -235,24 +235,24 @@ LPYYSTYPE PrimFnDydSquad_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydSquadGlb_EM_YY
+LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      HGLOBAL hGlbRht,               // Right arg handle
      LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    APLSTYPE  aplTypeLft,       // The storage type of the left arg
-              aplTypeRht;       // ...                     right ...
-    APLNELM   aplNELMLft,       // The # elements in left arg
-              aplNELMRht;       // ...               right ...
-    APLRANK   aplRankLft,       // The rank of the left arg
-              aplRankRht;       // ...             right ...
-    HGLOBAL   hGlbLft = NULL;   // Left arg global memory handle
-    LPVOID    lpMemLft = NULL,  // Ptr to left arg global memory
-              lpMemRht = NULL;  // Ptr to right ...
-    BOOL      bRet = TRUE;      // TRUE iff result is valid
-    LPYYSTYPE lpYYRes = NULL;   // Ptr to the result
+    APLSTYPE     aplTypeLft,        // The storage type of the left arg
+                 aplTypeRht;        // ...                     right ...
+    APLNELM      aplNELMLft,        // The # elements in left arg
+                 aplNELMRht;        // ...               right ...
+    APLRANK      aplRankLft,        // The rank of the left arg
+                 aplRankRht;        // ...             right ...
+    HGLOBAL      hGlbLft = NULL;    // Left arg global memory handle
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL;   // Ptr to right ...
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -338,45 +338,45 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ArrayIndex_EM_YY
+LPPL_YYSTYPE ArrayIndex_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    APLSTYPE    aplTypeLft,         // The storage type of the left arg
-                aplTypeRht,         // ...                     right ...
-                aplTypeRch,         // ...                     reach ...
-                aplTypeInd,         // ...                     index ...
-                aplTypeRes;         // ...                     result
-    APLNELM     aplNELMLft,         // The # elements in left arg
-                aplNELMRht,         // ...               right ...
-                aplNELMRch,         // ...               reach ...
-                aplNELMInd,         // ...               index ...
-                aplNELMRes;         // ...               result
-    APLRANK     aplRankLft,         // The rank of the left arg
-                aplRankRht,         // ...             right ...
-                aplRankRch,         // ...             reach ...
-                aplRankInd,         // ...             index ...
-                aplRankRes,         // ...             result
-                aplRankData;        // ...             data  ...
-    HGLOBAL     hGlbLft = NULL,     // Global memory handle to the left arg
-                hGlbRht = NULL,     // ...                         right ...
-                hGlbRes = NULL,     // ...                         result
-                hGlbRch = NULL,     // ...                         reach ...
-                hGlbData;           // ...                         data  ...
-    LPVOID      lpMemLft = NULL,    // Ptr to contents of the left arg
-                lpMemRht = NULL,    // ...                    right ...
-                lpMemRch = NULL,    // ...                    reach ...
-                lpMemRes = NULL,    // ...                    result
-                lpMemData;          // ...                    data  ...
-    LPAPLDIM    lpMemDimLft;        // Ptr to the dimensions of the left arg
-    LPAPLNESTED lpMemInd;           // Ptr to contents of the index arg
-    BOOL        bRet = TRUE;        // TRUE iff result is valid
-    LPYYSTYPE   lpYYRes;            // Ptr to the result
-    APLNELM     uRht,               // Right arg loop counter
-                uDim,               // Dimension ...
-                uRes;               // Result    ...
-    APLUINT     ByteRes;            // # bytes needed for the result
+    APLSTYPE     aplTypeLft,        // The storage type of the left arg
+                 aplTypeRht,        // ...                     right ...
+                 aplTypeRch,        // ...                     reach ...
+                 aplTypeInd,        // ...                     index ...
+                 aplTypeRes;        // ...                     result
+    APLNELM      aplNELMLft,        // The # elements in left arg
+                 aplNELMRht,        // ...               right ...
+                 aplNELMRch,        // ...               reach ...
+                 aplNELMInd,        // ...               index ...
+                 aplNELMRes;        // ...               result
+    APLRANK      aplRankLft,        // The rank of the left arg
+                 aplRankRht,        // ...             right ...
+                 aplRankRch,        // ...             reach ...
+                 aplRankInd,        // ...             index ...
+                 aplRankRes,        // ...             result
+                 aplRankData;       // ...             data  ...
+    HGLOBAL      hGlbLft = NULL,    // Global memory handle to the left arg
+                 hGlbRht = NULL,    // ...                         right ...
+                 hGlbRes = NULL,    // ...                         result
+                 hGlbRch = NULL,    // ...                         reach ...
+                 hGlbData;          // ...                         data  ...
+    LPVOID       lpMemLft = NULL,   // Ptr to contents of the left arg
+                 lpMemRht = NULL,   // ...                    right ...
+                 lpMemRch = NULL,   // ...                    reach ...
+                 lpMemRes = NULL,   // ...                    result
+                 lpMemData;         // ...                    data  ...
+    LPAPLDIM     lpMemDimLft;       // Ptr to the dimensions of the left arg
+    LPAPLNESTED  lpMemInd;          // Ptr to contents of the index arg
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    APLNELM      uRht,              // Right arg loop counter
+                 uDim,              // Dimension ...
+                 uRes;              // Result    ...
+    APLUINT      ByteRes;           // # bytes needed for the result
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);

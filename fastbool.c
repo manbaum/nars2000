@@ -70,13 +70,13 @@ FASTBOOLFNS FastBoolFns[] =                       // In the same order as enum t
 //***************************************************************************
 
 void FastBoolScan
-    (APLSTYPE  aplTypeRht,          // Right arg storage type
-     LPVOID    lpMemRht,            // Ptr to right arg memory
-     LPVOID    lpMemRes,            // Ptr to result    memory
-     APLUINT   uDimLo,              // Product of dimensions below axis
-     APLUINT   uDimAxRht,           // Length of right arg axis dimension
-     UINT      uFBFNIndex,          // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
-     LPYYSTYPE lpYYFcnStrOpr)       // Ptr to operator function strand
+    (APLSTYPE     aplTypeRht,       // Right arg storage type
+     LPVOID       lpMemRht,         // Ptr to right arg memory
+     LPVOID       lpMemRes,         // Ptr to result    memory
+     APLUINT      uDimLo,           // Product of dimensions below axis
+     APLUINT      uDimAxRht,        // Length of right arg axis dimension
+     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
     APLUINT   uLo,                  // Loop counter for uDimLo
@@ -322,13 +322,13 @@ void FastBoolScan
 //***************************************************************************
 
 void FastBoolScanQual
-    (APLSTYPE  aplTypeRht,          // Right arg storage type
-     LPVOID    lpMemRht,            // Ptr to right arg memory
-     LPVOID    lpMemRes,            // Ptr to result    memory
-     APLUINT   uDimLo,              // Product of dimensions below axis
-     APLUINT   uDimAxRht,           // Length of right arg axis dimension
-     UINT      uFBFNIndex,          // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
-     LPYYSTYPE lpYYFcnStrOpr)       // Ptr to operator function strand
+    (APLSTYPE     aplTypeRht,       // Right arg storage type
+     LPVOID       lpMemRht,         // Ptr to right arg memory
+     LPVOID       lpMemRes,         // Ptr to result    memory
+     APLUINT      uDimLo,           // Product of dimensions below axis
+     APLUINT      uDimAxRht,        // Length of right arg axis dimension
+     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
     APLUINT   uLo,                  // Loop counter for uDimLo
@@ -475,13 +475,13 @@ void FastBoolScanQual
 //***************************************************************************
 
 void FastBoolRed
-    (APLSTYPE  aplTypeRht,          // Right arg storage type
-     LPVOID    lpMemRht,            // Ptr to right arg memory
-     LPVOID    lpMemRes,            // Ptr to result    memory
-     APLUINT   uDimLo,              // Product of dimensions below axis
-     APLUINT   uDimAxRht,           // Length of right arg axis dimension
-     UINT      uFBFNIndex,          // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
-     LPYYSTYPE lpYYFcnStrOpr)       // Ptr to operator function strand
+    (APLSTYPE     aplTypeRht,       // Right arg storage type
+     LPVOID       lpMemRht,         // Ptr to right arg memory
+     LPVOID       lpMemRes,         // Ptr to result    memory
+     APLUINT      uDimLo,           // Product of dimensions below axis
+     APLUINT      uDimAxRht,        // Length of right arg axis dimension
+     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
     APLUINT   uLo,                  // Loop counter for uDimLo
@@ -655,13 +655,13 @@ void FastBoolRed
 //***************************************************************************
 
 void FastBoolRedQual
-    (APLSTYPE  aplTypeRht,          // Right arg storage type
-     LPVOID    lpMemRht,            // Ptr to right arg memory
-     LPVOID    lpMemRes,            // Ptr to result    memory
-     APLUINT   uDimLo,              // Product of dimensions below axis
-     APLUINT   uDimAxRht,           // Length of right arg axis dimension
-     UINT      uFBFNIndex,          // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
-     LPYYSTYPE lpYYFcnStrOpr)       // Ptr to operator function strand
+    (APLSTYPE     aplTypeRht,       // Right arg storage type
+     LPVOID       lpMemRht,         // Ptr to right arg memory
+     LPVOID       lpMemRes,         // Ptr to result    memory
+     APLUINT      uDimLo,           // Product of dimensions below axis
+     APLUINT      uDimAxRht,        // Length of right arg axis dimension
+     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
     APLUINT   uLo,                  // Loop counter for uDimLo
@@ -768,13 +768,13 @@ void FastBoolRedQual
 //***************************************************************************
 
 void FastBoolRedPlus
-    (APLSTYPE  aplTypeRht,          // Right arg storage type
-     LPVOID    lpMemRht,            // Ptr to right arg memory
-     LPVOID    lpMemRes,            // Ptr to result    memory
-     APLUINT   uDimLo,              // Product of dimensions below axis
-     APLUINT   uDimAxRht,           // Length of right arg axis dimension
-     UINT      uFBFNIndex,          // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
-     LPYYSTYPE lpYYFcnStrOpr)       // Ptr to operator function strand
+    (APLSTYPE     aplTypeRht,       // Right arg storage type
+     LPVOID       lpMemRht,         // Ptr to right arg memory
+     LPVOID       lpMemRes,         // Ptr to result    memory
+     APLUINT      uDimLo,           // Product of dimensions below axis
+     APLUINT      uDimAxRht,        // Length of right arg axis dimension
+     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
     APLUINT   uLo,                  // Loop counter for uDimLo

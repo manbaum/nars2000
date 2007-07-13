@@ -26,7 +26,7 @@
 //  Execute a niladic function
 //***************************************************************************
 
-LPYYSTYPE ExecuteFn0
+LPPL_YYSTYPE ExecuteFn0
     (LPTOKEN lptkFcn0)          // Ptr to function token
 
 {
@@ -46,7 +46,8 @@ LPYYSTYPE ExecuteFn0
     else
         return ExecFuncGlb_EM_YY (NULL,                         // Ptr to left arg token
                                   ClrPtrTypeDirGlb (lpNameFcn), // Function HGLOBAL
-                                  NULL);                        // Ptr to right arg token
+                                  NULL,                         // Ptr to right arg token
+                                  NULL);                        // Ptr to axis token
 } // End ExecuteFn0
 
 
@@ -62,7 +63,7 @@ LPYYSTYPE ExecuteFn0
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnCR_EM
+LPPL_YYSTYPE SysFnCR_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -102,7 +103,7 @@ LPYYSTYPE SysFnCR_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnMonCR_EM
+LPPL_YYSTYPE SysFnMonCR_EM
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -124,7 +125,7 @@ LPYYSTYPE SysFnMonCR_EM
     APLLONGEST    aplLongestRht;    // Right arg longest if immediate
     LPSYMENTRY    lpSymEntry;       // Ptr to SYMENTRY
     STFLAGS       stFlags;          // STE flags
-    LPYYSTYPE     lpYYRes = NULL;   // Ptr to the result
+    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
     LPAPLCHAR     lpw;              // Ptr to wide chars
 
     // Get the attributes (Type, NELM, and Rank)
@@ -234,16 +235,16 @@ LPYYSTYPE SysFnMonCR_EM
                     hGlbTxtLine = ((LPFCNARRAY_HEADER) lpMemData)->hGlbTxtLine;
 
                     // Lock the memory to get a ptr to it
-                    lpMemTxtLine.V = MyGlobalLock (hGlbTxtLine);
+                    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
-                    // Get the line length
-                    aplNELMRes = lstrlenW (lpMemTxtLine.C);
+                    // Get the length of the line text
+                    aplNELMRes = lpMemTxtLine->U;
 
                     // Copy the function line text to global memory
-                    CopyMemory (lpwszTemp, lpMemTxtLine.C, (UINT) aplNELMRes * sizeof (APLCHAR));
+                    CopyMemory (lpwszTemp, &lpMemTxtLine->C, (UINT) aplNELMRes * sizeof (lpMemTxtLine->C));
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine.V = NULL;
+                    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
                     // Finish the job via subroutine
                     hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes, 1, lpwszTemp, lptkFunc);
@@ -263,13 +264,13 @@ LPYYSTYPE SysFnMonCR_EM
                     lpMemDfnHdr = (LPDFN_HEADER) lpMemData;
 
                     // Lock the memory to get a ptr to it
-                    lpMemTxtLine.V = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+                    lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
 
                     // Get the length of the function header text
-                    uMaxLineLen = lpMemTxtLine.U[0];
+                    uMaxLineLen = lpMemTxtLine->U;
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine.V = NULL;
+                    MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine = NULL;
 
                     // Get ptr to array of function line structs (FCNLINE[numFcnLines])
                     lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
@@ -286,13 +287,13 @@ LPYYSTYPE SysFnMonCR_EM
                         if (hGlbTxtLine)
                         {
                             // Lock the memory to get a ptr to it
-                            lpMemTxtLine.V = MyGlobalLock (hGlbTxtLine);
+                            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
                             // Find the length of the longest line
-                            uMaxLineLen = max (uMaxLineLen, lpMemTxtLine.U[0]);
+                            uMaxLineLen = max (uMaxLineLen, lpMemTxtLine->U);
 
                             // We no longer need this ptr
-                            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine.V = NULL;
+                            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
                         } // End IF
 
                         // Skip to the next struct
@@ -340,16 +341,16 @@ LPYYSTYPE SysFnMonCR_EM
                         lpMemResChar = VarArrayBaseToData (lpMemRes, 2);
 
                         // Lock the memory to get a ptr to it
-                        lpMemTxtLine.V = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+                        lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
 
                         // Get the length of the function header text
-                        uLineLen = *lpMemTxtLine.U;
+                        uLineLen = lpMemTxtLine->U;
 
                         // Copy the function header text to the result
-                        CopyMemory (lpMemResChar, &lpMemTxtLine.U[1], uLineLen * sizeof (APLCHAR));
+                        CopyMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine.V = NULL;
+                        MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine = NULL;
 
                         // Fill the remainder of the line with blanks
                         for (lpMemResChar += uLineLen;
@@ -369,16 +370,16 @@ LPYYSTYPE SysFnMonCR_EM
                             if (hGlbTxtLine)
                             {
                                 // Lock the memory to get a ptr to it
-                                lpMemTxtLine.V = MyGlobalLock (hGlbTxtLine);
+                                lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
                                 // Get the length of the function line text
-                                uLineLen = *lpMemTxtLine.U;
+                                uLineLen = lpMemTxtLine->U;
 
                                 // Copy the function header text to the result
-                                CopyMemory (lpMemResChar, &lpMemTxtLine.U[1], uLineLen * sizeof (APLCHAR));
+                                CopyMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
 
                                 // We no longer need this ptr
-                                MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine.V = NULL;
+                                MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
                                 // Fill the remainder of the line with blanks
                                 for (lpMemResChar += uLineLen;
@@ -549,7 +550,7 @@ LPAPLCHAR CopySteName
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnDydCR_EM
+LPPL_YYSTYPE SysFnDydCR_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -573,14 +574,14 @@ LPYYSTYPE SysFnDydCR_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnDM_EM
+LPPL_YYSTYPE SysFnDM_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token  (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    LPYYSTYPE    lpYYRes;       // Ptr to the result
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
     HGLOBAL      hGlbRes;       // Result global memory handle
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
@@ -639,7 +640,7 @@ LPYYSTYPE SysFnDM_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnDR_EM
+LPPL_YYSTYPE SysFnDR_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -679,15 +680,15 @@ LPYYSTYPE SysFnDR_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnMonDR_EM
+LPPL_YYSTYPE SysFnMonDR_EM
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL hGlbData;
-    LPVOID  lpMem;
-    LPYYSTYPE lpYYRes;
+    HGLOBAL      hGlbData;
+    LPVOID       lpMem;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -882,23 +883,23 @@ LPYYSTYPE SysFnMonDR_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnDydDR_EM
+LPPL_YYSTYPE SysFnDydDR_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht;
-    APLNELM   aplNELMLft,
-              aplNELMRht;
-    APLRANK   aplRankLft,
-              aplRankRht;
-    HGLOBAL   hGlbRes = NULL;
-    APLINT    aplIntegerLft;
-    APLFLOAT  aplFloatLft;
-    LPYYSTYPE lpYYRes;
+    APLSTYPE     aplTypeLft,
+                 aplTypeRht;
+    APLNELM      aplNELMLft,
+                 aplNELMRht;
+    APLRANK      aplRankLft,
+                 aplRankRht;
+    HGLOBAL      hGlbRes = NULL;
+    APLINT       aplIntegerLft;
+    APLFLOAT     aplFloatLft;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1022,17 +1023,17 @@ LPYYSTYPE SysFnDydDR_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnDydDR_SHOW_EM
+LPPL_YYSTYPE SysFnDydDR_SHOW_EM
     (APLSTYPE aplTypeRht,
      LPTOKEN  lptkFunc)
 
 {
-    LPAPLCHAR lpw;          // Ptr to WCHAR text
-    APLUINT   ByteRes;      // # bytes in the result
-    HGLOBAL   hGlbRes;      // Result global memory handle
-    LPVOID    lpMemRes;     // Ptr to result global memory
-    LPYYSTYPE lpYYRes;      // Ptr to the result
-    APLNELM   aplNELMRes;   // Result NELM
+    LPAPLCHAR    lpw;           // Ptr to WCHAR text
+    APLUINT      ByteRes;       // # bytes in the result
+    HGLOBAL      hGlbRes;       // Result global memory handle
+    LPVOID       lpMemRes;      // Ptr to result global memory
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
+    APLNELM      aplNELMRes;    // Result NELM
 
     // Split cases based upon the rigth arg storage type
     switch (aplTypeRht)
@@ -1346,7 +1347,7 @@ void CalcNumIDs
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnSIZE_EM
+LPPL_YYSTYPE SysFnSIZE_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -1386,31 +1387,31 @@ LPYYSTYPE SysFnSIZE_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnMonSIZE_EM
+LPPL_YYSTYPE SysFnMonSIZE_EM
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token
 
 {
-    APLSTYPE   aplTypeRht;      // Right arg storage type
-    APLNELM    aplNELMRht,      // Right arg NELM
-               aplNELMRes,      // Result    ...
-               aplNELMCol;      // Result column NELM
-    APLRANK    aplRankRht;      // Right arg Rank
-    APLLONGEST aplLongestRht;   // Right arg longest if immediate
-    HGLOBAL    hGlbRht = NULL,  // Right arg global memory handle
-               hGlbRes = NULL;  // Result    ...
-    LPVOID     lpMemRht = NULL, // Ptr to right arg global memory
-               lpMemRes = NULL; // Ptr to result    ...
-    LPAPLCHAR  lpMemDataRht,    // Ptr to right arg char data
-               lpMemDataStart;  // Ptr to start of identifier
-    LPAPLINT   lpMemDataRes;    // Ptr to result integer data
-    APLUINT    uRht,            // Loop counter
-               uCol,            // ...
-               ByteRes;         // # bytes in the result
-    LPSYMENTRY lpSymEntry;      // Ptr to SYMENTRY
-    STFLAGS    stFlags;         // STE flags
-    LPYYSTYPE  lpYYRes = NULL;  // Ptr to the result
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMRht,        // Right arg NELM
+                 aplNELMRes,        // Result    ...
+                 aplNELMCol;        // Result column NELM
+    APLRANK      aplRankRht;        // Right arg Rank
+    APLLONGEST   aplLongestRht;     // Right arg longest if immediate
+    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbRes = NULL;    // Result    ...
+    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
+                 lpMemRes = NULL;   // Ptr to result    ...
+    LPAPLCHAR    lpMemDataRht,      // Ptr to right arg char data
+                 lpMemDataStart;    // Ptr to start of identifier
+    LPAPLINT     lpMemDataRes;      // Ptr to result integer data
+    APLUINT      uRht,              // Loop counter
+                 uCol,              // ...
+                 ByteRes;           // # bytes in the result
+    LPSYMENTRY   lpSymEntry;        // Ptr to SYMENTRY
+    STFLAGS      stFlags;           // STE flags
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // The right arg may be of two forms:
     //   1.  a vector of names as in 'a b c'
@@ -1633,7 +1634,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnDydSIZE_EM
+LPPL_YYSTYPE SysFnDydSIZE_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -1837,17 +1838,17 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnSYSID_EM
+LPPL_YYSTYPE SysFnSYSID_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token
 
 {
-    UINT       ByteRes;
-    HGLOBAL    hGlbRes;
-    LPVOID     lpMem;
-    LPYYSTYPE lpYYRes;
+    UINT         ByteRes;
+    HGLOBAL      hGlbRes;
+    LPVOID       lpMem;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
@@ -1934,20 +1935,20 @@ LPYYSTYPE SysFnSYSID_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnSYSVER_EM
+LPPL_YYSTYPE SysFnSYSVER_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    UINT       ByteRes;
-    HGLOBAL    hGlbRes;
-    LPVOID     lpMem;
-    char       szFileVer[32];
-    LPAPLCHAR  p;
-    HANDLE     hFile;
-    LPYYSTYPE  lpYYRes;
+    UINT         ByteRes;
+    HGLOBAL      hGlbRes;
+    LPVOID       lpMem;
+    char         szFileVer[32];
+    LPAPLCHAR    p;
+    HANDLE       hFile;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
@@ -2088,17 +2089,17 @@ LPYYSTYPE SysFnSYSVER_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnTC_EM
+LPPL_YYSTYPE SysFnTC_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    UINT       ByteRes;
-    HGLOBAL    hGlbRes;
-    LPVOID     lpMem;
-    LPYYSTYPE lpYYRes;
+    UINT         ByteRes;
+    HGLOBAL      hGlbRes;
+    LPVOID       lpMem;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
@@ -2187,13 +2188,13 @@ LPYYSTYPE SysFnTC_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnTCCom_EM
+LPPL_YYSTYPE SysFnTCCom_EM
     (WCHAR   wc,
      LPTOKEN lptkFunc,
      LPTOKEN lptkAxis)
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -2228,7 +2229,7 @@ LPYYSTYPE SysFnTCCom_EM
 //  System function:  []TCBEL -- Terminal Control, Bell
 //***************************************************************************
 
-LPYYSTYPE SysFnTCBEL_EM
+LPPL_YYSTYPE SysFnTCBEL_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -2248,7 +2249,7 @@ LPYYSTYPE SysFnTCBEL_EM
 //  System function:  []TCBS -- Terminal Control, Backspace
 //***************************************************************************
 
-LPYYSTYPE SysFnTCBS_EM
+LPPL_YYSTYPE SysFnTCBS_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -2268,7 +2269,7 @@ LPYYSTYPE SysFnTCBS_EM
 //  System function:  []TCDEL -- Terminal Control, Del
 //***************************************************************************
 
-LPYYSTYPE SysFnTCDEL_EM
+LPPL_YYSTYPE SysFnTCDEL_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -2288,7 +2289,7 @@ LPYYSTYPE SysFnTCDEL_EM
 //  System function:  []TCESC -- Terminal Control, Escape
 //***************************************************************************
 
-LPYYSTYPE SysFnTCESC_EM
+LPPL_YYSTYPE SysFnTCESC_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -2308,7 +2309,7 @@ LPYYSTYPE SysFnTCESC_EM
 //  System function:  []TCFF -- Terminal Control, Form Feed
 //***************************************************************************
 
-LPYYSTYPE SysFnTCFF_EM
+LPPL_YYSTYPE SysFnTCFF_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -2328,7 +2329,7 @@ LPYYSTYPE SysFnTCFF_EM
 //  System function:  []TCHT -- Terminal Control, Horizontal Tab
 //***************************************************************************
 
-LPYYSTYPE SysFnTCHT_EM
+LPPL_YYSTYPE SysFnTCHT_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -2348,7 +2349,7 @@ LPYYSTYPE SysFnTCHT_EM
 //  System function:  []TCLF -- Terminal Control, Linefeed
 //***************************************************************************
 
-LPYYSTYPE SysFnTCLF_EM
+LPPL_YYSTYPE SysFnTCLF_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -2368,7 +2369,7 @@ LPYYSTYPE SysFnTCLF_EM
 //  System function:  []TCNL -- Terminal Control, Newline
 //***************************************************************************
 
-LPYYSTYPE SysFnTCNL_EM
+LPPL_YYSTYPE SysFnTCNL_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -2388,7 +2389,7 @@ LPYYSTYPE SysFnTCNL_EM
 //  System function:  []TCNUL -- Terminal Control, Nul
 //***************************************************************************
 
-LPYYSTYPE SysFnTCNUL_EM
+LPPL_YYSTYPE SysFnTCNUL_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -2414,18 +2415,18 @@ LPYYSTYPE SysFnTCNUL_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnTS_EM
+LPPL_YYSTYPE SysFnTS_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    SYSTEMTIME SystemTime;
-    UINT       ByteRes;
-    HGLOBAL    hGlbRes;
-    LPVOID     lpMem;
-    LPYYSTYPE  lpYYRes;
+    SYSTEMTIME   SystemTime;
+    UINT         ByteRes;
+    HGLOBAL      hGlbRes;
+    LPVOID       lpMem;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
@@ -2524,7 +2525,7 @@ LPYYSTYPE SysFnTS_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnTYPE_EM
+LPPL_YYSTYPE SysFnTYPE_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -2564,15 +2565,15 @@ LPYYSTYPE SysFnTYPE_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnMonTYPE_EM
+LPPL_YYSTYPE SysFnMonTYPE_EM
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL hGlbData,
-            hGlbRes;
-    LPYYSTYPE lpYYRes;
+    HGLOBAL      hGlbData,
+                 hGlbRes;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -2712,7 +2713,7 @@ LPYYSTYPE SysFnMonTYPE_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE SysFnDydTYPE_EM
+LPPL_YYSTYPE SysFnDydTYPE_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token

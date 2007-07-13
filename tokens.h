@@ -77,7 +77,7 @@ typedef enum tagTOKENTYPES
  TKT_LISTBR   ,             // 17: List in brackets  (data is HGLOBAL)
  TKT_VARARRAY ,             // 18: Array of data (data is HGLOBAL)
  TKT_FCNARRAY ,             // 19: Array of functions and/or operators (data is HGLOBAL)
- TKT_FCNNAMED ,             // 1A: Symbol table entry for a named function (data is LPSYMENTRY)
+ TKT_FCNNAMED ,             // 1A: A named function (data is LPSYMENTRY)
  TKT_AXISIMMED,             // 1B: An immediate axis specification (data is immediate)
  TKT_AXISARRAY,             // 1C: An array of  ...   (data is HGLOBAL)
  TKT_OP1NAMED ,             // 1D: A named monadic primitive operator (data is LPSYMENTRY)

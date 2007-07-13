@@ -24,45 +24,23 @@
 //    monadic operator JotDot ("ERROR" and "outer product")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpJotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimOpJotDot_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimOpJotDot_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    Assert (lpYYFcnStr->tkToken.tkData.tkChar EQ INDEX_JOTDOT);
-
-    //***************************************************************
-    // The derived functions from this operator are not sensitive to
-    //   the axis operator, so signal a syntax error if present
-    //***************************************************************
-
-    if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_JOTDOT);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonJotDot_EM_YY (lpYYFcnStr,   // Ptr to operator function strand
-                                      lptkRhtArg,   // Ptr to right arg token
-                                      lptkAxis);    // Ptr to axis token (may be NULL)
+        return PrimOpMonJotDot_EM_YY (lpYYFcnStrOpr,    // Ptr to operator function strand
+                                      lptkRhtArg);      // Ptr to right arg token
     else
-        return PrimOpDydJotDot_EM_YY (lptkLftArg,   // Ptr to left arg token
-                                      lpYYFcnStr,   // Ptr to operator function strand
-                                      lptkRhtArg,   // Ptr to right arg token
-                                      lptkAxis);    // Ptr to axis token (may be NULL)
+        return PrimOpDydJotDot_EM_YY (lptkLftArg,       // Ptr to left arg token
+                                      lpYYFcnStrOpr,    // Ptr to operator function strand
+                                      lptkRhtArg);      // Ptr to right arg token
 } // End PrimOpJotDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -72,64 +50,32 @@ LPYYSTYPE PrimOpJotDot_EM_YY
 //    monadic operator JotDot ("ERROR" and "outer product")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpJotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimProtoOpJotDot_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimProtoOpJotDot_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxis)             // Ptr to axis token always NULL)
 
 {
-    LPPRIMFNS lpPrimProtoRht;       // Ptr to right operand prototype function
-    LPYYSTYPE lpYYFcnStrRht;        // Ptr to right operand function strand
-
-    //***************************************************************
-    // The derived functions from this operator are not sensitive to
-    //   the axis operator, so signal a syntax error if present
-    //***************************************************************
-
-    if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
-
-    // Set ptr to right operand,
-    //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
-
-    // Get a ptr to the prototype function for the first symbol (a function or operator)
-    lpPrimProtoRht = PrimProtoFnsTab[SymTrans (&lpYYFcnStrRht->tkToken)];
-    if (!lpPrimProtoRht)
-    {
-        ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                  &lpYYFcnStrRht->tkToken);
-        return NULL;
-    } // End IF
+    Assert (lptkAxis EQ NULL);
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
         //***************************************************************
         // Called monadically
         //***************************************************************
-        return PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken);
+        return PrimOpMonJotDotCommon_EM_YY (lpYYFcnStrOpr,      // Ptr to operator function strand
+                                            lptkRhtArg,         // Ptr to right arg token
+                                            TRUE);              // TRUE iff prototyping
     else
         //***************************************************************
         // Called dyadically
         //***************************************************************
         return PrimOpDydJotDotCommon_EM_YY (lptkLftArg,         // Ptr to left arg token
-                                            lpYYFcnStr,         // Ptr to operator function strand
+                                            lpYYFcnStrOpr,      // Ptr to operator function strand
                                             lptkRhtArg,         // Ptr to right arg token
-                                            lptkAxis,           // Ptr to axis token (may be NULL)
-                                            lpPrimProtoRht);    // Ptr to right operand prototype function
+                                            TRUE);              // TRUE iff prototyping
 } // End PrimProtoOpJotDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -138,21 +84,31 @@ LPYYSTYPE PrimProtoOpJotDot_EM_YY
 //  Primitive operator for monadic derived function from JotDot ("ERROR")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonJotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimOpMonJotDot_EM_YY
-    (LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimOpMonJotDot_EM_YY
+    (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken);
+    return PrimOpMonJotDotCommon_EM_YY (lpYYFcnStrOpr,      // Ptr to operator function strand
+                                        lptkRhtArg,         // Ptr to right arg token
+                                        FALSE);             // TRUE iff prototyping
 } // End PrimOpMonJotDot_EM_YY
-#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimOpMonJotDotCommon_EM_YY
+//
+//  Primitive operator for monadic derived function from JotDot ("ERROR")
+//***************************************************************************
+
+LPPL_YYSTYPE PrimOpMonJotDotCommon_EM_YY
+    (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     BOOL         bPrototyping)         // TRUE iff prototyping
+
+{
+    return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+} // End PrimOpJotDotCommon_EM_YY
 
 
 //***************************************************************************
@@ -161,26 +117,17 @@ LPYYSTYPE PrimOpMonJotDot_EM_YY
 //  Primitive operator for dyadic derived function from JotDot ("outer product")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydJotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimOpDydJotDot_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimOpDydJotDot_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token
+     LPPL_YYSTYPE lpYYFcnStr,           // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
     return PrimOpDydJotDotCommon_EM_YY (lptkLftArg,     // Ptr to left arg token
                                         lpYYFcnStr,     // Ptr to operator function strand
                                         lptkRhtArg,     // Ptr to right arg token
-                                        lptkAxis,       // Ptr to axis token (may be NULL)
-                                        NULL);          // Ptr to right operand prototype function
+                                        FALSE);         // TRUE iff prototoyping
 } // End PrimOpDydJotDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -195,65 +142,86 @@ LPYYSTYPE PrimOpDydJotDot_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpDydJotDotCommon_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis,            // Ptr to axis token (may be NULL)
-     LPPRIMFNS lpPrimProtoRht)      // Ptr to right operand prototype function
+LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     BOOL         bPrototyping)         // TRUE iff prototyping
 
 {
-    APLSTYPE  aplTypeLft,           // Left arg storage type
-              aplTypeRht,           // Right ...
-              aplTypeRes;           // Result   ...
-    APLNELM   aplNELMLft,           // Left arg NELM
-              aplNELMRht,           // Right ...
-              aplNELMRes;           // Result   ...
-    APLRANK   aplRankLft,           // Left arg rank
-              aplRankRht,           // Right ...
-              aplRankRes;           // Result   ...
-    APLUINT   ByteRes,              // # bytes needed for the result
-              uLft,                 // Left arg loop counter
-              uRht,                 // Right ...
-              uRes;                 // Result   ...
-    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
-              hGlbRht = NULL,       // Right ...
-              hGlbRes = NULL;       // Result   ...
-    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
-              lpMemRht = NULL,      // Ptr to right ...
-              lpMemRes = NULL;      // Ptr to result   ...
-    BOOL      bRet = TRUE;          // TRUE iff result is valid
-    TOKEN     tkLftArg = {0},       // Left arg token
-              tkRhtArg = {0};       // Right ...
-    UCHAR     immType;              // Immediate type
-    APLINT    apaOffLft,            // Left arg APA offset
-              apaMulLft,            // ...          multiplier
-              apaOffRht,            // Right arg APA offset
-              apaMulRht;            // ...           multiplier
-    LPYYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand
-              lpYYRes = NULL;       // Ptr to the result
-
-    // Set ptr to right operand,
-    //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
+    APLSTYPE     aplTypeLft,            // Left arg storage type
+                 aplTypeRht,            // Right ...
+                 aplTypeRes;            // Result   ...
+    APLNELM      aplNELMLft,            // Left arg NELM
+                 aplNELMRht,            // Right ...
+                 aplNELMRes;            // Result   ...
+    APLRANK      aplRankLft,            // Left arg rank
+                 aplRankRht,            // Right ...
+                 aplRankRes;            // Result   ...
+    APLUINT      ByteRes,               // # bytes needed for the result
+                 uLft,                  // Left arg loop counter
+                 uRht,                  // Right ...
+                 uRes;                  // Result   ...
+    HGLOBAL      hGlbLft = NULL,        // Left arg global memory handle
+                 hGlbRht = NULL,        // Right ...
+                 hGlbRes = NULL;        // Result   ...
+    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
+                 lpMemRht = NULL,       // Ptr to right ...
+                 lpMemRes = NULL;       // Ptr to result   ...
+    BOOL         bRet = TRUE;           // TRUE iff result is valid
+    TOKEN        tkLftArg = {0},        // Left arg token
+                 tkRhtArg = {0};        // Right ...
+    UCHAR        immType;               // Immediate type
+    APLINT       apaOffLft,             // Left arg APA offset
+                 apaMulLft,             // ...          multiplier
+                 apaOffRht,             // Right arg APA offset
+                 apaMulRht;             // ...           multiplier
+    LPPL_YYSTYPE lpYYFcnStrRht,         // Ptr to right operand function strand
+                 lpYYRes = NULL;        // Ptr to the result
+    LPPRIMFNS    lpPrimProtoRht;        // Ptr to right operand prototype function
+    LPTOKEN      lptkAxis;              // Ptr to axis token (may be NULL)
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
+    // Check for axis operator
+    if (lpYYFcnStrOpr->FcnCount > 1
+     && (lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+      || lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+        lptkAxis = &lpYYFcnStrOpr[1].tkToken;
+     else
+        lptkAxis = NULL;
+
+    //***************************************************************
+    // The derived functions from this operator are not sensitive to
+    //   the axis operator, so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
+    // Set ptr to right operand,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrRht = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+
     // The result NELM is the product of the left & right NELMs
     aplNELMRes = imul64 (aplNELMLft, aplNELMRht, &bRet);
     if (!bRet)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStr->tkToken);
+                                  &lpYYFcnStrOpr->tkToken);
         return NULL;
     } // End IF
 
     // Handle prototypes separately
     if (aplNELMRes EQ 0
-     && lpPrimProtoRht EQ NULL)
+     || bPrototyping)
     {
         // Get a ptr to the prototype function for the first symbol (a function or operator)
         lpPrimProtoRht = PrimProtoFnsTab[SymTrans (&lpYYFcnStrRht->tkToken)];
@@ -263,7 +231,8 @@ LPYYSTYPE PrimOpDydJotDotCommon_EM_YY
                                       &lpYYFcnStrRht->tkToken);
             goto ERROR_EXIT;
         } // End IF
-    } // End IF
+    } else
+        lpPrimProtoRht = NULL;
 
     // The rank of the result is the sum of the left & right ranks
     aplRankRes = aplRankLft + aplRankRht;
@@ -282,7 +251,7 @@ LPYYSTYPE PrimOpDydJotDotCommon_EM_YY
     if (!hGlbRes)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStr->tkToken);
+                                  &lpYYFcnStrOpr->tkToken);
         return NULL;
     } // End IF
 
@@ -333,15 +302,18 @@ LPYYSTYPE PrimOpDydJotDotCommon_EM_YY
     // lpMemLft now points to the left arg's data
     // lpMemRht now points to the right arg's data
 
-    // Fill nested result with PTR_REUSED
-    //   in case we fail part way through
-    *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-    for (uRes = 1; uRes < aplNELMRes; uRes++)
-        ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
+    if (aplTypeRes EQ ARRAY_NESTED)
+    {
+        // Fill nested result with PTR_REUSED
+        //   in case we fail part way through
+        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
+        for (uRes = 1; uRes < aplNELMRes; uRes++)
+            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
+    } // End IF
 
     // Fill in the arg tokens
     tkLftArg.tkCharIndex =
-    tkRhtArg.tkCharIndex = lpYYFcnStr->tkToken.tkCharIndex;
+    tkRhtArg.tkCharIndex = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // If the left arg is immediate, fill in the token
     if (lpMemLft EQ NULL)
@@ -445,7 +417,7 @@ LPYYSTYPE PrimOpDydJotDotCommon_EM_YY
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    lpYYRes->tkToken.tkCharIndex       = lpYYFcnStr->tkToken.tkCharIndex;
+    lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
     lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);

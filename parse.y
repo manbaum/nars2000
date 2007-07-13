@@ -37,6 +37,10 @@ in the lexical analyser (pl_yylex).
 #define fprintf                 pl_yyfprintf
 #endif
 
+#define    YYSTYPE     PL_YYSTYPE
+#define  LPYYSTYPE   LPPL_YYSTYPE
+#define tagYYSTYPE  tagPL_YYSTYPE
+
 // The following #defines are needed to allow multiple parses
 //   to coexist in the same file
 #define yy_symbol_print         pl_yy_symbol_print
@@ -44,8 +48,8 @@ in the lexical analyser (pl_yylex).
 #define yy_reduce_print         pl_yy_reduce_print
 #define yydestruct              pl_yydestruct
 
-LPYYSTYPE lpYYStr, lpYYStrL, lpYYStrR, lpYYStrN, lpYYRes, lpYYFcn, lpYYLst, lpYYAxis, lpYYOp1, lpYYOp2;
-BOOL      bRet;
+LPPL_YYSTYPE lpYYStr, lpYYStrL, lpYYStrR, lpYYStrN, lpYYRes, lpYYFcn, lpYYLst, lpYYAxis, lpYYOp1, lpYYOp2;
+BOOL         bRet;
 
 #define DbgMsgW2(a) DbgMsgW(a)
 ////#define DbgMsgW2(a) DbgMsgW(a); DbgBrk ()
@@ -540,7 +544,7 @@ ArrExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             lpYYRes = ExecFunc_EM_YY (NULL, &lpYYFcn->tkToken, &$1.tkToken);
+                                             lpYYRes = ExecFunc_EM_YY (NULL, lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
@@ -578,7 +582,7 @@ ArrExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             lpYYRes = ExecFunc_EM_YY (NULL, &lpYYFcn->tkToken, &$1.tkToken);
+                                             lpYYRes = ExecFunc_EM_YY (NULL, lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
@@ -616,7 +620,7 @@ ArrExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             lpYYRes = ExecFunc_EM_YY (NULL, &lpYYFcn->tkToken, &$1.tkToken);
+                                             lpYYRes = ExecFunc_EM_YY (NULL, lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 
@@ -675,7 +679,7 @@ ArrExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             lpYYRes = ExecFunc_EM_YY (&$3.tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+                                             lpYYRes = ExecFunc_EM_YY (&$3.tkToken, lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
@@ -735,7 +739,7 @@ ArrExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             lpYYRes = ExecFunc_EM_YY (&$3.tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+                                             lpYYRes = ExecFunc_EM_YY (&$3.tkToken, lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
@@ -1036,7 +1040,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             lpYYRes = ExecFunc_EM_YY (&$4.tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+                                             lpYYRes = ExecFunc_EM_YY (&$4.tkToken, lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 /////////////////////////////////////////////FreeResult (&$4.tkToken);                  // DO NOT FREE:  Used below
@@ -1091,7 +1095,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             lpYYRes = ExecFunc_EM_YY (&$4.tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+                                             lpYYRes = ExecFunc_EM_YY (&$4.tkToken, lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
 /////////////////////////////////////////////FreeResult (&$4.tkToken);                  // DO NOT FREE:  Used below
@@ -1166,7 +1170,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             bRet = ModifyAssignNameVals_EM (&lpYYStrN->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+                                             bRet = ModifyAssignNameVals_EM (&lpYYStrN->tkToken, lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
@@ -1230,7 +1234,7 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             bRet = ModifyAssignNameVals_EM (&lpYYStrN->tkToken, &lpYYFcn->tkToken, &$1.tkToken);
+                                             bRet = ModifyAssignNameVals_EM (&lpYYStrN->tkToken, lpYYFcn, &$1.tkToken);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);                  // DO NOT FREE:  Passed on as result
                                              FreeYYFcn (lpYYFcn); lpYYFcn = NULL;
                                              FreeResult (&lpYYStrN->tkToken); YYFree (lpYYStrN); lpYYStrN = NULL;
@@ -2849,12 +2853,13 @@ SingTokn:
 typedef struct tagPL_THREAD
 {
     HANDLE  hSemaphore;         // Handle of semaphore for this thread
-    HGLOBAL hGlbToken;          // Handle of tokenization of line to parse
-    LPWCHAR lpwszLine;          // Ptr to tokens of line to parse (GlobalLock of above)
+    HGLOBAL hGlbTxtLine,        // Line text global memory handle (may be NULL)
+            hGlbToken;          // Tokenized line global memory handle
+    LPWCHAR lpwszLine;          // Ptr to tokens of line to parse (GlobalLock of above) (may be NULL)
     HGLOBAL hGlbPTD;            // Handle of PerTabData for this thread
-    BOOL    bFreeToken;         // TRUE iff ParseLine is to free hGlbToken on exit
-    HWND    hWndSM,             // Window handle to Session Manager
-            hWndEC;             // Window handle to Edit Control
+    BOOL    bFreeToken,         // TRUE iff ParseLine is to free hGlbToken on exit
+            bFreeLine;          // ...                           lpwszLine ...
+    HWND    hWndSM;             // Window handle to Session Manager
 } PL_THREAD, *LPPL_THREAD;
 
 PL_THREAD plThread;             // Temporary global
@@ -2872,32 +2877,36 @@ PL_THREAD plThread;             // Temporary global
 #define APPEND_NAME
 #endif
 
-void ParseLine
-    (HWND    hWndSM,            // Window handle to Session Manager
-     HWND    hWndEC,            // Window handle to Edit Control
-     HGLOBAL hGlbToken,         // The token handle
-     LPWCHAR lpwszLine,         // The line to parse
+HANDLE ParseLine
+    (HWND    hWndSM,            // Session Manager window handle
+     HGLOBAL hGlbTxtLine,       // Line text global memory handle
+     HGLOBAL hGlbToken,         // Tokenized line global memory handle (may be NULL)
+     LPWCHAR lpwszLine,         // Ptr to the line text (may be NULL)
      HGLOBAL hGlbPTD,           // PTD handle
-     BOOL    bFreeToken)        // TRUE iff ParseLine is to free hGlbToken on exit
+     HANDLE  hSemaphore,        // Semaphore handle to wait for
+     BOOL    bFreeToken,        // TRUE iff ParseLine is to free hGlbToken on exit
+     BOOL    bFreeLine,         // ...                           lpwszLine ...
+     BOOL    bSignalSM)         // ...                      signal SM at end
 
 {
     DWORD  dwThreadId;
-    HANDLE hThread,
-           hSemaphore;
+    HANDLE hThread;
 
-    // Create a semaphore
-    hSemaphore = CreateSemaphore (NULL,             // No security attrs
-                                  0,                // Initial count (non-signalled)
-                                  65535,            // Maximum count
-                                  NULL);            // No name
+    if (!hSemaphore)
+        // Create a semaphore
+        hSemaphore = CreateSemaphore (NULL,             // No security attrs
+                                      0,                // Initial count (non-signalled)
+                                      65535,            // Maximum count
+                                      NULL);            // No name
     // Save args in struc to pass to thread func
-    plThread.hSemaphore = hSemaphore;
-    plThread.hGlbToken  = hGlbToken;
-    plThread.lpwszLine  = lpwszLine;
-    plThread.hGlbPTD    = hGlbPTD;
-    plThread.bFreeToken = bFreeToken;
-    plThread.hWndSM     = hWndSM;
-    plThread.hWndEC     = hWndEC;
+    plThread.hSemaphore  = hSemaphore;
+    plThread.hGlbTxtLine = hGlbTxtLine;
+    plThread.hGlbToken   = hGlbToken;
+    plThread.lpwszLine   = lpwszLine;
+    plThread.hGlbPTD     = hGlbPTD;
+    plThread.bFreeToken  = bFreeToken;
+    plThread.bFreeLine   = bFreeLine;
+    plThread.hWndSM      = hWndSM;
 
     // Create a new thread
     hThread = CreateThread (NULL,                   // No security attrs
@@ -2908,8 +2917,11 @@ void ParseLine
                             &dwThreadId);           // Returns thread id
     Sleep (0);              // To cut short the caller's thread slice
 
-    // Tell the SM to wait for PL to finish
-    PostMessage (hWndSM, MYWM_WFMO, (WPARAM) hThread, (LPARAM) hSemaphore);
+    if (bSignalSM)
+        // Tell the SM to wait for PL to finish
+        PostMessage (hWndSM, MYWM_WFMO, (WPARAM) hThread, (LPARAM) hSemaphore);
+
+    return hThread;
 } // End ParseLine
 #undef  APPEND_NAME
 
@@ -2930,15 +2942,16 @@ void ParseLineInThread
     (LPPL_THREAD lpplThread)
 
 {
-    HANDLE       hSemaphore;        // Handle to the ParseLine semaphore
-    HGLOBAL      hGlbToken;         // Handle to sequence of tokens to parse
+    HANDLE       hSemaphore;        // ParseLine semaphore handle
+    HGLOBAL      hGlbTxtLine,       // Line text global memory handle
+                 hGlbToken;         // Tokenized line global memory handle
     LPWCHAR      lpwszLine;         // Ptr to WCHARs in the line to parse
     HGLOBAL      hGlbPTD;           // Handle to PerTabData
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    BOOL         bFreeToken;        // TRUE iff we should free hGlbToken on exit
+    BOOL         bFreeToken,        // TRUE iff we should free hGlbToken on exit
+                 bFreeLine;         // ...                     lpwszLine ...
     PLLOCALVARS  plLocalVars = {0}; // Re-entrant vars
-    HWND         hWndSM,            // Window handle to Session Manager
-                 hWndEC;            // Window handle to Edit Control
+    HWND         hWndSM;            // Window handle to Session Manager
 
     // Make sure we can communicate between windows
     AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
@@ -2953,13 +2966,14 @@ void ParseLineInThread
     TlsSetValue (dwTlsPlLocalVars, (LPVOID) &plLocalVars);
 
     // Extract values from the arg struc
-    hSemaphore = lpplThread->hSemaphore;
-    hGlbToken  = lpplThread->hGlbToken;
-    lpwszLine  = lpplThread->lpwszLine;
-    hGlbPTD    = lpplThread->hGlbPTD;
-    bFreeToken = lpplThread->bFreeToken;
-    hWndSM     = lpplThread->hWndSM;
-    hWndEC     = lpplThread->hWndEC;
+    hSemaphore  = lpplThread->hSemaphore;
+    hGlbTxtLine = lpplThread->hGlbTxtLine;
+    hGlbToken   = lpplThread->hGlbToken;
+    lpwszLine   = lpplThread->lpwszLine;
+    hGlbPTD     = lpplThread->hGlbPTD;
+    bFreeToken  = lpplThread->bFreeToken;
+    bFreeLine   = lpplThread->bFreeLine;
+    hWndSM      = lpplThread->hWndSM;
 
     // Save the thread's PerTabData global memory handle
     TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
@@ -2977,11 +2991,12 @@ void ParseLineInThread
 #endif
 
     // Save values in the LocalVars
-    plLocalVars.hGlbPTD    = hGlbPTD;
-    plLocalVars.hWndSM     = hWndSM;
-    plLocalVars.hGlbToken  = hGlbToken;
-    plLocalVars.lpwszLine  = lpwszLine;
-    plLocalVars.bLookAhead = FALSE;
+    plLocalVars.hGlbPTD     = hGlbPTD;
+    plLocalVars.hWndSM      = hWndSM;
+    plLocalVars.hGlbTxtLine = hGlbTxtLine;
+    plLocalVars.hGlbToken   = hGlbToken;
+    plLocalVars.lpwszLine   = lpwszLine;
+    plLocalVars.bLookAhead  = FALSE;
 
     // Lock the memory to get a ptr to it, and set the variables
     UTLockAndSet (plLocalVars.hGlbToken, &plLocalVars.t2);
@@ -2998,27 +3013,27 @@ void ParseLineInThread
     // Allocate virtual memory for the Variable Strand accumulator
     plLocalVars.lpYYStrandStart[STRAND_VAR] =
         VirtualAlloc (NULL,      // Any address
-                      DEF_STRAND_MAXSIZE * sizeof (YYSTYPE),
+                      DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
                       MEM_RESERVE,
                       PAGE_READWRITE);
     if (!plLocalVars.lpYYStrandStart[STRAND_VAR])
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsg ("ParseLine:  VirtualAlloc for <pLocalVars.lpYYStrandStart[STRAND_VAR]> failed");
+        DbgMsg ("ParseLine:  VirtualAlloc for <plLocalVars.lpYYStrandStart[STRAND_VAR]> failed");
 
         return;             // Mark as failed
     } // End IF
 
     // Commit the intial size
     VirtualAlloc (plLocalVars.lpYYStrandStart[STRAND_VAR],
-                  DEF_STRAND_INITSIZE * sizeof (YYSTYPE),
+                  DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
                   MEM_COMMIT,
                   PAGE_READWRITE);
 
     // Allocate virtual memory for the Function Strand accumulator
     plLocalVars.lpYYStrandStart[STRAND_FCN] =
         VirtualAlloc (NULL,      // Any address
-                      DEF_STRAND_MAXSIZE * sizeof (YYSTYPE),
+                      DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
                       MEM_RESERVE,
                       PAGE_READWRITE);
     if (!plLocalVars.lpYYStrandStart[STRAND_FCN])
@@ -3031,7 +3046,7 @@ void ParseLineInThread
 
     // Commit the intial size
     VirtualAlloc (plLocalVars.lpYYStrandStart[STRAND_FCN],
-                  DEF_STRAND_INITSIZE * sizeof (YYSTYPE),
+                  DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
                   MEM_COMMIT,
                   PAGE_READWRITE);
 
@@ -3070,11 +3085,28 @@ void ParseLineInThread
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Signal an error
-    ErrorMessage (lpMemPTD->lpwszErrorMessage,
-                  lpwszLine,
-                  plLocalVars.tkErrorCharIndex,
-                  hWndEC);
+    if (lpwszLine)
+        // Signal an error
+        ErrorMessage (lpMemPTD->lpwszErrorMessage,
+                      lpwszLine,
+                      plLocalVars.tkErrorCharIndex,
+                      hWndSM);
+    else
+    {
+        LPMEMTXTUNION lpMemTxtLine;
+
+        // Lock the memory to get a ptr to it
+        lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+
+        // Signal an error
+        ErrorMessage (lpMemPTD->lpwszErrorMessage,
+                     &lpMemTxtLine->C,
+                      plLocalVars.tkErrorCharIndex,
+                      hWndSM);
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+    } // End IF/ELSE
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 NORMAL_EXIT:
@@ -3102,13 +3134,16 @@ NORMAL_EXIT:
     } // End IF
 
     // Free the virtual memory for the complete line
-    VirtualFree (lpwszLine, 0, MEM_RELEASE); lpwszLine = NULL;
+    if (bFreeLine && lpwszLine)
+    {
+        VirtualFree (lpwszLine, 0, MEM_RELEASE); lpwszLine = NULL;
+    } // End IF
 
     DBGLEAVE;
 
     // Release it
     if (!ReleaseSemaphore (hSemaphore, 1, NULL))
-        DbgBrk ();
+        DbgBrk ();          // ***FIXME*** -- Can this ever happen?
 } // End ParseLineInThread
 #undef  APPEND_NAME
 
@@ -3223,7 +3258,7 @@ char LookaheadSurround
     dprintfW (L"==Exiting  LookaheadSurround:  %c", cRes);
 #endif
     return cRes;
-} // LookaheadSurround
+} // End LookaheadSurround
 #undef  APPEND_NAME
 
 
@@ -3243,7 +3278,8 @@ char LookaheadSurround
 #endif
 
 char LookaheadAdjacent
-    (LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+    (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
+     BOOL          bSkipBrackets)   // TRUE if we're to skip over left/right brackets first
 
 {
     PLLOCALVARS plLocalVars;    // Local copy of outer PLLOCALVARS
@@ -3258,8 +3294,10 @@ char LookaheadAdjacent
     //   left grouping symbol in its tkData.tkIndex.
     // Get a ptr to the token adjacent to ("-1") the matching left
     //   grouping symbol.
-    plLocalVars.lpNext = &plLocalVars.lpStart[plLocalVars.lpNext->tkData.tkIndex - 1];
-
+    if (bSkipBrackets)
+        plLocalVars.lpNext = &plLocalVars.lpStart[plLocalVars.lpNext->tkData.tkIndex - 1];
+    else
+        plLocalVars.lpNext--;   // Skip over the function/operator symbol
     while (TRUE)
     switch (plLocalVars.lpNext->tkFlags.TknType)
     {
@@ -3328,14 +3366,23 @@ char LookaheadAdjacent
             goto NORMAL_EXIT;
 
         case TKT_LINECONT:
-            plLocalVars.lpNext--;   // Ignore this token
+        case TKT_COMMENT:
+            plLocalVars.lpNext--;   // Ignore these tokens
 
             break;                  // Go around again
 
-        case TKT_ASSIGN:
+        case TKT_ASSIGN:            // To allow f{is}/[1]
+            if (!bSkipBrackets)
+            {
+                cRes = 'F';
+
+                goto NORMAL_EXIT;
+            } // End IF
+
+            // Fall through to common code
+
         case TKT_LISTSEP:
         case TKT_COLON:
-        case TKT_COMMENT:
         case TKT_LPAREN:
         case TKT_LBRACKET:
         case TKT_EOS:
@@ -3452,7 +3499,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 int pl_yylex
-    (LPYYSTYPE     lpYYLval,        // Ptr to lval
+    (LPPL_YYSTYPE  lpYYLval,        // Ptr to lval
      LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
@@ -3601,7 +3648,7 @@ int pl_yylex
              || wchFn EQ UTF16_SLOPEBAR)
             {
                 // We really need an LALR grammar for this
-                switch (LookaheadSurround (lpplLocalVars))
+                switch (LookaheadAdjacent (lpplLocalVars, FALSE))
                 {
                     case '2':               // If the next token is a dyadic operator,
                         return PRIMFCN;     //   then this token is a function
@@ -3702,7 +3749,7 @@ int pl_yylex
             //   a function (return '}') or a variable (return ']')
 
             // We really need an LALR grammar for this
-            switch (LookaheadAdjacent (lpplLocalVars))
+            switch (LookaheadAdjacent (lpplLocalVars, TRUE))
             {
                 case '1':               // If the next token is a monadic operator
                 case 'F':               //   or a function,
@@ -3844,9 +3891,9 @@ void pl_yyfprintf
 //***************************************************************************
 
 void pl_yyprint
-    (FILE         *yyoutput,
-     yytype_uint16 yytoknum,
-     YYSTYPE const yyvaluep)
+    (FILE            *yyoutput,
+     yytype_uint16    yytoknum,
+     PL_YYSTYPE const yyvaluep)
 
 {
     WCHAR wszTemp[32],

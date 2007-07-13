@@ -2,17 +2,18 @@
 //  NARS2000 -- Per Tab Header
 //***************************************************************************
 
-#define INIT_PERTABVARS                                 \
-    lpMemPTD->hGlbQuadDM       = hGlbMTChar;            \
-    lpMemPTD->iMaxNumAlp       = DEF_NUMALP_MAXSIZE;    \
-    lpMemPTD->iMaxString       = DEF_STRING_MAXSIZE;    \
-    lpMemPTD->uHashMask        = DEF_HSHTAB_HASHMASK;   \
-    lpMemPTD->iSymTabTotalSize = DEF_SYMTAB_INITSIZE;   \
-    lpMemPTD->iHshTabTotalSize = DEF_HSHTAB_INITSIZE;   \
-    lpMemPTD->iHshTabBaseSize  = DEF_HSHTAB_INITSIZE;   \
-    lpMemPTD->iHshTabIncr      = DEF_HSHTAB_INCR;       \
-    lpMemPTD->ExecCode         = EXEC_SUCCESS;          \
-    lpMemPTD->bTabTextState    = FALSE;
+#define INIT_PERTABVARS                                     \
+    lpMemPTD->hGlbQuadDM         = hGlbMTChar;              \
+    lpMemPTD->iMaxNumAlp         = DEF_NUMALP_MAXSIZE;      \
+    lpMemPTD->iMaxString         = DEF_STRING_MAXSIZE;      \
+    lpMemPTD->uHashMask          = DEF_HSHTAB_HASHMASK;     \
+    lpMemPTD->iSymTabTotalSize   = DEF_SYMTAB_INITSIZE;     \
+    lpMemPTD->iHshTabTotalSize   = DEF_HSHTAB_INITSIZE;     \
+    lpMemPTD->iHshTabBaseSize    = DEF_HSHTAB_INITSIZE;     \
+    lpMemPTD->iHshTabIncr        = DEF_HSHTAB_INCR;         \
+    lpMemPTD->ExecCode           = EXEC_SUCCESS;            \
+    lpMemPTD->execState.exType   = EX_IMMEX;                \
+    lpMemPTD->bTabTextState      = FALSE;
 
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
@@ -20,7 +21,9 @@ typedef struct tagPERTABDATA
     EXEC_CODES ExecCode;            // 00:  Exception code
 
 #define NUMYYRES    10              // # YYRes elements in the array
-    YYSTYPE YYRes[NUMYYRES];        // 04:  The result token
+    PL_YYSTYPE YYRes[NUMYYRES];     // 04:  The result token
+
+    EXECSTATE execState;            // ??:  Execution state
 
     // Symbol & hash table variables
     LPSYMENTRY lpSymTab,            // Ptr to start of symbol table
@@ -75,8 +78,7 @@ typedef struct tagPERTABDATA
                lpSymQuadPW  ,       // ...            []PW
                lpSymQuadRL  ,       // ...            []RL
                lpSymQuadSA  ,       // ...            []SA
-               lpSymQuadWSID,       // ...            []WSID
-               lpSymQuadAXIS;       // ...            []AXIS
+               lpSymQuadWSID;       // ...            []WSID
     struct tagSIS_HEADER
               *lpSISBeg,            // Ptr to State Indicator Stack beginning
               *lpSISCur,            // ...                          current (may be NULL if SI is empty)

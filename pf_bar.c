@@ -71,7 +71,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecBar};
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnBar_EM_YY
+LPPL_YYSTYPE PrimFnBar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -168,7 +168,7 @@ APLFLOAT PrimFnMonBarFisF
 #endif
 
 BOOL PrimFnMonBarAPA_EM
-    (LPYYSTYPE     lpYYRes,         // Ptr to result YYSTYPE (may be NULL)
+    (LPPL_YYSTYPE  lpYYRes,         // Ptr to the result (may be NULL)
      LPTOKEN       lptkFunc,        // Ptr to function token
      HGLOBAL       hGlbRht,         // Handle to right arg
      HGLOBAL      *lphGlbRes,       // Ptr to handle to result
@@ -333,22 +333,22 @@ APLFLOAT PrimFnDydBarFisFvF
 #endif
 
 BOOL PrimFnDydBarAPA_EM
-    (LPYYSTYPE  lpYYRes,            // The result token (may be NULL)
+    (LPPL_YYSTYPE lpYYRes,          // Ptr to the result (may be NULL)
 
-     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPTOKEN      lptkFunc,         // Ptr to function token
 
-     HGLOBAL    hGlbLft,            // HGLOBAL of left arg (may be NULL if simple)
-     HGLOBAL    hGlbRht,            // ...        right ...
-     HGLOBAL   *lphGlbRes,          // Ptr to HGLOBAL of the result
+     HGLOBAL      hGlbLft,          // HGLOBAL of left arg (may be NULL if simple)
+     HGLOBAL      hGlbRht,          // ...        right ...
+     HGLOBAL     *lphGlbRes,        // Ptr to HGLOBAL of the result
 
-     APLRANK    aplRankLft,         // Rank of the left arg
-     APLRANK    aplRankRht,         // ...         right ...
+     APLRANK      aplRankLft,       // Rank of the left arg
+     APLRANK      aplRankRht,       // ...         right ...
 
-     APLNELM    aplNELMLft,         // Only one of these NELMs is 1
-     APLNELM    aplNELMRht,         // ...
+     APLNELM      aplNELMLft,       // Only one of these NELMs is 1
+     APLNELM      aplNELMRht,       // ...
 
-     APLINT     aplInteger,         // The integer from the simple side
-     LPPRIMSPEC lpPrimSpec)         // Ptr to PRIMSPEC
+     APLINT       aplInteger,       // The integer from the simple side
+     LPPRIMSPEC   lpPrimSpec)       // Ptr to PRIMSPEC
 
 {
     APLRANK aplRankRes;         // Result rank

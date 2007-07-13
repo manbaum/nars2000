@@ -4,7 +4,7 @@
 
 
 // Call this function for each monadic primitive function
-typedef LPYYSTYPE PRIMFN_MON
+typedef LPPL_YYSTYPE PRIMFN_MON
     (LPTOKEN lptkFunc,                      // Ptr to function token
      LPTOKEN lptkRhtArg,                    // Ptr to right arg token
      LPTOKEN lptkAxis,                      // Ptr to axis token (may be NULL)
@@ -13,7 +13,7 @@ typedef LPYYSTYPE PRIMFN_MON
 typedef PRIMFN_MON *LPPRIMFN_MON;
 
 // Call this function for each dyadic primitive function
-typedef LPYYSTYPE PRIMFN_DYD
+typedef LPPL_YYSTYPE PRIMFN_DYD
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
      LPTOKEN lptkFunc,                      // Ptr to function token
      LPTOKEN lptkRhtArg,                    // Ptr to right arg token
@@ -23,34 +23,34 @@ typedef LPYYSTYPE PRIMFN_DYD
 typedef PRIMFN_DYD *LPPRIMFN_DYD;
 
 typedef BOOL PRIMFN_DYD_SNvSN
-    (LPYYSTYPE lpYYRes,                     // Ptr to result YYSTYPE
+    (LPPL_YYSTYPE lpYYRes,                  // Ptr to the result
 
-     LPTOKEN   lptkLftArg,                  // Ptr to left arg token
-     LPTOKEN   lptkFunc,                    // Ptr to function token
-     LPTOKEN   lptkRhtArg,                  // Ptr to right arg token
+     LPTOKEN      lptkLftArg,               // Ptr to left arg token
+     LPTOKEN      lptkFunc,                 // Ptr to function token
+     LPTOKEN      lptkRhtArg,               // Ptr to right arg token
 
-     HGLOBAL   hGlbLft,                     // Handle to left arg
-     HGLOBAL   hGlbRht,                     // ...       right ...
-     HGLOBAL  *lphGlbRes,                   // Ptr to handle to result
+     HGLOBAL      hGlbLft,                  // Handle to left arg
+     HGLOBAL      hGlbRht,                  // ...       right ...
+     HGLOBAL     *lphGlbRes,                // Ptr to handle to result
 
-     LPVOID    lpMemLft,                    // Points to Sig.nature
-     LPVOID    lpMemRht,                    // ...
+     LPVOID       lpMemLft,                 // Points to Sig.nature
+     LPVOID       lpMemRht,                 // ...
 
-     LPAPLUINT lpMemAxisHead,               // Ptr to axis values, fleshed out
-     LPAPLUINT lpMemAxisTail,               // Ptr to grade up of AxisHead
+     LPAPLUINT    lpMemAxisHead,            // Ptr to axis values, fleshed out
+     LPAPLUINT    lpMemAxisTail,            // Ptr to grade up of AxisHead
 
-     APLRANK   aplRankLft,                  // Left arg rank
-     APLRANK   aplRankRht,                  // Right ...
-     APLRANK   aplRankRes,                  // Result ...
+     APLRANK      aplRankLft,               // Left arg rank
+     APLRANK      aplRankRht,               // Right ...
+     APLRANK      aplRankRes,               // Result ...
 
-     APLSTYPE  aplTypeLft,                  // Left arg storage type
-     APLSTYPE  aplTypeRht,                  // Right ...
-     APLSTYPE  aplTypeRes,                  // Result ...
+     APLSTYPE     aplTypeLft,               // Left arg storage type
+     APLSTYPE     aplTypeRht,               // Right ...
+     APLSTYPE     aplTypeRes,               // Result ...
 
-     APLNELM   aplNELMLft,                  // Left arg NELM
-     APLNELM   aplNELMRht,                  // Right ...
-     APLNELM   aplNELMRes,                  // Result ...
-     APLNELM   aplNELMAxis,                 // Axis ...
+     APLNELM      aplNELMLft,               // Left arg NELM
+     APLNELM      aplNELMRht,               // Right ...
+     APLNELM      aplNELMRes,               // Result ...
+     APLNELM      aplNELMAxis,              // Axis ...
      struct tagPrimSpec *lpPrimSpec);       // Ptr to local PRIMSPEC
 
 typedef PRIMFN_DYD_SNvSN *LPPRIMFN_DYD_SNvSN;
@@ -75,14 +75,14 @@ typedef STORAGE_TYPE_DYD *LPSTORAGE_TYPE_DYD;
 
 // Call this function if the monadic result is APA
 typedef BOOL APARESULT_MON
-        (LPYYSTYPE lpYYRes,                 // Ptr to result token (may be NULL)
+        (LPPL_YYSTYPE lpYYRes,              // Ptr to the result (may be NULL)
 
-         LPTOKEN   lptkFunc,                // Ptr to function token
+         LPTOKEN      lptkFunc,             // Ptr to function token
 
-         HGLOBAL   hGlbRht,                 // HGLOBAL of right arg
-         HGLOBAL  *lphGlbRes,               // ...        result
+         HGLOBAL      hGlbRht,              // HGLOBAL of right arg
+         HGLOBAL     *lphGlbRes,            // ...        result
 
-         APLRANK   aplRankRht,              // Right arg rank
+         APLRANK      aplRankRht,           // Right arg rank
 
          struct tagPrimSpec *lpPrimSpec);   // Ptr to local PRIMSPEC
 
@@ -90,21 +90,21 @@ typedef APARESULT_MON *LPAPARESULT_MON;
 
 // Call this function if the dyadic result is APA
 typedef BOOL APARESULT_DYD
-        (LPYYSTYPE lpYYRes,                 // Ptr to result token (may be NULL)
+        (LPPL_YYSTYPE lpYYRes,              // Ptr to the result (may be NULL)
 
-         LPTOKEN   lptkFunc,                // Ptr to function token
+         LPTOKEN      lptkFunc,             // Ptr to function token
 
-         HGLOBAL   hGlbLft,                 // HGLOBAL of left arg (may be NULL if simple)
-         HGLOBAL   hGlbRht,                 // ...        right ...
-         HGLOBAL  *lphGlbRes,               // ...        result
+         HGLOBAL      hGlbLft,              // HGLOBAL of left arg (may be NULL if simple)
+         HGLOBAL      hGlbRht,              // ...        right ...
+         HGLOBAL     *lphGlbRes,            // ...        result
 
-         APLRANK   aplRankLft,              // Left arg rank
-         APLRANK   aplRankRht,              // Right ...
+         APLRANK      aplRankLft,           // Left arg rank
+         APLRANK      aplRankRht,           // Right ...
 
-         APLNELM   aplNELMLft,              // Left arg NELM
-         APLNELM   aplNELMRht,              // Right ...
+         APLNELM      aplNELMLft,           // Left arg NELM
+         APLNELM      aplNELMRht,           // Right ...
 
-         APLINT    aplInteger,              // The integer from the simple side
+         APLINT       aplInteger,           // The integer from the simple side
          struct tagPrimSpec *lpPrimSpec);   // Ptr to local PRIMSPEC
 
 typedef APARESULT_DYD *LPAPARESULT_DYD;

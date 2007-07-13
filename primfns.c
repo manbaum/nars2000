@@ -67,8 +67,6 @@ extern PRIMSPEC PrimSpecUpStile;
 
 // Operators TO DO                                     Monadic      Dyadic
 /////// PrimOpDot_EM_YY                             // ERROR        Inner product
-/////// PrimOpSlash_EM_YY                           // Reduction    N-wise reduction
-/////// PrimOpSlope_EM_YY                           // Scan         ERROR
 
 
 // Primitives DONE                                     Monadic      Dyadic
@@ -124,6 +122,8 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimOpDieresisTilde_EM_YY                   // Duplicate    Commute
 /////// PrimOpJot_EM_YY                             // Composition  Composition
 /////// PrimOpJotDot_EM_YY                          // ERROR        Outer Product
+/////// PrimOpSlash_EM_YY                           // Reduction    N-wise reduction
+/////// PrimOpSlope_EM_YY                           // Scan         ERROR
 
 
 // First coordinate functions handled by common function
@@ -184,11 +184,11 @@ void InitPrimFns
     (void)
 
 {
-    //****************************************************
+    //***************************************************************
     //  Primitive Functions
     //  Primitive operators are handled case-by-case in
     //    ExecOp1_EM_YY and ExecOp2_EM_YY.
-    //****************************************************
+    //***************************************************************
     InitPrimFn (UTF16_ALPHA             , &PrimFnAlpha_EM_YY             ); // Alt-'a' - alpha
     InitPrimFn (UTF16_UPTACK            , &PrimFnUpTack_EM_YY            ); // Alt-'b' - up tack
     InitPrimFn (UTF16_UPSHOE            , &PrimFnUpShoe_EM_YY            ); // Alt-'c' - up shoe
@@ -327,7 +327,7 @@ void InitPrimFn
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFn_EM
+LPPL_YYSTYPE PrimFn_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -451,9 +451,9 @@ void InitPrimProtoFns
     (void)
 
 {
-    //****************************************************
+    //***************************************************************
     //  Primitive Functions & operators
-    //****************************************************
+    //***************************************************************
 
     InitPrimProtoFn (UTF16_ALPHA             , &PrimProtoFnAlpha_EM_YY             );   // Alt-'a' - alpha
     InitPrimProtoFn (UTF16_UPTACK            , &PrimProtoFnUpTack_EM_YY            );   // Alt-'b' - up tack
@@ -592,13 +592,20 @@ void InitPrimProtoFn
 
 void InitPrimProtoOp
     (WCHAR     wchFn,
-     LPPRIMOPS lpPrimFn)
+     LPPRIMOPS lpPrimOp)
 
 {
     if (PrimProtoFnsTab[(UCHAR) wchFn])
         DbgStop ();
     else
-        PrimProtoFnsTab[(UCHAR) wchFn] = (LPPRIMFNS) lpPrimFn;
+        // Note the white lie we tell here (LPPRIMFNS) instead of
+        //   (LPPRIMOPS) so we can use one table for both primitive
+        //   functions and operators.  When the prototype function
+        //   for a primitive function is called, lptkFunc is a ptr
+        //   to the primitive function token.  When the prototype
+        //   function for a primitive operator is called, the same
+        //   parameter is a ptr to the function strand.
+        PrimProtoFnsTab[(UCHAR) wchFn] = (LPPRIMFNS) lpPrimOp;
 } // End InitPrimProtoOp
 
 
@@ -615,7 +622,7 @@ void InitPrimProtoOp
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFn_EM
+LPPL_YYSTYPE PrimProtoFn_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -642,15 +649,15 @@ LPYYSTYPE PrimProtoFn_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoOp_EM
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE lpYYFuncStr,         // Ptr to function token
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimProtoOp_EM
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to function token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxis)             // Ptr to axis token (always NULL)
 
 {
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                              &lpYYFuncStr->tkToken);
+                              &lpYYFcnStrOpr->tkToken);
     return NULL;
 } // End PrimProtoOp_EM
 #undef  APPEND_NAME
@@ -848,58 +855,61 @@ void InitIdentityElement
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ExecFunc_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg)            // Ptr to right arg token
+LPPL_YYSTYPE ExecFunc_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStr,           // Ptr to function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    LPPRIMFNS lpPrimFn;
+    LPPRIMFNS lpPrimFn;             // Ptr to direct primitive or system function
+    LPTOKEN   lptkAxis;             // Ptr to axis token (may be NULL)
 
     DBGENTER;
 
     // Split cases based upon the function token type
-    switch (lptkFunc->tkFlags.TknType)
+    switch (lpYYFcnStr->tkToken.tkFlags.TknType)
     {
         case TKT_FCNIMMED:
-            lpPrimFn = PrimFnsTab[SymTrans (lptkFunc)];
+            lpPrimFn = PrimFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
             if (!lpPrimFn)
             {
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                           lptkFunc);
+                                          &lpYYFcnStr->tkToken);
                 return NULL;
             } // End IF
 
-            return (*lpPrimFn) (lptkLftArg, lptkFunc, lptkRhtArg, NULL);
+            return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, NULL);
 
         case TKT_FCNNAMED:
             // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST);
+            Assert (GetPtrTypeDir (lpYYFcnStr->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
-            if (!lptkFunc->tkData.tkSym->stFlags.Imm)
+            if (!lpYYFcnStr->tkToken.tkData.tkSym->stFlags.Imm)
             {
                 STFLAGS stFlags;
                 HGLOBAL hGlbFcn;
 
+                // Get the STE flags of the first token
+                stFlags = lpYYFcnStr->tkToken.tkData.tkSym->stFlags;
+
                 // Skip assertion if it's some kind of function/operator
-                stFlags = lptkFunc->tkData.tkSym->stFlags;
                 if (IsNameTypeFnOp (stFlags.ObjType))
                 {
                     LPPRIMFNS lpNameFcn;
 
                     // Get the address of the execution routine
-                    lpNameFcn = lptkFunc->tkData.tkSym->stData.stNameFcn;
+                    lpNameFcn = lpYYFcnStr->tkToken.tkData.tkSym->stData.stNameFcn;
 
                     // If it's an internal function, go there
                     if (stFlags.FcnDir)
-                        return (*lpNameFcn) (lptkLftArg, lptkFunc, lptkRhtArg, NULL);
+                        return (*lpNameFcn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, NULL);
 
                     // Use the HGLOBAL
                     hGlbFcn = lpNameFcn;
                 } else
                     // Use the HGLOBAL
-                    hGlbFcn = lptkFunc->tkData.tkSym->stData.stGlbData;
+                    hGlbFcn = lpYYFcnStr->tkToken.tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL function array or defined function
                 Assert (IsGlbTypeFcnDir (hGlbFcn)
@@ -907,39 +917,43 @@ LPYYSTYPE ExecFunc_EM_YY
 
                 // If it's a defined function, ...
                 if (stFlags.UsrDfn)
-                    return ExecDfnGlb_EM_YY (lptkLftArg,
-                                             ClrPtrTypeDirGlb (hGlbFcn),
-                                             lptkRhtArg);
+                    return ExecDfnGlb_EM_YY (lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
+                                             NULL,                          // Ptr to left operand token (may be NULL if not an operator)
+                                             ClrPtrTypeDirGlb (hGlbFcn),    // Defined function global memory handle
+                                             NULL,                          // Ptr to axis value token (may be NULL if no axis operator used)
+                                             NULL,                          // Ptr to right operand token (may be NULL if monadic operator or not an operator
+                                             lptkRhtArg);                   // Ptr to right arg token
                 else
                     // Execute a function array global memory handle
                     return ExecFuncGlb_EM_YY (lptkLftArg,
                                               ClrPtrTypeDirGlb (hGlbFcn),
-                                              lptkRhtArg);
+                                              lptkRhtArg,
+                                              NULL);
             } // End IF
 
             // Handle the immediate case
 
             // Split cases based upon the immediate type
-            switch (lptkFunc->tkData.tkSym->stFlags.ImmType)
+            switch (lpYYFcnStr->tkToken.tkData.tkSym->stFlags.ImmType)
             {
                 case IMMTYPE_PRIMFCN:
                 {
                     TOKEN tkFn = {0};
 
-                    lpPrimFn = PrimFnsTab[FcnTrans (lptkFunc->tkData.tkSym->stData.stChar)];
+                    lpPrimFn = PrimFnsTab[FcnTrans (lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar)];
                     if (!lpPrimFn)
                     {
                         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                                   lptkFunc);
+                                                  &lpYYFcnStr->tkToken);
                         return NULL;
                     } // End IF
 
                     // Fill in for PrimFn*** test
                     tkFn.tkFlags.TknType   = TKT_FCNIMMED;
-                    tkFn.tkFlags.ImmType   = GetImmTypeFcn (lptkFunc->tkData.tkSym->stData.stChar);
+                    tkFn.tkFlags.ImmType   = GetImmTypeFcn (lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar);
 ////////////////////tkFn.tkFlags.NoDisplay = 0;     // Already zero from {0}
-                    tkFn.tkData.tkChar     = lptkFunc->tkData.tkSym->stData.stChar;
-                    tkFn.tkCharIndex       = lptkFunc->tkCharIndex;
+                    tkFn.tkData.tkChar     = lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar;
+                    tkFn.tkCharIndex       = lpYYFcnStr->tkToken.tkCharIndex;
 
                     return (*lpPrimFn) (lptkLftArg, &tkFn, lptkRhtArg, NULL);
                 } // End IMMTYPE_PRIMFCN
@@ -950,11 +964,20 @@ LPYYSTYPE ExecFunc_EM_YY
 
         case TKT_FCNARRAY:
             // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lptkFunc->tkData.tkVoid));
+            Assert (IsGlbTypeFcnDir (lpYYFcnStr->tkToken.tkData.tkVoid));
+
+            // Check for axis operator
+            if (lpYYFcnStr->FcnCount > 1
+             && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+              || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+                lptkAxis = &lpYYFcnStr[1].tkToken;
+            else
+                lptkAxis = NULL;
 
             return ExecFuncGlb_EM_YY (lptkLftArg,
-                                      ClrPtrTypeDirGlb (lptkFunc->tkData.tkGlbData),
-                                      lptkRhtArg);
+                                      ClrPtrTypeDirGlb (lpYYFcnStr->tkToken.tkData.tkGlbData),
+                                      lptkRhtArg,
+                                      lptkAxis);
         defstop
             break;
     } // End SWITCH
@@ -976,13 +999,16 @@ LPYYSTYPE ExecFunc_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ExecDfnGlb_EM_YY
+LPPL_YYSTYPE ExecDfnGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-     HGLOBAL hGlbDfn,               // Handle to defined function
+     LPTOKEN lptkLftOpr,            // Ptr to left operand token (may be NULL if not an operator)
+     HGLOBAL hGlbDfnHdr,            // Defined function global memory handle
+     LPTOKEN lptkAxisOpr,           // Ptr to axis token (may be NULL if no axis operator used)
+     LPTOKEN lptkRhtOpr,            // Ptr to right operand token (may be NULL if monadic operator or not an operator)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    LPYYSTYPE    lpYYRes = NULL;    // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header
     APLSTYPE     aplTypeLft,        // Left arg storage type
                  aplTypeRht;        // Right ...
@@ -990,12 +1016,10 @@ LPYYSTYPE ExecDfnGlb_EM_YY
                  aplNELMRht;        // Right ...
     APLRANK      aplRankLft,        // Left arg rank
                  aplRankRht;        // Right ...
-    LPSYMENTRY  *lplpSymEntryDst;   // Ptr to LPSYMENTRYs on the SIS
+    LPSYMENTRY   lpSymEntryDst;     // Ptr to SYMENTRYs on the SIS
     STFLAGS      stFlagsMT = {0};   // STE flags for empty entry
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-
-    DbgBrk ();          // ***FINISHME*** -- ExecDfnGlb_EM_YY
+    HGLOBAL      hGlbPTD = NULL;    // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -1004,7 +1028,7 @@ LPYYSTYPE ExecDfnGlb_EM_YY
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbDfn);
+    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
     // If there's no left arg token and this function requires a left arg,
     //   signal a SYNTAX ERROR
@@ -1041,7 +1065,7 @@ LPYYSTYPE ExecDfnGlb_EM_YY
       || (aplRankLft EQ 1
        && lpMemDfnHdr->numLftArgSTE NE aplNELMLft)))
     {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                    lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
@@ -1053,14 +1077,14 @@ LPYYSTYPE ExecDfnGlb_EM_YY
       || (aplRankRht EQ 1
        && lpMemDfnHdr->numRhtArgSTE NE aplNELMRht)))
     {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                    lptkRhtArg);
         goto ERROR_EXIT;
     } // End IF
 
     // Fill in the SIS header on the stack
     lpMemPTD->lpSISNxt->Sig.nature   = SIS_HEADER_SIGNATURE;
-    lpMemPTD->lpSISNxt->hGlbDfn      = hGlbDfn;
+    lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
     lpMemPTD->lpSISNxt->DfnType      = lpMemDfnHdr->DfnType;
     lpMemPTD->lpSISNxt->FcnValence   = lpMemDfnHdr->FcnValence;
     lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
@@ -1076,106 +1100,365 @@ LPYYSTYPE ExecDfnGlb_EM_YY
     lpMemPTD->lpSISNxt->lpSISPrv     = lpMemPTD->lpSISCur;
 ////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in below
 
+    //***************************************************************
+    // No errors beyond this point
+    //***************************************************************
+
     lpMemPTD->lpSISCur               = lpMemPTD->lpSISNxt;
 
     // Point to the destination SYMENTRYs
-    lplpSymEntryDst = (LPSYMENTRY *) (((LPBYTE) lpMemPTD->lpSISNxt)[sizeof (SIS_HEADER)]);
+    lpSymEntryDst = (LPSYMENTRY) &(((LPBYTE) lpMemPTD->lpSISNxt)[sizeof (SIS_HEADER)]);
 
-    // Fill in flag values for empty entry
-    stFlagsMT.Inuse = 1;
+    // Fill in mask flag values for empty entry
+    stFlagsMT.Inuse   = 1;          // Retain Inuse flag
+    stFlagsMT.ObjName = NEG1U;      // ...    ObjName setting
 
     // Copy onto the SIS the current STEs for each local
     //   and undefine all but the system vars
 
     // Localize and clear the result STEs
-    lplpSymEntryDst =
-    LocalizeSymEntries (lplpSymEntryDst,
-                        (LPSYMENTRY *) (((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offResultSTE]),
+    lpSymEntryDst =
+    LocalizeSymEntries (lpSymEntryDst,
                         lpMemDfnHdr->numResultSTE,
+                        (LPSYMENTRY *) &(((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offResultSTE]),
                        &stFlagsMT);
     // Localize and clear the left arg STEs
-    lplpSymEntryDst =
-    LocalizeSymEntries (lplpSymEntryDst,
-                        (LPSYMENTRY *) (((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offLftArgSTE]),
+    lpSymEntryDst =
+    LocalizeSymEntries (lpSymEntryDst,
                         lpMemDfnHdr->numLftArgSTE,
+                        (LPSYMENTRY *) &(((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offLftArgSTE]),
                        &stFlagsMT);
     // Localize and clear the left operand STE
-    lplpSymEntryDst =
-    LocalizeSymEntries (lplpSymEntryDst,
+    lpSymEntryDst =
+    LocalizeSymEntries (lpSymEntryDst,
+                        lpMemDfnHdr->steLftOpr NE NULL,
                        &lpMemDfnHdr->steLftOpr,
-                        1,
+                       &stFlagsMT);
+    // Localize and clear the axis operand STE
+    lpSymEntryDst =
+    LocalizeSymEntries (lpSymEntryDst,
+                        lpMemDfnHdr->steAxisOpr NE NULL,
+                       &lpMemDfnHdr->steAxisOpr,
                        &stFlagsMT);
     // Localize and clear the right operand STE
-    lplpSymEntryDst =
-    LocalizeSymEntries (lplpSymEntryDst,
+    lpSymEntryDst =
+    LocalizeSymEntries (lpSymEntryDst,
+                        lpMemDfnHdr->steRhtOpr NE NULL,
                        &lpMemDfnHdr->steRhtOpr,
-                        1,
                        &stFlagsMT);
     // Localize and clear the right arg STEs
-    lplpSymEntryDst =
-    LocalizeSymEntries (lplpSymEntryDst,
-                        (LPSYMENTRY *) (((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offRhtArgSTE]),
+    lpSymEntryDst =
+    LocalizeSymEntries (lpSymEntryDst,
                         lpMemDfnHdr->numRhtArgSTE,
+                        (LPSYMENTRY *) &(((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offRhtArgSTE]),
                        &stFlagsMT);
     // Localize and clear the locals STEs
-    lplpSymEntryDst =
-    LocalizeSymEntries (lplpSymEntryDst,
-                        (LPSYMENTRY *) (((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offLocalsSTE]),
+    lpSymEntryDst =
+    LocalizeSymEntries (lpSymEntryDst,
                         lpMemDfnHdr->numLocalsSTE,
+                        (LPSYMENTRY *) &(((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offLocalsSTE]),
                        &stFlagsMT);
     // Search for line labels, localize and initialize them
+    lpSymEntryDst =
+    LocalizeLabels (lpSymEntryDst,
+                   &lpMemPTD->lpSISNxt->numLabels,
+                    lpMemDfnHdr);
 
-
-
-
-
-
-
-
-
-    // Save as new Nxt ptr
-    lpMemPTD->lpSISNxt               = (LPSIS_HEADER) lplpSymEntryDst;
+    // Save as new SISNxt ptr
+    lpMemPTD->lpSISNxt               = (LPSIS_HEADER) lpSymEntryDst;
 
     // Setup the left arg STEs
-    InitArgSTEs (lptkLftArg, lpMemDfnHdr->numLftArgSTE, (LPSYMENTRY *) (((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offLftArgSTE]));
-
+    InitArgSTEs (lptkLftArg,
+                 lpMemDfnHdr->numLftArgSTE,
+                 (LPSYMENTRY *) &(((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offLftArgSTE]));
     // Setup the left operand STE
-    if (lpMemDfnHdr->steLftOpr)
-    {
-        DbgBrk ();          // ***FINISHME***
-
-
-
-    } // End IF
-
+    InitArgSTEs (lptkLftOpr,
+                 lpMemDfnHdr->steLftOpr NE NULL,
+                &lpMemDfnHdr->steLftOpr);
+    // Setup the axis operand STE
+    InitArgSTEs (lptkAxisOpr,
+                 lpMemDfnHdr->steAxisOpr NE NULL,
+                &lpMemDfnHdr->steAxisOpr);
     // Setup the right operand STE
-    if (lpMemDfnHdr->steLftOpr)
-    {
-        DbgBrk ();          // ***FINISHME***
-
-
-
-    } // End IF
-
+    InitArgSTEs (lptkRhtOpr,
+                 lpMemDfnHdr->steRhtOpr NE NULL,
+                &lpMemDfnHdr->steRhtOpr);
     // Setup the right arg STEs
-    InitArgSTEs (lptkRhtArg, lpMemDfnHdr->numRhtArgSTE, (LPSYMENTRY *) (((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offRhtArgSTE]));
+    InitArgSTEs (lptkRhtArg,
+                 lpMemDfnHdr->numRhtArgSTE,
+                 (LPSYMENTRY *) &(((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offRhtArgSTE]));
 
-    // Start execution
+    // We no longer need these ptrs
+    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-
-
-
+    return ExecuteFunction (hGlbDfnHdr, hGlbPTD, 1);
 
 ERROR_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbDfn); lpMemDfnHdr = NULL;
+    if (hGlbDfnHdr && lpMemDfnHdr)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    if (hGlbPTD && lpMemPTD)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    } // End IF
 
     return lpYYRes;
 } // End ExecDfnGlb_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ExecuteFunction
+//
+//  Execute a function, line by line
+//***************************************************************************
+
+LPPL_YYSTYPE ExecuteFunction
+    (HGLOBAL hGlbDfnHdr,            // Defined function global memory handle
+     HGLOBAL hGlbPTD,               // PerTabData global memory handle
+     UINT    uLineNum)              // Starting line # (origin-1)
+
+{
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header
+    HGLOBAL      hGlbTxtLine,       // Line text global memory handle
+                 hGlbTknLine;       // Tokenized line global memory handle
+    LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
+    LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    HWND         hWndSM;            // Session Manager window handle
+    HANDLE       hSemaphore,        // Semaphore handle
+                 hThread;           // Thread    ...
+    BOOL         bRet = TRUE;       // TRUE iff still executing the function
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+    // Set the execution state
+    lpMemPTD->execState.exType = EX_DFN;
+
+    // Get the SM window handle
+    hWndSM = lpMemPTD->hWndSM;
+
+    // Save current line #
+    lpMemPTD->lpSISCur->CurLineNum = uLineNum;
+
+    // Create a semaphore
+    hSemaphore = CreateSemaphore (NULL,             // No security attrs
+                                  0,                // Initial count (non-signalled)
+                                  65535,            // Maximum count
+                                  NULL);            // No name
+    // Loop through the function lines
+    while (uLineNum <= lpMemPTD->lpSISCur->numFcnLines)
+    {
+        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+        lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+
+        // Get the starting line's token & text global memory handles
+        hGlbTxtLine = lpFcnLines[uLineNum - 1].hGlbTxtLine;
+        hGlbTknLine = lpFcnLines[uLineNum - 1].hGlbTknLine;
+
+        // We no longer need these ptrs
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+        // Execute the starting line
+        hThread =
+        ParseLine (hWndSM,                  // Session Manager window handle
+                   hGlbTxtLine,             // Line text global memory handle
+                   hGlbTknLine,             // Tokenixed line global memory handle
+                   NULL,                    // Ptr to line text global memory
+                   hGlbPTD,                 // PerTabData global memory handle
+                   hSemaphore,              // Semaphore handle
+                   FALSE,                   // ParseLine NOT to free hGlbTknLine on exit
+                   FALSE,                   // ...                   lpwszLine   ...
+                   FALSE);                  // ...              signal SM at end
+        // Set WHILE test
+        bRet = TRUE;
+
+        // Wait for something to happen
+        while (bRet)
+        {
+            DWORD dwWFMO;
+
+            dwWFMO =
+            WaitForMultipleObjects (1,                  // # handles to wait for
+                                   &hThread,            // Ptr to handle to wait for
+                                    TRUE,               // Only one handle to wait for
+                                    INFINITE);          // Timeout value in milliseconds
+////////////MsgWaitForMultipleObjects (1,               // # handles to wait for
+////////////                          &hSemaphore,      // Ptr to handle to wait for
+////////////                           FALSE,           // Only one handle to wait for
+////////////                           INFINITE,        // Timeout value in milliseconds
+////////////                           QS_ALLINPUT);    // Wait for any message
+            // Split cases based upon the return code
+            switch (dwWFMO)
+            {
+                // Check for ParseLine done
+                case WAIT_OBJECT_0:
+                    // Process ParseLine done
+                    bRet = FALSE;           // Mark as done
+
+                    break;                  // We handled the msg
+
+////////////////// Check for a message in the queue, ...
+////////////////case WAIT_OBJECT_0 + 1:
+////////////////    DbgBrk ();
+////////////////
+////////////////    break;                  // We handled the msg
+
+                case (DWORD) -1:
+////////////////////DbgBrk ();
+////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
+////////////////////    return FALSE;
+
+                    // Fall through to <defstop>
+
+                defstop
+                    GetLastError ();
+                    break;
+            } // End SWITCH
+        } // End WHILE
+
+        // Close the thread handle as it has terminated
+        CloseHandle (hThread); hThread = NULL;
+
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+        // Get next line # and save it back
+        uLineNum = ++lpMemPTD->lpSISCur->CurLineNum;
+    } // End WHILE
+
+    // Close the handle as it isn't used anymore
+    CloseHandle (hSemaphore); hSemaphore = NULL;
+
+    DbgBrk ();
+
+    // Ensure that all STEs in the result have a value
+
+
+
+
+    // Save the result
+
+
+
+
+    // Unlocalize the STEs
+
+
+
+    //
+
+
+
+
+    // We no longer need these ptrs
+    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpYYRes;
+} // End ExecuteFunction
+
+
+//***************************************************************************
+//  $LocalizeLabels
+//
+//  Localize and initialize all line labels
+//***************************************************************************
+
+LPSYMENTRY LocalizeLabels
+    (LPSYMENTRY   lpSymEntryDst,
+     LPUINT       lpNumLabels,
+     LPDFN_HEADER lpMemDfnHdr)
+
+{
+    UINT           numFcnLines,  // # lines in the function
+                   uLineNum;     // Loop counter
+    LPFCNLINE      lpFcnLines;   // Ptr to array of function line structs (FCNLINE[numFcnLines])
+    LPTOKEN_HEADER lptkHdr;      // Ptr to header of tokenized line
+    LPTOKEN        lptkLine;     // Ptr to tokenized line
+
+    // Get # lines in the function
+    numFcnLines = lpMemDfnHdr->numFcnLines;
+
+    // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+    lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+
+    // Loop through the function lines
+    for (*lpNumLabels = uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+    {
+        UINT numTokens;     // # tokens in the line
+
+        // Lock the memory to get a ptr to it
+        lptkHdr = MyGlobalLock (lpFcnLines->hGlbTknLine);
+
+        // Get the # tokens in the line
+        numTokens = lptkHdr->TokenCnt;
+
+        // Get ptr to the tokens in the line
+        lptkLine = (LPTOKEN) &((LPBYTE) lptkHdr)[sizeof (TOKEN_HEADER)];
+
+        Assert (lptkLine[0].tkFlags.TknType EQ TKT_EOL
+             || lptkLine[0].tkFlags.TknType EQ TKT_EOS);
+
+        // If there are at least three tokens, ...
+        //   (TKT_EOL, TKT_VARNAMED, TKT_COLON)
+        if (numTokens >= 3)
+        {
+            if (lptkLine[2].tkFlags.TknType EQ TKT_COLON
+             && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED)
+            {
+                LPSYMENTRY lpSymEntrySrc;   // Ptr to source SYMENTRY
+
+                // Get the source LPSYMENTRY
+                lpSymEntrySrc = lptkLine[1].tkData.tkSym;
+
+                // stData is an LPSYMENTRY
+                Assert (GetPtrTypeDir (lpSymEntrySrc) EQ PTRTYPE_STCONST);
+
+                // Copy the old SYMENTRY to the SIS
+                *lpSymEntryDst++ = *lpSymEntrySrc;
+
+                // Clear the STE flags & data
+                *((LPUINT) &lpSymEntrySrc->stFlags) = 0;
+////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below
+
+                // Initialize the SYMENTRY to an integer constant
+                lpSymEntrySrc->stFlags.Imm      = 1;
+                lpSymEntrySrc->stFlags.ImmType  = IMMTYPE_INT;
+                lpSymEntrySrc->stFlags.Inuse    = 1;
+                lpSymEntrySrc->stFlags.Value    = 1;
+                lpSymEntrySrc->stFlags.ObjName  = OBJNAME_USR;
+                lpSymEntrySrc->stFlags.ObjType  = NAMETYPE_VAR;
+                lpSymEntrySrc->stFlags.DfnLabel = 1;
+                lpSymEntrySrc->stData.stInteger = uLineNum + 1;
+
+                // Count in another label
+                (*lpNumLabels)++;
+            } // End IF
+        } // End IF
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lpFcnLines->hGlbTknLine); lptkHdr = NULL; lptkLine = NULL;
+
+        // Skip to the next struct
+        lpFcnLines++;
+    } // End FOR
+
+    return lpSymEntryDst;
+} // End LocalizeLabels
 
 
 //***************************************************************************
@@ -1201,9 +1484,14 @@ void InitArgSTEs
         switch (lptkArg->tkFlags.TknType)
         {
             case TKT_VARIMMED:
+            case TKT_AXISIMMED:
                 // Loop through the LPSYMENTRYs
                 for (uSym = 0; uSym < numArgSTE; uSym++, (*lplpSymEntry)++)
                 {
+                    // Clear the STE flags & data
+                    *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
+
                     (*lplpSymEntry)->stFlags.Imm      = 1;
                     (*lplpSymEntry)->stFlags.ImmType  = lptkArg->tkFlags.ImmType;
                     (*lplpSymEntry)->stFlags.Value    = 1;
@@ -1215,6 +1503,7 @@ void InitArgSTEs
                 return;
 
             case TKT_VARARRAY:
+            case TKT_AXISARRAY:
                 // Get the arg global memory handle
                 hGlbArg = lptkArg->tkData.tkGlbData;
 
@@ -1230,6 +1519,10 @@ void InitArgSTEs
                     // Loop through the LPSYMENTRYs
                     for (uSym = 0; uSym < numArgSTE; uSym++, (*lplpSymEntry)++)
                     {
+                        // Clear the STE flags & data
+                        *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+////////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
+
                         (*lplpSymEntry)->stFlags.Imm      = 1;
                         (*lplpSymEntry)->stFlags.ImmType  = lptkArg->tkData.tkSym->stFlags.ImmType;
                         (*lplpSymEntry)->stFlags.Value    = 1;
@@ -1252,11 +1545,13 @@ void InitArgSTEs
         // st/tkData is a valid HGLOBAL variable array
         Assert (IsGlbTypeVarDir (hGlbArg));
 
-        DbgBrk ();          // ***FINISHME ***
-
         // If there's only one STE, it gets the whole arg
         if (numArgSTE EQ 1)
         {
+            // Clear the STE flags & data
+            *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
+
 ////////////(*lplpSymEntry)->stFlags.Imm      = 0;      // Already zero from previous initialization
 ////////////(*lplpSymEntry)->stFlags.ImmType  = 0;      // Already zero from previous initialization
             (*lplpSymEntry)->stFlags.Value    = 1;
@@ -1265,15 +1560,150 @@ void InitArgSTEs
             (*lplpSymEntry)->stData.stGlbData = CopySymGlbDir (hGlbArg);
         } else
         {
+            APLSTYPE aplTypeArg;            // Arg storage type
+            APLNELM  aplNELMArg;            // Arg NELM
+            APLRANK  aplRankArg;            // Arg rank
+            UINT     uBitIndex;             // Bit index for Booleans
+            APLINT   apaOffArg,             // APA offset
+                     apaMulArg;             // ... multiplier
+
             // Lock the memory to get a ptr to it
             lpMemArg = MyGlobalLock (ClrPtrTypeDirGlb (hGlbArg));
 
-            // Loop through the LPSYMENTRYs
-            for (uSym = 0; uSym < numArgSTE; uSym++)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
+
+            aplTypeArg = lpHeader->ArrType;
+            aplNELMArg = lpHeader->NELM;
+            aplRankArg = lpHeader->Rank;
+
+#undef  lpHeader
+
+            // These were checked for above, but it never hurts to test again
+            Assert (aplNELMArg EQ numArgSTE);
+            Assert (aplRankArg EQ 1);
+
+            // Skip over the header and dimensions to the data
+            lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
+
+            // In case the arg is Boolean
+            uBitIndex = 0;
+
+            // In case the arg is APA, ...
+            if (aplTypeArg EQ ARRAY_APA)
             {
+#define lpAPA   ((LPAPLAPA) lpMemArg)
+                apaOffArg = lpAPA->Off;
+                apaMulArg = lpAPA->Mul;
+#undef  lpAPA
+            } // End IF
 
+            // Loop through the LPSYMENTRYs
+            for (uSym = 0; uSym < numArgSTE; uSym++, (*lplpSymEntry)++)
+            {
+                // Clear the STE flags & data
+                *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+                (*lplpSymEntry)->stData.stLongest = 0;
 
+                // Split cases based upon the arg storage type
+                switch (aplTypeArg)
+                {
+                    case ARRAY_BOOL:
+                        (*lplpSymEntry)->stFlags.Imm      = 1;
+                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_INT;
+                        (*lplpSymEntry)->stFlags.Value    = 1;
+                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stBoolean = BIT0 & ((*(LPAPLBOOL) lpMemArg) >> uBitIndex);
 
+                        // Check for end-of-byte
+                        if (++uBitIndex EQ NBIB)
+                        {
+                            uBitIndex = 0;                  // Start over
+                            ((LPAPLBOOL) lpMemArg)++;       // Skip to next byte
+                        } // End IF
+
+                        break;
+
+                    case ARRAY_INT:
+                        (*lplpSymEntry)->stFlags.Imm      = 1;
+                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_INT;
+                        (*lplpSymEntry)->stFlags.Value    = 1;
+                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stInteger = *((LPAPLINT) lpMemArg)++;
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                        (*lplpSymEntry)->stFlags.Imm      = 1;
+                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_FLOAT;
+                        (*lplpSymEntry)->stFlags.Value    = 1;
+                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stFloat   = *((LPAPLFLOAT) lpMemArg)++;
+
+                        break;
+
+                    case ARRAY_CHAR:
+                        (*lplpSymEntry)->stFlags.Imm      = 1;
+                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_CHAR;
+                        (*lplpSymEntry)->stFlags.Value    = 1;
+                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stChar    = *((LPAPLCHAR) lpMemArg)++;
+
+                        break;
+
+                    case ARRAY_APA:
+                        (*lplpSymEntry)->stFlags.Imm      = 1;
+                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_INT;
+                        (*lplpSymEntry)->stFlags.Value    = 1;
+                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stInteger = apaOffArg + apaMulArg * uSym;
+
+                        break;
+
+                    case ARRAY_HETERO:
+                    case ARRAY_NESTED:
+                        // Split cases based upon the arg ptr type
+                        switch (GetPtrTypeInd (lpMemArg))
+                        {
+                            case PTRTYPE_STCONST:
+                                (*lplpSymEntry)->stFlags.Imm      = 1;
+                                (*lplpSymEntry)->stFlags.ImmType  = (*(LPSYMENTRY *) lpMemArg)->stFlags.ImmType;
+                                (*lplpSymEntry)->stFlags.Value    = 1;
+                                (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
+                                (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
+                                (*lplpSymEntry)->stData           = (*(LPSYMENTRY *) lpMemArg)->stData;
+
+                                // Skip to next element in arg
+                                ((LPSYMENTRY *) lpMemArg)++;
+
+                                break;
+
+                            case PTRTYPE_HGLOBAL:
+////////////////////////////////(*lplpSymEntry)->stFlags.Imm      = 0;      // Already zero from previous initialization
+////////////////////////////////(*lplpSymEntry)->stFlags.ImmType  = 0;      // Already zero from previous initialization
+                                (*lplpSymEntry)->stFlags.Value    = 1;
+                                (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
+                                (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
+                                (*lplpSymEntry)->stData.stGlbData = CopySymGlbInd (lpMemArg);
+
+                                // Skip to next element in arg
+                                ((LPAPLNESTED) lpMemArg)++;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
             } // End FOR
 
             // We no longer need this ptr
@@ -1289,10 +1719,10 @@ void InitArgSTEs
 //  Localize SYMENTRYs
 //***************************************************************************
 
-LPSYMENTRY *LocalizeSymEntries
-    (LPSYMENTRY *lplpSymEntryDst,
-     LPSYMENTRY *lplpSymEntrySrc,
+LPSYMENTRY LocalizeSymEntries
+    (LPSYMENTRY  lpSymEntryDst,
      UINT        numSymEntries,
+     LPSYMENTRY *lplpSymEntrySrc,
      LPSTFLAGS   lpstFlagsMT)
 
 {
@@ -1302,20 +1732,21 @@ LPSYMENTRY *LocalizeSymEntries
     for (uSym = 0; uSym < numSymEntries; uSym++)
     {
         // Copy the SYMENTRY to the SIS
-        *(*lplpSymEntryDst)++ = **lplpSymEntrySrc;
+        *lpSymEntryDst++ = **lplpSymEntrySrc;
 
         // If the entry is not a system name, mark it as empty (e.g., VALUE ERROR)
         if ((*lplpSymEntrySrc)->stFlags.ObjName NE OBJNAME_SYS)
         {
-            (*lplpSymEntrySrc)->stFlags = *lpstFlagsMT;
+            // Clear the STE flags & data
+            *(UINT *) &(*lplpSymEntrySrc)->stFlags &= *(UINT *) lpstFlagsMT;
             (*lplpSymEntrySrc)->stData.stLongest = 0;
         } // End IF
 
         // Skip to next source entry
-        (*lplpSymEntrySrc)++;
+        lplpSymEntrySrc++;
     } // End FOR
 
-    return lplpSymEntryDst;
+    return lpSymEntryDst;
 } // End LocalizeSymEntries
 
 
@@ -1325,14 +1756,15 @@ LPSYMENTRY *LocalizeSymEntries
 //  Execute a function in global memory
 //***************************************************************************
 
-LPYYSTYPE ExecFuncGlb_EM_YY
+LPPL_YYSTYPE ExecFuncGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      HGLOBAL hGlbFcn,               // Handle to function strand
-     LPTOKEN lptkRhtArg)            // Ptr to right arg token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    LPYYSTYPE lpYYFcnStr,           // Ptr to function strand
-              lpYYRes;              // Ptr to the result
+    LPPL_YYSTYPE lpYYFcnStr,        // Ptr to function strand
+                 lpYYRes;           // Ptr to the result
 
     // Lock the memory to get a ptr to it
     lpYYFcnStr = MyGlobalLock (hGlbFcn);
@@ -1341,10 +1773,11 @@ LPYYSTYPE ExecFuncGlb_EM_YY
     lpYYFcnStr = FcnArrayBaseToData (lpYYFcnStr);
 
     // The contents of the global memory object consist of
-    //   a series of YYSTYPEs in RPN order.
+    //   a series of PL_YYSTYPEs in RPN order.
     lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
                                  lpYYFcnStr,    // Ptr to function strand
-                                 lptkRhtArg);   // Ptr to right arg token
+                                 lptkRhtArg,    // Ptr to right arg token
+                                 lptkAxis);     // Ptr to axis token
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFcn); lpYYFcnStr = NULL;
 
@@ -1364,15 +1797,17 @@ LPYYSTYPE ExecFuncGlb_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ExecFuncStr_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE lpYYFcnStr,          // Ptr to function strand
-     LPTOKEN   lptkRhtArg)          // Ptr to right arg token
+LPPL_YYSTYPE ExecFuncStr_EM_YY
+    (LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LPTOKEN      lptkAxis)         // Ptr to axis token (may be NULL)
 
 {
-    LPTOKEN    lptkAxis;        // Ptr to axis token
-    LPPRIMFNS  lpPrimFn;        // Ptr to function address
-////LPSYMENTRY lpSymEntry;      // Ptr to SYMENTRY if TKT_FCNNAMED and direct
+    LPPRIMFNS lpPrimFn;             // Ptr to function address
+    HGLOBAL   hGlbFcn;              // Function strand or defined function global memory handle
+
+    Assert (lptkAxis EQ NULL);
 
     // Split cases based upon the type of the first token
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)
@@ -1415,36 +1850,55 @@ LPYYSTYPE ExecFuncStr_EM_YY
             return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
 
         case TKT_FCNARRAY:
-////        Assert (lpYYFcnStr->FcnCount EQ 1
-////             || lpYYFcnStr->FcnCount EQ 2);
-////
-////        // Check for axis operator
-////        if (lpYYFcnStr->FcnCount > 1
-////         && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-////          || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-////            lptkAxis = &lpYYFcnStr[1].tkToken;
-////        else
-////            lptkAxis = NULL;
-////
-////        // Get the global memory handle or function address if direct
-////        lpPrimFn = lpYYFcnStr->tkToken.tkData.tkVoid;
-////
-////        // Check for internal functions
-////        if (lpYYFcnStr->tkToken.tkData.tkSym->stFlags.FcnDir)
-////            return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
-////
-////        // tkData is a valid HGLOBAL function array
-////        Assert (IsGlbTypeFcnDir (lpPrimFn));
-////
-////        return ExecFuncGlb_EM_YY (lptkLftArg,
-////                                  ClrPtrTypeDirGlb (lpPrimFn),
-////                                  lptkRhtArg);
-            // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lpYYFcnStr->tkToken.tkData.tkVoid));
+            DbgBrk ();          // ***FIXME*** -- How do we get here?
+                                // 1.  User-defined operator
+                                //   e.g., Z{is}L (F FOO G) R
+                                //         +foo- 1 2
+                                // 2.  User-defined function
+                                //   e.g., Z{is}FOO R
+                                //         3{jot}foo 1 2
+                                // 3.  User-defined function w/axis operator
+                                //   e.g., Z{is}FOO[X] R
+                                //         foo[1] 1 2
+                                // 4.  Monadic operator derived function
+                                //   e.g., f{is}/[1]
+                                //         +f 2 3{rho}{iota}6
+            // Get the global memory handle
+            hGlbFcn = lpYYFcnStr->tkToken.tkData.tkGlbData;
 
-            return ExecFuncGlb_EM_YY (lptkLftArg,
-                                      ClrPtrTypeDirGlb (lpYYFcnStr->tkToken.tkData.tkVoid),
-                                      lptkRhtArg);
+            // tkData is a valid HGLOBAL function array or defined function
+            Assert (IsGlbTypeFcnDir (hGlbFcn)
+                 || IsGlbTypeDfnDir (hGlbFcn));
+
+            // Check for axis operator
+            if (lpYYFcnStr->FcnCount > 1
+             && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+              || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+                lptkAxis = &lpYYFcnStr[1].tkToken;
+            else
+                lptkAxis = NULL;
+
+            // Split cases based upon the array signature
+            switch (GetSignatureGlb (ClrPtrTypeDirGlb (hGlbFcn)))
+            {
+                case FCNARRAY_HEADER_SIGNATURE:
+                    return ExecFuncGlb_EM_YY (lptkLftArg,                   // Ptr to left arg token (may be NULL if monadic)
+                                              ClrPtrTypeDirGlb (hGlbFcn),   // Function array global memory handle
+                                              lptkRhtArg,                   // Ptr to right arg token
+                                              lptkAxis);                    // Ptr to axis token (may be NULL)
+                case DFN_HEADER_SIGNATURE:
+                    DbgBrk ();
+
+                    return ExecDfnGlb_EM_YY (lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
+                                             NULL,                          // Ptr to left operand token (may be NULL if not an operator)
+                                             ClrPtrTypeDirGlb (hGlbFcn),    // Defined function global memory handle
+                                             lptkAxis,                      // Ptr to axis value token (may be NULL if no axis operator used)
+                                             NULL,                          // Ptr to right operand token (may be NULL if monadic operator or not an operator
+                                             lptkRhtArg);                   // Ptr to right arg token
+                defstop
+                    break;
+            } // SWITCH
+
         case TKT_FCNNAMED:
             Assert (lpYYFcnStr->FcnCount EQ 1
                  || lpYYFcnStr->FcnCount EQ 2);
@@ -1460,7 +1914,7 @@ LPYYSTYPE ExecFuncStr_EM_YY
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYFcnStr->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-            // Get the function address
+            // Get the global memory handle or function address if direct
             lpPrimFn = lpYYFcnStr->tkToken.tkData.tkSym->stData.stNameFcn;
 
             // Check for internal functions
@@ -1472,7 +1926,8 @@ LPYYSTYPE ExecFuncStr_EM_YY
 
             return ExecFuncGlb_EM_YY (lptkLftArg,
                                       ClrPtrTypeDirGlb (lpPrimFn),
-                                      lptkRhtArg);
+                                      lptkRhtArg,
+                                      lptkAxis);
         defstop
             return NULL;
     } // End SWITCH
@@ -1492,37 +1947,25 @@ LPYYSTYPE ExecFuncStr_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ExecOp1_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg)          // Ptr to right arg token
+LPPL_YYSTYPE ExecOp1_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    LPTOKEN lptkAxis;
-
-    // Check for axis operator
-    if (lpYYFcnStr->FcnCount > 1
-     && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        lptkAxis = &lpYYFcnStr[1].tkToken;
-     else
-        lptkAxis = NULL;
-
     // Split cases based upon the type of the monadic operator
-    switch (lpYYFcnStr->tkToken.tkData.tkChar)
+    switch (lpYYFcnStrOpr->tkToken.tkData.tkChar)
     {
         case INDEX_OPSLASH:     // Reduction along the last coordinate
         case INDEX_OPSLASHBAR:  // Reduction along the first coordinate
             return PrimOpSlash_EM_YY (lptkLftArg,   // Ptr to left arg token (may be NULL if monadic)
-                                      lpYYFcnStr,   // Ptr to operator function strand
-                                      lptkRhtArg,   // Ptr to right arg token
-                                      lptkAxis);    // Ptr to axis token (may be NULL)
+                                      lpYYFcnStrOpr,// Ptr to operator function strand
+                                      lptkRhtArg);  // Ptr to right arg token
         case INDEX_OPSLOPE:     // Scan along the last coordinate
         case INDEX_OPSLOPEBAR:  // Scan along the first coordinate
             return PrimOpSlope_EM_YY (lptkLftArg,   // Ptr to left arg token (may be NULL if monadic)
-                                      lpYYFcnStr,   // Ptr to operator function strand
-                                      lptkRhtArg,   // Ptr to right arg token
-                                      lptkAxis);    // Ptr to axis token (may be NULL)
+                                      lpYYFcnStrOpr,// Ptr to operator function strand
+                                      lptkRhtArg);  // Ptr to right arg token
         case UTF16_STILETILDE:  // Partition
             DbgBrk ();          // ***FINISHME*** -- UTF16_STILETILDE
 
@@ -1535,14 +1978,12 @@ LPYYSTYPE ExecOp1_EM_YY
 
         case UTF16_DIERESIS:    // Each
             return PrimOpDieresis_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if monadic)
-                                         lpYYFcnStr,        // Ptr to operator function strand
-                                         lptkRhtArg,        // Ptr to right arg token
-                                         lptkAxis);         // Ptr to axis token (may be NULL)
+                                         lpYYFcnStrOpr,     // Ptr to operator function strand
+                                         lptkRhtArg);       // Ptr to right arg token
         case UTF16_DIERESISTILDE:   // Commute/Duplicate
             return PrimOpDieresisTilde_EM_YY (lptkLftArg,   // Ptr to left arg token (may be NULL if monadic)
-                                             lpYYFcnStr,    // Ptr to operator function strand
-                                             lptkRhtArg,    // Ptr to right arg token
-                                             lptkAxis);     // Ptr to axis token (may be NULL)
+                                              lpYYFcnStrOpr,// Ptr to operator function strand
+                                              lptkRhtArg);  // Ptr to right arg token
         defstop
             return NULL;
     } // End SWITCH
@@ -1562,13 +2003,13 @@ LPYYSTYPE ExecOp1_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE ExecOp2_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE lpYYFcnStr,          // Ptr to function strand
-     LPTOKEN   lptkRhtArg)          // Ptr to right arg token
+LPPL_YYSTYPE ExecOp2_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStr,           // Ptr to function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    LPTOKEN lptkAxis;
+    LPTOKEN lptkAxis;           // Ptr to axis token (may be NULL)
 
     // Check for axis operator
     if (lpYYFcnStr->FcnCount > 1
@@ -1584,18 +2025,15 @@ LPYYSTYPE ExecOp2_EM_YY
         case UTF16_JOTDOT:      // Outer product
             return PrimOpJotDot_EM_YY (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
                                        lpYYFcnStr,  // Ptr to operator function strand
-                                       lptkRhtArg,  // Ptr to right arg token
-                                       lptkAxis);   // Ptr to axis token (may be NULL)
+                                       lptkRhtArg); // Ptr to right arg token
         case UTF16_DOT:         // Inner product
             return PrimOpDot_EM_YY    (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
                                        lpYYFcnStr,  // Ptr to operator function strand
-                                       lptkRhtArg,  // Ptr to right arg token
-                                       lptkAxis);   // Ptr to axis token (may be NULL)
+                                       lptkRhtArg); // Ptr to right arg token
         case UTF16_JOT:         // Compose
             return PrimOpJot_EM_YY    (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
                                        lpYYFcnStr,  // Ptr to operator function strand
-                                       lptkRhtArg,  // Ptr to right arg token
-                                       lptkAxis);   // Ptr to axis token (may be NULL)
+                                       lptkRhtArg); // Ptr to right arg token
         case UTF16_DIERESISDEL: // Dual
             DbgBrk ();          // ***FINISHME*** -- UTF16_DIERESISDEL
 
@@ -5727,14 +6165,14 @@ void DemoteData
 //  Allocate a new YYRes entry
 //***************************************************************************
 
-LPYYSTYPE YYAlloc
+LPPL_YYSTYPE YYAlloc
     (void)
 
 {
     UINT         u;             // Loop counter
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPYYSTYPE    lpYYRes = NULL;// Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;// Ptr to the result
 
 #ifdef DEBUG
     static UINT YYIndex = 0;
@@ -5782,13 +6220,13 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $YYCopy
 //
-//  Copy one YYSTYPE to another
+//  Copy one PL_YYSTYPE to another
 //    retaining the destination Inuse, Flag, and Index
 //***************************************************************************
 
 void YYCopy
-    (LPYYSTYPE lpYYDst,
-     LPYYSTYPE lpYYSrc)
+    (LPPL_YYSTYPE lpYYDst,
+     LPPL_YYSTYPE lpYYSrc)
 
 {
 #ifdef DEBUG
@@ -5803,7 +6241,7 @@ void YYCopy
     YYIndex = lpYYDst->YYIndex;
     YYFlag  = lpYYDst->YYFlag;
 #endif
-    *lpYYDst = *lpYYSrc;            // Copy the YYSTYPE
+    *lpYYDst = *lpYYSrc;            // Copy the PL_YYSTYPE
     lpYYDst->YYInuse = 1;           // Retain YYInuse flag
 #ifdef DEBUG
     lpYYDst->YYIndex = YYIndex;     // Retain YYIndex
@@ -5815,14 +6253,14 @@ void YYCopy
 //***************************************************************************
 //  $YYCopyFreeDst
 //
-//  Copy one YYSTYPE to another
+//  Copy one PL_YYSTYPE to another
 //    retaining the destination Inuse, Flag, and Index
 //    and free the destination copy if it's not inuse.
 //***************************************************************************
 
 void YYCopyFreeDst
-    (LPYYSTYPE lpYYDst,
-     LPYYSTYPE lpYYSrc)
+    (LPPL_YYSTYPE lpYYDst,
+     LPPL_YYSTYPE lpYYSrc)
 
 {
     if (lpYYDst->YYInuse)
@@ -5843,7 +6281,7 @@ void YYCopyFreeDst
 //***************************************************************************
 
 void YYFree
-    (LPYYSTYPE lpYYRes)         // Ptr to the YYRes entry
+    (LPPL_YYSTYPE lpYYRes)      // Ptr to the YYRes entry
 
 {
 #ifdef DEBUG                    // ***DEBUG***
@@ -5865,7 +6303,7 @@ void YYFree
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
 ////lpYYRes->YYInuse = 0;       // Free it
-    ZeroMemory (lpYYRes, sizeof (YYSTYPE));
+    ZeroMemory (lpYYRes, sizeof (PL_YYSTYPE));
 } // End YYFree
 
 

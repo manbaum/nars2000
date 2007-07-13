@@ -1301,7 +1301,7 @@ void DisplayGlobals
             Assert (IsGlbTypeFcnDir (MakeGlbTypeGlb (hGlb)));
 
             wsprintf (lpszDebug,
-                      "hGlb=%08X, NameType=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
+                      "hGlb=%08X, NamTyp=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
                       hGlb,
                       lpNameTypeStr[lpHeader->NameType],
                       lpHeader->fcnNELM,
@@ -1651,9 +1651,9 @@ LPWCHAR DisplayFcnGlb
 //***************************************************************************
 
 LPWCHAR DisplayFcnSub
-    (LPWCHAR   lpaplChar,       // Ptr to output save area
-     LPYYSTYPE lpYYMem,         // Ptr to function array
-     UINT      fcnNELM)         // Function NELM
+    (LPWCHAR      lpaplChar,    // Ptr to output save area
+     LPPL_YYSTYPE lpYYMem,      // Ptr to function array
+     UINT         fcnNELM)      // Function NELM
 
 {
     HGLOBAL hGlbData;           // Function array global memory handle
@@ -1805,7 +1805,9 @@ LPWCHAR DisplayFcnSub
             lpaplChar =
               FormatGlobal (lpaplChar, ClrPtrTypeDirGlb (hGlbData));
 #endif
-            lpaplChar[-1] = L']';   // Overwrite the trailing blank
+            if (lpaplChar[-1] EQ L' ')
+                lpaplChar--;            // Back over the trailing blank
+            *lpaplChar++ = L']';
 
             break;
 
@@ -1813,7 +1815,8 @@ LPWCHAR DisplayFcnSub
             lpaplChar =
               FormatAplint (lpaplChar,
                             lpYYMem[0].tkToken.tkData.tkInteger);
-            lpaplChar[-1] = L'\0';  // Overwrite the trailing blank
+            if (lpaplChar[-1] EQ L' ')
+                lpaplChar--;            // Back over the trailing blank
 
             break;
 
@@ -1939,7 +1942,7 @@ void DisplayStrand
     (int strType)               // Strand type (STRAND_VAR or STRAND_FCN)
 
 {
-    LPYYSTYPE     lp,
+    LPPL_YYSTYPE  lp,
                   lpLast;
     LPPLLOCALVARS lpplLocalVars;
     HGLOBAL       hGlbPTD;      // PerTabData global memory handle
@@ -1985,10 +1988,10 @@ void DisplayStrand
          lp NE lpplLocalVars->lpYYStrandNext[strType];
          lp ++)
     {
-        if (lpLast NE lp->unYYSTYPE.lpYYStrandBase)
+        if (lpLast NE lp->lpYYStrandBase)
         {
             DbgMsg ("--------------------------------------------------------");
-            lpLast = lp->unYYSTYPE.lpYYStrandBase;
+            lpLast  = lp->lpYYStrandBase;
         } // End IF
 
         wsprintf (lpszDebug,
@@ -2139,7 +2142,7 @@ void DisplayUndo
 
 #ifdef DEBUG
 //***************************************************************************
-//  DisplayFnHdr
+//  $DisplayFnHdr
 //
 //  Display the function header
 //***************************************************************************
@@ -2308,6 +2311,10 @@ void DisplayFnHdr
             break;
 
         case DFNTYPE_UNK:
+            lstrcatW (wszTemp, L"<empty>");
+
+            break;
+
         defstop
             break;
     } // End SWITCH

@@ -28,7 +28,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnCircleStile_EM_YY
+LPPL_YYSTYPE PrimFnCircleStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -54,7 +54,7 @@ LPYYSTYPE PrimFnCircleStile_EM_YY
 //  Generate a prototype for the primitive functions monadic & dyadic CircleStile
 //***************************************************************************
 
-LPYYSTYPE PrimProtoFnCircleStile_EM_YY
+LPPL_YYSTYPE PrimProtoFnCircleStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,37 +86,37 @@ LPYYSTYPE PrimProtoFnCircleStile_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonCircleStile_EM_YY
+LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE   aplTypeRht,
-               aplTypeRes;
-    APLNELM    aplNELMRht;
-    APLRANK    aplRankRht;
-    HGLOBAL    hGlbRht = NULL,
-               hGlbRes = NULL;
-    LPVOID     lpMemRht = NULL,
-               lpMemRes = NULL;
-    LPAPLDIM   lpMemDimRht;
-    APLUINT    aplAxis,     // The (one and only) axis value
-               uDim,
-               uLo,
-               uDimLo,
-               uAx,
-               uDimAx,
-               uHi,
-               uDimHi,
-               uRes,
-               uRht;
-    APLINT     apaOff,
-               apaMul;
-    LPYYSTYPE  lpYYRes;         // Ptr to the result
-    UINT       ByteRes,         // # bytes to allocate for the result
-               uBitMask,
-               uBitIndex;
+    APLSTYPE     aplTypeRht,
+                 aplTypeRes;
+    APLNELM      aplNELMRht;
+    APLRANK      aplRankRht;
+    HGLOBAL      hGlbRht = NULL,
+                 hGlbRes = NULL;
+    LPVOID       lpMemRht = NULL,
+                 lpMemRes = NULL;
+    LPAPLDIM     lpMemDimRht;
+    APLUINT      aplAxis,       // The (one and only) axis value
+                 uDim,
+                 uLo,
+                 uDimLo,
+                 uAx,
+                 uDimAx,
+                 uHi,
+                 uDimHi,
+                 uRes,
+                 uRht;
+    APLINT       apaOff,
+                 apaMul;
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
+    UINT         ByteRes,       // # bytes to allocate for the result
+                 uBitMask,
+                 uBitIndex;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
@@ -377,50 +377,50 @@ IMMED_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydCircleStile_EM_YY
+LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht,
-              aplTypeRes;
-    APLNELM   aplNELMLft,
-              aplNELMRht;
-    APLRANK   aplRankLft,
-              aplRankRht;
-    HGLOBAL   hGlbLft = NULL,
-              hGlbRht = NULL,
-              hGlbRes = NULL,
-              hGlbRot = NULL;
-    LPAPLDIM  lpMemDimLft,
-              lpMemDimRht;
-    LPVOID    lpMemLft = NULL,
-              lpMemRht = NULL,
-              lpMemRes = NULL;
-    LPAPLINT  lpMemRot = NULL;
-    BOOL      bRet = TRUE;
-    APLUINT   aplAxis,      // The (one and only) axis value
-              ByteRes,
-              uLo,
-              uDimLo,
-              uAx,
-              uDimAx,
-              uHi,
-              uDimHi,
-              uDim,
-              uRes,
-              uRht;
-    APLINT    aplInteger,
-              apaOff,
-              apaMul,
-              aplRot;
-    APLFLOAT  aplFloat;
-    LPYYSTYPE lpYYRes;
-    UINT      uBitMask,
-              uBitIndex;
+    APLSTYPE     aplTypeLft,
+                 aplTypeRht,
+                 aplTypeRes;
+    APLNELM      aplNELMLft,
+                 aplNELMRht;
+    APLRANK      aplRankLft,
+                 aplRankRht;
+    HGLOBAL      hGlbLft = NULL,
+                 hGlbRht = NULL,
+                 hGlbRes = NULL,
+                 hGlbRot = NULL;
+    LPAPLDIM     lpMemDimLft,
+                 lpMemDimRht;
+    LPVOID       lpMemLft = NULL,
+                 lpMemRht = NULL,
+                 lpMemRes = NULL;
+    LPAPLINT     lpMemRot = NULL;
+    BOOL         bRet = TRUE;
+    APLUINT      aplAxis,       // The (one and only) axis value
+                 ByteRes,
+                 uLo,
+                 uDimLo,
+                 uAx,
+                 uDimAx,
+                 uHi,
+                 uDimHi,
+                 uDim,
+                 uRes,
+                 uRht;
+    APLINT       aplInteger,
+                 apaOff,
+                 apaMul,
+                 aplRot;
+    APLFLOAT     aplFloat;
+    LPPL_YYSTYPE lpYYRes;
+    UINT         uBitMask,
+                 uBitIndex;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);

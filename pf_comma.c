@@ -22,7 +22,7 @@
 //  Primitive function for monadic and dyadic Comma ("ravel/table" and "catenate/laminate")
 //***************************************************************************
 
-LPYYSTYPE PrimFnComma_EM_YY
+LPPL_YYSTYPE PrimFnComma_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -53,7 +53,7 @@ LPYYSTYPE PrimFnComma_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnComma_EM_YY
+LPPL_YYSTYPE PrimProtoFnComma_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -86,7 +86,7 @@ LPYYSTYPE PrimProtoFnComma_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonComma_EM_YY
+LPPL_YYSTYPE PrimFnMonComma_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -168,20 +168,20 @@ LPYYSTYPE PrimFnMonComma_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonCommaImm_EM_YY
+LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     (IMMTYPES      ImmType,         // Right arg Immediate type
      APLLONGEST    aplLongest,      // Ptr to right arg value
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
      LPTOKEN       lptkFunc)        // Ptr to function token
 
 {
-    APLRANK   aplRankRes;           // Result rank
-    HGLOBAL   hGlbRes;              // Result global memory handle
-    LPVOID    lpMemRes;             // Ptr to result global memory
-    BOOL      bFract = FALSE,       // TRUE iff axis has fractional values
-              bTableRes;            // TRUE iff function is UTF16_COMMABAR
-    APLUINT   ByteRes;              // # bytes needed for the result
-    LPYYSTYPE lpYYRes;              // Ptr to the result
+    APLRANK      aplRankRes;        // Result rank
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPVOID       lpMemRes;          // Ptr to result global memory
+    BOOL         bFract = FALSE,    // TRUE iff axis has fractional values
+                 bTableRes;         // TRUE iff function is UTF16_COMMABAR
+    APLUINT      ByteRes;           // # bytes needed for the result
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Check for axis present
     while (lptkAxis NE NULL)
@@ -299,45 +299,45 @@ LPYYSTYPE PrimFnMonCommaImm_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonCommaGlb_EM_YY
+LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     (HGLOBAL       hGlbRht,         // Handle to right arg
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
      LPTOKEN       lptkFunc)        // Ptr to function token
 
 {
-    HGLOBAL   hGlbRes = NULL,       // Result global memory handle
-              hGlbAxis = NULL,      // Axis ...
-              hGlbOdo = NULL,       // Odometer ...
-              hGlbWVec = NULL;      // Weighting vector ...
-    LPVOID    lpMemRht = NULL,      // Ptr to right arg global memory
-              lpMemRes = NULL;      // Ptr to result    ...
-    LPAPLDIM  lpMemDimRht = NULL;   // Ptr to right arg dimensions
-    LPAPLUINT lpMemAxis = NULL,     // Ptr to axis global memory
-              lpMemGrUp = NULL,     // Ptr to grade up ...
-              lpMemOdo = NULL,      // Ptr to odometer ...
-              lpMemWVec = NULL;     // Ptr to weighting vector ...
-    APLUINT   ByteRes;              // # bytes needed for the result
-    APLNELM   aplNELMRht,           // Right arg NELM
-              aplNELMAxis;          // Axis      ...
-    APLRANK   aplRankRht,           // Right arg rank
-              aplRankRes;           // Result    ...
-    APLNELM   uRht,                 // Right arg loop counter
-              uRes,                 // Result    ...
-              uOdo;                 // Odometer  ...
-    APLDIM    aplDimNew;            //
-    APLSTYPE  aplTypeRht,           // Right arg storage type
-              aplTypeRes;           // Result    ...
-    APLNELMSIGN iRht;               // Right arg loop counter
-    APLINT    apaOffRht,            // Right arg APA offset
-              apaMulRht;            // ...           multiplier
-    APLUINT   aplFirstAxis,         // First axis value (if contiguous, then lowest)
-              aplLastAxis;          // Last ...                              highest
-    BOOL      bFract = FALSE,       // TRUE iff axis has fractional values
-              bTableRes,            // TRUE iff function is UTF16_COMMABAR
-              bRet = TRUE,          // TRUE iff result is valid
-              bReorder = FALSE;     // TRUE iff result values are reordered
+    HGLOBAL      hGlbRes = NULL,    // Result global memory handle
+                 hGlbAxis = NULL,   // Axis ...
+                 hGlbOdo = NULL,    // Odometer ...
+                 hGlbWVec = NULL;   // Weighting vector ...
+    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
+                 lpMemRes = NULL;   // Ptr to result    ...
+    LPAPLDIM     lpMemDimRht = NULL;// Ptr to right arg dimensions
+    LPAPLUINT    lpMemAxis = NULL,  // Ptr to axis global memory
+                 lpMemGrUp = NULL,  // Ptr to grade up ...
+                 lpMemOdo = NULL,   // Ptr to odometer ...
+                 lpMemWVec = NULL;  // Ptr to weighting vector ...
+    APLUINT      ByteRes;           // # bytes needed for the result
+    APLNELM      aplNELMRht,        // Right arg NELM
+                 aplNELMAxis;       // Axis      ...
+    APLRANK      aplRankRht,        // Right arg rank
+                 aplRankRes;        // Result    ...
+    APLNELM      uRht,              // Right arg loop counter
+                 uRes,              // Result    ...
+                 uOdo;              // Odometer  ...
+    APLDIM       aplDimNew;         //
+    APLSTYPE     aplTypeRht,        // Right arg storage type
+                 aplTypeRes;        // Result    ...
+    APLNELMSIGN  iRht;              // Right arg loop counter
+    APLINT       apaOffRht,         // Right arg APA offset
+                 apaMulRht;         // ...           multiplier
+    APLUINT      aplFirstAxis,      // First axis value (if contiguous, then lowest)
+                 aplLastAxis;       // Last ...                              highest
+    BOOL         bFract = FALSE,    // TRUE iff axis has fractional values
+                 bTableRes,         // TRUE iff function is UTF16_COMMABAR
+                 bRet = TRUE,       // TRUE iff result is valid
+                 bReorder = FALSE;  // TRUE iff result values are reordered
                                     //   from those in the right arg
-    LPYYSTYPE lpYYRes;              // Ptr to the result
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -884,65 +884,65 @@ ERROR_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydComma_EM_YY
+LPPL_YYSTYPE PrimFnDydComma_EM_YY
     (LPTOKEN       lptkLftArg,      // Ptr to left arg token
      LPTOKEN       lptkFunc,        // Ptr to function token
      LPTOKEN       lptkRhtArg,      // Ptr to right arg token
      LPTOKEN       lptkAxis)        // Ptr to axis token (may be NULL)
 
 {
-    APLUINT    aplAxis,     // The (one and only) axis value
-               uLft,
-               uRht,
-               uBeg,
-               uEnd,
-               uEndLft,
-               uEndRht,
-               ByteRes;
-    APLRANK    aplRankLft,  // The rank of the left arg
-               aplRankRht,  // ...             right ...
-               aplRankRes,  // ...             result
-               aplRankTmp;
-    APLSTYPE   aplTypeLft,
-               aplTypeRht,
-               aplTypeRes;
-    APLNELM    aplNELMLft,
-               aplNELMRht,
-               aplNELMRes;
-    HGLOBAL    hGlbLft = NULL,
-               hGlbRht = NULL,
-               hGlbRes = NULL;
-    LPVOID     lpMemLft = NULL,
-               lpMemRht = NULL,
-               lpMemRes = NULL,
-               lpSymGlbLft,
-               lpSymGlbRht;
-    LPAPLDIM   lpMemDimLft,
-               lpMemDimRht,
-               lpMemDimRes,
-               lpMemDimDir;
-    APLDIM     aplDimTmp,
-               aplDimBeg,
-               aplDimLftEnd,
-               aplDimRhtEnd,
-               aplDim1 = 1;
-    BOOL       bRet = TRUE,
-               bFract = FALSE;
-    UINT       uBitMaskLft,
-               uBitMaskRht,
-               uBitIndexRes;
-    APLINT     aplIntegerLft,
-               aplIntegerRht,
-               apaOffLft,
-               apaOffRht,
-               apaMulLft,
-               apaMulRht;
-    APLFLOAT   aplFloatLft,
-               aplFloatRht;
-    APLCHAR    aplCharLft,
-               aplCharRht;
-    APLLONGEST aplVal;
-    LPYYSTYPE  lpYYRes;
+    APLUINT      aplAxis,           // The (one and only) axis value
+                 uLft,
+                 uRht,
+                 uBeg,
+                 uEnd,
+                 uEndLft,
+                 uEndRht,
+                 ByteRes;
+    APLRANK      aplRankLft,        // The rank of the left arg
+                 aplRankRht,        // ...             right ...
+                 aplRankRes,        // ...             result
+                 aplRankTmp;
+    APLSTYPE     aplTypeLft,
+                 aplTypeRht,
+                 aplTypeRes;
+    APLNELM      aplNELMLft,
+                 aplNELMRht,
+                 aplNELMRes;
+    HGLOBAL      hGlbLft = NULL,
+                 hGlbRht = NULL,
+                 hGlbRes = NULL;
+    LPVOID       lpMemLft = NULL,
+                 lpMemRht = NULL,
+                 lpMemRes = NULL,
+                 lpSymGlbLft,
+                 lpSymGlbRht;
+    LPAPLDIM     lpMemDimLft,
+                 lpMemDimRht,
+                 lpMemDimRes,
+                 lpMemDimDir;
+    APLDIM       aplDimTmp,
+                 aplDimBeg,
+                 aplDimLftEnd,
+                 aplDimRhtEnd,
+                 aplDim1 = 1;
+    BOOL         bRet = TRUE,
+                 bFract = FALSE;
+    UINT         uBitMaskLft,
+                 uBitMaskRht,
+                 uBitIndexRes;
+    APLINT       aplIntegerLft,
+                 aplIntegerRht,
+                 apaOffLft,
+                 apaOffRht,
+                 apaMulLft,
+                 apaMulRht;
+    APLFLOAT     aplFloatLft,
+                 aplFloatRht;
+    APLCHAR      aplCharLft,
+                 aplCharRht;
+    APLLONGEST   aplVal;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     static APLSTYPE sType[ARRAY_LENGTH][ARRAY_LENGTH] =
     //      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        LIST         APA
     {{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // BOOL

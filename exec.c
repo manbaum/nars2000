@@ -746,7 +746,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
 
 HGLOBAL ExecuteLine
     (UINT        uLineNum,      // Line #
-     LPEXECSTATE esState,       // EXECSTATE enum
+     LPEXECSTATE lpExecState,   // Execution state
      HWND        hWndEC)        // Handle of Edit Control window
 
 {
@@ -805,7 +805,7 @@ HGLOBAL ExecuteLine
     {};
 
     // Split off immediate execution mode
-    if (esState->exType EQ EX_IMMEX)
+    if (lpExecState->exType EQ EX_IMMEX)
     {
         switch (lpwszLine[0])
         {
@@ -874,11 +874,14 @@ HGLOBAL ExecuteLine
 
                 // Run the parser in a separate thread
                 ParseLine (hWndSM,
-                           hWndEC,
+                           NULL,
                            hGlbToken,
                            lpwszCompLine,
                            (HGLOBAL) GetProp (hWndMC, "PTD"),
-                           TRUE);           // Parseline to free hGlbToken on exit
+                           NULL,            // Semaphore handle (create its own)
+                           TRUE,            // Parseline to free hGlbToken on exit
+                           TRUE,            // ...               lpwszLine ...
+                           TRUE);           // ...          signal SM at end
 ////////////////Untokenize (hGlbToken);
 ////////////////MyGlobalFree (hGlbToken); hGlbToken = NULL;
 
@@ -892,11 +895,14 @@ HGLOBAL ExecuteLine
                                  hWndEC,
                                 &ErrorMessage);
         ParseLine (hWndSM,
-                   hWndEC,
+                   NULL,
                    hGlbToken,
                    lpwszCompLine,
                    (HGLOBAL) GetProp (hWndMC, "PTD"),
-                   FALSE);                  // ParseLine NOT to free hGlbToken on exit
+                   NULL,                    // Semaphore handle (create its own)
+                   FALSE,                   // ParseLine NOT to free hGlbToken on exit
+                   TRUE,                    // ParseLine is  to free lpwszLine on exit
+                   TRUE);                   // ...              signal SM at end
     } // End IF/ELSE
 
     // Now done in <ParseLine>
@@ -2414,7 +2420,7 @@ void ErrorMessage
     (LPWCHAR lpwszMsg,          // Ptr to error message text
      LPWCHAR lpwszLine,         // Ptr to the line which generated the error
      UINT    uCaret,            // Position of caret (origin-0)
-     HWND    hWndEC)            // Window handle to the Edit Control
+     HWND    hWndSM)            // Window handle to the Session Manager
 
 {
     APLNELM      aplNELMRes;    // Result NELM
@@ -2440,7 +2446,7 @@ void ErrorMessage
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
     {
-        MessageBoxW (hWndEC,
+        MessageBoxW (hWndSM,
                      L"Unable to allocate space for " WS_UTF16_QUAD L"DM",
                      lpwszAppName,
                      MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -2533,7 +2539,7 @@ void ErrorMessage
 //  Wait for either Quad or Quote-quad input
 //***************************************************************************
 
-LPYYSTYPE WaitForInput
+LPPL_YYSTYPE WaitForInput
     (HWND    hWnd,                  // Window handle to Session Manager
      BOOL    bQuoteQuadInput,       // TRUE iff Quote-Quad input (FALSE if Quad input)
      LPTOKEN lptkFunc)              // Ptr to "function" token
@@ -2543,7 +2549,7 @@ LPYYSTYPE WaitForInput
     char          szTimer[32];
     LARGE_INTEGER waitTime;
     DWORD         dwWaitRes = WAIT_TIMEOUT;
-    LPYYSTYPE     lpYYRes;
+    LPPL_YYSTYPE  lpYYRes;
 
     return PrimFnNonceError_EM (lptkFunc);
 

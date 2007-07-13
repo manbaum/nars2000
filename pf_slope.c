@@ -28,7 +28,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnSlope_EM_YY
+LPPL_YYSTYPE PrimFnSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -60,7 +60,7 @@ LPYYSTYPE PrimFnSlope_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnSlope_EM_YY
+LPPL_YYSTYPE PrimProtoFnSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -93,7 +93,7 @@ LPYYSTYPE PrimProtoFnSlope_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonSlope_EM_YY
+LPPL_YYSTYPE PrimFnMonSlope_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -116,64 +116,64 @@ LPYYSTYPE PrimFnMonSlope_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydSlope_EM_YY
+LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,           // Left arg storage type
-              aplTypeRht,           // Right ...
-              aplTypeRes;           // Result   ...
-    APLNELM   aplNELMLft,           // Left arg NELM
-              aplNELMRht,           // Right ...
-              aplNELMRes;           // Result ...
-    APLRANK   aplRankLft,           // Left arg rank
-              aplRankRht,           // Right ...
-              aplRankRes;           // Result   ...
-    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
-              hGlbRht = NULL,       // Right ...
-              hGlbRes = NULL,       // Result   ...
-              hGlbRep = NULL;       // Replicate ...
-    LPAPLDIM  lpMemDimRht = NULL;   // Ptr to right arg dimensions
-    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
-              lpMemRht = NULL,      // Ptr to right ...
-              lpMemRes = NULL;      // Ptr to result   ...
-    LPAPLINT  lpMemRep = NULL;      // Ptr to replicate ...
-    BOOL      bRet = TRUE;          // TRUE iff result is valid
-    APLUINT   aplAxis,              // The (one and only) axis value
-              ByteRes,              //
-              uLo,                  //
-              uDimLo,               //
-              uAx,                  //
-              uDimAxRht,            //
-              uDimLftSum,           //
-              uHi,                  //
-              uDimHi,               //
-              uDim,                 //
-              uDimRht,              //
-              uDimRes,              //
-              uRes,                 //
-              uRht,                 //
-              uAcc,                 //
-              uLen;                 //
-    APLINT    aplIntegerLft,        //
-              aplIntegerRht,        //
-              aplIntegerRep,        //
-              apaOff,               //
-              apaMul;               //
-    APLFLOAT  aplFloatLft,          //
-              aplFloatRht,          //
-              aplFloatRep;          //
-    APLCHAR   aplCharRht,           //
-              aplCharRep;           //
-    APLNESTED aplNestRht,           //
-              aplNestRep,           //
-              aplNestProto;         //
-    LPYYSTYPE lpYYRes;              // Ptr to the result
-    UINT      uBitMask,             //
-              uBitIndex;            //
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht,        // Right ...
+                 aplTypeRes;        // Result   ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht,        // Right ...
+                 aplNELMRes;        // Result ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht,        // Right ...
+                 aplRankRes;        // Result   ...
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRht = NULL,    // Right ...
+                 hGlbRes = NULL,    // Result   ...
+                 hGlbRep = NULL;    // Replicate ...
+    LPAPLDIM     lpMemDimRht = NULL;// Ptr to right arg dimensions
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL,   // Ptr to right ...
+                 lpMemRes = NULL;   // Ptr to result   ...
+    LPAPLINT     lpMemRep = NULL;   // Ptr to replicate ...
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    APLUINT      aplAxis,           // The (one and only) axis value
+                 ByteRes,           //
+                 uLo,               //
+                 uDimLo,            //
+                 uAx,               //
+                 uDimAxRht,         //
+                 uDimLftSum,        //
+                 uHi,               //
+                 uDimHi,            //
+                 uDim,              //
+                 uDimRht,           //
+                 uDimRes,           //
+                 uRes,              //
+                 uRht,              //
+                 uAcc,              //
+                 uLen;              //
+    APLINT       aplIntegerLft,     //
+                 aplIntegerRht,     //
+                 aplIntegerRep,     //
+                 apaOff,            //
+                 apaMul;            //
+    APLFLOAT     aplFloatLft,       //
+                 aplFloatRht,       //
+                 aplFloatRep;       //
+    APLCHAR      aplCharRht,        //
+                 aplCharRep;        //
+    APLNESTED    aplNestRht,        //
+                 aplNestRep,        //
+                 aplNestProto;      //
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    UINT         uBitMask,          //
+                 uBitIndex;         //
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);

@@ -88,7 +88,7 @@ void SetExecCode
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnSyntaxError_EM
+LPPL_YYSTYPE PrimFnSyntaxError_EM
     (LPTOKEN lptkFunc)
 
 {
@@ -111,7 +111,7 @@ LPYYSTYPE PrimFnSyntaxError_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnNonceError_EM
+LPPL_YYSTYPE PrimFnNonceError_EM
     (LPTOKEN lptkFunc)
 
 {
@@ -156,7 +156,7 @@ void PrimFnValueError_EM
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonSyntaxError_EM
+LPPL_YYSTYPE PrimFnMonSyntaxError_EM
     (LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
      LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
@@ -182,7 +182,7 @@ LPYYSTYPE PrimFnMonSyntaxError_EM
 //// #define APPEND_NAME
 //// #endif
 ////
-//// LPYYSTYPE PrimFnDydSyntaxError_EM
+//// LPPL_YYSTYPE PrimFnDydSyntaxError_EM
 ////     (LPTOKEN    lptkLftArg,         // Ptr to left arg token
 ////      LPTOKEN    lptkFunc,           // Ptr to function token
 ////      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
@@ -203,7 +203,7 @@ LPYYSTYPE PrimFnMonSyntaxError_EM
 //  Generate a prototype result for the monadic & dyadic primitive mixed functions
 //***************************************************************************
 
-LPYYSTYPE PrimProtoFnMixed_EM_YY
+LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
     (LPPRIMFNS  lpPrimFn,           // Ptr to primitive function routine
      LPTOKEN    lptkLftArg,         // Ptr to left arg token
      LPTOKEN    lptkFunc,           // Ptr to function token
@@ -211,9 +211,9 @@ LPYYSTYPE PrimProtoFnMixed_EM_YY
      LPTOKEN    lptkAxis)           // Ptr to axis token (may be NULL)
 
 {
-    LPYYSTYPE lpYYRes;
-    HGLOBAL   hGlbRes,
-              hGlbResProto;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    HGLOBAL      hGlbRes,
+                 hGlbResProto;
 
     // Call the original function
     lpYYRes = (*lpPrimFn) (lptkLftArg,      // Ptr to left arg token
@@ -275,23 +275,36 @@ LPYYSTYPE PrimProtoFnMixed_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnScalar_EM_YY
+LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
     (LPTOKEN    lptkLftArg,         // Ptr to left arg token
      LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
      LPTOKEN    lptkAxis)           // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL    hGlbLft = NULL,          // Left arg global memory handle
-               hGlbRht = NULL,          // Right ...
-               hGlbRes = NULL;          // Result   ...
-    LPYYSTYPE  lpYYRes = NULL;          // Ptr to the result
+    HGLOBAL      hGlbLft,           // Left arg global memory handle
+                 hGlbRht,           // Right ...
+                 hGlbRes;           // Result   ...
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get right arg's global memory handle
     hGlbRht = GetGlbHandle (lptkRhtArg);
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
+    {
+        //***************************************************************
+        // Scalar monadic primitive functions are not sensitive
+        //   to the axis operator, so signal a syntax error if present
+        //***************************************************************
+
+        if (lptkAxis NE NULL)
+        {
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lptkAxis);
+            return NULL;
+        } // End IF
+
         //***************************************************************
         // Called monadically
         //***************************************************************
@@ -300,7 +313,7 @@ LPYYSTYPE PrimProtoFnScalar_EM_YY
         hGlbRes = MakeMonPrototype_EM (hGlbRht,     // Proto arg handle
                                        lptkFunc,    // Ptr to function token
                                        MP_NUMONLY); // Numerics only
-    else
+    } else
     {
         //***************************************************************
         // Called dyadically
@@ -370,19 +383,19 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMon_EM_YY
+LPPL_YYSTYPE PrimFnMon_EM_YY
     (LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
      LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    HGLOBAL  hGlbRes;
-    APLSTYPE aplTypeRes,
-             aplTypeRht;
-    APLRANK  aplRankRht;
-    APLNELM  aplNELMRht;
-    LPYYSTYPE lpYYRes;
+    HGLOBAL      hGlbRes;
+    APLSTYPE     aplTypeRes,
+                 aplTypeRht;
+    APLRANK      aplRankRht;
+    APLNELM      aplNELMRht;
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     DBGENTER;
 
@@ -1390,7 +1403,7 @@ NORMAL_EXIT:
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDyd_EM_YY
+LPPL_YYSTYPE PrimFnDyd_EM_YY
     (LPTOKEN    lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
@@ -1398,30 +1411,30 @@ LPYYSTYPE PrimFnDyd_EM_YY
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRANK     aplRankLft,             // Left arg rank
-                aplRankRht,             // Right ...
-                aplRankRes;             // Result   ...
-    APLNELM     aplNELMLft,             // Left arg NELM
-                aplNELMRht,             // Right ...
-                aplNELMRes,             // Result   ...
-                aplNELMAxis;            // Axis     ...
-    APLLONGEST  aplLongestLft,          // Left arg longest value
-                aplLongestRht;          // Right ...
-    HGLOBAL     hGlbLft = NULL,         // Left arg global memory handle
-                hGlbRht = NULL,         // Right ...
-                hGlbRes = NULL,         // Result   ...
-                hGlbAxis = NULL;        // Axis     ...
-    APLSTYPE    aplTypeLft,             // Left arg storage type
-                aplTypeRht,             // Right ...
-                aplTypeRes;             // Result   ...
-    LPAPLUINT   lpMemAxisHead = NULL,   // Ptr to axis head
-                lpMemAxisTail = NULL;   // Ptr to axis tail
-    LPVOID      lpMemLft = NULL,        // Ptr to left arg global memory
-                lpMemRht = NULL;        // Ptr to right ...
-    APLINT      aplInteger;             // Temporary integer value
-    BOOL        bRet = TRUE;            // TRUE iff result is valid
+    APLRANK      aplRankLft,            // Left arg rank
+                 aplRankRht,            // Right ...
+                 aplRankRes;            // Result   ...
+    APLNELM      aplNELMLft,            // Left arg NELM
+                 aplNELMRht,            // Right ...
+                 aplNELMRes,            // Result   ...
+                 aplNELMAxis;           // Axis     ...
+    APLLONGEST   aplLongestLft,         // Left arg longest value
+                 aplLongestRht;         // Right ...
+    HGLOBAL      hGlbLft = NULL,        // Left arg global memory handle
+                 hGlbRht = NULL,        // Right ...
+                 hGlbRes = NULL,        // Result   ...
+                 hGlbAxis = NULL;       // Axis     ...
+    APLSTYPE     aplTypeLft,            // Left arg storage type
+                 aplTypeRht,            // Right ...
+                 aplTypeRes;            // Result   ...
+    LPAPLUINT    lpMemAxisHead = NULL,  // Ptr to axis head
+                 lpMemAxisTail = NULL;  // Ptr to axis tail
+    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
+                 lpMemRht = NULL;       // Ptr to right ...
+    APLINT       aplInteger;            // Temporary integer value
+    BOOL         bRet = TRUE;           // TRUE iff result is valid
     LPPRIMFN_DYD_SNvSN lpPrimFn;        // Ptr to dyadic scalar SimpNest vs. SimpNest function
-    LPYYSTYPE   lpYYRes = NULL;         // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
 
     DBGENTER;
 
@@ -1667,7 +1680,7 @@ NORMAL_EXIT:
 #endif
 
 BOOL PrimFnDydSimpNest_EM
-    (LPYYSTYPE     lpYYRes,         // Ptr to result token
+    (LPPL_YYSTYPE  lpYYRes,         // Ptr to the result
 
      LPTOKEN       lptkLftArg,      // Ptr to left arg token
      LPTOKEN       lptkFunc,        // ...    function ...
@@ -1761,11 +1774,14 @@ BOOL PrimFnDydSimpNest_EM
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    // Fill nested result with PTR_REUSED
-    //   in case we fail part way through
-    *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-    for (uRes = 1; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
-        ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
+    if (aplTypeRes EQ ARRAY_NESTED)
+    {
+        // Fill nested result with PTR_REUSED
+        //   in case we fail part way through
+        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
+        for (uRes = 1; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
+    } // End IF
 
 #ifndef PRIMPROTOFNSCALAR
     // Handle prototypes separately
@@ -2023,7 +2039,7 @@ NORMAL_EXIT:
 #endif
 
 BOOL PrimFnDydNestSimp_EM
-    (LPYYSTYPE     lpYYRes,         // Ptr to result token
+    (LPPL_YYSTYPE  lpYYRes,         // Ptr to the result
 
      LPTOKEN       lptkLftArg,      // Ptr to left arg token
      LPTOKEN       lptkFunc,        // ...    function ...
@@ -2117,11 +2133,14 @@ BOOL PrimFnDydNestSimp_EM
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    // Fill nested result with PTR_REUSED
-    //   in case we fail part way through
-    *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-    for (uRes = 1; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
-        ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
+    if (aplTypeRes EQ ARRAY_NESTED)
+    {
+        // Fill nested result with PTR_REUSED
+        //   in case we fail part way through
+        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
+        for (uRes = 1; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
+    } // End IF
 
 #ifndef PRIMPROTOFNSCALAR
     // Handle prototypes separately
@@ -2669,35 +2688,35 @@ void FillToken
 #endif
 
 BOOL PrimFnDydNestNest_EM
-    (LPYYSTYPE  lpYYRes,            // Ptr to result token
+    (LPPL_YYSTYPE lpYYRes,          // Ptr to the result
 
-     LPTOKEN    lptkLftArg,         // Ptr to left arg token
-     LPTOKEN    lptkFunc,           // ...    function ...
-     LPTOKEN    lptkRhtArg,         // ...    right arg ...
+     LPTOKEN      lptkLftArg,       // Ptr to left arg token
+     LPTOKEN      lptkFunc,         // ...    function ...
+     LPTOKEN      lptkRhtArg,       // ...    right arg ...
 
-     HGLOBAL    hGlbLft,            // Left arg handle
-     HGLOBAL    hGlbRht,            // Right ...
-     HGLOBAL   *lphGlbRes,          // Ptr to result handle
+     HGLOBAL      hGlbLft,          // Left arg handle
+     HGLOBAL      hGlbRht,          // Right ...
+     HGLOBAL     *lphGlbRes,        // Ptr to result handle
 
-     LPVOID     lpMemLft,           // Points to Sig.nature
-     LPVOID     lpMemRht,           // ...
+     LPVOID       lpMemLft,         // Points to Sig.nature
+     LPVOID       lpMemRht,         // ...
 
-     LPAPLUINT  lpMemAxisHead,      // Ptr to axis values, fleshed out
-     LPAPLUINT  lpMemAxisTail,      // Ptr to grade up of AxisHead
+     LPAPLUINT    lpMemAxisHead,    // Ptr to axis values, fleshed out
+     LPAPLUINT    lpMemAxisTail,    // Ptr to grade up of AxisHead
 
-     APLRANK    aplRankLft,         // Left arg rank
-     APLRANK    aplRankRht,         // Right ...
-     APLRANK    aplRankRes,         // Result ...
+     APLRANK      aplRankLft,       // Left arg rank
+     APLRANK      aplRankRht,       // Right ...
+     APLRANK      aplRankRes,       // Result ...
 
-     APLSTYPE   aplTypeLft,         // Left arg type
-     APLSTYPE   aplTypeRht,         // Right ...
-     APLSTYPE   aplTypeRes,         // Result ...
+     APLSTYPE     aplTypeLft,       // Left arg type
+     APLSTYPE     aplTypeRht,       // Right ...
+     APLSTYPE     aplTypeRes,       // Result ...
 
-     APLNELM    aplNELMLft,         // Left arg NELM
-     APLNELM    aplNELMRht,         // Right ...
-     APLNELM    aplNELMRes,         // Result ...
-     APLNELM    aplNELMAxis,        // Axis ...
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+     APLNELM      aplNELMLft,       // Left arg NELM
+     APLNELM      aplNELMRht,       // Right ...
+     APLNELM      aplNELMRes,       // Result ...
+     APLNELM      aplNELMAxis,      // Axis ...
+     LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
     BOOL   bRet = TRUE;             // TRUE iff result is valid
@@ -2743,7 +2762,7 @@ BOOL PrimFnDydNestNest_EM
     {
         TOKEN     tkLft = {0},
                   tkRht = {0};
-        LPYYSTYPE lpYYRes;
+        LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
         // Fill in the left arg token
         FillToken (&tkLft,
@@ -4786,35 +4805,35 @@ ERROR_EXIT:
 #endif
 
 BOOL PrimFnDydSimpSimp_EM
-    (LPYYSTYPE  lpYYRes,            // Ptr to result token
+    (LPPL_YYSTYPE lpYYRes,          // Ptr to the result
 
-     LPTOKEN    lptkLftArg,         // Ptr to left arg token
-     LPTOKEN    lptkFunc,           // ...    function ...
-     LPTOKEN    lptkRhtArg,         // ...    right arg ...
+     LPTOKEN      lptkLftArg,       // Ptr to left arg token
+     LPTOKEN      lptkFunc,         // ...    function ...
+     LPTOKEN      lptkRhtArg,       // ...    right arg ...
 
-     HGLOBAL    hGlbLft,            // Left arg handle
-     HGLOBAL    hGlbRht,            // Right ...
-     HGLOBAL   *lphGlbRes,          // Ptr to result handle
+     HGLOBAL      hGlbLft,          // Left arg handle
+     HGLOBAL      hGlbRht,          // Right ...
+     HGLOBAL     *lphGlbRes,        // Ptr to result handle
 
-     LPVOID     lpMemLft,           // Points to Sig.nature
-     LPVOID     lpMemRht,           // ...
+     LPVOID       lpMemLft,         // Points to Sig.nature
+     LPVOID       lpMemRht,         // ...
 
-     LPAPLUINT  lpMemAxisHead,      // Ptr to axis values, fleshed out
-     LPAPLUINT  lpMemAxisTail,      // Ptr to grade up of AxisHead
+     LPAPLUINT    lpMemAxisHead,    // Ptr to axis values, fleshed out
+     LPAPLUINT    lpMemAxisTail,    // Ptr to grade up of AxisHead
 
-     APLRANK    aplRankLft,         // Left arg rank
-     APLRANK    aplRankRht,         // Right ...
-     APLRANK    aplRankRes,         // Result ...
+     APLRANK      aplRankLft,       // Left arg rank
+     APLRANK      aplRankRht,       // Right ...
+     APLRANK      aplRankRes,       // Result ...
 
-     APLSTYPE   aplTypeLft,         // Left arg type
-     APLSTYPE   aplTypeRht,         // Right ...
-     APLSTYPE   aplTypeRes,         // Result ...
+     APLSTYPE     aplTypeLft,       // Left arg type
+     APLSTYPE     aplTypeRht,       // Right ...
+     APLSTYPE     aplTypeRes,       // Result ...
 
-     APLNELM    aplNELMLft,         // Left arg NELM
-     APLNELM    aplNELMRht,         // Right ...
-     APLNELM    aplNELMRes,         // Result ...
-     APLNELM    aplNELMAxis,        // Axis ...
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+     APLNELM      aplNELMLft,       // Left arg NELM
+     APLNELM      aplNELMRht,       // Right ...
+     APLNELM      aplNELMRes,       // Result ...
+     APLNELM      aplNELMAxis,      // Axis ...
+     LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
     LPVOID    lpMemRes = NULL;  // Ptr to result global memory

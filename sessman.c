@@ -1045,7 +1045,9 @@ LRESULT APIENTRY SMWndProc
 #undef  nWidth
 #undef  fwSizeType
 
-        case WM_SETFONT:
+        case WM_SETFONT:            // hFont = (HFONT) wParam;
+                                    // fRedraw = LOWORD (lParam);
+        case WM_KILLFOCUS:          // hwndGainFocus = (HWND) wParam; // handle of window gaining focus
             // Pass it on the the edit control
             SendMessageW (hWndEC, message, wParam, lParam);
 
@@ -1142,10 +1144,10 @@ LRESULT APIENTRY SMWndProc
                         // Thread ParseLine done
 
                         // Close the handle as it isn't used anymore
-                        CloseHandle (hSemaphore);
+                        CloseHandle (hSemaphore); hSemaphore = NULL;
 
                         // Close the thread handle as it has terminated
-                        CloseHandle (hThread);
+                        CloseHandle (hThread); hThread = NULL;
 
                         // Display the default prompt
                         DisplayPrompt (hWndEC, TRUE);
@@ -1202,9 +1204,9 @@ LRESULT APIENTRY SMWndProc
         case MYWM_KEYDOWN:          // nVirtKey = (int) wParam;     // Virtual-key code
                                     // uLineNum = lParam;           // Line #   // lKeyData = lParam;           // Key data
         {
-            EXECSTATE esState;
             UINT      uLineLen,
                       uLineCnt;
+            EXECSTATE execState;
 
             // Get the thread's PerTabData global memory handle
             hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -1230,14 +1232,14 @@ LRESULT APIENTRY SMWndProc
 ////
 ////                } // End IF
 
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
                     // If we're not on the last line,
                     //   copy it and append it to the buffer
                     if (!IzitLastLine (hWndEC))
                     {
                         UINT uLastNum;
-
-                        // Lock the memory to get a ptr to it
-                        lpMemPTD = MyGlobalLock (hGlbPTD);
 
                         // Tell EM_GETLINE maximum # chars in the buffer
                         // The output array is a temporary so we don't have to
@@ -1267,14 +1269,19 @@ LRESULT APIENTRY SMWndProc
 
                         // Get the current line #
                         uLineNum = uLastNum;
-
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
                     } // End IF
 
                     // Mark as immediate execution
-                    esState.exType = EX_IMMEX;
-                    ExecuteLine (uLineNum, &esState, hWndEC);
+                    lpMemPTD->execState.exType = EX_IMMEX;
+
+                    // Copy execState so we can unlock hGlbPTD
+                    execState = lpMemPTD->execState;
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                    // Execute the line
+                    ExecuteLine (uLineNum, &execState, hWndEC);
 
                     break;
 

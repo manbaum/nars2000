@@ -26,34 +26,24 @@ extern FASTBOOLFNS FastBoolFns[];   // ***FIXME*** -- move into externs.h
 //    monadic operator Slope ("scan" and "ERROR")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimOpSlope_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimOpSlope_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    Assert (lpYYFcnStr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE
-         || lpYYFcnStr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR);
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonSlope_EM_YY (lpYYFcnStr,    // Ptr to operator function strand
-                                     lptkRhtArg,    // Ptr to right arg
-                                     lptkAxis);     // Ptr to axis token (may be NULL)
+        return PrimOpMonSlope_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
+                                     lptkRhtArg);   // Ptr to right arg
     else
         return PrimOpDydSlope_EM_YY (lptkLftArg,    // Ptr to left arg token
-                                     lpYYFcnStr,    // Ptr to operator function strand
-                                     lptkRhtArg,    // Ptr to right arg token
-                                     lptkAxis);     // Ptr to axis token (may be NULL)
+                                     lpYYFcnStrOpr, // Ptr to operator function strand
+                                     lptkRhtArg);   // Ptr to right arg token
 } // End PrimOpSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -63,34 +53,14 @@ LPYYSTYPE PrimOpSlope_EM_YY
 //    monadic operator Slope ("scan" and "ERROR")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimProtoOpSlope_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token
-     LPYYSTYPE lpYYFcnStrOpr,       // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimProtoOpSlope_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxis)             // Ptr to axis token always NULL)
 
 {
-    LPYYSTYPE lpYYFcnStrLft;        // Ptr to left operand function strand
-    LPPRIMFNS lpPrimProtoLft;       // Ptr to left operand prototype function
-
-    // Set ptr to left operand,
-    //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
-
-    // Get a ptr to the prototype function for the first symbol (a function or operator)
-    lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
-    if (!lpPrimProtoLft)
-    {
-        ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                  &lpYYFcnStrLft->tkToken);
-        return NULL;
-    } // End IF
+    Assert (lptkAxis EQ NULL);
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
@@ -99,15 +69,16 @@ LPYYSTYPE PrimProtoOpSlope_EM_YY
         //***************************************************************
         return PrimOpMonSlopeCommon_EM_YY (lpYYFcnStrOpr,   // Ptr to operator function strand
                                            lptkRhtArg,      // Ptr to right arg token
-                                           lptkAxis,        // Ptr to axis token (may be NULL)
-                                           lpPrimProtoLft); // Ptr to left operand prototype function
+                                           TRUE);           // TRUE iff prototyping
     else
         //***************************************************************
         // Called dyadically
         //***************************************************************
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+        return PrimOpDydSlopeCommon_EM_YY (lptkLftArg,      // Ptr to left arg token
+                                           lpYYFcnStrOpr,   // Ptr to operator function strand
+                                           lptkRhtArg,      // Ptr to right arg token
+                                           TRUE);           // TRUE iff prototyping
 } // End PrimProtoOpSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -116,24 +87,15 @@ LPYYSTYPE PrimProtoOpSlope_EM_YY
 //  Primitive operator for monadic derived function from Slope ("scan")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimOpMonSlope_EM_YY
-    (LPYYSTYPE lpYYFcnStrOpr,       // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimOpMonSlope_EM_YY
+    (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
     return PrimOpMonSlopeCommon_EM_YY (lpYYFcnStrOpr,       // Ptr to operator function strand
                                        lptkRhtArg,          // Ptr to right arg token
-                                       lptkAxis,            // Ptr to axis token (may be NULL)
-                                       NULL);               // Ptr to left operand function strand
+                                       FALSE);              // TRUE iff prototyping
 } // End PrimOpMonSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -148,54 +110,75 @@ LPYYSTYPE PrimOpMonSlope_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpMonSlopeCommon_EM_YY
-    (LPYYSTYPE lpYYFcnStrOpr,       // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis,            // Ptr to axis token (may be NULL)
-     LPPRIMFNS lpPrimProtoLft)      // Ptr to left operand prototype strand
+LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
+    (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     BOOL         bPrototyping)         // TRUE if prototyping
 
 {
-    APLSTYPE    aplTypeRht,         // Right arg storage type
-                aplTypeRes;         // Result    ...
-    APLNELM     aplNELMRht,         // Right arg NELM
-                aplNELMRes;         // Result    ...
-    APLRANK     aplRankRht,         // Right arg rank
-                aplRankRes;         // Result    ...
-    APLUINT     aplAxis,            // The (one and only) axis value
-                uLo,                // uDimLo loop counter
-                uHi,                // uDimHi ...
-                uDim,
-                uDimLo,             // Product of dimensions below axis
-                uDimHi,             // ...                   above ...
-                uDimRht,            // Starting index in right arg of current vector
-////            uDimRes,            // ...               result    ...
-                uDimAxRht,          // Right arg axis dimension
-                uRht,               // Right arg loop counter
-                uRes,               // Result loop counter
-                ByteRes;            // # bytes in the result
-    APLINT  ////iDim,               // Integer dimension loop counter
-                apaOffRht,          // Right arg APA offset
-                apaMulRht;          // ...           multiplier
-    HGLOBAL     hGlbRht = NULL,     // Right arg global memory handle
-                hGlbRes = NULL;     // Result    ...
-    LPVOID      lpMemRht = NULL,    // Ptr to right arg global memory
-                lpMemRes = NULL;    // Ptr to result    ...
-    LPAPLDIM    lpMemDimRht;        // Ptr to right arg dimensions
-    BOOL        bRet = TRUE,        // TRUE iff result is valid
-                bFastBool = FALSE;  // TRUE iff this is a Fast Boolean operation
-////LPPRIMSPEC  lpPrimSpec;         // Ptr to local PRIMSPEC
-    LPPRIMFLAGS lpPrimFlags;        // Ptr to corresponding PrimFlags entry
-    LPYYSTYPE   lpYYRes = NULL;     // Ptr to the result
-    LPYYSTYPE   lpYYFcnStrLft;      // Ptr to left operand function strand
-    TOKEN       tkLftArg = {0},     // Left arg token
-                tkRhtArg = {0};     // Right ...
+    APLSTYPE     aplTypeRht,        // Right arg storage type
+                 aplTypeRes;        // Result    ...
+    APLNELM      aplNELMRht,        // Right arg NELM
+                 aplNELMRes;        // Result    ...
+    APLRANK      aplRankRht,        // Right arg rank
+                 aplRankRes;        // Result    ...
+    APLUINT      aplAxis,           // The (one and only) axis value
+                 uLo,               // uDimLo loop counter
+                 uHi,               // uDimHi ...
+                 uDim,
+                 uDimLo,            // Product of dimensions below axis
+                 uDimHi,            // ...                   above ...
+                 uDimRht,           // Starting index in right arg of current vector
+////             uDimRes,           // ...               result    ...
+                 uDimAxRht,         // Right arg axis dimension
+                 uRht,              // Right arg loop counter
+                 uRes,              // Result loop counter
+                 ByteRes;           // # bytes in the result
+    APLINT       apaOffRht,         // Right arg APA offset
+                 apaMulRht;         // ...           multiplier
+    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
+                 hGlbRes = NULL;    // Result    ...
+    LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
+                 lpMemRes = NULL;   // Ptr to result    ...
+    LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
+    BOOL         bRet = TRUE,       // TRUE iff result is valid
+                 bFastBool = FALSE; // TRUE iff this is a Fast Boolean operation
+////LPPRIMSPEC   lpPrimSpec;        // Ptr to local PRIMSPEC
+    LPPRIMFLAGS  lpPrimFlags;       // Ptr to corresponding PrimFlags entry
+    TOKEN        tkLftArg = {0},    // Left arg token
+                 tkRhtArg = {0};    // Right ...
+    LPTOKEN      lptkAxis;          // Ptr to axis token (may be NULL)
+    LPPL_YYSTYPE lpYYRes = NULL,    // Ptr to the result
+                 lpYYFcnStrLft;     // Ptr to left operand function strand
+    LPPRIMFNS    lpPrimProtoLft;    // Ptr to left operand prototype function
 
-    // Get the attributes (Type, NELM, and Rank) of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    // Check for axis operator
+    if (lpYYFcnStrOpr->FcnCount > 1
+     && (lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+      || lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+        lptkAxis = &lpYYFcnStrOpr[1].tkToken;
+    else
+        lptkAxis = NULL;
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
+
+    // Get a ptr to the prototype function for the first symbol (a function or operator)
+    if (bPrototyping)
+    {
+        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        if (!lpPrimProtoLft)
+        {
+            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                                      &lpYYFcnStrLft->tkToken);
+            return NULL;
+        } // End IF
+    } else
+        lpPrimProtoLft = NULL;
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -233,7 +216,7 @@ LPYYSTYPE PrimOpMonSlopeCommon_EM_YY
                                               hGlbRht,          // Right arg global memory handle
                                               lpMemRht,         // Ptr to right arg global memory
                                               lpYYFcnStrOpr,    // Ptr to operator function strand
-                                              lpPrimProtoLft);  // Ptr to lefft operand prototype function
+                                              bPrototyping);    // TRUE iff prototyping
         goto NORMAL_EXIT;
     } // End IF
 
@@ -502,7 +485,8 @@ LPYYSTYPE PrimOpMonSlopeCommon_EM_YY
                     else
                         lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
                                                       lpYYFcnStrLft,    // Ptr to function strand
-                                                     &tkRhtArg);        // Ptr to right arg token
+                                                     &tkRhtArg,         // Ptr to right arg token
+                                                      lptkAxis);        // Ptr to axis token (may be NULL)
                     // Free the left & right arg tokens
                     FreeResult (&tkRhtArg);
                     FreeResult (&tkLftArg);
@@ -587,7 +571,8 @@ LPYYSTYPE PrimOpMonSlopeCommon_EM_YY
                     else
                         lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
                                                       lpYYFcnStrLft,    // Ptr to function strand
-                                                     &tkRhtArg);        // Ptr to right arg token
+                                                     &tkRhtArg,         // Ptr to right arg token
+                                                      lptkAxis);        // Ptr to axis token (may be NULL)
                     // Free the left & right arg tokens
                     FreeResult (&tkRhtArg);
                     FreeResult (&tkLftArg);
@@ -687,22 +672,34 @@ NORMAL_EXIT:
 //  Primitive operator for dyadic derived function from Slope ("ERROR")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimOpDydSlope_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimOpDydSlope_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimFnSyntaxError_EM (&lpYYFcnStr->tkToken);
+    return PrimOpDydSlopeCommon_EM_YY (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                                       lpYYFcnStrOpr,   // Ptr to operator function strand
+                                       lptkRhtArg,      // Ptr to right arg token
+                                       FALSE);          // TRUE iff prototyping
 } // End PrimOpDydSlope_EM_YY
-#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimOpDydSlopeCommon_EM_YY
+//
+//  Primitive operator for dyadic derived function from Slope ("ERROR")
+//***************************************************************************
+
+LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     BOOL         bPrototyping)         // TRUE if prototyping
+
+{
+    return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+} // End PrimOpDydClopeCommon_EM_YY
 
 
 //***************************************************************************

@@ -28,7 +28,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnSlash_EM_YY
+LPPL_YYSTYPE PrimFnSlash_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -60,7 +60,7 @@ LPYYSTYPE PrimFnSlash_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnSlash_EM_YY
+LPPL_YYSTYPE PrimProtoFnSlash_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -93,7 +93,7 @@ LPYYSTYPE PrimProtoFnSlash_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonSlash_EM_YY
+LPPL_YYSTYPE PrimFnMonSlash_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -116,64 +116,64 @@ LPYYSTYPE PrimFnMonSlash_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydSlash_EM_YY
+LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,
-              aplTypeRht,
-              aplTypeRes;
-    APLNELM   aplNELMLft,
-              aplNELMRht,
-              aplNELMRes;
-    APLRANK   aplRankLft,
-              aplRankRht,
-              aplRankRes;
-    HGLOBAL   hGlbLft = NULL,
-              hGlbRht = NULL,
-              hGlbRes = NULL,
-              hGlbRep = NULL;
-    LPAPLDIM  lpMemDimRht = NULL;
-    LPVOID    lpMemLft = NULL,
-              lpMemRht = NULL,
-              lpMemRes = NULL;
-    LPAPLINT  lpMemRep = NULL;
-    BOOL      bRet = TRUE;
-    APLUINT   aplAxis,      // The (one and only) axis value
-              ByteRes,
-              uLo,
-              uDimLo,
-              uAx,
-              uDimAxRht,
-              uDimAxRes,
-              uHi,
-              uDimHi,
-              uDim,
-              uDimRht,
-              uDimRes,
-              uRes,
-              uRht,
-              uRep,
-              uAcc,
-              uLen;
-    APLINT    aplIntegerLft,
-              aplIntegerRht,
-              aplIntegerRep,
-              apaOff,
-              apaMul;
-    APLFLOAT  aplFloatLft,
-              aplFloatRht,
-              aplFloatRep;
-    APLCHAR   aplCharRht,
-              aplCharRep;
-    APLNESTED aplNestRht,
-              aplNestRep;
-    LPYYSTYPE lpYYRes;
-    UINT      uBitMask,
-              uBitIndex;
+    APLSTYPE     aplTypeLft,
+                 aplTypeRht,
+                 aplTypeRes;
+    APLNELM      aplNELMLft,
+                 aplNELMRht,
+                 aplNELMRes;
+    APLRANK      aplRankLft,
+                 aplRankRht,
+                 aplRankRes;
+    HGLOBAL      hGlbLft = NULL,
+                 hGlbRht = NULL,
+                 hGlbRes = NULL,
+                 hGlbRep = NULL;
+    LPAPLDIM     lpMemDimRht = NULL;
+    LPVOID       lpMemLft = NULL,
+                 lpMemRht = NULL,
+                 lpMemRes = NULL;
+    LPAPLINT     lpMemRep = NULL;
+    BOOL         bRet = TRUE;
+    APLUINT      aplAxis,           // The (one and only) axis value
+                 ByteRes,
+                 uLo,
+                 uDimLo,
+                 uAx,
+                 uDimAxRht,
+                 uDimAxRes,
+                 uHi,
+                 uDimHi,
+                 uDim,
+                 uDimRht,
+                 uDimRes,
+                 uRes,
+                 uRht,
+                 uRep,
+                 uAcc,
+                 uLen;
+    APLINT       aplIntegerLft,
+                 aplIntegerRht,
+                 aplIntegerRep,
+                 apaOff,
+                 apaMul;
+    APLFLOAT     aplFloatLft,
+                 aplFloatRht,
+                 aplFloatRep;
+    APLCHAR      aplCharRht,
+                 aplCharRep;
+    APLNESTED    aplNestRht,
+                 aplNestRep;
+    LPPL_YYSTYPE lpYYRes;
+    UINT         uBitMask,
+                 uBitIndex;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);

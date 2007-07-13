@@ -2,6 +2,7 @@ TO DO:  General:  Important
 ---------------------------
 * Make <dtoa.c> multi-threaded
 * Move registry info into <nars2000.ini> file
+* Remove apaLen from APA definition
 * Implement dyadic epsilon              (member of)
 * ...       dyadic down tack jot        (format by specification)
 * ...       dyadic iota                 (index of)
@@ -20,7 +21,6 @@ TO DO:  General:  Important
 * ...       dyadic down tack            (representation)
 * ...       dyadic right shoe           (pick)
 * ...       dyadic up tack              (base value)
-* ...       dyadic squad                (indexing)
 * ...       bracket indexing             A[B]
 * ...       bracket indexed assignment   A[B]{is}C
 * ...       quad/quote-quad input

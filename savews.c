@@ -411,15 +411,15 @@ BOOL CmdSaveWS_EM
                             hGlbTxtLine = ((LPFCNARRAY_HEADER) lpMemObj)->hGlbTxtLine;
 
                             // Lock the memory to get a ptr to it
-                            lpMemTxtLine.V = MyGlobalLock (hGlbTxtLine);
+                            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
                             // Format the text as an ASCII string with non-ASCII chars
                             //   represented as either {symbol} or \xXXXX where XXXX is
                             //   a four-digit hex number.
-                            lpaplChar += ConvertWideToName (lpaplChar, (LPAPLCHAR) &lpMemTxtLine.U[1]);
+                            lpaplChar += ConvertWideToName (lpaplChar, &lpMemTxtLine->C);
 
                             // We no longer need this ptr
-                            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine.V = NULL;
+                            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
                             break;
 
@@ -620,15 +620,15 @@ void WriteFunctionLine
                L"%d",
                uLineNum);
     // Lock the memory to get a ptr to it
-    lpMemTxtLine.V = MyGlobalLock (hGlbTxtLine);
+    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
     // Format the text as an ASCII string with non-ASCII chars
     //   represented as either {symbol} or \xXXXX where XXXX is
     //   a four-digit hex number.
-    ConvertWideToName (lpwFormat, (LPWCHAR) &lpMemTxtLine.U[1]);
+    ConvertWideToName (lpwFormat, &lpMemTxtLine->C);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine.V = NULL;
+    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
     // Write out the entry (nnn = FunctionLine)
     WritePrivateProfileStringW (lpwszSectName,

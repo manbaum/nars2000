@@ -61,10 +61,9 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"rl"       , SYSVAR,      TRUE , NULL          , SYSVAR_RL  },  //  8:  Random Link
     {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , NULL          , SYSVAR_SA  },  //  9:  Stop Action
     {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL          , SYSVAR_WSID},  // 10:  Workspace Identifier
-    {WS_UTF16_QUAD L"axis"     , SYSVAR,      TRUE , NULL          , SYSVAR_AXIS},  // 11:  Defined function axis value
-    {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL          , 0          },  // 12:  Defined function entry point for Inverse
-    {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL          , 0          },  // 13:  ...                              Prototype
-    {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL          , 0          },  // 14:  ...                              Singleton
+    {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL          , 0          },  // 11:  Defined function entry point for Inverse
+    {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL          , 0          },  // 12:  ...                              Prototype
+    {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL          , 0          },  // 13:  ...                              Singleton
 
 ////{WS_UTF16_QUAD L"ai"       ,      0,      FALSE, SysFnAI_EM    , 0          },  // Accounting Information
 ////{WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM    , 0          },  // Atomic Vector
@@ -325,7 +324,6 @@ BOOL InitSystemNames_EM
     ptdSysVarSym[SYSVAR_RL  ] = &lpMemPTD->lpSymQuadRL  ;
     ptdSysVarSym[SYSVAR_SA  ] = &lpMemPTD->lpSymQuadSA  ;
     ptdSysVarSym[SYSVAR_WSID] = &lpMemPTD->lpSymQuadWSID;
-    ptdSysVarSym[SYSVAR_AXIS] = &lpMemPTD->lpSymQuadAXIS;
 
     Assert (HshTabFrisk ());
 
@@ -1882,23 +1880,6 @@ BOOL ValidateALX_EM
 
 
 //***************************************************************************
-//  $ValidateAXIS_EM
-//
-//  Validate a value about to be assigned to Quad-AXIS
-//***************************************************************************
-
-BOOL ValidateAXIS_EM
-    (LPTOKEN lptkName,              // Ptr to name token
-     LPTOKEN lpToken)               // Ptr to value token
-
-{
-    // Ensure the argument is an integer scalar (promoted to a vector)
-    //   or an integer vector.
-    return ValidateIntegerVector_EM (lptkName, lpToken);
-} // End ValidateAXIS_EM
-
-
-//***************************************************************************
 //  $ValidateCT_EM
 //
 //  Validate a value about to be assigned to Quad-CT
@@ -2473,7 +2454,6 @@ BOOL InitSystemVars
     aSysVarValid[SYSVAR_RL  ] = ValidateRL_EM  ;
     aSysVarValid[SYSVAR_SA  ] = ValidateSA_EM  ;
     aSysVarValid[SYSVAR_WSID] = ValidateWSID_EM;
-    aSysVarValid[SYSVAR_AXIS] = ValidateAXIS_EM;
 
     // Assign default values to the system vars
     if (!AssignCharVector_EM (WS_UTF16_QUAD L"alx" , hGlbQuadALX_CWS   , SYSVAR_ALX , lpMemPTD->lpSymQuadALX      )) return FALSE;   // Attention Latent Expression

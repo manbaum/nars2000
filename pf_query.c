@@ -74,7 +74,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnQuery_EM_YY
+LPPL_YYSTYPE PrimFnQuery_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -105,7 +105,7 @@ LPYYSTYPE PrimFnQuery_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnQuery_EM_YY
+LPPL_YYSTYPE PrimProtoFnQuery_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -296,7 +296,7 @@ APLINT PrimFnMonQueryIisF
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydQuery_EM_YY
+LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -325,7 +325,7 @@ LPYYSTYPE PrimFnDydQuery_EM_YY
                  uTmp,              // Temporary ...
                  uSub;              // Subarray  ...
     BOOL         bRet = TRUE;       // TRUE iff result is valid
-    LPYYSTYPE    lpYYRes;           // Ptr to the result
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     APLBOOL      bQuadIO;           // []IO

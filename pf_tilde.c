@@ -71,7 +71,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTilde};
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnTilde_EM_YY
+LPPL_YYSTYPE PrimFnTilde_EM_YY
     (LPTOKEN lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -102,7 +102,7 @@ LPYYSTYPE PrimFnTilde_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnTilde_EM_YY
+LPPL_YYSTYPE PrimProtoFnTilde_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -232,25 +232,25 @@ APLBOOL PrimFnMonTildeBisF
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydTilde_EM_YY
+LPPL_YYSTYPE PrimFnDydTilde_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE  aplTypeLft,           // Left arg storage type
-              aplTypeRht;           // Right ...
-    APLNELM   aplNELMLft,           // Left arg NELM
-              aplNELMRht;           // Right ...
-    APLRANK   aplRankLft,           // Left arg rank
-              aplRankRht;           // Right ...
-    HGLOBAL   hGlbLft = NULL,       // Left arg global memory handle
-              hGlbRht = NULL;       // Right ...
-    LPVOID    lpMemLft = NULL,      // Ptr to left arg global memory
-              lpMemRht = NULL;      // Ptr to right ...
-    BOOL      bRet = TRUE;          // TRUE iff result is valid
-    LPYYSTYPE lpYYRes = NULL;       // Ptr to result
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht;        // Right ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht;        // Right ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht;        // Right ...
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRht = NULL;    // Right ...
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL;   // Ptr to right ...
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

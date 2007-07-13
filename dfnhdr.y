@@ -29,7 +29,7 @@
 #endif
 
 #define    YYSTYPE     FH_YYSTYPE
-#define  LPYYSTYPE     FH_LPYYSTYPE
+#define  LPYYSTYPE   LPFH_YYSTYPE
 #define tagYYSTYPE  tagFH_YYSTYPE
 
 // The following #defines are needed to allow multiple parses
@@ -48,7 +48,7 @@
 %name-prefix="fh_yy"
 %parse-param {LPFHLOCALVARS lpfhLocalVars}
 %lex-param   {LPFHLOCALVARS lpfhLocalVars}
-%token NAMEUNK NAMESYS ASSIGN LINECONT UNK
+%token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK
 
 %start Header
 
@@ -121,10 +121,25 @@ one of the following phrases:
     (Z) {is}
 (Z1 Z2) {is}
 
-that makes 3 x 55 = 165 cases.
+and then almost everything again once more, with FOO replaced by FOO[X],
+except for the four niladic cases.
+
+That makes (2 x 4 x 55) - 4 = 436 cases.
 
  */
 
+
+AxisOpr:
+      NAMEOPR '[' NAMEUNK ']'   {DbgMsgW2 (L"%%AxisOpr:  NAMEUNK[NAMEUNK]");
+                                 InitHdrStrand (&$1);
+                                 PushHdrStrand (&$1);
+                                 PushHdrStrand (&$3);
+                                 $$ = *MakeHdrStrand (&$1);
+                                 lpfhLocalVars->DfnAxis  = 1;
+                                 lpfhLocalVars->lpYYAxisOpr = $3.lpYYStrandIndirect;
+                                 $$ = $1;
+                                }
+    ;
 
 OpenList:
                NAMEUNK          {DbgMsgW2 (L"%%OpenList:  NAMEUNK");
@@ -136,6 +151,31 @@ OpenList:
                                 }
     ;
 
+AxisList:
+      '('          AxisOpr          ')'
+                                {DbgMsgW2 (L"%%AxisList:  (AxisOpr)");
+                                 InitHdrStrand (&$2);
+                                 $2.Indirect = 1;
+                                 PushHdrStrand (&$2);
+                                 $$ = *MakeHdrStrand (&$2);
+                                }
+    | '(' NAMEUNK  AxisOpr          ')'
+                                {DbgMsgW2 (L"%%AxisList:  (NAMEUNK AxisOpr)");
+                                 PushHdrStrand (&$2);
+                                 $3.Indirect = 1;
+                                 PushHdrStrand (&$3);
+                                 $$ = *MakeHdrStrand (&$2);
+                                }
+    | '(' NAMEUNK  AxisOpr NAMEUNK ')'
+                                {DbgMsgW2 (L"%%AxisList:  (NAMEUNK AxisOpr NAMEUNK)");
+                                 PushHdrStrand (&$2);
+                                 $3.Indirect = 1;
+                                 PushHdrStrand (&$3);
+                                 PushHdrStrand (&$4);
+                                 $$ = *MakeHdrStrand (&$2);
+                                }
+    ;
+
 List:
       '(' OpenList ')'          {DbgMsgW2 (L"%%List:  '(' OpenList ')'");
                                  $$ = *MakeHdrStrand (&$2);
@@ -143,11 +183,11 @@ List:
     ;
 
 Result:
-      List    ASSIGN            {DbgMsgW2 (L"%%Result:  List ASSIGN");
+      List    ASSIGN            {DbgMsgW2 (L"%%Result:  List" WS_UTF16_LEFTARROW);
                                  lpfhLocalVars->lpYYResult = &$1;
                                  $$ = $1;
                                 }
-    | NAMEUNK ASSIGN            {DbgMsgW2 (L"%%Result:  NAMEUNK ASSIGN");
+    | NAMEUNK ASSIGN            {DbgMsgW2 (L"%%Result:  NAMEUNK" WS_UTF16_LEFTARROW);
                                  InitHdrStrand (&$1);
                                  PushHdrStrand (&$1);
                                  $$ = *MakeHdrStrand (&$1);
@@ -156,11 +196,14 @@ Result:
     ;
 
 OptArg:
-      '[' List     ']'          {DbgMsgW2 (L"%%OptArg:  '[' List ']'");
+      '[' List     ']'          {DbgMsgW2 (L"%%OptArg:  [List]");
                                  $$ = $2;
                                 }
-    | '[' OpenList ']'          {DbgMsgW2 (L"%%OptArg:  '[' OpenList ']'");
+    | '[' OpenList ']'          {DbgMsgW2 (L"%%OptArg:  [OpenList]");
                                  $$ = *MakeHdrStrand (&$2);
+                                }
+    | '(' '[' OpenList ']' ')'  {DbgMsgW2 (L"%%OptArg:  ([OpenList])");
+                                 $$ = *MakeHdrStrand (&$3);
                                 }
     ;
 
@@ -188,7 +231,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
                                 }
 
-    |         NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK RhtArg");         // Monadic function
+    |         AxisOpr  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  AxisOpr RhtArg");         // Monadic function w/axis operator
                                  InitHdrStrand (&$1);
                                  PushHdrStrand (&$1);
                                  MakeHdrStrand (&$1);
@@ -199,7 +242,18 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
 
-    | NAMEUNK NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK NAMEUNK RhtArg"); // Dyadic function
+    |         NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK RhtArg");         // Monadic function
+                                 InitHdrStrand (&$1);
+                                 PushHdrStrand (&$1);
+                                 MakeHdrStrand (&$1);
+
+                                 lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
+                                }
+
+    | NAMEUNK AxisOpr  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK AxisOpr RhtArg"); // Dyadic function w/axis operator
                                  InitHdrStrand (&$1);
                                  PushHdrStrand (&$1);
                                  MakeHdrStrand (&$1);
@@ -214,7 +268,11 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
-    | List    NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  List NAMEUNK RhtArg");    // Dyadic function
+    | NAMEUNK NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK NAMEUNK RhtArg"); // Dyadic function
+                                 InitHdrStrand (&$1);
+                                 PushHdrStrand (&$1);
+                                 MakeHdrStrand (&$1);
+
                                  InitHdrStrand (&$2);
                                  PushHdrStrand (&$2);
                                  MakeHdrStrand (&$2);
@@ -225,7 +283,29 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
-    | OptArg  NAMEUNK RhtArg    {DbgMsgW2 (L"%%NoResHdr:  OptArg NAMEUNK RhtArg");  // Bivalent function
+    | List    AxisOpr  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  List AxisOpr RhtArg");    // Dyadic function w/axis operator
+                                 InitHdrStrand (&$2);
+                                 PushHdrStrand (&$2);
+                                 MakeHdrStrand (&$2);
+
+                                 lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
+                                }
+    | List    NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  List NAMEUNK RhtArg");    // Dyadic function
+                                 InitHdrStrand (&$2);
+                                 PushHdrStrand (&$2);
+                                 MakeHdrStrand (&$2);
+
+                                 lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
+                                }
+    | OptArg  AxisOpr  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg AxisOpr RhtArg");  // Bivalent function w/axis operator
                                  InitHdrStrand (&$2);
                                  PushHdrStrand (&$2);
                                  MakeHdrStrand (&$2);
@@ -236,38 +316,77 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
                                 }
-    |         List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  List RhtArg");            // Mon/Dyd operator, monadic derived function
+    | OptArg  NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg NAMEUNK RhtArg");  // Bivalent function
+                                 InitHdrStrand (&$2);
+                                 PushHdrStrand (&$2);
+                                 MakeHdrStrand (&$2);
+
+                                 lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
+                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
+                                }
+    |        AxisList  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  AxisList RhtArg");        // Mon/Dyd operator, monadic derived function w/axis operator
                                  if (!GetOprName (&$1))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
-    | NAMEUNK List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK List RhtArg");    // Mon/Dyd operator, dyadic derived function
-                                 if (!GetOprName (&$2))
+    |         List     RhtArg   {DbgMsgW2 (L"%%NoResHdr:  List RhtArg");            // Mon/Dyd operator, monadic derived function
+                                 if (!GetOprName (&$1))
                                      YYERROR;
 
-                                 lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
-                                 lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
-                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_MON;       // Mark as monadic
                                 }
-    | List    List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  List List RhtArg");       // Mon/Dyd operator, dyadic derived function
+    | NAMEUNK AxisList RhtArg   {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK AxisList RhtArg");// Mon/Dyd operator, dyadic derived function w/axis operator
                                  if (!GetOprName (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
-                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
                                 }
-    | OptArg  List    RhtArg    {DbgMsgW2 (L"%%NoResHdr:  OptArg List RhtArg");     // Mon/Dyd operator, ambivalent derived function
+    | NAMEUNK List     RhtArg   {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK List RhtArg");    // Mon/Dyd operator, dyadic derived function
                                  if (!GetOprName (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
-                                 lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
+                                }
+    | List    AxisList RhtArg   {DbgMsgW2 (L"%%NoResHdr:  List AxisList RhtArg");   // Mon/Dyd operator, dyadic derived function w/axis operator
+                                 if (!GetOprName (&$2))
+                                     YYERROR;
+
+                                 lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
+                                }
+    | List    List     RhtArg   {DbgMsgW2 (L"%%NoResHdr:  List List RhtArg");       // Mon/Dyd operator, dyadic derived function
+                                 if (!GetOprName (&$2))
+                                     YYERROR;
+
+                                 lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
+                                }
+    | OptArg  AxisList RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg AxisList RhtArg"); // Mon/Dyd operator, ambivalent derived function w/axis operator
+                                 if (!GetOprName (&$2))
+                                     YYERROR;
+
+                                 lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
+                                 lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
+                                }
+    | OptArg  List     RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg List RhtArg");     // Mon/Dyd operator, ambivalent derived function
+                                 if (!GetOprName (&$2))
+                                     YYERROR;
+
+                                 lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
+                                 lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
                                 }
     ;
@@ -280,9 +399,6 @@ Locals:
                                  $$ = *PushHdrStrand (&$2);
                                 }
     |         ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  ':' NAMESYS");
-                                 if (NameIsAxis (&$2.tkToken))
-                                     lpfhLocalVars->DfnAxis = 1;
-                                 else
                                  if (!$2.tkToken.tkData.tkSym->stFlags.Value)
                                      YYERROR;
                                  InitHdrStrand (&$2);
@@ -294,9 +410,6 @@ Locals:
                                  $$ = *PushHdrStrand (&$3);
                                 }
     | Locals  ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  Locals ':' NAMESYS");
-                                 if (NameIsAxis (&$3.tkToken))
-                                     lpfhLocalVars->DfnAxis = 1;
-                                 else
                                  if (!$3.tkToken.tkData.tkSym->stFlags.Value)
                                      YYERROR;
                                  $$ = *PushHdrStrand (&$3);
@@ -304,7 +417,12 @@ Locals:
     ;
 
 Header:
-              error             {DbgMsgW2 (L"%%Header:  error");
+        /* Empty */             {DbgMsgW2 (L"%%Header:  <empty>");
+#ifdef DEBUG
+                                 DisplayFnHdr (lpfhLocalVars);
+#endif
+                                }
+    |         error             {DbgMsgW2 (L"%%Header:  error");
                                  YYABORT;
                                 }
 
@@ -380,6 +498,26 @@ BOOL ParseHeader
     // Start off with no error
     lpfhLocalVars->tkErrorCharIndex = NEG1U;
 
+    // Allocate virtual memory for the Header Strand accumulator
+    lpfhLocalVars->lpYYStrandStart =
+        VirtualAlloc (NULL,      // Any address
+                      DEF_STRAND_MAXSIZE * sizeof (FH_YYSTYPE),
+                      MEM_RESERVE,
+                      PAGE_READWRITE);
+    if (!lpfhLocalVars->lpYYStrandStart)
+    {
+        // ***FIXME*** -- WS FULL before we got started???
+        DbgMsg ("ParseHeader:  VirtualAlloc for <lpfhLocalVars->lpYYStrandStart> failed");
+
+        goto ERROR_EXIT;    // Mark as failed
+    } // End IF
+
+    // Commit the intial size
+    VirtualAlloc (lpfhLocalVars->lpYYStrandStart,
+                  DEF_STRAND_INITSIZE * sizeof (FH_YYSTYPE),
+                  MEM_COMMIT,
+                  PAGE_READWRITE);
+
     // Use VirtualAlloc for the parser stack
     // ***FIXME***
 
@@ -403,6 +541,11 @@ BOOL ParseHeader
 
     // Parse the header, check for errors
     bRet = fh_yyparse (lpfhLocalVars) EQ 0;
+ERROR_EXIT:
+    if (lpfhLocalVars->lpYYStrandStart)
+    {
+        VirtualFree (lpfhLocalVars->lpYYStrandStart, 0, MEM_RELEASE); lpfhLocalVars->lpYYStrandStart = NULL;
+    } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (lpfhLocalVars->hGlbTknHdr); lpfhLocalVars->t2.lpBase = NULL;
@@ -426,53 +569,22 @@ BOOL ValidSysName
 
 
 //***************************************************************************
-//  $NameIsAxis
-//
-//  Return TRUE if the token's name is {quad}axis
-//***************************************************************************
-
-BOOL NameIsAxis
-    (LPTOKEN lptkName)      // Ptr to name token
-
-{
-    HGLOBAL   hGlbName;     // HTE name global memory handle
-    LPAPLCHAR lpMemName;    // Ptr to STE name global memory
-    BOOL      bRet;         // TRUE iff the name is {quad}axis
-
-    // tkData is an LPSYMENTRY
-    Assert (GetPtrTypeDir (lptkName->tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-    // Get the STE name's global memory handle
-    hGlbName = lptkName->tkData.tkSym->stHshEntry->htGlbName;
-
-    // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (hGlbName);
-
-    // Compare the two names, case insensitive
-    bRet = lstrcmpiW (lpMemName, WS_UTF16_QUAD L"axis") EQ 0;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbName); lpMemName = NULL;
-
-    return bRet;
-} // End NameIsAxis
-
-
-//***************************************************************************
 //  $fh_yylex
 //
 //  Lexical analyzer for Bison
 //***************************************************************************
 
 int fh_yylex
-    (LPYYSTYPE     lpYYLval,            // Ptr to lval
+    (LPFH_YYSTYPE  lpYYLval,            // Ptr to lval
      LPFHLOCALVARS lpfhLocalVars)       // Ptr to local fhLocalVars
 
 {
     // Return the current token
-    lpYYLval->tkToken        = *lpfhLocalVars->lpNext;
-    lpYYLval->uStrandLen     = 0;
-    lpYYLval->lpYYStrandBase = lpfhLocalVars->lpYYStrandBase;
+    lpYYLval->tkToken            = *lpfhLocalVars->lpNext;
+    lpYYLval->uStrandLen         =
+    lpYYLval->Indirect           = 0;
+    lpYYLval->lpYYStrandIndirect = NULL;
+    lpYYLval->lpYYStrandBase     = lpfhLocalVars->lpYYStrandBase;
 
     // Check for stopping point
     if (lpfhLocalVars->lpStop EQ lpfhLocalVars->lpNext)
@@ -482,10 +594,17 @@ int fh_yylex
     switch (lpfhLocalVars->lpNext++->tkFlags.TknType)
     {
         case TKT_VARNAMED:
+            // If the token is a sysname, return NAMESYS
             if (lpfhLocalVars->lpNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
                 return NAMESYS;
             else
-                return NAMEUNK;
+            {
+                // If the next token is a left bracket, return NAMEOPR
+                if (lpfhLocalVars->lpNext->tkFlags.TknType EQ TKT_LBRACKET)
+                    return NAMEOPR;
+                else
+                    return NAMEUNK;
+            } // End IF
 
         case TKT_ASSIGN:
             return ASSIGN;
@@ -646,7 +765,7 @@ void fh_yyfprintf
 //***************************************************************************
 
 void InitHdrStrand
-    (LPYYSTYPE lpYYArg)             // Ptr to the incoming argument
+    (LPFH_YYSTYPE lpYYArg)          // Ptr to the incoming argument
 
 {
     LPFHLOCALVARS lpfhLocalVars;    // Ptr to local fhLocalVars
@@ -666,8 +785,8 @@ void InitHdrStrand
 //  Push a header token onto the strand stack.
 //***************************************************************************
 
-LPYYSTYPE PushHdrStrand
-    (LPYYSTYPE lpYYArg)             // Ptr to the incoming argument
+LPFH_YYSTYPE PushHdrStrand
+    (LPFH_YYSTYPE lpYYArg)          // Ptr to the incoming argument
 
 {
     LPFHLOCALVARS lpfhLocalVars;    // Ptr to local plLocalVars
@@ -677,6 +796,11 @@ LPYYSTYPE PushHdrStrand
 
     // Copy the strand base to the result
     lpYYArg->lpYYStrandBase = lpfhLocalVars->lpYYStrandBase;
+
+    // Return our own position so the next user
+    //   of this token can refer to it.
+    if (!lpYYArg->lpYYStrandIndirect)
+        lpYYArg->lpYYStrandIndirect = lpfhLocalVars->lpYYStrandNext;
 
     // Save this token on the strand stack
     //   and skip over it
@@ -698,8 +822,8 @@ LPYYSTYPE PushHdrStrand
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE MakeHdrStrand
-    (LPYYSTYPE lpYYArg)             // Ptr to incoming token
+LPFH_YYSTYPE MakeHdrStrand
+    (LPFH_YYSTYPE lpYYArg)          // Ptr to incoming token
 
 {
     LPFHLOCALVARS lpfhLocalVars;    // Ptr to local fhLocalVars
@@ -727,10 +851,12 @@ LPYYSTYPE MakeHdrStrand
 //***************************************************************************
 
 BOOL GetOprName
-    (LPYYSTYPE lpYYArg)
+    (LPFH_YYSTYPE lpYYArg)
 
 {
     LPFHLOCALVARS lpfhLocalVars;    // Ptr to local fhLocalVars
+
+    DbgBrk ();
 
     // Get this thread's LocalVars ptr
     lpfhLocalVars = (LPFHLOCALVARS) TlsGetValue (dwTlsFhLocalVars);

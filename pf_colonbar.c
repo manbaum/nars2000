@@ -71,7 +71,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecColonBar};
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnColonBar_EM_YY
+LPPL_YYSTYPE PrimFnColonBar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token

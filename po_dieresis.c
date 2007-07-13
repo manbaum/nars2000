@@ -24,33 +24,23 @@
 //    monadic operator Dieresis ("each" and "each")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDieresis_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimOpDieresis_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token (may be NULL if monadic)
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimOpDieresis_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    Assert (lpYYFcnStr->tkToken.tkData.tkChar EQ UTF16_DIERESIS);
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DIERESIS);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonDieresis_EM_YY (lpYYFcnStr,     // Ptr to operator function strand
-                                        lptkRhtArg,     // Ptr to right arg token
-                                        lptkAxis);      // Ptr to axis token (may be NULL)
+        return PrimOpMonDieresis_EM_YY (lpYYFcnStrOpr,  // Ptr to operator function strand
+                                        lptkRhtArg);    // Ptr to right arg token
     else
         return PrimOpDydDieresis_EM_YY (lptkLftArg,     // Ptr to left arg token
-                                        lpYYFcnStr,     // Ptr to operator function strand
-                                        lptkRhtArg,     // Ptr to right arg token
-                                        lptkAxis);      // Ptr to axis token (may be NULL)
+                                        lpYYFcnStrOpr,  // Ptr to operator function strand
+                                        lptkRhtArg);    // Ptr to right arg token
 } // End PrimOpDieresis_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -60,55 +50,32 @@ LPYYSTYPE PrimOpDieresis_EM_YY
 //    monadic operator Dieresis ("each" and "each")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpDieresis_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimProtoOpDieresis_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimProtoOpDieresis_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxis)             // Ptr to axis token always NULL)
 
 {
-    LPYYSTYPE lpYYFcnStrLft;        // Ptr to left operand function strand
-    LPPRIMFNS lpPrimProtoLft;       // Ptr to left operand prototype function
-
-    // Set ptr to left operand,
-    //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
-
-    // Get a ptr to the prototype function for the first symbol (a function or operator)
-    lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
-    if (!lpPrimProtoLft)
-    {
-        ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                  &lpYYFcnStrLft->tkToken);
-        return NULL;
-    } // End IF
+    Assert (lptkAxis EQ NULL);
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
         //***************************************************************
         // Called monadically
         //***************************************************************
-        return PrimOpMonDieresisCommon_EM_YY (lpYYFcnStr,           // Ptr to operator function strand
+        return PrimOpMonDieresisCommon_EM_YY (lpYYFcnStrOpr,        // Ptr to operator function strand
                                               lptkRhtArg,           // Ptr to right arg token
-                                              lptkAxis,             // Ptr to axis token (may be NULL)
-                                              lpPrimProtoLft);      // Ptr to left operand prototype function
+                                              TRUE);                // TRUE iff prototyping
     else
         //***************************************************************
         // Called dyadically
         //***************************************************************
         return PrimOpDydDieresisCommon_EM_YY (lptkLftArg,           // Ptr to left arg token
-                                              lpYYFcnStr,           // Ptr to operator function strand
+                                              lpYYFcnStrOpr,        // Ptr to operator function strand
                                               lptkRhtArg,           // Ptr to right arg token
-                                              lptkAxis,             // Ptr to axis token (may be NULL)
-                                              lpPrimProtoLft);      // Ptr to left operand prototype function
+                                              TRUE);                // TRUE iff prototyping
 } // End PrimProtoOpDieresis_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -117,24 +84,15 @@ LPYYSTYPE PrimProtoOpDieresis_EM_YY
 //  Primitive operator for monadic derived function from Dieresis ("each")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonDieresis_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimOpMonDieresis_EM_YY
-    (LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimOpMonDieresis_EM_YY
+    (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimOpMonDieresisCommon_EM_YY (lpYYFcnStr,           // Ptr to operator function strand
+    return PrimOpMonDieresisCommon_EM_YY (lpYYFcnStrOpr,        // Ptr to operator function strand
                                           lptkRhtArg,           // Ptr to right arg token
-                                          lptkAxis,             // Ptr to axis token (may be NULL)
-                                          NULL);                // Ptr to left operand prototype function
+                                          FALSE);               // TRUE iff prototyping
 } // End PrimOpDieresis_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -149,32 +107,41 @@ LPYYSTYPE PrimOpMonDieresis_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpMonDieresisCommon_EM_YY
-    (LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis,            // Ptr to axis token (may be NULL)
-     LPPRIMFNS lpPrimProtoLft)      // Ptr to left operand prototype function (may be NULL if not prototyping)
+LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
+    (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     BOOL         bPrototyping)         // TRUE iff protoyping
 
 {
-    APLUINT   ByteRes;              // # bytes needed for the result
-    APLSTYPE  aplTypeRht,           // Right arg storage type
-              aplTypeRes;           // Result    ...
-    APLNELM   aplNELMRht;           // Right arg NELM
-    APLRANK   aplRankRht;           // Right arg rank
-    HGLOBAL   hGlbRht,              // Right arg global memory handle
-              hGlbRes;              // Result    ...
-    LPVOID    lpMemRht,             // Ptr to right arg global memory
-              lpMemRes;             // Ptr to result    ...
-    APLUINT   uRht,                 // Right arg loop counter
-              uRes;                 // Result    ...
-    LPYYSTYPE lpYYRes = NULL,       // Ptr to the result
-              lpYYRes2;             // Ptr to secondary result
-    APLINT    apaOff,               // Right arg APA offset
-              apaMul;               // ...           multiplier
-    TOKEN     tkRhtArg = {0};       // Right arg token
-    UINT      uBitMask;             // Bit mask for marching through Booleans
-    BOOL      bRet = TRUE;          // TRUE iff result is valid
-    LPYYSTYPE lpYYFcnStrLft;        // Ptr to left operand function strand
+    APLUINT      ByteRes;           // # bytes needed for the result
+    APLSTYPE     aplTypeRht,        // Right arg storage type
+                 aplTypeRes;        // Result    ...
+    APLNELM      aplNELMRht;        // Right arg NELM
+    APLRANK      aplRankRht;        // Right arg rank
+    HGLOBAL      hGlbRht,           // Right arg global memory handle
+                 hGlbRes;           // Result    ...
+    LPVOID       lpMemRht,          // Ptr to right arg global memory
+                 lpMemRes;          // Ptr to result    ...
+    APLUINT      uRht,              // Right arg loop counter
+                 uRes;              // Result    ...
+    LPPL_YYSTYPE lpYYRes = NULL,    // Ptr to the result
+                 lpYYRes2;          // Ptr to secondary result
+    APLINT       apaOff,            // Right arg APA offset
+                 apaMul;            // ...           multiplier
+    TOKEN        tkRhtArg = {0};    // Right arg token
+    UINT         uBitMask;          // Bit mask for marching through Booleans
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYFcnStrLft;     // Ptr to left operand function strand
+    LPTOKEN      lptkAxis;          // Ptr to axis token (may be NULL)
+    LPPRIMFNS    lpPrimProtoLft;    // Ptr to left operand prototype function (may be NULL if not prototyping)
+
+    // Check for axis operator
+    if (lpYYFcnStrOpr->FcnCount > 1
+     && (lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+      || lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+        lptkAxis = &lpYYFcnStrOpr[1].tkToken;
+     else
+        lptkAxis = NULL;
 
     //***************************************************************
     // The derived function from this operator is not sensitive to
@@ -189,7 +156,7 @@ LPYYSTYPE PrimOpMonDieresisCommon_EM_YY
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
@@ -198,7 +165,7 @@ LPYYSTYPE PrimOpMonDieresisCommon_EM_YY
     //  Handle prototypes separately
     //***************************************************************
     if (aplNELMRht EQ 0
-     && lpPrimProtoLft EQ NULL)
+     || bPrototyping)
     {
         // Get a ptr to the prototype function for the first symbol (a function or operator)
         lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
@@ -208,7 +175,8 @@ LPYYSTYPE PrimOpMonDieresisCommon_EM_YY
                                       &lpYYFcnStrLft->tkToken);
             goto ERROR_EXIT;
         } // End IF
-    } // End IF
+    } else
+        lpPrimProtoLft = NULL;
 
     // Get right arg's global ptrs
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -224,7 +192,8 @@ LPYYSTYPE PrimOpMonDieresisCommon_EM_YY
         else
             lpYYRes2 = ExecFuncStr_EM_YY (NULL,             // No left arg token
                                           lpYYFcnStrLft,    // Ptr to left operand function strand
-                                          lptkRhtArg);      // Ptr to right arg token
+                                          lptkRhtArg,       // Ptr to right arg token
+                                          lptkAxis);        // Ptr to axis token
         if (lpYYRes2)
         {
             // Enclose the item
@@ -285,11 +254,14 @@ LPYYSTYPE PrimOpMonDieresisCommon_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRht);
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-    // Fill nested result with PTR_REUSED
-    //   in case we fail part way through
-    *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-    for (uRes = 1; uRes < aplNELMRht; uRes++)
-        ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
+    if (aplTypeRes EQ ARRAY_NESTED)
+    {
+        // Fill nested result with PTR_REUSED
+        //   in case we fail part way through
+        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
+        for (uRes = 1; uRes < aplNELMRht; uRes++)
+            ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
+    } // End IF
 
     // Fill in the right arg token
     tkRhtArg.tkFlags.TknType   = TKT_VARIMMED;
@@ -537,15 +509,15 @@ NORMAL_EXIT:
 //***************************************************************************
 
 BOOL ExecFuncOnToken_EM
-    (LPVOID    *lplpMemRes,         // Ptr to ptr to result memory
-     LPTOKEN    lptkLftArg,         // Ptr to left arg token
-     LPYYSTYPE  lpYYFcnStr,         // Ptr to function strand
-     LPTOKEN    lptkRhtArg,         // Ptr to right arg token
-     LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
-     LPPRIMFNS  lpPrimProto)        // Ptr to left operand prototype function (may be NULL)
+    (LPVOID      *lplpMemRes,           // Ptr to ptr to result memory
+     LPTOKEN      lptkLftArg,           // Ptr to left arg token
+     LPPL_YYSTYPE lpYYFcnStr,           // Ptr to function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxis,             // Ptr to axis token (may be NULL)
+     LPPRIMFNS    lpPrimProto)          // Ptr to left operand prototype function (may be NULL)
 
 {
-    LPYYSTYPE lpYYRes;
+    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
     // Execute the function on the arg token
     if (lpPrimProto)
@@ -560,7 +532,8 @@ BOOL ExecFuncOnToken_EM
     else
         lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
                                      lpYYFcnStr,    // Ptr to function strand
-                                     lptkRhtArg);   // Ptr to right arg token
+                                     lptkRhtArg,    // Ptr to right arg token
+                                     lptkAxis);     // Ptr to axis token (may be NULL)
     // If it succeeded, ...
     if (lpYYRes)
     {
@@ -602,26 +575,17 @@ BOOL ExecFuncOnToken_EM
 //  Primitive operator for dyadic derived function from Dieresis ("each")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydDieresis_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPYYSTYPE PrimOpDydDieresis_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis)            // Ptr to axis token (may be NULL)
+LPPL_YYSTYPE PrimOpDydDieresis_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
     return PrimOpDydDieresisCommon_EM_YY (lptkLftArg,          // Ptr to left arg token
-                                          lpYYFcnStr,          // Ptr to operator function strand
+                                          lpYYFcnStrOpr,       // Ptr to operator function strand
                                           lptkRhtArg,          // Ptr to right arg token
-                                          lptkAxis,            // Ptr to axis token (may be NULL)
-                                          NULL);               // Ptr to left operand prototype function (may be NULL if not prototyping)
+                                          FALSE);               // TRUE iff prototyping
 } // End PrimOpDydDieresis_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -636,60 +600,70 @@ LPYYSTYPE PrimOpDydDieresis_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
-    (LPTOKEN   lptkLftArg,          // Ptr to left arg token
-     LPYYSTYPE lpYYFcnStr,          // Ptr to operator function strand
-     LPTOKEN   lptkRhtArg,          // Ptr to right arg token
-     LPTOKEN   lptkAxis,            // Ptr to axis token (may be NULL)
-     LPPRIMFNS lpPrimProtoLft)      // Ptr to left operand function strand (may be NULL if not prototyping)
+LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     BOOL         bPrototyping)         // TRUE iff prototyping
 
 {
-    APLSTYPE    aplTypeLft,             // Left arg storage type
-                aplTypeRht,             // Right ...
-                aplTypeRes;             // Result ...
-    APLNELM     aplNELMLft,             // Left arg NELM
-                aplNELMRht,             // Right ...
-                aplNELMRes,             // Result ...
-                aplNELMAxis;            // Axis ...
-    APLRANK     aplRankLft,             // Left arg rank
-                aplRankRht,             // Right ...
-                aplRankRes;             // Result ...
-    HGLOBAL     hGlbLft = NULL,         // Left arg global memory handle
-                hGlbRht = NULL,         // Right ...
-                hGlbRes = NULL,         // Result   ...
-                hGlbAxis = NULL,        // Axis     ...
-                hGlbWVec = NULL,        // Weighting vector ...
-                hGlbOdo = NULL;         // Odometer ...
-    LPAPLUINT   lpMemAxisHead = NULL,   // Ptr to axis values, fleshed out
-                lpMemAxisTail = NULL,   // Ptr to grade up of AxisHead
-                lpMemOdo = NULL,        // Ptr to odometer global memory
-                lpMemWVec = NULL;       // Ptr to weighting vector ...
-    LPVOID      lpMemLft = NULL,        // Ptr to left arg global memory
-                lpMemRht = NULL,        // Ptr to right ...
-                lpMemRes = NULL;        // Ptr to result   ...
-    LPAPLDIM    lpMemDimRes;            // Ptr to result dimensions
-    BOOL        bRet = TRUE;            // TRUE iff result is valid
-    APLUINT     uLft,                   // Left arg loop counter
-                uRht,                   // Right ...
-                uRes,                   // Result   ...
-                uArg,                   // Argument ...
-                ByteAlloc;              // # bytes to allocate
-    APLINT      apaOffLft,              // Left arg APA offset
-                apaMulLft,              // ...          multiplier
-                apaOffRht,              // Right arg APA offset
-                apaMulRht,              // ...           multiplier
-                iDim;                   // Dimension loop counter
-    UCHAR       immType;                // Immediate type
-    LPYYSTYPE   lpYYRes = NULL,         // Ptr to the result
-                lpYYFcnStrLft;          // Ptr to left operand function strand
-    TOKEN       tkLftArg = {0},         // Left arg token
-                tkRhtArg = {0};         // Right ...
+    APLSTYPE     aplTypeLft,            // Left arg storage type
+                 aplTypeRht,            // Right ...
+                 aplTypeRes;            // Result ...
+    APLNELM      aplNELMLft,            // Left arg NELM
+                 aplNELMRht,            // Right ...
+                 aplNELMRes,            // Result ...
+                 aplNELMAxis;           // Axis ...
+    APLRANK      aplRankLft,            // Left arg rank
+                 aplRankRht,            // Right ...
+                 aplRankRes;            // Result ...
+    HGLOBAL      hGlbLft = NULL,        // Left arg global memory handle
+                 hGlbRht = NULL,        // Right ...
+                 hGlbRes = NULL,        // Result   ...
+                 hGlbAxis = NULL,       // Axis     ...
+                 hGlbWVec = NULL,       // Weighting vector ...
+                 hGlbOdo = NULL;        // Odometer ...
+    LPAPLUINT    lpMemAxisHead = NULL,  // Ptr to axis values, fleshed out
+                 lpMemAxisTail = NULL,  // Ptr to grade up of AxisHead
+                 lpMemOdo = NULL,       // Ptr to odometer global memory
+                 lpMemWVec = NULL;      // Ptr to weighting vector ...
+    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
+                 lpMemRht = NULL,       // Ptr to right ...
+                 lpMemRes = NULL;       // Ptr to result   ...
+    LPAPLDIM     lpMemDimRes;           // Ptr to result dimensions
+    BOOL         bRet = TRUE;           // TRUE iff result is valid
+    APLUINT      uLft,                  // Left arg loop counter
+                 uRht,                  // Right ...
+                 uRes,                  // Result   ...
+                 uArg,                  // Argument ...
+                 ByteAlloc;             // # bytes to allocate
+    APLINT       apaOffLft,             // Left arg APA offset
+                 apaMulLft,             // ...          multiplier
+                 apaOffRht,             // Right arg APA offset
+                 apaMulRht,             // ...           multiplier
+                 iDim;                  // Dimension loop counter
+    UCHAR        immType;               // Immediate type
+    LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
+                 lpYYFcnStrLft;         // Ptr to left operand function strand
+    TOKEN        tkLftArg = {0},        // Left arg token
+                 tkRhtArg = {0};        // Right ...
+    LPTOKEN      lptkAxis,              // Ptr to axis token (may be NULL)
+                 lptkAxis2;             // Ptr to secondary axis token (may be NULL)
+    LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand function strand (may be NULL if not prototyping)
 
     DBGENTER;
 
+    // Check for axis operator
+    if (lpYYFcnStrOpr->FcnCount > 1
+     && (lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+      || lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+        lptkAxis = &lpYYFcnStrOpr[1].tkToken;
+     else
+        lptkAxis = NULL;
+
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -741,7 +715,7 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
                                   lpMemRht,         // Ptr to right arg memory Sig.nature
                                   aplNELMAxis,
                                   lpMemAxisTail,
-                                 &lpYYFcnStr->tkToken))
+                                 &lpYYFcnStrOpr->tkToken))
         goto ERROR_EXIT;
 
     // The NELM of the result is the larger of the two args
@@ -755,7 +729,7 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
     //  Handle prototypes separately
     //***************************************************************
     if (aplNELMRes EQ 0
-     && lpPrimProtoLft EQ NULL)
+     || bPrototyping)
     {
         // Get a ptr to the prototype function for the first symbol (a function or operator)
         lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
@@ -765,7 +739,8 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
                                       &lpYYFcnStrLft->tkToken);
             goto ERROR_EXIT;
         } // End IF
-    } // End IF
+    } else
+        lpPrimProtoLft = NULL;
 
     // Allocate space for result
     if (!PrimScalarFnDydAllocate_EM (&lpYYFcnStrLft->tkToken,
@@ -906,6 +881,14 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
     if (aplTypeRes EQ ARRAY_NESTED)
         aplNELMRes = max (aplNELMRes, 1);
 
+    // Check for secondary axis operator
+    if (lpYYFcnStrLft->FcnCount > 1
+     && (lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+      || lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+        lptkAxis2 = &lpYYFcnStrLft[1].tkToken;
+    else
+        lptkAxis2 = NULL;
+
     // Loop through the result
     for (uRes = 0; uRes < aplNELMRes; uRes++)
     {
@@ -962,7 +945,7 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
                                  &tkLftArg,             // Ptr to left arg token
                                   lpYYFcnStrLft,        // Ptr to function strand
                                  &tkRhtArg,             // Ptr to right arg token
-                                  NULL,                 // Ptr to axis token
+                                  lptkAxis2,            // Ptr to axis token
                                   lpPrimProtoLft))      // Ptr to left operand prototype function
             goto ERROR_EXIT;
 
@@ -981,7 +964,7 @@ LPYYSTYPE PrimOpDydDieresisCommon_EM_YY
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    lpYYRes->tkToken.tkCharIndex       = lpYYFcnStr->tkToken.tkCharIndex;
+    lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
     lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);

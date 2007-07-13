@@ -71,7 +71,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecPlus};
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnPlus_EM_YY
+LPPL_YYSTYPE PrimFnPlus_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -179,12 +179,12 @@ APLFLOAT PrimFnMonPlusFisF
 #endif
 
 BOOL PrimFnMonPlusAPA_EM
-    (LPYYSTYPE  lpYYRes,            // The result token (may be NULL)
-     LPTOKEN    lptkFunc,           // Ptr to function token
-     HGLOBAL    hGlbRht,            // Right arg handle
-     HGLOBAL   *lphGlbRes,          // Ptr to result handle
-     APLRANK    aplRankRht,         // Right arg rank
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+    (LPPL_YYSTYPE lpYYRes,          // The result token (may be NULL)
+     LPTOKEN      lptkFunc,         // Ptr to function token
+     HGLOBAL      hGlbRht,          // Right arg handle
+     HGLOBAL     *lphGlbRes,        // Ptr to result handle
+     APLRANK      aplRankRht,       // Right arg rank
+     LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
     DBGENTER;
@@ -321,22 +321,22 @@ APLFLOAT PrimFnDydPlusFisFvF
 #endif
 
 BOOL PrimFnDydPlusAPA_EM
-    (LPYYSTYPE  lpYYRes,            // The result token (may be NULL)
+    (LPPL_YYSTYPE lpYYRes,          // The result token (may be NULL)
 
-     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPTOKEN      lptkFunc,         // Ptr to function token
 
-     HGLOBAL    hGlbLft,            // HGLOBAL of left arg (may be NULL if simple)
-     HGLOBAL    hGlbRht,            // ...        right ...
-     HGLOBAL   *lphGlbRes,          // Ptr to result handle
+     HGLOBAL      hGlbLft,          // HGLOBAL of left arg (may be NULL if simple)
+     HGLOBAL      hGlbRht,          // ...        right ...
+     HGLOBAL     *lphGlbRes,        // Ptr to result handle
 
-     APLRANK    aplRankLft,         // Left arg rank
-     APLRANK    aplRankRht,         // Right ...
+     APLRANK      aplRankLft,       // Left arg rank
+     APLRANK      aplRankRht,       // Right ...
 
-     APLNELM    aplNELMLft,         // Left arg NELM
-     APLNELM    aplNELMRht,         // Right ...
+     APLNELM      aplNELMLft,       // Left arg NELM
+     APLNELM      aplNELMRht,       // Right ...
 
-     APLINT     aplInteger,         // The integer from the simple side
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+     APLINT       aplInteger,       // The integer from the simple side
+     LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
     APLRANK aplRankRes;         // Result rank

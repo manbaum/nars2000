@@ -72,7 +72,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecUpStile};
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnUpStile_EM_YY
+LPPL_YYSTYPE PrimFnUpStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -206,16 +206,16 @@ APLFLOAT PrimFnMonUpStileFisF
 #endif
 
 BOOL PrimFnMonUpStileAPA_EM
-    (LPYYSTYPE  lpYYRes,            // Ptr to result token (may be NULL)
+    (LPPL_YYSTYPE lpYYRes,          // Ptr to result token (may be NULL)
 
-     LPTOKEN    lptkFunc,           // Ptr to function token
+     LPTOKEN      lptkFunc,         // Ptr to function token
 
-     HGLOBAL    hGlbRht,            // Right arg handle
-     HGLOBAL   *lphGlbRes,          // Ptr to result handle
+     HGLOBAL      hGlbRht,          // Right arg handle
+     HGLOBAL     *lphGlbRes,        // Ptr to result handle
 
-     APLRANK    aplRankRht,         // Right arg rank
+     APLRANK      aplRankRht,       // Right arg rank
 
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+     LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
     DBGENTER;

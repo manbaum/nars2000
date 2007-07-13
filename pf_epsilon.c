@@ -28,7 +28,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnEpsilon_EM_YY
+LPPL_YYSTYPE PrimFnEpsilon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -59,7 +59,7 @@ LPYYSTYPE PrimFnEpsilon_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnEpsilon_EM_YY
+LPPL_YYSTYPE PrimProtoFnEpsilon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -92,7 +92,7 @@ LPYYSTYPE PrimProtoFnEpsilon_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonEpsilon_EM_YY
+LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -175,16 +175,16 @@ LPYYSTYPE PrimFnMonEpsilon_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonEpsilonImm_EM_YY
+LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     (ARRAY_TYPES aplTypeRes,    // Right arg storage type
      APLLONGEST  aplLongest,    // Right arg immediate value
      LPTOKEN     lptkFunc)      // Ptr to function token
 
 {
-    APLUINT   ByteRes;              // # bytes needed for the result
-    HGLOBAL   hGlbRes;              // Result global memory handle
-    LPVOID    lpMemRes;             // Ptr to result global memory
-    LPYYSTYPE lpYYRes;              // Ptr to the result
+    APLUINT      ByteRes;       // # bytes needed for the result
+    HGLOBAL      hGlbRes;       // Result global memory handle
+    LPVOID       lpMemRes;      // Ptr to result global memory
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
     // Calculate space needed for the result (a one-element vector)
     ByteRes = CalcArraySize (aplTypeRes, 1, 1);
@@ -286,20 +286,20 @@ LPYYSTYPE PrimFnMonEpsilonImm_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonEpsilonGlb_EM_YY
+LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     (HGLOBAL hGlbRht,               // Handle to right arg
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    APLSTYPE  aplTypeRes;           // The storage type of the result
-    APLNELM   aplNELMRes;           // # elements in the result
-    HGLOBAL   hGlbRes;              // Result global memory handle
-    LPVOID    lpMemRes;             // Ptr to result global memory
-    APLUINT   ByteRes;              // # bytes needed for the result
-    UINT      uBitMask = 0x01,      // Bit mask for marching through Booleans
-              uBitIndex = 0;        // Bit index ...
-    BOOL      bRet = TRUE;          // TRUE iff result is valid
-    LPYYSTYPE lpYYRes;              // Ptr to the result
+    APLSTYPE     aplTypeRes;        // The storage type of the result
+    APLNELM      aplNELMRes;        // # elements in the result
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPVOID       lpMemRes;          // Ptr to result global memory
+    APLUINT      ByteRes;           // # bytes needed for the result
+    UINT         uBitMask = 0x01,   // Bit mask for marching through Booleans
+                 uBitIndex = 0;     // Bit index ...
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Traverse the array counting the # simple scalars
     //   and keeping track of the common storage type --
@@ -1061,25 +1061,25 @@ void PrimFnMonEpsilonGlbCopy
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydEpsilon_EM_YY
+LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE aplTypeLft,
-             aplTypeRht;
-    APLNELM  aplNELMLft,
-             aplNELMRht;
-    APLRANK  aplRankLft,
-             aplRankRht;
-    HGLOBAL  hGlbLft,
-             hGlbRht;
-    LPVOID   lpMemLft,
-             lpMemRht;
-    BOOL     bRet = TRUE;
-    LPYYSTYPE lpYYRes;
+    APLSTYPE     aplTypeLft,
+                 aplTypeRht;
+    APLNELM      aplNELMLft,
+                 aplNELMRht;
+    APLRANK      aplRankLft,
+                 aplRankRht;
+    HGLOBAL      hGlbLft,
+                 hGlbRht;
+    LPVOID       lpMemLft,
+                 lpMemRht;
+    BOOL         bRet = TRUE;
+    LPPL_YYSTYPE lpYYRes;
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

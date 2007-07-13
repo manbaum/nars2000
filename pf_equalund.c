@@ -29,7 +29,7 @@
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnEqualUnderbar_EM_YY
+LPPL_YYSTYPE PrimFnEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -60,7 +60,7 @@ LPYYSTYPE PrimFnEqualUnderbar_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimProtoFnEqualUnderbar_EM_YY
+LPPL_YYSTYPE PrimProtoFnEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -93,17 +93,17 @@ LPYYSTYPE PrimProtoFnEqualUnderbar_EM_YY
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnMonEqualUnderbar_EM_YY
+LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE aplTypeRht;
-    APLNELM  aplNELMRht;
-    APLRANK  aplRankRht;
-    HGLOBAL  hGlbRht;
-    LPYYSTYPE lpYYRes;
+    APLSTYPE     aplTypeRht;
+    APLNELM      aplNELMRht;
+    APLRANK      aplRankRht;
+    HGLOBAL      hGlbRht;
+    LPPL_YYSTYPE lpYYRes;
 
     // Determine how deep the argument is.
     // Simple scalars:  0
@@ -290,7 +290,7 @@ APLINT PrimFnMonEqualUnderBarGlb
 #define APPEND_NAME
 #endif
 
-LPYYSTYPE PrimFnDydEqualUnderbar_EM_YY
+LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -317,7 +317,7 @@ LPYYSTYPE PrimFnDydEqualUnderbar_EM_YY
                  aplFloatRht;   // Right ...
     APLCHAR      aplCharLft,    // Left arg as char
                  aplCharRht;    // Right ...
-    LPYYSTYPE    lpYYRes;       // Ptr to the result
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     APLFLOAT     fQuadCT;       // []CT

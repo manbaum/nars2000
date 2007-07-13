@@ -313,6 +313,7 @@ BOOL CmdFnsVarsOps_EM
          lpSymEntry++)
     if (lpSymEntry->stFlags.Inuse
      && lpSymEntry->stFlags.Value
+     && lpSymEntry->stFlags.ObjName NE OBJNAME_SYS
      && (*IzitFVO) (lpSymEntry->stFlags.ObjType))
     {
         // Lock the memory to get a ptr to it

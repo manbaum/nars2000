@@ -126,11 +126,12 @@
               <span class="APL">A{is}A+1</span> and
               <span class="APL">B{is}B+1</span>)</li>
             <li>Function/operator assignment (e.g.,
-              <span class="APL">F{is}+.{times}</span>, or
-              <span class="APL">F{is}{dieresis}</span>, or
+              <span class="APL">F{is}+.{times}</span> and
+              <span class="APL">F{is}{dieresis}</span> and
               <span class="APL">F{is}{jot}</span>)</li>
             <li>Sink (monadic {is}<span class="APL">A</span>
               to suppress the display of <span class="APL">A</span>)</li>
+            <li>Function editing via <span class="APL">{del}</span> or <span class="APL">)EDIT</span></li>
             <li>Unified indexing such that <span class="APL">R[L]</span>
               allows both Reach and Scatter indexing &mdash; that is, if
               <span class="APL">L{pick}R</span> is valid, it is equivalent to
@@ -335,6 +336,11 @@
           <span class="APL">(A B)+{is}1</span> is the same as
           <span class="APL">A{is}A+1</span> and
           <span class="APL">B{is}B+1</span>)</li>
+        <li>Function/operator assignment (e.g.,
+          <span class="APL">F{is}+.{times}</span> and
+          <span class="APL">F{is}{dieresis}</span> and
+          <span class="APL">F{is}{jot}</span>)</li>
+        <li>Function editing via <span class="APL">{del}</span> or <span class="APL">)EDIT</span></li>
         <li>Raw output</li>
         <li>Unified indexing such that <span class="APL">R[L]</span>
           allows both Reach and Scatter indexing &mdash; that is, if
@@ -401,6 +407,7 @@
       <ul>
         <li><span class="APL">)CLEAR</span></li>
         <li><span class="APL">)CLOSE</span></li>
+        <li><span class="APL">)DROP</span></li>
         <li><span class="APL">)EDIT</span></li>
         <li><span class="APL">)FNS</span></li>
         <li><span class="APL">)EXIT</span></li>

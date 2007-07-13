@@ -150,22 +150,24 @@ DecrRefCntInd (hGlbData);
 
 typedef enum tagEXTYPE
 {
-    EX_IMMEX, EX_FN
+    EX_IMMEX = 0,               // 00:  Immediate execution
+    EX_DFN,                     // 01:  Defined function
 } EXTYPE;
+
+typedef struct tagEXECSTATE
+{
+    EXTYPE       exType;        // 00:  Execution state
+                                // 04:  Length
+} EXECSTATE, *LPEXECSTATE;
 
 typedef enum tagEXEC_CODES
 {
     EXEC_SUCCESS = 0 ,          // 00:  All OK
-////EXEC_RESULT_BOOL ,          // Result should be Boolean
-////EXEC_RESULT_INT  ,          // ...              Integer
+////EXEC_RESULT_BOOL ,          //      Result should be Boolean
+////EXEC_RESULT_INT  ,          //      ...              Integer
     EXEC_RESULT_FLOAT,          // 01:  ...              Float
     EXEC_DOMAIN_ERROR,          // 02:  Signal a DOMAIN ERROR
 } EXEC_CODES;
-
-typedef struct tagEXECSTATE
-{
-    EXTYPE exType;
-} EXECSTATE, *LPEXECSTATE;
 
 typedef struct tagGLBHIST
 {

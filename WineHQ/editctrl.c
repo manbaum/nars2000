@@ -2324,6 +2324,8 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
     INT y;
     LRESULT pos;
 
+    DbgBrk ();
+
     if (es->style & ES_MULTILINE) {
         INT vlc = (es->format_rect.bottom - es->format_rect.top) / es->line_height;
         if ((line < es->y_offset) || (line > es->y_offset + vlc) || (line >= es->line_count))
@@ -2448,6 +2450,9 @@ static void EDIT_SetCaretPos(EDITSTATE *es, INT pos,
     LRESULT res = EDIT_EM_PosFromChar(es, pos, after_wrap);
 //  TRACE("%d - %dx%d\n", pos, (short)LOWORD(res), (short)HIWORD(res));
     SetCaretPos((short)LOWORD(res), (short)HIWORD(res));
+#ifdef DEBUG
+    dprintfW (L"~~~SetCaretPos (%d, %d)", (short)LOWORD(res), (short)HIWORD(res));
+#endif
 }
 
 
@@ -3606,8 +3611,8 @@ static void EDIT_EM_ScrollCaret(EDITSTATE *es)
         }
     }
 
-    if(es->flags & EF_FOCUSED)
-    EDIT_SetCaretPos(es, es->selection_end, es->flags & EF_AFTER_WRAP);
+    if (es->flags & EF_FOCUSED)
+        EDIT_SetCaretPos(es, es->selection_end, es->flags & EF_AFTER_WRAP);
 } // End EDIT_EM_ScrollCaret
 
 
@@ -4774,7 +4779,15 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
             SendMessageW (es->hwndSelf, WM_COPY, 0, 0);
 ////////////EDIT_WM_Copy(es);
         else
+        {
             MyCreateCaret (es->hwndSelf, 0, CARETWIDTH, es->line_height);
+            EDIT_SetCaretPos (es, es->selection_end,
+                              es->flags & EF_AFTER_WRAP);
+            ShowCaret(es->hwndSelf);
+#ifdef DEBUG
+            dprintfW (L"~~~ShowCaret (%08X)", es->hwndSelf);
+#endif
+        }
         break;
     case VK_RETURN:
         /* If the edit doesn't want the return send a message to the default object */
@@ -4804,6 +4817,9 @@ static LRESULT EDIT_WM_KillFocus(EDITSTATE *es)
 {
     es->flags &= ~EF_FOCUSED;
     DestroyCaret();
+#ifdef DEBUG
+    dprintfW (L"~~~DestroyCaret ()");
+#endif
     if(!(es->style & ES_NOHIDESEL))
         EDIT_InvalidateText(es, es->selection_start, es->selection_end);
     EDIT_NOTIFY_PARENT(es, EN_KILLFOCUS);
@@ -5053,6 +5069,11 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
                     (es->style & ES_NOHIDESEL));
         dc = hdc ? hdc : BeginPaint(es->hwndSelf, &ps);
 
+    HideCaret (es->hwndSelf);
+#ifdef DEBUG
+    dprintfW (L"~~~HideCaret (%08X)", es->hwndSelf);
+#endif
+
     GetClientRect(es->hwndSelf, &rcClient);
 
     /* get the background brush */
@@ -5086,6 +5107,15 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     GetClipBox(dc, &rc);
     FillRect(dc, &rc, brush);
 
+#ifdef DEBUG
+    dprintfW (L"~~~WM_PAINT: rcClip (%d-%d, %d-%d) %d-%d",
+              rc.top,
+              rc.bottom,
+              rc.left,
+              rc.right,
+              es->selection_start,
+              es->selection_end);
+#endif
     IntersectClipRect(dc, es->format_rect.left,
                 es->format_rect.top,
                 es->format_rect.right,
@@ -5105,7 +5135,12 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
         for (i = es->y_offset ; i <= min(es->y_offset + vlc, es->y_offset + es->line_count - 1) ; i++) {
             EDIT_GetLineRect(es, i, 0, -1, &rcLine);
             if (IntersectRect(&rc, &rcRgn, &rcLine))
+            {
                 EDIT_PaintLine(es, dc, i, rev);
+#ifdef DEBUG
+                dprintfW (L"~~~PaintLine (%d: %d-%d, %d-%d)", i, rcLine.top, rcLine.bottom, rcLine.left, rcLine.right);
+#endif
+            }
         }
     } else {
         EDIT_GetLineRect(es, 0, 0, -1, &rcLine);
@@ -5115,8 +5150,12 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     if (es->font)
         SelectObject(dc, old_font);
 
-        if (!hdc)
-            EndPaint(es->hwndSelf, &ps);
+    ShowCaret(es->hwndSelf);
+#ifdef DEBUG
+    dprintfW (L"~~~ShowCaret (%08X)", es->hwndSelf);
+#endif
+    if (!hdc)
+        EndPaint(es->hwndSelf, &ps);
 } // End EDIT_WM_Paint
 
 
@@ -5176,6 +5215,9 @@ static void EDIT_WM_SetFocus(EDITSTATE *es)
     EDIT_SetCaretPos(es, es->selection_end,
              es->flags & EF_AFTER_WRAP);
     ShowCaret(es->hwndSelf);
+#ifdef DEBUG
+    dprintfW (L"~~~ShowCaret (%08X)", es->hwndSelf);
+#endif
     EDIT_NOTIFY_PARENT(es, EN_SETFOCUS);
 } // End EDIT_WM_SetFocus
 
@@ -5207,6 +5249,10 @@ static void EDIT_WM_SetFont(EDITSTATE *es, HFONT font, BOOL redraw)
         SelectObject(dc, old_font);
     ReleaseDC(es->hwndSelf, dc);
 
+#ifdef DEBUG
+    dprintfW (L"~~~SetFont (%08X)", font);
+#endif
+
     /* Reset the format rect and the margins */
     GetClientRect(es->hwndSelf, &clientRect);
     EDIT_SetRectNP(es, &clientRect);
@@ -5225,6 +5271,9 @@ static void EDIT_WM_SetFont(EDITSTATE *es, HFONT font, BOOL redraw)
         EDIT_SetCaretPos(es, es->selection_end,
                  es->flags & EF_AFTER_WRAP);
         ShowCaret(es->hwndSelf);
+#ifdef DEBUG
+        dprintfW (L"~~~ShowCaret (%08X)", es->hwndSelf);
+#endif
     }
 } // End EDIT_WM_SetFont
 
@@ -5249,8 +5298,12 @@ static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
     // Ask the parent how wide the caret should be
     SendMessageW (GetParent (hWnd), WM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) &nmEC);
 
-    bRet = CreateCaret (hWnd, hBitMap, nWidth, nHeight);
-    ShowCaret (hWnd);
+////bRet = CreateCaret (hWnd, hBitMap, nWidth, nHeight);
+    bRet = CreateCaret (hWnd, (HBITMAP) 1, nWidth, nHeight);
+#ifdef DEBUG
+    dprintfW (L"~~~CreateCaret (%08X, %08X, %d, %d)", hWnd, hBitMap, nWidth, nHeight);
+#endif
+////ShowCaret (hWnd);
 
     return bRet;
 } // End MyCreateCaret

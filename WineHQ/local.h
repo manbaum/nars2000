@@ -22,6 +22,7 @@ INT         WINAPI WideCharToMultiByte(UINT,DWORD,LPCWSTR,INT,LPSTR,INT,LPCSTR,L
 
 void DbgBrk (void);
 BOOL IzitFE (HWND);
+extern int __cdecl dprintfW(unsigned short *lpwszFmt,...);
 
 #include "main.h"
 #include "editctrl.h"

@@ -1046,8 +1046,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
      BOOL         bSaveTxtLine)     // TRUE iff we should save the line text
 
 {
-    int           iIniLen,          // Initial strand length
-                  iActLen,          // Actual  ...
+    UINT          uIniLen,          // Initial strand length
+                  uActLen,          // Actual  ...
                   FcnCount = 0;
     APLUINT       ByteRes;                  // # bytes needed for the result
     HGLOBAL       hGlbStr;
@@ -1073,14 +1073,14 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
 
     // Get the (maximum) # elements in the strand
-    iIniLen = lpplLocalVars->lpYYStrandNext[STRAND_FCN] - lpYYStrand;
+    uIniLen = lpplLocalVars->lpYYStrandNext[STRAND_FCN] - lpYYStrand;
 
     //***********************************************************************
     //********** Single Element Case ****************************************
     //***********************************************************************
 
     // If there is a single element, pass through the entire token
-    if (iIniLen EQ 1)
+    if (uIniLen EQ 1)
     {
         // Free the allocated result as CopyPL_YYSTYPE_EM_YY
         //   will allocate a result
@@ -1106,9 +1106,9 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     // Calculate the # bytes we'll need for the header and data
     ByteRes = sizeof (FCNARRAY_HEADER)          // For the header
-            + sizeof (PL_YYSTYPE) * iIniLen;    // For the data
+            + sizeof (PL_YYSTYPE) * uIniLen;    // For the data
 
-    // Allocate global memory for a length <iIniLen> vector of type <PL_YYSTYPE>.
+    // Allocate global memory for a length <uIniLen> vector of type <PL_YYSTYPE>.
     // N.B.: Conversion from APLUINT to UINT.
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbStr = DbgGlobalAlloc (GHND, (UINT) ByteRes);
@@ -1135,7 +1135,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
     lpHeader->NameType    = cNameType;
     lpHeader->RefCnt      = 1;
-////lpHeader->NELM        =             // To be filled in below
+////lpHeader->fcnNELM     =             // To be filled in below
     if (bSaveTxtLine)
     {
         UINT          uLineLen;     // Line length
@@ -1180,7 +1180,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
 
-    lpHeader->fcnNELM = iActLen = lpYYMemData - lpYYMemStart;
+    lpHeader->fcnNELM = uActLen = lpYYMemData - lpYYMemStart;
 
 #undef  lpHeader
 
@@ -1189,7 +1189,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     // Handle case where we overallocated to the extent that there
     //   is only one function which can then be immediate.
-    if (iActLen EQ 1)
+    if (uActLen EQ 1)
     {
         // Copy the entire token
         CopyYYFcn (lpYYRes, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount);
@@ -1200,17 +1200,17 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         // We no longer need this storage
         FreeResultGlobalFcn (hGlbStr); hGlbStr = NULL;
     } else
-    if (iIniLen NE iActLen)
+    if (uIniLen NE uActLen)
     {
         // Resize the block downwards
         hGlbStr =
         MyGlobalReAlloc (hGlbStr,
-                         (UINT) ByteRes - (iIniLen - iActLen) * sizeof (PL_YYSTYPE),
+                         (UINT) ByteRes - (uIniLen - uActLen) * sizeof (PL_YYSTYPE),
                          GHND);
     } // End IF/ELSE/IF
 
     // Save the token & function counts
-    lpYYRes->TknCount = iActLen;
+    lpYYRes->TknCount = uActLen;
     lpYYRes->FcnCount = FcnCount;
 #ifdef DEBUG
     if (hGlbStr)
@@ -1394,58 +1394,6 @@ LPPL_YYSTYPE CopyYYFcn
     return lpYYMem;
 } // End CopyYYFcn
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $ErrorMessageIndirectToken
-//
-//  Signal an error message, indirectly
-//    and set the error token
-//***************************************************************************
-
-void ErrorMessageIndirectToken
-    (WCHAR   *lpwszMsg,
-     LPTOKEN  lpError)
-
-{
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Save in global for later reference
-    lpMemPTD->lpwszErrorMessage = lpwszMsg;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    // Set the error token
-    ErrorMessageSetToken (lpError);
-} // End ErrorMessageIndirectToken
-
-
-//***************************************************************************
-//  $ErrorMessageSetToken
-//
-//  Set the error token for an error message
-//***************************************************************************
-
-void ErrorMessageSetToken
-    (LPTOKEN lpError)
-
-{
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
-
-    // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
-
-    // Set the error token
-    lpplLocalVars->tkErrorCharIndex = lpError->tkCharIndex;
-} // End ErrorMessageSetToken
 
 
 //***************************************************************************

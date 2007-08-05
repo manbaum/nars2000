@@ -9,9 +9,9 @@
 #include "aplerrors.h"
 #include "colors.h"
 #include "main.h"
-#include "termcode.h"
 #include "resource.h"
 #include "resdebug.h"
+#include "termcode.h"
 #include "externs.h"
 #include "editctrl.h"
 #include "Unitrans.h"
@@ -320,7 +320,7 @@ LRESULT APIENTRY FEWndProc
                 MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
 
                 // Get the ptr to the next available entry
-                lpUndoNxt = (LPUNDOBUF) &((LPBYTE) lpUndoBeg)[uUndoSize];
+                lpUndoNxt = (LPUNDOBUF) ByteAddr (lpUndoBeg, uUndoSize);
 
                 // Save in window extra bytes
                 SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
@@ -420,7 +420,7 @@ LRESULT APIENTRY FEWndProc
                 numFcnLines = lpMemDfnHdr->numFcnLines;
 
                 // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-                lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+                lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
                 // Loop through the lines, appending the text to the Edit Control
                 for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
@@ -449,10 +449,6 @@ LRESULT APIENTRY FEWndProc
                               EM_REPLACESEL,
                               FALSE,
                               (LPARAM) (((LPFE_CREATESTRUCT) (lpMDIcs->lParam))->lpwszLine));
-
-            // Set the selection to the start of the buffer
-            SendMessageW (hWndEC, EM_SETSEL, 0, 0);
-
             // Mark as no changes so far
             SetWindowLong (hWnd, GWLSF_CHANGED, FALSE);
 
@@ -2763,7 +2759,7 @@ BOOL SaveFunction
         uOffset = sizeof (DFN_HEADER);
 
         // Initialize ptr to ptr to SYMENTRYs at end of header
-        lplpSymDfnHdr = (LPSYMENTRY *) &((LPBYTE) lpMemDfnHdr)[uOffset];
+        lplpSymDfnHdr = (LPSYMENTRY *) ByteAddr (lpMemDfnHdr, uOffset);
 
         // If there's a result, ...
         if (fhLocalVars.lpYYResult)
@@ -2828,7 +2824,7 @@ BOOL SaveFunction
             lpMemDfnHdr->offFcnLines = 0;
 
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-        lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
         // Loop through the lines
         for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
@@ -3037,7 +3033,7 @@ void GetSpecialLabelNums
     numFcnLines = lpMemDfnHdr->numFcnLines;
 
     // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-    lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+    lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
     // Loop through the function lines
     for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
@@ -3051,7 +3047,7 @@ void GetSpecialLabelNums
         numTokens = lptkHdr->TokenCnt;
 
         // Get ptr to the tokens in the line
-        lptkLine = (LPTOKEN) &((LPBYTE) lptkHdr)[sizeof (TOKEN_HEADER)];
+        lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
 
         Assert (lptkLine[0].tkFlags.TknType EQ TKT_EOL
              || lptkLine[0].tkFlags.TknType EQ TKT_EOS);

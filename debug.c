@@ -592,9 +592,9 @@ void DbgMsgW
     (LPWCHAR wszTemp)
 
 {
-    BOOL         bParseLine,    // TRUE iff the current thread is ParseLine
-                 bRet;          // TRUE iff <RelaseSemaphore> worked
-    HANDLE       hSemaphore;    // Handle to ParseLine semaphore
+////BOOL         bParseLine,    // TRUE iff the current thread is ParseLine
+////             bRet;          // TRUE iff <RelaseSemaphore> worked
+////HANDLE       hSemaphore;    // Handle to ParseLine semaphore
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
@@ -606,31 +606,31 @@ void DbgMsgW
 
     if (lpMemPTD->hWndDB)
     {
-        bParseLine = ('PL' EQ (UINT) TlsGetValue (dwTlsType));
-        if (bParseLine)
-        {
-            // Get the ParseLine semaphore handle
-            hSemaphore = TlsGetValue (dwTlsSemaphore);
-
-            // Release the semaphore so the Debugger can process
-            //   the following message
-            bRet = ReleaseSemaphore (hSemaphore, 1, NULL);
-            if (!bRet
-             && GetLastError () NE ERROR_INVALID_HANDLE)
-            {
-                DbgBrk ();
-            } // End IF
-
-            // Display the debug message
-            SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
-
-            // Start the wait again if the semaphore handle is valid
-            if (bRet)
-                PostMessage (GetParent (lpMemPTD->hWndDB),
-                             MYWM_WFMO,
-                             (WPARAM) GetCurrentThreadId (),
-                             (LPARAM) hSemaphore);
-        } else
+////////bParseLine = ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+////////if (bParseLine)
+////////{
+////////    // Get the ParseLine semaphore handle
+////////    hSemaphore = TlsGetValue (dwTlsSemaphore);
+////////
+////////    // Release the semaphore so the Debugger can process
+////////    //   the following message
+////////    bRet = ReleaseSemaphore (hSemaphore, 1, NULL);
+////////    if (!bRet
+////////     && GetLastError () NE ERROR_INVALID_HANDLE)
+////////    {
+////////        DbgBrk ();
+////////    } // End IF
+////////
+////////    // Display the debug message
+////////    SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
+////////
+////////    // Start the wait again if the semaphore handle is valid
+////////    if (bRet)
+////////        PostMessage (GetParent (lpMemPTD->hWndDB),
+////////                     MYWM_WFMO,
+////////                     (WPARAM) GetCurrentThreadId (),
+////////                     (LPARAM) hSemaphore);
+////////} else
             SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
     } // End IF
 
@@ -681,11 +681,11 @@ int dprintf
 
 {
     va_list vl;
-    int     i1, i2, i3, i4, iRet;
+    int     i1, i2, i3, i4, i5, i6, i7, i8, iRet;
     char    szTemp[1024];
 
     // We hope that no one calls us with more than
-    //   four arguments.
+    //   eight arguments.
     // Note we must grab them separately this way
     //   as using va_arg in the argument list to
     //   wsprintf pushes the arguments in reverse
@@ -696,12 +696,16 @@ int dprintf
     i2 = va_arg (vl, int);
     i3 = va_arg (vl, int);
     i4 = va_arg (vl, int);
+    i5 = va_arg (vl, int);
+    i6 = va_arg (vl, int);
+    i7 = va_arg (vl, int);
+    i8 = va_arg (vl, int);
 
     va_end (vl);
 
     iRet = sprintf (szTemp,
                     lpszFmt,
-                    i1, i2, i3, i4);
+                    i1, i2, i3, i4, i5, i6, i7, i8);
     DbgMsg (szTemp);
 
     return iRet;
@@ -722,11 +726,11 @@ int dprintfW
 
 {
     va_list vl;
-    int     i1, i2, i3, i4, iRet;
+    int     i1, i2, i3, i4, i5, i6, i7, i8, iRet;
     WCHAR   wszTemp[1024];
 
     // We hope that no one calls us with more than
-    //   four arguments.
+    //   eight arguments.
     // Note we must grab them separately this way
     //   as using va_arg in the argument list to
     //   wsprintf pushes the arguments in reverse
@@ -737,12 +741,16 @@ int dprintfW
     i2 = va_arg (vl, int);
     i3 = va_arg (vl, int);
     i4 = va_arg (vl, int);
+    i5 = va_arg (vl, int);
+    i6 = va_arg (vl, int);
+    i7 = va_arg (vl, int);
+    i8 = va_arg (vl, int);
 
     va_end (vl);
 
     iRet = wsprintfW (wszTemp,
                       lpwszFmt,
-                      i1, i2, i3, i4);
+                      i1, i2, i3, i4, i5, i6, i7, i8);
     DbgMsgW (wszTemp);
 
     return iRet;

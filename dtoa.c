@@ -63,7 +63,7 @@
 
 #define IEEE_8087
 #define Llong        __int64
-////#define MULTIPLE_THREADS        ***FIXME***
+#define MULTIPLE_THREADS        ***FIXME***
 
 /*
  * #define IEEE_8087 for IEEE-arithmetic machines where the least
@@ -167,6 +167,9 @@
  *      the result overflows to +-Infinity or underflows to 0.
  */
 
+#include <windows.h>
+#include "externs.h"
+
 #ifndef Long
 #define Long long
 #endif
@@ -198,7 +201,8 @@ extern void *MALLOC(size_t);
 
 #ifndef Omit_Private_Memory
 #ifndef PRIVATE_MEM
-#define PRIVATE_MEM 2304
+////#define PRIVATE_MEM 2304
+#define PRIVATE_MEM 7400
 #endif
 #define PRIVATE_mem ((PRIVATE_MEM+sizeof(double)-1)/sizeof(double))
 static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
@@ -469,6 +473,9 @@ extern double rnd_prod(double, double), rnd_quot(double, double);
 #ifndef MULTIPLE_THREADS
 #define ACQUIRE_DTOA_LOCK(n)    /*nothing*/
 #define FREE_DTOA_LOCK(n)       /*nothing*/
+#else
+#define ACQUIRE_DTOA_LOCK(n)    EnterCriticalSection (&CSO##n)
+#define FREE_DTOA_LOCK(n)       LeaveCriticalSection (&CSO##n)
 #endif
 
 #define Kmax 15

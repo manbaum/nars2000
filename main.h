@@ -22,6 +22,16 @@
 #define IsGlbTypeFcnInd(a) (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeDfnDir(a) (IsGlobalTypeArray (            a, DFN_HEADER_SIGNATURE))
 #define IsGlbTypeNamDir(a) (IsGlobalTypeArray (            a, VARNAMED_HEADER_SIGNATURE))
+#define IsSymNoValue(a)     ((a)->stHshEntry EQ NULL                \
+                          && (a)->stFlags.Perm                      \
+                          && (a)->stFlags.Value EQ 0                \
+                          && (a)->stFlags.ObjName EQ OBJNAME_NONE   \
+                          && (a)->stFlags.ObjType EQ NAMETYPE_UNK)
+#define IsTokenNoValue(a)   ((a)                                    \
+                          && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
+                          && IsSymNoValue ((a)->tkData.tkSym))
+
+#define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
 
 #define AplModI(m,a) PrimFnDydStileIisIvI (m, a, NULL)
 #define AplModF(m,a) PrimFnDydStileFisFvF (m, a, NULL)
@@ -131,8 +141,8 @@ DecrRefCntInd (hGlbData);
 
 // Define local window messages
 #define MYWM_MOVE           (WM_APP+ 0) // MF
-#define MYWM_WFMO           (WM_APP+ 1) // SM (Wait For Multiple Objects)
-#define MYWM_PARSELINEDONE  (WM_APP+ 2) // SM (DisplayPrompt & CloseHandle)
+////ine MYWM_WFMO           (WM_APP+ 1) // SM (Wait For Multiple Objects)
+////ine MYWM_PARSELINEDONE  (WM_APP+ 2) // SM (DisplayPrompt & CloseHandle)
 #define MYWM_SETFOCUS       (WM_APP+ 3) // SM (SetFocus)
 #define MYWM_IZITNAME       (WM_APP+ 4) // FE (Izit A Name)
 #define MYWM_SAVE_FN        (WM_APP+ 5) // FE (SaveFunction)
@@ -150,15 +160,15 @@ DecrRefCntInd (hGlbData);
 
 typedef enum tagEXTYPE
 {
-    EX_IMMEX = 0,               // 00:  Immediate execution
-    EX_DFN,                     // 01:  Defined function
+    EX_IMM = 0,                 // 00:  Immediate execution
+    EX_DFN,                     // 01:  Defined function execution
 } EXTYPE;
 
-typedef struct tagEXECSTATE
+typedef struct tagEXEC_STATE
 {
     EXTYPE       exType;        // 00:  Execution state
                                 // 04:  Length
-} EXECSTATE, *LPEXECSTATE;
+} EXEC_STATE, *LPEXEC_STATE;
 
 typedef enum tagEXEC_CODES
 {
@@ -201,12 +211,19 @@ typedef enum tagMAKEPROTO
     MP_NUMCONV                  // 02:  Convert chars to numerics ...
 } MAKEPROTO;
 
+typedef enum tagGOTO_TYPES
+{
+    GOTO_ZILDE = 0,             // 00:  {goto} {zilde}
+    GOTO_LINE,                  // 01:  {goto} LineNum
+    GOTO_ERROR,                 // 02:  ERROR
+} GOTO_TYPES;
+
 #ifndef DEBUG
 #define Assert(a)
 #endif
 
-#define DEF_STRAND_INITSIZE     65536       // Initial size in tokens of the strand stack
-#define DEF_STRAND_MAXSIZE      1024*1024   // Maximum ...
+#define DEF_STRAND_INITSIZE    (  64*1024)  // Initial size in tokens of the strand stack
+#define DEF_STRAND_MAXSIZE     (1024*1024)  // Maximum ...
 
 // Resource debugging
 #define MAXOBJ  12800

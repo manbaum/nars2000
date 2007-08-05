@@ -241,13 +241,18 @@ BOOL CreateNewTab
     cntThread.lpszDPFE   = lpszDPFE;
     cntThread.iTab       = iTab;
 
+#ifdef DEBUG
+    // Can't call Debugger as it hasn't been created as yet.
+////dprintfW (L"--Starting thread in <CreateNewTab>.");
+#endif
+
     // Create a new thread
     hThread = CreateThread (NULL,                   // No security attrs
                             0,                      // Use default stack size
-                            (LPTHREAD_START_ROUTINE) &CreateNewTabInThread,
-                            (LPVOID) &cntThread,    // Param to thread func
+                           &CreateNewTabInThread,   // Starting routine
+                           &cntThread,              // Param to thread func
                             CREATE_SUSPENDED,       // Creation flag
-                            &dwThreadId);           // Returns thread id
+                           &dwThreadId);            // Returns thread id
     // Save the thread handle
     cntThread.hThread = hThread;
 
@@ -270,7 +275,7 @@ BOOL CreateNewTab
 #define APPEND_NAME
 #endif
 
-BOOL CreateNewTabInThread
+BOOL WINAPI CreateNewTabInThread
     (LPCNT_THREAD lpcntThread)
 
 {
@@ -785,7 +790,8 @@ LRESULT WINAPI LclTabCtrlWndProc
             FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadLX  ->stData.stGlbData)); lpMemPTD->lpSymQuadLX  ->stData.stGlbData = NULL;
             FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadSA  ->stData.stGlbData)); lpMemPTD->lpSymQuadSA  ->stData.stGlbData = NULL;
             FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadPR  ->stData.stGlbData)); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
+            if (lpMemPTD->cQuadPR)
+                FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadPR  ->stData.stGlbData)); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
 
 #undef  APPEND_NAME
 

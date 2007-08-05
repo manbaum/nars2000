@@ -438,6 +438,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
         // Call it
         (*lpFastBool) (aplTypeRht,          // Right arg storage type
+                       aplNELMRht,          // Right arg NELM
                        lpMemRht,            // Ptr to right arg memory
                        lpMemRes,            // Ptr to result    memory
                        uDimLo,              // Product of dimensions below axis
@@ -508,12 +509,12 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                     lpYYRes = (*lpPrimProtoLft) (&tkLftArg,     // Ptr to left arg token
                                         (LPTOKEN) lpYYFcnStrLft,// Ptr to left operand function strand
                                                  &tkRhtArg,     // Ptr to right arg token
-                                                  lptkAxis);    // Ptr to axis token (may be NULL)
+                                                  NULL);        // Ptr to axis token (may be NULL)
                 else
                     lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,     // Ptr to left arg token
                                                   lpYYFcnStrLft,// Ptr to left operand function strand
                                                  &tkRhtArg,     // Ptr to right arg token
-                                                  lptkAxis);    // Ptr to axis token (may be NULL)
+                                                  NULL);        // Ptr to axis token (may be NULL)
                 // Free the left & right arg tokens
                 FreeResult (&tkLftArg);
                 FreeResult (&tkRhtArg);
@@ -834,7 +835,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -842,7 +843,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     if (aplNELMLft NE 1)
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -850,7 +851,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     if (!IsSimpleNum (aplTypeLft))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -871,7 +872,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         if (!bRet)
         {
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                      &lpYYFcnStrOpr->tkToken);
+                                       lptkLftArg);
             goto ERROR_EXIT;
         } // End IF
     } // End IF
@@ -940,7 +941,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     if (aplIntegerLftAbs > (APLINT) (1 + uDimAxRht))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
+                                   lptkLftArg);
         goto ERROR_EXIT;
     } // End IF
 
@@ -967,12 +968,12 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
         // If it's not an immediate primitive function,
         //   or it is, but is without an identity element,
-        //   signal a DOMAIN ERROR
+        //   signal a LEFT DOMAIN ERROR
         if (!lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
          || !PrimFlags[uIndex].IdentElem)
         {
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                      &lpYYFcnStrOpr->tkToken);
+                                      &lpYYFcnStrLft->tkToken);
             goto ERROR_EXIT;
         } // End IF
 
@@ -1066,7 +1067,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         lpYYRes = PrimOpMonSlashCommon_EM_YY (lpYYFcnStrOpr,    // Ptr to operator function strand
                                               lptkRhtArg,       // Ptr to right arg
                                               bPrototyping);    // TRUE iff prototyping
-        // Insert a dimension into the result
+        // Insert a unit dimension into the result
         if (!PrimOpDydSlashInsertDim_EM (lpYYRes,       // Ptr to the result
                                          aplAxis,       // The (one and only) axis value
                                          uDimAxRes,     // Result axis dimension length
@@ -1099,7 +1100,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         // Free the result of the function execution
         FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
 
-        // Insert a dimension into the result
+        // Insert a unit dimension into the result
         if (!PrimOpDydSlashInsertDim_EM (lpYYRes,       // Ptr to the result
                                          aplAxis,       // The (one and only) axis value
                                          uDimAxRes,     // Result axis dimension length
@@ -1357,6 +1358,11 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
+    if (lpYYRes)
+    {
+        YYFree (lpYYRes); lpYYRes = NULL;
+    } // End IF
+
     if (hGlbRes)
     {
         if (lpMemRes)
@@ -1389,7 +1395,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $PrimOpDydSlashInsertDim_EM
 //
-//  Insert a new coordinate into a result
+//  Insert a unit dimension into a result
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1413,6 +1419,98 @@ BOOL PrimOpDydSlashInsertDim_EM
     // If it failed, ...
     if (!lpYYRes)
         return FALSE;
+
+    // Check for immediate result
+    if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_VARIMMED)
+    {
+        IMMTYPES   immType;         // Datatype of immediate result
+        APLLONGEST aplLongest;      // Value of immediate result
+        APLUINT    ByteRes;         // # bytes needed for the result
+        APLSTYPE   aplTypeRes;      // Result storage type
+
+        // Save the immediate type
+        immType = lpYYRes->tkToken.tkFlags.ImmType;
+
+        // Save the value
+        aplLongest = lpYYRes->tkToken.tkData.tkLongest;
+
+        // Calculate the result storage type
+        aplTypeRes = TranslateImmTypeToArrayType (immType);
+
+        // Calculate space needed for the result
+        ByteRes = CalcArraySize (aplTypeRes, 1, 1); // One-element vector
+
+        // Allocate space for the result
+        hGlbTmp = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        if (!hGlbTmp)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                      &lpYYFcnStrOpr->tkToken);
+            return FALSE;
+        } // End IF
+
+        // Lock the memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbTmp);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+
+        // Fill in the header values
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = aplTypeRes;
+////////lpHeader->Perm       = 0;       // Already zero from GHND
+////////lpHeader->SysVar     = 0;       // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = 1;
+        lpHeader->Rank       = 1;
+
+#undef  lpHeader
+
+        // Fill in the dimension
+        *VarArrayBaseToDim (lpMemRes) = 1;
+
+        // Skip over the header and dimension
+        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+        // Fill in the value
+        // Split cases based upon the immediate type
+        switch (immType)
+        {
+            case IMMTYPE_BOOL:
+                *((LPAPLBOOL)  lpMemRes) = (APLBOOL) aplLongest;
+
+                break;
+
+            case IMMTYPE_INT:
+                *((LPAPLINT)   lpMemRes) = (APLINT) aplLongest;
+
+                break;
+
+            case IMMTYPE_FLOAT:
+                *((LPAPLFLOAT) lpMemRes) = *(LPAPLFLOAT) &aplLongest;
+
+                break;
+
+            case IMMTYPE_CHAR:
+                *((LPAPLCHAR)  lpMemRes) = (APLCHAR) aplLongest;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTmp); lpMemRes = NULL;
+
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+        lpYYRes->tkToken.tkFlags.ImmType   = 0;
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbTmp);
+////////lpYYRes->tkToken.tkCharIndex       =        // Already filled in by caller
+
+        return TRUE;
+    } // End IF
 
     // Get the global memory handle
     hGlbTmp = lpYYRes->tkToken.tkData.tkGlbData;
@@ -1449,9 +1547,9 @@ BOOL PrimOpDydSlashInsertDim_EM
 
     // Move the memory upwards to make room for a new dimension
     // Use MoveMemory as the source and destin blocks overlap
-    MoveMemory (((LPBYTE) lpMemRes) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (aplAxis + 1),
-                ((LPBYTE) lpMemRes) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) *  aplAxis     ,
-                (UINT) (ByteRes    - (sizeof (VARARRAY_HEADER) + sizeof (APLDIM) *  aplAxis     )));
+    MoveMemory (ByteAddr (lpMemRes, sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (aplAxis + 1)),
+                ByteAddr (lpMemRes, sizeof (VARARRAY_HEADER) + sizeof (APLDIM) *  aplAxis     ),
+                (UINT) (ByteRes  - (sizeof (VARARRAY_HEADER) + sizeof (APLDIM) *  aplAxis     )));
     // Increase the rank by one
     ((LPVARARRAY_HEADER) lpMemRes)->Rank++;
 

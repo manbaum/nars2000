@@ -13,6 +13,7 @@
 //#include <multimon.h>   // Multiple monitor support
 #include <limits.h>
 #include <direct.h>
+#include <float.h>
 
 #include "main.h"
 #include "resdebug.h"
@@ -1806,6 +1807,10 @@ int PASCAL WinMain
     // Save the thread type ('MF')
     TlsSetValue (dwTlsType, (LPVOID) 'MF');
 
+    // Set rounding precision to 53-bits
+    //   as per comments in top of <dtoa.c>
+    control87(PC_53, MCW_PC);
+
     // If there's a command line, parse it
     if (!ParseCommandLine (lpCmdLine))
         return -1;                  // Exit
@@ -1817,6 +1822,11 @@ int PASCAL WinMain
     // Register the window class
     if (!InitApplication (hInstance))
         goto EXIT3;
+
+    // Allocate two Critical Section objects
+    //   for use in dtoa.c
+    InitializeCriticalSection (&CSO0);
+    InitializeCriticalSection (&CSO1);
 
     // Create various permanent variables
     MakePermVars ();
@@ -1857,7 +1867,7 @@ int PASCAL WinMain
     if (hWndMF EQ NULL)
     {
         MB (pszNoCreateMFWnd);
-        return FALSE;
+        goto EXIT4;
     } // End IF
 
 ////// Make the window visible; update its client area
@@ -1881,6 +1891,9 @@ int PASCAL WinMain
         } // End IF
     } // End WHILE
     // GetMessage returned FALSE for a Quit message
+EXIT4:
+    DeleteCriticalSection (&CSO1);
+    DeleteCriticalSection (&CSO0);
 EXIT3:
     UninitApplication (hInstance);
 EXIT2:

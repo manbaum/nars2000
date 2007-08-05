@@ -273,7 +273,7 @@ LPPL_YYSTYPE SysFnMonCR_EM
                     MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine = NULL;
 
                     // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-                    lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+                    lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
                     // Get # function lines
                     uNumLines = lpMemDfnHdr->numFcnLines;
@@ -359,7 +359,7 @@ LPPL_YYSTYPE SysFnMonCR_EM
                             *lpMemResChar++ = L' ';
 
                         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-                        lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+                        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
                         // Run through the function lines copying each line text to the result
                         for (uLine = 0; uLine < uNumLines; uLine++)
@@ -442,7 +442,7 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  SysFnMonCR_ALLOC_EM
+//  $SysFnMonCR_ALLOC_EM
 //
 //  Subroutine to SysFnMonCR_EM for allocating and copying to the result
 //***************************************************************************
@@ -1012,7 +1012,7 @@ LPPL_YYSTYPE SysFnDydDR_EM
 
 
 //***************************************************************************
-//  SysFnDydDR_SHOW_EM
+//  $SysFnDydDR_SHOW_EM
 //
 //  Return a character representation of the storage type
 //***************************************************************************
@@ -1059,7 +1059,7 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM
             break;
 
         case ARRAY_APA:
-            lpw = L"Arithmetic Progression Array:  192 bits total";
+            lpw = L"Arithmetic Progression Array:  128 bits total";
 
             break;
 
@@ -1709,7 +1709,7 @@ APLINT CalcSymentrySize
                                              + lpMemDfnHdr->numLocalsSTE)
                       + sizeof (FCNLINE) * lpMemDfnHdr->numFcnLines;
             // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-            lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+            lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
             // Get # function lines
             uNumLines = lpMemDfnHdr->numFcnLines;

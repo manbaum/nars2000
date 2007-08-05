@@ -386,6 +386,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
         // Call it
         (*lpFastBool) (aplTypeRht,          // Right arg storage type
+                       aplNELMRht,          // Right arg NELM
                        lpMemRht,            // Ptr to right arg memory
                        lpMemRes,            // Ptr to result    memory
                        uDimLo,              // Product of dimensions below axis

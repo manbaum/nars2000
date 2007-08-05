@@ -130,7 +130,7 @@ DIR:
         $(CC) $(CFLAGS_WEXE) /Fo$@ /c %s
 
 {$(WS)}.c{$(O)}.obj:
-        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.
+        @Set INCLUDE=$(WS).;$(WS)Include;$(WS)Include\Wine;$(WS)Include\msvcrt;.;$(O)
         @if exist $@ del $@
         $(CC) $(CFLAGS_WEXE) /Fo$@ /c /D "UNICODE" %s
 
@@ -149,10 +149,13 @@ $(O)editctrl.DEP        \
 $(O)editfcn.DEP         \
 $(O)editmat.DEP         \
 $(O)editvec.DEP         \
+$(O)errmsg.DEP          \
 $(O)exec.DEP            \
+$(O)execdfn.DEP         \
 $(O)fastbool.DEP        \
 $(O)free.DEP            \
 $(O)g_fmt.DEP           \
+$(O)goto.DEP            \
 $(O)main.DEP            \
 $(O)parse.DEP           \
 $(O)pf_bar.DEP          \
@@ -287,8 +290,14 @@ $(O)version.DEV
 !if exist ($(O)editvec.DEP)
 !       include $(O)editvec.DEP
 !endif
+!if exist ($(O)errmsg.DEP)
+!       include $(O)errmsg.DEP
+!endif
 !if exist ($(O)exec.DEP)
 !       include $(O)exec.DEP
+!endif
+!if exist ($(O)execdfn.DEP)
+!       include $(O)execdfn.DEP
 !endif
 !if exist ($(O)fastbool.DEP)
 !       include $(O)fastbool.DEP
@@ -298,6 +307,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)g_fmt.DEP)
 !       include $(O)g_fmt.DEP
+!endif
+!if exist ($(O)goto.DEP)
+!       include $(O)goto.DEP
 !endif
 !if exist ($(O)main.DEP)
 !       include $(O)main.DEP
@@ -520,10 +532,13 @@ $(O)editctrl.PRO        \
 $(O)editfcn.PRO         \
 $(O)editmat.PRO         \
 $(O)editvec.PRO         \
+$(O)errmsg.PRO          \
 $(O)exec.PRO            \
+$(O)execdfn.PRO         \
 $(O)fastbool.PRO        \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
+$(O)goto.PRO            \
 $(O)main.PRO            \
 $(O)parse.PRO           \
 $(O)pf_bar.PRO          \
@@ -648,9 +663,12 @@ $(O)display.OBJ:        $(@B).C         $(DISPLAY_DEP)
 $(O)editfcn.OBJ:        $(@B).C         $(EDITFCN_DEP)
 $(O)editmat.OBJ:        $(@B).C         $(EDITMAT_DEP)
 $(O)editvec.OBJ:        $(@B).C         $(EDITVEC_DEP)
+$(O)errmsg.OBJ:         $(@B).C         $(ERRMSG_DEP)
 $(O)exec.OBJ:           $(@B).C         $(EXEC_DEP)
+$(O)execdfn.OBJ:        $(@B).C         $(EXECDFN_DEP)
 $(O)fastbool.OBJ:       $(@B).C         $(FASTBOOL_DEP)
 $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
+$(O)goto.OBJ:           $(@B).C         $(GOTO_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
 $(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
 $(O)pf_circle.OBJ:      $(@B).C         $(PF_CIRCLE_DEP)
@@ -750,11 +768,14 @@ OBJS=                       \
      $(O)editfcn.OBJ        \
      $(O)editmat.OBJ        \
      $(O)editvec.OBJ        \
+     $(O)errmsg.OBJ         \
      $(O)exec.OBJ           \
+     $(O)execdfn.OBJ        \
      $(O)fastbool.OBJ       \
      $(O)free.OBJ           \
      $(O)g_fmt.obj          \
      $(O)getreent.OBJ       \
+     $(O)goto.obj           \
      $(O)main.OBJ           \
      $(O)parse.OBJ          \
      $(O)pf_bar.OBJ         \

@@ -1,8 +1,7 @@
 TO DO:  General:  Important
 ---------------------------
-* Make <dtoa.c> multi-threaded
 * Move registry info into <nars2000.ini> file
-* Remove apaLen from APA definition
+* Fix display of chars in a saved ws (surround with quotes, etc.)
 * Implement dyadic epsilon              (member of)
 * ...       dyadic down tack jot        (format by specification)
 * ...       dyadic iota                 (index of)
@@ -103,6 +102,9 @@ DONE:  General
   should be (0 0) (0 0).  Also, the sum of an empty vector
   whose prototype is 0 0 and an empty vector whose prototype
   is 0 0 0 should be a LENGTH ERROR.
+* Fix display of chars wth embedded CRs, LFs, BSs, etc.
+* Remove apaLen from APA definition
+* Make <dtoa.c> multi-threaded
 *
 
 
@@ -151,11 +153,18 @@ QUESTIONS
 
   what should <g> reference?
   what happens to <g> if we change <f>?
-* Should we allow f {is} {jot}{dot}   ?? (right operator)
-* Should we allow f {is} {jot}fn      ?? (left operator)
+* Should we allow f {is} {jot}fn or {jot}{dot} ?? (right operator)
+* Should we allow f {is} {jot}fn               ?? (left operator)
 * How should an empty vector display?
   On APL+WIN systems 3.6 + 5.x, '' displays by skipping one blank line
   but 0{rho}{enclose}{zilde} displays without skipping a blank line.
+* If a defined function indicates in its header that a result is to be
+  returned, should we allow it to exit if that var has not been set?
+
+  What about multiple results such as {del}(Z1 Z2 ...) {is} foo R,
+  where Z1 is set, but not Z2?
+
+  What if no Zn is set -- should we allow the function to exit?
 *
 
 
@@ -198,6 +207,16 @@ MISSING On Laptop
 * MSDN
 *
 
+
+
+ToDo
+----
+* Unlocalize in reverse order
+* Unlocalize in one pass (and clear .Value), and restore
+  in another pass to handle duplicate localized names
+* Resolve NAMETYPE_UNK bug
+* Axis error if defined function given an axis but not accepting one
+*
 
 
 

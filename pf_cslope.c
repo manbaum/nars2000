@@ -184,7 +184,6 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
 #define lpAPA       ((LPAPLAPA) lpMemLft)
     lpAPA->Off = (aplRankRht - 1) + bQuadIO;
     lpAPA->Mul = -1;
-    lpAPA->Len = aplRankRht;
 #undef  lpAPA
     // We no longer need this ptr
     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;

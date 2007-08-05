@@ -21,9 +21,6 @@
 #include "compro.h"
 #endif
 
-// State Indicator level
-UINT SILevel = 0;
-
 
 //***************************************************************************
 //  $MakeWorkspaceNameCanonical
@@ -288,7 +285,7 @@ BOOL CmdSaveWS_EM
                 wsprintfW (wszCount, L"%d", uSymVar++);
 
                 // Format the section name
-                wsprintfW (wszSectName, L"Vars.%d", SILevel);
+                wsprintfW (wszSectName, L"Vars.%d", lpMemPTD->SILevel);
 
                 // Write out the entry (nnn = Name)
                 //   in the [Vars.nnn] section
@@ -366,9 +363,9 @@ BOOL CmdSaveWS_EM
 
                 // Format the section name
                 if (bNameTypeFn)
-                    wsprintfW (wszSectName, L"Fns.%d", SILevel);
+                    wsprintfW (wszSectName, L"Fns.%d", lpMemPTD->SILevel);
                 else
-                    wsprintfW (wszSectName, L"Ops.%d", SILevel);
+                    wsprintfW (wszSectName, L"Ops.%d", lpMemPTD->SILevel);
 
                 // Write out the entry (nnn = Name)
                 //   in the [Fns.nnn] or [Ops.nnn] section
@@ -447,7 +444,7 @@ BOOL CmdSaveWS_EM
                             numFcnLines = lpMemDfnHdr->numFcnLines;
 
                             // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-                            lpFcnLines = (LPFCNLINE) &((LPBYTE) lpMemDfnHdr)[lpMemDfnHdr->offFcnLines];
+                            lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
                             // Write out the function header
                             WriteFunctionLine (lpwszFormat,     // Ptr to the section name
@@ -526,7 +523,7 @@ BOOL CmdSaveWS_EM
     // Format the SI depth
     wsprintfW (wszCount,
                L"%d",
-               SILevel);
+               lpMemPTD->SILevel);
     // Write out the SI depth to the [General] section
     WritePrivateProfileStringW (L"General",     // Section name
                                 L"SIDepth",     // Key name
@@ -906,6 +903,8 @@ LPAPLCHAR TransferFormGlb
                     if (lpSymEntry->stFlags.ImmType EQ IMMTYPE_FLOAT)
                         lpMemPTD->lpSymQuadPP->stData.stInteger = DEF_MAX_QUADPP;
 
+                    // ***FIXME*** -- Handle non-printable chars (e.g. []TCxxx)
+
                     // Format the value
                     lpaplChar =
                     FormatImmed (lpaplChar,
@@ -923,34 +922,42 @@ LPAPLCHAR TransferFormGlb
 
 #define hGlbSub     (*(LPAPLNESTED *) lpMemObj)
 
-                    // Get the global's Type
-                    AttrsOfGlb (ClrPtrTypeDirGlb (hGlbSub), &aplTypeSub, NULL, NULL, NULL);
+                    if (hGlbObj EQ PTR_REUSED)
+                    {
+                        // Append the HGLOBAL name
+                        lpaplChar +=
+                        wsprintfW (lpaplChar,
+                                   L"REUSED ");
+                    } else
+                    {
+                        // Get the global's Type
+                        AttrsOfGlb (ClrPtrTypeDirGlb (hGlbSub), &aplTypeSub, NULL, NULL, NULL);
 
-                    // Append a leading "({enclose}"
+                        // Append a leading "({enclose}"
 #define APPEND_TEXT     L"({enclose}"
-                    if (!IsSimple (aplTypeSub))
-                    {
-                        lstrcpyW (lpaplChar, APPEND_TEXT);
-                        lpaplChar += (sizeof (APPEND_TEXT) / sizeof (WCHAR)) - 1;
-                    } // End IF
+                        if (!IsSimple (aplTypeSub))
+                        {
+                            lstrcpyW (lpaplChar, APPEND_TEXT);
+                            lpaplChar += (sizeof (APPEND_TEXT) / sizeof (WCHAR)) - 1;
+                        } // End IF
 #undef  APPEND_TEXT
-                    lpaplChar =
-                    TransferFormGlb (lpaplChar,
-                                    hGlbSub,
-
-                                    lpMemSaveWSID);
+                        lpaplChar =
+                        TransferFormGlb (lpaplChar,
+                                        hGlbSub,
+                                        lpMemSaveWSID);
 #undef  hGlbSub
-                    if (!IsSimple (aplTypeSub))
-                    {
-                        // Delete the last blank in case it matters,
-                        //   and append a trailing ')'
-                        if (lpaplChar[-1] EQ L' ')
-                            *--lpaplChar = L')';
-                        else
-                            *  lpaplChar = L')';
-                        // Skip over the paren
-                        lpaplChar++;
-                    } // End IF
+                        if (!IsSimple (aplTypeSub))
+                        {
+                            // Delete the last blank in case it matters,
+                            //   and append a trailing ')'
+                            if (lpaplChar[-1] EQ L' ')
+                                *--lpaplChar = L')';
+                            else
+                                *  lpaplChar = L')';
+                            // Skip over the paren
+                            lpaplChar++;
+                        } // End IF
+                    } // End IF/ELSE
 
                     break;
                 } // End PTRTYPE_HGLOBAL

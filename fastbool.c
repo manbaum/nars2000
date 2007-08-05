@@ -71,6 +71,7 @@ FASTBOOLFNS FastBoolFns[] =                       // In the same order as enum t
 
 void FastBoolScan
     (APLSTYPE     aplTypeRht,       // Right arg storage type
+     APLNELM      aplNELMRht,       // Right arg NELM
      LPVOID       lpMemRht,         // Ptr to right arg memory
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis
@@ -114,7 +115,7 @@ void FastBoolScan
 
 #define lpAPA       ((LPAPLAPA) lpMemRht)
 
-        Assert (lpAPA->Len > 1);
+        Assert (aplNELMRht > 1);
         Assert (lpAPA->Mul EQ 0);
 
         // Check the APA multiplier
@@ -323,6 +324,7 @@ void FastBoolScan
 
 void FastBoolScanQual
     (APLSTYPE     aplTypeRht,       // Right arg storage type
+     APLNELM      aplNELMRht,       // Right arg NELM
      LPVOID       lpMemRht,         // Ptr to right arg memory
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis
@@ -359,7 +361,7 @@ void FastBoolScanQual
 
 #define lpAPA       ((LPAPLAPA) lpMemRht)
 
-        Assert (lpAPA->Len > 1);
+        Assert (aplNELMRht > 1);
         Assert (lpAPA->Mul EQ 0);
 
         // Check the APA multiplier
@@ -476,6 +478,7 @@ void FastBoolScanQual
 
 void FastBoolRed
     (APLSTYPE     aplTypeRht,       // Right arg storage type
+     APLNELM      aplNELMRht,       // Right arg NELM
      LPVOID       lpMemRht,         // Ptr to right arg memory
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis
@@ -518,14 +521,14 @@ void FastBoolRed
 
 #define lpAPA       ((LPAPLAPA) lpMemRht)
 
-        Assert (lpAPA->Len > 1);
+        Assert (aplNELMRht > 1);
         Assert (lpAPA->Mul EQ 0);
 
         // Check the APA multiplier
         if (lpAPA->Mul EQ 0)
         {
             // Set the infix bit
-            uInfix = !((BIT0 & lpAPA->Len) ? uIdentElem: uNotMarker);
+            uInfix = !((BIT0 & aplNELMRht) ? uIdentElem : uNotMarker);
 
             // Because the APA has all the same element (lpAPA->Off),
             //   we find it either in the first position or not at all
@@ -656,6 +659,7 @@ void FastBoolRed
 
 void FastBoolRedQual
     (APLSTYPE     aplTypeRht,       // Right arg storage type
+     APLNELM      aplNELMRht,       // Right arg NELM
      LPVOID       lpMemRht,         // Ptr to right arg memory
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis
@@ -679,7 +683,7 @@ void FastBoolRedQual
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
 
-        Assert (lpAPA->Len > 1);
+        Assert (aplNELMRht > 1);
         Assert (lpAPA->Mul EQ 0);
 
         // The possibilities are as follows (where V can be any non-negative integer vector):
@@ -769,6 +773,7 @@ void FastBoolRedQual
 
 void FastBoolRedPlus
     (APLSTYPE     aplTypeRht,       // Right arg storage type
+     APLNELM      aplNELMRht,       // Right arg NELM
      LPVOID       lpMemRht,         // Ptr to right arg memory
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis

@@ -121,7 +121,7 @@ typedef struct tagAPLAPA    // Offset + Multiplier {times} {iota} Length (origin
 {
     APLINT  Off,        // Offset
             Mul;        // Multiplier
-    APLUINT Len;        // Length
+////APLUINT Len;        // Length (the actual length is obtained from the NELM)
 } APLAPA, * LPAPLAPA;
 
 /*

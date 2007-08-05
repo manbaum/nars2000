@@ -54,6 +54,10 @@ BOOL ArrayDisplay_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkRes->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
+            // Check for NoValue
+            if (IsSymNoValue (lptkRes->tkData.tkSym))
+                return TRUE;
+
             // If it's not immediate, it's an array
             if (!lptkRes->tkData.tkSym->stFlags.Imm)
             {
@@ -65,8 +69,6 @@ BOOL ArrayDisplay_EM
                     DisplayGlbArr (ClrPtrTypeDirGlb (lptkRes->tkData.tkSym->stData.stGlbData),
                                    bEndingCR);
                 return TRUE;
-
-                break;
             } // End IF
 
             // Check for NoDisplay flag
@@ -162,22 +164,23 @@ void DisplayGlbArr
                  lpaplChar,
                  lpaplCharStart,
                  lpwsz;
-    APLSTYPE     aplType;
-    APLNELM      aplNELM;
-    APLRANK      aplRank;
-    LPAPLDIM     lpMemDim;
-    APLDIM       aplDimNCols,
-                 aplDimNRows,
-                 aplDimCol,
-                 aplLastDim;
-    APLNELM      aplNELMRes;
-    LPFMTHEADER  lpFmtHeader;
-    LPFMTCOLSTR  lpFmtColStr;
-    UINT         uCol;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLUINT      uQuadPP,       // []PP
-                 uQuadPW;       // []PW
+    APLSTYPE     aplType;           // Arg storage type
+    APLNELM      aplNELM;           // Arg NELM
+    APLRANK      aplRank;           // Arg rank
+    LPAPLDIM     lpMemDim;          // Ptr to arg dimensions
+    APLDIM       aplDimNCols,       // # cols
+                 aplDimNRows,       // # rows
+                 aplChrNCols,       // # cols for char arrays
+                 aplDimCol,         // Col loop counter
+                 aplLastDim;        // Length of the last dimension in the result
+    APLNELM      aplNELMRes;        // Result NELM
+    LPFMTHEADER  lpFmtHeader;       // Ptr to format header struc
+    LPFMTCOLSTR  lpFmtColStr;       // Ptr to format col struc
+    UINT         uCol;              // Loop counter
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    APLUINT      uQuadPP,           // []PP
+                 uQuadPW;           // []PW
 
 #define DEF_DISPLAY_INITSIZE    65536
 #define DEF_DISPLAY_MAXSIZE     65536
@@ -256,39 +259,43 @@ void DisplayGlbArr
             aplDimNRows = aplNELM / aplDimNCols;
     } // End IF/ELSE
 
-    // Define a new FMTHEAD in the output
+    // Format char arrays as one col
+    aplChrNCols = (aplType EQ ARRAY_CHAR) ? 1 : aplDimNCols;
+
+    // Create a new FMTHEAD in the output
     ZeroMemory ((LPFMTHEADER) lpaplCharIni, sizeof (FMTHEADER));
 ////((LPFMTHEADER) lpaplCharIni)->lpFmtHeadUp = NULL;  // Filled in by ZeroMemory
     lpFmtHeader = (LPFMTHEADER) lpaplCharIni;
 #ifdef DEBUG
-    lpFmtHeader->Signature   = FMTHEADER_SIGNATURE;
+    lpFmtHeader->Sig.nature  = FMTHEADER_SIGNATURE;
 #endif
 ////lpFmtHeader->lpFmtRowUp  = NULL;                // Filled in by ZeroMemory
 ////lpFmtHeader->lpFmtColUp  = NULL;                // ...
 ////lpFmtHeader->lpFmtRow1st =                      // Filled in below
 ////lpFmtHeader->lpFmtCol1st =                      // ...
     lpFmtHeader->uRows       = (UINT) aplDimNRows;
-    lpFmtHeader->uCols       = (UINT) aplDimNCols;
+    lpFmtHeader->uCols       = (UINT) aplChrNCols;
 ////lpFmtHeader->uFmtRows    = 0;                   // Filled in by ZeroMemory
 ////lpFmtHeader->uFmtInts    = 0;                   // ...
 ////lpFmtHeader->uFmtFrcs    = 0;                   // ...
 ////lpFmtHeader->uFmtTrBl    = 0;                   // ...
 ////lpFmtHeader->uDepth      = 0;                   // ...
+////lpFmtHeader->uMatRes     = 0;                   // ...
 
-    // Define <aplDimNCols> FMTCOLSTRs in the output
+    // Create <aplChrNCols> FMTCOLSTRs in the output
     lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
     lpFmtHeader->lpFmtCol1st = lpFmtColStr;
-    ZeroMemory (lpFmtColStr, (UINT) aplDimNCols * sizeof (FMTCOLSTR));
+    ZeroMemory (lpFmtColStr, (UINT) aplChrNCols * sizeof (FMTCOLSTR));
 #ifdef DEBUG
     {
         APLDIM uCol;
 
-        for (uCol = 0; uCol < aplDimNCols; uCol++)
-            lpFmtColStr[uCol].Signature = FMTCOLSTR_SIGNATURE;
+        for (uCol = 0; uCol < aplChrNCols; uCol++)
+            lpFmtColStr[uCol].Sig.nature = FMTCOLSTR_SIGNATURE;
     }
 #endif
     // Skip over the FMTCOLSTRs
-    lpaplCharStart = (LPAPLCHAR) (&lpFmtColStr[aplDimNCols]);
+    lpaplCharStart = (LPAPLCHAR) (&lpFmtColStr[aplChrNCols]);
 
     // Save ptr to 1st child FMTROWSTR
     if (aplDimNRows)
@@ -406,7 +413,7 @@ void DisplayGlbArr
 
     // Add up the width of each column to get the
     //   # cols in the result
-    for (aplLastDim = aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+    for (aplLastDim = aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
         aplLastDim += (lpFmtColStr[aplDimCol].uInts
                      + lpFmtColStr[aplDimCol].uFrcs);
     aplLastDim += lpFmtHeader->uFmtTrBl;
@@ -438,7 +445,7 @@ void DisplayGlbArr
         case ARRAY_HETERO:
 ////////////lpaplChar =
             FormatArrSimple (lpFmtHeader,           // Ptr to FMTHEADER
-                             lpFmtColStr,           // Ptr to vector of <aplDimNCols> FMTCOLSTRs
+                             lpFmtColStr,           // Ptr to vector of <aplChrNCols> FMTCOLSTRs
                              lpaplCharStart,        // Ptr to compiled input
                             &lpaplChar,             // Ptr to output string
                              aplDimNRows,           // # rows in this array
@@ -446,6 +453,7 @@ void DisplayGlbArr
                              aplLastDim,            // Length of last dim in result (NULL for !bRawOutput)
                              aplRank,               // Rank of this array
                              lpMemDim,              // Ptr to this array's dimensions
+                             aplType,               // Storage type of thsi array
                              TRUE,                  // TRUE iff raw output
                              bEndingCR);            // TRUE iff last line has CR
             break;
@@ -545,6 +553,7 @@ LPAPLCHAR FormatImmed
 
 {
     WCHAR wc;
+    UINT  uRht;
 
     switch (ImmType)
     {
@@ -568,15 +577,31 @@ LPAPLCHAR FormatImmed
             switch (wc)
             {
                 case TCBEL:     // Bel
-                case TCBS:      // BS
+                    MessageBeep (NEG1U);    // Sound the alarum!
+
+                    // Fall through to common code
+
                 case TCDEL:     // Del
                 case TCESC:     // Esc
                 case TCFF:      // FF
-                case TCHT:      // HT
-                case TCLF:      // LF
-                case TCNL:      // NL
                 case TCNUL:     // NUL
-                    DbgBrk ();  // ***FINISHME*** -- []TCxxx
+                case TCBS:      // BS
+                case TCNL:      // NL
+                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+
+                    break;          // Can't go any farther left
+
+                case TCHT:      // HT
+                    // We're always at the (virtual) left margin,
+                    //   so insert enough blanks for a TAB
+                    for (uRht = 0; uRht < uTabs; uRht)
+                        *lpaplChar++ = L' ';
+                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+
+                    break;
+
+                case TCLF:      // LF
+                    DbgBrk ();  // ***FINISHME*** -- []TCLF -- ???
 
 
 
@@ -586,13 +611,16 @@ LPAPLCHAR FormatImmed
 
 
                     break;
+
+                default:
+                    if (wc >= 32)           // If none of the above but printable,
+                        *lpaplChar++ = wc;  //   append it
+
+                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+
+                    break;
             } // End SWITCH
 
-            lpaplChar +=
-            wsprintfW (lpaplChar,
-///////////////////////L"'%c' ",
-                       L"%c ",
-                       wc);
             break;
 
         case IMMTYPE_FLOAT:
@@ -1348,6 +1376,9 @@ void DisplayTokens
     int          i, iLen;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    if (gDbgLvl <= 2)
+        return;
 
     DbgMsg ("********** Tokens **************************************");
 

@@ -360,23 +360,32 @@ void DisplayPrompt
      BOOL bSetFocusSM)  // TRUE iff we're to set the focus to the Session Manager
 
 {
-    UINT uCharPos,
-         uLinePos;
+////UINT uCharPos,
+////     uLinePos;
 
-    // Get the line position of the current line
-    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, (WPARAM) -1, 0);
+    // Move the caret to the End-of-the-buffer
+    MoveCaretEOB (hWndEC);
 
-    // Get the char position of the caret
-    uCharPos = GetCurCharPos (hWndEC);
+////// Get the line position of the current line
+////uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, (WPARAM) -1, 0);
 
-    // If the char position of the caret
-    //   is not at the left, put it there
-    if (uLinePos NE uCharPos)
-    {
-        DbgBrk ();
-        AppendLine (L"", FALSE, TRUE);
-    } // End IF
+////// Get the char position of the caret
+////uCharPos = GetCurCharPos (hWndEC);
+
+////// If the char position of the caret
+//////   is not at the left, put it there
+////if (uLinePos NE uCharPos)
+////{
+////    DbgBrk ();
+////    AppendLine (L"", FALSE, TRUE);
+////} // End IF
+
+    // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
+
+#ifdef DEBUG
+    dprintfW (L"~~~DisplayPrompt (%d)", bSetFocusSM);
+#endif
 
     if (bSetFocusSM)
         // Set the focus to the Session Manager so the prompt displays
@@ -503,18 +512,18 @@ LRESULT APIENTRY SMWndProc
      LONG lParam)   // ...
 
 {
-    HWND       hWndEC;      // Window handle to Edit Control
-    int        iMaxLimit;   // Maximum # chars in edit control
-    VKSTATE    vkState;
-    long       lvkState;
-    HGLOBAL    hGlbPTD;     // Handle to this window's PerTabData
+    HWND         hWndEC;    // Window handle to Edit Control
+    int          iMaxLimit; // Maximum # chars in edit control
+    VKSTATE      vkState;
+    long         lvkState;
+    HGLOBAL      hGlbPTD;   // Handle to this window's PerTabData
     LPPERTABDATA lpMemPTD;  // Ptr to ...
-////RECT       rcFmtEC;     // Formatting rectangle for the Edit Control
-    LPUNDOBUF  lpUndoBeg,   // Ptr to start of Undo Buffer
-               lpUndoNxt;   // ...    next available slot in the Undo Buffer
-////HDC        hDC;
-////HFONT      hFontOld;
-////TEXTMETRIC tm;
+////RECT         rcFmtEC;   // Formatting rectangle for the Edit Control
+    LPUNDOBUF    lpUndoBeg, // Ptr to start of Undo Buffer
+                 lpUndoNxt; // ...    next available slot in the Undo Buffer
+////HDC          hDC;
+////HFONT        hFontOld;
+////TEXTMETRIC   tm;
 
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLong (hWnd, GWLSF_HWNDEC);
@@ -568,10 +577,6 @@ LRESULT APIENTRY SMWndProc
             SM_Create (hWnd);
 
             // *************** Undo Buffer *****************************
-            // At some point, we'll read in the undo buffer from
-            //   the saved function and copy it to virtual memory
-            //   also setting the _BEG, _NXT, and _LST ptrs.
-
             // _BEG is the (static) ptr to the beginning of the virtual memory.
             // _NXT is the (dynamic) ptr to the next available entry.
             //    Undo entries are between _NXT[-1] and _BEG, inclusive.
@@ -678,7 +683,7 @@ LRESULT APIENTRY SMWndProc
 ////////////// Allocate virtual memory for the token stack used in parsing
 ////////////p = lpMemPTD->lptkStackBase =
 ////////////  VirtualAlloc (NULL,       // Any address
-////////////                DEF_TOKENSTACK_MAXSIZE,
+////////////                DEF_TOKENSTACK_MAXSIZE * sizeof (TOKEN),
 ////////////                MEM_RESERVE,
 ////////////                PAGE_READWRITE);
 ////////////// We no longer need this ptr
@@ -694,7 +699,7 @@ LRESULT APIENTRY SMWndProc
 ////////////
 ////////////// Commit the intial size
 ////////////VirtualAlloc (p,
-////////////              DEF_TOKENSTACK_INITSIZE,
+////////////              DEF_TOKENSTACK_INITSIZE * sizeof (TOKEN),
 ////////////              MEM_COMMIT,
 ////////////              PAGE_READWRITE);
 
@@ -838,9 +843,15 @@ LRESULT APIENTRY SMWndProc
             // Initialize next available entry
             lpMemPTD->lpSymTabNext = lpMemPTD->lpSymTab;
 
-            // Initialize the Symbol table Entry for the constant zero and blank
-            lpMemPTD->steZero  = SymTabAppendPermInteger_EM (0);
-            lpMemPTD->steBlank = SymTabAppendPermChar_EM    (L' ');
+            // Initialize the Symbol table Entry for the constant zero and blank, and No Value
+            lpMemPTD->steZero    = SymTabAppendPermInteger_EM (0);
+            lpMemPTD->steBlank   = SymTabAppendPermChar_EM    (L' ');
+            lpMemPTD->steNoValue = lpMemPTD->lpSymTabNext++;
+
+            // Set the flags for the NoValue entry
+            lpMemPTD->steNoValue->stFlags.Perm = 1;
+            lpMemPTD->steNoValue->stFlags.ObjName = OBJNAME_NONE;
+            lpMemPTD->steNoValue->stFlags.ObjType = NAMETYPE_UNK;
 
 ////////////// We no longer need this ptr
 ////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -852,7 +863,7 @@ LRESULT APIENTRY SMWndProc
             // Allocate virtual memory for the symbol table
             p = lpMemPTD->lpSISBeg = lpMemPTD->lpSISNxt =
               VirtualAlloc (NULL,       // Any address
-                            DEF_SIS_MAXSIZE,
+                            DEF_SIS_MAXSIZE * sizeof (SYMENTRY),
                             MEM_RESERVE,
                             PAGE_READWRITE);
             // We no longer need this ptr
@@ -868,7 +879,34 @@ LRESULT APIENTRY SMWndProc
 
             // Commit the intial size
             VirtualAlloc (p,
-                          DEF_SIS_INITSIZE,
+                          DEF_SIS_INITSIZE * sizeof (SYMENTRY),
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+
+            // *************** YYRes Buffer ****************************
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Allocate virtual memory for the YYRes buffer
+            p = lpMemPTD->lpYYRes =
+              VirtualAlloc (NULL,       // Any address
+                            DEF_YYRES_MAXSIZE * sizeof (PL_YYSTYPE),
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpYYRes> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Commit the intial size
+            VirtualAlloc (p,
+                          DEF_YYRES_INITSIZE * sizeof (PL_YYSTYPE),
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
@@ -1072,111 +1110,111 @@ LRESULT APIENTRY SMWndProc
 
             break;                  // Continue with WM_MDIACTIVATE
 
-        case MYWM_WFMO:             // hThread = (HANDLE) wParam;
-                                    // hSemaphore = (HANDLE) lParam;
-#define hThread     ((HANDLE) wParam)
-#define hSemaphore  ((HANDLE) lParam)
-
-            while (TRUE)
-            {
-                DWORD dwWFMO;
-
-                dwWFMO =
-                MsgWaitForMultipleObjects (1,               // # handles to wait for
-                                          &hSemaphore,      // Ptr to handle to wait for
-                                           FALSE,           // Only one handle to wait for
-                                           INFINITE,        // Timeout value in milliseconds
-                                           QS_ALLINPUT);    // Wait for any message
-                // Split cases based upon the return code
-                switch (dwWFMO)
-                {
-                    // Check for ParseLine done
-                    case WAIT_OBJECT_0:
-                        // Process ParseLine done
-                        PostMessage (hWnd, MYWM_PARSELINEDONE, wParam, lParam);
-
-                        return FALSE;           // We handled the msg
-
-                    // Check for a message in the queue, ...
-                    case WAIT_OBJECT_0 + 1:
-                        // Repost our message
-                        PostMessage (hWnd, message, wParam, lParam);
-
-                        return FALSE;           // We handled the msg
-
-                    case (DWORD) -1:
-////////////////////////DbgBrk ();
-////////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
-////////////////////////    return FALSE;
-
-                        // Fall through to <defstop>
-
-                    defstop
-                        GetLastError ();
-                        break;
-                } // End SWITCH
-            } // End WHILE
-
-            return FALSE;           // We handled the msg
-#undef  hSemaphore
-#undef  hThread
-
-        case MYWM_PARSELINEDONE:
-#define hThread     ((HANDLE) wParam)
-#define hSemaphore  ((HANDLE) lParam)
-
-            // Wait for the thread to terminate
-            while (TRUE)
-            {
-                DWORD dwWFMO;
-
-                dwWFMO =
-                MsgWaitForMultipleObjects (1,               // # handles to wait for
-                                          &hThread,         // Ptr to handle to wait for
-                                           FALSE,           // Only one handle to wait for
-                                           INFINITE,        // Timeout value in milliseconds
-                                           QS_ALLINPUT);    // Wait for any message
-                // Split cases based upon the return code
-                switch (dwWFMO)
-                {
-                    // Check for ParseLine thread done
-                    case WAIT_OBJECT_0:
-                        // Thread ParseLine done
-
-                        // Close the handle as it isn't used anymore
-                        CloseHandle (hSemaphore); hSemaphore = NULL;
-
-                        // Close the thread handle as it has terminated
-                        CloseHandle (hThread); hThread = NULL;
-
-                        // Display the default prompt
-                        DisplayPrompt (hWndEC, TRUE);
-
-                        return FALSE;           // We handled the msg
-
-                    // Check for a message in the queue, ...
-                    case WAIT_OBJECT_0 + 1:
-                        // Repost our message
-                        PostMessage (hWnd, message, wParam, lParam);
-
-                        return FALSE;           // We handled the msg
-
-                    case (DWORD) -1:
-////////////////////////DbgBrk ();
-////////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
-////////////////////////    return FALSE;
-
-                        // Fall through to <defstop>
-
-                    defstop
-                        GetLastError ();
-                        break;
-                } // End SWITCH
-            } // End WHILE
-
-            return FALSE;           // We handled the msg
-#undef  hSemaphore
-#undef  hThread
+////         case MYWM_WFMO:             // hThread = (HANDLE) wParam;
+////                                     // hSemaphore = (HANDLE) lParam;
+//// #define hThread     ((HANDLE) wParam)
+//// #define hSemaphore  ((HANDLE) lParam)
+////
+////             while (TRUE)
+////             {
+////                 DWORD dwWFMO;
+////
+////                 dwWFMO =
+////                 MsgWaitForMultipleObjects (1,               // # handles to wait for
+////                                           &hSemaphore,      // Ptr to handle to wait for
+////                                            FALSE,           // Only one handle to wait for
+////                                            INFINITE,        // Timeout value in milliseconds
+////                                            QS_ALLINPUT);    // Wait for any message
+////                 // Split cases based upon the return code
+////                 switch (dwWFMO)
+////                 {
+////                     // Check for ParseLine done
+////                     case WAIT_OBJECT_0:
+////                         // Process ParseLine done
+////                         PostMessage (hWnd, MYWM_PARSELINEDONE, wParam, lParam);
+////
+////                         return FALSE;           // We handled the msg
+////
+////                     // Check for a message in the queue, ...
+////                     case WAIT_OBJECT_0 + 1:
+////                         // Repost our message
+////                         PostMessage (hWnd, message, wParam, lParam);
+////
+////                         return FALSE;           // We handled the msg
+////
+////                     case (DWORD) -1:
+//// ////////////////////////DbgBrk ();
+//// ////////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
+//// ////////////////////////    return FALSE;
+////
+////                         // Fall through to <defstop>
+////
+////                     defstop
+////                         GetLastError ();
+////                         break;
+////                 } // End SWITCH
+////             } // End WHILE
+////
+////             return FALSE;           // We handled the msg
+//// #undef  hSemaphore
+//// #undef  hThread
+////
+////         case MYWM_PARSELINEDONE:
+//// #define hThread     ((HANDLE) wParam)
+//// #define hSemaphore  ((HANDLE) lParam)
+////
+////             // Wait for the thread to terminate
+////             while (TRUE)
+////             {
+////                 DWORD dwWFMO;
+////
+////                 dwWFMO =
+////                 MsgWaitForMultipleObjects (1,               // # handles to wait for
+////                                           &hThread,         // Ptr to handle to wait for
+////                                            FALSE,           // Only one handle to wait for
+////                                            INFINITE,        // Timeout value in milliseconds
+////                                            QS_ALLINPUT);    // Wait for any message
+////                 // Split cases based upon the return code
+////                 switch (dwWFMO)
+////                 {
+////                     // Check for ParseLine thread done
+////                     case WAIT_OBJECT_0:
+////                         // Thread ParseLine done
+////
+////                         // Close the handle as it isn't used anymore
+////                         CloseHandle (hSemaphore); hSemaphore = NULL;
+////
+////                         // Close the thread handle as it has terminated
+////                         CloseHandle (hThread); hThread = NULL;
+////
+////                         // Display the default prompt
+////                         DisplayPrompt (hWndEC, TRUE);
+////
+////                         return FALSE;           // We handled the msg
+////
+////                     // Check for a message in the queue, ...
+////                     case WAIT_OBJECT_0 + 1:
+////                         // Repost our message
+////                         PostMessage (hWnd, message, wParam, lParam);
+////
+////                         return FALSE;           // We handled the msg
+////
+////                     case (DWORD) -1:
+//// ////////////////////////DbgBrk ();
+//// ////////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
+//// ////////////////////////    return FALSE;
+////
+////                         // Fall through to <defstop>
+////
+////                     defstop
+////                         GetLastError ();
+////                         break;
+////                 } // End SWITCH
+////             } // End WHILE
+////
+////             return FALSE;           // We handled the msg
+//// #undef  hSemaphore
+//// #undef  hThread
 
         case MYWM_SETFOCUS:
             // Set the focus to the Session Manager so the cursor displays
@@ -1204,9 +1242,8 @@ LRESULT APIENTRY SMWndProc
         case MYWM_KEYDOWN:          // nVirtKey = (int) wParam;     // Virtual-key code
                                     // uLineNum = lParam;           // Line #   // lKeyData = lParam;           // Key data
         {
-            UINT      uLineLen,
-                      uLineCnt;
-            EXECSTATE execState;
+            UINT uLineLen,
+                 uLineCnt;
 
             // Get the thread's PerTabData global memory handle
             hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -1232,14 +1269,14 @@ LRESULT APIENTRY SMWndProc
 ////
 ////                } // End IF
 
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
                     // If we're not on the last line,
                     //   copy it and append it to the buffer
                     if (!IzitLastLine (hWndEC))
                     {
                         UINT uLastNum;
+
+                        // Lock the memory to get a ptr to it
+                        lpMemPTD = MyGlobalLock (hGlbPTD);
 
                         // Tell EM_GETLINE maximum # chars in the buffer
                         // The output array is a temporary so we don't have to
@@ -1269,19 +1306,13 @@ LRESULT APIENTRY SMWndProc
 
                         // Get the current line #
                         uLineNum = uLastNum;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
                     } // End IF
 
-                    // Mark as immediate execution
-                    lpMemPTD->execState.exType = EX_IMMEX;
-
-                    // Copy execState so we can unlock hGlbPTD
-                    execState = lpMemPTD->execState;
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
                     // Execute the line
-                    ExecuteLine (uLineNum, &execState, hWndEC);
+                    ImmExecLine (uLineNum, hWndEC);
 
                     break;
 
@@ -1494,7 +1525,7 @@ LRESULT APIENTRY SMWndProc
                                     // pnmh = (LPNMHDR) lParam;
 #define lpnmEC  ((LPNMEDITCTRL) lParam)
 
-            // Check for from Edit Ctrl
+            // Ensure from Edit Ctrl
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
             {
                 // Get the current vkState

@@ -457,7 +457,9 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                                            lpPrimSpec);
                 if (!hGlbRes)
                 {
-                    YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+                    YYFree (lpYYRes); lpYYRes = NULL;
+
+                    return NULL;
                 } // End IF
 
                 // Fill in the result token
@@ -576,7 +578,7 @@ RESTART_EXCEPTION_VARNAMED:
                 defstop
                     return NULL;
             } // SWITCH
-            } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+            } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
@@ -591,7 +593,9 @@ RESTART_EXCEPTION_VARNAMED:
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
-                        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+                        YYFree (lpYYRes); lpYYRes = NULL;
+
+                        return NULL;
 
                     case EXEC_RESULT_FLOAT:
                         SetExecCode (EXEC_SUCCESS); // Reset
@@ -711,7 +715,7 @@ RESTART_EXCEPTION_VARIMMED:
                 defstop
                     return NULL;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+            } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
@@ -726,7 +730,9 @@ RESTART_EXCEPTION_VARIMMED:
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
-                        YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+                        YYFree (lpYYRes); lpYYRes = NULL;
+
+                        return NULL;
 
                     case EXEC_RESULT_FLOAT:
                         SetExecCode (EXEC_SUCCESS); // Reset
@@ -772,7 +778,9 @@ RESTART_EXCEPTION_VARIMMED:
                                        lpPrimSpec);
             if (!hGlbRes)
             {
-                YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+                YYFree (lpYYRes); lpYYRes = NULL;
+
+                return NULL;
             } // End IF
 
             // Fill in the result token
@@ -792,7 +800,9 @@ RESTART_EXCEPTION_VARIMMED:
 
     DbgStop ();         // We should never get here
 
-    YYFree (lpYYRes); lpYYRes = NULL; return NULL;
+    YYFree (lpYYRes); lpYYRes = NULL;
+
+    return NULL;
 } // End PrimFnMon_EM_YY
 #undef  APPEND_NAME
 
@@ -1306,7 +1316,7 @@ RESTART_EXCEPTION:
         defstop
             break;
     } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+    } __except (CheckException (GetExceptionInformation ()))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
@@ -1737,7 +1747,7 @@ BOOL PrimFnDydSimpNest_EM
 
     // If the left arg is immediate, get the one and only value
     if (!lpMemLft)
-        FirstValue (lptkLftArg,         // Ptr to right arg token
+        FirstValue (lptkLftArg,         // Ptr to left arg token
                    &aplIntegerLft,      // Ptr to integer result
                    &aplFloatLft,        // Ptr to float ...
                    &aplCharLft,         // Ptr to WCHAR ...
@@ -3498,7 +3508,7 @@ RESTART_EXCEPTION:
         defstop
             break;
     } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+    } __except (CheckException (GetExceptionInformation ()))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
@@ -4236,7 +4246,7 @@ RESTART_EXCEPTION:
         defstop
             break;
     } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+    } __except (CheckException (GetExceptionInformation ()))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
@@ -4748,7 +4758,7 @@ RESTART_EXCEPTION_IMMED:
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+    } __except (CheckException (GetExceptionInformation ()))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
@@ -5038,7 +5048,7 @@ RESTART_EXCEPTION_SINGLETON:
                 defstop
                     break;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+            } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
@@ -5531,7 +5541,7 @@ RESTART_EXCEPTION_AXIS:
                 defstop
                     break;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+            } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
@@ -5737,7 +5747,7 @@ RESTART_EXCEPTION_NOAXIS:
                 defstop
                     break;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), lpPrimSpec))
+            } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);

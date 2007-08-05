@@ -148,6 +148,9 @@
               <span class="APL">(,[2 1] R) {notmatch} ,[1 2] R</span>)</li>
             <li>Axis operator is allowed on the Each operator (e.g.,
               <span class="APL">1 2{rho}{each}[1] 2 3{rho}{iota}6</span>)</li>
+            <li>Axis operator is allowed on user-defined functions (e.g.,
+              <span class="APL">foo[2 3] {iota}5</span> by specifying it in the
+              function header, as in <span class="APL">{del} Z{is}foo[X] R</span>)</li>
           </ul>
         </li>
 
@@ -519,7 +522,8 @@
       want to do and submit it to the project via the Discussion Forums.</p>
 
       <p>When you contribute content to the project, your name will be placed in
-      the List of Contributors.  First time contributors will also need to
+      the <a class="linkleft" href="/Contributors.ahtml">List of Contributors</a>.
+      First time contributors will also need to
       <a class="linkleft" href="http://www.gnu.org/licenses/why-assign.html">assign
       copyright</a> of what you contribute to the project, in
       particular to the principal author, Bob Smith.  This is by no means

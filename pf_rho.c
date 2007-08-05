@@ -544,7 +544,6 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
                     NULL,           // Ptr to ...immediate type ...
                     NULL);          // Ptr to array type ...
         lpAPA->Mul = 0;
-        lpAPA->Len = aplNELMRes;
 #undef  lpAPA
     } else
     //***************************************************************
@@ -1262,7 +1261,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
 #define lpAPA       ((LPAPLAPA) lpDataLft)
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
-                apaLen = lpAPA->Len;
+                apaLen = aplNELMLft;
 #undef  lpAPA
                 // Ensure no element in the left arg goes negative
                 //   by checking the first and last elements
@@ -1599,7 +1598,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
 #define lpAPA       ((LPAPLAPA) lpMemRhtNext)
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
-            apaLen = lpAPA->Len;
+            apaLen = aplNELMRht;
 #undef  lpAPA
             // If the right arg isn't reused, we can
             //   store the result as an APA
@@ -1610,7 +1609,6 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
 #define lpAPA       ((LPAPLAPA) lpDataRes)
                 lpAPA->Off = apaOff;
                 lpAPA->Mul = apaMul;
-                lpAPA->Len = aplNELMRes;
 #undef  lpAPA
             } else
             {

@@ -92,6 +92,8 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    HGLOBAL hGlbRht;            // Right arg global memory handle
+
     //***************************************************************
     // Comma-bar is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -115,13 +117,13 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
             // If it's not immediate, we must look inside the array
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
-                // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+                // Get the global memory handle
+                hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
-                return PrimFnMonCommaGlb_EM_YY
-                       (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
-                        lptkAxis,                                                       // Ptr to axis token (may be NULL)
-                        lptkFunc);                                                      // Ptr to function token
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbRht));
+
+                break;          // Join common global code
             } // End IF
 
             // Handle the immediate case
@@ -140,10 +142,11 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
-            return PrimFnMonCommaGlb_EM_YY
-                   (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
-                    lptkAxis,                                           // Ptr to axis token (may be NULL)
-                    lptkFunc);                                          // Ptr to function token
+            // Get the global memory handle
+            hGlbRht = lptkRhtArg->tkData.tkGlbData;
+
+            break;          // Join common global code
+
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                        lptkFunc);
@@ -152,6 +155,10 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
         defstop
             return NULL;
     } // End SWITCH
+
+    return PrimFnMonCommaGlb_EM_YY (ClrPtrTypeDirGlb (hGlbRht), // HGLOBAL
+                                    lptkAxis,                   // Ptr to axis token (may be NULL)
+                                    lptkFunc);                  // Ptr to function token
 } // End PrimFnMonComma_EM_YY
 #undef  APPEND_NAME
 
@@ -388,8 +395,10 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     //***************************************************************
     bTableRes = (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
     if (bTableRes)
-        aplLastAxis = aplNELMAxis = aplRankRht - 1;
-    else
+    {
+        aplLastAxis = aplRankRht;
+        aplNELMAxis = aplRankRht - 1;
+    } else
     // Empty axis means insert new last unit coordinate
     if (aplNELMAxis EQ 0)
         aplLastAxis = aplRankRht;
@@ -398,6 +407,9 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     // Note that for contiguous axes, <aplLastAxis> is
     //   the highest axis value, and <aplFirstAxis> is
     //   the lowest axis value, inclusive.
+    // For example, for ,[1 3 2] (in origin-0)
+    //   aplFirstAxis is 1, and
+    //   apllastAxis  is 3
     aplFirstAxis = 1 + aplLastAxis - aplNELMAxis;
 
     //***************************************************************
@@ -542,12 +554,17 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
              || uRht > aplLastAxis)
                 ((LPAPLDIM) lpMemRes)[uRes++] = lpMemDimRht[uRht];
             else
-            // otherwise, it's the last (highest) axis dimension, ...
+            // If, it's the last (highest) axis dimension, ...
             if (uRht EQ aplLastAxis)
                 ((LPAPLDIM) lpMemRes)[uRes++] = aplDimNew;
         } // End FOR
+
+        // Otherwise, it's the last (highest) axis dimension, ...
+        if (uRht EQ aplLastAxis)
+            ((LPAPLDIM) lpMemRes)[uRes++] = aplDimNew;
     } else
     // If we're inserting a unit coordinate, ...
+    if (aplRankRes > aplRankRht)
     {
         // Insert the unit coordinate
         ((LPAPLDIM) lpMemRes)[aplLastAxis] = 1;
@@ -558,6 +575,10 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             if (uRes NE aplLastAxis)
                 ((LPAPLDIM) lpMemRes)[uRes] = lpMemDimRht[uRht++];
         } // End FOR
+    } else
+    {
+        for (uRes = uRht = 0; uRht < aplRankRht; uRes++)
+            ((LPAPLDIM) lpMemRes)[uRes] = lpMemDimRht[uRht++];
     } // End IF/ELSE
 
     // Point to the result's data

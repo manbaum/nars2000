@@ -286,8 +286,10 @@ IMMTYPES TranslateArrayTypeToImmType
         case ARRAY_HETERO:
         case ARRAY_NESTED:
         case ARRAY_LIST:
+            return IMMTYPE_ERROR;
+
         defstop
-            return -1;              // To keep the compiler happy
+            return IMMTYPE_ERROR;       // To keep the compiler happy
     } // End SWITCH
 } // End TranslateArrayTypeToImmType
 

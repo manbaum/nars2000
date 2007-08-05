@@ -278,7 +278,6 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 #define lpAPA       ((LPAPLAPA) lpMemRes)
     lpAPA->Off = bQuadIO;
     lpAPA->Mul = 1;
-    lpAPA->Len = aplNELMRes;
 #undef  lpAPA
 
     // We no longer need this ptr

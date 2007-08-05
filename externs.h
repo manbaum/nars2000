@@ -26,29 +26,36 @@
 #define DEF_CURWID_INS      5           // Cursor width for insert mode
 #define DEF_CURWID_REP      2           // ...              replace ...
 #define DEF_HISTLINES    3000           // # lines in history buffer
-#define DEF_CURLINE_MAXLEN   1024       // Maximum current line length
-#define DEF_CURLINE_MAXSIZE  ((DEF_CURLINE_MAXLEN + 1) * sizeof (WCHAR)) // Maximum line size in bytes
-#define DEF_CURLINE_INITSIZE DEF_CURLINE_MAXSIZE
 #define DEF_TEXT_FG_COLOR   COLOR_RED
 #define DEF_TEXT_BG_COLOR   COLOR_WHITE
-#define DEF_NUMALP_MAXSIZE  64*1024*sizeof (char)   // Max size for lpszNumAlp
-#define DEF_NUMALP_INITSIZE 64*1024*sizeof (char)   // Initial ...
-#define DEF_STRING_MAXSIZE  64*1024*sizeof (WCHAR)  // Max size for lpwszString
-#define DEF_STRING_INITSIZE 64*1024*sizeof (WCHAR)  // Initial ...
-#define DEF_TOKENSTACK_MAXSIZE 64*1024*sizeof (TOKEN)   // Maximum size of token stack
-#define DEF_TOKENSTACK_INITSIZE 64*1024*sizeof (TOKEN)  // Initial ...
-#define DEF_SIS_INITSIZE      64*1024   // Initial size for State Indicator Stack
-#define DEF_SIS_MAXSIZE     1024*1024   // Maximum ...
 
 // Size of storage areas
-#define DEF_CTEMP_MAXSIZE   65536       // Maximum size of char  temporary storage
-#define DEF_CTEMP_INITSIZE  65536       // Initial ...
-#define DEF_WTEMP_MAXSIZE   65536       // Maximum size of WCHAR ...
-#define DEF_WTEMP_INITSIZE  65536       // Initial ...
-#define DEF_DEBUG_MAXSIZE   65536       // Maximum size of debug ...
-#define DEF_DEBUG_INITSIZE  65536       // Initial ...
-#define DEF_WFORMAT_MAXSIZE   1024*1024 // Maximum size of WCHAR Formatting storage
-#define DEF_WFORMAT_INITSIZE    64*1024 // Initial ...
+#define DEF_CURLINE_INITSIZE    (   4*1024)                 // Initial line size in bytes
+#define DEF_CURLINE_MAXSIZE     (   4*1024)                 // Maximum ...
+#define DEF_CURLINE_MAXLEN      (DEF_CURLINE_INITSIZE - 1)  // Maximum current line length
+#define DEF_NUMALP_INITSIZE     (  64*1024)                 // Initial size for lpszNumAlp
+#define DEF_NUMALP_MAXSIZE      (  64*1024)                 // Maximum ...
+#define DEF_STRING_INITSIZE     (  64*1024)                 // Initial size for lpwszString
+#define DEF_STRING_MAXSIZE      (  64*1024)                 // Maximum ...
+////ine DEF_TOKENSTACK_INITSIZE (  64*1024)                 // Initial size of token stack
+////ine DEF_TOKENSTACK_MAXSIZE  (  64*1024)                 // Maximum ...
+#define DEF_SIS_INITSIZE        (   0*1024)                 // Initial size for State Indicator Stack
+#define DEF_SIS_INCRSIZE        (  64*1024)                 // Increment ..
+#define DEF_SIS_MAXSIZE         (1024*1024)                 // Maximum ...
+#define DEF_YYRES_INITSIZE      (   0*1024)                 // Initial size of YYRes buffer
+#define DEF_YYRES_INCRSIZE      (   4*1024)                 // Increment ...
+#define DEF_YYRES_MAXSIZE       (1024*1024)                 // Maximum ...
+#define DEF_CTEMP_INITSIZE      (  64*1024)                 // Initial size of char  temporary storage
+#define DEF_CTEMP_MAXSIZE       (  64*1024)                 // Maximum ...
+#define DEF_WTEMP_INITSIZE      (  64*1024)                 // Initial size of WCHAR ...
+#define DEF_WTEMP_MAXSIZE       (  64*1024)                 // Maximum ...
+#define DEF_DEBUG_INITSIZE      (  64*1024)                 // Initial size of debug ...
+#define DEF_DEBUG_MAXSIZE       (  64*1024)                 // Maximum ...
+#define DEF_WFORMAT_INITSIZE    (  64*1024)                 // Initial size of WCHAR Formatting storage
+#define DEF_WFORMAT_MAXSIZE     (1024*1024)                 // Maximum ...
+#define DEF_UNDOBUF_INITSIZE    (   4*1024)                 // Initial size of Undo buffer
+#define DEF_UNDOBUF_MAXSIZE     (  64*1024)                 // Maximum ...
+
 
 // Global Options
 #define DEF_NEWTABONCLEAR   TRUE
@@ -161,6 +168,10 @@ WCHAR wszLoadDir[_MAX_PATH],            // Load workspaces directory
 
 #define WKSNAME "workspaces"            // Name of Workspaces subdirectory under main dir
 
+EXTERN
+CRITICAL_SECTION CSO0,                  // Critical Section Object #0
+                 CSO1;                  // ...                     #1
+
 
 //***************************************************************************
 // Thread Local Storage indices
@@ -188,13 +199,6 @@ EXTERN
 LPWCHAR lpwszTemp,                      // Used for temporary WCHAR storage
         lpwszFormat;                    // Used for formatting
 
-#ifdef DEBUG
-EXTERN
-LPCHAR lpszDebug;                       // Used for temporary storage of char
-                                        //   debug output
-EXTERN
-LPWCHAR lpwszDebug;                     // Used for temporary storage of WCHAR
-                                        //   debug output
 EXTERN
 UCHAR gDbgLvl                           // Debug level 0 = none
 #ifdef DEFINE_VALUES
@@ -202,6 +206,13 @@ UCHAR gDbgLvl                           // Debug level 0 = none
 #endif
 ;
 
+#ifdef DEBUG
+EXTERN
+LPCHAR lpszDebug;                       // Used for temporary storage of char
+                                        //   debug output
+EXTERN
+LPWCHAR lpwszDebug;                     // Used for temporary storage of WCHAR
+                                        //   debug output
 EXTERN
 LPWCHAR lpwNameTypeStr[]
 #ifdef DEFINE_VALUES
@@ -288,6 +299,7 @@ APLFLOAT PrimIdent[PF_INDEX_NEXT];      // Primitive scalar function identity el
                                         //   in the same order as enum tagFBFNINDS
 
 typedef void (FASTBOOLFCN) (APLSTYPE     aplTypeRht,        // Right arg storage type
+                            APLNELM      aplNELMRht,        // Right arg NELM
                             LPVOID       lpMemRht,          // Ptr to right arg global memory
                             LPVOID       lpMemRes,          // Ptr to result    ...
                             APLUINT      uDimLo,            // Product of dimensions below axis
@@ -613,6 +625,14 @@ UCHAR FastBoolTrans[256][5]
 //***************************************************************************
 //
 //***************************************************************************
+
+// Default tab stops
+EXTERN
+UINT uTabs
+#ifdef DEFINE_VALUES
+ = DEF_TABS
+#endif
+;
 
 // Default six-space indent
 EXTERN

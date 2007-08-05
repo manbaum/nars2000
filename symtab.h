@@ -95,6 +95,13 @@ typedef struct tagHTFLAGS
 //   be sure to make a corresponding change to
 //   <ahtFlagNames> in <display.c>.
 
+
+typedef struct tagAPLCHAR6
+{
+    APLCHAR aplChar[6];
+} APLCHAR6, *LPAPLCHAR6;
+
+
 // Hash table entry
 typedef struct tagHSHENTRY
 {
@@ -104,7 +111,11 @@ typedef struct tagHSHENTRY
     HTFLAGS htFlags;        // 08:  Flags
     UINT    uHash,          // 0C:  The hash value for this entry
             uHashAndMask;   // 10:  uHash & the current mask
-    HGLOBAL htGlbName;      // 14:  Handle of the entry's name (NULL if none)
+    union                   // 14:  Handle of the entry's name (NULL if none)
+    {
+        HGLOBAL htGlbName;
+        LPAPLCHAR6 *lplpaplChar6;
+    };
     struct tagSYMENTRY
             *htSymEntry;    // 18:  Ptr to the matching SYMENTRY
                             // 1C:  Length
@@ -115,10 +126,10 @@ typedef struct tagHSHENTRY
 //********************* SYMBOL TABLE ****************************************
 
 // Maximum symbol table size (# entries)
-#define DEF_SYMTAB_MAXSIZE  (1024 * 1024)
+#define DEF_SYMTAB_MAXSIZE  (1024*1024)
 
 // Starting symbol table size (# entries)
-#define DEF_SYMTAB_INITSIZE (4 * 1024)
+#define DEF_SYMTAB_INITSIZE (   4*1024)
 
 // Amount to resize
 #define DEF_SYMTAB_RESIZE   DEF_SYMTAB_INITSIZE
@@ -132,7 +143,8 @@ typedef enum tagIMMTYPES
     IMMTYPE_PRIMFCN,        // 04:  Primitive monadic/dyadic function
     IMMTYPE_PRIMOP1,        // 05:  Primitive monadic operator
     IMMTYPE_PRIMOP2,        // 06:  ...       dyadic  ...
-                            // 07-0F:  Available entries (4 bits)
+                            // 07-0E:  Available entries (4 bits)
+    IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type
 } IMMTYPES;
 
 // Name types

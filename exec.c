@@ -821,9 +821,6 @@ DWORD WINAPI ImmExecLineInThread
     DWORD        dwWFMO,        // Return code from WaitForMultipleObjects
                  dwRet = 0;     // Return code from this function
 
-    // Make sure we can communicate between windows
-    AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
-
     // Save the thread type ('IE')
     TlsSetValue (dwTlsType, (LPVOID) 'IE');
 

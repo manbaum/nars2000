@@ -2953,9 +2953,6 @@ DWORD WINAPI ParseLineInThread
     PLLOCALVARS  plLocalVars = {0}; // Re-entrant vars
     HWND         hWndSM;            // Window handle to Session Manager
 
-    // Make sure we can communicate between windows
-    AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
-
     // Save the thread type ('PL')
     TlsSetValue (dwTlsType, (LPVOID) 'PL');
 

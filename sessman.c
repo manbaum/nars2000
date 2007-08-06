@@ -360,32 +360,11 @@ void DisplayPrompt
      BOOL bSetFocusSM)  // TRUE iff we're to set the focus to the Session Manager
 
 {
-////UINT uCharPos,
-////     uLinePos;
-
     // Move the caret to the End-of-the-buffer
     MoveCaretEOB (hWndEC);
 
-////// Get the line position of the current line
-////uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, (WPARAM) -1, 0);
-
-////// Get the char position of the caret
-////uCharPos = GetCurCharPos (hWndEC);
-
-////// If the char position of the caret
-//////   is not at the left, put it there
-////if (uLinePos NE uCharPos)
-////{
-////    DbgBrk ();
-////    AppendLine (L"", FALSE, TRUE);
-////} // End IF
-
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
-
-#ifdef DEBUG
-    dprintfW (L"~~~DisplayPrompt (%d)", bSetFocusSM);
-#endif
 
     if (bSetFocusSM)
         // Set the focus to the Session Manager so the prompt displays

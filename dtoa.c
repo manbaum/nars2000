@@ -63,7 +63,7 @@
 
 #define IEEE_8087
 #define Llong        __int64
-#define MULTIPLE_THREADS        ***FIXME***
+#define MULTIPLE_THREADS
 
 /*
  * #define IEEE_8087 for IEEE-arithmetic machines where the least

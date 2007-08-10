@@ -154,14 +154,18 @@ RESTART_EXCEPTION_EXECDFNGLB:
     {
         // Fill in the SIS header on the stack
         lpMemPTD->lpSISNxt->Sig.nature   = SIS_HEADER_SIGNATURE;
+////////lpMemPTD->lpSISNxt->hThread      =          // Filled in by ExecuteFunction_EM_YY
+////////lpMemPTD->lpSISNxt->hSemaphore   =          // ...
+        lpMemPTD->lpSISNxt->hSigaphore   = NULL;
         lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
         lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
         lpMemPTD->lpSISNxt->DfnType      = lpMemDfnHdr->DfnType;
         lpMemPTD->lpSISNxt->FcnValence   = lpMemDfnHdr->FcnValence;
         lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
-        lpMemPTD->lpSISNxt->Suspended    = 0;
-        lpMemPTD->lpSISNxt->Avail        = 0;
+        lpMemPTD->lpSISNxt->Suspended    = FALSE;
+        lpMemPTD->lpSISNxt->Avail        = FALSE;
         lpMemPTD->lpSISNxt->CurLineNum   = 1;
+        lpMemPTD->lpSISNxt->NxtLineNum   = 2;
 ////////lpMemPTD->lpSISNxt->numLabels    =              // Filled in below
         lpMemPTD->lpSISNxt->numResultSTE = lpMemDfnHdr->numResultSTE;
         lpMemPTD->lpSISNxt->numLftArgSTE = lpMemDfnHdr->numLftArgSTE;
@@ -358,8 +362,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     LPPERTABDATA   lpMemPTD = NULL; // Ptr to PerTabData global memory
     LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
     HWND           hWndSM;          // Session Manager window handle
-    HANDLE         hSemaphore,      // Semaphore handle
-                   hThread;         // Thread    ...
+    HANDLE         hThread,         // Thread handle
+                   hSemaphore;      // Semaphore handle
     UINT           numResultSTE,    // # result STEs (may be zero if no result)
                    numRes;          // Loop counter
     BOOL           bRet = TRUE;     // TRUE iff still executing the function
@@ -381,20 +385,20 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Get the tokenized header global memory handle
     hGlbTknHdr = lpMemDfnHdr->hGlbTknHdr;
 
-    // Set the execution state
-    lpMemPTD->execState.exType = EX_DFN;
-
     // Get the SM window handle
     hWndSM = lpMemPTD->hWndSM;
 
     // Save current line #
     lpMemPTD->lpSISCur->CurLineNum = uLineNum;
+    lpMemPTD->lpSISCur->NxtLineNum = uLineNum + 1;
 
     // Create a semaphore
-    hSemaphore = CreateSemaphore (NULL,             // No security attrs
-                                  0,                // Initial count (non-signalled)
-                                  65535,            // Maximum count
-                                  NULL);            // No name
+    hSemaphore =
+    lpMemPTD->lpSISCur->hSemaphore =
+    CreateSemaphore (NULL,              // No security attrs
+                     0,                 // Initial count (non-signalled)
+                     64*1024,           // Maximum count
+                     NULL);             // No name
     // Loop through the function lines
     while (0 < uLineNum && uLineNum <= lpMemPTD->lpSISCur->numFcnLines)
     {
@@ -439,11 +443,11 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                    hGlbTxtLine,             // Line text global memory handle
                    hGlbTknLine,             // Tokenixed line global memory handle
                    NULL,                    // Ptr to line text global memory
-                   hGlbPTD,                 // PerTabData global memory handle
-                   hSemaphore,              // Semaphore handle
-                   FALSE,                   // ParseLine NOT to free hGlbTknLine on exit
-                   FALSE,                   // ...                   lpwszLine   ...
-                   FALSE);                  // ...              signal SM at end
+                   hGlbPTD);                // PerTabData global memory handle
+///////////////////NULL,                    // Semaphore handle
+///////////////////FALSE,                   // ParseLine NOT to free hGlbTknLine on exit
+///////////////////FALSE,                   // ...                   lpwszLine   ...
+///////////////////FALSE);                  // ...              signal SM at end
         // Set WHILE test
         bRet = TRUE;
 
@@ -464,35 +468,40 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             dwWFMO =
             WaitForMultipleObjects (1,                  // # handles to wait for
                                    &hThread,            // Ptr to handle to wait for
-                                    TRUE,               // Only one handle to wait for
+                                    FALSE,              // Exit if only one handle is signalled
                                     INFINITE);          // Timeout value in milliseconds
-////////////MsgWaitForMultipleObjects (1,               // # handles to wait for
-////////////                          &hSemaphore,      // Ptr to handle to wait for
-////////////                           FALSE,           // Only one handle to wait for
-////////////                           INFINITE,        // Timeout value in milliseconds
-////////////                           QS_ALLINPUT);    // Wait for any message
             // Split cases based upon the return code
             switch (dwWFMO)
             {
-                // Check for ParseLine done
-                case WAIT_OBJECT_0:
+                // Check for thread (ParseLine) done
+                case WAIT_OBJECT_0:         // hThread terminated
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                    // If suspended, wait for the semaphore to trigger
+                    if (lpMemPTD->lpSISCur->Suspended)
+                    {
+                        HWND hWndEC;
+
+                        hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
+
+                        // Display the default prompt
+                        DisplayPrompt (hWndEC, FALSE, 2);
+
+                        // Wait for the semaphore to trigger
+                        WaitForMultipleObjects (1,                  // # handles to wait for
+                                               &hSemaphore,         // Ptr to handle to wait for
+                                                FALSE,              // Exit if only one handle is signalled
+                                                INFINITE);          // Timeout value in milliseconds
+                    } // End IF
+
                     // Process ParseLine done
                     bRet = FALSE;           // Mark as done
 
-                    break;                  // We handled the msg
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-////////////////// Check for a message in the queue, ...
-////////////////case WAIT_OBJECT_0 + 1:
-////////////////    DbgBrk ();              //
-////////////////
-////////////////    break;                  // We handled the msg
-
-                case (DWORD) -1:
-////////////////////DbgBrk ();
-////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
-////////////////////    return FALSE;
-
-                    // Fall through to <defstop>
+                    break;                      // We handled the msg
 
                 defstop
                     GetLastError ();
@@ -510,19 +519,17 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
-        // Get next line #
-        uLineNum = lpMemPTD->lpSISCur->CurLineNum;
+        // If we're suspended, break
+        if (lpMemPTD->lpSISCur->Suspended)
+            break;
 
-        // If it didn't come from {goto}, skip to the next line
-        //   and save the value back
-        if (!lpMemPTD->lpSISCur->GotoLine)
-            lpMemPTD->lpSISCur->CurLineNum = ++uLineNum;
+        // Get next line #
+        uLineNum = lpMemPTD->lpSISCur->NxtLineNum++;
+        lpMemPTD->lpSISCur->CurLineNum = uLineNum;
     } // End WHILE
 
-    // Close the handle as it isn't used anymore
+    // Close the semaphore handle as it isn't used anymore
     CloseHandle (hSemaphore); hSemaphore = NULL;
-
-    DbgBrk ();
 
     // If we're suspended, don't Unlocalize
     if (lpMemPTD->lpSISCur->Suspended)
@@ -538,32 +545,17 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     switch (numResultSTE)
     {
         case 0:         // No result
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
-
-            // Fill in the result token
-            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARNAMED;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
-            lpYYRes->tkToken.tkFlags.NoDisplay = 1;
-            lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->steNoValue;
-            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+            // Make a PL_YYSTYPE NoValue entry
+            lpYYRes = MakeNoValue_YY (lptkFunc);
 
             break;
 
         case 1:         // Single result name:  Copy it as the result from this function
             // Check for a value
             if (!(*lplpSymEntry)->stFlags.Value)
-            {
-                // Allocate a new YYRes
-                lpYYRes = YYAlloc ();
-
-                // Fill in the result token
-                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARNAMED;
-////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
-                lpYYRes->tkToken.tkFlags.NoDisplay = 1;
-                lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->steNoValue;
-                lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-            } else
+                // Make a PL_YYSTYPE NoValue entry
+                lpYYRes = MakeNoValue_YY (lptkFunc);
+            else
             {
                 // Lock the memory to get a ptr to it
                 lptkHdr = MyGlobalLock (hGlbTknHdr);
@@ -798,7 +790,8 @@ void Unlocalize
         lpSymEntryCur = lpSymEntryNxt[numSym].stHshEntry->htSymEntry;
 
         // Release the current value of the STE
-        if (!lpSymEntryCur->stFlags.Imm)
+        //   if it's not immediate and has a value
+        if (!lpSymEntryCur->stFlags.Imm && lpSymEntryCur->stFlags.Value)
         {
             // Get the global memory handle
             hGlbData = lpSymEntryCur->stData.stGlbData;
@@ -877,6 +870,10 @@ LPSYMENTRY LocalizeLabels
     LPFCNLINE      lpFcnLines;   // Ptr to array of function line structs (FCNLINE[numFcnLines])
     LPTOKEN_HEADER lptkHdr;      // Ptr to header of tokenized line
     LPTOKEN        lptkLine;     // Ptr to tokenized line
+    STFLAGS stFlagsClr = {0};   // Flags for clearing an STE
+
+    // Set the Inuse flag
+    stFlagsClr.Inuse = 1;
 
     // Get # lines in the function
     numFcnLines = lpMemDfnHdr->numFcnLines;
@@ -920,7 +917,7 @@ LPSYMENTRY LocalizeLabels
                 *lpSymEntryNxt++ = *lpSymEntrySrc;
 
                 // Clear the STE flags & data
-                *((LPUINT) &lpSymEntrySrc->stFlags) = 0;
+                *((PUINT_PTR) &lpSymEntrySrc->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below
 
                 // Initialize the SYMENTRY to an integer constant
@@ -964,6 +961,10 @@ void InitVarSTEs
     UINT    uSym;               // Loop counter
     HGLOBAL hGlbArg;            // Arg global memory handle
     LPVOID  lpMemArg;           // Ptr to arg global memory
+    STFLAGS stFlagsClr = {0};   // Flags for clearing an STE
+
+    // Set the Inuse flag
+    stFlagsClr.Inuse = 1;
 
     // If the token is defined, ...
     if (lptkArg && numArgSTE)
@@ -977,7 +978,7 @@ void InitVarSTEs
                 for (uSym = 0; uSym < numArgSTE; uSym++, lplpSymEntry++)
                 {
                     // Clear the STE flags & data
-                    *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+                    *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
                     (*lplpSymEntry)->stFlags.Imm      = 1;
@@ -1007,9 +1008,8 @@ void InitVarSTEs
                     // Loop through the LPSYMENTRYs
                     for (uSym = 0; uSym < numArgSTE; uSym++, lplpSymEntry++)
                     {
-
                         // Clear the STE flags & data
-                        *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+                        *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
                         (*lplpSymEntry)->stFlags.Imm      = 1;
@@ -1042,7 +1042,7 @@ void InitVarSTEs
         if (numArgSTE EQ 1)
         {
             // Clear the STE flags & data
-            *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+            *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
 ////////////(*lplpSymEntry)->stFlags.Imm      = 0;      // Already zero from previous initialization
@@ -1094,7 +1094,7 @@ void InitVarSTEs
             for (uSym = 0; uSym < numArgSTE; uSym++, lplpSymEntry++)
             {
                 // Clear the STE flags & data
-                *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+                *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
                 (*lplpSymEntry)->stData.stLongest = 0;
 
                 // Split cases based upon the arg storage type
@@ -1224,6 +1224,11 @@ BOOL InitFcnSTEs
      LPSYMENTRY  *lplpSymEntry) // Ptr to LPSYMENTRYs
 
 {
+    STFLAGS stFlagsClr = {0};   // Flags for clearing an STE
+
+    // Set the Inuse flag
+    stFlagsClr.Inuse = 1;
+
     // If the token is defined, ...
     if (lpYYArg && numArgSTE)
     {
@@ -1235,7 +1240,7 @@ BOOL InitFcnSTEs
             Assert (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNIMMED);
 
             // Clear the STE flags & data
-            *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+            *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
             (*lplpSymEntry)->stFlags.Imm      = 1;
@@ -1286,7 +1291,7 @@ BOOL InitFcnSTEs
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
             // Clear the STE flags & data
-            *((LPUINT) &(*lplpSymEntry)->stFlags) = 0;
+            *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
 ////////////(*lplpSymEntry)->stFlags.Imm      = 0;      // Already zero from above
@@ -1328,7 +1333,7 @@ LPSYMENTRY LocalizeSymEntries
         if ((*lplpSymEntrySrc)->stFlags.ObjName NE OBJNAME_SYS)
         {
             // Clear the STE flags & data
-            *(UINT *) &(*lplpSymEntrySrc)->stFlags &= *(UINT *) lpstFlagsMT;
+            *(PUINT_PTR) &(*lplpSymEntrySrc)->stFlags &= *(PUINT_PTR) lpstFlagsMT;
             (*lplpSymEntrySrc)->stData.stLongest = 0;
         } // End IF
 

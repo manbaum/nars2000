@@ -65,6 +65,7 @@
 #include "pf_uarrow.pro"
 #include "pf_ucaret.pro"
 #include "pf_ustile.pro"
+#include "pf_utackjot.pro"
 #include "po_dieresis.pro"
 #include "po_ditilde.pro"
 #include "po_dot.pro"

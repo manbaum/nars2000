@@ -14,6 +14,8 @@
 #include "externs.h"
 #include "editctrl.h"
 #include "pertab.h"
+#include "dfnhdr.h"
+#include "sis.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -49,6 +51,9 @@ typedef struct tagSM_CREATEPARAMS
 {
     HGLOBAL hGlbPTD;
 } SM_CREATEPARAMS, UNALIGNED *LPSM_CREATEPARAMS;
+
+APLCHAR wszQuadInput[] =
+WS_UTF16_QUAD L":";
 
 
 //***************************************************************************
@@ -357,7 +362,8 @@ void MoveCaretEOB
 
 void DisplayPrompt
     (HWND hWndEC,       // Window handle of the Edit Control
-     BOOL bSetFocusSM)  // TRUE iff we're to set the focus to the Session Manager
+     BOOL bSetFocusSM,  // TRUE iff we're to set the focus to the Session Manager
+     UINT uCaller)      // ***DEBUG***
 
 {
     // Move the caret to the End-of-the-buffer
@@ -365,6 +371,10 @@ void DisplayPrompt
 
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
+
+#ifdef DEBUG
+    dprintfW (L"~~DisplayPrompt (%d, %d)", bSetFocusSM, uCaller);
+#endif
 
     if (bSetFocusSM)
         // Set the focus to the Session Manager so the prompt displays
@@ -406,7 +416,7 @@ LPSYMENTRY GetSteZero
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpSym;
-} // GetSteZero
+} // End GetSteZero
 
 
 //***************************************************************************
@@ -443,7 +453,7 @@ LPSYMENTRY GetSteBlank
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpSym;
-} // GetSteBlank
+} // End GetSteBlank
 
 
 //***************************************************************************
@@ -1025,7 +1035,17 @@ LRESULT APIENTRY SMWndProc
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
             // Display the default prompt
-            DisplayPrompt (hWndEC, TRUE);
+            DisplayPrompt (hWndEC, TRUE, 1);
+
+            return FALSE;           // We handled the msg
+
+        case MYWM_QUOTEQUAD:        // bQuoteQuad = (BOOL) wParam
+                                    // TRUE iff Quote-Quad input, FALSE if Quad input
+            if (!wParam)
+            {
+                AppendLine (wszQuadInput, FALSE, TRUE);
+                DisplayPrompt (hWndEC, FALSE, lParam);
+            } // End IF
 
             return FALSE;           // We handled the msg
 
@@ -1089,112 +1109,6 @@ LRESULT APIENTRY SMWndProc
 
             break;                  // Continue with WM_MDIACTIVATE
 
-////         case MYWM_WFMO:             // hThread = (HANDLE) wParam;
-////                                     // hSemaphore = (HANDLE) lParam;
-//// #define hThread     ((HANDLE) wParam)
-//// #define hSemaphore  ((HANDLE) lParam)
-////
-////             while (TRUE)
-////             {
-////                 DWORD dwWFMO;
-////
-////                 dwWFMO =
-////                 MsgWaitForMultipleObjects (1,               // # handles to wait for
-////                                           &hSemaphore,      // Ptr to handle to wait for
-////                                            FALSE,           // Only one handle to wait for
-////                                            INFINITE,        // Timeout value in milliseconds
-////                                            QS_ALLINPUT);    // Wait for any message
-////                 // Split cases based upon the return code
-////                 switch (dwWFMO)
-////                 {
-////                     // Check for ParseLine done
-////                     case WAIT_OBJECT_0:
-////                         // Process ParseLine done
-////                         PostMessage (hWnd, MYWM_PARSELINEDONE, wParam, lParam);
-////
-////                         return FALSE;           // We handled the msg
-////
-////                     // Check for a message in the queue, ...
-////                     case WAIT_OBJECT_0 + 1:
-////                         // Repost our message
-////                         PostMessage (hWnd, message, wParam, lParam);
-////
-////                         return FALSE;           // We handled the msg
-////
-////                     case (DWORD) -1:
-//// ////////////////////////DbgBrk ();
-//// ////////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
-//// ////////////////////////    return FALSE;
-////
-////                         // Fall through to <defstop>
-////
-////                     defstop
-////                         GetLastError ();
-////                         break;
-////                 } // End SWITCH
-////             } // End WHILE
-////
-////             return FALSE;           // We handled the msg
-//// #undef  hSemaphore
-//// #undef  hThread
-////
-////         case MYWM_PARSELINEDONE:
-//// #define hThread     ((HANDLE) wParam)
-//// #define hSemaphore  ((HANDLE) lParam)
-////
-////             // Wait for the thread to terminate
-////             while (TRUE)
-////             {
-////                 DWORD dwWFMO;
-////
-////                 dwWFMO =
-////                 MsgWaitForMultipleObjects (1,               // # handles to wait for
-////                                           &hThread,         // Ptr to handle to wait for
-////                                            FALSE,           // Only one handle to wait for
-////                                            INFINITE,        // Timeout value in milliseconds
-////                                            QS_ALLINPUT);    // Wait for any message
-////                 // Split cases based upon the return code
-////                 switch (dwWFMO)
-////                 {
-////                     // Check for ParseLine thread done
-////                     case WAIT_OBJECT_0:
-////                         // Thread ParseLine done
-////
-////                         // Close the handle as it isn't used anymore
-////                         CloseHandle (hSemaphore); hSemaphore = NULL;
-////
-////                         // Close the thread handle as it has terminated
-////                         CloseHandle (hThread); hThread = NULL;
-////
-////                         // Display the default prompt
-////                         DisplayPrompt (hWndEC, TRUE);
-////
-////                         return FALSE;           // We handled the msg
-////
-////                     // Check for a message in the queue, ...
-////                     case WAIT_OBJECT_0 + 1:
-////                         // Repost our message
-////                         PostMessage (hWnd, message, wParam, lParam);
-////
-////                         return FALSE;           // We handled the msg
-////
-////                     case (DWORD) -1:
-//// ////////////////////////DbgBrk ();
-//// ////////////////////////if (GetLastError () EQ ERROR_INVALID_HANDLE)
-//// ////////////////////////    return FALSE;
-////
-////                         // Fall through to <defstop>
-////
-////                     defstop
-////                         GetLastError ();
-////                         break;
-////                 } // End SWITCH
-////             } // End WHILE
-////
-////             return FALSE;           // We handled the msg
-//// #undef  hSemaphore
-//// #undef  hThread
-
         case MYWM_SETFOCUS:
             // Set the focus to the Session Manager so the cursor displays
             SetFocus (hWnd);
@@ -1223,6 +1137,7 @@ LRESULT APIENTRY SMWndProc
         {
             UINT uLineLen,
                  uLineCnt;
+            BOOL bRet;
 
             // Get the thread's PerTabData global memory handle
             hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -1241,58 +1156,66 @@ LRESULT APIENTRY SMWndProc
             switch (nVirtKey)
             {
                 case VK_RETURN:
-                    // Check for Quad or Quote-quad input
-////                if ()       // ***FINISHME*** -- Quad and/or quote-quad input
-////                {
-////
-////
-////                } // End IF
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                    // If we're not on the last line,
-                    //   copy it and append it to the buffer
-                    if (!IzitLastLine (hWndEC))
+                    // If there's an active program, ignore this key
+                    bRet = (lpMemPTD->lpSISCur && !lpMemPTD->lpSISCur->Suspended);
+                    if (!bRet)
                     {
-                        UINT uLastNum;
+                        // If we're not on the last line,
+                        //   copy it and append it to the buffer
+                        if (!IzitLastLine (hWndEC))
+                        {
+                            UINT uLastNum;
 
-                        // Lock the memory to get a ptr to it
-                        lpMemPTD = MyGlobalLock (hGlbPTD);
+                            // Tell EM_GETLINE maximum # chars in the buffer
+                            // The output array is a temporary so we don't have to
+                            //   worry about overwriting outside the allocated buffer
+                            ((LPWORD) lpMemPTD->lpwszTmpLine)[0] = DEF_CURLINE_MAXLEN;
 
-                        // Tell EM_GETLINE maximum # chars in the buffer
-                        // The output array is a temporary so we don't have to
-                        //   worry about overwriting outside the allocated buffer
-                        ((LPWORD) lpMemPTD->lpwszTmpLine)[0] = DEF_CURLINE_MAXLEN;
+                            // Get the current line
+                            SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemPTD->lpwszTmpLine);
 
-                        // Get the current line
-                        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemPTD->lpwszTmpLine);
+                            // Append CRLF
+                            lstrcatW (lpMemPTD->lpwszTmpLine, L"\r\n");
 
-                        // Append CRLF
-                        lstrcatW (lpMemPTD->lpwszTmpLine, L"\r\n");
+                            // Move the caret to the end of the buffer
+                            MoveCaretEOB (hWndEC);
 
-                        // Move the caret to the end of the buffer
-                        MoveCaretEOB (hWndEC);
+                            // Get the # of the last line
+                            uLastNum = SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
-                        // Get the # of the last line
-                        uLastNum = SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+                            // Replace the last line in the buffer
+                            ReplaceLine (hWnd, lpMemPTD->lpwszTmpLine, uLastNum);
 
-                        // Replace the last line in the buffer
-                        ReplaceLine (hWnd, lpMemPTD->lpwszTmpLine, uLastNum);
+                            // Restore the original of the current line
+                            ReplaceLine (hWnd, lpMemPTD->lpwszCurLine, uLineNum);
 
-                        // Restore the original of the current line
-                        ReplaceLine (hWnd, lpMemPTD->lpwszCurLine, uLineNum);
+                            // Move the caret to the end of the buffer
+                            MoveCaretEOB (hWndEC);
 
-                        // Move the caret to the end of the buffer
-                        MoveCaretEOB (hWndEC);
-
-                        // Get the current line #
-                        uLineNum = uLastNum;
-
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+                            // Get the current line #
+                            uLineNum = uLastNum;
+                        } // End IF
                     } // End IF
 
-                    // Execute the line
-                    ImmExecLine (uLineNum, hWndEC);
+                    // If we're in Quote-Quad input, ...
+                    if (lpMemPTD->lpSISCur
+                     && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QQUAD)
+                    {
+                        // Format QQ input and save in global memory
+                        FormatQQuadInput (uLineNum, hWndEC, lpMemPTD);
 
+                        bRet = TRUE;        // Mark as not ImmExecLine material
+                    } // End IF
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                    // Execute the line if no other program is active
+                    if (!bRet)
+                        ImmExecLine (uLineNum, hWndEC);
                     break;
 
                 case VK_UP:

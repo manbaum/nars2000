@@ -182,8 +182,8 @@ void DisplayGlbArr
     APLUINT      uQuadPP,           // []PP
                  uQuadPW;           // []PW
 
-#define DEF_DISPLAY_INITSIZE    65536
-#define DEF_DISPLAY_MAXSIZE     65536
+#define DEF_DISPLAY_INITSIZE    (64*1024)
+#define DEF_DISPLAY_MAXSIZE     (64*1024)
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -907,7 +907,7 @@ void DisplayHshTab
         UINT  htFlags;
 
         // Format the flags
-        htFlags = *(UINT *) &lpHshEntry->htFlags;
+        htFlags = *(PUINT_PTR) &lpHshEntry->htFlags;
         for (j = 0;
              j < HT_FLAGNAMES_NROWS;
              j++)
@@ -1072,7 +1072,7 @@ void DisplaySymTab
         for (j = 0;
              j < ST_FLAGNAMES_NROWS;
              j++)
-        if ((*(UINT *) &stFlags) & astFlagNames[j].uMask)
+        if ((*(PUINT_PTR) &stFlags) & astFlagNames[j].uMask)
             lstrcatW (wszFlags, astFlagNames[j].lpwszName);
 
         if (IsNameTypeVar (stFlags.ObjType)

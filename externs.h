@@ -183,7 +183,7 @@ DWORD dwTlsType,                        // Thread type (e.g.
                                         //   'TC' for Tab Control,
                                         //   'PL' for ParseLine,
                                         //   etc.)
-      dwTlsSemaphore,                   // Handle to semaphore  for PL thread only
+//////dwTlsSemaphore,                   // Handle to semaphore  for PL thread only
       dwTlsPlLocalVars,                 // Ptr to lpplLocalVars for PL thread only
       dwTlsFhLocalVars,                 // Ptr to lpfhLocalVars for SM and PL threads
       dwTlsPerTabData;                  // Ptr to PerTabData    for TC, SM, and PL threads

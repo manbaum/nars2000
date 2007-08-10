@@ -1799,7 +1799,7 @@ int PASCAL WinMain
 
     // Allocate TLS indices
     dwTlsType        = TlsAlloc ();     // Thread type ('MF', 'TC', 'PL', etc.)
-    dwTlsSemaphore   = TlsAlloc ();     // Thread semaphore (for 'PL' only)
+////dwTlsSemaphore   = TlsAlloc ();     // Thread semaphore (for 'PL' only)
     dwTlsPlLocalVars = TlsAlloc ();     // lpplLocalVars (for 'PL' only)
     dwTlsFhLocalVars = TlsAlloc ();     // lpfhLocalVars (for 'PL' or 'SM' only)
     dwTlsPerTabData  = TlsAlloc ();     // PerTabData    (for 'PL' or 'SM' only)
@@ -1846,6 +1846,10 @@ int PASCAL WinMain
 
     // Initialize tables for Primitive Fns, Operators, etc.
     InitPrimTabs ();
+
+#ifdef DEBUG
+    InitFsaTabs ();
+#endif
 
     // Get and save the current Thread Id
     dwMainThreadId = GetCurrentThreadId ();

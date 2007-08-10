@@ -16,7 +16,11 @@ typedef enum tagDFNTYPES            // Defined Function Types
     DFNTYPE_OP1,                    // 01:  Monadic operator
     DFNTYPE_OP2,                    // 02:  Dyadic operator
     DFNTYPE_FCN,                    // 03:  Niladic/monadic/dyadic/ambivalent function
-                                    // 00:  No available entries (2 bits)
+    DFNTYPE_IMM,                    // 04:  Immediate execution
+    DFNTYPE_EXEC,                   // 05:  Execute primitive
+    DFNTYPE_QUAD,                   // 06:  Quad input
+    DFNTYPE_QQUAD,                  // 07:  Quote-Quad input
+                                    // 08-0F:  Available entries (4 bits)
 } DFNTYPES;
 
 typedef enum tagFCNVALENCES         // Defined/Derived Function Valence
@@ -25,9 +29,9 @@ typedef enum tagFCNVALENCES         // Defined/Derived Function Valence
     FCNVALENCE_MON,                 // 01:  Monadic function/derived function
     FCNVALENCE_DYD,                 // 02:  Dyadic  ...
     FCNVALENCE_AMB,                 // 03:  Ambivalent ...
-                                    // 00:  No available entries (2 bits)
+    FCNVALENCE_IMM,                 // 04:  Immediate execution
+                                    // 05-07:  Available entries (3 bits)
 } FCNVALENCES;
-
 
 // Defined function header signature
 #define DFN_HEADER_SIGNATURE   'SNFD'
@@ -36,10 +40,10 @@ typedef struct tagDFN_HEADER        // Function header structure
 {
     HEADER_SIGNATURE Sig;           // 00:  Defined function header signature
     UINT             Version;       // 04:  Version # of this header
-    UINT             DfnType:2,     // 08:  00000003:  Defined Function Type (see DFNTYPES enum)
-                     FcnValence:2,  //      0000000C:  Defined/Derived Function Valence (see FCNVALENCES enum)
-                     DfnAxis:1,     //      00000010:  Defined/Derived Function accepts axis value
-                     Avail:27;      //      FFFFFFE0:  Available bits
+    UINT             DfnType:4,     // 08:  0000000F:  Defined Function Type (see DFNTYPES enum)
+                     FcnValence:3,  //      00000070:  Defined/Derived Function Valence (see FCNVALENCES enum)
+                     DfnAxis:1,     //      00000080:  Defined/Derived Function accepts axis value
+                     Avail:24;      //      FFFFFF00:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
                      nPrototypeLine,// 10:  Line # of the []PROTOTYPE label (0 if not present)
                      nInverseLine,  // 14:  Line # of the []INVERSE label (0 if not present)
@@ -99,10 +103,10 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  lpNext,            // 14:  Next  ...
                  lpStop;            // 18:  Stopping token
     UINT         tkErrorCharIndex;  // 1C:  Error char index
-    UINT         DfnType:2,         // 20:  00000003:  Defined Function Type (see enum DFNTYPE)
-                 FcnValence:2,      //      0000000C:  Defined/Derived Function Valence (see FCNVALENCES enum)
-                 DfnAxis:1,         //      00000010:  Defined/Derived Function accepts axis value
-                 Avail:27;          //      FFFFFFE0:  Available bits
+    UINT         DfnType:4,         // 20:  0000000F:  Defined Function Type (see enum DFNTYPE)
+                 FcnValence:3,      //      00000070:  Defined/Derived Function Valence (see FCNVALENCES enum)
+                 DfnAxis:1,         //      00000080:  Defined/Derived Function accepts axis value
+                 Avail:24;          //      FFFFFF00:  Available bits
     LPFH_YYSTYPE lpYYStrandStart,   // 24:  Strand stack start (static)
                  lpYYStrandBase,    // 28:  ...          base (dynamic)
                  lpYYStrandNext,    // 2C:  ...          next token (dynamic)

@@ -2,6 +2,8 @@ TO DO:  General:  Important
 ---------------------------
 * Move registry info into <nars2000.ini> file
 * Fix display of chars in a saved ws (surround with quotes, etc.)
+* Handle multiple SI levels in a saved ws
+* Handle SI Damage
 * Implement dyadic epsilon              (member of)
 * ...       dyadic down tack jot        (format by specification)
 * ...       dyadic iota                 (index of)
@@ -9,9 +11,7 @@ TO DO:  General:  Important
 * ...       dyadic dot                  (inner product)
 * ...       monadic grade-up            (grade on rank > 1)
 * ...       monadic grade-down          (grade on rank > 1)
-* ...       monadic up arrow            (first)
 * ...       monadic down shoe           (unique)
-* ...       monadic up tack jot         (execute)
 * ...       monadic right shoe          (disclose)
 * ...       dyadic grade-up             (char grades)
 * ...       dyadic grade-down           (char grades)
@@ -22,12 +22,8 @@ TO DO:  General:  Important
 * ...       dyadic up tack              (base value)
 * ...       bracket indexing             A[B]
 * ...       bracket indexed assignment   A[B]{is}C
-* ...       quad/quote-quad input
 * ...       )LOAD
 * ...       )COPY
-* ...       function execution
-* ...       goto
-* ...       goto Line #
 * ...       minimum set of system functions
 * ...       event handling
 * ...       Ctrl-Break
@@ -44,7 +40,7 @@ TO DO:  General:  Wish List
 * Check on freeing intermediate variables on error
 * Idiom recognition in the tokenizer
 * Test ± infinity code
-* Get permission to redistribute APL385 Unicode font
+* Get permission to redistribute APL385 Unicode or SimPL font
 * Reference count on symbol table entries??
 * Strings in the symbol table??
 * Test all occurrences of a list as the right arg to a primitive or system function
@@ -97,6 +93,14 @@ DONE:  General
 * ...       )FNS
 * ...       )OPS
 * ...       )VARS
+* ...       )SI
+* ...       function execution
+* ...       goto
+* ...       goto Line #
+* ...       monadic up arrow
+* ...       monadic up tack jot
+* ...       quad input
+* ...       quote-quad input
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

@@ -54,35 +54,6 @@ TOKENTYPES TranslateTknTypeToTknTypeNamed
 } // End TranslateTknTypeToTknTypeNamed
 
 
-//// //***************************************************************************
-//// //  $TranslateNameTypeToTknTypeNamed
-//// //
-//// //  Translate a name type (see NAMETYPES enum) to
-//// //    a named token type (see TOKENTYPES enum).
-//// //***************************************************************************
-////
-//// TOKENTYPES TranslateNameTypeToTknTypeNamed
-////     (NAMETYPES nameType)
-////
-//// {
-////     switch (nameType)
-////     {
-////         case NAMETYPE_FN0:
-////         case FNAMEYPE_FCN12:
-////             return TKT_FCNNAMED;
-////
-////         case NAMETYPE_OP1:
-////             return TKT_OP1NAMED;
-////
-////         case NAMETYPE_OP2:
-////             return TKT_OP2NAMED;
-////
-////         defstop
-////             return -1;              // To keep the compiler happy
-////     } // End SWITCH
-//// } // End TranslateNameTypeToTknTypeNamed
-
-
 //***************************************************************************
 //  TranslateDfnToNameType
 //

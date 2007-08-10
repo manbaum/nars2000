@@ -9,6 +9,7 @@
 #include "main.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "dfnhdr.h"
 #include "pertab.h"
 #include "sis.h"
 
@@ -19,35 +20,36 @@
 
 
 //***************************************************************************
-//  $GotoLine
+//  $GotoLine_EM
 //
 //  Handle {goto} LineNum
 //
-//  Return GOTO_ZILDE if we're going to {zilde}
-//         GOTO_LINE  if we're going to a valid line num
-//         GOTO_ERROR if error
+//  Return EXITTYPE_GOTO_ZILDE if we're going to {zilde}
+//         EXITTYPE_GOTO_LINE  if we're going to a valid line num
+//         EXITTYPE_ERROR if error
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- GotoLine"
+#define APPEND_NAME     L" -- GotoLine_EM"
 #else
 #define APPEND_NAME
 #endif
 
-GOTO_TYPES GotoLine
+EXIT_TYPES GotoLine_EM
     (LPTOKEN lptkRhtArg,        // Ptr to right arg token
      LPTOKEN lptkFunc)          // Ptr to function token
 
 {
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    GOTO_TYPES   gotoType;          // Return value
+    EXIT_TYPES   exitType;          // Return value
     APLSTYPE     aplTypeRht;        // Right arg storage type
     APLNELM      aplNELMRht;        // ...       NELM
     APLRANK      aplRankRht;        // ...       rank
     UCHAR        immType;           // Right arg first value immediate type
     APLINT       aplIntegerRht;     // First value as integer
     APLFLOAT     aplFloatRht;       // ...            float
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -102,58 +104,64 @@ GOTO_TYPES GotoLine
      || aplIntegerRht < 0
      || aplIntegerRht > 0x7FFFFFFF)
     {
-        gotoType = GOTO_ZILDE;
+        exitType = EXITTYPE_GOTO_ZILDE;
 
         goto NORMAL_EXIT;
     } // End IF
 
-    // Split cases based upon the execution mode
-    switch (lpMemPTD->execState.exType)
+    // Split cases based upon the function type
+    switch (lpMemPTD->lpSISCur->DfnType)
     {
-        case EX_IMM:
-            // Restart execution in a suspended function
-            DbgBrk ();      // ***FINISHME*** -- goto LineNum in EX_IMM
-
+        case DFNTYPE_IMM:       // Restart execution in a suspended function
             // If there's a suspended function, ...
-            if (lpMemPTD->lpSISCur)
+            if (lpMemPTD->lpSISCur->lpSISPrv)
             {
-                // Save as the next line # ("- 1" because we pre-increment
-                //   the value in <ExecuteFunction>).
-                lpMemPTD->lpSISCur->CurLineNum = (UINT) aplIntegerRht - 1;
-
-                // Mark as having been specified by {goto}
-                lpMemPTD->lpSISCur->GotoLine = TRUE;
+                // Save as the next line #
+                lpMemPTD->lpSISCur->lpSISPrv->NxtLineNum = (UINT) aplIntegerRht;
 
                 // Mark as no longer suspended
-                lpMemPTD->lpSISCur->Suspended = 0;
+                lpMemPTD->lpSISCur->lpSISPrv->Suspended = FALSE;
 
-                gotoType = GOTO_LINE;
+                exitType = EXITTYPE_GOTO_LINE;
             } else
-                gotoType = GOTO_ZILDE;
-
-
-
-
-
+                exitType = EXITTYPE_GOTO_ZILDE;
             break;
 
-        case EX_DFN:
+        case DFNTYPE_OP1:
+        case DFNTYPE_OP2:
+        case DFNTYPE_FCN:       // Jump to a new line #
             // If there's a suspended function, ...
             if (lpMemPTD->lpSISCur)
             {
-                // Save as the next line # ("- 1" because we pre-increment
-                //   the value in <ExecuteFunction>).
-                lpMemPTD->lpSISCur->CurLineNum = (UINT) aplIntegerRht - 1;
-
-                // Mark as having been specified by {goto}
-                lpMemPTD->lpSISCur->GotoLine = TRUE;
+                // Save as the next line #
+                lpMemPTD->lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
 
                 // Mark as no longer suspended
-                lpMemPTD->lpSISCur->Suspended = 0;
+                lpMemPTD->lpSISCur->Suspended = FALSE;
 
-                gotoType = GOTO_LINE;
+                exitType = EXITTYPE_GOTO_LINE;
             } else
-                gotoType = GOTO_ZILDE;
+                exitType = EXITTYPE_GOTO_ZILDE;
+            break;
+
+        case DFNTYPE_EXEC:
+        case DFNTYPE_QUAD:
+            // Peel back to the first non-Imm/Exec layer
+            //   starting with the previous SIS header
+            lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
+
+            // If there's a suspended function, ...
+            if (lpSISCur)
+            {
+                // Save as the next line #
+                lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
+
+                // Mark as no longer suspended
+                lpSISCur->Suspended = FALSE;
+
+                exitType = EXITTYPE_GOTO_LINE;
+            } else
+                exitType = EXITTYPE_GOTO_ZILDE;
             break;
 
         defstop
@@ -163,13 +171,13 @@ GOTO_TYPES GotoLine
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
-    gotoType = GOTO_ERROR;
+    exitType = EXITTYPE_ERROR;
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    return gotoType;
-} // End GotoLine
+    return exitType;
+} // End GotoLine_EM
 #undef  APPEND_NAME
 
 

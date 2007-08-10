@@ -14,6 +14,7 @@
 #include "externs.h"
 #include "pertab.h"
 #include "dfnhdr.h"
+#include "sis.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -53,19 +54,18 @@ extern PRIMSPEC PrimSpecUpStile;
 
 
 // Primitives TO DO                                    Monadic      Dyadic
-#define PrimFnDelStile_EM_YY        PrimFn_EM       // Mixed        Mixed
-#define PrimFnDeltaStile_EM_YY      PrimFn_EM       // Mixed        Mixed
-#define PrimFnDownArrow_EM_YY       PrimFn_EM       // ERROR        Mixed
-#define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed        ERROR
-#define PrimFnDownTack_EM_YY        PrimFn_EM       // ERROR        Mixed
-#define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR        Mixed
-#define PrimFnUpTackJot_EM_YY       PrimFn_EM       // Mixed        ERROR
-#define PrimFnRightShoe_EM_YY       PrimFn_EM       // Mixed        Mixed
-#define PrimFnUpTack_EM_YY          PrimFn_EM       // ERROR        Mixed
+#define PrimFnDelStile_EM_YY        PrimFn_EM       // Mixed (*)    Mixed (*)
+#define PrimFnDeltaStile_EM_YY      PrimFn_EM       // Mixed (*)    Mixed (*)
+#define PrimFnDownArrow_EM_YY       PrimFn_EM       // ERROR        Mixed (*)
+#define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed (*)    ERROR
+#define PrimFnDownTack_EM_YY        PrimFn_EM       // ERROR        Mixed (*)
+#define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR        Mixed (*)
+#define PrimFnRightShoe_EM_YY       PrimFn_EM       // Mixed (*)    Mixed (*)
+#define PrimFnUpTack_EM_YY          PrimFn_EM       // ERROR        Mixed (*)
 
 
 // Operators TO DO                                     Monadic      Dyadic
-/////// PrimOpDot_EM_YY                             // ERROR        Inner product
+/////// PrimOpDot_EM_YY                             // ERROR        Inner product (*)
 
 
 // Primitives DONE                                     Monadic      Dyadic
@@ -102,7 +102,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnSlashBar_EM_YY                        // ERROR        Mixed
 /////// PrimFnSlope_EM_YY                           // ERROR        Mixed
 /////// PrimFnSlopeBar_EM_YY                        // ERROR        Mixed
-/////// PrimFnSquad_EM_YY                           // ERROR        Mixed
+/////// PrimFnSquad_EM_YY                           // ERROR        Mixed (*)
 /////// PrimFnStar_EM_YY                            // Scalar       Scalar
 /////// PrimFnStile_EM_YY                           // Scalar       Scalar
 /////// PrimFnDownTackJot_EM_YY                     // Mixed        Mixed (*)
@@ -112,6 +112,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnUpCaret_EM_YY                         // ERROR        Scalar
 /////// PrimFnUpCaretTilde_EM_YY                    // ERROR        Scalar
 /////// PrimFnUpStile_EM_YY                         // Scalar       Scalar
+/////// PrimFnUpTackJot_EM_YY                       // Mixed        ERROR
 
 // (*) = Unfinished
 
@@ -5645,6 +5646,150 @@ BOOL YYResIsEmpty
     return bRet;
 } // End YYResIsEmpty
 #endif
+
+
+//***************************************************************************
+//  $MakeNoValue_YY
+//
+//  Return a NoValue PL_YYSTYPE entry
+//***************************************************************************
+
+LPPL_YYSTYPE MakeNoValue_YY
+    (LPTOKEN lptkFunc)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARNAMED;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = 1;
+    lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->steNoValue;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpYYRes;
+} // End MakeNoValue_YY
+
+
+//***************************************************************************
+//  $GetSISLayer
+//
+//  Peel back to the first non-Imm/Exec layer
+//    starting with the previous SIS header
+//***************************************************************************
+
+LPSIS_HEADER GetSISLayer
+    (LPSIS_HEADER lpSISCur)
+
+{
+    while (lpSISCur
+        && (lpSISCur->DfnType EQ DFNTYPE_IMM
+         || lpSISCur->DfnType EQ DFNTYPE_EXEC))
+        lpSISCur = lpSISCur->lpSISPrv;
+
+    return lpSISCur;
+} // End GetSISLayer
+
+
+//***************************************************************************
+//  $FillSISNxt
+//
+//  Fill in the SIS Header for lpSISNxt
+//***************************************************************************
+
+void FillSISNxt
+    (LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
+     HANDLE       hSemaphore,           // Semaphore handle
+     DFNTYPES     DfnType,              // DFNTYPE
+     FCNVALENCES  FcnValence,           // FCNVALENCE
+     BOOL         Suspended)            // TRUE iff starts Suspended
+
+{
+RESTART_EXCEPTION_FILLSISNXT:
+    __try
+    {
+        // Create another level on the SI stack
+        lpMemPTD->lpSISNxt->Sig.nature    = SIS_HEADER_SIGNATURE;
+        lpMemPTD->lpSISNxt->hThread       = NULL;
+        lpMemPTD->lpSISNxt->hSemaphore    = hSemaphore;
+        lpMemPTD->lpSISNxt->hSigaphore    = NULL;
+        lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;
+        lpMemPTD->lpSISNxt->hGlbFcnName   = NULL;
+        lpMemPTD->lpSISNxt->DfnType       = DfnType;
+        lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
+        lpMemPTD->lpSISNxt->DfnAxis       = FALSE;
+        lpMemPTD->lpSISNxt->Suspended     = Suspended;
+        lpMemPTD->lpSISNxt->Avail         = 0;
+        lpMemPTD->lpSISNxt->CurLineNum    = 0;
+        lpMemPTD->lpSISNxt->NxtLineNum    = 0;
+        lpMemPTD->lpSISNxt->numLabels     = 0;
+        lpMemPTD->lpSISNxt->numResultSTE  = 0;
+        lpMemPTD->lpSISNxt->offResultSTE  = 0;
+        lpMemPTD->lpSISNxt->numLftArgSTE  = 0;
+        lpMemPTD->lpSISNxt->offLftArgSTE  = 0;
+        lpMemPTD->lpSISNxt->numRhtArgSTE  = 0;
+        lpMemPTD->lpSISNxt->offRhtArgSTE  = 0;
+        lpMemPTD->lpSISNxt->numLocalsSTE  = 0;
+        lpMemPTD->lpSISNxt->offLocalsSTE  = 0;
+        lpMemPTD->lpSISNxt->numFcnLines   = 0;
+        lpMemPTD->lpSISNxt->SILevel       = ++lpMemPTD->SILevel;
+        lpMemPTD->lpSISNxt->lpSISPrv      = lpMemPTD->lpSISCur;
+        lpMemPTD->lpSISNxt->lpSISNxt      = (LPSIS_HEADER) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
+
+        // Link this SIS into the chain
+        if (lpMemPTD->lpSISCur)
+            lpMemPTD->lpSISCur->lpSISNxt = lpMemPTD->lpSISNxt;
+        lpMemPTD->lpSISCur = lpMemPTD->lpSISNxt;
+        lpMemPTD->lpSISNxt = lpMemPTD->lpSISNxt->lpSISNxt;
+    } __except (CheckException (GetExceptionInformation ()))
+    {
+        switch (GetExecCode ())
+        {
+            case EXCEPTION_ACCESS_VIOLATION:
+            {
+                MEMORY_BASIC_INFORMATION mbi;
+
+                SetExecCode (EXEC_SUCCESS); // Reset
+
+                // See how many pages are already allocated
+                VirtualQuery (lpMemPTD->lpSISNxt,
+                             &mbi,
+                              sizeof (mbi));
+
+                // Check for no allocation as yet
+                if (mbi.State EQ MEM_RESERVE)
+                    mbi.RegionSize = 0;
+
+                // Allocate more memory to the YYRes buffer
+                if (VirtualAlloc (lpMemPTD->lpSISNxt,
+                                  mbi.RegionSize + DEF_SIS_INCRSIZE * sizeof (SYMENTRY),
+                                  MEM_COMMIT,
+                                  PAGE_READWRITE) NE NULL)
+                    goto RESTART_EXCEPTION_FILLSISNXT;
+
+                // Fall through to never-never-land
+
+            } // End EXCEPTION_ACCESS_VIOLATION
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End __try/__except
+} // End FillSISNxt
 
 
 //***************************************************************************

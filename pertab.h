@@ -11,8 +11,7 @@
     lpMemPTD->iHshTabTotalSize   = DEF_HSHTAB_INITSIZE;     \
     lpMemPTD->iHshTabBaseSize    = DEF_HSHTAB_INITSIZE;     \
     lpMemPTD->iHshTabIncr        = DEF_HSHTAB_INCR;         \
-    lpMemPTD->ExecCode           = EXEC_SUCCESS;            \
-    lpMemPTD->execState.exType   = EX_IMM;
+    lpMemPTD->ExecCode           = EXEC_SUCCESS;
 
     // The following vars are already initialized to zero which is the default
     //   value, so they do not need to be explicitly set.
@@ -29,75 +28,76 @@ typedef struct tagPERTABDATA
     LPPL_YYSTYPE lpYYRes;           // 04:  The result token
     UINT         numYYRes;          // 08:  # YYRes elements in the array
                                     //      pointed to by lpYYRes
-    EXEC_STATE   execState;         // 0C:  Execution state
 
     // Symbol & hash table variables
-    LPSYMENTRY   lpSymTab,          // 10:  Ptr to start of symbol table
-                 lpSymTabNext;      // 14:  Ptr to next available STE
-    int          iSymTabTotalSize,  // 18:  # STEs, currently
-                 iHshTabTotalSize,  // 1C:  # HTEs, currently, including EPBs
-                 iHshTabBaseSize,   // 20:  Base size of hash table
-                 iHshTabIncr;       // 24:  Increment when looping through HT
-    LPHSHENTRY   lpHshTab,          // 28:  Ptr to start of hash table
-                 lpHshTabSplitNext; // 2C:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
-    UINT         uHashMask;         // 30:  Mask for all hash lookups
+    LPSYMENTRY   lpSymTab,          // 0C:  Ptr to start of symbol table
+                 lpSymTabNext;      // 10:  Ptr to next available STE
+    int          iSymTabTotalSize,  // 14:  # STEs, currently
+                 iHshTabTotalSize,  // 18:  # HTEs, currently, including EPBs
+                 iHshTabBaseSize,   // 1C:  Base size of hash table
+                 iHshTabIncr;       // 20:  Increment when looping through HT
+    LPHSHENTRY   lpHshTab,          // 24:  Ptr to start of hash table
+                 lpHshTabSplitNext; // 28:  ...    next HTE to split (incremented by DEF_HSHTAB_NBLKS)
+    UINT         uHashMask;         // 2C:  Mask for all hash lookups
 
-    HGLOBAL      hGlbQuadDM;        // 34:  Quad-DM global memory handle
+    HGLOBAL      hGlbQuadDM;        // 30:  Quad-DM global memory handle
 
-    HWND         hWndMC,            // 38:  MDI Client window handle
-                 hWndSM,            // 3C:  Session Manager ...
-                 hWndDB,            // 40:  Debugger     ...
-                 hWndActive;        // 44:  Active MDI window when last switched out
+    HWND         hWndMC,            // 34:  MDI Client window handle
+                 hWndSM,            // 38:  Session Manager ...
+                 hWndDB,            // 3C:  Debugger     ...
+                 hWndActive;        // 40:  Active MDI window when last switched out
 
-    BOOL         bTabTextState:1,   // 48:  00000001:  TRUE iff the tab's text state is Highlight, FALSE if Normal
+    BOOL         bTabTextState:1,   // 44:  00000001:  TRUE iff the tab's text state is Highlight, FALSE if Normal
                  bNegative:1,       //      00000002:  Sign bit for integer part
                  bNegExp:1,         //      00000004:  ...          exponent ...
                  Avail:29;          //      FFFFFFF8:  Available bits
 
-    LPWCHAR      lpwszCurLine,      // 4C:  The contents of the line
+    LPWCHAR      lpwszCurLine,      // 48:  The contents of the line
                                     //      with the cursor on it.
-                 lpwszTmpLine,      // 50:  Temporary holding area
-                 lpwszErrorMessage; // 54:  Ptr to error message to signal
-    LPCHAR       lpszNumAlp;        // 58:  Accumulator for integers & floating points & names
-    LPWCHAR      lpwszString;       // 5C:  ...             strings
-    UINT         uCaret;            // 60:  Position of the caret in the current line on error
-    int          iMaxNumAlp,        // 64:  Maximum # chars in lpszNumAlp
-                 iMaxString,        // 68:  Maximum # WCHARs in lpwszString
-                 iNumAlpLen,        // 6C:  # chars in lpszNumAlp
-                 iStringLen,        // 70:  ...        lpwszString
-                 iLabelText,        // 74:  Offset in DPFE of the label text
-                 crIndex;           // 78:  Tab's color index
+                 lpwszTmpLine,      // 4C:  Temporary holding area
+                 lpwszErrorMessage; // 50:  Ptr to error message to signal
+    LPCHAR       lpszNumAlp;        // 54:  Accumulator for integers & floating points & names
+    LPWCHAR      lpwszString;       // 58:  ...             strings
+    UINT         uCaret;            // 5C:  Position of the caret in the current line on error
+    int          iMaxNumAlp,        // 60:  Maximum # chars in lpszNumAlp
+                 iMaxString,        // 64:  Maximum # WCHARs in lpwszString
+                 iNumAlpLen,        // 68:  # chars in lpszNumAlp
+                 iStringLen,        // 6C:  ...        lpwszString
+                 iLabelText,        // 70:  Offset in DPFE of the label text
+                 crIndex;           // 74:  Tab's color index
 
     // Accumulation vars for constant integer, floating point, and string
-    APLINT       aplInteger;        // 7C:  8-byte Integers
+    APLINT       aplInteger;        // 78:  8-byte Integers
 
-    LPSYMENTRY   steZero,           // 84:  Ptr to STE for constant zero
-                 steBlank,          // 88: ...            ...      blank
-                 steNoValue,        // 8C: ...            no-value result
-                 lpSymQuadALX ,     // 90: ...            []ALX
-                 lpSymQuadCT  ,     // 94: ...            []CT
-                 lpSymQuadELX ,     // 98: ...            []ELX
-                 lpSymQuadIO  ,     // 9C: ...            []IO
-                 lpSymQuadLX  ,     // A0: ...            []LX
-                 lpSymQuadPP  ,     // A4: ...            []PP
-                 lpSymQuadPR  ,     // A8: ...            []PR
-                 lpSymQuadPW  ,     // AC: ...            []PW
-                 lpSymQuadRL  ,     // B0: ...            []RL
-                 lpSymQuadSA  ,     // B4: ...            []SA
-                 lpSymQuadWSID;     // B8: ...            []WSID
+    LPSYMENTRY   steZero,           // 80:  Ptr to STE for constant zero
+                 steBlank,          // 84: ...            ...      blank
+                 steNoValue,        // 88: ...            no-value result
+                 lpSymQuadALX ,     // 8C: ...            []ALX
+                 lpSymQuadCT  ,     // 90: ...            []CT
+                 lpSymQuadELX ,     // 94: ...            []ELX
+                 lpSymQuadIO  ,     // 98: ...            []IO
+                 lpSymQuadLX  ,     // 9C: ...            []LX
+                 lpSymQuadPP  ,     // A0: ...            []PP
+                 lpSymQuadPR  ,     // A4: ...            []PR
+                 lpSymQuadPW  ,     // A8: ...            []PW
+                 lpSymQuadRL  ,     // AC: ...            []RL
+                 lpSymQuadSA  ,     // B0: ...            []SA
+                 lpSymQuadWSID;     // B4: ...            []WSID
     struct tagSIS_HEADER
-                *lpSISBeg,          // BC:  Ptr to State Indicator Stack beginning
-                *lpSISCur,          // C0:  ...                          current (may be NULL if SI is empty)
-                *lpSISNxt;          // C4:  ...                          next
+                *lpSISBeg,          // B8:  Ptr to State Indicator Stack beginning
+                *lpSISCur,          // BC:  ...                          current (may be NULL if SI is empty)
+                *lpSISNxt;          // C0:  ...                          next
 
-    WNDPROC lpfnOldListboxWndProc,  // C8:  Save area for old Listbox procedure
-            lpfnOldEditCtrlWndProc; // CC:  Save area for old Edit Control procedure
+    WNDPROC lpfnOldListboxWndProc,  // C4:  Save area for old Listbox procedure
+            lpfnOldEditCtrlWndProc; // C8:  Save area for old Edit Control procedure
 
-    UINT         SILevel;           // D0:  State Indicator level
+    UINT         SILevel;           // CC:  Current State Indicator level
 
-    APLBOOL      bQuadxSA;          // D4:  []SA (in its index form)
-    APLCHAR      cQuadPR;           // D5:  []PR     (' ') (When a char scalar)
-    char         DPFE[_MAX_PATH];   // D7:  The Drive, Path, Filename, & Ext of the WS
+    PL_YYSTYPE   YYResExec;         // D0:  Result from execute primitive
+
+    APLCHAR      cQuadPR;           //100:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //102:  []SA (in its index form)
+    char         DPFE[_MAX_PATH];   //103:  The Drive, Path, Filename, & Ext of the WS
                                     //1??:  Length
 } PERTABDATA, *LPPERTABDATA;
 

@@ -34,7 +34,7 @@ http://portal.acm.org/citation.cfm?id=3324
 // Starting # blocks in hash table -- must be a power of two
 //   so the hash mask is a contiguous series of 1s
 //   (one less than a power of two).
-////ine DEF_HSHTAB_NBLKS       4    // 4096
+////ine DEF_HSHTAB_NBLKS       4
 #define DEF_HSHTAB_NBLKS       4096
 #if (DEF_HSHTAB_NBLKS & (DEF_HSHTAB_NBLKS - 1)) != 0
 #error DEF_HSHTAB_NBLKS is not a power of two.
@@ -45,7 +45,7 @@ http://portal.acm.org/citation.cfm?id=3324
 //   overflow entry in each block so we never assign
 //   a value to the PrinHash entry which doesn't have
 //   the same hash value.
-////ine DEF_HSHTAB_EPB         2    //    8
+////ine DEF_HSHTAB_EPB         2
 #define DEF_HSHTAB_EPB         8
 
 // Maximum hash table size (# entries)
@@ -55,7 +55,6 @@ http://portal.acm.org/citation.cfm?id=3324
 #define DEF_HSHTAB_INITSIZE (DEF_HSHTAB_NBLKS * DEF_HSHTAB_EPB)
 
 // Amount to resize -- this value must be a divisor of DEF_HSHTAB_INITSIZE
-////#define DEF_HSHTAB_RESIZE   (DEF_HSHTAB_INITSIZE / 2)
 #define DEF_HSHTAB_RESIZE   DEF_HSHTAB_INITSIZE
 
 #if ((DEF_HSHTAB_INITSIZE / DEF_HSHTAB_RESIZE) * DEF_HSHTAB_RESIZE) != \

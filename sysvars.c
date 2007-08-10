@@ -410,7 +410,7 @@ BOOL AssignRealScalar_EM
 
     // Save the flags
     stFlags.SysVarValid = SysVarValid;
-    *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
+    *(PUINT_PTR) &lpSymEntryDest->stFlags |= *(PUINT_PTR) &stFlags;
 
     return TRUE;
 } // End AssignRealScalar_EM
@@ -448,7 +448,7 @@ BOOL AssignBoolScalar_EM
 
     // Save the flags
     stFlags.SysVarValid = SysVarValid;
-    *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
+    *(PUINT_PTR) &lpSymEntryDest->stFlags |= *(PUINT_PTR) &stFlags;
 
     return TRUE;
 } // End AssignBoolScalar_EM
@@ -486,7 +486,7 @@ BOOL AssignIntScalar_EM
 
     // Save the flags
     stFlags.SysVarValid = SysVarValid;
-    *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
+    *(PUINT_PTR) &lpSymEntryDest->stFlags |= *(PUINT_PTR) &stFlags;
 
     return TRUE;
 } // End AssignIntScalar_EM
@@ -524,7 +524,7 @@ BOOL AssignCharScalar_EM
 
     // Save the flags
     stFlags.SysVarValid = SysVarValid;
-    *(UINT *) &lpSymEntryDest->stFlags |= *(UINT *) &stFlags;
+    *(PUINT_PTR) &lpSymEntryDest->stFlags |= *(PUINT_PTR) &stFlags;
 
     return TRUE;
 } // End AssignCharScalar_EM

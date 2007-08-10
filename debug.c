@@ -281,7 +281,6 @@ LRESULT APIENTRY DBWndProc
         case MYWM_DBGMSG_CLR:
             // Start over again
             SendMessageW (hWndLB, LB_RESETCONTENT, 0, 0);
-////////////iLineNum = (int) GetProp (PROP_LINENUM);
             iLineNum = 0;
             SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
@@ -357,7 +356,6 @@ LRESULT WINAPI LclListboxWndProc
             {
                 case IDM_COPY:
                     // Get the # selected items
-////////////////////iSelCnt = SendMessageW (hWndLB, LB_GETSELCOUNT, 0, 0);
                     iSelCnt = SendMessageW (hWnd, LB_GETSELCOUNT, 0, 0);
 
                     // Allocate space for that many indices
@@ -367,14 +365,12 @@ LRESULT WINAPI LclListboxWndProc
                     lpInd = GlobalLock (hGlbInd);
 
                     // Populate the array
-////////////////////SendMessageW (hWndLB, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
                     SendMessageW (hWnd, LB_GETSELITEMS, iSelCnt, (LPARAM) lpInd);
 
                     // Loop through the selected items and calculate
                     //   the storage requirement for the collection
                     for (iTotalBytes = i = 0; i < iSelCnt; i++)
                         // The "2 +" is for the '\r' and '\n' at the end of each line
-////////////////////////iTotalBytes += sizeof (WCHAR) * (2 + SendMessageW (hWndLB, LB_GETTEXTLEN, lpInd[i], 0));
                         iTotalBytes += sizeof (WCHAR) * (2 + SendMessageW (hWnd, LB_GETTEXTLEN, lpInd[i], 0));
 
                     // Allocate storage for the entire collection
@@ -386,7 +382,6 @@ LRESULT WINAPI LclListboxWndProc
                     // Copy the text to the array, separated by a newline
                     for (p = lpSel, i = 0; i < iSelCnt; i++)
                     {
-////////////////////////p += SendMessageW (hWndLB, LB_GETTEXT, lpInd[i], (LPARAM) p);
                         p += SendMessageW (hWnd, LB_GETTEXT, lpInd[i], (LPARAM) p);
                         *p++ = '\r';
                         *p++ = '\n';
@@ -433,7 +428,6 @@ LRESULT WINAPI LclListboxWndProc
 
                 case IDM_SELECTALL:
                     // Select all items
-////////////////////if (LB_ERR EQ SendMessageW (hWndLB,
                     if (LB_ERR EQ SendMessageW (hWnd,
                                                LB_SELITEMRANGE,
                                                TRUE,
@@ -592,9 +586,6 @@ void DbgMsgW
     (LPWCHAR wszTemp)
 
 {
-////BOOL         bParseLine,    // TRUE iff the current thread is ParseLine
-////             bRet;          // TRUE iff <RelaseSemaphore> worked
-////HANDLE       hSemaphore;    // Handle to ParseLine semaphore
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
@@ -605,34 +596,7 @@ void DbgMsgW
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     if (lpMemPTD->hWndDB)
-    {
-////////bParseLine = ('PL' EQ (UINT) TlsGetValue (dwTlsType));
-////////if (bParseLine)
-////////{
-////////    // Get the ParseLine semaphore handle
-////////    hSemaphore = TlsGetValue (dwTlsSemaphore);
-////////
-////////    // Release the semaphore so the Debugger can process
-////////    //   the following message
-////////    bRet = ReleaseSemaphore (hSemaphore, 1, NULL);
-////////    if (!bRet
-////////     && GetLastError () NE ERROR_INVALID_HANDLE)
-////////    {
-////////        DbgBrk ();
-////////    } // End IF
-////////
-////////    // Display the debug message
-////////    SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
-////////
-////////    // Start the wait again if the semaphore handle is valid
-////////    if (bRet)
-////////        PostMessage (GetParent (lpMemPTD->hWndDB),
-////////                     MYWM_WFMO,
-////////                     (WPARAM) GetCurrentThreadId (),
-////////                     (LPARAM) hSemaphore);
-////////} else
-            SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
-    } // End IF
+        SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

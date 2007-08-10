@@ -116,7 +116,6 @@ BOOL CreateFcnWindow
                       hWndMC,               // Parent
                       _hInstance,           // Instance
                       (LPARAM) &feCreateStruct);// Extra data,
-
     if (hWnd EQ NULL)
     {
         if (feCreateStruct.ErrCode EQ 1)

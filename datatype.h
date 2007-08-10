@@ -121,7 +121,6 @@ typedef struct tagAPLAPA    // Offset + Multiplier {times} {iota} Length (origin
 {
     APLINT  Off,        // Offset
             Mul;        // Multiplier
-////APLUINT Len;        // Length (the actual length is obtained from the NELM)
 } APLAPA, * LPAPLAPA;
 
 /*
@@ -254,18 +253,18 @@ typedef enum tagPTR_TYPES
 // Macros to clear the low-order bits of either an LPSYMENTRY,
 //   or HGLOBAL (luckily, both types of ptrs are the same size).
 // These macros come in either direct (Dir) or indirect (Ind) form
-#define ClrPtrTypeDir(lpMem)                     ((~PTRTYPE_MASK) &  (UINT)   lpMem)
-#define ClrPtrTypeDirSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  (UINT)   lpMem)
-#define ClrPtrTypeDirGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  (UINT)   lpMem)
-#define ClrPtrTypeDirFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  (UINT)   lpMem)
-#define ClrPtrTypeInd(lpMem)                     ((~PTRTYPE_MASK) & *(UINT *) lpMem)
-#define ClrPtrTypeIndSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(UINT *) lpMem)
-#define ClrPtrTypeIndGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(UINT *) lpMem)
+#define ClrPtrTypeDir(lpMem)                     ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeDirSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeDirGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeDirFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeInd(lpMem)                     ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
+#define ClrPtrTypeIndSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
+#define ClrPtrTypeIndGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
 
 // Macro to extract the low-order bits of a memory ptr used
 //   to distinguish between the various pointer types.
-#define GetPtrTypeInd(lpMem)    (  PTRTYPE_MASK  & *(UINT *) lpMem)
-#define GetPtrTypeDir(lpMem)    (  PTRTYPE_MASK  &  (UINT)   lpMem)
+#define GetPtrTypeInd(lpMem)    (  PTRTYPE_MASK  & *(PUINT_PTR) lpMem)
+#define GetPtrTypeDir(lpMem)    (  PTRTYPE_MASK  &  ( UINT)     lpMem)
 
 // Macro to create a masked LPSYMENTRY
 #define MakeSymType(lpMem)      (PTRTYPE_STCONST | (UINT) lpMem)

@@ -140,37 +140,24 @@ DecrRefCntInd (hGlbData);
 
 
 // Define local window messages
-#define MYWM_MOVE           (WM_APP+ 0) // MF
-////ine MYWM_WFMO           (WM_APP+ 1) // SM (Wait For Multiple Objects)
-////ine MYWM_PARSELINEDONE  (WM_APP+ 2) // SM (DisplayPrompt & CloseHandle)
-#define MYWM_SETFOCUS       (WM_APP+ 3) // SM (SetFocus)
-#define MYWM_IZITNAME       (WM_APP+ 4) // FE (Izit A Name)
-#define MYWM_SAVE_FN        (WM_APP+ 5) // FE (SaveFunction)
-#define MYWM_SAVECLOSE_FN   (WM_APP+ 6) // FE (SaveFunction/CloseFunction)
-#define MYWM_SAVE_AS_FN     (WM_APP+ 7) // FE (SaveAsFunction)
-#define MYWM_CLOSE_FN       (WM_APP+ 8) // FE (CloseFunction)
+#define MYWM_MOVE           (WM_APP + 0)    // MF
+#define MYWM_SETFOCUS       (WM_APP + 1)    // SM (SetFocus)
+#define MYWM_IZITNAME       (WM_APP + 2)    // FE (Izit A Name)
+#define MYWM_SAVE_FN        (WM_APP + 3)    // FE (SaveFunction)
+#define MYWM_SAVECLOSE_FN   (WM_APP + 4)    // FE (SaveFunction/CloseFunction)
+#define MYWM_SAVE_AS_FN     (WM_APP + 5)    // FE (SaveAsFunction)
+#define MYWM_CLOSE_FN       (WM_APP + 6)    // FE (CloseFunction)
+#define MYWM_QUOTEQUAD      (WM_APP + 7)    // PL (Quote-Quad/Quad Input)
 
 // Define Debug window messages
-#define MYWM_INIT_DB        (WM_APP + 0)
-#define MYWM_DBGMSGA        (WM_APP + 1)
-#define MYWM_DBGMSGW        (WM_APP + 2)
-#define MYWM_DBGMSG_CLR     (WM_APP + 3)
-#define MYWM_DBGMSG_SCROLL  (WM_APP + 4)
+#define MYWM_INIT_DB        (WM_APP + 0)    // DB
+#define MYWM_DBGMSGA        (WM_APP + 1)    // DB
+#define MYWM_DBGMSGW        (WM_APP + 2)    // DB
+#define MYWM_DBGMSG_CLR     (WM_APP + 3)    // DB
+#define MYWM_DBGMSG_SCROLL  (WM_APP + 4)    // DB
 
 
-typedef enum tagEXTYPE
-{
-    EX_IMM = 0,                 // 00:  Immediate execution
-    EX_DFN,                     // 01:  Defined function execution
-} EXTYPE;
-
-typedef struct tagEXEC_STATE
-{
-    EXTYPE       exType;        // 00:  Execution state
-                                // 04:  Length
-} EXEC_STATE, *LPEXEC_STATE;
-
-typedef enum tagEXEC_CODES
+typedef enum tagEXEC_CODES      // Exception Codes
 {
     EXEC_SUCCESS = 0 ,          // 00:  All OK
 ////EXEC_RESULT_BOOL ,          //      Result should be Boolean
@@ -211,12 +198,16 @@ typedef enum tagMAKEPROTO
     MP_NUMCONV                  // 02:  Convert chars to numerics ...
 } MAKEPROTO;
 
-typedef enum tagGOTO_TYPES
+typedef enum tagEXIT_TYPES
 {
-    GOTO_ZILDE = 0,             // 00:  {goto} {zilde}
-    GOTO_LINE,                  // 01:  {goto} LineNum
-    GOTO_ERROR,                 // 02:  ERROR
-} GOTO_TYPES;
+    EXITTYPE_GOTO_ZILDE = 0,    // 00:  {goto} {zilde}
+    EXITTYPE_GOTO_LINE,         // 01:  {goto} LineNum
+    EXITTYPE_GOTO_RESET,        // 02:  {goto}
+    EXITTYPE_ERROR,             // 03:  ERROR
+    EXITTYPE_NODISPLAY,         // 04:  Value already displayed
+    EXITTYPE_NOVALUE,           // 05:  No value returned
+                                // 06-07:  Available entries (3 bits)
+} EXIT_TYPES;
 
 #ifndef DEBUG
 #define Assert(a)

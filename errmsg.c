@@ -52,17 +52,20 @@ void ErrorMessage
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Mark as suspended
-    DbgBrk ();
-    if (lpMemPTD->lpSISCur)
-        lpMemPTD->lpSISCur->Suspended = 1;
+    // Mark as suspended if not immediate execution
+    if (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_IMM)
+        lpMemPTD->lpSISCur->Suspended = TRUE;
 
-    // If we're to include the function name, ...
-    if (lpMemPTD->execState.exType EQ EX_DFN)
+    // Clear any semaphore to signal
+    lpMemPTD->lpSISCur->hSigaphore = NULL;
+
+    // If it's not immediate execution mode,
+    //   include the function name, ...
+    if (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_IMM)
     {
-        LPAPLCHAR     lpMemName;        // Ptr to function name global memory
-        LPDFN_HEADER  lpMemDfnHdr;      // Ptr to defined function header global memory
-        LPFCNLINE     lpFcnLines;       // Ptr to array function line structs (FCNLINE[numFcnLines])
+        LPAPLCHAR    lpMemName;         // Ptr to function name global memory
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header global memory
+        LPFCNLINE    lpFcnLines;        // Ptr to array function line structs (FCNLINE[numFcnLines])
 
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (lpMemPTD->lpSISCur->hGlbFcnName);
@@ -179,8 +182,10 @@ void ErrorMessage
     // Save the new value in the STE
     lpMemPTD->hGlbQuadDM = hGlbRes;
 
-////if (lpMemPTD->bDispFcnName)
-    if (lpMemPTD->execState.exType EQ EX_DFN)
+    // If it's not immediate execution mode, unlock the
+    //   defined function handle
+////if (lpMemPTD->execState.exType EQ EX_DFN)
+    if (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_IMM)
     {
         // We no longer need this ptr
         MyGlobalUnlock (GlobalHandle (lpMemTxtLine));

@@ -734,9 +734,9 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
 
 typedef struct tagIE_THREAD
 {
-    UINT    uLineNum;           // Line #
     HWND    hWndEC;             // Handle of Edit Control window
     HGLOBAL hGlbPTD;            // PerTabData global memory handle
+    LPWCHAR lpwszCompLine;      // Ptr to complete line
 } IE_THREAD, *LPIE_THREAD;
 
 IE_THREAD ieThread;             // Temporary global
@@ -755,95 +755,25 @@ IE_THREAD ieThread;             // Temporary global
 #define APPEND_NAME
 #endif
 
-void ImmExecLine
+HANDLE ImmExecLine
     (UINT uLineNum,             // Line #
      HWND hWndEC)               // Handle of Edit Control window
 
 {
-    DWORD  dwThreadId;          // The thread ID #
-    HANDLE hThread;             // The thread handle
-////HWND   hWndSM;              // Session Manager window handle
-
-    // Save args in struc to pass to thread func
-    ieThread.uLineNum   = uLineNum;
-    ieThread.hWndEC     = hWndEC;
-    ieThread.hGlbPTD    = TlsGetValue (dwTlsPerTabData);
-
-    // Create a new thread
-    hThread = CreateThread (NULL,                   // No security attrs
-                            0,                      // Use default stack size
-                           &ImmExecLineInThread,    // Starting routine
-                           &ieThread,               // Param to thread func
-                            0,                      // Creation flag
-                           &dwThreadId);            // Returns thread id
-////Sleep (0);              // To cut short the caller's thread slice
-////
-////// Get the Session Manager window handle
-////hWndSM = GetParent (hWndEC);
-////
-////// Tell the SM to wait for IE to finish
-////PostMessage (hWndSM, MYWM_WFMO, (WPARAM) hThread, (LPARAM) hSemaphore);
-} // End ImmExecLine
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $ImmExecLineInThread
-//
-//  Execute a line (sys/user command, fn defn, etc.)
-//    in immediate execution mode
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ImmExecLineInThread"
-#else
-#define APPEND_NAME
-#endif
-
-DWORD WINAPI ImmExecLineInThread
-    (LPIE_THREAD lpieThread)
-
-{
-    HANDLE       hHandle[2];    // Array of handles
-#define HSEMAPHORE  0           // ParseLine semaphore handle
-#define HTHREAD     1
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    DWORD        dwThreadId;    // The thread ID #
     LPWCHAR      lpwszCompLine, // Ptr to complete line
-                 lpwszLine;
-    HGLOBAL      hGlbToken;     // Handle of tokenized line
-    UINT         uLineNum,      // Line #
-                 uLinePos,      // Char position of start of line
+                 lpwszLine;     // Ptr to line following leading blanks
+    UINT         uLinePos,      // Char position of start of line
                  uLineLen;      // Line length
-    HWND         hWndEC,        // Handle of Edit Control window
-                 hWndMC,        // Window handle of MDI Client
-                 hWndSM;        // ...              Session Manager
-    HGLOBAL      hGlbPTD;       // Handle to this window's PerTabData
-    LPPERTABDATA lpMemPTD;      // Ptr to ...
-    DWORD        dwWFMO,        // Return code from WaitForMultipleObjects
-                 dwRet = 0;     // Return code from this function
+    HWND         hWndMC;        // Window handle of MDI Client
 
-    // Save the thread type ('IE')
-    TlsSetValue (dwTlsType, (LPVOID) 'IE');
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
 
-    // Extract values from the arg struc
-    uLineNum = lpieThread->uLineNum;
-    hWndEC   = lpieThread->hWndEC;
-    hGlbPTD  = lpieThread->hGlbPTD;
-
-    // Save the thread's PerTabData global memory handle
-    TlsSetValue (dwTlsPerTabData, hGlbPTD);
-
-#ifdef DEBUG
-    dprintfW (L"--Starting thread in <ImmExecLineInThread>.");
-#endif
-
-    // Get the window handle of the Session Manager
-    hWndSM = GetParent (hWndEC);
-
-    // Get the window handle of the MDI Client
-    hWndMC = GetParent (hWndSM);
-
-    // Ensure we calculated the lengths properly
-    Assert (sizeof (fsaColTable) EQ (COL_LENGTH * sizeof (FSA_ACTION) * FSA_LENGTH));
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the position of the start of the line
     uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
@@ -861,13 +791,13 @@ DWORD WINAPI ImmExecLineInThread
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("ImmExecLine:  VirtualAlloc for <lpwszCompLine> failed");
 
-        return NEG1U;       // Mark as failed
+        return (HANDLE) NEG1U;  // Mark as failed
     } // End IF
 
     // Tell EM_GETLINE maximum # chars in the buffer
     // Because we allocated space for the terminating zero,
     //   we don't have to worry about overwriting the
-    //   allocation limmits of the buffer
+    //   allocation limits of the buffer
     ((LPWORD) lpwszCompLine)[0] = (WORD) uLineLen;
 
     // Get the contents of the line
@@ -889,7 +819,17 @@ DWORD WINAPI ImmExecLineInThread
             // Execute the command (ignore the result)
             ExecSysCmd (lpwszLine);
 
-            hGlbToken = NULL;
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // If it's Quad input, ...
+            if (lpMemPTD->lpSISCur
+             && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
+                // Tell the SM to display the Quad Input Prompt
+                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 6);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             break;
 
@@ -900,106 +840,220 @@ DWORD WINAPI ImmExecLineInThread
 #endif
             AppendLine (ERRMSG_NONCE_ERROR, FALSE, TRUE);
 
-            hGlbToken = NULL;
-
-            break;
-
-        case UTF16_DEL:     // Function definition
-            // Create the Function Editor Window (ignore the result)
-            CreateFcnWindow (lpwszLine, hWndMC);
-
-            hGlbToken = NULL;
-
-            break;
-
-        default:
-            // Tokenize, parse, and untokenize the line
-
-            // Tokenize it
-            hGlbToken = Tokenize_EM (lpwszCompLine,
-                                     lstrlenW (lpwszCompLine),
-                                     hWndEC,
-                                    &ErrorMessage);
-            // If it's invalid, ...
-            if (hGlbToken EQ NULL)
-            {
-                dwRet = 1;          // Mark as failed Tokenize_EM
-
-                break;
-            } // End IF
-
-            // Create a semaphore
-            hHandle[HSEMAPHORE] =
-            CreateSemaphore (NULL,              // No security attrs
-                             0,                 // Initial count (non-signalled)
-                             64*1024,           // Maximum count
-                             NULL);             // No name
-            // Save the thread's semaphore handle
-            TlsSetValue (dwTlsSemaphore, (LPVOID) hHandle[HSEMAPHORE]);
-
-            // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Mark as immediate execution
-            lpMemPTD->execState.exType = EX_IMM;
-
-            // Create another level on the SI stack
-
-
-
-
-
-
+            // If it's Quad input, ...
+            if (lpMemPTD->lpSISCur
+             && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
+                // Tell the SM to display the Quad Input Prompt
+                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 7);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            // Run the parser in a separate thread
-            hHandle[HTHREAD] =
-            ParseLine (hWndSM,
-                       NULL,
-                       hGlbToken,
-                       lpwszCompLine,
-                       hGlbPTD,         // PerTabData global memory handle
-                       NULL,            // Semaphore handle (create its own)
-                       TRUE,            // Parseline to free hGlbToken on exit
-                       TRUE,            // ...               lpwszLine ...
-                       TRUE);           // ...          signal SM at end
-////////////Untokenize (hGlbToken);
-////////////MyGlobalFree (hGlbToken); hGlbToken = NULL;
+            break;
 
-            dwWFMO =
-            WaitForMultipleObjects (2,                  // # handles to wait for
-                                    hHandle,            // Ptr to handle to wait for
-                                    FALSE,              // Exit if only one handle is signalled
-                                    INFINITE);          // Timeout value in milliseconds
-            // Close the handle as it isn't used anymore
-            CloseHandle (hHandle[HSEMAPHORE]); hHandle[HSEMAPHORE] = NULL;
+        case UTF16_DEL:     // Function definition
+            // Get the window handle of the MDI Client
+            hWndMC = GetParent (GetParent (hWndEC));
 
-            // Close the thread handle as it has terminated
-            CloseHandle (hHandle[HTHREAD]); hHandle[HTHREAD] = NULL;
+            // Create the Function Editor Window (ignore the result)
+            CreateFcnWindow (lpwszLine, hWndMC);
 
-            // Display the default prompt
-            DisplayPrompt (hWndEC, TRUE);
+            // Fall through to empty line case
+
+        case L'\0':         // Empty line
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // If it's Quad input, ...
+            if (lpMemPTD->lpSISCur
+             && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
+                // Tell the SM to display the Quad Input Prompt
+                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 8);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             break;
+
+        default:
+            // Save args in struc to pass to thread func
+            ieThread.hWndEC        = hWndEC;
+            ieThread.hGlbPTD       = TlsGetValue (dwTlsPerTabData);
+            ieThread.lpwszCompLine = lpwszCompLine;
+
+            // Create a new thread
+            return CreateThread (NULL,                  // No security attrs
+                                 0,                     // Use default stack size
+                                &ImmExecLineInThread,   // Starting routine
+                                &ieThread,              // Param to thread func
+                                 0,                     // Creation flag
+                                &dwThreadId);           // Returns thread id
     } // End SWITCH
 
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // If it's not Quad input, ...
+    if (!(lpMemPTD->lpSISCur
+      && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD))
+        // Display the default prompt
+        DisplayPrompt (hWndEC, FALSE, 4);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Free the virtual memory for the complete line
+    VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
+
+    return NULL;
+} // End ImmExecLine
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ImmExecLineInThread
+//
+//  Execute a line (sys/user command, fn defn, etc.)
+//    in immediate execution mode
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ImmExecLineInThread"
+#else
+#define APPEND_NAME
+#endif
+
+DWORD WINAPI ImmExecLineInThread
+    (LPIE_THREAD lpieThread)
+
+{
+    HANDLE       hThread,           // Thread handle
+                 hSigaphore = NULL; // Semaphore handle to signal (NULL if none)
+    LPWCHAR      lpwszCompLine;     // Ptr to complete line
+    HGLOBAL      hGlbToken;         // Handle of tokenized line
+    HWND         hWndEC,            // Handle of Edit Control window
+                 hWndSM;            // ...       Session Manager ...
+    HGLOBAL      hGlbPTD;           // Handle to this window's PerTabData
+    LPPERTABDATA lpMemPTD;          // Ptr to ...
+    DWORD        dwRet = 0;         // Return code from this function
+
+    // Save the thread type ('IE')
+    TlsSetValue (dwTlsType, (LPVOID) 'IE');
+
+    // Extract values from the arg struc
+    hWndEC        = lpieThread->hWndEC;
+    hGlbPTD       = lpieThread->hGlbPTD;
+    lpwszCompLine = lpieThread->lpwszCompLine;
+
+    // Save the thread's PerTabData global memory handle
+    TlsSetValue (dwTlsPerTabData, hGlbPTD);
+
+#ifdef DEBUG
+    dprintfW (L"--Starting thread in <ImmExecLineInThread>.");
+#endif
+
+    // Get the window handle of the Session Manager
+    hWndSM = GetParent (hWndEC);
+
+    // Tokenize, parse, and untokenize the line
+
+    // Tokenize the line
+    hGlbToken = Tokenize_EM (lpwszCompLine,
+                             lstrlenW (lpwszCompLine),
+                             hWndEC,
+                            &ErrorMessage);
+    // If it's invalid, ...
+    if (hGlbToken EQ NULL)
+    {
+        dwRet = 1;          // Mark as failed Tokenize_EM
+
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Fill in the SIS header for Immediate Execution Mode
+    FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
+                NULL,                   // Semaphore handle
+                DFNTYPE_IMM,            // DfnType
+                FCNVALENCE_IMM,         // FcnValence
+                FALSE);                 // Suspended
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Run the parser in a separate thread
+    hThread =
+    ParseLine (hWndSM,              // Session Manager window handle
+               NULL,                // Line text global memory handle
+               hGlbToken,           // Tokenized line global memory handle
+               lpwszCompLine,       // Ptr to the complete line
+               hGlbPTD);            // PerTabData global memory handle
+///////////////NULL,                // Semaphore handle
+///////////////FALSE,               // ParseLine NOT to free hGlbToken on exit
+///////////////FALSE,               // ...                   lpwszCompLine ...
+///////////////TRUE);               // ParseLine to signal SM at end
+    WaitForMultipleObjects (1,                  // # handles to wait for
+                           &hThread,            // Ptr to handle to wait for
+                            FALSE,              // Exit if only one handle is signalled
+                            INFINITE);          // Timeout value in milliseconds
+    // Close the thread handle as it has terminated
+    CloseHandle (hThread); hThread = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Save the semaphore handle to signal after Unlocalize (may be NULL if none)
+    hSigaphore = lpMemPTD->lpSISCur->hSigaphore;
+    lpMemPTD->lpSISCur->hSigaphore = NULL;
+
+    // Unlocalize the STEs on the innermost level
+    //   and strip off one level
+    Unlocalize ();
+
+    // If this hSigaphore is not for this level, pass it on up the line
+    if (hSigaphore
+     && lpMemPTD->lpSISCur
+     && hSigaphore NE lpMemPTD->lpSISCur->hSemaphore)
+    {
+        Assert (lpMemPTD->lpSISCur->hSigaphore EQ NULL);
+
+        // Pass it on up the line
+        lpMemPTD->lpSISCur->hSigaphore = hSigaphore;
+        hSigaphore = NULL;
+    } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Untokenize the temporary line and free its memory
+    Untokenize (hGlbToken);
+    MyGlobalFree (hGlbToken); hGlbToken = NULL;
+ERROR_EXIT:
 #ifdef DEBUG
     dprintfW (L"--Ending   thread in <ImmExecLineInThread>.");
 #endif
+    // Free the virtual memory for the complete line
+    VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
 
-    // Now done in <ParseLine>
-////// Free the virtual memory for the complete line
-////VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // If we failed, ...
-    if (hGlbToken EQ NULL)
-        // Display the default prompt
-        DisplayPrompt (hWndEC, FALSE);
+    // Display the default prompt if there's a suspension (not Quad Input, though)
+    if (lpMemPTD->lpSISCur EQ NULL
+     || (lpMemPTD->lpSISCur->Suspended
+      && lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD))
+        DisplayPrompt (hWndEC, FALSE, 3);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // If there's a semaphore to signal, ...
+    if (hSigaphore)
+        ReleaseSemaphore (hSigaphore, 1, NULL);
 
     return dwRet;
 } // End ImmExecLineInThread
@@ -2465,56 +2519,212 @@ void IncorrectCommand
 
 
 //***************************************************************************
+//  $FormatQQuadInput
+//
+//  Format QQ input and save in global memory
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FormatQQuadInput"
+#else
+#define APPEND_NAME
+#endif
+
+void FormatQQuadInput
+    (UINT          uLineNum,        // Line #
+     HWND          hWndEC,          // Handle of Edit Control window
+     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+
+{
+    UINT         uLinePos,      // Char position of start of line
+                 uLineLen;      // Line length
+    APLUINT      ByteRes;       // # bytes in the result
+    HGLOBAL      hGlbRes;       // Result global memory handle
+    LPAPLCHAR    lpMemRes;      // Ptr to result global memory
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
+
+    // Get the position of the start of the line
+    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+
+    // Get the line length
+    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+
+    // Calculate the space needed for the result
+    // N.B.:  max is needed because, in order to get the line,
+    //        we need to tell EM_GETLINE the buffer size which
+    //        takes up one APLCHAR (WORD) at the start of the buffer.
+    ByteRes = CalcArraySize (ARRAY_CHAR, max (uLineLen, 1), 1);
+
+    // Allocate space for the result
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lpMemPTD->lpSISCur->lptkFunc);
+        // Make a PL_YYSTYPE NoValue entry
+        lpYYRes = MakeNoValue_YY (lpMemPTD->lpSISCur->lptkFunc);
+    } else
+    {
+        // Lock the memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+
+        // Fill in the header
+        lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeaderRes->ArrType    = ARRAY_CHAR;
+////////lpHeaderRes->Perm       = 0;        // Already zero from GHND
+////////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
+        lpHeaderRes->RefCnt     = 1;
+        lpHeaderRes->NELM       = uLineLen;
+        lpHeaderRes->Rank       = 1;
+
+#undef  lpHeaderRes
+
+        // Save the dimension in the result
+        *VarArrayBaseToDim (lpMemRes) = uLineLen;
+
+        // Skip over the header and dimensions to the data
+        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+        // Tell EM_GETLINE maximum # chars in the buffer
+        // Because we allocated space for max (uLineLen, 1)
+        //   chars, we don't have to worry about overwriting
+        //   the allocation limits of the buffer
+        ((LPWORD) lpMemRes)[0] = (WORD) uLineLen;
+
+        // Get the contents of the line
+        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemRes);
+
+        // Replace leading Prompt Replacement chars
+        if (lpMemPTD->cQuadPR NE L'\0')
+        {
+            UINT QQPromptLen,   // Length of QQ prompt
+                 u;             // Loop counter
+
+            // Get the length of the QQ prompt
+            QQPromptLen = lpMemPTD->lpSISCur->QQPromptLen;
+
+            // ***FIXME*** -- we're supposed to save the actual prompt
+            //                and compare it with the chars after the
+            //                user has responded to the request for
+            //                Quote-Quad input.
+
+            // Replace all prompt chars
+            for (u = 0; u < QQPromptLen; u++)
+                lpMemRes[u] = lpMemPTD->cQuadPR;
+        } // End IF
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
+        lpYYRes->tkToken.tkFlags.NoDisplay = 1;
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+        lpYYRes->tkToken.tkCharIndex       = lpMemPTD->lpSISCur->lptkFunc->tkCharIndex;
+    } // End IF/ELSE
+
+    // Save the result in PerTabData
+    lpMemPTD->YYResExec = *lpYYRes;
+
+    // Free the YYRes we allocated
+    YYFree (lpYYRes); lpYYRes = NULL;
+
+    Assert (lpMemPTD->lpSISCur->hSemaphore NE NULL);
+
+    // Signal WaitForInput that we have a result
+    ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
+} // End FormatQQuadInput
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $WaitForInput
 //
 //  Wait for either Quad or Quote-quad input
 //***************************************************************************
 
 LPPL_YYSTYPE WaitForInput
-    (HWND    hWnd,                  // Window handle to Session Manager
-     BOOL    bQuoteQuadInput,       // TRUE iff Quote-Quad input (FALSE if Quad input)
-     LPTOKEN lptkFunc)              // Ptr to "function" token
+    (HWND    hWndSM,                // Window handle to Session Manager
+     BOOL    bQuoteQuad,            // TRUE iff Quote-Quad input (FALSE if Quad input)
+     LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HANDLE        hTimer;
-    char          szTimer[32];
-    LARGE_INTEGER waitTime;
-    DWORD         dwWaitRes = WAIT_TIMEOUT;
-    LPPL_YYSTYPE  lpYYRes;
+    HANDLE         hSemaphore;      // Semaphore handle
+    LPPL_YYSTYPE   lpYYRes;         // Ptr to the result
+    HGLOBAL        hGlbPTD;         // PerTabData global memory handle
+    LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
+    UINT           uLinePos,        // Char position of start of line
+                   uCharPos;        // Current char position
+    HWND           hWndEC;          // Edit Control window handle
 
-    return PrimFnNonceError_EM (lptkFunc);
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
 
-    DbgBrk ();          // ***FINISHME*** -- WaitForInput
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Create a unique name for the timer object
-    wsprintf (szTimer, "%s%08X", bQuoteQuadInput ? "QuoteQuadInput" : "QuadInput", hWnd);
+    // Create a semaphore
+    hSemaphore =
+    CreateSemaphore (NULL,              // No security attrs
+                     0,                 // Initial count (non-signalled)
+                     64*1024,           // Maximum count
+                     NULL);             // No name
+    // Fill in the SIS header for Quote-Quad/Quad Input Mode
+    FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
+                hSemaphore,             // Semaphore handle
+                bQuoteQuad ? DFNTYPE_QQUAD: DFNTYPE_QUAD, // DfnType
+                FCNVALENCE_NIL,         // FcnValence
+                TRUE);                  // Suspended
+    // Save a ptr to the function token
+    lpMemPTD->lpSISCur->lptkFunc = lptkFunc;
 
-    // Create a timer object
-    hTimer = CreateWaitableTimer (NULL,         // No SECURITY_ATTRIBUTES
-                                  FALSE,        // ***FIXME*** -- Is this correct??
-                                  szTimer);
-    // Set the wait time to a large integer
-    waitTime.QuadPart = -1;
+    // Get the Edit Control window handle
+    hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
 
-    SetWaitableTimer (hTimer,           // Handle to timer object
-                      &waitTime,        // Ptr to wait time
-                      0L,               // 0 = not periodic
-                      NULL,             // No completion routine
-                      NULL,             // No arg to completion routine
-                      TRUE);            // Resume from suspended state
+    // Get the char position of the caret
+    uCharPos = GetCurCharPos (hWndEC);
 
-    while (dwWaitRes EQ WAIT_TIMEOUT)
-        dwWaitRes = WaitForSingleObject (hTimer,    // Handle to timer object
-                                         10000);    // 10000 x 1 millisecond = 10 second
+    // Get the position of the start of the line
+    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, NEG1U, 0);
+
+    // Save the Quote-Quad input prompt length
+    lpMemPTD->lpSISCur->QQPromptLen = uCharPos - uLinePos;
+
+    // Tell the Session Manager to display the appropriate prompt
+    PostMessage (hWndSM, MYWM_QUOTEQUAD, bQuoteQuad, 10);
+
+    // Wait for the thread to terminate
+    WaitForMultipleObjects (1,                  // # handles to wait for
+                           &hSemaphore,         // Ptr to handle to wait for
+                            FALSE,              // Exit if only one handle is signalled
+                            INFINITE);          // Timeout value in milliseconds
+    // Close the semaphore handle as it is no longer needed
+    CloseHandle (hSemaphore); hSemaphore = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Unlocalize the STEs on the innermost level
+    //   and strip off one level
+    Unlocalize ();
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-  //lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);     // ***FIXME***
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+    // Copy the result
+    *lpYYRes = lpMemPTD->YYResExec;
+    ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpYYRes;
 } // End WaitForInput
@@ -3486,6 +3696,23 @@ static COLNAMES colNames[] =
         return wszTemp;
     } // End IF/ELSE
 } // End GetColName
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $InitFsaTabs
+//
+//  Ensure the FSA tables have been properly setup
+//***************************************************************************
+
+void InitFsaTabs
+    (void)
+
+{
+    // Ensure we calculated the lengths properly
+    Assert (sizeof (fsaColTable) EQ (COL_LENGTH * sizeof (FSA_ACTION) * FSA_LENGTH));
+} // End InitFsaTabs
 #endif
 
 

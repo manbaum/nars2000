@@ -624,9 +624,14 @@ LPAPLCHAR FormatArrSimple
                         if (!lpw)
                             lpw = lpaplChar + uActLen;          // Place decimal point after integer part
 
-                        // Align the decimal points
-                        uCol = (lpw - lpaplChar) + uFrcs;
-                        uLead = uCmpWid - max (uActLen, uCol);      // # leading blanks to align decimal points
+                        // Align the decimal points unless char
+                        if (aplType EQ ARRAY_CHAR)
+                            uLead = 0;
+                        else
+                        {
+                            uCol = (lpw - lpaplChar) + uFrcs;
+                            uLead = uCmpWid - max (uActLen, uCol);  // # leading blanks to align decimal points
+                        } // End IF/ELSE
 
                         // If this is raw output,
                         // break the line if it would exceed []PW

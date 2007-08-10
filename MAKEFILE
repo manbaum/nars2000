@@ -197,6 +197,7 @@ $(O)pf_times.DEP        \
 $(O)pf_uarrow.DEP       \
 $(O)pf_ucaret.DEP       \
 $(O)pf_ustile.DEP       \
+$(O)pf_utackjot.DEP     \
 $(O)po_dieresis.DEP     \
 $(O)po_ditilde.DEP      \
 $(O)po_dot.DEP          \
@@ -431,6 +432,9 @@ $(O)version.DEV
 !if exist ($(O)pf_ustile.DEP)
 !       include $(O)pf_ustile.DEP
 !endif
+!if exist ($(O)pf_utackjot.DEP)
+!       include $(O)pf_utackjot.DEP
+!endif
 !if exist ($(O)po_dieresis.DEP)
 !       include $(O)po_dieresis.DEP
 !endif
@@ -580,6 +584,7 @@ $(O)pf_times.PRO        \
 $(O)pf_uarrow.PRO       \
 $(O)pf_ucaret.PRO       \
 $(O)pf_ustile.PRO       \
+$(O)pf_utackjot.PRO     \
 $(O)po_dieresis.PRO     \
 $(O)po_ditilde.PRO      \
 $(O)po_dot.PRO          \
@@ -709,6 +714,7 @@ $(O)pf_times.OBJ:       $(@B).C         $(PF_TIMES_DEP)
 $(O)pf_uarrow.OBJ:      $(@B).C         $(PF_UARROW_DEP)
 $(O)pf_ucaret.OBJ:      $(@B).C         $(PF_UCARET_DEP)
 $(O)pf_ustile.OBJ:      $(@B).C         $(PF_USTILE_DEP)
+$(O)pf_utackjot.OBJ:    $(@B).C         $(PF_UTACKJOT_DEP)
 $(O)po_dieresis.OBJ:    $(@B).C         $(PO_DIERESIS_DEP)
 $(O)po_ditilde.OBJ:     $(@B).C         $(PO_DITILDE_DEP)
 $(O)po_dot.OBJ:         $(@B).C         $(PO_DOT_DEP)
@@ -817,6 +823,7 @@ OBJS=                       \
      $(O)pf_uarrow.OBJ      \
      $(O)pf_ucaret.OBJ      \
      $(O)pf_ustile.OBJ      \
+     $(O)pf_utackjot.OBJ    \
      $(O)po_dieresis.OBJ    \
      $(O)po_ditilde.OBJ     \
      $(O)po_dot.OBJ         \

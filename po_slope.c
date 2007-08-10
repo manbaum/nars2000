@@ -129,7 +129,6 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                  uDimLo,            // Product of dimensions below axis
                  uDimHi,            // ...                   above ...
                  uDimRht,           // Starting index in right arg of current vector
-////             uDimRes,           // ...               result    ...
                  uDimAxRht,         // Right arg axis dimension
                  uRht,              // Right arg loop counter
                  uRes,              // Result loop counter
@@ -700,7 +699,7 @@ LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
 
 {
     return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
-} // End PrimOpDydClopeCommon_EM_YY
+} // End PrimOpDydSlopeCommon_EM_YY
 
 
 //***************************************************************************

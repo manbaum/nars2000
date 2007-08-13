@@ -218,7 +218,7 @@ typedef enum tagEXIT_TYPES
 #define DEF_STRAND_MAXSIZE     (1024*1024)  // Maximum ...
 
 // Resource debugging
-#define MAXOBJ  12800
+#define MAXOBJ  128000
 
 // Define bit masks
 #define BIT0    0x00000001

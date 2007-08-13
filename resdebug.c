@@ -150,6 +150,9 @@ void _SaveObj
     // Get a ptr to the counter
     lpiCount = lpiaCount[dwType - 1];
 
+    if (*lpiCount >= MAXOBJ)
+        return;
+
     // Save the line number
     lpaauLinNum[dwType - 1][*lpiCount] = uLine;
 
@@ -174,23 +177,23 @@ void _DeleObj
 
 {
     int i, iLen;
+    int *lpiCount;
 
-    // Count out another OBJECT
-    if (*lpiaCount[dwType - 1])
-        (*lpiaCount[dwType - 1])--;
-    else
-        MyDbgBrk ("DeleObj 1");
+    // Get a ptr to the counter
+    lpiCount = lpiaCount[dwType - 1];
 
     // Find this object in the array
-    iLen = (*lpiaCount[dwType - 1]) + 1;
+    iLen = *lpiCount;
     for (i = 0; i < iLen; i++)
     if (hObject EQ lpaah[dwType - 1][i])
         break;
 
     // If we didn't find it, ...
     if (i EQ iLen)
-        MyDbgBrk ("DeleObj 2");
-    else
+    {
+        if (*lpiCount < MAXOBJ)
+            MyDbgBrk ("DeleObj 2");
+    } else
     {
         // Move down the saved values above this entry
         MoveMemory (&lpaauLinNum[dwType - 1][i],
@@ -200,6 +203,15 @@ void _DeleObj
                     &lpaah[dwType - 1][i + 1],
                     (iLen - i) * sizeof (lpaah[0][0]));
     } // End IF/ELSE
+
+    if (*lpiCount < MAXOBJ)
+    {
+        // Count out another OBJECT
+        if (*lpiCount)
+            (*lpiaCount[dwType - 1])--;
+        else
+            MyDbgBrk ("DeleObj 1");
+    } // End IF
 } // _DeleObj
 
 

@@ -3420,7 +3420,7 @@ SingTokn:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
-                                             ExecuteFn0 (&$1.tkToken);
+                                             ExecuteFn0 (&$1);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR;
@@ -3435,7 +3435,7 @@ SingTokn:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
-                                             ExecuteFn0 (&$1.tkToken);
+                                             ExecuteFn0 (&$1);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR;

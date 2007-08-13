@@ -1014,15 +1014,31 @@ LPPL_YYSTYPE ExecFuncGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpYYFcnStr = MyGlobalLock (hGlbFcn);
 
-    // Skip over the header to the data
-    lpYYFcnStr = FcnArrayBaseToData (lpYYFcnStr);
+    // Split cases based upon the signature
+    switch (((LPHEADER_SIGNATURE) lpYYFcnStr)->nature)
+    {
+        case FCNARRAY_HEADER_SIGNATURE:
+            // Skip over the header to the data
+            lpYYFcnStr = FcnArrayBaseToData (lpYYFcnStr);
 
-    // The contents of the global memory object consist of
-    //   a series of PL_YYSTYPEs in RPN order.
-    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
-                                 lpYYFcnStr,    // Ptr to function strand
-                                 lptkRhtArg,    // Ptr to right arg token
-                                 lptkAxis);     // Ptr to axis token
+            // The contents of the global memory object consist of
+            //   a series of PL_YYSTYPEs in RPN order.
+            lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
+                                         lpYYFcnStr,    // Ptr to function strand
+                                         lptkRhtArg,    // Ptr to right arg token
+                                         lptkAxis);     // Ptr to axis token
+            break;
+
+        case DFN_HEADER_SIGNATURE:
+            DbgBrk ();
+
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFcn); lpYYFcnStr = NULL;
 

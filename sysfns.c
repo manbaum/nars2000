@@ -27,27 +27,43 @@
 //***************************************************************************
 
 LPPL_YYSTYPE ExecuteFn0
-    (LPTOKEN lptkFcn0)          // Ptr to function token
+    (LPPL_YYSTYPE lpYYFcn0)     // Ptr to function PL_YYSTYPE
 
 {
     LPPRIMFNS lpNameFcn;
 
     // tkData is an LPSYMENTRY
-    Assert (GetPtrTypeDir (lptkFcn0->tkData.tkVoid) EQ PTRTYPE_STCONST);
+    Assert (GetPtrTypeDir (lpYYFcn0->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-    lpNameFcn = lptkFcn0->tkData.tkSym->stData.stNameFcn;
+    lpNameFcn = lpYYFcn0->tkToken.tkData.tkSym->stData.stNameFcn;
 
-    if (lptkFcn0->tkData.tkSym->stFlags.FcnDir)
+    if (lpYYFcn0->tkToken.tkData.tkSym->stFlags.FcnDir)
         // Call the execution routine
         return (*lpNameFcn) (NULL,
-                             lptkFcn0,
+                            &lpYYFcn0->tkToken,
                              NULL,
                              NULL);
     else
-        return ExecFuncGlb_EM_YY (NULL,                         // Ptr to left arg token
-                                  ClrPtrTypeDirGlb (lpNameFcn), // Function HGLOBAL
-                                  NULL,                         // Ptr to right arg token
-                                  NULL);                        // Ptr to axis token
+        // tkData is a valid HGLOBAL function array or defined function
+        Assert (IsGlbTypeFcnDir (lpNameFcn)
+             || IsGlbTypeDfnDir (lpNameFcn));
+
+        // Split cases based upon the array signature
+        switch (GetSignatureGlb (ClrPtrTypeDirGlb (lpNameFcn)))
+        {
+            case FCNARRAY_HEADER_SIGNATURE:
+                return ExecFuncGlb_EM_YY (NULL,                         // Ptr to left arg token (may be NULL if monadic or niladic)
+                                          ClrPtrTypeDirGlb (lpNameFcn), // Function array global memory handle
+                                          NULL,                         // Ptr to right arg token (may be NULL if niladic)
+                                          NULL);                        // Ptr to axis token (may be NULL)
+            case DFN_HEADER_SIGNATURE:
+                return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (lpNameFcn),  // Defined function global memory handle
+                                         NULL,                          // Ptr to left arg token (may be NULL if monadic)
+                                         lpYYFcn0,                      // Ptr to function strand
+                                         NULL);                         // Ptr to right arg token
+            defstop
+                return NULL;
+        } // SWITCH
 } // End ExecuteFn0
 
 

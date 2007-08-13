@@ -368,37 +368,37 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     // Free the GSL work vector
     gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
 
-#ifdef DEBUG
-    // Display matrix U (M x N)
-    dprintf ("=== Displaying Matrix U (M x N) = (%d, %d) ===", (UINT) uNumRows, (UINT) uNumCols);
-    for (uRow = 0; uRow < uNumRows; uRow++)
-    {
-        char szTemp[128];
-        char *p = szTemp;
-
-        p += sprintf (p, "Row %d = ", uRow);
-
-        for (uCol = 0; uCol < uNumCols; uCol++)
-            p += sprintf (p, "%G, ", lpGslMatrixU->data[uRow * uNumCols + uCol]);
-        p [-2] = '\0';
-        DbgMsg (szTemp);
-    } // End FOR
-
-    // Display matrix V (N x N)
-    dprintf ("=== Displaying Matrix V (N x N) = (%d, %d) ===", (UINT) uNumCols, (UINT) uNumCols);
-    for (uRow = 0; uRow < uNumCols; uRow++)
-    {
-        char szTemp[128];
-        char *p = szTemp;
-
-        p += sprintf (p, "Row %d = ", uRow);
-
-        for (uCol = 0; uCol < uNumCols; uCol++)
-            p += sprintf (p, "%G, ", lpGslMatrixV->data[uRow * uNumCols + uCol]);
-        p [-2] = '\0';
-        DbgMsg (szTemp);
-    } // End FOR
-#endif
+//// #ifdef DEBUG
+////     // Display matrix U (M x N)
+////     dprintf ("=== Displaying Matrix U (M x N) = (%d, %d) ===", (UINT) uNumRows, (UINT) uNumCols);
+////     for (uRow = 0; uRow < uNumRows; uRow++)
+////     {
+////         char szTemp[128];
+////         char *p = szTemp;
+////
+////         p += sprintf (p, "Row %d = ", uRow);
+////
+////         for (uCol = 0; uCol < uNumCols; uCol++)
+////             p += sprintf (p, "%G, ", lpGslMatrixU->data[uRow * uNumCols + uCol]);
+////         p [-2] = '\0';
+////         DbgMsg (szTemp);
+////     } // End FOR
+////
+////     // Display matrix V (N x N)
+////     dprintf ("=== Displaying Matrix V (N x N) = (%d, %d) ===", (UINT) uNumCols, (UINT) uNumCols);
+////     for (uRow = 0; uRow < uNumCols; uRow++)
+////     {
+////         char szTemp[128];
+////         char *p = szTemp;
+////
+////         p += sprintf (p, "Row %d = ", uRow);
+////
+////         for (uCol = 0; uCol < uNumCols; uCol++)
+////             p += sprintf (p, "%G, ", lpGslMatrixV->data[uRow * uNumCols + uCol]);
+////         p [-2] = '\0';
+////         DbgMsg (szTemp);
+////     } // End FOR
+//// #endif
 
 #define lpMemData   ((LPAPLFLOAT) lpMemRes)
 
@@ -419,22 +419,22 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
             lpGslMatrixU->data[uRow * uNumCols + uCol] /= S;
     } // End FOR
 
-#ifdef DEBUG
-    // Display matrix U (M x N)
-    dprintf ("=== Displaying Matrix U (M x N) = (%d, %d) ===", (UINT) uNumRows, (UINT) uNumCols);
-    for (uRow = 0; uRow < uNumRows; uRow++)
-    {
-        char szTemp[128];
-        char *p = szTemp;
-
-        p += sprintf (p, "Row %d = ", uRow);
-
-        for (uCol = 0; uCol < uNumCols; uCol++)
-            p += sprintf (p, "%G, ", lpGslMatrixU->data[uRow * uNumCols + uCol]);
-        p [-2] = '\0';
-        DbgMsg (szTemp);
-    } // End FOR
-#endif
+//// #ifdef DEBUG
+////     // Display matrix U (M x N)
+////     dprintf ("=== Displaying Matrix U (M x N) = (%d, %d) ===", (UINT) uNumRows, (UINT) uNumCols);
+////     for (uRow = 0; uRow < uNumRows; uRow++)
+////     {
+////         char szTemp[128];
+////         char *p = szTemp;
+////
+////         p += sprintf (p, "Row %d = ", uRow);
+////
+////         for (uCol = 0; uCol < uNumCols; uCol++)
+////             p += sprintf (p, "%G, ", lpGslMatrixU->data[uRow * uNumCols + uCol]);
+////         p [-2] = '\0';
+////         DbgMsg (szTemp);
+////     } // End FOR
+//// #endif
 
     // Calculate V +.x U
     // Actually, we calculate V +.x U*

@@ -11,7 +11,7 @@
     lpMemPTD->iHshTabTotalSize   = DEF_HSHTAB_INITSIZE;     \
     lpMemPTD->iHshTabBaseSize    = DEF_HSHTAB_INITSIZE;     \
     lpMemPTD->iHshTabIncr        = DEF_HSHTAB_INCR;         \
-    lpMemPTD->ExecCode           = EXEC_SUCCESS;
+    lpMemPTD->ExceptionCode      = EXCEPTION_SUCCESS;
 
     // The following vars are already initialized to zero which is the default
     //   value, so they do not need to be explicitly set.
@@ -24,7 +24,7 @@
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
 {
-    EXEC_CODES   ExecCode;          // 00:  Exception code
+    EXCEPTION_CODES ExceptionCode;  // 00:  Exception code
     LPPL_YYSTYPE lpYYRes;           // 04:  The result token
     UINT         numYYRes;          // 08:  # YYRes elements in the array
                                     //      pointed to by lpYYRes
@@ -47,7 +47,7 @@ typedef struct tagPERTABDATA
                  hWndDB,            // 3C:  Debugger     ...
                  hWndActive;        // 40:  Active MDI window when last switched out
 
-    BOOL         bTabTextState:1,   // 44:  00000001:  TRUE iff the tab's text state is Highlight, FALSE if Normal
+    UINT         bTabTextState:1,   // 44:  00000001:  TRUE iff the tab's text state is Highlight, FALSE if Normal
                  bNegative:1,       //      00000002:  Sign bit for integer part
                  bNegExp:1,         //      00000004:  ...          exponent ...
                  Avail:29;          //      FFFFFFF8:  Available bits

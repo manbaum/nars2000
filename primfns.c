@@ -4719,24 +4719,28 @@ APLINT RoundUpBitsInArray
 //  Check on a structured exception
 //***************************************************************************
 
-UINT CheckException
+long CheckException
     (LPEXCEPTION_POINTERS lpExcept)
 
 {
     // Save the exception code for later use
-    SetExecCode (lpExcept->ExceptionRecord->ExceptionCode);
+    MySetExceptionCode (lpExcept->ExceptionRecord->ExceptionCode);
 
     // Split cases based upon the exception code
-    switch (GetExecCode ())
+    switch (MyGetExceptionCode ())
     {
-////////case EXEC_RESULT_BOOL:
-////////case EXEC_RESULT_INT:
-        case EXEC_RESULT_FLOAT:
-        case EXEC_DOMAIN_ERROR:
+////////case EXCEPTION_RESULT_BOOL:
+////////case EXCEPTION_RESULT_INT:
+        case EXCEPTION_RESULT_FLOAT:
+        case EXCEPTION_BREAKPOINT:
+        case EXCEPTION_DOMAIN_ERROR:
         case EXCEPTION_FLT_DIVIDE_BY_ZERO:
         case EXCEPTION_INT_DIVIDE_BY_ZERO:
         case EXCEPTION_ACCESS_VIOLATION:
             return EXCEPTION_EXECUTE_HANDLER;
+
+        case EXCEPTION_CTRL_BREAK:
+            return EXCEPTION_CONTINUE_EXECUTION;
 
         default:
             return EXCEPTION_CONTINUE_SEARCH;
@@ -4774,7 +4778,7 @@ APLINT imul64
         if (lpbRet)
             *lpbRet = FALSE;
         else
-            RaiseException (EXEC_RESULT_FLOAT, 0, 0, NULL);
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } // End IF
 
     return aplRes;
@@ -5473,16 +5477,16 @@ RESTART_EXCEPTION_YYALLOC:
     } __except (CheckException (GetExceptionInformation ()))
     {
 #ifdef DEBUG
-        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %08X (%S#%d)", GetExecCode (), FNLN);
+        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %08X (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        // Split cases based upon the ExecCode
-        switch (GetExecCode ())
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
         {
             case EXCEPTION_ACCESS_VIOLATION:
             {
                 MEMORY_BASIC_INFORMATION mbi;
 
-                SetExecCode (EXEC_SUCCESS); // Reset
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 // See how many pages are already allocated
                 VirtualQuery (lpMemPTD->lpYYRes,
@@ -5724,7 +5728,6 @@ RESTART_EXCEPTION_FILLSISNXT:
     {
         // Create another level on the SI stack
         lpMemPTD->lpSISNxt->Sig.nature    = SIS_HEADER_SIGNATURE;
-        lpMemPTD->lpSISNxt->hThread       = NULL;
         lpMemPTD->lpSISNxt->hSemaphore    = hSemaphore;
         lpMemPTD->lpSISNxt->hSigaphore    = NULL;
         lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;
@@ -5757,13 +5760,13 @@ RESTART_EXCEPTION_FILLSISNXT:
         lpMemPTD->lpSISNxt = lpMemPTD->lpSISNxt->lpSISNxt;
     } __except (CheckException (GetExceptionInformation ()))
     {
-        switch (GetExecCode ())
+        switch (MyGetExceptionCode ())
         {
             case EXCEPTION_ACCESS_VIOLATION:
             {
                 MEMORY_BASIC_INFORMATION mbi;
 
-                SetExecCode (EXEC_SUCCESS); // Reset
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 // See how many pages are already allocated
                 VirtualQuery (lpMemPTD->lpSISNxt,
@@ -5790,6 +5793,31 @@ RESTART_EXCEPTION_FILLSISNXT:
         } // End SWITCH
     } // End __try/__except
 } // End FillSISNxt
+
+
+//***************************************************************************
+//  $PassSigaphore
+//
+// If this hSigaphore is not for this level, pass it on up the line
+//***************************************************************************
+
+LPSIS_HEADER PassSigaphore
+    (LPPERTABDATA lpMemPTD,
+     HANDLE       hSigaphore)
+{
+    if (hSigaphore
+     && lpMemPTD->lpSISCur
+     && hSigaphore NE lpMemPTD->lpSISCur->hSemaphore)
+    {
+        Assert (lpMemPTD->lpSISCur->hSigaphore EQ NULL);
+
+        // Pass it on up the line
+        lpMemPTD->lpSISCur->hSigaphore = hSigaphore;
+        hSigaphore = NULL;
+    } // End IF
+
+    return hSigaphore;
+} // End PassSigaphore
 
 
 //***************************************************************************

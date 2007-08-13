@@ -173,7 +173,7 @@ APLINT PrimFnMonDownStileIisF
     //   absolute value is >= 2*53
     if (!_finite (aplFloatRht)
      || fabs (aplFloatRht) >= Float2Pow53)
-        RaiseException (EXEC_RESULT_FLOAT, 0, 0, NULL);
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
     return (APLINT) PrimFnMonDownStileFisF (aplFloatRht, lpPrimSpec);
 } // End PrimFnMonDownStileIisF

@@ -25,7 +25,7 @@ TO DO:  General:  Important
 * ...       )LOAD
 * ...       )COPY
 * ...       minimum set of system functions
-* ...       event handling
+* ...       event handling ([]ALX)
 * ...       Ctrl-Break
 * ...
 
@@ -101,6 +101,7 @@ DONE:  General
 * ...       monadic up tack jot
 * ...       quad input
 * ...       quote-quad input
+* ...       error handling ([]ELX)
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

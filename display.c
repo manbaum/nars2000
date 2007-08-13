@@ -405,8 +405,8 @@ void DisplayGlbArr
             break;
     } // End SWITCH
 
-    // Propogate the row & col count up the line
-    PropogateRowColCount (lpFmtHeader,
+    // Propagate the row & col count up the line
+    PropagateRowColCount (lpFmtHeader,
                           FALSE);
 
     // lpaplCharStart now contains the compiled version of the output

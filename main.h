@@ -157,14 +157,15 @@ DecrRefCntInd (hGlbData);
 #define MYWM_DBGMSG_SCROLL  (WM_APP + 4)    // DB
 
 
-typedef enum tagEXEC_CODES      // Exception Codes
+typedef enum tagEXCEPTION_CODES // Exception Codes
 {
-    EXEC_SUCCESS = 0 ,          // 00:  All OK
-////EXEC_RESULT_BOOL ,          //      Result should be Boolean
-////EXEC_RESULT_INT  ,          //      ...              Integer
-    EXEC_RESULT_FLOAT,          // 01:  ...              Float
-    EXEC_DOMAIN_ERROR,          // 02:  Signal a DOMAIN ERROR
-} EXEC_CODES;
+    EXCEPTION_SUCCESS = 0 ,     // 00:  All OK
+////EXCEPTION_RESULT_BOOL ,     //      Result should be Boolean
+////EXCEPTION_RESULT_INT  ,     //      ...              Integer
+    EXCEPTION_RESULT_FLOAT,     // 01:  ...              Float
+    EXCEPTION_DOMAIN_ERROR,     // 02:  Signal a DOMAIN ERROR
+    EXCEPTION_CTRL_BREAK,       // 03:  Ctrl-Break pressed
+} EXCEPTION_CODES;
 
 typedef struct tagGLBHIST
 {

@@ -345,8 +345,8 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     if (aplRankRht > 1)
         lpFmtHeader->uMatRes = TRUE;
 
-    // Propogate the row & col count up the line
-    PropogateRowColCount (lpFmtHeader,
+    // Propagate the row & col count up the line
+    PropagateRowColCount (lpFmtHeader,
                           FALSE);
 
     // CHARs are handled above
@@ -2099,20 +2099,20 @@ LPAPLCHAR CompileArrNestedGlb
     // We no longer need this ptr
     MyGlobalUnlock (hGlb); lpMem = NULL;
 
-    // Propogate the row & col count up the line
-    PropogateRowColCount (lpFmtHeader,
+    // Propagate the row & col count up the line
+    PropagateRowColCount (lpFmtHeader,
                           TRUE);
     return lpaplChar;
 } // End CompileArrNestedGlb
 
 
 //***************************************************************************
-//  $PropogateRowColCount
+//  $PropagateRowColCount
 //
-//  Propogate the row & col count up the line
+//  Propagate the row & col count up the line
 //***************************************************************************
 
-void PropogateRowColCount
+void PropagateRowColCount
     (LPFMTHEADER lpFmtHeader,       // Ptr to FMTHEADER struc
      BOOL        bNested)           // TRUE iff nested (to be surrounded by blanks)
 
@@ -2159,15 +2159,15 @@ void PropogateRowColCount
     lpFmtHeader->uFmtFrcs = max (lpFmtHeader->uFmtFrcs, uFrcs);
     lpFmtHeader->uFmtTrBl |= uTrBl;
 
-    // Propogate the uMatRes bit
+    // Propagate the uMatRes bit
     if (lpFmtHeader->lpFmtHeadUp)
         lpFmtHeader->lpFmtHeadUp->uMatRes |= lpFmtHeader->uMatRes;
 
     // Recurse
     if (lpFmtHeader->lpFmtHeadUp)
-        PropogateRowColCount (lpFmtHeader->lpFmtHeadUp,
+        PropagateRowColCount (lpFmtHeader->lpFmtHeadUp,
                               FALSE);
-} // End PropogateRowColCount
+} // End PropagateRowColCount
 
 
 //***************************************************************************

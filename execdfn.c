@@ -176,13 +176,13 @@ RESTART_EXCEPTION_EXECDFNGLB:
 ////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in below
     } __except (CheckException (GetExceptionInformation ()))
     {
-        switch (GetExecCode ())
+        switch (MyGetExceptionCode ())
         {
             case EXCEPTION_ACCESS_VIOLATION:
             {
                 MEMORY_BASIC_INFORMATION mbi;
 
-                SetExecCode (EXEC_SUCCESS); // Reset
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 // See how many pages are already allocated
                 VirtualQuery (lpMemPTD->lpSISNxt,
@@ -362,13 +362,12 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     LPPERTABDATA   lpMemPTD = NULL; // Ptr to PerTabData global memory
     LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
     HWND           hWndSM;          // Session Manager window handle
-    HANDLE         hThread,         // Thread handle
-                   hSemaphore;      // Semaphore handle
+    HANDLE         hSemaphore;      // Semaphore handle
     UINT           numResultSTE,    // # result STEs (may be zero if no result)
                    numRes;          // Loop counter
-    BOOL           bRet = TRUE;     // TRUE iff still executing the function
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
+    BOOL           bRet;            // TRUE iff result is valid
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -438,80 +437,32 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // Execute the function line
-        hThread =
         ParseLine (hWndSM,                  // Session Manager window handle
                    hGlbTxtLine,             // Line text global memory handle
                    hGlbTknLine,             // Tokenixed line global memory handle
                    NULL,                    // Ptr to line text global memory
                    hGlbPTD);                // PerTabData global memory handle
-///////////////////NULL,                    // Semaphore handle
-///////////////////FALSE,                   // ParseLine NOT to free hGlbTknLine on exit
-///////////////////FALSE,                   // ...                   lpwszLine   ...
-///////////////////FALSE);                  // ...              signal SM at end
-        // Set WHILE test
-        bRet = TRUE;
-
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
-        // Save the thread handle
-        lpMemPTD->lpSISCur->hThread = hThread;
+        // If suspended, wait for the semaphore to trigger
+        if (lpMemPTD->lpSISCur->Suspended)
+        {
+            HWND hWndEC;        // Edit Control window handle
+
+            // Get the Edit Control window handle
+            hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
+
+            // Display the default prompt
+            DisplayPrompt (hWndEC, FALSE, 2);
+
+            // Wait for the semaphore to trigger
+            WaitForSingleObject (hSemaphore,            // Ptr to handle to wait for
+                                 INFINITE);             // Timeout value in milliseconds
+        } // End IF
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-        // Wait for something to happen
-        while (bRet)
-        {
-            DWORD dwWFMO;           // WaitForMultipleObjects return code
-
-            dwWFMO =
-            WaitForMultipleObjects (1,                  // # handles to wait for
-                                   &hThread,            // Ptr to handle to wait for
-                                    FALSE,              // Exit if only one handle is signalled
-                                    INFINITE);          // Timeout value in milliseconds
-            // Split cases based upon the return code
-            switch (dwWFMO)
-            {
-                // Check for thread (ParseLine) done
-                case WAIT_OBJECT_0:         // hThread terminated
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-                    // If suspended, wait for the semaphore to trigger
-                    if (lpMemPTD->lpSISCur->Suspended)
-                    {
-                        HWND hWndEC;
-
-                        hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
-
-                        // Display the default prompt
-                        DisplayPrompt (hWndEC, FALSE, 2);
-
-                        // Wait for the semaphore to trigger
-                        WaitForMultipleObjects (1,                  // # handles to wait for
-                                               &hSemaphore,         // Ptr to handle to wait for
-                                                FALSE,              // Exit if only one handle is signalled
-                                                INFINITE);          // Timeout value in milliseconds
-                    } // End IF
-
-                    // Process ParseLine done
-                    bRet = FALSE;           // Mark as done
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-                    break;                      // We handled the msg
-
-                defstop
-                    GetLastError ();
-
-                    break;
-            } // End SWITCH
-        } // End WHILE
-
-        // Close the thread handle as it has terminated
-        CloseHandle (hThread); hThread = NULL;
 
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -655,9 +606,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
                 if (!bRet)
                 {
-////////////////////// Set function name display on error flag
-////////////////////lpMemPTD->bDispFcnName = TRUE;
-
                     // Mark as an error on line 0
                     lpMemPTD->lpSISCur->CurLineNum = 0;
 

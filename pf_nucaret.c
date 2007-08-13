@@ -156,7 +156,7 @@ APLBOOL PrimFnDydUpCaretTildeBisIvI
 {
     if (!IsBooleanValue (aplIntegerLft)
      || !IsBooleanValue (aplIntegerRht))
-        RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
     return !(((APLBOOL) aplIntegerLft) & (APLBOOL) aplIntegerRht);
 } // End PrimFnDydUpCaretTildeBisIvI
 
@@ -184,7 +184,7 @@ APLBOOL PrimFnDydUpCaretTildeBisFvF
     if (!bRet
      || !IsBooleanValue (aplLft)
      || !IsBooleanValue (aplRht))
-        RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return !(((APLBOOL) aplLft) & (APLBOOL) aplRht);
 } // End PrimFnDydUpCaretTildeBisFvF

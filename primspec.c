@@ -20,18 +20,18 @@
 
 
 //***************************************************************************
-//  GetExecCode
+//  $MyGetExceptionCode
 //
-//  Return the current ExecCode
+//  Return the current ExceptionCode
 //***************************************************************************
 
-EXEC_CODES GetExecCode
+EXCEPTION_CODES MyGetExceptionCode
     (void)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    EXEC_CODES   ExecCode;      // Exception code
+    HGLOBAL         hGlbPTD;        // PerTabData global memory handle
+    LPPERTABDATA    lpMemPTD;       // Ptr to PerTabData global memory
+    EXCEPTION_CODES ExceptionCode;  // Exception code
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -39,24 +39,24 @@ EXEC_CODES GetExecCode
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Get the ExecCode
-    ExecCode = lpMemPTD->ExecCode;
+    // Get the ExceptionCode
+    ExceptionCode = lpMemPTD->ExceptionCode;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    return ExecCode;
-} // End GetExecCode
+    return ExceptionCode;
+} // End MyGetExceptionCode
 
 
 //***************************************************************************
-//  SetExecCode
+//  $MySetExceptionCode
 //
-//  Set the current ExecCode
+//  Set the current ExceptionCode
 //***************************************************************************
 
-void SetExecCode
-    (EXEC_CODES ExecCode)       // Exception code
+void MySetExceptionCode
+    (EXCEPTION_CODES ExceptionCode) // Exception code
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
@@ -68,12 +68,12 @@ void SetExecCode
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Set the ExecCode
-    lpMemPTD->ExecCode = ExecCode;
+    // Set the ExceptionCode
+    lpMemPTD->ExceptionCode = ExceptionCode;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End SetExecCode
+} // End MySetExceptionCode
 
 
 //***************************************************************************
@@ -581,15 +581,15 @@ RESTART_EXCEPTION_VARNAMED:
             } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                // Split cases based upon the ExecCode
-                switch (GetExecCode ())
+                // Split cases based upon the ExceptionCode
+                switch (MyGetExceptionCode ())
                 {
-                    case EXEC_DOMAIN_ERROR:
+                    case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
@@ -597,15 +597,15 @@ RESTART_EXCEPTION_VARNAMED:
 
                         return NULL;
 
-                    case EXEC_RESULT_FLOAT:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                    case EXCEPTION_RESULT_FLOAT:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
                          && aplTypeRes NE ARRAY_FLOAT)
                         {
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_VARNAMED;
                         } // End IF
@@ -718,15 +718,15 @@ RESTART_EXCEPTION_VARIMMED:
             } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                // Split cases based upon the ExecCode
-                switch (GetExecCode ())
+                // Split cases based upon the ExceptionCode
+                switch (MyGetExceptionCode ())
                 {
-                    case EXEC_DOMAIN_ERROR:
+                    case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
@@ -734,15 +734,15 @@ RESTART_EXCEPTION_VARIMMED:
 
                         return NULL;
 
-                    case EXEC_RESULT_FLOAT:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                    case EXCEPTION_RESULT_FLOAT:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
                          && aplTypeRes NE ARRAY_FLOAT)
                         {
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_VARIMMED;
                         } // End IF
@@ -1319,22 +1319,22 @@ RESTART_EXCEPTION:
     } __except (CheckException (GetExceptionInformation ()))
     {
 #ifdef DEBUG
-        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        // Split cases based upon the ExecCode
-        switch (GetExecCode ())
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
         {
-            case EXEC_DOMAIN_ERROR:
+            case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                SetExecCode (EXEC_SUCCESS); // Reset
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
                 goto ERROR_EXIT;
 
-            case EXEC_RESULT_FLOAT:
-                SetExecCode (EXEC_SUCCESS); // Reset
+            case EXCEPTION_RESULT_FLOAT:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 if (IsSimpleNum (aplTypeRes)
                  && aplTypeRes NE ARRAY_FLOAT)
@@ -1353,7 +1353,7 @@ RESTART_EXCEPTION:
                     // We no longer need this storage
                     FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
 #ifdef DEBUG
-                    dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                    dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -3511,22 +3511,22 @@ RESTART_EXCEPTION:
     } __except (CheckException (GetExceptionInformation ()))
     {
 #ifdef DEBUG
-        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        // Split cases based upon the ExecCode
-        switch (GetExecCode ())
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
         {
-            case EXEC_DOMAIN_ERROR:
+            case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                SetExecCode (EXEC_SUCCESS); // Reset
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);
                 return FALSE;
 
-            case EXEC_RESULT_FLOAT:
-                SetExecCode (EXEC_SUCCESS); // Reset
+            case EXCEPTION_RESULT_FLOAT:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 if (IsSimpleNum (aplTypeRes)
                  && aplTypeRes NE ARRAY_FLOAT)
@@ -3537,7 +3537,7 @@ RESTART_EXCEPTION:
                     lpMemRes = lpMemResStart;
                     lpMemRht = lpMemRhtStart;
 #ifdef DEBUG
-                    dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                    dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -4249,22 +4249,22 @@ RESTART_EXCEPTION:
     } __except (CheckException (GetExceptionInformation ()))
     {
 #ifdef DEBUG
-        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        // Split cases based upon the ExecCode
-        switch (GetExecCode ())
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
         {
-            case EXEC_DOMAIN_ERROR:
+            case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                SetExecCode (EXEC_SUCCESS); // Reset
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);
                 return FALSE;
 
-            case EXEC_RESULT_FLOAT:
-                SetExecCode (EXEC_SUCCESS); // Reset
+            case EXCEPTION_RESULT_FLOAT:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 if (IsSimpleNum (aplTypeRes)
                  && aplTypeRes NE ARRAY_FLOAT)
@@ -4275,7 +4275,7 @@ RESTART_EXCEPTION:
                     lpMemRes = lpMemResStart;
                     lpMemLft = lpMemLftStart;
 #ifdef DEBUG
-                    dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                    dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                     goto RESTART_EXCEPTION;
                 } // End IF
@@ -4761,15 +4761,15 @@ RESTART_EXCEPTION_IMMED:
     } __except (CheckException (GetExceptionInformation ()))
     {
 #ifdef DEBUG
-        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        // Split cases based upon the ExecCode
-        switch (GetExecCode ())
+        // Split cases based upon the ExceptionCode
+        switch (MyGetExceptionCode ())
         {
-            case EXEC_DOMAIN_ERROR:
+            case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_FLT_DIVIDE_BY_ZERO:
             case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                SetExecCode (EXEC_SUCCESS); // Reset
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);
@@ -4777,15 +4777,15 @@ RESTART_EXCEPTION_IMMED:
 
                 goto ERROR_EXIT;
 
-            case EXEC_RESULT_FLOAT:
-                SetExecCode (EXEC_SUCCESS); // Reset
+            case EXCEPTION_RESULT_FLOAT:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 if (IsSimpleNum (aplTypeRes)
                  && aplTypeRes NE ARRAY_FLOAT)
                 {
                     aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
-                    dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                    dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                     goto RESTART_EXCEPTION_IMMED;
                 } // End IF
@@ -5051,15 +5051,15 @@ RESTART_EXCEPTION_SINGLETON:
             } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                // Split cases based upon the ExecCode
-                switch (GetExecCode ())
+                // Split cases based upon the ExceptionCode
+                switch (GetExceptionCode ())
                 {
-                    case EXEC_DOMAIN_ERROR:
+                    case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                            lptkFunc);
@@ -5067,15 +5067,15 @@ RESTART_EXCEPTION_SINGLETON:
 
                         goto ERROR_EXIT;
 
-                    case EXEC_RESULT_FLOAT:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                    case EXCEPTION_RESULT_FLOAT:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
                          && aplTypeRes NE ARRAY_FLOAT)
                         {
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_SINGLETON;
                         } // End IF
@@ -5544,22 +5544,22 @@ RESTART_EXCEPTION_AXIS:
             } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                // Split cases based upon the ExecCode
-                switch (GetExecCode ())
+                // Split cases based upon the ExceptionCode
+                switch (GetExceptionCode ())
                 {
-                    case EXEC_DOMAIN_ERROR:
+                    case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
                         return FALSE;
 
-                    case EXEC_RESULT_FLOAT:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                    case EXCEPTION_RESULT_FLOAT:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
                          && aplTypeRes NE ARRAY_FLOAT)
@@ -5573,7 +5573,7 @@ RESTART_EXCEPTION_AXIS:
                             for (uRes = 0 ; uRes < (APLRANKSIGN) aplRankRes; uRes++)
                                 lpMemOdo[uRes] = 0;
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_AXIS;
                         } // End IF
@@ -5750,22 +5750,22 @@ RESTART_EXCEPTION_NOAXIS:
             } __except (CheckException (GetExceptionInformation ()))
             {
 #ifdef DEBUG
-                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                // Split cases based upon the ExecCode
-                switch (GetExecCode ())
+                // Split cases based upon the ExceptionCode
+                switch (GetExceptionCode ())
                 {
-                    case EXEC_DOMAIN_ERROR:
+                    case EXCEPTION_DOMAIN_ERROR:
                     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
                     case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
                         return FALSE;
 
-                    case EXEC_RESULT_FLOAT:
-                        SetExecCode (EXEC_SUCCESS); // Reset
+                    case EXCEPTION_RESULT_FLOAT:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
                          && aplTypeRes NE ARRAY_FLOAT)
@@ -5775,7 +5775,7 @@ RESTART_EXCEPTION_NOAXIS:
                             // Restart the pointers
                             lpMemRes = lpMemResStart;
 #ifdef DEBUG
-                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", GetExecCode (), FNLN);
+                            dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
                             goto RESTART_EXCEPTION_NOAXIS;
                         } // End IF

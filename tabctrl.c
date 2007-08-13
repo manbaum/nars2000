@@ -310,9 +310,6 @@ BOOL WINAPI CreateNewTabInThread
     // Get the size and position of the parent window.
     GetClientRect (hWndParent, &rc);
 
-////// Save data from the current WS into global memory
-////SaveWsData (hGlbCurTab);
-
     if (hGlbCurTab)
     {
         // Lock the memory to get a ptr to it
@@ -480,20 +477,12 @@ BOOL WINAPI CreateNewTabInThread
     // Set the property to the current thread handle
     SetProp (hWndParent, szTemp, hThread);
 
-    // Save the window handles in global variables
-////hWndMC = lpMemPTD->hWndMC;  // No longer referenced globally
-////hWndSM = lpMemPTD->hWndSM;  // Already set by the window's WM_NCCREATE action
-////hWndDB = lpMemPTD->hWndDB;  // ...
-
     // Set the handle of the active window
     lpMemPTD->hWndActive = lpMemPTD->hWndSM;
 
     // Save the handle
     hGlbCurTab = hGlbPTD;
     SetWindowLong (lpMemPTD->hWndSM, GWLSF_PERTAB, (long) hGlbPTD);
-
-////// Clear data in this WS to global default values
-////ClearWsData ();
 
     // Show the child windows of the incoming tab
     ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
@@ -511,17 +500,37 @@ BOOL WINAPI CreateNewTabInThread
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    // Main message loop
-    while (GetMessage(&Msg, NULL, 0, 0))
-    {
-        // Handle MDI messages and accelerators
-        if (!TranslateMDISysAccel (hWndMC, &Msg)
-         && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+////__try
+////{
+        // Main message loop
+        while (GetMessage (&Msg, NULL, 0, 0))
         {
-            TranslateMessage (&Msg);
-            DispatchMessage  (&Msg);
-        } // End IF
-    } // End WHILE
+            // Handle MDI messages and accelerators
+            if (!TranslateMDISysAccel (hWndMC, &Msg)
+             && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+            {
+                TranslateMessage (&Msg);
+                DispatchMessage  (&Msg);
+            } // End IF
+        } // End WHILE
+////} __except (CheckException (GetExceptionInformation ()))
+////{
+////    // Lock the memory to get a ptr to it
+////    lpMemPTD = MyGlobalLock (hGlbPTD);
+////
+////    // Handle unhandled exceptions
+////    DbgBrk ();          // ***FIXME*** -- unhandled exceptions
+////
+////    // Display message for unhandled exception
+////
+////
+////
+////
+////
+////    // We no longer need this ptr
+////    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+////} // End __try/__except
+
     // GetMessage returned FALSE for a Quit message
 
     goto NORMAL_EXIT;

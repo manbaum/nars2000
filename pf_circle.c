@@ -373,7 +373,7 @@ APLFLOAT PrimFnDydCircleFisIvI
                                           lpPrimSpec);
     } // End SWITCH
 
-    RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 } // End PrimFnDydCircleFisIvI
 
 
@@ -468,7 +468,7 @@ APLFLOAT PrimFnDydCircleFisFvF
             break;
     } // End SWITCH
 
-    RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return 0;   // To keep the compiler happy
 } // End PrimFnDydCircleFisFvF

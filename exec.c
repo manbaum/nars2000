@@ -930,8 +930,7 @@ DWORD WINAPI ImmExecLineInThread
     (LPIE_THREAD lpieThread)
 
 {
-    HANDLE       hThread,           // Thread handle
-                 hSigaphore = NULL; // Semaphore handle to signal (NULL if none)
+    HANDLE       hSigaphore = NULL; // Semaphore handle to signal (NULL if none)
     LPWCHAR      lpwszCompLine;     // Ptr to complete line
     HGLOBAL      hGlbToken;         // Handle of tokenized line
     HWND         hWndEC,            // Handle of Edit Control window
@@ -986,23 +985,11 @@ DWORD WINAPI ImmExecLineInThread
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Run the parser in a separate thread
-    hThread =
     ParseLine (hWndSM,              // Session Manager window handle
                NULL,                // Line text global memory handle
                hGlbToken,           // Tokenized line global memory handle
                lpwszCompLine,       // Ptr to the complete line
                hGlbPTD);            // PerTabData global memory handle
-///////////////NULL,                // Semaphore handle
-///////////////FALSE,               // ParseLine NOT to free hGlbToken on exit
-///////////////FALSE,               // ...                   lpwszCompLine ...
-///////////////TRUE);               // ParseLine to signal SM at end
-    WaitForMultipleObjects (1,                  // # handles to wait for
-                           &hThread,            // Ptr to handle to wait for
-                            FALSE,              // Exit if only one handle is signalled
-                            INFINITE);          // Timeout value in milliseconds
-    // Close the thread handle as it has terminated
-    CloseHandle (hThread); hThread = NULL;
-
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -1015,16 +1002,7 @@ DWORD WINAPI ImmExecLineInThread
     Unlocalize ();
 
     // If this hSigaphore is not for this level, pass it on up the line
-    if (hSigaphore
-     && lpMemPTD->lpSISCur
-     && hSigaphore NE lpMemPTD->lpSISCur->hSemaphore)
-    {
-        Assert (lpMemPTD->lpSISCur->hSigaphore EQ NULL);
-
-        // Pass it on up the line
-        lpMemPTD->lpSISCur->hSigaphore = hSigaphore;
-        hSigaphore = NULL;
-    } // End IF
+    hSigaphore = PassSigaphore (lpMemPTD, hSigaphore);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1051,10 +1029,13 @@ ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
+#ifdef DEBUG
+    if (hSigaphore)
+        dprintfW (L"~~Releasing semaphore:  %08X", hSigaphore);
+#endif
     // If there's a semaphore to signal, ...
     if (hSigaphore)
         ReleaseSemaphore (hSigaphore, 1, NULL);
-
     return dwRet;
 } // End ImmExecLineInThread
 #undef  APPEND_NAME
@@ -2639,6 +2620,10 @@ void FormatQQuadInput
 
     Assert (lpMemPTD->lpSISCur->hSemaphore NE NULL);
 
+#ifdef DEBUG
+    if (lpMemPTD->lpSISCur->hSemaphore)
+        dprintfW (L"~~Releasing semaphore:  %08X", lpMemPTD->lpSISCur->hSemaphore);
+#endif
     // Signal WaitForInput that we have a result
     ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
 } // End FormatQQuadInput
@@ -2701,11 +2686,9 @@ LPPL_YYSTYPE WaitForInput
     // Tell the Session Manager to display the appropriate prompt
     PostMessage (hWndSM, MYWM_QUOTEQUAD, bQuoteQuad, 10);
 
-    // Wait for the thread to terminate
-    WaitForMultipleObjects (1,                  // # handles to wait for
-                           &hSemaphore,         // Ptr to handle to wait for
-                            FALSE,              // Exit if only one handle is signalled
-                            INFINITE);          // Timeout value in milliseconds
+    // Wait for the semaphore to trigger
+    WaitForSingleObject (hSemaphore,            // Ptr to handle to wait for
+                         INFINITE);             // Timeout value in milliseconds
     // Close the semaphore handle as it is no longer needed
     CloseHandle (hSemaphore); hSemaphore = NULL;
 

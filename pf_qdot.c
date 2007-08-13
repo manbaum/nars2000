@@ -184,11 +184,11 @@ APLINT PrimFnMonQuoteDotIisI
 
     // Check for DOMAIN ERROR
     if (aplIntegerRht < 0)
-        RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Check for results too large to express as integers
     if (aplIntegerRht > 20)
-        RaiseException (EXEC_RESULT_FLOAT, 0, 0, NULL);
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
     // Lookup the result
     return factorial[aplIntegerRht];
@@ -214,7 +214,7 @@ APLFLOAT PrimFnMonQuoteDotFisF
     {
         (void) FloatToAplint_SCT (aplFloatRht, &iRet);
         if (iRet)
-            RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
     } // End IF
 
     // Use the GNU Scientific Library Gamma function
@@ -229,7 +229,7 @@ APLFLOAT PrimFnMonQuoteDotFisF
         case GSL_FAILURE:
         case GSL_EDOM:
         case GSL_ERANGE:
-            RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         defstop
             break;
@@ -333,7 +333,7 @@ APLINT PrimFnDydQuoteDotIisIvI
             return 0;
 
         case 4*0 + 2*1 + 1*0:   // DOMAIN ERROR
-            RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case 4*0 + 2*1 + 1*1:   // ((-1)*L)*L!(L-(R+1))
             return ((L%2) ? -1: 1) * PrimFnDydQuoteDotIisIvI (L, L-(R+1), NULL);
@@ -438,7 +438,7 @@ APLFLOAT PrimFnDydQuoteDotFisIvI
             return 0;
 
         case 4*0 + 2*1 + 1*0:   // DOMAIN ERROR
-            RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case 4*0 + 2*1 + 1*1:   // ((-1)*LI)*LI!(LI-(RI+1))
             return ((LI%2) ? -1: 1) * PrimFnDydQuoteDotFisIvI (LI, LI-(RI+1), NULL);
@@ -528,7 +528,7 @@ APLFLOAT PrimFnDydQuoteDotFisFvF
                 return 0;
 
             case 4*0 + 2*1 + 1*0:   // DOMAIN ERROR
-                RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
             case 4*0 + 2*1 + 1*1:   // ((-1)*LF)*LF!(LF-(RF+1))
                 return (fmod (LF, 2) ? -1: 1) * PrimFnDydQuoteDotFisFvF (LF, LF-(RF+1), NULL);

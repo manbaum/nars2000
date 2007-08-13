@@ -120,9 +120,6 @@ EXTERN
 HINSTANCE _hInstance;                   // Global instance handle
 
 EXTERN
-DWORD dwMainThreadId;                   // Thread ID of the main application
-
-EXTERN
 HANDLE hAccel;                          // Keyboard accelerators
 
 EXTERN
@@ -174,8 +171,11 @@ CRITICAL_SECTION CSO0,                  // Critical Section Object #0
 
 
 //***************************************************************************
-// Thread Local Storage indices
+// Thread-related Variables
 //***************************************************************************
+
+EXTERN
+DWORD dwMainThreadId;                   // Thread ID of the main application
 
 EXTERN
 DWORD dwTlsType,                        // Thread type (e.g.

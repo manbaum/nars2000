@@ -143,7 +143,8 @@
             <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
               <span class="APL">1 2+[1] 2 3{rho}{iota}6</span>)</li>
             <li>Axis operator to primitive scalar dyadic functions may transpose coordinates (e.g.,
-              <span class="APL">((2 3{rho}0)+[1 2] 2 3 4{rho}1) {match} (3 2{rho}0)+[2 1] 2 3 4{rho}1</span>)</li>
+              <span class="APL">((2 3{rho}{iota}6)+[1 2] 2 3 4{rho}{iota}24)
+              {match} (3 2{rho}{iota}6)+[2 1] 2 3 4{rho}{iota}24</span>)</li>
             <li>Axis operator to Ravel may transpose coordinates (e.g.,
               <span class="APL">(,[2 1] R) {notmatch} ,[1 2] R</span>)</li>
             <li>Axis operator is allowed on the Each operator (e.g.,

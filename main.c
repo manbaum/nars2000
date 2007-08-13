@@ -1878,22 +1878,35 @@ int PASCAL WinMain
 ////ShowWindow (hWndMF, nCmdShow);
 ////UpdateWindow (hWndMF);
 
-    // Main message loop
-    while (GetMessage(&Msg, NULL, 0, 0))
-    {
-        HWND hWndMC;
-
-        // Get the window handle of the currently active MDI Client
-        hWndMC = GetActiveMC (hWndTC);
-
-        // Handle MDI messages and accelerators
-        if (!TranslateMDISysAccel (hWndMC, &Msg)
-         && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+////__try
+////{
+        // Main message loop
+        while (GetMessage (&Msg, NULL, 0, 0))
         {
-            TranslateMessage (&Msg);
-            DispatchMessage  (&Msg);
-        } // End IF
-    } // End WHILE
+            HWND hWndMC;        // MDI Client window handle
+
+            // Get the window handle of the currently active MDI Client
+            hWndMC = GetActiveMC (hWndTC);
+
+            // Handle MDI messages and accelerators
+            if (!TranslateMDISysAccel (hWndMC, &Msg)
+             && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+            {
+                TranslateMessage (&Msg);
+                DispatchMessage  (&Msg);
+            } // End IF
+        } // End WHILE
+////} __except (CheckException (GetExceptionInformation ()))
+////{
+////    // Handle unhandled exceptions
+////    DbgBrk ();          // ***FIXME*** -- unhandled exceptions
+////
+////    // Display message for unhandled exception
+////
+////
+////
+////} // End __try/__except
+
     // GetMessage returned FALSE for a Quit message
 EXIT4:
     DeleteCriticalSection (&CSO1);

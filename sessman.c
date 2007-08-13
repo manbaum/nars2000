@@ -1155,6 +1155,39 @@ LRESULT APIENTRY SMWndProc
 
             switch (nVirtKey)
             {
+                case VK_CANCEL:
+                {
+                    LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
+#ifdef DEBUG
+                    UINT          tlsType;          // Thread type
+#endif
+                    // Get the thread's ptr to local vars
+                    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+#ifdef DEBUG
+                    // Get the thread type
+                    tlsType = (UINT) TlsGetValue (dwTlsType);
+#endif
+                    // If it's defined for this thread type, ...
+                    if (lpplLocalVars)
+                    {
+                        DbgBrk ();
+
+                        // Mark as Ctrl-Break
+                        lpplLocalVars->bCtrlBreak = TRUE;
+                    } // End IF
+////////////////////// Lock the memory to get a ptr to it
+////////////////////lpMemPTD = MyGlobalLock (hGlbPTD);
+////////////////////
+////////////////////// Mark as Ctrl-Break
+////////////////////lpMemPTD->bCtrlBreak = TRUE;
+////////////////////
+////////////////////// We no longer need this ptr
+////////////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                    break;
+                } // End VK_CANCEL
+
                 case VK_RETURN:
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);

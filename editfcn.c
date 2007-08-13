@@ -784,6 +784,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                  ksCtrl;        // ...      VK_SHIFT   ...
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    WNDPROC      lpfnOldEditCtrlWndProc; // Ptr to preceding Edit Control window procedure
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -846,6 +847,17 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                         PostMessage (hWndParent, MYWM_KEYDOWN, wParam, uLineNum);
                     } // End IF
+
+                    break;
+
+                case 'C':
+                    if (!ksCtrl)
+                        break;
+
+                    // Fall through to VK_CANCEL
+
+                case VK_CANCEL:
+                    PostMessageW (hWndParent, MYWM_KEYDOWN, VK_CANCEL, 0);
 
                     break;
 
@@ -1447,17 +1459,20 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
+            // Get the address of the preceding Edit Control window proc
+            lpfnOldEditCtrlWndProc = lpMemPTD->lpfnOldEditCtrlWndProc;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
             // We need to call the original handler first before
             //   drawing the line #s as this operation might change
             //   the count.
-            lResult = CallWindowProcW (lpMemPTD->lpfnOldEditCtrlWndProc,
+            lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
                                        hWnd,
                                        message,
                                        wParam,
                                        lParam); // Pass on down the line
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             // Draw the line #s
             DrawLineNumsFE (hWnd);
 
@@ -1535,17 +1550,20 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
+            // Get the address of the preceding Edit Control window proc
+            lpfnOldEditCtrlWndProc = lpMemPTD->lpfnOldEditCtrlWndProc;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
             // We need to call the original handler first before
             //   drawing the line #s as this operation might change
             //   the count.
-            lResult = CallWindowProcW (lpMemPTD->lpfnOldEditCtrlWndProc,
+            lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
                                        hWnd,
                                        message,
                                        wParam,
                                        lParam); // Pass on down the line
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             // Draw the line #s
             DrawLineNumsFE (hWnd);
 
@@ -1645,14 +1663,17 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            lResult = CallWindowProcW (lpMemPTD->lpfnOldEditCtrlWndProc,
+            // Get the address of the preceding Edit Control window proc
+            lpfnOldEditCtrlWndProc = lpMemPTD->lpfnOldEditCtrlWndProc;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            lResult = CallWindowProcW (lpfnOldEditCtrlWndProc,
                                        hWnd,
                                        message,
                                        wParam,
                                        lParam); // Pass on down the line
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             // Draw the line #s
             DrawLineNumsFE (hWnd);
 
@@ -1662,15 +1683,17 @@ LRESULT WINAPI LclEditCtrlWndProc
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    lResult = CallWindowProcW (lpMemPTD->lpfnOldEditCtrlWndProc,
-                               hWnd,
-                               message,
-                               wParam,
-                               lParam); // Pass on down the line
+    // Get the address of the preceding Edit Control window proc
+    lpfnOldEditCtrlWndProc = lpMemPTD->lpfnOldEditCtrlWndProc;
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    return lResult;
+    return CallWindowProcW (lpfnOldEditCtrlWndProc,
+                            hWnd,
+                            message,
+                            wParam,
+                            lParam);    // Pass on down the line
 } // End LclEditCtrlWndProc
 
 

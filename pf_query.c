@@ -202,7 +202,7 @@ APLINT PrimFnMonQueryIisI
 
     // Check for DOMAIN ERROR
     if (aplIntegerRht < bQuadIO)
-        RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Calculate new QuadRL
     uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
@@ -257,7 +257,7 @@ APLINT PrimFnMonQueryIisF
     if (aplFloatRht < bQuadIO
      || aplFloatRht NE floor (aplFloatRht)
      || aplFloatRht >= Float2Pow53)
-        RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Calculate new QuadRL
     uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;

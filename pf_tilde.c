@@ -198,7 +198,7 @@ APLBOOL PrimFnMonTildeBisI
 
 {
     if (!IsBooleanValue (aplIntegerRht))
-        RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
     return !(APLBOOL) aplIntegerRht;
 } // End PrimFnMonTildeBisI
 
@@ -215,7 +215,7 @@ APLBOOL PrimFnMonTildeBisF
 
 {
     if (!IsBooleanValue (aplFloatRht))
-        RaiseException (EXEC_DOMAIN_ERROR, 0, 0, NULL);
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
     return !(APLBOOL) aplFloatRht;
 } // End PrimFnMonTildeBisF
 

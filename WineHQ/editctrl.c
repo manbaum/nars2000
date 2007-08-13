@@ -429,7 +429,7 @@ static HBRUSH EDIT_NotifyCtlColor(EDITSTATE *es, HDC hdc)
         if (!hbrush)
             hbrush = (HBRUSH)DefWindowProcW(GetParent(es->hwndSelf), msg, (WPARAM)hdc, (LPARAM)es->hwndSelf);
         return hbrush;
-}
+} // End EDIT_NotifyCtlColor
 
 static inline LRESULT DefWindowProcT(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, BOOL unicode)
 {
@@ -4665,7 +4665,7 @@ static BOOL EDIT_CheckCombo(EDITSTATE *es, UINT msg, INT key)
       SendMessageW(hCombo, CB_SETEXTENDEDUI, TRUE, 0);
 
    return TRUE;
-}
+} // End EDIT_CheckCombo
 
 
 /*********************************************************************

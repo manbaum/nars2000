@@ -19,6 +19,108 @@
 
 
 //***************************************************************************
+//  $BreakMessage
+//
+//  Display a message from Ctrl-Break
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- BreakMessage"
+#else
+#define APPEND_NAME
+#endif
+
+void BreakMessage
+    (HWND         hWndSM,
+     LPSIS_HEADER lpSISCur)
+
+{
+    LPAPLCHAR    lpMemName;     // Ptr to function name global memory
+    APLNELM      aplNELMRes;    // Length of function name[line #]
+    APLUINT      ByteRes;       // # bytes in the result
+    LPAPLCHAR    lpMemRes;      // Ptr to result global memory
+    HGLOBAL      hGlbRes,       // Result global memory handle
+                 hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Mark as suspended
+    lpMemPTD->lpSISCur->Suspended = TRUE;
+
+    // Lock the memory to get a ptr to it
+    lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+
+    // Format the name and line #
+    aplNELMRes =
+    wsprintfW (lpwszTemp,
+               L"%s[%d]",
+               lpMemName,
+               lpSISCur->CurLineNum);
+    // We no longer need this ptr
+    MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
+
+    // Calculate space needed for te result
+    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
+
+    // Allocate space for the result
+    // N.B.  Conversion from APLUINT to UINT.
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        MessageBoxW (hWndSM,
+                     L"Unable to allocate space for " WS_UTF16_QUAD L"DM",
+                     lpwszAppName,
+                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        return;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->Perm       = 0;   // Already zero from GHND
+////lpHeader->SysVar     = 0;   // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
+
+#undef  lpHeader
+
+    // Fill in the dimension
+    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+
+    // Skip over the header and dimension to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+    // Copy the function name[line #] to the result
+    CopyMemory (lpMemRes, lpwszTemp, (UINT) aplNELMRes * sizeof (APLCHAR));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Free the old value
+    FreeResultGlobalVar (lpMemPTD->hGlbQuadDM);
+
+    // Save the new value in the STE
+    lpMemPTD->hGlbQuadDM = hGlbRes;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End BreakMessage
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $ErrorMessage
 //
 //  Signal an error message
@@ -59,9 +161,11 @@ void ErrorMessage
     // Clear any semaphore to signal
     lpMemPTD->lpSISCur->hSigaphore = NULL;
 
-    // If it's not immediate execution mode,
+    // If it's a defined function/operator
     //   include the function name, ...
-    if (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_IMM)
+    if (lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_OP1
+     || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_OP2
+     || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_FCN)
     {
         LPAPLCHAR    lpMemName;         // Ptr to function name global memory
         LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header global memory
@@ -150,18 +254,24 @@ void ErrorMessage
 
     // Copy the error message to the result
     lstrcpyW (lpMemRes, lpwszMsg); lpMemRes += lstrlenW (lpwszMsg);
+
+    // Copy a line terminator to the result
     *lpMemRes++ = L'\r'; *lpMemRes++ = L'\n';
+
+    // Copy the function name[line #] to the result
     if (uNameLen)
     {
         CopyMemory (lpMemRes, lpwszTemp, uNameLen * sizeof (APLCHAR));
         lpMemRes += uNameLen;
     } // End IF
+
+    // Copy the function line to the result
     lstrcpyW (lpMemRes, lpwszLine); lpMemRes += lstrlenW (lpwszLine);
 
     // If the caret is not -1, display a caret
     if (uCaret NE NEG1U)
     {
-        UINT    u;
+        UINT u;     // Loop counter
 
         // Close the last line
         *lpMemRes++ = L'\r'; *lpMemRes++ = L'\n';
@@ -184,7 +294,6 @@ void ErrorMessage
 
     // If it's not immediate execution mode, unlock the
     //   defined function handle
-////if (lpMemPTD->execState.exType EQ EX_DFN)
     if (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_IMM)
     {
         // We no longer need this ptr
@@ -193,18 +302,6 @@ void ErrorMessage
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    //***************************************************************
-    // ***FIXME*** -- Signal an error which should execute []ELX
-    //                which will then display this text
-    //                (if []ELX is '[]DM').
-    //***************************************************************
-
-////#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    { // ***DEBUG***
-        DisplayGlbArr (hGlbRes, TRUE);
-    } // ***DEBUG*** END
-////#endif
 } // End ErrorMessage
 #undef  APPEND_NAME
 

@@ -58,73 +58,45 @@
 
 The set of cases we must handle is as follows:
 
-						FOO
-						FOO R
-						FOO (R)
-						FOO (R1 R2)
-					  L FOO R
-					  L FOO (R)
-					  L FOO (R1 R2)
-					(L) FOO R
-					(L) FOO (R)
-					(L) FOO (R1 R2)
-				(L1 L2) FOO R
-				(L1 L2) FOO (R)
-				(L1 L2) FOO (R1 R2)
-					[L] FOO R
-					[L] FOO (R)
-					[L] FOO (R1 R2)
-				[L1 L2] FOO R
-				[L1 L2] FOO (R)
-				[L1 L2] FOO (R1 R2)
-					   (FOO RO) R
-					   (FOO RO) (R)
-					   (FOO RO) (R1 R2)
-					 L (FOO RO) R
-					 L (FOO RO) (R)
-					 L (FOO RO) (R1 R2)
-				   (L) (FOO RO) R
-				   (L) (FOO RO) (R)
-				   (L) (FOO RO) (R1 R2)
-			   (L1 L2) (FOO RO) R
-			   (L1 L2) (FOO RO) (R)
-			   (L1 L2) (FOO RO) (R1 R2)
-				   [L] (FOO RO) R
-				   [L] (FOO RO) (R)
-				   [L] (FOO RO) (R1 R2)
-			   [L1 L2] (FOO RO) R
-			   [L1 L2] (FOO RO) (R)
-			   [L1 L2] (FOO RO) (R1 R2)
-					(LO FOO RO) R
-					(LO FOO RO) (R)
-					(LO FOO RO) (R1 R2)
-				  L (LO FOO RO) R
-				  L (LO FOO RO) (R)
-				  L (LO FOO RO) (R1 R2)
-				(L) (LO FOO RO) R
-				(L) (LO FOO RO) (R)
-				(L) (LO FOO RO) (R1 R2)
-			(L1 L2) (LO FOO RO) R
-			(L1 L2) (LO FOO RO) (R)
-			(L1 L2) (LO FOO RO) (R1 R2)
-				[L] (LO FOO RO) R
-				[L] (LO FOO RO) (R)
-				[L] (LO FOO RO) (R1 R2)
-			[L1 L2] (LO FOO RO) R
-			[L1 L2] (LO FOO RO) (R)
-			[L1 L2] (LO FOO RO) (R1 R2)
+Result
+------
+	1.	**Empty**
+	2.	Z{is}
+	3.	(Z){is}
+	4.	(Z1 Z2 ...){is}
 
-and then everything again three more times, prefaced with
-one of the following phrases:
 
-	  Z {is}
-	(Z) {is}
-(Z1 Z2) {is}
+Left Arg
+--------
+	1.	**Empty**
+	2.	L
+	3.	(L)
+	4.	(L1 L2 ...)
+	5.	[L]
+	6.	[L1 L2 ...]
+	7.	[(L)]
+	8.	[(L1 L2 ...)]
 
-and then almost everything again once more, with FOO replaced by FOO[X],
-except for the four niladic cases.
+Fcn/Opr
+-------
+	1.	FOO
+	2.	(FOO)
+	3.	(LO FOO)
+	4.	(LO FOO RO)
+	5.	FOO[X]
+	6.	(FOO[X])
+	7.	(LO FOO[X])
+	8.	(LO FOO[X] RO)
 
-That makes (2 x 4 x 55) - 4 = 436 cases.
+Right Arg
+---------
+	1.	R
+	2.	(R)
+	3.	(R1 R2 ...)
+
+This yields 768 (=4 x 8 x 8 x 3) distinct Monadic/Dyadic Function/Operator headers
+and 		  8 (=4 x 1 x 2 x 1) distinct Niladic Function headers
+for a total of 776 (=768 + 8) Defined Function headers, not counting locals.
 
  */
 
@@ -465,13 +437,19 @@ Header:
 BOOL ParseHeader
 	(HWND		   hWndEC,			// Window handle of Edit Control
 	 HGLOBAL	   hGlbTknHdr,		// Tokenized header global memory handle
-	 LPFHLOCALVARS lpfhLocalVars)	// Local vars
+	 LPFHLOCALVARS lpfhLocalVars,	// Ptr to Local vars
+	 BOOL		   DisplayErr)		// TRUE iff want error messages displayed
 
 {
-	BOOL bRet = FALSE;			// TRUE iff result is valid
+	BOOL bRet = FALSE,			// TRUE iff result is valid
+		 OldDisplayErr; 		// Save area for old DisplayErr
 
 	// Save the window handle
 	lpfhLocalVars->hWndEC = hWndEC;
+
+	// Save the error display flag
+	OldDisplayErr = lpfhLocalVars->DisplayErr;
+	lpfhLocalVars->DisplayErr = DisplayErr;
 
 	// Save the thread's ptr to local vars
 	TlsSetValue (dwTlsFhLocalVars, (LPVOID) lpfhLocalVars);
@@ -541,6 +519,9 @@ BOOL ParseHeader
 
 	// Parse the header, check for errors
 	bRet = fh_yyparse (lpfhLocalVars) EQ 0;
+
+	// Restore the error display flag
+	lpfhLocalVars->DisplayErr = OldDisplayErr;
 ERROR_EXIT:
 	if (lpfhLocalVars->lpYYStrandStart)
 	{
@@ -847,7 +828,7 @@ LPFH_YYSTYPE MakeHdrStrand
 //***************************************************************************
 //	$GetOprName
 //
-//	Extract the operator name and valence from a list
+//	Extract the function/operator/operand names from a list
 //***************************************************************************
 
 BOOL GetOprName
@@ -862,6 +843,12 @@ BOOL GetOprName
 	// Split cases based upon the strand length
 	switch (lpYYArg->uStrandLen)
 	{
+		case 1: 		// Function
+			lpfhLocalVars->DfnType	   = DFNTYPE_FCN;
+			lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[0];
+
+			return TRUE;
+
 		case 2: 		// Monadic operator
 			lpfhLocalVars->DfnType	   = DFNTYPE_OP1;
 			lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[0];
@@ -878,6 +865,12 @@ BOOL GetOprName
 			return TRUE;
 
 		default:
+			if (lpfhLocalVars->DisplayErr)
+			{
+				lpfhLocalVars->lpNext->tkCharIndex = lpYYArg->tkToken.tkCharIndex;
+				fh_yyerror (lpfhLocalVars, "syntax error");
+			} // End IF
+
 			return FALSE;
 	} // End SWITCH
 } // End GetOprName

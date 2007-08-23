@@ -167,7 +167,8 @@ WCHAR wszLoadDir[_MAX_PATH],            // Load workspaces directory
 
 EXTERN
 CRITICAL_SECTION CSO0,                  // Critical Section Object #0
-                 CSO1;                  // ...                     #1
+                 CSO1,                  // ...                     #1
+                 CSOPL;                 // ...                     for ParseLine
 
 
 //***************************************************************************
@@ -1313,6 +1314,21 @@ typedef void (*LPERRHANDFN) (LPWCHAR lpwszMsg,
                              LPWCHAR lpwszLine,
                              UINT uCaret,
                              HWND hWndEC);
+typedef enum tagERRORCODES
+{
+    ERRORCODE_NONE = 0,     // 00:  No error
+    ERRORCODE_ALX,          // 01:  Signal []ALX
+    ERRORCODE_ELX,          // 02:  Signal []ELX
+} ERRORCODES;
+
+typedef enum tagLINENUMS    // Starting line #s
+{
+    LINENUM_ONE = 0,        // 00:  Line #1
+    LINENUM_PROTOTYPE,      // 01:  Line []PROTOTYPE
+    LINENUM_INVERSE,        // 02:  Line []INVERSE
+    LINENUM_SINGLETON,      // 03:  Line []SINGLETON
+} LINENUMS;
+
 #define ENUMS_DEFINED
 #undef  EXTERN
 

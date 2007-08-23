@@ -16,7 +16,8 @@ typedef struct tagSIS_HEADER
                      FcnValence:3,  //      00000070:  Defined/Derived Function Valence (see FCNVALENCES enum)
                      DfnAxis:1,     //      00000080:  Defined/Derived Function accepts axis value
                      Suspended:1,   //      00000100:  Function is suspended
-                     Avail:23;      //      FFFFFE00:  Available bits
+                     Resetting:1,   //      00000200:  SI stack is resetting
+                     Avail:22;      //      FFFFFC00:  Available bits
     UINT             CurLineNum,    // 18:  Current line # (origin-1)
                      NxtLineNum,    // 1C:  Next    ...
                      numLabels,     // 20:  # line labels
@@ -30,8 +31,8 @@ typedef struct tagSIS_HEADER
                      offLocalsSTE,  // 40:  Offset to start of function lines (FCNLINE[nLines])
                      numFcnLines,   // 44:  # lines in the function (not counting the header)
                      numSymEntries, // 48:  # SYMENTRYs on the stack
-                     SILevel,       // 4C:  SI Level
-                     QQPromptLen;   // 50:  Quote-Quad input prompt length
+                     QQPromptLen,   // 4C:  Quote-Quad input prompt length
+                     ErrorCode;     // 50:  Error code (see ERRORCODES)
     struct tagSIS_HEADER
                     *lpSISPrv,      // 54:  Ptr to previous SIS header (NULL = none)
                     *lpSISNxt;      // 58:  Ptr to next     ...         ...

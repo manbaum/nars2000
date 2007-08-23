@@ -10,6 +10,7 @@
 #include "resdebug.h"
 #include "externs.h"
 #include "pertab.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -161,20 +162,46 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
+    // The result storage type is assumed to be NESTED,
+    //   but we'll call TypeDemote at the end just in case.
+    aplTypeRes = ARRAY_NESTED;
+
     //***************************************************************
     //  Handle prototypes separately
     //***************************************************************
     if (aplNELMRht EQ 0
      || bPrototyping)
     {
-        // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
-        if (!lpPrimProtoLft)
+        // Split cases baed upon the token type of the function strand's first item
+        switch (lpYYFcnStrLft->tkToken.tkFlags.TknType)
         {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            goto ERROR_EXIT;
-        } // End IF
+            case TKT_FCNIMMED:
+            case TKT_OP1IMMED:
+            case TKT_OP2IMMED:
+            case TKT_OPJOTDOT:
+                // Get a ptr to the prototype function for the first symbol (a function or operator)
+                lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+                if (!lpPrimProtoLft)
+                {
+                    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                                              &lpYYFcnStrLft->tkToken);
+                    goto ERROR_EXIT;
+                } // End IF
+
+                break;
+
+            case TKT_FCNARRAY:
+                // Get a ptr to the prototype function for the defined function
+                lpPrimProtoLft = ExecDfnGlbProto_EM_YY;
+
+////////////////// Make sure the result is marked as Nested
+////////////////aplTypeRes = ARRAY_NESTED;      // Set previously
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } else
         lpPrimProtoLft = NULL;
 
@@ -202,18 +229,14 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                                 NULL);                      // Ptr to LPPRIMSPEC
             FreeResult (&lpYYRes2->tkToken); YYFree (lpYYRes2); lpYYRes2 = NULL;
         } else
-            return NULL;
+            lpYYRes = NULL;
 
-        return lpYYRes;
+        goto NORMAL_EXIT;
     } // End IF
 
     //***************************************************************
     // From here on, the right arg is an HGLOBAL
     //***************************************************************
-
-    // The result storage type is assumed to be NESTED,
-    //   but we'll call TypeDemote at the end just in case.
-    aplTypeRes = ARRAY_NESTED;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
@@ -270,34 +293,18 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 ////tkRhtArg.tkData.tkLongest  =       // To be filled in below
     tkRhtArg.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
-    // Translate ARRAY_APA args to ARRAY_INT
-    if (aplTypeRht EQ ARRAY_APA)
-        tkRhtArg.tkFlags.ImmType = ARRAY_INT;
-    else
-        tkRhtArg.tkFlags.ImmType = aplTypeRht;
-
-    // Split cases based upon the storage type of the right arg
-    switch (aplTypeRht)
+    // Handle prototypes separately
+    if (aplNELMRht EQ 0)
     {
-        case ARRAY_BOOL:
-            // Initialize the bit mask
-            uBitMask = 0x01;
-
-            // Loop through the right arg
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
-            {
-                // Copy the value to the arg token
-                tkRhtArg.tkData.tkBoolean = (uBitMask & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
-
-                // Shift over the bit mask
-                uBitMask <<= 1;
-
-                // Check for end-of-byte
-                if (uBitMask EQ END_OF_BYTE)
-                {
-                    uBitMask = 0x01;            // Start over
-                    ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
-                } // End IF
+        // Split cases based upon the storage type of the right arg
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+            case ARRAY_APA:
+                tkRhtArg.tkFlags.ImmType = ARRAY_BOOL;
+                tkRhtArg.tkData.tkBoolean = 0;
 
                 // Execute the function on the arg token
                 if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
@@ -307,16 +314,11 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           NULL,                 // Ptr to axis token
                                           lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                     goto ERROR_EXIT;
-            } // End FOR
+                break;
 
-            break;
-
-        case ARRAY_INT:
-            // Loop through the right arg
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
-            {
-                // Copy the value to the arg token
-                tkRhtArg.tkData.tkInteger = *((LPAPLINT) lpMemRht)++;
+            case ARRAY_CHAR:
+                tkRhtArg.tkFlags.ImmType = ARRAY_CHAR;
+                tkRhtArg.tkData.tkBoolean = L' ';
 
                 // Execute the function on the arg token
                 if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
@@ -326,79 +328,10 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           NULL,                 // Ptr to axis token
                                           lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                     goto ERROR_EXIT;
-            } // End FOR
+                break;
 
-            break;
-
-        case ARRAY_FLOAT:
-            // Loop through the right arg
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
-            {
-                // Copy the value to the arg token
-                tkRhtArg.tkData.tkFloat = *((LPAPLFLOAT) lpMemRht)++;
-
-                // Execute the function on the arg token
-                if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
-                                          NULL,                 // Ptr to left arg token
-                                          lpYYFcnStrLft,        // Ptr to function strand
-                                         &tkRhtArg,             // Ptr to right arg token
-                                          NULL,                 // Ptr to axis token
-                                          lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
-                    goto ERROR_EXIT;
-            } // End FOR
-
-            break;
-
-        case ARRAY_CHAR:
-            // Loop through the right arg
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
-            {
-                // Copy the value to the arg token
-                tkRhtArg.tkData.tkChar = *((LPAPLCHAR) lpMemRht)++;
-
-                // Execute the function on the arg token
-                if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
-                                          NULL,                 // Ptr to left arg token
-                                          lpYYFcnStrLft,        // Ptr to function strand
-                                         &tkRhtArg,             // Ptr to right arg token
-                                          NULL,                 // Ptr to axis token
-                                          lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
-                    goto ERROR_EXIT;
-            } // End FOR
-
-            break;
-
-        case ARRAY_APA:
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-            apaOff = lpAPA->Off;
-            apaMul = lpAPA->Mul;
-#undef  lpAPA
-        // Loop through the right arg
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
-            {
-                // Copy the value to the arg token
-                tkRhtArg.tkData.tkInteger = apaOff + apaMul * uRht;
-
-                // Execute the function on the arg token
-                if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
-                                          NULL,                 // Ptr to left arg token
-                                          lpYYFcnStrLft,        // Ptr to function strand
-                                         &tkRhtArg,             // Ptr to right arg token
-                                          NULL,                 // Ptr to axis token
-                                          lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
-                    goto ERROR_EXIT;
-            } // End FOR
-
-            break;
-
-        case ARRAY_NESTED:
-            // Take into account the nested prototype
-            if (aplTypeRht EQ ARRAY_NESTED)
-                aplNELMRht = max (aplNELMRht, 1);
-        case ARRAY_HETERO:
-            // Loop through the right arg
-            for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
-            {
+            case ARRAY_NESTED:
+            case ARRAY_HETERO:
                 // Split cases based upon the ptr type
                 switch (GetPtrTypeInd (lpMemRht))
                 {
@@ -440,14 +373,193 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
                 if (!bRet)
                     goto ERROR_EXIT;
-            } // End FOR
+                break;
 
-            break;
+            defstop
+                break;
+        } // End SWITCH
+    } else
+    {
+        // Translate ARRAY_APA args to ARRAY_INT
+        if (aplTypeRht EQ ARRAY_APA)
+            tkRhtArg.tkFlags.ImmType = ARRAY_INT;
+        else
+            tkRhtArg.tkFlags.ImmType = aplTypeRht;
 
-        defstop
-            break;
-    } // End SWITCH
+        // Split cases based upon the storage type of the right arg
+        switch (aplTypeRht)
+        {
+            case ARRAY_BOOL:
+                // Initialize the bit mask
+                uBitMask = 0x01;
 
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Copy the value to the arg token
+                    tkRhtArg.tkData.tkBoolean = (uBitMask & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
+
+                    // Shift over the bit mask
+                    uBitMask <<= 1;
+
+                    // Check for end-of-byte
+                    if (uBitMask EQ END_OF_BYTE)
+                    {
+                        uBitMask = 0x01;            // Start over
+                        ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                    } // End IF
+
+                    // Execute the function on the arg token
+                    if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
+                                              NULL,                 // Ptr to left arg token
+                                              lpYYFcnStrLft,        // Ptr to function strand
+                                             &tkRhtArg,             // Ptr to right arg token
+                                              NULL,                 // Ptr to axis token
+                                              lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
+                        goto ERROR_EXIT;
+                } // End FOR
+
+                break;
+
+            case ARRAY_INT:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Copy the value to the arg token
+                    tkRhtArg.tkData.tkInteger = *((LPAPLINT) lpMemRht)++;
+
+                    // Execute the function on the arg token
+                    if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
+                                              NULL,                 // Ptr to left arg token
+                                              lpYYFcnStrLft,        // Ptr to function strand
+                                             &tkRhtArg,             // Ptr to right arg token
+                                              NULL,                 // Ptr to axis token
+                                              lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
+                        goto ERROR_EXIT;
+                } // End FOR
+
+                break;
+
+            case ARRAY_FLOAT:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Copy the value to the arg token
+                    tkRhtArg.tkData.tkFloat = *((LPAPLFLOAT) lpMemRht)++;
+
+                    // Execute the function on the arg token
+                    if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
+                                              NULL,                 // Ptr to left arg token
+                                              lpYYFcnStrLft,        // Ptr to function strand
+                                             &tkRhtArg,             // Ptr to right arg token
+                                              NULL,                 // Ptr to axis token
+                                              lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
+                        goto ERROR_EXIT;
+                } // End FOR
+
+                break;
+
+            case ARRAY_CHAR:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Copy the value to the arg token
+                    tkRhtArg.tkData.tkChar = *((LPAPLCHAR) lpMemRht)++;
+
+                    // Execute the function on the arg token
+                    if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
+                                              NULL,                 // Ptr to left arg token
+                                              lpYYFcnStrLft,        // Ptr to function strand
+                                             &tkRhtArg,             // Ptr to right arg token
+                                              NULL,                 // Ptr to axis token
+                                              lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
+                        goto ERROR_EXIT;
+                } // End FOR
+
+                break;
+
+            case ARRAY_APA:
+    #define lpAPA       ((LPAPLAPA) lpMemRht)
+                apaOff = lpAPA->Off;
+                apaMul = lpAPA->Mul;
+    #undef  lpAPA
+            // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Copy the value to the arg token
+                    tkRhtArg.tkData.tkInteger = apaOff + apaMul * uRht;
+
+                    // Execute the function on the arg token
+                    if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
+                                              NULL,                 // Ptr to left arg token
+                                              lpYYFcnStrLft,        // Ptr to function strand
+                                             &tkRhtArg,             // Ptr to right arg token
+                                              NULL,                 // Ptr to axis token
+                                              lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
+                        goto ERROR_EXIT;
+                } // End FOR
+
+                break;
+
+            case ARRAY_NESTED:
+                // Take into account the nested prototype
+                if (aplTypeRht EQ ARRAY_NESTED)
+                    aplNELMRht = max (aplNELMRht, 1);
+            case ARRAY_HETERO:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
+                {
+                    // Split cases based upon the ptr type
+                    switch (GetPtrTypeInd (lpMemRht))
+                    {
+                        case PTRTYPE_STCONST:
+                            // Set the token type
+                            tkRhtArg.tkFlags.TknType = TKT_VARIMMED;
+
+                            // Get the immediate type from the STE
+                            tkRhtArg.tkFlags.ImmType = (*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType;
+
+                            // Copy the value to the arg token
+                            tkRhtArg.tkData.tkLongest = (*(LPSYMENTRY *) lpMemRht)->stData.stLongest;
+
+                            break;
+
+                        case PTRTYPE_HGLOBAL:
+                            // Set the token & immediate type
+                            tkRhtArg.tkFlags.TknType = TKT_VARARRAY;
+                            tkRhtArg.tkFlags.ImmType = 0;
+
+                            // Copy the value to the arg token
+                            tkRhtArg.tkData.tkGlbData = CopySymGlbInd ((LPAPLNESTED) lpMemRht);
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // Execute the function on the arg token
+                    bRet = ExecFuncOnToken_EM (&lpMemRes,           // Ptr to output storage
+                                               NULL,                // Ptr to left arg token
+                                               lpYYFcnStrLft,       // Ptr to function strand
+                                              &tkRhtArg,            // Ptr to right arg token
+                                               NULL,                // Ptr to axis token
+                                               lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
+                    // Free the arg token
+                    FreeResult (&tkRhtArg);
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } // End FOR
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End IF/ELSE
+
+    // Unlock the result global memory in case we call TypeDemote
     if (lpMemRes)
     {
         // We no longer need this ptr
@@ -470,7 +582,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
-    bRet = FALSE;
+////bRet = FALSE;
 
     if (hGlbRes)
     {
@@ -731,14 +843,36 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     if (aplNELMRes EQ 0
      || bPrototyping)
     {
-        // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
-        if (!lpPrimProtoLft)
+        // Split cases baed upon the token type of the function strand's first item
+        switch (lpYYFcnStrLft->tkToken.tkFlags.TknType)
         {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            goto ERROR_EXIT;
-        } // End IF
+            case TKT_FCNIMMED:
+            case TKT_OP1IMMED:
+            case TKT_OP2IMMED:
+            case TKT_OPJOTDOT:
+                // Get a ptr to the prototype function for the first symbol (a function or operator)
+                lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+                if (!lpPrimProtoLft)
+                {
+                    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                                              &lpYYFcnStrLft->tkToken);
+                    goto ERROR_EXIT;
+                } // End IF
+
+                break;
+
+            case TKT_FCNARRAY:
+                // Get a ptr to the prototype function for the defined function
+                lpPrimProtoLft = ExecDfnGlbProto_EM_YY;
+
+////////////////// Make sure the result is marked as Nested
+////////////////aplTypeRes = ARRAY_NESTED;      // Set previously
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } else
         lpPrimProtoLft = NULL;
 
@@ -757,7 +891,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);      // ***FIXME***
+    lpMemRes = MyGlobalLock (hGlbRes);
 
     // Fill in the arg tokens
     tkLftArg.tkCharIndex =
@@ -955,6 +1089,13 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         if (lpMemRht)
             FreeResult (&tkRhtArg);
     } // End FOR
+
+    // Unlock the result global memory in case we call TypeDemote
+    if (lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();

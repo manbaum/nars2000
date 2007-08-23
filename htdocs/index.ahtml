@@ -141,17 +141,28 @@
             <li>Dyadic operator jot ({jot}) (composition) (e.g.,
               <span class="APL">f{is},{jot}{gradeup}{jot}{gradeup}{jot},</span>)</li>
             <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
-              <span class="APL">1 2+[1] 2 3{rho}{iota}6</span>)</li>
+              <span class="APL">1 2+[1] 2 3{rho}R</span>)</li>
             <li>Axis operator to primitive scalar dyadic functions may transpose coordinates (e.g.,
-              <span class="APL">((2 3{rho}{iota}6)+[1 2] 2 3 4{rho}{iota}24)
-              {match} (3 2{rho}{iota}6)+[2 1] 2 3 4{rho}{iota}24</span>)</li>
+              <span class="APL">(2 3{rho}L)+[1 2] 2 3 4{rho}R</span> and
+              <span class="APL">(3 2{rho}L)+[2 1] 2 3 4{rho}R</span> are both valid
+              but, in general, have different values)</li>
             <li>Axis operator to Ravel may transpose coordinates (e.g.,
-              <span class="APL">(,[2 1] R) {notmatch} ,[1 2] R</span>)</li>
-            <li>Axis operator is allowed on the Each operator (e.g.,
-              <span class="APL">1 2{rho}{each}[1] 2 3{rho}{iota}6</span>)</li>
+              <span class="APL">,[2 1] R</span> and <span class="APL">,[1 2] R</span>
+              are both valid but, in general, have the same values in different order)</li>
+            <li>Axis operator is allowed on the dyadic derived function from the Each operator (e.g.,
+              <span class="APL">(2 3{rho}L){rho}{each}[1 2] 2 3 4{rho}R</span>)</li>
             <li>Axis operator is allowed on user-defined functions (e.g.,
-              <span class="APL">foo[2 3] {iota}5</span> by specifying it in the
+              <span class="APL">foo[2 3] R</span> by specifying it in the
               function header, as in <span class="APL">{del} Z{is}foo[X] R</span>)</li>
+            <li>User-defined operators (e.g., <span class="APL">{del}
+             Z{is}L (OP1[X] RO) R</span> or
+             <span class="APL">{del}
+             Z{is}L (LO OP2[X] RO) R</span>)</li>
+            <li>Strand left and right arguments and result to user-defined
+              functions/operators along with optional left argument (e.g., <span class="APL">{del}
+             (Z1 Z2){is}[L1 L2 L3] (LO OP2[X] RO) (R1 R2 R3 R4)</span>)</li>
+            <li>User-defined function prototype entry point
+              (<span class="APL">{quad}PROTOTYPE:</span>)</li>
           </ul>
         </li>
 
@@ -172,18 +183,10 @@
 
       <h3>Feature Set Wish List</h3>
       <ul>
-        <li>User-defined operators (e.g., <span class="APL">{del}
-         Z{is}L (LO OP2 RO) R</span>)</li>
-        <li>Strand left and right arguments and result to user-defined
-          functions/operators (e.g., <span class="APL">{del}
-         (Z1 Z2){is}[L1 L2 L3] (LO OP2 RO) (R1 R2 R3 R4)</span>)</li>
-        <li>User defined function prototypes
-          (<span class="APL">{quad}PROTOTYPE:</span>)</li>
-        <li>User defined function singletons
+        <li>User-defined function singleton entry point
           (<span class="APL">{quad}SINGLETON:</span>)</li>
-        <li>User defined function inverses
+        <li>User-defined function inverse entry point
           (<span class="APL">{quad}INVERSE:</span>)</li>
-        <li>User defined function local variable <span class="APL">{quad}AXIS</span></li>
         <li>Dynamic functions (e.g.,
           <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
         <li>Selective assignment (e.g.,
@@ -230,14 +233,14 @@
         <li>All variable names are two-byte characters
           (Unicode, that is, UTF-16)</li>
         <li>Array rank and dimension limit of 64 bits</li>
-        <li>Line continuation marker for easier display of long lines
-          which also allows comments within a line</li>
         <li>Multilevel Undo in function editing</li>
         <li>Undo buffer saved with function for reuse on next edit</li>
       </ul>
 
       <h3>Miscellaneous Wish List</h3>
       <ul>
+        <li>Line continuation marker for easier display of long lines
+          which also allows comments within a line</li>
         <li>Control structures on one line or split across multiple lines</li>
         <li>Idiom recognition at tokenization time</li>
         <li>Beating and drag-along (a la P.S. Abrams
@@ -269,6 +272,7 @@
               using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
             <li>Monadic thorn ({thorn}) (default format)</li>
             <li>Monadic up arrow ({uparrow}) (first)</li>
+            <li>Monadic up-tack-jot ({uptackjot}) (execute)</li>
           </ul>
         </li>
         <li>Dyadic
@@ -358,13 +362,29 @@
           and scan (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}</span>)
           along contiguous elements</li>
         <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
-          <span class="APL">1 2+[1] 2 3{rho}{iota}6</span>)</li>
-        <li>Axis operator to primitive scalar dyadic functions may transpose coordinates
-          (e.g., <span class="APL">((2 3{rho}0)+[1 2] 2 3 4{rho}1) {match} (3 2{rho}0)+[2 1] 2 3 4{rho}1</span>)</li>
+          <span class="APL">1 2+[1] 2 3{rho}R</span>)</li>
+        <li>Axis operator to primitive scalar dyadic functions may transpose coordinates (e.g.,
+          <span class="APL">(2 3{rho}L)+[1 2] 2 3 4{rho}R</span> and
+          <span class="APL">(3 2{rho}L)+[2 1] 2 3 4{rho}R</span> are both valid
+          but, in general, have different values)</li>
         <li>Axis operator to Ravel may transpose coordinates (e.g.,
-          <span class="APL">(,[2 1] R) {notmatch} ,[1 2] R</span>)</li>
-        <li>Axis operator is allowed on the Each operator (e.g.,
-          <span class="APL">1 2{rho}{each}[1] 2 3{rho}{iota}6</span>)</li>
+          <span class="APL">,[2 1] R</span> and <span class="APL">,[1 2] R</span>
+          are both valid but, in general, have the same values in different order)</li>
+        <li>Axis operator is allowed on the dyadic derived function from the Each operator (e.g.,
+          <span class="APL">(2 3{rho}L){rho}{each}[1 2] 2 3 4{rho}R</span>)</li>
+        <li>User-defined operators (e.g., <span class="APL">{del}
+         Z{is}L (LO OP2[X] RO) R</span>)</li>
+        <li>Strand left and right arguments and result to user-defined
+          functions/operators along with optional left argument (e.g., <span class="APL">{del}
+         (Z1 Z2){is}[L1 L2 L3] (LO OP2[X] RO) (R1 R2 R3 R4)</span>)</li>
+        <li>Function Execution along with Goto (<span class="APL">{goto}</span>),
+          Goto line # (<span class="APL">{goto}N</span>)</li>
+        <li>Control-Break (along with Control-C)</li>
+        <li>Event Handling (<span class="APL">{quad}ALX</span>)</li>
+        <li>Error Handling (<span class="APL">{quad}ELX</span>
+          and <span class="APL">{quad}DM</span>)</li>
+        <li>User-defined function prototype entry point
+          (<span class="APL">{quad}PROTOTYPE:</span>)</li>
       </ul>
 
       <h3>Session Manager</h3>
@@ -413,10 +433,11 @@
         <li><span class="APL">)CLOSE</span></li>
         <li><span class="APL">)DROP</span></li>
         <li><span class="APL">)EDIT</span></li>
-        <li><span class="APL">)FNS</span></li>
         <li><span class="APL">)EXIT</span></li>
+        <li><span class="APL">)FNS</span></li>
         <li><span class="APL">)NEWTAB</span></li>
         <li><span class="APL">)OPS</span></li>
+        <li><span class="APL">)RESET</span></li>
         <li><span class="APL">)VARS</span></li>
       </ul>
     </div>

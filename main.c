@@ -1824,9 +1824,11 @@ int PASCAL WinMain
         goto EXIT3;
 
     // Allocate two Critical Section objects
-    //   for use in dtoa.c
+    //   for use in dtoa.c, and one
+    //   for use in parseLine.
     InitializeCriticalSection (&CSO0);
     InitializeCriticalSection (&CSO1);
+    InitializeCriticalSection (&CSOPL);
 
     // Create various permanent variables
     MakePermVars ();

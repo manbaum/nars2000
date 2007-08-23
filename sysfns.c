@@ -60,7 +60,8 @@ LPPL_YYSTYPE ExecuteFn0
                 return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (lpNameFcn),  // Defined function global memory handle
                                          NULL,                          // Ptr to left arg token (may be NULL if monadic)
                                          lpYYFcn0,                      // Ptr to function strand
-                                         NULL);                         // Ptr to right arg token
+                                         NULL,                          // Ptr to right arg token
+                                         LINENUM_ONE);                  // Starting line # (see LINENUMS)
             defstop
                 return NULL;
         } // SWITCH

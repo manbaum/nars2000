@@ -362,6 +362,8 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     // Wait for the thread to terminate
     WaitForSingleObject (hThread,               // Ptr to handle to wait for
                          INFINITE);             // Timeout value in milliseconds
+    if (gDbgLvl EQ 9)
+        DbgBrk ();
     // Close the thread handle as it has terminated
     CloseHandle (hThread); hThread = NULL;
 
@@ -471,7 +473,7 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize ();
+    Unlocalize (FALSE);
 
     // If this hSigaphore is not for this level, pass it on up the line
     hSigaphore = PassSigaphore (lpMemPTD, hSigaphore);
@@ -496,8 +498,12 @@ ERROR_EXIT:
     //   and no Sigaphore
     if (hSigaphore EQ NULL
      && (lpMemPTD->lpSISCur EQ NULL
-      || lpMemPTD->lpSISCur->Suspended))
+      || lpMemPTD->lpSISCur->Suspended)
+     && lpMemPTD->lpSISCur->ErrorCode EQ ERRORCODE_NONE)
         DisplayPrompt (hWndEC, FALSE, 5);
+    else
+    if (lpMemPTD->lpSISCur)
+        lpMemPTD->lpSISCur->ErrorCode = ERRORCODE_NONE;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

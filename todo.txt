@@ -25,8 +25,7 @@ TO DO:  General:  Important
 * ...       )LOAD
 * ...       )COPY
 * ...       minimum set of system functions
-* ...       event handling ([]ALX)
-* ...       Ctrl-Break
+* ...       ambiguous operators
 * ...
 
 
@@ -62,6 +61,8 @@ TO DO:  General:  Wish List
 * ...       dyadic epsilon underbar     (find)
 * ...       vector editor
 * ...       matrix editor
+* ...       []INVERSE:
+* ...       []SINGLETON:
 * ...
 
 
@@ -102,6 +103,9 @@ DONE:  General
 * ...       quad input
 * ...       quote-quad input
 * ...       error handling ([]ELX)
+* ...       event handling ([]ALX)
+* ...       Ctrl-Break
+* ...       []PROTOTYPE:
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

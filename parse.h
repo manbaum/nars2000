@@ -74,7 +74,10 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                  lpYYAxis,          // 60:  ...               axis
                  lpYYOp1,           // 64:  ...               monadic operator
                  lpYYOp2;           // 68:  ...               dyadic  ...
-                                    // 70:  Length
+    struct tagPLLOCALVARS
+                *lpPLPrev;          // 70:  Ptr to previous PLLOCALVARS struct
+                                    //      in thread creation order (NULL = none)
+                                    // 74:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

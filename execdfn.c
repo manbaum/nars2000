@@ -21,6 +21,41 @@
 
 
 //***************************************************************************
+//  $ExecDfnGlbProto_EM_YY
+//
+//  Execute a defined function on a prototype
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecDfnGlbProto_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFcnStr,            // Ptr to function strand
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+{
+    HGLOBAL hGlbProto;              // Prototype global memory handle
+
+    // Get the defined function global memory handle
+    hGlbProto = lptkFcnStr->tkData.tkGlbData;
+
+    Assert (GetSignatureGlb (ClrPtrTypeDirGlb (hGlbProto)) EQ DFN_HEADER_SIGNATURE);
+
+    // Execute the defined function on the arg using the []PROTOTYPE entry point
+    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbProto),  // Defined function global memory handle
+                             lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
+              (LPPL_YYSTYPE) lptkFcnStr,                    // Ptr to function strand
+                             lptkRhtArg,                    // Ptr to right arg token
+                             LINENUM_PROTOTYPE);            // Starting line # (see LINENUMS)
+} // End ExecDfnGlbProto_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $ExecDfnGlb_EM_YY
 //
 //  Execute a defined function
@@ -35,8 +70,9 @@
 LPPL_YYSTYPE ExecDfnGlb_EM_YY
     (HGLOBAL      hGlbDfnHdr,       // Defined function global memory handle
      LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
-     LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand
-     LPTOKEN      lptkRhtArg)       // Ptr to right arg token
+     LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LINENUMS     startLineNum)     // Starting line # (see LINENUMS)
 
 {
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
@@ -57,7 +93,8 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     LPTOKEN      lptkAxis;          // Ptr to axis token
 
     // Check for axis operator
-    if (lpYYFcnStr->FcnCount > 1
+    if (lpYYFcnStr
+     && lpYYFcnStr->FcnCount > 1
      && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
       || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
         lptkAxis = &lpYYFcnStr[1].tkToken;
@@ -65,7 +102,8 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
         lptkAxis = NULL;
 
     // If there's room for a left operand, ...
-    if (lpYYFcnStr->FcnCount > (UINT) (1 + (lptkAxis NE NULL)))
+    if (lpYYFcnStr
+     && lpYYFcnStr->FcnCount > (UINT) (1 + (lptkAxis NE NULL)))
     {
         // Set ptr to left operand
         lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
@@ -149,6 +187,41 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
                                    lptkRhtArg);
         goto ERROR_EXIT;
     } // End IF
+
+    // Split cases based upon the starting line #
+    switch (startLineNum)
+    {
+        case LINENUM_ONE:
+            startLineNum = 1;
+
+            break;
+
+        case LINENUM_PROTOTYPE:
+            startLineNum = lpMemDfnHdr->nPrototypeLine;
+
+            break;
+
+        case LINENUM_INVERSE:
+            startLineNum = lpMemDfnHdr->nInverseLine;
+
+            break;
+
+        case LINENUM_SINGLETON:
+            startLineNum = lpMemDfnHdr->nSingletonLine;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Check for non-existant label
+    if (startLineNum EQ 0)
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkRhtArg);
+        goto ERROR_EXIT;
+    } // End IF
 RESTART_EXCEPTION_EXECDFNGLB:
     __try
     {
@@ -172,6 +245,8 @@ RESTART_EXCEPTION_EXECDFNGLB:
         lpMemPTD->lpSISNxt->numRhtArgSTE = lpMemDfnHdr->numRhtArgSTE;
         lpMemPTD->lpSISNxt->numLocalsSTE = lpMemDfnHdr->numLocalsSTE;
         lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
+        lpMemPTD->lpSISNxt->QQPromptLen  = 0;
+        lpMemPTD->lpSISNxt->ErrorCode    = ERRORCODE_NONE;
         lpMemPTD->lpSISNxt->lpSISPrv     = lpMemPTD->lpSISCur;
 ////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in below
     } __except (CheckException (GetExceptionInformation ()))
@@ -310,12 +385,12 @@ RESTART_EXCEPTION_EXECDFNGLB:
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    return ExecuteFunction_EM_YY (1, &lpYYFcnStr->tkToken);
+    return ExecuteFunction_EM_YY (startLineNum, &lpYYFcnStr->tkToken);
 
 UNLOCALIZE_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize ();
+    Unlocalize (FALSE);
 ERROR_EXIT:
     if (hGlbDfnHdr && lpMemDfnHdr)
     {
@@ -367,7 +442,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                    numRes;          // Loop counter
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
-    BOOL           bRet;            // TRUE iff result is valid
+    BOOL           bRet,            // TRUE iff result is valid
+                   bResetting = FALSE; // TRUE iff we're resetting
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -459,19 +535,22 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             // Wait for the semaphore to trigger
             WaitForSingleObject (hSemaphore,            // Ptr to handle to wait for
                                  INFINITE);             // Timeout value in milliseconds
+            if (gDbgLvl EQ 9)
+                DbgBrk ();
         } // End IF
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
+////////// We no longer need this ptr
+////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+////////
+////////// Lock the memory to get a ptr to it
+////////lpMemPTD = MyGlobalLock (hGlbPTD);
+////////
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
-        // If we're suspended, break
-        if (lpMemPTD->lpSISCur->Suspended)
+        // If we're suspended or resetting, break
+        if (lpMemPTD->lpSISCur->Suspended
+         || lpMemPTD->lpSISCur->Resetting)
             break;
 
         // Get next line #
@@ -481,6 +560,11 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
     // Close the semaphore handle as it isn't used anymore
     CloseHandle (hSemaphore); hSemaphore = NULL;
+
+    // If we're resetting, Unlocalize
+    bResetting = lpMemPTD->lpSISCur->Resetting;
+    if (bResetting)
+        goto UNLOCALIZE_EXIT;
 
     // If we're suspended, don't Unlocalize
     if (lpMemPTD->lpSISCur->Suspended)
@@ -681,14 +765,18 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             break;
         } // End default
     } // End SWITCH
-
+UNLOCALIZE_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize ();
+    Unlocalize (FALSE);
 ERROR_EXIT:
     // We no longer need these ptrs
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // If we're resetting, keep on truckin'
+    if (bResetting)
+        GotoReset ();
 
     return lpYYRes;
 } // End ExecuteFunction_EM_YY
@@ -702,8 +790,8 @@ ERROR_EXIT:
 //    and strip off one level
 //***************************************************************************
 
-void Unlocalize
-    (void)
+BOOL Unlocalize
+    (BOOL bResetting)               // TRUE iff we're resetting
 
 {
     HGLOBAL      hGlbPTD,           // PerTabData global memory handle
@@ -712,6 +800,7 @@ void Unlocalize
     UINT         numSymEntries,     // # SYMENTRYs localized
                  numSym;            // Loop counter
     LPSYMENTRY   lpSymEntryNxt;     // Ptr to next SYMENTRY on the SIS
+    BOOL         bRet = TRUE;       // TRUE iff the result is valid
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -719,85 +808,107 @@ void Unlocalize
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    Assert (lpMemPTD->lpSISCur NE NULL);
-
-    // Get # SYMENTRYs on the stack
-    numSymEntries = lpMemPTD->lpSISCur->numSymEntries;
-
-    // Point to the destination SYMENTRYs
-    lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISCur, sizeof (SIS_HEADER));
-
-    // Loop through the # SYMENTRYs
-    for (numSym = 0; numSym < numSymEntries; numSym++)
-    // If the hash entry is valid, ...
-    if (lpSymEntryNxt[numSym].stHshEntry)
+    // If the SI is non-empty, ...
+    if (lpMemPTD->SILevel)
     {
-        LPSYMENTRY lpSymEntryCur;       // Ptr to SYMENTRY to release & unlocalize
+        Assert (lpMemPTD->lpSISCur NE NULL);
 
-        // Get the ptr to the corresponding SYMENTRY
-        lpSymEntryCur = lpSymEntryNxt[numSym].stHshEntry->htSymEntry;
-
-        // Release the current value of the STE
-        //   if it's not immediate and has a value
-        if (!lpSymEntryCur->stFlags.Imm && lpSymEntryCur->stFlags.Value)
+        // If there's a Semaphore and we're resetting, ...
+        if (lpMemPTD->lpSISCur->hSemaphore
+         && bResetting)
         {
-            // Get the global memory handle
-            hGlbData = lpSymEntryCur->stData.stGlbData;
+            DbgBrk ();
 
-            // Split cases based upon the nametype
-            switch (lpSymEntryCur->stFlags.ObjType)
-            {
-                case NAMETYPE_VAR:
-                    // stData is a valid HGLOBAL variable array
-                    Assert (IsGlbTypeVarDir (hGlbData));
+            // Mark as resetting
+            lpMemPTD->lpSISCur->Resetting = TRUE;
 
-                    // Free the global var
-                    FreeResultGlobalVar (ClrPtrTypeDirGlb (hGlbData));
+            // Signal the pending thread
+            ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
 
-                    break;
+            // Tell the caller to stop
+            bRet = FALSE;
 
-                case NAMETYPE_FN0:
-                    // stData is a defined function
-                    Assert (lpSymEntryCur->stFlags.UsrDfn);
-
-                    // Free the global defined function
-                    FreeResultGlobalDfn (ClrPtrTypeDirGlb (hGlbData));
-
-                    break;
-
-                case NAMETYPE_FN12:
-                case NAMETYPE_OP1:
-                case NAMETYPE_OP2:
-                    if (lpSymEntryCur->stFlags.UsrDfn)
-                        // Free the global defined function
-                        FreeResultGlobalDfn (ClrPtrTypeDirGlb (hGlbData));
-                    else
-                        // Free the global function array
-                        FreeResultGlobalFcn (ClrPtrTypeDirGlb (hGlbData));
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
+            goto NORMAL_EXIT;
         } // End IF
 
-        // Restore the previous STE
-        *lpSymEntryCur = lpSymEntryNxt[numSym];
-    } // End FOR
+        // Get # SYMENTRYs on the stack
+        numSymEntries = lpMemPTD->lpSISCur->numSymEntries;
 
-    // Strip the level from the stack
-    lpMemPTD->lpSISNxt = lpMemPTD->lpSISCur;
-    lpMemPTD->lpSISCur = lpMemPTD->lpSISCur->lpSISPrv;
-    if (lpMemPTD->lpSISCur)
-    {
-        lpMemPTD->lpSISCur->lpSISNxt = NULL;
+        // Point to the destination SYMENTRYs
+        lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISCur, sizeof (SIS_HEADER));
+
+        // Loop through the # SYMENTRYs
+        for (numSym = 0; numSym < numSymEntries; numSym++)
+        // If the hash entry is valid, ...
+        if (lpSymEntryNxt[numSym].stHshEntry)
+        {
+            LPSYMENTRY lpSymEntryCur;       // Ptr to SYMENTRY to release & unlocalize
+
+            // Get the ptr to the corresponding SYMENTRY
+            lpSymEntryCur = lpSymEntryNxt[numSym].stHshEntry->htSymEntry;
+
+            // Release the current value of the STE
+            //   if it's not immediate and has a value
+            if (!lpSymEntryCur->stFlags.Imm && lpSymEntryCur->stFlags.Value)
+            {
+                // Get the global memory handle
+                hGlbData = lpSymEntryCur->stData.stGlbData;
+
+                // Split cases based upon the nametype
+                switch (lpSymEntryCur->stFlags.ObjType)
+                {
+                    case NAMETYPE_VAR:
+                        // stData is a valid HGLOBAL variable array
+                        Assert (IsGlbTypeVarDir (hGlbData));
+
+                        // Free the global var
+                        FreeResultGlobalVar (ClrPtrTypeDirGlb (hGlbData));
+
+                        break;
+
+                    case NAMETYPE_FN0:
+                        // stData is a defined function
+                        Assert (lpSymEntryCur->stFlags.UsrDfn);
+
+                        // Free the global defined function
+                        FreeResultGlobalDfn (ClrPtrTypeDirGlb (hGlbData));
+
+                        break;
+
+                    case NAMETYPE_FN12:
+                    case NAMETYPE_OP1:
+                    case NAMETYPE_OP2:
+                        if (lpSymEntryCur->stFlags.UsrDfn)
+                            // Free the global defined function
+                            FreeResultGlobalDfn (ClrPtrTypeDirGlb (hGlbData));
+                        else
+                            // Free the global function array
+                            FreeResultGlobalFcn (ClrPtrTypeDirGlb (hGlbData));
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End IF
+
+            // Restore the previous STE
+            *lpSymEntryCur = lpSymEntryNxt[numSym];
+        } // End FOR
+
+        // Strip the level from the stack
+        lpMemPTD->lpSISNxt = lpMemPTD->lpSISCur;
+        lpMemPTD->lpSISCur = lpMemPTD->lpSISCur->lpSISPrv;
+        if (lpMemPTD->lpSISCur)
+            lpMemPTD->lpSISCur->lpSISNxt = NULL;
+
+        // Back off the SI Level
+        lpMemPTD->SILevel--;
     } // End IF
-
-    // Back off the SI Level
-    lpMemPTD->SILevel--;
-
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
 } // End Unlocalize
 
 

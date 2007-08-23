@@ -87,18 +87,20 @@ typedef struct tagPERTABDATA
                 *lpSISBeg,          // B8:  Ptr to State Indicator Stack beginning
                 *lpSISCur,          // BC:  ...                          current (may be NULL if SI is empty)
                 *lpSISNxt;          // C0:  ...                          next
+    struct tagPLLOCALVARS
+                *lpPLCur;           // C4:  Ptr to current plLocalVars struct
+                                    //      in thread creation order (NULL = none)
+    WNDPROC lpfnOldListboxWndProc,  // C8:  Save area for old Listbox procedure
+            lpfnOldEditCtrlWndProc; // CC:  Save area for old Edit Control procedure
 
-    WNDPROC lpfnOldListboxWndProc,  // C4:  Save area for old Listbox procedure
-            lpfnOldEditCtrlWndProc; // C8:  Save area for old Edit Control procedure
+    UINT         SILevel;           // D0:  Current State Indicator level
 
-    UINT         SILevel;           // CC:  Current State Indicator level
+    PL_YYSTYPE   YYResExec;         // D4:  Result from execute primitive
 
-    PL_YYSTYPE   YYResExec;         // D0:  Result from execute primitive
-
-    APLCHAR      cQuadPR;           //100:  []PR     (' ') (When a char scalar)
-    APLBOOL      bQuadxSA;          //102:  []SA (in its index form)
-    char         DPFE[_MAX_PATH];   //103:  The Drive, Path, Filename, & Ext of the WS
-                                    //1??:  Length
+    APLCHAR      cQuadPR;           //104:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //106:  []SA (in its index form)
+    char         DPFE[_MAX_PATH];   //107:  The Drive, Path, Filename, & Ext of the WS
+                                    //207:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

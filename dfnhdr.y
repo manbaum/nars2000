@@ -695,7 +695,8 @@ void fh_yyfprintf
 	 ...)					// Zero or more arguments
 
 {
-#ifdef DEBUG
+////#ifdef DEBUG
+#if FALSE
 	va_list vl;
 	int 	i1, i2, i3;
 	static char szTemp[256] = {'\0'};

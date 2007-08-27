@@ -86,8 +86,9 @@ BOOL CreateFcnWindow
 	 HWND	 hWndMC)
 
 {
-	HWND hWnd;
-	FE_CREATESTRUCT feCreateStruct;
+	HWND			hWnd;			// Handle for Function Editor window
+	FE_CREATESTRUCT feCreateStruct; // CreateStruct for Function Editor window
+////HGLOBAL 		hGlbPTD;		// PerTabData global memory handle
 
 	// Skip over the initial UTF16_DEL, if present
 	if (lpwszLine[0] EQ UTF16_DEL)
@@ -103,8 +104,6 @@ BOOL CreateFcnWindow
 	// Initialize the return error code
 	feCreateStruct.ErrCode	 = 0;
 
-	// ***FIXME*** -- What do we do with this handle??
-
 	hWnd =
 	CreateMDIWindowW (LFEWNDCLASS,			// Class name
 					  wszFETitle,			// Window title
@@ -115,7 +114,8 @@ BOOL CreateFcnWindow
 					  CW_USEDEFAULT,		// Width
 					  hWndMC,				// Parent
 					  _hInstance,			// Instance
-					  (LPARAM) &feCreateStruct);// Extra data,
+			(LPARAM) &feCreateStruct);		// Extra data,
+	// If it didn't succeed, ...
 	if (hWnd EQ NULL)
 	{
 		if (feCreateStruct.ErrCode EQ 1)
@@ -125,9 +125,13 @@ BOOL CreateFcnWindow
 		return FALSE;
 	} // End IF
 
-	// Save the PTD handle with the window
-	SetProp (hWnd, "PTD", (HGLOBAL) GetProp (hWndMC, "PTD"));
-
+////// Get the PerTabData global memory handle
+////hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+////
+////// Save the PTD handle with the window
+////SetProp (hWnd, "PTD", (HGLOBAL) GetProp (hWndMC, "PTD"));
+////SetProp (hWnd, "PTD", hGlbPTD);
+////
 	// Make the window visible; update its client area
 	ShowWindow (hWnd, SW_SHOWNORMAL);
 	UpdateWindow (hWnd);
@@ -372,9 +376,12 @@ LRESULT APIENTRY FEWndProc
 				return -1;			// Stop the whole process
 			} // End IF
 
-			// Save the PTD handle with the window
-			hGlbPTD = GetProp (GetParent (hWnd), "PTD");
-			SetProp (hWnd, "PTD", (HGLOBAL) hGlbPTD);
+			// Get the PerTabData global memory handle
+			hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+////////////// Save the PTD handle with the window
+////////////hGlbPTD = GetProp (GetParent (hWnd), "PTD");
+////////////SetProp (hWnd, "PTD", (HGLOBAL) hGlbPTD);
 
 			// Save in window extra bytes
 			SetWindowLong (hWnd, GWLSF_HWNDEC, (long) hWndEC);

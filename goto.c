@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Goto Functions
+//	NARS2000 -- Goto Functions
 //***************************************************************************
 
 #define STRICT
@@ -20,204 +20,204 @@
 
 
 //***************************************************************************
-//  $GotoLine_EM
+//	$GotoLine_EM
 //
-//  Handle {goto} LineNum
+//	Handle {goto} LineNum
 //
-//  Return EXITTYPE_GOTO_ZILDE if we're going to {zilde}
-//         EXITTYPE_GOTO_LINE  if we're going to a valid line num
-//         EXITTYPE_ERROR if error
+//	Return EXITTYPE_GOTO_ZILDE if we're going to {zilde}
+//		   EXITTYPE_GOTO_LINE  if we're going to a valid line num
+//		   EXITTYPE_ERROR if error
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- GotoLine_EM"
+#define APPEND_NAME 	L" -- GotoLine_EM"
 #else
 #define APPEND_NAME
 #endif
 
 EXIT_TYPES GotoLine_EM
-    (LPTOKEN lptkRhtArg,        // Ptr to right arg token
-     LPTOKEN lptkFunc)          // Ptr to function token
+	(LPTOKEN lptkRhtArg,		// Ptr to right arg token
+	 LPTOKEN lptkFunc)			// Ptr to function token
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    EXIT_TYPES   exitType;          // Return value
-    APLSTYPE     aplTypeRht;        // Right arg storage type
-    APLNELM      aplNELMRht;        // ...       NELM
-    APLRANK      aplRankRht;        // ...       rank
-    UCHAR        immType;           // Right arg first value immediate type
-    APLINT       aplIntegerRht;     // First value as integer
-    APLFLOAT     aplFloatRht;       // ...            float
-    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+	HGLOBAL 	 hGlbPTD;			// PerTabData global memory handle
+	LPPERTABDATA lpMemPTD;			// Ptr to PerTabData global memory
+	EXIT_TYPES	 exitType;			// Return value
+	APLSTYPE	 aplTypeRht;		// Right arg storage type
+	APLNELM 	 aplNELMRht;		// ...		 NELM
+	APLRANK 	 aplRankRht;		// ...		 rank
+	UCHAR		 immType;			// Right arg first value immediate type
+	APLINT		 aplIntegerRht; 	// First value as integer
+	APLFLOAT	 aplFloatRht;		// ...			  float
+	LPSIS_HEADER lpSISCur;			// Ptr to current SIS header
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+	// Get the thread's PerTabData global memory handle
+	hGlbPTD = TlsGetValue (dwTlsPerTabData);
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+	// Lock the memory to get a ptr to it
+	lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Get the attributes (Type, NELM, and Rank)
-    //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+	// Get the attributes (Type, NELM, and Rank)
+	//	 of the right arg
+	AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
 
-    // Check for RANK ERROR
-    if (aplRankRht > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+	// Check for RANK ERROR
+	if (aplRankRht > 1)
+	{
+		ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+								   lptkFunc);
+		goto ERROR_EXIT;
+	} // End IF
 
-    // Get the first value
-    FirstValue (lptkRhtArg,         // Ptr to right arg token
-               &aplIntegerRht,      // Ptr to integer result
-               &aplFloatRht,        // Ptr to float ...
-                NULL,               // Ptr to WCHAR ...
-                NULL,               // Ptr to longest ...
-                NULL,               // Ptr to lpSym/Glb ...
-               &immType,            // Ptr to ...immediate type ...
-                NULL);              // Ptr to array type ...
-    if (immType EQ IMMTYPE_ERROR
-     || immType EQ IMMTYPE_CHAR)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+	// Get the first value
+	FirstValue (lptkRhtArg, 		// Ptr to right arg token
+			   &aplIntegerRht,		// Ptr to integer result
+			   &aplFloatRht,		// Ptr to float ...
+				NULL,				// Ptr to WCHAR ...
+				NULL,				// Ptr to longest ...
+				NULL,				// Ptr to lpSym/Glb ...
+			   &immType,			// Ptr to ...immediate type ...
+				NULL);				// Ptr to array type ...
+	if (immType EQ IMMTYPE_ERROR
+	 || immType EQ IMMTYPE_CHAR)
+	{
+		ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+								   lptkFunc);
+		goto ERROR_EXIT;
+	} // End IF
 
-    if (immType EQ IMMTYPE_FLOAT)
-    {
-        BOOL bRet;
+	if (immType EQ IMMTYPE_FLOAT)
+	{
+		BOOL bRet;
 
-        aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-        if (!bRet)
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
-    } // End IF
+		aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+		if (!bRet)
+		{
+			ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+									   lptkFunc);
+			goto ERROR_EXIT;
+		} // End IF
+	} // End IF
 
-    // If the right arg is empty or out of range, ...
-    if (aplNELMRht EQ 0
-     || aplIntegerRht < 0
-     || aplIntegerRht > 0x7FFFFFFF)
-    {
-        exitType = EXITTYPE_GOTO_ZILDE;
+	// If the right arg is empty or out of range, ...
+	if (aplNELMRht EQ 0
+	 || aplIntegerRht < 0
+	 || aplIntegerRht > 0x7FFFFFFF)
+	{
+		exitType = EXITTYPE_GOTO_ZILDE;
 
-        goto NORMAL_EXIT;
-    } // End IF
+		goto NORMAL_EXIT;
+	} // End IF
 
-    // Split cases based upon the function type
-    switch (lpMemPTD->lpSISCur->DfnType)
-    {
-        case DFNTYPE_IMM:       // Restart execution in a suspended function
-            // If there's a suspended function, ...
-            if (lpMemPTD->lpSISCur->lpSISPrv)
-            {
-                // Save as the next line #
-                lpMemPTD->lpSISCur->lpSISPrv->NxtLineNum = (UINT) aplIntegerRht;
+	// Split cases based upon the function type
+	switch (lpMemPTD->lpSISCur->DfnType)
+	{
+		case DFNTYPE_IMM:		// Restart execution in a suspended function
+			// If there's a suspended function, ...
+			if (lpMemPTD->lpSISCur->lpSISPrv)
+			{
+				// Save as the next line #
+				lpMemPTD->lpSISCur->lpSISPrv->NxtLineNum = (UINT) aplIntegerRht;
 
-                // Mark as no longer suspended
-                lpMemPTD->lpSISCur->lpSISPrv->Suspended = FALSE;
+				// Mark as no longer suspended
+				lpMemPTD->lpSISCur->lpSISPrv->Suspended = FALSE;
 
-                exitType = EXITTYPE_GOTO_LINE;
-            } else
-                exitType = EXITTYPE_GOTO_ZILDE;
-            break;
+				exitType = EXITTYPE_GOTO_LINE;
+			} else
+				exitType = EXITTYPE_GOTO_ZILDE;
+			break;
 
-        case DFNTYPE_OP1:
-        case DFNTYPE_OP2:
-        case DFNTYPE_FCN:       // Jump to a new line #
-            // If there's a suspended function, ...
-            if (lpMemPTD->lpSISCur)
-            {
-                // Save as the next line #
-                lpMemPTD->lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
+		case DFNTYPE_OP1:
+		case DFNTYPE_OP2:
+		case DFNTYPE_FCN:		// Jump to a new line #
+			// If there's a suspended function, ...
+			if (lpMemPTD->lpSISCur)
+			{
+				// Save as the next line #
+				lpMemPTD->lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
 
-                // Mark as no longer suspended
-                lpMemPTD->lpSISCur->Suspended = FALSE;
+				// Mark as no longer suspended
+				lpMemPTD->lpSISCur->Suspended = FALSE;
 
-                exitType = EXITTYPE_GOTO_LINE;
-            } else
-                exitType = EXITTYPE_GOTO_ZILDE;
-            break;
+				exitType = EXITTYPE_GOTO_LINE;
+			} else
+				exitType = EXITTYPE_GOTO_ZILDE;
+			break;
 
-        case DFNTYPE_EXEC:
-        case DFNTYPE_QUAD:
-            // Peel back to the first non-Imm/Exec layer
-            //   starting with the previous SIS header
-            lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
+		case DFNTYPE_EXEC:
+		case DFNTYPE_QUAD:
+			// Peel back to the first non-Imm/Exec layer
+			//	 starting with the previous SIS header
+			lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
 
-            // If there's a suspended function, ...
-            if (lpSISCur)
-            {
-                // Save as the next line #
-                lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
+			// If there's a suspended function, ...
+			if (lpSISCur)
+			{
+				// Save as the next line #
+				lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
 
-                // Mark as no longer suspended
-                lpSISCur->Suspended = FALSE;
+				// Mark as no longer suspended
+				lpSISCur->Suspended = FALSE;
 
-                exitType = EXITTYPE_GOTO_LINE;
-            } else
-                exitType = EXITTYPE_GOTO_ZILDE;
-            break;
+				exitType = EXITTYPE_GOTO_LINE;
+			} else
+				exitType = EXITTYPE_GOTO_ZILDE;
+			break;
 
-        defstop
-            break;
-    } // End SWITCH
+		defstop
+			break;
+	} // End SWITCH
 
-    goto NORMAL_EXIT;
+	goto NORMAL_EXIT;
 
 ERROR_EXIT:
-    exitType = EXITTYPE_ERROR;
+	exitType = EXITTYPE_ERROR;
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+	// We no longer need this ptr
+	MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    return exitType;
+	return exitType;
 } // End GotoLine_EM
-#undef  APPEND_NAME
+#undef	APPEND_NAME
 
 
 //***************************************************************************
-//  $GotoReset
+//	$GotoReset
 //
-//  Handle {goto}
+//	Handle {goto}
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- GotoReset"
+#define APPEND_NAME 	L" -- GotoReset"
 #else
 #define APPEND_NAME
 #endif
 
 void GotoReset
-    (void)
+	(void)
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    BOOL         bRet = TRUE;       // TRUE iff the result is valid
+	HGLOBAL 	 hGlbPTD;			// PerTabData global memory handle
+	LPPERTABDATA lpMemPTD;			// Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+	// Get the thread's PerTabData global memory handle
+	hGlbPTD = TlsGetValue (dwTlsPerTabData);
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+	// Lock the memory to get a ptr to it
+	lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Loop while there's a non-empty SI
-    while (bRet && lpMemPTD->lpSISCur NE NULL)
-        // Unlocalize the STEs on the innermost level
-        //   and strip off one level
-        bRet = Unlocalize (TRUE);
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+	// Loop while there's a non-empty SI
+		// Unlocalize the STEs on the innermost level
+		//	 and strip off one level
+	while (lpMemPTD->lpSISCur NE NULL
+		&& Unlocalize (TRUE));
+
+	// We no longer need this ptr
+	MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End GotoReset
-#undef  APPEND_NAME
+#undef	APPEND_NAME
 
 
 //***************************************************************************
-//  End of File: goto.c
+//	End of File: goto.c
 //***************************************************************************

@@ -170,6 +170,8 @@ DecrRefCntInd (hGlbData);
 #define MYWM_SAVE_AS_FN 	(WM_APP + 5)	// FE (SaveAsFunction)
 #define MYWM_CLOSE_FN		(WM_APP + 6)	// FE (CloseFunction)
 #define MYWM_QUOTEQUAD		(WM_APP + 7)	// PL (Quote-Quad/Quad Input)
+#define MYWM_WFMO			(WM_APP + 8)	// SM (WaitForMultipleObjects)
+#define MYWM_INIT_SMDB		(WM_APP + 9)	// SM (Initialize SM/DB windows)
 
 // Define Debug window messages
 #define MYWM_INIT_DB		(WM_APP + 0)	// DB

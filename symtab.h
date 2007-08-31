@@ -147,7 +147,7 @@ typedef enum tagIMMTYPES
 } IMMTYPES;
 
 // Name types
-typedef enum tagNAMETYPES
+typedef enum tagNAME_TYPES
 {
     NAMETYPE_UNK = 0,       // 00:  Name is unknown
     NAMETYPE_VAR,           // 01:  ...     a variable
@@ -156,7 +156,7 @@ typedef enum tagNAMETYPES
     NAMETYPE_OP1,           // 04:  ...       monadic operator
     NAMETYPE_OP2,           // 05:  ...       dyadic operator
                             // 06-07:  Available entries (3 bits)
-} NAMETYPES;
+} NAME_TYPES;
 
 #define NAMETYPE_STRING     "?VNF12"
 #define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2"}
@@ -172,13 +172,13 @@ typedef enum tagNAMETYPES
 #define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
 #define IsNameTypeVar(a)    ((a) EQ NAMETYPE_VAR)
 
-typedef enum tagOBJNAMES
+typedef enum tagOBJ_NAMES
 {
     OBJNAME_NONE = 0,       // 00:  Unnamed
     OBJNAME_USR,            // 01:  User name
     OBJNAME_SYS,            // 02:  System name (starts with a Quad or Quote-quad)
                             // 03:  Available entry (2 bits)
-} OBJNAMES;
+} OBJ_NAMES;
 
 #define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS"}
 
@@ -192,11 +192,11 @@ typedef struct tagSTFLAGS
          Inuse:1,           // 00000080:  Inuse entry
          Value:1,           // 00000100:  Entry has a value
          ObjName:2,         // 00000600:  The data in .stData is NULL if .ObjType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
-                            //            (see OBJNAMES)
+                            //            (see enum OBJ_NAMES)
          ObjType:3,         // 00003800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
-                            //            (see NAMETYPES)
+                            //            (see enum NAME_TYPES)
          SysVarValid:4,     // 0003C000:  Index to validation routine for System Vars
-                            //            (see SYSVARS)
+                            //            (see enum SYSVARS)
          UsrDfn:1,          // 00040000:  Defined function/operator
          DfnLabel:1,        // 00080000:  Defined function/operator label        (valid only if .Value is set)
          DfnSysLabel:1,     // 00100000:  Defined function/operator system label (valid only if .Value is set)

@@ -99,6 +99,10 @@
           The ideas in this paper were invaluable in creating the Hash and
           Symbol tables.</li>
 
+        <li>The LALR(1) Parser is based upon "The Syntax of APL:  An
+         Old Approach Revisited" by Jean Jacques Giardot &amp;
+         Florence Rollin, ACM SIGAPL Quote-Quad APL 1987.</li>
+
         <li>This project benefited greatly by discussions with some
           of the many great APL implementors who went before me.  To
           name but a few:  Larry Breed, Gene McDonnell, Jim Brown,

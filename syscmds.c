@@ -457,13 +457,12 @@ BOOL CmdSi_EM
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Loop through the SI levels
-    if (lpMemPTD->lpSISCur)
-    for (lpSISCur = lpMemPTD->lpSISBeg;
-         lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt;
-         lpSISCur = lpSISCur->lpSISNxt)
+    // Loop backwards through the SI levels
+    for (lpSISCur = lpMemPTD->lpSISCur;
+         lpSISCur;
+         lpSISCur = lpSISCur->lpSISPrv)
     {
-        LPAPLCHAR    lpMemName;         // Ptr to function name global memory
+        LPAPLCHAR lpMemName;            // Ptr to function name global memory
 
         // Split cases based upon the caller's function type
         switch (lpSISCur->DfnType)

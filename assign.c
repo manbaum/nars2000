@@ -337,13 +337,13 @@ ERROR_EXIT:
 //  Return the NAMETYPE_xxx of a function token
 //***************************************************************************
 
-NAMETYPES GetNameType
+NAME_TYPES GetNameType
     (LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HGLOBAL   hGlbData;             // Function array global memory handle
-    LPVOID    lpMem;                // Ptr to function array global memory
-    NAMETYPES cNameType;            // Function name type (see NAMETYPES enum)
+    HGLOBAL    hGlbData;            // Function array global memory handle
+    LPVOID     lpMem;               // Ptr to function array global memory
+    NAME_TYPES nameType;            // Function name type (see enum NAME_TYPES)
 
     // Split cases based upon the token type
     switch (lptkFunc->tkFlags.TknType)
@@ -433,14 +433,14 @@ NAMETYPES GetNameType
     {
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMem)
         case FCNARRAY_HEADER_SIGNATURE:
-            cNameType = lpHeader->NameType;
+            nameType = lpHeader->NameType;
 
             break;
 #undef  lpHeader
 
 #define lpHeader    ((LPDFN_HEADER) lpMem)
         case DFN_HEADER_SIGNATURE:
-            cNameType = TranslateDfnToNameType (lpHeader->DfnType, lpHeader->FcnValence);
+            nameType = TranslateDfnToNameType (lpHeader->DfnType, lpHeader->FcnValence);
 
             break;
 #undef  lpHeader
@@ -452,7 +452,7 @@ NAMETYPES GetNameType
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMem = NULL;
 
-    return cNameType;
+    return nameType;
 } // End GetNameType
 
 

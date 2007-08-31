@@ -57,13 +57,13 @@ TOKENTYPES TranslateTknTypeToTknTypeNamed
 //***************************************************************************
 //  TranslateDfnToNameType
 //
-//  Translate a defined function type (see DFNTYPES enum and FCNVALENCES enum)
-//    to a function type (see NAMETYPES enum).
+//  Translate a defined function type (see enum DFN_TYPES and enum FCN_VALENCES)
+//    to a function type (see enum NAME_TYPES).
 //***************************************************************************
 
-NAMETYPES TranslateDfnToNameType
-    (DFNTYPES    dfnType,       // Defined function type (see DFNTYPES enum)
-     FCNVALENCES fcnValence)    // Function valance (see FCNVALENCES enum)
+NAME_TYPES TranslateDfnToNameType
+    (DFN_TYPES    dfnType,      // Defined function type (see enum DFN_TYPES)
+     FCN_VALENCES fcnValence)   // Function valance (see enum FCN_VALENCES)
 
 {
     // Split cases based upon the defined function type

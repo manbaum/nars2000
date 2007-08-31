@@ -215,7 +215,7 @@ typedef struct tagVARARRAY_HEADER
 typedef struct tagFCNARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;           // 00:  Array header signature
-    UINT             NameType:3,    // 04:  00000007:  The type of the array (see NAMETYPES enum)
+    UINT             NameType:3,    // 04:  00000007:  The type of the array (see enum NAME_TYPES)
                      Avail:29;      //      FFFFFFF8:  Available bits
     UINT             RefCnt,        // 08:  Reference count
                      fcnNELM;       // 0C:  # elements in the array

@@ -241,7 +241,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
     lpwszCompLine[0] = (APLCHAR) aplLongest;
     lpwszCompLine[1] = L'\0';
 
-    return PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine, TRUE);
+    return PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine, TRUE, lptkFunc);
 } // End PrimFnMonUpTackJotImm_EM_YY
 #undef  APPEND_NAME
 
@@ -305,7 +305,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
-    return PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine, TRUE);
+    return PrimFnMonUpTackJotCommon_EM_YY (lpwszCompLine, TRUE, lptkFunc);
 } // End PrimFnMonUpTackJotGlb_EM_YY
 #undef  APPEND_NAME
 
@@ -318,7 +318,8 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
 
 LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     (LPAPLCHAR lpwszCompLine,
-     BOOL      bFreeCompLine)
+     BOOL      bFreeCompLine,
+     LPTOKEN   lptkFunc)
 
 {
 ////DWORD          dwThreadId;      // The thread ID
@@ -408,6 +409,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 
     // Copy the result
     *lpYYRes = lpMemPTD->YYResExec;
+    lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
     ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
 
     // We no longer need this ptr
@@ -436,20 +438,21 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 #endif
 
 DWORD WINAPI PrimFnMonUpTackJotInThread
-    (LPUTJ_THREAD lputjThread)
+    (LPUTJ_THREAD lputjThread)          // Ptr to UpTackJotThread struct
 
 {
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    HWND         hWndSM,            // Session Manager window handle
-                 hWndEC;            // Edit Control    ...
-    LPAPLCHAR    lpwszCompLine;     // Ptr to the complete line to execute
-////UINT         oldTlsType;        // Previous value of dwTlsType
-    DWORD        dwRet = 0;         // Return code from this function
-    HGLOBAL      hGlbToken = NULL;  // Tokenized line global memory handle
-    HANDLE       hSigaphore = NULL, // Semaphore handle to signal (NULL if none)
-                 hSemaReset;        // Semaphore handle for )RESET
-    EXIT_TYPES   exitType;          // Return code from ParseLine
+    HGLOBAL       hGlbPTD;              // PerTabData global memory handle
+    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+    HWND          hWndSM,               // Session Manager window handle
+                  hWndEC;               // Edit Control    ...
+    LPAPLCHAR     lpwszCompLine;        // Ptr to the complete line to execute
+////UINT          oldTlsType;           // Previous value of dwTlsType
+    DWORD         dwRet = 0;            // Return code from this function
+    HGLOBAL       hGlbToken = NULL;     // Tokenized line global memory handle
+    HANDLE        hSigaphore = NULL,    // Semaphore handle to signal (NULL if none)
+                  hSemaReset;           // Semaphore handle for )RESET
+    EXIT_TYPES    exitType;             // Return code from ParseLine
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to local plLocalVars
 
 ////// Save the previous value of dwTlsType
 ////(LPVOID) oldTlsType = TlsGetValue (dwTlsType);
@@ -512,15 +515,12 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
     // Split cases based upon the exit type
     switch (exitType)
     {
-        case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
-        case EXITTYPE_DISPLAY:      // ...
-        case EXITTYPE_NODISPLAY:    // ...
+        case EXITTYPE_DISPLAY:      // Nothing more to do with these types
         case EXITTYPE_NOVALUE:      // ...
-        case EXITTYPE_ERROR:        // ...
+        case EXITTYPE_GOTO_ZILDE:   // ...
         case EXITTYPE_GOTO_LINE:    // ...
-            DbgBrk ();
-
-
+        case EXITTYPE_NODISPLAY:    // ...
+        case EXITTYPE_ERROR:        // ...
             break;
 
         case EXITTYPE_RESET_1LVL:
@@ -540,6 +540,12 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
             break;
     } // End SWITCH
 
+    // Get this thread's LocalVars ptr
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+
+    // Save the exit type in the plLocalVars
+    lpplLocalVars->ExitType = exitType;
+
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -549,7 +555,7 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize (FALSE);
+    Unlocalize ();
 
     // If this hSigaphore is not for this level, pass it on up the line
     hSigaphore = PassSigaphore (lpMemPTD, hSigaphore);

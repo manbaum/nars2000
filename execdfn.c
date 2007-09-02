@@ -251,6 +251,9 @@ RESTART_EXCEPTION_EXECDFNGLB:
         lpMemPTD->lpSISNxt->ErrorCode    = ERRORCODE_NONE;
         lpMemPTD->lpSISNxt->lpSISPrv     = lpMemPTD->lpSISCur;
 ////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in below
+#ifdef DEBUG
+        dprintfW (L"~~Localize:    %08X (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
+#endif
     } __except (CheckException (GetExceptionInformation ()))
     {
         switch (MyGetExceptionCode ())
@@ -392,7 +395,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
 UNLOCALIZE_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize (FALSE);
+    Unlocalize ();
 ERROR_EXIT:
     if (hGlbDfnHdr && lpMemDfnHdr)
     {
@@ -816,7 +819,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 UNLOCALIZE_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize (FALSE);
+    Unlocalize ();
 ERROR_EXIT:
     // We no longer need these ptrs
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -839,7 +842,7 @@ ERROR_EXIT:
 //***************************************************************************
 
 BOOL Unlocalize
-    (BOOL bResetting)               // TRUE iff we're resetting
+    (void)
 
 {
     HGLOBAL      hGlbPTD,           // PerTabData global memory handle
@@ -848,7 +851,8 @@ BOOL Unlocalize
     UINT         numSymEntries,     // # SYMENTRYs localized
                  numSym;            // Loop counter
     LPSYMENTRY   lpSymEntryNxt;     // Ptr to next SYMENTRY on the SIS
-    BOOL         bRet = TRUE;       // TRUE iff the result is valid
+    BOOL         bRet = TRUE,       // TRUE iff the result is valid
+                 bResetting;        // TRUE iff we're resetting
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -860,7 +864,9 @@ BOOL Unlocalize
     if (lpMemPTD->SILevel)
     {
         Assert (lpMemPTD->lpSISCur NE NULL);
-
+#ifdef DEBUG
+        dprintfW (L"~~Unlocalize:  %08X to %08X", lpMemPTD->lpSISCur, lpMemPTD->lpSISCur->lpSISPrv);
+#endif
         // Save the resetting flag
         bResetting = lpMemPTD->lpSISCur->Resetting;
 
@@ -961,7 +967,9 @@ BOOL Unlocalize
         } // End IF
 #ifdef DEBUG
         // Zero the old entry
-        ZeroMemory (lpMemPTD->lpSISNxt, sizeof (*lpMemPTD->lpSISNxt));
+        ZeroMemory (lpMemPTD->lpSISNxt,
+                    sizeof (*lpMemPTD->lpSISNxt)
+                  + numSymEntries * sizeof (lpSymEntryNxt));
 #endif
         // Back off the SI Level
         lpMemPTD->SILevel--;

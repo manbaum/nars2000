@@ -738,7 +738,8 @@ typedef struct tagWFSO      // Struct for WaitForSingleObject
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     HANDLE       WaitHandle,    // WaitHandle from RegisterWaitForSingleObject
-                 hSigaphore;    // Handle to signal next (may be NULL)
+                 hSigaphore,    // Handle to signal next (may be NULL)
+                 hThread;       // Thread handle
 } WFSO, *LPWFSO;
 
 IE_THREAD ieThread;             // Temporary global
@@ -767,10 +768,12 @@ VOID CALLBACK WaitForImmExecLine
 
     // Save the thread's PerTabData global memory handle
     TlsSetValue (dwTlsPerTabData, lpMemWFSO->hGlbPTD);
-
-    // Unlocalize the STEs on the innermost level
-    //   and strip off one level
-    Unlocalize (FALSE);
+#ifdef DEBUG
+    dprintfW (L"~~WaitForImmExecLine (%08X)", lpMemWFSO->hThread);
+#endif
+////// Unlocalize the STEs on the innermost level
+//////   and strip off one level
+////Unlocalize ();
 
     // Cancel the wait operation
 #ifdef DEBUG
@@ -967,7 +970,7 @@ void ImmExecLine
 EXIT_TYPES ImmExecStmt
     (LPWCHAR lpwszCompLine, // Ptr to line to execute
      BOOL    bFreeLine,     // TRUE iff free lpwszCompLine on completion
-     BOOL    bWaitUntilDone,// TRUE iff wait until finished
+     BOOL    bWaitUntilFini,// TRUE iff wait until finished
      HWND    hWndEC)        // Edit Control window handle
 
 {
@@ -977,12 +980,13 @@ EXIT_TYPES ImmExecStmt
     EXIT_TYPES exitType;    // Exit code from thread
 
     // Save args in struc to pass to thread func
-    ieThread.hWndEC        = hWndEC;
-    ieThread.hGlbPTD       = TlsGetValue (dwTlsPerTabData);
-    ieThread.lpwszCompLine = lpwszCompLine;
-    ieThread.hSemaReset    = NULL;
-    ieThread.hGlbWFSO      = DbgGlobalAlloc (GHND, sizeof (WFSO));
-    ieThread.bFreeLine     = bFreeLine;
+    ieThread.hWndEC         = hWndEC;
+    ieThread.hGlbPTD        = TlsGetValue (dwTlsPerTabData);
+    ieThread.lpwszCompLine  = lpwszCompLine;
+    ieThread.hSemaReset     = NULL;
+    ieThread.hGlbWFSO       = DbgGlobalAlloc (GHND, sizeof (WFSO));
+    ieThread.bFreeLine      = bFreeLine;
+    ieThread.bWaitUntilFini = bWaitUntilFini;
 
     // Lock the memory to get a ptr to it
     lpMemWFSO = MyGlobalLock (ieThread.hGlbWFSO);
@@ -997,21 +1001,32 @@ EXIT_TYPES ImmExecStmt
                            &ieThread,               // Param to thread func
                             CREATE_SUSPENDED,       // Creation flag
                            &dwThreadId);            // Returns thread id
-    // Tell W to callback when this thread terminates
-    if (bWaitUntilDone)
+#ifdef DEBUG
+    // Save the thread handle
+    lpMemWFSO->hThread = hThread;
+#endif
+    // Should we wait until finished?
+    if (bWaitUntilFini)
     {
         // Start 'er up
         ResumeThread (hThread);
-
+#ifdef DEBUG
+        dprintfW (L"~~WaitForSingleObject (ENTRY):  %08X -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
+#endif
         // Wait until this thread terminates
         WaitForSingleObject (hThread,              // Handle to wait on
                              INFINITE);            // Wait time in milliseconds
+#ifdef DEBUG
+        dprintfW (L"~~WaitForSingleObject (EXIT):   %08X -- %s (%S#%d)", hThread, L"ImmExecStmt", FNLN);
+#endif
         // Get the exit code
         GetExitCodeThread (hThread, &exitType);
-
-        return exitType;
     } else
     {
+#ifdef DEBUG
+        dprintfW (L"~~RegisterWaitForSingleObject (%08X)", hThread);
+#endif
+        // Tell W to callback when this thread terminates
         RegisterWaitForSingleObject (&lpMemWFSO->WaitHandle,// Return wait handle
                                       hThread,              // Handle to wait on
                                      &WaitForImmExecLine,   // Callback function
@@ -1024,8 +1039,10 @@ EXIT_TYPES ImmExecStmt
         // Start 'er up
         ResumeThread (hThread);
 
-        return EXITTYPE_NONE;
+        exitType = EXITTYPE_NONE;
     } // End IF/ELSE
+
+    return exitType;
 } // End ImmExecStmt
 #undef  APPEND_NAME
 
@@ -1057,7 +1074,8 @@ DWORD WINAPI ImmExecLineInThread
     HGLOBAL      hGlbPTD;           // Handle to this window's PerTabData
     LPPERTABDATA lpMemPTD;          // Ptr to ...
     BOOL         bResetting,        // TRUE iff we're resetting
-                 bFreeLine;         // TRUE iff we should free lpszCompLine on completion
+                 bFreeLine,         // TRUE iff we should free lpszCompLine on completion
+                 bWaitUntilFini;    // TRUE iff wait until finished
     EXIT_TYPES   exitType;          // Return code from ParseLine
     LPWFSO       lpMemWFSO;         // Ptr to WFSO global memory
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
@@ -1066,12 +1084,13 @@ DWORD WINAPI ImmExecLineInThread
     TlsSetValue (dwTlsType, (LPVOID) 'IE');
 
     // Extract values from the arg struc
-    hWndEC        = lpieThread->hWndEC;
-    hGlbPTD       = lpieThread->hGlbPTD;
-    lpwszCompLine = lpieThread->lpwszCompLine;
-    hSemaReset    = lpieThread->hSemaReset;
-    hGlbWFSO      = lpieThread->hGlbWFSO;
-    bFreeLine     = lpieThread->bFreeLine;
+    hWndEC         = lpieThread->hWndEC;
+    hGlbPTD        = lpieThread->hGlbPTD;
+    lpwszCompLine  = lpieThread->lpwszCompLine;
+    hSemaReset     = lpieThread->hSemaReset;
+    hGlbWFSO       = lpieThread->hGlbWFSO;
+    bFreeLine      = lpieThread->bFreeLine;
+    bWaitUntilFini = lpieThread->bWaitUntilFini;
 
     // Save the thread's PerTabData global memory handle
     TlsSetValue (dwTlsPerTabData, hGlbPTD);
@@ -1176,7 +1195,7 @@ DWORD WINAPI ImmExecLineInThread
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize (FALSE);
+    Unlocalize ();
 
     // If this hSigaphore is not for this level, pass it on up the line
     hSigaphore = PassSigaphore (lpMemPTD, hSigaphore);
@@ -1200,13 +1219,22 @@ ERROR_EXIT:
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+////// Display the default prompt
+//////   if we're not resetting, and
+//////   if there's a suspension (not Quad Input, though)
+////if (!bResetting)
+////if (lpMemPTD->lpSISCur EQ NULL
+//// || (lpMemPTD->lpSISCur->Suspended
+////  && lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD))
+////    DisplayPrompt (hWndEC, FALSE, 3);
+
     // Display the default prompt
     //   if we're not resetting, and
-    //   if there's a suspension (not Quad Input, though)
-    if (!bResetting)
-    if (lpMemPTD->lpSISCur EQ NULL
-     || (lpMemPTD->lpSISCur->Suspended
-      && lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD))
+    //   the caller isn't waiting for us to finish, and
+    //   there's no semaphore to signal
+    if (!bResetting
+     && !bWaitUntilFini
+     && hSigaphore EQ NULL)
         DisplayPrompt (hWndEC, FALSE, 3);
 
     // We no longer need this ptr
@@ -2854,16 +2882,17 @@ LPPL_YYSTYPE WaitForInput
                      0,                 // Initial count (non-signalled)
                      64*1024,           // Maximum count
                      NULL);             // No name
-    // Create a semaphore for )RESET
-    hHandle[1] =
-    CreateSemaphore (NULL,              // No security attrs
-                     0,                 // Initial count (non-signalled)
-                     64*1024,           // Maximum count
-                     NULL);             // No name
+////// Create a semaphore for )RESET
+////hHandle[1] =
+////CreateSemaphore (NULL,              // No security attrs
+////                 0,                 // Initial count (non-signalled)
+////                 64*1024,           // Maximum count
+////                 NULL);             // No name
     // Fill in the SIS header for Quote-Quad/Quad Input Mode
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
                 hHandle[0],             // Semaphore handle
-                hHandle[1],             // Semaphore handle for )RESET
+////////////////hHandle[1],             // Semaphore handle for )RESET
+                NULL,                   // Semaphore handle for )RESET
                 bQuoteQuad ? DFNTYPE_QQUAD: DFNTYPE_QUAD, // DfnType
                 FCNVALENCE_NIL,         // FcnValence
                 TRUE);                  // Suspended
@@ -2892,7 +2921,7 @@ LPPL_YYSTYPE WaitForInput
     dprintfW (L"~~WaitForMultipleObjects (ENTRY):  %s (%S#%d)", L"WaitForInput", FNLN);
 #endif
     // Wait for either semaphore to trigger
-    switch (WaitForMultipleObjects (2,           // # handles to wait for
+    switch (WaitForMultipleObjects (1,           // # handles to wait for ***FIXME*** -- Use WaitForSingleObject
                                     hHandle,     // Handle array
                                     FALSE,       // Return when any handle is signalled
                                     INFINITE))   // Timeout value in milliseconds
@@ -2905,14 +2934,14 @@ LPPL_YYSTYPE WaitForInput
 
             break;
 
-        case WAIT_OBJECT_0 + 1: // hSemaReset triggered
-#ifdef DEBUG
-            dprintfW (L"~~WaitForMultipleObjects (SEMARESET-EXIT):  %s (%S#%d)", L"WaitForInput", FNLN);
-#endif
-            bResetting = TRUE;
-
-            break;
-
+////         case WAIT_OBJECT_0 + 1: // hSemaReset triggered
+//// #ifdef DEBUG
+////             dprintfW (L"~~WaitForMultipleObjects (SEMARESET-EXIT):  %s (%S#%d)", L"WaitForInput", FNLN);
+//// #endif
+////             bResetting = TRUE;
+////
+////             break;
+////
         defstop
             break;
     } // End SWITCH
@@ -2922,9 +2951,9 @@ LPPL_YYSTYPE WaitForInput
     // Close the semaphore handle as it is no longer needed
     CloseHandle (hHandle[0]); hHandle[0] = NULL;
 
-    // Close the Reset Semaphore handle as it is no longer needed
-    CloseHandle (hHandle[1]); hHandle[1] = NULL;
-
+////// Close the Reset Semaphore handle as it is no longer needed
+////CloseHandle (hHandle[1]); hHandle[1] = NULL;
+////
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -2933,7 +2962,7 @@ LPPL_YYSTYPE WaitForInput
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
-    Unlocalize (FALSE);
+    Unlocalize ();
 
     // If we're resetting, ...
     if (bResetting)

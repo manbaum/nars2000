@@ -216,6 +216,8 @@ void ErrorMessage
 
         case DFNTYPE_IMM:       // No action
         case DFNTYPE_QUAD:      // ...
+            uNameLen = 0;
+
             break;
 
         case DFNTYPE_QQUAD:
@@ -380,17 +382,30 @@ void ErrorMessageSetToken
     (LPTOKEN lptkError)             // Ptr to error token (may be NULL)
 
 {
+    // Set the error char index
+    ErrorMessageSetCharIndex ((lptkError NE NULL) ? lptkError->tkCharIndex
+                                                  : NEG1U);
+} // End ErrorMessageSetToken
+
+
+//***************************************************************************
+//  $ErrorMessageSetCharIndex
+//
+//  Set the error char index for an error message
+//***************************************************************************
+
+void ErrorMessageSetCharIndex
+    (int tkCharIndex)               // Error char index
+
+{
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
-    // Set the error token
-    if (lptkError)
-        lpplLocalVars->tkErrorCharIndex = lptkError->tkCharIndex;
-    else
-        lpplLocalVars->tkErrorCharIndex = NEG1U;
-} // End ErrorMessageSetToken
+    // Set the error char index
+    lpplLocalVars->tkErrorCharIndex = tkCharIndex;
+} // End ErrorMessageSetCharIndex
 
 
 //***************************************************************************

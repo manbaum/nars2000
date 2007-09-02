@@ -109,6 +109,8 @@ EXIT_TYPES GotoLine_EM
         goto NORMAL_EXIT;
     } // End IF
 
+    exitType = EXITTYPE_GOTO_LINE;
+
     // Split cases based upon the function type
     switch (lpMemPTD->lpSISCur->DfnType)
     {
@@ -121,10 +123,8 @@ EXIT_TYPES GotoLine_EM
 
                 // Mark as no longer suspended
                 lpMemPTD->lpSISCur->lpSISPrv->Suspended = FALSE;
+            } // End IF
 
-                exitType = EXITTYPE_GOTO_LINE;
-            } else
-                exitType = EXITTYPE_GOTO_ZILDE;
             break;
 
         case DFNTYPE_OP1:
@@ -138,10 +138,8 @@ EXIT_TYPES GotoLine_EM
 
                 // Mark as no longer suspended
                 lpMemPTD->lpSISCur->Suspended = FALSE;
+            } // End IF
 
-                exitType = EXITTYPE_GOTO_LINE;
-            } else
-                exitType = EXITTYPE_GOTO_ZILDE;
             break;
 
         case DFNTYPE_EXEC:
@@ -150,8 +148,11 @@ EXIT_TYPES GotoLine_EM
             //   starting with the previous SIS header
             lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
 
-            // If there's a suspended function, ...
-            if (lpSISCur)
+            // If there's a suspended user-defined function/operator, ...
+            if (lpSISCur
+             && (lpSISCur->DfnType EQ DFNTYPE_OP1
+              || lpSISCur->DfnType EQ DFNTYPE_OP2
+              || lpSISCur->DfnType EQ DFNTYPE_FCN))
             {
                 // Save as the next line #
                 lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
@@ -159,9 +160,10 @@ EXIT_TYPES GotoLine_EM
                 // Mark as no longer suspended
                 lpSISCur->Suspended = FALSE;
 
-                exitType = EXITTYPE_GOTO_LINE;
-            } else
-                exitType = EXITTYPE_GOTO_ZILDE;
+                // Save the suspended function's semaphore as the one to signal
+                lpMemPTD->lpSISCur->hSigaphore = lpSISCur->hSemaphore;
+            } // End IF
+
             break;
 
         defstop
@@ -210,7 +212,7 @@ NORMAL_EXIT:
 ////         // Unlocalize the STEs on the innermost level
 ////         //   and strip off one level
 ////     while (lpMemPTD->lpSISCur NE NULL
-////         && Unlocalize (TRUE));
+////         && Unlocalize ());
 ////
 ////     // We no longer need this ptr
 ////     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

@@ -12,18 +12,6 @@ typedef struct tagCNT_THREAD    // Thread struct for CreateNewTabInThread
 } CNT_THREAD, *LPCNT_THREAD;
 
 
-typedef struct tagPL_THREAD     // Thread struct for ParseLineInThread
-{
-    HGLOBAL hGlbTxtLine,        // 00:  Line text global memory handle (may be NULL)
-            hGlbToken;          // 04:  Tokenized line global memory handle
-    LPWCHAR lpwszLine;          // 08:  Ptr to tokens of line to parse (GlobalLock of above) (may be NULL)
-    HGLOBAL hGlbPTD;            // 0C:  Handle of PerTabData for this thread
-    HWND    hWndSM;             // 10:  Window handle to Session Manager
-    HANDLE  hSemaReset;         // 14:  Semaphore Handle for )RESET
-                                // 18:  Length
-} PL_THREAD, *LPPL_THREAD;
-
-
 typedef struct tagUTJ_THREAD    // Thread struct for PrimFnMonUpTackJotInThread
 {
     HWND    hWndEC;             // 00:  Handle of Edit Control window
@@ -40,9 +28,10 @@ typedef struct tagIE_THREAD     // Thread struct for ImmExecLineInThread
     HGLOBAL hGlbPTD;            // 04:  PerTabData global memory handle
     LPWCHAR lpwszCompLine;      // 08:  Ptr to complete line
     HGLOBAL hGlbWFSO;           // 0C:  WaitForSingleObject callback global memory handle
-    BOOL    bFreeLine;          // 10:  TRUE iff we should free lpwszCompLine on completion
-    HANDLE  hSemaReset;         // 14:  Semaphore Handle for )RESET
-                                // 18:  Length
+    BOOL    bFreeLine,          // 10:  TRUE iff we should free lpwszCompLine on completion
+            bWaitUntilFini;     // 14:  TRUE iff wait until finished
+    HANDLE  hSemaReset;         // 18:  Semaphore Handle for )RESET
+                                // 1C:  Length
 } IE_THREAD, *LPIE_THREAD;
 
 

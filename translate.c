@@ -336,7 +336,7 @@ ARRAY_TYPES TranslateStrandTypeToArrayType
             return ARRAY_NESTED;
 
         defstop
-            return -1;              // To keep the compiler happy
+            return ARRAY_ERROR;     // To keep the compiler happy
     } // End SWITCH
 } // End TranslateStrandTypeToArrayType
 

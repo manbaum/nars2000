@@ -191,7 +191,9 @@ Stmt:
                                              // We no longer need this ptr
                                              MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
-                                             lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
+                                             // If the exit type isn't GOTO_LINE, mark it as already displayed
+                                             if (lpplLocalVars->ExitType NE EXITTYPE_GOTO_LINE)
+                                                 lpplLocalVars->ExitType = EXITTYPE_NODISPLAY;
                                              FreeResult (&$1.tkToken);
                                              if (!lpplLocalVars->bRet)
                                                  YYERROR;
@@ -236,29 +238,29 @@ Stmt:
                                                      break;
 
                                                  case EXITTYPE_GOTO_LINE:   // Valid line #
-                                                     // Lock the memory to get a ptr to it
-                                                     lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
-
-                                                     // If we're in Immediate Execution mode,
-                                                     //   Execute primitive, or Quad input, ...
-                                                     if (lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_IMM
-                                                      || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_EXEC
-                                                      || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
-                                                     {
-                                                         LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
-
-                                                         // Peel back to the first non-Imm/Exec layer
-                                                         //   starting with the previous SIS header
-                                                         lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
-
-                                                         Assert (lpSISCur NE NULL);
-
-                                                         // Save the semaphore handle to signal the suspended thread to restart execution
-                                                         lpMemPTD->lpSISCur->hSigaphore = lpSISCur->hSemaphore;
-                                                     } // End IF
-
-                                                     // We no longer need this ptr
-                                                     MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
+/////////////////////////////////////////////////////// Lock the memory to get a ptr to it
+/////////////////////////////////////////////////////lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////// If we're in Immediate Execution mode,
+///////////////////////////////////////////////////////   Execute primitive, or Quad input, ...
+/////////////////////////////////////////////////////if (lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_IMM
+///////////////////////////////////////////////////// || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_EXEC
+///////////////////////////////////////////////////// || lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
+/////////////////////////////////////////////////////{
+/////////////////////////////////////////////////////    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////    // Peel back to the first non-Imm/Exec layer
+/////////////////////////////////////////////////////    //   starting with the previous SIS header
+/////////////////////////////////////////////////////    lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////    Assert (lpSISCur NE NULL);
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////    // Save the semaphore handle to signal the suspended thread to restart execution
+/////////////////////////////////////////////////////    lpMemPTD->lpSISCur->hSigaphore = lpSISCur->hSemaphore;
+/////////////////////////////////////////////////////} // End IF
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////// We no longer need this ptr
+/////////////////////////////////////////////////////MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 
                                                      YYACCEPT;              // Stop executing this line
 
@@ -4063,6 +4065,7 @@ EXIT_TYPES ParseLine
     plLocalVars.lpwszLine   = lpwszLine;
     plLocalVars.bLookAhead  = FALSE;
     plLocalVars.hSemaReset  = hSemaReset;
+    plLocalVars.ExitType    = EXITTYPE_NONE;
 
     // Lock the memory to get a ptr to it, and set the variables
     UTLockAndSet (plLocalVars.hGlbToken, &plLocalVars.t2);
@@ -4288,7 +4291,7 @@ ERROR_EXIT:
                   NEG1U,
                   hWndSM);
     // Execute []ELX
-    plLocalVars.lpYYRes = PrimFnMonUpTackJotCommon_EM_YY (WS_UTF16_QUAD L"ELX", FALSE);
+    plLocalVars.lpYYRes = PrimFnMonUpTackJotCommon_EM_YY (WS_UTF16_QUAD L"ELX", FALSE, NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

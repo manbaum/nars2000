@@ -5781,7 +5781,9 @@ RESTART_EXCEPTION_FILLSISNXT:
         lpMemPTD->lpSISNxt->ErrorCode     = ERRORCODE_NONE;
         lpMemPTD->lpSISNxt->lpSISPrv      = lpMemPTD->lpSISCur;
         lpMemPTD->lpSISNxt->lpSISNxt      = (LPSIS_HEADER) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
-
+#ifdef DEBUG
+        dprintfW (L"~~Localize:    %08X (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
+#endif
         // Link this SIS into the chain
         if (lpMemPTD->lpSISCur)
             lpMemPTD->lpSISCur->lpSISNxt = lpMemPTD->lpSISNxt;

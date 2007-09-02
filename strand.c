@@ -386,6 +386,16 @@ static char tabConvert[][STRAND_LENGTH] =
                 // Check for VALUE ERROR
                 if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Value)
                 {
+                    // If this is a single NoValue item, ignore it
+                    //   as it's coming from a function with no return value
+                    if (iLen EQ 1
+                     && IsSymNoValue (lpYYToken->tkToken.tkData.tkSym))
+                    {
+                        cStrandNxtType = STRAND_BOOL;
+
+                        break;
+                    } // End IF
+
                     ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                                               &lpYYToken->tkToken);
                     goto ERROR_EXIT;
@@ -532,8 +542,9 @@ static char tabConvert[][STRAND_LENGTH] =
                         // If it's not an immediate, ...
                         if (!lpYYRes->tkToken.tkData.tkSym->stFlags.Imm)
                         {
-                            // stData is a valid HGLOBAL variable array
-                            Assert (IsGlbTypeVarDir (lpYYRes->tkToken.tkData.tkSym->stData.stGlbData));
+                            // stData is a NoValue entry or a valid HGLOBAL variable array
+                            Assert (IsSymNoValue (lpYYRes->tkToken.tkData.tkSym)
+                                 || IsGlbTypeVarDir (lpYYRes->tkToken.tkData.tkSym->stData.stGlbData));
                         } // End IF
 
                         break;

@@ -2,7 +2,7 @@
 //  NARS2000 -- State Indicator Stack Header
 //***************************************************************************
 
-// Defined function header signature
+// User-defined function/operator header signature
 #define SIS_HEADER_SIGNATURE   ' SIS'
 
 typedef struct tagSIS_HEADER
@@ -11,11 +11,11 @@ typedef struct tagSIS_HEADER
     HANDLE           hSemaphore,    // 04:  Semaphore handle
                      hSigaphore,    // 08:  Semaphore handle to signal on exit (NULL if none)
                      hSemaReset;    // 0C:  Semaphore handle for )RESET
-    HGLOBAL          hGlbDfnHdr,    // 10:  Defined function global memory handle
+    HGLOBAL          hGlbDfnHdr,    // 10:  User-defined function/operator global memory handle
                      hGlbFcnName;   // 14:  Function name global memory handle
-    UINT             DfnType:4,     // 18:  0000000F:  Defined Function Type (see enum DFN_TYPES)
-                     FcnValence:3,  //      00000070:  Defined/Derived Function Valence (see enum FCN_VALENCES)
-                     DfnAxis:1,     //      00000080:  Defined/Derived Function accepts axis value
+    UINT             DfnType:4,     // 18:  0000000F:  User-defined function/operator Type (see enum DFN_TYPES)
+                     FcnValence:3,  //      00000070:  User-defined function/operator Valence (see enum FCN_VALENCES)
+                     DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      Suspended:1,   //      00000100:  Function is suspended
                      Resetting:1,   //      00000200:  SI stack is resetting
                      Reset1Lvl:1,   //      00000400:  SI stack is resetting one level of suspension

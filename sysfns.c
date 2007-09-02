@@ -44,7 +44,7 @@ LPPL_YYSTYPE ExecuteFn0
                              NULL,
                              NULL);
     else
-        // tkData is a valid HGLOBAL function array or defined function
+        // tkData is a valid HGLOBAL function array or user-defined function/operator
         Assert (IsGlbTypeFcnDir (lpNameFcn)
              || IsGlbTypeDfnDir (lpNameFcn));
 
@@ -57,7 +57,7 @@ LPPL_YYSTYPE ExecuteFn0
                                           NULL,                         // Ptr to right arg token (may be NULL if niladic)
                                           NULL);                        // Ptr to axis token (may be NULL)
             case DFN_HEADER_SIGNATURE:
-                return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (lpNameFcn),  // Defined function global memory handle
+                return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (lpNameFcn),  // User-defined function/operator global memory handle
                                          NULL,                          // Ptr to left arg token (may be NULL if monadic)
                                          lpYYFcn0,                      // Ptr to function strand
                                          NULL,                          // Ptr to right arg token
@@ -270,14 +270,14 @@ LPPL_YYSTYPE SysFnMonCR_EM
 
                 case DFN_HEADER_SIGNATURE:
                 {
-                    LPDFN_HEADER  lpMemDfnHdr;      // Ptr to defined function header ...
+                    LPDFN_HEADER  lpMemDfnHdr;      // Ptr to user-defined function/operator header ...
                     LPFCNLINE     lpFcnLines;       // Ptr to array of function line structs (FCNLINE[numFcnLines])
                     UINT          uNumLines,        // # function lines
                                   uLine,            // Loop counter
                                   uMaxLineLen;      // Length of the longest line
                     APLUINT       ByteRes;          // # bytes in the result
 
-                    // Get ptr to defined function header
+                    // Get ptr to user-defined function/operator header
                     lpMemDfnHdr = (LPDFN_HEADER) lpMemData;
 
                     // Lock the memory to get a ptr to it
@@ -1696,8 +1696,8 @@ APLINT CalcSymentrySize
     // If it is a user function/operator, ...
     if (IsNameTypeFnOp (lpSymEntry->stFlags.ObjType))
     {
-        HGLOBAL      hGlbDfnHdr;        // Defined function header global memory handle
-        LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header ...
+        HGLOBAL      hGlbDfnHdr;        // User-defined function/operator header global memory handle
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
         LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
         UINT         uNumLines,         // # function lines
                      uLine;             // Loop counter
@@ -1705,14 +1705,14 @@ APLINT CalcSymentrySize
         // Get the global memory handle
         hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
-        // stData is a valid HGLOBAL function array or defined function
+        // stData is a valid HGLOBAL function array or user-defined function/operator
         Assert (IsGlbTypeFcnDir (hGlbDfnHdr)
              || IsGlbTypeDfnDir (hGlbDfnHdr));
 
         // Clear the ptr type bits
         hGlbDfnHdr = ClrPtrTypeDirGlb (hGlbDfnHdr);
 
-        // Split cases based upon the defined function bit
+        // Split cases based upon the user-defined function/operator bit
         if (lpSymEntry->stFlags.UsrDfn)
         {
             // Lock the memory to get a ptr to it

@@ -197,10 +197,10 @@ typedef struct tagSTFLAGS
                             //            (see enum NAME_TYPES)
          SysVarValid:4,     // 0003C000:  Index to validation routine for System Vars
                             //            (see enum SYSVARS)
-         UsrDfn:1,          // 00040000:  Defined function/operator
-         DfnLabel:1,        // 00080000:  Defined function/operator label        (valid only if .Value is set)
-         DfnSysLabel:1,     // 00100000:  Defined function/operator system label (valid only if .Value is set)
-         DfnAxis:1,         // 00200000:  Defined function/operator accepts axis value
+         UsrDfn:1,          // 00040000:  User-defined function/operator
+         DfnLabel:1,        // 00080000:  User-defined function/operator label        (valid only if .Value is set)
+         DfnSysLabel:1,     // 00100000:  User-defined function/operator system label (valid only if .Value is set)
+         DfnAxis:1,         // 00200000:  User-defined function/operator accepts axis value
          FcnDir:1,          // 00400000:  Direct function/operator               (stNameFcn is valid)
          Avail:9;           // FF800000:  Available bits
 } STFLAGS, *LPSTFLAGS;

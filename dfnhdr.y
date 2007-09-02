@@ -96,7 +96,8 @@ Right Arg
 
 This yields 768 (=4 x 8 x 8 x 3) distinct Monadic/Dyadic Function/Operator headers
 and           8 (=4 x 1 x 2 x 1) distinct Niladic Function headers
-for a total of 776 (=768 + 8) Defined Function headers, not counting locals.
+for a total of 776 (=768 + 8) User-defined function/operator headers,
+not counting the presence/absence of locals.
 
  */
 
@@ -852,8 +853,8 @@ BOOL GetOprName
 
         case 2:         // Monadic operator
             lpfhLocalVars->DfnType     = DFNTYPE_OP1;
-            lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[0];
-            lpfhLocalVars->lpYYRhtOpr  = &lpYYArg->lpYYStrandBase[1];
+            lpfhLocalVars->lpYYLftOpr  = &lpYYArg->lpYYStrandBase[0];
+            lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[1];
 
             return TRUE;
 

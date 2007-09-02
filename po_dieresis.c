@@ -191,7 +191,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 break;
 
             case TKT_FCNARRAY:
-                // Get a ptr to the prototype function for the defined function
+                // Get a ptr to the prototype function for the user-defined function/operator
                 lpPrimProtoLft = ExecDfnGlbProto_EM_YY;
 
 ////////////////// Make sure the result is marked as Nested
@@ -862,7 +862,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                 break;
 
             case TKT_FCNARRAY:
-                // Get a ptr to the prototype function for the defined function
+                // Get a ptr to the prototype function for the user-defined function/operator
                 lpPrimProtoLft = ExecDfnGlbProto_EM_YY;
 
 ////////////////// Make sure the result is marked as Nested

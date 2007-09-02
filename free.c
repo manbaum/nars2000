@@ -107,17 +107,18 @@ void FreeResultSub
             // Get the global memory handle
             hGlbData = lptkRes->tkData.tkSym->stData.stGlbData;
 
-            // Data is an valid HGLOBAL named primitive or defined function
+            // Data is an valid HGLOBAL named primitive
+            //   or user-defined function/operator
             Assert (IsGlbTypeFcnDir (hGlbData)
                  || IsGlbTypeDfnDir (hGlbData));
 
             // Is it time to free the name?
             if (bFreeName)
             {
-                // If it's a defined function, ...
+                // If it's a user-defined function/operator, ...
                 if (lptkRes->tkData.tkSym->stFlags.UsrDfn)
                 {
-                    // Free the defined function,
+                    // Free the user-defined function/operator
                     if (FreeResultGlobalDfn (hGlbData))
                     {
 #ifdef DEBUG_ZAP
@@ -164,7 +165,8 @@ void FreeResultSub
                 // Get the global memory ptr
                 hGlbData = lptkRes->tkData.tkSym->stData.stGlbData;
 
-                // stData is a valid HGLOBAL variable or function array or defined function
+                // stData is a valid HGLOBAL variable or function array
+                //   or user-defined function/operator
                 Assert (IsGlbTypeVarDir (hGlbData)
                      || IsGlbTypeFcnDir (hGlbData)
                      || IsGlbTypeDfnDir (hGlbData));
@@ -494,7 +496,8 @@ BOOL FreeResultGlobalFcn
                 // Get the global memory handle
                 hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
 
-                // tkData is a valid HGLOBAL function array or defined function
+                // tkData is a valid HGLOBAL function array
+                //   or user-defined function/operator
                 Assert (IsGlbTypeFcnDir (hGlbLcl)
                      || IsGlbTypeDfnDir (hGlbLcl));
 
@@ -520,7 +523,7 @@ BOOL FreeResultGlobalFcn
                         break;
 
                     case DFN_HEADER_SIGNATURE:
-                        // Free the defined function
+                        // Free the user-defined function/operator
                         if (FreeResultGlobalDfn (hGlbLcl))
                         {
 #ifdef DEBUG_ZAP
@@ -644,7 +647,7 @@ UINT GetSignatureGlb
 //***************************************************************************
 //  $FreeResultGlobalDfn
 //
-//  Free a global defined function
+//  Free a global user-defined function/operator
 //***************************************************************************
 
 #ifdef DEBUG
@@ -657,12 +660,12 @@ BOOL FreeResultGlobalDfn
     (HGLOBAL hGlbData)
 
 {
-    LPDFN_HEADER lpMemDfn;          // Ptr to defined function header global memory
+    LPDFN_HEADER lpMemDfn;          // Ptr to user-defined function/operator header global memory
     UINT         numFcnLines,       // # lines in the function
                  RefCnt;            // Reference count
     LPFCNLINE    lpFcnLines;        // Ptr to the array of structs (FCNLINE[numFcnLine])
 
-    // Data is an valid HGLOBAL defined function
+    // Data is an valid HGLOBAL user-defined function/operator
     Assert (IsGlbTypeDfnDir (MakeGlbTypeGlb (hGlbData)));
 
     // Clear the ptr type bits

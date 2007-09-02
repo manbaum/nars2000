@@ -238,8 +238,8 @@ LRESULT APIENTRY FEWndProc
         case WM_CREATE:             // lpcs = (LPCREATESTRUCT) lParam; // Structure with creation data
         {
             LPSYMENTRY   lpSymName;         // Ptr to function name STE
-            HGLOBAL      hGlbDfnHdr = NULL; // Defined function header global memory handle
-            LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header global memory
+            HGLOBAL      hGlbDfnHdr = NULL; // User-defined function/operator header global memory handle
+            LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
             HGLOBAL      hGlbPTD;           // PerTabData global memory handle
             LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
@@ -255,7 +255,7 @@ LRESULT APIENTRY FEWndProc
             lpSymName = ParseFunctionName (hWnd, ((LPFE_CREATESTRUCT) (lpMDIcs->lParam))->lpwszLine);
             if (lpSymName)
             {
-                // If it's a function/operator but not a defined function, ...
+                // If it's a function/operator but not a user-defined function/operator, ...
                 if (IsNameTypeFnOp (lpSymName->stFlags.ObjType)
                  && !lpSymName->stFlags.UsrDfn)
                 {
@@ -2513,9 +2513,9 @@ BOOL SaveFunction
     UINT          uLineLen;             // Line length
     HGLOBAL       hGlbTxtHdr = NULL,    // Header text global memory handle
                   hGlbTknHdr = NULL,    // Tokenized header text ...
-                  hGlbDfnHdr = NULL;    // Defined function header ...
+                  hGlbDfnHdr = NULL;    // User-defined function/operator header ...
     LPMEMTXTUNION lpMemTxtLine;         // Ptr to header/line text global memory
-    LPDFN_HEADER  lpMemDfnHdr;          // Ptr to defined function header ...
+    LPDFN_HEADER  lpMemDfnHdr;          // Ptr to user-defined function/operator header ...
     BOOL          bRet = FALSE;         // TRUE iff result is valid
     FHLOCALVARS   fhLocalVars = {0};    // Re-entrant vars
     HGLOBAL       hGlbPTD;              // PerTabData global memory handle
@@ -2666,7 +2666,7 @@ BOOL SaveFunction
         LPUNDOBUF   lpUndoBeg,          // Ptr to start of Undo buffer
                     lpUndoLst;          // Ptr to end ...
         LPSYMENTRY  lpSymName = NULL,   // Ptr to SYMENTRY for the function name
-                   *lplpSymDfnHdr;      // Ptr to LPSYMENTRYs at end of defined function header
+                   *lplpSymDfnHdr;      // Ptr to LPSYMENTRYs at end of user-defined function/operator header
 
         // Check to see if this function is already in global memory
         lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
@@ -2953,7 +2953,7 @@ BOOL SaveFunction
         // Save the global memory handle in the STE
         lpSymName->stData.stGlbData = MakeGlbTypeGlb (hGlbDfnHdr);
 
-        // Mark as valued and defined function
+        // Mark as valued and user-defined function/operator
         lpSymName->stFlags.Value  =
         lpSymName->stFlags.UsrDfn = 1;
 
@@ -3054,7 +3054,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 void GetSpecialLabelNums
-    (LPDFN_HEADER  lpMemDfnHdr)     // Ptr to defined function header
+    (LPDFN_HEADER  lpMemDfnHdr)     // Ptr to user-defined function/operator header
 
 {
     UINT           numFcnLines,  // # lines in the function

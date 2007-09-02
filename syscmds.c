@@ -431,7 +431,8 @@ BOOL CmdReset_EM
     (LPWCHAR lpwszTail)
 
 {
-    GotoReset ();
+    DbgBrk ();
+////SiResetAll ();
 
     return TRUE;
 } // End CmdReset_EM
@@ -457,6 +458,11 @@ BOOL CmdSi_EM
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+#ifdef DEBUG
+    if (lpMemPTD->lpSISCur EQ NULL)
+       AppendLine (WS_UTF16_ZILDE, FALSE, TRUE);
+    else
+#endif
     // Loop backwards through the SI levels
     for (lpSISCur = lpMemPTD->lpSISCur;
          lpSISCur;
@@ -468,6 +474,9 @@ BOOL CmdSi_EM
         switch (lpSISCur->DfnType)
         {
             case DFNTYPE_IMM:
+#ifdef DEBUG
+                AppendLine (WS_UTF16_EPSILON, FALSE, TRUE);
+#endif
                 break;
 
             case DFNTYPE_OP1:

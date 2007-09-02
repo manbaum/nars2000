@@ -734,6 +734,13 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
 #endif
 ;
 
+typedef struct tagWFSO      // Struct for WaitForSingleObject
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    HANDLE       WaitHandle,    // WaitHandle from RegisterWaitForSingleObject
+                 hSigaphore;    // Handle to signal next (may be NULL)
+} WFSO, *LPWFSO;
+
 IE_THREAD ieThread;             // Temporary global
 
 
@@ -748,16 +755,40 @@ VOID CALLBACK WaitForImmExecLine
      BOOLEAN TimerOrWaitFired)      // Reason
 
 {
-#define hGlbPTD     ((HGLOBAL) lpParameter)
+    LPWFSO lpMemWFSO;       // Ptr to WFSO global memory
+#ifdef DEBUG
+    DWORD  dwRet;           // Return code from UnregisterWait
+#endif
+
+#define hGlbWFSO    ((HGLOBAL) lpParameter)
+
+    // Lock the memory to get a ptr to it
+    lpMemWFSO = MyGlobalLock (hGlbWFSO);
 
     // Save the thread's PerTabData global memory handle
-    TlsSetValue (dwTlsPerTabData, hGlbPTD);
+    TlsSetValue (dwTlsPerTabData, lpMemWFSO->hGlbPTD);
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
     Unlocalize (FALSE);
 
-#undef  hGlbPTD
+    // Cancel the wait operation
+#ifdef DEBUG
+    dwRet =
+#endif
+    UnregisterWait (lpMemWFSO->WaitHandle);
+
+    Assert (dwRet EQ 0 || dwRet EQ ERROR_IO_PENDING);
+
+    // Signal the next level (if appropriate)
+    if (lpMemWFSO->hSigaphore)
+        ReleaseSemaphore (lpMemWFSO->hSigaphore, 1, NULL);
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+
+    // Free the allocated memory
+    DbgGlobalFree (hGlbWFSO); hGlbWFSO = NULL;
+#undef  hGlbWFSO
 } // End WaitForImmExecLine
 
 
@@ -781,9 +812,6 @@ void ImmExecLine
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    HANDLE       hThread,       // Thread handle
-                 WaitHandle;    // Wait handle from RegisterWaitForSingleObject
-    DWORD        dwThreadId;    // The thread ID #
     LPWCHAR      lpwszCompLine, // Ptr to complete line
                  lpwszLine;     // Ptr to line following leading blanks
     UINT         uLinePos,      // Char position of start of line
@@ -898,38 +926,11 @@ void ImmExecLine
             break;
 
         default:
-            // Save args in struc to pass to thread func
-            ieThread.hWndEC        = hWndEC;
-            ieThread.hGlbPTD       = TlsGetValue (dwTlsPerTabData);
-            ieThread.lpwszCompLine = lpwszCompLine;
-            ieThread.hSemaReset    =
-            CreateSemaphore (NULL,              // No security attrs
-                             0,                 // Initial count (non-signalled)
-                             64*1024,           // Maximum count
-                             NULL);             // No name
-            // Create a new thread
-            hThread = CreateThread (NULL,                   // No security attrs
-                                    0,                      // Use default stack size
-                                   &ImmExecLineInThread,    // Starting routine
-                                   &ieThread,               // Param to thread func
-                                    0,                      // Creation flag
-                                   &dwThreadId);            // Returns thread id
-            // Tell W to callback when this thread terminates
-            RegisterWaitForSingleObject (&WaitHandle,           // Return wait handle
-                                          hThread,              // Handle to wait on
-                                         &WaitForImmExecLine,   // Callback function
-                                          hGlbPTD,              // Callback function parameter
-                                          INFINITE,             // Wait time in milliseconds
-                                          WT_EXECUTEONLYONCE);  // Options
-////////////// Lock the memory to get a ptr to it
-////////////lpMemPTD = MyGlobalLock (hGlbPTD);
-////////////
-////////////// Tell the Session Manager to wait as appropriate
-////////////PostMessage (lpMemPTD->hWndSM, MYWM_WFMO, (WPARAM) hThread, (LPARAM) ieThread.hSemaReset);
-////////////
-////////////// We no longer need this ptr
-////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
+            // Execute the statement
+            ImmExecStmt (lpwszCompLine,     // Ptr to line to execute
+                         TRUE,              // Free lpwszCompLine on completion
+                         FALSE,             // TRUE iff wait until finished
+                         hWndEC);           // Edit Control window handle
             return;
     } // End SWITCH
 
@@ -948,6 +949,84 @@ void ImmExecLine
     // Free the virtual memory for the complete line
     VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
 } // End ImmExecLine
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ImmExecStmt
+//
+//  Execute a statement
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ImmExecStmt"
+#else
+#define APPEND_NAME
+#endif
+
+EXIT_TYPES ImmExecStmt
+    (LPWCHAR lpwszCompLine, // Ptr to line to execute
+     BOOL    bFreeLine,     // TRUE iff free lpwszCompLine on completion
+     BOOL    bWaitUntilDone,// TRUE iff wait until finished
+     HWND    hWndEC)        // Edit Control window handle
+
+{
+    HANDLE     hThread;     // Thread handle
+    DWORD      dwThreadId;  // The thread ID #
+    LPWFSO     lpMemWFSO;   // Ptr to WFSO global memory
+    EXIT_TYPES exitType;    // Exit code from thread
+
+    // Save args in struc to pass to thread func
+    ieThread.hWndEC        = hWndEC;
+    ieThread.hGlbPTD       = TlsGetValue (dwTlsPerTabData);
+    ieThread.lpwszCompLine = lpwszCompLine;
+    ieThread.hSemaReset    = NULL;
+    ieThread.hGlbWFSO      = DbgGlobalAlloc (GHND, sizeof (WFSO));
+    ieThread.bFreeLine     = bFreeLine;
+
+    // Lock the memory to get a ptr to it
+    lpMemWFSO = MyGlobalLock (ieThread.hGlbWFSO);
+
+    // Fill in the struct
+    lpMemWFSO->hGlbPTD = ieThread.hGlbPTD;
+
+    // Create a new thread
+    hThread = CreateThread (NULL,                   // No security attrs
+                            0,                      // Use default stack size
+                           &ImmExecLineInThread,    // Starting routine
+                           &ieThread,               // Param to thread func
+                            CREATE_SUSPENDED,       // Creation flag
+                           &dwThreadId);            // Returns thread id
+    // Tell W to callback when this thread terminates
+    if (bWaitUntilDone)
+    {
+        // Start 'er up
+        ResumeThread (hThread);
+
+        // Wait until this thread terminates
+        WaitForSingleObject (hThread,              // Handle to wait on
+                             INFINITE);            // Wait time in milliseconds
+        // Get the exit code
+        GetExitCodeThread (hThread, &exitType);
+
+        return exitType;
+    } else
+    {
+        RegisterWaitForSingleObject (&lpMemWFSO->WaitHandle,// Return wait handle
+                                      hThread,              // Handle to wait on
+                                     &WaitForImmExecLine,   // Callback function
+                                      ieThread.hGlbWFSO,    // Callback function parameter
+                                      INFINITE,             // Wait time in milliseconds
+                                      WT_EXECUTEONLYONCE);  // Options
+        // We no longer need this ptr
+        MyGlobalUnlock (ieThread.hGlbWFSO); lpMemWFSO = NULL;
+
+        // Start 'er up
+        ResumeThread (hThread);
+
+        return EXITTYPE_NONE;
+    } // End IF/ELSE
+} // End ImmExecStmt
 #undef  APPEND_NAME
 
 
@@ -971,13 +1050,17 @@ DWORD WINAPI ImmExecLineInThread
     HANDLE       hSigaphore = NULL, // Semaphore handle to signal (NULL if none)
                  hSemaReset;        // Semaphore handle for )RESET
     LPWCHAR      lpwszCompLine;     // Ptr to complete line
-    HGLOBAL      hGlbToken;         // Handle of tokenized line
+    HGLOBAL      hGlbToken,         // Handle of tokenized line
+                 hGlbWFSO;          // WaitForSingleObject callback global memory handle
     HWND         hWndEC,            // Handle of Edit Control window
                  hWndSM;            // ...       Session Manager ...
     HGLOBAL      hGlbPTD;           // Handle to this window's PerTabData
     LPPERTABDATA lpMemPTD;          // Ptr to ...
-    DWORD        dwRet = 0;         // Return code from this function
-    BOOL         bResetting;        // TRUE iff we're resetting
+    BOOL         bResetting,        // TRUE iff we're resetting
+                 bFreeLine;         // TRUE iff we should free lpszCompLine on completion
+    EXIT_TYPES   exitType;          // Return code from ParseLine
+    LPWFSO       lpMemWFSO;         // Ptr to WFSO global memory
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
 
     // Save the thread type ('IE')
     TlsSetValue (dwTlsType, (LPVOID) 'IE');
@@ -987,6 +1070,8 @@ DWORD WINAPI ImmExecLineInThread
     hGlbPTD       = lpieThread->hGlbPTD;
     lpwszCompLine = lpieThread->lpwszCompLine;
     hSemaReset    = lpieThread->hSemaReset;
+    hGlbWFSO      = lpieThread->hGlbWFSO;
+    bFreeLine     = lpieThread->bFreeLine;
 
     // Save the thread's PerTabData global memory handle
     TlsSetValue (dwTlsPerTabData, hGlbPTD);
@@ -1008,7 +1093,7 @@ DWORD WINAPI ImmExecLineInThread
     // If it's invalid, ...
     if (hGlbToken EQ NULL)
     {
-        dwRet = 1;          // Mark as failed Tokenize_EM
+        exitType = EXITTYPE_ERROR;  // Mark as in error
 
         goto ERROR_EXIT;
     } // End IF
@@ -1027,12 +1112,54 @@ DWORD WINAPI ImmExecLineInThread
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Run the parser in a separate thread
+    exitType =
     ParseLine (hWndSM,              // Session Manager window handle
                NULL,                // Line text global memory handle
                hGlbToken,           // Tokenized line global memory handle
                lpwszCompLine,       // Ptr to the complete line
                hGlbPTD,             // PerTabData global memory handle
                hSemaReset);         // Semaphore handle for )RESET
+    // Split cases based upon the exit type
+    switch (exitType)
+    {
+        case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
+        case EXITTYPE_DISPLAY:      // ...
+        case EXITTYPE_NODISPLAY:    // ...
+        case EXITTYPE_NOVALUE:      // ...
+        case EXITTYPE_ERROR:        // ...
+            break;
+
+        case EXITTYPE_GOTO_LINE:
+        case EXITTYPE_RESET_1LVL:
+        case EXITTYPE_RESET_ALL:
+            // Lock the memory to get a ptr to it
+            lpMemWFSO = MyGlobalLock (hGlbWFSO);
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Save the semaphore handle to signal after Unlocalize (may be NULL if none)
+            for (lpSISCur = lpMemPTD->lpSISCur;
+                 lpSISCur;
+                 lpSISCur = lpSISCur->lpSISPrv)
+            if (lpSISCur->hSemaphore)
+            {
+                lpMemWFSO->hSigaphore = lpSISCur->hSemaphore;
+
+                break;
+            } // End FOR/IF
+
+            // We no longer need these ptrs
+            MyGlobalUnlock (hGlbPTD);  lpMemPTD  = NULL;
+            MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+
+            break;
+
+        case EXITTYPE_NONE:
+        defstop
+            break;
+    } // End SWITCH
+
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -1045,8 +1172,7 @@ DWORD WINAPI ImmExecLineInThread
     {
         hSigaphore = lpMemPTD->lpSISCur->hSigaphore;
         lpMemPTD->lpSISCur->hSigaphore = NULL;
-    } else
-        hSigaphore = NULL;
+    } // End IF
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
@@ -1066,7 +1192,10 @@ ERROR_EXIT:
     dprintfW (L"--Ending   thread in <ImmExecLineInThread>.");
 #endif
     // Free the virtual memory for the complete line
-    VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
+    if (bFreeLine)
+    {
+        VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
+    } // End IF
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1095,7 +1224,7 @@ ERROR_EXIT:
         Sleep (0);
     } // End IF
 
-    return dwRet;
+    return exitType;
 } // End ImmExecLineInThread
 #undef  APPEND_NAME
 
@@ -3196,7 +3325,8 @@ void Untokenize
                 // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
                 if (!lpToken->tkData.tkSym->stFlags.Imm)
                 {
-                    // stData is an internal function, a valid HGLOBAL variable or function array, or defined function
+                    // stData is an internal function, a valid HGLOBAL variable or function array,
+                    //   or user-defined function/operator
                     Assert (lpToken->tkData.tkSym->stFlags.FcnDir
                          || IsGlbTypeVarDir (lpToken->tkData.tkSym->stData.stGlbData)
                          || IsGlbTypeFcnDir (lpToken->tkData.tkSym->stData.stGlbData)

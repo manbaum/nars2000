@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Defined Function Execution Routines
+//  NARS2000 -- User-Defined Function/Operator Execution Routines
 //***************************************************************************
 
 #define STRICT
@@ -23,7 +23,7 @@
 //***************************************************************************
 //  $ExecDfnGlbProto_EM_YY
 //
-//  Execute a defined function on a prototype
+//  Execute a user-defined function/operator on a prototype
 //***************************************************************************
 
 #ifdef DEBUG
@@ -40,13 +40,13 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
 {
     HGLOBAL hGlbProto;              // Prototype global memory handle
 
-    // Get the defined function global memory handle
+    // Get the user-defined function/operator global memory handle
     hGlbProto = lptkFcnStr->tkData.tkGlbData;
 
     Assert (GetSignatureGlb (ClrPtrTypeDirGlb (hGlbProto)) EQ DFN_HEADER_SIGNATURE);
 
-    // Execute the defined function on the arg using the []PROTOTYPE entry point
-    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbProto),  // Defined function global memory handle
+    // Execute the user-defined function/operator on the arg using the []PROTOTYPE entry point
+    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbProto),  // User-defined function/operator global memory handle
                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
               (LPPL_YYSTYPE) lptkFcnStr,                    // Ptr to function strand
                              lptkRhtArg,                    // Ptr to right arg token
@@ -58,7 +58,7 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
 //***************************************************************************
 //  $ExecDfnGlb_EM_YY
 //
-//  Execute a defined function
+//  Execute a user-defined function/operator
 //***************************************************************************
 
 #ifdef DEBUG
@@ -68,7 +68,7 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
 #endif
 
 LPPL_YYSTYPE ExecDfnGlb_EM_YY
-    (HGLOBAL      hGlbDfnHdr,       // Defined function global memory handle
+    (HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle
      LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
      LPTOKEN      lptkRhtArg,       // Ptr to right arg token
@@ -76,7 +76,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
 
 {
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    LPDFN_HEADER lpMemDfnHdr;       // Ptr to defined function header
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
     APLSTYPE     aplTypeLft,        // Left arg storage type
                  aplTypeRht;        // Right ...
     APLNELM      aplNELMLft,        // Left arg NELM
@@ -226,7 +226,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
 RESTART_EXCEPTION_EXECDFNGLB:
     __try
     {
-        // Fill in the SIS header for a User-Defined Function
+        // Fill in the SIS header for a User-Defined Function/Operator
         lpMemPTD->lpSISNxt->Sig.nature   = SIS_HEADER_SIGNATURE;
 ////////lpMemPTD->lpSISNxt->hThread      =          // Filled in by ExecuteFunction_EM_YY
 ////////lpMemPTD->lpSISNxt->hSemaphore   =          // ...
@@ -429,10 +429,10 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
 {
     LPPL_YYSTYPE   lpYYRes = NULL;  // Ptr to the result
-    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to defined function header
+    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header
     LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
     LPTOKEN        lptkLine;        // Ptr to tokenized line
-    HGLOBAL        hGlbDfnHdr,      // Defined function global memory handle
+    HGLOBAL        hGlbDfnHdr,      // User-defined function/operator global memory handle
                    hGlbTxtLine,     // Line text global memory handle
                    hGlbTknLine,     // Tokenized line global memory handle
                    hGlbPTD;         // PerTabData global memory handle
@@ -447,6 +447,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
     BOOL           bRet,            // TRUE iff result is valid
                    bResetting = FALSE; // TRUE iff we're resetting
+    EXIT_TYPES     exitType;        // Return code from ParseLine
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -454,7 +455,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Get the defined function header global memory handle
+    // Get the user-defined function/operator header global memory handle
     hGlbDfnHdr = lpMemPTD->lpSISCur->hGlbDfnHdr;
 
     // Lock the memory to get a ptr to it
@@ -523,6 +524,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // Execute the function line
+        exitType =
         ParseLine (hWndSM,                  // Session Manager window handle
                    hGlbTxtLine,             // Line text global memory handle
                    hGlbTknLine,             // Tokenixed line global memory handle
@@ -530,6 +532,34 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                    hGlbPTD,                 // PerTabData global memory handle
                    NULL);                   // Semaphore handle for )RESET
 ///////////////////hSemaReset);             // Semaphore handle for )RESET
+
+        switch (exitType)
+        {
+            case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
+            case EXITTYPE_DISPLAY:      // ...
+            case EXITTYPE_NODISPLAY:    // ...
+            case EXITTYPE_NOVALUE:      // ...
+            case EXITTYPE_ERROR:        // ...
+            case EXITTYPE_GOTO_LINE:    // ...
+                break;
+
+            case EXITTYPE_RESET_1LVL:
+                DbgBrk ();
+
+
+                break;
+
+            case EXITTYPE_RESET_ALL:
+                DbgBrk ();
+
+
+                break;
+
+            case EXITTYPE_NONE:
+            defstop
+                break;
+        } // End SWITCH
+
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -792,10 +822,10 @@ ERROR_EXIT:
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    // If we're resetting, keep on truckin'
-    if (bResetting)
-        GotoReset ();
-
+////// If we're resetting, keep on truckin'
+////if (bResetting)
+////    GotoReset ();
+////
     return lpYYRes;
 } // End ExecuteFunction_EM_YY
 #undef  APPEND_NAME
@@ -891,10 +921,10 @@ BOOL Unlocalize
                         break;
 
                     case NAMETYPE_FN0:
-                        // stData is a defined function
+                        // stData is a user-defined function/operator
                         Assert (lpSymEntryCur->stFlags.UsrDfn);
 
-                        // Free the global defined function
+                        // Free the global user-defined function/operator
                         FreeResultGlobalDfn (ClrPtrTypeDirGlb (hGlbData));
 
                         break;
@@ -903,7 +933,7 @@ BOOL Unlocalize
                     case NAMETYPE_OP1:
                     case NAMETYPE_OP2:
                         if (lpSymEntryCur->stFlags.UsrDfn)
-                            // Free the global defined function
+                            // Free the global user-defined function/operator
                             FreeResultGlobalDfn (ClrPtrTypeDirGlb (hGlbData));
                         else
                             // Free the global function array

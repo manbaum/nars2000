@@ -114,6 +114,10 @@ Stmts:
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              Assert (YYResIsEmpty ());
+
+                                             // Set the exit type to error unless already set
+                                             if (lpplLocalVars->ExitType EQ EXITTYPE_NONE)
+                                                 lpplLocalVars->ExitType = EXITTYPE_ERROR;
                                          } // End IF
 
                                          YYABORT;
@@ -167,12 +171,12 @@ Stmt:
                                                      PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 11);
                                                  else
                                                  {
-                                                     LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
-
-                                                     // Peel back to the first non-Imm/Exec layer
-                                                     //   starting with the previous SIS header
-                                                     lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
-
+/////////////////////////////////////////////////////LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////// Peel back to the first non-Imm/Exec layer
+///////////////////////////////////////////////////////   starting with the previous SIS header
+/////////////////////////////////////////////////////lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
+/////////////////////////////////////////////////////
                                                      // Copy the result
                                                      lpplLocalVars->lpYYRes = CopyPL_YYSTYPE_EM_YY (&$1, FALSE);
                                                      lpMemPTD->YYResExec = *lpplLocalVars->lpYYRes;
@@ -3964,13 +3968,13 @@ SingTokn:
 //***************************************************************************
 
 
-PL_THREAD plThread;             // Temporary global
-
-
 //***************************************************************************
 //  $ParseLine
 //
 //  Parse a line
+//  The result of parsing the line is in the return value (plLocalvars.ExitType)
+//    as well as in lpMemPTD->YYResExec if there is a value (EXITTYPE_DISPLAY
+//    or EXITTYPE_NODISPLAY).
 //***************************************************************************
 
 #ifdef debug
@@ -3979,7 +3983,7 @@ PL_THREAD plThread;             // Temporary global
 #define APPEND_NAME
 #endif
 
-void ParseLine
+EXIT_TYPES ParseLine
     (HWND    hWndSM,            // Session Manager window handle
      HGLOBAL hGlbTxtLine,       // Line text global memory handle
      HGLOBAL hGlbToken,         // Tokenized line global memory handle (may be NULL)
@@ -3988,103 +3992,12 @@ void ParseLine
      HANDLE  hSemaReset)        // Semaphore handle for )RESET
 
 {
-////HANDLE       hHandle[2];    // Array of handles
-////DWORD        dwThreadId;    // Thread ID
-////BOOL         bResetting;    // TRUE iff we're resetting
-////LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Save args in struc to pass to thread func
-    plThread.hWndSM      = hWndSM;
-    plThread.hGlbTxtLine = hGlbTxtLine;
-    plThread.hGlbToken   = hGlbToken;
-    plThread.lpwszLine   = lpwszLine;
-    plThread.hGlbPTD     = hGlbPTD;
-    plThread.hSemaReset  = hSemaReset;
-////plThread.hSemaReset  = hHandle[1] = hSemaReset;
-
-    ParseLineInThread (&plThread);
-
-////     // Create a new thread
-////     hHandle[0] =
-////         CreateThread (NULL,                 // No security attrs
-////                       0,                    // Use default stack size
-////                      &ParseLineInThread,    // Starting routine
-////                      &plThread,             // Param to thread func
-////                       0,                    // Creation flag
-////                      &dwThreadId);          // Returns thread id
-//// #ifdef DEBUG
-////     dprintfW (L"~~WaitForMultipleObjects (ENTRY):  %s (%S#%d)", L"ParseLine", FNLN);
-//// #endif
-////     // Wait for the thread to terminate
-////     //   or the Reset Semaphore to signal
-////     switch (WaitForMultipleObjects (1,           // # handles to wait for ***FIXME -- Use WaitForSingleObject
-////                                     hHandle,     // Handle array
-////                                     FALSE,       // Return when any handle is signalled
-////                                     INFINITE))   // Timeout value in milliseconds
-////     {
-////         case WAIT_OBJECT_0 + 0:     // hThread terminated
-//// #ifdef DEBUG
-////             dprintfW (L"~~WaitForMultipleObjects (THREAD-EXIT):  %s (%S#%d)", L"ParseLine", FNLN);
-//// #endif
-////             // Close the thread handle as it has terminated
-////             CloseHandle (hHandle[0]); hHandle[0] = NULL;
-////
-////             DbgBrk ();
-////
-////             // Lock the memory to get a ptr to it
-////             lpMemPTD = MyGlobalLock (hGlbPTD);
-////
-////             // Get the resetting flag
-////             bResetting = lpMemPTD->lpSISCur->Resetting;
-////
-////             // We no longer need this ptr
-////             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-////
-////             return bResetting;
-////
-//// ////////case WAIT_OBJECT_0 + 1:     // hSemaReset signalled
-//// ////////    DbgBrk ();
-//// ////////
-//// ////////    // Mark as resetting
-//// ////////    return TRUE;
-////
-////         defstop
-////             // Return something to keep the compiler happy
-////             return FALSE;
-////     } // End SWITCH
-} // End ParseLine
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $ParseLineInThread
-//
-//  Parse a line in a thread
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ParseLineInThread"
-#else
-#define APPEND_NAME
-#endif
-
-DWORD WINAPI ParseLineInThread
-    (LPPL_THREAD lpplThread)
-
-{
-    HGLOBAL      hGlbTxtLine,       // Line text global memory handle
-                 hGlbToken;         // Tokenized line global memory handle
-    LPWCHAR      lpwszLine;         // Ptr to WCHARs in the line to parse
-    HGLOBAL      hGlbPTD;           // Handle to PerTabData
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     PLLOCALVARS  plLocalVars = {0}; // Re-entrant vars
-    UINT         oldTlsPlLocalVars; // Ptr to previous value of dwTlsPlLocalVars
-    UINT         oldTlsType;        // Previous value of dwTlsType
-    HWND         hWndSM;            // Window handle to Session Manager
-    UINT         uError;            // Error code
+    UINT         oldTlsPlLocalVars, // Ptr to previous value of dwTlsPlLocalVars
+                 oldTlsType,        // Previous value of dwTlsType
+                 uError;            // Error code
     BOOL         bRet;              // TRUE iff result is valid
-    DWORD        dwRet = 0;         // Return code from thread
-    HANDLE       hSemaReset;        // Semaphore handle for )RESET
 
     // Save the previous value of dwTlsType
     (LPVOID) oldTlsType = TlsGetValue (dwTlsType);
@@ -4097,14 +4010,6 @@ DWORD WINAPI ParseLineInThread
 
     // Save the thread's ptr to local vars
     TlsSetValue (dwTlsPlLocalVars, (LPVOID) &plLocalVars);
-
-    // Extract values from the arg struc
-    hGlbTxtLine = lpplThread->hGlbTxtLine;
-    hGlbToken   = lpplThread->hGlbToken;
-    lpwszLine   = lpplThread->lpwszLine;
-    hGlbPTD     = lpplThread->hGlbPTD;
-    hWndSM      = lpplThread->hWndSM;
-    hSemaReset  = lpplThread->hSemaReset;
 
     // Save the thread's PerTabData global memory handle
     TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
@@ -4132,14 +4037,14 @@ DWORD WINAPI ParseLineInThread
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-RESTART_FROM_ERROR:
+////RESTART_FROM_ERROR:
     // Initialize the error code
     uError = ERRORCODE_NONE;
 
     // If we don't have a valid handle, ...
     if (!hGlbToken)
     {
-        dwRet = NEG1U;
+        plLocalVars.ExitType = EXITTYPE_ERROR;
 
         goto NORMAL_EXIT;
     } // End IF
@@ -4158,7 +4063,6 @@ RESTART_FROM_ERROR:
     plLocalVars.lpwszLine   = lpwszLine;
     plLocalVars.bLookAhead  = FALSE;
     plLocalVars.hSemaReset  = hSemaReset;
-    plLocalVars.ExitType    = EXITTYPE_NONE;
 
     // Lock the memory to get a ptr to it, and set the variables
     UTLockAndSet (plLocalVars.hGlbToken, &plLocalVars.t2);
@@ -4183,6 +4087,8 @@ RESTART_FROM_ERROR:
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("ParseLine:  VirtualAlloc for <plLocalVars.lpYYStrandStart[STRAND_VAR]> failed");
 
+        plLocalVars.ExitType = EXITTYPE_ERROR;
+
         goto ERROR_EXIT;
     } // End IF
 
@@ -4201,6 +4107,8 @@ RESTART_FROM_ERROR:
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("ParseLine:  VirtualAlloc for <pLocalVars.lpYYStrandStart[STRAND_FCN]> failed");
+
+        plLocalVars.ExitType = EXITTYPE_ERROR;
 
         goto ERROR_EXIT;
     } // End IF
@@ -4245,36 +4153,57 @@ RESTART_FROM_ERROR:
 
     if (!plLocalVars.bCtrlBreak
      && !plLocalVars.bLookAhead)
+    // Split cases based upon the exit type
     switch (plLocalVars.ExitType)
     {
-        case EXITTYPE_NONE:
+        case EXITTYPE_RESET_ALL:
             DbgBrk ();
 
             break;
 
-        case EXITTYPE_GOTO_ZILDE:
-        case EXITTYPE_GOTO_LINE:
-        case EXITTYPE_RESET_ALL:
         case EXITTYPE_RESET_1LVL:
             DbgBrk ();
 
             break;
 
-        case EXITTYPE_ERROR:
-            DbgBrk ();
+        case EXITTYPE_ERROR:        // Mark user-defined function/operator as suspended
+        {
+            LPSIS_HEADER lpSISCur;
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Get a ptr to the current SIS header
+            lpSISCur = lpMemPTD->lpSISCur;
+
+            // If this level or an adjacent preceding level is
+            //   from the Execute primitive, peel back to the
+            //   preceding level
+            while (lpSISCur && lpSISCur->DfnType EQ DFNTYPE_EXEC)
+                lpSISCur = lpSISCur->lpSISPrv;
+
+            // If this level is a user-defined function/operator,
+            //   mark it as suspended
+            if (lpSISCur
+             && (lpSISCur->DfnType EQ DFNTYPE_OP1
+              || lpSISCur->DfnType EQ DFNTYPE_OP2
+              || lpSISCur->DfnType EQ DFNTYPE_FCN))
+                lpMemPTD->lpSISCur->Suspended = TRUE;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             break;
+        } // End EXITTYPE_ERROR
 
-        case EXITTYPE_DISPLAY:
-        case EXITTYPE_NODISPLAY:
-        case EXITTYPE_NOVALUE:
-
-
-
-
-
+        case EXITTYPE_DISPLAY:      // Nothing more to do with these types
+        case EXITTYPE_NODISPLAY:    // ...
+        case EXITTYPE_NOVALUE:      // ...
+        case EXITTYPE_GOTO_ZILDE:   // ...
+        case EXITTYPE_GOTO_LINE:    // ...
             break;
 
+        case EXITTYPE_NONE:
         defstop
             break;
     } // End IF/SWITCH
@@ -4293,7 +4222,7 @@ RESTART_FROM_ERROR:
         // Reset the flag
         plLocalVars.bCtrlBreak = FALSE;
 
-        // Peel back to first defined function
+        // Peel back to first user-defined function/operator
         for (lpSISCur = lpMemPTD->lpSISCur;
              lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt;
              lpSISCur = lpSISCur->lpSISPrv)
@@ -4302,7 +4231,7 @@ RESTART_FROM_ERROR:
          || lpSISCur->DfnType EQ DFNTYPE_FCN)
             break;
 
-        // If called from a defined function/operator, ...
+        // If called from a user-defined function/operator, ...
         if (lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt)
             // Signal an error
             BreakMessage (hWndSM, lpSISCur);
@@ -4383,60 +4312,6 @@ NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (plLocalVars.hGlbToken); plLocalVars.t2.lpBase   = NULL;
 
-    // If there's an error to be signalled, ...
-    if (uError NE ERRORCODE_NONE)
-    {
-        HWND hWndEC;            // Edit Control window handle
-
-        // Get the Edit Control window handle
-        hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
-#ifdef DEBUG
-        if (uError EQ ERRORCODE_ELX)
-            DbgMsgW (L"~~Start []ELX on");
-        else
-            DbgMsgW (L"~~Start []ALX on");
-
-        if (lpwszLine)
-            DbgMsgW (lpwszLine);
-        else
-        {
-            LPMEMTXTUNION lpMemTxtLine;
-
-            // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
-
-            // Display the function line
-            DbgMsgW (&lpMemTxtLine->C);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-        } // End IF/ELSE
-#endif
-        // Mark as not executing function line
-        hGlbTxtLine = NULL;
-
-        // Set the text for the line
-        if (uError EQ ERRORCODE_ELX)
-            lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX";
-        else
-            lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ALX";
-        // Tokenize the line
-        hGlbToken = Tokenize_EM (lpwszLine,
-                                 lstrlenW (lpwszLine),
-                                 hWndEC,
-                                &ErrorMessage);
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
-        // Save the error code
-        lpMemPTD->lpSISCur->ErrorCode = uError;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-        goto RESTART_FROM_ERROR;
-    } // End IF
-
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -4459,13 +4334,95 @@ NORMAL_EXIT:
 
     // Restore the previous value of dwTlsType
     TlsSetValue (dwTlsType, (LPVOID) oldTlsType);
+
+    // If there's an error to be signalled, ...
+    if (uError NE ERRORCODE_NONE)
+    {
+        EXIT_TYPES exitType;    // Return code from ImmExecStmt
+
+#ifdef DEBUG
+        if (uError EQ ERRORCODE_ELX)
+            DbgMsgW (L"~~Start []ELX on");
+        else
+            DbgMsgW (L"~~Start []ALX on");
+
+        if (lpwszLine)
+            DbgMsgW (lpwszLine);
+        else
+        {
+            LPMEMTXTUNION lpMemTxtLine;
+
+            // Lock the memory to get a ptr to it
+            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+
+            // Display the function line
+            DbgMsgW (&lpMemTxtLine->C);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+        } // End IF/ELSE
+#endif
+////////// Mark as not executing function line
+////////hGlbTxtLine = NULL;
+////////
+        // Set the text for the line
+        if (uError EQ ERRORCODE_ELX)
+            lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX";
+        else
+            lpwszLine = WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ALX";
+
+        // Execute the statement in immediate execution mode
+        exitType =
+        ImmExecStmt (lpwszLine,     // Ptr to line to execute
+                     FALSE,         // TRUE iff free the lpwszLine on completion
+                     TRUE,          // TRUE iff wait until finished
+                     (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+        // Split cases based upon the exit type
+        switch (exitType)
+        {
+            case EXITTYPE_GOTO_LINE:
+            case EXITTYPE_RESET_ALL:
+            case EXITTYPE_RESET_1LVL:
+                // Pass on to caller
+                plLocalVars.ExitType = exitType;
+
+                break;
+
+            case EXITTYPE_ERROR:        // Nothing more to do with these
+            case EXITTYPE_DISPLAY:      // ...
+            case EXITTYPE_NODISPLAY:    // ...
+            case EXITTYPE_NOVALUE:      // ...
+            case EXITTYPE_GOTO_ZILDE:   // ...
+                break;
+
+            case EXITTYPE_NONE:
+            defstop
+                break;
+        } // End SWITCH
+
+////////// Tokenize the line
+////////hGlbToken = Tokenize_EM (lpwszLine,
+////////                         lstrlenW (lpwszLine),
+////////                         hWndEC,
+////////                        &ErrorMessage);
+////////// Lock the memory to get a ptr to it
+////////lpMemPTD = MyGlobalLock (hGlbPTD);
+////////
+////////// Save the error code
+////////lpMemPTD->lpSISCur->ErrorCode = uError;
+////////
+////////// We no longer need this ptr
+////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+////////
+////////goto RESTART_FROM_ERROR;
+    } // End IF
 #ifdef DEBUG
     dprintfW (L"--Ending   thread in <ParseLineInThread>.");
 #endif
     DBGLEAVE;
 
-    return dwRet;
-} // End ParseLineInThread
+    return plLocalVars.ExitType;
+} // End ParseLine
 #undef  APPEND_NAME
 
 

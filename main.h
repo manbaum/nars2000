@@ -234,7 +234,7 @@ typedef enum tagEXIT_TYPES
     EXITTYPE_RESET_1LVL,        // 03:  {goto}
     EXITTYPE_RESET_ALL,         // 04:  )RESET
     EXITTYPE_ERROR,             // 05:  ERROR
-    EXITTYPE_DISPLAY,           // 06:  Value to be displayed
+    EXITTYPE_DISPLAY,           // 06:  Value not already displayed
     EXITTYPE_NODISPLAY,         // 07:  Value already displayed
     EXITTYPE_NOVALUE,           // 08:  No value returned
                                 // 09-0F:  Available entries (4 bits)

@@ -61,9 +61,9 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"rl"       , SYSVAR,      TRUE , NULL          , SYSVAR_RL  },  //  8:  Random Link
     {WS_UTF16_QUAD L"sa"       , SYSVAR,      TRUE , NULL          , SYSVAR_SA  },  //  9:  Stop Action
     {WS_UTF16_QUAD L"wsid"     , SYSVAR,      TRUE , NULL          , SYSVAR_WSID},  // 10:  Workspace Identifier
-    {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL          , 0          },  // 11:  Defined function entry point for Inverse
-    {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL          , 0          },  // 12:  ...                              Prototype
-    {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL          , 0          },  // 13:  ...                              Singleton
+    {WS_UTF16_QUAD L"prototype", SYSLBL,      TRUE , NULL          , 0          },  // 11:  User-defined function/operator entry point for Prototype
+    {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL          , 0          },  // 12:  ...                                            Inverse
+    {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL          , 0          },  // 13:  ...                                            Singleton
 
 ////{WS_UTF16_QUAD L"ai"       ,      0,      FALSE, SysFnAI_EM    , 0          },  // Accounting Information
 ////{WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM    , 0          },  // Atomic Vector

@@ -122,7 +122,9 @@ void AppendLine
 
     // Scroll the caret into view
     SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
-
+#ifdef DEBUG
+    dprintfW (L"AppendLine: <%s> (%S#%d)", lpwszLine, FNLN);
+#endif
     // Replace the selection (none) with the new line
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 
@@ -387,15 +389,14 @@ void DisplayPrompt
      UINT uCaller)      // ***DEBUG***
 
 {
+#ifdef DEBUG
+    dprintfW (L"~~DisplayPrompt (%d, %d)", bSetFocusSM, uCaller);
+#endif
     // Move the caret to the End-of-the-buffer
     MoveCaretEOB (hWndEC);
 
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
-
-#ifdef DEBUG
-    dprintfW (L"~~DisplayPrompt (%d, %d)", bSetFocusSM, uCaller);
-#endif
 
     if (bSetFocusSM)
         // Set the focus to the Session Manager so the prompt displays
@@ -1030,8 +1031,8 @@ LRESULT APIENTRY SMWndProc
         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
                                     // idChild = HIWORD(wParam);  // Identifier of child window
                                     // lValue = lParam;           // Child handle, or cursor coordinates
-#define fwEvent     LOWORD (wParam)
-#define idChild     HIWORD (wParam)
+#define fwEvent     (LOWORD (wParam))
+#define idChild     (HIWORD (wParam))
 
             // Check for WM_CREATE from the Edit Control/Debugger
             if (fwEvent EQ WM_CREATE)

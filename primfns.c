@@ -921,13 +921,14 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     // Use the HGLOBAL
                     hGlbFcn = lpYYFcnStr->tkToken.tkData.tkSym->stData.stGlbData;
 
-                // stData is a valid HGLOBAL function array or defined function
+                // stData is a valid HGLOBAL function array
+                //   or user-defined function/operator
                 Assert (IsGlbTypeFcnDir (hGlbFcn)
                      || IsGlbTypeDfnDir (hGlbFcn));
 
-                // If it's a defined function, ...
+                // If it's a user-defined function/operator, ...
                 if (stFlags.UsrDfn)
-                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbFcn),    // Defined function global memory handle
+                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbFcn),    // User-defined function/operator global memory handle
                                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
                                              lpYYFcnStr,                    // Ptr to function strand
                                              lptkRhtArg,                    // Ptr to right arg token
@@ -1067,7 +1068,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
 
 {
     LPPRIMFNS lpPrimFn;             // Ptr to function address
-    HGLOBAL   hGlbFcn;              // Function strand or defined function global memory handle
+    HGLOBAL   hGlbFcn;              // Function strand or user-defined function/operator global memory handle
 
     Assert (lptkAxis EQ NULL);
 
@@ -1118,7 +1119,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                                 // 2.  User-defined function
                                 //   e.g., Z{is}FOO R
                                 //         3{jot}foo 1 2
-                                // 3.  User-defined function w/axis operator
+                                // 3.  User-defined function/operator w/axis operator
                                 //   e.g., Z{is}FOO[X] R
                                 //         foo[1] 1 2
                                 // 4.  Monadic operator derived function
@@ -1127,7 +1128,8 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
             // Get the global memory handle
             hGlbFcn = lpYYFcnStr->tkToken.tkData.tkGlbData;
 
-            // tkData is a valid HGLOBAL function array or defined function
+            // tkData is a valid HGLOBAL function array
+            //   or user-defined function/operator
             Assert (IsGlbTypeFcnDir (hGlbFcn)
                  || IsGlbTypeDfnDir (hGlbFcn));
 
@@ -1148,7 +1150,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                                               lptkRhtArg,                   // Ptr to right arg token
                                               lptkAxis);                    // Ptr to axis token (may be NULL)
                 case DFN_HEADER_SIGNATURE:
-                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbFcn),    // Defined function global memory handle
+                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbFcn),    // User-defined function/operator global memory handle
                                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
                                              lpYYFcnStr,                    // Ptr to function strand
                                              lptkRhtArg,                    // Ptr to right arg token
@@ -4536,7 +4538,7 @@ HGLOBAL CopyArray_EM
 //  $IsGlobalTypeArray
 //
 //  Confirm that an HGLOBAL is a valid variable or function array, or a
-//    defined function.
+//    user-defined function/operator.
 //***************************************************************************
 
 BOOL IsGlobalTypeArray

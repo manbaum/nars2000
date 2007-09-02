@@ -54,7 +54,7 @@ BOOL AssignName_EM
     if (IsNameTypeVar (lptkNam->tkData.tkSym->stFlags.ObjType)
      && lptkNam->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
     {
-        // If the target is a defined function system label, signal a SYNTAX ERROR
+        // If the target is a user-defined function/operator system label, signal a SYNTAX ERROR
         if (lptkNam->tkData.tkSym->stFlags.DfnSysLabel)
         {
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
@@ -80,7 +80,7 @@ BOOL AssignName_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkSrc->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
-            // If the target is a defined function label, signal a SYNTAX ERROR
+            // If the target is a user-defined function/operator label, signal a SYNTAX ERROR
             if (lptkNam->tkData.tkSym->stFlags.DfnLabel)
             {
                 ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
@@ -125,7 +125,8 @@ BOOL AssignName_EM
             {
                 // Handle the global case
 
-                // stData is an internal function, a valid HGLOBAL variable or function array, or defined function
+                // stData is an internal function, a valid HGLOBAL variable or function array,
+                //   or user-defined function/operator
                 Assert (lptkSrc->tkData.tkSym->stFlags.FcnDir
                      || IsGlbTypeVarDir (lptkSrc->tkData.tkSym->stData.stGlbData)
                      || IsGlbTypeFcnDir (lptkSrc->tkData.tkSym->stData.stGlbData)
@@ -161,7 +162,7 @@ BOOL AssignName_EM
                     // Save the new global memory ptr
                     lptkNam->tkData.tkSym->stData.stGlbData = hGlbSrc;
 
-                    // Transfer defined function flag
+                    // Transfer user-defined function/operator flag
                     lptkNam->tkData.tkSym->stFlags.UsrDfn =
                     lptkSrc->tkData.tkSym->stFlags.UsrDfn;
                 } // End IF/ELSE
@@ -418,7 +419,8 @@ NAME_TYPES GetNameType
             return -1;
     } // End SWITCH
 
-    // stData/tkData is a valid HGLOBAL function array or defined function
+    // stData/tkData is a valid HGLOBAL function array
+    //   or user-defined function/operator
     Assert (IsGlbTypeFcnDir (hGlbData)
          || IsGlbTypeDfnDir (hGlbData));
 

@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Defined Function Header
+//  NARS2000 -- User-Defined Function/Operator Header
 //***************************************************************************
 
 typedef struct tagFCNLINE           // Function line structure, one per function line
@@ -10,7 +10,7 @@ typedef struct tagFCNLINE           // Function line structure, one per function
                                     // 0C:  Length
 } FCNLINE, *LPFCNLINE;
 
-typedef enum tagDFN_TYPES            // Defined Function Types
+typedef enum tagDFN_TYPES            // User-Defined Function/Operator Types
 {
     DFNTYPE_UNK = 0,                // 00:  Unknown
     DFNTYPE_OP1,                    // 01:  Monadic operator
@@ -23,7 +23,7 @@ typedef enum tagDFN_TYPES            // Defined Function Types
                                     // 08-0F:  Available entries (4 bits)
 } DFN_TYPES;
 
-typedef enum tagFCN_VALENCES        // Defined/Derived Function Valence
+typedef enum tagFCN_VALENCES        // User-Defined Function/Operator Valence
 {
     FCNVALENCE_NIL = 0,             // 00:  Niladic function
     FCNVALENCE_MON,                 // 01:  Monadic function/derived function
@@ -33,16 +33,16 @@ typedef enum tagFCN_VALENCES        // Defined/Derived Function Valence
                                     // 05-07:  Available entries (3 bits)
 } FCN_VALENCES;
 
-// Defined function header signature
+// User-defined function/operator header signature
 #define DFN_HEADER_SIGNATURE   'SNFD'
 
 typedef struct tagDFN_HEADER        // Function header structure
 {
-    HEADER_SIGNATURE Sig;           // 00:  Defined function header signature
+    HEADER_SIGNATURE Sig;           // 00:  User-defined function/operator header signature
     UINT             Version;       // 04:  Version # of this header
-    UINT             DfnType:4,     // 08:  0000000F:  Defined Function Type (see enum DFN_TYPES)
-                     FcnValence:3,  //      00000070:  Defined/Derived Function Valence (see enum FCN_VALENCES)
-                     DfnAxis:1,     //      00000080:  Defined/Derived Function accepts axis value
+    UINT             DfnType:4,     // 08:  0000000F:  User-defined function/operator type (see enum DFN_TYPES)
+                     FcnValence:3,  //      00000070:  User-defined function/operator valence (see enum FCN_VALENCES)
+                     DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      Avail:24;      //      FFFFFF00:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
                      nPrototypeLine,// 10:  Line # of the []PROTOTYPE label (0 if not present)
@@ -103,9 +103,9 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  lpNext,            // 14:  Next  ...
                  lpStop;            // 18:  Stopping token
     UINT         tkErrorCharIndex;  // 1C:  Error char index
-    UINT         DfnType:4,         // 20:  0000000F:  Defined Function Type (see DFN_TYPES enum)
-                 FcnValence:3,      //      00000070:  Defined/Derived Function Valence (see enum FCN_VALENCES)
-                 DfnAxis:1,         //      00000080:  Defined/Derived Function accepts axis value
+    UINT         DfnType:4,         // 20:  0000000F:  User-defined function/operator type (see DFN_TYPES enum)
+                 FcnValence:3,      //      00000070:  User-defined function/operator valence (see enum FCN_VALENCES)
+                 DfnAxis:1,         //      00000080:  User-defined function/operator accepts axis value
                  DisplayErr:1,      //      00000100:  TRUE iff we should display error messages
                  Avail:23;          //      FFFFFE00:  Available bits
     LPFH_YYSTYPE lpYYStrandStart,   // 24:  Strand stack start (static)

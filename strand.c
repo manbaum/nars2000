@@ -223,7 +223,8 @@ void FreeStrand
 
                 if (!lpYYToken->tkToken.tkData.tkSym->stFlags.Imm)
                 {
-                    // stData is an internal function, a valid HGLOBAL variable or function array, or defined function
+                    // stData is an internal function, a valid HGLOBAL variable or function array,
+                    //   or user-defined function/operator
                     Assert (lpYYToken->tkToken.tkData.tkSym->stFlags.FcnDir
                          || IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
                          || IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkSym->stData.stGlbData)
@@ -1334,7 +1335,8 @@ LPPL_YYSTYPE CopyYYFcn
                         // Get the global memory handle or function address if direct
                         hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
 
-                        //stData is a valid HGLOBAL function array or defined function
+                        //stData is a valid HGLOBAL function array
+                        //   or user-defined function/operator
                         Assert (IsGlbTypeFcnDir (hGlbData)
                              || IsGlbTypeDfnDir (hGlbData));
 

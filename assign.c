@@ -624,16 +624,15 @@ BOOL AssignNameSpec_EM
     // Skip over the header and dimension to the data
     lpMemVal = VarArrayBaseToData (lpMemVal, aplRankVal);
 
-#define lpAPA       ((LPAPLAPA) lpMemVal)
-
-    // If the value is an APA, get its parameters
+    // If the value is an APA, ...
     if (aplTypeVal EQ ARRAY_APA)
     {
+#define lpAPA       ((LPAPLAPA) lpMemVal)
+        // Get the APA parameters
         apaOffVal = lpAPA->Off;
         apaMulVal = lpAPA->Mul;
-    } // End IF
-
 #undef  lpAPA
+    } // End IF
 
     // Fill in the value token
 ////tkToken.tkFlags.TknType     =

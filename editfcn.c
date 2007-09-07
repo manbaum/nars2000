@@ -125,13 +125,6 @@ BOOL CreateFcnWindow
         return FALSE;
     } // End IF
 
-////// Get the PerTabData global memory handle
-////hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-////
-////// Save the PTD handle with the window
-////SetProp (hWnd, "PTD", (HGLOBAL) GetProp (hWndMC, "PTD"));
-////SetProp (hWnd, "PTD", hGlbPTD);
-////
     // Make the window visible; update its client area
     ShowWindow (hWnd, SW_SHOWNORMAL);
     UpdateWindow (hWnd);
@@ -378,10 +371,6 @@ LRESULT APIENTRY FEWndProc
 
             // Get the PerTabData global memory handle
             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-////////////// Save the PTD handle with the window
-////////////hGlbPTD = GetProp (GetParent (hWnd), "PTD");
-////////////SetProp (hWnd, "PTD", (HGLOBAL) hGlbPTD);
 
             // Save in window extra bytes
             SetWindowLong (hWnd, GWLSF_HWNDEC, (long) hWndEC);
@@ -2584,33 +2573,10 @@ BOOL SaveFunction
                                   NULL);
     if (!hGlbTknHdr)
     {
-////////LPWCHAR          lpwszMsg;
-////////UINT             uCaret;
-////////NONCLIENTMETRICS ncMetrics;
-////////LOGFONT          lfMessageFont;
-        WCHAR            wszTemp[1024];
+        WCHAR wszTemp[1024];
 
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
-
-////////// Get the error message
-////////lpwszMsg = lpMemPTD->lpwszErrorMessage;
-////////
-////////// Get the caret position
-////////uCaret = lpMemPTD->uCaret;
-////////
-////////// Fill in the size as required for call to SPI
-////////ncMetrics.cbSize = sizeof (NONCLIENTMETRICS);
-////////
-////////// Get the system parameters
-////////SystemParametersInfo (SPI_GETNONCLIENTMETRICS, 0, &ncMetrics, 0);
-////////
-////////// Save the font for the call to MessageBox
-////////lfMessageFont = ncMetrics.lfMessageFont;
-////////
-////////// Change the font for the MessageBox
-////////GetObject (hFontSM, sizeof (LOGFONT), &ncMetrics.lfMessageFont);
-////////SystemParametersInfo (SPI_SETNONCLIENTMETRICS, 0, &ncMetrics, 0);
 
         // Format the error message
         wsprintfW (wszTemp,
@@ -2621,10 +2587,6 @@ BOOL SaveFunction
                     wszTemp,
                     lpwszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-////////// Restore the normal MessageBox font
-////////ncMetrics.lfMessageFont = lfMessageFont;
-////////SystemParametersInfo (SPI_SETNONCLIENTMETRICS, 0, &ncMetrics, 0);
-
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -2793,7 +2755,7 @@ BOOL SaveFunction
         uOffset = sizeof (DFN_HEADER);
 
         // Initialize ptr to ptr to SYMENTRYs at end of header
-        lplpSymDfnHdr = (LPSYMENTRY *) ByteAddr (lpMemDfnHdr, uOffset);
+        lplpSymDfnHdr = (LPAPLHETERO) ByteAddr (lpMemDfnHdr, uOffset);
 
         // If there's a result, ...
         if (fhLocalVars.lpYYResult)
@@ -2942,6 +2904,10 @@ BOOL SaveFunction
 
             // No monitor info as yet
             lpFcnLines->hGlbMonInfo = NULL;
+
+            // Transfer Stop & Trace info
+            lpFcnLines->bStop  =
+            lpFcnLines->bTrace = FALSE;     // ***FIXME*** -- transfer from orig fn
 
             // Skip to the next struct
             lpFcnLines++;

@@ -74,37 +74,38 @@ typedef struct tagPERTABDATA
     APLINT       aplInteger;        // 78:  8-byte Integers
 
     LPSYMENTRY   steZero,           // 80:  Ptr to STE for constant zero
-                 steBlank,          // 84: ...            ...      blank
-                 steNoValue,        // 88: ...            no-value result
-                 lpSymQuadALX ,     // 8C: ...            []ALX
-                 lpSymQuadCT  ,     // 90: ...            []CT
-                 lpSymQuadELX ,     // 94: ...            []ELX
-                 lpSymQuadIO  ,     // 98: ...            []IO
-                 lpSymQuadLX  ,     // 9C: ...            []LX
-                 lpSymQuadPP  ,     // A0: ...            []PP
-                 lpSymQuadPR  ,     // A4: ...            []PR
-                 lpSymQuadPW  ,     // A8: ...            []PW
-                 lpSymQuadRL  ,     // AC: ...            []RL
-                 lpSymQuadSA  ,     // B0: ...            []SA
-                 lpSymQuadWSID;     // B4: ...            []WSID
+                 steOne,            // 84:  ...                     one
+                 steBlank,          // 88:  ...                     blank
+                 steNoValue,        // 8C:  ...            no-value result
+                 lpSymQuadALX ,     // 90:  ...            []ALX
+                 lpSymQuadCT  ,     // 94:  ...            []CT
+                 lpSymQuadELX ,     // 98:  ...            []ELX
+                 lpSymQuadIO  ,     // 9C:  ...            []IO
+                 lpSymQuadLX  ,     // A0:  ...            []LX
+                 lpSymQuadPP  ,     // A4:  ...            []PP
+                 lpSymQuadPR  ,     // A8:  ...            []PR
+                 lpSymQuadPW  ,     // AC:  ...            []PW
+                 lpSymQuadRL  ,     // B0:  ...            []RL
+                 lpSymQuadSA  ,     // B4:  ...            []SA
+                 lpSymQuadWSID;     // B8:  ...            []WSID
     struct tagSIS_HEADER
-                *lpSISBeg,          // B8:  Ptr to State Indicator Stack beginning
-                *lpSISCur,          // BC:  ...                          current (may be NULL if SI is empty)
-                *lpSISNxt;          // C0:  ...                          next
+                *lpSISBeg,          // BC:  Ptr to State Indicator Stack beginning
+                *lpSISCur,          // C0:  ...                          current (may be NULL if SI is empty)
+                *lpSISNxt;          // C4:  ...                          next
     struct tagPLLOCALVARS
-                *lpPLCur;           // C4:  Ptr to current plLocalVars struct
+                *lpPLCur;           // C8:  Ptr to current plLocalVars struct
                                     //      in thread creation order (NULL = none)
-    WNDPROC lpfnOldListboxWndProc,  // C8:  Save area for old Listbox procedure
-            lpfnOldEditCtrlWndProc; // CC:  Save area for old Edit Control procedure
+    WNDPROC lpfnOldListboxWndProc,  // CC:  Save area for old Listbox procedure
+            lpfnOldEditCtrlWndProc; // D0:  Save area for old Edit Control procedure
 
-    UINT         SILevel;           // D0:  Current State Indicator level
+    UINT         SILevel;           // D4:  Current State Indicator level
 
-    PL_YYSTYPE   YYResExec;         // D4:  Result from execute primitive
+    PL_YYSTYPE   YYResExec;         // D8:  Result from execute primitive
 
-    APLCHAR      cQuadPR;           //104:  []PR     (' ') (When a char scalar)
-    APLBOOL      bQuadxSA;          //106:  []SA (in its index form)
-    char         DPFE[_MAX_PATH];   //107:  The Drive, Path, Filename, & Ext of the WS
-                                    //20B:  Length
+    APLCHAR      cQuadPR;           //108:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //10A:  []SA (in its index form)
+    char         DPFE[_MAX_PATH];   //10B:  The Drive, Path, Filename, & Ext of the WS
+                                    //20F:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

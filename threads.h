@@ -17,8 +17,7 @@ typedef struct tagUTJ_THREAD    // Thread struct for PrimFnMonUpTackJotInThread
     HWND    hWndEC;             // 00:  Handle of Edit Control window
     HGLOBAL hGlbPTD;            // 04:  PerTabData global memory handle
     LPWCHAR lpwszCompLine;      // 08:  Ptr to complete line
-    HANDLE  hSemaReset;         // 0C:  Semaphore Handle for )RESET
-                                // 10:  Length
+                                // 0C:  Length
 } UTJ_THREAD, *LPUTJ_THREAD;
 
 
@@ -30,8 +29,7 @@ typedef struct tagIE_THREAD     // Thread struct for ImmExecLineInThread
     HGLOBAL hGlbWFSO;           // 0C:  WaitForSingleObject callback global memory handle
     BOOL    bFreeLine,          // 10:  TRUE iff we should free lpwszCompLine on completion
             bWaitUntilFini;     // 14:  TRUE iff wait until finished
-    HANDLE  hSemaReset;         // 18:  Semaphore Handle for )RESET
-                                // 1C:  Length
+                                // 18:  Length
 } IE_THREAD, *LPIE_THREAD;
 
 

@@ -703,6 +703,13 @@ LPPL_YYSTYPE ArrayIndex_EM_YY
         } // End SWITCH
     } // End IF/ELSE
 
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -902,7 +909,7 @@ BOOL ReachSymTabConst_EM
         return FALSE;
     } // End IF
 
-#define lpSymRch        (*(LPSYMENTRY *) lpMemRch)
+#define lpSymRch        (*(LPAPLHETERO) lpMemRch)
 
     // Split cases based upon the immediate type of the reach arg
     switch (lpSymRch->stFlags.ImmType)
@@ -1012,6 +1019,7 @@ BOOL ValueAsSymentry
 
        case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
 #undef  lpAPA
@@ -1419,6 +1427,7 @@ BOOL WeighIndex_EM
 
         case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemSub)
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
 #undef  lpAPA

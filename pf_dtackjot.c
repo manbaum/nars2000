@@ -819,7 +819,7 @@ LPAPLCHAR FormatArrNested
                 {
                     case PTRTYPE_STCONST:
                         // Get the array storage type
-                        aplType = TranslateImmTypeToArrayType ((*(LPSYMENTRY *) lpMem)->stFlags.ImmType);
+                        aplType = TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMem)->stFlags.ImmType);
 
                         // Split cases based upon the array storage type (STE immediate type)
                         switch (aplType)
@@ -1630,7 +1630,7 @@ LPAPLCHAR CompileArrHetero
         // Loop through the cols
         for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
         {
-#define lpSymEntry      ((LPSYMENTRY *) lpMem)
+#define lpSymEntry      ((LPAPLHETERO) lpMem)
 
             // Save the immediate type
             immTypeCur = (*lpSymEntry)->stFlags.ImmType;
@@ -1781,11 +1781,11 @@ LPAPLCHAR CompileArrNested
             {
                 case PTRTYPE_STCONST:
                     // Split cases based upon the STE immediate type
-                    switch ((*(LPSYMENTRY *) lpMem)->stFlags.ImmType)
+                    switch ((*(LPAPLHETERO) lpMem)->stFlags.ImmType)
                     {
                         case IMMTYPE_BOOL:
                             lpaplChar =
-                            CompileArrBool    (&(*(LPSYMENTRY *) lpMem)->stData.stBoolean,  // Ptr to right arg memory
+                            CompileArrBool    (&(*(LPAPLHETERO) lpMem)->stData.stBoolean,  // Ptr to right arg memory
                                                 lpFmtHeader,                                // Ptr to parent header
                                                &lpFmtColStr[aplDimCol],                     // Ptr to vector of ColStrs
                                                 lpaplChar,                                  // Ptr to compiled output
@@ -1798,7 +1798,7 @@ LPAPLCHAR CompileArrNested
 
                         case IMMTYPE_INT:
                             lpaplChar =
-                            CompileArrInteger (&(*(LPSYMENTRY *) lpMem)->stData.stInteger,  // Ptr to right arg memory
+                            CompileArrInteger (&(*(LPAPLHETERO) lpMem)->stData.stInteger,  // Ptr to right arg memory
                                                 lpFmtHeader,                                // Ptr to parent header
                                                &lpFmtColStr[aplDimCol],                     // Ptr to vector of ColStrs
                                                 lpaplChar,                                  // Ptr to compiled output
@@ -1811,7 +1811,7 @@ LPAPLCHAR CompileArrNested
 
                         case IMMTYPE_FLOAT:
                             lpaplChar =
-                            CompileArrFloat   (&(*(LPSYMENTRY *) lpMem)->stData.stFloat,    // Ptr to right arg memory
+                            CompileArrFloat   (&(*(LPAPLHETERO) lpMem)->stData.stFloat,    // Ptr to right arg memory
                                                 lpFmtHeader,                                // Ptr to parent header
                                                &lpFmtColStr[aplDimCol],                     // Ptr to vector of ColStrs
                                                 lpaplChar,                                  // Ptr to compiled output
@@ -1824,7 +1824,7 @@ LPAPLCHAR CompileArrNested
 
                         case IMMTYPE_CHAR:
                             lpaplChar =
-                            CompileArrChar    (&(*(LPSYMENTRY *) lpMem)->stData.stChar,     // Ptr to right arg memory
+                            CompileArrChar    (&(*(LPAPLHETERO) lpMem)->stData.stChar,     // Ptr to right arg memory
                                                 lpFmtHeader,                                // Ptr to parent header
                                                &lpFmtColStr[aplDimCol],                     // Ptr to vector of ColStrs
                                                 lpaplChar,                                  // Ptr to compiled output

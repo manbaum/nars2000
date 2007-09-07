@@ -2,23 +2,24 @@
 //  NARS2000 -- Datatype Header File
 //***************************************************************************
 
-typedef ULONGLONG   APLRANK;    // The type of the rank element in an array
-typedef  LONGLONG   APLRANKSIGN;// ...             rank element ... (signed)
-typedef ULONGLONG   APLNELM;    // ...             # elements   ...
-typedef  LONGLONG   APLNELMSIGN;// ...             # elements   ... (signed)
-typedef ULONGLONG   APLDIM;     // ...             dimensions   ...
-typedef UCHAR       APLBOOL;    // ...         an element in a Boolean array (unsigned)
-typedef  LONGLONG   APLINT;     // ...         ...           an integer array
-typedef ULONGLONG   APLUINT;    // ...         ...           an integer array (unsigned)
-typedef WCHAR       APLCHAR;    // ...         ...           a character
-typedef double      APLFLOAT;   // ...         ...           a Floating Point array
-typedef HGLOBAL     APLNESTED;  // ...         ...           a nested array
-typedef LPVOID      APLHETERO;  // ...         ...           a HETERO array
-typedef LPVOID      APLLIST;    // ...                       a list
-typedef UCHAR       APLSTYPE;   // Storage type (see ARRAY_TYPES)
+typedef ULONGLONG   APLRANK;            // The type of the rank element in an array
+typedef  LONGLONG   APLRANKSIGN;        // ...             rank element ... (signed)
+typedef ULONGLONG   APLNELM;            // ...             # elements   ...
+typedef  LONGLONG   APLNELMSIGN;        // ...             # elements   ... (signed)
+typedef ULONGLONG   APLDIM;             // ...             dimensions   ...
+typedef UCHAR       APLBOOL;            // ...         an element in a Boolean array (unsigned)
+typedef  LONGLONG   APLINT;             // ...         ...           an integer array
+typedef ULONGLONG   APLUINT;            // ...         ...           an integer array (unsigned)
+typedef WCHAR       APLCHAR;            // ...         ...           a character
+typedef double      APLFLOAT;           // ...         ...           a Floating Point array
+typedef HGLOBAL     APLNESTED;          // ...         ...           a nested array
+typedef struct tagSYMENTRY *APLHETERO;  // ...         ...           a HETERO array
+typedef LPVOID      APLLIST;            // ...                       a list
+typedef UCHAR       APLSTYPE;           // Storage type (see ARRAY_TYPES)
 
-// APLLIST, APLHETERO, and APLNESTED may be either an LPSYMENTRY or
+// APLLIST and APLNESTED may be either an LPSYMENTRY or
 //   an HGLOBAL.
+// APLHETERO may be an LPSYMENTRY only.
 
 typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMTAB_DATA
 
@@ -207,6 +208,7 @@ typedef struct tagVARARRAY_HEADER
 // Macros to skip from the array base to either the dimensions or the data
 #define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER)                            )
 #define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * aplRank)
+#define VarArrayDimToData(lpMem,aplRank)  (LPVOID)   (((LPCHAR) lpMem)                            + sizeof (APLDIM) * aplRank)
 
 // Function array header signature
 #define FCNARRAY_HEADER_SIGNATURE   'SNCF'

@@ -1256,9 +1256,8 @@ BOOL PrimFnDydRhoLftGlbValid_EM
                         apaVal;
                 APLUINT apaLen;
 
-
-                // Save the APA data
 #define lpAPA       ((LPAPLAPA) lpDataLft)
+                // Get the APA parameters
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
                 apaLen = aplNELMLft;
@@ -1384,8 +1383,8 @@ void PrimFnDydRhoLftGlbCopyDim
                     apaMul;
             APLUINT apaLen;
 
-            // Save the APA data
 #define lpAPA       ((LPAPLAPA) lpDataLft)
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
 #undef  lpAPA
@@ -1541,7 +1540,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             break;
 
         case ARRAY_NESTED:
-            // Take into account the nested prototype
+            // Take into account nested prototypes
             aplNELMRes = max (aplNELMRes, 1);
         case ARRAY_HETERO:
             // Loop through the result and right arg copying the data
@@ -1560,10 +1559,10 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
                 {
                     case PTRTYPE_STCONST:
                         // It's an immediate
-                        Assert ((*(LPSYMENTRY *) lpMemRhtNext)->stFlags.Imm);
+                        Assert ((*(LPAPLHETERO) lpMemRhtNext)->stFlags.Imm);
 
                         // Pass on the LPSYMENTRY
-                        *((LPSYMENTRY *) lpDataRes)++ = *(LPSYMENTRY *) lpMemRhtNext;
+                        *((LPAPLHETERO) lpDataRes)++ = *(LPAPLHETERO) lpMemRhtNext;
 
                         break;
 
@@ -1594,8 +1593,8 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
                     apaMul;
             APLUINT apaLen;
 
-            // Save the APA data
 #define lpAPA       ((LPAPLAPA) lpMemRhtNext)
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
             apaLen = aplNELMRht;

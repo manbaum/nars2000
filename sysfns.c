@@ -12,6 +12,7 @@
 #include "termcode.h"
 #include "externs.h"
 #include "pertab.h"
+#include "sis.h"
 #include "dfnhdr.h"
 
 // Include prototypes unless prototyping
@@ -1353,6 +1354,130 @@ void CalcNumIDs
 
 
 //***************************************************************************
+//  $SysFnLC_EM
+//
+//  System function:  []LC -- Line Counter
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnLC_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE SysFnLC_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token
+
+{
+    UINT         ByteRes;           // # bytes in the result
+    APLNELM      aplNELMRes;        // Result NELM
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPVOID       lpMemRes;          // Ptr to result global memory
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
+
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Trundle through the SI stack counting the # layers with
+    //   a user-defined function/operator
+    for (aplNELMRes = 0, lpSISCur = lpMemPTD->lpSISCur;
+         lpSISCur;
+         lpSISCur = lpSISCur->lpSISPrv)
+    if (lpSISCur->DfnType EQ DFNTYPE_OP1
+     || lpSISCur->DfnType EQ DFNTYPE_OP2
+     || lpSISCur->DfnType EQ DFNTYPE_FCN)
+        aplNELMRes++;
+
+    // Calculate space needed for the result
+    ByteRes = (UINT) CalcArraySize (ARRAY_INT, aplNELMRes, 1);
+
+    // Allocate space for the result
+    hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_INT;
+////lpHeader->Perm       = 0;           // Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
+
+#undef  lpHeader
+
+    // Fill in the dimension
+    *(VarArrayBaseToDim (lpMemRes)) = aplNELMRes;
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+    // Trundle through the SI stack copying the line #
+    //   from layers with a user-defined function/operator
+    for (lpSISCur = lpMemPTD->lpSISCur;
+         lpSISCur;
+         lpSISCur = lpSISCur->lpSISPrv)
+    if (lpSISCur->DfnType EQ DFNTYPE_OP1
+     || lpSISCur->DfnType EQ DFNTYPE_OP2
+     || lpSISCur->DfnType EQ DFNTYPE_FCN)
+        *((LPAPLINT) lpMemRes)++ = lpSISCur->CurLineNum;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpYYRes;
+} // End SysFnLC_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $SysFnSIZE_EM
 //
 //  System function:  []SIZE -- Size of an identifier
@@ -1862,9 +1987,9 @@ LPPL_YYSTYPE SysFnSYSID_EM
      LPTOKEN lptkAxis)              // Ptr to axis token
 
 {
-    UINT         ByteRes;
-    HGLOBAL      hGlbRes;
-    LPVOID       lpMem;
+    UINT         ByteRes;           // # bytes in the result
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPVOID       lpMemRes;          // Ptr to result global memory
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // This function is niladic
@@ -1898,9 +2023,9 @@ LPPL_YYSTYPE SysFnSYSID_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -1914,16 +2039,16 @@ LPPL_YYSTYPE SysFnSYSID_EM
 #undef  lpHeader
 
     // Fill in the dimension
-    *(VarArrayBaseToDim (lpMem)) = SYSID_NELM;
+    *(VarArrayBaseToDim (lpMemRes)) = SYSID_NELM;
 
     // Skip over the header and dimensions to the data
-    lpMem = VarArrayBaseToData (lpMem, 1);
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the SYSID to the result
-    CopyMemory (lpMem, SYSID, SYSID_NELM * sizeof (APLCHAR));
+    CopyMemory (lpMemRes, SYSID, SYSID_NELM * sizeof (APLCHAR));
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMem = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -1959,12 +2084,12 @@ LPPL_YYSTYPE SysFnSYSVER_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    UINT         ByteRes;
-    HGLOBAL      hGlbRes;
-    LPVOID       lpMem;
-    char         szFileVer[32];
-    LPAPLCHAR    p;
-    HANDLE       hFile;
+    UINT         ByteRes;           // # bytes in the result
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPVOID       lpMemRes;          // Ptr to result global memory
+    char         szFileVer[32];     //
+    LPAPLCHAR    p;                 //
+    HANDLE       hFile;             //
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // This function is niladic
@@ -1998,9 +2123,9 @@ LPPL_YYSTYPE SysFnSYSVER_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -2014,12 +2139,12 @@ LPPL_YYSTYPE SysFnSYSVER_EM
 #undef  lpHeader
 
     // Fill in the dimension
-    *(VarArrayBaseToDim (lpMem)) = SYSVER_NELM;
+    *(VarArrayBaseToDim (lpMemRes)) = SYSVER_NELM;
 
     // Skip over the header and dimensions to the data
-    lpMem = VarArrayBaseToData (lpMem, 1);
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-    p = (LPAPLCHAR) lpMem;
+    p = (LPAPLCHAR) lpMemRes;
 
     // Read in the application's File Version String
     LclFileVersionStr (szAppDPFE, szFileVer);
@@ -2077,7 +2202,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM
     } // End IF
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMem = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -2113,9 +2238,9 @@ LPPL_YYSTYPE SysFnTC_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    UINT         ByteRes;
-    HGLOBAL      hGlbRes;
-    LPVOID       lpMem;
+    UINT         ByteRes;           // # bytes in the result
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPVOID       lpMemRes;          // Ptr to result global memory
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // This function is niladic
@@ -2146,9 +2271,9 @@ LPPL_YYSTYPE SysFnTC_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -2162,12 +2287,12 @@ LPPL_YYSTYPE SysFnTC_EM
 #undef  lpHeader
 
     // Fill in the dimension
-    *(VarArrayBaseToDim (lpMem)) = 3;
+    *(VarArrayBaseToDim (lpMemRes)) = 3;
 
     // Skip over the header and dimensions to the data
-    lpMem = VarArrayBaseToData (lpMem, 1);
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-#define lpMemData   ((LPAPLCHAR) lpMem)
+#define lpMemData   ((LPAPLCHAR) lpMemRes)
 
     lpMemData[0] = TCBS;    // Backspace
     lpMemData[1] = TCNL;    // Newline
@@ -2176,7 +2301,7 @@ LPPL_YYSTYPE SysFnTC_EM
 #undef  lpMemData
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMem = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -2439,10 +2564,10 @@ LPPL_YYSTYPE SysFnTS_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    SYSTEMTIME   SystemTime;
-    UINT         ByteRes;
-    HGLOBAL      hGlbRes;
-    LPVOID       lpMem;
+    SYSTEMTIME   SystemTime;        //
+    UINT         ByteRes;           // # bytes in the result
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPVOID       lpMemRes;          // Ptr to result global memory
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // This function is niladic
@@ -2473,9 +2598,9 @@ LPPL_YYSTYPE SysFnTS_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
 
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -2489,10 +2614,10 @@ LPPL_YYSTYPE SysFnTS_EM
 #undef  lpHeader
 
     // Fill in the dimension
-    *(VarArrayBaseToDim (lpMem)) = 7;
+    *(VarArrayBaseToDim (lpMemRes)) = 7;
 
     // Skip over the header and dimensions to the data
-    lpMem = VarArrayBaseToData (lpMem, 1);
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Get the current time
     if (bUseLocalTime)
@@ -2500,7 +2625,7 @@ LPPL_YYSTYPE SysFnTS_EM
     else
         GetSystemTime (&SystemTime);
 
-#define lpMemData   ((LPAPLINT) lpMem)
+#define lpMemData   ((LPAPLINT) lpMemRes)
 
     lpMemData[0] = SystemTime.wYear;
     lpMemData[1] = SystemTime.wMonth;
@@ -2513,7 +2638,7 @@ LPPL_YYSTYPE SysFnTS_EM
 #undef  lpMemData
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMem = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -2588,8 +2713,8 @@ LPPL_YYSTYPE SysFnMonTYPE_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL      hGlbData,
-                 hGlbRes;
+    HGLOBAL      hGlbData,          //
+                 hGlbRes;           // Result global memory handle
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Allocate a new YYRes

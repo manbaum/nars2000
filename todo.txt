@@ -12,7 +12,6 @@ TO DO:  General:  Important
 * ...       monadic grade-up            (grade on rank > 1)
 * ...       monadic grade-down          (grade on rank > 1)
 * ...       monadic down shoe           (unique)
-* ...       monadic right shoe          (disclose)
 * ...       dyadic grade-up             (char grades)
 * ...       dyadic grade-down           (char grades)
 * ...       dyadic up arrow             (take)
@@ -21,10 +20,26 @@ TO DO:  General:  Important
 * ...       dyadic right shoe           (pick)
 * ...       dyadic up tack              (base value)
 * ...       bracket indexing             A[B]
+* ...       bracket indexing             A[B][C]
 * ...       bracket indexed assignment   A[B]{is}C
+* ...       bracket indexed assignment  (A[B]){is}C
+* ...       bracket indexed modified assignment  (A[B])+{is}C
 * ...       )LOAD
 * ...       )COPY
 * ...       minimum set of system functions
+* ...          []AV
+* ...          []EM
+* ...          []ET
+* ...          []DL R
+* ...          []NC R
+* ...          []EX R
+* ...          []NL R
+* ...          []ES R
+* ...          []ERROR R
+* ...        L []NL R
+* ...        L []EA R
+* ...        L []ES R
+* ...        L []TF R
 * ...       ambiguous operators
 * ...
 
@@ -56,6 +71,7 @@ TO DO:  General:  Wish List
 * ...       expanded set of system functions
 * ...       extend associativity to derived functions such as {jot}{dot}+ ??
 * ...       component file system
+* ...       dyadic down tack jot        (format by example)
 * ...       dyadic left shoe            (partitioned enclose)
 * ...       dyadic squad                (indexing)
 * ...       dyadic epsilon underbar     (find)
@@ -63,6 +79,11 @@ TO DO:  General:  Wish List
 * ...       matrix editor
 * ...       []INVERSE:
 * ...       []SINGLETON:
+* ...       []STOP R
+* ...       []TRACE R
+* ...     L []STOP R
+* ...     L []TRACE R
+* ...       []FMT
 * ...
 
 
@@ -95,6 +116,8 @@ DONE:  General
 * ...       )OPS
 * ...       )VARS
 * ...       )SI
+* ...       )SIC
+* ...       )RESET
 * ...       function execution
 * ...       goto
 * ...       goto Line #
@@ -106,6 +129,8 @@ DONE:  General
 * ...       event handling ([]ALX)
 * ...       Ctrl-Break
 * ...       []PROTOTYPE:
+* ...       []LC
+* ...       monadic right shoe
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

@@ -611,6 +611,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 
                 case ARRAY_APA:     // Lft = BOOL, Rht = APA
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+                    // Get the APA parameters
                     apaOff = lpAPA->Off;
                     apaMul = lpAPA->Mul;
 #undef  lpAPA
@@ -699,6 +700,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 
                 case ARRAY_APA:     // Lft = INT, Rht = APA
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+                    // Get the APA parameters
                     apaOff = lpAPA->Off;
                     apaMul = lpAPA->Mul;
 #undef  lpAPA
@@ -757,6 +759,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 
                 case ARRAY_APA:     // Lft = FLOAT, Rht = APA
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+                    // Get the APA parameters
                     apaOff = lpAPA->Off;
                     apaMul = lpAPA->Mul;
 #undef  lpAPA
@@ -818,6 +821,7 @@ BOOL PrimFnDydEqualUnderbarSimple
 
                 case ARRAY_HETERO:  // Lft = APA, Rht = HETERO
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+                    // Get the APA parameters
                     apaOff = lpAPA->Off;
                     apaMul = lpAPA->Mul;
 #undef  lpAPA

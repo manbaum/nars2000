@@ -363,6 +363,9 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+
     return lpYYRes;
 } // End PrimFnMonEpsilonGlb_EM_YY
 #undef  APPEND_NAME
@@ -439,7 +442,7 @@ void PrimFnMonEpsilonGlbCount
             switch (GetPtrTypeInd (lpMemRht))
             {
                 case PTRTYPE_STCONST:
-                    *lpaplTypeRes = aplTypeArr[*lpaplTypeRes][TranslateImmTypeToArrayType ((*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType)];
+                    *lpaplTypeRes = aplTypeArr[*lpaplTypeRes][TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)];
                     (*lpaplNELMRes)++;
 
                     break;
@@ -508,10 +511,11 @@ void PrimFnMonEpsilonGlbCopy
     // Skip past the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-    // If the right arg is an APA, get its parameters
+    // If the right arg is an APA, ...
     if (aplTypeRht EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -580,10 +584,10 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         case PTRTYPE_STCONST:       // Res = BOOL  , Rht = NESTED:BOOL/INT/FLOAT/CHAR
                             // Split cases based upon the right arg's immediate type
-                            switch ((*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType)
+                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                             {
                                 case IMMTYPE_BOOL:  // Res = BOOL  , Rht = NESTED:BOOL
-                                    *(*(LPAPLBOOL *) lplpMemRes) |= ((*(LPSYMENTRY *) lpMemRht)->stData.stBoolean) << *lpuBitIndex;
+                                    *(*(LPAPLBOOL *) lplpMemRes) |= ((*(LPAPLHETERO) lpMemRht)->stData.stBoolean) << *lpuBitIndex;
 
                                     // Check for end-of-byte
                                     if (++*lpuBitIndex EQ NBIB)
@@ -680,15 +684,15 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         case PTRTYPE_STCONST:       // Res = INT   , Rht = NESTED:BOOL/INT/FLOAT/CHAR
                             // Split cases based upon the right arg's immediate type
-                            switch ((*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType)
+                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                             {
                                 case IMMTYPE_BOOL:  // Res = INT   , Rht = NESTED:BOOL
-                                    *(*(LPAPLINT *) lplpMemRes)++ = (*(LPSYMENTRY *) lpMemRht)->stData.stBoolean;
+                                    *(*(LPAPLINT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
 
                                     break;
 
                                 case IMMTYPE_INT:   // Res = INT   , Rht = NESTED:INT
-                                    *(*(LPAPLINT *) lplpMemRes)++ = (*(LPSYMENTRY *) lpMemRht)->stData.stInteger;
+                                    *(*(LPAPLINT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
 
                                     break;
 
@@ -781,20 +785,20 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         case PTRTYPE_STCONST:       // Res = FLOAT , Rht = NESTED:BOOL/INT/FLOAT/CHAR
                             // Split cases based upon the right arg's immediate type
-                            switch ((*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType)
+                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                             {
                                 case IMMTYPE_BOOL:  // Res = FLOAT , Rht = NESTED:BOOL
-                                    *(*(LPAPLFLOAT *) lplpMemRes)++ = (*(LPSYMENTRY *) lpMemRht)->stData.stBoolean;
+                                    *(*(LPAPLFLOAT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
 
                                     break;
 
                                 case IMMTYPE_INT:   // Res = FLOAT , Rht = NESTED:INT
-                                    *(*(LPAPLFLOAT *) lplpMemRes)++ = (APLFLOAT) (*(LPSYMENTRY *) lpMemRht)->stData.stInteger;
+                                    *(*(LPAPLFLOAT *) lplpMemRes)++ = (APLFLOAT) (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
 
                                     break;
 
                                 case IMMTYPE_FLOAT: // Res = FLOAT , Rht = NESTED:FLOAT
-                                    *(*(LPAPLFLOAT *) lplpMemRes)++ = (*(LPSYMENTRY *) lpMemRht)->stData.stFloat;
+                                    *(*(LPAPLFLOAT *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stFloat;
 
                                     break;
 
@@ -854,10 +858,10 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         case PTRTYPE_STCONST:       // Res = CHAR  , Rht = NESTED:BOOL/INT/FLOAT/CHAR
                             // Split cases based upon the right arg's immediate type
-                            switch ((*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType)
+                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                             {
                                 case IMMTYPE_CHAR:  // Res = CHAR  , Rht = NESTED:CHAR
-                                    *(*(LPAPLCHAR *) lplpMemRes)++ = (*(LPSYMENTRY *) lpMemRht)->stData.stChar;
+                                    *(*(LPAPLCHAR *) lplpMemRes)++ = (*(LPAPLHETERO) lpMemRht)->stData.stChar;
 
                                     break;
 
@@ -981,29 +985,29 @@ void PrimFnMonEpsilonGlbCopy
                     {
                         case PTRTYPE_STCONST:       // Res = HETERO, Rht = NESTED:BOOL/INT/FLOAT/CHAR
                             // Split cases based upon the right arg's immediate type
-                            switch ((*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType)
+                            switch ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)
                             {
                                 case IMMTYPE_BOOL:  // Res = HETERO, Rht = NESTED:BOOL
-                                    aplVal = (*(LPSYMENTRY *) lpMemRht)->stData.stBoolean;
+                                    aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
                                     *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc);
 
                                     break;
 
                                 case IMMTYPE_INT:   // Res = HETERO, Rht = NESTED:INT
-                                    aplVal = (*(LPSYMENTRY *) lpMemRht)->stData.stInteger;
+                                    aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
                                     *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
 
                                     break;
 
                                 case IMMTYPE_FLOAT: // Res = HETERO, Rht = NESTED:FLOAT
-                                    aplVal = *(LPAPLLONGEST) &(*(LPSYMENTRY *) lpMemRht)->stData.stFloat;
+                                    aplVal = *(LPAPLLONGEST) &(*(LPAPLHETERO) lpMemRht)->stData.stFloat;
                                     *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc);
 
                                     break;
 
 
                                 case IMMTYPE_CHAR:  // Res = HETERO, Rht = NESTED:CHAR
-                                    aplVal = (*(LPSYMENTRY *) lpMemRht)->stData.stChar;
+                                    aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stChar;
                                     *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc);
 
                                     break;

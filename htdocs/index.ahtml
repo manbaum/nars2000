@@ -272,7 +272,8 @@
               using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
             <li>Monadic thorn ({thorn}) (default format)</li>
             <li>Monadic up arrow ({uparrow}) (first)</li>
-            <li>Monadic up-tack-jot ({uptackjot}) (execute)</li>
+            <li>Monadic uptack jot ({uptackjot}) (execute)</li>
+            <li>Monadic right shoe ({disclose}) (disclose)</li>
           </ul>
         </li>
         <li>Dyadic
@@ -404,6 +405,7 @@
             <li><span class="APL">{quad}ESC</span></li>
             <li><span class="APL">{quad}FF</span></li>
             <li><span class="APL">{quad}HT</span></li>
+            <li><span class="APL">{quad}LC</span></li>
             <li><span class="APL">{quad}LF</span></li>
             <li><span class="APL">{quad}NL</span></li>
             <li><span class="APL">{quad}NUL</span></li>
@@ -438,6 +440,8 @@
         <li><span class="APL">)NEWTAB</span></li>
         <li><span class="APL">)OPS</span></li>
         <li><span class="APL">)RESET</span></li>
+        <li><span class="APL">)SI</span></li>
+        <li><span class="APL">)SIC</span></li>
         <li><span class="APL">)VARS</span></li>
       </ul>
     </div>

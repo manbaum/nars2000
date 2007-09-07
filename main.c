@@ -720,23 +720,6 @@ LRESULT APIENTRY MFWndProc
 
             break;                  // Continue with next handler
 
-////         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
-////                                     // idChild = HIWORD(wParam);  // Identifier of child window
-////                                     // lValue = lParam;           // Child handle, or cursor coordinates
-//// #define fwEvent     LOWORD (wParam)
-//// #define idChild     HIWORD (wParam)
-////
-////             DbgBrk ();
-////
-////             // Check for WM_CREATE from the Tab Control
-////             if (fwEvent EQ WM_CREATE)
-////                 PostMessage (hWnd, MYWM_INIT_EC, 0, 0);
-////
-////             return FALSE;           // We handled the msg
-////
-//// #undef  idChild
-//// #undef  fwEvent
-
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
         {

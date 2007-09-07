@@ -345,10 +345,11 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
         tkRhtArg.tkFlags.ImmType = immType;
     } // End IF
 
-    // If the left arg is APA, fill in the offset and multiplier
+    // If the left arg is APA, ...
     if (aplTypeLft EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+        // Get the APA parameters
         apaOffLft = lpAPA->Off;
         apaMulLft = lpAPA->Mul;
 #undef  lpAPA
@@ -358,12 +359,13 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     if (aplTypeRht EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
 #undef  lpAPA
     } // End IF
 
-    // Take into account the nested prototype
+    // Take into account nested prototypes
     if (aplTypeRht EQ ARRAY_NESTED)
         aplNELMRht = max (aplNELMRht, 1);
     if (aplTypeLft EQ ARRAY_NESTED)

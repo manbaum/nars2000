@@ -298,7 +298,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     } // End IF
 
     // Copy the chars into the line
-////Assert (aplNELMRht EQ (UINT) aplNELMRht);
+    Assert (aplNELMRht EQ (UINT) aplNELMRht);
     CopyMemory (lpwszCompLine, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
     lpwszCompLine[aplNELMRht] = L'\0';
 
@@ -322,8 +322,6 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
      LPTOKEN   lptkFunc)
 
 {
-////DWORD          dwThreadId;      // The thread ID
-////HANDLE         hHandle[2];      // Array of handles
     LPPL_YYSTYPE   lpYYRes;         // Ptr to the result
     HGLOBAL        hGlbPTD;         // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
@@ -345,61 +343,8 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     utjThread.hWndEC        = hWndEC;
     utjThread.hGlbPTD       = hGlbPTD;
     utjThread.lpwszCompLine = lpwszCompLine;
-    utjThread.hSemaReset    = NULL;
 
     PrimFnMonUpTackJotInThread (&utjThread);
-
-////    utjThread.hSemaReset    =
-////        hHandle[1] =
-////        CreateSemaphore (NULL,              // No security attrs
-////                         0,                 // Initial count (non-signalled)
-////                         64*1024,           // Maximum count
-////                         NULL);             // No name
-////    // Create a new thread
-////    hHandle[0] =
-////        CreateThread (NULL,                         // No security attrs
-////                      0,                            // Use default stack size
-////                     &PrimFnMonUpTackJotInThread,   // Starting routine
-////                     &utjThread,                    // Param to thread func
-////                      0,                            // Creation flag
-////                     &dwThreadId);                  // Returns thread id
-////#ifdef DEBUG
-////    dprintfW (L"~~WaitForMultipleObjects (ENTRY):  %s (%S#%d)", L"PrimFnMonUpTackJotCommon_EM_YY", FNLN);
-////#endif
-////    // Wait for the thread to terminate
-////    //   or the Reset Semaphore to signal
-////    switch (WaitForMultipleObjects (2,           // # handles to wait for
-////                                    hHandle,     // Handle array
-////                                    FALSE,       // Return when any handle is signalled
-////                                    INFINITE))   // Timeout value in milliseconds
-////    {
-////        case WAIT_OBJECT_0 + 0:     // hThread terminated
-////#ifdef DEBUG
-////            dprintfW (L"~~WaitForMultipleObjects (THREAD-EXIT):  %s (%S#%d)", L"PrimFnMonUpTackJotCommon_EM_YY", FNLN);
-////#endif
-////            if (gDbgLvl EQ 9)
-////                DbgBrk ();
-////            // Close the thread handle as it has terminated
-////            CloseHandle (hHandle[0]); hHandle[0] = NULL;
-////
-////            break;
-////
-////        case WAIT_OBJECT_0 + 1:     // hSemaReset signalled
-////            DbgBrk ();
-////
-////
-////
-////
-////
-////
-////            break;
-////
-////        defstop
-////            break;
-////    } // EndSWITCH
-////
-////    // Close the Reset Semaphore handle as it is no longer needed
-////    CloseHandle (hHandle[1]); hHandle[1] = NULL;
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -446,25 +391,16 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
     HWND          hWndSM,               // Session Manager window handle
                   hWndEC;               // Edit Control    ...
     LPAPLCHAR     lpwszCompLine;        // Ptr to the complete line to execute
-////UINT          oldTlsType;           // Previous value of dwTlsType
     DWORD         dwRet = 0;            // Return code from this function
     HGLOBAL       hGlbToken = NULL;     // Tokenized line global memory handle
-    HANDLE        hSigaphore = NULL,    // Semaphore handle to signal (NULL if none)
-                  hSemaReset;           // Semaphore handle for )RESET
+    HANDLE        hSigaphore = NULL;    // Semaphore handle to signal (NULL if none)
     EXIT_TYPES    exitType;             // Return code from ParseLine
     LPPLLOCALVARS lpplLocalVars;        // Ptr to local plLocalVars
 
-////// Save the previous value of dwTlsType
-////(LPVOID) oldTlsType = TlsGetValue (dwTlsType);
-////
-////// Save the thread type ('EX')
-////TlsSetValue (dwTlsType, (LPVOID) 'EX');
-////
     // Extract values from the arg struc
     hWndEC        = lputjThread->hWndEC;
     hGlbPTD       = lputjThread->hGlbPTD;
     lpwszCompLine = lputjThread->lpwszCompLine;
-    hSemaReset    = lputjThread->hSemaReset;
 
     // Save the thread's PerTabData global memory handle
     TlsSetValue (dwTlsPerTabData, hGlbPTD);
@@ -497,7 +433,6 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
     // Fill in the SIS header for the Execute primitive
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
                 NULL,                   // Semaphore handle
-                hSemaReset,             // Semaphore handle for )RESET
                 DFNTYPE_EXEC,           // DfnType
                 FCNVALENCE_MON,         // FcnValence
                 FALSE);                 // Suspended
@@ -510,8 +445,7 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
                NULL,                // Line text global memory handle
                hGlbToken,           // Tokenized line global memory handle
                lpwszCompLine,       // Ptr to the complete line
-               hGlbPTD,             // PerTabData global memory handle
-               hSemaReset);         // Semaphore handle for )RESET
+               hGlbPTD);            // PerTabData global memory handle
     // Split cases based upon the exit type
     switch (exitType)
     {
@@ -523,7 +457,13 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
         case EXITTYPE_ERROR:        // ...
             break;
 
-        case EXITTYPE_RESET_1LVL:
+        case EXITTYPE_RESET_ONE:
+            DbgBrk ();
+
+
+            break;
+
+        case EXITTYPE_RESET_ONE_INIT:
             DbgBrk ();
 
 
@@ -577,15 +517,10 @@ ERROR_EXIT:
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Display the default prompt if there's a suspension
-//////   and not executing []ALX/[]ELX
     if (hSigaphore EQ NULL
      && (lpMemPTD->lpSISCur EQ NULL
       || lpMemPTD->lpSISCur->Suspended))
-//// && lpMemPTD->lpSISCur->ErrorCode EQ ERRORCODE_NONE)
-        DisplayPrompt (hWndEC, FALSE, 5);
-////else
-////if (lpMemPTD->lpSISCur)
-////    lpMemPTD->lpSISCur->ErrorCode = ERRORCODE_NONE;
+        DisplayPrompt (hWndEC, 5);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -602,9 +537,6 @@ ERROR_EXIT:
         Sleep (0);
     } // End IF
 
-////// Restore the previous value of dwTlsType
-////TlsSetValue (dwTlsType, (LPVOID) oldTlsType);
-////
     return dwRet;
 } // End PrimFnMonUpTackJotInThread
 #undef  APPEND_NAME

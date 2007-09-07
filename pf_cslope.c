@@ -620,8 +620,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             break;
 
         case ARRAY_APA:
-            // Save the APA parameters
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+            // Get the APA parameters
             apaOffRht = lpAPA->Off;
             apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -689,6 +689,13 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             break;
     } // End SWITCH
 PROTO_EXIT:
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 

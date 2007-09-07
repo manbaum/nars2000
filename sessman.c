@@ -108,14 +108,6 @@ void AppendLine
 
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLong (lpMemPTD->hWndSM, GWLSF_HWNDEC);
-////#ifdef DEBUG
-////    dprintfW (L"~~Releasing semaphore:  %08X (%S#%d)", lpMemPTD->hSemaphoreWFMO, FNLN);
-////#endif
-////    // Tell the Session Manager to stop waiting
-////    ReleaseSemaphore (lpMemPTD->hSemaphoreWFMO, 1, NULL);
-////
-////    // Release our time slice so the released thread can act
-////    Sleep (0);
 
     // Move the caret to the end of the buffer
     MoveCaretEOB (hWndEC);
@@ -134,17 +126,6 @@ void AppendLine
         // Replace the selection (none) with "\r\n"
         SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
     } // End IF
-
-////    // Tell the Session Manager to start waiting
-////    if (lpMemPTD->hThreadWFMO)
-////    {
-////        PostMessage (lpMemPTD->hWndSM,
-////                 MYWM_WFMO,
-////                   (WPARAM) lpMemPTD->hThreadWFMO,
-////                     (LPARAM) lpMemPTD->hSemaResetWFMO);
-////        lpMemPTD->hThreadWFMO    =
-////        lpMemPTD->hSemaResetWFMO = NULL;
-////    } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -385,12 +366,12 @@ void MoveCaretEOB
 
 void DisplayPrompt
     (HWND hWndEC,       // Window handle of the Edit Control
-     BOOL bSetFocusSM,  // TRUE iff we're to set the focus to the Session Manager
+/////BOOL bSetFocusSM,  // TRUE iff we're to set the focus to the Session Manager
      UINT uCaller)      // ***DEBUG***
 
 {
 #ifdef DEBUG
-    dprintfW (L"~~DisplayPrompt (%d, %d)", bSetFocusSM, uCaller);
+    dprintfW (L"~~DisplayPrompt (%d)", uCaller);
 #endif
     // Move the caret to the End-of-the-buffer
     MoveCaretEOB (hWndEC);
@@ -398,9 +379,9 @@ void DisplayPrompt
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
 
-    if (bSetFocusSM)
-        // Set the focus to the Session Manager so the prompt displays
-        PostMessage (GetParent (hWndEC), MYWM_SETFOCUS, 0, 0);
+////if (bSetFocusSM)
+////    // Set the focus to the Session Manager so the prompt displays
+////    PostMessage (GetParent (hWndEC), MYWM_SETFOCUS, 0, 0);
 } // End DisplayPrompt
 
 
@@ -435,6 +416,39 @@ LPSYMENTRY GetSteZero
 
     return lpSym;
 } // End GetSteZero
+
+
+//***************************************************************************
+//  $GetSteOne
+//
+//  Return the LPSYMENTRY corresponding to the constant one
+//***************************************************************************
+
+LPSYMENTRY GetSteOne
+    (void)
+
+{
+    LPSYMENTRY    lpSym;        // Ptr to result
+    HGLOBAL       hGlbPTD;      // PerTabData global memory handle
+    LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
+
+    // Ensure we are where we think we are
+    Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+
+    // Get the PerTabData global handle
+    hGlbPTD = (HGLOBAL) TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the STE
+    lpSym = lpMemPTD->steOne;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpSym;
+} // End GetSteOne
 
 
 //***************************************************************************
@@ -849,8 +863,9 @@ LRESULT APIENTRY SMWndProc
             // Initialize next available entry
             lpMemPTD->lpSymTabNext = lpMemPTD->lpSymTab;
 
-            // Initialize the Symbol table Entry for the constant zero and blank, and No Value
+            // Initialize the Symbol table Entry for the constants zero, one, blank, and No Value
             lpMemPTD->steZero    = SymTabAppendPermInteger_EM (0);
+            lpMemPTD->steOne     = SymTabAppendPermInteger_EM (1);
             lpMemPTD->steBlank   = SymTabAppendPermChar_EM    (L' ');
             lpMemPTD->steNoValue = lpMemPTD->lpSymTabNext++;
 
@@ -1005,12 +1020,6 @@ LRESULT APIENTRY SMWndProc
               SetWindowLongW (hWndEC,
                               GWL_WNDPROC,
                               (long) (WNDPROC) &LclEditCtrlWndProc);
-////////////// Create and save a semaphore for WFMO
-////////////lpMemPTD->hSemaphoreWFMO =
-////////////    CreateSemaphore (NULL,              // No security attrs
-////////////                     0,                 // Initial count (non-signalled)
-////////////                     64*1024,           // Maximum count
-////////////                     NULL);             // No name
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1081,7 +1090,7 @@ LRESULT APIENTRY SMWndProc
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
             // Display the default prompt
-            DisplayPrompt (hWndEC, TRUE, 1);
+            DisplayPrompt (hWndEC, 1);
 
             return FALSE;           // We handled the msg
 
@@ -1090,169 +1099,10 @@ LRESULT APIENTRY SMWndProc
             if (!wParam)
             {
                 AppendLine (wszQuadInput, FALSE, TRUE);
-                DisplayPrompt (hWndEC, FALSE, lParam);
+                DisplayPrompt (hWndEC, lParam);
             } // End IF
 
             return FALSE;           // We handled the msg
-
-////         case MYWM_WFMO:             // hThread = (HANDLE) wParam
-////                                     // hSemaReset = (HANDLE) lParam
-////         {
-////             HANDLE hHandle[3];      // Array of handles
-////
-//// #define hThread     ((HANDLE) wParam)
-//// #define hSemaReset  ((HANDLE) lParam)
-////
-////             // Get the thread's PerTabData global memory handle
-////             hGlbPTD = TlsGetValue (dwTlsPerTabData);
-////
-////             // Lock the memory to get a ptr to it
-////             lpMemPTD = MyGlobalLock (hGlbPTD);
-////
-////             DbgBrk ();
-////
-////             // Save handles in array
-////             hHandle[0] = hThread;
-////             hHandle[1] = hSemaReset;
-////             hHandle[2] = lpMemPTD->hSemaphoreWFMO;
-////
-////             // We no longer need this ptr
-////             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-////
-//// #ifdef DEBUG
-////             dprintfW (L"~~MsgWaitForMultipleObjects (ENTRY):  %s (%S#%d)", L"SMWndProc", FNLN);
-//// #endif
-////             while (TRUE)
-////             {
-////                 DWORD dwWFMO;               // Return value from MsgWaitForMultipleObjects
-////
-////                 dwWFMO =
-////                 MsgWaitForMultipleObjects (3,               // # handles to wait for
-////                                            hHandle,         // Ptr to handle to wait for
-////                                            FALSE,           // Wait for any handle to signal
-////                                            INFINITE,        // Timeout value in milliseconds
-////                                            QS_ALLINPUT);    // Wait for any message
-////                 // Split cases based upon the return code
-////                 switch (dwWFMO)
-////                 {
-////                     case WAIT_OBJECT_0 + 0:         // hThread terminated
-//// #ifdef DEBUG
-////                         dprintfW (L"~~WaitForMultipleObjects (THREAD-EXIT):  %s (%S#%d)", L"WaitForInput", FNLN);
-//// #endif
-//// ////////////////////////// Process ParseLine done
-//// ////////////////////////PostMessage (hWnd, MYWM_PARSELINEDONE, wParam, lParam);
-////
-////                         DbgBrk ();
-////
-////                         // Close the thread handle as it has terminated
-////                         CloseHandle (hHandle[0]); hHandle[0] = NULL;
-////
-////                         // Close the Reset Semaphore handle as it isn't used anymore
-////                         CloseHandle (hHandle[1]); hHandle[1] = NULL;
-////
-////                         break;
-////
-////                     case WAIT_OBJECT_0 + 1:         // hSemaReset signalled
-////                         DbgBrk ();
-////
-////
-////
-////
-////
-////
-////
-////
-////                         // Close the Reset Semaphore handle as it isn't used anymore
-////                         CloseHandle (hHandle[1]); hHandle[1] = NULL;
-////
-////                         break;
-////
-////                     case WAIT_OBJECT_0 + 2:         // hSemaphore signalled
-//// #ifdef DEBUG
-////                         dprintfW (L"~~WaitForMultipleObjects (SEMAPHORE-EXIT):  %s (%S#%d)", L"WaitForInput", FNLN);
-//// #endif
-////                         DbgBrk ();
-////
-////                         // Lock the memory to get a ptr to it
-////                         lpMemPTD = MyGlobalLock (hGlbPTD);
-////
-////                         // Save parameters for caller's use
-////                         lpMemPTD->hThreadWFMO    = hThread;
-////                         lpMemPTD->hSemaResetWFMO = hSemaReset;
-////
-////                         // We no longer need this ptr
-////                         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-////
-////                         return FALSE;       // We handled the msg
-////
-////                     case WAIT_OBJECT_0 + 3:         // Wait triggered by new message
-////                         // Repost our message
-////                         PostMessage (hWnd, message, wParam, lParam);
-////
-////                         break;
-////
-////                     defstop
-////                         GetLastError ();
-////
-////                         break;
-////                 } // End SWITCH
-////             } // End WHILE
-////
-////             return FALSE;           // We handled the msg
-////         } // End MYWM_WFMO
-//// #undef  hSemaReset
-//// #undef  hThread
-
-////         case MYWM_PARSELINEDONE:
-//// #define hThread     ((HANDLE) wParam)
-//// #define hSemaReset  ((HANDLE) lParam)
-////
-////             // Wait for the thread to terminate
-////             while (TRUE)
-////             {
-////                 DWORD dwWFMO;
-////
-////                 dwWFMO =
-////                 MsgWaitForMultipleObjects (1,               // # handles to wait for
-////                                           &hThread,         // Ptr to handle to wait for
-////                                            FALSE,           // Only one handle to wait for
-////                                            INFINITE,        // Timeout value in milliseconds
-////                                            QS_ALLINPUT);    // Wait for any message
-////                 // Split cases based upon the return code
-////                 switch (dwWFMO)
-////                 {
-////                     // Check for ParseLine thread done
-////                     case WAIT_OBJECT_0 + 0:
-////                         // Thread ParseLine done
-////
-////                         // Close the Reset Semaphore handle as it isn't used anymore
-////                         CloseHandle (hSemaReset); hSemaReset = NULL;
-////
-////                         // Close the thread handle as it has terminated
-////                         CloseHandle (hThread); hThread = NULL;
-////
-//// ////////////////////////// Display the default prompt
-//// ////////////////////////DisplayPrompt (hWndEC, TRUE);
-////
-////                         return FALSE;           // We handled the msg
-////
-////                     // Check for a message in the queue, ...
-////                     case WAIT_OBJECT_0 + 1:
-////                         // Repost our message
-////                         PostMessage (hWnd, message, wParam, lParam);
-////
-////                         return FALSE;           // We handled the msg
-////
-////                     defstop
-////                         GetLastError ();
-////
-////                         break;
-////                 } // End SWITCH
-////             } // End WHILE
-////
-////             return FALSE;           // We handled the msg
-//// #undef  hSemaReset
-//// #undef  hThread
 
 #define fwSizeType  wParam
 #define nWidth      (LOWORD (lParam))
@@ -1261,7 +1111,6 @@ LRESULT APIENTRY SMWndProc
                                     // nWidth = LOWORD(lParam);  // Width of client area
                                     // nHeight = HIWORD(lParam); // Height of client area
             if (fwSizeType NE SIZE_MINIMIZED)
-            {
                 SetWindowPos (hWndEC,           // Window handle to position
                               0,                // SWP_NOZORDER
                               0,                // X-position
@@ -1271,17 +1120,6 @@ LRESULT APIENTRY SMWndProc
                               SWP_NOZORDER      // Flags
                             | SWP_SHOWWINDOW
                              );
-////////////////// Get the formatting rectangle
-////////////////SendMessageW (hWndEC, EM_GETRECT, 0, (LPARAM) &rcFmtEC);
-////////////////
-////////////////// Move the rectangle over enough chars (FCN_INDENT) to provide room
-//////////////////   for line numbers
-////////////////rcFmtEC.left = FCN_INDENT * cxAveCharSM;
-////////////////
-////////////////// Tell the control about this change
-////////////////SendMessageW (hWndEC, EM_SETRECT, 0, (LPARAM) &rcFmtEC);
-            } // End IF
-
             break;                  // Continue with next handler ***MUST***
 #undef  nHeight
 #undef  nWidth

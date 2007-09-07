@@ -363,12 +363,12 @@ BOOL PrimFnDydPlusAPA_EM
     //   (one of the arg's must be a singleton)
     if (aplNELMLft NE 1)
     {
-        *lphGlbRes = CopyArray_EM (hGlbLft, TRUE, lptkFunc);
+        *lphGlbRes = CopyArray_EM (hGlbLft, lptkFunc);
         aplRankRes = aplRankLft;
     } else
     if (aplNELMRht NE 1)
     {
-        *lphGlbRes = CopyArray_EM (hGlbRht, TRUE, lptkFunc);
+        *lphGlbRes = CopyArray_EM (hGlbRht, lptkFunc);
         aplRankRes = aplRankRht;
     } else
         DbgStop ();     // We should never get here

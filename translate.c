@@ -9,6 +9,7 @@
 
 #include "main.h"
 #include "externs.h"
+#include "sis.h"
 #include "dfnhdr.h"
 
 // Include prototypes unless prototyping
@@ -339,6 +340,38 @@ ARRAY_TYPES TranslateStrandTypeToArrayType
             return ARRAY_ERROR;     // To keep the compiler happy
     } // End SWITCH
 } // End TranslateStrandTypeToArrayType
+
+
+//***************************************************************************
+//  $TranslateResetFlagToExitType
+//
+//  Translate a ResetFlag (see RESET_FLAGS enum) to
+//    an ExitType (see EXIT_TYPES enum).
+//***************************************************************************
+
+EXIT_TYPES TranslateResetFlagToExitType
+    (RESET_FLAGS resetFlag)
+
+{
+    // Split cases based upon the reset flag
+    switch (resetFlag)
+    {
+        case RESETFLAG_NONE:
+            return EXITTYPE_NONE;
+
+        case RESETFLAG_ONE:
+            return EXITTYPE_RESET_ONE;
+
+        case RESETFLAG_ONE_INIT:
+            return EXITTYPE_RESET_ONE_INIT;
+
+        case RESETFLAG_ALL:
+            return EXITTYPE_RESET_ALL;
+
+        defstop
+            return EXITTYPE_NONE;
+    } // End SWITCH
+} // End TranslateResetFlagToExitType
 
 
 //***************************************************************************

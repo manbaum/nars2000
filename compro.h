@@ -54,6 +54,7 @@
 #include "pf_rcaret.pro"
 #include "pf_rcaretund.pro"
 #include "pf_rho.pro"
+#include "pf_rshoe.pro"
 #include "pf_rtack.pro"
 #include "pf_slash.pro"
 #include "pf_slope.pro"

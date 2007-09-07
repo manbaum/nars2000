@@ -19,6 +19,7 @@
 #define SysFnCR_EM      NULL
 #define SysFnDM_EM      NULL
 #define SysFnDR_EM      NULL
+#define SysFnLC_EM      NULL
 #define SysFnSIZE_EM    NULL
 #define SysFnSYSID_EM   NULL
 #define SysFnSYSVER_EM  NULL
@@ -68,7 +69,7 @@ SYSNAME aSystemNames[] =
 ////{WS_UTF16_QUAD L"ai"       ,      0,      FALSE, SysFnAI_EM    , 0          },  // Accounting Information
 ////{WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM    , 0          },  // Atomic Vector
     {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, SysFnDM_EM    , 0          },  // Diagnostic Message
-////{WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM    , 0          },  // Line Counter
+    {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM    , 0          },  // Line Counter
 ////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, SysFnSI_EM    , 0          },  // State Indicator
 ////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, SysFnSINL_EM  , 0          },  // State Indicator w/Name List
     {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, SysFnSYSID_EM , 0          },  // System Identifier

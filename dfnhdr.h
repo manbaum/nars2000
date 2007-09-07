@@ -4,9 +4,12 @@
 
 typedef struct tagFCNLINE           // Function line structure, one per function line
 {
-    HGLOBAL hGlbTxtLine;            // 00:  Text of the line (APLCHAR) global memory handle
-    HGLOBAL hGlbTknLine;            // 04:  Tokenized line (TOKEN)     ...
-    HGLOBAL hGlbMonInfo;            // 08:  Monitor information (??)   ... (may be NULL)
+    HGLOBAL hGlbTxtLine,            // 00:  Text of the line (APLCHAR) global memory handle
+            hGlbTknLine,            // 04:  Tokenized line (TOKEN)     ...
+            hGlbMonInfo;            // 08:  Monitor information (??)   ... (may be NULL)
+    UINT    bStop:1,                // 0C:  00000001:  Stop on this line
+            bTrace:1,               //      00000002:  Trace this line
+            Avail:30;               //      FFFFFFFC:  Available bits
                                     // 0C:  Length
 } FCNLINE, *LPFCNLINE;
 

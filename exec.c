@@ -771,16 +771,11 @@ VOID CALLBACK WaitForImmExecLine
 #ifdef DEBUG
     dprintfW (L"~~WaitForImmExecLine (%08X)", lpMemWFSO->hThread);
 #endif
-////// Unlocalize the STEs on the innermost level
-//////   and strip off one level
-////Unlocalize ();
-
     // Cancel the wait operation
 #ifdef DEBUG
     dwRet =
 #endif
-    UnregisterWait (lpMemWFSO->WaitHandle);
-
+    UnregisterWait (lpMemWFSO->WaitHandle); lpMemWFSO->WaitHandle = NULL;
     Assert (dwRet EQ 0 || dwRet EQ ERROR_IO_PENDING);
 
     // Signal the next level (if appropriate)
@@ -840,7 +835,6 @@ void ImmExecLine
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("ImmExecLine:  VirtualAlloc for <lpwszCompLine> failed");
 
-////////return (HANDLE) NEG1U;  // Mark as failed
         return;                 // Mark as failed
     } // End IF
 
@@ -872,11 +866,12 @@ void ImmExecLine
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // If it's Quad input, ...
+            // If it's Quad input, and we're not resetting, ...
             if (lpMemPTD->lpSISCur
+             && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
-                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 6);
+                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 10);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -897,7 +892,7 @@ void ImmExecLine
             if (lpMemPTD->lpSISCur
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
-                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 7);
+                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 11);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -921,7 +916,7 @@ void ImmExecLine
             if (lpMemPTD->lpSISCur
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
-                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 8);
+                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 12);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -940,11 +935,12 @@ void ImmExecLine
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // If it's not Quad input, ...
+    // If no SIS layer or not Quad input and not reset all, ...
     if (lpMemPTD->lpSISCur EQ NULL
-     || lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD)
+     || (lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD
+      && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_ALL))
         // Display the default prompt
-        DisplayPrompt (hWndEC, FALSE, 4);
+        DisplayPrompt (hWndEC, 4);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -983,7 +979,6 @@ EXIT_TYPES ImmExecStmt
     ieThread.hWndEC         = hWndEC;
     ieThread.hGlbPTD        = TlsGetValue (dwTlsPerTabData);
     ieThread.lpwszCompLine  = lpwszCompLine;
-    ieThread.hSemaReset     = NULL;
     ieThread.hGlbWFSO       = DbgGlobalAlloc (GHND, sizeof (WFSO));
     ieThread.bFreeLine      = bFreeLine;
     ieThread.bWaitUntilFini = bWaitUntilFini;
@@ -1024,7 +1019,7 @@ EXIT_TYPES ImmExecStmt
     } else
     {
 #ifdef DEBUG
-        dprintfW (L"~~RegisterWaitForSingleObject (%08X)", hThread);
+        dprintfW (L"~~RegisterWaitForSingleObject (%08X) (%S#%d)", hThread, FNLN);
 #endif
         // Tell W to callback when this thread terminates
         RegisterWaitForSingleObject (&lpMemWFSO->WaitHandle,// Return wait handle
@@ -1064,8 +1059,7 @@ DWORD WINAPI ImmExecLineInThread
     (LPIE_THREAD lpieThread)
 
 {
-    HANDLE       hSigaphore = NULL, // Semaphore handle to signal (NULL if none)
-                 hSemaReset;        // Semaphore handle for )RESET
+    HANDLE       hSigaphore = NULL; // Semaphore handle to signal (NULL if none)
     LPWCHAR      lpwszCompLine;     // Ptr to complete line
     HGLOBAL      hGlbToken,         // Handle of tokenized line
                  hGlbWFSO;          // WaitForSingleObject callback global memory handle
@@ -1073,8 +1067,8 @@ DWORD WINAPI ImmExecLineInThread
                  hWndSM;            // ...       Session Manager ...
     HGLOBAL      hGlbPTD;           // Handle to this window's PerTabData
     LPPERTABDATA lpMemPTD;          // Ptr to ...
-    BOOL         bResetting,        // TRUE iff we're resetting
-                 bFreeLine,         // TRUE iff we should free lpszCompLine on completion
+    RESET_FLAGS  resetFlag;         // Reset flag (see enum RESET_FLAGS)
+    BOOL         bFreeLine,         // TRUE iff we should free lpszCompLine on completion
                  bWaitUntilFini;    // TRUE iff wait until finished
     EXIT_TYPES   exitType;          // Return code from ParseLine
     LPWFSO       lpMemWFSO;         // Ptr to WFSO global memory
@@ -1087,18 +1081,15 @@ DWORD WINAPI ImmExecLineInThread
     hWndEC         = lpieThread->hWndEC;
     hGlbPTD        = lpieThread->hGlbPTD;
     lpwszCompLine  = lpieThread->lpwszCompLine;
-    hSemaReset     = lpieThread->hSemaReset;
     hGlbWFSO       = lpieThread->hGlbWFSO;
     bFreeLine      = lpieThread->bFreeLine;
     bWaitUntilFini = lpieThread->bWaitUntilFini;
 
     // Save the thread's PerTabData global memory handle
     TlsSetValue (dwTlsPerTabData, hGlbPTD);
-
 #ifdef DEBUG
     dprintfW (L"--Starting thread in <ImmExecLineInThread>.");
 #endif
-
     // Get the window handle of the Session Manager
     hWndSM = GetParent (hWndEC);
 
@@ -1123,7 +1114,6 @@ DWORD WINAPI ImmExecLineInThread
     // Fill in the SIS header for Immediate Execution Mode
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
                 NULL,                   // Semaphore handle
-                hSemaReset,             // Semaphore handle for )RESET
                 DFNTYPE_IMM,            // DfnType
                 FCNVALENCE_IMM,         // FcnValence
                 FALSE);                 // Suspended
@@ -1136,41 +1126,92 @@ DWORD WINAPI ImmExecLineInThread
                NULL,                // Line text global memory handle
                hGlbToken,           // Tokenized line global memory handle
                lpwszCompLine,       // Ptr to the complete line
-               hGlbPTD,             // PerTabData global memory handle
-               hSemaReset);         // Semaphore handle for )RESET
+               hGlbPTD);            // PerTabData global memory handle
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Start with the preceding layer (if any)
+    lpSISCur = lpMemPTD->lpSISCur->lpSISPrv;
+
     // Split cases based upon the exit type
     switch (exitType)
     {
-        case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
-        case EXITTYPE_DISPLAY:      // ...
-        case EXITTYPE_NODISPLAY:    // ...
-        case EXITTYPE_NOVALUE:      // ...
-        case EXITTYPE_ERROR:        // ...
+        case EXITTYPE_ERROR:        // If from Quad Input, tell SM to redisplay the prompt
+            if (lpSISCur
+             && lpSISCur->DfnType EQ DFNTYPE_QUAD)
+                PostMessage (hWndSM, MYWM_QUOTEQUAD, FALSE, 13);
             break;
 
-        case EXITTYPE_GOTO_LINE:
-        case EXITTYPE_RESET_1LVL:
-        case EXITTYPE_RESET_ALL:
-            // Lock the memory to get a ptr to it
-            lpMemWFSO = MyGlobalLock (hGlbWFSO);
+        case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
+        case EXITTYPE_DISPLAY:      // ...
+        case EXITTYPE_NOVALUE:      // ...
+            break;
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Save the semaphore handle to signal after Unlocalize (may be NULL if none)
-            for (lpSISCur = lpMemPTD->lpSISCur;
-                 lpSISCur;
-                 lpSISCur = lpSISCur->lpSISPrv)
-            if (lpSISCur->hSemaphore)
+        case EXITTYPE_NODISPLAY:    // Signal previous SI layer's semaphore if it's Quad input
+            // If the previous layer in the SI stack is Quad input,
+            //   signal it to receive this value
+            if (lpSISCur
+             && lpSISCur->DfnType EQ DFNTYPE_QUAD)
             {
-                lpMemWFSO->hSigaphore = lpSISCur->hSemaphore;
+                // Lock the memory to get a ptr to it
+                lpMemWFSO = MyGlobalLock (hGlbWFSO);
+
+                Assert (lpSISCur->hSemaphore NE NULL);
+
+                // Tell the wait handler to signal this layer
+                hSigaphore = lpMemWFSO->hSigaphore = lpSISCur->hSemaphore;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+            } // End IF
+
+            break;
+
+        case EXITTYPE_RESET_ONE:        // Stop at this level
+            exitType = EXITTYPE_NOVALUE;
+            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
+
+            break;
+
+        case EXITTYPE_RESET_ONE_INIT:   // Change to EXITTYPE_RESET_ONE
+            exitType = EXITTYPE_RESET_ONE;
+            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_ONE;
+
+            // Fall through to common code
+
+        case EXITTYPE_RESET_ALL:        // ...
+            // If there's no more SI layers,
+            if (lpSISCur EQ NULL)
+            {
+                // Display the default prompt
+                DisplayPrompt (hWndEC, 6);
 
                 break;
-            } // End FOR/IF
+            } // End IF
 
-            // We no longer need these ptrs
-            MyGlobalUnlock (hGlbPTD);  lpMemPTD  = NULL;
-            MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+            // Fall through to common code
+
+        case EXITTYPE_GOTO_LINE:        // Signal previous SI layer's semaphore if it's user-defined function/operator
+            // If the previous layer in the SI stack is a
+            //   User-Defined Function/Operator or Quad Input,
+            //   signal it to handle this action
+            if (lpSISCur
+             && (lpSISCur->DfnType EQ DFNTYPE_OP1
+              || lpSISCur->DfnType EQ DFNTYPE_OP2
+              || lpSISCur->DfnType EQ DFNTYPE_FCN
+              || lpSISCur->DfnType EQ DFNTYPE_QUAD))
+            {
+                // Lock the memory to get a ptr to it
+                lpMemWFSO = MyGlobalLock (hGlbWFSO);
+
+                Assert (lpSISCur->hSemaphore NE NULL);
+
+                // Tell the wait handler to signal this layer
+                hSigaphore = lpMemWFSO->hSigaphore = lpSISCur->hSemaphore;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+            } // End IF
 
             break;
 
@@ -1179,26 +1220,12 @@ DWORD WINAPI ImmExecLineInThread
             break;
     } // End SWITCH
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the resetting flag
-    bResetting = lpMemPTD->lpSISCur->Resetting;
-
-    // Save the semaphore handle to signal after Unlocalize (may be NULL if none)
-    if (lpMemPTD->lpSISCur
-     && !bResetting)
-    {
-        hSigaphore = lpMemPTD->lpSISCur->hSigaphore;
-        lpMemPTD->lpSISCur->hSigaphore = NULL;
-    } // End IF
+    // Get the reset flag
+    resetFlag = lpMemPTD->lpSISCur->ResetFlag;
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
     Unlocalize ();
-
-    // If this hSigaphore is not for this level, pass it on up the line
-    hSigaphore = PassSigaphore (lpMemPTD, hSigaphore);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1216,42 +1243,16 @@ ERROR_EXIT:
         VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
     } // End IF
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-////// Display the default prompt
-//////   if we're not resetting, and
-//////   if there's a suspension (not Quad Input, though)
-////if (!bResetting)
-////if (lpMemPTD->lpSISCur EQ NULL
-//// || (lpMemPTD->lpSISCur->Suspended
-////  && lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QUAD))
-////    DisplayPrompt (hWndEC, FALSE, 3);
-
     // Display the default prompt
     //   if we're not resetting, and
     //   the caller isn't waiting for us to finish, and
+//////   the exit type isn't error, and
     //   there's no semaphore to signal
-    if (!bResetting
+    if (resetFlag EQ RESETFLAG_NONE
      && !bWaitUntilFini
+/////&& exitType NE EXITTYPE_ERROR
      && hSigaphore EQ NULL)
-        DisplayPrompt (hWndEC, FALSE, 3);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    // If there's a semaphore to signal, ...
-    if (hSigaphore)
-    {
-#ifdef DEBUG
-        dprintfW (L"~~Releasing semaphore:  %08X (%S#%d)", hSigaphore, FNLN);
-#endif
-        ReleaseSemaphore (hSigaphore, 1, NULL);
-
-        // Release our time slice so the released thread can act
-        Sleep (0);
-    } // End IF
-
+        DisplayPrompt (hWndEC, 3);
     return exitType;
 } // End ImmExecLineInThread
 #undef  APPEND_NAME
@@ -1893,7 +1894,6 @@ BOOL fnAsnDone
 
 {
     TKFLAGS    tkFlags = {0};
-    BOOL       bRet;
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -1908,11 +1908,10 @@ BOOL fnAsnDone
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
+    return AppendNewToken_EM (lptkLocalVars,
                               &tkFlags,
                               &aplLongest,
                               0);
-    return bRet;
 } // End fnAsnDone
 
 
@@ -1927,7 +1926,6 @@ BOOL fnLstDone
 
 {
     TKFLAGS    tkFlags = {0};
-    BOOL       bRet;
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -1942,11 +1940,10 @@ BOOL fnLstDone
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
+    return AppendNewToken_EM (lptkLocalVars,
                               &tkFlags,
                               &aplLongest,
                               0);
-    return bRet;
 } // End fnLstDone
 
 
@@ -1961,7 +1958,6 @@ BOOL fnClnDone
 
 {
     TKFLAGS    tkFlags = {0};
-    BOOL       bRet;
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -1976,11 +1972,10 @@ BOOL fnClnDone
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
+    return AppendNewToken_EM (lptkLocalVars,
                               &tkFlags,
                               &aplLongest,
                               0);
-    return bRet;
 } // End fnClnDone
 
 
@@ -1995,7 +1990,6 @@ BOOL fnPrmDone
 
 {
     TKFLAGS tkFlags = {0};
-    BOOL    bRet;
     APLINT  aplInteger;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2023,11 +2017,10 @@ BOOL fnPrmDone
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
+    return AppendNewToken_EM (lptkLocalVars,
                               &tkFlags,
                               &aplInteger,
                               0);
-    return bRet;
 } // End fnPrmDone
 
 
@@ -2138,7 +2131,6 @@ BOOL fnOp2Done
 
 {
     TKFLAGS    tkFlags = {0};
-    BOOL       bRet;            // TRUE iff result is valid
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2151,11 +2143,10 @@ BOOL fnOp2Done
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     aplLongest = lptkLocalVars->PrevWchar;
-    bRet = AppendNewToken_EM (lptkLocalVars,
+    return AppendNewToken_EM (lptkLocalVars,
                               &tkFlags,
                               &aplLongest,
                               -1);
-    return bRet;
 } // End fnOp2Done
 
 
@@ -2170,7 +2161,6 @@ BOOL fnJotDone
 
 {
     TKFLAGS tkFlags = {0};
-    BOOL    bRet;               // TRUE iff result is valid
     APLINT  aplInteger;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2185,11 +2175,10 @@ BOOL fnJotDone
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
+    return AppendNewToken_EM (lptkLocalVars,
                               &tkFlags,
                               &aplInteger,
                               -1);
-    return bRet;
 } // End fnJotDone
 
 
@@ -2204,7 +2193,6 @@ BOOL fnOutDone
 
 {
     TKFLAGS tkFlags = {0};
-    BOOL    bRet;               // TRUE iff result is valid
     APLINT  aplInteger;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
@@ -2219,11 +2207,10 @@ BOOL fnOutDone
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
-    bRet = AppendNewToken_EM (lptkLocalVars,
+    return AppendNewToken_EM (lptkLocalVars,
                               &tkFlags,
                               &aplInteger,
                               -1);
-    return bRet;
 } // End fnOutDone
 
 
@@ -2245,7 +2232,6 @@ BOOL fnComDone
 {
     int     iLen, iLen2;
     HGLOBAL hGlb;
-    BOOL    bRet;               // TRUE iff result is valid
     APLINT  aplInteger;
     LPWCHAR lpwch;
 
@@ -2273,7 +2259,7 @@ BOOL fnComDone
     {
         ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
 
-        bRet = FALSE;
+        return FALSE;
     } else
     {
         LPWCHAR lpwsz;
@@ -2294,13 +2280,11 @@ BOOL fnComDone
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
-        bRet = AppendNewToken_EM (lptkLocalVars,
+        return AppendNewToken_EM (lptkLocalVars,
                                   &tkFlags,
                                   &aplInteger,
                                   0);
     } // End IF
-
-    return bRet;
 } // End fnComDone
 #undef  APPEND_NAME
 
@@ -2861,14 +2845,13 @@ LPPL_YYSTYPE WaitForInput
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    HANDLE         hHandle[2];      // Array of handles
+    HANDLE         hSemaphore;      // Semaphore handle
     LPPL_YYSTYPE   lpYYRes;         // Ptr to the result
     HGLOBAL        hGlbPTD;         // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
     UINT           uLinePos,        // Char position of start of line
                    uCharPos;        // Current char position
     HWND           hWndEC;          // Edit Control window handle
-    BOOL           bResetting;      // TRUE iff we're resetting
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -2877,22 +2860,14 @@ LPPL_YYSTYPE WaitForInput
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Create a semaphore
-    hHandle[0] =
+    hSemaphore =
     CreateSemaphore (NULL,              // No security attrs
                      0,                 // Initial count (non-signalled)
                      64*1024,           // Maximum count
                      NULL);             // No name
-////// Create a semaphore for )RESET
-////hHandle[1] =
-////CreateSemaphore (NULL,              // No security attrs
-////                 0,                 // Initial count (non-signalled)
-////                 64*1024,           // Maximum count
-////                 NULL);             // No name
     // Fill in the SIS header for Quote-Quad/Quad Input Mode
     FillSISNxt (lpMemPTD,               // Ptr to PerTabData global memory
-                hHandle[0],             // Semaphore handle
-////////////////hHandle[1],             // Semaphore handle for )RESET
-                NULL,                   // Semaphore handle for )RESET
+                hSemaphore,             // Semaphore handle
                 bQuoteQuad ? DFNTYPE_QQUAD: DFNTYPE_QUAD, // DfnType
                 FCNVALENCE_NIL,         // FcnValence
                 TRUE);                  // Suspended
@@ -2915,57 +2890,29 @@ LPPL_YYSTYPE WaitForInput
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Tell the Session Manager to display the appropriate prompt
-    PostMessage (hWndSM, MYWM_QUOTEQUAD, bQuoteQuad, 10);
-
+    PostMessage (hWndSM, MYWM_QUOTEQUAD, bQuoteQuad, 14);
 #ifdef DEBUG
-    dprintfW (L"~~WaitForMultipleObjects (ENTRY):  %s (%S#%d)", L"WaitForInput", FNLN);
+    dprintfW (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"WaitForInput", FNLN);
 #endif
-    // Wait for either semaphore to trigger
-    switch (WaitForMultipleObjects (1,           // # handles to wait for ***FIXME*** -- Use WaitForSingleObject
-                                    hHandle,     // Handle array
-                                    FALSE,       // Return when any handle is signalled
-                                    INFINITE))   // Timeout value in milliseconds
-    {
-        case WAIT_OBJECT_0 + 0: // hSemaphore triggered
+    // Wait for the semaphore to trigger
+    WaitForSingleObject (hSemaphore,    // Handle to wait for
+                         INFINITE);     // Timeout value in milliseconds
 #ifdef DEBUG
-            dprintfW (L"~~WaitForMultipleObjects (SEMAPHORE-EXIT):  %s (%S#%d)", L"WaitForInput", FNLN);
+    dprintfW (L"~~WaitForSingleObject (EXIT):   %s (%S#%d)", L"WaitForInput", FNLN);
 #endif
-            bResetting = FALSE;
-
-            break;
-
-////         case WAIT_OBJECT_0 + 1: // hSemaReset triggered
-//// #ifdef DEBUG
-////             dprintfW (L"~~WaitForMultipleObjects (SEMARESET-EXIT):  %s (%S#%d)", L"WaitForInput", FNLN);
-//// #endif
-////             bResetting = TRUE;
-////
-////             break;
-////
-        defstop
-            break;
-    } // End SWITCH
-
-    if (gDbgLvl EQ 9)
-        DbgBrk ();
     // Close the semaphore handle as it is no longer needed
-    CloseHandle (hHandle[0]); hHandle[0] = NULL;
+    CloseHandle (hSemaphore); hSemaphore = NULL;
 
-////// Close the Reset Semaphore handle as it is no longer needed
-////CloseHandle (hHandle[1]); hHandle[1] = NULL;
-////
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Transfer the resetting flag
-    lpMemPTD->lpSISCur->Resetting = bResetting;
 
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
     Unlocalize ();
 
     // If we're resetting, ...
-    if (bResetting)
+    if (lpMemPTD->lpSISCur
+     && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
         lpYYRes = NULL;
     else
     {
@@ -3371,9 +3318,9 @@ void Untokenize
                 if (FreeResultGlobalVar (ClrPtrTypeDirGlb (lpToken->tkData.tkGlbData)))
                 {
 #ifdef DEBUG_ZAP
-                    dprintf ("**Zapping in Untokenize: %08X (%d)",
-                             ClrPtrTypeDir (lpToken->tkData.tkGlbData),
-                             __LINE__);
+                    dprintfW (L"**Zapping in Untokenize: %08X (%d) (%S#%d)",
+                              ClrPtrTypeDir (lpToken->tkData.tkGlbData),
+                              FNLN);
 #endif
                     lpToken->tkData.tkGlbData = NULL;
                 } // End IF
@@ -3384,9 +3331,9 @@ void Untokenize
                 // Free the global
                 DbgGlobalFree (ClrPtrTypeDirGlb (lpToken->tkData.tkGlbData));
 #ifdef DEBUG_ZAP
-                dprintf ("**Zapping in Untokenize: %08X (%d)",
-                         ClrPtrTypeDir (lpToken->tkData.tkGlbData),
-                         __LINE__);
+                dprintfW (L"**Zapping in Untokenize: %08X (%d) (%S#%d)",
+                          ClrPtrTypeDir (lpToken->tkData.tkGlbData),
+                          FNLN);
 #endif
                 lpToken->tkData.tkGlbData = NULL;
 

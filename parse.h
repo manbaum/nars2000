@@ -77,8 +77,7 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     struct tagPLLOCALVARS
                 *lpPLPrev;          // 70:  Ptr to previous PLLOCALVARS struct
                                     //      in thread creation order (NULL = none)
-    HANDLE       hSemaReset;        // 74:  Semaphore handle for )RESET
-                                    // 78:  Length
+                                    // 74:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

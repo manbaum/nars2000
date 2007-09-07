@@ -355,14 +355,11 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 break;
 
             case ARRAY_APA:
-
 #define lpAPA       ((LPAPLAPA) lpMemLft)
-
+                // Get the APA parameters
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
-
 #undef  lpAPA
-
                 // Check the first and last values
                 if (!IsBooleanValue (apaOff)
                  || !IsBooleanValue (apaOff + apaMul * (aplNELMLft - 1)))
@@ -622,12 +619,10 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         case ARRAY_APA:
 
 #define lpAPA       ((LPAPLAPA) lpMemRht)
-
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
-
 #undef  lpAPA
-
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)

@@ -334,6 +334,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
                 case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+                    // Get the APA parameters
                     apaOffRht = lpAPA->Off;
                     apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -825,6 +826,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
                 case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+                    // Get the APA parameters
                     apaOffRht = lpAPA->Off;
                     apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -905,8 +907,9 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             case ARRAY_APA:
                 Assert (uNumRowsLft EQ lpGslVectorB->size);
 #define lpAPA       ((LPAPLAPA) lpMemLft)
-                    apaOffLft = lpAPA->Off;
-                    apaMulLft = lpAPA->Mul;
+                // Get the APA parameters
+                apaOffLft = lpAPA->Off;
+                apaMulLft = lpAPA->Mul;
 #undef  lpAPA
                 for (uRow = 0; uRow < uNumRowsLft; uRow++)
                     lpGslVectorB->data[uRow] = (APLFLOAT) (APLINT) (apaOffLft + apaMulLft * (uRow * uNumColsLft + uCol));

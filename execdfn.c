@@ -230,7 +230,6 @@ RESTART_EXCEPTION_EXECDFNGLB:
         lpMemPTD->lpSISNxt->Sig.nature   = SIS_HEADER_SIGNATURE;
 ////////lpMemPTD->lpSISNxt->hThread      =          // Filled in by ExecuteFunction_EM_YY
 ////////lpMemPTD->lpSISNxt->hSemaphore   =          // ...
-////////lpMemPTD->lpSISNxt->hSemaReset   =          // ...
         lpMemPTD->lpSISNxt->hSigaphore   = NULL;
         lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
         lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
@@ -313,13 +312,13 @@ RESTART_EXCEPTION_EXECDFNGLB:
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->numResultSTE,
-                        (LPSYMENTRY *) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE),
+                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE),
                        &stFlagsMT);
     // Localize and clear the left arg STEs
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->numLftArgSTE,
-                        (LPSYMENTRY *) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE),
+                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE),
                        &stFlagsMT);
     // Localize and clear the left operand STE
     lpSymEntryNxt =
@@ -343,13 +342,13 @@ RESTART_EXCEPTION_EXECDFNGLB:
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->numRhtArgSTE,
-                        (LPSYMENTRY *) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE),
+                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE),
                        &stFlagsMT);
     // Localize and clear the locals STEs
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->numLocalsSTE,
-                        (LPSYMENTRY *) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLocalsSTE),
+                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLocalsSTE),
                        &stFlagsMT);
     // Search for line labels, localize and initialize them
     lpSymEntryNxt =
@@ -366,7 +365,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
     // Setup the left arg STEs
     InitVarSTEs (lptkLftArg,
                  lpMemDfnHdr->numLftArgSTE,
-                 (LPSYMENTRY *) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE));
+                 (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE));
     // Setup the left operand STE
     if (!InitFcnSTEs (lpYYFcnStrLft,
                       lpMemDfnHdr->steLftOpr NE NULL,
@@ -384,7 +383,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
     // Setup the right arg STEs
     InitVarSTEs (lptkRhtArg,
                  lpMemDfnHdr->numRhtArgSTE,
-                 (LPSYMENTRY *) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE));
+                 (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE));
 
     // We no longer need these ptrs
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -443,15 +442,14 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     LPFCNLINE      lpFcnLines;      // Ptr to array of function line structs (FCNLINE[numFcnLines])
     HWND           hWndSM;          // Session Manager window handle
     HANDLE         hSemaphore;      // Semaphore handle
-////               hSemaReset;      // Semaphore handle for )RESET
     UINT           numResultSTE,    // # result STEs (may be zero if no result)
                    numRes;          // Loop counter
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
-    BOOL           bRet,            // TRUE iff result is valid
-                   bResetting = FALSE; // TRUE iff we're resetting
+    BOOL           bRet;            // TRUE iff result is valid
+#ifdef DEBUG
     EXIT_TYPES     exitType;        // Return code from ParseLine
-
+#endif
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
 
@@ -481,13 +479,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                      0,                 // Initial count (non-signalled)
                      64*1024,           // Maximum count
                      NULL);             // No name
-////// Create a semaphore for )RESET
-////hSemaReset =
-////lpMemPTD->lpSISCur->hSemaReset =
-////CreateSemaphore (NULL,              // No security attrs
-////                 0,                 // Initial count (non-signalled)
-////                 64*1024,           // Maximum count
-////                 NULL);             // No name
     // Loop through the function lines
     while (0 < uLineNum && uLineNum <= lpMemPTD->lpSISCur->numFcnLines)
     {
@@ -521,21 +512,21 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
         }
 #endif
-
         // We no longer need these ptrs
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // Execute the function line
+#ifdef DEBUG
         exitType =
+#endif
         ParseLine (hWndSM,                  // Session Manager window handle
                    hGlbTxtLine,             // Line text global memory handle
                    hGlbTknLine,             // Tokenixed line global memory handle
                    NULL,                    // Ptr to line text global memory
-                   hGlbPTD,                 // PerTabData global memory handle
-                   NULL);                   // Semaphore handle for )RESET
-///////////////////hSemaReset);             // Semaphore handle for )RESET
-
+                   hGlbPTD);                // PerTabData global memory handle
+#ifdef DEBUG
+        // Split cases based upon the exit type
         switch (exitType)
         {
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
@@ -544,25 +535,16 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             case EXITTYPE_NOVALUE:      // ...
             case EXITTYPE_ERROR:        // ...
             case EXITTYPE_GOTO_LINE:    // ...
-                break;
-
-            case EXITTYPE_RESET_1LVL:
-                DbgBrk ();
-
-
-                break;
-
+            case EXITTYPE_RESET_ONE:
+            case EXITTYPE_RESET_ONE_INIT:
             case EXITTYPE_RESET_ALL:
-                DbgBrk ();
-
-
                 break;
 
             case EXITTYPE_NONE:
             defstop
                 break;
         } // End SWITCH
-
+#endif
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -575,7 +557,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
 
             // Display the default prompt
-            DisplayPrompt (hWndEC, FALSE, 2);
+            DisplayPrompt (hWndEC, 2);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -598,7 +580,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
         // If we're suspended or resetting, break
         if (lpMemPTD->lpSISCur->Suspended
-         || lpMemPTD->lpSISCur->Resetting)
+         || lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
             break;
 
         // Get next line #
@@ -609,12 +591,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Close the semaphore handle as it isn't used anymore
     CloseHandle (hSemaphore); hSemaphore = NULL;
 
-////// Close the Reset Semaphore handle as it isn't used anymore
-////CloseHandle (hSemaReset); hSemaReset = NULL;
-
     // If we're resetting, Unlocalize
-    bResetting = lpMemPTD->lpSISCur->Resetting;
-    if (bResetting)
+    if (lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
         goto UNLOCALIZE_EXIT;
 
     // If we're suspended, don't Unlocalize
@@ -625,7 +603,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     numResultSTE = lpMemDfnHdr->numResultSTE;
 
     // Get ptr to 1st result STE
-    lplpSymEntry = (LPSYMENTRY *) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE);
+    lplpSymEntry = (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE);
 
     // Ensure that all STEs in the result have a value
     switch (numResultSTE)
@@ -825,10 +803,6 @@ ERROR_EXIT:
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-////// If we're resetting, keep on truckin'
-////if (bResetting)
-////    GotoReset ();
-////
     return lpYYRes;
 } // End ExecuteFunction_EM_YY
 #undef  APPEND_NAME
@@ -851,8 +825,8 @@ BOOL Unlocalize
     UINT         numSymEntries,     // # SYMENTRYs localized
                  numSym;            // Loop counter
     LPSYMENTRY   lpSymEntryNxt;     // Ptr to next SYMENTRY on the SIS
-    BOOL         bRet = TRUE,       // TRUE iff the result is valid
-                 bResetting;        // TRUE iff we're resetting
+    BOOL         bRet = TRUE;       // TRUE iff the result is valid
+    RESET_FLAGS  resetFlag;         // Reset flag (see enum RESET_FLAGS)
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -867,29 +841,8 @@ BOOL Unlocalize
 #ifdef DEBUG
         dprintfW (L"~~Unlocalize:  %08X to %08X", lpMemPTD->lpSISCur, lpMemPTD->lpSISCur->lpSISPrv);
 #endif
-        // Save the resetting flag
-        bResetting = lpMemPTD->lpSISCur->Resetting;
-
-////         // If there's a Reset Semaphore and we're resetting, ...
-////         if (lpMemPTD->lpSISCur->hSemaReset
-////          && bResetting)
-////         {
-////             // Mark as resetting
-////             lpMemPTD->lpSISCur->Resetting = TRUE;
-//// #ifdef DEBUG
-////             dprintfW (L"~~Releasing semaphore:  %08X (%S#%d)", lpMemPTD->lpSISCur->hSemaReset, FNLN);
-//// #endif
-////             // Signal the pending thread
-////             ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaReset, 1, NULL);
-////
-////             // Release our time slice so the released thread can act
-////             Sleep (0);
-////
-////             // Tell the caller to stop
-////             bRet = FALSE;
-////
-////             goto NORMAL_EXIT;
-////         } // End IF
+        // Save the reset flag
+        resetFlag = lpMemPTD->lpSISCur->ResetFlag;
 
         // Get # SYMENTRYs on the stack
         numSymEntries = lpMemPTD->lpSISCur->numSymEntries;
@@ -962,8 +915,8 @@ BOOL Unlocalize
         {
             lpMemPTD->lpSISCur->lpSISNxt = NULL;
 
-            // Transfer the resetting flag up one level
-            lpMemPTD->lpSISCur->Resetting = bResetting;
+            // Transfer the reset flag up one level
+            lpMemPTD->lpSISCur->ResetFlag = resetFlag;
         } // End IF
 #ifdef DEBUG
         // Zero the old entry
@@ -1210,10 +1163,11 @@ void InitVarSTEs
             // In case the arg is Boolean
             uBitIndex = 0;
 
-            // In case the arg is APA, ...
+            // If the arg is APA, ...
             if (aplTypeArg EQ ARRAY_APA)
             {
 #define lpAPA   ((LPAPLAPA) lpMemArg)
+                // Get the APA parameters
                 apaOffArg = lpAPA->Off;
                 apaMulArg = lpAPA->Mul;
 #undef  lpAPA
@@ -1293,14 +1247,14 @@ void InitVarSTEs
                         {
                             case PTRTYPE_STCONST:
                                 (*lplpSymEntry)->stFlags.Imm      = 1;
-                                (*lplpSymEntry)->stFlags.ImmType  = (*(LPSYMENTRY *) lpMemArg)->stFlags.ImmType;
+                                (*lplpSymEntry)->stFlags.ImmType  = (*(LPAPLHETERO) lpMemArg)->stFlags.ImmType;
                                 (*lplpSymEntry)->stFlags.Value    = 1;
                                 (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
                                 (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                                (*lplpSymEntry)->stData           = (*(LPSYMENTRY *) lpMemArg)->stData;
+                                (*lplpSymEntry)->stData           = (*(LPAPLHETERO) lpMemArg)->stData;
 
                                 // Skip to next element in arg
-                                ((LPSYMENTRY *) lpMemArg)++;
+                                ((LPAPLHETERO) lpMemArg)++;
 
                                 break;
 

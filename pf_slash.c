@@ -374,6 +374,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
 
             case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+                // Get the APA parameters
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
 #undef  lpAPA
@@ -591,14 +592,11 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             break;
 
         case ARRAY_APA:
-
 #define lpAPA       ((LPAPLAPA) lpMemRht)
-
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
-
 #undef  lpAPA
-
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -649,6 +647,13 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             break;
     } // End SWITCH
 PROTO_EXIT:
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -658,6 +663,9 @@ PROTO_EXIT:
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
 

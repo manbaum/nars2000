@@ -610,10 +610,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     } else
     // Reorder the right arg into the result
     {
-        // If it's an APA, get its parameters
+        // If the right arg is an APA, ...
         if (aplTypeRht EQ ARRAY_APA)
         {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+            // Get the APA parameters
             apaOffRht = lpAPA->Off;
             apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -1343,11 +1344,11 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     {
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
-
-        // If the left arg is an APA, get its parameters
+        // If the left arg is an APA, ...
         if (aplTypeLft EQ ARRAY_APA)
         {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+            // Get the APA parameters
             apaOffLft = lpAPA->Off;
             apaMulLft = lpAPA->Mul;
 #undef  lpAPA
@@ -1362,10 +1363,11 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     {
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-        // If the left arg is an APA, get its parameters
+        // If the left arg is an APA, ...
         if (aplTypeRht EQ ARRAY_APA)
         {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+            // Get the APA parameters
             apaOffRht = lpAPA->Off;
             apaMulRht = lpAPA->Mul;
 #undef  lpAPA

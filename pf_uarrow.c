@@ -135,6 +135,9 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (lpSymGlb);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // See if it fits into a lower (but not necessarily smaller) datatype
+        lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
     } else
     {
         // Fill in the result token
@@ -257,8 +260,8 @@ BOOL PrimFnDydUpArrowLftGlbValid_EM
                     apaMul,
                     apaVal;
 
-            // Save the APA data
 #define lpAPA       ((LPAPLAPA) lpDataLft)
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
 #undef  lpAPA

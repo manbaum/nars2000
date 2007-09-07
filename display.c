@@ -1831,7 +1831,7 @@ LPWCHAR DisplayFcnSub
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (hGlbData));
 #if TRUE
-            lstrcpyW (lpaplChar, L"TXT_AXISARRAY ");    // N.B.:  trailing blank is significant
+            lstrcpyW (lpaplChar, L"TKT_AXISARRAY ");    // N.B.:  trailing blank is significant
             lpaplChar += lstrlenW (lpaplChar);
 #else
             lpaplChar =
@@ -1859,7 +1859,7 @@ LPWCHAR DisplayFcnSub
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (hGlbData));
 #if TRUE
-            lstrcpyW (lpaplChar, L"TXT_VARARRAY ");     // N.B.:  trailing blank is significant
+            lstrcpyW (lpaplChar, L"TKT_VARARRAY ");     // N.B.:  trailing blank is significant
             lpaplChar += lstrlenW (lpaplChar);
 #else
             lpaplChar =
@@ -2099,11 +2099,11 @@ void DisplayUndo
     (long) hGlbEC = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
 
     // Display it
-    dprintf ("Caret position = %d, # lines = %d, hGlbEC = %08X",
-             uCharPos,
-             uLineCount,
-             hGlbEC);
-
+    dprintfW (L"Caret position = %d, # lines = %d, hGlbEC = %08X (%S#%d)",
+              uCharPos,
+              uLineCount,
+              hGlbEC,
+              FNLN);
     // Lock the memory to get a ptr to it
     lpwsz = MyGlobalLock (hGlbEC);
 

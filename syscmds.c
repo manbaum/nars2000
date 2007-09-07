@@ -47,7 +47,7 @@ SYSCMDSTAB SysCmdsTab[]
     {L"reset" ,     &CmdReset_EM    },
     {L"save"  ,     &CmdSaveWS_EM   },
     {L"si"    ,     &CmdSi_EM       },
-////{L"sic"   ,     &CmdSic_EM      },
+    {L"sic"   ,     &CmdReset_EM    },
 ////{L"sinl"  ,     &CmdSinl_EM     },
     {L"vars"  ,     &CmdVars_EM     },
 ////{L"xload" ,     &CmdXloadWS_EM  },
@@ -431,8 +431,29 @@ BOOL CmdReset_EM
     (LPWCHAR lpwszTail)
 
 {
-    DbgBrk ();
-////SiResetAll ();
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // If there's an SIS layer, ...
+    if (lpMemPTD->lpSISCur)
+    {
+        // Set the reset flag
+        lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_ALL;
+
+        Assert (lpMemPTD->lpSISCur->hSemaphore NE NULL);
+
+        // Signal the next layer to begin resetting
+        ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
+    } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return TRUE;
 } // End CmdReset_EM

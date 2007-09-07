@@ -340,10 +340,10 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                         tkRhtArg.tkFlags.TknType = TKT_VARIMMED;
 
                         // Get the immediate type from the STE
-                        tkRhtArg.tkFlags.ImmType = (*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType;
+                        tkRhtArg.tkFlags.ImmType = (*(LPAPLHETERO) lpMemRht)->stFlags.ImmType;
 
                         // Copy the value to the arg token
-                        tkRhtArg.tkData.tkLongest = (*(LPSYMENTRY *) lpMemRht)->stData.stLongest;
+                        tkRhtArg.tkData.tkLongest = (*(LPAPLHETERO) lpMemRht)->stData.stLongest;
 
                         break;
 
@@ -480,6 +480,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
             case ARRAY_APA:
     #define lpAPA       ((LPAPLAPA) lpMemRht)
+                // Get the APA parameters
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
     #undef  lpAPA
@@ -502,7 +503,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 break;
 
             case ARRAY_NESTED:
-                // Take into account the nested prototype
+                // Take into account nested prototypes
                 if (aplTypeRht EQ ARRAY_NESTED)
                     aplNELMRht = max (aplNELMRht, 1);
             case ARRAY_HETERO:
@@ -517,10 +518,10 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                             tkRhtArg.tkFlags.TknType = TKT_VARIMMED;
 
                             // Get the immediate type from the STE
-                            tkRhtArg.tkFlags.ImmType = (*(LPSYMENTRY *) lpMemRht)->stFlags.ImmType;
+                            tkRhtArg.tkFlags.ImmType = (*(LPAPLHETERO) lpMemRht)->stFlags.ImmType;
 
                             // Copy the value to the arg token
-                            tkRhtArg.tkData.tkLongest = (*(LPSYMENTRY *) lpMemRht)->stData.stLongest;
+                            tkRhtArg.tkData.tkLongest = (*(LPAPLHETERO) lpMemRht)->stData.stLongest;
 
                             break;
 
@@ -559,8 +560,8 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
         } // End SWITCH
     } // End IF/ELSE
 
-    // Unlock the result global memory in case we call TypeDemote
-    if (lpMemRes)
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -582,8 +583,6 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
-////bRet = FALSE;
-
     if (hGlbRes)
     {
         if (lpMemRes)
@@ -596,13 +595,13 @@ ERROR_EXIT:
         DbgGlobalFree (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (lpMemRht)
+    if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (lpMemRes)
+    if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -931,19 +930,21 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     // Otherwise, skip over the header and dimensions to the data
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-    // If the left arg is APA, fill in the offset and multiplier
+    // If the left arg is APA, ...
     if (aplTypeLft EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+        // Get the APA parameters
         apaOffLft = lpAPA->Off;
         apaMulLft = lpAPA->Mul;
 #undef  lpAPA
     } // End IF
 
-    // If the right arg is APA, fill in the offset and multiplier
+    // If the right arg is APA, ...
     if (aplTypeRht EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -1007,7 +1008,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         lpMemOdo = MyGlobalLock (hGlbOdo);
     } // End IF
 
-    // Take into account the nested prototype
+    // Take into account nested prototypes
     if (aplTypeLft EQ ARRAY_NESTED)
         aplNELMLft = max (aplNELMLft, 1);
     if (aplTypeRht EQ ARRAY_NESTED)
@@ -1090,7 +1091,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
             FreeResult (&tkRhtArg);
     } // End FOR
 
-    // Unlock the result global memory in case we call TypeDemote
+    // Unlock the result global memory in case TypeDemote actually demotes
     if (lpMemRes)
     {
         // We no longer need this ptr

@@ -302,6 +302,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
 
         case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
 #undef  lpAPA
@@ -566,6 +567,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
             case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+                // Get the APA parameters
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
 #undef  lpAPA
@@ -779,6 +781,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
         case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
 #undef  lpAPA

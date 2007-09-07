@@ -155,12 +155,13 @@ typedef enum tagNAME_TYPES
     NAMETYPE_FN12,          // 03:  ...       monadic/dyadic/ambivalent function
     NAMETYPE_OP1,           // 04:  ...       monadic operator
     NAMETYPE_OP2,           // 05:  ...       dyadic operator
-                            // 06-07:  Available entries (3 bits)
+    NAMETYPE_LST,           // 06:  ...       list
+                            // 07-07:  Available entries (3 bits)
 } NAME_TYPES;
 
-#define NAMETYPE_STRING     "?VNF12"
-#define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2"}
-#define NAMETYPE_WSTRPTR    {L"Unk", L"Var", L"Nil", L"Fcn", L"Op1", L"Op2"}
+#define NAMETYPE_STRING     "?VNF12L"
+#define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2",  "Lst"}
+#define NAMETYPE_WSTRPTR    {L"Unk", L"Var", L"Nil", L"Fcn", L"Op1", L"Op2", L"Lst"}
 
 // The above enum is constructed so as to allow the following masks to be used:
 #define NAMETYPEMASK_FN     0x02    // Name is a function

@@ -314,20 +314,18 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-
-    // If the right arg is an APA, get its parameters
+    // If the right arg is an APA, ...
     if (aplTypeRht EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
         apaOff = lpAPA->Off;
         apaMul = lpAPA->Mul;
 #undef  lpAPA
     } // End IF
 
-
     // Calculate the NELM of the result taking into
     //   account the axis values.
-////if (hGlbAxis)
     if (lptkAxis NE NULL)
     {
         // Lock the memory to get a ptr to it
@@ -1018,6 +1016,13 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         } // End FOR/SWITCH
     } // End IF/ELSE
 NORMAL_EXIT:
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 

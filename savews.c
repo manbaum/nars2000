@@ -787,6 +787,7 @@ LPAPLCHAR TransferFormGlb
 
         case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemObj)
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
 #undef  lpAPA
@@ -829,20 +830,20 @@ LPAPLCHAR TransferFormGlb
 
         case ARRAY_HETERO:
             // Loop through the array elements
-            for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPSYMENTRY *) lpMemObj)++)
+            for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLHETERO) lpMemObj)++)
             // Split cases based upon the element immediate type
-            switch ((*(LPSYMENTRY *) lpMemObj)->stFlags.ImmType)
+            switch ((*(LPAPLHETERO) lpMemObj)->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
                     lpaplChar =
                     FormatAplint (lpaplChar,
-                                  (*(LPSYMENTRY *) lpMemObj)->stData.stBoolean);
+                                  (*(LPAPLHETERO) lpMemObj)->stData.stBoolean);
                     break;
 
                 case IMMTYPE_INT:
                     lpaplChar =
                     FormatAplint (lpaplChar,
-                                  (*(LPSYMENTRY *) lpMemObj)->stData.stInteger);
+                                  (*(LPAPLHETERO) lpMemObj)->stData.stInteger);
                     break;
 
                 case IMMTYPE_CHAR:
@@ -850,7 +851,7 @@ LPAPLCHAR TransferFormGlb
                     *lpaplChar++ = L'\'';
 
                     // Save the char in a string
-                    wch[0] = (*(LPSYMENTRY *) lpMemObj)->stData.stChar;
+                    wch[0] = (*(LPAPLHETERO) lpMemObj)->stData.stChar;
 
                     // Format the value
                     lpaplChar += ConvertWideToName (lpaplChar, wch);
@@ -867,7 +868,7 @@ LPAPLCHAR TransferFormGlb
                     // Format the value
                     lpaplChar =
                     FormatFloat (lpaplChar,
-                                 (*(LPSYMENTRY *) lpMemObj)->stData.stFloat,
+                                 (*(LPAPLHETERO) lpMemObj)->stData.stFloat,
                                  DEF_MAX_QUADPP);
                     break;
 
@@ -887,7 +888,7 @@ LPAPLCHAR TransferFormGlb
 ////////////lpaplChar += (sizeof (APPEND_TEXT) / sizeof (WCHAR)) - 1;
 #undef  APPEND_TEXT
 
-            // Take into account empty arrays
+            // Take into account nested prototypes
             aplNELMObj = max (aplNELMObj, 1);
 
             // Loop through the array elements
@@ -896,7 +897,7 @@ LPAPLCHAR TransferFormGlb
             switch (GetPtrTypeInd (lpMemObj))
             {
                 case PTRTYPE_STCONST:
-#define lpSymEntry      (*(LPSYMENTRY *) lpMemObj)
+#define lpSymEntry      (*(LPAPLHETERO) lpMemObj)
 
                     // Ensure we format with full precision in case it's floating point
                     uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;

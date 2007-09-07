@@ -10,7 +10,8 @@
 
 #define TRUE    1
 #define FALSE   0
-#define NEG1U   ((UINT) -1)
+#define NEG1U   (   (UINT) -1)
+#define NEG1A   ((APLUINT) -1)
 
 #define abs64(a)    (((a)>0)?a:-(a))
 #define MB(a)   MessageBox (NULL, a, "NARS2000", MB_OK)
@@ -56,7 +57,7 @@ default:    \
 #define DBGENTER    if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
 #define DBGLEAVE    if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
 
-#define IsGlbPtr(a) (MyGlobalFlags (a) NE GMEM_INVALID_HANDLE)
+#define IsGlbPtr(a) ((a) NE NULL && MyGlobalFlags (a) NE GMEM_INVALID_HANDLE)
 
 #ifdef DEBUG_ALLOCFREE
 #define DbgGlobalAlloc(uFlags,ByteRes) \
@@ -112,7 +113,7 @@ DecrRefCntInd (hGlbData);
 #define DBGENTER
 #define DBGLEAVE
 
-#define IsGlbPtr(a) (GlobalFlags (a) NE GMEM_INVALID_HANDLE)
+#define IsGlbPtr(a) ((a) NE NULL && GlobalFlags (a) NE GMEM_INVALID_HANDLE)
 
 #define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc (uFlags, ByteRes);
 
@@ -173,8 +174,7 @@ DecrRefCntInd (hGlbData);
 #define MYWM_SAVE_AS_FN     (WM_APP + 5)    // FE (SaveAsFunction)
 #define MYWM_CLOSE_FN       (WM_APP + 6)    // FE (CloseFunction)
 #define MYWM_QUOTEQUAD      (WM_APP + 7)    // PL (Quote-Quad/Quad Input)
-#define MYWM_WFMO           (WM_APP + 8)    // SM (WaitForMultipleObjects)
-#define MYWM_INIT_SMDB      (WM_APP + 9)    // SM (Initialize SM/DB windows)
+#define MYWM_INIT_SMDB      (WM_APP + 8)    // SM (Initialize SM/DB windows)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP + 0)    // DB
@@ -231,13 +231,14 @@ typedef enum tagEXIT_TYPES
     EXITTYPE_NONE = 0,          // 00:  Undefined
     EXITTYPE_GOTO_ZILDE,        // 01:  {goto} {zilde}
     EXITTYPE_GOTO_LINE,         // 02:  {goto} LineNum
-    EXITTYPE_RESET_1LVL,        // 03:  {goto}
-    EXITTYPE_RESET_ALL,         // 04:  )RESET
-    EXITTYPE_ERROR,             // 05:  ERROR
-    EXITTYPE_DISPLAY,           // 06:  Value not already displayed
-    EXITTYPE_NODISPLAY,         // 07:  Value already displayed
-    EXITTYPE_NOVALUE,           // 08:  No value returned
-                                // 09-0F:  Available entries (4 bits)
+    EXITTYPE_RESET_ONE,         // 03:  {goto}
+    EXITTYPE_RESET_ONE_INIT,    // 04:  {goto}  (first time)
+    EXITTYPE_RESET_ALL,         // 05:  )RESET
+    EXITTYPE_ERROR,             // 06:  ERROR
+    EXITTYPE_DISPLAY,           // 07:  Value not already displayed
+    EXITTYPE_NODISPLAY,         // 08:  Value already displayed
+    EXITTYPE_NOVALUE,           // 09:  No value returned
+                                // 0A-0F:  Available entries (4 bits)
 } EXIT_TYPES;
 
 #ifndef DEBUG

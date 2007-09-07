@@ -954,10 +954,11 @@ RESTART_EXCEPTION:
     } // End IF
 #endif
 
-    // If the right arg is an APA, get its parameters
+    // If the right arg is an APA, ...
     if (aplTypeRht EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -1764,10 +1765,11 @@ BOOL PrimFnDydSimpNest_EM
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     } // End IF/ELSE
 
-    // If the left arg is APA, get its parameters
+    // If the left arg is APA, ...
     if (aplTypeLft EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+        // Get the APA parameters
         apaOffLft = lpAPA->Off;
         apaMulLft = lpAPA->Mul;
 #undef  lpAPA
@@ -2123,10 +2125,11 @@ BOOL PrimFnDydNestSimp_EM
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     } // End IF/ELSE
 
-    // If the right arg is APA, get its parameters
+    // If the right arg is APA, ...
     if (aplTypeRht EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -2516,10 +2519,11 @@ HGLOBAL PrimFnDydNestSiSc_EM
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    // If the left arg is an APA, get its parameters
+    // If the left arg is an APA, ...
     if (aplTypeLft EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+        // Get the APA parameters
         apaOffLft = lpAPA->Off;
         apaMulLft = lpAPA->Mul;
 #undef  lpAPA
@@ -4415,10 +4419,11 @@ HGLOBAL PrimFnDydSiScNest_EM
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    // If the right arg is an APA, get its parameters
+    // If the right arg is an APA, ...
     if (aplTypeRht EQ ARRAY_APA)
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
         apaOffRht = lpAPA->Off;
         apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -5121,10 +5126,11 @@ RESTART_EXCEPTION_SINGLETON:
         lpMemRes    = VarArrayBaseToData (lpMemRes,    aplRankRes);
         lpMemDimArg = VarArrayBaseToData (lpMemDimArg, aplRankRes);
 
-        // If the non-singleton arg is an APA, get its parameters
+        // If the non-singleton arg is an APA, ...
         if (aplTypeArg EQ ARRAY_APA)
         {
 #define lpAPA       ((LPAPLAPA) lpMemDimArg)
+            // Get the APA parameters
             apaOffLft = apaOffRht = lpAPA->Off;
             apaMulLft = apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -5205,19 +5211,21 @@ RESTART_EXCEPTION_SINGLETON:
         //   to restart from an exception
         lpMemResStart = lpMemRes;
 
-        // If the left arg is an APA, get its parameters
+        // If the left arg is an APA, ...
         if (aplTypeLft EQ ARRAY_APA)
         {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
+            // Get the APA parameters
             apaOffLft = lpAPA->Off;
             apaMulLft = lpAPA->Mul;
 #undef  lpAPA
         } // End IF
 
-        // If the right arg is an APA, get its parameters
+        // If the right arg is an APA, ...
         if (aplTypeRht EQ ARRAY_APA)
         {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
+            // Get the APA parameters
             apaOffRht = lpAPA->Off;
             apaMulRht = lpAPA->Mul;
 #undef  lpAPA
@@ -5796,7 +5804,8 @@ RESTART_EXCEPTION_NOAXIS:
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE/...
 
-    if (lpMemRes)
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (*lphGlbRes && lpMemRes)
     {
         // We no longer need this ptr
         MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;

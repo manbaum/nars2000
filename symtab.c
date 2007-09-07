@@ -432,7 +432,10 @@ BOOL HshTabResize_EM
 
     Assert (HshTabFrisk ());
 #ifdef DEBUG
-    dprintf ("||| Resizing the hash table from %08X to %08X", lpMemPTD->iHshTabTotalSize, lpMemPTD->iHshTabTotalSize + iResize);
+    dprintfW (L"||| Resizing the hash table from %08X to %08X (%S#%d)",
+              lpMemPTD->iHshTabTotalSize,
+              lpMemPTD->iHshTabTotalSize + iResize,
+              FNLN);
 #endif
     // We need more entries
     iHshTabNewSize = lpMemPTD->iHshTabTotalSize + iResize;
@@ -585,7 +588,10 @@ BOOL HshTabSplitNextEntry_EM
 
     Assert (HshTabFrisk ());
 #ifdef DEBUG
-    dprintf ("||| Splitting Hash Table entry %08X to %08X", lpMemPTD->lpHshTabSplitNext, &lpMemPTD->lpHshTabSplitNext[lpMemPTD->iHshTabBaseSize]);
+    dprintfW (L"||| Splitting Hash Table entry %08X to %08X (%S#%d)",
+              lpMemPTD->lpHshTabSplitNext,
+             &lpMemPTD->lpHshTabSplitNext[lpMemPTD->iHshTabBaseSize],
+              FNLN);
 #endif
     // Ensure that &lpMemPTD->lpHshTabSplitNext[lpMemPTD->iHshTabBaseSize] has been allocated.
     // If not, allocate it now
@@ -727,7 +733,10 @@ BOOL HshTabSplitNextEntry_EM
         lpMemPTD->iHshTabBaseSize <<= 1;
         Assert (lpMemPTD->iHshTabBaseSize <= lpMemPTD->iHshTabTotalSize);
 #ifdef DEBUG
-        dprintf ("||| Shifting uHashMask from %04X to %04X", lpMemPTD->uHashMask, uHashMaskNext);
+        dprintfW (L"||| Shifting uHashMask from %04X to %04X (%S#%d)",
+                  lpMemPTD->uHashMask,
+                  uHashMaskNext,
+                  FNLN);
 #endif
         lpMemPTD->uHashMask = uHashMaskNext;
         Assert (lpMemPTD->uHashMask < (UINT) (2 * lpMemPTD->iHshTabBaseSize / DEF_HSHTAB_EPB));
@@ -1549,7 +1558,7 @@ LPSYMENTRY MakePermSymEntry_EM
         ErrorMessageSetToken (lptkFunc);
 
     return lpSymDst;
-} // End MakeSymPermEntry_EM
+} // End MakePermSymEntry_EM
 
 
 //***************************************************************************

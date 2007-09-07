@@ -245,9 +245,9 @@ void FreeStrand
                     if (FreeResultGlobalVar (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.tkGlbData)))
                     {
 #ifdef DEBUG_ZAP
-                        dprintf ("**Zapping in FreeStrand: %08X (%s#%d)",
-                                 ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
-                                 FNLN);
+                        dprintfW (L"**Zapping in FreeStrand: %08X (%S#%d)",
+                                  ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
+                                  FNLN);
 #endif
                         lpYYToken->tkToken.tkData.tkGlbData = NULL;
                     } // End IF
@@ -265,9 +265,9 @@ void FreeStrand
                     if (FreeResultGlobalFcn (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.tkGlbData)))
                     {
 #ifdef DEBUG_ZAP
-                        dprintf ("**Zapping in FreeStrand: %08X (%s#%d)",
-                                 ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
-                                 FNLN);
+                        dprintfW (L"**Zapping in FreeStrand: %08X (%S#%d)",
+                                  ClrPtrTypeDir (lpYYToken->tkToken.tkData.tkGlbData),
+                                  FNLN);
 #endif
                         lpYYToken->tkToken.tkData.tkGlbData = NULL;
                     } // End IF
@@ -2213,6 +2213,7 @@ LPTOKEN CopyToken_EM
 
 {
     static TOKEN tkRes;     // ***FIXME*** -- dynamic rather than static
+    LPSYMENTRY lpSymEntry;  // Ptr to SYMENTRY in the token
 
     DBGENTER;
 
@@ -2225,17 +2226,20 @@ LPTOKEN CopyToken_EM
     switch (lpToken->tkFlags.TknType)
     {
         case TKT_VARNAMED:      // tkData is LPSYMENTRY
+            // Get the LPSYMENTRY
+            lpSymEntry = lpToken->tkData.tkSym;
+
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
             // If it's not immediate, we must traverse the array
-            if (!lpToken->tkData.tkSym->stFlags.Imm)
+            if (!lpSymEntry->stFlags.Imm)
             {
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lpToken->tkData.tkSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir (lpSymEntry->stData.stGlbData));
 
                 // Increment the reference count in global memory
-                DbgIncrRefCntDir (lpToken->tkData.tkSym->stData.stGlbData);
+                DbgIncrRefCntDir (lpSymEntry->stData.stGlbData);
 
                 break;          // We're done
             } // End IF

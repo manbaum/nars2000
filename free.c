@@ -122,10 +122,10 @@ void FreeResultSub
                     if (FreeResultGlobalDfn (hGlbData))
                     {
 #ifdef DEBUG_ZAP
-                        dprintf ("**Zapping in FreeResultSub: Token=%08X, Value=%08X (%s#%d)",
-                                 lptkRes,
-                                 ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
-                                 FNLN);
+                        dprintfW (L"**Zapping in FreeResultSub: Token=%08X, Value=%08X (%S#%d)",
+                                  lptkRes,
+                                  ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
+                                  FNLN);
 #endif
                         lptkRes->tkData.tkSym->stData.stGlbData = NULL;
                     } // End IF
@@ -135,10 +135,10 @@ void FreeResultSub
                     if (FreeResultGlobalFcn (hGlbData))
                     {
 #ifdef DEBUG_ZAP
-                        dprintf ("**Zapping in FreeResultSub: Token=%08X, Value=%08X (%s#%d)",
-                                 lptkRes,
-                                 ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
-                                 FNLN);
+                        dprintfW (L"**Zapping in FreeResultSub: Token=%08X, Value=%08X (%S#%d)",
+                                  lptkRes,
+                                  ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
+                                  FNLN);
 #endif
                         lptkRes->tkData.tkSym->stData.stGlbData = NULL;
                     } // End IF
@@ -189,10 +189,10 @@ void FreeResultSub
                     if (bTmp)
                     {
 #ifdef DEBUG_ZAP
-                        dprintf ("**Zapping in FreeResultSub: Token=%08X, Value=%08X (%s#%d)",
-                                 lptkRes,
-                                 ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
-                                 FNLN);
+                        dprintfW (L"**Zapping in FreeResultSub: Token=%08X, Value=%08X (%S#%d)",
+                                  lptkRes,
+                                  ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
+                                  FNLN);
 #endif
                         lptkRes->tkData.tkSym->stData.stGlbData = NULL;
                     } // End IF
@@ -241,10 +241,10 @@ void FreeResultSub
                 if (bTmp)
                 {
 #ifdef DEBUG_ZAP
-                    dprintf ("**Zapping in FreeResultSub: Token=%08X, Value=%08X (%s#%d)",
-                             lptkRes,
-                             ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
-                             FNLN);
+                    dprintfW (L"**Zapping in FreeResultSub: Token=%08X, Value=%08X (%S#%d)",
+                              lptkRes,
+                              ClrPtrTypeDir (lptkRes->tkData.tkGlbData),
+                              FNLN);
 #endif
                     lptkRes->tkData.tkGlbData = NULL;
                 } // End IF
@@ -319,7 +319,10 @@ BOOL FreeResultGlobalVar
         RefCnt = --lpHeader->RefCnt;
 
 #ifdef DEBUG_REFCNT
-        dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X(res=%d) (%S#%d)", ClrPtrTypeDir (hGlbData), RefCnt, FNLN);
+        dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X(res=%d) (%S#%d)",
+                  ClrPtrTypeDir (hGlbData),
+                  RefCnt,
+                  FNLN);
 #endif
 
 #undef  lpHeader
@@ -336,7 +339,7 @@ BOOL FreeResultGlobalVar
                 break;
 
             case ARRAY_NESTED:  // Free the LPSYMENTRYs and/or HGLOBALs
-                // Take into account nested prototype
+                // Take into account nested prototypes
                 aplNELM = max (aplNELM, 1);
 
                 // Fall through to common handling
@@ -360,10 +363,10 @@ BOOL FreeResultGlobalVar
                             if (FreeResultGlobalVar (ClrPtrTypeIndGlb (lpMem)))
                             {
 #ifdef DEBUG_ZAP
-                                dprintf ("**Zapping in FreeResultGlobalVar: Global=%08X, Value=%08X (%s#%d)",
-                                         hGlbData,
-                                         ClrPtrTypeInd (lpMem),
-                                         FNLN);
+                                dprintfW (L"**Zapping in FreeResultGlobalVar: Global=%08X, Value=%08X (%S#%d)",
+                                          hGlbData,
+                                          ClrPtrTypeInd (lpMem),
+                                          FNLN);
 #endif
                                 *((LPVOID *) lpMem) = NULL;
                             } // End IF
@@ -453,7 +456,10 @@ BOOL FreeResultGlobalFcn
 #undef  lpHeader
 
 #ifdef DEBUG_REFCNT
-    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X(res=%d) (%S#%d)", ClrPtrTypeDir (hGlbData), RefCnt, FNLN);
+    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X(res=%d) (%S#%d)",
+              ClrPtrTypeDir (hGlbData),
+              RefCnt,
+              FNLN);
 #endif
 
     if (RefCnt EQ 0)
@@ -512,10 +518,10 @@ BOOL FreeResultGlobalFcn
                         if (FreeResultGlobalFcn (hGlbLcl))
                         {
 #ifdef DEBUG_ZAP
-                            dprintf ("**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%s#%d)",
-                                     hGlbData,
-                                     hGlbLcl,
-                                     FNLN);
+                            dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
+                                      hGlbData,
+                                      hGlbLcl,
+                                      FNLN);
 #endif
                             lpYYToken->tkToken.tkData.tkGlbData = NULL;
                         } // End IF
@@ -527,10 +533,10 @@ BOOL FreeResultGlobalFcn
                         if (FreeResultGlobalDfn (hGlbLcl))
                         {
 #ifdef DEBUG_ZAP
-                            dprintf ("**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%s#%d)",
-                                     hGlbData,
-                                     hGlbLcl,
-                                     FNLN);
+                            dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
+                                      hGlbData,
+                                      hGlbLcl,
+                                      FNLN);
 #endif
                             lpYYToken->tkToken.tkData.tkGlbData = NULL;
                         } // End IF
@@ -558,10 +564,10 @@ BOOL FreeResultGlobalFcn
                 if (FreeResultGlobalVar (hGlbLcl))
                 {
 #ifdef DEBUG_ZAP
-                    dprintf ("**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%s#%d)",
-                             hGlbData,
-                             hGlbLcl,
-                             FNLN);
+                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
+                              hGlbData,
+                              hGlbLcl,
+                              FNLN);
 #endif
                     lpYYToken->tkToken.tkData.tkGlbData = NULL;
                 } // End IF
@@ -585,10 +591,10 @@ BOOL FreeResultGlobalFcn
                 if (FreeResultGlobalVar (hGlbLcl))
                 {
 #ifdef DEBUG_ZAP
-                    dprintf ("**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%s#%d)",
-                             hGlbData,
-                             hGlbLcl,
-                             FNLN);
+                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
+                              hGlbData,
+                              hGlbLcl,
+                              FNLN);
 #endif
                     lpYYToken->tkToken.tkData.tkSym->stData.stGlbData = NULL;
                 } // End IF

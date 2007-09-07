@@ -60,7 +60,6 @@ extern PRIMSPEC PrimSpecUpStile;
 #define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed (*)    ERROR
 #define PrimFnDownTack_EM_YY        PrimFn_EM       // ERROR        Mixed (*)
 #define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR        Mixed (*)
-#define PrimFnRightShoe_EM_YY       PrimFn_EM       // Mixed (*)    Mixed (*)
 #define PrimFnUpTack_EM_YY          PrimFn_EM       // ERROR        Mixed (*)
 
 
@@ -96,6 +95,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnQuery_EM_YY                           // Scalar       Mixed
 /////// PrimFnRightCaret_EM_YY                      // ERROR        Scalar
 /////// PrimFnRightCaretUnderbar_EM_YY              // ERROR        Scalar
+/////// PrimFnRightShoe_EM_YY                       // Mixed (*)    Mixed (*)
 /////// PrimFnRightTack_EM_YY                       // ERROR        Mixed
 /////// PrimFnRho_EM_YY                             // Mixed        Mixed
 /////// PrimFnSlash_EM_YY                           // ERROR        Mixed
@@ -2004,7 +2004,7 @@ BOOL CheckAxisGlb
 
 #define lpAPA       ((LPAPLAPA) lpMem)
 
-            // Get the APA data
+            // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
             apaLen = *lpaplNELM;
@@ -2974,8 +2974,8 @@ void GetValueIntoToken
             {
                 case PTRTYPE_STCONST:
                     lptkArg->tkFlags.TknType  = TKT_VARIMMED;
-                    lptkArg->tkFlags.ImmType  = ((LPSYMENTRY *) lpMemArg)[uArg]->stFlags.ImmType;
-                    lptkArg->tkData.tkLongest = ((LPSYMENTRY *) lpMemArg)[uArg]->stData.stLongest;
+                    lptkArg->tkFlags.ImmType  = ((LPAPLHETERO) lpMemArg)[uArg]->stFlags.ImmType;
+                    lptkArg->tkData.tkLongest = ((LPAPLHETERO) lpMemArg)[uArg]->stData.stLongest;
 
                     break;
 
@@ -3459,7 +3459,6 @@ HGLOBAL MakeMonPrototype_EM
 
     // Make a copy of the array as we're changing it
     hGlbArr = CopyArray_EM (hGlbArr,
-                            TRUE,
                             lptkFunc);
     if (!hGlbArr)
         return NULL;
@@ -3596,7 +3595,7 @@ HGLOBAL MakeMonPrototype_EM
             switch (GetPtrTypeInd (lpMemArr))
             {
                 case PTRTYPE_STCONST:
-                    lpSymArr = *(LPSYMENTRY *) lpMemArr;
+                    lpSymArr = *(LPAPLHETERO) lpMemArr;
 
                     // It's an immediate
                     Assert (lpSymArr->stFlags.Imm);
@@ -3642,7 +3641,7 @@ HGLOBAL MakeMonPrototype_EM
 
                     if (lpSymRes)
                         // Save back into array
-                        *((LPSYMENTRY *) lpMemArr)++ = lpSymRes;
+                        *((LPAPLHETERO) lpMemArr)++ = lpSymRes;
                     else
                         goto SYMTAB_ERROR_EXIT;
                     break;
@@ -3982,7 +3981,7 @@ HGLOBAL MakeDydPrototype_EM
                                          aplNELMRes))
             goto ERROR_EXIT;
 
-        // Take into account the nested prototype
+        // Take into account nested prototypes
         if (aplTypeLft EQ ARRAY_NESTED)
             aplNELMLft = max (aplNELMLft, 1);
         if (aplTypeRht EQ ARRAY_NESTED)
@@ -4276,7 +4275,7 @@ BOOL IsFirstSimpleGlb
     switch (GetPtrTypeInd (lpMemRht))
     {
         case PTRTYPE_STCONST:       // a {is} 1 {diamond} 0{rho}a (2 3)
-            lpSym = *(LPSYMENTRY *) lpMemRht;
+            lpSym = *(LPAPLHETERO) lpMemRht;
 
             // It's an immediate
             Assert (lpSym->stFlags.Imm);
@@ -4384,7 +4383,6 @@ HGLOBAL CopySymGlbDirGlb
 
 HGLOBAL CopyArray_EM
     (HGLOBAL hGlbSrc,       // Source handle
-     BOOL    bChanging,     // TRUE iff we're changing the copy
      LPTOKEN lptkFunc)      // Ptr to function token
 
 {
@@ -4400,16 +4398,6 @@ HGLOBAL CopyArray_EM
                 lpSymDst;
     APLNELM     u;
     BOOL        bRet = TRUE;
-
-    // If we're not changing the copy, instead just increment
-    //   the reference count and return the input HGLOBAL.
-    if (!bChanging)
-    {
-        // Increment the reference count in global memory
-        DbgIncrRefCntDir (MakeGlbTypeGlb (hGlbSrc));
-
-        return hGlbSrc;
-    } // End IF
 
     // Get the size of the global memory object
     dwSize = MyGlobalSize (hGlbSrc);
@@ -4474,7 +4462,7 @@ HGLOBAL CopyArray_EM
                 switch (GetPtrTypeInd (lpMemSrc))
                 {
                     case PTRTYPE_STCONST:
-                        lpSymSrc = *(LPSYMENTRY *) lpMemSrc;
+                        lpSymSrc = *(LPAPLHETERO) lpMemSrc;
 
                         // It's an immediate
                         Assert (lpSymSrc->stFlags.Imm);
@@ -4485,7 +4473,7 @@ HGLOBAL CopyArray_EM
                                                        lptkFunc);
                         if (lpSymDst)
                             // Save into the destin
-                            *((LPSYMENTRY *) lpMemDst) = lpSymDst;
+                            *((LPAPLHETERO) lpMemDst) = lpSymDst;
                         else
                             bRet = FALSE;
                         break;
@@ -4498,7 +4486,6 @@ HGLOBAL CopyArray_EM
 
                         // Copy the array
                         hGlbTmp = CopyArray_EM (ClrPtrTypeIndGlb (lpMemSrc),
-                                                TRUE,
                                                 lptkFunc);
                         if (hGlbTmp)
                             // Save into the destin
@@ -4913,6 +4900,7 @@ APLUINT CalcHeaderSize
 //  etc.
 //
 //  The following functions have been changed to use TypeDemote:
+//    primitive scalar dyadic functions, simple vs. simple
 //    enclose with axis
 //    reshape
 //    collapsing dyadic transpose
@@ -4922,11 +4910,12 @@ APLUINT CalcHeaderSize
 //    first
 //    outer product
 //    reduction w/ or w/o axis
-//    each
-//    indexing/squad
-//    reduction
 //    N-wise reduction
+//    monadic & dyadic each
+//    indexing/squad
 //    scan
+//    disclose
+//    user-defined function/operator with multiple result names
 //
 //  must call this function to check their result to see if it
 //  can be stored more simply.  Note that more simply does not
@@ -4947,7 +4936,8 @@ LPTOKEN TypeDemote
                       hGlbRes = NULL;   // Result    ...
     LPVOID            lpMemRht = NULL,  // Ptr to right arg global memory
                       lpMemRes = NULL;  // Ptr to result    ...
-    APLNELM           aplNELMRht;       // Right arg NELM
+    APLNELM           aplNELMRht,       // Right arg NELM
+                      aplNELMNest;      // Right arg NELM in case empty nested
     APLRANK           aplRankRht;       // Right arg rank
     APLUINT           uRht,             // Right arg loop counter
                       ByteRes;          // # bytes needed for the result
@@ -4998,10 +4988,6 @@ LPTOKEN TypeDemote
     aplTypeRht = lpMemRhtHdr->ArrType;
     aplNELMRht = lpMemRhtHdr->NELM;
     aplRankRht = lpMemRhtHdr->Rank;
-
-    // Handle empties up front
-    if (aplNELMRht EQ 0)
-        goto NORMAL_EXIT;
 
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRhtHdr, aplRankRht);
@@ -5070,8 +5056,14 @@ LPTOKEN TypeDemote
             //   in this context, we co-opt it).
             aplTypeRes = ARRAY_LIST;
 
+            // Take into account nested prototypes
+            if (aplTypeRht EQ ARRAY_NESTED)
+                aplNELMNest = max (aplNELMRht, 1);
+            else
+                aplNELMNest = aplNELMRht;
+
             // Loop through the elements
-            for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
+            for (uRht = 0; uRht < aplNELMNest; uRht++, ((LPAPLHETERO) lpMemRht)++)
             {
                 // Split cases based upon the ptr type of the element
                 switch (GetPtrTypeInd (lpMemRht))
@@ -5343,7 +5335,7 @@ void DemoteData
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
-                        *((LPAPLBOOL) lpMemRes) |= ((*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger) << uBitIndex;
+                        *((LPAPLBOOL) lpMemRes) |= ((*((LPAPLHETERO) lpMemRht)++)->stData.stInteger) << uBitIndex;
 
                         // Check for end-of-byte
                         if (++uBitIndex EQ NBIB)
@@ -5375,7 +5367,7 @@ void DemoteData
                 case ARRAY_NESTED:  // Res = INT , Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
-                        *((LPAPLINT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stInteger;
+                        *((LPAPLINT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stInteger;
                     break;
 
                 defstop
@@ -5392,7 +5384,7 @@ void DemoteData
                 case ARRAY_NESTED:  // Res = FLOAT, Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
-                        *((LPAPLFLOAT) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stFloat;
+                        *((LPAPLFLOAT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat;
                     break;
 
                 defstop
@@ -5409,7 +5401,7 @@ void DemoteData
                 case ARRAY_NESTED:  // Res = CHAR, Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
-                        *((LPAPLCHAR) lpMemRes)++ = (*((LPSYMENTRY *) lpMemRht)++)->stData.stChar;
+                        *((LPAPLCHAR) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stChar;
                     break;
 
                 defstop
@@ -5717,7 +5709,6 @@ LPPL_YYSTYPE MakeNoValue_YY
 //  $GetSISLayer
 //
 //  Peel back to the first non-Imm/Exec layer
-//    starting with the previous SIS header
 //***************************************************************************
 
 LPSIS_HEADER GetSISLayer
@@ -5742,7 +5733,6 @@ LPSIS_HEADER GetSISLayer
 void FillSISNxt
     (LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      HANDLE       hSemaphore,           // Semaphore handle
-     HANDLE       hSemaReset,           // Semaphore handle for )RESET
      DFN_TYPES    DfnType,              // DFNTYPE_xxx
      FCN_VALENCES FcnValence,           // FCNVALENCE_xxx
      BOOL         Suspended)            // TRUE iff starts Suspended
@@ -5756,7 +5746,6 @@ RESTART_EXCEPTION_FILLSISNXT:
         // Create another level on the SI stack
         lpMemPTD->lpSISNxt->Sig.nature    = SIS_HEADER_SIGNATURE;
         lpMemPTD->lpSISNxt->hSemaphore    = hSemaphore;
-        lpMemPTD->lpSISNxt->hSemaReset    = hSemaReset;
         lpMemPTD->lpSISNxt->hSigaphore    = NULL;
         lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;
         lpMemPTD->lpSISNxt->hGlbFcnName   = NULL;

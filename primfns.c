@@ -46,84 +46,90 @@ extern PRIMSPEC PrimSpecUpCaretTilde;
 extern PRIMSPEC PrimSpecUpStile;
 
 
-// Symbols for which there is no definition            Monadic      Dyadic
-#define PrimFnAlpha_EM_YY           PrimFn_EM       // ERROR        ERROR
-#define PrimFnIotaUnderbar_EM_YY    PrimFn_EM       // ERROR        ERROR
-#define PrimFnOmega_EM_YY           PrimFn_EM       // ERROR        ERROR
-#define PrimFnUpShoe_EM_YY          PrimFn_EM       // ERROR        ERROR
+// Symbols for which there is no definition            Monadic          Dyadic
+#define PrimFnAlpha_EM_YY           PrimFn_EM       // ERROR            ERROR
+#define PrimFnIotaUnderbar_EM_YY    PrimFn_EM       // ERROR            ERROR
+#define PrimFnOmega_EM_YY           PrimFn_EM       // ERROR            ERROR
+#define PrimFnUpShoe_EM_YY          PrimFn_EM       // ERROR            ERROR
 
 
-// Primitives TO DO                                    Monadic      Dyadic
-#define PrimFnDelStile_EM_YY        PrimFn_EM       // Mixed (*)    Mixed (*)
-#define PrimFnDeltaStile_EM_YY      PrimFn_EM       // Mixed (*)    Mixed (*)
-#define PrimFnDownArrow_EM_YY       PrimFn_EM       // ERROR        Mixed (*)
-#define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed (*)    ERROR
-#define PrimFnDownTack_EM_YY        PrimFn_EM       // ERROR        Mixed (*)
-#define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR        Mixed (*)
-#define PrimFnUpTack_EM_YY          PrimFn_EM       // ERROR        Mixed (*)
+// Primitives TO DO                                    Monadic          Dyadic
+#define PrimFnDelStile_EM_YY        PrimFn_EM       // Mixed (*)        Mixed (*)
+#define PrimFnDeltaStile_EM_YY      PrimFn_EM       // Mixed (*)        Mixed (*)
+#define PrimFnDownArrow_EM_YY       PrimFn_EM       // ERROR            Mixed (*)
+#define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed (*)        ERROR
+#define PrimFnDownTack_EM_YY        PrimFn_EM       // ERROR            Mixed (*)
+#define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR            Mixed (*)
+#define PrimFnUpTack_EM_YY          PrimFn_EM       // ERROR            Mixed (*)
 
 
-// Operators TO DO                                     Monadic      Dyadic
-/////// PrimOpDot_EM_YY                             // ERROR        Inner product (*)
+// Monadic Operators TO DO                             Monadic          Dyadic
+/////// PrimOpStileTilde_EM_YY                      // ERROR            Partition
 
+// Dyadic  Operators TO DO                             Monadic          Dyadic
+/////// PrimOpDieresisDel_EM_YY                     // ERROR            Dual (*)
+/////// PrimOpDieresisDowntack_EM_YY                // ERROR            Convolution (*)
+/////// PrimOpDieresisJot_EM_YY                     // Rank (*)         Rank (*)
+/////// PrimOpDieresisStar_EM_YY                    // ERROR            Power (*)
+/////// PrimOpDot_EM_YY                             // Determinant (*)  Inner product (*)
 
-// Primitives DONE                                     Monadic      Dyadic
-/////// PrimFnBar_EM_YY                             // Scalar       Scalar
-/////// PrimFnCircle_EM_YY                          // Scalar       Scalar
-/////// PrimFnCircleBar_EM_YY                       // Mixed        Mixed
-/////// PrimFnCircleSlope_EM_YY                     // Mixed        Mixed
-/////// PrimFnCircleStar_EM_YY                      // Scalar       Scalar
-/////// PrimFnCircleStile_EM_YY                     // Mixed        Mixed
-/////// PrimFnComma_EM_YY                           // Mixed        Mixed
-/////// PrimFnCommaBar_EM_YY                        // Mixed        Mixed
-/////// PrimFnColonBar_EM_YY                        // Scalar       Scalar
-/////// PrimFnDomino_EM_YY                          // Mixed        Mixed
-/////// PrimFnDownCaret_EM_YY                       // ERROR        Scalar
-/////// PrimFnDownCaretTilde_EM_YY                  // ERROR        Scalar
-/////// PrimFnDownStile_EM_YY                       // Scalar       Scalar
-/////// PrimFnEpsilon_EM_YY                         // Mixed        Mixed (*)
-/////// PrimFnEqual_EM_YY                           // ERROR        Scalar
-/////// PrimFnEqualUnderbar_EM_YY                   // Mixed        Mixed
-/////// PrimFnIota_EM_YY                            // Mixed        Mixed (*)
-/////// PrimFnLeftCaret_EM_YY                       // ERROR        Scalar
-/////// PrimFnLeftCaretUnderbar_EM_YY               // ERROR        Scalar
-/////// PrimFnLeftShoe_EM_YY                        // Mixed        Mixed (*)
-/////// PrimFnLeftTack_EM_YY                        // ERROR        Mixed
-/////// PrimFnNotEqual_EM_YY                        // ERROR        Scalar
-/////// PrimFnPlus_EM_YY                            // Scalar       Scalar
-/////// PrimFnQuoteDot_EM_YY                        // Scalar       Scalar
-/////// PrimFnQuery_EM_YY                           // Scalar       Mixed
-/////// PrimFnRightCaret_EM_YY                      // ERROR        Scalar
-/////// PrimFnRightCaretUnderbar_EM_YY              // ERROR        Scalar
-/////// PrimFnRightShoe_EM_YY                       // Mixed (*)    Mixed (*)
-/////// PrimFnRightTack_EM_YY                       // ERROR        Mixed
-/////// PrimFnRho_EM_YY                             // Mixed        Mixed
-/////// PrimFnSlash_EM_YY                           // ERROR        Mixed
-/////// PrimFnSlashBar_EM_YY                        // ERROR        Mixed
-/////// PrimFnSlope_EM_YY                           // ERROR        Mixed
-/////// PrimFnSlopeBar_EM_YY                        // ERROR        Mixed
-/////// PrimFnSquad_EM_YY                           // ERROR        Mixed (*)
-/////// PrimFnStar_EM_YY                            // Scalar       Scalar
-/////// PrimFnStile_EM_YY                           // Scalar       Scalar
-/////// PrimFnDownTackJot_EM_YY                     // Mixed        Mixed (*)
-/////// PrimFnTilde_EM_YY                           // Scalar       Mixed (*)
-/////// PrimFnTimes_EM_YY                           // Scalar       Scalar
-/////// PrimFnUpArrow_EM_YY                         // Mixed        Mixed (*)
-/////// PrimFnUpCaret_EM_YY                         // ERROR        Scalar
-/////// PrimFnUpCaretTilde_EM_YY                    // ERROR        Scalar
-/////// PrimFnUpStile_EM_YY                         // Scalar       Scalar
-/////// PrimFnUpTackJot_EM_YY                       // Mixed        ERROR
+// Primitive Functions DONE                            Monadic          Dyadic
+/////// PrimFnBar_EM_YY                             // Scalar           Scalar
+/////// PrimFnCircle_EM_YY                          // Scalar           Scalar
+/////// PrimFnCircleBar_EM_YY                       // Mixed            Mixed
+/////// PrimFnCircleSlope_EM_YY                     // Mixed            Mixed
+/////// PrimFnCircleStar_EM_YY                      // Scalar           Scalar
+/////// PrimFnCircleStile_EM_YY                     // Mixed            Mixed
+/////// PrimFnComma_EM_YY                           // Mixed            Mixed
+/////// PrimFnCommaBar_EM_YY                        // Mixed            Mixed
+/////// PrimFnColonBar_EM_YY                        // Scalar           Scalar
+/////// PrimFnDomino_EM_YY                          // Mixed            Mixed
+/////// PrimFnDownCaret_EM_YY                       // ERROR            Scalar
+/////// PrimFnDownCaretTilde_EM_YY                  // ERROR            Scalar
+/////// PrimFnDownStile_EM_YY                       // Scalar           Scalar
+/////// PrimFnEpsilon_EM_YY                         // Mixed            Mixed (*)
+/////// PrimFnEqual_EM_YY                           // ERROR            Scalar
+/////// PrimFnEqualUnderbar_EM_YY                   // Mixed            Mixed
+/////// PrimFnIota_EM_YY                            // Mixed            Mixed (*)
+/////// PrimFnLeftCaret_EM_YY                       // ERROR            Scalar
+/////// PrimFnLeftCaretUnderbar_EM_YY               // ERROR            Scalar
+/////// PrimFnLeftShoe_EM_YY                        // Mixed            Mixed (*)
+/////// PrimFnLeftTack_EM_YY                        // ERROR            Mixed
+/////// PrimFnNotEqual_EM_YY                        // ERROR            Scalar
+/////// PrimFnPlus_EM_YY                            // Scalar           Scalar
+/////// PrimFnQuoteDot_EM_YY                        // Scalar           Scalar
+/////// PrimFnQuery_EM_YY                           // Scalar           Mixed
+/////// PrimFnRightCaret_EM_YY                      // ERROR            Scalar
+/////// PrimFnRightCaretUnderbar_EM_YY              // ERROR            Scalar
+/////// PrimFnRightShoe_EM_YY                       // Mixed            Mixed (*)
+/////// PrimFnRightTack_EM_YY                       // ERROR            Mixed
+/////// PrimFnRho_EM_YY                             // Mixed            Mixed
+/////// PrimFnSlash_EM_YY                           // ERROR            Mixed
+/////// PrimFnSlashBar_EM_YY                        // ERROR            Mixed
+/////// PrimFnSlope_EM_YY                           // ERROR            Mixed
+/////// PrimFnSlopeBar_EM_YY                        // ERROR            Mixed
+/////// PrimFnSquad_EM_YY                           // ERROR            Mixed (*)
+/////// PrimFnStar_EM_YY                            // Scalar           Scalar
+/////// PrimFnStile_EM_YY                           // Scalar           Scalar
+/////// PrimFnDownTackJot_EM_YY                     // Mixed            Mixed (*)
+/////// PrimFnTilde_EM_YY                           // Scalar           Mixed (*)
+/////// PrimFnTimes_EM_YY                           // Scalar           Scalar
+/////// PrimFnUpArrow_EM_YY                         // Mixed            Mixed (*)
+/////// PrimFnUpCaret_EM_YY                         // ERROR            Scalar
+/////// PrimFnUpCaretTilde_EM_YY                    // ERROR            Scalar
+/////// PrimFnUpStile_EM_YY                         // Scalar           Scalar
+/////// PrimFnUpTackJot_EM_YY                       // Mixed            ERROR
 
 // (*) = Unfinished
 
 
-// Operators DONE                                      Monadic      Dyadic
-/////// PrimOpDieresis_EM_YY                        // Each         Each
-/////// PrimOpDieresisTilde_EM_YY                   // Duplicate    Commute
-/////// PrimOpJot_EM_YY                             // Composition  Composition
-/////// PrimOpJotDot_EM_YY                          // ERROR        Outer Product
-/////// PrimOpSlash_EM_YY                           // Reduction    N-wise reduction
-/////// PrimOpSlope_EM_YY                           // Scan         ERROR
+// Primitive Operators DONE                            Monadic          Dyadic
+/////// PrimOpDieresis_EM_YY                        // Each             Each
+/////// PrimOpDieresisTilde_EM_YY                   // Duplicate        Commute
+/////// PrimOpJot_EM_YY                             // Composition      Composition
+/////// PrimOpJotDot_EM_YY                          // ERROR            Outer Product
+/////// PrimOpSlash_EM_YY                           // Reduction        N-wise reduction
+/////// PrimOpSlope_EM_YY                           // Scan             ERROR
 
 
 // First coordinate functions handled by common function
@@ -932,7 +938,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
                                              lpYYFcnStr,                    // Ptr to function strand
                                              lptkRhtArg,                    // Ptr to right arg token
-                                             LINENUM_ONE);                  // Starting line # (see LINENUMS)
+                                             LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
                 else
                     // Execute a function array global memory handle
                     return ExecFuncGlb_EM_YY (lptkLftArg,
@@ -1154,7 +1160,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
                                              lpYYFcnStr,                    // Ptr to function strand
                                              lptkRhtArg,                    // Ptr to right arg token
-                                             LINENUM_ONE);                  // Starting line # (see LINENUMS)
+                                             LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
                 defstop
                     break;
             } // SWITCH
@@ -1619,25 +1625,15 @@ BOOL CheckAxisImm
      LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
 
 {
-    APLUINT      ByteAxis;      // # bytes for the axis global
-    APLRANK      aplRank;       // Maximum rank for comparison
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
-    UINT         u;             // Loop counter
-    LPAPLINT     lpAxisTail;    // Ptr to grade up of AxisHead
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLBOOL      bQuadIO;       // []IO
+    APLUINT  ByteAxis;          // # bytes for the axis global
+    APLRANK  aplRank;           // Maximum rank for comparison
+    BOOL     bRet = TRUE;       // TRUE iff result is valid
+    UINT     u;                 // Loop counter
+    LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
+    APLBOOL  bQuadIO;           // []IO
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     // The immediate value minus []IO
     //   must be an integer in the range
@@ -1783,31 +1779,21 @@ BOOL CheckAxisGlb
      LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
 
 {
-    BOOL         bRet = TRUE;
-    LPVOID       lpMem,
-                 lpDup = NULL;
-    HGLOBAL      hGlbDup = NULL;
-    UINT         uBitMask;
-    APLUINT      ByteDup,
-                 ByteAxis,
-                 u;
-    APLSTYPE     aplTypeLcl;
-    APLRANK      aplRankLcl;
-    LPAPLINT     lpAxisTail;    // Ptr to grade up of AxisHead
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLBOOL      bQuadIO;       // []IO
+    BOOL     bRet = TRUE;
+    LPVOID   lpMem,
+             lpDup = NULL;
+    HGLOBAL  hGlbDup = NULL;
+    UINT     uBitMask;
+    APLUINT  ByteDup,
+             ByteAxis,
+             u;
+    APLSTYPE aplTypeLcl;
+    APLRANK  aplRankLcl;
+    LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
+    APLBOOL  bQuadIO;           // []IO
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbData));
@@ -2560,7 +2546,7 @@ void FirstValue
      LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
      LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
      LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
-     LPUCHAR      lpImmType,    // ...        immediate type:  IMMTYPES (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type:  IMM_TYPES (may be NULL)
      LPAPLSTYPE   lpArrType)    // ...        array type:  ARRAY_TYPES (may be NULL)
 
 {
@@ -2647,7 +2633,7 @@ void FirstValueImm
      LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
      LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
      LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
-     LPUCHAR      lpImmType,    // ...        immediate type:  IMMTYPES (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type:  IMM_TYPES (may be NULL)
      LPAPLSTYPE   lpArrType)    // ...        array type:  ARRAY_TYPES (may be NULL)
 {
     if (lpImmType)
@@ -2722,7 +2708,7 @@ void FirstValueSymGlb
      LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
      LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
      LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
-     LPUCHAR      lpImmType,    // ...        immediate type IMMTYPES (may be NULL)
+     LPUCHAR      lpImmType,    // ...        immediate type IMM_TYPES (may be NULL)
      LPAPLSTYPE   lpArrType)    // ...        array type -- ARRAY_TYPES (may be NULL)
 
 {
@@ -3103,11 +3089,11 @@ APLLONGEST GetGlbPtrs_LOCK
 //***************************************************************************
 
 APLINT GetNextInteger
-    (LPVOID   lpMem,
-     APLSTYPE aplType,
-     APLINT   uRes,
-     APLINT   apaOff,
-     APLINT   apaMul)
+    (LPVOID   lpMem,                // Ptr to global memory
+     APLSTYPE aplType,              // Storage type
+     APLINT   uRes,                 // Index
+     APLINT   apaOff,               // Offset if APA
+     APLINT   apaMul)               // Multiplier if APA
 
 {
     // Split cases based upon the storage type
@@ -3138,11 +3124,11 @@ APLINT GetNextInteger
 //***************************************************************************
 
 APLFLOAT GetNextFloat
-    (LPVOID   lpMem,
-     APLSTYPE aplType,
-     APLINT   uRes,
-     APLINT   apaOff,
-     APLINT   apaMul)
+    (LPVOID   lpMem,                // Ptr to global memory
+     APLSTYPE aplType,              // Storage type
+     APLINT   uRes,                 // Index
+     APLINT   apaOff,               // Offset if APA
+     APLINT   apaMul)               // Multiplier if APA
 
 {
     // Split cases based upon the storage type
@@ -3152,7 +3138,7 @@ APLFLOAT GetNextFloat
             return (APLFLOAT) (BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (uRes & MASKLOG2NBIB)));
 
         case ARRAY_INT:
-            return (APLFLOAT) ((LPAPLINT) lpMem)[uRes];
+            return (APLFLOAT) ((LPAPLINT) lpMem)[uRes]; // ***FIXME*** -- Possible loss of precision
 
         case ARRAY_FLOAT:
             return ((LPAPLFLOAT) lpMem)[uRes];
@@ -3173,17 +3159,17 @@ APLFLOAT GetNextFloat
 //***************************************************************************
 
 APLSTYPE GetNextHetero
-    (LPAPLHETERO lpMem,
-     APLINT      u,
-     LPAPLINT    lpaplInteger,
-     LPAPLFLOAT  lpaplFloat,
-     LPAPLCHAR   lpaplChar)
+    (LPAPLHETERO lpMem,             // Ptr to global memory
+     APLINT      uRes,              // Index
+     LPAPLINT    lpaplInteger,      // Ptr to Boolean/Integer result
+     LPAPLFLOAT  lpaplFloat,        // Ptr to Float result
+     LPAPLCHAR   lpaplChar)         // Ptr to Char result
 
 {
     LPSYMENTRY lpSymEntry;
 
     // Get the next LPSYMENTRY
-    lpSymEntry = lpMem[u];
+    lpSymEntry = lpMem[uRes];
 
     // stData is immediate
     Assert (lpSymEntry->stFlags.Imm);
@@ -3217,6 +3203,120 @@ APLSTYPE GetNextHetero
             return ARRAY_ERROR;
     } // End SWITCH
 } // End GetNextHetero
+
+
+//***************************************************************************
+//  $GetNextValue
+//
+//  Get next value from an item
+//  If *lphGlbRes is NULL on exit, the result is an immediate.
+//***************************************************************************
+
+void GetNextValue
+    (HGLOBAL     hGlbSub,               // Item global memory handle
+     APLUINT     uSub,                  // Index into item
+     HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle
+     APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value
+     IMM_TYPES  *lpimmTypeRes)          // Ptr to result immediate type
+
+{
+    APLSTYPE  aplTypeSub;               // Item storage type
+////APLNELM   aplNELMSub;               // Item NELM
+    APLRANK   aplRankSub;               // Item rank
+    LPVOID    lpMemSub;                 // Ptr to item global memory
+    APLHETERO lpSymSub;                 // Item as APLHETERO
+
+    // Assume the result is an immediate
+    *lphGlbRes = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemSub = MyGlobalLock (hGlbSub);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
+    aplTypeSub = lpHeader->ArrType;
+////aplNELMSub = lpHeader->NELM;
+    aplRankSub = lpHeader->Rank;
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeSub)
+    {
+        case ARRAY_BOOL:
+            *lpaplLongestRes = BIT0 & (((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] >> (uSub & MASKLOG2NBIB));
+            *lpimmTypeRes    = IMMTYPE_BOOL;
+
+            break;
+
+        case ARRAY_INT:
+            *lpaplLongestRes = ((LPAPLINT) lpMemSub)[uSub];
+            *lpimmTypeRes    = IMMTYPE_INT;
+
+            break;
+
+        case ARRAY_FLOAT:
+            *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLFLOAT) lpMemSub)[uSub];
+            *lpimmTypeRes    = IMMTYPE_FLOAT;
+
+            break;
+
+        case ARRAY_CHAR:
+            *lpaplLongestRes = ((LPAPLCHAR) lpMemSub)[uSub];
+            *lpimmTypeRes    = IMMTYPE_CHAR;
+
+            break;
+
+        case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMemSub)
+            *lpaplLongestRes = lpAPA->Off + lpAPA->Mul * uSub;
+            *lpimmTypeRes    = IMMTYPE_INT;
+#undef  lpAPA
+            break;
+
+        case ARRAY_HETERO:
+            lpSymSub = ((LPAPLHETERO) lpMemSub)[uSub];
+
+            // Extract the immediate type & value
+            *lpaplLongestRes = lpSymSub->stData.stLongest;
+            *lpimmTypeRes    = lpSymSub->stFlags.ImmType;
+
+            break;
+
+        case ARRAY_NESTED:
+            // Get the item
+            lpSymSub = ((LPAPLNESTED) lpMemSub)[uSub];
+
+            // Split cases based upon the ptr type
+            switch (GetPtrTypeDir (lpSymSub))
+            {
+                case PTRTYPE_STCONST:
+                    // Extract the immediate type & value
+                    *lpaplLongestRes = lpSymSub->stData.stLongest;
+                    *lpimmTypeRes    = lpSymSub->stFlags.ImmType;
+
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    // Mark the result as an HGLOBAL
+                    *lphGlbRes = lpSymSub;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+} // End GetNextValue
 
 
 //***************************************************************************
@@ -3436,9 +3536,9 @@ BOOL PrimScalarFnDydAllocate_EM
 #endif
 
 HGLOBAL MakeMonPrototype_EM
-    (HGLOBAL   hGlbArr,             // Incoming array handle
-     LPTOKEN   lptkFunc,            // Ptr to function token
-     MAKEPROTO mpEnum)              // See MAKEPROTO enum
+    (HGLOBAL    hGlbArr,            // Incoming array handle
+     LPTOKEN    lptkFunc,           // Ptr to function token
+     MAKE_PROTO mpEnum)             // See MAKE_PROTO
 
 {
     LPVOID      lpMemArr,
@@ -3736,12 +3836,12 @@ NORMAL_EXIT:
 #endif
 
 HGLOBAL MakeDydPrototype_EM
-    (HGLOBAL  hGlbLft,      // Left arg global memory handle (may be NULL if immediate)
-     IMMTYPES immTypeLft,   // Left arg storage type if immediate
-     LPTOKEN  lptkFunc,     // Ptr to function token
-     HGLOBAL  hGlbRht,      // Right arg global memory handle (may be NULL if immediate)
-     IMMTYPES immTypeRht,   // Right arg storage type if immediate
-     LPTOKEN  lptkAxis)     // Ptr to axis token (may be NULL)
+    (HGLOBAL   hGlbLft,                 // Left arg global memory handle (may be NULL if immediate)
+     IMM_TYPES immTypeLft,              // Left arg storage type if immediate (see IMM_TYPES)
+     LPTOKEN   lptkFunc,                // Ptr to function token
+     HGLOBAL   hGlbRht,                 // Right arg global memory handle (may be NULL if immediate)
+     IMM_TYPES immTypeRht,              // Right arg storage type if immediate (see IMM_TYPES)
+     LPTOKEN   lptkAxis)                // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE    aplTypeLft,             // Left arg storage type

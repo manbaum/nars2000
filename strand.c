@@ -1148,9 +1148,9 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 ////lpHeader->fcnNELM     =             // To be filled in below
     if (bSaveTxtLine)
     {
-        UINT          uLineLen;     // Line length
-        LPMEMTXTUNION lpMemTxtLine; // Ptr to line text global memory
-        LPAPLCHAR     lpMemTxtSrc;  // Ptr to line text source
+        UINT           uLineLen;        // Line length
+        LPMEMTXT_UNION lpMemTxtLine;    // Ptr to line text global memory
+        LPAPLCHAR      lpMemTxtSrc;     // Ptr to line text source
 
         // Get the ptr to the source line text
         lpMemTxtSrc = lpplLocalVars->lpwszLine;

@@ -393,7 +393,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                        lpMemRes,            // Ptr to result    memory
                        uDimLo,              // Product of dimensions below axis
                        uDimAxRht,           // Length of right arg axis dimension
-                       lpPrimFlags->Index,  // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+                       lpPrimFlags->Index,  // FBFN_INDS value (e.g., index into FastBoolFns[])
                        lpYYFcnStrOpr);      // Ptr to operator function strand
     } else
     {

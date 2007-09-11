@@ -5,7 +5,7 @@
 // Translation table for converting chars from
 //   various APL systems to NARS.
 
-typedef enum tagUNITRANS
+typedef enum tagUNI_TRANS
 {
     UNITRANS_APLWIN = 0,    // 00:  APL+WIN 3.6 (and maybe later)
     UNITRANS_ISO,           // 01:  ISO Standard (What Typeface is this???)
@@ -13,7 +13,7 @@ typedef enum tagUNITRANS
     UNITRANS_DYALOG,        // 03:  Dyalog ???   ***FINISHME***
     UNITRANS_NARS,          // 04:  NARS2000
     UNITRANS_LENGTH,        // 05:  Length of the enum *MUST* be last
-} UNITRANS;
+} UNI_TRANS;
 
 WCHAR uniTrans[][UNITRANS_LENGTH] =
 {// APL+WIN      ISO      APL2  Dyalog  NARS

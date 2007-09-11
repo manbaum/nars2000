@@ -188,17 +188,9 @@ APLINT PrimFnMonQueryIisI
     APLBOOL      bQuadIO;       // []IO
     APLUINT      uQuadRL;       // []RL
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-    uQuadRL = lpMemPTD->lpSymQuadRL->stData.stInteger;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []IO & []RL
+    bQuadIO = GetQuadIO ();
+    uQuadRL = GetQuadRL ();
 
     // Check for DOMAIN ERROR
     if (aplIntegerRht < bQuadIO)
@@ -206,6 +198,9 @@ APLINT PrimFnMonQueryIisI
 
     // Calculate new QuadRL
     uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -241,17 +236,9 @@ APLINT PrimFnMonQueryIisF
     APLBOOL      bQuadIO;       // []IO
     APLUINT      uQuadRL;       // []RL
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-    uQuadRL = lpMemPTD->lpSymQuadRL->stData.stInteger;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []IO & []RL
+    bQuadIO = GetQuadIO ();
+    uQuadRL = GetQuadRL ();
 
     // Check for DOMAIN ERROR
     if (aplFloatRht < bQuadIO
@@ -261,6 +248,9 @@ APLINT PrimFnMonQueryIisF
 
     // Calculate new QuadRL
     uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -326,20 +316,10 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
                  uSub;              // Subarray  ...
     BOOL         bRet = TRUE;       // TRUE iff result is valid
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     APLBOOL      bQuadIO;           // []IO
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -384,7 +364,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     } // End IF
 
     // Get the respective first values
-    FirstValue (lptkLftArg,         // Ptr to right arg token
+    FirstValue (lptkLftArg,         // Ptr to left arg token
                &aplIntegerLft,      // Ptr to integer result
                &aplFloatLft,        // Ptr to float ...
                 NULL,               // Ptr to WCHAR ...

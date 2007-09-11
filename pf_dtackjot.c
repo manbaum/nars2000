@@ -540,34 +540,24 @@ LPAPLCHAR FormatArrSimple
      BOOL        bEndingCR)     // TRUE iff last line has CR
 
 {
-    APLDIM       aplDimRow,         // Loop counter
-                 aplDimCol,         // Loop counter
-                 aplChrNCols;       // # cols for char arrays
-    UINT         uActLen,
-                 uLead,
-                 uCol,
-                 uCmpWid,
-                 uInts,
-                 uFrcs;
-    LPWCHAR      lpw,
-                 lpwszOut,
-                 lpwszOutStart;
-    LPFMTROWSTR  lpFmtRowStr;
-    LPAPLCHAR    lpaplChar = lpaplChar2;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLUINT      uQuadPW;       // []PW
+    APLDIM      aplDimRow,          // Loop counter
+                aplDimCol,          // Loop counter
+                aplChrNCols;        // # cols for char arrays
+    UINT        uActLen,
+                uLead,
+                uCol,
+                uCmpWid,
+                uInts,
+                uFrcs;
+    LPWCHAR     lpw,
+                lpwszOut,
+                lpwszOutStart;
+    LPFMTROWSTR lpFmtRowStr;
+    LPAPLCHAR   lpaplChar = lpaplChar2;
+    APLUINT     uQuadPW;            // []PW
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    uQuadPW = lpMemPTD->lpSymQuadPW->stData.stInteger;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []PW
+    uQuadPW = GetQuadPW ();
 
     // Initialize local output string ptr
     lpwszOut = *lplpwszOut;

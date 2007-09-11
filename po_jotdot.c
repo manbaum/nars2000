@@ -319,7 +319,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     if (lpMemLft EQ NULL)
     {
         tkLftArg.tkFlags.TknType = TKT_VARIMMED;
-        FirstValue (lptkLftArg,                 // Ptr to right arg token
+        FirstValue (lptkLftArg,                 // Ptr to left arg token
                     NULL,                       // Ptr to integer result
                     NULL,                       // Ptr to float ...
                     NULL,                       // Ptr to WCHAR ...

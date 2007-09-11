@@ -24,7 +24,7 @@
 ///////                          0x11-0x17      // (available)
 ///////                          0x18           // ...       {jot}
 
-// N.B.:  Whenever changing the above enum (TOKENTYPES),
+// N.B.:  Whenever changing the above enum (TOKEN_TYPES),
 //   be sure to make a corresponding change to
 //   <aSymbolNames> in <externs.h>.
 

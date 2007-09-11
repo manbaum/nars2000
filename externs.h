@@ -251,7 +251,7 @@ LPPRIMSPEC PrimSpecTab[256];            // The table of corresponding LPPRIMSPEC
                                         //   for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
-    WORD Index:4,                       // 000F:  Function index (see enum tagFBFNINDS)
+    WORD Index:4,                       // 000F:  Function index (see FBFN_INDS)
          Available:5,                   // 01F0:  Available flag bits
          IdentElem:1,                   // 0200:  TRUE iff this function has an identity element
          DydScalar:1,                   // 0400:  ...                    is scalar dyadic
@@ -271,7 +271,7 @@ PRIMFLAGS PrimFlags[256];               // The flag tables for all primitive fun
 //  Fast Boolean Reduction and Scan tables
 //***************************************************************************
 
-typedef enum tagFBFNINDS                // Fast Boolean function indices
+typedef enum tagFBFN_INDS               // Fast Boolean function indices
 {   PF_INDEX_UNK = 0 ,                  // 00 = No entry so we can catch this as an error
     PF_INDEX_LESS    ,                  // 01 = Index for "less than" ...
     PF_INDEX_OR      ,                  // 02 = ...       "or"    ...
@@ -292,11 +292,11 @@ typedef enum tagFBFNINDS                // Fast Boolean function indices
                                         // If another entry is made, be sure
                                         //   to increase Index:4 to Index:5
                                         //   in tagPRIMFLAGS
-} FBFNINDS;
+} FBFN_INDS;
 
 EXTERN
 APLFLOAT PrimIdent[PF_INDEX_NEXT];      // Primitive scalar function identity elements
-                                        //   in the same order as enum tagFBFNINDS
+                                        //   in the same order as FBFN_INDS
 
 typedef void (FASTBOOLFCN) (APLSTYPE     aplTypeRht,        // Right arg storage type
                             APLNELM      aplNELMRht,        // Right arg NELM
@@ -304,7 +304,7 @@ typedef void (FASTBOOLFCN) (APLSTYPE     aplTypeRht,        // Right arg storage
                             LPVOID       lpMemRes,          // Ptr to result    ...
                             APLUINT      uDimLo,            // Product of dimensions below axis
                             APLUINT      uDimAxRht,         // Length of right arg axis dimension
-                            UINT         uIndex,            // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+                            FBFN_INDS    uIndex,            // FBFN_INDS value (e.g., index into FastBoolFns[])
                             LPPL_YYSTYPE lpYYFcnStrOpr);    // Ptr to operator function strand
 typedef FASTBOOLFCN *LPFASTBOOLFCN;
 
@@ -663,14 +663,15 @@ HGLOBAL hGlbZilde,
         hGlbSAError,
         hGlbSAExit,
         hGlbSAOff,
-        hGlbQuadWSID_CWS;
+        hGlbQuadWSID_CWS,
+        hGlbAV;
 
 EXTERN
 APLFLOAT PosInfinity,                   // Positive infinity
          NegInfinity,                   // Negative ...
          Float2Pow53;                   // 2*53 in floating point
 
-typedef enum tagSYSVARS
+typedef enum tagSYS_VARS
 {
     SYSVAR_UNK = 0,             // 00:  Unknown name
     SYSVAR_ALX ,                // 01:  []ALX
@@ -686,7 +687,7 @@ typedef enum tagSYSVARS
     SYSVAR_WSID,                // 0B:  []WSID
     SYSVAR_LENGTH               // 0C:  # entries in the enum
                                 // 0D-0F:  Available entries (4 bits)
-} SYSVARS;
+} SYS_VARS;
 
 EXTERN
 // Use as in:  (*aSysVarValid[SYSVAR_IO]) (lptkName, lptkExpr);
@@ -1270,7 +1271,7 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
 #endif
 ;
 
-typedef enum tagUNDOACTS
+typedef enum tagUNDO_ACTS
 {
     undoNone = 0,       // 0000:  No action
     undoIns,            // 0001:  Insert a character
@@ -1279,25 +1280,25 @@ typedef enum tagUNDOACTS
     undoSel,            // 0004:  Select one or more characters
     undoInsToggle,      // 0005:  Toggle the insert mode
                         // 0006-FFFF:  Available entries (16 bits)
-} UNDOACTS;
+} UNDO_ACTS;
 
 #define UNDO_NOGROUP    0
 
-typedef struct tagUNDOBUF
+typedef struct tagUNDO_BUF
 {
     UINT  CharPosBeg,   // 00:  Beginning character position (from start of text),
                         //      -1 = current position
           CharPosEnd,   // 04:  Ending    ...
           Group;        // 08:  Group index identifies actions to be performed together,
                         //      0 = no grouping
-    short Action;       // 0C:  Action (see enum UNDOACTS)
+    short Action;       // 0C:  Action (see UNDO_ACTS)
     WCHAR Char;         // 0E:  The character (if any),
                         //       0 = none
                         // 10:  Length
-} UNDOBUF, *LPUNDOBUF;
+} UNDO_BUF, *LPUNDO_BUF;
 
 
-typedef union tagMEMTXTUNION
+typedef union tagMEMTXT_UNION
 {
     struct
     {
@@ -1308,26 +1309,26 @@ typedef union tagMEMTXTUNION
             WORD    W;      // 04:  ...          a WORD
         };
     };
-} MEMTXTUNION, *LPMEMTXTUNION;
+} MEMTXT_UNION, *LPMEMTXT_UNION;
 
 typedef void (*LPERRHANDFN) (LPWCHAR lpwszMsg,
                              LPWCHAR lpwszLine,
                              UINT uCaret,
                              HWND hWndEC);
-typedef enum tagERRORCODES
+typedef enum tagERROR_CODES
 {
     ERRORCODE_NONE = 0,     // 00:  No error
     ERRORCODE_ALX,          // 01:  Signal []ALX
     ERRORCODE_ELX,          // 02:  Signal []ELX
-} ERRORCODES;
+} ERROR_CODES;
 
-typedef enum tagLINENUMS    // Starting line #s
+typedef enum tagLINE_NUMS   // Starting line #s
 {
     LINENUM_ONE = 0,        // 00:  Line #1
     LINENUM_PROTOTYPE,      // 01:  Line []PROTOTYPE
     LINENUM_INVERSE,        // 02:  Line []INVERSE
     LINENUM_SINGLETON,      // 03:  Line []SINGLETON
-} LINENUMS;
+} LINE_NUMS;
 
 #define ENUMS_DEFINED
 #undef  EXTERN

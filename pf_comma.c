@@ -176,7 +176,7 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
-    (IMMTYPES      ImmType,         // Right arg Immediate type
+    (IMM_TYPES     immType,         // Right arg Immediate type (see IMM_TYPES)
      APLLONGEST    aplLongest,      // Ptr to right arg value
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
      LPTOKEN       lptkFunc)        // Ptr to function token
@@ -233,7 +233,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     //***************************************************************
     // Calculate the space needed for the result
     //***************************************************************
-    ByteRes = CalcArraySize (TranslateImmTypeToArrayType (ImmType),
+    ByteRes = CalcArraySize (TranslateImmTypeToArrayType (immType),
                              1,
                              aplRankRes);
     //***************************************************************
@@ -256,7 +256,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
 
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = TranslateImmTypeToArrayType (ImmType);
+    lpHeader->ArrType    = TranslateImmTypeToArrayType (immType);
 ////lpHeader->Perm       = 0;               // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -266,7 +266,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
 #undef  lpHeader
 
     // Fill in the result's dimension
-    *(VarArrayBaseToDim (lpMemRes)) = 1;
+    *VarArrayBaseToDim (lpMemRes) = 1;
     if (bTableRes)
         *(1 + VarArrayBaseToDim (lpMemRes)) = 1;
 
@@ -990,7 +990,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     if (aplRankLft EQ 0                         // Scalar
      && aplNELMLft NE 0                         // and non-empty
      && aplTypeLft NE ARRAY_NESTED)             // and non-nested
-        FirstValue (lptkLftArg,                 // Ptr to right arg token
+        FirstValue (lptkLftArg,                 // Ptr to left arg token
                    &aplIntegerLft,              // Ptr to integer result
                    &aplFloatLft,                // Ptr to float ...
                    &aplCharLft,                 // Ptr to WCHAR ...
@@ -1001,7 +1001,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     else                                        // otherwise,
     if ((aplRankLft EQ 0 || aplNELMLft EQ 0)    // Scalar or empty
      && aplTypeLft EQ ARRAY_NESTED)             // and nested
-        FirstValue (lptkLftArg,                 // Ptr to right arg token
+        FirstValue (lptkLftArg,                 // Ptr to left arg token
                     NULL,                       // Ptr to integer result
                     NULL,                       // Ptr to float ...
                     NULL,                       // Ptr to WCHAR ...

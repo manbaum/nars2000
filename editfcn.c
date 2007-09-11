@@ -200,18 +200,18 @@ void FE_Delete
 #endif
 
 LRESULT APIENTRY FEWndProc
-    (HWND hWnd,         // Window handle
-     UINT message,      // Type of message
-     UINT wParam,       // Additional information
-     LONG lParam)       // ...
+    (HWND hWnd,                 // Window handle
+     UINT message,              // Type of message
+     UINT wParam,               // Additional information
+     LONG lParam)               // ...
 
 {
-    HWND      hWndEC;       // Handle of Edit Control window
-    int       iMaxLimit;    // Maximum # chars in edit control
-    VKSTATE   vkState;      // Virtual key state (Shift, Alt, Ctrl)
-    long      lvkState;     // Temporary var for vkState
-    LPUNDOBUF lpUndoBeg,    // Ptr to start of Undo Buffer
-              lpUndoNxt;    // ...    next available slot in the Undo Buffer
+    HWND       hWndEC;          // Handle of Edit Control window
+    int        iMaxLimit;       // Maximum # chars in edit control
+    VKSTATE    vkState;         // Virtual key state (Shift, Alt, Ctrl)
+    long       lvkState;        // Temporary var for vkState
+    LPUNDO_BUF lpUndoBeg,       // Ptr to start of Undo Buffer
+               lpUndoNxt;       // ...    next available slot in the Undo Buffer
 
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
@@ -283,12 +283,12 @@ LRESULT APIENTRY FEWndProc
             // Allocate virtual memory for the Undo Buffer
             lpUndoBeg =
             VirtualAlloc (NULL,          // Any address
-                          DEF_UNDOBUF_MAXSIZE * sizeof (UNDOBUF),
+                          DEF_UNDOBUF_MAXSIZE * sizeof (UNDO_BUF),
                           MEM_RESERVE,
                           PAGE_READWRITE);
             // Commit the intial size
             VirtualAlloc (lpUndoBeg,
-                          DEF_UNDOBUF_INITSIZE * sizeof (UNDOBUF),
+                          DEF_UNDOBUF_INITSIZE * sizeof (UNDO_BUF),
                           MEM_COMMIT,
                           PAGE_READWRITE);
             // Save in window extra bytes
@@ -300,8 +300,8 @@ LRESULT APIENTRY FEWndProc
             if (hGlbDfnHdr
              && lpMemDfnHdr->hGlbUndoBuff)
             {
-                LPUNDOBUF lpMemUndo;        // Ptr to Undo Buffer global memory
-                UINT      uUndoSize;        // Size of Undo Buffer in bytes
+                LPUNDO_BUF lpMemUndo;       // Ptr to Undo Buffer global memory
+                UINT       uUndoSize;       // Size of Undo Buffer in bytes
 
                 // Get the size in bytes
                 uUndoSize = MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff);
@@ -316,7 +316,7 @@ LRESULT APIENTRY FEWndProc
                 MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
 
                 // Get the ptr to the next available entry
-                lpUndoNxt = (LPUNDOBUF) ByteAddr (lpUndoBeg, uUndoSize);
+                lpUndoNxt = (LPUNDO_BUF) ByteAddr (lpUndoBeg, uUndoSize);
 
                 // Save in window extra bytes
                 SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
@@ -393,11 +393,11 @@ LRESULT APIENTRY FEWndProc
             //   read in its lines as the initial text
             if (hGlbDfnHdr)
             {
-                HGLOBAL       hGlbTxtLine;      // Line/header text global memory handle
-                LPMEMTXTUNION lpMemTxtLine;     // Ptr to header/line text global memory
-                UINT          numFcnLines,      // # lines in the function
-                              uLineNum;         // Line #
-                LPFCNLINE     lpFcnLines;       // Ptr to array function line structs (FCNLINE[numFcnLines])
+                HGLOBAL        hGlbTxtLine;     // Line/header text global memory handle
+                LPMEMTXT_UNION lpMemTxtLine;    // Ptr to header/line text global memory
+                UINT           numFcnLines,     // # lines in the function
+                               uLineNum;        // Line #
+                LPFCNLINE      lpFcnLines;      // Ptr to array function line structs (FCNLINE[numFcnLines])
 
                 // Get the function header text global memory handle
                 hGlbTxtLine = lpMemDfnHdr->hGlbTxtHdr;
@@ -761,7 +761,7 @@ LRESULT WINAPI LclEditCtrlWndProc
     long         lvkState;      // Temporary var for vkState
     HWND         hWndParent;    // Handle of parent (SM/FE) window
     LRESULT      lResult;       // Result from calling original handler
-    LPUNDOBUF    lpUndoNxt,     // Ptr to next available slot in the Undo Buffer
+    LPUNDO_BUF   lpUndoNxt,     // Ptr to next available slot in the Undo Buffer
                  lpUndoBeg;     // ...    first          ...
     UINT         uCharPosBeg,   // Pos of the beginning char
                  uCharPosEnd,   // ...        ending    ...
@@ -1746,8 +1746,8 @@ HGLOBAL CopyGlbMemory
 //***************************************************************************
 
 void PasteAPLChars
-    (HWND     hWndEC,       // Window handle of the Edit Control
-     UNITRANS uIndex)       // ENUM tagUNITRANS index
+    (HWND      hWndEC,              // Window handle of the Edit Control
+     UNI_TRANS uIndex)              // UNI_TRANS index
 
 {
     DWORD      dwSize;
@@ -2052,7 +2052,7 @@ void AppendUndo
      WCHAR Char)            // Character, 0 = none
 
 {
-    LPUNDOBUF lpUndoNxt;    // Ptr to next available slot in the Undo Buffer
+    LPUNDO_BUF lpUndoNxt;   // Ptr to next available slot in the Undo Buffer
 
     // Get the ptr to the next available slot in our Undo Buffer
     (long) lpUndoNxt = GetWindowLong (hWnd, GWLxx_UNDO_NXT);
@@ -2498,17 +2498,17 @@ BOOL SaveFunction
     (HWND hWndFE)
 
 {
-    HWND          hWndEC;               // Window handle to Edit Control
-    UINT          uLineLen;             // Line length
-    HGLOBAL       hGlbTxtHdr = NULL,    // Header text global memory handle
-                  hGlbTknHdr = NULL,    // Tokenized header text ...
-                  hGlbDfnHdr = NULL;    // User-defined function/operator header ...
-    LPMEMTXTUNION lpMemTxtLine;         // Ptr to header/line text global memory
-    LPDFN_HEADER  lpMemDfnHdr;          // Ptr to user-defined function/operator header ...
-    BOOL          bRet = FALSE;         // TRUE iff result is valid
-    FHLOCALVARS   fhLocalVars = {0};    // Re-entrant vars
-    HGLOBAL       hGlbPTD;              // PerTabData global memory handle
-    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+    HWND           hWndEC;              // Window handle to Edit Control
+    UINT           uLineLen;            // Line length
+    HGLOBAL        hGlbTxtHdr = NULL,   // Header text global memory handle
+                   hGlbTknHdr = NULL,   // Tokenized header text ...
+                   hGlbDfnHdr = NULL;   // User-defined function/operator header ...
+    LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/line text global memory
+    LPDFN_HEADER   lpMemDfnHdr;         // Ptr to user-defined function/operator header ...
+    BOOL           bRet = FALSE;        // TRUE iff result is valid
+    FHLOCALVARS    fhLocalVars = {0};   // Re-entrant vars
+    HGLOBAL        hGlbPTD;             // PerTabData global memory handle
+    LPPERTABDATA   lpMemPTD;            // Ptr to PerTabData global memory
 
     Assert (IzitFE (hWndFE));
 
@@ -2625,7 +2625,7 @@ BOOL SaveFunction
                     numFcnLines,        // # lines in the function
                     numSTE;             // Loop counter
         LPFCNLINE   lpFcnLines;         // Ptr to array of function line structs (FCNLINE[numFcnLines])
-        LPUNDOBUF   lpUndoBeg,          // Ptr to start of Undo buffer
+        LPUNDO_BUF  lpUndoBeg,          // Ptr to start of Undo buffer
                     lpUndoLst;          // Ptr to end ...
         LPSYMENTRY  lpSymName = NULL,   // Ptr to SYMENTRY for the function name
                    *lplpSymDfnHdr;      // Ptr to LPSYMENTRYs at end of user-defined function/operator header
@@ -2717,7 +2717,7 @@ BOOL SaveFunction
         (long) lpUndoBeg = GetWindowLong (hWndFE, GWLSF_UNDO_BEG);
         if (lpUndoBeg)
         {
-            LPUNDOBUF lpMemUndo;        // Ptr to Undo Buffer global memory
+            LPUNDO_BUF lpMemUndo;       // Ptr to Undo Buffer global memory
 
             // Get the ptr to the last entry in the Undo Buffer
             (long) lpUndoLst = GetWindowLong (hWndFE, GWLSF_UNDO_LST);
@@ -2728,7 +2728,7 @@ BOOL SaveFunction
             else
             {
                 // Allocate storage for the Undo buffer
-                lpMemDfnHdr->hGlbUndoBuff = DbgGlobalAlloc (GHND, (lpUndoLst - lpUndoBeg) * sizeof (UNDOBUF));
+                lpMemDfnHdr->hGlbUndoBuff = DbgGlobalAlloc (GHND, (lpUndoLst - lpUndoBeg) * sizeof (UNDO_BUF));
                 if (!lpMemDfnHdr->hGlbUndoBuff)
                 {
                     MessageBox (hWndEC,
@@ -2742,7 +2742,7 @@ BOOL SaveFunction
                 lpMemUndo = MyGlobalLock (lpMemDfnHdr->hGlbUndoBuff);
 
                 // Copy the Undo Buffer to global memory
-                CopyMemory (lpMemUndo, lpUndoBeg, (lpUndoLst - lpUndoBeg) * sizeof (UNDOBUF));
+                CopyMemory (lpMemUndo, lpUndoBeg, (lpUndoLst - lpUndoBeg) * sizeof (UNDO_BUF));
 
                 // We no longer need this ptr
                 MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;

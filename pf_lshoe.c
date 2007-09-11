@@ -114,14 +114,12 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
             return PrimFnMonLeftShoeCon_EM_YY
                    (lptkRhtArg->tkData.tkSym->stFlags.ImmType,  // Immediate type
                     lptkRhtArg->tkData.tkSym->stData.stLongest, // Immediate value
-                    lptkRhtArg,                                 // Ptr to right arg
                     lptkAxis,                                   // Ptr to axis token (may be NULL)
                     lptkFunc);                                  // Ptr to function token
         case TKT_VARIMMED:
             return PrimFnMonLeftShoeCon_EM_YY
                    (lptkRhtArg->tkFlags.ImmType,                // Immediate type
                     lptkRhtArg->tkData.tkLongest,               // Immediate value
-                    lptkRhtArg,                                 // Ptr to right arg
                     lptkAxis,                                   // Ptr to axis token (may be NULL)
                     lptkFunc);                                  // Ptr to function token
         case TKT_VARARRAY:
@@ -159,7 +157,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
 LPPL_YYSTYPE PrimFnMonLeftShoeCon_EM_YY
     (UINT       ImmType,            // The immediate type
      APLLONGEST aplLongest,         // The immediate value
-     LPTOKEN    lpTokenRht,         // Ptr to right arg token
      LPTOKEN    lptkAxis,           // Ptr to axis token
      LPTOKEN    lptkFunc)           // Ptr to function token
 
@@ -192,7 +189,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeCon_EM_YY
     lpYYRes->tkToken.tkFlags.ImmType   = ImmType;
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
-    lpYYRes->tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
 } // End PrimFnMonLeftShoeCon_EM_YY

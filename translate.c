@@ -21,12 +21,12 @@
 //***************************************************************************
 //  $TranslateTknTypeToTknTypeNamed
 //
-//  Translate a token type (see TOKENTYPES enum) to
-//    a named token type (see TOKENTYPES enum).
+//  Translate a token type (see TOKEN_TYPES) to
+//    a named token type (see TOKEN_TYPES).
 //***************************************************************************
 
-TOKENTYPES TranslateTknTypeToTknTypeNamed
-    (TOKENTYPES tknType)
+TOKEN_TYPES TranslateTknTypeToTknTypeNamed
+    (TOKEN_TYPES tknType)
 
 {
     switch (tknType)
@@ -58,13 +58,13 @@ TOKENTYPES TranslateTknTypeToTknTypeNamed
 //***************************************************************************
 //  TranslateDfnToNameType
 //
-//  Translate a user-defined function/operator type (see enum DFN_TYPES and enum FCN_VALENCES)
-//    to a function type (see enum NAME_TYPES).
+//  Translate a user-defined function/operator type (see DFN_TYPES and FCN_VALENCES)
+//    to a function type (see NAME_TYPES).
 //***************************************************************************
 
 NAME_TYPES TranslateDfnToNameType
-    (DFN_TYPES    dfnType,      // User-defined function/operator type (see enum DFN_TYPES)
-     FCN_VALENCES fcnValence)   // Function valance (see enum FCN_VALENCES)
+    (DFN_TYPES    dfnType,      // User-defined function/operator type (see DFN_TYPES)
+     FCN_VALENCES fcnValence)   // Function valance (see FCN_VALENCES)
 
 {
     // Split cases based upon the user-defined function/operator type
@@ -102,12 +102,12 @@ NAME_TYPES TranslateDfnToNameType
 //***************************************************************************
 //  $TranslateImmTypeToTknType
 //
-//  Translate an immediate type (see IMMTYPES enum) to
-//    a token type (see TOKENTYPES enum).
+//  Translate an immediate type (see IMM_TYPES) to
+//    a token type (see TOKEN_TYPES).
 //***************************************************************************
 
-TOKENTYPES TranslateImmTypeToTknType
-    (IMMTYPES immType)
+TOKEN_TYPES TranslateImmTypeToTknType
+    (IMM_TYPES immType)
 
 {
     switch (immType)
@@ -136,12 +136,12 @@ TOKENTYPES TranslateImmTypeToTknType
 //// //***************************************************************************
 //// //  $TranslateImmTypeToTknTypeNamed
 //// //
-//// //  Translate an immediate type (see IMMTYPES enum) to
-//// //    a named token type (see TOKENTYPES enum).
+//// //  Translate an immediate type (see IMM_TYPES) to
+//// //    a named token type (see TOKEN_TYPES).
 //// //***************************************************************************
 ////
-//// TOKENTYPES TranslateImmTypeToTknTypeNamed
-////     (IMMTYPES immType)
+//// TOKEN_TYPES TranslateImmTypeToTknTypeNamed
+////     (IMM_TYPES immType)
 ////
 //// {
 ////     switch (immType)
@@ -170,12 +170,12 @@ TOKENTYPES TranslateImmTypeToTknType
 //***************************************************************************
 //  $TranslateImmTypeToStrandType
 //
-//  Translate an immediate type (see IMMTYPES enum) to
-//    a strand type (see STRAND_TYPES enum).
+//  Translate an immediate type (see IMM_TYPES) to
+//    a strand type (see STRAND_TYPES).
 //***************************************************************************
 
 STRAND_TYPES TranslateImmTypeToStrandType
-    (IMMTYPES immType)
+    (IMM_TYPES immType)
 
 {
     switch (immType)
@@ -201,12 +201,12 @@ STRAND_TYPES TranslateImmTypeToStrandType
 //***************************************************************************
 //  $TranslateImmTypeToArrayType
 //
-//  Translate an immediate type (see IMMTYPES enum) to
-//    an array type (see ARRAY_TYPES enum).
+//  Translate an immediate type (see IMM_TYPES) to
+//    an array type (see ARRAY_TYPES).
 //***************************************************************************
 
 ARRAY_TYPES TranslateImmTypeToArrayType
-    (IMMTYPES immType)
+    (IMM_TYPES immType)
 
 {
     switch (immType)
@@ -232,11 +232,11 @@ ARRAY_TYPES TranslateImmTypeToArrayType
 //***************************************************************************
 //  $TranslateArrayTypeToImmType
 //
-//  Translate an array type (see ARRAY_TYPES enum) to
-//    an immediate type (see IMMTYPES enum).
+//  Translate an array type (see ARRAY_TYPES) to
+//    an immediate type (see IMM_TYPES).
 //***************************************************************************
 
-IMMTYPES TranslateArrayTypeToImmType
+IMM_TYPES TranslateArrayTypeToImmType
     (ARRAY_TYPES arrayType)
 
 {
@@ -269,8 +269,8 @@ IMMTYPES TranslateArrayTypeToImmType
 //***************************************************************************
 //  $TranslateArrayTypeToStrandType
 //
-//  Translate an array type (see ARRAY_TYPES enum) to
-//    a strand type (see STRAND_TYPES enum).
+//  Translate an array type (see ARRAY_TYPES) to
+//    a strand type (see STRAND_TYPES).
 //***************************************************************************
 
 STRAND_TYPES TranslateArrayTypeToStrandType
@@ -306,8 +306,8 @@ STRAND_TYPES TranslateArrayTypeToStrandType
 //***************************************************************************
 //  $TranslateStrandTypeToArrayType
 //
-//  Translate a strand type (see STRAND_TYPES enum) to
-//    an array type (see ARRAY_TYPES enum).
+//  Translate a strand type (see STRAND_TYPES) to
+//    an array type (see ARRAY_TYPES).
 //***************************************************************************
 
 ARRAY_TYPES TranslateStrandTypeToArrayType
@@ -345,8 +345,8 @@ ARRAY_TYPES TranslateStrandTypeToArrayType
 //***************************************************************************
 //  $TranslateResetFlagToExitType
 //
-//  Translate a ResetFlag (see RESET_FLAGS enum) to
-//    an ExitType (see EXIT_TYPES enum).
+//  Translate a ResetFlag (see RESET_FLAGS) to
+//    an ExitType (see EXIT_TYPES).
 //***************************************************************************
 
 EXIT_TYPES TranslateResetFlagToExitType

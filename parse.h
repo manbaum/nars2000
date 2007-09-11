@@ -36,12 +36,12 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
 #define YYSTYPE_IS_DECLARED 1
 
 // Define indices into lpYYStrandStart/Base/Nest[STRAND_LEN];
-typedef enum tagINDSTRAND
+typedef enum tagSTRAND_INDS
 {
     STRAND_VAR = 0,                 // 00:  Index for var strands
     STRAND_FCN,                     // 01:  Index for function strands
     STRAND_LEN                      // 02:  # elements in this enum
-} INDSTRAND;
+} STRAND_INDS;
 
 typedef struct tagPLLOCALVARS       // ParseLine Local Vars
 {
@@ -53,9 +53,9 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                  lpStop;            // 14:  Ptr to stop token if LookAhead
     LPAPLCHAR    lpwszLine;         // 18:  Ptr to line text (zero-terminated)
     UINT         tkErrorCharIndex;  // 1C:  Error char index
-    UINT         NameType:3,        // 20:  00000007:  Object type (see enum NAMETYPE)
+    UINT         NameType:3,        // 20:  00000007:  Object type (see NAME_TYPES)
                  bLookAhead:1,      //      00000008:  TRUE iff looking for object type within surrounding parens
-                 ExitType:4,        //      000000F0:  Exit Type (see enum EXIT_TYPES)
+                 ExitType:4,        //      000000F0:  Exit Type (see EXIT_TYPES)
                  bRet:1,            //      00000100   Various function results
                  bCtrlBreak:1,      //      00000200   TRUE iff Ctrl-Break pressed
                  Avail:22;          //      FFFFFC00:  Available bits

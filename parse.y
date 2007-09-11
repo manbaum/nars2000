@@ -4308,7 +4308,7 @@ EXIT_TYPES ParseLine
                           hWndSM);
         else
         {
-            LPMEMTXTUNION lpMemTxtLine;
+            LPMEMTXT_UNION lpMemTxtLine;
 
             // Lock the memory to get a ptr to it
             lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
@@ -4400,7 +4400,7 @@ NORMAL_EXIT:
             DbgMsgW (lpwszLine);
         else
         {
-            LPMEMTXTUNION lpMemTxtLine;
+            LPMEMTXT_UNION lpMemTxtLine;
 
             // Lock the memory to get a ptr to it
             lpMemTxtLine = MyGlobalLock (hGlbTxtLine);

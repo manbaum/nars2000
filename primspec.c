@@ -4901,7 +4901,7 @@ BOOL PrimFnDydSimpSimp_EM
         if (aplRankRes EQ 0)
         {
             // Get the respective first values
-            FirstValue (lptkLftArg,         // Ptr to right arg token
+            FirstValue (lptkLftArg,         // Ptr to left arg token
                        &aplIntegerLft,      // Ptr to integer result
                        &aplFloatLft,        // Ptr to float ...
                        &aplCharLft,         // Ptr to WCHAR ...
@@ -4936,7 +4936,7 @@ BOOL PrimFnDydSimpSimp_EM
             lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
             // Get the respective values
-            FirstValue (lptkLftArg,         // Ptr to right arg token
+            FirstValue (lptkLftArg,         // Ptr to left arg token
                        &aplIntegerLft,      // Ptr to integer result
                        &aplFloatLft,        // Ptr to float ...
                        &aplCharLft,         // Ptr to WCHAR ...
@@ -5138,7 +5138,7 @@ RESTART_EXCEPTION_SINGLETON:
 
         // Get the value of the singleton
         if (aplNELMLft EQ 1)
-            FirstValue (lptkLftArg,         // Ptr to right arg token
+            FirstValue (lptkLftArg,         // Ptr to left arg token
                        &aplIntegerLft,      // Ptr to integer result
                        &aplFloatLft,        // Ptr to float ...
                        &aplCharLft,         // Ptr to WCHAR ...

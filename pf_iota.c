@@ -118,20 +118,10 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     BOOL         bRet = TRUE;   // TRUE iff result is valid
     APLINT       aplIntTmp;     // Temporary integer
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     APLBOOL      bQuadIO;       // []IO
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     //***************************************************************
     // Check the right argument for RANK, LENGTH, and DOMAIN ERRORs
@@ -393,7 +383,7 @@ BOOL PrimFnMonIotaGlb_EM
 
 {
     LPVOID   lpMem;
-    APLSTYPE aplType;           // The array storage type (see enum ARRAY_TYPES)
+    APLSTYPE aplType;           // The array storage type (see ARRAY_TYPES)
     APLNELM  aplNELM;           // # elements in the array
     APLRANK  aplRank;           // The rank of the array
     BOOL     bRet = TRUE;

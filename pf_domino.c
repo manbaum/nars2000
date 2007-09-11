@@ -643,7 +643,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         case 0:
             uNumRowsLft =
             uNumColsLft = 1;
-            FirstValue (lptkLftArg,         // Ptr to right arg token
+            FirstValue (lptkLftArg,         // Ptr to left arg token
                         NULL,               // Ptr to integer result
                        &aplFloatLft,        // Ptr to float ...
                         NULL,               // Ptr to WCHAR ...

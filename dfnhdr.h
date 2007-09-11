@@ -43,8 +43,8 @@ typedef struct tagDFN_HEADER        // Function header structure
 {
     HEADER_SIGNATURE Sig;           // 00:  User-defined function/operator header signature
     UINT             Version;       // 04:  Version # of this header
-    UINT             DfnType:4,     // 08:  0000000F:  User-defined function/operator type (see enum DFN_TYPES)
-                     FcnValence:3,  //      00000070:  User-defined function/operator valence (see enum FCN_VALENCES)
+    UINT             DfnType:4,     // 08:  0000000F:  User-defined function/operator type (see DFN_TYPES)
+                     FcnValence:3,  //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      Avail:24;      //      FFFFFF00:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
@@ -107,7 +107,7 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  lpStop;            // 18:  Stopping token
     UINT         tkErrorCharIndex;  // 1C:  Error char index
     UINT         DfnType:4,         // 20:  0000000F:  User-defined function/operator type (see DFN_TYPES enum)
-                 FcnValence:3,      //      00000070:  User-defined function/operator valence (see enum FCN_VALENCES)
+                 FcnValence:3,      //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                  DfnAxis:1,         //      00000080:  User-defined function/operator accepts axis value
                  DisplayErr:1,      //      00000100:  TRUE iff we should display error messages
                  Avail:23;          //      FFFFFE00:  Available bits

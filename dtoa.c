@@ -168,6 +168,8 @@
  */
 
 #include <windows.h>
+
+#include "main.h"
 #include "externs.h"
 
 #ifndef Long

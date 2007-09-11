@@ -44,7 +44,7 @@ value.
 // Data Token Types
 #define TKT_FIRST 1         // This way, we can catch uninitialized
                             //   token types (i.e., .TknType EQ 0)
-typedef enum tagTOKENTYPES
+typedef enum tagTOKEN_TYPES
 {TKT_VARNAMED = TKT_FIRST,  // 01: Symbol table entry for a named var (data is LPSYMENTRY)
  TKT_STRING   ,             // 02: String  (data is HGLOBAL)
  TKT_VARIMMED ,             // 03: An immediate constant (Boolean, Integer, Character, or Floating point,
@@ -84,11 +84,11 @@ typedef enum tagTOKENTYPES
  TKT_OP2NAMED ,             // 1E: ...     dyadic  ...
  TKT_STRNAMED ,             // 1F: A named strand
                             // 20-FF:  Available entries (6 bits)
-} TOKENTYPES;
+} TOKEN_TYPES;
 
 #define TKT_LENGTH      (TKT_LENGTHp1 - 1)
 
-// N.B.:  Whenever changing the above enum (TOKENTYPES),
+// N.B.:  Whenever changing the above enum (TOKEN_TYPES),
 //   be sure to make a corresponding change to
 //   <Untokenize> in <exec.c>,
 //   <LookaheadDyadicOp>, <LookaheadAdjacent>, and <pl_yylex> in <parse.y>,
@@ -99,8 +99,8 @@ typedef enum tagTOKENTYPES
 
 typedef struct tagTKFLAGS
 {
-    UINT TknType:6,         // 0000003F:  Data token type (see TOKENTYPES)
-         ImmType:4,         // 000003C0:  Type of immediate data (see IMMTYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
+    UINT TknType:6,         // 0000003F:  Data token type (see TOKEN_TYPES)
+         ImmType:4,         // 000003C0:  Type of immediate data (see IMM_TYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
          NoDisplay:1,       // 00000400:  Do not display this token
          Avail:21;          // FFFFF800:  Available bits
 } TKFLAGS, *LPTKFLAGS;

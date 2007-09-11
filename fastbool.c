@@ -33,7 +33,7 @@ FASTBOOLFCN FastBoolScanQual;
 
 #define NA  0,0,0
 
-FASTBOOLFNS FastBoolFns[] =                       // In the same order as enum tagFBFNINDS
+FASTBOOLFNS FastBoolFns[] =                       // In the same order as FBFN_INDS
 {{ NULL           ,  NULL            ,    NA},    // 00 = No entry so we can catch this as an error
  {&FastBoolRed    , &FastBoolScan    , 0,0,0},    // 01 = Less
  {&FastBoolRed    , &FastBoolScan    , 0,0,1},    // 02 = Or
@@ -76,7 +76,7 @@ void FastBoolScan
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis
      APLUINT      uDimAxRht,        // Length of right arg axis dimension
-     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     FBFN_INDS    uFBFNIndex,       // FBFN_INDS value (e.g., index into FastBoolFns[])
      LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
@@ -329,7 +329,7 @@ void FastBoolScanQual
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis
      APLUINT      uDimAxRht,        // Length of right arg axis dimension
-     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     FBFN_INDS    uFBFNIndex,       // FBFN_INDS value (e.g., index into FastBoolFns[])
      LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
@@ -483,7 +483,7 @@ void FastBoolRed
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis
      APLUINT      uDimAxRht,        // Length of right arg axis dimension
-     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     FBFN_INDS    uFBFNIndex,       // FBFN_INDS value (e.g., index into FastBoolFns[])
      LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
@@ -664,7 +664,7 @@ void FastBoolRedQual
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis
      APLUINT      uDimAxRht,        // Length of right arg axis dimension
-     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     FBFN_INDS    uFBFNIndex,       // FBFN_INDS value (e.g., index into FastBoolFns[])
      LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
@@ -778,7 +778,7 @@ void FastBoolRedPlus
      LPVOID       lpMemRes,         // Ptr to result    memory
      APLUINT      uDimLo,           // Product of dimensions below axis
      APLUINT      uDimAxRht,        // Length of right arg axis dimension
-     UINT         uFBFNIndex,       // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+     FBFN_INDS    uFBFNIndex,       // FBFN_INDS value (e.g., index into FastBoolFns[])
      LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {

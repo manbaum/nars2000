@@ -267,7 +267,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     if (aplNELMLft EQ 1)
     {
         // Get the integer or float value
-        FirstValue (lptkLftArg,         // Ptr to right arg token
+        FirstValue (lptkLftArg,         // Ptr to left arg token
                    &aplIntegerLft,      // Ptr to integer result
                    &aplFloatLft,        // Ptr to float ...
                     NULL,               // Ptr to WCHAR ...

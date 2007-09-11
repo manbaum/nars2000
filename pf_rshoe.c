@@ -115,14 +115,12 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
             return PrimFnMonRightShoeCon_EM_YY
                    (lptkRhtArg->tkData.tkSym->stFlags.ImmType,  // Immediate type
                     lptkRhtArg->tkData.tkSym->stData.stLongest, // Immediate value
-                    lptkRhtArg,                                 // Ptr to right arg
                     lptkAxis,                                   // Ptr to axis token (may be NULL)
                     lptkFunc);                                  // Ptr to function token
         case TKT_VARIMMED:
             return PrimFnMonRightShoeCon_EM_YY
                    (lptkRhtArg->tkFlags.ImmType,                // Immediate type
                     lptkRhtArg->tkData.tkLongest,               // Immediate value
-                    lptkRhtArg,                                 // Ptr to right arg
                     lptkAxis,                                   // Ptr to axis token (may be NULL)
                     lptkFunc);                                  // Ptr to function token
         case TKT_VARARRAY:
@@ -158,9 +156,8 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnMonRightShoeCon_EM_YY
-    (UINT       ImmType,            // The immediate type
+    (IMM_TYPES  immType,            // The immediate type (see IMM_TYPES)
      APLLONGEST aplLongest,         // The immediate value
-     LPTOKEN    lpTokenRht,         // Ptr to right arg token
      LPTOKEN    lptkAxis,           // Ptr to axis token
      LPTOKEN    lptkFunc)           // Ptr to function token
 
@@ -190,10 +187,10 @@ LPPL_YYSTYPE PrimFnMonRightShoeCon_EM_YY
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    lpYYRes->tkToken.tkFlags.ImmType   = ImmType;
+    lpYYRes->tkToken.tkFlags.ImmType   = immType;
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
-    lpYYRes->tkToken.tkCharIndex       = lpTokenRht->tkCharIndex;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
 } // End PrimFnMonRightShoeCon_EM_YY
@@ -491,30 +488,15 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     // Point to the result's dimension
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
 
-////// Split cases based upon the presence of the axis operator
-////if (hGlbAxis)
-////{
-////    // Lock the memory to get a ptr to it
-////    lpMemAxis = MyGlobalLock (hGlbAxis);
-////
-////    // First, copy the dimensions from the common item
-////    for (uCom = 0; uCom < aplRankCom; uCom++)
-////        lpMemDimRes[lpMemAxis[uCom + (aplRankRes - aplRankCom)]] = lpMemDimCom[uCom];
-////    // Next, copy the dimensions from the right arg
-////    for (uRht = 0; uRht < aplRankRht; uRht++)
-////        lpMemDimRes[lpMemAxis[uRht                            ]] = lpMemDimRht[uRht];
-////} else
-    {
-        // Fill in the result's dimension
+    // Fill in the result's dimension
 
-        // First, copy the dimensions from the right arg
-        for (uRht = 0; uRht < aplRankRht; uRht++)
-            lpMemDimRes[uRht] = lpMemDimRht[uRht];
+    // First, copy the dimensions from the right arg
+    for (uRht = 0; uRht < aplRankRht; uRht++)
+        lpMemDimRes[uRht] = lpMemDimRht[uRht];
 
-        // Next, copy the dimensions from the common item
-        for (uCom = 0; uCom < aplRankCom; uCom++)
-            lpMemDimRes[uCom + aplRankRht] = lpMemDimCom[uCom];
-    } // End IF/ELSE
+    // Next, copy the dimensions from the common item
+    for (uCom = 0; uCom < aplRankCom; uCom++)
+        lpMemDimRes[uCom + aplRankRht] = lpMemDimCom[uCom];
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
@@ -868,20 +850,7 @@ NORMAL_EXIT:
     {
         LPPL_YYSTYPE lpYYRes2,      // Ptr to secondary result
                      lpYYRes3;      // Ptr to tertiary result
-        HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-        LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
         APLBOOL      bQuadIO;       // []IO
-
-        // Get the thread's PerTabData global memory handle
-        hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-        // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbPTD);
-
-        bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // Calculate space needed for left arg
         ByteRes = CalcArraySize (ARRAY_INT, aplRankRes, 1);
@@ -926,6 +895,9 @@ NORMAL_EXIT:
 
         // Copy the values from lpMemAxis
         CopyMemory (lpMemLft, lpMemAxis, (UINT) aplRankRes * sizeof (APLUINT));
+
+        // Get the current value of []IO
+        bQuadIO = GetQuadIO ();
 
         // Because lpMemAxis is in origin-0, and the left arg to
         //   dyadic transpose is []IO-sensitive, we must
@@ -1036,6 +1008,17 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
     {
@@ -1049,31 +1032,31 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                return PrimFnDydRightShoeGlb_EM (lptkLftArg,
-                                                 ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                                 lptkAxis,
-                                                 lptkFunc);
+                return PrimFnDydRightShoeGlb_EM_YY (lptkLftArg,
+                                                    ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
+                                                    lptkFunc);
             } // End IF
 
             // Handle the immediate case
 
-            // ***FIXME*** -- Allow immediates if left arg is all zildes
-
-            // Fall through to TKT_VARIMMED case to signal a RANK ERROR
-
+            // If the left arg is valid, return the immediate in the right arg
+            return PrimFnDydRightShoeImm_EM_YY (lptkRhtArg->tkData.tkSym->stFlags.ImmType,
+                                                lptkRhtArg->tkData.tkSym->stData.stLongest,
+                                                lptkLftArg,
+                                                lptkFunc);
         case TKT_VARIMMED:
-            ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
+            // If the left arg is valid, return the immediate in the right arg
+            return PrimFnDydRightShoeImm_EM_YY (lptkRhtArg->tkFlags.ImmType,
+                                                lptkRhtArg->tkData.tkLongest,
+                                                lptkLftArg,
+                                                lptkFunc);
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
-            return PrimFnDydRightShoeGlb_EM (lptkLftArg,
-                                             ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
-                                             lptkAxis,
-                                             lptkFunc);
+            return PrimFnDydRightShoeGlb_EM_YY (lptkLftArg,
+                                                ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
+                                                lptkFunc);
         case TKT_LISTPAR:
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                        lptkFunc);
@@ -1087,74 +1070,513 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
 
 
 //***************************************************************************
-//  $PrimFnDydRightShoeGlb_EM_YY
+//  $PrimFnDydRightShoeImm_EM_YY
 //
-//  Dyadic RightShoe ("pick") on a global memory object
+//  Dyadic RightShoe ("pick") on an immediate right arg
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRightShoeGlb_EM"
+#define APPEND_NAME     L" -- PrimFnDydRightShoeImm_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     HGLOBAL hGlbRht,               // Handle to right arg
-     LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
-     LPTOKEN lptkFunc)              // Ptr to function token
+LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
+    (IMM_TYPES  immType,            // The immediate type (see IMM_TYPES)
+     APLLONGEST aplLongest,         // The immediate value
+     LPTOKEN    lptkLftArg,         // Ptr to left arg token
+     LPTOKEN    lptkFunc)           // Ptr to function token
 
 {
-    APLINT       aplAxis;           // The (one and only) axis value
-    APLRANK      aplRankRht;        // The rank of the right arg
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeSub;        // Left arg item storage type
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMSub;        // Left arg item NELM
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankSub;        // Left arg item rank
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    APLUINT      uLft;              // Loop counter
+    HGLOBAL      hGlbLft;           // Left arg global memory handle
+    LPVOID       lpMemLft;          // Ptr to left arg global memory
 
-    // Get the rank of the right arg
-    aplRankRht = RankOfGlb (hGlbRht);
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the left arg
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
 
-    // Check for axis present
-    if (lptkAxis NE NULL)
+    // Check for LEFT RANK ERROR
+    if (aplRankLft > 1)
     {
-        // Check the axis values, fill in # elements in axis
-        if (!CheckAxis_EM (lptkAxis,        // The axis token
-                           aplRankRht,      // All values less than this
-                           TRUE,            // TRUE iff scalar or one-element vector only
-                           FALSE,           // TRUE iff want sorted axes
-                           FALSE,           // TRUE iff axes must be contiguous
-                           FALSE,           // TRUE iff duplicate axes are allowed
-                           NULL,            // TRUE iff fractional values allowed
-                          &aplAxis,         // Return last axis value
-                           NULL,            // Return # elements in axis vector
-                           NULL))           // Return HGLOBAL with APLINT axis values
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // If the left arg is simple, it must be empty (i.e., {zilde} or '')
+    if (IsSimple (aplTypeLft))
+    {
+        if (aplNELMLft NE 0)
+        {
+            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                       lptkFunc);
             return NULL;
-    } else
+        } // End IF
+
+        goto NORMAL_EXIT;
+    } // End IF
+
+    // Check for LEFT DOMAIN ERROR
+    if (aplTypeLft NE ARRAY_NESTED)
     {
-        // No axis means partition on the last dimension
-        aplAxis = max (0, (APLINT) aplRankRht - 1);
-    } // End IF/ELSE
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
 
-    DbgBrk ();              // ***FINISHME*** -- PrimFnDydRightShoeGlb_EM
+    // From here on the left arg is a nested scalar or vector
 
+    // Take into account nested prototypes
+    aplNELMLft = max (aplNELMLft, 1);
+
+    // Get left arg global ptr
+    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+
+    // Skip over the herader and dimensions
+    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+
+    // Loop through the left arg to ensure that it is
+    //   a nested vector of zildes
+    for (uLft = 0; uLft < aplNELMLft; uLft++)
+    {
+        // Split cases based upon the ptr type of the element
+        switch (GetPtrTypeDir (((LPAPLNESTED) lpMemLft)[uLft]))
+        {
+            case PTRTYPE_STCONST:
+                ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                           lptkFunc);
+                goto ERROR_EXIT;
+
+            case PTRTYPE_HGLOBAL:
+                // Ensure that this element is a simple empty vector
+
+                // Get the attributes (Type, NELM, and Rank)
+                //   of the item
+                AttrsOfGlb (ClrPtrTypeDirGlb (((LPAPLNESTED) lpMemLft)[uLft]), &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
+
+                // Check for LEFT RANK ERROR
+                if (aplRankSub NE 1)
+                {
+                    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    goto ERROR_EXIT;
+                } // End IF
+
+                // Check for LEFT LENGTH ERROR
+                if (!IsSimple (aplTypeSub)
+                 || aplNELMSub NE 0)
+                {
+                    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    goto ERROR_EXIT;
+                } // End IF
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End FOR
+NORMAL_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
-    // Split cases based upon the
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = immType;
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+ERROR_EXIT:
+    if (hGlbLft && lpMemLft)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End PrimFnDydRightShoeImm_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydRightShoeGlb_EM_YY
+//
+//  Dyadic RightShoe ("pick") on a right arg global memory handle
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydRightShoeGlb_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     HGLOBAL hGlbRht,               // Handle to right arg
+     LPTOKEN lptkFunc)              // Ptr to function token
+
+{
+    // Split cases based upon the left arg's token type
+    switch (lptkLftArg->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkLftArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, we must look inside the array
+            if (!lptkLftArg->tkData.tkSym->stFlags.Imm)
+            {
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkSym->stData.stGlbData));
+
+                return PrimFnDydRightShoeGlbGlb_EM_YY
+                       (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),  // Left arg global memory handle
+                        hGlbRht,                                                        // Right arg ...
+                        lptkFunc);                                                      // Ptr to function token
+            } // End IF
+
+            // Handle the immediate case
+            return PrimFnDydRightShoeImmGlb_EM_YY
+                   (lptkLftArg->tkData.tkSym->stFlags.ImmType,  // Immediate type
+                    lptkLftArg->tkData.tkSym->stData.stLongest, // Immediate value
+                    hGlbRht,                                    // Right arg global memory handle
+                    lptkFunc);                                  // Ptr to function token
+        case TKT_VARIMMED:
+            return PrimFnDydRightShoeImmGlb_EM_YY
+                   (lptkLftArg->tkFlags.ImmType,                // Immediate type
+                    lptkLftArg->tkData.tkLongest,               // Immediate value
+                    hGlbRht,                                    // Right arg global memory handle
+                    lptkFunc);                                  // Ptr to function token
+        case TKT_VARARRAY:
+            // tkData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkGlbData));
+
+            return PrimFnDydRightShoeGlbGlb_EM_YY
+                   (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkGlbData),    // Left arg global memory handle
+                    hGlbRht,                                            // Right arg ...
+                    lptkFunc);                                          // Ptr to function token
+        case TKT_LISTPAR:
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lptkFunc);
+            return NULL;
+
+        defstop
+            return NULL;
+    } // End SWITCH
+} // End PrimFnDydRightShoeGlb_EM_YY
+
+
+//***************************************************************************
+//  $PrimFnDydRightShoeImmGlb_EM_YY
+//
+//  Dyadic RightShoe ("pick") on a left arg immediate
+//    and right arg global memory handle
+//***************************************************************************
+
+LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
+    (IMM_TYPES  immTypeLft,             // Left arg immediate type (see IMM_TYPES)
+     APLLONGEST aplLongestLft,          // Left arg immediate value
+     HGLOBAL    hGlbRht,                // Right arg global memory handle
+     LPTOKEN    lptkFunc)               // Ptr to function token
+
+{
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMRht;        // Right arg NELM
+    APLRANK      aplRankRht;        // Right arg rank
+    IMM_TYPES    immTypeRes;        // Result immediate type (see IMM_TYPES)
+    APLLONGEST   aplLongestRes;     // Result immediate value
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    BOOL         bRet;              // TRUE iff FloatToAplint_SCT is valid
+    APLBOOL      bQuadIO;           // []IO
+    HGLOBAL      hGlbRes = NULL;    // Result global memory handle
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg global
+    AttrsOfGlb (hGlbRht, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for LEFT LENGTH ERROR
+    if (aplRankRht NE 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Split cases based upon the left arg immediate type
+    switch (immTypeLft)
+    {
+        case IMMTYPE_FLOAT:
+            // Attempt to convert the float to an integer
+            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+            if (!bRet)
+            {
+                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                           lptkFunc);
+                return NULL;
+            } // End IF
+
+            // Fall through to common code
+
+        case IMMTYPE_BOOL:
+        case IMMTYPE_INT:
+            // Get the current value of []IO
+            bQuadIO = GetQuadIO ();
+
+            // Convert to origin-0
+            // N.B.:  Because APLLONGEST is unsigned, we don't have to worry about negatives
+            aplLongestLft -= bQuadIO;
+
+            // Ensure that the index is with range
+            if (aplLongestLft < aplNELMRht)
+            {
+                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                           lptkFunc);
+                return NULL;
+            } // End IF
+
+            // Extract an element from the right arg
+            GetNextValue (hGlbRht,                  // Right arg global memory handle
+                          aplLongestLft,            // Index
+                         &hGlbRes,                  // Ptr to result as HGLOBAL
+                         &aplLongestRes,            // Ptr to result immediate value
+                         &immTypeRes);              // Ptr to result immediate type
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // If the result is an HGLOBAL
+            if (hGlbRes)
+            {
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+                lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+            } else
+            {
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkLongest  = aplLongestRes;
+                lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+            } // End IF/ELSE
+
+            break;
+
+        case IMMTYPE_CHAR:
+            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                       lptkFunc);
+            return NULL;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpYYRes;
+} // End PrimFnDydRightShoeImmGlb_EM_YY
+
+
+//***************************************************************************
+//  $PrimFnDydRightShoeGlbGlb_EM_YY
+//
+//  Dyadic RightShoe ("pick") on a left arg global memory handle
+//    and right arg global memory handle
+//***************************************************************************
+
+LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
+    (HGLOBAL    hGlbLft,                // Left  arg global memory handle
+     HGLOBAL    hGlbRht,                // Right arg global memory handle
+     LPTOKEN    lptkFunc)               // Ptr to function token
+
+{
+    APLSTYPE     aplTypeLft,        // Left  arg storage type
+                 aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMLft,        // Left  arg NELM
+                 aplNELMNest,       // Left  arg NELM if nested
+                 aplNELMRht;        // Right arg NELM
+    APLRANK      aplRankLft,        // Left  arg rank
+                 aplRankRht;        // Right arg rank
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPVOID       lpMemLft,          // Ptr to left arg global memory
+                 lpMemRht;          // Ptr to right ...
+    LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
+    APLUINT      uLft;              // Loop counter
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the left & right arg globals
+    AttrsOfGlb (hGlbLft, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfGlb (hGlbRht, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for LEFT RANK ERROR
+    if (aplRankLft > 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    DbgBrk ();              // ***FINISHME*** -- PrimFnDydRightShoeGlbGlb_EM_YY
+
+    // Lock the memory to get a ptr to it
+    lpMemLft = MyGlobalLock (hGlbLft);
+    lpMemRht = MyGlobalLock (hGlbRht);
+
+    // Skip over the header to the dimensions
+    lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+
+    // Skip over the header and dimensions to the data
+    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+    // Take into account nested prototypes
+    if (aplTypeLft EQ ARRAY_NESTED)
+        aplNELMNest = max (aplNELMLft, 1);
+    else
+        aplNELMNest = aplNELMLft;
+
+    // Loop through the elements of the left arg
+    for (uLft = 0; uLft < aplNELMNest; uLft++)
+    {
+        APLINT aplIntegerSubLft;
+
+        // Get and validate the next index from the left arg
+        aplIntegerSubLft = ElementToIndex_EM (aplTypeLft,
+                                              lpMemLft,
+                                              uLft,
+                                              lpMemDimRht,
+                                              aplRankRht,
+                                             &bRet,
+                                              lptkFunc);
+        if (!bRet)
+            goto ERROR_EXIT;
+
+        // If the right arg is simple, ...
+        if (IsSimple (aplTypeRht))
+        {
+
+
+        } else
+        {
+
+
+        } // IF/ELSE
+    } // End FOR
 
 
 
 
 
-
-
-
-
+ERROR_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
 
     if (bRet)
         return lpYYRes;
     else
         return NULL;
-} // End PrimFnDydRightShoeGlb_EM_YY
+} // End PrimFnDydRightShoeGlbGlb_EM_YY
+
+
+//***************************************************************************
+//  $ElementToIndex_EM
+//
+//  Convert an element in global memory to an index
+//    relative to the shape of the right arg
+//***************************************************************************
+
+APLINT ElementToIndex_EM
+    (APLSTYPE aplTypeLft,               // Left arg storage type
+     LPVOID   lpMemLft,                 // Ptr to left arg global memory
+     APLUINT  uLft,                     // Left arg index
+     LPAPLDIM lpMemDimRht,              // Ptr to right arg dimensions
+     APLRANK  aplRankRht,               // Right arg rank
+     LPBOOL   lpbRet,                   // Ptr to TRUE iff result is valid
+     LPTOKEN  lptkFunc)                 // Ptr to function token
+
+{
+    APLINT aplIntegerLft;
+
+    // If the left arg is simple, the right arg must be a vector
+    if (IsSimple (aplTypeLft)
+     && aplRankRht NE 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                   lptkFunc);
+        *lpbRet = FALSE;
+
+        return 0;
+    } // End IF
+
+////// Extract an element from the left arg
+////GetNextValue (hGlbLft,                  // Right arg global memory handle
+////              uLft,                     // Index
+////             &hGlbSubLft,               // Ptr to result as HGLOBAL
+////             &aplLongestSubLft,         // Ptr to result immediate value
+////             &immTypeSubLft);           // Ptr to result immediate type
+////if (hGlbRes)
+////{
+////    // Lock the memory to get a ptr to it
+////    lpMemSubLft = MyGlobalLock (hGlbSubLft);
+////
+////
+////
+////
+////
+////    // We no longer need this ptr
+////    MyGlobalUnlock (hGlbSubLft); lpMemSubLft = NULL;
+////} else
+////{
+////
+////
+////
+////
+////} // End IF
+////
+////// Extract an element from the right arg
+////GetNextValue (hGlbRht,                  // Right arg global memory handle
+////              aplLongestLft,            // Index
+////             &hGlbRes,                  // Ptr to result as HGLOBAL
+////             &aplLongestRes,            // Ptr to result immediate value
+////             &immTypeRes);              // Ptr to result immediate type
+////// Skip over the header and dimensions to the data
+////lpMemLft = VarArrayBaseToData (lpMemLft, 1);
+
+    // Split cases based upon the left arg storage type
+    switch (aplTypeLft)
+    {
+        case ARRAY_BOOL:
+            aplIntegerLft = 0;
+
+            break;
+
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_CHAR:
+        case ARRAY_APA:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+
+
+
+    return aplIntegerLft;
+} // End ElementToIndex_EM
 
 
 //***************************************************************************

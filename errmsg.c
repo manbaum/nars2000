@@ -146,7 +146,7 @@ void ErrorMessage
     HGLOBAL       hGlbPTD;      // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory
     UINT          uNameLen;     // Length of function name[line #]
-    LPMEMTXTUNION lpMemTxtLine = NULL; // Ptr to text header/line global memory
+    LPMEMTXT_UNION lpMemTxtLine = NULL; // Ptr to text header/line global memory
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);
@@ -155,75 +155,79 @@ void ErrorMessage
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Clear any semaphore to signal
-    lpMemPTD->lpSISCur->hSigaphore = NULL;
+    if (lpMemPTD->lpSISCur)
+        lpMemPTD->lpSISCur->hSigaphore = NULL;
 
     // Split cases based upon the DfnType
-    switch (lpMemPTD->lpSISCur->DfnType)
-    {
-        case DFNTYPE_OP1:
-        case DFNTYPE_OP2:
-        case DFNTYPE_FCN:
+    if (lpMemPTD->lpSISCur)
+        switch (lpMemPTD->lpSISCur->DfnType)
         {
-            LPAPLCHAR    lpMemName;         // Ptr to function name global memory
-            LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
-            LPFCNLINE    lpFcnLines;        // Ptr to array function line structs (FCNLINE[numFcnLines])
-
-            // Include the function name
-
-            // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (lpMemPTD->lpSISCur->hGlbFcnName);
-
-            // Format the name and line #
-            uNameLen =
-            wsprintfW (lpwszTemp,
-                       L"%s[%d] ",
-                       lpMemName,
-                       lpMemPTD->lpSISCur->CurLineNum);
-            // We no longer need this ptr
-            MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbFcnName); lpMemName = NULL;
-
-            // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (lpMemPTD->lpSISCur->hGlbDfnHdr);
-
-            // Get a ptr to the line # in error
-            if (lpMemPTD->lpSISCur->CurLineNum EQ 0)
-                lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
-            else
+            case DFNTYPE_OP1:
+            case DFNTYPE_OP2:
+            case DFNTYPE_FCN:
             {
-                // Get ptr to array of function line structs (FCNLINE[numFcnLines])
-                lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+                LPAPLCHAR    lpMemName;         // Ptr to function name global memory
+                LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
+                LPFCNLINE    lpFcnLines;        // Ptr to array function line structs (FCNLINE[numFcnLines])
 
-                // Get a ptr to the function line, converting to origin-0 from origin-1
-                lpMemTxtLine = MyGlobalLock (lpFcnLines[lpMemPTD->lpSISCur->CurLineNum - 1].hGlbTxtLine);
-            } // End IF/ELSE
+                // Include the function name
 
-            // Ptr to the text
-            lpwszLine = &lpMemTxtLine->C;
+                // Lock the memory to get a ptr to it
+                lpMemName = MyGlobalLock (lpMemPTD->lpSISCur->hGlbFcnName);
 
-            // We no longer need this ptr
-            MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
+                // Format the name and line #
+                uNameLen =
+                wsprintfW (lpwszTemp,
+                           L"%s[%d] ",
+                           lpMemName,
+                           lpMemPTD->lpSISCur->CurLineNum);
+                // We no longer need this ptr
+                MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbFcnName); lpMemName = NULL;
 
-            break;
-        } // End DFNTYPE_OP1/OP2/FCN
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (lpMemPTD->lpSISCur->hGlbDfnHdr);
 
-        case DFNTYPE_EXEC:
-            // Include a leading marker
+                // Get a ptr to the line # in error
+                if (lpMemPTD->lpSISCur->CurLineNum EQ 0)
+                    lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+                else
+                {
+                    // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+                    lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-            lstrcpyW (lpwszTemp, WS_UTF16_UPTACKJOT L"     ");
-            uNameLen = 6;
+                    // Get a ptr to the function line, converting to origin-0 from origin-1
+                    lpMemTxtLine = MyGlobalLock (lpFcnLines[lpMemPTD->lpSISCur->CurLineNum - 1].hGlbTxtLine);
+                } // End IF/ELSE
 
-            break;
+                // Ptr to the text
+                lpwszLine = &lpMemTxtLine->C;
 
-        case DFNTYPE_IMM:       // No action
-        case DFNTYPE_QUAD:      // ...
-            uNameLen = 0;
+                // We no longer need this ptr
+                MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-            break;
+                break;
+            } // End DFNTYPE_OP1/OP2/FCN
 
-        case DFNTYPE_QQUAD:
-        defstop
-            break;
-    } // End SWITCH
+            case DFNTYPE_EXEC:
+                // Include a leading marker
+
+                lstrcpyW (lpwszTemp, WS_UTF16_UPTACKJOT L"     ");
+                uNameLen = 6;
+
+                break;
+
+            case DFNTYPE_IMM:       // No action
+            case DFNTYPE_QUAD:      // ...
+                uNameLen = 0;
+
+                break;
+
+            case DFNTYPE_QQUAD:
+            defstop
+                break;
+        } // End SWITCH
+    else
+        uNameLen = 0;
 
     // Calculate the length of the []DM vector
     aplNELMRes = lstrlenW (lpwszMsg)

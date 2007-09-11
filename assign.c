@@ -344,7 +344,7 @@ NAME_TYPES GetNameType
 {
     HGLOBAL    hGlbData;            // Function array global memory handle
     LPVOID     lpMem;               // Ptr to function array global memory
-    NAME_TYPES nameType;            // Function name type (see enum NAME_TYPES)
+    NAME_TYPES nameType;            // Function name type (see NAME_TYPES)
 
     // Split cases based upon the token type
     switch (lptkFunc->tkFlags.TknType)
@@ -471,9 +471,9 @@ NAME_TYPES GetNameType
 #endif
 
 void AssignArrayCommon
-    (LPTOKEN    lptkName,       // Ptr to name token
-     LPTOKEN    lptkSrc,        // Ptr to source token
-     TOKENTYPES TknType)        // Incoming token type for name
+    (LPTOKEN     lptkName,          // Ptr to name token
+     LPTOKEN     lptkSrc,           // Ptr to source token
+     TOKEN_TYPES TknType)           // Incoming token type for name (see TOKEN_TYPES)
 
 {
     // Free the old value for this name

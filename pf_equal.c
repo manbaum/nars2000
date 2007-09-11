@@ -171,20 +171,10 @@ APLBOOL PrimFnDydEqualBisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLFLOAT     fQuadCT;       // []CT
+    APLFLOAT fQuadCT;           // []CT
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    fQuadCT = lpMemPTD->lpSymQuadCT->stData.stFloat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []CT
+    fQuadCT = GetQuadCT ();
 
     return CompareCT (aplFloatLft, aplFloatRht, fQuadCT, lpPrimSpec);
 } // End PrimFnDydEqualBisFvF

@@ -177,25 +177,15 @@ void DisplayGlbArr
     LPFMTHEADER  lpFmtHeader;       // Ptr to format header struc
     LPFMTCOLSTR  lpFmtColStr;       // Ptr to format col struc
     UINT         uCol;              // Loop counter
-    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     APLUINT      uQuadPP,           // []PP
                  uQuadPW;           // []PW
 
 #define DEF_DISPLAY_INITSIZE    (64*1024)
 #define DEF_DISPLAY_MAXSIZE     (64*1024)
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
-    uQuadPW = lpMemPTD->lpSymQuadPW->stData.stInteger;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []PP & PW
+    uQuadPP = GetQuadPP ();
+    uQuadPW = GetQuadPW ();
 
     // Allocate space for the display
     lpaplCharIni =
@@ -306,6 +296,8 @@ void DisplayGlbArr
     // Loop through the array appending the formatted values (separated by L'\0')
     //   to the output vector, and accumulating the values in the appropriate
     //   FMTCOLSTR & FMTROWSTR entries.
+
+    DbgBrk ();
 
     // Split cases based upon the array's storage type
     switch (aplType)
@@ -698,23 +690,13 @@ LPAPLCHAR FormatFloat
      APLUINT  uPrecision)       // Precision to use (0 = default)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLUINT      uQuadPP;       // []PP
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
+    APLUINT uQuadPP;            // []PP
 
     if (uPrecision EQ 0)
-        uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
+        // Get the current value of []PP
+        uQuadPP = GetQuadPP ();
     else
         uQuadPP = uPrecision;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     if (!_finite (fFloat))
     {
@@ -2065,7 +2047,7 @@ void DisplayUndo
     HGLOBAL      hGlbEC;
     LPWCHAR      lpwsz, p;
     HWND         hWndParent;
-    LPUNDOBUF    lpUndoBeg,     // Ptr to start of Undo Buffer
+    LPUNDO_BUF   lpUndoBeg,     // Ptr to start of Undo Buffer
                  lpUndoNxt;     // ...    next available slot in the Undo Buffer
     BOOL         bShift;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle

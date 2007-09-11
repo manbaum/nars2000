@@ -120,7 +120,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
     APLSTYPE     aplTypeLft;        // The storage type of the left arg
     APLNELM      aplNELMLft;        // The # elements in the left arg
     APLRANK      aplRankLft;        // The rank of the left arg
-    IMMTYPES     immTypeRht;        // The immediate type of the right arg
+    IMM_TYPES    immTypeRht;        // The immediate type of the right arg (see IMM_TYPES)
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Split cases based upon the right arg's token type
@@ -884,22 +884,12 @@ BOOL ReachSymTabConst_EM
      LPTOKEN  lptkFunc)         // Ptr to the function token
 
 {
-    APLINT       aplInteger;    // Temporary integer
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLBOOL      bQuadIO;       // []IO
+    APLINT  aplInteger;         // Temporary integer
+    BOOL    bRet = TRUE;        // TRUE iff result is valid
+    APLBOOL bQuadIO;            // []IO
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     // Check for RANK ERROR
     if (aplRankLft NE 1)
@@ -1323,27 +1313,16 @@ BOOL WeighIndex_EM
      LPTOKEN  lptkFunc)         // Ptr to the function token
 
 {
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
-    APLUINT      aplWeight;     // The weighting accumulator
-    APLINT       iRch,          // Loop var (must be signed)
-                 aplInteger,    // Temporary integer
-                 apaOff,        // APA offset
-                 apaMul;        // ... multiplier
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLBOOL      bQuadIO;       // []IO
+    BOOL    bRet = TRUE;        // TRUE iff result is valid
+    APLUINT aplWeight;          // The weighting accumulator
+    APLINT  iRch,               // Loop var (must be signed)
+            aplInteger,         // Temporary integer
+            apaOff,             // APA offset
+            apaMul;             // ... multiplier
+    APLBOOL bQuadIO;            // []IO
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     // Initialize the weight & index accumulator
     aplWeight = 1;

@@ -133,7 +133,7 @@ typedef struct tagHSHENTRY
 // Amount to resize
 #define DEF_SYMTAB_RESIZE   DEF_SYMTAB_INITSIZE
 
-typedef enum tagIMMTYPES
+typedef enum tagIMM_TYPES
 {
     IMMTYPE_BOOL = 0,       // 00:  Boolean
     IMMTYPE_INT,            // 01:  Integer
@@ -144,7 +144,7 @@ typedef enum tagIMMTYPES
     IMMTYPE_PRIMOP2,        // 06:  ...       dyadic  ...
                             // 07-0E:  Available entries (4 bits)
     IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type
-} IMMTYPES;
+} IMM_TYPES;
 
 // Name types
 typedef enum tagNAME_TYPES
@@ -183,21 +183,34 @@ typedef enum tagOBJ_NAMES
 
 #define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS"}
 
+typedef enum tagNAME_CLASS
+{
+    NAMECLASS_INV = -1,     // -1 = Invalid name or unknown sysname
+    NAMECLASS_AVL = 0,      //  0 = Available name
+    NAMECLASS_USRLBL,       //  1 = User label
+    NAMECLASS_USRVAR,       //  2 = User variable
+    NAMECLASS_USRFCN,       //  3 = User-defined function
+    NAMECLASS_USROPR,       //  4 = User-defined operator (monadic or dyadec)
+    NAMECLASS_SYSVAR,       //  5 = System variable
+    NAMECLASS_SYSFCN,       //  6 = System function
+    NAMECLASS_SYSLBL,       //  7 = System label
+} NAME_CLASS;
+
 // Symbol table flags
 typedef struct tagSTFLAGS
 {
     UINT Imm:1,             // 00000001:  The data in .stData is Immediate simple numeric or character scalar
-         ImmType:4,         // 0000001E:  ...                    Immediate Boolean, Integer, Character, or Float (see IMMTYPES)
+         ImmType:4,         // 0000001E:  ...                    Immediate Boolean, Integer, Character, or Float (see IMM_TYPES)
          NotCase:1,         // 00000020:  Case-insensitive name
          Perm:1,            // 00000040:  Permanent entry
          Inuse:1,           // 00000080:  Inuse entry
          Value:1,           // 00000100:  Entry has a value
          ObjName:2,         // 00000600:  The data in .stData is NULL if .ObjType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
-                            //            (see enum OBJ_NAMES)
+                            //            (see OBJ_NAMES)
          ObjType:3,         // 00003800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
-                            //            (see enum NAME_TYPES)
+                            //            (see NAME_TYPES)
          SysVarValid:4,     // 0003C000:  Index to validation routine for System Vars
-                            //            (see enum SYSVARS)
+                            //            (see SYS_VARS)
          UsrDfn:1,          // 00040000:  User-defined function/operator
          DfnLabel:1,        // 00080000:  User-defined function/operator label        (valid only if .Value is set)
          DfnSysLabel:1,     // 00100000:  User-defined function/operator system label (valid only if .Value is set)

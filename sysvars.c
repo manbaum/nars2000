@@ -16,10 +16,14 @@
 #ifndef PROTO
 #include "compro.h"
 #else
+#define SysFnAV_EM      NULL
 #define SysFnCR_EM      NULL
+#define SysFnDL_EM      NULL
 #define SysFnDM_EM      NULL
 #define SysFnDR_EM      NULL
 #define SysFnLC_EM      NULL
+#define SysFnNC_EM      NULL
+#define SysFnNL_EM      NULL
 #define SysFnSIZE_EM    NULL
 #define SysFnSYSID_EM   NULL
 #define SysFnSYSVER_EM  NULL
@@ -43,14 +47,14 @@ typedef struct tagSYSNAME
     UINT        uValence;       // For system functions, Niladic(0), All others (1)
     BOOL        bSysVar;        // Izit a system variable (TRUE) or function (FALSE)?  If TRUE, uValence is ignored
     LPPRIMFNS   lpNameFcn;      // Ptr to execution routine
-    SYSVARS     sysVarIndex;    // enum value of each System Var (0 = Unknown)
+    SYS_VARS    sysVarIndex;    // Value of each System Var (0 = Unknown)
 } SYSNAME, *LPSYSNAME;
 
 #define SYSLBL      8
 #define SYSVAR      9
 
 SYSNAME aSystemNames[] =
-{ // Name                       Valence       Var?   Exec Routine    SYSVARS
+{ // Name                       Valence       Var?   Exec Routine    SYS_VARS
     {WS_UTF16_QUAD L"alx"      , SYSVAR,      TRUE , NULL          , SYSVAR_ALX },  //  0:  Attention Latent Expression
     {WS_UTF16_QUAD L"ct"       , SYSVAR,      TRUE , NULL          , SYSVAR_CT  },  //  1:  Comparison Tolerance
     {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , NULL          , SYSVAR_ELX },  //  2:  Error Latent Expression
@@ -66,8 +70,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL          , 0          },  // 12:  ...                                            Inverse
     {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL          , 0          },  // 13:  ...                                            Singleton
 
-////{WS_UTF16_QUAD L"ai"       ,      0,      FALSE, SysFnAI_EM    , 0          },  // Accounting Information
-////{WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM    , 0          },  // Atomic Vector
+    {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM    , 0          },  // Atomic Vector
     {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, SysFnDM_EM    , 0          },  // Diagnostic Message
     {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM    , 0          },  // Line Counter
 ////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, SysFnSI_EM    , 0          },  // State Indicator
@@ -93,7 +96,7 @@ SYSNAME aSystemNames[] =
 ////{WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, SysFnCRLPC_EM , 0          },  // Canonical Representation, Public Comment
 ////{WS_UTF16_QUAD L"def"      ,      1,      FALSE, SysFnDEF_EM   , 0          },  // Define Function
 ////{WS_UTF16_QUAD L"defl"     ,      1,      FALSE, SysFnDEFL_EM  , 0          },  // Define Function Line
-////{WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM    , 0          },  // Delay Execution
+    {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM    , 0          },  // Delay Execution
     {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM    , 0          },  // Data Representation
 ////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, SysFnERASE_EM , 0          },  // Erase Names
 ////{WS_UTF16_QUAD L"error"    ,      1,      FALSE, SysFnERROR_EM , 0          },  // Signal Error
@@ -103,10 +106,9 @@ SYSNAME aSystemNames[] =
 ////{WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM    , 0          },  // Fix Function
 ////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM, 0          },  // Identifier List
 ////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM , 0          },  // Identifier Localization
-////{WS_UTF16_QUAD L"lock"     ,      1,      FALSE, SysFnLOCK_EM  , 0          },  // Lock Functions
 ////{WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM    , 0          },  // Monitor Function
-////{WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM    , 0          },  // Name Classification
-////{WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM    , 0          },  // Name List
+    {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM    , 0          },  // Name Classification
+    {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM    , 0          },  // Name List
     {WS_UTF16_QUAD L"size"     ,      1,      FALSE, SysFnSIZE_EM  , 0          },  // Size of an object
 ////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, SysFnSS_EM    , 0          },  // Search String
 ////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM  , 0          },  // Manage Stop Points
@@ -138,7 +140,9 @@ void MakePermVars
     (void)
 
 {
-    LPVARARRAY_HEADER lpHeader;
+    LPVARARRAY_HEADER lpHeader;     // Ptr to array header
+    LPAPLCHAR         lpMemRes;     // Ptr to result global memory
+    UINT              uRes;         // Loop counter
 
     // Create zilde
     // Note, we can't use DbgGlobalAlloc here as the
@@ -176,6 +180,115 @@ void MakePermVars
     hGlbSAExit  = MakePermCharVector (SAExit);
     hGlbSAOff   = MakePermCharVector (SAOff);
     hGlbQuadWSID_CWS = hGlbMTChar;
+
+    // Create []AV
+    hGlbAV = MyGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, 256, 1));
+    if (!hGlbAV)
+    {
+        DbgStop ();         // We should never get here
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpHeader = MyGlobalLock (hGlbAV);
+
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+    lpHeader->Perm       = 1;       // So we don't free it
+////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->RefCnt     = 0;       // Ignore as this is perm
+    lpHeader->NELM       = 256;
+    lpHeader->Rank       = 1;
+
+    // Fill in the dimension
+    *VarArrayBaseToDim (lpHeader) = 256;
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpHeader, 1);
+
+    // Fill in the result:  0-0x7E
+    for (uRes = 0; uRes < 0x7F; uRes++)
+        lpMemRes[uRes] = uRes;
+
+    // Fill in the result:  0x7F-0xFF
+    for (        ; uRes < 0x100; uRes++)
+        lpMemRes[uRes] = L' ';
+
+    // Fill in the result:  miscellaneous 0x80-0xFF
+    lpMemRes[0x90] = UTF16_QUAD;
+    lpMemRes[0x91] = UTF16_QUOTEQUAD;
+    lpMemRes[0x92] = UTF16_DOMINO;
+    lpMemRes[0x9D] = UTF16_UPTACK;
+    lpMemRes[0x9F] = UTF16_IBEAM;
+
+    lpMemRes[0xA9] = UTF16_UPSTILE;
+    lpMemRes[0xAC] = UTF16_DOWNSHOE;
+    lpMemRes[0xAE] = UTF16_DOWNTACKJOT;
+    lpMemRes[0xAF] = UTF16_UPTACKJOT;
+    lpMemRes[0xB5] = UTF16_CIRCLESTAR;
+
+    lpMemRes[0xB3] = UTF16_STILE;
+    lpMemRes[0xB6] = UTF16_DELTA;
+    lpMemRes[0xB7] = UTF16_DEL;
+    lpMemRes[0xB8] = UTF16_RIGHTARROW;
+    lpMemRes[0xBD] = UTF16_LEFTARROW;
+    lpMemRes[0xBE] = UTF16_DOWNSTILE;
+
+    lpMemRes[0xC2] = UTF16_DOWNTACK;
+    lpMemRes[0xC6] = UTF16_UPARROW;
+    lpMemRes[0xC7] = UTF16_DOWNARROW;
+
+    lpMemRes[0xD0] = UTF16_IOTAUNDERBAR;
+    lpMemRes[0xD1] = UTF16_EPSILONUNDERBAR;
+    lpMemRes[0xD2] = UTF16_DIERESISDOT;
+    lpMemRes[0xD3] = UTF16_SQUAD;
+    lpMemRes[0xD4] = UTF16_QUADSLOPE;
+    lpMemRes[0xD5] = UTF16_QUADJOT;
+    lpMemRes[0xD6] = UTF16_RIGHTTACK;
+    lpMemRes[0xD7] = UTF16_LEFTTACK;
+    lpMemRes[0xD8] = UTF16_DIAMOND;
+
+    lpMemRes[0xE0] = UTF16_ALPHA;
+    lpMemRes[0xE2] = UTF16_LEFTSHOE;
+    lpMemRes[0xE3] = UTF16_RIGHTSHOE;
+    lpMemRes[0xE4] = UTF16_LAMP;
+    lpMemRes[0xE5] = UTF16_UPCARETTILDE;
+    lpMemRes[0xE6] = UTF16_RHO;
+    lpMemRes[0xE7] = UTF16_DOWNCARETTILDE;
+    lpMemRes[0xE8] = UTF16_CIRCLESTILE;
+    lpMemRes[0xE9] = UTF16_CIRCLEBAR;
+    lpMemRes[0xEA] = UTF16_CIRCLE;
+    lpMemRes[0xEB] = UTF16_DOWNCARET;
+    lpMemRes[0xEC] = UTF16_IOTA;
+    lpMemRes[0xED] = UTF16_CIRCLESLOPE;
+    lpMemRes[0xEE] = UTF16_EPSILON;
+    lpMemRes[0xEF] = UTF16_UPSHOE;
+
+    lpMemRes[0xF0] = UTF16_SLASHBAR;
+    lpMemRes[0xF1] = UTF16_SLOPEBAR;
+    lpMemRes[0xF2] = UTF16_RIGHTCARETUNDERBAR;
+    lpMemRes[0xF3] = UTF16_LEFTCARETUNDERBAR;
+    lpMemRes[0xF4] = UTF16_NOTEQUAL;
+    lpMemRes[0xF5] = UTF16_TIMES;
+    lpMemRes[0xF6] = UTF16_COLONBAR;
+    lpMemRes[0xF7] = UTF16_DELTAUNDERBAR;
+    lpMemRes[0xF8] = UTF16_JOT;
+    lpMemRes[0xF9] = UTF16_OMEGA;
+    lpMemRes[0xFA] = UTF16_DELTILDE;
+    lpMemRes[0xFB] = UTF16_DELTASTILE;
+    lpMemRes[0xFC] = UTF16_DELSTILE;
+    lpMemRes[0xFD] = UTF16_OVERBAR;
+    lpMemRes[0xFE] = UTF16_DIERESIS;
+
+////lpMemRes[0x??] = UTF16_DIERESISDEL;
+////lpMemRes[0x??] = UTF16_DIERESISDOWNTACK;
+////lpMemRes[0x??] = UTF16_DIERESISCIRCLE;
+////lpMemRes[0x??] = UTF16_DIERESISSTAR;
+////lpMemRes[0x??] = UTF16_DIERESISTILDE;
+////lpMemRes[0x??] = UTF16_ZILDE;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbAV); lpMemRes = NULL;
 } // End MakePermVars
 #undef  APPEND_NAME
 

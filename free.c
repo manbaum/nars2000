@@ -288,7 +288,7 @@ BOOL FreeResultGlobalVar
 {
     LPVOID    lpMem;
     APLRANK   aplRank;
-    APLSTYPE  aplType;          // The array storage type (see enum ARRAY_TYPES)
+    APLSTYPE  aplType;          // The array storage type (see ARRAY_TYPES)
     APLNELM   aplNELM;
     UINT      u,
               RefCnt;

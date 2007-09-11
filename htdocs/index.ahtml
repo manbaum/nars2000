@@ -155,7 +155,7 @@
               <span class="APL">foo[2 3] R</span> by specifying it in the
               function header, as in <span class="APL">{del} Z{is}foo[X] R</span>)</li>
             <li>User-defined operators (e.g., <span class="APL">{del}
-             Z{is}L (OP1[X] RO) R</span> or
+             Z{is}L (LO OP1[X]) R</span> or
              <span class="APL">{del}
              Z{is}L (LO OP2[X] RO) R</span>)</li>
             <li>Strand left and right arguments and result to user-defined
@@ -235,6 +235,10 @@
         <li>Array rank and dimension limit of 64 bits</li>
         <li>Multilevel Undo in function editing</li>
         <li>Undo buffer saved with function for reuse on next edit</li>
+        <li>Prototypes for all primitive functions and operators</li>
+        <li>Fast Boolean reduction (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}</span>)
+          and scan (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}</span>)
+          along contiguous elements</li>
       </ul>
 
       <h3>Miscellaneous Wish List</h3>
@@ -270,10 +274,10 @@
             <li>Monadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse)</li>
             <li>Monadic domino ({domino}) (matrix inverse)
               using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
-            <li>Monadic thorn ({thorn}) (default format)</li>
+            <li>Monadic downtack jot ({thorn}) (default format)</li>
             <li>Monadic up arrow ({uparrow}) (first)</li>
             <li>Monadic uptack jot ({uptackjot}) (execute)</li>
-            <li>Monadic right shoe ({disclose}) (disclose)</li>
+            <li>Monadic right shoe ({disclose}) (disclose) with and without axis</li>
           </ul>
         </li>
         <li>Dyadic
@@ -358,7 +362,7 @@
           <span class="APL">L{squad}R</span> is valid, it is equivalent to
           <span class="APL">R[{disclose}{jot}.,/L]</span></li>
         <li>Quad and Quote-Quad output, e.g., (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
-        <li>Prototypes for primitive functions and operators</li>
+        <li>Prototypes for all primitive functions and operators</li>
         <li>Fast Boolean reduction (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}</span>)
           and scan (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}</span>)
           along contiguous elements</li>
@@ -374,6 +378,8 @@
         <li>Axis operator is allowed on the dyadic derived function from the Each operator (e.g.,
           <span class="APL">(2 3{rho}L){rho}{each}[1 2] 2 3 4{rho}R</span>)</li>
         <li>User-defined operators (e.g., <span class="APL">{del}
+         Z{is}L (LO OP1[X]) R</span> or
+         <span class="APL">{del}
          Z{is}L (LO OP2[X] RO) R</span>)</li>
         <li>Strand left and right arguments and result to user-defined
           functions/operators along with optional left argument (e.g., <span class="APL">{del}
@@ -402,6 +408,7 @@
             <li><span class="APL">{quad}BEL</span></li>
             <li><span class="APL">{quad}BS</span></li>
             <li><span class="APL">{quad}DEL</span></li>
+            <li><span class="APL">{quad}DM</span></li>
             <li><span class="APL">{quad}ESC</span></li>
             <li><span class="APL">{quad}FF</span></li>
             <li><span class="APL">{quad}HT</span></li>
@@ -419,7 +426,9 @@
         <li>Monadic
           <ul>
             <li><span class="APL">{quad}CR</span></li>
+            <li><span class="APL">{quad}DL</span></li>
             <li><span class="APL">{quad}DR</span></li>
+            <li><span class="APL">{quad}NC</span></li>
             <li><span class="APL">{quad}SIZE</span></li>
             <li><span class="APL">{quad}TYPE</span></li>
           </ul>
@@ -482,7 +491,9 @@
             commercial system, such as a Windows interface, .NET interface, COM
             server, etc., although I've not made any conscious effort to make it
             difficult to add such features.  These features may be included at some later
-            time &mdash; they just aren't high priority up front.
+            time &mdash; they just aren't high priority up front.  You are, of course,
+            free to use the program commercially, subject to the license agreement
+            (see the next section).
           </li>
         </ul>
     </div>

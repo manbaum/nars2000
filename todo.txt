@@ -26,13 +26,14 @@ TO DO:  General:  Important
 * ...       bracket indexed modified assignment  (A[B])+{is}C
 * ...       )LOAD
 * ...       )COPY
+* ...       )NMS
 * ...       minimum set of system functions
+* ...          []AF R
 * ...          []AV
 * ...          []EM
 * ...          []ET
-* ...          []DL R
-* ...          []NC R
 * ...          []EX R
+* ...          []FX R
 * ...          []NL R
 * ...          []ES R
 * ...          []ERROR R
@@ -69,21 +70,43 @@ TO DO:  General:  Wish List
 * ...       syntax highlighting
 * ...       control structures
 * ...       expanded set of system functions
+* ...         []SI
+* ...         []SINL
+* ...         []CALL R
+* ...       L []CALL R
+* ...         []CRL R
+* ...         []CRLPC R
+* ...         []DEF R
+* ...         []DEFL R
+* ...         []ERASE R
+* ...         []FI R
+* ...       L []FMT R
+* ...         []IDLIST R
+* ...       L []IDLIST R
+* ...         []IDLOC R
+* ...         []MF R
+* ...       L []MF R
+* ...       L []SS R
+* ...         []STOP R
+* ...         []TRACE R
+* ...       L []STOP R
+* ...       L []TRACE R
+* ...         []VI R
+* ...         []VR R
 * ...       extend associativity to derived functions such as {jot}{dot}+ ??
 * ...       component file system
 * ...       dyadic down tack jot        (format by example)
 * ...       dyadic left shoe            (partitioned enclose)
 * ...       dyadic squad                (indexing)
 * ...       dyadic epsilon underbar     (find)
+* ...       dieresis-del                (dual)
+* ...       dieresis-downtack           (convolution)
+* ...       dieresis-jot                (rank)
+* ...       dieresis-star               (power)
 * ...       vector editor
 * ...       matrix editor
 * ...       []INVERSE:
 * ...       []SINGLETON:
-* ...       []STOP R
-* ...       []TRACE R
-* ...     L []STOP R
-* ...     L []TRACE R
-* ...       []FMT
 * ...
 
 
@@ -130,6 +153,8 @@ DONE:  General
 * ...       Ctrl-Break
 * ...       []PROTOTYPE:
 * ...       []LC
+* ...       []DL R
+* ...       []NC R
 * ...       monadic right shoe
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype

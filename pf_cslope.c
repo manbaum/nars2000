@@ -107,21 +107,10 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     LPPL_YYSTYPE lpYYRes,       // Ptr to the result
                  lpYYRes2;      // Ptr to secondary result
     UINT         ByteRes;       // # bytes in result
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     APLBOOL      bQuadIO;       // []IO
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

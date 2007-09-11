@@ -386,7 +386,7 @@ BOOL CmdSaveWS_EM
                 } else
                 {
                     HGLOBAL       hGlbTxtLine;
-                    LPMEMTXTUNION lpMemTxtLine;
+                    LPMEMTXT_UNION lpMemTxtLine;
 
                     // Get the global memory handle
                     hGlbObj = lpSymEntry->stData.stGlbData;
@@ -609,8 +609,8 @@ void WriteFunctionLine
      LPWCHAR lpMemSaveWSID)     // Ptr to saved WS file DPFE
 
 {
-    LPMEMTXTUNION lpMemTxtLine;
-    WCHAR         wszCount[10];
+    LPMEMTXT_UNION lpMemTxtLine;
+    WCHAR          wszCount[10];
 
     // Format the line number
     wsprintfW (wszCount,

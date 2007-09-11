@@ -219,12 +219,12 @@ typedef struct tagVKSTATE
           Avail:28;             // FFFFFFF0:  Available bits
 } VKSTATE, *LPVKSTATE;
 
-typedef enum tagMAKEPROTO
+typedef enum tagMAKE_PROTO
 {
     MP_CHARS,                   // 00:  Chars allowed in MakePrototype arg
     MP_NUMONLY,                 // 01:  Numerics only ...
     MP_NUMCONV                  // 02:  Convert chars to numerics ...
-} MAKEPROTO;
+} MAKE_PROTO;
 
 typedef enum tagEXIT_TYPES
 {

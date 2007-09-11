@@ -23,6 +23,7 @@
 ////lpMemPTD->lpSISCur           = NULL;
 ////lpMemPTD->lpPLCur            = NULL;
 ////lpMemPTD->SILevel            = 0;
+////lpmemPTD->hSemaDelay         = NULL;
 
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
@@ -99,7 +100,7 @@ typedef struct tagPERTABDATA
             lpfnOldEditCtrlWndProc; // D0:  Save area for old Edit Control procedure
 
     UINT         SILevel;           // D4:  Current State Indicator level
-
+    HANDLE       hSemaDelay;        // D8:  Delay semaphore (NULL if no delay active)
     PL_YYSTYPE   YYResExec;         // D8:  Result from execute primitive
 
     APLCHAR      cQuadPR;           //108:  []PR     (' ') (When a char scalar)

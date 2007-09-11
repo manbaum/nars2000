@@ -334,11 +334,14 @@ BOOL CmdFnsVarsOps_EM
         uSymCnt++;
     } // End FOR/IF
 
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     // Sort the HGLOBALs
     ShellSort (lphGlbSort, uSymCnt, CmpHGLOBAL);
 
     // Get the current value of []PW
-    uQuadPW = (UINT) (lpMemPTD->lpSymQuadPW->stData.stInteger);
+    uQuadPW = (UINT) GetQuadPW ();
 
     // Re-initialize the output area
     for (uLineChar = 0; uLineChar < uQuadPW; uLineChar++)
@@ -397,9 +400,6 @@ BOOL CmdFnsVarsOps_EM
         // Output the current line
         AppendLine (lpwszFormat, TRUE, TRUE);
     } // End IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return FALSE;
 } // End CmdFnsVarsOps_EM

@@ -446,7 +446,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                        lpMemRes,            // Ptr to result    memory
                        uDimLo,              // Product of dimensions below axis
                        uDimAxRht,           // Length of right arg axis dimension
-                       lpPrimFlags->Index,  // enum tagFBFNINDS value (e.g., index into FastBoolFns[])
+                       lpPrimFlags->Index,  // FBFN_INDS value (e.g., index into FastBoolFns[])
                        lpYYFcnStrOpr);      // Ptr to operator function strand
     } else
     // If this is an empty nested result, ...
@@ -860,7 +860,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     } // End IF
 
     // Get the one (and only) value from the left arg
-    FirstValue (lptkLftArg,             // Ptr to right arg token
+    FirstValue (lptkLftArg,             // Ptr to left arg token
                &aplIntegerLft,          // Ptr to integer result
                &aplFloatLft,            // Ptr to float ...
                 NULL,                   // Ptr to WCHAR ...
@@ -1428,7 +1428,7 @@ BOOL PrimOpDydSlashInsertDim_EM
     // Check for immediate result
     if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_VARIMMED)
     {
-        IMMTYPES   immType;         // Datatype of immediate result
+        IMM_TYPES  immType;         // Datatype of immediate result (see IMM_TYPES)
         APLLONGEST aplLongest;      // Value of immediate result
         APLUINT    ByteRes;         // # bytes needed for the result
         APLSTYPE   aplTypeRes;      // Result storage type

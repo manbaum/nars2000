@@ -168,14 +168,12 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
 
             // Handle the immediate case
             return PrimFnMonUpTackJotImm_EM_YY
-                   (lptkRhtArg->tkData.tkSym->stFlags.ImmType,  // Immediate type
-                    lptkRhtArg->tkData.tkSym->stData.stLongest, // Immediate value
+                   (lptkRhtArg->tkData.tkSym->stData.stLongest, // Immediate value
                     lptkAxis,                                   // Ptr to axis token (may be NULL)
                     lptkFunc);                                  // Ptr to function token
         case TKT_VARIMMED:
             return PrimFnMonUpTackJotImm_EM_YY
-                   (lptkRhtArg->tkFlags.ImmType,                // Immediate type
-                    lptkRhtArg->tkData.tkLongest,               // Immediate value
+                   (lptkRhtArg->tkData.tkLongest,               // Immediate value
                     lptkAxis,                                   // Ptr to axis token (may be NULL)
                     lptkFunc);                                  // Ptr to function token
         case TKT_VARARRAY:
@@ -216,8 +214,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
-    (IMMTYPES      ImmType,         // Right arg Immediate type
-     APLLONGEST    aplLongest,      // Ptr to right arg value
+    (APLLONGEST    aplLongest,      // Ptr to right arg value
      LPTOKEN       lptkAxis,        // Ptr to axis token (may be NULL)
      LPTOKEN       lptkFunc)        // Ptr to function token
 

@@ -21,11 +21,11 @@ typedef struct tagSIS_HEADER
                      hSigaphore;    // 08:  Semaphore handle to signal on exit (NULL if none)
     HGLOBAL          hGlbDfnHdr,    // 0C:  User-defined function/operator global memory handle
                      hGlbFcnName;   // 10:  Function name global memory handle
-    UINT             DfnType:4,     // 14:  0000000F:  User-defined function/operator Type (see enum DFN_TYPES)
-                     FcnValence:3,  //      00000070:  User-defined function/operator Valence (see enum FCN_VALENCES)
+    UINT             DfnType:4,     // 14:  0000000F:  User-defined function/operator Type (see DFN_TYPES)
+                     FcnValence:3,  //      00000070:  User-defined function/operator Valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      Suspended:1,   //      00000100:  Function is suspended
-                     ResetFlag:2,   //      00000600:  SI stack is resetting (see enum RESET_FLAGS)
+                     ResetFlag:2,   //      00000600:  SI stack is resetting (see RESET_FLAGS)
                      Avail:21;      //      FFFFF800:  Available bits
     UINT             CurLineNum,    // 18:  Current line # (origin-1)
                      NxtLineNum,    // 1C:  Next    ...
@@ -41,7 +41,7 @@ typedef struct tagSIS_HEADER
                      numFcnLines,   // 44:  # lines in the function (not counting the header)
                      numSymEntries, // 48:  # SYMENTRYs on the stack
                      QQPromptLen,   // 4C:  Quote-Quad input prompt length
-                     ErrorCode;     // 50:  Error code (see ERRORCODES)
+                     ErrorCode;     // 50:  Error code (see ERROR_CODES)
     struct tagSIS_HEADER
                     *lpSISPrv,      // 54:  Ptr to previous SIS header (NULL = none)
                     *lpSISNxt;      // 58:  Ptr to next     ...         ...

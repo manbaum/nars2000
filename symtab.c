@@ -1517,7 +1517,7 @@ LPSYMENTRY SymTabLookupNameLength
 //***************************************************************************
 
 LPSYMENTRY MakePermSymEntry_EM
-    (IMMTYPES     immType,          // ImmType to use
+    (IMM_TYPES    immType,          // ImmType to use (see IMM_TYPES)
      LPAPLLONGEST lpVal,            // Value to use
      LPTOKEN      lptkFunc)         // Ptr to token to use in case of error
 
@@ -1568,7 +1568,7 @@ LPSYMENTRY MakePermSymEntry_EM
 //***************************************************************************
 
 LPSYMENTRY MakeSymEntry_EM
-    (IMMTYPES     immType,          // ImmType to use
+    (IMM_TYPES    immType,          // ImmType to use (see IMM_TYPES)
      LPAPLLONGEST lpVal,            // Value to use
      LPTOKEN      lptkFunc)         // Ptr to token to use in case of error
 
@@ -1620,7 +1620,7 @@ LPSYMENTRY MakeSymEntry_EM
 
 LPSYMENTRY CopyImmSymEntry_EM
     (LPSYMENTRY lpSymSrc,   // LPSYMENTRY to use
-     IMMTYPES   immType,    // ImmType to use (unless -1)
+     IMM_TYPES  immType,    // ImmType to use (unless -1) (see IMM_TYPES)
      LPTOKEN    lpToken)    // Ptr to token to use in case of error
 
 {

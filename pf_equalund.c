@@ -318,20 +318,10 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     APLCHAR      aplCharLft,    // Left arg as char
                  aplCharRht;    // Right ...
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     APLFLOAT     fQuadCT;       // []CT
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    fQuadCT = lpMemPTD->lpSymQuadCT->stData.stFloat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []CT
+    fQuadCT = GetQuadCT ();
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -412,7 +402,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
                     break;
 
                 // Get the respective first values
-                FirstValue (lptkLftArg,         // Ptr to right arg token
+                FirstValue (lptkLftArg,         // Ptr to left arg token
                            &aplIntegerLft,      // Ptr to integer result
                            &aplFloatLft,        // Ptr to float ...
                            &aplCharLft,         // Ptr to WCHAR ...
@@ -495,30 +485,20 @@ BOOL PrimFnDydEqualUnderbarSimple
      APLRANK  aplRankRht)
 
 {
-    APLINT       uDim,
-                 apaOff,
-                 apaMul;
-    UINT         uBitMask = 0x01;
-    APLINT       aplIntegerLft,
-                 aplIntegerRht;
-    APLFLOAT     aplFloatLft,
-                 aplFloatRht;
-    APLCHAR      aplCharLft,
-                 aplCharRht;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLFLOAT     fQuadCT;       // []CT
+    APLINT   uDim,
+             apaOff,
+             apaMul;
+    UINT     uBitMask = 0x01;
+    APLINT   aplIntegerLft,
+             aplIntegerRht;
+    APLFLOAT aplFloatLft,
+             aplFloatRht;
+    APLCHAR  aplCharLft,
+             aplCharRht;
+    APLFLOAT fQuadCT;           // []CT
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    fQuadCT = lpMemPTD->lpSymQuadCT->stData.stFloat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []CT
+    fQuadCT = GetQuadCT ();
 
     // Ensure same rank and # elements
     if (aplRankLft NE aplRankRht
@@ -1014,33 +994,23 @@ BOOL PrimFnDydEqualUnderbarNested
      APLRANK  aplRankRht)
 
 {
-    APLUINT      uDim;
-    APLNELM      aplNELMLft2,
-                 aplNELMRht2;
-    LPVOID       lpMemLft2,
-                 lpMemRht2;
-    APLINT       aplIntegerLft,
-                 aplIntegerRht;
-    APLFLOAT     aplFloatLft,
-                 aplFloatRht;
-    APLCHAR      aplCharLft,
-                 aplCharRht;
-    UINT         ptrType;
-    BOOL         bRet = TRUE;
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLFLOAT     fQuadCT;       // []CT
+    APLUINT  uDim;
+    APLNELM  aplNELMLft2,
+             aplNELMRht2;
+    LPVOID   lpMemLft2,
+             lpMemRht2;
+    APLINT   aplIntegerLft,
+             aplIntegerRht;
+    APLFLOAT aplFloatLft,
+             aplFloatRht;
+    APLCHAR  aplCharLft,
+             aplCharRht;
+    UINT     ptrType;
+    BOOL     bRet = TRUE;
+    APLFLOAT fQuadCT;           // []CT
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    fQuadCT = lpMemPTD->lpSymQuadCT->stData.stFloat;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Get the current value of []CT
+    fQuadCT = GetQuadCT ();
 
     // Ensure same rank and # elements
     if (aplRankLft NE aplRankRht

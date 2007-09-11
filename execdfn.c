@@ -50,7 +50,7 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
               (LPPL_YYSTYPE) lptkFcnStr,                    // Ptr to function strand
                              lptkRhtArg,                    // Ptr to right arg token
-                             LINENUM_PROTOTYPE);            // Starting line # (see LINENUMS)
+                             LINENUM_PROTOTYPE);            // Starting line # (see LINE_NUMS)
 } // End ExecDfnGlbProto_EM_YY
 #undef  APPEND_NAME
 
@@ -72,7 +72,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
      LPTOKEN      lptkRhtArg,       // Ptr to right arg token
-     LINENUMS     startLineNum)     // Starting line # (see LINENUMS)
+     LINE_NUMS    startLineNum)     // Starting line # (see LINE_NUMS)
 
 {
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
@@ -138,11 +138,11 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     } // End IF
 
     // If there is an axis token and this function does not accept
-    //   an axis operator, signal an AXIS ERROR
+    //   an axis operator, signal an SYNTAX ERROR
     if (lptkAxis NE NULL
      && lpMemDfnHdr->steAxisOpr EQ NULL)
     {
-        ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                    lptkAxis);
         goto ERROR_EXIT;
     } // End IF
@@ -491,8 +491,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
 #ifdef DEBUG
         {
-            LPMEMTXTUNION lpMemTxtLine;
-            LPAPLCHAR     lpMemFcnName;
+            LPMEMTXT_UNION lpMemTxtLine;
+            LPAPLCHAR      lpMemFcnName;
 
             // Lock the memory to get a ptr to it
             lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
@@ -826,7 +826,7 @@ BOOL Unlocalize
                  numSym;            // Loop counter
     LPSYMENTRY   lpSymEntryNxt;     // Ptr to next SYMENTRY on the SIS
     BOOL         bRet = TRUE;       // TRUE iff the result is valid
-    RESET_FLAGS  resetFlag;         // Reset flag (see enum RESET_FLAGS)
+    RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData);

@@ -1,5 +1,5 @@
 //****************************************************************************
-//  NARS2000 -- Common Prototypes
+//	NARS2000 -- Common Prototypes
 //****************************************************************************
 
 #ifndef COMPRO_INCLUDED
@@ -11,6 +11,7 @@
 #include "convert.pro"
 #include "debug.pro"
 #include "dfnhdr.pro"
+#include "dispdbg.pro"
 #include "display.pro"
 #include "dtoa.pro"
 ////lude "editctrl.pro"
@@ -99,5 +100,5 @@
 #endif
 
 //***************************************************************************
-//  End of File: compro.h
+//	End of File: compro.h
 //***************************************************************************

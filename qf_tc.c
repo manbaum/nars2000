@@ -1,0 +1,348 @@
+//***************************************************************************
+//  NARS2000 -- System Function -- Quad TC
+//***************************************************************************
+
+#define STRICT
+#include <windows.h>
+
+#include "main.h"
+#include "aplerrors.h"
+#include "resdebug.h"
+#include "termcode.h"
+#include "externs.h"
+
+// Include prototypes unless prototyping
+#ifndef PROTO
+#include "compro.h"
+#endif
+
+
+//***************************************************************************
+//  $SysFnTC_EM
+//
+//  System function:  []TC -- Terminal Control
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnTC_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE SysFnTC_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    UINT         ByteRes;           // # bytes in the result
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPVOID       lpMemRes;          // Ptr to result global memory
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
+    // Calculate space needed for the result
+    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, 3, 1);
+
+    // Allocate space for the result
+    hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->Perm       = 0;           // Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = 3;
+    lpHeader->Rank       = 1;
+
+#undef  lpHeader
+
+    // Fill in the dimension
+    *VarArrayBaseToDim (lpMemRes) = 3;
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+#define lpMemData   ((LPAPLCHAR) lpMemRes)
+
+    lpMemData[0] = TCBS;    // Backspace
+    lpMemData[1] = TCNL;    // Newline
+    lpMemData[2] = TCLF;    // Linefeed
+
+#undef  lpMemData
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+} // End SysFnTC_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SysFnTCCom_EM
+//
+//  System function:  []TCxxx -- Terminal Control, Common Routine
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnTCCOM_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE SysFnTCCom_EM
+    (WCHAR   wc,                    // Char to return
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_CHAR;
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkChar     = wc;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+} // End SysFnTCCom_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SysFnTCBEL_EM
+//
+//  System function:  []TCBEL -- Terminal Control, Bell
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnTCBEL_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    return SysFnTCCom_EM (TCBEL, lptkFunc, lptkAxis);
+} // End SysFnTCBEL_EM
+
+
+//***************************************************************************
+//  $SysFnTCBS_EM
+//
+//  System function:  []TCBS -- Terminal Control, Backspace
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnTCBS_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    return SysFnTCCom_EM (TCBS, lptkFunc, lptkAxis);
+} // End SysFnTCBS_EM
+
+
+//***************************************************************************
+//  $SysFnTCDEL_EM
+//
+//  System function:  []TCDEL -- Terminal Control, Del
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnTCDEL_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    return SysFnTCCom_EM (TCDEL, lptkFunc, lptkAxis);
+} // End SysFnTCDEL_EM
+
+
+//***************************************************************************
+//  $SysFnTCESC_EM
+//
+//  System function:  []TCESC -- Terminal Control, Escape
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnTCESC_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    return SysFnTCCom_EM (TCESC, lptkFunc, lptkAxis);
+} // End SysFnTCESC_EM
+
+
+//***************************************************************************
+//  $SysFnTCFF_EM
+//
+//  System function:  []TCFF -- Terminal Control, Form Feed
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnTCFF_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    return SysFnTCCom_EM (TCFF, lptkFunc, lptkAxis);
+} // End SysFnTCFF_EM
+
+
+//***************************************************************************
+//  $SysFnTCHT_EM
+//
+//  System function:  []TCHT -- Terminal Control, Horizontal Tab
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnTCHT_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    return SysFnTCCom_EM (TCHT, lptkFunc, lptkAxis);
+} // End SysFnTCHT_EM
+
+
+//***************************************************************************
+//  $SysFnTCLF_EM
+//
+//  System function:  []TCLF -- Terminal Control, Linefeed
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnTCLF_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    return SysFnTCCom_EM (TCLF, lptkFunc, lptkAxis);
+} // End SysFnTCLF_EM
+
+
+//***************************************************************************
+//  $SysFnTCNL_EM
+//
+//  System function:  []TCNL -- Terminal Control, Newline
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnTCNL_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    return SysFnTCCom_EM (TCNL, lptkFunc, lptkAxis);
+} // End SysFnTCNL_EM
+
+
+//***************************************************************************
+//  $SysFnTCNUL_EM
+//
+//  System function:  []TCNUL -- Terminal Control, Nul
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnTCNUL_EM
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+
+    return SysFnTCCom_EM (TCNUL, lptkFunc, lptkAxis);
+} // End SysFnTCNUL_EM
+
+
+//***************************************************************************
+//  End of File: qf_tc.c
+//***************************************************************************

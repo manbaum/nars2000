@@ -850,6 +850,54 @@ void InitIdentityElement
 
 
 //***************************************************************************
+//  $ExecuteFn0
+//
+//  Execute a niladic function
+//***************************************************************************
+
+LPPL_YYSTYPE ExecuteFn0
+    (LPPL_YYSTYPE lpYYFcn0)     // Ptr to function PL_YYSTYPE
+
+{
+    LPPRIMFNS lpNameFcn;
+
+    // tkData is an LPSYMENTRY
+    Assert (GetPtrTypeDir (lpYYFcn0->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+    lpNameFcn = lpYYFcn0->tkToken.tkData.tkSym->stData.stNameFcn;
+
+    if (lpYYFcn0->tkToken.tkData.tkSym->stFlags.FcnDir)
+        // Call the execution routine
+        return (*lpNameFcn) (NULL,
+                            &lpYYFcn0->tkToken,
+                             NULL,
+                             NULL);
+    else
+        // tkData is a valid HGLOBAL function array or user-defined function/operator
+        Assert (IsGlbTypeFcnDir (lpNameFcn)
+             || IsGlbTypeDfnDir (lpNameFcn));
+
+        // Split cases based upon the array signature
+        switch (GetSignatureGlb (ClrPtrTypeDirGlb (lpNameFcn)))
+        {
+            case FCNARRAY_HEADER_SIGNATURE:
+                return ExecFuncGlb_EM_YY (NULL,                         // Ptr to left arg token (may be NULL if monadic or niladic)
+                                          ClrPtrTypeDirGlb (lpNameFcn), // Function array global memory handle
+                                          NULL,                         // Ptr to right arg token (may be NULL if niladic)
+                                          NULL);                        // Ptr to axis token (may be NULL)
+            case DFN_HEADER_SIGNATURE:
+                return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (lpNameFcn),  // User-defined function/operator global memory handle
+                                         NULL,                          // Ptr to left arg token (may be NULL if monadic)
+                                         lpYYFcn0,                      // Ptr to function strand
+                                         NULL,                          // Ptr to right arg token
+                                         LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
+            defstop
+                return NULL;
+        } // SWITCH
+} // End ExecuteFn0
+
+
+//***************************************************************************
 //  $ExecFunc_EM_YY
 //
 //  Execute a user-defined, system, or primitive function

@@ -62,7 +62,7 @@ UINT MaskTheHash
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -115,7 +115,7 @@ BOOL HshTabFrisk
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -425,7 +425,7 @@ BOOL HshTabResize_EM
     BOOL         bRet = TRUE;   // TRUE iff result is valid
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -508,7 +508,7 @@ BOOL SymTabResize_EM
     BOOL         bRet = TRUE;   // TRUE iff result is valid
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -581,7 +581,7 @@ BOOL HshTabSplitNextEntry_EM
     BOOL         bRet = TRUE;   // TRUE iff result is valid
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -792,7 +792,7 @@ LPHSHENTRY FindNextFreeUsingHash_SPLIT_EM
     DBGENTER;
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -918,7 +918,7 @@ LPHSHENTRY FindNextFreeUsingHTE_EM
     DBGENTER;
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1028,7 +1028,7 @@ LPHSHENTRY HshTabLookupChar
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1082,7 +1082,7 @@ BOOL AppendSymbolName
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1215,7 +1215,7 @@ LPSYMENTRY SymTabLookupChar
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1281,7 +1281,7 @@ LPSYMENTRY SymTabLookupNumber
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1350,7 +1350,7 @@ LPSYMENTRY SymTabLookupFloat
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1433,7 +1433,7 @@ LPSYMENTRY SymTabLookupNameLength
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1715,7 +1715,7 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1846,7 +1846,7 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1973,7 +1973,7 @@ LPSYMENTRY SymTabAppendCharCommon_EM
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -2123,7 +2123,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

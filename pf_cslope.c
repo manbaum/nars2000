@@ -39,6 +39,10 @@ LPPL_YYSTYPE PrimFnCircleSlope_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESLOPE);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonCircleSlope_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -126,14 +130,6 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-
-    // Check for list
-    if (aplTypeRht EQ ARRAY_LIST)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
 
     // Calculate space needed for the left arg
     ByteRes = (UINT) CalcArraySize (ARRAY_APA, aplRankRht, 1);
@@ -271,14 +267,6 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-
-    // Check for list
-    if (aplTypeRht EQ ARRAY_LIST)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
 
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -477,7 +465,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   {times}{backscan}1{drop}({rho}R),1
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
-    ByteRes = aplRankRht * sizeof (APLINT);
+    ByteRes = aplRankRht * sizeof (APLUINT);
 
     // In case the result is a scalar, allocate at least
     //   one byte so the GlobalLock doesn't fail -- Windows
@@ -513,7 +501,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   in the result, with values initially all zero (thanks to GHND).
     // N.B.  Conversion from APLUINT to UINT.
     //***************************************************************
-    ByteRes = aplRankRes * sizeof (APLINT);
+    ByteRes = aplRankRes * sizeof (APLUINT);
 
     // In case the result is a scalar, allocate at least
     //   one byte so the GlobalLock doesn't fail -- Windows
@@ -549,6 +537,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                     uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
 
+                // Increment the odometer in lpMemOdo subject to
+                //   the values in lpMemDimRes
+                IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
                 uBitMask = 1 << ((int) (uRht % NBIB));
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
@@ -560,10 +552,6 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                     uBitIndex = 0;              // Start over
                     ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
                 } // End IF
-
-                // Increment the odometer in lpMemOdo subject to
-                //   the values in lpMemDimRes
-                IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
             } // End FOR
 
             break;
@@ -578,12 +566,12 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                     uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
 
-                // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLINT) lpMemRes)[uRes] = ((LPAPLINT) lpMemRht)[uRht];
-
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                // Copy element # uRht from the right arg to lpMemRes[uRes]
+                ((LPAPLINT) lpMemRes)[uRes] = ((LPAPLINT) lpMemRht)[uRht];
             } // End FOR
 
             break;
@@ -598,12 +586,12 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                     uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
 
-                // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLFLOAT) lpMemRes)[uRes] = ((LPAPLFLOAT) lpMemRht)[uRht];
-
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                // Copy element # uRht from the right arg to lpMemRes[uRes]
+                ((LPAPLFLOAT) lpMemRes)[uRes] = ((LPAPLFLOAT) lpMemRht)[uRht];
             } // End FOR
 
             break;
@@ -623,12 +611,12 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                     uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
 
-                // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLINT) lpMemRes)[uRes] = apaOffRht + apaMulRht * uRht;
-
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                // Copy element # uRht from the right arg to lpMemRes[uRes]
+                ((LPAPLINT) lpMemRes)[uRes] = apaOffRht + apaMulRht * uRht;
             } // End FOR
 
             break;
@@ -643,12 +631,12 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                     uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
 
-                // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLCHAR) lpMemRes)[uRes] = ((LPAPLCHAR) lpMemRht)[uRht];
-
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                // Copy element # uRht from the right arg to lpMemRes[uRes]
+                ((LPAPLCHAR) lpMemRes)[uRes] = ((LPAPLCHAR) lpMemRht)[uRht];
             } // End FOR
 
             break;
@@ -664,12 +652,12 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                     uRht += lpMemOdo[lpMemAxis[uOdo]] * lpMemWVec[uOdo];
 
-                // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLHETERO) lpMemRes)[uRes] = CopySymGlbDir (((LPAPLHETERO) lpMemRht)[uRht]);
-
                 // Increment the odometer in lpMemOdo subject to
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                // Copy element # uRht from the right arg to lpMemRes[uRes]
+                ((LPAPLHETERO) lpMemRes)[uRes] = CopySymGlbDir (((LPAPLHETERO) lpMemRht)[uRht]);
             } // End FOR
 
             break;

@@ -96,26 +96,28 @@ typedef enum tagARRAY_TYPES
 } ARRAY_TYPES;
 
 // Define macro for detecting simple array type
-/////// IsSimple(a)    (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR || a EQ ARRAY_HETERO)
-#define IsSimple(a)    (uTypeMap[a] <= uTypeMap[ARRAY_HETERO])
+/////// IsSimple(a)         (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR || a EQ ARRAY_HETERO)
+#define IsSimple(a)         (uTypeMap[a] <= uTypeMap[ARRAY_HETERO])
 
 // Define macro for detecting simple non-heterogeneous array type
-/////// IsSimpleNH(a)  (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR)
-#define IsSimpleNH(a)  (uTypeMap[a] < uTypeMap[ARRAY_HETERO])
+/////// IsSimpleNH(a)       (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR)
+#define IsSimpleNH(a)       (uTypeMap[a] < uTypeMap[ARRAY_HETERO])
 
 // Define macro for detecting simple numeric array type
-/////// IsSimpleNum(a) (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT)
-#define IsSimpleNum(a) (uTypeMap[a] < uTypeMap[ARRAY_CHAR])
+/////// IsSimpleNum(a)      (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT)
+#define IsSimpleNum(a)      (uTypeMap[a] < uTypeMap[ARRAY_CHAR])
 
 // Define macro for detecting simple integer-like array type
-#define IsSimpleInt(a) (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA)
+#define IsSimpleInt(a)      (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA)
 
 // Define macro for detecting simple character or heterogeneous array type
-#define IsSimpleCH(a)  (a EQ ARRAY_CHAR || a EQ ARRAY_HETERO)
+#define IsSimpleCH(a)       (a EQ ARRAY_CHAR || a EQ ARRAY_HETERO)
 
 // Define macro for detecting simple Boolean value
-#define IsBooleanValue(a) (a EQ 0 || a EQ 1)
+#define IsBooleanValue(a)   (a EQ 0 || a EQ 1)
 
+// Define macro for detecting a parenthetic list
+#define IsTknParList(a)     ((a)->tkFlags.TknType EQ TKT_LISTPAR)
 
 // Define APA structure
 typedef struct tagAPLAPA    // Offset + Multiplier {times} {iota} Length (origin-0)
@@ -217,8 +219,8 @@ typedef struct tagVARARRAY_HEADER
 typedef struct tagFCNARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;           // 00:  Array header signature
-    UINT             NameType:3,    // 04:  00000007:  The type of the array (see NAME_TYPES)
-                     Avail:29;      //      FFFFFFF8:  Available bits
+    UINT             NameType:4,    // 04:  0000000F:  The type of the array (see NAME_TYPES)
+                     Avail:28;      //      FFFFFFF0:  Available bits
     UINT             RefCnt,        // 08:  Reference count
                      fcnNELM;       // 0C:  # elements in the array
     HGLOBAL          hGlbTxtLine;   // 10:  Line text global memory handle (may be NULL)

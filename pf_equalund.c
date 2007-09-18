@@ -39,6 +39,10 @@ LPPL_YYSTYPE PrimFnEqualUnderbar_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUALUNDERBAR);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonEqualUnderbar_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -167,11 +171,6 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
                 Assert (IsGlbTypeVarDir (hGlbRht));
 
                 break;          // Continue with global case
-
-            case TKT_LISTPAR:
-                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                           lptkFunc);
-                return NULL;
 
             case TKT_VARIMMED:
             defstop
@@ -344,14 +343,6 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-
-    // Check for lists here -- the parser catches lists on the left
-    if (aplTypeRht EQ ARRAY_LIST)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkRhtArg);
-        return NULL;
-    } // End IF
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();

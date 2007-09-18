@@ -13,7 +13,6 @@
 #define NEG1U   (   (UINT) -1)
 #define NEG1A   ((APLUINT) -1)
 
-#define abs64(a)    (((a)>0)?a:-(a))
 #define MB(a)   MessageBox (NULL, a, "NARS2000", MB_OK)
 #define MBC(a)  if (MessageBox (NULL, a, "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
 #define IsGlbTypeVarDir(a) (IsGlobalTypeArray (            a, VARARRAY_HEADER_SIGNATURE))

@@ -107,7 +107,7 @@ void MakeQuadAV
     lpMemRes = VarArrayBaseToData (lpHeader, 1);
 
     // Fill in the result:  0-0x7E
-    for (uRes = 0; uRes < 0x7F; uRes++)
+    for (uRes = 0; uRes < 0x7F;  uRes++)
         lpMemRes[uRes] = uRes;
 
     // Fill in the result:  0x7F-0xFF
@@ -115,6 +115,7 @@ void MakeQuadAV
         lpMemRes[uRes] = L' ';
 
     // Fill in the result:  miscellaneous 0x80-0xFF
+    lpMemRes[0x7F] = UTF16_ZILDE;
     lpMemRes[0x80] = 0x00C7;            // C cedilla
     lpMemRes[0x81] = 0x00FC;            // u umlaut
     lpMemRes[0x82] = 0x00E9;            // e right
@@ -146,7 +147,8 @@ void MakeQuadAV
     lpMemRes[0x9B] = 0x00F8;            // 0 slash
     lpMemRes[0x9C] = 0x00A3;            // Pound sign
     lpMemRes[0x9D] = UTF16_UPTACK;
-    lpMemRes[0x9E] = 0x00  ;            // Pt       // ***FIXME***
+////lpMemRes[0x9E] = 0x20A7;            // Pts
+    lpMemRes[0x9E] = 0x20AC;            // Euro
     lpMemRes[0x9F] = UTF16_IBEAM;
 
     lpMemRes[0xA0] = 0x00E1;            // a right
@@ -155,49 +157,51 @@ void MakeQuadAV
     lpMemRes[0xA3] = 0x00FA;            // u right
     lpMemRes[0xA4] = 0x00F1;            // n tilde
     lpMemRes[0xA5] = 0x00D1;            // N tilde
-    lpMemRes[0xA6] = 0x00AA;            // a underbar
-    lpMemRes[0xA7] = 0x00BA;            // o underbar
+////lpMemRes[0xA6] = 0x00AA;            // a underbar
+////lpMemRes[0xA7] = 0x00BA;            // o underbar
+    lpMemRes[0xA6] = UTF16_DIERESISDEL;
+    lpMemRes[0xA7] = UTF16_DIERESISSTAR;
     lpMemRes[0xA8] = 0x00BF;            // Inverted query
     lpMemRes[0xA9] = UTF16_UPSTILE;
-    lpMemRes[0xAA] = 0x00AC;            // PL1 not
-    lpMemRes[0xAB] = 0x00  ;            // Blank
+    lpMemRes[0xAA] = 0x00AC;            // PL1 not          // Available???
+    lpMemRes[0xAB] = UTF16_DIERESISTILDE;
     lpMemRes[0xAC] = UTF16_DOWNSHOE;
     lpMemRes[0xAD] = 0x00A1;            // Inverted shreik
     lpMemRes[0xAE] = UTF16_DOWNTACKJOT;
     lpMemRes[0xAF] = UTF16_UPTACKJOT;
 
-    lpMemRes[0xB0] = 0x00  ;            // Filler
-    lpMemRes[0xB1] = 0x00  ;            // Filler
-    lpMemRes[0xB2] = 0x00  ;            // Filler
+    lpMemRes[0xB0] = 0x00  ;            // Filler           // Available???
+    lpMemRes[0xB1] = 0x00  ;            // Filler           // Available???
+    lpMemRes[0xB2] = 0x00  ;            // Filler           // Available???
     lpMemRes[0xB3] = UTF16_STILE;
-    lpMemRes[0xB4] = 0x00  ;            // Line draw
+    lpMemRes[0xB4] = 0x00  ;            // Line draw        // Available???
     lpMemRes[0xB5] = UTF16_CIRCLESTAR;
     lpMemRes[0xB6] = UTF16_DELTA;
     lpMemRes[0xB7] = UTF16_DEL;
     lpMemRes[0xB8] = UTF16_RIGHTARROW;
-    lpMemRes[0xB9] = 0x00  ;            // Line draw
-    lpMemRes[0xBA] = 0x00  ;            // Line draw
-    lpMemRes[0xBB] = 0x00  ;            // Line draw
-    lpMemRes[0xBC] = 0x00  ;            // Line draw
+    lpMemRes[0xB9] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xBA] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xBB] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xBC] = 0x00  ;            // Line draw        // Available???
     lpMemRes[0xBD] = UTF16_LEFTARROW;
     lpMemRes[0xBE] = UTF16_DOWNSTILE;
-    lpMemRes[0xBF] = 0x00  ;            // Line draw
+    lpMemRes[0xBF] = 0x00  ;            // Line draw        // Available???
 
-    lpMemRes[0xC0] = 0x00  ;            // Line draw
-    lpMemRes[0xC1] = 0x00  ;            // Line draw
-    lpMemRes[0xC2] = 0x00  ;            // Line draw
-    lpMemRes[0xC3] = 0x00  ;            // Line draw
-    lpMemRes[0xC4] = 0x00  ;            // Line draw
-    lpMemRes[0xC5] = 0x00  ;            // Line draw
+    lpMemRes[0xC0] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xC1] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xC2] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xC3] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xC4] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xC5] = 0x00  ;            // Line draw        // Available???
     lpMemRes[0xC6] = UTF16_UPARROW;
     lpMemRes[0xC7] = UTF16_DOWNARROW;
-    lpMemRes[0xC8] = 0x00  ;            // Line draw
-    lpMemRes[0xC9] = 0x00  ;            // Line draw
-    lpMemRes[0xCA] = 0x00  ;            // Line draw
-    lpMemRes[0xCB] = 0x00  ;            // Line draw
-    lpMemRes[0xCC] = 0x00  ;            // Line draw
-    lpMemRes[0xCD] = 0x00  ;            // Line draw
-    lpMemRes[0xCE] = 0x00  ;            // Line draw
+    lpMemRes[0xC8] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xC9] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xCA] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xCB] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xCC] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xCD] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xCE] = 0x00  ;            // Line draw        // Available???
     lpMemRes[0xCF] = UTF16_EQUALUNDERBAR;
 
     lpMemRes[0xD0] = UTF16_IOTAUNDERBAR;
@@ -209,16 +213,16 @@ void MakeQuadAV
     lpMemRes[0xD6] = UTF16_RIGHTTACK;
     lpMemRes[0xD7] = UTF16_LEFTTACK;
     lpMemRes[0xD8] = UTF16_DIAMOND;
-    lpMemRes[0xD9] = 0x00  ;            // Line draw
-    lpMemRes[0xDA] = 0x00  ;            // Line draw
-    lpMemRes[0xDB] = 0x00  ;            // Filler
-    lpMemRes[0xDC] = 0x00  ;            // Filler
-    lpMemRes[0xDD] = 0x00  ;            // Filler
-    lpMemRes[0xDE] = 0x00  ;            // Filler
-    lpMemRes[0xDF] = 0x00  ;            // Filler
+    lpMemRes[0xD9] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xDA] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0xDB] = 0x00  ;            // Filler           // Available???
+    lpMemRes[0xDC] = 0x00  ;            // Filler           // Available???
+    lpMemRes[0xDD] = 0x00  ;            // Filler           // Available???
+    lpMemRes[0xDE] = 0x00  ;            // Filler           // Available???
+    lpMemRes[0xDF] = 0x00  ;            // Filler           // Available???
 
     lpMemRes[0xE0] = UTF16_ALPHA;
-    lpMemRes[0xE1] = 0x00DF;            // Beta
+    lpMemRes[0xE1] = 0x00DF;            // Beta             // Available???
     lpMemRes[0xE2] = UTF16_LEFTSHOE;
     lpMemRes[0xE3] = UTF16_RIGHTSHOE;
     lpMemRes[0xE4] = UTF16_LAMP;
@@ -249,15 +253,11 @@ void MakeQuadAV
     lpMemRes[0xFC] = UTF16_DELSTILE;
     lpMemRes[0xFD] = UTF16_OVERBAR;
     lpMemRes[0xFE] = UTF16_DIERESIS;
-    lpMemRes[0xFF] = 0x00  ;            // Blank
+    lpMemRes[0xFF] = 0x00  ;            // Blank            // Available???
 
-////lpMemRes[0x??] = UTF16_DIERESISDEL;
 ////lpMemRes[0x??] = UTF16_DIERESISDOWNTACK;
 ////lpMemRes[0x??] = UTF16_DIERESISCIRCLE;
-////lpMemRes[0x??] = UTF16_DIERESISSTAR;
-////lpMemRes[0x??] = UTF16_DIERESISTILDE;
 ////lpMemRes[0x??] = UTF16_STILETILDE;
-////lpMemRes[0x??] = UTF16_ZILDE;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbAV); lpMemRes = NULL;

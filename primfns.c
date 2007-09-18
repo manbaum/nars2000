@@ -56,7 +56,6 @@ extern PRIMSPEC PrimSpecUpStile;
 // Primitives TO DO                                    Monadic          Dyadic
 #define PrimFnDelStile_EM_YY        PrimFn_EM       // Mixed (*)        Mixed (*)
 #define PrimFnDeltaStile_EM_YY      PrimFn_EM       // Mixed (*)        Mixed (*)
-#define PrimFnDownArrow_EM_YY       PrimFn_EM       // ERROR            Mixed (*)
 #define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed (*)        ERROR
 #define PrimFnDownTack_EM_YY        PrimFn_EM       // ERROR            Mixed (*)
 #define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR            Mixed (*)
@@ -84,6 +83,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnCommaBar_EM_YY                        // Mixed            Mixed
 /////// PrimFnColonBar_EM_YY                        // Scalar           Scalar
 /////// PrimFnDomino_EM_YY                          // Mixed            Mixed
+/////// PrimFnDownArrow_EM_YY                       // ERROR            Mixed
 /////// PrimFnDownCaret_EM_YY                       // ERROR            Scalar
 /////// PrimFnDownCaretTilde_EM_YY                  // ERROR            Scalar
 /////// PrimFnDownStile_EM_YY                       // Scalar           Scalar
@@ -2430,45 +2430,6 @@ BOOL CheckAxis_EM
 
 
 //***************************************************************************
-//  $GradeUp
-//
-//  Grade up on a small number of APLUINTs
-//***************************************************************************
-
-void GradeUp
-    (LPAPLUINT lpSrc,       // Source
-     LPAPLUINT lpDst,       // Destination
-     APLUINT   uCount)      // # APLUINTs in the source
-
-{
-    APLUINT u1, u2, u3;
-
-    // Start with {iota}aplRankCmp in lpDst
-    for (u1 = 0; u1 < uCount; u1++)
-        lpDst[u1] = u1;
-
-    // Use Gnome sort on lpDst while comparing lpSrc
-    u2 = 1; u3 = 2;
-    while (u2 < uCount)
-    {
-        if (lpSrc[lpDst[u2 - 1]] <= lpSrc[lpDst[u2]])
-        {
-            u2 = u3;
-            u3++;
-        } else
-        {
-            u1            = lpDst[u2 - 1];
-            lpDst[u2 - 1] = lpDst[u2];
-            lpDst[u2]     = u1;
-
-            if (u2 NE 1)
-                u2--;
-        } // End IF/ELSE
-    } // End WHILE
-} // End GradeUp
-
-
-//***************************************************************************
 //  $TestDupAxis
 //
 //  Test an axis value for duplicates
@@ -4186,7 +4147,7 @@ HGLOBAL MakeDydPrototype_EM
                     //   {times}{backscan}1{drop}({rho}Z),1
                     // N.B.  Conversion from APLUINT to UINT.
                     //***************************************************************
-                    ByteRes = aplRankRes * sizeof (APLINT);
+                    ByteRes = aplRankRes * sizeof (APLUINT);
                     Assert (ByteRes EQ (UINT) ByteRes);
                     hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
                     if (!hGlbWVec)
@@ -4216,7 +4177,7 @@ HGLOBAL MakeDydPrototype_EM
                     //   in the right arg, with values initially all zero (thanks to GHND).
                     // N.B.  Conversion from APLUINT to UINT.
                     //***************************************************************
-                    ByteRes = aplRankRes * sizeof (APLINT);
+                    ByteRes = aplRankRes * sizeof (APLUINT);
                     Assert (ByteRes EQ (UINT) ByteRes);
                     hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
                     if (!hGlbOdo)
@@ -4908,6 +4869,30 @@ long CheckException
 
 
 //***************************************************************************
+//  $abs64
+//
+//  Return the absolute value of a 64-bit integer
+//
+//  Originally, this function was a macro as in
+//
+//    #define abs64(a)    (((a)>0)?a:-(a))
+//
+//  however, the first time I tried
+//
+//    abs64 (*((LPAPLINT) lpMemLft)++)
+//
+//  I decided it was better off as a function.
+//***************************************************************************
+
+APLINT abs64
+    (APLINT aplInt)
+
+{
+    return (aplInt > 0) ? aplInt : -aplInt;
+} // End abs64
+
+
+//***************************************************************************
 //  $imul64
 //
 //  Multiply two 64-bit integers retaining maximum precision
@@ -5590,7 +5575,7 @@ LPPL_YYSTYPE YYAlloc
 #endif
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -5758,7 +5743,7 @@ void YYFree
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -5792,7 +5777,7 @@ BOOL YYResIsEmpty
     BOOL         bRet = TRUE;   // TRUE iff result is valid
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -5831,7 +5816,7 @@ LPPL_YYSTYPE MakeNoValue_YY
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

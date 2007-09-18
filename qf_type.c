@@ -35,6 +35,10 @@ LPPL_YYSTYPE SysFnTYPE_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -165,11 +169,6 @@ LPPL_YYSTYPE SysFnMonTYPE_EM
             } // End SWITCH
 
             DbgStop ();         // We should never get here
-
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 
         case TKT_VARARRAY:
             hGlbData = lptkRhtArg->tkData.tkGlbData;

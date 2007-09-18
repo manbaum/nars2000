@@ -36,6 +36,10 @@ LPPL_YYSTYPE SysFnDL_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -122,7 +126,7 @@ LPPL_YYSTYPE SysFnMonDL_EM
                 NULL,                   // Ptr to ...immediate type ...
                 NULL);                  // Ptr to array type ...
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

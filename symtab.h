@@ -155,13 +155,16 @@ typedef enum tagNAME_TYPES
     NAMETYPE_FN12,          // 03:  ...       monadic/dyadic/ambivalent function
     NAMETYPE_OP1,           // 04:  ...       monadic operator
     NAMETYPE_OP2,           // 05:  ...       dyadic operator
-    NAMETYPE_LST,           // 06:  ...       list
-                            // 07-07:  Available entries (3 bits)
+    NAMETYPE_AMB,           // 06:  ...       ambiguous function/operator
+    NAMETYPE_FILL1,         // 07:  ...       filler
+    NAMETYPE_LST,           // 08:  ...       list
+                            // 09-0F:  Available entries (4 bits)
 } NAME_TYPES;
 
-#define NAMETYPE_STRING     "?VNF12L"
-#define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2",  "Lst"}
-#define NAMETYPE_WSTRPTR    {L"Unk", L"Var", L"Nil", L"Fcn", L"Op1", L"Op2", L"Lst"}
+#define NAMETYPE_STRING     "?VNF12A?L"
+//                              0       1       2       3       4       5       6       7       8
+#define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2",  "Amb",  "???",  "Lst"}
+#define NAMETYPE_WSTRPTR    {L"Unk", L"Var", L"Nil", L"Fcn", L"Op1", L"Op2", L"Amb", L"???", L"Lst"}
 
 // The above enum is constructed so as to allow the following masks to be used:
 #define NAMETYPEMASK_FN     0x02    // Name is a function
@@ -172,6 +175,7 @@ typedef enum tagNAME_TYPES
 #define IsNameTypeOp(a)     ((a) &                    NAMETYPEMASK_OP )
 #define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
 #define IsNameTypeVar(a)    ((a) EQ NAMETYPE_VAR)
+#define IsNameTypeName(a)   (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_AMB)
 
 typedef enum tagOBJ_NAMES
 {
@@ -207,16 +211,16 @@ typedef struct tagSTFLAGS
          Value:1,           // 00000100:  Entry has a value
          ObjName:2,         // 00000600:  The data in .stData is NULL if .ObjType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
                             //            (see OBJ_NAMES)
-         ObjType:3,         // 00003800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
+         ObjType:4,         // 00007800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
                             //            (see NAME_TYPES)
-         SysVarValid:4,     // 0003C000:  Index to validation routine for System Vars
+         SysVarValid:4,     // 00078000:  Index to validation routine for System Vars
                             //            (see SYS_VARS)
-         UsrDfn:1,          // 00040000:  User-defined function/operator
-         DfnLabel:1,        // 00080000:  User-defined function/operator label        (valid only if .Value is set)
-         DfnSysLabel:1,     // 00100000:  User-defined function/operator system label (valid only if .Value is set)
-         DfnAxis:1,         // 00200000:  User-defined function/operator accepts axis value
-         FcnDir:1,          // 00400000:  Direct function/operator               (stNameFcn is valid)
-         Avail:9;           // FF800000:  Available bits
+         UsrDfn:1,          // 00080000:  User-defined function/operator
+         DfnLabel:1,        // 00100000:  User-defined function/operator label        (valid only if .Value is set)
+         DfnSysLabel:1,     // 00200000:  User-defined function/operator system label (valid only if .Value is set)
+         DfnAxis:1,         // 00400000:  User-defined function/operator accepts axis value
+         FcnDir:1,          // 00800000:  Direct function/operator               (stNameFcn is valid)
+         Avail:8;           // FF000000:  Available bits
 } STFLAGS, *LPSTFLAGS;
 
 // N.B.:  Whenever changing the above struct (STFLAGS),

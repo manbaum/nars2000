@@ -34,6 +34,7 @@
 #include "pf_cslope.pro"
 #include "pf_cstar.pro"
 #include "pf_cstile.pro"
+#include "pf_darrow.pro"
 #include "pf_dcaret.pro"
 #include "pf_domino.pro"
 #include "pf_dstile.pro"

@@ -243,5 +243,44 @@ static BYTE aTT2[] = {
 
 
 //***************************************************************************
+//  $GradeUp
+//
+//  Grade up on a small number of APLUINTs
+//***************************************************************************
+
+void GradeUp
+    (LPAPLUINT lpSrc,       // Source
+     LPAPLUINT lpDst,       // Destination
+     APLUINT   uCount)      // # APLUINTs in the source
+
+{
+    APLUINT u1, u2, u3;
+
+    // Start with {iota}aplRankCmp in lpDst
+    for (u1 = 0; u1 < uCount; u1++)
+        lpDst[u1] = u1;
+
+    // Use Gnome sort on lpDst while comparing lpSrc
+    u2 = 1; u3 = 2;
+    while (u2 < uCount)
+    {
+        if (lpSrc[lpDst[u2 - 1]] <= lpSrc[lpDst[u2]])
+        {
+            u2 = u3;
+            u3++;
+        } else
+        {
+            u1            = lpDst[u2 - 1];
+            lpDst[u2 - 1] = lpDst[u2];
+            lpDst[u2]     = u1;
+
+            if (u2 NE 1)
+                u2--;
+        } // End IF/ELSE
+    } // End WHILE
+} // End GradeUp
+
+
+//***************************************************************************
 //  End of File: sort.c
 //***************************************************************************

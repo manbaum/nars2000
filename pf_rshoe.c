@@ -33,6 +33,10 @@ LPPL_YYSTYPE PrimFnRightShoe_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTSHOE);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonRightShoe_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
@@ -131,11 +135,6 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
                    (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
                     lptkAxis,                                           // Ptr to axis token (may be NULL)
                     lptkFunc);                                          // Ptr to function token
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
         defstop
             return NULL;
     } // End SWITCH
@@ -1057,11 +1056,6 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
             return PrimFnDydRightShoeGlb_EM_YY (lptkLftArg,
                                                 ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
                                                 lptkFunc);
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
         defstop
             return NULL;
     } // End SWITCH
@@ -1264,11 +1258,6 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                    (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkGlbData),    // Left arg global memory handle
                     hGlbRht,                                            // Right arg ...
                     lptkFunc);                                          // Ptr to function token
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
         defstop
             return NULL;
     } // End SWITCH

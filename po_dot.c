@@ -30,6 +30,8 @@ LPPL_YYSTYPE PrimOpDot_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DOT);
+
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
         return PrimOpMonDot_EM_YY (lpYYFcnStrOpr,   // Ptr to operator function strand

@@ -315,7 +315,7 @@ BOOL InitSystemNames_EM
     LPSYMENTRY  *ptdSysVarSym[SYSVAR_LENGTH];
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -901,7 +901,6 @@ BOOL ValidateInteger_EM
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of HGLOBALs
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                        lptkExpr);
-
             return FALSE;
 
         case TKT_STRING:    // tkData is an HGLOBAL of an array of ???
@@ -2006,7 +2005,7 @@ BOOL ValidatePR_EM
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -2237,7 +2236,7 @@ BOOL ValidateSA_EM
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -2445,7 +2444,7 @@ BOOL InitSystemVars
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

@@ -36,6 +36,10 @@ LPPL_YYSTYPE SysFnSIZE_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present

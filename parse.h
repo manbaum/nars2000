@@ -53,12 +53,12 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                  lpStop;            // 14:  Ptr to stop token if LookAhead
     LPAPLCHAR    lpwszLine;         // 18:  Ptr to line text (zero-terminated)
     UINT         tkErrorCharIndex;  // 1C:  Error char index
-    UINT         NameType:3,        // 20:  00000007:  Object type (see NAME_TYPES)
-                 bLookAhead:1,      //      00000008:  TRUE iff looking for object type within surrounding parens
-                 ExitType:4,        //      000000F0:  Exit Type (see EXIT_TYPES)
-                 bRet:1,            //      00000100   Various function results
-                 bCtrlBreak:1,      //      00000200   TRUE iff Ctrl-Break pressed
-                 Avail:22;          //      FFFFFC00:  Available bits
+    UINT         NameType:4,        // 20:  0000000F:  Object type (see NAME_TYPES)
+                 bLookAhead:1,      //      00000010:  TRUE iff looking for object type within surrounding parens
+                 ExitType:4,        //      000001E0:  Exit Type (see EXIT_TYPES)
+                 bRet:1,            //      00000200   Various function results
+                 bCtrlBreak:1,      //      00000400   TRUE iff Ctrl-Break pressed
+                 Avail:21;          //      FFFFF800:  Available bits
     LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 24:  Strand stack start (static)
                  lpYYStrandBase [STRAND_LEN],   // 2C:  ...          base (dynamic)
                  lpYYStrandNext [STRAND_LEN];   // 34:  ...          next token (dynamic)

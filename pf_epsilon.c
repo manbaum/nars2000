@@ -38,6 +38,10 @@ LPPL_YYSTYPE PrimFnEpsilon_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_EPSILON);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonEpsilon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -151,11 +155,6 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
             return PrimFnMonEpsilonGlb_EM_YY
                    (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
                     lptkFunc);                                          // Ptr to function token
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
         defstop
             return NULL;
     } // End SWITCH

@@ -47,10 +47,22 @@ In any case,
 
 ////LPTOKEN lptkStackBase;          // Ptr to base of token stack used in parsing
 
-typedef struct tagSM_CREATEPARAMS
-{
-    HGLOBAL hGlbPTD;
-} SM_CREATEPARAMS, UNALIGNED *LPSM_CREATEPARAMS;
+// MDI WM_NCCREATE & WM_CREATE parameter passing convention
+//
+// When calling CreateMDIWindow with an extra data parameter
+//   of (say) &hGlbPTD, the window procedure receives the data
+//   in the following struc:
+//
+//      typedef struct tagSM_CREATEPARAMS
+//      {
+//          HGLOBAL hGlbPTD;
+//      } SM_CREATEPARAMS, UNALIGNED *LPSM_CREATEPARAMS;
+//
+//   which is used as follows:
+//
+//      #define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
+//      hGlbPTD = ((LPSM_CREATEPARAMS) (lpMDIcs->lParam))->hGlbPTD;
+//      #undef  lpMDIcs
 
 APLCHAR wszQuadInput[] =
 WS_UTF16_QUAD L":";
@@ -101,7 +113,7 @@ void AppendLine
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -403,7 +415,7 @@ LPSYMENTRY GetSteZero
     Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
 
     // Get the PerTabData global handle
-    hGlbPTD = (HGLOBAL) TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -436,7 +448,7 @@ LPSYMENTRY GetSteOne
     Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
 
     // Get the PerTabData global handle
-    hGlbPTD = (HGLOBAL) TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -469,7 +481,7 @@ LPSYMENTRY GetSteBlank
     Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
 
     // Get the PerTabData global handle
-    hGlbPTD = (HGLOBAL) TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -499,7 +511,7 @@ APLFLOAT GetQuadCT
     APLFLOAT     fQuadCT;       // []CT
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -528,7 +540,7 @@ APLBOOL GetQuadIO
     APLBOOL      bQuadIO;       // []IO
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -557,7 +569,7 @@ APLUINT GetQuadPP
     APLUINT      uQuadPP;       // []PP
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -586,7 +598,7 @@ APLUINT GetQuadPW
     APLUINT      uQuadPW;       // []PW
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -615,7 +627,7 @@ APLUINT GetQuadRL
     APLUINT      uQuadRL;       // []RL
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -693,11 +705,10 @@ LRESULT APIENTRY SMWndProc
 ////LCLODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
     {
-#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
         case WM_NCCREATE:               // lpcs = (LPCREATESTRUCT) lParam
         {
             // Get the thread's PerTabData global memory handle
-            hGlbPTD = ((LPSM_CREATEPARAMS) (lpMDIcs->lParam))->hGlbPTD;
+            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -712,9 +723,7 @@ LRESULT APIENTRY SMWndProc
 
             break;                  // Continue with next handler
         } // End WM_NCCREATE
-#undef  lpMDIcs
 
-#define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
         case WM_CREATE:             // 0 = (int) wParam
                                     // lpcs = (LPCREATESTRUCT) lParam
         {
@@ -722,10 +731,7 @@ LRESULT APIENTRY SMWndProc
             LPVOID p;
 
             // Get the thread's PerTabData global memory handle
-            hGlbPTD = ((LPSM_CREATEPARAMS) (lpMDIcs->lParam))->hGlbPTD;
-
-            // Save the thread's PerTabData global memory handle
-            TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
+            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Initialize # threads
             SetProp (hWnd, "NTHREADS", 0);
@@ -1125,7 +1131,7 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // *************** Edit Control ****************************
-            // Create an Edit Control within which we can edit
+            // Create an Edit Control within which we can enter expressions
             hWndEC =
             CreateWindowExW (0L,                    // Extended styles
                              LECWNDCLASS,           // Class name
@@ -1180,7 +1186,6 @@ LRESULT APIENTRY SMWndProc
 
             return FALSE;           // We handled the msg
         } // End WM_CREATE
-#undef  lpMDIcs
 
         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
                                     // idChild = HIWORD(wParam);  // Identifier of child window
@@ -1207,7 +1212,7 @@ LRESULT APIENTRY SMWndProc
 #ifdef DEBUG
         case MYWM_INIT_SMDB:
             // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData);
+            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1236,6 +1241,9 @@ LRESULT APIENTRY SMWndProc
 
             // Display the default prompt
             DisplayPrompt (hWndEC, 1);
+
+            // Ensure the SM has the focus
+            SetFocus (hWnd);
 
             return FALSE;           // We handled the msg
 
@@ -1328,7 +1336,7 @@ LRESULT APIENTRY SMWndProc
             BOOL bRet;
 
             // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData);
+            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Special cases for SM windows:
             //   * Up/Dn arrows:
@@ -1544,7 +1552,7 @@ LRESULT APIENTRY SMWndProc
                     HWND         hWndMC;
 
                     // Get the thread's PerTabData global memory handle
-                    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+                    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1715,7 +1723,7 @@ LRESULT APIENTRY SMWndProc
         case WM_DESTROY:
         {
             // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData);
+            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);

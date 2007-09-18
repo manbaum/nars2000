@@ -39,6 +39,10 @@ LPPL_YYSTYPE PrimFnCircleStile_EM_YY
     Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE
          || lptkFunc->tkData.tkChar EQ UTF16_CIRCLEBAR);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonCircleStile_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -120,14 +124,6 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
-
-    // Check for list
-    if (aplTypeRht EQ ARRAY_LIST)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
 
     // Check for axis present
     if (lptkAxis NE NULL)

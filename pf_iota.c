@@ -39,6 +39,10 @@ LPPL_YYSTYPE PrimFnIota_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_IOTA);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -219,11 +223,6 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                                       lptkFunc))
                 return NULL;
             break;              // Continue with common code
-
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
 
         defstop
             return NULL;
@@ -470,13 +469,6 @@ BOOL PrimFnMonIotaGlb_EM
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            bRet = FALSE;
-
-            break;
-
-        case ARRAY_LIST:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                        lptkFunc);
             bRet = FALSE;
 

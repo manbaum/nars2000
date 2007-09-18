@@ -2448,6 +2448,9 @@ static void EDIT_SetCaretPos(EDITSTATE *es, INT pos,
     LRESULT res = EDIT_EM_PosFromChar(es, pos, after_wrap);
 //  TRACE("%d - %dx%d\n", pos, (short)LOWORD(res), (short)HIWORD(res));
     SetCaretPos((short)LOWORD(res), (short)HIWORD(res));
+#ifdef DEBUG
+////dprintfW (L">>SetCaretPos (%d, %d)", (short)LOWORD(res), (short)HIWORD(res));
+#endif DEBUG
 }
 
 
@@ -5253,7 +5256,9 @@ static BOOL MyCreateCaret (HWND hWnd, HBITMAP hBitMap, int nWidth, int nHeight)
 
     // Ask the parent how wide the caret should be
     SendMessageW (GetParent (hWnd), WM_NOTIFY, nmEC.nmHdr.idFrom, (LPARAM) &nmEC);
-
+#ifdef DEBUG
+////dprintfW (L">>CreateCaret (%08X, %08X, %d, %d)", hWnd, hBitMap, nWidth, nHeight);
+#endif DEBUG
     return CreateCaret (hWnd, hBitMap, nWidth, nHeight);
 } // End MyCreateCaret
 

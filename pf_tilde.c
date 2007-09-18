@@ -252,6 +252,10 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
     BOOL         bRet = TRUE;       // TRUE iff result is valid
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present

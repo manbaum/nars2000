@@ -33,6 +33,10 @@ LPPL_YYSTYPE PrimFnComma_EM_YY
     Assert (lptkFunc->tkData.tkChar EQ UTF16_COMMA
          || lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonComma_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
@@ -146,11 +150,6 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
             hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
             break;          // Join common global code
-
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
 
         defstop
             return NULL;
@@ -625,7 +624,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         //   {times}{backscan}1{drop}({rho}R),1
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteRes = aplRankRht * sizeof (APLINT);
+        ByteRes = aplRankRht * sizeof (APLUINT);
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbWVec)
@@ -657,7 +656,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         //   in the right arg, with values initially all zero (thanks to GHND).
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteRes = aplRankRht * sizeof (APLINT);
+        ByteRes = aplRankRht * sizeof (APLUINT);
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbOdo)
@@ -686,15 +685,15 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
                     uBitMask = 1 << (((UINT) uRht) & MASKLOG2NBIB);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
                     ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (((UINT) uRes) & MASKLOG2NBIB);
-
-                    // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
                 } // End FOR
 
                 break;
@@ -708,12 +707,12 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-                    // Copy element # uRht from the right arg to lpMemRes[uRes]
-                    ((LPAPLINT) lpMemRes)[uRes] = ((LPAPLINT) lpMemRht)[uRht];
-
                     // Increment the odometer in lpMemOdo subject to
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    ((LPAPLINT) lpMemRes)[uRes] = ((LPAPLINT) lpMemRht)[uRht];
                 } // End FOR
 
                 break;
@@ -727,12 +726,12 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-                    // Copy element # uRht from the right arg to lpMemRes[uRes]
-                    ((LPAPLFLOAT) lpMemRes)[uRes] = ((LPAPLFLOAT) lpMemRht)[uRht];
-
                     // Increment the odometer in lpMemOdo subject to
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    ((LPAPLFLOAT) lpMemRes)[uRes] = ((LPAPLFLOAT) lpMemRht)[uRht];
                 } // End FOR
 
                 break;
@@ -746,12 +745,12 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-                    // Copy element # uRht from the right arg to lpMemRes[uRes]
-                    ((LPAPLCHAR) lpMemRes)[uRes] = ((LPAPLCHAR) lpMemRht)[uRht];
-
                     // Increment the odometer in lpMemOdo subject to
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    ((LPAPLCHAR) lpMemRes)[uRes] = ((LPAPLCHAR) lpMemRht)[uRht];
                 } // End FOR
 
                 break;
@@ -765,14 +764,14 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     // Note that APLHETERO elements are LPSYMENTRYs, so there's no
                     //   reference count to increment, or other special handling.
                     ((LPAPLHETERO) lpMemRes)[uRes] = ((LPAPLHETERO) lpMemRht)[uRht];
-
-                    // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
                 } // End FOR
 
                 break;
@@ -786,19 +785,15 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-#define lpMemData   ((LPAPLNESTED) lpMemRht)[uRht]
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     // Note that APLNESTED elements are a mixture of LPSYMENTRYs
                     //   and HGLOBALs, so we need to run the HGLOBALs through
                     //   CopySymGlbDir so as to increment the reference count.
-                    ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (lpMemData);
-
-#undef  lpMemData
-
-                    // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (((LPAPLNESTED) lpMemRht)[uRht]);
                 } // End FOR
 
                 break;
@@ -812,17 +807,16 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-                    // Copy element # uRht from the right arg to lpMemRes[uRes]
-                    ((LPAPLINT) lpMemRes)[uRes] = apaOffRht + apaMulRht * uRht;
-
                     // Increment the odometer in lpMemOdo subject to
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    ((LPAPLINT) lpMemRes)[uRes] = apaOffRht + apaMulRht * uRht;
                 } // End FOR
 
                 break;
 
-            case ARRAY_LIST:
             defstop
                 break;
         } // End SWITCH
@@ -838,31 +832,13 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
-    if (lpMemRes)
+    if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (lpMemOdo)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbOdo); lpMemOdo = NULL;
-    } // End IF
-
-    if (lpMemWVec)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbWVec); lpMemWVec = NULL;
-    } // End IF
-
-    if (lpMemAxis)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbAxis); lpMemAxis = NULL;
-    } // End IF
-
-    if (lpMemRht)
+    if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht);  lpMemRht  = NULL;
@@ -870,18 +846,36 @@ ERROR_EXIT:
 
     if (hGlbWVec)
     {
+        if (lpMemWVec)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbWVec); lpMemWVec = NULL;
+        } // End IF
+
         // We no longer need this storage
         DbgGlobalFree (hGlbWVec); hGlbWVec = NULL;
     } // End IF
 
     if (hGlbOdo)
     {
+        if (lpMemOdo)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbOdo); lpMemOdo = NULL;
+        } // End IF
+
         // We no longer need this storage
         DbgGlobalFree (hGlbOdo); hGlbOdo = NULL;
     } // End IF
 
     if (hGlbAxis)
     {
+        if (lpMemAxis)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbAxis); lpMemAxis = NULL;
+        } // End IF
+
         // We no longer need this storage
         DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
     } // End IF

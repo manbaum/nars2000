@@ -42,7 +42,7 @@ SYSCMDSTAB SysCmdsTab[]
 ////{L"lib"   ,     &CmdLib_EM      },
 ////{L"load"  ,     &CmdLoadWS_EM   },
     {L"newtab",     &CmdNewTab_EM   },
-////{L"nms"   ,     &CmdNms_EM      },
+    {L"nms"   ,     &CmdNms_EM      },
     {L"ops"   ,     &CmdOps_EM      },
     {L"reset" ,     &CmdReset_EM    },
     {L"save"  ,     &CmdSaveWS_EM   },
@@ -161,7 +161,7 @@ BOOL CmdEdit_EM
     //                function, vector, or matrix by default
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -217,6 +217,34 @@ BOOL IzitFNS
 {
     return IsNameTypeFn (ObjType);
 } // End IzitFNS
+
+
+//***************************************************************************
+//  $CmdNms_EM
+//
+//  Execute system command:  )NMS
+//***************************************************************************
+
+BOOL CmdNms_EM
+    (LPWCHAR lpwszTail)
+
+{
+    return CmdFnsVarsOps_EM (lpwszTail, IzitNMS);
+} // End CmdNms_EM
+
+
+//***************************************************************************
+//  $IzitNMS
+//
+//  Return TRUE iff the object type is that of a variable/function/operator
+//***************************************************************************
+
+BOOL IzitNMS
+    (UINT ObjType)
+
+{
+    return IsNameTypeName (ObjType);
+} // End IzitNMS
 
 
 //***************************************************************************
@@ -300,7 +328,7 @@ BOOL CmdFnsVarsOps_EM
     BOOL         bLineCont;         // TRUE iff this line is a continuation
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -435,7 +463,7 @@ BOOL CmdReset_EM
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -474,7 +502,7 @@ BOOL CmdSi_EM
     LPSIS_HEADER lpSISCur;      // Ptr to current SIS_HEADER srtuc
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

@@ -520,10 +520,11 @@ BOOL ParseHeader
 
     // Parse the header, check for errors
     bRet = fh_yyparse (lpfhLocalVars) EQ 0;
-
+ERROR_EXIT:
     // Restore the error display flag
     lpfhLocalVars->DisplayErr = OldDisplayErr;
-ERROR_EXIT:
+
+    // Free the allocated memory
     if (lpfhLocalVars->lpYYStrandStart)
     {
         VirtualFree (lpfhLocalVars->lpYYStrandStart, 0, MEM_RELEASE); lpfhLocalVars->lpYYStrandStart = NULL;
@@ -641,16 +642,20 @@ void fh_yyerror                     // Called for Bison syntax error
     lpfhLocalVars->tkErrorCharIndex = uCharIndex;
 
     // Check for SYNTAX ERROR
-#define ERR     "syntax error"
-    lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
-    if (lstrcmp (szTemp, ERR) EQ 0)
+    if (lpfhLocalVars->DisplayErr)
     {
-        wsprintf (szTemp, "Syntax Error in line 0, position %d -- function NOT saved.", uCharIndex);
-        p = szTemp;
+#define ERR     "syntax error"
+        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+        if (lstrcmp (szTemp, ERR) EQ 0)
+        {
+            wsprintf (szTemp, "Syntax Error in line 0, position %d -- function NOT saved.", uCharIndex);
+            p = szTemp;
 
-        goto DISPLAYCAT;
+            goto DISPLAYCAT;
 #undef  ERR
-    } // End IF
+        } // End IF
+    } else
+        return;
 
 #define ERR     "memory exhausted"
     lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too

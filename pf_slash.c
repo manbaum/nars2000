@@ -39,6 +39,10 @@ LPPL_YYSTYPE PrimFnSlash_EM_YY
     Assert (lptkFunc->tkData.tkChar EQ UTF16_SLASH
          || lptkFunc->tkData.tkChar EQ UTF16_SLASHBAR);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonSlash_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);

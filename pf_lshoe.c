@@ -32,6 +32,10 @@ LPPL_YYSTYPE PrimFnLeftShoe_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_LEFTSHOE);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonLeftShoe_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
@@ -130,11 +134,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
                    (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
                     lptkAxis,                                           // Ptr to axis token (may be NULL)
                     lptkFunc);                                          // Ptr to function token
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
         defstop
             return NULL;
     } // End SWITCH
@@ -565,7 +564,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemRht);
                     break;
 
-                case ARRAY_LIST:        // Handled above
                 defstop
                     break;
             } // End SWITCH
@@ -578,7 +576,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         //   {times}{backscan}1{drop}({rho}R),1
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteRes = aplRankRht * sizeof (APLINT);
+        ByteRes = aplRankRht * sizeof (APLUINT);
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbWVec)
@@ -610,7 +608,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         //   in the right arg, with values initially all zero (thanks to GHND).
         // N.B.:  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteRes = aplRankRht * sizeof (APLINT);
+        ByteRes = aplRankRht * sizeof (APLUINT);
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbOdo)
@@ -688,15 +686,15 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
                     uBitMask = 1 << (((UINT) uRht) & MASKLOG2NBIB);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     ((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] |=
                     ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (((UINT) uSub) & MASKLOG2NBIB);
-
-                    // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
                 } // End FOR
 
                 // We no longer need this ptr
@@ -740,12 +738,12 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-                    // Copy element # uRht from the right arg to lpMemSub[uSub]
-                    ((LPAPLINT) lpMemSub)[uSub] = ((LPAPLINT) lpMemRht)[uRht];
-
                     // Increment the odometer in lpMemOdo subject to
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemSub[uSub]
+                    ((LPAPLINT) lpMemSub)[uSub] = ((LPAPLINT) lpMemRht)[uRht];
                 } // End FOR
 
                 // We no longer need this ptr
@@ -789,12 +787,12 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-                    // Copy element # uRht from the right arg to lpMemSub[uSub]
-                    ((LPAPLFLOAT) lpMemSub)[uSub] = ((LPAPLFLOAT) lpMemRht)[uRht];
-
                     // Increment the odometer in lpMemOdo subject to
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemSub[uSub]
+                    ((LPAPLFLOAT) lpMemSub)[uSub] = ((LPAPLFLOAT) lpMemRht)[uRht];
                 } // End FOR
 
                 // We no longer need this ptr
@@ -838,12 +836,12 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-                    // Copy element # uRht from the right arg to lpMemSub[uSub]
-                    ((LPAPLCHAR) lpMemSub)[uSub] = ((LPAPLCHAR) lpMemRht)[uRht];
-
                     // Increment the odometer in lpMemOdo subject to
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemSub[uSub]
+                    ((LPAPLCHAR) lpMemSub)[uSub] = ((LPAPLCHAR) lpMemRht)[uRht];
                 } // End FOR
 
                 // We no longer need this ptr
@@ -887,14 +885,14 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     // Note that APLHETERO elements are LPSYMENTRYs, so there's no
                     //   reference count to increment, or other special handling.
                     ((LPAPLHETERO) lpMemSub)[uSub] = ((LPAPLHETERO) lpMemRht)[uRht];
-
-                    // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
                 } // End FOR
 
                 // We no longer need this ptr
@@ -938,19 +936,15 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-#define lpMemData   ((LPAPLNESTED) lpMemRht)[uRht]
+                    // Increment the odometer in lpMemOdo subject to
+                    //   the values in lpMemDimRht[lpMemAxis]
+                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     // Note that APLNESTED elements are a mixture of LPSYMENTRYs
                     //   and HGLOBALs, so we need to run the HGLOBALs through
                     //   CopySymGlbDir to increment the reference count.
-                    ((LPAPLNESTED) lpMemSub)[uSub] = CopySymGlbDir (lpMemData);
-
-#undef  lpMemData
-
-                    // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRht[lpMemAxis]
-                    IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+                    ((LPAPLNESTED) lpMemSub)[uSub] = CopySymGlbDir (((LPAPLNESTED) lpMemRht)[uRht]);
                 } // End FOR
 
                 // We no longer need this ptr
@@ -994,12 +988,12 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     for (uRht = uOdo = 0; uOdo < aplRankRht; uOdo++)
                         uRht += lpMemOdo[lpMemGrUp[uOdo]] * lpMemWVec[uOdo];
 
-                    // Copy element # uRht from the right arg to lpMemSub[uSub]
-                    ((LPAPLINT) lpMemSub)[uSub] = apaOff + apaMul * uRht;
-
                     // Increment the odometer in lpMemOdo subject to
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
+
+                    // Copy element # uRht from the right arg to lpMemSub[uSub]
+                    ((LPAPLINT) lpMemSub)[uSub] = apaOff + apaMul * uRht;
                 } // End FOR
 
                 // We no longer need this ptr
@@ -1007,7 +1001,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
                 break;
 
-            case ARRAY_LIST:        // Handled above
             defstop
                 break;
         } // End FOR/SWITCH
@@ -1300,11 +1293,6 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
                                             ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
                                             lptkAxis,
                                             lptkFunc);
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
         defstop
             return NULL;
     } // End SWITCH

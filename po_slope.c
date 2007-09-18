@@ -37,6 +37,10 @@ LPPL_YYSTYPE PrimOpSlope_EM_YY
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
         return PrimOpMonSlope_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand

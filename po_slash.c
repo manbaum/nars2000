@@ -37,6 +37,10 @@ LPPL_YYSTYPE PrimOpSlash_EM_YY
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
         return PrimOpMonSlash_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand

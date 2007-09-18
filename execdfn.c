@@ -118,7 +118,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
         lpYYFcnStrLft = lpYYFcnStrRht = NULL;
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -451,7 +451,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     EXIT_TYPES     exitType;        // Return code from ParseLine
 #endif
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -829,7 +829,7 @@ BOOL Unlocalize
     RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

@@ -46,6 +46,10 @@ LPPL_YYSTYPE PrimFnUpTackJot_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_UPTACKJOT);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -185,11 +189,6 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
 
             break;          // Join common global code
 
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
         defstop
             return NULL;
     } // End SWITCH
@@ -325,7 +324,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     HWND           hWndEC;          // Edit Control window handle
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

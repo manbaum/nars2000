@@ -26,19 +26,23 @@
 
 LPPL_YYSTYPE PrimOpDieresisTilde_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
-     LPPL_YYSTYPE lpYYFcnStr,           // Ptr to operator function strand
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    Assert (lpYYFcnStr->tkToken.tkData.tkChar EQ UTF16_DIERESISTILDE);
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DIERESISTILDE);
+
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonDieresisTilde_EM_YY (lpYYFcnStr,    // Ptr to operator function strand
+        return PrimOpMonDieresisTilde_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
                                              lptkRhtArg);   // Ptr to right arg
     else
         return PrimOpDydDieresisTilde_EM_YY (lptkLftArg,    // Ptr to left arg token
-                                             lpYYFcnStr,    // Ptr to operator function strand
+                                             lpYYFcnStrOpr, // Ptr to operator function strand
                                              lptkRhtArg);   // Ptr to right arg token
 } // End PrimOpDieresisTilde_EM_YY
 

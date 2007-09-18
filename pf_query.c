@@ -200,7 +200,7 @@ APLINT PrimFnMonQueryIisI
     uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -250,7 +250,7 @@ APLINT PrimFnMonQueryIisF
     uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -318,8 +318,9 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     APLBOOL      bQuadIO;           // []IO
 
-    // Get the current value of []IO
-    bQuadIO = GetQuadIO ();
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -332,6 +333,9 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
                                    lptkAxis);
         return NULL;
     } // End IF
+
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);

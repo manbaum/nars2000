@@ -35,6 +35,9 @@ LPPL_YYSTYPE SysFnDR_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    // Note that we don't test for TKT_LIST/ARRAY_LIST
+    //   as this function processes that element.
+
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -246,7 +249,6 @@ LPPL_YYSTYPE SysFnMonDR_EM
 
             break;
 
-////////case ARRAY_LIST:            // Handled above with TKT_LIST
         defstop
             break;
     } // End SWITCH

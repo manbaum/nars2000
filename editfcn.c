@@ -581,9 +581,14 @@ LRESULT APIENTRY FEWndProc
             return FALSE;           // We handled the msg
 
         case WM_SETFOCUS:
+#ifdef DEBUG
+////////////dprintfW (L">>WM_SETFOCUS (%08X) -- hWndFE", hWnd);
+#endif
             // Pass on to the edit ctrl
             SetFocus (hWndEC);
-
+#ifdef DEBUG
+////////////dprintfW (L">>SetFocus (%08X) -- hWndEC", hWndEC);
+#endif
             break;
 
         case WM_MDIACTIVATE:        // Activate/de-activate a child window
@@ -679,6 +684,7 @@ LRESULT APIENTRY FEWndProc
             // If it's OK to close the window, do so, else ignore
             if (!QueryCloseFE (hWnd))
                 return FALSE;       // Do not close
+
             break;                  // Default action is to close
 
         case WM_DESTROY:
@@ -783,7 +789,7 @@ LRESULT WINAPI LclEditCtrlWndProc
     WNDPROC      lpfnOldEditCtrlWndProc; // Ptr to preceding Edit Control window procedure
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
 ////LCLODSAPI ("EC: ", hWnd, message, wParam, lParam);
     // Split cases
@@ -2343,18 +2349,18 @@ void DrawLineNumsFE
 //***************************************************************************
 
 BOOL QueryCloseFE
-    (HWND hWnd)
+    (HWND hWndFE)           // Handle for FE window
 
 {
     // If the text hasn't changed, continue with close
-    if (!GetWindowLong (hWnd, GWLSF_CHANGED))
+    if (!GetWindowLong (hWndFE, GWLSF_CHANGED))
         return TRUE;
 
     // Ask the user what to do
-    switch (MessageBox (hWnd, szCloseMessage, lpszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
+    switch (MessageBox (hWndFE, szCloseMessage, lpszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
     {
         case IDYES:         // Save the function
-            return SaveFunction (hWnd);
+            return SaveFunction (hWndFE);
 
         case IDNO:          // Do not save the function
             return TRUE;
@@ -2384,7 +2390,7 @@ void ErrorHandler
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -2513,7 +2519,7 @@ BOOL SaveFunction
     Assert (IzitFE (hWndFE));
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLong (hWndFE, GWLSF_HWNDEC);
@@ -2535,7 +2541,7 @@ BOOL SaveFunction
                     "Insufficient memory to save the function header text!!",
                     lpszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-        return bRet;
+        goto ERROR_EXIT;
     } // End IF
 
     // The following test isn't an optimzation, but avoids
@@ -2980,17 +2986,13 @@ BOOL SaveFunction
         bRet = TRUE;
 
         goto NORMAL_EXIT;
-    } // End IF
+    } else
+        // Ensure the FE window redraws the caret
+        SetFocus (hWndFE);
 ERROR_EXIT:
     if (hGlbDfnHdr)
     {
         FreeResultGlobalDfn (hGlbDfnHdr); hGlbDfnHdr = NULL;
-    } // End IF
-
-    // Free the virtual memory we allocated above
-    if (fhLocalVars.lpYYStrandStart)
-    {
-        VirtualFree (fhLocalVars.lpYYStrandStart, 0, MEM_RELEASE); fhLocalVars.lpYYStrandStart = NULL;
     } // End IF
 
     if (hGlbTknHdr)
@@ -3008,6 +3010,12 @@ ERROR_EXIT:
         MyGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
     } // End IF
 NORMAL_EXIT:
+    // Free the virtual memory we allocated above
+    if (fhLocalVars.lpYYStrandStart)
+    {
+        VirtualFree (fhLocalVars.lpYYStrandStart, 0, MEM_RELEASE); fhLocalVars.lpYYStrandStart = NULL;
+    } // End IF
+
     return bRet;
 } // End SaveFunction
 #undef  APPEND_NAME
@@ -3128,18 +3136,16 @@ BOOL CloseFunction
     (HWND hWndFE)
 
 {
+    BOOL bRet;                  // TRUE iff we're to close
+
     Assert (IzitFE (hWndFE));
 
     // If it's OK to close the window, do so, else ignore
-    if (QueryCloseFE (hWndFE))
-    {
+    bRet = QueryCloseFE (hWndFE);
+    if (bRet)
         // Close the Function Editor window
         SendMessage (GetParent (hWndFE), WM_MDIDESTROY, (WPARAM) hWndFE, 0);
-
-        return TRUE;
-    } // End IF
-
-    return FALSE;
+    return bRet;
 } // End CloseFunction
 
 

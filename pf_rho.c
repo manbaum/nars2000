@@ -38,6 +38,10 @@ LPPL_YYSTYPE PrimFnRho_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_RHO);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -142,11 +146,6 @@ LPPL_YYSTYPE PrimFnMonRho_EM_YY
             return PrimFnMonRhoGlb_EM_YY
                    (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
                     lptkFunc);                                          // Ptr to function token
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-
         defstop
             return NULL;
     } // End SWITCH
@@ -1114,11 +1113,6 @@ BOOL PrimFnDydRhoLftValid_EM
 
             break;
 
-        case TKT_LISTPAR:
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return FALSE;
-
         defstop
             return FALSE;
     } // End SWITCH
@@ -1291,7 +1285,6 @@ BOOL PrimFnDydRhoLftGlbValid_EM
             case ARRAY_CHAR:
             case ARRAY_NESTED:          // We could check for promotion to simple numeric
             case ARRAY_HETERO:          // ...
-            case ARRAY_LIST:
                 bRet = FALSE;
 
                 break;
@@ -1396,7 +1389,6 @@ void PrimFnDydRhoLftGlbCopyDim
         case ARRAY_CHAR:
         case ARRAY_NESTED:          // We could check for promotion to simple numeric
         case ARRAY_HETERO:          // ...
-        case ARRAY_LIST:
             break;
 
         defstop
@@ -1626,7 +1618,6 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             break;
         } // End ARRAY_APA
 
-        case ARRAY_LIST:
         defstop
             break;
     } // End SWITCH

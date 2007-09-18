@@ -34,7 +34,7 @@ EXCEPTION_CODES MyGetExceptionCode
     EXCEPTION_CODES ExceptionCode;  // Exception code
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -63,7 +63,7 @@ void MySetExceptionCode
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -398,6 +398,10 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     DBGENTER;
+
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -1449,6 +1453,10 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
 
     DBGENTER;
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
@@ -1821,7 +1829,7 @@ BOOL PrimFnDydSimpNest_EM
             //   {times}{backscan}1{drop}({rho}Z),1
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
-            ByteAlloc = aplRankRes * sizeof (APLINT);
+            ByteAlloc = aplRankRes * sizeof (APLUINT);
             Assert (ByteAlloc EQ (UINT) ByteAlloc);
             hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
             if (!hGlbWVec)
@@ -1851,7 +1859,7 @@ BOOL PrimFnDydSimpNest_EM
             //   in the right arg, with values initially all zero (thanks to GHND).
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
-            ByteAlloc = aplRankRes * sizeof (APLINT);
+            ByteAlloc = aplRankRes * sizeof (APLUINT);
             Assert (ByteAlloc EQ (UINT) ByteAlloc);
             hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
             if (!hGlbOdo)
@@ -2179,7 +2187,7 @@ BOOL PrimFnDydNestSimp_EM
             //   {times}{backscan}1{drop}({rho}Z),1
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
-            ByteAlloc = aplRankRes * sizeof (APLINT);
+            ByteAlloc = aplRankRes * sizeof (APLUINT);
             Assert (ByteAlloc EQ (UINT) ByteAlloc);
             hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
             if (!hGlbWVec)
@@ -2209,7 +2217,7 @@ BOOL PrimFnDydNestSimp_EM
             //   in the right arg, with values initially all zero (thanks to GHND).
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
-            ByteAlloc = aplRankRes * sizeof (APLINT);
+            ByteAlloc = aplRankRes * sizeof (APLUINT);
             Assert (ByteAlloc EQ (UINT) ByteAlloc);
             hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
             if (!hGlbOdo)
@@ -5243,7 +5251,7 @@ RESTART_EXCEPTION_SINGLETON:
             //   Cx contains the remaining axes.
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
-            ByteRes = aplRankRes * sizeof (APLINT);
+            ByteRes = aplRankRes * sizeof (APLUINT);
             Assert (ByteRes EQ (UINT) ByteRes);
             hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
             if (!hGlbWVec)
@@ -5273,7 +5281,7 @@ RESTART_EXCEPTION_SINGLETON:
             //   in the right arg, with values initially all zero (thanks to GHND).
             // N.B.  Conversion from APLUINT to UINT.
             //***************************************************************
-            ByteRes = aplRankRes * sizeof (APLINT);
+            ByteRes = aplRankRes * sizeof (APLUINT);
             Assert (ByteRes EQ (UINT) ByteRes);
             hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
             if (!hGlbOdo)

@@ -30,6 +30,12 @@ LPPL_YYSTYPE PrimOpJot_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_JOT);
+
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+
     return PrimOpJotCommon_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
                                   lpYYFcnStrOpr,        // Ptr to operator function strand
                                   lptkRhtArg,           // Ptr to right arg token

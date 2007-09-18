@@ -52,7 +52,7 @@ EXIT_TYPES GotoLine_EM
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
 
     // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData);
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -181,43 +181,6 @@ NORMAL_EXIT:
     return exitType;
 } // End GotoLine_EM
 #undef  APPEND_NAME
-
-
-//// //***************************************************************************
-//// //  $GotoReset
-//// //
-//// //  Handle {goto}
-//// //***************************************************************************
-////
-//// #ifdef DEBUG
-//// #define APPEND_NAME     L" -- GotoReset"
-//// #else
-//// #define APPEND_NAME
-//// #endif
-////
-//// void GotoReset
-////     (void)
-////
-//// {
-////     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
-////     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-////
-////     // Get the thread's PerTabData global memory handle
-////     hGlbPTD = TlsGetValue (dwTlsPerTabData);
-////
-////     // Lock the memory to get a ptr to it
-////     lpMemPTD = MyGlobalLock (hGlbPTD);
-////
-////     // Loop while there's a non-empty SI
-////         // Unlocalize the STEs on the innermost level
-////         //   and strip off one level
-////     while (lpMemPTD->lpSISCur NE NULL
-////         && Unlocalize ());
-////
-////     // We no longer need this ptr
-////     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-//// } // End GotoReset
-//// #undef  APPEND_NAME
 
 
 //***************************************************************************

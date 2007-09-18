@@ -33,6 +33,10 @@ LPPL_YYSTYPE PrimOpDieresis_EM_YY
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DIERESIS);
 
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken);
+
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
         return PrimOpMonDieresis_EM_YY (lpYYFcnStrOpr,  // Ptr to operator function strand
@@ -964,7 +968,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         //   {times}{backscan}1{drop}({rho}Z),1
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteAlloc = aplRankRes * sizeof (APLINT);
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
         Assert (ByteAlloc EQ (UINT) ByteAlloc);
         hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
         if (!hGlbWVec)
@@ -994,7 +998,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         //   in the right arg, with values initially all zero (thanks to GHND).
         // N.B.  Conversion from APLUINT to UINT.
         //***************************************************************
-        ByteAlloc = aplRankRes * sizeof (APLINT);
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
         Assert (ByteAlloc EQ (UINT) ByteAlloc);
         hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
         if (!hGlbOdo)

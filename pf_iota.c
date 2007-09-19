@@ -9,7 +9,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

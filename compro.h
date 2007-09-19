@@ -36,6 +36,7 @@
 #include "pf_cstile.pro"
 #include "pf_darrow.pro"
 #include "pf_dcaret.pro"
+#include "pf_deltastile.pro"
 #include "pf_domino.pro"
 #include "pf_dstile.pro"
 #include "pf_dtackjot.pro"

@@ -92,7 +92,7 @@ int CmpHGLOBAL
 //
 //  Compare two wide ASCIIZ strings the APL way
 //  Return 1 if s1 > s2, -1 if s1 < s2, and 0 otherwise.
-//  Essentially, return (s1 - s2).
+//  Essentially, return signum (s1 - s2).
 //***************************************************************************
 
 int aplcmp (const LPWCHAR s1, const LPWCHAR s2)
@@ -279,6 +279,49 @@ void GradeUp
         } // End IF/ELSE
     } // End WHILE
 } // End GradeUp
+
+
+//***************************************************************************
+//  $GnomeSort
+//
+//  Grade up on arbitrary objects using Gnome Sort
+//***************************************************************************
+
+void GnomeSort
+    (LPAPLUINT lpDst,       // Destination
+     LPVOID    lpSrc,       // Source
+     APLUINT   uCount,      // # APLUINTs in the source
+     APLINT (*ObjCmp) (LPVOID, APLUINT, APLUINT, LPVOID), // Ptr to comparison routine
+     LPVOID    lpExtra)     // Ptr to extra data (passed to ObjCmp)
+
+{
+    APLUINT u1, u2, u3;
+
+////// Start with {iota}aplRankCmp in lpDst
+////for (u1 = 0; u1 < uCount; u1++)
+////    lpDst[u1] = u1;
+
+    // Use Gnome sort on lpDst while comparing lpSrc
+    u2 = 1; u3 = 2;
+    while (u2 < uCount)
+    {
+        if (ObjCmp (lpSrc, lpDst[u2], lpDst[u2 - 1], lpExtra) >= 0)
+////////if (lpSrc[lpDst[u2]]     >= lpSrc[lpDst[u2 - 1]])
+////////if (lpSrc[lpDst[u2 - 1]] <= lpSrc[lpDst[u2]])
+        {
+            u2 = u3;
+            u3++;
+        } else
+        {
+            u1            = lpDst[u2 - 1];
+            lpDst[u2 - 1] = lpDst[u2];
+            lpDst[u2]     = u1;
+
+            if (u2 NE 1)
+                u2--;
+        } // End IF/ELSE
+    } // End WHILE
+} // End GnomeSort
 
 
 //***************************************************************************

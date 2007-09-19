@@ -168,6 +168,7 @@ $(O)pf_cstile.DEP       \
 $(O)pf_cstar.DEP        \
 $(O)pf_darrow.DEP       \
 $(O)pf_dcaret.DEP       \
+$(O)pf_deltastile.DEP   \
 $(O)pf_domino.DEP       \
 $(O)pf_dstile.DEP       \
 $(O)pf_dtackjot.DEP     \
@@ -361,6 +362,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)pf_dcaret.DEP)
 !       include $(O)pf_dcaret.DEP
+!endif
+!if exist ($(O)pf_deltastile.DEP)
+!       include $(O)pf_deltastile.DEP
 !endif
 !if exist ($(O)pf_domino.DEP)
 !       include $(O)pf_domino.DEP
@@ -623,6 +627,7 @@ $(O)pf_cstile.PRO       \
 $(O)pf_cstar.PRO        \
 $(O)pf_darrow.PRO       \
 $(O)pf_dcaret.PRO       \
+$(O)pf_deltastile.PRO   \
 $(O)pf_domino.PRO       \
 $(O)pf_dstile.PRO       \
 $(O)pf_dtackjot.PRO     \
@@ -770,6 +775,7 @@ $(O)pf_cstile.OBJ:      $(@B).C         $(PF_CSTILE_DEP)
 $(O)pf_cstar.OBJ:       $(@B).C         $(PF_CSTAR_DEP)
 $(O)pf_darrow.OBJ:      $(@B).C         $(PF_DARROW_DEP)
 $(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
+$(O)pf_deltastile.OBJ:  $(@B).C         $(PF_DELTASTILE_DEP)
 $(O)pf_domino.OBJ:      $(@B).C         $(PF_DOMINO_DEP)
 $(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
 $(O)pf_dtackjot.OBJ:    $(@B).C         $(PF_DTACKJOT_DEP)
@@ -896,6 +902,7 @@ OBJS=                       \
      $(O)pf_cstar.OBJ       \
      $(O)pf_darrow.OBJ      \
      $(O)pf_dcaret.OBJ      \
+     $(O)pf_deltastile.OBJ  \
      $(O)pf_domino.OBJ      \
      $(O)pf_dstile.OBJ      \
      $(O)pf_dtackjot.OBJ    \

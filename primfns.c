@@ -53,9 +53,7 @@ extern PRIMSPEC PrimSpecUpStile;
 #define PrimFnUpShoe_EM_YY          PrimFn_EM       // ERROR            ERROR
 
 
-// Primitives TO DO                                    Monadic          Dyadic
-#define PrimFnDelStile_EM_YY        PrimFn_EM       // Mixed (*)        Mixed (*)
-#define PrimFnDeltaStile_EM_YY      PrimFn_EM       // Mixed (*)        Mixed (*)
+// Primitive functions TO DO                           Monadic          Dyadic
 #define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed (*)        ERROR
 #define PrimFnDownTack_EM_YY        PrimFn_EM       // ERROR            Mixed (*)
 #define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR            Mixed (*)
@@ -66,6 +64,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimOpStileTilde_EM_YY                      // ERROR            Partition
 
 // Dyadic  Operators TO DO                             Monadic          Dyadic
+/////// PrimProtoOpDieresisCircle_EM_YY             // ?????            ?????
 /////// PrimOpDieresisDel_EM_YY                     // ERROR            Dual (*)
 /////// PrimOpDieresisDowntack_EM_YY                // ERROR            Convolution (*)
 /////// PrimOpDieresisJot_EM_YY                     // Rank (*)         Rank (*)
@@ -82,6 +81,8 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnComma_EM_YY                           // Mixed            Mixed
 /////// PrimFnCommaBar_EM_YY                        // Mixed            Mixed
 /////// PrimFnColonBar_EM_YY                        // Scalar           Scalar
+/////// PrimFnDelStile_EM_YY                        // Mixed            Mixed (*)
+/////// PrimFnDeltaStile_EM_YY                      // Mixed            Mixed (*)
 /////// PrimFnDomino_EM_YY                          // Mixed            Mixed
 /////// PrimFnDownArrow_EM_YY                       // ERROR            Mixed
 /////// PrimFnDownCaret_EM_YY                       // ERROR            Scalar
@@ -114,7 +115,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnDownTackJot_EM_YY                     // Mixed            Mixed (*)
 /////// PrimFnTilde_EM_YY                           // Scalar           Mixed (*)
 /////// PrimFnTimes_EM_YY                           // Scalar           Scalar
-/////// PrimFnUpArrow_EM_YY                         // Mixed            Mixed (*)
+/////// PrimFnUpArrow_EM_YY                         // Mixed            Mixed
 /////// PrimFnUpCaret_EM_YY                         // ERROR            Scalar
 /////// PrimFnUpCaretTilde_EM_YY                    // ERROR            Scalar
 /////// PrimFnUpStile_EM_YY                         // Scalar           Scalar
@@ -354,24 +355,22 @@ LPPL_YYSTYPE PrimFn_EM
 
 
 // Primitive functions TO DO
-#define PrimProtoFnDelStile_EM_YY               PrimProtoFn_EM
-#define PrimProtoFnDeltaStile_EM_YY             PrimProtoFn_EM
-#define PrimProtoFnDownArrow_EM_YY              PrimProtoFn_EM
 #define PrimProtoFnDownShoe_EM_YY               PrimProtoFn_EM
 #define PrimProtoFnDownTack_EM_YY               PrimProtoFn_EM
 #define PrimProtoFnEpsilonUnderbar_EM_YY        PrimProtoFn_EM
-#define PrimProtoFnRightShoe_EM_YY              PrimProtoFn_EM
 #define PrimProtoFnUpTack_EM_YY                 PrimProtoFn_EM
-#define PrimProtoFnUpTackJot_EM_YY              PrimProtoFn_EM
 
 
-// Primitive operators TO DO
+// Monadic operators TO DO
+#define PrimProtoOpStileTilde_EM_YY             PrimProtoOp_EM
+
+// Dyadic operators TO DO
 #define PrimProtoOpDieresisCircle_EM_YY         PrimProtoOp_EM
 #define PrimProtoOpDieresisDel_EM_YY            PrimProtoOp_EM
 #define PrimProtoOpDieresisDownTack_EM_YY       PrimProtoOp_EM
 #define PrimProtoOpDieresisJot_EM_YY            PrimProtoOp_EM
 #define PrimProtoOpDieresisStar_EM_YY           PrimProtoOp_EM
-#define PrimProtoOpStileTilde_EM_YY             PrimProtoOp_EM
+#define PrimProtoOpDot_EM_YY                    PrimProtoOp_EM
 
 
 // Primitive scalar functions DONE
@@ -402,7 +401,10 @@ LPPL_YYSTYPE PrimFn_EM
 
 // Primitive mixed functions DONE
 /////// PrimProtoFnComma_EM_YY
+/////// PrimProtoFnDelStile_EM_YY
+/////// PrimProtoFnDeltaStile_EM_YY
 /////// PrimProtoFnDomino_EM_YY
+/////// PrimProtoFnDownArrow_EM_YY
 /////// PrimProtoFnCircleSlope_EM_YY
 /////// PrimProtoFnCircleStile_EM_YY
 /////// PrimProtoFnDomino_EM_YY
@@ -414,18 +416,19 @@ LPPL_YYSTYPE PrimFn_EM
 /////// PrimProtoFnLeftTack_EM_YY
 /////// PrimProtoFnQuery_EM_YY
 /////// PrimProtoFnRho_EM_YY
+/////// PrimProtoFnRightShoe_EM_YY
 /////// PrimProtoFnRightTack_EM_YY
 /////// PrimProtoFnSlash_EM_YY
 /////// PrimProtoFnSlope_EM_YY
 /////// PrimProtoFnSquad_EM_YY
 /////// PrimProtoFnTilde_EM_YY
 /////// PrimProtoFnUpArrow_EM_YY
+/////// PrimProtoFnUpTackJot_EM_YY
 
 
 // Primitive operators DONE
 /////// PrimProtoOpDieresis_EM_YY
 /////// PrimProtoOpDieresisTilde_EM_YY
-/////// PrimProtoOpDot_EM_YY
 /////// PrimProtoOpJot_EM_YY
 /////// PrimProtoOpJotDot_EM_YY
 /////// PrimProtoOpSlash_EM_YY
@@ -635,9 +638,7 @@ LPPL_YYSTYPE PrimProtoFn_EM
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                               lptkFunc);
-    return NULL;
+    return PrimFnNonceError_EM (lptkFunc);
 } // End PrimProtoFn_EM
 #undef  APPEND_NAME
 

@@ -278,6 +278,8 @@
             <li>Monadic up arrow ({uparrow}) (first)</li>
             <li>Monadic uptack jot ({uptackjot}) (execute)</li>
             <li>Monadic right shoe ({disclose}) (disclose) with and without axis operator</li>
+            <li>Monadic delta stile ({gradeup}) (numeric grade up)</li>
+            <li>Monadic del stile ({gradedown}) (numeric grade down)</li>
           </ul>
         </li>
         <li>Dyadic

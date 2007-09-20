@@ -162,8 +162,9 @@ ul, ol
           } // End IF
       } // End WHILE
 
-      // Sort files descendingly
-      rsort ($Files);
+      // Sort files descendingly by version #
+      natsort ($Files);
+      $Files = array_reverse ($Files);
 
       foreach ($Files as $File)
       {

@@ -10,8 +10,6 @@ TO DO:  General:  Important
 * ...       dyadic tilde                (without)
 * ...       dyadic dot                  (inner product)
 * ...       monadic down shoe           (unique)
-* ...       dyadic grade-up             (char grades)
-* ...       dyadic grade-down           (char grades)
 * ...       dyadic down tack            (representation)
 * ...       dyadic right shoe           (pick)
 * ...       dyadic up tack              (base value)
@@ -22,8 +20,7 @@ TO DO:  General:  Important
 * ...       bracket indexed modified assignment  (A[B])+{is}C
 * ...       )LOAD
 * ...       )COPY
-* ...       minimum set of system functions
-* ...          []AV
+* ...       minimum set of system functions, to wit:
 * ...          []DR R
 * ...        L []DR R
 * ...          []EM
@@ -64,7 +61,7 @@ TO DO:  General:  Wish List
 * ...       array predicates
 * ...       syntax highlighting
 * ...       control structures
-* ...       expanded set of system functions
+* ...       expanded set of system functions, to wit:
 * ...         []SI
 * ...         []SINL
 * ...         []CALL R
@@ -148,6 +145,7 @@ DONE:  General
 * ...       event handling ([]ALX)
 * ...       Ctrl-Break
 * ...       []PROTOTYPE:
+* ...       []AV
 * ...       []LC
 * ...       []DL R
 * ...       []NC R
@@ -157,6 +155,8 @@ DONE:  General
 * ...       dyadic up arrow
 * ...       monadic grade-up
 * ...       monadic grade-down
+* ...       dyadic grade-up
+* ...       dyadic grade-down
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector
@@ -166,6 +166,8 @@ DONE:  General
 * Remove apaLen from APA definition
 * Make <dtoa.c> multi-threaded
 * Test all occurrences of a list as the right arg to a primitive or system function
+* Right double click on the name of a user-defined function/operator
+  or available name opens up the function editor
 *
 
 

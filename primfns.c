@@ -1125,7 +1125,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
     LPPRIMFNS lpPrimFn;             // Ptr to function address
     HGLOBAL   hGlbFcn;              // Function strand or user-defined function/operator global memory handle
 
-    Assert (lptkAxis EQ NULL);
+    // Note that lptkAxis is not NULL for (say) L {take}[1]{each} R
 
     // Split cases based upon the type of the first token
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)

@@ -199,6 +199,9 @@ typedef enum tagNAME_CLASS
     NAMECLASS_SYSFCN,       //  6 = System function
     NAMECLASS_SYSLBL,       //  7 = System label
 } NAME_CLASS;
+// Note that )NMS in <syscmds.c> assumes that the Name Class
+//   is a single digit.  If you add enough classes to invalidate
+//   that assumptioon, be sure make )NMS work, too.
 
 // Symbol table flags
 typedef struct tagSTFLAGS

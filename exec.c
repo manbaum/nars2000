@@ -1093,6 +1093,9 @@ DWORD WINAPI ImmExecLineInThread
     // Get the window handle of the Session Manager
     hWndSM = GetParent (hWndEC);
 
+    // Initialize the Reset Flag
+    resetFlag = RESETFLAG_NONE;
+
     // Tokenize, parse, and untokenize the line
 
     // Tokenize the line
@@ -1103,8 +1106,34 @@ DWORD WINAPI ImmExecLineInThread
     // If it's invalid, ...
     if (hGlbToken EQ NULL)
     {
-        exitType = EXITTYPE_ERROR;  // Mark as in error
+        // Execute the statement in immediate execution mode
+        exitType =
+        ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                     FALSE,         // TRUE iff free the lpwszLine on completion
+                     TRUE,          // TRUE iff wait until finished
+                     (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+        // Split cases based upon the exit type
+        switch (exitType)
+        {
+            case EXITTYPE_GOTO_LINE:        // Pass on to caller
+            case EXITTYPE_RESET_ALL:        // ...
+            case EXITTYPE_RESET_ONE:        // ...
+            case EXITTYPE_RESET_ONE_INIT:   // ...
+                break;
 
+            case EXITTYPE_ERROR:            // Mark as in error (from the error in Tokenize_EM)
+            case EXITTYPE_DISPLAY:          // ...
+            case EXITTYPE_NODISPLAY:        // ...
+            case EXITTYPE_NOVALUE:          // ...
+            case EXITTYPE_GOTO_ZILDE:       // ...
+                exitType = EXITTYPE_ERROR;
+
+                break;
+
+            case EXITTYPE_NONE:
+            defstop
+                break;
+        } // End SWITCH
         goto ERROR_EXIT;
     } // End IF
 
@@ -3185,7 +3214,7 @@ ERROR_EXIT:
         tkLocalVars.lpLastEOS   = NULL;
     } // End IF
 
-    // Free the handle, if requested
+    // Free the handle
     MyGlobalFree (tkLocalVars.hGlbToken); tkLocalVars.hGlbToken = NULL;
 
     goto FREED_EXIT;

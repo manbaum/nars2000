@@ -840,6 +840,12 @@ LRESULT APIENTRY MFWndProc
 
             break;                  // Continue with next handler
 
+
+        case WM_RBUTTONDBLCLK:
+            DbgBrk ();
+
+            break;
+
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
 #define lpnmh   ((LPNMHDR) lParam)

@@ -94,7 +94,7 @@ LPPL_YYSTYPE SysFnMonCR_EM
     UINT           uLineLen;            // Length of a text line
     APLLONGEST     aplLongestRht;       // Right arg longest if immediate
     LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY
-    STFLAGS        stFlags;             // STE flags
+    STFLAGS        stFlags = {0};       // STE flags
     LPPL_YYSTYPE   lpYYRes = NULL;      // Ptr to the result
     LPAPLCHAR      lpw;                 // Ptr to wide chars
 
@@ -120,9 +120,6 @@ LPPL_YYSTYPE SysFnMonCR_EM
 
     // Get right arg's global ptrs
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-
-    // Clear the flags
-    ZeroMemory (&stFlags, sizeof (stFlags));
 
     // Split cases based upon the right arg rank
     if (aplRankRht EQ 0)

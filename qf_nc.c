@@ -333,8 +333,8 @@ NORMAL_EXIT:
 //  A name is validly constructed if
 //
 //   first:  QUAD | QUOTEQUAD | ALPHABETIC;
-//   second: ALPHABETIC | NUMERIC;
-//   name:   OVERBAR | first second;
+//   second: ALPHABETIC | NUMERIC | OVERBAR;
+//   name:   OVERBAR | ALPHA | OMEGA | first second;
 //
 //***************************************************************************
 
@@ -351,26 +351,32 @@ BOOL ValidName
      || lpaplChar[0] EQ UTF16_DELTA
      || lpaplChar[0] EQ UTF16_DELTAUNDERBAR
      || lpaplChar[0] EQ UTF16_OVERBAR
+     || lpaplChar[0] EQ UTF16_ALPHA
+     || lpaplChar[0] EQ UTF16_OMEGA
      || (L'a' <= lpaplChar[0]
       &&         lpaplChar[0] <= L'z')
      || (L'A' <= lpaplChar[0]
       &&         lpaplChar[0] <= L'Z'))
     {
-        // If the first char is overbar, it must be the only char
-        if (lpaplChar[0] EQ UTF16_OVERBAR
+        // If the first char is overbar | alpha | omega,
+        //   it must be the only char
+        if ((lpaplChar[0] EQ UTF16_OVERBAR
+          || lpaplChar[0] EQ UTF16_ALPHA
+          || lpaplChar[0] EQ UTF16_OMEGA)
          && uLen NE 1)
             return FALSE;
 
         // Loop through the rest of the chars
         for (uNam = 1; uNam < uLen; uNam++)
-        if (!(L'a' <= lpaplChar[uNam]
-           &&         lpaplChar[uNam] <= L'z')
-          || (L'A' <= lpaplChar[uNam]
-           &&         lpaplChar[uNam] <= L'Z')
-          || (L'0' <= lpaplChar[uNam]
-           &&         lpaplChar[uNam] <= L'9')
-          || lpaplChar[0] EQ UTF16_DELTA
-          || lpaplChar[0] EQ UTF16_DELTAUNDERBAR)
+        if (!((L'a' <= lpaplChar[uNam]
+            &&         lpaplChar[uNam] <= L'z')
+           || (L'A' <= lpaplChar[uNam]
+            &&         lpaplChar[uNam] <= L'Z')
+           || (L'0' <= lpaplChar[uNam]
+            &&         lpaplChar[uNam] <= L'9')
+           || lpaplChar[0] EQ UTF16_DELTA
+           || lpaplChar[0] EQ UTF16_DELTAUNDERBAR
+           || lpaplChar[0] EQ UTF16_OVERBAR))
             return FALSE;
         return TRUE;
     } // End IF
@@ -393,6 +399,10 @@ BOOL ValidName
 //   5 = System variable
 //   6 = System function
 //   7 = System label
+//
+//  Note that )NMS in <syscmds.c> assumes that the Name Class
+//    is a single digit.  If you add enough classes to invalidate
+//    that assumptioon, be sure make )NMS work, too.
 //***************************************************************************
 
 APLINT CalcNameClass

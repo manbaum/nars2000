@@ -472,20 +472,6 @@ LRESULT APIENTRY FEWndProc
 
             return FALSE;           // We handled the msg
 
-        case MYWM_IZITNAME:         // start = (UINT) wParam
-                                    // end   = (UINT) lParam
-            // This message is sent whenever the user right clicks
-            //   inside a Function Edit window and the Edit Control
-            //   wants to know whether or not to enable the
-            //   Localize/Unlocalize menu items.
-////        DbgBrk ();      /// ***FINISHME*** -- Localize/Unlocalize
-
-
-
-
-
-            return FALSE;           // Its not a name
-
         case MYWM_SAVE_FN:
             // Save the function (if well-formed)
             SaveFunction (hWnd);
@@ -749,6 +735,32 @@ int LclECPaintHook
 
 
 //***************************************************************************
+//  $IzitNameChar
+//
+//  Return TRUE iff the given APLCHAR is valid in a variable/function/operator name
+//***************************************************************************
+
+BOOL IzitNameChar
+    (APLCHAR aplChar)
+
+{
+    return ((L'a' <= aplChar
+          &&         aplChar <= L'z')
+         || (L'A' <= aplChar
+          &&         aplChar <= L'Z')
+         || (L'0' <= aplChar
+          &&         aplChar <= L'9')
+         || aplChar EQ UTF16_DELTA
+         || aplChar EQ UTF16_DELTAUNDERBAR
+         || aplChar EQ UTF16_OVERBAR
+         || aplChar EQ UTF16_ALPHA          // Only as one and only char
+         || aplChar EQ UTF16_OMEGA          // ...
+         || aplChar EQ UTF16_QUAD           // Valid as 1st char only
+         || aplChar EQ UTF16_QUOTEQUAD);    // ...
+} // End IzitNameChar
+
+
+//***************************************************************************
 //  $LclEditCtrlWndProc
 //
 //  Local window procedure for the Edit Control
@@ -795,6 +807,245 @@ LRESULT WINAPI LclEditCtrlWndProc
     // Split cases
     switch (message)
     {
+        // In the case of right double click, the sequence of messages is
+        //   WM_RBUTTONDOWN
+        //   WM_RBUTTONUP
+        //   WM_CONTEXTMENU
+        //   WM_RBUTTONDBLCLK
+        //   WM_RBUTTONUP
+        //
+        // If the user double clicked, we set a timer in the WM_CONTEXTMENU
+        //   message handler and wait for it to expire (real WM_CONTEXTMENU)
+        //   or WM_RBUTTONDBLCLK occurs in which it's a double click.  Note
+        //   the last WM_RBUTTONUP.  If we pass this message on, W will
+        //   send another WM_CONTEXTMENU.  To avoid this, we save the current
+        //   tick count at the end of WM_RBUTTONDBLCLK.  If WM_RBUTTONUP
+        //   occurs too soon, we ignore that message.
+
+        // ***FIXME*** -- If the user right double clicks on a name and the
+        //                editor window for the function overlaps the name,
+        //                then the last WM_RBUTTONUP message is sent to
+        //                the editor window and appears as a WM_CONTEXTMENU.
+        //                Maybe use SetCapture ??
+
+#define ID_TIMER        1729
+        case WM_CONTEXTMENU:                // hwnd = (HWND) wParam;
+                                            // xPos = LOWORD(lParam);
+                                            // yPos = HIWORD(lParam);
+            // Set a timer waiting for WM_RBUTTONDBLCLK or expiration
+            SetTimer (hWnd, ID_TIMER, GetDoubleClickTime () / 4, NULL);
+
+            // Save the context menu's wParam & lParam so we
+            //   can retrieve them in WM_TIMER.  The values
+            //   in lParam are in screen coordinates and are
+            //   translated for multiple monitor support which
+            //   saves me the trouble.
+            SetProp (hWnd, "TIMER.WPARAM", (LPVOID) wParam);
+            SetProp (hWnd, "TIMER.LPARAM", (LPVOID) lParam);
+
+            return FALSE;
+
+        case WM_TIMER:              // wTimerID = wParam            // Timer identifier
+                                    // tmpc = (TIMERPROC *) lParam  // Ptr to timer callback
+            if (wParam EQ ID_TIMER)
+            {
+                // The timer expired, so it's a real WM_CONTEXTMENU
+                KillTimer (hWnd, ID_TIMER);
+
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                // Get the address of the preceding Edit Control window proc
+                lpfnOldEditCtrlWndProc = lpMemPTD->lpfnOldEditCtrlWndProc;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                return CallWindowProcW (lpfnOldEditCtrlWndProc,
+                                        hWnd,
+                                        WM_CONTEXTMENU,
+                                        (WPARAM) GetProp (hWnd, "TIMER.WPARAM"),
+                                        (LPARAM) GetProp (hWnd, "TIMER.LPARAM"));
+            } // End IF
+
+            break;
+
+        case WM_RBUTTONDBLCLK:
+        {
+            UINT       xPos, yPos;      // x- and y-screen coordinates
+            LPSYMENTRY lpSymEntry;      // Ptr to the SYMENTRY under the name
+
+            // It's a right double click, so cancel the timer
+            KillTimer (hWnd, ID_TIMER);
+
+            // Handle a right double click
+
+            // Get the lParam from the original WM_CONTEXTMENU message
+            yPos = (LPARAM) GetProp (hWnd, "TIMER.LPARAM");
+
+            xPos = (short) LOWORD (yPos);
+            yPos = (short) HIWORD (yPos);
+
+            // If there's an identifier underneath this double click,
+            //   attempt to edit it as a function/variable
+            lpSymEntry = (LPSYMENTRY) SendMessageW (hWnd, MYWM_IZITNAME, xPos, yPos);
+            if (lpSymEntry
+             && (lpSymEntry->stFlags.ObjName EQ OBJNAME_NONE
+              || lpSymEntry->stFlags.ObjName EQ OBJNAME_USR)
+             && (lpSymEntry->stFlags.UsrDfn
+              || !lpSymEntry->stFlags.Value))
+            {
+                LPAPLCHAR lpMemName;
+
+                // If the name is that of a user defined function/operator
+                //   or it is undefined, edit it as a function
+                switch (lpSymEntry->stFlags.ObjType)
+                {
+                    case NAMETYPE_UNK:
+                    case NAMETYPE_FN0:
+                    case NAMETYPE_FN12:
+                    case NAMETYPE_OP1:
+                    case NAMETYPE_OP2:
+                    case NAMETYPE_AMB:
+                        // Lock the memory to get a ptr to it
+                        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                        // Lock the memory to get a ptr to it
+                        lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+
+                        // Copy the name (and its trailing zero) to temporary storage
+                        //   which won't go away when we unlock the name's global
+                        //   memory handle
+                        CopyMemory (lpwszFormat, lpMemName, (lstrlenW (lpMemName) + 1) * sizeof (APLCHAR));
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+
+                        // Open a Function Editor window
+                        CreateFcnWindow (lpwszFormat, lpMemPTD->hWndMC);
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                        break;
+
+                    case NAMETYPE_LST:      // Ignore this name type
+                    case NAMETYPE_VAR:      // ...
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End IF
+
+            // In case we get a WM_RBUTTONUP message shortly after this one,
+            //   we need a way to recognize it and discard it so W doesn't
+            //   think to generate another WM_CONTEXTMENU message.
+            SetProp (hWnd, "DBLCLK.TICKCOUNT", (LPVOID) GetTickCount ());
+
+            break;
+        } // End WM_RBUTTONDBLCLK
+#undef  ID_TIMER
+
+        case WM_RBUTTONUP:
+            // If this message occurs closely on the heels of a WM_RBUTTONDBLCLK,
+            //  discard it so W doesn't generate another WM_CONTEXTMENU message.
+            if (GetDoubleClickTime () > (GetTickCount () - (DWORD) GetProp (hWnd, "DBLCLK.TICKCOUNT")))
+                return FALSE;           // Discard this message
+            break;
+
+        case MYWM_IZITNAME:         // xPos = (UINT) wParam
+                                    // yPos = (UINT) lParam
+        {
+            POINT pt;
+
+            // This message is sent whenever the user right clicks
+            //   inside a Function Edit window and the Edit Control
+            //   wants to know whether or not to enable the
+            //   Localize/Unlocalize menu items, or it occurs
+            //   inside a Session Manager window and the user wants
+            //   to edit the named object.
+
+            // Translate the xPos & yPos mouse screen coordinates into
+            //   client coordinates in the Edit Control window
+            pt.x = (UINT) wParam;
+            pt.y = (UINT) lParam;
+            ScreenToClient (hWnd, &pt);
+
+            // Translate the xPos & yPos client coordinates into
+            //   char positions in the text
+            uCharPos = SendMessageW (hWnd, EM_CHARFROMPOS, 0, MAKELPARAM (pt.x, pt.y));
+
+            // Split out the number of the line with this char
+            //   and the char position
+            uLineNum = HIWORD (uCharPos);
+            uCharPos = LOWORD (uCharPos);
+
+            // Get the length of the line with this char
+            uLineLen = SendMessageW (hWnd, EM_LINELENGTH, uCharPos, 0);
+
+            // Get the index of the first character in the line
+            uLinePos = SendMessageW (hWnd, EM_LINEINDEX, uLineNum, 0);
+
+            // Convert uCharPos from origin-0 to origin-Line
+            uCharPos -= uLinePos;
+
+            // Tell EM_GETLINE maximum # chars in the buffer
+            // The output array is a temporary so we don't have to
+            //   worry about overwriting outside the allocated buffer
+            ((LPWORD) lpwszTemp)[0] = (WORD) uLineLen;
+
+            // Get the contents of the line
+            SendMessageW (hWnd, EM_GETLINE, uLineNum, (LPARAM) lpwszTemp);
+
+            // Check the chars at and to the right of the specified char pos
+            uCharPosEnd = uCharPos;
+            while (IzitNameChar (lpwszTemp[uCharPosEnd]))
+                uCharPosEnd++;
+
+            // Ensure the name is properly terminated
+            lpwszTemp[uCharPosEnd] = L'\0';
+
+            // Start one char to the left
+            uCharPosBeg = uCharPos - 1;
+
+            // Check the chars to the left of the specified char pos
+            if (uCharPos)
+            {
+                while (IzitNameChar (lpwszTemp[uCharPosBeg]))
+                if (uCharPosBeg)
+                    uCharPosBeg--;
+                else
+                    break;
+            } // End IF
+
+            // Back up to the next position
+            //   as we started one back
+            uCharPosBeg++;
+
+            // The name spans [uCharPosBeg, uCharPosEnd)
+            // Check the whole name now
+            if (ValidName (&lpwszTemp[uCharPosBeg], uCharPosEnd - uCharPosBeg)
+             && lpwszTemp[uCharPosBeg] NE UTF16_QUAD
+             && lpwszTemp[uCharPosBeg] NE UTF16_QUOTEQUAD)
+            {
+                STFLAGS    stFlags = {0};       // Symbol Table Flags used to limit the lookup
+                LPSYMENTRY lpSymEntry;          // Ptr to SYMENTRY if found
+
+                // Lookup the name in the symbol table
+                lpSymEntry = SymTabLookupNameLength (&lpwszTemp[uCharPosBeg],
+                                                      uCharPosEnd - uCharPosBeg,
+                                                     &stFlags);
+                if (lpSymEntry)
+                    return (LRESULT) lpSymEntry;
+
+                // Name not found -- append it
+                // Lookup in or append to the symbol table
+                return (LRESULT) SymTabAppendName_EM (&lpwszTemp[uCharPosBeg]);
+            } else
+                return (LRESULT) NULL;
+        } // End MYWM_IZITNAME
+
 #define nVirtKey ((int) wParam)
         case WM_KEYDOWN:            // nVirtKey = (int) wParam;     // Virtual-key code
                                     // lKeyData = lParam;           // Key data
@@ -2032,7 +2283,7 @@ WCHAR GetCharValue
     // Tell EM_GETLINE maximum # chars in the buffer
     // The output array is a temporary so we don't have to
     //   worry about overwriting outside the allocated buffer
-    ((LPWORD) lpwszTemp)[0] = uLineLen;
+    ((LPWORD) lpwszTemp)[0] = (WORD) uLineLen;
 
     // Get the current line
     SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszTemp);

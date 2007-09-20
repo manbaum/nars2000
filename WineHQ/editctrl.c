@@ -942,7 +942,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         EDIT_WM_Command(es, HIWORD(wParam), LOWORD(wParam), (HWND)lParam);
         break;
 
-        case WM_CONTEXTMENU:
+    case WM_CONTEXTMENU:
         EDIT_WM_ContextMenu(es, (short)LOWORD(lParam), (short)HIWORD(lParam));
         break;
 
@@ -4296,7 +4296,7 @@ static void EDIT_WM_ContextMenu (EDITSTATE *es, INT x, INT y)
     {
         BOOL bItsaName;
 
-        bItsaName = SendMessageA (es->hwndParent, MYWM_IZITNAME, start, end);
+        bItsaName = SendMessageA (es->hwndSelf, MYWM_IZITNAME, x, y);
 
         AppendMenuA (popup, MF_SEPARATOR                           , 0             , NULL);
         AppendMenuA (popup, MF_STRING | (bItsaName ? 0 : MF_GRAYED), IDM_LOCALIZE  , "&Localize");

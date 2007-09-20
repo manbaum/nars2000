@@ -201,7 +201,7 @@ BOOL CmdFns_EM
     (LPWCHAR lpwszTail)
 
 {
-    return CmdFnsVarsOps_EM (lpwszTail, IzitFNS);
+    return CmdFnsVarsOps_EM (lpwszTail, IzitFNS, FALSE);
 } // End CmdFns_EM
 
 
@@ -229,7 +229,7 @@ BOOL CmdNms_EM
     (LPWCHAR lpwszTail)
 
 {
-    return CmdFnsVarsOps_EM (lpwszTail, IzitNMS);
+    return CmdFnsVarsOps_EM (lpwszTail, IzitNMS, TRUE);
 } // End CmdNms_EM
 
 
@@ -257,7 +257,7 @@ BOOL CmdVars_EM
     (LPWCHAR lpwszTail)
 
 {
-    return CmdFnsVarsOps_EM (lpwszTail, IzitVARS);
+    return CmdFnsVarsOps_EM (lpwszTail, IzitVARS, FALSE);
 } // End CmdVars_EM
 
 
@@ -285,7 +285,7 @@ BOOL CmdOps_EM
     (LPWCHAR lpwszTail)
 
 {
-    return CmdFnsVarsOps_EM (lpwszTail, IzitOPS);
+    return CmdFnsVarsOps_EM (lpwszTail, IzitOPS, FALSE);
 } // End CmdOps_EM
 
 
@@ -310,15 +310,16 @@ BOOL IzitOPS
 //***************************************************************************
 
 BOOL CmdFnsVarsOps_EM
-    (LPWCHAR lpwszTail,
-     BOOL (*IzitFVO) (UINT))
+    (LPWCHAR lpwszTail,             // Ptr to tail of command
+     BOOL  (*IzitFVO) (UINT),       // Ptr to function to determine name type
+     BOOL    bNMS)                  // TRUE iff the command is )NMS
 
 {
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
     LPAPLCHAR    lpMemName;         // Ptr to name global memory
-    HGLOBAL     *lphGlbSort;        // Ptr to HGLOBALs for sorting
+    LPSYMENTRY  *lpSymSort;         // Ptr to LPSYMENTRYs for sorting
     UINT         uSymCnt,           // Count of # matching STEs
                  uSymNum,           // Loop counter
                  uLineChar,         // Current char # in output line
@@ -334,7 +335,7 @@ BOOL CmdFnsVarsOps_EM
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Initialize the LPSYMENTRY sort array
-    lphGlbSort = (HGLOBAL *) lpwszTemp;
+    lpSymSort = (LPSYMENTRY *) lpwszTemp;
 
     // Trundle through the Symbol Table
     //   looking for functions (niladic or monadic/dyadic)
@@ -346,17 +347,23 @@ BOOL CmdFnsVarsOps_EM
      && lpSymEntry->stFlags.ObjName NE OBJNAME_SYS
      && (*IzitFVO) (lpSymEntry->stFlags.ObjType))
     {
+        // ***FIXME*** -- Make sensitive to lpwszTail
+        // ***FIXME*** -- Display global names only
+
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
 
+        // Get the name length
+        uNameLen = lstrlenW (lpMemName) + bNMS * 2;
+
         // Find the longest name
-        uMaxNameLen = max (uMaxNameLen, (UINT) lstrlenW (lpMemName));
+        uMaxNameLen = max (uMaxNameLen, uNameLen);
 
         // We no longer need this ptr
         MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
 
         // Save the LPSYMENTRY ptr for later use
-        lphGlbSort[uSymCnt] = lpSymEntry->stHshEntry->htGlbName;
+        lpSymSort[uSymCnt] = lpSymEntry;
 
         // Count in another matching name
         uSymCnt++;
@@ -366,7 +373,7 @@ BOOL CmdFnsVarsOps_EM
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Sort the HGLOBALs
-    ShellSort (lphGlbSort, uSymCnt, CmpHGLOBAL);
+    ShellSort (lpSymSort, uSymCnt, CmpLPSYMENTRY);
 
     // Get the current value of []PW
     uQuadPW = (UINT) GetQuadPW ();
@@ -381,12 +388,13 @@ BOOL CmdFnsVarsOps_EM
          uSymNum++)
     {
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (lphGlbSort[uSymNum]);
+        lpMemName = MyGlobalLock (lpSymSort[uSymNum]->stHshEntry->htGlbName);
 
+        // Get the name length
         uNameLen = lstrlenW (lpMemName);
 
         // If the line is too long, skip to the next one
-        if ((uLineChar + uNameLen) > uQuadPW
+        if ((uLineChar + uNameLen + bNMS * 2) > uQuadPW
          && uLineChar NE 0)
         {
             // Ensure properly terminated
@@ -412,11 +420,18 @@ BOOL CmdFnsVarsOps_EM
         // Copy the name to the output area
         CopyMemory (&lpwszFormat[uLineChar], lpMemName, uNameLen * sizeof (APLCHAR));
 
+        // If it's )NMS, append the name class
+        if (bNMS)
+        {
+            lpwszFormat[uLineChar + uNameLen + 0] = L'.';
+            lpwszFormat[uLineChar + uNameLen + 1] = L'0' + (UINT) CalcNameClass (lpSymSort[uSymNum]);
+        } // End IF
+
         // Skip to the next name boundary
         uLineChar += uMaxNameLen + 1;
 
         // We no longer need this ptr
-        MyGlobalUnlock (lphGlbSort[uSymNum]); lpMemName = NULL;
+        MyGlobalUnlock (lpSymSort[uSymNum]->stHshEntry->htGlbName); lpMemName = NULL;
     } // End FOR
 
     // If there's still text in the buffer, output it

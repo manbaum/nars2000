@@ -15,14 +15,22 @@
 #include "compro.h"
 #endif
 
-typedef struct tagGRADEDATA
+typedef struct tagTT_HANDLES        // Translate Table handles & ptrs
 {
-    APLSTYPE aplTypeRht;            // Right arg storage type
-    APLUINT  aplNELMRest;           // Product of right arg dims after the first
-    APLINT   apaOffRht,             // Right arg APA offset
-             apaMulRht;             // Right arg APA multiplier
-    int      iMul;                  // Multiplier for GradeUp vs. GradeDown
+    HGLOBAL   hGlbTT;               // TT global memory handle
+    LPAPLCHAR lpMemTT;              // Ptr to TT global memory
+} TT_HANDLES, *LPTT_HANDLES;
+
+typedef struct tagGRADE_DATA
+{
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLUINT      aplNELMRest;       // Product of right arg dims after the first
+    APLINT       apaOffRht,         // Right arg APA offset
+                 apaMulRht;         // Right arg APA multiplier
+    int          iMul;              // Multiplier for GradeUp vs. GradeDown
                                     //   1 for GradeUp, -1 for GradeDown
+    APLRANK      aplRankLft;        // Left arg rank
+    LPTT_HANDLES lpMemTTHandles;    // Ptr to TT Handles global memory
 } GRADE_DATA, *LPGRADE_DATA;
 
 
@@ -67,9 +75,9 @@ LPPL_YYSTYPE PrimFnDeltaStile_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonGradeCom_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydGradeCom_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnDeltaStile_EM_YY
 #undef  APPEND_NAME
 
@@ -115,9 +123,9 @@ LPPL_YYSTYPE PrimFnDelStile_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonGradeCom_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return PrimFnDydGradeCom_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+        return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnDelStile_EM_YY
 #undef  APPEND_NAME
 
@@ -191,41 +199,43 @@ LPPL_YYSTYPE PrimProtoFnDelStile_EM_YY
 
 
 //***************************************************************************
-//  $PrimFnMonGradeCom_EM_YY
+//  $PrimFnMonGradeCommon_EM_YY
 //
 //  Primitive function for monadic DelStile and DeltaStile
-//    ("grade up/down numeric" and "grade up/down character")
+//    ("grade up/down numeric")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonGradeCom_EM_YY"
+#define APPEND_NAME     L" -- PrimFnMonGradeCommon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE PrimFnMonGradeCom_EM_YY
+LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLNELM      aplNELMRht,    // Right arg NELM
-                 aplNELMRes;    // Result    ...
-    APLRANK      aplRankRht;    // Right arg rank
-    HGLOBAL      hGlbRht,       // Right arg global memory handle
-                 hGlbRes;       // Result    ...
-    APLUINT      ByteRes,       // # bytes in result
-                 uRes;          // Loop counter
-    LPVOID       lpMemRht,      // Ptr to right arg global memory
-                 lpMemRes;      // Ptr to result    ...
-    LPAPLDIM     lpMemDimRht;   // Ptr to right arg dimensions
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
-    APLBOOL      bQuadIO;       // []IO
-    GRADE_DATA   gradeData;     // Data passed to GnomeSort
+    APLNELM      aplNELMRht,        // Right arg NELM
+                 aplNELMRes;        // Result    ...
+    APLRANK      aplRankRht;        // Right arg rank
+    HGLOBAL      hGlbRht,           // Right arg global memory handle
+                 hGlbRes;           // Result    ...
+    APLUINT      ByteRes,           // # bytes in result
+                 uRes;              // Loop counter
+    LPVOID       lpMemRht,          // Ptr to right arg global memory
+                 lpMemRes;          // Ptr to result    ...
+    LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    APLBOOL      bQuadIO;           // []IO
+    GRADE_DATA   gradeData;         // Data passed to GnomeSort
 
     // Mark as grade up or down
     gradeData.iMul = (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE) ? 1 : -1;
+    gradeData.aplRankLft = 0;
+    gradeData.lpMemTTHandles = NULL;
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -310,15 +320,11 @@ LPPL_YYSTYPE PrimFnMonGradeCom_EM_YY
 #undef  lpAPA
     } // End IF
 
-    // Start with {iota}aplNELMRes in lpMemRes
-    for (uRes = 0; uRes < aplNELMRes; uRes++)
-        ((LPAPLINT) lpMemRes)[uRes] = uRes;
-
     // Grade the array
     GnomeSort (lpMemRes,            // Ptr to result global memory
                lpMemRht,            // Ptr to right arg global memory
                aplNELMRes,          // Result NELM
-              &PrimFnMonGradeComp,  // Ptr to comparison routine
+              &PrimFnMonGradeCompare,// Ptr to comparison routine
               &gradeData);
     // Add in []IO
     for (uRes = 0; uRes < aplNELMRes; uRes++)
@@ -350,27 +356,343 @@ ERROR_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End PrimFnMonGradeCom_EM_YY
+} // End PrimFnMonGradeCommon_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $PrimFnMonGradeComp
+//  $PrimFnDydGradeCommon_EM_YY
 //
-//  Comparison routine for PrimFnMonGradeCom
+//  Primitive function for dyadic DelStile and DeltaStile
+//    ("grade up/down character")
 //***************************************************************************
 
-APLINT PrimFnMonGradeComp
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydGradeCommon_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLSTYPE     aplTypeLft;            // Left arg storage type
+    APLNELM      aplNELMLft,            // Left arg NELM
+                 aplNELMRht,            // Right ...
+                 aplNELMRes;            // Result    ...
+    APLRANK      aplRankLft,            // Left arg rank
+                 aplRankRht;            // Right ...
+    HGLOBAL      hGlbLft = NULL,        // Left arg global memory handle
+                 hGlbRht = NULL,        // Right ...
+                 hGlbRes = NULL;        // Result   ...
+    LPVOID       lpMemLft = NULL,       // Ptr to left arg global memory
+                 lpMemRht = NULL,       // Ptr to right ...
+                 lpMemRes = NULL;       // Ptr to result   ...
+    LPAPLDIM     lpMemDimLft,           // Ptr to left arg dimensions
+                 lpMemDimRht;           // Ptr to right ...
+    APLUINT      ByteRes,               // # bytes in result
+                 uDim,                  // Loop counter
+                 uRes,                  // Loop counter
+                 uBegLen,               // Product of leading dimensions
+                 uBeg,                  // Loop counter
+                 uEndLen,               // Product of trailing dimensions
+                 uEnd;                  // Loop counter
+    APLINT       iLft;                  // Loop counter
+    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
+    APLBOOL      bQuadIO;               // []IO
+    GRADE_DATA   gradeData;             // Data passed to GnomeSort
+    HGLOBAL      hGlbTTHandles = NULL;  // TT Handles global memory handle
+    LPTT_HANDLES lpMemTTHandles = NULL; // Ptr to TT handles global memory
+
+    // Mark as grade up or down
+    gradeData.iMul = (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE) ? 1 : -1;
+
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
+
+    // Get the attributes (Type, NELM, and Rank) of the left & right args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+    AttrsOfToken (lptkRhtArg, &gradeData.aplTypeRht, &aplNELMRht, &aplRankRht);
+
+    // Check for LEFT RANK ERROR
+    if (aplRankLft EQ 0)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkLftArg);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Check for RIGHT RANK ERROR
+    if (aplRankRht EQ 0)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkRhtArg);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Check for LEFT LENGTH ERROR
+    if (aplNELMLft EQ 0)
+    {
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                   lptkLftArg);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Check for LEFT DOMAIN ERROR
+    if (aplTypeLft NE ARRAY_CHAR)
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkLftArg);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Check for RIGHT DOMAIN ERROR
+    if (gradeData.aplTypeRht NE ARRAY_CHAR
+     && aplNELMRht NE 0)
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkRhtArg);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Get left and right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // Allocate an array to hold the HGLOBALs of the translate tables
+    hGlbTTHandles = DbgGlobalAlloc (GHND, (UINT) aplRankLft * sizeof (TT_HANDLES));
+    if (!hGlbTTHandles)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkLftArg);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemTTHandles = MyGlobalLock (hGlbTTHandles);
+
+    // Allocate 128KB arrays for the translate tables,
+    //   one per left arg dimension
+    for (uDim = 0; uDim < aplRankLft; uDim++)
+    {
+        // Allocate space for the TT -- note without GMEM_ZEROINIT as we'll init it ourselves
+        lpMemTTHandles[uDim].hGlbTT = DbgGlobalAlloc (GMEM_MOVEABLE, 64*1024*sizeof (APLCHAR));
+        if (!lpMemTTHandles[uDim].hGlbTT)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkLftArg);
+            goto ERROR_EXIT;
+        } // End IF
+
+        // Lock the memory to get a ptr to it
+        lpMemTTHandles[uDim].lpMemTT = MyGlobalLock (lpMemTTHandles[uDim].hGlbTT);
+
+        // Fill with 0xFFs as identity element for min comparisons
+        FillMemory (lpMemTTHandles[uDim].lpMemTT, 64*1024*sizeof (APLCHAR), 0xFF);
+    } // End FOR
+
+    // Save in gradeData
+    gradeData.lpMemTTHandles = lpMemTTHandles;
+    gradeData.aplRankLft     = aplRankLft;
+
+    // Skip over the header to the dimensions
+    lpMemDimLft = VarArrayBaseToDim (lpMemLft);
+
+    // Skip over the header and dimensions to the data
+    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+
+    // Convert the left arg into multiple TTs
+    for (uEndLen = 1, iLft = aplRankLft - 1; iLft >= 0; iLft--)
+    {
+        APLUINT   uDimLen;      // Length of dimension iLft
+        APLCHAR   aplChar;      // The next char
+        LPAPLCHAR lpMemTT;      // Ptr to current TT
+
+        // Get a ptr to the current TT
+        lpMemTT = lpMemTTHandles[iLft].lpMemTT;
+
+        // Get the dimension length
+        uDimLen = lpMemDimLft[iLft];
+
+        // Calculate product of the leading dimensions
+        uBegLen = aplNELMLft / (uDimLen * uEndLen);
+
+        // Run through the left arg along the iLft dimension
+        //   (of length lpMemDimLft[iLft])
+        //   filling in the elements of the corresponding TT.
+        for (uBeg = 0; uBeg < uBegLen; uBeg++)
+        for (uDim = 0; uDim < uDimLen; uDim++)
+        for (uEnd = 0; uEnd < uEndLen; uEnd++)
+        {
+            // Get the next char
+            aplChar = ((LPAPLCHAR) lpMemLft)[uEnd + uEndLen * (uDimLen * uBeg + uDim)];
+
+            // Compare with existing index
+            lpMemTT[aplChar] = min (lpMemTT[aplChar], (UINT) uDim);
+        } // End FOR/FOR
+
+        // Calculate product of trailing dimensions
+        uEndLen *= uDimLen;
+    } // End FOR
+
+    // Skip over the header to the dimensions
+    lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+
+    // Get the length of the first dimension (as result length)
+    aplNELMRes = lpMemDimRht[0];
+
+    // Calculate the length of the dimensions after the first one
+    for (gradeData.aplNELMRest = 1, uRes = 1; uRes < aplRankRht; uRes++)
+        gradeData.aplNELMRest *= lpMemDimRht[uRes];
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
+
+    // Allocate space for the result.
+    // N.B. Conversion from APLUINT to UINT.
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        // Mark as a WS FULL
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+
+    // Fill in the header
+    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeaderRes->ArrType    = ARRAY_INT;
+////lpHeaderRes->Perm       = 0;        // Already zero from GHND
+////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
+    lpHeaderRes->RefCnt     = 1;
+    lpHeaderRes->NELM       = aplNELMRes;
+    lpHeaderRes->Rank       = 1;
+
+#undef  lpHeaderRes
+
+    // Save the dimension in the result
+    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+    // If the right arg is an APA, ...
+    if (gradeData.aplTypeRht EQ ARRAY_APA)
+    {
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+        // Get the APA parameters
+        gradeData.apaOffRht = lpAPA->Off;
+        gradeData.apaMulRht = lpAPA->Mul;
+#undef  lpAPA
+    } // End IF
+
+    // Grade the array
+    GnomeSort (lpMemRes,            // Ptr to result global memory
+               lpMemRht,            // Ptr to right arg global memory
+               aplNELMRes,          // Result NELM
+              &PrimFnMonGradeCompare,// Ptr to comparison routine
+              &gradeData);
+    // Add in []IO
+    for (uRes = 0; uRes < aplNELMRes; uRes++)
+        ((LPAPLINT) lpMemRes)[uRes] += bQuadIO;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+ERROR_EXIT:
+    if (hGlbLft && lpMemLft)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
+
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    if (hGlbTTHandles)
+    {
+        if (lpMemTTHandles EQ NULL)
+            // Lock the memory to get a ptr to it
+            lpMemTTHandles = MyGlobalLock (hGlbTTHandles);
+
+        for (uDim = 0; uDim < aplRankLft; uDim++)
+        if (lpMemTTHandles[uDim].hGlbTT)
+        {
+            if (lpMemTTHandles[uDim].lpMemTT)
+            {
+                // We no longer need this ptr
+                MyGlobalUnlock (lpMemTTHandles[uDim].hGlbTT); lpMemTTHandles[uDim].lpMemTT = NULL;
+            } // End IF
+
+            // We no longer need this storage
+            DbgGlobalFree (lpMemTTHandles[uDim].hGlbTT); lpMemTTHandles[uDim].hGlbTT = NULL;
+        } // End FOR/IF
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTTHandles); lpMemTTHandles = NULL;
+
+        // We no longer need this storage
+        DbgGlobalFree (hGlbTTHandles); hGlbTTHandles = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End PrimFnDydGradeCommon_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnMonGradeCompare
+//
+//  Comparison routine for PrimFnMonGradeCommon_EM_YY & PrimFnDydGradeCommon_EM_YY
+//***************************************************************************
+
+APLINT PrimFnMonGradeCompare
     (LPVOID       lpMemRht,         // Ptr to right arg array
      APLUINT      aplUIntLft,       // Left index
      APLUINT      aplUIntRht,       // Right index
      LPGRADE_DATA lpGradeData)      // Ptr to extra data
 
 {
-    APLUINT uRest;
-    APLNELM aplNELMRest;
+    APLUINT      uRest,             // Loop counter
+                 uDim;              // Loop counter
+    APLINT       iRest;             // Loop counter
+    APLNELM      aplNELMRest;       // Loop limit
+    APLRANK      aplRankLft;        // Loop limit
+    BOOL         bSame,             // TRUE if the two planes are the same
+                 bToggle;           // Toggle value between chars
+    LPTT_HANDLES lpMemTTHandles;    // Ptr to TT handles global memory
+    LPAPLCHAR    lpMemTT;           // Ptr to current TT
 
-    // Get the Grade Data
+    // Get the product of all but the first dimension
     aplNELMRest = lpGradeData->aplNELMRest;
 
     // Split cases based upon the right arg storage type
@@ -485,165 +807,62 @@ APLINT PrimFnMonGradeComp
 
             break;
 
+        case ARRAY_CHAR:
+            // Get # dimensions in left arg (# TTs)
+            aplRankLft = lpGradeData->aplRankLft;
+
+            // Get ptr to array of TTs
+            lpMemTTHandles = lpGradeData->lpMemTTHandles;
+
+            // Initialize vars
+            bSame = bToggle = TRUE;
+
+            // Loop through the TTs
+            for (uDim = 0; uDim < aplRankLft; uDim++)
+            {
+                // Get a ptr to the current TT
+                lpMemTT = lpMemTTHandles[uDim].lpMemTT;
+
+                // Compare the hyper-planes of the right arg
+                for (iRest = aplNELMRest - 1; iRest >= 0; iRest--)
+                {
+                    APLCHAR aplCharLft,         // Left char
+                            aplCharRht,         // Right ...
+                            aplIndLft,          // Left char index
+                            aplIndRht;          // Right ...
+
+                    // Get the left & right CHARs
+                    aplCharLft = ((LPAPLCHAR) lpMemRht)[aplUIntLft * aplNELMRest + iRest];
+                    aplCharRht = ((LPAPLCHAR) lpMemRht)[aplUIntRht * aplNELMRest + iRest];
+
+                    aplIndLft = lpMemTT[aplCharLft];
+                    aplIndRht = lpMemTT[aplCharRht];
+
+                    // If the  indices are different, ...
+                    if (aplIndLft NE aplIndRht)
+                    {
+                        // Mark as different
+                        bSame = FALSE;
+
+                        // Calculate toggle state
+                        if (bToggle EQ (aplIndLft > aplIndRht))
+                            bToggle = !bToggle;
+                    } // End IF
+                } // End FOR
+            } // End FOR
+
+            return (bSame ? 0
+                          : bToggle ? -1 * lpGradeData->iMul
+                                    :  1 * lpGradeData->iMul);
+            break;
+
         defstop
             break;
     } // End SWITCH
 
+    // They are equal
     return 0;
-} // End PrimFnMonGradeComp
-
-
-//***************************************************************************
-//  $PrimFnDydGradeCom_EM_YY
-//
-//  Primitive function for dyadic DelStile and DeltaStile
-//    ("grade up/down numeric")
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydGradeCom_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPPL_YYSTYPE PrimFnDydGradeCom_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
-
-{
-    APLSTYPE     aplTypeLft;        // Left arg storage type
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht;        // Right ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL,    // Right ...
-                 hGlbRes = NULL;    // Result   ...
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL,   // Ptr to right ...
-                 lpMemRes = NULL;   // Ptr to result   ...
-    APLUINT      uLft;              // Loop counter
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    APLBOOL      bQuadIO;           // []IO
-    GRADE_DATA   gradeData;         // Data passed to GnomeSort
-
-    // Mark as grade up or down
-    gradeData.iMul = (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE) ? 1 : -1;
-
-    // Get the current value of []IO
-    bQuadIO = GetQuadIO ();
-
-    // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &gradeData.aplTypeRht, &aplNELMRht, &aplRankRht);
-
-    // Check for LEFT RANK ERROR
-    if (aplRankLft EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Check for RIGHT RANK ERROR
-    if (aplRankRht EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkRhtArg);
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Check for LEFT LENGTH ERROR
-    if (aplNELMLft EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Check for RIGHT DOMAIN ERROR
-    if (gradeData.aplTypeRht NE ARRAY_CHAR
-     && aplNELMRht NE 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkRhtArg);
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Check for LEFT DOMAIN ERROR
-    if (aplTypeLft NE ARRAY_CHAR)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
-
-    return PrimFnNonceError_EM (lptkFunc);
-
-    DbgBrk ();          // ***FINISHME*** -- PrimFnDydGradeCom_EM_YY
-
-    // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-
-    // Allocate an array to hold the HGLOBALs of the translate tables
-
-
-
-    // Allocate 128KB arrays for the translate tables,
-    //   one per left arg dimension
-    for (uLft = 0; uLft < aplRankLft; uLft++)
-    {
-
-
-
-    } // End FOR
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-ERROR_EXIT:
-    if (hGlbLft && lpMemLft)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-    } // End IF
-
-    if (hGlbRht && lpMemRht)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-    } // End IF
-
-    if (hGlbRes && lpMemRes)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-    } // End IF
-
-    return lpYYRes;
-} // End PrimFnDydGradeCom_EM_YY
-#undef  APPEND_NAME
+} // End PrimFnMonGradeCompare
 
 
 //***************************************************************************

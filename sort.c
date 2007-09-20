@@ -55,17 +55,17 @@ void ShellSort
 
 
 //***************************************************************************
-//  $CmpHGLOBAL
+//  $CmpLPSYMENTRY
 //
-//  Compare two HGLOBALs being sorted
+//  Compare two LPSYMENTRYs being sorted
 //
 //  Note that the names may include the characters
 //    {alpha}, {omega}, {delta}, {deltaunderbar}, and {overbar}.
 //***************************************************************************
 
-int CmpHGLOBAL
-    (HGLOBAL hGlbLft,
-     HGLOBAL hGlbRht)
+int CmpLPSYMENTRY
+    (LPSYMENTRY lpSymLft,
+     LPSYMENTRY lpSymRht)
 
 {
     LPAPLCHAR lpMemLft,     // Ptr to left arg global memory
@@ -73,18 +73,18 @@ int CmpHGLOBAL
     int       iCmp;         // Comparison result
 
     // Lock the memory to get a ptr to it
-    lpMemLft = MyGlobalLock (hGlbLft);
-    lpMemRht = MyGlobalLock (hGlbRht);
+    lpMemLft = MyGlobalLock (lpSymLft->stHshEntry->htGlbName);
+    lpMemRht = MyGlobalLock (lpSymRht->stHshEntry->htGlbName);
 
     // Compare the two names
     iCmp = aplcmp (lpMemLft, lpMemRht);
 
     // We no longer need these ptrs
-    MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    MyGlobalUnlock (lpSymRht->stHshEntry->htGlbName); lpMemRht = NULL;
+    MyGlobalUnlock (lpSymLft->stHshEntry->htGlbName); lpMemLft = NULL;
 
     return iCmp;
-} // End CmpHGLOBAL
+} // End CmpLPSYMENTRY
 
 
 //***************************************************************************
@@ -174,7 +174,7 @@ static BYTE aTT2[] = {
     bRet = (len1 <= len2);      // Shorter before longer
     bSame = (len1 == len2);     // If you prefer to consider
                                 //   "foo" the same as "foo   ",
-                                //   change this to Same = 1;
+                                //   change this to bSame = 1;
     // Loop through the array of translate tables
     //   where 3 = sizeof (*tt)
     for (i = 0; i < 3; i++)
@@ -297,9 +297,9 @@ void GnomeSort
 {
     APLUINT u1, u2, u3;
 
-////// Start with {iota}aplRankCmp in lpDst
-////for (u1 = 0; u1 < uCount; u1++)
-////    lpDst[u1] = u1;
+    // Start with {iota}aplRankCmp in lpDst
+    for (u1 = 0; u1 < uCount; u1++)
+        lpDst[u1] = u1;
 
     // Use Gnome sort on lpDst while comparing lpSrc
     u2 = 1; u3 = 2;

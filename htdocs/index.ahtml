@@ -160,7 +160,9 @@
              Z{is}L (LO OP2[X] RO) R</span>)</li>
             <li>Strand left and right arguments and result to user-defined
               functions/operators along with optional left argument (e.g., <span class="APL">{del}
-             (Z1 Z2){is}[L1 L2 L3] (LO OP2[X] RO) (R1 R2 R3 R4)</span>)</li>
+              (Z1 Z2){is}[L1 L2 L3] (LO OP2[X] RO) (R1 R2 R3 R4)</span>)</li>
+            <li>Note that brackets are required to surround the left argument of an ambivalent
+              function (Is this an <b>inconsistent</b> extension?).</li>
             <li>User-defined function/operator prototype entry point
               (<span class="APL">{quad}PROTOTYPE:</span>)</li>
           </ul>
@@ -239,6 +241,7 @@
         <li>Fast Boolean reduction (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}</span>)
           and scan (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}</span>)
           along contiguous elements</li>
+        <li>Right double click on an editable name brings up the function editor on that name</li>
       </ul>
 
       <h3>Miscellaneous Wish List</h3>
@@ -301,6 +304,8 @@
               using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
             <li>Dyadic down arrow ({drop}) (drop) with and without axis operator</li>
             <li>Dyadic up arrow ({take}) (take) with and without axis operator</li>
+            <li>Dyadic delta stile ({gradeup}) (character grade up)</li>
+            <li>Dyadic del stile ({gradedown}) (character grade down)</li>
           </ul>
         </li>
       </ul>

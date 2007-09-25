@@ -1056,23 +1056,23 @@ EXIT_TYPES ImmExecStmt
 #endif
 
 DWORD WINAPI ImmExecLineInThread
-    (LPIE_THREAD lpieThread)
+    (LPIE_THREAD lpieThread)            // Ptr to IE_THREAD struc
 
 {
-    HANDLE       hSigaphore = NULL; // Semaphore handle to signal (NULL if none)
-    LPWCHAR      lpwszCompLine;     // Ptr to complete line
-    HGLOBAL      hGlbToken,         // Handle of tokenized line
-                 hGlbWFSO;          // WaitForSingleObject callback global memory handle
-    HWND         hWndEC,            // Handle of Edit Control window
-                 hWndSM;            // ...       Session Manager ...
-    HGLOBAL      hGlbPTD;           // Handle to this window's PerTabData
-    LPPERTABDATA lpMemPTD;          // Ptr to ...
-    RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
-    BOOL         bFreeLine,         // TRUE iff we should free lpszCompLine on completion
-                 bWaitUntilFini;    // TRUE iff wait until finished
-    EXIT_TYPES   exitType;          // Return code from ParseLine
-    LPWFSO       lpMemWFSO;         // Ptr to WFSO global memory
-    LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
+    HANDLE        hSigaphore = NULL;    // Semaphore handle to signal (NULL if none)
+    LPWCHAR       lpwszCompLine;        // Ptr to complete line
+    HGLOBAL       hGlbToken,            // Handle of tokenized line
+                  hGlbWFSO;             // WaitForSingleObject callback global memory handle
+    HWND          hWndEC,               // Handle of Edit Control window
+                  hWndSM;               // ...       Session Manager ...
+    HGLOBAL       hGlbPTD;              // Handle to this window's PerTabData
+    LPPERTABDATA  lpMemPTD;             // Ptr to ...
+    RESET_FLAGS   resetFlag;            // Reset flag (see RESET_FLAGS)
+    BOOL          bFreeLine,            // TRUE iff we should free lpszCompLine on completion
+                  bWaitUntilFini;       // TRUE iff wait until finished
+    EXIT_TYPES    exitType;             // Return code from ParseLine
+    LPWFSO        lpMemWFSO;            // Ptr to WFSO global memory
+    LPSIS_HEADER  lpSISPrv;             // Ptr to previous SIS header
 
     // Save the thread type ('IE')
     TlsSetValue (dwTlsType, (LPVOID) 'IE');
@@ -1102,7 +1102,7 @@ DWORD WINAPI ImmExecLineInThread
     hGlbToken = Tokenize_EM (lpwszCompLine,
                              lstrlenW (lpwszCompLine),
                              hWndEC,
-                            &ErrorMessage);
+                            &ErrorMessageDirect);
     // If it's invalid, ...
     if (hGlbToken EQ NULL)
     {
@@ -1160,14 +1160,80 @@ DWORD WINAPI ImmExecLineInThread
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Start with the preceding layer (if any)
-    lpSISCur = lpMemPTD->lpSISCur->lpSISPrv;
+    lpSISPrv = lpMemPTD->lpSISCur->lpSISPrv;
 
     // Split cases based upon the exit type
     switch (exitType)
     {
+        case EXITTYPE_QUADERROR_INIT:
+            DbgBrk ();
+
+            // If there are no more SI layers, ...
+            if (lpSISPrv EQ NULL)
+            {
+                // ***FIXME*** -- Set the tkCharIndex for the error???
+
+                // Set the error message
+                ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
+                                    lpwszCompLine,                  // Ptr to the line which generated the error
+                                    lpMemPTD->tkErrorCharIndex,     // Position of caret (origin-0)
+                                    hWndSM);                        // Window handle to the Session Manager
+                // Execute []ELX in immediate execution mode
+////////////////exitType =
+                ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX",   // Ptr to line to execute
+                             FALSE,         // TRUE iff free the lpwszLine on completion
+                             TRUE,          // TRUE iff wait until finished
+                             (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+                // Set the reset flag
+                lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
+
+                exitType = EXITTYPE_NONE;
+
+                break;
+            } // End IF
+
+            // If the previous layer in the SI stack is a
+            //   User-Defined Function/Operator or Quad Input,
+            //   signal it to handle this action
+            if (lpSISPrv
+             && (lpSISPrv->DfnType EQ DFNTYPE_OP1
+              || lpSISPrv->DfnType EQ DFNTYPE_OP2
+              || lpSISPrv->DfnType EQ DFNTYPE_FCN
+              || lpSISPrv->DfnType EQ DFNTYPE_QUAD))
+            {
+                // Lock the memory to get a ptr to it
+                lpMemWFSO = MyGlobalLock (hGlbWFSO);
+
+                Assert (lpSISPrv->hSemaphore NE NULL);
+
+                // Tell the wait handler to signal this layer
+                hSigaphore = lpMemWFSO->hSigaphore = lpSISPrv->hSemaphore;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+            } // End IF
+
+            break;
+
+        case EXITTYPE_QUADERROR_EXEC:
+            DbgBrk ();
+
+            // Execute []ELX in immediate execution mode
+////////////exitType =
+            ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX",   // Ptr to line to execute
+                         FALSE,         // TRUE iff free the lpwszLine on completion
+                         TRUE,          // TRUE iff wait until finished
+                         (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+            // Set the reset flag
+            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
+
+            exitType = EXITTYPE_NONE;
+
+            break;
+
         case EXITTYPE_ERROR:        // If from Quad Input, tell SM to redisplay the prompt
-            if (lpSISCur
-             && lpSISCur->DfnType EQ DFNTYPE_QUAD)
+            if (lpSISPrv
+             && lpSISPrv->DfnType EQ DFNTYPE_QUAD)
                 PostMessage (hWndSM, MYWM_QUOTEQUAD, FALSE, 13);
             break;
 
@@ -1179,16 +1245,16 @@ DWORD WINAPI ImmExecLineInThread
         case EXITTYPE_NODISPLAY:    // Signal previous SI layer's semaphore if it's Quad input
             // If the previous layer in the SI stack is Quad input,
             //   signal it to receive this value
-            if (lpSISCur
-             && lpSISCur->DfnType EQ DFNTYPE_QUAD)
+            if (lpSISPrv
+             && lpSISPrv->DfnType EQ DFNTYPE_QUAD)
             {
                 // Lock the memory to get a ptr to it
                 lpMemWFSO = MyGlobalLock (hGlbWFSO);
 
-                Assert (lpSISCur->hSemaphore NE NULL);
+                Assert (lpSISPrv->hSemaphore NE NULL);
 
                 // Tell the wait handler to signal this layer
-                hSigaphore = lpMemWFSO->hSigaphore = lpSISCur->hSemaphore;
+                hSigaphore = lpMemWFSO->hSigaphore = lpSISPrv->hSemaphore;
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
@@ -1208,9 +1274,9 @@ DWORD WINAPI ImmExecLineInThread
 
             // Fall through to common code
 
-        case EXITTYPE_RESET_ALL:        // ...
-            // If there's no more SI layers,
-            if (lpSISCur EQ NULL)
+        case EXITTYPE_RESET_ALL:        // Continue resetting if more layers
+            // If there are no more SI layers, ...
+            if (lpSISPrv EQ NULL)
             {
                 // Display the default prompt
                 DisplayPrompt (hWndEC, 6);
@@ -1224,19 +1290,19 @@ DWORD WINAPI ImmExecLineInThread
             // If the previous layer in the SI stack is a
             //   User-Defined Function/Operator or Quad Input,
             //   signal it to handle this action
-            if (lpSISCur
-             && (lpSISCur->DfnType EQ DFNTYPE_OP1
-              || lpSISCur->DfnType EQ DFNTYPE_OP2
-              || lpSISCur->DfnType EQ DFNTYPE_FCN
-              || lpSISCur->DfnType EQ DFNTYPE_QUAD))
+            if (lpSISPrv
+             && (lpSISPrv->DfnType EQ DFNTYPE_OP1
+              || lpSISPrv->DfnType EQ DFNTYPE_OP2
+              || lpSISPrv->DfnType EQ DFNTYPE_FCN
+              || lpSISPrv->DfnType EQ DFNTYPE_QUAD))
             {
                 // Lock the memory to get a ptr to it
                 lpMemWFSO = MyGlobalLock (hGlbWFSO);
 
-                Assert (lpSISCur->hSemaphore NE NULL);
+                Assert (lpSISPrv->hSemaphore NE NULL);
 
                 // Tell the wait handler to signal this layer
-                hSigaphore = lpMemWFSO->hSigaphore = lpSISCur->hSemaphore;
+                hSigaphore = lpMemWFSO->hSigaphore = lpSISPrv->hSemaphore;
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
@@ -2467,15 +2533,13 @@ BOOL fnQuoDone
             //   the string to the global memory
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpwsz)
-
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_CHAR;
-////        lpHeader->Perm       = 0;
-////        lpHeader->SysVar     = 0;
+////////////lpHeader->Perm       = 0;
+////////////lpHeader->SysVar     = 0;
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = lpMemPTD->iStringLen;
             lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
             *VarArrayBaseToDim (lpwsz) = lpMemPTD->iStringLen;
@@ -2757,7 +2821,7 @@ void FormatQQuadInput
     // Get the line length
     uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
-    // Calculate the space needed for the result
+    // Calculate space needed for the result
     // N.B.:  max is needed because, in order to get the line,
     //        we need to tell EM_GETLINE the buffer size which
     //        takes up one APLCHAR (WORD) at the start of the buffer.
@@ -2779,7 +2843,6 @@ void FormatQQuadInput
         lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
         // Fill in the header
         lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeaderRes->ArrType    = ARRAY_CHAR;
@@ -2788,7 +2851,6 @@ void FormatQQuadInput
         lpHeaderRes->RefCnt     = 1;
         lpHeaderRes->NELM       = uLineLen;
         lpHeaderRes->Rank       = 1;
-
 #undef  lpHeaderRes
 
         // Save the dimension in the result
@@ -3301,13 +3363,11 @@ void Untokenize
     {
 
 #define lpHeader    ((LPTOKEN_HEADER) lpToken)
-
         // It's a token
         Assert (lpHeader->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
 
         // Get the # tokens
         iLen = lpHeader->TokenCnt;
-
 #undef  lpHeader
 
         lpToken = TokenBaseToStart (lpToken);   // Skip over TOKEN_HEADER

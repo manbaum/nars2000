@@ -309,7 +309,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
                  aplIntegerRht;     // Right ...
     APLFLOAT     aplFloatLft,       // Left arg temporary float
                  aplFloatRht;       // Right ...
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     APLINT       uLft,              // Left arg loop counter
                  uRht,              // Right ...
                  uTmp,              // Temporary ...
@@ -338,8 +338,8 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     bQuadIO = GetQuadIO ();
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -444,7 +444,6 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
@@ -453,7 +452,6 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplIntegerLft;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Skip over the header to the dimension

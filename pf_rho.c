@@ -202,7 +202,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
                  lpMemRes;          // ...    result ...
     APLRANK      aplRankRht;        // The rank of the array
     HGLOBAL      hGlbRes;           // Result global memory handle
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     BOOL         bRet = TRUE;       // TRUE iff result is valid
     UINT         uRes;              // Loop counter
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
@@ -211,10 +211,8 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeaderRht     ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the rank
     aplRankRht = lpHeaderRht->Rank;
-
 #undef  lpHeaderRht
 
     // If the right arg rank is zero, the result is {zilde}
@@ -242,7 +240,6 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
         lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
         // Fill in the header
         lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeaderRes->ArrType    = ARRAY_INT;
@@ -251,7 +248,6 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
         lpHeaderRes->RefCnt     = 1;
         lpHeaderRes->NELM       = aplRankRht;
         lpHeaderRes->Rank       = 1;
-
 #undef  lpHeaderRes
 
         // Save the dimension
@@ -325,7 +321,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     BOOL         bRet = TRUE,       // TRUE iff result is valid
                  bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
                  bPrototype = FALSE; // TRUE iff we're to generate a prototype
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     //***************************************************************
@@ -340,7 +336,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     //***************************************************************
     // Get the attributes (Type, NELM, and Rank) of the right arg
     //***************************************************************
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, NULL, NULL);
 
     // Normally, the result storage type is the same as that of the right arg
     aplTypeRes = aplTypeRht;
@@ -501,7 +497,6 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
@@ -510,7 +505,6 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = aplRankRes;
-
 #undef  lpHeaderRes
 
     //***************************************************************

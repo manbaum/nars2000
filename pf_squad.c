@@ -181,7 +181,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
     // The only allowed left arg is an empty vector
 
     // Get the attributes (Type, NELM, and Rank) of the left arg
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for RANK ERROR
     if (aplRankLft NE 1)
@@ -254,7 +254,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfGlb   (hGlbRht   , &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for axis present
@@ -375,11 +375,11 @@ LPPL_YYSTYPE ArrayIndex_EM_YY
     APLNELM      uRht,              // Right arg loop counter
                  uDim,              // Dimension ...
                  uRes;              // Result    ...
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Map APA left arg to INT result
     if (aplTypeLft EQ ARRAY_APA)
@@ -498,7 +498,6 @@ LPPL_YYSTYPE ArrayIndex_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -507,7 +506,6 @@ LPPL_YYSTYPE ArrayIndex_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions
@@ -1162,11 +1160,10 @@ BOOL ReachDown_EM
                 lpMemSub = MyGlobalLock (ClrPtrTypeIndGlb (lpMemNdx));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
-
+                // Get the Array Type, NELM, and Rank
                 aplTypeSub = lpHeader->ArrType;
                 aplNELMSub = lpHeader->NELM;
                 aplRankSub = lpHeader->Rank;
-
 #undef  lpHeader
 
                 // Check for RANK ERROR

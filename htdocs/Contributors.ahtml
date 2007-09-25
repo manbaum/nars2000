@@ -94,14 +94,23 @@
     <div class="section">
       <h2 id="Borrowed_Ideas">Borrowed Ideas</h2>
       <ul>
-        <li>Linear Hashing by Witold Litwin, Linear hashing: A new tool for file and table addressing,
-          Proc. 6th Conference on Very Large Databases, pages 212-223, 1980.
+        <li><a class="linkleft"
+          href="http://www.cs.cmu.edu/afs/cs.cmu.edu/user/christos/www/courses/826-resources/PAPERS+BOOK/linear-hashing.PDF">
+          "Linear hashing: A new tool for file and table addressing"</a>, by Witold Litwin,
+          Proc. 6th Conference on Very Large Databases, pp. 212-223, 1980.
           The ideas in this paper were invaluable in creating the Hash and
           Symbol tables.</li>
 
-        <li>The LALR(1) Parser is based upon "The Syntax of APL:  An
-         Old Approach Revisited" by Jean Jacques Giardot &amp;
-         Florence Rollin, ACM SIGAPL Quote-Quad APL 1987.</li>
+        <li>The LALR(1) Parser is based upon <a class="linkleft"
+         href="http://portal.acm.org/citation.cfm?id=28371&coll=portal&dl=ACM">The Syntax of APL: An
+         Old Approach Revisited"</a> by Jean Jacques Giardot &amp;
+         Florence Rollin, ACM SIGAPL APL87 Conference Proceedings, pp.441-449, 1987.</li>
+
+        <li><a class="linkleft" href="http://portal.acm.org/citation.cfm?id=804449&dl=ACM&coll=portal">
+          "Sorting - A New/Old Problem"</a> by Howard J. Smith, Jr.,
+          ACM SIGAPL APL79 Conference Proceedings, pp. 123-127, 1979 is the
+          touchstone for understanding his remarkable algorithm.
+        </li>
 
         <li>This project benefited greatly by discussions with some
           of the many great APL implementors who went before me.  To

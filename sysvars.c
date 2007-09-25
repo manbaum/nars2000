@@ -16,30 +16,31 @@
 #ifndef PROTO
 #include "compro.h"
 #else
-#define SysFnAV_EM      NULL
-#define SysFnCR_EM      NULL
-#define SysFnDL_EM      NULL
-#define SysFnDM_EM      NULL
-#define SysFnDR_EM      NULL
-#define SysFnLC_EM      NULL
-#define SysFnNC_EM      NULL
-#define SysFnNL_EM      NULL
-#define SysFnSIZE_EM    NULL
-#define SysFnSYSID_EM   NULL
-#define SysFnSYSVER_EM  NULL
-#define SysFnTC_EM      NULL
-#define SysFnTCBEL_EM   NULL
-#define SysFnTCBS_EM    NULL
-#define SysFnTCDEL_EM   NULL
-#define SysFnTCESC_EM   NULL
-#define SysFnTCFF_EM    NULL
-#define SysFnTCHT_EM    NULL
-#define SysFnTCLF_EM    NULL
-#define SysFnTCNL_EM    NULL
-#define SysFnTCNUL_EM   NULL
-#define SysFnTS_EM      NULL
-#define SysFnTYPE_EM    NULL
-#define SysFnUCS_EM     NULL
+#define SysFnAV_EM_YY       NULL
+#define SysFnCR_EM_YY       NULL
+#define SysFnDL_EM_YY       NULL
+#define SysFnDM_EM_YY       NULL
+#define SysFnDR_EM_YY       NULL
+#define SysFnERROR_EM_YY    NULL
+#define SysFnLC_EM_YY       NULL
+#define SysFnNC_EM_YY       NULL
+#define SysFnNL_EM_YY       NULL
+#define SysFnSIZE_EM_YY     NULL
+#define SysFnSYSID_EM_YY    NULL
+#define SysFnSYSVER_EM_YY   NULL
+#define SysFnTC_EM_YY       NULL
+#define SysFnTCBEL_EM_YY    NULL
+#define SysFnTCBS_EM_YY     NULL
+#define SysFnTCDEL_EM_YY    NULL
+#define SysFnTCESC_EM_YY    NULL
+#define SysFnTCFF_EM_YY     NULL
+#define SysFnTCHT_EM_YY     NULL
+#define SysFnTCLF_EM_YY     NULL
+#define SysFnTCNL_EM_YY     NULL
+#define SysFnTCNUL_EM_YY    NULL
+#define SysFnTS_EM_YY       NULL
+#define SysFnTYPE_EM_YY     NULL
+#define SysFnUCS_EM_YY      NULL
 #endif
 
 typedef struct tagSYSNAME
@@ -71,53 +72,53 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"inverse"  , SYSLBL,      TRUE , NULL          , 0          },  // 12:  ...                                            Inverse
     {WS_UTF16_QUAD L"singleton", SYSLBL,      TRUE , NULL          , 0          },  // 13:  ...                                            Singleton
 
-    {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM    , 0          },  // Atomic Vector
-    {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, SysFnDM_EM    , 0          },  // Diagnostic Message
-    {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM    , 0          },  // Line Counter
-////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, SysFnSI_EM    , 0          },  // State Indicator
-////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, SysFnSINL_EM  , 0          },  // State Indicator w/Name List
-    {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, SysFnSYSID_EM , 0          },  // System Identifier
-    {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, SysFnSYSVER_EM, 0          },  // System Version
-    {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, SysFnTC_EM    , 0          },  // Terminal Control Characters
-    {WS_UTF16_QUAD L"tcbel"    ,      0,      FALSE, SysFnTCBEL_EM , 0          },  // Terminal Control Character, Bell
-    {WS_UTF16_QUAD L"tcbs"     ,      0,      FALSE, SysFnTCBS_EM  , 0          },  // Terminal Control Character, Backspace
-    {WS_UTF16_QUAD L"tcdel"    ,      0,      FALSE, SysFnTCDEL_EM , 0          },  // Terminal Control Character, Delete
-    {WS_UTF16_QUAD L"tcesc"    ,      0,      FALSE, SysFnTCESC_EM , 0          },  // Terminal Control Character, Escape
-    {WS_UTF16_QUAD L"tcff"     ,      0,      FALSE, SysFnTCFF_EM  , 0          },  // Terminal Control Character, Form Feed
-    {WS_UTF16_QUAD L"tcht"     ,      0,      FALSE, SysFnTCHT_EM  , 0          },  // Terminal Control Character, Horizontal Tab
-    {WS_UTF16_QUAD L"tclf"     ,      0,      FALSE, SysFnTCLF_EM  , 0          },  // Terminal Control Character, Line Feed
-    {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, SysFnTCNL_EM  , 0          },  // Terminal Control Character, New Line
-    {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, SysFnTCNUL_EM , 0          },  // Terminal Control Character, Null
-    {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM    , 0          },  // Time Stamp
-////{WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM    , 0          },  // Workspace Available
+    {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM_YY     , 0          },  // Atomic Vector
+    {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, SysFnDM_EM_YY     , 0          },  // Diagnostic Message
+    {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM_YY     , 0          },  // Line Counter
+////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, SysFnSI_EM_YY     , 0          },  // State Indicator
+////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, SysFnSINL_EM_YY   , 0          },  // State Indicator w/Name List
+    {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, SysFnSYSID_EM_YY  , 0          },  // System Identifier
+    {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, SysFnSYSVER_EM_YY , 0          },  // System Version
+    {WS_UTF16_QUAD L"tc"       ,      0,      FALSE, SysFnTC_EM_YY     , 0          },  // Terminal Control Characters
+    {WS_UTF16_QUAD L"tcbel"    ,      0,      FALSE, SysFnTCBEL_EM_YY  , 0          },  // Terminal Control Character, Bell
+    {WS_UTF16_QUAD L"tcbs"     ,      0,      FALSE, SysFnTCBS_EM_YY   , 0          },  // Terminal Control Character, Backspace
+    {WS_UTF16_QUAD L"tcdel"    ,      0,      FALSE, SysFnTCDEL_EM_YY  , 0          },  // Terminal Control Character, Delete
+    {WS_UTF16_QUAD L"tcesc"    ,      0,      FALSE, SysFnTCESC_EM_YY  , 0          },  // Terminal Control Character, Escape
+    {WS_UTF16_QUAD L"tcff"     ,      0,      FALSE, SysFnTCFF_EM_YY   , 0          },  // Terminal Control Character, Form Feed
+    {WS_UTF16_QUAD L"tcht"     ,      0,      FALSE, SysFnTCHT_EM_YY   , 0          },  // Terminal Control Character, Horizontal Tab
+    {WS_UTF16_QUAD L"tclf"     ,      0,      FALSE, SysFnTCLF_EM_YY   , 0          },  // Terminal Control Character, Line Feed
+    {WS_UTF16_QUAD L"tcnl"     ,      0,      FALSE, SysFnTCNL_EM_YY   , 0          },  // Terminal Control Character, New Line
+    {WS_UTF16_QUAD L"tcnul"    ,      0,      FALSE, SysFnTCNUL_EM_YY  , 0          },  // Terminal Control Character, Null
+    {WS_UTF16_QUAD L"ts"       ,      0,      FALSE, SysFnTS_EM_YY     , 0          },  // Time Stamp
+////{WS_UTF16_QUAD L"wa"       ,      0,      FALSE, SysFnWA_EM_YY     , 0          },  // Workspace Available
 
-////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM  , 0          },  // Call Assembler Code
-    {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM    , 0          },  // Canonical Representation
-////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, SysFnCRL_EM   , 0          },  // Canonical Representation, Line
-////{WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, SysFnCRLPC_EM , 0          },  // Canonical Representation, Public Comment
-////{WS_UTF16_QUAD L"def"      ,      1,      FALSE, SysFnDEF_EM   , 0          },  // Define Function
-////{WS_UTF16_QUAD L"defl"     ,      1,      FALSE, SysFnDEFL_EM  , 0          },  // Define Function Line
-    {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM    , 0          },  // Delay Execution
-    {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM    , 0          },  // Data Representation
-////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, SysFnERASE_EM , 0          },  // Erase Names
-////{WS_UTF16_QUAD L"error"    ,      1,      FALSE, SysFnERROR_EM , 0          },  // Signal Error
-////{WS_UTF16_QUAD L"ex"       ,      1,      FALSE, SysFnEX_EM    , 0          },  // Erase Names
-////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, SysFnFI_EM    , 0          },  // Format Items
-////{WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM   , 0          },  // Format
-////{WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM    , 0          },  // Fix Function
-////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM, 0          },  // Identifier List
-////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM , 0          },  // Identifier Localization
-////{WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM    , 0          },  // Monitor Function
-    {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM    , 0          },  // Name Classification
-    {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM    , 0          },  // Name List
-    {WS_UTF16_QUAD L"size"     ,      1,      FALSE, SysFnSIZE_EM  , 0          },  // Size of an object
-////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, SysFnSS_EM    , 0          },  // Search String
-////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM  , 0          },  // Manage Stop Points
-////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, SysFnTRACE_EM , 0          },  // Manage Trace Points
-    {WS_UTF16_QUAD L"type"     ,      1,      FALSE, SysFnTYPE_EM  , 0          },  // Manage Trace Points
-    {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, SysFnUCS_EM   , 0          },  // Universal Character Set
+////{WS_UTF16_QUAD L"call"     ,      1,      FALSE, SysFnCALL_EM_YY   , 0          },  // Call Assembler Code
+    {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, SysFnCR_EM_YY     , 0          },  // Canonical Representation
+////{WS_UTF16_QUAD L"crl"      ,      1,      FALSE, SysFnCRL_EM_YY    , 0          },  // Canonical Representation, Line
+////{WS_UTF16_QUAD L"crlpc"    ,      1,      FALSE, SysFnCRLPC_EM_YY  , 0          },  // Canonical Representation, Public Comment
+////{WS_UTF16_QUAD L"def"      ,      1,      FALSE, SysFnDEF_EM_YY    , 0          },  // Define Function
+////{WS_UTF16_QUAD L"defl"     ,      1,      FALSE, SysFnDEFL_EM_YY   , 0          },  // Define Function Line
+    {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, SysFnDL_EM_YY     , 0          },  // Delay Execution
+    {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, SysFnDR_EM_YY     , 0          },  // Data Representation
+////{WS_UTF16_QUAD L"erase"    ,      1,      FALSE, SysFnERASE_EM_YY  , 0          },  // Erase Names
+    {WS_UTF16_QUAD L"error"    ,      1,      FALSE, SysFnERROR_EM_YY  , 0          },  // Signal Error
+////{WS_UTF16_QUAD L"ex"       ,      1,      FALSE, SysFnEX_EM_YY     , 0          },  // Erase Names
+////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, SysFnFI_EM_YY     , 0          },  // Format Items
+////{WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM_YY    , 0          },  // Format
+////{WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM_YY     , 0          },  // Fix Function
+////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM_YY , 0          },  // Identifier List
+////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM_YY  , 0          },  // Identifier Localization
+////{WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM_YY     , 0          },  // Monitor Function
+    {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, SysFnNC_EM_YY     , 0          },  // Name Classification
+    {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, SysFnNL_EM_YY     , 0          },  // Name List
+    {WS_UTF16_QUAD L"size"     ,      1,      FALSE, SysFnSIZE_EM_YY   , 0          },  // Size of an object
+////{WS_UTF16_QUAD L"ss"       ,      1,      FALSE, SysFnSS_EM_YY     , 0          },  // Search String
+////{WS_UTF16_QUAD L"stop"     ,      1,      FALSE, SysFnSTOP_EM_YY   , 0          },  // Manage Stop Points
+////{WS_UTF16_QUAD L"trace"    ,      1,      FALSE, SysFnTRACE_EM_YY  , 0          },  // Manage Trace Points
+    {WS_UTF16_QUAD L"type"     ,      1,      FALSE, SysFnTYPE_EM_YY   , 0          },  // Manage Trace Points
+    {WS_UTF16_QUAD L"ucs"      ,      1,      FALSE, SysFnUCS_EM_YY    , 0          },  // Universal Character Set
 ////{WS_UTF16_QUAD L"vi"       ,      1,      FALSE, StsFnVI_EM    , 0          },  // Verify Items
-////{WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM    , 0          },  // Vector Representation of a Function
+////{WS_UTF16_QUAD L"vr"       ,      1,      FALSE, SysFnVR_EM_YY     , 0          },  // Vector Representation of a Function
 
     // ***FIXME*** Add more entries
 };
@@ -683,12 +684,10 @@ BOOL ValidateBoolean_EM
     lpMemRht = MyGlobalLock (ClrPtrTypeDirGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
@@ -921,12 +920,10 @@ BOOL ValidateInteger_EM
     lpMemRht = MyGlobalLock (ClrPtrTypeDirGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
@@ -1155,7 +1152,6 @@ BOOL ValidateFloat_EM
     lpMemRht = MyGlobalLock (ClrPtrTypeDirGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpHeader, lpHeader->Rank);
 
@@ -1354,8 +1350,7 @@ BOOL ValidateCharVector_EM
     lpMemRht = MyGlobalLock (ClrPtrTypeDirGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
-    // Get the right arg NELM & rank
+    // Get the right arg NELM and Rank
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
 
@@ -1494,7 +1489,6 @@ ALLOC_VECTOR:
         lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
         // Fill in the header values
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
@@ -1503,7 +1497,6 @@ ALLOC_VECTOR:
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
         // Save the dimension
@@ -1689,12 +1682,10 @@ BOOL ValidateIntegerVector_EM
     lpMemRht = MyGlobalLock (ClrPtrTypeDirGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
@@ -1763,7 +1754,6 @@ BOOL ValidateIntegerVector_EM
             lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
             // Fill in the header values
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_INT;
@@ -1772,7 +1762,6 @@ BOOL ValidateIntegerVector_EM
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMRht;
             lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
             // Save the dimension
@@ -1816,7 +1805,6 @@ MAKE_VECTOR:
         lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
         // Fill in the header values
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
@@ -1825,7 +1813,6 @@ MAKE_VECTOR:
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
         // Save the dimension
@@ -2094,7 +2081,6 @@ BOOL ValidatePR_EM
     lpMemRht = MyGlobalLock (ClrPtrTypeDirGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpHeader, lpHeader->Rank);
 
@@ -2295,12 +2281,10 @@ BOOL ValidateSA_EM
     lpMemRht = MyGlobalLock (ClrPtrTypeDirGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data

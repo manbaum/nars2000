@@ -18,18 +18,18 @@
 
 
 //***************************************************************************
-//  $SysFnDM_EM
+//  $SysFnDM_EM_YY
 //
 //  System function:  []DM -- Diagnostic Message
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDM_EM"
+#define APPEND_NAME     L" -- SysFnDM_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnDM_EM
+LPPL_YYSTYPE SysFnDM_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token  (should be NULL)
@@ -79,7 +79,7 @@ LPPL_YYSTYPE SysFnDM_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnDM_EM
+} // End SysFnDM_EM_YY
 #undef  APPEND_NAME
 
 

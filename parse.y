@@ -4210,53 +4210,47 @@ EXIT_TYPES ParseLine
     //   2 = memory xhausted
     bRet = pl_yyparse (&plLocalVars);
 
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
     if (!plLocalVars.bCtrlBreak
      && !plLocalVars.bLookAhead)
     // Split cases based upon the exit type
     switch (plLocalVars.ExitType)
     {
-        case EXITTYPE_RESET_ALL:
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
+        case EXITTYPE_QUADERROR_INIT:
+            // Set the reset flag
+            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
 
+            break;
+
+        case EXITTYPE_QUADERROR_EXEC:
+            // Set the reset flag
+            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_EXEC;
+
+            break;
+
+        case EXITTYPE_RESET_ALL:
             // Set the reset flag
             lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_ALL;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             break;
 
         case EXITTYPE_RESET_ONE:
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // Set the reset flag
             lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_ONE;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             break;
 
         case EXITTYPE_RESET_ONE_INIT:
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             // Set the reset flag
             lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_ONE_INIT;
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             break;
 
         case EXITTYPE_ERROR:        // Mark user-defined function/operator as suspended
         {
             LPSIS_HEADER lpSISCur;
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Get a ptr to the current SIS header
             lpSISCur = lpMemPTD->lpSISCur;
@@ -4275,9 +4269,6 @@ EXIT_TYPES ParseLine
               || lpSISCur->DfnType EQ DFNTYPE_FCN))
                 lpMemPTD->lpSISCur->Suspended = TRUE;
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
             break;
         } // End EXITTYPE_ERROR
 
@@ -4292,6 +4283,9 @@ EXIT_TYPES ParseLine
         defstop
             break;
     } // End IF/SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // If Ctrl-Break was pressed, ...
     if (plLocalVars.bCtrlBreak)
@@ -4337,10 +4331,10 @@ EXIT_TYPES ParseLine
         // If called from Immediate Execution/Execute, ...
         if (lpwszLine)
             // Signal an error
-            ErrorMessage (lpMemPTD->lpwszErrorMessage,
-                          lpwszLine,
-                          plLocalVars.tkErrorCharIndex,
-                          hWndSM);
+            ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
+                                lpwszLine,                      // Ptr to the line which generated the error
+                                plLocalVars.tkErrorCharIndex,   // Position of caret (origin-0)
+                                hWndSM);                        // Window handle to the Session Manager
         else
         {
             LPMEMTXT_UNION lpMemTxtLine;
@@ -4349,10 +4343,10 @@ EXIT_TYPES ParseLine
             lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
             // Signal an error
-            ErrorMessage (lpMemPTD->lpwszErrorMessage,
-                         &lpMemTxtLine->C,
-                          plLocalVars.tkErrorCharIndex,
-                          hWndSM);
+            ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
+                               &lpMemTxtLine->C,                // Ptr to the line which generated the error
+                                plLocalVars.tkErrorCharIndex,   // Position of caret (origin-0)
+                                hWndSM);                        // Window handle to the Session Manager
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
         } // End IF/ELSE
@@ -4368,10 +4362,10 @@ EXIT_TYPES ParseLine
 
 ERROR_EXIT:
     // Signal an error
-    ErrorMessage (ERRMSG_WS_FULL L"-- ParseLineInThread",
-                  L"",
-                  NEG1U,
-                  hWndSM);
+    ErrorMessageDirect (ERRMSG_WS_FULL L"-- ParseLineInThread", // Ptr to error message text
+                        L"",                                    // Ptr to the line which generated the error
+                        NEG1U,                                  // Position of caret (origin-0)
+                        hWndSM);                                // Window handle to the Session Manager
     // Execute []ELX
     plLocalVars.lpYYRes = PrimFnMonUpTackJotCommon_EM_YY (WS_UTF16_QUAD L"ELX", FALSE, NULL);
 

@@ -183,7 +183,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         lpPrimProtoLft = NULL;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -352,7 +352,6 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -361,7 +360,6 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions

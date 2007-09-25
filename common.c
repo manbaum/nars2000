@@ -352,7 +352,6 @@ HGLOBAL GetRegGlbChar
                 lpMem = MyGlobalLock (hGlbVal);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
                 // Fill in the header values
                 lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                 lpHeader->ArrType    = ARRAY_CHAR;
@@ -361,7 +360,6 @@ HGLOBAL GetRegGlbChar
                 lpHeader->RefCnt     = 1;
                 lpHeader->NELM       = uLen;
                 lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
                 // Save the dimension

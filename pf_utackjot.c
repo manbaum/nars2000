@@ -128,7 +128,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
     if (aplRankRht > 1)
@@ -269,11 +269,9 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the NELM and Rank
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Skip over the header and dimension
@@ -414,7 +412,7 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
     hGlbToken = Tokenize_EM (lpwszCompLine,
                              lstrlenW (lpwszCompLine),
                              hWndEC,
-                            &ErrorMessage);
+                            &ErrorMessageDirect);
     // If it's invalid, ...
     if (hGlbToken EQ NULL)
     {

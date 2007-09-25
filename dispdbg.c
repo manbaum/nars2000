@@ -576,7 +576,6 @@ void DisplayTokens
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
 #define lpHeader    ((LPTOKEN_HEADER) lpToken)
-
     wsprintf (lpszDebug,
               "lpToken = %08X, Version # = %d, TokenCnt = %d, PrevGroup = %d",
               lpToken,
@@ -586,7 +585,6 @@ void DisplayTokens
     DbgMsg (lpszDebug);
 
     iLen = lpHeader->TokenCnt;
-
 #undef  lpHeader
 
     lpToken = TokenBaseToStart (lpToken);   // Skip over TOKEN_HEADER

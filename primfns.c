@@ -1508,9 +1508,8 @@ APLRANK RankOfGlb
     lpMem = MyGlobalLock (hGlb);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
+    // Get the Rank
     aplRank = lpHeader->Rank;
-
 #undef  lpHeader
 
     // We no longer need this ptr
@@ -1530,10 +1529,11 @@ void AttrsOfToken
     (LPTOKEN   lpToken,         // Ptr to token
      APLSTYPE *lpaplType,       // Ptr to token storage type (may be NULL)
      LPAPLNELM lpaplNELM,       // ...          NELM (may be NULL)
-     LPAPLRANK lpaplRank)       // ...          rank (may be NULL)
+     LPAPLRANK lpaplRank,       // ...          rank (may be NULL)
+     LPAPLUINT lpaplCols)       // ...          # cols in the array (scalar = 1) (may be NULL)
 
 {
-    HGLOBAL hGlbData;
+    HGLOBAL hGlbData;           // Global memory handle
 
     // Split case based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -1560,6 +1560,8 @@ void AttrsOfToken
                 *lpaplNELM = 1;
             if (lpaplRank)
                 *lpaplRank = 0;
+            if (lpaplCols)
+                *lpaplCols = 1;
             return;
 
         case TKT_VARIMMED:
@@ -1569,6 +1571,8 @@ void AttrsOfToken
                 *lpaplNELM = 1;
             if (lpaplRank)
                 *lpaplRank = 0;
+            if (lpaplCols)
+                *lpaplCols = 1;
             return;
 
         case TKT_VARARRAY:
@@ -1591,7 +1595,7 @@ void AttrsOfToken
     } // End SWITCH
 
     // Get the attributes (Type, NELM, and Rank) of the global
-    AttrsOfGlb (ClrPtrTypeDirGlb (hGlbData), lpaplType, lpaplNELM, lpaplRank, NULL);
+    AttrsOfGlb (ClrPtrTypeDirGlb (hGlbData), lpaplType, lpaplNELM, lpaplRank, lpaplCols);
 } // End AttrsOfToken
 
 
@@ -1609,13 +1613,12 @@ void AttrsOfGlb
      LPAPLUINT lpaplCols)       // ...          # cols in the array (scalar = 1) (may be NULL)
 
 {
-    LPVOID  lpMem;
+    LPVOID  lpMemData;          // Ptr to global memory
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbData);
+    lpMemData = MyGlobalLock (hGlbData);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemData)
     if (lpaplType)
         *lpaplType = lpHeader->ArrType;
     if (lpaplNELM)
@@ -1627,17 +1630,14 @@ void AttrsOfGlb
     if (lpaplCols)
     {
         if (lpHeader->Rank NE 0)
-        {
-            lpMem = VarArrayBaseToDim (lpMem);
-            *lpaplCols = ((LPAPLDIM) lpMem)[lpHeader->Rank - 1];
-        } else
+            *lpaplCols = ((LPAPLDIM) VarArrayBaseToDim (lpMemData))[lpHeader->Rank - 1];
+        else
             *lpaplCols = 1;
     } // End IF
-
 #undef  lpHeader
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMem = NULL;
+    MyGlobalUnlock (hGlbData); lpMemData = NULL;
 } // End AttrsOfGlb
 
 
@@ -1851,11 +1851,10 @@ BOOL CheckAxisGlb
     lpMem = MyGlobalLock (ClrPtrTypeDirGlb (hGlbData));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
+    // Get the Array Type, NELM, and Rank
     aplTypeLcl = lpHeader->ArrType;
    *lpaplNELM  = lpHeader->NELM;
     aplRankLcl = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Check the axis rank and the NELM (if singletons only)
@@ -2758,14 +2757,12 @@ void FirstValueSymGlb
     lpMem = MyGlobalLock (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
-    // Get the array's storage type & NELM
+    // Get the Array Type and NELM
     aplType = lpHeader->ArrType;
     aplNELM = lpHeader->NELM;
 
     // Skip over the header and dimensions to the data
     lpMem = VarArrayBaseToData (lpMem, lpHeader->Rank);
-
 #undef  lpHeader
 
     if (lpImmType)
@@ -3243,6 +3240,7 @@ void GetNextValue
     lpMemSub = MyGlobalLock (hGlbSub);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
+    // Get the Array Type, NELM, and Rank
     aplTypeSub = lpHeader->ArrType;
 ////aplNELMSub = lpHeader->NELM;
     aplRankSub = lpHeader->Rank;
@@ -3310,7 +3308,7 @@ void GetNextValue
 
                 case PTRTYPE_HGLOBAL:
                     // Mark the result as an HGLOBAL
-                    *lphGlbRes = lpSymSub;
+                    *lphGlbRes = ClrPtrTypeDirGlb (lpSymSub);
 
                     break;
 
@@ -3400,7 +3398,7 @@ BOOL PrimScalarFnDydAllocate_EM
      APLNELM    aplNELMRes)     // Result ...
 
 {
-    APLUINT  ByteRes;           // # bytes needed for the result
+    APLUINT  ByteRes;           // # bytes in the result
     LPVOID   lpMemRes;          // Ptr to locked memory in result
     LPAPLDIM lpMemDimArg;
     APLUINT  uRes;
@@ -3465,7 +3463,6 @@ BOOL PrimScalarFnDydAllocate_EM
     lpMemRes = MyGlobalLock (*lphGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -3474,7 +3471,6 @@ BOOL PrimScalarFnDydAllocate_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = *lpaplRankRes;
-
 #undef  lpHeader
 
     // Fill in the dimensions
@@ -3561,7 +3557,7 @@ HGLOBAL MakeMonPrototype_EM
     APLNELM     uLen;
     HGLOBAL     hGlbTmp;
     BOOL        bRet = TRUE;        // TRUE iff result is valid
-    APLUINT     ByteRes;            // # bytes needed for the result
+    APLUINT     ByteRes;            // # bytes in the result
     LPSYMENTRY  lpSymArr,
                 lpSymRes;
 
@@ -3644,7 +3640,6 @@ HGLOBAL MakeMonPrototype_EM
                     lpMemRes = MyGlobalLock (hGlbTmp);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
                     // Fill in the header
                     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                     lpHeader->ArrType    = ARRAY_BOOL;
@@ -3653,7 +3648,6 @@ HGLOBAL MakeMonPrototype_EM
                     lpHeader->RefCnt     = 1;
                     lpHeader->NELM       = aplNELM;
                     lpHeader->Rank       = aplRank;
-
 #undef  lpHeader
 
                     // Copy the dimensions to the result
@@ -4018,7 +4012,6 @@ HGLOBAL MakeDydPrototype_EM
         lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
@@ -4027,7 +4020,6 @@ HGLOBAL MakeDydPrototype_EM
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
         // Copy the dimensions to the result
@@ -4043,12 +4035,10 @@ HGLOBAL MakeDydPrototype_EM
         lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
 #define lpAPA       ((LPAPLAPA) lpMemRes)
-
         // To make a prototype APA, set its
         //   offset and multiplier to zero
         lpAPA->Off =
         lpAPA->Mul = 0;
-
 #undef  lpAPA
 
         goto NORMAL_EXIT;
@@ -4369,10 +4359,9 @@ BOOL IsFirstSimpleGlb
     lpMemRht = MyGlobalLock (*lphGlbRht);
 
 #define lpHeaderRht     ((LPVARARRAY_HEADER) lpMemRht)
-
+    // Get the Array Type and Rank
     aplTypeRht = lpHeaderRht->ArrType;
     aplRankRht = lpHeaderRht->Rank;
-
 #undef  lpHeaderRht
 
     // It's a nested element
@@ -4528,14 +4517,12 @@ HGLOBAL CopyArray_EM
         dprintfW (L"##RefCnt=1 in " APPEND_NAME L": %08X (%S#%d)", lpMemDst, FNLN);
 #endif
 #define lpHeaderDst ((LPVARARRAY_HEADER) lpMemDst)
-
         lpHeaderDst->RefCnt = 1;
 
         // Recurse through the array, copying all the global ptrs
         aplType = lpHeaderDst->ArrType;
         aplNELM = lpHeaderDst->NELM;
         aplRank = lpHeaderDst->Rank;
-
 #undef  lpHeaderDst
 
         lpMemDstBase = lpMemDst = VarArrayBaseToData (lpMemDst, aplRank);
@@ -4671,11 +4658,9 @@ BOOL IsGlobalTypeArray
         lpMem = GlobalLock (hGlb); Assert (lpMem NE NULL);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
         // Ensure it has the correct signature
         bRet = (lpHeader->Sig.nature EQ Signature)
             && (lpHeader->Perm || lpHeader->RefCnt > 0);
-
 #undef  lpHeader
 
         // We no longer need this ptr
@@ -4809,28 +4794,28 @@ BOOL CheckRankLengthError_EM
 //***************************************************************************
 //  $RoundUpBits8
 //
-//  Round up bits to a byte (8 bits/byte)
+//  Round up bits to a byte (8 bits/byte) and convert to # bytes
 //***************************************************************************
 
 APLINT RoundUpBits8
-    (APLNELM aplNELM)
+    (APLNELM aplNELM)           // NELM to convert
 
 {
-    return (aplNELM + (NBIB - 1)) & ~MASKLOG2NBIB;
+    return ((aplNELM + (NBIB - 1)) & ~MASKLOG2NBIB) >> LOG2NBIB;
 } // End RoundUpBits8
 
 
 //***************************************************************************
 //  $RoundUpBitsInArray
 //
-//  Round up bits to a dword (8 bits/byte)
+//  Round up bits to a dword (32 bits/dword) and convert to # bytes
 //***************************************************************************
 
 APLINT RoundUpBitsInArray
-    (APLNELM aplNELM)
+    (APLNELM aplNELM)           // NELM to convert
 
 {
-    return (aplNELM + (NBID - 1)) & ~MASKLOG2NBID;
+    return ((aplNELM + (NBID - 1)) & ~MASKLOG2NBID) >> LOG2NBIB;
 } // End RoundUpBitsInArray
 
 
@@ -4942,7 +4927,7 @@ APLUINT CalcArraySize
      APLRANK     aplRank)       // ...    rank
 
 {
-    APLUINT ByteRes;            // # bytes needed for the result
+    APLUINT ByteRes;            // # bytes in the result
 
     Assert (0 <= aplType
          &&      aplType < ARRAY_LENGTH);
@@ -5074,7 +5059,7 @@ LPTOKEN TypeDemote
                       aplNELMNest;      // Right arg NELM in case empty nested
     APLRANK           aplRankRht;       // Right arg rank
     APLUINT           uRht,             // Right arg loop counter
-                      ByteRes;          // # bytes needed for the result
+                      ByteRes;          // # bytes in the result
     APLINT            aplInteger;       // Temporary integer
     APLFLOAT          aplFloat;         // ...       float
     APLSTYPE          aplTypeRes,
@@ -5292,11 +5277,9 @@ LPTOKEN TypeDemote
                 dprintfW (L"##RefCnt=1 in " APPEND_NAME L": %08X (%S#%d)", lpMemRes, FNLN);
 #endif
 #define lpHeaderRes ((LPVARARRAY_HEADER) lpMemRes)
-
                 // Set the reference count and array type
                 lpHeaderRes->RefCnt  = 1;
                 lpHeaderRes->ArrType = ARRAY_HETERO;
-
 #undef  lpHeaderRes
                 // We no longer need these ptrs
                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -5350,7 +5333,6 @@ LPTOKEN TypeDemote
             lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeRes;
@@ -5359,7 +5341,6 @@ LPTOKEN TypeDemote
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMRht;
             lpHeader->Rank       = aplRankRht;
-
 #undef  lpHeader
 
             // Skip over the header to the dimensions

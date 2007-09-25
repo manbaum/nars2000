@@ -180,8 +180,8 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                  uBitIndex;         //
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // The rank of the result is the same as that of the right arg
     //   with scalar right arg promoted to a vector
@@ -427,7 +427,6 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -436,7 +435,6 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Copy the dimensions from the right arg to the result

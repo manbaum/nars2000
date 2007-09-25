@@ -162,7 +162,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     APLRANK      aplRankLft,            // Left arg rank
                  aplRankRht,            // Right ...
                  aplRankRes;            // Result   ...
-    APLUINT      ByteRes,               // # bytes needed for the result
+    APLUINT      ByteRes,               // # bytes in the result
                  uLft,                  // Left arg loop counter
                  uRht,                  // Right ...
                  uRes;                  // Result   ...
@@ -187,8 +187,8 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for axis operator
     if (lpYYFcnStrOpr->FcnCount > 1
@@ -263,7 +263,6 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -272,7 +271,6 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Get left and right arg's global ptrs

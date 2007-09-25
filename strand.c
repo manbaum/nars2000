@@ -310,7 +310,7 @@ LPPL_YYSTYPE MakeVarStrand_EM_YY
 {
     int          iLen,
                  iBitIndex;
-    APLUINT      ByteRes;               // # bytes needed for the result
+    APLUINT      ByteRes;               // # bytes in the result
     LPPL_YYSTYPE lpYYToken,
                  lpYYStrand;
     HGLOBAL      hGlbStr,
@@ -413,7 +413,6 @@ static char tabConvert[][STRAND_LENGTH] =
                     lpMemStr = MyGlobalLock (ClrPtrTypeDirGlb (hGlbData));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
-
                     if (lpHeader->Rank EQ 0)
                         cStrandNxtType = TranslateArrayTypeToStrandType (lpHeader->ArrType);
                     else
@@ -664,7 +663,6 @@ static char tabConvert[][STRAND_LENGTH] =
     lpMemStr = MyGlobalLock (hGlbStr);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType = aplType;
@@ -673,7 +671,6 @@ static char tabConvert[][STRAND_LENGTH] =
     lpHeader->RefCnt  = 1;
     lpHeader->NELM    = iLen;
     lpHeader->Rank    = 1;
-
 #undef  lpHeader
 
     *VarArrayBaseToDim (lpMemStr) = iLen;
@@ -1059,7 +1056,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     UINT          uIniLen,          // Initial strand length
                   uActLen,          // Actual  ...
                   FcnCount = 0;
-    APLUINT       ByteRes;                  // # bytes needed for the result
+    APLUINT       ByteRes;          // # bytes in the result
     HGLOBAL       hGlbStr;
     LPVOID        lpMemStr;
     LPPL_YYSTYPE  lpYYStrand,
@@ -1068,7 +1065,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
                   lpYYBase = (LPPL_YYSTYPE) -1,
                   lpYYRes;
     BOOL          bRet = TRUE;
-    LPPLLOCALVARS lpplLocalVars;   // Ptr to local plLocalVars
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
+    SYSTEMTIME    systemTime;       // Current system (UTC) time
 
     DBGENTER;
 
@@ -1140,12 +1138,18 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpMemStr = MyGlobalLock (hGlbStr);
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
-
     // Fill in the header
     lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
     lpHeader->NameType    = nameType;
     lpHeader->RefCnt      = 1;
 ////lpHeader->fcnNELM     =             // To be filled in below
+
+    // Get the current system (UTC) time
+    GetSystemTime (&systemTime);
+
+    // Convert system time to file time and save as creation time
+    SystemTimeToFileTime (&systemTime, &lpHeader->ftCreation);
+
     if (bSaveTxtLine)
     {
         UINT           uLineLen;        // Line length
@@ -1179,7 +1183,6 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
             MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
         } // End IF
     } // End IF
-
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
@@ -1189,9 +1192,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYMemData = CopyYYFcn (lpYYMemData, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount);
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
-
     lpHeader->fcnNELM = uActLen = lpYYMemData - lpYYMemStart;
-
 #undef  lpHeader
 
     // We no longer need this ptr
@@ -1809,7 +1810,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
 
 {
     int           iLen;             // # elements in the strand
-    APLUINT       ByteRes;          // # bytes needed for the result
+    APLUINT       ByteRes;          // # bytes in the result
     LPPL_YYSTYPE  lpYYStrand;       // Ptr to base of strand
     HGLOBAL       hGlbStr;          // Strand global memory handle
     LPVOID        lpMemStr;         // Ptr to strand global memory
@@ -1858,11 +1859,9 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     lpMemStr = MyGlobalLock (hGlbStr);
 
 #define lpHeader    ((LPVARNAMED_HEADER) lpMemStr)
-
     // Fill in the header
     lpHeader->Sig.nature = VARNAMED_HEADER_SIGNATURE;
     lpHeader->NELM       = iLen;
-
 #undef  lpHeader
 
     // Skip over the header to the data
@@ -2037,7 +2036,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     LPPL_YYSTYPE  lpYYStrand,
                   lpYYToken;
     int           iLen;
-    APLUINT       ByteRes;          // # bytes needed for the result
+    APLUINT       ByteRes;          // # bytes in the result
     HGLOBAL       hGlbLst;
     LPVOID        lpMemLst;
     LPSYMENTRY    lpSymEntry;
@@ -2089,7 +2088,6 @@ LPPL_YYSTYPE MakeList_EM_YY
     lpMemLst = MyGlobalLock (hGlbLst);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemLst)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_LIST;
@@ -2098,7 +2096,6 @@ LPPL_YYSTYPE MakeList_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = iLen;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     *VarArrayBaseToDim (lpMemLst) = iLen;

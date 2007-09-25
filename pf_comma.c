@@ -186,7 +186,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     LPVOID       lpMemRes;          // Ptr to result global memory
     BOOL         bFract = FALSE,    // TRUE iff axis has fractional values
                  bTableRes;         // TRUE iff function is UTF16_COMMABAR
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Check for axis present
@@ -230,7 +230,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     aplRankRes = 1 + bTableRes;
 
     //***************************************************************
-    // Calculate the space needed for the result
+    // Calculate space needed for the result
     //***************************************************************
     ByteRes = CalcArraySize (TranslateImmTypeToArrayType (immType),
                              1,
@@ -252,7 +252,6 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = TranslateImmTypeToArrayType (immType);
@@ -261,7 +260,6 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = 1;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Fill in the result's dimension
@@ -322,7 +320,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                  lpMemGrUp = NULL,  // Ptr to grade up ...
                  lpMemOdo = NULL,   // Ptr to odometer ...
                  lpMemWVec = NULL;  // Ptr to weighting vector ...
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     APLNELM      aplNELMRht,        // Right arg NELM
                  aplNELMAxis;       // Axis      ...
     APLRANK      aplRankRht,        // Right arg rank
@@ -426,11 +424,9 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the Array Type and NELM
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions
@@ -511,7 +507,6 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
@@ -520,7 +515,6 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRht;
     lpHeaderRes->Rank       = aplRankRes;
-
 #undef  lpHeaderRes
 
     // Calculate the length of the raveled dimension
@@ -689,7 +683,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
 
-                    uBitMask = 1 << (((UINT) uRht) & MASKLOG2NBIB);
+                    uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
@@ -973,8 +967,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Both arguments are within bounds
     Assert (aplTypeLft < ARRAY_LENGTH);
@@ -1258,7 +1252,6 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
@@ -1267,7 +1260,6 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = aplRankRes;
-
 #undef  lpHeaderRes
 
     // Skip over the result header to the dimensions

@@ -160,9 +160,9 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
     if (lptkLftArg)
-        AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
+        AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     if (lptkRhtArg)
-        AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+        AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // If the DFN left arg is a list, make sure the left arg token
     //   is a scalar, or a vector of the proper length
@@ -540,6 +540,16 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             case EXITTYPE_RESET_ALL:
                 break;
 
+            case EXITTYPE_QUADERROR_INIT:
+                DbgBrk ();
+
+                break;
+
+            case EXITTYPE_QUADERROR_EXEC:
+                DbgBrk ();
+
+                break;
+
             case EXITTYPE_NONE:
             defstop
                 break;
@@ -672,7 +682,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
         default:        // Multiple result names:  Allocate storage to hold them
         {
-            APLUINT ByteRes;        // # bytes needed for the result
+            APLUINT ByteRes;        // # bytes in the result
             HGLOBAL hGlbRes;        // Result global memory handle
             LPVOID  lpMemRes;       // Ptr to result global memory
 
@@ -746,7 +756,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_NESTED;
@@ -755,7 +764,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = numResultSTE;
             lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
             // Fill in the dimension
@@ -1146,11 +1154,9 @@ void InitVarSTEs
             lpMemArg = MyGlobalLock (ClrPtrTypeDirGlb (hGlbArg));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
-
             aplTypeArg = lpHeader->ArrType;
             aplNELMArg = lpHeader->NELM;
             aplRankArg = lpHeader->Rank;
-
 #undef  lpHeader
 
             // These were checked for above, but it never hurts to test again
@@ -1334,7 +1340,7 @@ BOOL InitFcnSTEs
             (*lplpSymEntry)->stData.stLongest = lpYYArg->tkToken.tkData.tkLongest;
         } else
         {
-            APLUINT ByteRes;            // # bytes needed for the result
+            APLUINT ByteRes;            // # bytes in the result
             HGLOBAL hGlbRes;            // Result global memory handle
             LPVOID  lpMemRes;           // Ptr to result global memory
 
@@ -1354,14 +1360,12 @@ BOOL InitFcnSTEs
             lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemRes)
-
             // Fill in the header
             lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
             lpHeader->NameType    = NAMETYPE_FN12;
             lpHeader->RefCnt      = 1;
             lpHeader->fcnNELM     = lpYYArg->FcnCount;
 ////////////lpHeader->hGlbTxtLine = NULL;           // Already zero from GHND
-
 #undef  lpHeader
 
             // Skip over the header and dimensions to the data

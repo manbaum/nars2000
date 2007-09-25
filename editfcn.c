@@ -2886,6 +2886,7 @@ BOOL SaveFunction
                     lpUndoLst;          // Ptr to end ...
         LPSYMENTRY  lpSymName = NULL,   // Ptr to SYMENTRY for the function name
                    *lplpSymDfnHdr;      // Ptr to LPSYMENTRYs at end of user-defined function/operator header
+        SYSTEMTIME  systemTime;         // Current system (UTC) time
 
         // Check to see if this function is already in global memory
         lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
@@ -2969,6 +2970,12 @@ BOOL SaveFunction
                                   : NULL;
         lpMemDfnHdr->hGlbTxtHdr   = hGlbTxtHdr;
         lpMemDfnHdr->hGlbTknHdr   = hGlbTknHdr;
+
+        // Get the current system (UTC) time
+        GetSystemTime (&systemTime);
+
+        // Convert system time to file time and save as creation time
+        SystemTimeToFileTime (&systemTime, &lpMemDfnHdr->ftCreation);
 
         // Get the ptr to the start of the Undo Buffer
         (long) lpUndoBeg = GetWindowLong (hWndFE, GWLSF_UNDO_BEG);

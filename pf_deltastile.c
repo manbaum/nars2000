@@ -222,7 +222,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     APLRANK      aplRankRht;        // Right arg rank
     HGLOBAL      hGlbRht,           // Right arg global memory handle
                  hGlbRes;           // Result    ...
-    APLUINT      ByteRes,           // # bytes in result
+    APLUINT      ByteRes,           // # bytes in the result
                  uRes;              // Loop counter
     LPVOID       lpMemRht,          // Ptr to right arg global memory
                  lpMemRes;          // Ptr to result    ...
@@ -241,7 +241,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     bQuadIO = GetQuadIO ();
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
-    AttrsOfToken (lptkRhtArg, &gradeData.aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &gradeData.aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
     if (aplRankRht EQ 0)
@@ -291,7 +291,6 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_INT;
@@ -300,7 +299,6 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = 1;
-
 #undef  lpHeaderRes
 
     // Save the dimension in the result
@@ -394,7 +392,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
                  lpMemRes = NULL;       // Ptr to result   ...
     LPAPLDIM     lpMemDimLft,           // Ptr to left arg dimensions
                  lpMemDimRht;           // Ptr to right ...
-    APLUINT      ByteRes,               // # bytes in result
+    APLUINT      ByteRes,               // # bytes in the result
                  uDim,                  // Loop counter
                  uRes,                  // Loop counter
                  uBegLen,               // Product of leading dimensions
@@ -415,8 +413,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     bQuadIO = GetQuadIO ();
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &gradeData.aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &gradeData.aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT RANK ERROR
     if (aplRankLft EQ 0)
@@ -568,7 +566,6 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_INT;
@@ -577,7 +574,6 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = 1;
-
 #undef  lpHeaderRes
 
     // Save the dimension in the result
@@ -708,12 +704,12 @@ APLINT PrimFnMonGradeCompare
 
                 // Get the left hand indexed bit
                 aplBitLft = aplUIntLft * aplNELMRest + uRest;
-                uBitMask = 1 << ((int) (aplBitLft % NBIB));
+                uBitMask = 1 << (MASKLOG2NBIB & (UINT) aplBitLft);
                 aplBitLft = (uBitMask & ((LPAPLBOOL) lpMemRht)[aplBitLft >> LOG2NBIB]) ? 1 : 0;
 
                 // Get the right hand indexed bit
                 aplBitRht = aplUIntRht * aplNELMRest + uRest;
-                uBitMask = 1 << ((int) (aplBitRht % NBIB));
+                uBitMask = 1 << (MASKLOG2NBIB & (UINT) aplBitRht);
                 aplBitRht = (uBitMask & ((LPAPLBOOL) lpMemRht)[aplBitRht >> LOG2NBIB]) ? 1 : 0;
 
                 // Split cases based upon the signum of the difference

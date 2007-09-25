@@ -18,18 +18,18 @@
 
 
 //***************************************************************************
-//  $SysFnSYSVER_EM
+//  $SysFnSYSVER_EM_YY
 //
 //  System function:  []SYSVER -- System Version
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnSYSVER_EM"
+#define APPEND_NAME     L" -- SysFnSYSVER_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnSYSVER_EM
+LPPL_YYSTYPE SysFnSYSVER_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -78,7 +78,6 @@ LPPL_YYSTYPE SysFnSYSVER_EM
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -87,7 +86,6 @@ LPPL_YYSTYPE SysFnSYSVER_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = SYSVER_NELM;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -167,7 +165,7 @@ LPPL_YYSTYPE SysFnSYSVER_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnSYSVER_EM
+} // End SysFnSYSVER_EM_YY
 #undef  APPEND_NAME
 
 

@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  $SysFnSYSID_EM
+//  $SysFnSYSID_EM_YY
 //
 //  System function:  []SYSID -- System Identifier
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnSYSID_EM"
+#define APPEND_NAME     L" -- SysFnSYSID_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnSYSID_EM
+LPPL_YYSTYPE SysFnSYSID_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -74,7 +74,6 @@ LPPL_YYSTYPE SysFnSYSID_EM
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -83,7 +82,6 @@ LPPL_YYSTYPE SysFnSYSID_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = SYSID_NELM;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -109,7 +107,7 @@ LPPL_YYSTYPE SysFnSYSID_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnSYSID_EM
+} // End SysFnSYSID_EM_YY
 #undef  APPEND_NAME
 
 

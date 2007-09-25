@@ -137,13 +137,13 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     LPFMTCOLSTR  lpFmtColStr;       // Ptr to col struc
     LPAPLCHAR    lpaplChar,         // Ptr to output save area
                  lpaplCharStart;    // Ptr to start of output save area
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     BOOL         bRet = TRUE,       // TRUE iff result is valid
                  bSimpleScalar;     // TRUE if right arg is a simple scalar
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank) of the right args
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Get right arg's global ptrs
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -399,7 +399,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -408,7 +407,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions
@@ -2249,8 +2247,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     DbgBrk ();          // ***FINISHME*** -- PrimFnDydDownTackJot_EM_YY
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);

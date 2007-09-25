@@ -11,7 +11,6 @@ TO DO:  General:  Important
 * ...       dyadic dot                  (inner product)
 * ...       monadic down shoe           (unique)
 * ...       dyadic down tack            (representation)
-* ...       dyadic right shoe           (pick)
 * ...       dyadic up tack              (base value)
 * ...       bracket indexing             A[B]
 * ...       bracket indexing             A[B][C]
@@ -21,16 +20,13 @@ TO DO:  General:  Important
 * ...       )LOAD
 * ...       )COPY
 * ...       minimum set of system functions, to wit:
-* ...          []DR R
 * ...        L []DR R
 * ...          []EM
 * ...          []ET
 * ...          []EX R
 * ...          []FX R
-* ...          []NL R
 * ...          []ES R
 * ...          []ERROR R
-* ...        L []NL R
 * ...        L []EA R
 * ...        L []ES R
 * ...        L []TF R
@@ -45,6 +41,7 @@ TO DO:  General:  Wish List
 * Allocate bison stack from virtual memory
 * Implement Garbage Collection???
 * Test implementation limits (stack, FP, Integer, etc.)
+* Test _MAXSIZE limits on VirtualAlloc
 * Check on freeing intermediate variables on error
 * Idiom recognition in the tokenizer
 * Test ± infinity code
@@ -52,6 +49,7 @@ TO DO:  General:  Wish List
 * Reference count on symbol table entries??
 * Strings in the symbol table??
 * Implement user/session options dialog
+* Implement Redo (Ctrl-Y)
 * ...       selective assignment
 * ...       dynamic functions
 * ...       magic functions for primitive functions
@@ -95,6 +93,7 @@ TO DO:  General:  Wish List
 * ...       dieresis-downtack           (convolution)
 * ...       dieresis-jot                (rank)
 * ...       dieresis-star               (power)
+* ...       stile-tilde                 (partition)
 * ...       vector editor
 * ...       matrix editor
 * ...       []INVERSE:
@@ -144,12 +143,17 @@ DONE:  General
 * ...       error handling ([]ELX)
 * ...       event handling ([]ALX)
 * ...       Ctrl-Break
+* ...       []DR R
 * ...       []PROTOTYPE:
 * ...       []AV
 * ...       []LC
 * ...       []DL R
 * ...       []NC R
 * ...       []UCS R
+* ...       []NL R
+* ...     L []NL R
+* ...     2 []CR R
+* ...     1 []CR R
 * ...       monadic right shoe
 * ...       dyadic down arrow
 * ...       dyadic up arrow
@@ -157,6 +161,7 @@ DONE:  General
 * ...       monadic grade-down
 * ...       dyadic grade-up
 * ...       dyadic grade-down
+* ...       dyadic right shoe
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector
@@ -168,6 +173,7 @@ DONE:  General
 * Test all occurrences of a list as the right arg to a primitive or system function
 * Right double click on the name of a user-defined function/operator
   or available name opens up the function editor
+* Axis error if defined function given an axis but not accepting one
 *
 
 
@@ -176,6 +182,7 @@ DONE:  Session Manager
 * Mouse selection in session manager:  line & sentence
 * CUA keystrokes:  e.g. Ctrl-RightArrow, etc.
 * Tabs for workspaces
+* Implement Undo
 *
 
 
@@ -196,12 +203,6 @@ DONE:  Features
 * ± infinity
 * Use structured exception handling to change storage
   type on the fly (such as {floor} {infinity})
-* Monadic []DR
-* []TS
-* []TC, []TCxxx
-* []TYPE
-* []SYSID
-* []SYSVER
 *
 
 
@@ -227,7 +228,8 @@ QUESTIONS
   What about multiple results such as {del}(Z1 Z2 ...) {is} foo R,
   where Z1 is set, but not Z2?
 
-  What if no Zn is set -- should we allow the function to exit?
+  What if no Zn is set -- should we allow the function to exit
+  with no result as in {del}Z{is}FOO R when Z is unset??
 *
 
 
@@ -284,7 +286,6 @@ ToDo
 * Unlocalize in one pass (and clear .Value), and restore
   in another pass to handle duplicate localized names
 * Resolve NAMETYPE_UNK bug
-* Axis error if defined function given an axis but not accepting one
 *
 
 

@@ -229,7 +229,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                  lpMemGrUp = NULL,
                  lpMemOdo = NULL,
                  lpMemWVec = NULL;
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     APLNELM      aplNELMAxis,
                  aplNELMRes,
                  aplNELMRht,
@@ -297,11 +297,9 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the Array Type and NELM
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
-
 #undef  lpHeader
 
     // Skp over the header to the dimensions
@@ -372,7 +370,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_NESTED;
@@ -381,7 +378,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = aplRankRes;
-
 #undef  lpHeaderRes
 
     // Point to the result's dimension
@@ -470,7 +466,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         lpMemProto = MyGlobalLock (hGlbProto);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemProto)
-
                         // Fill in the header
                         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                         lpHeader->ArrType    = ARRAY_NESTED;
@@ -479,7 +474,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         lpHeader->RefCnt     = 1;
                         lpHeader->NELM       = aplNELMSub;
                         lpHeader->Rank       = aplNELMAxis;
-
 #undef  lpHeader
                         // Fill in the dimension
                         *VarArrayBaseToDim (lpMemProto) = aplNELMSub;
@@ -690,7 +684,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
 
-                    uBitMask = 1 << (((UINT) uRht) & MASKLOG2NBIB);
+                    uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     ((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] |=
@@ -1104,7 +1098,7 @@ BOOL PrimFnMonLeftShoeProto_EM
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    APLUINT ByteRes,                // # bytes needed for the result
+    APLUINT ByteRes,                // # bytes in the result
             uRes;                   // Result loop counter
     LPVOID lpMemProto;              // Ptr to prototype global memory
 
@@ -1130,7 +1124,6 @@ BOOL PrimFnMonLeftShoeProto_EM
         lpMemProto = MyGlobalLock (*lphGlbProto);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemProto)
-
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplType;
@@ -1139,7 +1132,6 @@ BOOL PrimFnMonLeftShoeProto_EM
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMSub;
         lpHeader->Rank       = aplNELMAxis;
-
 #undef  lpHeader
 
         // Fill in the dimension
@@ -1175,7 +1167,7 @@ BOOL PrimFnMonLeftShoeProto_EM
 #endif
 
 BOOL PrimFnMonLeftShoeGlbSub_EM
-    (APLUINT     ByteRes,           // # bytes needed for the result
+    (APLUINT     ByteRes,           // # bytes in the result
      APLSTYPE    aplTypeSub,        // Subarray type
      APLNELM     aplNELMSub,        // Subarray NELM
      APLNELM     aplNELMAxis,       // Axis NELM
@@ -1211,7 +1203,6 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
     *lplpMemSub = MyGlobalLock (*lphGlbSub);
 
 #define lpHeader    (*(LPVARARRAY_HEADER *) lplpMemSub)
-
     // Fill in the subarray header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeSub;
@@ -1220,7 +1211,6 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMSub;
     lpHeader->Rank       = aplNELMAxis;
-
 #undef  lpHeader
 
     //***************************************************************

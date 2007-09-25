@@ -129,7 +129,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                  hGlbRes = NULL;    // Result    ...
     LPVOID       lpMemRht = NULL,   // Ptr to right arg global memory
                  lpMemRes = NULL;   // Ptr to result    ...
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     APLDIM       uNumRows,
                  uNumCols,
                  uRow,
@@ -149,7 +149,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Get right arg's global ptrs
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -238,7 +238,6 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_FLOAT;
@@ -247,7 +246,6 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Fill in the dimensions
@@ -565,7 +563,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
                  lpMemRht = NULL,   // Ptr to right ...
                  lpMemRes = NULL;   // Ptr to result   ...
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     APLDIM       uNumRowsLft,       //
                  uNumColsLft,       //
                  uNumRowsRht,       //
@@ -594,8 +592,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -702,7 +700,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     // Save the NELM of the result
     aplNELMRes = uNumRowsRes * uNumColsRes;
 
-    // Calculate the space needed for the result
+    // Calculate space needed for the result
     if (aplRankRes NE 0)
     {
         // Calculate space needed for the result
@@ -723,7 +721,6 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
         // Fill in the header values
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_FLOAT;
@@ -732,7 +729,6 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
         // Fill in the dimensions

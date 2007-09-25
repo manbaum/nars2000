@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  $SysFnTS_EM
+//  $SysFnTS_EM_YY
 //
 //  System function:  []TS -- Time Stamp
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnTS_EM"
+#define APPEND_NAME     L" -- SysFnTS_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnTS_EM
+LPPL_YYSTYPE SysFnTS_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -72,7 +72,6 @@ LPPL_YYSTYPE SysFnTS_EM
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
@@ -81,7 +80,6 @@ LPPL_YYSTYPE SysFnTS_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = 7;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -97,7 +95,6 @@ LPPL_YYSTYPE SysFnTS_EM
         GetSystemTime (&SystemTime);
 
 #define lpMemData   ((LPAPLINT) lpMemRes)
-
     lpMemData[0] = SystemTime.wYear;
     lpMemData[1] = SystemTime.wMonth;
     lpMemData[2] = SystemTime.wDay;
@@ -105,7 +102,6 @@ LPPL_YYSTYPE SysFnTS_EM
     lpMemData[4] = SystemTime.wMinute;
     lpMemData[5] = SystemTime.wSecond;
     lpMemData[6] = SystemTime.wMilliseconds;
-
 #undef  lpMemData
 
     // We no longer need this ptr
@@ -122,7 +118,7 @@ LPPL_YYSTYPE SysFnTS_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnTS_EM
+} // End SysFnTS_EM_YY
 #undef  APPEND_NAME
 
 

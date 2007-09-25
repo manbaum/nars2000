@@ -116,7 +116,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 {
     APLNELM      aplNELMRes;    // Result NELM
     HGLOBAL      hGlbRes;       // Result global memory handle
-    UINT         ByteRes;       // # bytes in result
+    UINT         ByteRes;       // # bytes in the result
     LPVOID       lpMemRes;      // Ptr to result global memory
     BOOL         bRet = TRUE;   // TRUE iff result is valid
     APLINT       aplIntTmp;     // Temporary integer
@@ -244,7 +244,6 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_APA;
@@ -253,7 +252,6 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = 1;
-
 #undef  lpHeaderRes
 
     // Save the dimension in the result
@@ -390,15 +388,13 @@ BOOL PrimFnMonIotaGlb_EM
     lpMem = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
     // It's an array
     Assert (lpHeader->Sig.nature EQ VARARRAY_HEADER_SIGNATURE);
 
-    // Get the Type, NELM, and Rank
+    // Get the Array Type, NELM, and Rank
     aplType = lpHeader->ArrType;
     aplNELM = lpHeader->NELM;
     aplRank = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Skip past the header and dimensions to the data
@@ -518,8 +514,8 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
     if (aplRankLft NE 1)

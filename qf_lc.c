@@ -20,18 +20,18 @@
 
 
 //***************************************************************************
-//  $SysFnLC_EM
+//  $SysFnLC_EM_YY
 //
 //  System function:  []LC -- Line Counter
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnLC_EM"
+#define APPEND_NAME     L" -- SysFnLC_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnLC_EM
+LPPL_YYSTYPE SysFnLC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -94,7 +94,6 @@ LPPL_YYSTYPE SysFnLC_EM
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
@@ -103,7 +102,6 @@ LPPL_YYSTYPE SysFnLC_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -139,7 +137,7 @@ LPPL_YYSTYPE SysFnLC_EM
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpYYRes;
-} // End SysFnLC_EM
+} // End SysFnLC_EM_YY
 #undef  APPEND_NAME
 
 

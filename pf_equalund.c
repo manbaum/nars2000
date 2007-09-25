@@ -137,7 +137,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // If it's not nested,
     //   it's of depth 0 (scalar) or 1 (vector or higher)
@@ -221,12 +221,10 @@ APLINT PrimFnMonEqualUnderBarGlb
             lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
             // Get the Array Type, NELM, and Rank
             aplTypeRht = lpHeader->ArrType;
             aplNELMRht = lpHeader->NELM;
             aplRankRht = lpHeader->Rank;
-
 #undef  lpHeader
 
             // Handle nested prototype
@@ -341,8 +339,8 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     // N.B.  We are relying upon type demotion here
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();

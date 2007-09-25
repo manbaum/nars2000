@@ -118,7 +118,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
      BOOL         bPrototyping)         // TRUE iff protoyping
 
 {
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     APLSTYPE     aplTypeRht,        // Right arg storage type
                  aplTypeRes;        // Result    ...
     APLNELM      aplNELMRht;        // Right arg NELM
@@ -164,7 +164,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // The result storage type is assumed to be NESTED,
     //   but we'll call TypeDemote at the end just in case.
@@ -260,7 +260,6 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -269,7 +268,6 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
-
 #undef  lpHeader
 
     // Copy the dimensions from the right arg to the result
@@ -596,7 +594,7 @@ ERROR_EXIT:
         } // End IF
 
         // We no longer need this storage
-        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbRht && lpMemRht)
@@ -782,8 +780,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // The rank of the result is the larger of the two args
     aplRankRes = max (aplRankLft, aplRankRht);

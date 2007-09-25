@@ -123,7 +123,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                  uBitIndex;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -185,7 +185,6 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -194,7 +193,6 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
-
 #undef  lpHeader
 
     // Get right arg's global ptrs
@@ -420,8 +418,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                  uBitIndex;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -654,7 +652,6 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -663,7 +660,6 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions

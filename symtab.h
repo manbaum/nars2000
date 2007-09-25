@@ -146,6 +146,10 @@ typedef enum tagIMM_TYPES
     IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type
 } IMM_TYPES;
 
+// Note that the following macro depends upon
+//   the ordering of the above enum
+#define IsImmNum(a)     ((a) < IMMTYPE_CHAR)
+
 // Name types
 typedef enum tagNAME_TYPES
 {
@@ -198,6 +202,7 @@ typedef enum tagNAME_CLASS
     NAMECLASS_SYSVAR,       //  5 = System variable
     NAMECLASS_SYSFCN,       //  6 = System function
     NAMECLASS_SYSLBL,       //  7 = System label
+    NAMECLASS_LENp1,        //  8 = # valid entries + 1 (1-7)
 } NAME_CLASS;
 // Note that )NMS in <syscmds.c> assumes that the Name Class
 //   is a single digit.  If you add enough classes to invalidate

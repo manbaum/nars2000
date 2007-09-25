@@ -303,7 +303,6 @@ BOOL FreeResultGlobalVar
     lpMem = MyGlobalLock (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
     if (!lpHeader->Perm)
     {
         // Get the Type, RefCnt, NELM, and Rank
@@ -324,7 +323,6 @@ BOOL FreeResultGlobalVar
                   RefCnt,
                   FNLN);
 #endif
-
 #undef  lpHeader
 
         if (RefCnt EQ 0)
@@ -441,7 +439,6 @@ BOOL FreeResultGlobalFcn
     lpMemData = MyGlobalLock (hGlbData);
 
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemData)
-
     // Get the Type, RefCnt, NELM, and line text handle
     RefCnt      = lpHeader->RefCnt;
     fcnNELM     = lpHeader->fcnNELM;
@@ -452,7 +449,6 @@ BOOL FreeResultGlobalFcn
 
     // Decrement
     RefCnt = --lpHeader->RefCnt;
-
 #undef  lpHeader
 
 #ifdef DEBUG_REFCNT

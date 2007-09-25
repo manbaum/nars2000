@@ -8,7 +8,9 @@ typedef enum tagRESET_FLAGS
     RESETFLAG_ONE,                  // 01:  Reset one level  -- {goto}
     RESETFLAG_ONE_INIT,             // 02:  Reset one level  -- {goto} (initial case)
     RESETFLAG_ALL,                  // 03:  Reset all levels -- )RESET
-                                    // 00:  No available (2 bits)
+    RESETFLAG_QUADERROR_INIT,       // 04:  Reset one level  -- []ERROR (initialization)
+    RESETFLAG_QUADERROR_EXEC,       // 05:  Reset one level  -- []ERROR (execute []ELX)
+                                    // 06-07:  Available (3 bits)
 } RESET_FLAGS;
 
 // User-defined function/operator header signature
@@ -25,8 +27,8 @@ typedef struct tagSIS_HEADER
                      FcnValence:3,  //      00000070:  User-defined function/operator Valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      Suspended:1,   //      00000100:  Function is suspended
-                     ResetFlag:2,   //      00000600:  SI stack is resetting (see RESET_FLAGS)
-                     Avail:21;      //      FFFFF800:  Available bits
+                     ResetFlag:3,   //      00000E00:  SI stack is resetting (see RESET_FLAGS)
+                     Avail:20;      //      FFFFF000:  Available bits
     UINT             CurLineNum,    // 18:  Current line # (origin-1)
                      NxtLineNum,    // 1C:  Next    ...
                      numLabels,     // 20:  # line labels

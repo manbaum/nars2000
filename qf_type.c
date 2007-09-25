@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  $SysFnTYPE_EM
+//  $SysFnTYPE_EM_YY
 //
 //  System function:  []TYPE -- Prototype
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnTYPE_EM"
+#define APPEND_NAME     L" -- SysFnTYPE_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnTYPE_EM
+LPPL_YYSTYPE SysFnTYPE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -53,26 +53,26 @@ LPPL_YYSTYPE SysFnTYPE_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonTYPE_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return SysFnMonTYPE_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return SysFnDydTYPE_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End SysFnTYPE_EM
+        return SysFnDydTYPE_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End SysFnTYPE_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnMonTYPE_EM
+//  $SysFnMonTYPE_EM_YY
 //
 //  Monadic []TYPE -- Prototype
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonTYPE_EM"
+#define APPEND_NAME     L" -- SysFnMonTYPE_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnMonTYPE_EM
+LPPL_YYSTYPE SysFnMonTYPE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -199,23 +199,23 @@ LPPL_YYSTYPE SysFnMonTYPE_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnMonTYPE_EM
+} // End SysFnMonTYPE_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnDydTYPE_EM
+//  $SysFnDydTYPE_EM_YY
 //
 //  Dyadic []TYPE -- ERROR
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydTYPE_EM"
+#define APPEND_NAME     L" -- SysFnDydTYPE_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnDydTYPE_EM
+LPPL_YYSTYPE SysFnDydTYPE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -223,7 +223,7 @@ LPPL_YYSTYPE SysFnDydTYPE_EM
 
 {
     return PrimFnSyntaxError_EM (lptkFunc);
-} // End SysFnDydTYPE_EM
+} // End SysFnDydTYPE_EM_YY
 #undef  APPEND_NAME
 
 

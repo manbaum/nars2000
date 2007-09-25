@@ -160,9 +160,11 @@
              Z{is}L (LO OP2[X] RO) R</span>)</li>
             <li>Strand left and right arguments and result to user-defined
               functions/operators along with optional left argument (e.g., <span class="APL">{del}
+              Z{is}FOO (R1 R2 R3 R4)</span> or, more fully, <span class="APL">{del}
               (Z1 Z2){is}[L1 L2 L3] (LO OP2[X] RO) (R1 R2 R3 R4)</span>)</li>
-            <li>Note that brackets are required to surround the left argument of an ambivalent
-              function (Is this an <b>inconsistent</b> extension?).</li>
+            <li>Note that brackets are <b>required</b> to surround the left
+              argument of an ambivalent function as in <span class="APL">{del} Z{is}[L] FOO R</span>
+              &mdash; Is this an <b>inconsistent</b> extension?</li>
             <li>User-defined function/operator prototype entry point
               (<span class="APL">{quad}PROTOTYPE:</span>)</li>
           </ul>
@@ -306,6 +308,7 @@
             <li>Dyadic up arrow ({take}) (take) with and without axis operator</li>
             <li>Dyadic delta stile ({gradeup}) (character grade up)</li>
             <li>Dyadic del stile ({gradedown}) (character grade down)</li>
+            <li>Dyadic right shoe ({pick}) (pick)</li>
           </ul>
         </li>
       </ul>
@@ -439,6 +442,7 @@
             <li><span class="APL">{quad}DL</span></li>
             <li><span class="APL">{quad}DR</span></li>
             <li><span class="APL">{quad}NC</span></li>
+            <li><span class="APL">{quad}NL</span></li>
             <li><span class="APL">{quad}SIZE</span></li>
             <li><span class="APL">{quad}TYPE</span></li>
             <li><span class="APL">{quad}UCS</span></li>
@@ -446,6 +450,12 @@
         </li>
 
         <li>Dyadic
+          <ul>
+            <li><span class="APL">{quad}NL</span></li>
+            <li><span class="APL">{quad}CR</span> &mdash;
+             <span class="APL">1 {quad}CR</span> for vector result,
+             <span class="APL">2 {quad}CR</span> for matrix result</li>
+          </ul>
         </li>
       </ul>
 

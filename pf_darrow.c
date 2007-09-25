@@ -152,7 +152,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
                  apaMulRht,             // Right arg APA multiplier
                  iRht,                  // Loop counter
                  aplIntLft;             // Temporary left arg integer
-    APLUINT      ByteRes,               // # bytes needed for the result
+    APLUINT      ByteRes,               // # bytes in the result
                  uRes,                  // Loop counter
                  uRht,                  // Loop counter
                  uOdo;                  // Loop counter
@@ -168,8 +168,8 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // If the right arg is scalar, the result rank is aplNELMLft,
     //   otherwise the result rank is aplRankRht
@@ -295,7 +295,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     else
         aplTypeRes = aplTypeRht;
 
-    // Calculate the space needed for the result
+    // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
     // Allocate space for the result.
@@ -313,7 +313,6 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -322,7 +321,6 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions
@@ -459,7 +457,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         switch (aplTypeRht)
         {
             case ARRAY_BOOL:
-                uBitMask = 1 << (((UINT) uRht) & MASKLOG2NBIB);
+                uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
                 ((LPAPLBOOL)   lpMemRes)[uRes >> LOG2NBIB] |=

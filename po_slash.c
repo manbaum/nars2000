@@ -173,7 +173,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -377,7 +377,6 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -386,7 +385,6 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions
@@ -822,8 +820,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Handle prototypes specially
     if ((aplNELMLft EQ 0 || aplNELMRht EQ 0)
@@ -1422,7 +1420,7 @@ BOOL PrimOpDydSlashInsertDim_EM
 
 {
     HGLOBAL hGlbTmp;            // Temporary global memory handle
-    APLUINT ByteRes;            // # bytes needed for the result
+    APLUINT ByteRes;            // # bytes in the result
     LPVOID  lpMemRes;           // Ptr to result global memory
 
     // If it failed, ...
@@ -1434,7 +1432,7 @@ BOOL PrimOpDydSlashInsertDim_EM
     {
         IMM_TYPES  immType;         // Datatype of immediate result (see IMM_TYPES)
         APLLONGEST aplLongest;      // Value of immediate result
-        APLUINT    ByteRes;         // # bytes needed for the result
+        APLUINT    ByteRes;         // # bytes in the result
         APLSTYPE   aplTypeRes;      // Result storage type
 
         // Save the immediate type
@@ -1462,7 +1460,6 @@ BOOL PrimOpDydSlashInsertDim_EM
         lpMemRes = MyGlobalLock (hGlbTmp);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
         // Fill in the header values
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
@@ -1471,7 +1468,6 @@ BOOL PrimOpDydSlashInsertDim_EM
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = 1;
         lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
         // Fill in the dimension
@@ -1603,7 +1599,7 @@ BOOL PrimOpDydSlashAllocate_EM
      LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
-    APLUINT  ByteRes,           // # bytes needed for the result
+    APLUINT  ByteRes,           // # bytes in the result
              uRes,              // Result loop counter
              uDim;              // Dimension loop counter
 
@@ -1625,7 +1621,6 @@ BOOL PrimOpDydSlashAllocate_EM
     *lplpMemRes = MyGlobalLock (*lphGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) *lplpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -1634,7 +1629,6 @@ BOOL PrimOpDydSlashAllocate_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions

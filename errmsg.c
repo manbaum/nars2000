@@ -84,7 +84,6 @@ void BreakMessage
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -93,7 +92,6 @@ void BreakMessage
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -121,18 +119,18 @@ void BreakMessage
 
 
 //***************************************************************************
-//  $ErrorMessage
+//  $ErrorMessageDirect
 //
-//  Signal an error message
+//  Signal an error message, directly
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ErrorMessage"
+#define APPEND_NAME     L" -- ErrorMessageDirect"
 #else
 #define APPEND_NAME
 #endif
 
-void ErrorMessage
+void ErrorMessageDirect
     (LPWCHAR lpwszMsg,          // Ptr to error message text
      LPWCHAR lpwszLine,         // Ptr to the line which generated the error
      UINT    uCaret,            // Position of caret (origin-0)
@@ -257,7 +255,6 @@ void ErrorMessage
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -266,7 +263,6 @@ void ErrorMessage
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -325,7 +321,7 @@ void ErrorMessage
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End ErrorMessage
+} // End ErrorMessageDirect
 #undef  APPEND_NAME
 
 

@@ -533,10 +533,8 @@ BOOL AssignNameSpec_EM
     lpMemNam = MyGlobalLock (hGlbStr);
 
 #define lpHeader    ((LPVARNAMED_HEADER) lpMemNam)
-
     // Get the # names in the strand
     aplNELMNam = lpHeader->NELM;
-
 #undef  lpHeader
 
     // Skip over the name strand header to the data
@@ -590,12 +588,10 @@ BOOL AssignNameSpec_EM
     lpMemVal = MyGlobalLock (hGlbVal);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemVal)
-
     // Get the Type, NELM, and Rank
     aplTypeVal = lpHeader->ArrType;
     aplRankVal = lpHeader->Rank;
     aplNELMVal = lpHeader->NELM;
-
 #undef  lpHeader
 
     // Check for RANK ERROR
@@ -879,9 +875,7 @@ BOOL ModifyAssignNameVals_EM
     lpMemName = MyGlobalLock (hGlbName);
 
 #define lpHeader        ((LPVARNAMED_HEADER) lpMemName)
-
     aplNELMNam = lpHeader->NELM;
-
 #undef  lpHeader
 
     // Skip over the header to the data

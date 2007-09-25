@@ -110,7 +110,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     LPVOID       lpMemLft;      // Ptr to left arg global memory
     LPPL_YYSTYPE lpYYRes,       // Ptr to the result
                  lpYYRes2;      // Ptr to secondary result
-    UINT         ByteRes;       // # bytes in result
+    UINT         ByteRes;       // # bytes in the result
     APLBOOL      bQuadIO;       // []IO
 
     // Get the current value of []IO
@@ -129,7 +129,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     } // End IF
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Calculate space needed for the left arg
     ByteRes = (UINT) CalcArraySize (ARRAY_APA, aplRankRht, 1);
@@ -147,7 +147,6 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     lpMemLft = MyGlobalLock (hGlbLft);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemLft)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_APA;
@@ -156,7 +155,6 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplRankRht;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -241,7 +239,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                  lpMemWVec = NULL,  // Ptr to weighting vector ...
                  lpMemOdo = NULL;   // Ptr to odometer ...
     BOOL         bRet = TRUE;       // TRUE iff result is valid
-    APLUINT      ByteRes,           // # bytes needed for the result
+    APLUINT      ByteRes,           // # bytes in the result
                  uRht,              // Right arg loop counter
                  uRes,              // Result    ...
                  uOdo;              // Odometer  ...
@@ -265,8 +263,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     } // End IF
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -414,7 +412,6 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -423,7 +420,6 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions
@@ -541,7 +537,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
 
-                uBitMask = 1 << ((int) (uRht % NBIB));
+                uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
                 *((LPAPLBOOL) lpMemRes) |= ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << uBitIndex;

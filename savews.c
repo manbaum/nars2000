@@ -112,6 +112,7 @@ BOOL CmdSaveWS_EM
     BOOL         bNameTypeFn;           // TRUE iff the name type is a function
 /////////////////bNameTypeOp;           // ...                         operator
     HGLOBAL      hGlbWSID;              // []WSID global memory handle
+    FILETIME     ftCreation;            // Object creation time
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -123,10 +124,9 @@ BOOL CmdSaveWS_EM
     lpMemOldWSID = MyGlobalLock (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemOldWSID)
-
+    // Get the NELM and Rank
     aplNELMWSID = lpHeader->NELM;
     aplRankWSID = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Terminate the one-char string
@@ -415,6 +415,9 @@ BOOL CmdSaveWS_EM
                             //   a four-digit hex number.
                             lpaplChar += ConvertWideToName (lpaplChar, &lpMemTxtLine->C);
 
+                            // Copy creation time
+                            ftCreation = ((LPFCNARRAY_HEADER) lpMemObj)->ftCreation;
+
                             // We no longer need this ptr
                             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
@@ -431,6 +434,7 @@ BOOL CmdSaveWS_EM
                             //   of the function on a separate line as in
                             //   0 = <Header>
                             //   1 = <First Line>, etc.
+                            //   CreationTime = xxxxxxxxxxxxxxxx (64-bit hex number)
 
                             // Format the section name
                             lpw = lpwszFormat;
@@ -463,8 +467,8 @@ BOOL CmdSaveWS_EM
                                                    uLine + 1,
                                                    lpFcnLines->hGlbTxtLine,
                                                    lpMemSaveWSID);
-
-
+                            // Copy creation time
+                            ftCreation = lpMemDfnHdr->ftCreation;
 #undef  lpMemDfnHdr
                             break;
                         } // End DFN_HEADER_SIGNATURE
@@ -473,6 +477,22 @@ BOOL CmdSaveWS_EM
                             break;
                     } // End SWITCH
 
+                    // Copy "CreationTime" to temp storage
+                    lstrcpyW (lpwszFormat, L"CreationTime");
+
+                    // Save key length
+                    uLine = lstrlenW (lpwszFormat);
+
+                    // Save the ftCreation time
+                    wsprintfW (&lpwszFormat[uLine],
+                                L"%08X",
+                                L"%08X",
+                                ftCreation.dwHighDateTime,
+                                ftCreation.dwLowDateTime);
+                    WritePrivateProfileStringW (wszSectName,
+                                                lpwszFormat,
+                                               &lpwszFormat[uLine + 1],
+                                                lpMemSaveWSID);
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
                 } // End IF/ELSE
@@ -548,7 +568,6 @@ BOOL CmdSaveWS_EM
     lpMemNewWSID = MyGlobalLock (hGlbWSID);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemNewWSID)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -557,7 +576,6 @@ BOOL CmdSaveWS_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = iCmp;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -681,7 +699,7 @@ LPAPLCHAR TransferFormGlb
     lpMemObj = MyGlobalLock (hGlbObj);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
-
+    // Get the Array Type, NELM, and Rank
     aplTypeObj = lpHeader->ArrType;
     aplNELMObj = lpHeader->NELM;
     aplRankObj = lpHeader->Rank;

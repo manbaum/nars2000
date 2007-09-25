@@ -365,6 +365,12 @@ EXIT_TYPES TranslateResetFlagToExitType
         case RESETFLAG_ONE_INIT:
             return EXITTYPE_RESET_ONE_INIT;
 
+        case RESETFLAG_QUADERROR_INIT:
+            return EXITTYPE_QUADERROR_INIT;
+
+        case RESETFLAG_QUADERROR_EXEC:
+            return EXITTYPE_QUADERROR_EXEC;
+
         case RESETFLAG_ALL:
             return EXITTYPE_RESET_ALL;
 

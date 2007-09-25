@@ -18,18 +18,18 @@
 
 
 //***************************************************************************
-//  $SysFnDL_EM
+//  $SysFnDL_EM_YY
 //
 //  System function:  []DL -- Delay
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDL_EM"
+#define APPEND_NAME     L" -- SysFnDL_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnDL_EM
+LPPL_YYSTYPE SysFnDL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -54,26 +54,26 @@ LPPL_YYSTYPE SysFnDL_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonDL_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return SysFnMonDL_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return SysFnDydDL_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End SysFnDL_EM
+        return SysFnDydDL_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End SysFnDL_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnMonDL_EM
+//  $SysFnMonDL_EM_YY
 //
 //  Monadic []DL -- Delay
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonDL_EM"
+#define APPEND_NAME     L" -- SysFnMonDL_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnMonDL_EM
+LPPL_YYSTYPE SysFnMonDL_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -90,7 +90,7 @@ LPPL_YYSTYPE SysFnMonDL_EM
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
     if (aplRankRht > 1)
@@ -167,23 +167,23 @@ LPPL_YYSTYPE SysFnMonDL_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnMonDL_EM
+} // End SysFnMonDL_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnDydDL_EM
+//  $SysFnDydDL_EM_YY
 //
 //  Dyadic []DL -- ERROR
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydDL_EM"
+#define APPEND_NAME     L" -- SysFnDydDL_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnDydDL_EM
+LPPL_YYSTYPE SysFnDydDL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -191,7 +191,7 @@ LPPL_YYSTYPE SysFnDydDL_EM
 
 {
     return PrimFnSyntaxError_EM (lptkFunc);
-} // End SysFnDydDL_EM
+} // End SysFnDydDL_EM_YY
 #undef  APPEND_NAME
 
 

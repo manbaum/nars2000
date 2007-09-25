@@ -435,10 +435,8 @@ void SaveEnvironment
     lpMem = MyGlobalLock (hGlbQuadLX_CWS);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
     // Get the # bytes
     nBytes = ((UINT) lpHeader->NELM) * sizeof (APLCHAR);
-
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
@@ -458,10 +456,8 @@ void SaveEnvironment
     lpMem = MyGlobalLock (hGlbQuadALX_CWS);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
     // Get the # bytes
     nBytes = ((UINT) lpHeader->NELM) * sizeof (APLCHAR);
-
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
@@ -481,10 +477,8 @@ void SaveEnvironment
     lpMem = MyGlobalLock (hGlbQuadELX_CWS);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-
     // Get the # bytes
     nBytes = ((UINT) lpHeader->NELM) * sizeof (APLCHAR);
-
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data

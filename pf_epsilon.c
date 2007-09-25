@@ -180,7 +180,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
      LPTOKEN     lptkFunc)      // Ptr to function token
 
 {
-    APLUINT      ByteRes;       // # bytes needed for the result
+    APLUINT      ByteRes;       // # bytes in the result
     HGLOBAL      hGlbRes;       // Result global memory handle
     LPVOID       lpMemRes;      // Ptr to result global memory
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
@@ -203,7 +203,6 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -212,7 +211,6 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = 1;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -294,7 +292,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     APLNELM      aplNELMRes;        // # elements in the result
     HGLOBAL      hGlbRes;           // Result global memory handle
     LPVOID       lpMemRes;          // Ptr to result global memory
-    APLUINT      ByteRes;           // # bytes needed for the result
+    APLUINT      ByteRes;           // # bytes in the result
     UINT         uBitMask = 0x01,   // Bit mask for marching through Booleans
                  uBitIndex = 0;     // Bit index ...
     BOOL         bRet = TRUE;       // TRUE iff result is valid
@@ -325,7 +323,6 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -334,7 +331,6 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Save the dimension in the result
@@ -403,12 +399,10 @@ void PrimFnMonEpsilonGlbCount
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
-    // Get the Array Type and NELM
+    // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Split cases based upon the right arg's storage type
@@ -490,7 +484,7 @@ void PrimFnMonEpsilonGlbCopy
     LPVOID     lpMemRht;            // Ptr to right arg global memory
     UINT       uBitMask = 0x01;     // Bit mask for marching through Booleans
     APLUINT    uRht;                // Right arg loop counter
-    APLUINT    ByteRes;             // # bytes needed for the result
+    APLUINT    ByteRes;             // # bytes in the result
     APLINT     apaOffRht,           // Right arg APA offset
                apaMulRht;           // ...           multiplier
     APLLONGEST aplVal;              // Temporary value
@@ -499,12 +493,10 @@ void PrimFnMonEpsilonGlbCopy
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Skip past the header and dimensions to the data
@@ -1101,8 +1093,8 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     DbgBrk ();          // ***FINISHME*** -- PrimFnDydEpsilon_EM_YY
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);

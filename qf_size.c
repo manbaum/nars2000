@@ -18,18 +18,18 @@
 
 
 //***************************************************************************
-//  $SysFnSIZE_EM
+//  $SysFnSIZE_EM_YY
 //
 //  System function:  []SIZE -- Size of an identifier
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnSIZE_EM"
+#define APPEND_NAME     L" -- SysFnSIZE_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnSIZE_EM
+LPPL_YYSTYPE SysFnSIZE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -54,26 +54,26 @@ LPPL_YYSTYPE SysFnSIZE_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonSIZE_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return SysFnMonSIZE_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return SysFnDydSIZE_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End SysFnSIZE_EM
+        return SysFnDydSIZE_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End SysFnSIZE_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnMonSIZE_EM
+//  $SysFnMonSIZE_EM_YY
 //
 //  Monadic []SIZE -- Size of an identifier
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonSIZE_EM"
+#define APPEND_NAME     L" -- SysFnMonSIZE_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnMonSIZE_EM
+LPPL_YYSTYPE SysFnMonSIZE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -106,7 +106,7 @@ LPPL_YYSTYPE SysFnMonSIZE_EM
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
     if (aplRankRht > 2)
@@ -156,7 +156,6 @@ LPPL_YYSTYPE SysFnMonSIZE_EM
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
@@ -165,7 +164,6 @@ LPPL_YYSTYPE SysFnMonSIZE_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -290,7 +288,7 @@ ERROR_EXIT:
     if (hGlbRes)
     {
         // We no longer need this storage
-        DbgGlobalFree (hGlbRes); hGlbRes = NULL;
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
@@ -306,23 +304,23 @@ NORMAL_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End SysFnMonSize_EM
+} // End SysFnMonSize_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnDydSIZE_EM
+//  $SysFnDydSIZE_EM_YY
 //
 //  Dyadic []SIZE -- ERROR
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydSIZE_EM"
+#define APPEND_NAME     L" -- SysFnDydSIZE_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnDydSIZE_EM
+LPPL_YYSTYPE SysFnDydSIZE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -330,7 +328,7 @@ LPPL_YYSTYPE SysFnDydSIZE_EM
 
 {
     return PrimFnSyntaxError_EM (lptkFunc);
-} // End SysFnDydSIZE_EM
+} // End SysFnDydSIZE_EM_YY
 #undef  APPEND_NAME
 
 
@@ -473,12 +471,10 @@ APLUINT CalcGlbSize
     lpMemData = MyGlobalLock (hGlbData);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemData)
-
     // Get the Array Type, NELM, and Rank
     aplType = lpHeader->ArrType;
     aplNELM = lpHeader->NELM;
     aplRank = lpHeader->Rank;
-
 #undef  lpHeader
 
     // If the array is simple, that's all

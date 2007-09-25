@@ -90,10 +90,16 @@ typedef enum tagARRAY_TYPES
 
 // Whenever changing this <enum>, be sure to make a
 //   corresponding change to <StorageType> and <TypeDemote>
-//   in <primfns.c>,  <uTypeMap> in <externs.h>, and
-//   <IsSimpleNH> and <IsSimpleNum> macros in <datatype.h>.
+//   in <primfns.c>,  <uTypeMap> in <externs.h>,
+//   <IsSimpleNH> and <IsSimpleNum> macros in <datatype.h>,
+//   and BPE_VEC in this file.
 
 } ARRAY_TYPES;
+
+// Bites per element vector
+// N.B. the order of elements in this vector matches
+//   the order of elements in the above ARRAY_TYPES enum.
+#define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 0
 
 // Define macro for detecting simple array type
 /////// IsSimple(a)         (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR || a EQ ARRAY_HETERO)
@@ -224,6 +230,7 @@ typedef struct tagFCNARRAY_HEADER
     UINT             RefCnt,        // 08:  Reference count
                      fcnNELM;       // 0C:  # elements in the array
     HGLOBAL          hGlbTxtLine;   // 10:  Line text global memory handle (may be NULL)
+    FILETIME         ftCreation;    // 14:  Time of last creation
                                     // 14:  Length
 } FCNARRAY_HEADER, *LPFCNARRAY_HEADER;
 

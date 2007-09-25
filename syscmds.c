@@ -338,7 +338,8 @@ BOOL CmdFnsVarsOps_EM
     lpSymSort = (LPSYMENTRY *) lpwszTemp;
 
     // Trundle through the Symbol Table
-    //   looking for functions (niladic or monadic/dyadic)
+    //   looking for functions (niladic or monadic/dyadic),
+    //   operators (monadic or dyadic), and/or variables
     for (lpSymEntry = lpMemPTD->lpSymTab, uSymCnt = 0;
          lpSymEntry < lpMemPTD->lpSymTabNext;
          lpSymEntry++)

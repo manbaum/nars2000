@@ -707,6 +707,8 @@ LRESULT APIENTRY SMWndProc
     {
         case WM_NCCREATE:               // lpcs = (LPCREATESTRUCT) lParam
         {
+            LPVOID p;
+
             // Get the thread's PerTabData global memory handle
             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -717,6 +719,32 @@ LRESULT APIENTRY SMWndProc
             lpMemPTD->hWndSM = hWnd;
 
             INIT_PERTABVARS
+
+            // Allocate virtual memory for the []ERROR buffer
+            p = lpMemPTD->lpwszQuadErrorMsg =
+            VirtualAlloc (NULL,          // Any address
+                          DEF_QUADERROR_MAXSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
+                          MEM_RESERVE,
+                          PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("WM_NCCREATE:  VirtualAlloc for <lpwszQuadErrorMsg> failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Commit the intial size
+            VirtualAlloc (lpMemPTD->lpwszQuadErrorMsg,
+                          DEF_QUADERROR_INITSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

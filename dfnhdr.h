@@ -68,13 +68,14 @@ typedef struct tagDFN_HEADER        // Function header structure
     HGLOBAL          hGlbTxtHdr,    // 54:  Text of function header (APLCHAR) ...
                      hGlbTknHdr,    // 58:  Tokenized function header (TOKEN) ...
                      hGlbUndoBuff;  // 5C:  Undo buffer                       ... (may be NULL)
-                                    // 60:  Length
-                                    // 60:  Array of function line structures (FCNLINE[nLines])
+    FILETIME         ftCreation;    // 60:  Time of last creation
+                                    // 68:  Length
+                                    // 68:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a
 //   corresponding change to
-//   <CalcSymentrySize> and <SysFnMonCR_EM> in <sysfns.c>,
+//   <CalcSymentrySize> and <SysFnMonCR_EM_YY> in <sysfns.c>,
 //   <FEWndProc:WM_CREATE>, <SaveFunction>,
 //   <GetSpecialLabelNums> in <editfcn.c>, and
 //   <FreeResultGlobalDfn> in <free.c>.

@@ -233,11 +233,13 @@ typedef enum tagEXIT_TYPES
     EXITTYPE_RESET_ONE,         // 03:  {goto}
     EXITTYPE_RESET_ONE_INIT,    // 04:  {goto}  (first time)
     EXITTYPE_RESET_ALL,         // 05:  )RESET
-    EXITTYPE_ERROR,             // 06:  ERROR
-    EXITTYPE_DISPLAY,           // 07:  Value not already displayed
-    EXITTYPE_NODISPLAY,         // 08:  Value already displayed
-    EXITTYPE_NOVALUE,           // 09:  No value returned
-                                // 0A-0F:  Available entries (4 bits)
+    EXITTYPE_QUADERROR_INIT,    // 06:  []ERROR -- initialization
+    EXITTYPE_QUADERROR_EXEC,    // 07:  []ERROR -- execute []ELX
+    EXITTYPE_ERROR,             // 08:  ERROR
+    EXITTYPE_DISPLAY,           // 09:  Value not already displayed
+    EXITTYPE_NODISPLAY,         // 0A:  Value already displayed
+    EXITTYPE_NOVALUE,           // 0B:  No value returned
+                                // 0C-0F:  Available entries (4 bits)
 } EXIT_TYPES;
 
 #ifndef DEBUG

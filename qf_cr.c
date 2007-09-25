@@ -18,18 +18,18 @@
 
 
 //***************************************************************************
-//  $SysFnCR_EM
+//  $SysFnCR_EM_YY
 //
 //  System function:  []CR -- Canonical Representation
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnCR_EM"
+#define APPEND_NAME     L" -- SysFnCR_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnCR_EM
+LPPL_YYSTYPE SysFnCR_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -54,32 +54,60 @@ LPPL_YYSTYPE SysFnCR_EM
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonCR_EM (            lptkFunc, lptkRhtArg, lptkAxis);
+        return SysFnMonCR_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return SysFnDydCR_EM (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End SysFnCR_EM
+        return SysFnDydCR_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End SysFnCR_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnMonCR_EM
+//  $SysFnMonCR_EM_YY
 //
 //  Monadic []CR -- Canonical Representation
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonCR_EM"
+#define APPEND_NAME     L" -- SysFnMonCR_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnMonCR_EM
+LPPL_YYSTYPE SysFnMonCR_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE       aplTypeRht;          // Right arg storage type
+    return SysFnCR_Common_EM_YY (2,                     // Result rank
+                                 lptkFunc,              // Ptr to function token
+                                 lptkRhtArg,            // Ptr to right arg token
+                                 lptkAxis);             // Ptr to axis token (may be NULL)
+} // End SysFnMon_CR_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SysFnCR_Common_EM_YY
+//
+//  Monadic []CR -- Canonical Representation, for vector and matrix results
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnCR_Common_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE SysFnCR_Common_EM_YY
+    (APLRANK aplRankRes,            // Result rank
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLSTYPE       aplTypeRht,          // Right arg storage type
+                   aplTypeRes;          // Result    ...
     APLNELM        aplNELMRht,          // Right arg NELM
                    aplNELMRes;          // Result    ...
     APLRANK        aplRankRht;          // Right arg rank
@@ -91,7 +119,7 @@ LPPL_YYSTYPE SysFnMonCR_EM
                    lpMemRes = NULL,     // Ptr to result    ...
                    lpMemData;           // Ptr to function data ...
     LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/line text global memory
-    UINT           uLineLen;            // Length of a text line
+    UINT           uRes;                // Loop counter
     APLLONGEST     aplLongestRht;       // Right arg longest if immediate
     LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY
     STFLAGS        stFlags = {0};       // STE flags
@@ -100,7 +128,7 @@ LPPL_YYSTYPE SysFnMonCR_EM
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
     if (aplRankRht > 1)
@@ -142,21 +170,24 @@ LPPL_YYSTYPE SysFnMonCR_EM
                                             &stFlags);
     } // End IF/ELSE
 
+    // Mark the result type & rank
+    aplTypeRes = ARRAY_CHAR;
+
     // If not found,
     //   or it's a System Name,
     //   or without a value,
-    //   return 0 x 0 char matrix
+    //   return empty vector or 0 x 0 char matrix
     if (!lpSymEntry
      ||  lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
      || !lpSymEntry->stFlags.Value)
         // Not the signature of anything we know
-        // Return a 0 x 0 char matric
-        hGlbRes = SysFnMonCR_ALLOC_EM (0, 2, lpwszTemp, lptkFunc);
+        // Return an empty vector or a 0 x 0 char matrix
+        hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, 0, aplRankRes, NULL, lptkFunc);
     else
     // If it's immediate, ...
     if (lpSymEntry->stFlags.Imm)
     {
-        // Copy the function name
+        // Append the function name from the symbol table
         lpw = CopySteName (lpwszTemp, lpSymEntry);
 
         // Append a left arrow
@@ -169,7 +200,7 @@ LPPL_YYSTYPE SysFnMonCR_EM
         aplNELMRes = lpw - lpwszTemp;
 
         // Finish the job via subroutine
-        hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes, 1, lpwszTemp, lptkFunc);
+        hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
     } else
     {
         // Check for internal functions
@@ -182,7 +213,7 @@ LPPL_YYSTYPE SysFnMonCR_EM
             aplNELMRes = lpw - lpwszTemp;
 
             // Finish the job via subroutine
-            hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes, 1, lpwszTemp, lptkFunc);
+            hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
         } else
         {
             // Get the global memory ptr
@@ -214,7 +245,7 @@ LPPL_YYSTYPE SysFnMonCR_EM
                     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
                     // Finish the job via subroutine
-                    hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes, 1, lpwszTemp, lptkFunc);
+                    hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
 
                     break;
 
@@ -246,32 +277,38 @@ LPPL_YYSTYPE SysFnMonCR_EM
                     uNumLines = lpMemDfnHdr->numFcnLines;
 
                     // Run through the function lines looking for the longest
-                    for (uLine = 0; uLine < uNumLines; uLine++)
+                    if (aplRankRes EQ 2)
                     {
-                        // Get the line text global memory handle
-                        hGlbTxtLine = lpFcnLines->hGlbTxtLine;
-
-                        if (hGlbTxtLine)
+                        for (uLine = 0; uLine < uNumLines; uLine++)
                         {
-                            // Lock the memory to get a ptr to it
-                            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                            // Get the line text global memory handle
+                            hGlbTxtLine = lpFcnLines->hGlbTxtLine;
 
-                            // Find the length of the longest line
-                            uMaxLineLen = max (uMaxLineLen, lpMemTxtLine->U);
+                            if (hGlbTxtLine)
+                            {
+                                // Lock the memory to get a ptr to it
+                                lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
-                            // We no longer need this ptr
-                            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-                        } // End IF
+                                // Find the length of the longest line
+                                uMaxLineLen = max (uMaxLineLen, lpMemTxtLine->U);
 
-                        // Skip to the next struct
-                        lpFcnLines++;
-                    } // End FOR
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+                            } // End IF
+
+                            // Skip to the next struct
+                            lpFcnLines++;
+                        } // End FOR
+                    } else
+                        aplTypeRes = ARRAY_NESTED;
 
                     // Calculate the result NELM ("1 +" includes the header)
-                    aplNELMRes = (1 + uNumLines) * uMaxLineLen;
+                    aplNELMRes = 1 + uNumLines;
+                    if (aplRankRes EQ 2)
+                        aplNELMRes *= uMaxLineLen;
 
-                    // Calculate the space needed for the result
-                    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 2);
+                    // Calculate space needed for the result
+                    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
                     // Allocate space for the result
                     // N.B.:  Conversion from APLUINT to UINT
@@ -286,44 +323,35 @@ LPPL_YYSTYPE SysFnMonCR_EM
                         lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
-
                         // Fill in the header
                         lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                        lpHeaderRes->ArrType    = ARRAY_CHAR;
+                        lpHeaderRes->ArrType    = aplTypeRes;
 ////////////////////////lpHeaderRes->Perm       = 0;        // Already zero from GHND
 ////////////////////////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
                         lpHeaderRes->RefCnt     = 1;
                         lpHeaderRes->NELM       = aplNELMRes;
-                        lpHeaderRes->Rank       = 2;
-
+                        lpHeaderRes->Rank       = aplRankRes;
 #undef  lpHeaderRes
 
                         // Save the dimensions in the result ("1 +" includes the header)
                         (VarArrayBaseToDim (lpMemRes))[0] = 1 + uNumLines;
-                        (VarArrayBaseToDim (lpMemRes))[1] = uMaxLineLen;
+                        if (aplRankRes EQ 2)
+                            (VarArrayBaseToDim (lpMemRes))[1] = uMaxLineLen;
 
 #define lpMemResChar    ((LPAPLCHAR) lpMemRes)
-
                         // Skip over the header and dimensions to the data
-                        lpMemResChar = VarArrayBaseToData (lpMemRes, 2);
+                        lpMemResChar = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-                        // Lock the memory to get a ptr to it
-                        lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+                        // If this is a nested result, fill it in PTR_REUSED
+                        //   in case we fail along the way
+                        if (aplRankRes EQ 1)
+                        for (uRes = 0; uRes < aplNELMRes; uRes++)
+                            ((LPAPLNESTED) lpMemResChar)[uRes] = PTR_REUSED;
 
-                        // Get the length of the function header text
-                        uLineLen = lpMemTxtLine->U;
-
-                        // Copy the function header text to the result
-                        CopyMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
-
-                        // We no longer need this ptr
-                        MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine = NULL;
-
-                        // Fill the remainder of the line with blanks
-                        for (lpMemResChar += uLineLen;
-                             uLineLen < uMaxLineLen;
-                             uLineLen++)
-                            *lpMemResChar++ = L' ';
+                        // Copy the header to the result as either a row or as an allocated HGLOBAL
+                        lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, lpMemDfnHdr->hGlbTxtHdr, uMaxLineLen, lptkFunc);
+                        if (lpMemResChar EQ NULL)
+                            goto ERROR_EXIT;
 
                         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
                         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
@@ -335,25 +363,10 @@ LPPL_YYSTYPE SysFnMonCR_EM
                             hGlbTxtLine = lpFcnLines->hGlbTxtLine;
 
                             if (hGlbTxtLine)
-                            {
-                                // Lock the memory to get a ptr to it
-                                lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
-
-                                // Get the length of the function line text
-                                uLineLen = lpMemTxtLine->U;
-
-                                // Copy the function header text to the result
-                                CopyMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
-
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-
-                                // Fill the remainder of the line with blanks
-                                for (lpMemResChar += uLineLen;
-                                     uLineLen < uMaxLineLen;
-                                     uLineLen++)
-                                    *lpMemResChar++ = L' ';
-                            } // End IF
+                                // Copy the header to the result as either a row or as an allocated HGLOBAL
+                                lpMemResChar = SysFnCR_Copy_EM (aplRankRes, lpMemResChar, hGlbTxtLine, uMaxLineLen, lptkFunc);
+                                if (lpMemResChar EQ NULL)
+                                    goto ERROR_EXIT;
 #undef  lpMemResChar
                             // Skip to the next struct
                             lpFcnLines++;
@@ -365,7 +378,7 @@ LPPL_YYSTYPE SysFnMonCR_EM
 
                 case VARARRAY_HEADER_SIGNATURE: // Return a 0 x 0 char matrix
                     // Finish the job via subroutine
-                    hGlbRes = SysFnMonCR_ALLOC_EM (0, 2, L"", lptkFunc);
+                    hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, 0, aplRankRes, NULL, lptkFunc);
 
                     break;
 
@@ -390,28 +403,145 @@ LPPL_YYSTYPE SysFnMonCR_EM
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-ERROR_EXIT:
+
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    // We no longer need this ptr
+    goto NORMAL_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
     if (hGlbRht && lpMemRht)
     {
+        // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
     return lpYYRes;
-} // End SysFnMonCR_EM
+} // End SysFnnCR_Common_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SysFnCR_Copy_EM
+//
+//  Subroutine to SysFnCR_Common_EM for copying a line to the result
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnCR_Copy_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPVOID SysFnCR_Copy_EM
+    (APLRANK aplRankRes,                    // Result rank
+     LPVOID  lpMemRes,                      // Ptr to result
+     HGLOBAL hGlbTxt,                       // Header/line text global memory handle
+     UINT    uMaxLineLen,                   // Maximum line length (valid only with aplRankRes EQ 2)
+     LPTOKEN lptkFunc)                      // Ptr to function token
+
+{
+    LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/line text global memory
+    UINT           uLineLen;            // Length of a text line
+    HGLOBAL        hGlbCpy;             // Copy of header/line text global memory handle
+    LPVOID         lpMemCpy;            // Ptr to header/line text global memory
+    APLUINT        ByteRes;             // # bytes in the result
+
+    // Lock the memory to get a ptr to it
+    lpMemTxtLine = MyGlobalLock (hGlbTxt);
+
+    // Split cases based upon the result rank (1 or 2)
+    if (aplRankRes EQ 1)
+    {
+        // Calculate space needed for the result
+        ByteRes = CalcArraySize (ARRAY_CHAR, lpMemTxtLine->U, 1);
+
+        // Allocate space for the result.
+        // N.B. Conversion from APLUINT to UINT.
+        Assert (ByteRes EQ (UINT) ByteRes);
+        hGlbCpy = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+        if (!hGlbCpy)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkFunc);
+            // Mark as in error
+            lpMemRes = NULL;
+
+            goto ERROR_EXIT;
+        } // End IF
+
+        // Lock the memory to get a ptr to it
+        lpMemCpy = MyGlobalLock (hGlbCpy);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemCpy)
+        // Fill in the header
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_CHAR;
+////////lpHeader->Perm       = 0;   // Already zero from GHND
+////////lpHeader->SysVar     = 0;   // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = lpMemTxtLine->U;
+        lpHeader->Rank       = 1;
+#undef  lpHeader
+
+        // Save the dimension
+        *VarArrayBaseToDim (lpMemCpy) = lpMemTxtLine->U;
+
+        // Skip over the header and dimensions to the data
+        lpMemCpy = VarArrayBaseToData (lpMemCpy, 1);
+
+        // Copy the text
+        CopyMemory (lpMemCpy, &lpMemTxtLine->C, lpMemTxtLine->U * sizeof (APLCHAR));
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbCpy); lpMemCpy = NULL;
+
+        // Save the HGLOBAL in the result and skip over it
+        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbCpy);
+    } else
+    {
+        // Get the length of the function header text
+        uLineLen = lpMemTxtLine->U;
+#define lpMemResChar        ((LPAPLCHAR) lpMemRes)
+        // Copy the function header text to the result
+        CopyMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
+
+        // Fill the remainder of the line with blanks
+        if (aplRankRes EQ 2)
+        for (lpMemResChar += uLineLen;
+             uLineLen < uMaxLineLen;
+             uLineLen++)
+            *lpMemResChar++ = L' ';
+#undef  lpMemResChar
+    } // End IF/ELSE
+ERROR_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTxt); lpMemTxtLine = NULL;
+
+    return lpMemRes;
+} // End SysFnCR_Copy_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
 //  $SysFnMonCR_ALLOC_EM
 //
-//  Subroutine to SysFnMonCR_EM for allocating and copying to the result
+//  Subroutine to SysFnCR_Common_EM for allocating and copying to the result
 //***************************************************************************
 
 #ifdef DEBUG
@@ -421,7 +551,8 @@ ERROR_EXIT:
 #endif
 
 HGLOBAL SysFnMonCR_ALLOC_EM
-    (APLNELM   aplNELMRes,      // Result NELM
+    (APLSTYPE  aplTypeRes,      // Result storage type
+     APLNELM   aplNELMRes,      // Result NELM
      APLRANK   aplRankRes,      // ...    rank
      LPAPLCHAR lpw,             // Ptr to result text
      LPTOKEN   lptkFunc)        // Ptr to function token
@@ -432,7 +563,7 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     APLUINT    ByteRes;         // # bytes in the result
 
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, aplRankRes);
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
     // Allocate space for the result
     // N.B.:  Conversion from APLUINT to UINT
@@ -449,26 +580,39 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_CHAR;
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->Perm       = 0;           // Already zero from GHND
 ////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
-    // Save the dimension in the result
-    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    // If the rank EQ 2 and the NELM NE 0, the first
+    //   dimension is 1
+    if (aplRankRes EQ 2
+     && aplNELMRes NE 0)
+    {
+        // Save the dimension in the result
+        (VarArrayBaseToDim (lpMemRes))[0] = 1;
+
+        // Save the dimension in the result
+        (VarArrayBaseToDim (lpMemRes))[1] = aplNELMRes;
+    } else
+        // Save the dimension in the result
+        *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the result
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    // Copy the function text to the result
-    CopyMemory (lpMemRes, lpw, (UINT) aplNELMRes * sizeof (APLCHAR));
+    // Ensure the source is valid
+    if (lpw)
+    {
+        // Copy the function text to the result
+        CopyMemory (lpMemRes, lpw, (UINT) aplNELMRes * sizeof (APLCHAR));
+    } // End IF
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -486,46 +630,123 @@ HGLOBAL SysFnMonCR_ALLOC_EM
 
 LPAPLCHAR CopySteName
     (LPAPLCHAR  lpMemRes,       // Ptr to result global memory
-     LPSYMENTRY lpSymEntry)     // Function name global memory handle
+     LPSYMENTRY lpSymEntry)     // Ptr to function symbol table entry
 
 {
     LPAPLCHAR lpMemName;        // Ptr to function name global memory
+    UINT      uNameLen;         // Length of STE name
 
     // Lock the memory to get a ptr to it
     lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
 
-    // Copy the function name
-    lstrcpyW (lpMemRes, lpMemName);
+    // Get the name length
+    uNameLen = lstrlenW (lpMemName);
+
+    // Copy the name to the output area
+    CopyMemory (lpMemRes, lpMemName, uNameLen * sizeof (APLCHAR));
+
+    // Skip over the name
+    lpMemRes += uNameLen;
 
     // We no longer need this ptr
     MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
 
-    // Point to the end
-    return &lpMemRes[lstrlenW (lpMemRes)];
+    return lpMemRes;
 } // End CopySteName
 
 
 //***************************************************************************
-//  $SysFnDydCR_EM
+//  $SysFnDydCR_EM_YY
 //
-//  Dyadic []CR -- ERROR
+//  Dyadic []CR -- Canonical Representation (matrix or vector)
+//                 1 = return as vector
+//                 2 = return as matrix
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydCR_EM"
+#define APPEND_NAME     L" -- SysFnDydCR_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnDydCR_EM
+LPPL_YYSTYPE SysFnDydCR_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc);
-} // End SysFnDydCR_EM
+    APLSTYPE   aplTypeLft;          // Left arg storage type
+    APLNELM    aplNELMLft;          // Left arg NELM
+    APLRANK    aplRankLft;          // Left arg rank
+    HGLOBAL    hGlbLft = NULL;      // Left arg global memory handle
+    APLLONGEST aplLongestLft;       // Left arg immediate value
+    BOOL       bRet = TRUE;         // TRUE iff result is valid
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the left arg
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+
+    // Check forLEFT RANK ERROR
+    if (aplRankLft > 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Check for LEFT LENGTH ERROR
+    if (aplNELMLft NE 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Check for LEFT DOMAIN ERROR
+    if (!IsSimpleNum (aplTypeLft))
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Get left arg's global ptrs
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, NULL);
+
+    //Split cases based upon the left arg storage type
+    switch (aplTypeLft)
+    {
+        case ARRAY_FLOAT:
+            // Convert the float to APLINT
+            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+
+            // Fall through to common code
+
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            if (!bRet
+             || (aplLongestLft NE 1
+              && aplLongestLft NE 2))
+            {
+                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                           lptkFunc);
+                return NULL;
+            } // End IF
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Call common routine
+    return SysFnCR_Common_EM_YY (aplLongestLft,         // Result rank
+                                 lptkFunc,              // Ptr to function token
+                                 lptkRhtArg,            // Ptr to right arg token
+                                 lptkAxis);             // Ptr to axis token (may be NULL)
+} // End SysFnDydCR_EM_YY
 #undef  APPEND_NAME
 
 

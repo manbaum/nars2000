@@ -123,6 +123,29 @@ LPPL_YYSTYPE PrimFnNonceError_EM
 
 
 //***************************************************************************
+//  $PrimFnDomainError_EM
+//
+//  Primitive function DOMAIN ERROR
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDomainError_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnDomainError_EM
+    (LPTOKEN lptkFunc)
+
+{
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End PrimFnDomainError_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnValueError_EM
 //
 //  Primitive function VALUE ERROR
@@ -413,7 +436,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
 #ifdef PRIMPROTOFNSCALAR
     // Handle prototypes separately
@@ -840,7 +863,7 @@ HGLOBAL PrimFnMonGlb_EM
     APLINT   uRes,              // Result loop counter
              apaOffRht,         // Right arg APA offset
              apaMulRht;         // ...           multiplier
-    APLUINT  ByteRes;           // # bytes needed for the result
+    APLUINT  ByteRes;           // # bytes in the result
     BOOL     bRet = TRUE;       // TRUE iff result is valid
     UINT     uBitIndex;         // Bit index when marching through Booleans
 
@@ -850,7 +873,6 @@ HGLOBAL PrimFnMonGlb_EM
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
@@ -863,7 +885,6 @@ HGLOBAL PrimFnMonGlb_EM
     // In case StorageTypeMon changed the value of aplTypeRht,
     //   save it back into the array
     lpHeader->ArrType = aplTypeRht;
-
 #undef  lpHeader
 
     // Check for DOMAIN ERROR
@@ -909,7 +930,6 @@ RESTART_EXCEPTION:
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -918,7 +938,6 @@ RESTART_EXCEPTION:
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht;
     lpHeader->Rank       = aplRankRht;
-
 #undef  lpHeader
 
     // Skip over the header to the dimensions
@@ -1459,8 +1478,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
 #ifdef PRIMPROTOFNSCALAR
     // Handle prototypes separately
@@ -2460,12 +2479,10 @@ HGLOBAL PrimFnDydNestSiSc_EM
     lpMemLft = MyGlobalLock (hGlbLft);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemLft)
-
     // Get the Array Type, NELM, and Rank
     aplTypeLft = lpHeader->ArrType;
     aplNELMLft = lpHeader->NELM;
     aplRankLft = lpHeader->Rank;
-
 #undef  lpHeader
 
     // The NELM of the result is the larger of the two arg's NELMs
@@ -4360,12 +4377,10 @@ HGLOBAL PrimFnDydSiScNest_EM
     lpMemRht = MyGlobalLock (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
-
     // Get the Array Type, NELM, and Rank
     aplTypeRht = lpHeader->ArrType;
     aplNELMRht = lpHeader->NELM;
     aplRankRht = lpHeader->Rank;
-
 #undef  lpHeader
 
     // The NELM of the result is the larger of the two arg's NELMs
@@ -4882,7 +4897,7 @@ BOOL PrimFnDydSimpSimp_EM
               iRht;
     UINT      uBitIndex = 0;
     LPVOID    lpMemResStart;
-    APLUINT   ByteRes;          // # bytes needed for the result
+    APLUINT   ByteRes;          // # bytes in the result
     APLCHAR   aplCharLft,
               aplCharRht;
 

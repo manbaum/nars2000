@@ -17,18 +17,18 @@
 
 
 //***************************************************************************
-//  $SysFnAV_EM
+//  $SysFnAV_EM_YY
 //
 //  System function:  []AV -- Atomic Vector
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnAV_EM"
+#define APPEND_NAME     L" -- SysFnAV_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnAV_EM
+LPPL_YYSTYPE SysFnAV_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -63,7 +63,7 @@ LPPL_YYSTYPE SysFnAV_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnAV_EM
+} // End SysFnAV_EM_YY
 #undef  APPEND_NAME
 
 

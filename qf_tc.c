@@ -18,18 +18,18 @@
 
 
 //***************************************************************************
-//  $SysFnTC_EM
+//  $SysFnTC_EM_YY
 //
 //  System function:  []TC -- Terminal Control
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnTC_EM"
+#define APPEND_NAME     L" -- SysFnTC_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnTC_EM
+LPPL_YYSTYPE SysFnTC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -72,7 +72,6 @@ LPPL_YYSTYPE SysFnTC_EM
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -81,7 +80,6 @@ LPPL_YYSTYPE SysFnTC_EM
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = 3;
     lpHeader->Rank       = 1;
-
 #undef  lpHeader
 
     // Fill in the dimension
@@ -91,11 +89,9 @@ LPPL_YYSTYPE SysFnTC_EM
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
 #define lpMemData   ((LPAPLCHAR) lpMemRes)
-
     lpMemData[0] = TCBS;    // Backspace
     lpMemData[1] = TCNL;    // Newline
     lpMemData[2] = TCLF;    // Linefeed
-
 #undef  lpMemData
 
     // We no longer need this ptr
@@ -112,23 +108,23 @@ LPPL_YYSTYPE SysFnTC_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnTC_EM
+} // End SysFnTC_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnTCCom_EM
+//  $SysFnTCCom_EM_YY
 //
 //  System function:  []TCxxx -- Terminal Control, Common Routine
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnTCCOM_EM"
+#define APPEND_NAME     L" -- SysFnTCCOM_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnTCCom_EM
+LPPL_YYSTYPE SysFnTCCom_EM_YY
     (WCHAR   wc,                    // Char to return
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -159,17 +155,17 @@ LPPL_YYSTYPE SysFnTCCom_EM
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
-} // End SysFnTCCom_EM
+} // End SysFnTCCom_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnTCBEL_EM
+//  $SysFnTCBEL_EM_YY
 //
 //  System function:  []TCBEL -- Terminal Control, Bell
 //***************************************************************************
 
-LPPL_YYSTYPE SysFnTCBEL_EM
+LPPL_YYSTYPE SysFnTCBEL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -179,17 +175,17 @@ LPPL_YYSTYPE SysFnTCBEL_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom_EM (TCBEL, lptkFunc, lptkAxis);
-} // End SysFnTCBEL_EM
+    return SysFnTCCom_EM_YY (TCBEL, lptkFunc, lptkAxis);
+} // End SysFnTCBEL_EM_YY
 
 
 //***************************************************************************
-//  $SysFnTCBS_EM
+//  $SysFnTCBS_EM_YY
 //
 //  System function:  []TCBS -- Terminal Control, Backspace
 //***************************************************************************
 
-LPPL_YYSTYPE SysFnTCBS_EM
+LPPL_YYSTYPE SysFnTCBS_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -199,17 +195,17 @@ LPPL_YYSTYPE SysFnTCBS_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom_EM (TCBS, lptkFunc, lptkAxis);
-} // End SysFnTCBS_EM
+    return SysFnTCCom_EM_YY (TCBS, lptkFunc, lptkAxis);
+} // End SysFnTCBS_EM_YY
 
 
 //***************************************************************************
-//  $SysFnTCDEL_EM
+//  $SysFnTCDEL_EM_YY
 //
 //  System function:  []TCDEL -- Terminal Control, Del
 //***************************************************************************
 
-LPPL_YYSTYPE SysFnTCDEL_EM
+LPPL_YYSTYPE SysFnTCDEL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -219,17 +215,17 @@ LPPL_YYSTYPE SysFnTCDEL_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom_EM (TCDEL, lptkFunc, lptkAxis);
-} // End SysFnTCDEL_EM
+    return SysFnTCCom_EM_YY (TCDEL, lptkFunc, lptkAxis);
+} // End SysFnTCDEL_EM_YY
 
 
 //***************************************************************************
-//  $SysFnTCESC_EM
+//  $SysFnTCESC_EM_YY
 //
 //  System function:  []TCESC -- Terminal Control, Escape
 //***************************************************************************
 
-LPPL_YYSTYPE SysFnTCESC_EM
+LPPL_YYSTYPE SysFnTCESC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -239,17 +235,17 @@ LPPL_YYSTYPE SysFnTCESC_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom_EM (TCESC, lptkFunc, lptkAxis);
-} // End SysFnTCESC_EM
+    return SysFnTCCom_EM_YY (TCESC, lptkFunc, lptkAxis);
+} // End SysFnTCESC_EM_YY
 
 
 //***************************************************************************
-//  $SysFnTCFF_EM
+//  $SysFnTCFF_EM_YY
 //
 //  System function:  []TCFF -- Terminal Control, Form Feed
 //***************************************************************************
 
-LPPL_YYSTYPE SysFnTCFF_EM
+LPPL_YYSTYPE SysFnTCFF_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -259,17 +255,17 @@ LPPL_YYSTYPE SysFnTCFF_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom_EM (TCFF, lptkFunc, lptkAxis);
-} // End SysFnTCFF_EM
+    return SysFnTCCom_EM_YY (TCFF, lptkFunc, lptkAxis);
+} // End SysFnTCFF_EM_YY
 
 
 //***************************************************************************
-//  $SysFnTCHT_EM
+//  $SysFnTCHT_EM_YY
 //
 //  System function:  []TCHT -- Terminal Control, Horizontal Tab
 //***************************************************************************
 
-LPPL_YYSTYPE SysFnTCHT_EM
+LPPL_YYSTYPE SysFnTCHT_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -279,17 +275,17 @@ LPPL_YYSTYPE SysFnTCHT_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom_EM (TCHT, lptkFunc, lptkAxis);
-} // End SysFnTCHT_EM
+    return SysFnTCCom_EM_YY (TCHT, lptkFunc, lptkAxis);
+} // End SysFnTCHT_EM_YY
 
 
 //***************************************************************************
-//  $SysFnTCLF_EM
+//  $SysFnTCLF_EM_YY
 //
 //  System function:  []TCLF -- Terminal Control, Linefeed
 //***************************************************************************
 
-LPPL_YYSTYPE SysFnTCLF_EM
+LPPL_YYSTYPE SysFnTCLF_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -299,17 +295,17 @@ LPPL_YYSTYPE SysFnTCLF_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom_EM (TCLF, lptkFunc, lptkAxis);
-} // End SysFnTCLF_EM
+    return SysFnTCCom_EM_YY (TCLF, lptkFunc, lptkAxis);
+} // End SysFnTCLF_EM_YY
 
 
 //***************************************************************************
-//  $SysFnTCNL_EM
+//  $SysFnTCNL_EM_YY
 //
 //  System function:  []TCNL -- Terminal Control, Newline
 //***************************************************************************
 
-LPPL_YYSTYPE SysFnTCNL_EM
+LPPL_YYSTYPE SysFnTCNL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -319,17 +315,17 @@ LPPL_YYSTYPE SysFnTCNL_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom_EM (TCNL, lptkFunc, lptkAxis);
-} // End SysFnTCNL_EM
+    return SysFnTCCom_EM_YY (TCNL, lptkFunc, lptkAxis);
+} // End SysFnTCNL_EM_YY
 
 
 //***************************************************************************
-//  $SysFnTCNUL_EM
+//  $SysFnTCNUL_EM_YY
 //
 //  System function:  []TCNUL -- Terminal Control, Nul
 //***************************************************************************
 
-LPPL_YYSTYPE SysFnTCNUL_EM
+LPPL_YYSTYPE SysFnTCNUL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
@@ -339,8 +335,8 @@ LPPL_YYSTYPE SysFnTCNUL_EM
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-    return SysFnTCCom_EM (TCNUL, lptkFunc, lptkAxis);
-} // End SysFnTCNUL_EM
+    return SysFnTCCom_EM_YY (TCNUL, lptkFunc, lptkAxis);
+} // End SysFnTCNUL_EM_YY
 
 
 //***************************************************************************

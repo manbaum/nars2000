@@ -195,9 +195,7 @@ BOOL PrimFnMonBarAPA_EM
     lpMemRes = MyGlobalLock (*lphGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     aplRankRes = lpHeader->Rank;
-
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data

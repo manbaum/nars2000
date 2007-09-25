@@ -180,8 +180,8 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                  uBitIndex;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht);
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // The rank of the result is the same as that of the right arg
     //   with scalar right arg promoted to a vector
@@ -435,7 +435,6 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     lpMemRes = MyGlobalLock (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -444,7 +443,6 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;
-
 #undef  lpHeader
 
     // Copy the dimensions from the right arg to the result
@@ -500,7 +498,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     if (lpMemRht)
                     {
                         uRht = uDimRht + uAx * uDimHi;
-                        uBitMask = 1 << (UINT) (uRht % NBIB);
+                        uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
                         aplIntegerRep = (uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0;
                     } else
                         aplIntegerRep = aplIntegerRht;
@@ -508,7 +506,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         uRes = uDimRes + uAcc * uDimHi;
-                        uBitIndex = (UINT) (uRes % NBIB);
+                        uBitIndex = MASKLOG2NBIB & (UINT) uRes;
                         ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
                         ((aplNELMRht EQ 1) ? aplIntegerRht : aplIntegerRep) << uBitIndex;
                     } // End FOR

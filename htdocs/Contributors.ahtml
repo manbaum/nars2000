@@ -88,6 +88,11 @@
 
         <li><a class="linkleft" href="http://www.burtleburtle.net/bob/c/lookup3.c">Hash
           routines</a> by Bob Jenkins.</li>
+
+        <li>The <a class="linkleft" href="http://www.winehq.org/">Wine</a>
+          library of Windows Emulation routines contributed
+          an implementation of the Windows Edit Control when I
+          couldn't get the one in Windows to do what I wanted.</li>
       </ul>
     </div>
 
@@ -102,11 +107,11 @@
           Symbol tables.</li>
 
         <li>The LALR(1) Parser is based upon <a class="linkleft"
-         href="http://portal.acm.org/citation.cfm?id=28371&coll=portal&dl=ACM">The Syntax of APL: An
+         href="http://portal.acm.org/citation.cfm?id=28371&amp;coll=portal&amp;dl=ACM">The Syntax of APL: An
          Old Approach Revisited"</a> by Jean Jacques Giardot &amp;
          Florence Rollin, ACM SIGAPL APL87 Conference Proceedings, pp.441-449, 1987.</li>
 
-        <li><a class="linkleft" href="http://portal.acm.org/citation.cfm?id=804449&dl=ACM&coll=portal">
+        <li><a class="linkleft" href="http://portal.acm.org/citation.cfm?id=804449&amp;dl=ACM&amp;coll=portal">
           "Sorting - A New/Old Problem"</a> by Howard J. Smith, Jr.,
           ACM SIGAPL APL79 Conference Proceedings, pp. 123-127, 1979 is the
           touchstone for understanding his remarkable algorithm.

@@ -136,73 +136,7 @@ LPPL_YYSTYPE PrimFnDydLeftTack_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL      hGlbData;
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-
-    // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTTACK);
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken = *lptkLftArg;
-
-    // If this is a global memory object, increment its reference count
-    // Split cases based upon the token type
-    switch (lpYYRes->tkToken.tkFlags.TknType)
-    {
-        case TKT_VARNAMED:
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lpYYRes->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-            // If it's not immediate, we must look inside the array
-            if (!lpYYRes->tkToken.tkData.tkSym->stFlags.Imm)
-            {
-                // Get the global memory handle
-                hGlbData = lpYYRes->tkToken.tkData.tkSym->stData.stGlbData;
-
-                // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (hGlbData));
-
-                // Fill in the result token
-                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (hGlbData);
-////////////////lpYYRes->tkToken.tkCharIndex       =           // Already set
-            } else
-            {
-                // Fill in the result token
-                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-                lpYYRes->tkToken.tkFlags.ImmType   = lpYYRes->tkToken.tkData.tkSym->stFlags.ImmType;
-////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkLongest  = lpYYRes->tkToken.tkData.tkSym->stData.stLongest;
-////////////////lpYYRes->tkToken.tkCharIndex       =           // Already set
-            } // End IF/ELSE
-
-            break;
-
-        case TKT_VARIMMED:
-            break;
-
-        case TKT_VARARRAY:
-            // Get the global memory handle
-            hGlbData = lpYYRes->tkToken.tkData.tkGlbData;
-
-            // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (hGlbData));
-
-            // Make a copy of the data
-            lpYYRes->tkToken.tkData.tkGlbData = CopySymGlbDir (hGlbData);
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    return lpYYRes;
+    return PrimFnDydTackCommon_YY (lptkLftArg, lptkFunc);
 } // End PrimFnLeftTack_EM_YY
 #undef  APPEND_NAME
 

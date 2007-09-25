@@ -10,8 +10,6 @@ TO DO:  General:  Important
 * ...       dyadic tilde                (without)
 * ...       dyadic dot                  (inner product)
 * ...       monadic down shoe           (unique)
-* ...       dyadic down tack            (representation)
-* ...       dyadic up tack              (base value)
 * ...       bracket indexing             A[B]
 * ...       bracket indexing             A[B][C]
 * ...       bracket indexed assignment   A[B]{is}C
@@ -20,7 +18,6 @@ TO DO:  General:  Important
 * ...       )LOAD
 * ...       )COPY
 * ...       minimum set of system functions, to wit:
-* ...        L []DR R
 * ...          []EM
 * ...          []ET
 * ...          []EX R
@@ -50,6 +47,7 @@ TO DO:  General:  Wish List
 * Strings in the symbol table??
 * Implement user/session options dialog
 * Implement Redo (Ctrl-Y)
+* Check for overflow on integer multiplication
 * ...       selective assignment
 * ...       dynamic functions
 * ...       magic functions for primitive functions
@@ -154,6 +152,7 @@ DONE:  General
 * ...     L []NL R
 * ...     2 []CR R
 * ...     1 []CR R
+* ...     L []DR R
 * ...       monadic right shoe
 * ...       dyadic down arrow
 * ...       dyadic up arrow
@@ -162,6 +161,8 @@ DONE:  General
 * ...       dyadic grade-up
 * ...       dyadic grade-down
 * ...       dyadic right shoe
+* ...       dyadic down tack
+* ...       dyadic up tack
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

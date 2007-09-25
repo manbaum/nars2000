@@ -309,6 +309,8 @@
             <li>Dyadic delta stile ({gradeup}) (character grade up)</li>
             <li>Dyadic del stile ({gradedown}) (character grade down)</li>
             <li>Dyadic right shoe ({pick}) (pick)</li>
+            <li>Dyadic down tack ({encode}) (encode/representation)</li>
+            <li>Dyadic up tack ({decode}) (decode/base value)</li>
           </ul>
         </li>
       </ul>
@@ -451,10 +453,11 @@
 
         <li>Dyadic
           <ul>
-            <li><span class="APL">{quad}NL</span></li>
             <li><span class="APL">{quad}CR</span> &mdash;
-             <span class="APL">1 {quad}CR</span> for vector result,
-             <span class="APL">2 {quad}CR</span> for matrix result</li>
+              <span class="APL">1 {quad}CR</span> for vector result,
+              <span class="APL">2 {quad}CR</span> for matrix result</li>
+            <li><span class="APL">{quad}DR</span></li>
+            <li><span class="APL">{quad}NL</span></li>
           </ul>
         </li>
       </ul>

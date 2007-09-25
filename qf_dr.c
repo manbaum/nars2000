@@ -77,8 +77,7 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL      hGlbData;
-    LPVOID       lpMem;
+    APLSTYPE     aplTypeRht;        // Right arg storage type
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Allocate a new YYRes
@@ -92,129 +91,32 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
 #define DR_SHOW             0   // Return a character vector representation
+#define DR_DISPFLOAT        1   // Return a character representation of a float
 #define DR_BOOL           100   //  1 bit  per value
 #define DR_CHAR          1601   // 16 bits ...
 #define DR_INT           6402   // 64 ...
 #define DR_FLOAT         6403   // 64 ...
-#define DR_APA           6404   // 64 ...
-#define DR_HETERO32      3205   // 32 ...
-#define DR_HETERO64      6406   // 64 ...
-#define DR_NESTED32      3207   // 32 ...
-#define DR_NESTED64      6408   // 64 ...
-#define DR_LIST32        3209   // 32 ...
-#define DR_LIST64        6410   // 64 ...
-#define DR_COMPLEX       6411   // 64 ...
-#define DR_QUATERNIONS   6412   // 64 ...
-#define DR_OCTONIONS     6413   // 64 ...
-#define DR_RATIONAL        14   // ?? ...
+#define DR_APA           6404   // 64 ... offset & multiplier
+#define DR_COMPLEX       6405   // 64 ... real & imaginary
+#define DR_QUATERNIONS   6406   // 64 ... real & ...
+#define DR_OCTONIONS     6407   // 64 ... real & ...
+#define DR_HETERO32      3208   // 32 ... per item
+#define DR_HETERO64      6409   // 64 ... ...
+#define DR_NESTED32      3210   // 32 ... ...
+#define DR_NESTED64      6411   // 64 ... ...
+#define DR_LIST32        3212   // 32 ... ...
+#define DR_LIST64        6413   // 64 ... ...
+#define DR_RATIONAL        14   // ??
 
-    // Split cases based upon the right arg's token type
-    switch (lptkRhtArg->tkFlags.TknType)
-    {
-        case TKT_VARNAMED:
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
+    DbgBrk ();
 
-            // If it's not immediate, it's an HGLOBAL
-            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
-            {
-                hGlbData = lptkRhtArg->tkData.tkSym->stData.stGlbData;
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, NULL, NULL);
 
-                break;      // Continue with HGLOBAL case
-            } // End IF
-
-            // Handle the immediate case
-
-            // stData is an immediate
-            Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
-
-            // Split cases based upon the token's immediate type
-            switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
-            {
-                case IMMTYPE_BOOL:
-                    lpYYRes->tkToken.tkData.tkInteger = DR_BOOL;
-
-                    return lpYYRes;
-
-                case IMMTYPE_INT:
-                    lpYYRes->tkToken.tkData.tkInteger = DR_INT;
-
-                    return lpYYRes;
-
-                case IMMTYPE_FLOAT:
-                    lpYYRes->tkToken.tkData.tkInteger = DR_FLOAT;
-
-                    return lpYYRes;
-
-                case IMMTYPE_CHAR:
-                    lpYYRes->tkToken.tkData.tkInteger = DR_CHAR;
-
-                    return lpYYRes;
-
-                defstop
-                    return NULL;
-            } // End SWITCH
-
-            DbgStop ();         // We should never get here
-
-        case TKT_VARIMMED:
-            // Split cases based upon the token's immediate type
-            switch (lptkRhtArg->tkFlags.ImmType)
-            {
-                case IMMTYPE_BOOL:
-                    lpYYRes->tkToken.tkData.tkInteger = DR_BOOL;
-
-                    return lpYYRes;
-
-                case IMMTYPE_INT:
-                    lpYYRes->tkToken.tkData.tkInteger = DR_INT;
-
-                    return lpYYRes;
-
-                case IMMTYPE_FLOAT:
-                    lpYYRes->tkToken.tkData.tkInteger = DR_FLOAT;
-
-                    return lpYYRes;
-
-                case IMMTYPE_CHAR:
-                    lpYYRes->tkToken.tkData.tkInteger = DR_CHAR;
-
-                    return lpYYRes;
-
-                defstop
-                    return NULL;
-            } // End SWITCH
-
-            DbgStop ();         // We should never get here
-
-        case TKT_LISTPAR:
-            lpYYRes->tkToken.tkData.tkInteger = DR_LIST32;
-
-            return lpYYRes;
-
-        case TKT_VARARRAY:
-            hGlbData = lptkRhtArg->tkData.tkGlbData;
-
-            break;      // Continue with HGLOBAL case
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // HGLOBAL case
-    // tk/stData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbData));
-
-    // Clear the ptr type bits
-    hGlbData = ClrPtrTypeDirGlb (hGlbData);
-
-    // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbData);
-
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-    // Split cases based upon the array storage type
-    switch (lpHeader->ArrType)
-#undef  lpHeader
+    // Set the datatype
+    // Split cases baed upon the right arg storage type
+    switch (aplTypeRht)
     {
         case ARRAY_BOOL:
             lpYYRes->tkToken.tkData.tkInteger = DR_BOOL;
@@ -236,6 +138,11 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 
             break;
 
+        case ARRAY_APA:
+            lpYYRes->tkToken.tkData.tkInteger = DR_APA;
+
+            break;
+
         case ARRAY_HETERO:
             lpYYRes->tkToken.tkData.tkInteger = DR_HETERO32;
 
@@ -246,17 +153,14 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 
             break;
 
-        case ARRAY_APA:
-            lpYYRes->tkToken.tkData.tkInteger = DR_APA;
+        case ARRAY_LIST:
+            lpYYRes->tkToken.tkData.tkInteger = DR_LIST32;
 
             break;
 
         defstop
             break;
     } // End SWITCH
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMem = NULL;
 
     return lpYYRes;
 } // End SysFnMonDR_EM_YY
@@ -350,6 +254,21 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
             // Return a character representation
             return SysFnDydDR_SHOW_EM_YY (lptkRhtArg, lptkFunc);
 
+        case DR_DISPFLOAT:
+            hGlbRes = SysFnDydDR_FloatToChar_EM (lptkRhtArg, lptkFunc);
+
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+            return lpYYRes;
+
         case DR_BOOL:
             return SysFnDydDR_Convert_EM_YY (ARRAY_BOOL,  lptkRhtArg, lptkFunc);
 
@@ -370,33 +289,14 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_LIST32:
         case DR_LIST64:
         case DR_RATIONAL:
+        default:
             return PrimFnDomainError_EM (lptkFunc);
 
         case DR_COMPLEX:
         case DR_QUATERNIONS:
         case DR_OCTONIONS:
-            // ***DEBUG***
-            hGlbRes = DR_FloatToChar_EM (lptkRhtArg, lptkFunc);
-
-            break;
-
-        default:
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
+            return PrimFnNonceError_EM (lptkFunc);
     } // End SWITCH
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-    return lpYYRes;
 } // End SysFnDydDR_EM_YY
 #undef  APPEND_NAME
 
@@ -437,8 +337,6 @@ LPPL_YYSTYPE SysFnDydDR_Convert_EM_YY
     // The result is an array of the same shape as R with
     //   the last coordinate multiplied by the # bits per
     //   right arg element divided by the bits per result element.
-
-    DbgBrk ();
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -805,18 +703,18 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
 
 
 //***************************************************************************
-//  $DR_FloatToChar_EM
+//  $SysFnDydDR_FloatToChar_EM
 //
 //  QuadDR subroutine to convert FP to WCHAR
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- DR_FloatToChar_EM"
+#define APPEND_NAME     L" -- SysFnDydDR_FloatToChar_EM"
 #else
 #define APPEND_NAME
 #endif
 
-HGLOBAL DR_FloatToChar_EM
+HGLOBAL SysFnDydDR_FloatToChar_EM
     (LPTOKEN lptkRhtArg,
      LPTOKEN lptkFunc)
 
@@ -927,7 +825,7 @@ HGLOBAL DR_FloatToChar_EM
     } // End IF
 
     return hGlbRes;
-} // End DR_FloatToChar_EM
+} // End SysFnDydDR_FloatToChar_EM
 #undef  APPEND_NAME
 
 

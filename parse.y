@@ -435,6 +435,14 @@ Stmt:
                                          } else
                                              YYERROR;
                                         }
+    |     ILWE    EOL                   {DbgMsgW2 (L"%%Stmt:  EOL ILWE");
+                                         if (lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->NameType = NAMETYPE_LST;
+                                             YYACCEPT;
+                                         } else
+                                             YYERROR;
+                                        }
     |     ArrExpr EOL                   {DbgMsgW2 (L"%%Stmt:  EOL ArrExpr");
                                          if (lpplLocalVars->bLookAhead)
                                          {
@@ -2788,32 +2796,33 @@ LeftOper:
                                              YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |                  AmbOp LeftOper   {DbgMsgW2 (L"%%LeftOper:  LeftOper AmbOp");
-                                         if (!lpplLocalVars->bLookAhead)
-                                         {
-                                             lpplLocalVars->lpYYRes =
-                                             PushFcnStrand_YY (&$1, 2, INDIRECT);    // Monadic operator (Indirect)
-                                             FreeResult (&$1.tkToken);
-
-                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$2.tkToken);
-                                                 YYERROR;
-                                             } // End IF
-
-                                             // The result is always the root of the function tree
-                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-
-                                             lpplLocalVars->lpYYRes =
-                                             PushFcnStrand_YY (&$2, 1, INDIRECT);    // Left operand (Indirect)
-                                             FreeResult (&$2.tkToken);
-
-                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
-                                                 YYERROR;
-
-                                             YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
-                                         } // End IF
-                                        }
+    // The following item propduces 8 R/R errors
+////|                  AmbOp LeftOper   {DbgMsgW2 (L"%%LeftOper:  LeftOper AmbOp");
+////                                     if (!lpplLocalVars->bLookAhead)
+////                                     {
+////                                         lpplLocalVars->lpYYRes =
+////                                         PushFcnStrand_YY (&$1, 2, INDIRECT);    // Monadic operator (Indirect)
+////                                         FreeResult (&$1.tkToken);
+////
+////                                         if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+////                                         {
+////                                             FreeResult (&$2.tkToken);
+////                                             YYERROR;
+////                                         } // End IF
+////
+////                                         // The result is always the root of the function tree
+////                                         $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+////
+////                                         lpplLocalVars->lpYYRes =
+////                                         PushFcnStrand_YY (&$2, 1, INDIRECT);    // Left operand (Indirect)
+////                                         FreeResult (&$2.tkToken);
+////
+////                                         if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+////                                             YYERROR;
+////
+////                                         YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+////                                     } // End IF
+////                                    }
     |     RightOper DydOp LeftOper      {DbgMsgW2 (L"%%LeftOper:  LeftOper DydOp RightOper");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
@@ -3815,7 +3824,31 @@ ILPAR:
       ')' ILNE '('                      {DbgMsgW2 (L"%%ILPAR:  (ILNE)");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
-                                             lpplLocalVars->lpYYLst = MakeList_EM_YY (&$2, TRUE);
+                                             lpplLocalVars->lpYYLst = MakeList_EM_YY (&$2, FALSE);
+                                             FreeResult (&$2.tkToken);
+
+                                             if (lpplLocalVars->lpYYLst)             // If defined, free it
+                                             {
+                                                 FreeResult (&lpplLocalVars->lpYYLst->tkToken); YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+                                             } // End IF
+
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYLst = MakeList_EM_YY (&$2, FALSE);
+                                             FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
+                                                 YYERROR;
+
+                                             $$ = *lpplLocalVars->lpYYLst; YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+                                         } // End IF
+                                        }
+    | ')' ILWE '('                      {DbgMsgW2 (L"%%ILPAR:  (ILWE)");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             lpplLocalVars->lpYYLst = MakeList_EM_YY (&$2, FALSE);
                                              FreeResult (&$2.tkToken);
 
                                              if (lpplLocalVars->lpYYLst)             // If defined, free it
@@ -3897,11 +3930,12 @@ ILNE:
 // Index list, with empties
 // Skip Ctrl-Break checking here so the List processing isn't interrupted
 ILWE:
-      /* Empty */                       {DbgMsgW2 (L"%%ILWE:  <empty>");
+              ';' ArrExpr               {DbgMsgW2 (L"%%ILWE:  ArrExpr;");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
-                                             InitList0_YY ();
+                                             InitList1_YY (&$2);
+                                             FreeResult (&$2.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR;
@@ -3909,13 +3943,7 @@ ILWE:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |          error                    {DbgMsgW2 (L"%%ILWE:  error");
-                                         if (!lpplLocalVars->bLookAhead)
-                                             YYERROR;
-                                         else
-                                             YYERROR;
-                                        }
-    |          ArrExpr                  {DbgMsgW2 (L"%%ILWE:  ArrExpr");
+    | ArrExpr ';'                       {DbgMsgW2 (L"%%ILWE:  ;ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
@@ -3928,15 +3956,15 @@ ILWE:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ILWE ';' error                    {DbgMsgW2 (L"%%ILWE:  error;ILWE");
+    | ILWE    ';' error                 {DbgMsgW2 (L"%%ILWE:  error;ILWE");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             FreeResult (&$3.tkToken);
+                                             FreeResult (&$1.tkToken);
                                              YYERROR;
                                          } else
                                              YYERROR;
                                         }
-    | ILWE ';' ArrExpr                  {DbgMsgW2 (L"%%ILWE:  ArrExpr;ILWE");
+    | ILWE    ';' ArrExpr               {DbgMsgW2 (L"%%ILWE:  ArrExpr;ILWE");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =
@@ -3950,7 +3978,7 @@ ILWE:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ILWE ';'                          {DbgMsgW2 (L"%%ILWE:  ILWE;");
+    | ILWE    ';'                       {DbgMsgW2 (L"%%ILWE:  ILWE;");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->lpYYRes =

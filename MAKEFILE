@@ -171,6 +171,7 @@ $(O)pf_dcaret.DEP       \
 $(O)pf_deltastile.DEP   \
 $(O)pf_domino.DEP       \
 $(O)pf_dstile.DEP       \
+$(O)pf_dtack.DEP        \
 $(O)pf_dtackjot.DEP     \
 $(O)pf_epsilon.DEP      \
 $(O)pf_equal.DEP        \
@@ -201,6 +202,7 @@ $(O)pf_times.DEP        \
 $(O)pf_uarrow.DEP       \
 $(O)pf_ucaret.DEP       \
 $(O)pf_ustile.DEP       \
+$(O)pf_utack.DEP        \
 $(O)pf_utackjot.DEP     \
 $(O)po_dieresis.DEP     \
 $(O)po_ditilde.DEP      \
@@ -373,6 +375,9 @@ $(O)version.DEV
 !if exist ($(O)pf_dstile.DEP)
 !       include $(O)pf_dstile.DEP
 !endif
+!if exist ($(O)pf_dtack.DEP)
+!       include $(O)pf_dtack.DEP
+!endif
 !if exist ($(O)pf_dtackjot.DEP)
 !       include $(O)pf_dtackjot.DEP
 !endif
@@ -462,6 +467,9 @@ $(O)version.DEV
 !endif
 !if exist ($(O)pf_ustile.DEP)
 !       include $(O)pf_ustile.DEP
+!endif
+!if exist ($(O)pf_utack.DEP)
+!       include $(O)pf_utack.DEP
 !endif
 !if exist ($(O)pf_utackjot.DEP)
 !       include $(O)pf_utackjot.DEP
@@ -634,6 +642,7 @@ $(O)pf_dcaret.PRO       \
 $(O)pf_deltastile.PRO   \
 $(O)pf_domino.PRO       \
 $(O)pf_dstile.PRO       \
+$(O)pf_dtack.PRO        \
 $(O)pf_dtackjot.PRO     \
 $(O)pf_epsilon.PRO      \
 $(O)pf_equal.PRO        \
@@ -664,6 +673,7 @@ $(O)pf_times.PRO        \
 $(O)pf_uarrow.PRO       \
 $(O)pf_ucaret.PRO       \
 $(O)pf_ustile.PRO       \
+$(O)pf_utack.PRO        \
 $(O)pf_utackjot.PRO     \
 $(O)po_dieresis.PRO     \
 $(O)po_ditilde.PRO      \
@@ -783,6 +793,7 @@ $(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
 $(O)pf_deltastile.OBJ:  $(@B).C         $(PF_DELTASTILE_DEP)
 $(O)pf_domino.OBJ:      $(@B).C         $(PF_DOMINO_DEP)
 $(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
+$(O)pf_dtack.OBJ:       $(@B).C         $(PF_DTACK_DEP)
 $(O)pf_dtackjot.OBJ:    $(@B).C         $(PF_DTACKJOT_DEP)
 $(O)pf_epsilon.OBJ:     $(@B).C         $(PF_EPSILON_DEP)
 $(O)pf_equal.OBJ:       $(@B).C         $(PF_EQUAL_DEP)
@@ -813,6 +824,7 @@ $(O)pf_times.OBJ:       $(@B).C         $(PF_TIMES_DEP)
 $(O)pf_uarrow.OBJ:      $(@B).C         $(PF_UARROW_DEP)
 $(O)pf_ucaret.OBJ:      $(@B).C         $(PF_UCARET_DEP)
 $(O)pf_ustile.OBJ:      $(@B).C         $(PF_USTILE_DEP)
+$(O)pf_utack.OBJ:       $(@B).C         $(PF_UTACK_DEP)
 $(O)pf_utackjot.OBJ:    $(@B).C         $(PF_UTACKJOT_DEP)
 $(O)po_dieresis.OBJ:    $(@B).C         $(PO_DIERESIS_DEP)
 $(O)po_ditilde.OBJ:     $(@B).C         $(PO_DITILDE_DEP)
@@ -911,6 +923,7 @@ OBJS=                       \
      $(O)pf_deltastile.OBJ  \
      $(O)pf_domino.OBJ      \
      $(O)pf_dstile.OBJ      \
+     $(O)pf_dtack.OBJ       \
      $(O)pf_dtackjot.OBJ    \
      $(O)pf_epsilon.OBJ     \
      $(O)pf_equal.OBJ       \
@@ -941,6 +954,7 @@ OBJS=                       \
      $(O)pf_uarrow.OBJ      \
      $(O)pf_ucaret.OBJ      \
      $(O)pf_ustile.OBJ      \
+     $(O)pf_utack.OBJ       \
      $(O)pf_utackjot.OBJ    \
      $(O)po_dieresis.OBJ    \
      $(O)po_ditilde.OBJ     \

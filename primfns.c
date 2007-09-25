@@ -55,9 +55,7 @@ extern PRIMSPEC PrimSpecUpStile;
 
 // Primitive functions TO DO                           Monadic          Dyadic
 #define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed (*)        ERROR
-#define PrimFnDownTack_EM_YY        PrimFn_EM       // ERROR            Mixed (*)
 #define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR            Mixed (*)
-#define PrimFnUpTack_EM_YY          PrimFn_EM       // ERROR            Mixed (*)
 
 
 // Monadic Operators TO DO                             Monadic          Dyadic
@@ -88,6 +86,8 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnDownCaret_EM_YY                       // ERROR            Scalar
 /////// PrimFnDownCaretTilde_EM_YY                  // ERROR            Scalar
 /////// PrimFnDownStile_EM_YY                       // Scalar           Scalar
+/////// PrimFnDownTack_EM_YY                        // ERROR            Mixed
+/////// PrimFnDownTackJot_EM_YY                     // Mixed            Mixed (*)
 /////// PrimFnEpsilon_EM_YY                         // Mixed            Mixed (*)
 /////// PrimFnEqual_EM_YY                           // ERROR            Scalar
 /////// PrimFnEqualUnderbar_EM_YY                   // Mixed            Mixed
@@ -112,13 +112,13 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnSquad_EM_YY                           // ERROR            Mixed (*)
 /////// PrimFnStar_EM_YY                            // Scalar           Scalar
 /////// PrimFnStile_EM_YY                           // Scalar           Scalar
-/////// PrimFnDownTackJot_EM_YY                     // Mixed            Mixed (*)
 /////// PrimFnTilde_EM_YY                           // Scalar           Mixed (*)
 /////// PrimFnTimes_EM_YY                           // Scalar           Scalar
 /////// PrimFnUpArrow_EM_YY                         // Mixed            Mixed
 /////// PrimFnUpCaret_EM_YY                         // ERROR            Scalar
 /////// PrimFnUpCaretTilde_EM_YY                    // ERROR            Scalar
 /////// PrimFnUpStile_EM_YY                         // Scalar           Scalar
+/////// PrimFnUpTack_EM_YY                          // ERROR            Mixed (*)
 /////// PrimFnUpTackJot_EM_YY                       // Mixed            ERROR
 
 // (*) = Unfinished
@@ -356,9 +356,7 @@ LPPL_YYSTYPE PrimFn_EM
 
 // Primitive functions TO DO
 #define PrimProtoFnDownShoe_EM_YY               PrimProtoFn_EM
-#define PrimProtoFnDownTack_EM_YY               PrimProtoFn_EM
 #define PrimProtoFnEpsilonUnderbar_EM_YY        PrimProtoFn_EM
-#define PrimProtoFnUpTack_EM_YY                 PrimProtoFn_EM
 
 
 // Monadic operators TO DO
@@ -405,9 +403,11 @@ LPPL_YYSTYPE PrimFn_EM
 /////// PrimProtoFnDeltaStile_EM_YY
 /////// PrimProtoFnDomino_EM_YY
 /////// PrimProtoFnDownArrow_EM_YY
+/////// PrimProtoFnDownTack_EM_YY
 /////// PrimProtoFnCircleSlope_EM_YY
 /////// PrimProtoFnCircleStile_EM_YY
 /////// PrimProtoFnDomino_EM_YY
+/////// PrimProtoFnDownTack_EM_YY
 /////// PrimProtoFnDownTackJot_EM_YY
 /////// PrimProtoFnEpsilon_EM_YY
 /////// PrimProtoFnEqualUnderbar_EM_YY
@@ -423,6 +423,7 @@ LPPL_YYSTYPE PrimFn_EM
 /////// PrimProtoFnSquad_EM_YY
 /////// PrimProtoFnTilde_EM_YY
 /////// PrimProtoFnUpArrow_EM_YY
+/////// PrimProtoFnUpTack_EM_YY
 /////// PrimProtoFnUpTackJot_EM_YY
 
 
@@ -1530,7 +1531,7 @@ void AttrsOfToken
      APLSTYPE *lpaplType,       // Ptr to token storage type (may be NULL)
      LPAPLNELM lpaplNELM,       // ...          NELM (may be NULL)
      LPAPLRANK lpaplRank,       // ...          rank (may be NULL)
-     LPAPLUINT lpaplCols)       // ...          # cols in the array (scalar = 1) (may be NULL)
+     LPAPLDIM  lpaplCols)       // ...          # cols in the array (scalar = 1) (may be NULL)
 
 {
     HGLOBAL hGlbData;           // Global memory handle
@@ -3222,9 +3223,9 @@ APLSTYPE GetNextHetero
 void GetNextValue
     (HGLOBAL     hGlbSub,               // Item global memory handle
      APLUINT     uSub,                  // Index into item
-     HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle
+     HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
      APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value
-     IMM_TYPES  *lpimmTypeRes)          // Ptr to result immediate type
+     IMM_TYPES  *lpimmTypeRes)          // Ptr to result immediate type (may be NULL)
 
 {
     APLSTYPE  aplTypeSub;               // Item storage type
@@ -3234,7 +3235,8 @@ void GetNextValue
     APLHETERO lpSymSub;                 // Item as APLHETERO
 
     // Assume the result is an immediate
-    *lphGlbRes = NULL;
+    if (lphGlbRes)
+        *lphGlbRes = NULL;
 
     // Lock the memory to get a ptr to it
     lpMemSub = MyGlobalLock (hGlbSub);
@@ -3254,32 +3256,37 @@ void GetNextValue
     {
         case ARRAY_BOOL:
             *lpaplLongestRes = BIT0 & (((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] >> (uSub & MASKLOG2NBIB));
-            *lpimmTypeRes    = IMMTYPE_BOOL;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_BOOL;
 
             break;
 
         case ARRAY_INT:
             *lpaplLongestRes = ((LPAPLINT) lpMemSub)[uSub];
-            *lpimmTypeRes    = IMMTYPE_INT;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_INT;
 
             break;
 
         case ARRAY_FLOAT:
             *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLFLOAT) lpMemSub)[uSub];
-            *lpimmTypeRes    = IMMTYPE_FLOAT;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_FLOAT;
 
             break;
 
         case ARRAY_CHAR:
             *lpaplLongestRes = ((LPAPLCHAR) lpMemSub)[uSub];
-            *lpimmTypeRes    = IMMTYPE_CHAR;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_CHAR;
 
             break;
 
         case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemSub)
             *lpaplLongestRes = lpAPA->Off + lpAPA->Mul * uSub;
-            *lpimmTypeRes    = IMMTYPE_INT;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_INT;
 #undef  lpAPA
             break;
 
@@ -3288,7 +3295,8 @@ void GetNextValue
 
             // Extract the immediate type & value
             *lpaplLongestRes = lpSymSub->stData.stLongest;
-            *lpimmTypeRes    = lpSymSub->stFlags.ImmType;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = lpSymSub->stFlags.ImmType;
 
             break;
 
@@ -3302,13 +3310,15 @@ void GetNextValue
                 case PTRTYPE_STCONST:
                     // Extract the immediate type & value
                     *lpaplLongestRes = lpSymSub->stData.stLongest;
-                    *lpimmTypeRes    = lpSymSub->stFlags.ImmType;
+                    if (lpimmTypeRes)
+                        *lpimmTypeRes    = lpSymSub->stFlags.ImmType;
 
                     break;
 
                 case PTRTYPE_HGLOBAL:
                     // Mark the result as an HGLOBAL
-                    *lphGlbRes = ClrPtrTypeDirGlb (lpSymSub);
+                    if (lphGlbRes)
+                        *lphGlbRes = ClrPtrTypeDirGlb (lpSymSub);
 
                     break;
 

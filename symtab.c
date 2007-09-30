@@ -1569,7 +1569,7 @@ LPSYMENTRY MakePermSymEntry_EM
 
 LPSYMENTRY MakeSymEntry_EM
     (IMM_TYPES    immType,          // ImmType to use (see IMM_TYPES)
-     LPAPLLONGEST lpVal,            // Value to use
+     LPAPLLONGEST lpVal,            // Ptr to value to use
      LPTOKEN      lptkFunc)         // Ptr to token to use in case of error
 
 {

@@ -202,7 +202,7 @@ BEGIN
                     5,115,18,NOT WS_GROUP
     LTEXT           "Copyright © 2006-2007 Sudley Place Software, Inc.\nAll rights reserved.",
                     IDC_STATIC,10,30,150,18,NOT WS_GROUP
-    LTEXT           "This program is release under version 2 of the GNU GPL license.  For more details, see",
+    LTEXT           "This program is released under version 2 of the GNU GPL license.  For more details, see",
                     IDC_STATIC,10,55,170,20
     LTEXT           "http://www.nars2000.org",
                     IDC_LINK,10,75,170,9,SS_NOTIFY

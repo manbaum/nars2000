@@ -3224,7 +3224,7 @@ void GetNextValue
     (HGLOBAL     hGlbSub,               // Item global memory handle
      APLUINT     uSub,                  // Index into item
      HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
-     APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value
+     APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
      IMM_TYPES  *lpimmTypeRes)          // Ptr to result immediate type (may be NULL)
 
 {
@@ -3255,36 +3255,37 @@ void GetNextValue
     switch (aplTypeSub)
     {
         case ARRAY_BOOL:
-            *lpaplLongestRes = BIT0 & (((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] >> (uSub & MASKLOG2NBIB));
+            if (lpaplLongestRes)
+                *lpaplLongestRes = BIT0 & (((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] >> (uSub & MASKLOG2NBIB));
             if (lpimmTypeRes)
                 *lpimmTypeRes    = IMMTYPE_BOOL;
-
             break;
 
         case ARRAY_INT:
-            *lpaplLongestRes = ((LPAPLINT) lpMemSub)[uSub];
+            if (lpaplLongestRes)
+                *lpaplLongestRes = ((LPAPLINT) lpMemSub)[uSub];
             if (lpimmTypeRes)
                 *lpimmTypeRes    = IMMTYPE_INT;
-
             break;
 
         case ARRAY_FLOAT:
-            *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLFLOAT) lpMemSub)[uSub];
+            if (lpaplLongestRes)
+                *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLFLOAT) lpMemSub)[uSub];
             if (lpimmTypeRes)
                 *lpimmTypeRes    = IMMTYPE_FLOAT;
-
             break;
 
         case ARRAY_CHAR:
-            *lpaplLongestRes = ((LPAPLCHAR) lpMemSub)[uSub];
+            if (lpaplLongestRes)
+                *lpaplLongestRes = ((LPAPLCHAR) lpMemSub)[uSub];
             if (lpimmTypeRes)
                 *lpimmTypeRes    = IMMTYPE_CHAR;
-
             break;
 
         case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemSub)
-            *lpaplLongestRes = lpAPA->Off + lpAPA->Mul * uSub;
+            if (lpaplLongestRes)
+                *lpaplLongestRes = lpAPA->Off + lpAPA->Mul * uSub;
             if (lpimmTypeRes)
                 *lpimmTypeRes    = IMMTYPE_INT;
 #undef  lpAPA
@@ -3294,10 +3295,10 @@ void GetNextValue
             lpSymSub = ((LPAPLHETERO) lpMemSub)[uSub];
 
             // Extract the immediate type & value
-            *lpaplLongestRes = lpSymSub->stData.stLongest;
+            if (lpaplLongestRes)
+                *lpaplLongestRes = lpSymSub->stData.stLongest;
             if (lpimmTypeRes)
                 *lpimmTypeRes    = lpSymSub->stFlags.ImmType;
-
             break;
 
         case ARRAY_NESTED:
@@ -3309,17 +3310,16 @@ void GetNextValue
             {
                 case PTRTYPE_STCONST:
                     // Extract the immediate type & value
-                    *lpaplLongestRes = lpSymSub->stData.stLongest;
+                    if (lpaplLongestRes)
+                        *lpaplLongestRes = lpSymSub->stData.stLongest;
                     if (lpimmTypeRes)
                         *lpimmTypeRes    = lpSymSub->stFlags.ImmType;
-
                     break;
 
                 case PTRTYPE_HGLOBAL:
                     // Mark the result as an HGLOBAL
                     if (lphGlbRes)
                         *lphGlbRes = ClrPtrTypeDirGlb (lpSymSub);
-
                     break;
 
                 defstop
@@ -5019,14 +5019,12 @@ APLUINT CalcHeaderSize
 //  homogeneous array in nested array format.  In other words,
 //  structural functions such as
 //
-//  take
-//  drop
-//  indexed assignment
-//  pick
-//  unique
-//  partition
-//  without
-//  etc.
+//    unique
+//    partition
+//    without
+//    bracket indexing
+//    bracket indexed assignment
+//    etc.
 //
 //  The following functions have been changed to use TypeDemote:
 //    primitive scalar dyadic functions, simple vs. simple
@@ -5041,10 +5039,13 @@ APLUINT CalcHeaderSize
 //    reduction w/ or w/o axis
 //    N-wise reduction
 //    monadic & dyadic each
-//    indexing/squad
+//    squad
 //    scan
 //    disclose
 //    user-defined function/operator with multiple result names
+//    pick
+//    take
+//    drop
 //
 //  must call this function to check their result to see if it
 //  can be stored more simply.  Note that more simply does not
@@ -5120,6 +5121,19 @@ LPTOKEN TypeDemote
 
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayBaseToData (lpMemRhtHdr, aplRankRht);
+
+    // If the right arg is a simple scalar,
+    //   convert it to an immediate
+    if (IsSimple (aplTypeRht)
+     && aplRankRht EQ 0)
+    {
+        // Fill in the result token
+        lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
+        lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+        lptkRhtArg->tkData.tkLongest = *(LPAPLLONGEST) lpMemRht;
+
+        goto IMMED_EXIT;
+    } // End IF
 
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)

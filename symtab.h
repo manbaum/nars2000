@@ -146,8 +146,9 @@ typedef enum tagIMM_TYPES
     IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type
 } IMM_TYPES;
 
-// Note that the following macro depends upon
+// Note that the following macros depend upon
 //   the ordering of the above enum
+#define IsImmInt(a)     ((a) < IMMTYPE_FLOAT)
 #define IsImmNum(a)     ((a) < IMMTYPE_CHAR)
 
 // Name types

@@ -151,13 +151,12 @@
               are both valid but, in general, have the same values in different order)</li>
             <li>Axis operator is allowed on the dyadic derived function from the Each operator (e.g.,
               <span class="APL">(2 3{rho}L){rho}{each}[1 2] 2 3 4{rho}R</span>)</li>
-            <li>Axis operator is allowed on user-defined functions (e.g.,
+            <li>Axis operator is allowed on user-defined functions/operators (e.g.,
               <span class="APL">foo[2 3] R</span> by specifying it in the
               function header, as in <span class="APL">{del} Z{is}foo[X] R</span>)</li>
             <li>User-defined operators (e.g., <span class="APL">{del}
-             Z{is}L (LO OP1[X]) R</span> or
-             <span class="APL">{del}
-             Z{is}L (LO OP2[X] RO) R</span>)</li>
+              Z{is}L (LO OP1[X]) R</span> or <span class="APL">{del}
+              Z{is}L (LO OP2[X] RO) R</span>)</li>
             <li>Strand left and right arguments and result to user-defined
               functions/operators along with optional left argument (e.g., <span class="APL">{del}
               Z{is}FOO (R1 R2 R3 R4)</span> or, more fully, <span class="APL">{del}
@@ -268,49 +267,51 @@
         <li>Monadic
           <ul>
             <li>All monadic primitive scalar functions</li>
-            <li>Monadic ({rho}) (shape)</li>
-            <li>Monadic left shoe ({enclose}) (enclose) with and without axis operator</li>
-            <li>Monadic iota ({iota}) (index generator)</li>
-            <li>Monadic epsilon ({epsilon}) (enlist)</li>
-            <li>Monadic comma ({comma} and {commabar}) (ravel (with and without axis operator) and table)
+            <li>Monadic rho ({rho}) &mdash; shape</li>
+            <li>Monadic left shoe ({enclose}) &mdash; enclose (with and without axis operator)</li>
+            <li>Monadic iota ({iota}) &mdash; index generator</li>
+            <li>Monadic epsilon ({epsilon}) &mdash; enlist</li>
+            <li>Monadic comma ({comma} and {commabar}) &mdash; ravel (with and without axis operator), and table
                &mdash; Axis operator to Ravel may transpose coordinates</li>
-            <li>Monadic equal-underbar ({equalunderbar}) (depth)</li>
-            <li>Monadic circle-slope ({circleslope}) (transpose)</li>
-            <li>Monadic circle-stile/circle-bar ({circlestile} and {circlebar}) (reverse)</li>
-            <li>Monadic domino ({domino}) (matrix inverse)
+            <li>Monadic equal-underbar ({equalunderbar}) &mdash; depth</li>
+            <li>Monadic circle-slope ({circleslope}) &mdash; transpose</li>
+            <li>Monadic circle-stile/circle-bar ({circlestile} and {circlebar}) &mdash; reverse (with and without axis operator)</li>
+            <li>Monadic domino ({domino}) &mdash; matrix inverse
               using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
-            <li>Monadic downtack jot ({thorn}) (default format)</li>
-            <li>Monadic up arrow ({uparrow}) (first)</li>
-            <li>Monadic uptack jot ({uptackjot}) (execute)</li>
-            <li>Monadic right shoe ({disclose}) (disclose) with and without axis operator</li>
-            <li>Monadic delta stile ({gradeup}) (numeric grade up)</li>
-            <li>Monadic del stile ({gradedown}) (numeric grade down)</li>
+            <li>Monadic downtack jot ({thorn}) &mdash; default format</li>
+            <li>Monadic up arrow ({uparrow}) &mdash; first</li>
+            <li>Monadic uptack jot ({uptackjot}) &mdash; execute</li>
+            <li>Monadic right shoe ({disclose}) &mdash; disclose (with and without axis operator)</li>
+            <li>Monadic delta stile ({gradeup}) &mdash; numeric grade up</li>
+            <li>Monadic del stile ({gradedown}) &mdash; numeric grade down</li>
           </ul>
         </li>
         <li>Dyadic
           <ul>
-            <li>All dyadic primitive scalar functions with and without axis operator</li>
+            <li>All dyadic primitive scalar functions (with and without axis operator)</li>
             <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
               Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
               respectively</li>
-            <li>Dyadic query ({query}) (deal)</li>
-            <li>Dyadic rho ({rho}) (reshape)</li>
-            <li>Dyadic slash ({/}) (replicate)</li>
-            <li>Dyadic slope ({\}) (expand)</li>
-            <li>Dyadic left tack ({lev}) (left) and right tack ({dex}) (right)</li>
-            <li>Dyadic comma ({comma} and {commabar}) (catenate/laminate) with and without axis operator</li>
-            <li>Dyadic equal-underbar ({equalunderbar}) (match)</li>
-            <li>Dyadic circle-slope ({circleslope}) (transpose)</li>
-            <li>Dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) (rotate)</li>
-            <li>Dyadic domino ({domino}) (matrix divide)
+            <li>Dyadic query ({query}) &mdash; deal</li>
+            <li>Dyadic rho ({rho}) &mdash; reshape</li>
+            <li>Dyadic slash ({/}) &mdash; replicate</li>
+            <li>Dyadic slope ({\}) &mdash; expand</li>
+            <li>Dyadic left tack ({lev}) &mdash; left</li>
+            <li>Dyadic right tack ({dex}) &mdash; right</li>
+            <li>Dyadic comma ({comma} and {commabar}) &mdash; catenate/laminate (with and without axis operator)</li>
+            <li>Dyadic equal-underbar ({equalunderbar}) &mdash; match</li>
+            <li>Dyadic circle-slope ({circleslope}) &mdash; transpose</li>
+            <li>Dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) &mdash; rotate (with and without axis operator)</li>
+            <li>Dyadic domino ({domino}) &mdash; matrix divide
               using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
-            <li>Dyadic down arrow ({drop}) (drop) with and without axis operator</li>
-            <li>Dyadic up arrow ({take}) (take) with and without axis operator</li>
-            <li>Dyadic delta stile ({gradeup}) (character grade up)</li>
-            <li>Dyadic del stile ({gradedown}) (character grade down)</li>
-            <li>Dyadic right shoe ({pick}) (pick)</li>
-            <li>Dyadic down tack ({encode}) (encode/representation)</li>
-            <li>Dyadic up tack ({decode}) (decode/base value)</li>
+            <li>Dyadic down arrow ({drop}) &mdash; drop (with and without axis operator)</li>
+            <li>Dyadic up arrow ({take}) &mdash; take (with and without axis operator)</li>
+            <li>Dyadic delta stile ({gradeup}) &mdash; character grade up</li>
+            <li>Dyadic del stile ({gradedown}) &mdash; character grade down</li>
+            <li>Dyadic right shoe ({pick}) &mdash; pick</li>
+            <li>Dyadic down tack ({encode}) &mdash; encode/representation</li>
+            <li>Dyadic up tack ({decode}) &mdash; decode/base value</li>
+            <li>Dyadic squad ({squad}) &mdash; index (with and without axis operator)</li>
           </ul>
         </li>
       </ul>
@@ -319,19 +320,19 @@
       <ul>
         <li>Monadic
           <ul>
-            <li>Monadic operator each  ({each}) monadic and dyadic derived functions (each)
-              with and without axis operator</li>
-            <li>Monadic operator frown ({frown}) monadic and dyadic derived functions (commute and duplicate)</li>
-            <li>Monadic operator jot-dot ({jot}{dot}) dyadic derived function (outer product)</li>
-            <li>Monadic operator slash ({/}) monadic and dyadic derived functions
-               (reduce and N-wise reduce with and without axis operator)</li>
-            <li>Monadic operator slope ({\}) monadic derived function
-               (scan with and without axis operator)</li>
+            <li>Monadic operator each  ({each}) monadic and dyadic derived functions &mdash; each
+              (with and without axis operator)</li>
+            <li>Monadic operator frown ({frown}) monadic and dyadic derived functions &mdash; commute and duplicate</li>
+            <li>Monadic operator jot-dot ({jot}{dot}) dyadic derived function &mdash; outer product</li>
+            <li>Monadic operator slash ({/}) monadic and dyadic derived functions &mdash;
+               reduce and N-wise reduce (with and without axis operator)</li>
+            <li>Monadic operator slope ({\}) monadic derived function &mdash;
+               scan (with and without axis operator)</li>
           </ul>
         </li>
         <li>Dyadic
           <ul>
-            <li>Dyadic operator jot ({jot}) monadic and dyadic derived functions (composition)</li>
+            <li>Dyadic operator jot ({jot}) monadic and dyadic derived functions &mdash; composition</li>
           </ul>
         </li>
       </ul>

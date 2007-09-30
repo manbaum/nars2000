@@ -167,7 +167,8 @@ void DisplayGlbArr
     APLNELM      aplNELMRes;        // Result NELM
     LPFMTHEADER  lpFmtHeader;       // Ptr to format header struc
     LPFMTCOLSTR  lpFmtColStr;       // Ptr to format col struc
-    UINT         uCol;              // Loop counter
+    FMTROWSTR    FmtRowLft;         // Left hand row struc
+    LPFMTROWSTR  lpFmtRowLft;       // Ptr to left hand row struc
     APLUINT      uQuadPP,           // []PP
                  uQuadPW;           // []PW
     BOOL         bLineCont = FALSE; // TRUE iff this line is a continuation
@@ -284,6 +285,19 @@ void DisplayGlbArr
     else
         lpFmtHeader->lpFmtRow1st = NULL;
 
+    // Initialize the left row struc
+    lpFmtRowLft = &FmtRowLft;
+    ZeroMemory (lpFmtRowLft, sizeof (FmtRowLft));
+#ifdef DEBUG
+    lpFmtRowLft->Sig.nature  = FMTROWSTR_SIGNATURE;
+#endif
+////lpFmtRowLft->lpFmtColUp  = NULL;        // Already zero from ZeroMemory
+////lpFmtRowLft->uFmtRows    = 0;           // ...
+////lpFmtRowLft->uBlank      = FALSE;       // ...
+////lpFmtRowLft->lpFmtRowNxt = NULL;        // ...
+////lpFmtRowLft->lpFmtRowLft = NULL;        // ...
+////lpFmtRowLft->lpFmtRowRht = NULL;        // ...
+
     // Loop through the array appending the formatted values (separated by L'\0')
     //   to the output vector, and accumulating the values in the appropriate
     //   FMTCOLSTR & FMTROWSTR entries.
@@ -296,11 +310,13 @@ void DisplayGlbArr
             CompileArrBool    ((LPAPLBOOL)    lpMem,    // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
+                              &lpFmtRowLft,             // Ptr to ptr to starting left row struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
+                               TRUE,                    // TRUE iff top level array
                                FALSE);                  // TRUE iff nested
             break;
 
@@ -309,11 +325,13 @@ void DisplayGlbArr
             CompileArrInteger ((LPAPLINT)    lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
+                              &lpFmtRowLft,             // Ptr to ptr to starting left row struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
+                               TRUE,                    // TRUE iff top level array
                                FALSE);                  // TRUE iff nested
             break;
 
@@ -322,11 +340,13 @@ void DisplayGlbArr
             CompileArrFloat   ((LPAPLFLOAT)  lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
+                              &lpFmtRowLft,             // Ptr to ptr to starting left row struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
+                               TRUE,                    // TRUE iff top level array
                                FALSE);                  // TRUE iff nested
             break;
 
@@ -335,11 +355,13 @@ void DisplayGlbArr
             CompileArrAPA     ((LPAPLAPA)    lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
+                              &lpFmtRowLft,             // Ptr to ptr to starting left row struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
+                               TRUE,                    // TRUE iff top level array
                                FALSE);                  // TRUE iff nested
             break;
 
@@ -348,11 +370,13 @@ void DisplayGlbArr
             CompileArrChar    ((LPAPLCHAR)   lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
+                              &lpFmtRowLft,             // Ptr to ptr to starting left row struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
+                               TRUE,                    // TRUE iff top level array
                                FALSE);                  // TRUE iff nested
             break;
 
@@ -361,11 +385,13 @@ void DisplayGlbArr
             CompileArrHetero  ((LPAPLHETERO) lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
+                              &lpFmtRowLft,             // Ptr to ptr to starting left row struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
+                               TRUE,                    // TRUE iff top level array
                                FALSE);                  // TRUE iff nested
             break;
 
@@ -374,11 +400,13 @@ void DisplayGlbArr
             CompileArrNested  ((LPAPLNESTED) lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
+                              &lpFmtRowLft,             // Ptr to ptr to starting left row struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
+                               TRUE,                    // TRUE iff top level array
                                FALSE);                  // TRUE iff nested
             break;
 
@@ -435,6 +463,7 @@ void DisplayGlbArr
                              aplRank,               // Rank of this array
                              lpMemDim,              // Ptr to this array's dimensions
                              aplType,               // Storage type of this array
+                             TRUE,                  // TRUE iff skip to next row after this item
                              aplType NE ARRAY_CHAR, // TRUE iff raw output
                              bEndingCR);            // TRUE iff last line has CR
             break;
@@ -465,12 +494,17 @@ void DisplayGlbArr
     if (aplType EQ ARRAY_CHAR
      || aplType EQ ARRAY_NESTED)
     {
+        APLDIM aplDimRow;           // Loop counter
+        UINT   uFmtRow;             // Loop counter
+
+        DbgBrk ();
+
         uOutLen = uQuadPW;          // Initial output length
 
         // Loop through the formatted rows
-        for (lpwsz = lpwszFormat, uCol = 0;
-             uCol < lpFmtHeader->uFmtRows;
-             uCol++, lpwsz += aplLastDim)
+        for (lpwsz = lpwszFormat, uFmtRow = 0, aplDimRow = 0;
+             uFmtRow < lpFmtHeader->uFmtRows;
+             uFmtRow++, aplDimRow++, lpwsz += aplLastDim)
         {
             WCHAR   wch;                // The replaced WCHAR
             APLDIM  aplDimTmp;          // Remaining line length to output
@@ -510,6 +544,23 @@ void DisplayGlbArr
             lpwsz[uOffset + aplDimTmp] = L'\0';     // Terminate the line
             AppendLine (lpwsz + uOffset, bLineCont, TRUE);// Display the line
             lpwsz[uOffset + aplDimTmp] = wch;       // Restore the ending char
+
+            // Handle blank lines between planes
+            if (aplDimRow NE (aplDimNRows - 1))     // Not last row
+            {
+                APLDIM  aplDimAcc;
+                APLRANK uRank;
+
+                aplDimAcc = 1;
+                for (uRank = 0; uRank < (aplRank - 1); uRank++)
+                {
+                    aplDimAcc *= lpMemDim[(aplRank - 2) - uRank];
+                    if ((aplDimRow + 1) % aplDimAcc)
+                        break;
+
+                    AppendLine (L"", FALSE, TRUE);
+                } // End FOR
+            } // End IF
         } // End FOR
     } // End IF
 

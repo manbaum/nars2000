@@ -85,17 +85,16 @@ TO DO:  General:  Wish List
 * ...       component file system
 * ...       dyadic down tack jot        (format by example)
 * ...       dyadic left shoe            (partitioned enclose)
-* ...       dyadic squad                (indexing)
 * ...       dyadic epsilon underbar     (find)
 * ...       dieresis-del                (dual)
 * ...       dieresis-downtack           (convolution)
 * ...       dieresis-jot                (rank)
 * ...       dieresis-star               (power)
 * ...       stile-tilde                 (partition)
-* ...       vector editor
-* ...       matrix editor
-* ...       []INVERSE:
-* ...       []SINGLETON:
+* ...       vector editor       (requires someone to want it badly enough to code it)
+* ...       matrix editor       (requires someone to want it badly enough to code it)
+* ...       []INVERSE:          (requires power operator)
+* ...       []SINGLETON:        (requires definition of singleton reduction/scan for all functions)
 * ...
 
 
@@ -163,6 +162,7 @@ DONE:  General
 * ...       dyadic right shoe
 * ...       dyadic down tack
 * ...       dyadic up tack
+* ...       dyadic squad
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

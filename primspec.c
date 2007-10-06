@@ -503,9 +503,6 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
 
             // Handle the immediate case
 
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
-
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = aplTypeRes;

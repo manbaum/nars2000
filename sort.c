@@ -245,7 +245,7 @@ static BYTE aTT2[] = {
 //***************************************************************************
 //  $GradeUp
 //
-//  Grade up on a small number of APLUINTs
+//  Grade up on a small number of APLUINTs (using the algorithm for GnomeSort)
 //***************************************************************************
 
 void GradeUp
@@ -256,7 +256,7 @@ void GradeUp
 {
     APLUINT u1, u2, u3;
 
-    // Start with {iota}aplRankCmp in lpDst
+    // Start with {iota}uCount in lpDst
     for (u1 = 0; u1 < uCount; u1++)
         lpDst[u1] = u1;
 
@@ -297,10 +297,6 @@ void GnomeSort
 {
     APLUINT u1, u2, u3;
 
-    // Start with {iota}aplRankCmp in lpDst
-    for (u1 = 0; u1 < uCount; u1++)
-        lpDst[u1] = u1;
-
     // Use Gnome sort on lpDst while comparing lpSrc
     u2 = 1; u3 = 2;
     while (u2 < uCount)
@@ -322,6 +318,85 @@ void GnomeSort
         } // End IF/ELSE
     } // End WHILE
 } // End GnomeSort
+
+
+//***************************************************************************
+//  $HeapSort
+//
+//  Heapsort based on ideas of J.W.Williams/R.W.Floyd/S.Carlsson
+//    taken from http://en.wikipedia.org/wiki/Heapsort
+//***************************************************************************
+
+/////// data_i_LESS_THAN_(other)   (data[i] < other)
+#define data_i_LESS_THAN_(other)   (ObjCmp (lpSrc, other, lpDst[i], lpExtra) > 0)
+#define MOVE_i_TO_free  {lpDst[free] = lpDst[i]; free = i;}
+
+#define APLUINT APLUINT
+
+void sift_in
+    (APLUINT   uCount,
+     LPAPLUINT lpDst,
+     LPVOID    lpSrc,
+     APLUINT   free_in,
+     APLUINT   next,
+     APLINT (*ObjCmp) (LPVOID, APLUINT, APLUINT, LPVOID), // Ptr to comparison routine
+     LPVOID    lpExtra)
+{
+    APLUINT i,
+            free = free_in;
+
+    // Sift up the free node
+    for (i = 2 * free; i < uCount; i += i)
+    {
+        if (data_i_LESS_THAN_ (lpDst[i + 1]))
+            i++;
+        MOVE_i_TO_free
+    } // End FOR
+
+    // Special case in sift up if the last inner node has only 1 child
+    if (i EQ uCount)
+       MOVE_i_TO_free
+    // Sift down the new item next
+    while (((i = free / 2) >= free_in)
+        && data_i_LESS_THAN_ (next))
+       MOVE_i_TO_free
+
+    lpDst[free] = next;
+} // End sift_in
+
+void HeapSort
+    (LPAPLUINT lpDst,       // Destination
+     LPVOID    lpSrc,       // Source
+     APLUINT   uCount,      // # APLUINTs in the source
+     APLINT (*ObjCmp) (LPVOID, APLUINT, APLUINT, LPVOID), // Ptr to comparison routine
+     LPVOID    lpExtra)     // Ptr to extra data (passed to ObjCmp)
+{
+    APLUINT j;
+
+    if (uCount <= 1)
+        return;
+    // Map addresses to indices 1 til count
+    lpDst -= 1;
+
+    // Build the heap structure
+    for (j = uCount / 2; j >= 1; j--)
+    {
+       APLUINT next = lpDst[j];
+
+       sift_in (uCount, lpDst, lpSrc, j, next, ObjCmp, lpExtra);
+    } // End FOR
+
+    // Search next by next remaining extremal element
+    for (j = uCount - 1; j >= 1; j--)
+    {
+       APLUINT next = lpDst[j + 1];
+
+       // Extract extremal element from the heap
+       lpDst[j + 1] = lpDst[1];
+
+       sift_in (j, lpDst, lpSrc, 1, next, ObjCmp, lpExtra);
+    } // End FOR
+} // End HeapSort
 
 
 //***************************************************************************

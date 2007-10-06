@@ -177,21 +177,13 @@ void FreeResultSub
                 // Is it time to free the name?
                 if (bFreeName)
                 {
-                    // Get the global memory ptr
-                    hGlbData = ClrPtrTypeDirGlb (hGlbData);
-
-                    if (lptkRes->tkFlags.TknType EQ TKT_FCNNAMED
-                     || lptkRes->tkFlags.TknType EQ TKT_OP1NAMED
-                     || lptkRes->tkFlags.TknType EQ TKT_OP2NAMED)
-                        bTmp = FreeResultGlobalFcn (hGlbData);
-                    else
-                        bTmp = FreeResultGlobalVar (hGlbData);
+                    bTmp = FreeResultGlobalDFV (ClrPtrTypeDirGlb (hGlbData));
                     if (bTmp)
                     {
 #ifdef DEBUG_ZAP
                         dprintfW (L"**Zapping in FreeResultSub: Token=%08X, Value=%08X (%S#%d)",
                                   lptkRes,
-                                  ClrPtrTypeDir (lptkRes->tkData.tkSym->stData.stGlbData),
+                                  ClrPtrTypeDir (hGlbData),
                                   FNLN);
 #endif
                         lptkRes->tkData.tkSym->stData.stGlbData = NULL;
@@ -227,17 +219,18 @@ void FreeResultSub
         case TKT_AXISARRAY: // ...
         case TKT_FCNARRAY:  // ...
         case TKT_LISTBR:    // ...
+            // Get the global memory ptr
+            hGlbData = lptkRes->tkData.tkGlbData;
+
             // Check for ptr reuse
-            if (!PtrReusedDir (lptkRes->tkData.tkGlbData))
+            if (!PtrReusedDir (hGlbData))
             {
                 // tkData is a valid HGLOBAL variable or function array
-                Assert (IsGlbTypeVarDir (lptkRes->tkData.tkGlbData)
-                     || IsGlbTypeFcnDir (lptkRes->tkData.tkGlbData));
+                Assert (IsGlbTypeVarDir (hGlbData)
+                     || IsGlbTypeFcnDir (hGlbData)
+                     || IsGlbTypeDfnDir (hGlbData));
 
-                if (lptkRes->tkFlags.TknType EQ TKT_FCNARRAY)
-                    bTmp = FreeResultGlobalFcn (ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
-                else
-                    bTmp = FreeResultGlobalVar (ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData));
+                bTmp = FreeResultGlobalDFV (ClrPtrTypeDirGlb (hGlbData));
                 if (bTmp)
                 {
 #ifdef DEBUG_ZAP
@@ -268,6 +261,34 @@ void FreeResultSub
     } // End SWITCH
 } // End FreeResultSub
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $FreeResultGlobalDFV
+//
+//  Free a global defined function, variable, or function array
+//***************************************************************************
+
+BOOL FreeResultGlobalDFV
+    (HGLOBAL hGlbData)
+
+{
+    // Split cases based upon the signature
+    switch (GetSignatureGlb (hGlbData))
+    {
+        case DFN_HEADER_SIGNATURE:
+            return FreeResultGlobalDfn (hGlbData);
+
+        case FCNARRAY_HEADER_SIGNATURE:
+            return FreeResultGlobalFcn (hGlbData);
+
+        case VARARRAY_HEADER_SIGNATURE:
+            return FreeResultGlobalVar (hGlbData);
+
+        defstop
+            return FALSE;
+    } // End SWITCH
+} // End FreeResultGlobalDFV
 
 
 //***************************************************************************
@@ -506,42 +527,17 @@ BOOL FreeResultGlobalFcn
                 // Clear the ptr type bits
                 hGlbLcl = ClrPtrTypeDirGlb (hGlbLcl);
 
-                // Split cases based upon the array signature
-                switch (GetSignatureGlb (hGlbLcl))
+                // Free the function array or user-defined function/operator
+                if (FreeResultGlobalDFV (hGlbLcl))
                 {
-                    case FCNARRAY_HEADER_SIGNATURE:
-                        // Free the function array
-                        if (FreeResultGlobalFcn (hGlbLcl))
-                        {
 #ifdef DEBUG_ZAP
-                            dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
-                                      hGlbData,
-                                      hGlbLcl,
-                                      FNLN);
+                    dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
+                              hGlbData,
+                              hGlbLcl,
+                              FNLN);
 #endif
-                            lpYYToken->tkToken.tkData.tkGlbData = NULL;
-                        } // End IF
-
-                        break;
-
-                    case DFN_HEADER_SIGNATURE:
-                        // Free the user-defined function/operator
-                        if (FreeResultGlobalDfn (hGlbLcl))
-                        {
-#ifdef DEBUG_ZAP
-                            dprintfW (L"**Zapping in FreeResultGlobalFcn: Global=%08X, Value=%08X (%S#%d)",
-                                      hGlbData,
-                                      hGlbLcl,
-                                      FNLN);
-#endif
-                            lpYYToken->tkToken.tkData.tkGlbData = NULL;
-                        } // End IF
-
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
+                    lpYYToken->tkToken.tkData.tkGlbData = NULL;
+                } // End IF
 
                 break;
 

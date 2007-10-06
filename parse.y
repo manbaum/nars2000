@@ -1209,6 +1209,7 @@ ArrExpr:
 
                                              lpplLocalVars->lpYYRes = ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
+                                             lpplLocalVars->lpYYStr = lpplLocalVars->lpYYFcn;
                                              FreeYYFcn (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              FreeResult (&$3.tkToken);
 
@@ -4599,8 +4600,12 @@ char LookaheadSurround
     (LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    PLLOCALVARS plLocalVars;    // Local copy of outer PLLOCALVARS
+    PLLOCALVARS plLocalVars;        // Local copy of outer PLLOCALVARS
+    char        cRes;           // The result char
 
+#ifdef DEBUG
+    DbgMsgW (L"==Entering LookaheadSurround");
+#endif
     // Copy outer lpplLocalVars
     plLocalVars = *lpplLocalVars;
 
@@ -4614,9 +4619,13 @@ char LookaheadSurround
 
     // Parse the file, check for errors
     if (pl_yyparse (&plLocalVars))
-        return '?';
+        cRes = '?';
     else
-        return NAMETYPE_STRING[plLocalVars.NameType];
+        cRes = NAMETYPE_STRING[plLocalVars.NameType];
+#ifdef DEBUG
+    dprintfW (L"==Exiting  LookaheadSurround:  %c", cRes);
+#endif
+    return cRes;
 } // End LookaheadSurround
 #undef  APPEND_NAME
 
@@ -4768,7 +4777,6 @@ NORMAL_EXIT:
 #ifdef DEBUG
     dprintfW (L"==Exiting  LookaheadAdjacent:  %c", cRes);
 #endif
-
     return cRes;
 } // LookaheadAdjacent
 #undef  APPEND_NAME
@@ -4867,7 +4875,8 @@ int pl_yylex
 
 {
 #ifdef DEBUG
-    static UINT YYIndex = 0;
+    static UINT YYIndex = 0;        // Unique index for each YYRes
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 #endif
     WCHAR       wchFn;
 
@@ -4876,15 +4885,25 @@ int pl_yylex
 
     // Return the current token
     lpYYLval->tkToken    = *lpplLocalVars->lpNext;
-    lpYYLval->YYInuse    =
-    lpYYLval->YYIndirect =
-    lpYYLval->Avail      =
-    lpYYLval->TknCount   =
-    lpYYLval->FcnCount   = 0;
-    lpYYLval->lpYYFcn    = NULL;
+
+    // Initialize the rest of the fields
+    lpYYLval->TknCount       =
+    lpYYLval->FcnCount       =
+    lpYYLval->YYInuse        =
+    lpYYLval->YYIndirect     =
+    lpYYLval->Avail          = 0;
+    lpYYLval->lpYYFcn        = NULL;
+    lpYYLval->lpYYStrandBase = NULL;
 #ifdef DEBUG
-    lpYYLval->YYFlag     = 1;         // Mark as a pl_yylex Index
-    lpYYLval->YYIndex    = ++YYIndex;
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
+
+    lpYYLval->YYIndex        = ++YYIndex;
+    lpYYLval->YYFlag         = 1;         // Mark as a pl_yylex Index
+    lpYYLval->SILevel        = lpMemPTD->SILevel;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpplLocalVars->hGlbPTD); lpMemPTD = NULL;
 #endif
 
     // Split cases based upon the token type

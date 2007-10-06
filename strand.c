@@ -1076,6 +1076,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
+    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
+
     // Save the base of this strand
     lpYYStrand              =
     lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
@@ -1099,6 +1101,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         lpYYRes->FcnCount = 1;
 
         lpYYBase = lpYYArg->lpYYFcn;
+
+        Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
         goto NORMAL_EXIT;
     } // End IF
@@ -1133,6 +1137,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;    // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
+
+    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
     // Lock the memory to get a ptr to it
     lpMemStr = MyGlobalLock (hGlbStr);
@@ -1183,15 +1189,16 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
             MyGlobalUnlock (lpHeader->hGlbTxtLine); lpMemTxtLine = NULL;
         } // End IF
     } // End IF
-#undef  lpHeader
+
+    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
     // Skip over the header and dimensions to the data
     lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
 
     // Copy the PL_YYSTYPEs to the global memory object
-    lpYYMemData = CopyYYFcn (lpYYMemData, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount);
+    lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount, TRUE);
 
-#define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
+    // Calculate the actual length
     lpHeader->fcnNELM = uActLen = lpYYMemData - lpYYMemStart;
 #undef  lpHeader
 
@@ -1202,9 +1209,14 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     //   is only one function which can then be immediate.
     if (uActLen EQ 1)
     {
+        Assert (YYCheckInuse (lpYYRes));            // ***DEBUG***
+        Assert (YYCheckInuse (lpYYArg->lpYYFcn));   // ***DEBUG***
+
         // Copy the entire token
-        CopyYYFcn (lpYYRes, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount);
+        YYCopyFcn (lpYYRes, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount, FALSE);
         Assert (FcnCount EQ 1);
+
+        Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
         // Note that the result token in lpYYRes is now TKT_FCNIMMED
 
@@ -1220,6 +1232,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
                          GHND);
     } // End IF/ELSE/IF
 
+    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
+
     // Save the token & function counts
     lpYYRes->TknCount = uActLen;
     lpYYRes->FcnCount = FcnCount;
@@ -1230,6 +1244,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 #endif
 NORMAL_EXIT:
     lpYYRes->lpYYStrandBase  = lpplLocalVars->lpYYStrandBase[STRAND_FCN] = lpYYBase;
+
+    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
 #ifdef DEBUG
     // Display the strand stack
@@ -1254,157 +1270,6 @@ ERROR_EXIT:
 
     YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 } // End MakeFcnStrand_EM_YY
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $CopyYYFcn
-//
-//  Copy one or more PL_YYSTYPE functions to a memory object
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopyYYFcn"
-#else
-#define APPEND_NAME
-#endif
-
-LPPL_YYSTYPE CopyYYFcn
-    (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
-     LPPL_YYSTYPE  lpYYArg,             // Ptr to function arg
-     LPPL_YYSTYPE *lpYYBase,            // Ptr to ptr to YY base address
-     LPINT         lpFcnCount)          // Ptr to resulting function count
-
-{
-    int          i,
-                 iLen,
-                 FcnCount,
-                 TotalFcnCount = 0;
-    PL_YYSTYPE   YYFcn = {0};
-    HGLOBAL      hGlbData;
-    LPTOKEN      lpToken;
-    LPPL_YYSTYPE lpYYMem0,
-                 lpYYCopy;
-
-    // Get the token count in this function strand
-    iLen = lpYYArg->TknCount;
-
-    // We need to modify the function count in the first token,
-    //   so save its address in the array.
-    lpYYMem0 = lpYYMem;
-
-    // Loop through the tokens associated with this symbol
-    for (i = 0; i < iLen; i++)
-    {
-#ifdef DEBUG
-        LPPL_YYSTYPE lpYYArgI;
-
-        lpYYArgI = &lpYYArg[i];
-#endif
-        // Calculate the earlier function base
-        *lpYYBase = min (*lpYYBase, lpYYArg[i].lpYYFcn);
-
-        // If the function is indirect, recurse
-        if (lpYYArg[i].YYIndirect)
-        {
-            FcnCount = 0;   // Initialize as it is incremented in CopyYYFcn
-            lpYYMem = CopyYYFcn (lpYYMem, lpYYArg[i].lpYYFcn, lpYYBase, &FcnCount);
-        } else
-        {
-            // Get the function arg token
-            lpToken = &lpYYArg[i].tkToken;
-
-            // Special case for named functions/operators
-            if (lpToken->tkFlags.TknType EQ TKT_FCNNAMED
-             || lpToken->tkFlags.TknType EQ TKT_OP1NAMED
-             || lpToken->tkFlags.TknType EQ TKT_OP2NAMED)
-            {
-                // tkData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-                // If it's an immediate function/operator, copy it directly
-                if (lpToken->tkData.tkSym->stFlags.Imm)
-                {
-                    YYFcn.tkToken.tkFlags.TknType   = TranslateImmTypeToTknType (lpToken->tkData.tkSym->stFlags.ImmType);
-                    YYFcn.tkToken.tkFlags.ImmType   = lpToken->tkData.tkSym->stFlags.ImmType;
-////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
-                    YYFcn.tkToken.tkData.tkLongest  = 0;        // Keep the extraneous data clear
-                    YYFcn.tkToken.tkData.tkChar     = lpToken->tkData.tkSym->stData.stChar;
-                    YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
-////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
-////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
-////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
-////////////////////YYFcn.lpYYFcn                   = NULL;     // Already zero from = {0}
-                    YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
-                } else
-                {
-                    // If it's an internal function, ...
-                    if (lpToken->tkData.tkSym->stFlags.FcnDir)
-                        // Copy the argument
-                        YYFcn = lpYYArg[i];
-                    else
-                    {
-                        // Get the global memory handle or function address if direct
-                        hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
-
-                        //stData is a valid HGLOBAL function array
-                        //   or user-defined function/operator
-                        Assert (IsGlbTypeFcnDir (hGlbData)
-                             || IsGlbTypeDfnDir (hGlbData));
-
-                        // Increment the reference count in global memory
-                        DbgIncrRefCntDir (hGlbData);
-
-                        // Fill in the token
-                        YYFcn.tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-////////////////////////YYFcn.tkToken.tkFlags.ImmType   = 0;        // Already zero from = {0}
-////////////////////////YYFcn.tkToken.tkFlags.NoDisplay = 0;        // Already zero from = {0}
-                        YYFcn.tkToken.tkData.tkGlbData  = hGlbData;
-                        YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
-////////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
-////////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
-////////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
-////////////////////////YYFcn.lpYYFcn                   = NULL;     // Already zero from = {0}
-                        YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
-                    } // End IF
-                } // End IF/ELSE
-
-                YYFcn.TknCount = lpYYArg[i].TknCount;
-                YYFcn.YYInuse  = 0;
-#ifdef DEBUG
-                YYFcn.YYIndex  = NEG1U;
-#endif
-                *lpYYMem++ = YYFcn;
-            } else
-            {
-                lpYYCopy = CopyPL_YYSTYPE_EM_YY (&lpYYArg[i], FALSE);
-                if (lpYYMem->YYInuse)
-                    YYCopy (lpYYMem++, lpYYCopy);
-                else
-                    YYCopyFreeDst (lpYYMem++, lpYYCopy);
-                YYFree (lpYYCopy); lpYYCopy = NULL;
-            } // End IF/ELSE
-
-            // Save the function count
-            FcnCount = 1;
-            lpYYMem[-1].FcnCount = FcnCount;
-        } // End IF/ELSE
-
-        // Accumulate into the total function count
-        TotalFcnCount += FcnCount;
-    } // End FOR
-
-    // Save the total function count in the first token
-    lpYYMem0->FcnCount = TotalFcnCount;
-
-    // Return as the overall total
-    *lpFcnCount = TotalFcnCount;
-
-#ifdef DEBUG
-    lpYYArg[0].FcnCount = TotalFcnCount;
-#endif
-    return lpYYMem;
-} // End CopyYYFcn
 #undef  APPEND_NAME
 
 

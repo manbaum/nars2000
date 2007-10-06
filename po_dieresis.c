@@ -141,12 +141,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     LPPRIMFNS    lpPrimProtoLft;    // Ptr to left operand prototype function (may be NULL if not prototyping)
 
     // Check for axis operator
-    if (lpYYFcnStrOpr->FcnCount > 1
-     && (lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        lptkAxis = &lpYYFcnStrOpr[1].tkToken;
-     else
-        lptkAxis = NULL;
+    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
 
     //***************************************************************
     // The derived function from this operator is not sensitive to
@@ -767,12 +762,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     DBGENTER;
 
     // Check for axis operator
-    if (lpYYFcnStrOpr->FcnCount > 1
-     && (lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        lptkAxis = &lpYYFcnStrOpr[1].tkToken;
-     else
-        lptkAxis = NULL;
+    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)

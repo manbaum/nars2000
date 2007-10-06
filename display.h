@@ -32,12 +32,14 @@ typedef struct tagFMTCOLSTR
     HEADER_SIGNATURE Sig;               // 00:  FMTCOLSTR signature
 #endif
 ////UINT        uFmtType;               //      Format type (see FMT_TYPES)
-    UINT        uInts,                  // 04:  # Integer digits in Boolean/Integer/APA/Float column,
+    UINT        uLdBl:16,               // 04:  0000FFFF:  # leading blanks
+                uTrBl:16;               //      FFFF0000:  # trailing blanks
+    UINT        uInts,                  // 08:  # Integer digits in Boolean/Integer/APA/Float column,
                                         //      or # chars in Char column
-                                        //      including sign and leading spaces
-                uFrcs;                  // 08:  # Fractional digits in Float column
+                                        //      including sign
+                uFrcs;                  // 0C:  # Fractional digits in Float column
                                         //      including decimal point
-                                        // 0C:  Length
+                                        // 10:  Length
 } FMTCOLSTR, *LPFMTCOLSTR;
 
 typedef struct tagFMTROWSTR
@@ -61,8 +63,11 @@ typedef struct tagFMTITMSTR
     HEADER_SIGNATURE Sig;               // 00:  FMTITMSTR signature
     FMTCOLSTR   *lpFmtColUp;            // 04:  Ptr to parent FMTCOLSTR
 #endif
-    UINT        uFmtRows;               // 08:  # formatted rows in this row
-                                        // 0C:  Length
+    UINT        uFmtRows:31,            // 08:  7FFFFFFF:  # formatted rows in this row
+                uBlank:1;               //      80000000:  TRUE iff this row is blank
+    struct tagFMTROWSTR *lpFmtRowNxt;   // 0C:  Ptr to next sibling FMTROWSTR
+    struct tagFMTITMSTR *lpFmtItmRht;   // 10:  Ptr to right adjacent item
+                                        // 14:  Length
 } FMTITMSTR, *LPFMTITMSTR;
 
 ////typedef enum tagFMT_TYPES

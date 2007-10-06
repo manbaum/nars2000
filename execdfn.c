@@ -93,13 +93,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     LPTOKEN      lptkAxis;          // Ptr to axis token
 
     // Check for axis operator
-    if (lpYYFcnStr
-     && lpYYFcnStr->FcnCount > 1
-     && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        lptkAxis = &lpYYFcnStr[1].tkToken;
-     else
-        lptkAxis = NULL;
+    lptkAxis = CheckAxisOper (lpYYFcnStr);
 
     // If there's room for a left operand, ...
     if (lpYYFcnStr

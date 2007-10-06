@@ -15,6 +15,9 @@
 #include "compro.h"
 #endif
 
+
+#define GRADE_ROUTINE       HeapSort
+
 typedef struct tagTT_HANDLES        // Translate Table handles & ptrs
 {
     HGLOBAL   hGlbTT;               // TT global memory handle
@@ -155,11 +158,11 @@ LPPL_YYSTYPE PrimProtoFnDeltaStile_EM_YY
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM_YY (&PrimFnDeltaStile_EM_YY,   // Ptr to primitive function routine
-                                    lptkLftArg,         // Ptr to left arg token
-                                    lptkFunc,           // Ptr to function token
-                                    lptkRhtArg,         // Ptr to right arg token
-                                    lptkAxis);          // Ptr to axis token (may be NULL)
+    return PrimProtoFnMixed_EM_YY (&PrimFnDeltaStile_EM_YY, // Ptr to primitive function routine
+                                    lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+                                    lptkFunc,               // Ptr to function token
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDeltaStile_EM_YY
 #undef  APPEND_NAME
 
@@ -189,11 +192,11 @@ LPPL_YYSTYPE PrimProtoFnDelStile_EM_YY
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM_YY (&PrimFnDelStile_EM_YY,// Ptr to primitive function routine
-                                    lptkLftArg,         // Ptr to left arg token
-                                    lptkFunc,           // Ptr to function token
-                                    lptkRhtArg,         // Ptr to right arg token
-                                    lptkAxis);          // Ptr to axis token (may be NULL)
+    return PrimProtoFnMixed_EM_YY (&PrimFnDelStile_EM_YY,   // Ptr to primitive function routine
+                                    lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+                                    lptkFunc,               // Ptr to function token
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDelStile_EM_YY
 #undef  APPEND_NAME
 
@@ -230,7 +233,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     BOOL         bRet = TRUE;       // TRUE iff result is valid
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     APLBOOL      bQuadIO;           // []IO
-    GRADE_DATA   gradeData;         // Data passed to GnomeSort
+    GRADE_DATA   gradeData;         // Data passed to GRADE_ROUTINE
 
     // Mark as grade up or down
     gradeData.iMul = (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE) ? 1 : -1;
@@ -318,12 +321,16 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 #undef  lpAPA
     } // End IF
 
+    // Initialize the result with {iota}aplNELMRes
+    for (uRes = 0; uRes < aplNELMRes; uRes++)
+        ((LPAPLINT) lpMemRes)[uRes] = uRes;
+
     // Grade the array
-    GnomeSort (lpMemRes,            // Ptr to result global memory
-               lpMemRht,            // Ptr to right arg global memory
-               aplNELMRes,          // Result NELM
-              &PrimFnMonGradeCompare,// Ptr to comparison routine
-              &gradeData);
+    GRADE_ROUTINE (lpMemRes,                // Ptr to result global memory
+                   lpMemRht,                // Ptr to right arg global memory
+                   aplNELMRes,              // Result NELM
+                  &PrimFnMonGradeCompare,   // Ptr to comparison routine
+                  &gradeData);              // Ptr to extra grade data
     // Add in []IO
     for (uRes = 0; uRes < aplNELMRes; uRes++)
         ((LPAPLINT) lpMemRes)[uRes] += bQuadIO;
@@ -402,7 +409,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     APLINT       iLft;                  // Loop counter
     LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
     APLBOOL      bQuadIO;               // []IO
-    GRADE_DATA   gradeData;             // Data passed to GnomeSort
+    GRADE_DATA   gradeData;             // Data passed to GRADE_ROUTINE
     HGLOBAL      hGlbTTHandles = NULL;  // TT Handles global memory handle
     LPTT_HANDLES lpMemTTHandles = NULL; // Ptr to TT handles global memory
 
@@ -593,12 +600,16 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 #undef  lpAPA
     } // End IF
 
+    // Initialize the result with {iota}aplNELMRes
+    for (uRes = 0; uRes < aplNELMRes; uRes++)
+        ((LPAPLINT) lpMemRes)[uRes] = uRes;
+
     // Grade the array
-    GnomeSort (lpMemRes,            // Ptr to result global memory
-               lpMemRht,            // Ptr to right arg global memory
-               aplNELMRes,          // Result NELM
-              &PrimFnMonGradeCompare,// Ptr to comparison routine
-              &gradeData);
+    GRADE_ROUTINE (lpMemRes,                // Ptr to result global memory
+                   lpMemRht,                // Ptr to right arg global memory
+                   aplNELMRes,              // Result NELM
+                  &PrimFnMonGradeCompare,   // Ptr to comparison routine
+                  &gradeData);              // Ptr to extra grade data
     // Add in []IO
     for (uRes = 0; uRes < aplNELMRes; uRes++)
         ((LPAPLINT) lpMemRes)[uRes] += bQuadIO;
@@ -698,9 +709,9 @@ APLINT PrimFnMonGradeCompare
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
             {
-                APLUINT aplBitLft,
-                        aplBitRht;
-                UINT    uBitMask;
+                APLUINT aplBitLft,              // Left arg bit value
+                        aplBitRht;              // Right ...
+                UINT    uBitMask;               // Left & right arg bit mask
 
                 // Get the left hand indexed bit
                 aplBitLft = aplUIntLft * aplNELMRest + uRest;
@@ -850,8 +861,6 @@ APLINT PrimFnMonGradeCompare
             return (bSame ? 0
                           : bToggle ? -1 * lpGradeData->iMul
                                     :  1 * lpGradeData->iMul);
-            break;
-
         defstop
             break;
     } // End SWITCH

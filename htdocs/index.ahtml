@@ -132,7 +132,7 @@
             <li>Sink (monadic {is}<span class="APL">A</span>
               to suppress the display of <span class="APL">A</span>)</li>
             <li>Function editing via <span class="APL">{del}</span> or <span class="APL">)EDIT</span></li>
-            <li>Unified indexing such that <span class="APL">R[L]</span>
+            <li>Unified indexing: <span class="APL">R[L]</span>
               allows both Reach and Scatter indexing &mdash; that is, if
               <span class="APL">L{pick}R</span> is valid, it is equivalent to
               <span class="APL">{disclose}R[{enclose}L]</span>, and if
@@ -239,9 +239,9 @@
         <li>Multilevel Undo in function editing</li>
         <li>Undo buffer saved with function for reuse on next edit</li>
         <li>Prototypes for all primitive functions and operators</li>
-        <li>Fast Boolean reduction (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}</span>)
-          and scan (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}</span>)
-          along contiguous elements</li>
+        <li>Fast Boolean reduction ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus})
+          and scan ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand})
+          along contiguous bits</li>
         <li>Right double click on an editable name brings up the function editor on that name</li>
       </ul>
 
@@ -266,7 +266,7 @@
       <ul>
         <li>Monadic
           <ul>
-            <li>All monadic primitive scalar functions</li>
+            <li>All monadic primitive scalar functions ({plus}{minus}{multiply}{divide}{circle}{circlestar}{star}{stile}{downstile}{upstile}{shreik}{query}{tilde})</li>
             <li>Monadic rho ({rho}) &mdash; shape</li>
             <li>Monadic left shoe ({enclose}) &mdash; enclose (with and without axis operator)</li>
             <li>Monadic iota ({iota}) &mdash; index generator</li>
@@ -288,7 +288,8 @@
         </li>
         <li>Dyadic
           <ul>
-            <li>All dyadic primitive scalar functions (with and without axis operator)</li>
+            <li>All dyadic primitive scalar functions ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}{minus}{multiply}{divide}{circle}{circlestar}{star}{stile}{downstile}{upstile}{shreik})
+              (with and without axis operator)</li>
             <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
               Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
               respectively</li>
@@ -370,7 +371,7 @@
           <span class="APL">F{is}{jot}</span>)</li>
         <li>Function editing via <span class="APL">{del}</span> or <span class="APL">)EDIT</span></li>
         <li>Raw output</li>
-        <li>Unified indexing such that <span class="APL">R[L]</span>
+        <li>Unified indexing: <span class="APL">R[L]</span>
           allows both Reach and Scatter indexing &mdash; that is, if
           <span class="APL">L{pick}R</span> is valid, it is equivalent to
           <span class="APL">{disclose}R[{enclose}L]</span>, and if
@@ -378,9 +379,9 @@
           <span class="APL">R[{disclose}{jot}.,/L]</span></li>
         <li>Quad and Quote-Quad output, e.g., (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
         <li>Prototypes for all primitive functions and operators</li>
-        <li>Fast Boolean reduction (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}</span>)
-          and scan (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}</span>)
-          along contiguous elements</li>
+        <li>Fast Boolean reduction ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus})
+          and scan ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand})
+          along contiguous bits</li>
         <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
           <span class="APL">1 2+[1] 2 3{rho}R</span>)</li>
         <li>Axis operator to primitive scalar dyadic functions may transpose coordinates (e.g.,

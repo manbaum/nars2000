@@ -83,7 +83,7 @@ typedef enum tagTOKEN_TYPES
  TKT_OP1NAMED ,             // 1D: A named monadic primitive operator (data is LPSYMENTRY)
  TKT_OP2NAMED ,             // 1E: ...     dyadic  ...
  TKT_STRNAMED ,             // 1F: A named strand
-                            // 20-FF:  Available entries (6 bits)
+                            // 20-3F:  Available entries (6 bits)
 } TOKEN_TYPES;
 
 #define TKT_LENGTH      (TKT_LENGTHp1 - 1)

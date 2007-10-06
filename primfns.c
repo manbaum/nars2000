@@ -852,6 +852,26 @@ void InitIdentityElement
 
 
 //***************************************************************************
+//  $CheckAxisOper
+//
+//  Check for axis operator
+//***************************************************************************
+
+LPTOKEN CheckAxisOper
+    (LPPL_YYSTYPE lpYYFcnStr)       // Ptr to function strand
+
+{
+    if (lpYYFcnStr->FcnCount
+     && lpYYFcnStr->FcnCount > 1
+     && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
+      || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
+        return &lpYYFcnStr[1].tkToken;
+    else
+        return NULL;
+} // End CheckAxisOper
+
+
+//***************************************************************************
 //  $ExecuteFn0
 //
 //  Execute a niladic function
@@ -883,11 +903,13 @@ LPPL_YYSTYPE ExecuteFn0
         switch (GetSignatureGlb (ClrPtrTypeDirGlb (lpNameFcn)))
         {
             case FCNARRAY_HEADER_SIGNATURE:
+                // Execute a function array global memory handle
                 return ExecFuncGlb_EM_YY (NULL,                         // Ptr to left arg token (may be NULL if monadic or niladic)
                                           ClrPtrTypeDirGlb (lpNameFcn), // Function array global memory handle
                                           NULL,                         // Ptr to right arg token (may be NULL if niladic)
                                           NULL);                        // Ptr to axis token (may be NULL)
             case DFN_HEADER_SIGNATURE:
+                // Execute a user-defined function/operator global memory handle
                 return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (lpNameFcn),  // User-defined function/operator global memory handle
                                          NULL,                          // Ptr to left arg token (may be NULL if monadic)
                                          lpYYFcn0,                      // Ptr to function strand
@@ -895,7 +917,7 @@ LPPL_YYSTYPE ExecuteFn0
                                          LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
             defstop
                 return NULL;
-        } // SWITCH
+        } // End SWITCH
 } // End ExecuteFn0
 
 
@@ -919,8 +941,11 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 {
     LPPRIMFNS lpPrimFn;             // Ptr to direct primitive or system function
     LPTOKEN   lptkAxis;             // Ptr to axis token (may be NULL)
+    HGLOBAL   hGlbFcn;              // Function array global memory handle
 
     DBGENTER;
+
+    Assert (lpYYFcnStr->YYInuse);
 
     // Check for NoValue
     if (IsTokenNoValue (lptkLftArg)
@@ -954,7 +979,6 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             if (!lpYYFcnStr->tkToken.tkData.tkSym->stFlags.Imm)
             {
                 STFLAGS stFlags;
-                HGLOBAL hGlbFcn;
 
                 // Get the STE flags of the first token
                 stFlags = lpYYFcnStr->tkToken.tkData.tkSym->stFlags;
@@ -1029,21 +1053,37 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             } // End SWITCH
 
         case TKT_FCNARRAY:
+            // Get the HGLOBAL
+            hGlbFcn = lpYYFcnStr->tkToken.tkData.tkGlbData;
+
             // tkData is a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (lpYYFcnStr->tkToken.tkData.tkVoid));
+            //   or user-defined function/operator
+            Assert (IsGlbTypeFcnDir (hGlbFcn)
+                 || IsGlbTypeDfnDir (hGlbFcn));
 
-            // Check for axis operator
-            if (lpYYFcnStr->FcnCount > 1
-             && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-              || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-                lptkAxis = &lpYYFcnStr[1].tkToken;
-            else
-                lptkAxis = NULL;
+            // If it's a user-defined function/operator, ...
+            switch (GetSignatureGlb (ClrPtrTypeDirGlb (hGlbFcn)))
+            {
+                case FCNARRAY_HEADER_SIGNATURE:
+                    // Check for axis operator
+                    lptkAxis = CheckAxisOper (lpYYFcnStr);
 
-            return ExecFuncGlb_EM_YY (lptkLftArg,
-                                      ClrPtrTypeDirGlb (lpYYFcnStr->tkToken.tkData.tkGlbData),
-                                      lptkRhtArg,
-                                      lptkAxis);
+                    // Execute a function array global memory handle
+                    return ExecFuncGlb_EM_YY (lptkLftArg,                   // Ptr to left arg token (may be NULL if monadic)
+                                              ClrPtrTypeDirGlb (hGlbFcn),   // Function array global memory handle
+                                              lptkRhtArg,                   // Ptr to right arg token
+                                              lptkAxis);                    // Ptr to axis token (may be NULL)
+                case DFN_HEADER_SIGNATURE:
+                    // Execute a user-defined function/operator global memory handle
+                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbFcn),    // User-defined function/operator global memory handle
+                                             lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
+                                             lpYYFcnStr,                    // Ptr to function strand
+                                             lptkRhtArg,                    // Ptr to right arg token
+                                             LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
+                defstop
+                    break;
+            } // End SWITCH
+
         defstop
             break;
     } // End SWITCH
@@ -1072,31 +1112,15 @@ LPPL_YYSTYPE ExecFuncGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpYYFcnStr = MyGlobalLock (hGlbFcn);
 
-    // Split cases based upon the signature
-    switch (((LPHEADER_SIGNATURE) lpYYFcnStr)->nature)
-    {
-        case FCNARRAY_HEADER_SIGNATURE:
-            // Skip over the header to the data
-            lpYYFcnStr = FcnArrayBaseToData (lpYYFcnStr);
+    // Skip over the header to the data
+    lpYYFcnStr = FcnArrayBaseToData (lpYYFcnStr);
 
-            // The contents of the global memory object consist of
-            //   a series of PL_YYSTYPEs in RPN order.
-            lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
-                                         lpYYFcnStr,    // Ptr to function strand
-                                         lptkRhtArg,    // Ptr to right arg token
-                                         lptkAxis);     // Ptr to axis token
-            break;
-
-        case DFN_HEADER_SIGNATURE:
-            DbgBrk ();
-
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
+    // The contents of the global memory object consist of
+    //   a series of PL_YYSTYPEs in RPN order.
+    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,    // Ptr to left arg token
+                                 lpYYFcnStr,    // Ptr to function strand
+                                 lptkRhtArg,    // Ptr to right arg token
+                                 lptkAxis);     // Ptr to axis token
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFcn); lpYYFcnStr = NULL;
 
@@ -1151,12 +1175,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                  || lpYYFcnStr->FcnCount EQ 2);
 
             // Check for axis operator
-            if (lpYYFcnStr->FcnCount > 1
-             && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-              || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-                lptkAxis = &lpYYFcnStr[1].tkToken;
-            else
-                lptkAxis = NULL;
+            lptkAxis = CheckAxisOper (lpYYFcnStr);
 
             lpPrimFn = PrimFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
             if (!lpPrimFn)
@@ -1194,18 +1213,15 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Check for axis operator
-                    if (lpYYFcnStr->FcnCount > 1
-                     && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-                      || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-                        lptkAxis = &lpYYFcnStr[1].tkToken;
-                    else
-                        lptkAxis = NULL;
+                    lptkAxis = CheckAxisOper (lpYYFcnStr);
 
+                    // Execute a function array global memory handle
                     return ExecFuncGlb_EM_YY (lptkLftArg,                   // Ptr to left arg token (may be NULL if monadic)
                                               ClrPtrTypeDirGlb (hGlbFcn),   // Function array global memory handle
                                               lptkRhtArg,                   // Ptr to right arg token
                                               lptkAxis);                    // Ptr to axis token (may be NULL)
                 case DFN_HEADER_SIGNATURE:
+                    // Execute a user-defined function/operator global memory handle
                     return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbFcn),    // User-defined function/operator global memory handle
                                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
                                              lpYYFcnStr,                    // Ptr to function strand
@@ -1213,19 +1229,14 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                                              LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
                 defstop
                     break;
-            } // SWITCH
+            } // End SWITCH
 
         case TKT_FCNNAMED:
             Assert (lpYYFcnStr->FcnCount EQ 1
                  || lpYYFcnStr->FcnCount EQ 2);
 
             // Check for axis operator
-            if (lpYYFcnStr->FcnCount > 1
-             && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-              || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-                lptkAxis = &lpYYFcnStr[1].tkToken;
-            else
-                lptkAxis = NULL;
+            lptkAxis = CheckAxisOper (lpYYFcnStr);
 
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYFcnStr->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
@@ -1332,12 +1343,7 @@ LPPL_YYSTYPE ExecOp2_EM_YY
     LPTOKEN lptkAxis;           // Ptr to axis token (may be NULL)
 
     // Check for axis operator
-    if (lpYYFcnStr->FcnCount > 1
-     && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        lptkAxis = &lpYYFcnStr[1].tkToken;
-     else
-        lptkAxis = NULL;
+    lptkAxis = CheckAxisOper (lpYYFcnStr);
 
     // Split cases based upon the type of the dyadic operator
     switch (lpYYFcnStr->tkToken.tkData.tkChar)
@@ -5553,258 +5559,6 @@ void DemoteData
             break;
     } // End SWITCH
 } // End DemoteData
-
-
-//***************************************************************************
-//  $YYAlloc
-//
-//  Allocate a new YYRes entry
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- YYAlloc"
-#else
-#define APPEND_NAME
-#endif
-
-LPPL_YYSTYPE YYAlloc
-    (void)
-
-{
-    UINT         u;             // Loop counter
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYRes = NULL;// Ptr to the result
-
-#ifdef DEBUG
-    static UINT YYIndex = 0;
-#endif
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Search for an empty YYRes slot,
-    //   zero it,
-    //   mark it as inuse,
-    //   and return a ptr to it
-    for (u = 0; u < lpMemPTD->numYYRes; u++)
-    if (!lpMemPTD->lpYYRes[u].YYInuse)
-    {
-        // Set the return value
-        lpYYRes = &lpMemPTD->lpYYRes[u];
-
-        // Zero the memory
-        ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
-
-        // Mark as inuse
-        lpYYRes->YYInuse = 1;
-
-#ifdef DEBUG
-        lpYYRes->SILevel = lpMemPTD->SILevel;   // Save the SI Level
-        lpYYRes->YYFlag = 0;  // Mark as a YYAlloc Index
-
-        // Save unique number for debugging/tracking purposes
-        lpYYRes->YYIndex = ++YYIndex;
-#endif
-        goto NORMAL_EXIT;
-    } // End FOR/IF
-
-    // If we get here, we ran out of indices
-    lpYYRes = &lpMemPTD->lpYYRes[u++];
-    lpMemPTD->numYYRes = u;
-RESTART_EXCEPTION_YYALLOC:
-    __try
-    {
-        // Zero the memory
-        ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
-
-        // Mark as inuse
-        lpYYRes->YYInuse = 1;
-#ifdef DEBUG
-        lpYYRes->YYFlag = 0;  // Mark as a YYAlloc Index
-
-        // Save unique number for debugging/tracking purposes
-        lpYYRes->YYIndex = ++YYIndex;
-#endif
-    } __except (CheckException (GetExceptionInformation ()))
-    {
-#ifdef DEBUG
-        dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %08X (%S#%d)", MyGetExceptionCode (), FNLN);
-#endif
-        // Split cases based upon the ExceptionCode
-        switch (MyGetExceptionCode ())
-        {
-            case EXCEPTION_ACCESS_VIOLATION:
-            {
-                MEMORY_BASIC_INFORMATION mbi;
-
-                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
-
-                // See how many pages are already allocated
-                VirtualQuery (lpMemPTD->lpYYRes,
-                             &mbi,
-                              sizeof (mbi));
-
-                // Check for no allocation as yet
-                if (mbi.State EQ MEM_RESERVE)
-                    mbi.RegionSize = 0;
-
-                // Allocate more memory to the YYRes buffer
-                if (VirtualAlloc (lpMemPTD->lpYYRes,
-                                  mbi.RegionSize + DEF_YYRES_INCRSIZE * sizeof (PL_YYSTYPE),
-                                  MEM_COMMIT,
-                                  PAGE_READWRITE) NE NULL)
-                    goto RESTART_EXCEPTION_YYALLOC;
-
-                // Fall through to never-never-land
-
-            } // End EXCEPTION_ACCESS_VIOLATION
-
-            defstop
-                break;
-        } // End SWITCH
-    } // End __try/__except
-NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return lpYYRes;
-} // End YYAlloc
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $YYCopy
-//
-//  Copy one PL_YYSTYPE to another
-//    retaining the destination Inuse, Flag, and Index
-//***************************************************************************
-
-void YYCopy
-    (LPPL_YYSTYPE lpYYDst,
-     LPPL_YYSTYPE lpYYSrc)
-
-{
-#ifdef DEBUG
-    UINT YYIndex,
-         YYFlag;
-#endif
-
-    Assert (lpYYDst->YYInuse);
-
-#ifdef DEBUG
-    // Save the old index & flag
-    YYIndex = lpYYDst->YYIndex;
-    YYFlag  = lpYYDst->YYFlag;
-#endif
-    *lpYYDst = *lpYYSrc;            // Copy the PL_YYSTYPE
-    lpYYDst->YYInuse = 1;           // Retain YYInuse flag
-#ifdef DEBUG
-    lpYYDst->YYIndex = YYIndex;     // Retain YYIndex
-    lpYYDst->YYFlag  = YYFlag;      // ...    YYFlag
-#endif
-} // End YYCopy
-
-
-//***************************************************************************
-//  $YYCopyFreeDst
-//
-//  Copy one PL_YYSTYPE to another
-//    retaining the destination Inuse, Flag, and Index
-//    and free the destination copy if it's not inuse.
-//***************************************************************************
-
-void YYCopyFreeDst
-    (LPPL_YYSTYPE lpYYDst,
-     LPPL_YYSTYPE lpYYSrc)
-
-{
-    if (lpYYDst->YYInuse)
-        YYCopy (lpYYDst, lpYYSrc);
-    else
-    {
-        lpYYDst->YYInuse = 1;       // Mark as in use for YYCopy
-        YYCopy (lpYYDst, lpYYSrc);
-        lpYYDst->YYInuse = 0;       // Mark as no longer in use
-    } // End IF/ELSE
-} // End YYCopyFreeDst
-
-
-//***************************************************************************
-//  $YYFree
-//
-//  Free a YYRes entry
-//***************************************************************************
-
-void YYFree
-    (LPPL_YYSTYPE lpYYRes)      // Ptr to the YYRes entry
-
-{
-#ifdef DEBUG                    // ***DEBUG***
-    UINT         u;             // Index into lpMemPTD->YYRes
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    u = lpYYRes - lpMemPTD->lpYYRes;
-    Assert (u < lpMemPTD->numYYRes);
-    Assert (lpYYRes->YYInuse EQ 1);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-#endif
-////lpYYRes->YYInuse = 0;       // Free it
-    ZeroMemory (lpYYRes, sizeof (PL_YYSTYPE));
-} // End YYFree
-
-
-#ifdef DEBUG
-//***************************************************************************
-//  $YYResIsEmpty
-//
-//  Ensure that YYRes has no Inuse entries
-//***************************************************************************
-
-BOOL YYResIsEmpty
-    (void)
-
-{
-    UINT         u;             // Loop counter
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Loop through the YYRes entries looking for
-    //   entries in use at this SI Level
-    for (u = 0; u < lpMemPTD->numYYRes; u++)
-    if (lpMemPTD->lpYYRes[u].YYInuse
-     && lpMemPTD->SILevel EQ lpMemPTD->lpYYRes[u].SILevel)
-    {
-        bRet = FALSE;
-
-        break;
-    } // End FOR/IF
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return bRet;
-} // End YYResIsEmpty
-#endif
 
 
 //***************************************************************************

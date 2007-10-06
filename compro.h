@@ -111,6 +111,7 @@
 #include "tabctrl.pro"
 #include "translate.pro"
 #include "ver.pro"
+#include "yyfns.pro"
 #if RESDEBUG
 #include "resdebug.pro"
 #endif

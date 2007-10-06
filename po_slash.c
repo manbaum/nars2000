@@ -161,12 +161,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     LPTOKEN      lptkAxis;          // Ptr to axis token (may be NULL)
 
     // Check for axis operator
-    if (lpYYFcnStrOpr->FcnCount > 1
-     && (lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        lptkAxis = &lpYYFcnStrOpr[1].tkToken;
-     else
-        lptkAxis = NULL;
+    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
@@ -794,12 +789,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     LPPRIMFNS    lpPrimProtoLft;    // Ptr to left operand prototype function
 
     // Check for axis operator
-    if (lpYYFcnStrOpr->FcnCount > 1
-     && (lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        lptkAxis = &lpYYFcnStrOpr[1].tkToken;
-     else
-        lptkAxis = NULL;
+    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)

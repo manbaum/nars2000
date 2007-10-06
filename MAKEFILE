@@ -246,7 +246,8 @@ $(O)translate.DEP       \
 $(O)ver.DEP             \
 $(O)main.DEV            \
 $(O)ver.DEV             \
-$(O)version.DEV
+$(O)version.DEV         \
+$(O)yyfns.DEP
 
 {$(O)}.C{$(O)}.DEP:
     @Set INCLUDE=$(I98);$(H);$(O)
@@ -603,6 +604,9 @@ $(O)version.DEV
 !if exist ($(O)version.DEV)
 !       include $(O)version.DEV
 !endif
+!if exist ($(O)yyfns.DEP)
+!       include $(O)yyfns.DEP
+!endif
 
 
 ####################### PROTOTYPE GENERATION #################
@@ -714,7 +718,8 @@ $(O)syscmds.PRO         \
 $(O)sysvars.PRO         \
 $(O)tabctrl.PRO         \
 $(O)translate.PRO       \
-$(O)ver.PRO
+$(O)ver.PRO             \
+$(O)yyfns.PRO
 
 {}.C{$(O)}.PRO:
         @Set INCLUDE=$(I98);$(H);$(O)
@@ -868,6 +873,7 @@ $(O)sysvars.OBJ:        $(@B).C         $(SYSVARS_DEP)
 $(O)tabctrl.OBJ:        $(@B).C         $(TABCTRL_DEP)
 $(O)translate.OBJ:      $(@B).C         $(TRANSLATE_DEP)
 $(O)ver.OBJ:            $(@B).C         $(VER_DEP)
+$(O)yyfns.OBJ:          $(@B).C         $(YYFNS_DEP)
 
 main.RC:                                $(MAIN_RCDEP)   $(ICONS)
 
@@ -998,6 +1004,7 @@ OBJS=                       \
      $(O)tabctrl.OBJ        \
      $(O)translate.OBJ      \
      $(O)ver.OBJ            \
+     $(O)yyfns.OBJ          \
      $(O)DBGBRK.OBJ         \
      $(O)main.RES
 

@@ -157,12 +157,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                  lpPrimProtoRht;        // Ptr to right ...
 
     // Check for axis operator
-    if (lpYYFcnStrOpr->FcnCount > 1
-     && (lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStrOpr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        lptkAxis = &lpYYFcnStrOpr[1].tkToken;
-     else
-        lptkAxis = NULL;
+    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
 
     //***************************************************************
     // The derived functions from this operator are not sensitive to

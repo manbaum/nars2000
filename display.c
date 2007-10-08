@@ -167,8 +167,6 @@ void DisplayGlbArr
     APLNELM      aplNELMRes;        // Result NELM
     LPFMTHEADER  lpFmtHeader;       // Ptr to format header struc
     LPFMTCOLSTR  lpFmtColStr;       // Ptr to format col struc
-    FMTITMSTR    FmtItmRht;         // Right hand item struc
-    LPFMTITMSTR  lpFmtItmRht;       // Ptr to right hand item struc
     APLUINT      uQuadPP,           // []PP
                  uQuadPW;           // []PW
     BOOL         bLineCont = FALSE; // TRUE iff this line is a continuation
@@ -285,14 +283,6 @@ void DisplayGlbArr
     else
         lpFmtHeader->lpFmtRow1st = NULL;
 
-    // Initialize the right row struc
-    lpFmtItmRht = &FmtItmRht;
-    ZeroMemory (lpFmtItmRht, sizeof (lpFmtItmRht[0]));
-#ifdef DEBUG
-    lpFmtItmRht->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-////lpFmtItmRht->lpFmtItmRht = NULL;        // Already zero from ZeroMemory
-
     // Loop through the array appending the formatted values (separated by L'\0')
     //   to the output vector, and accumulating the values in the appropriate
     //   FMTCOLSTR & FMTROWSTR entries.
@@ -305,7 +295,6 @@ void DisplayGlbArr
             CompileArrBool    ((LPAPLBOOL)    lpMem,    // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,             // Ptr to ptr to starting right item struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
@@ -320,7 +309,6 @@ void DisplayGlbArr
             CompileArrInteger ((LPAPLINT)    lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,             // Ptr to ptr to starting right item struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
@@ -335,7 +323,6 @@ void DisplayGlbArr
             CompileArrFloat   ((LPAPLFLOAT)  lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,             // Ptr to ptr to starting right item struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
@@ -350,7 +337,6 @@ void DisplayGlbArr
             CompileArrAPA     ((LPAPLAPA)    lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,             // Ptr to ptr to starting right item struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
@@ -365,7 +351,6 @@ void DisplayGlbArr
             CompileArrChar    ((LPAPLCHAR)   lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,             // Ptr to ptr to starting right item struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
@@ -380,7 +365,6 @@ void DisplayGlbArr
             CompileArrHetero  ((LPAPLHETERO) lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,             // Ptr to ptr to starting right item struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols
@@ -395,7 +379,6 @@ void DisplayGlbArr
             CompileArrNested  ((LPAPLNESTED) lpMem,     // Ptr to right arg memory
                                lpFmtHeader,             // Ptr to parent header
                                lpFmtColStr,             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,             // Ptr to ptr to starting right item struc
                                lpaplCharStart,          // Ptr to compiled output
                                aplDimNRows,             // # rows
                                aplDimNCols,             // # cols

@@ -142,8 +142,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     BOOL         bRet = TRUE,       // TRUE iff result is valid
                  bSimpleScalar;     // TRUE if right arg is a simple scalar
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    FMTITMSTR    FmtItmRht;         // Right hand item struc
-    LPFMTITMSTR  lpFmtItmRht;       // Ptr to right hand item struc
 
     // Get the attributes (Type, NELM, and Rank) of the right args
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
@@ -222,14 +220,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     //   to the output vector, and accumulating the values in the appropriate
     //   FMTCOLSTR & FMTROWSTR entries.
 
-    // Initialize the right item struc
-    lpFmtItmRht = &FmtItmRht;
-    ZeroMemory (lpFmtItmRht, sizeof (lpFmtItmRht[0]));
-#ifdef DEBUG
-    lpFmtItmRht->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-////lpFmtItmRht->lpFmtItmRht = NULL;        // Already zero from ZeroMemory (initial value)
-
     // If the right arg is a simple scalar,
     //   get its value
     bSimpleScalar = (aplRankRht EQ 0 && IsSimpleNH (aplTypeRht));
@@ -251,7 +241,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                                              : (LPAPLBOOL)   lpMemRht,  // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,                             // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -267,7 +256,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                                              : (LPAPLINT)    lpMemRht,  // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,                             // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -283,7 +271,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                                              : (LPAPLFLOAT)  lpMemRht,  // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                              &lpFmtItmRht,                             // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -324,7 +311,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
             CompileArrAPA     ((LPAPLAPA)    lpMemRht,      // Ptr to right arg memory
                                lpFmtHeader,                 // Ptr to parent header
                                lpFmtColStr,                 // Ptr to vector of ColStrs
-                              &lpFmtItmRht,                 // Ptr to ptr to starting right item struc
                                lpaplChar,                   // Ptr to compiled output
                                aplDimNRows,                 // # rows
                                aplDimNCols,                 // # cols
@@ -339,7 +325,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
             CompileArrHetero  ((LPAPLHETERO) lpMemRht,      // Ptr to right arg memory
                                lpFmtHeader,                 // Ptr to parent header
                                lpFmtColStr,                 // Ptr to vector of ColStrs
-                              &lpFmtItmRht,                 // Ptr to ptr to starting right item struc
                                lpaplChar,                   // Ptr to compiled output
                                aplDimNRows,                 // # rows
                                aplDimNCols,                 // # cols
@@ -354,7 +339,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
             CompileArrNested  ((LPAPLNESTED) lpMemRht,      // Ptr to right arg memory
                                lpFmtHeader,                 // Ptr to parent header
                                lpFmtColStr,                 // Ptr to vector of ColStrs
-                              &lpFmtItmRht,                 // Ptr to ptr to starting right item struc
                                lpaplChar,                   // Ptr to compiled output
                                aplDimNRows,                 // # rows
                                aplDimNCols,                 // # cols
@@ -582,7 +566,6 @@ LPAPLCHAR FormatArrSimple
                 lpwszOut,           //
                 lpwszOutStart;      //
     LPFMTROWSTR lpFmtRowStr;        // Ptr to this item's FMTROWSTR
-    LPFMTITMSTR lpFmtItmStr;        // Ptr to this item's FMTITMSTR
     LPAPLCHAR   lpaplChar = lpaplChar2;
     APLUINT     uQuadPW;            // []PW
 
@@ -612,15 +595,6 @@ LPAPLCHAR FormatArrSimple
 
         // Skip over the FMTROWSTR to the next available position
         lpaplChar = (LPAPLCHAR) &lpFmtRowStr[1];
-
-        // Point to the FMTITMSTR
-        lpFmtItmStr = (LPFMTITMSTR) lpaplChar;
-
-        // Validate the FMTITMSTR
-        Assert (lpFmtItmStr->Sig.nature EQ FMTITMSTR_SIGNATURE);
-
-        // Skip over the FMTITMSTR to the next available position
-        lpaplChar = (LPAPLCHAR) &lpFmtItmStr[1];
 
         // Save starting output string ptr
         lpwszOutStart = lpwszOut;
@@ -1157,7 +1131,6 @@ LPAPLCHAR CompileArrBool
     (LPAPLBOOL   lpMem,         // Ptr to data to format
      LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
      LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
-     LPFMTITMSTR *lplpFmtItmRht,// Ptr to ptr to starting right item struc
      LPAPLCHAR   lpaplChar,     // Ptr to next available format position
      APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
      APLDIM      aplDimNCols,   // # cols to format
@@ -1172,7 +1145,6 @@ LPAPLCHAR CompileArrBool
     APLDIM      aplDimCol,
                 aplDimRow;
     LPFMTROWSTR lpFmtRowLcl = NULL;
-    LPFMTITMSTR lpFmtItmLcl = NULL;
 
     // Loop through the cols, setting the common widths
     for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
@@ -1228,22 +1200,6 @@ LPAPLCHAR CompileArrBool
         // Skip over the FMTROWSTR to the next available position
         lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
 
-        // Create a new FMTITMSTR
-        lpFmtItmLcl = (LPFMTITMSTR) lpaplChar;
-#ifdef DEBUG
-        lpFmtItmLcl->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-        lpFmtItmLcl->lpFmtItmRht = NULL;
-
-        if (bTopLevel)
-            (*lplpFmtItmRht)->lpFmtItmRht = NULL;       // Ptr to ptr to new right adjacent item
-        else
-            (*lplpFmtItmRht)->lpFmtItmRht = lpFmtItmLcl;// Ptr to ptr to new right adjacent item
-       *lplpFmtItmRht            = lpFmtItmLcl;         // Ptr to new right adjacent item
-
-        // Skip over the FMTITMSTR to the next available position
-        lpaplChar = (LPAPLCHAR) &lpFmtItmLcl[1];
-
         // Loop through the cols
         for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
         {
@@ -1277,8 +1233,7 @@ LPAPLCHAR CompileArrBool
                                          lpMemDim,          // Ptr to item dimensions
                                          aplRank,           // Item rank
                                          aplDimRow,         // Item row #
-                                         lpFmtColStr,       // Ptr to item FMTCOLSTR
-                                         lplpFmtItmRht);    // Ptr to ptr to right item struc
+                                         lpFmtColStr);      // Ptr to item FMTCOLSTR
     } // End FOR
 
     // Mark as last row struc
@@ -1298,7 +1253,6 @@ LPAPLCHAR CompileArrInteger
     (LPAPLINT    lpMem,         // Ptr to data to format
      LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
      LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
-     LPFMTITMSTR *lplpFmtItmRht,// Ptr to ptr to starting right item struc
      LPAPLCHAR   lpaplChar,     // Ptr to next available format position
      APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
      APLDIM      aplDimNCols,   // # cols to format
@@ -1313,7 +1267,6 @@ LPAPLCHAR CompileArrInteger
                 aplDimRow;          // ...
     LPAPLCHAR   lpwszOut;           // Ptr to output buffer
     LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to local FMTROWSTR
-    LPFMTITMSTR lpFmtItmLcl = NULL; // Ptr to local FMTITMSTR
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -1334,22 +1287,6 @@ LPAPLCHAR CompileArrInteger
 
         // Skip over the FMTROWSTR to the next available position
         lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
-
-        // Create a new FMTITMSTR
-        lpFmtItmLcl = (LPFMTITMSTR) lpaplChar;
-#ifdef DEBUG
-        lpFmtItmLcl->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-        lpFmtItmLcl->lpFmtItmRht = NULL;
-
-        if (bTopLevel)
-            (*lplpFmtItmRht)->lpFmtItmRht = NULL;       // Ptr to ptr to new right adjacent item
-        else
-            (*lplpFmtItmRht)->lpFmtItmRht = lpFmtItmLcl;// Ptr to ptr to new right adjacent item
-       *lplpFmtItmRht            = lpFmtItmLcl;         // Ptr to new right adjacent item
-
-        // Skip over the FMTITMSTR to the next available position
-        lpaplChar = (LPAPLCHAR) &lpFmtItmLcl[1];
 
         // Loop through the cols
         for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
@@ -1402,8 +1339,7 @@ LPAPLCHAR CompileArrInteger
                                          lpMemDim,          // Ptr to item dimensions
                                          aplRank,           // Item rank
                                          aplDimRow,         // Item row #
-                                         lpFmtColStr,       // Ptr to item FMTCOLSTR
-                                         lplpFmtItmRht);    // Ptr to ptr to right item struc
+                                         lpFmtColStr);      // Ptr to item FMTCOLSTR
     } // End FOR
 
     // Mark as last row struc
@@ -1423,7 +1359,6 @@ LPAPLCHAR CompileArrFloat
     (LPAPLFLOAT  lpMem,         // Ptr to data to format
      LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
      LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
-     LPFMTITMSTR *lplpFmtItmRht,// Ptr to ptr to starting right item struc
      LPAPLCHAR   lpaplChar,     // Ptr to next available format position
      APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
      APLDIM      aplDimNCols,   // # cols to format
@@ -1439,7 +1374,6 @@ LPAPLCHAR CompileArrFloat
     LPAPLCHAR   lpwszOut;
     LPWCHAR     lpwsz;
     LPFMTROWSTR lpFmtRowLcl = NULL;
-    LPFMTITMSTR lpFmtItmLcl = NULL;
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -1460,22 +1394,6 @@ LPAPLCHAR CompileArrFloat
 
         // Skip over the FMTROWSTR to the next available position
         lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
-
-        // Create a new FMTITMSTR
-        lpFmtItmLcl = (LPFMTITMSTR) lpaplChar;
-#ifdef DEBUG
-        lpFmtItmLcl->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-        lpFmtItmLcl->lpFmtItmRht = NULL;
-
-        if (bTopLevel)
-            (*lplpFmtItmRht)->lpFmtItmRht = NULL;       // Ptr to ptr to new right adjacent item
-        else
-            (*lplpFmtItmRht)->lpFmtItmRht = lpFmtItmLcl;// Ptr to ptr to new right adjacent item
-       *lplpFmtItmRht            = lpFmtItmLcl;         // Ptr to new right adjacent item
-
-        // Skip over the FMTITMSTR to the next available position
-        lpaplChar = (LPAPLCHAR) &lpFmtItmLcl[1];
 
         // Loop through the cols
         for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
@@ -1555,8 +1473,7 @@ LPAPLCHAR CompileArrFloat
                                          lpMemDim,          // Ptr to item dimensions
                                          aplRank,           // Item rank
                                          aplDimRow,         // Item row #
-                                         lpFmtColStr,       // Ptr to item FMTCOLSTR
-                                         lplpFmtItmRht);    // Ptr to ptr to right item struc
+                                         lpFmtColStr);      // Ptr to item FMTCOLSTR
     } // End FOR
 
     // Mark as last row struc
@@ -1576,7 +1493,6 @@ LPAPLCHAR CompileArrChar
     (LPAPLCHAR   lpMem,         // Ptr to data to format
      LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
      LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
-     LPFMTITMSTR *lplpFmtItmRht,// Ptr to ptr to starting right item struc
      LPAPLCHAR   lpaplChar,     // Ptr to next available format position
      APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
      APLDIM      aplDimNCols,   // # cols to format
@@ -1589,7 +1505,6 @@ LPAPLCHAR CompileArrChar
     APLDIM      aplDimRow,      // Loop counter
                 aplDimCol;      // ...
     LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to local FMTROWSTR
-    LPFMTITMSTR lpFmtItmLcl = NULL; // Ptr to local FMTITMSTR
     UINT        uCurWidth,      // Current col width
                 uCurPos,        // Current col position
                 uMaxWidth,      // Maximum col width
@@ -1615,22 +1530,6 @@ LPAPLCHAR CompileArrChar
 
         // Skip over the FMTROWSTR to the next available position
         lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
-
-        // Create a new FMTITMSTR
-        lpFmtItmLcl = (LPFMTITMSTR) lpaplChar;
-#ifdef DEBUG
-        lpFmtItmLcl->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-        lpFmtItmLcl->lpFmtItmRht = NULL;
-
-        if (bTopLevel)
-            (*lplpFmtItmRht)->lpFmtItmRht = NULL;       // Ptr to ptr to new right adjacent item
-        else
-            (*lplpFmtItmRht)->lpFmtItmRht = lpFmtItmLcl;// Ptr to ptr to new right adjacent item
-       *lplpFmtItmRht            = lpFmtItmLcl;         // Ptr to new right adjacent item
-
-        // Skip over the FMTITMSTR to the next available position
-        lpaplChar = (LPAPLCHAR) &lpFmtItmLcl[1];
 
         // Copy the data including a terminating zero
         //  and launder special chars
@@ -1671,7 +1570,7 @@ LPAPLCHAR CompileArrChar
 #endif
                 lpFmtRowLcl->uBlank      = FALSE;
                 lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
-                lpFmtRowLcl->uColOff     = uMaxWidth;       // Initialize the col offset
+                lpFmtRowLcl->uColOff     = uCurPos;         // Initialize the col offset
 ////////////////lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr (filled in below)
 
                 // Link into the row chain
@@ -1679,22 +1578,6 @@ LPAPLCHAR CompileArrChar
 
                 // Skip over the FMTROWSTR to the next available position
                 lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
-
-                // Create a new FMTITMSTR
-                lpFmtItmLcl = (LPFMTITMSTR) lpaplChar;
-#ifdef DEBUG
-                lpFmtItmLcl->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-                lpFmtItmLcl->lpFmtItmRht = NULL;
-
-                if (bTopLevel)
-                    (*lplpFmtItmRht)->lpFmtItmRht = NULL;       // Ptr to ptr to new right adjacent item
-                else
-                    (*lplpFmtItmRht)->lpFmtItmRht = lpFmtItmLcl;// Ptr to ptr to new right adjacent item
-               *lplpFmtItmRht            = lpFmtItmLcl;         // Ptr to new right adjacent item
-
-                // Skip over the FMTITMSTR to the next available position
-                lpaplChar = (LPAPLCHAR) &lpFmtItmLcl[1];
 
                 // Mark as matrix result
                 lpFmtHeader->uMatRes = TRUE;
@@ -1705,10 +1588,13 @@ LPAPLCHAR CompileArrChar
                 break;
 
             case TCHT:          // []TCHT -- Move ahead to the next tab stop
-                uTmp = (1 + (uCurWidth % uTabs)) * uTabs;
-                while (uCurWidth < uTmp)
+                uTmp = (1 + (uCurPos % uTabs)) * uTabs;
+                while (uCurPos < uTmp)
                 {
-                    lpaplChar[uCurWidth++] = L' ';
+                    lpaplChar[uCurPos] = L' ';
+                    uCurPos++;
+                    uCurWidth++;
+                    uItmWidth++;
                     uMaxWidth = max (uMaxWidth, uCurWidth);
                 } // End WHILE
 
@@ -1767,8 +1653,7 @@ LPAPLCHAR CompileArrChar
                                          lpMemDim,          // Ptr to item dimensions
                                          aplRank,           // Item rank
                                          aplDimRow,         // Item row #
-                                         lpFmtColStr,       // Ptr to item FMTCOLSTR
-                                         lplpFmtItmRht);    // Ptr to ptr to right item struc
+                                         lpFmtColStr);      // Ptr to item FMTCOLSTR
     } // End FOR
 
     // Mark as last row struc
@@ -1788,7 +1673,6 @@ LPAPLCHAR CompileArrAPA
     (LPAPLAPA    lpAPA,         // Ptr to data to format
      LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
      LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
-     LPFMTITMSTR *lplpFmtItmRht,// Ptr to ptr to starting right item struc
      LPAPLCHAR   lpaplChar,     // Ptr to next available format position
      APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
      APLDIM      aplDimNCols,   // # cols to format
@@ -1806,7 +1690,6 @@ LPAPLCHAR CompileArrAPA
                 aplDimRow;
     LPAPLCHAR   lpwszOut;
     LPFMTROWSTR lpFmtRowLcl = NULL;
-    LPFMTITMSTR lpFmtItmLcl = NULL;
 
     // Get the APA parameters
     apaOff = lpAPA->Off;
@@ -1831,22 +1714,6 @@ LPAPLCHAR CompileArrAPA
 
         // Skip over the FMTROWSTR to the next available position
         lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
-
-        // Create a new FMTITMSTR
-        lpFmtItmLcl = (LPFMTITMSTR) lpaplChar;
-#ifdef DEBUG
-        lpFmtItmLcl->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-        lpFmtItmLcl->lpFmtItmRht = NULL;
-
-        if (bTopLevel)
-            (*lplpFmtItmRht)->lpFmtItmRht = NULL;       // Ptr to ptr to new right adjacent item
-        else
-            (*lplpFmtItmRht)->lpFmtItmRht = lpFmtItmLcl;// Ptr to ptr to new right adjacent item
-       *lplpFmtItmRht            = lpFmtItmLcl;         // Ptr to new right adjacent item
-
-        // Skip over the FMTITMSTR to the next available position
-        lpaplChar = (LPAPLCHAR) &lpFmtItmLcl[1];
 
         // Loop through the cols
         for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++, apaAcc++)
@@ -1896,8 +1763,7 @@ LPAPLCHAR CompileArrAPA
                                          lpMemDim,          // Ptr to item dimensions
                                          aplRank,           // Item rank
                                          aplDimRow,         // Item row #
-                                         lpFmtColStr,       // Ptr to item FMTCOLSTR
-                                         lplpFmtItmRht);    // Ptr to ptr to right item struc
+                                         lpFmtColStr);      // Ptr to item FMTCOLSTR
     } // End FOR
 
     // Mark as last row struc
@@ -1917,7 +1783,6 @@ LPAPLCHAR CompileArrHetero
     (LPAPLHETERO lpMem,         // Ptr to data to format
      LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
      LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
-     LPFMTITMSTR *lplpFmtItmRht,// Ptr to ptr to starting right item struc
      LPAPLCHAR   lpaplChar,     // Ptr to next available format position
      APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
      APLDIM      aplDimNCols,   // # cols to format
@@ -1935,7 +1800,6 @@ LPAPLCHAR CompileArrHetero
     LPAPLCHAR   lpwszOut;       // Ptr to output buffer
     LPWCHAR     lpwsz;          // ...
     LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to current FMTROWSTR
-    LPFMTITMSTR lpFmtItmLcl = NULL; // Ptr to current FMTITMSTR
     UINT        immTypeCur,     // Current immediate type
                 immTypeLst;     // Last    ...
 
@@ -1958,22 +1822,6 @@ LPAPLCHAR CompileArrHetero
 
         // Skip over the FMTROWSTR to the next available position
         lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
-
-        // Create a new FMTITMSTR
-        lpFmtItmLcl = (LPFMTITMSTR) lpaplChar;
-#ifdef DEBUG
-        lpFmtItmLcl->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-        lpFmtItmLcl->lpFmtItmRht = NULL;
-
-        if (bTopLevel)
-            (*lplpFmtItmRht)->lpFmtItmRht = NULL;       // Ptr to ptr to new right adjacent item
-        else
-            (*lplpFmtItmRht)->lpFmtItmRht = lpFmtItmLcl;// Ptr to ptr to new right adjacent item
-       *lplpFmtItmRht            = lpFmtItmLcl;         // Ptr to new right adjacent item
-
-        // Skip over the FMTITMSTR to the next available position
-        lpaplChar = (LPAPLCHAR) &lpFmtItmLcl[1];
 
         // Note that it doesn't matter what we start off the row
         //   with as the last immediate type (immTypeLst) because
@@ -2020,24 +1868,8 @@ LPAPLCHAR CompileArrHetero
                 lpFmtHeader->lpFmtRowLst = lpFmtRowLcl;
 
                 // Skip over the FMTROWSTR to the next available position
-                lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
-
-                // Create a new FMTITMSTR
-                lpFmtItmLcl = (LPFMTITMSTR) lpaplChar;
-#ifdef DEBUG
-                lpFmtItmLcl->Sig.nature  = FMTITMSTR_SIGNATURE;
-#endif
-                lpFmtItmLcl->lpFmtItmRht = NULL;
-
-                if (bTopLevel)
-                    (*lplpFmtItmRht)->lpFmtItmRht = NULL;       // Ptr to ptr to new right adjacent item
-                else
-                    (*lplpFmtItmRht)->lpFmtItmRht = lpFmtItmLcl;// Ptr to ptr to new right adjacent item
-               *lplpFmtItmRht            = lpFmtItmLcl;         // Ptr to new right adjacent item
-
-                // Skip over the FMTITMSTR to the next available position
                 lpwszOut =
-                lpaplChar = (LPAPLCHAR) &lpFmtItmLcl[1];
+                lpaplChar = (LPAPLCHAR) &lpFmtRowLcl[1];
 
                 // Mark as matrix result
                 lpFmtHeader->uMatRes = TRUE;
@@ -2126,8 +1958,7 @@ LPAPLCHAR CompileArrHetero
                                          lpMemDim,          // Ptr to item dimensions
                                          aplRank,           // Item rank
                                          aplDimRow,         // Item row #
-                                         lpFmtColStr,       // Ptr to item FMTCOLSTR
-                                         lplpFmtItmRht);    // Ptr to ptr to right item struc
+                                         lpFmtColStr);      // Ptr to item FMTCOLSTR
     } // End FOR
 
     // Mark as last row struc
@@ -2147,7 +1978,6 @@ LPAPLCHAR CompileArrNested
     (LPAPLNESTED lpMem,         // Ptr to data to format
      LPFMTHEADER lpFmtHeader,   // Ptr to parent FMTHEADER
      LPFMTCOLSTR lpFmtColStr,   // Ptr to vector of aplDimNCols FMTCOLSTRs
-     LPFMTITMSTR *lplpFmtItmRht,// Ptr to ptr to starting right item struc
      LPAPLCHAR   lpaplChar,     // Ptr to next available format position
      APLDIM      aplDimNRows,   // # rows to format (actually it's x/ all but last dim)
      APLDIM      aplDimNCols,   // # cols to format
@@ -2193,7 +2023,6 @@ LPAPLCHAR CompileArrNested
                                          lpFmtHeader,               // The parent FMTHEADER
                                          lpFmtRowLcl,               // This row's FMTROWSTR
                                         &lpFmtColStr[aplDimCol],    // This col's FMTCOLSTR
-                                         lplpFmtItmRht,             // Ptr to ptr to starting right item struc
                                          lpaplChar);                // Ptr to next available position
                     break;
 
@@ -2203,7 +2032,6 @@ LPAPLCHAR CompileArrNested
                                          lpFmtHeader,               // The parent FMTHEADER
                                          lpFmtRowLcl,               // This row's FMTROWSTR
                                         &lpFmtColStr[aplDimCol],    // This col's FMTCOLSTR
-                                         lplpFmtItmRht,             // Ptr to ptr to starting right item struc
                                          lpaplChar);                // Ptr to next available position
                     break;
 
@@ -2228,8 +2056,7 @@ LPAPLCHAR CompileArrNested
                                          lpMemDim,          // Ptr to item dimensions
                                          aplRank,           // Item rank
                                          aplDimRow,         // Item row #
-                                         lpFmtColStr,       // Ptr to item FMTCOLSTR
-                                         lplpFmtItmRht);    // Ptr to ptr to right item struc
+                                         lpFmtColStr);      // Ptr to item FMTCOLSTR
     } // End FOR
 
     // Mark as last row struc
@@ -2250,7 +2077,6 @@ LPAPLCHAR CompileArrNestedCon
      LPFMTHEADER lpFmtHeader,   // The parent FMTHEADER
      LPFMTROWSTR lpFmtRowLcl,   // This row's FMTROWSTR
      LPFMTCOLSTR lpFmtColStr,   // This col's FMTCOLSTR
-     LPFMTITMSTR *lplpFmtItmRht,// Ptr to ptr to right adjacent item
      LPAPLCHAR   lpaplChar)     // Ptr to next available position
 
 {
@@ -2309,7 +2135,6 @@ LPAPLCHAR CompileArrNestedCon
             CompileArrBool    (&(*lpMem)->stData.stBoolean,     // Ptr to right arg memory
                                 lpFmtHeader,                    // Ptr to parent header
                                 lpFmtColStr,                    // Ptr to vector of ColStrs
-                                lplpFmtItmRht,                  // Ptr to ptr to starting right item struc
                                 lpaplChar,                      // Ptr to compiled output
                                 1,                              // # rows
                                 1,                              // # cols
@@ -2324,7 +2149,6 @@ LPAPLCHAR CompileArrNestedCon
             CompileArrInteger (&(*lpMem)->stData.stInteger,     // Ptr to right arg memory
                                 lpFmtHeader,                    // Ptr to parent header
                                 lpFmtColStr,                    // Ptr to vector of ColStrs
-                                lplpFmtItmRht,                  // Ptr to ptr to starting right item struc
                                 lpaplChar,                      // Ptr to compiled output
                                 1,                              // # rows
                                 1,                              // # cols
@@ -2339,7 +2163,6 @@ LPAPLCHAR CompileArrNestedCon
             CompileArrFloat   (&(*lpMem)->stData.stFloat,       // Ptr to right arg memory
                                 lpFmtHeader,                    // Ptr to parent header
                                 lpFmtColStr,                    // Ptr to vector of ColStrs
-                                lplpFmtItmRht,                  // Ptr to ptr to starting right item struc
                                 lpaplChar,                      // Ptr to compiled output
                                 1,                              // # rows
                                 1,                              // # cols
@@ -2354,7 +2177,6 @@ LPAPLCHAR CompileArrNestedCon
             CompileArrChar    (&(*lpMem)->stData.stChar,        // Ptr to right arg memory
                                 lpFmtHeader,                    // Ptr to parent header
                                 lpFmtColStr,                    // Ptr to vector of ColStrs
-                                lplpFmtItmRht,                  // Ptr to ptr to starting right item struc
                                 lpaplChar,                      // Ptr to compiled output
                                 1,                              // # rows
                                 1,                              // # cols
@@ -2386,7 +2208,6 @@ LPAPLCHAR CompileArrNestedGlb
      LPFMTHEADER lpFmtHeader,   // The parent FMTHEADER
      LPFMTROWSTR lpFmtRowStr,   // This row's FMTROWSTR
      LPFMTCOLSTR lpFmtColStr,   // This col's FMTCOLSTR
-     LPFMTITMSTR *lplpFmtItmRht,// Ptr to ptr to right adjacent item
      LPAPLCHAR   lpaplChar)     // Ptr to next available position
 
 {
@@ -2498,7 +2319,6 @@ LPAPLCHAR CompileArrNestedGlb
                                              : (LPAPLBOOL)   lpMem,     // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                               lplpFmtItmRht,                           // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -2514,7 +2334,6 @@ LPAPLCHAR CompileArrNestedGlb
                                              : (LPAPLINT)    lpMem,     // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                               lplpFmtItmRht,                           // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -2530,7 +2349,6 @@ LPAPLCHAR CompileArrNestedGlb
                                              : (LPAPLFLOAT)  lpMem,     // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                               lplpFmtItmRht,                           // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -2546,7 +2364,6 @@ LPAPLCHAR CompileArrNestedGlb
                                              : (LPAPLCHAR)  lpMem,      // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                               lplpFmtItmRht,                           // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -2561,7 +2378,6 @@ LPAPLCHAR CompileArrNestedGlb
             CompileArrAPA     ((LPAPLAPA)    lpMem,                     // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                               lplpFmtItmRht,                           // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -2576,7 +2392,6 @@ LPAPLCHAR CompileArrNestedGlb
             CompileArrHetero  ((LPAPLHETERO) lpMem,                     // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                               lplpFmtItmRht,                           // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -2591,7 +2406,6 @@ LPAPLCHAR CompileArrNestedGlb
             CompileArrNested  ((LPAPLNESTED) lpMem,                     // Ptr to right arg memory
                                lpFmtHeader,                             // Ptr to parent header
                                lpFmtColStr,                             // Ptr to vector of ColStrs
-                               lplpFmtItmRht,                           // Ptr to ptr to starting right item struc
                                lpaplChar,                               // Ptr to compiled output
                                aplDimNRows,                             // # rows
                                aplDimNCols,                             // # cols
@@ -2710,8 +2524,7 @@ LPAPLCHAR AppendBlankRows
      LPAPLDIM    lpMemDim,              // Ptr to item dimensions
      APLRANK     aplRank,               // Item rank
      APLDIM      aplDimRow,             // Item row #
-     LPFMTCOLSTR lpFmtColStr,           // Ptr to item FMTCOLSTR
-     LPFMTITMSTR *lplpFmtItmRht)        // Ptr to ptr to right item struc
+     LPFMTCOLSTR lpFmtColStr)           // Ptr to item FMTCOLSTR
 
 {
     APLDIM      aplDimAcc,

@@ -56,18 +56,6 @@ typedef struct tagFMTROWSTR
                                         // 14:  Length
 } FMTROWSTR, *LPFMTROWSTR;
 
-typedef struct tagFMTITMSTR
-{
-#ifdef DEBUG
-#define FMTITMSTR_SIGNATURE 'IIII'      // 49494949
-    HEADER_SIGNATURE Sig;               // 00:  FMTITMSTR signature
-#endif
-    struct tagFMTITMSTR *lpFmtItmRht;   // 04:  Ptr to right adjacent item
-                                        // 08:  Length
-} FMTITMSTR, *LPFMTITMSTR;
-
-
-
 ////typedef enum tagFMT_TYPES
 ////{
 ////    FMTTYPE_INT = 0,                    // Integer format, e.g. -1234

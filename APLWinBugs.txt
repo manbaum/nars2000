@@ -34,3 +34,28 @@ but instead returns
 yields an empty character vector!
 
 
+4.  Error instead of result
+
+'abc'[0.5] 1 2 3
+
+should yield a heterogeneous array, but instead signals a DOMAIN ERROR
+
+
+5.  Incorrect Display
+
+'abc' tclf 'ef'
+
+displays as
+
+ abc
+      ef
+
+instead of
+
+ abc    ef
+
+followed by a blank row
+
+6.
+
+

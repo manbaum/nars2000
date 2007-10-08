@@ -14,15 +14,16 @@ typedef struct tagFMTHEADER
     struct tagFMTROWSTR *lpFmtRow1st;   // 10:  Ptr to 1st child FMTROWSTR
     struct tagFMTROWSTR *lpFmtRowLst;   // 14:  Ptr to last child FMTROWSTR
     struct tagFMTCOLSTR *lpFmtCol1st;   // 18:  Ptr to 1st child FMTCOLSTR
-    UINT        uRows,                  // 1C:  # (FMTROWSTRs, DATAs) to follow
-                uCols,                  // 20:  # FMTCOLSTRs to follow
+    UINT        uActRows,               // 1C:  # FMTROWSTRs to follow
+                uActCols,               // 20:  # FMTCOLSTRs to follow
                 uFmtRows,               // 24:  # formatted rows in this block (+/FMTROWSTR.uFmtRows)
-                uFmtInts,               // 28:  ...         ints ...           (+/FMTCOLSTR.uInts)
-                uFmtFrcs;               // 2C:  ...         frcs ...           (+/FMTCOLSTR.uFrcs)
-    UINT        uDepth:30,              // 30:  3FFFFFFF:  Depth of this struct (0 = top)
-                uFmtTrBl:1,             //      40000000:  TRUE iff trailing blank surrounding this item
+                uFmtLdBl,               // 28:  ...         LdBl ...           (+/FMTCOLSTR.uLdBl)
+                uFmtInts,               // 2C:  ...         ints ...           (+/FMTCOLSTR.uInts)
+                uFmtFrcs,               // 30:  ...         frcs ...           (+/FMTCOLSTR.uFrcs)
+                uFmtTrBl;               // 34:  ...         TrBl ...           (+/FMTCOLSTR.uTrBl)
+    UINT        uDepth:31,              // 38:  7FFFFFFF:  Depth of this struct (0 = top)
                 uMatRes:1;              //      80000000:  TRUE iff there is a rank > 1 item contained in this item
-                                        // 34:  Length
+                                        // 3C:  Length
 } FMTHEADER, *LPFMTHEADER;
 
 typedef struct tagFMTCOLSTR
@@ -31,15 +32,14 @@ typedef struct tagFMTCOLSTR
 #define FMTCOLSTR_SIGNATURE 'CCCC'      // 43434343
     HEADER_SIGNATURE Sig;               // 00:  FMTCOLSTR signature
 #endif
-////UINT        uFmtType;               //      Format type (see FMT_TYPES)
-    UINT        uLdBl:16,               // 04:  0000FFFF:  # leading blanks
-                uTrBl:16;               //      FFFF0000:  # trailing blanks
-    UINT        uInts,                  // 08:  # Integer digits in Boolean/Integer/APA/Float column,
+    UINT        uLdBl,                  // 04:  # leading blanks
+                uInts,                  // 08:  # Integer digits in Boolean/Integer/APA/Float column,
                                         //      or # chars in Char column
                                         //      including sign
-                uFrcs;                  // 0C:  # Fractional digits in Float column
+                uFrcs,                  // 0C:  # Fractional digits in Float column
                                         //      including decimal point
-                                        // 10:  Length
+                uTrBl;                  // 10:  # trailing blanks
+                                        // 14:  Length
 } FMTCOLSTR, *LPFMTCOLSTR;
 
 typedef struct tagFMTROWSTR
@@ -51,8 +51,8 @@ typedef struct tagFMTROWSTR
 #endif
     UINT        uFmtRows:31,            // 08:  7FFFFFFF:  # formatted rows in this row
                 uBlank:1;               //      80000000:  TRUE iff this row is blank
-    struct tagFMTROWSTR *lpFmtRowNxt;   // 0C:  Ptr to next sibling FMTROWSTR
-    struct tagFMTROWSTR *lpFmtRowRht;   // 10:  Ptr to right adjacent row
+    UINT        uColOff;                // 0C:  Column offset of this row
+    struct tagFMTROWSTR *lpFmtRowNxt;   // 10:  Ptr to next sibling FMTROWSTR
                                         // 14:  Length
 } FMTROWSTR, *LPFMTROWSTR;
 
@@ -61,14 +61,12 @@ typedef struct tagFMTITMSTR
 #ifdef DEBUG
 #define FMTITMSTR_SIGNATURE 'IIII'      // 49494949
     HEADER_SIGNATURE Sig;               // 00:  FMTITMSTR signature
-    FMTCOLSTR   *lpFmtColUp;            // 04:  Ptr to parent FMTCOLSTR
 #endif
-    UINT        uFmtRows:31,            // 08:  7FFFFFFF:  # formatted rows in this row
-                uBlank:1;               //      80000000:  TRUE iff this row is blank
-    struct tagFMTROWSTR *lpFmtRowNxt;   // 0C:  Ptr to next sibling FMTROWSTR
-    struct tagFMTITMSTR *lpFmtItmRht;   // 10:  Ptr to right adjacent item
-                                        // 14:  Length
+    struct tagFMTITMSTR *lpFmtItmRht;   // 04:  Ptr to right adjacent item
+                                        // 08:  Length
 } FMTITMSTR, *LPFMTITMSTR;
+
+
 
 ////typedef enum tagFMT_TYPES
 ////{

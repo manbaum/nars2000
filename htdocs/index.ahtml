@@ -243,7 +243,11 @@
           and scan ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand})
           along contiguous bits</li>
         <li>Right double click on an editable name brings up the function editor on that name</li>
-      </ul>
+        <li>Control chars (<span class="APL">{quad}TCBEL</span>, <span class="APL">{quad}TCBS</span>,
+          <span class="APL">{quad}TCDEL</span>, <span class="APL">{quad}TCESC</span>,
+          <span class="APL">{quad}TCFF</span>, <span class="APL">{quad}TCHT</span>,
+          <span class="APL">{quad}TCLF</span>, <span class="APL">{quad}TCNL</span>, and
+          <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output</ul>
 
       <h3>Miscellaneous Wish List</h3>
       <ul>
@@ -408,6 +412,11 @@
           and <span class="APL">{quad}DM</span>)</li>
         <li>User-defined function/operator prototype entry point
           (<span class="APL">{quad}PROTOTYPE:</span>)</li>
+        <li>Control chars (<span class="APL">{quad}TCBEL</span>, <span class="APL">{quad}TCBS</span>,
+          <span class="APL">{quad}TCDEL</span>, <span class="APL">{quad}TCESC</span>,
+          <span class="APL">{quad}TCFF</span>, <span class="APL">{quad}TCHT</span>,
+          <span class="APL">{quad}TCLF</span>, <span class="APL">{quad}TCNL</span>, and
+          <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output</ul>
       </ul>
 
       <h3>Session Manager</h3>

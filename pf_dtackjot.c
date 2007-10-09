@@ -188,6 +188,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
 ////lpFmtHeader->lpFmtRow1st =                      // Filled in below
 ////lpFmtHeader->lpFmtRowLst =                      // ...
 ////lpFmtHeader->lpFmtCol1st =                      // ...
+    lpFmtHeader->uRealRows   = (UINT) aplDimNRows;  // # real rows from dimensions
 ////lpFmtHeader->uActRows    = 0;                   // Already zero from ZeroMemory (initial value)
     lpFmtHeader->uActCols    = (UINT) aplDimNCols;
 ////lpFmtHeader->uFmtRows    = 0;                   // Already zero from ZeroMemory (initial value)
@@ -280,6 +281,20 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                                FALSE);                                  // TRUE iff nested
             break;
 
+        case ARRAY_APA:
+////////////lpaplChar =
+            CompileArrAPA     ((LPAPLAPA)    lpMemRht,      // Ptr to right arg memory
+                               lpFmtHeader,                 // Ptr to parent header
+                               lpFmtColStr,                 // Ptr to vector of ColStrs
+                               lpaplChar,                   // Ptr to compiled output
+                               aplDimNRows,                 // # rows
+                               aplDimNCols,                 // # cols
+                               aplRankRht,                  // Right arg rank
+                               lpMemDimRht,                 // Ptr to right arg dimensions
+                               TRUE,                        // TRUE iff top level array
+                               FALSE);                      // TRUE iff nested
+            break;
+
         case ARRAY_CHAR:
             // Return the right arg
 
@@ -306,20 +321,6 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                 goto NORMAL_EXIT;
             } // End IF/ELSE
 
-        case ARRAY_APA:
-////////////lpaplChar =
-            CompileArrAPA     ((LPAPLAPA)    lpMemRht,      // Ptr to right arg memory
-                               lpFmtHeader,                 // Ptr to parent header
-                               lpFmtColStr,                 // Ptr to vector of ColStrs
-                               lpaplChar,                   // Ptr to compiled output
-                               aplDimNRows,                 // # rows
-                               aplDimNCols,                 // # cols
-                               aplRankRht,                  // Right arg rank
-                               lpMemDimRht,                 // Ptr to right arg dimensions
-                               TRUE,                        // TRUE iff top level array
-                               FALSE);                      // TRUE iff nested
-            break;
-
         case ARRAY_HETERO:
 ////////////lpaplChar =
             CompileArrHetero  ((LPAPLHETERO) lpMemRht,      // Ptr to right arg memory
@@ -331,7 +332,8 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                                aplRankRht,                  // Right arg rank
                                lpMemDimRht,                 // Ptr to right arg dimensions
                                TRUE,                        // TRUE iff top level array
-                               FALSE);                      // TRUE iff nested
+                               FALSE,                       // TRUE iff nested
+                               FALSE);                      // TRUE iff handle []TCLF specially
             break;
 
         case ARRAY_NESTED:
@@ -472,7 +474,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
                              lpMemDimRht,           // Ptr to this array's dimensions
                              aplTypeRht,            // Storage type of this array
                              TRUE,                  // TRUE iff skip to next row after this item
-                             FALSE,                 // TRUE iff raw output
+                             FALSE,                 // TRUE iff raw (not {thorn}) output
                              TRUE);                 // TRUE iff last line has CR
             break;
 
@@ -552,7 +554,9 @@ LPAPLCHAR FormatArrSimple
 {
     APLDIM      aplDimRow,          // Loop counter
                 aplDimCol,          // Loop counter
-                aplChrNCols;        // # cols for char arrays
+                aplChrNCols,        // # cols for char arrays
+                aplRealNRows,       // # real rows
+                aplRealRow;         // Loop counter
     UINT        uActLen,            // Actual length
                 uLead,              //
                 uCol,               //
@@ -575,12 +579,19 @@ LPAPLCHAR FormatArrSimple
     // Initialize local output string ptr
     lpwszOut = *lplpwszOut;
 
+    // Initialize the # real rows
+    aplRealNRows = lpFmtHeader->uRealRows;
+
     // Format char arrays as one col
     aplChrNCols = (aplType EQ ARRAY_CHAR) ? 1 : aplDimNCols;
 
     // Loop through the formatted rows
-    for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+    for (aplDimRow = aplRealRow = 0;
+         aplDimRow < aplDimNRows;
+         aplDimRow++)
     {
+        BOOL bRealRow;          // TRUE iff this is a real row
+
         // Point to the FMTROWSTR
         lpFmtRowStr = (LPFMTROWSTR) lpaplChar;
 
@@ -589,6 +600,10 @@ LPAPLCHAR FormatArrSimple
 
         // It's a simple array
         Assert (lpFmtRowStr->uFmtRows EQ 1);
+
+        // Accumulate the # real rows so far
+        bRealRow = lpFmtRowStr->bRealRow;
+        aplRealRow += bRealRow;
 
         // Save this row's col offset
         uColOff = lpFmtRowStr->uColOff;
@@ -600,7 +615,7 @@ LPAPLCHAR FormatArrSimple
         lpwszOutStart = lpwszOut;
 
         // Handle non-blank rows
-        if (!lpFmtRowStr->uBlank)
+        if (!lpFmtRowStr->bBlank)
         {
             // Loop through the cols
             for (aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
@@ -734,6 +749,22 @@ LPAPLCHAR FormatArrSimple
         // If this is raw output, output it
         if (bRawOutput)
         {
+            // Handle blank lines between planes
+            if (bRealRow && aplRealRow NE 1)        // Real row and not first row
+            {
+                APLDIM aplDimAcc;
+
+                aplDimAcc = 1;
+                for (uCol = 0; uCol < (aplRank - 1); uCol++)
+                {
+                    aplDimAcc *= lpMemDim[(aplRank - 2) - uCol];
+                    if ((aplRealRow - 1) % aplDimAcc)
+                        break;
+
+                    AppendLine (L"", FALSE, TRUE);
+                } // End FOR
+            } // End IF
+
             // Ensure properly terminated
             *lpwszOut = L'\0';
 
@@ -747,22 +778,6 @@ LPAPLCHAR FormatArrSimple
             uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
             while (uCol--)
                 *lpw++ = L' ';
-
-            // Handle blank lines between planes -- ***FIXME*** -- Shouldn't be calculated on formatted rows
-            if (aplDimRow NE (aplDimNRows - 1))     // Not last row
-            {
-                APLDIM aplDimAcc;
-
-                aplDimAcc = 1;
-                for (uCol = 0; uCol < (aplRank - 1); uCol++)
-                {
-                    aplDimAcc *= lpMemDim[(aplRank - 2) - uCol];
-                    if ((aplDimRow + 1) % aplDimAcc)
-                        break;
-
-                    AppendLine (L"", FALSE, TRUE);
-                } // End FOR
-            } // End IF
         } // End IF
     } // End FOR
 
@@ -818,7 +833,7 @@ LPAPLCHAR FormatArrNested
         lpwszOutStart = lpwszOut;
 
         // Handle non-blank rows
-        if (!lpFmtRowStr->uBlank)
+        if (!lpFmtRowStr->bBlank)
 #undef  lpFmtRowStr
         {
             // Loop through the cols
@@ -1189,9 +1204,10 @@ LPAPLCHAR CompileArrBool
         lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
         lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-        lpFmtRowLcl->uBlank      = FALSE;
-        lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
         lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = TRUE;            // Initialize as a real row
+        lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
+        lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
         lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr
 
         // Link into the row chain
@@ -1277,8 +1293,9 @@ LPAPLCHAR CompileArrInteger
         lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
         lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-        lpFmtRowLcl->uBlank      = FALSE;
         lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = TRUE;            // Initialize as a real row
+        lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
         lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
         lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr
 
@@ -1384,8 +1401,9 @@ LPAPLCHAR CompileArrFloat
         lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
         lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-        lpFmtRowLcl->uBlank      = FALSE;
         lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = TRUE;            // Initialize as a real row
+        lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
         lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
         lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr
 
@@ -1520,8 +1538,9 @@ LPAPLCHAR CompileArrChar
         lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
         lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-        lpFmtRowLcl->uBlank      = FALSE;
         lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = TRUE;            // Initialize as a real row
+        lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
         lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
         lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr
 
@@ -1568,8 +1587,9 @@ LPAPLCHAR CompileArrChar
                 lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
                 lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-                lpFmtRowLcl->uBlank      = FALSE;
                 lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+                lpFmtRowLcl->bRealRow    = FALSE;           // Initialize as not a real row
+                lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
                 lpFmtRowLcl->uColOff     = uCurPos;         // Initialize the col offset
 ////////////////lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr (filled in below)
 
@@ -1704,8 +1724,9 @@ LPAPLCHAR CompileArrAPA
         lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
         lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-        lpFmtRowLcl->uBlank      = FALSE;
         lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = TRUE;            // Initialize as a real row
+        lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
         lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
         lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr
 
@@ -1789,7 +1810,8 @@ LPAPLCHAR CompileArrHetero
      APLRANK     aplRank,       // Rank of data to format
      LPAPLDIM    lpMemDim,      // Ptr to dimension vector
      BOOL        bTopLevel,     // TRUE iff top level array
-     BOOL        bNested)       // TRUE iff nested
+     BOOL        bNested,       // TRUE iff nested
+     BOOL        bTCLF)         // TRUE iff handle []TCLF specially
 
 {
     UINT        uLen,           // Length of integer or fractinoal part
@@ -1812,8 +1834,9 @@ LPAPLCHAR CompileArrHetero
         lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
         lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-        lpFmtRowLcl->uBlank      = FALSE;
         lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = TRUE;            // Initialize as a real row
+        lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
         lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
         lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr
 
@@ -1840,9 +1863,10 @@ LPAPLCHAR CompileArrHetero
             // Save the immediate type
             immTypeCur = (*lpSymEntry)->stFlags.ImmType;
 
-            // Handle []TCLF specially
-            if (immTypeCur EQ IMMTYPE_CHAR
-             && (*lpSymEntry)->stData.stChar EQ TCLF)
+            // If we're to handle []TCLF specially, ...
+            if (bTCLF                                   // Handle specially, and
+             && immTypeCur EQ IMMTYPE_CHAR              //   it's char, and
+             && (*lpSymEntry)->stData.stChar EQ TCLF)   //   it's []TCLF
             {
                 APLDIM uCol;            // Loop counter
 
@@ -1859,8 +1883,9 @@ LPAPLCHAR CompileArrHetero
                 lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
                 lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-                lpFmtRowLcl->uBlank      = FALSE;
                 lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+                lpFmtRowLcl->bRealRow    = FALSE;           // Initialize as not a real row
+                lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
                 lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
 ////////////////lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr (filled in below)
 
@@ -1948,7 +1973,7 @@ LPAPLCHAR CompileArrHetero
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
-        // If this is not at the top level (Depth = 0),
+        // If not at the top level (Depth = 0),
         //   we need to count the interdimensional spacing
         //   as blank rows in the row count
         if (lpFmtHeader->uDepth                 // Not top level, and
@@ -2000,10 +2025,11 @@ LPAPLCHAR CompileArrNested
         lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
         lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-        lpFmtRowLcl->uBlank      = FALSE;
-        lpFmtRowLcl->uFmtRows    = 1;            // Initialize the count
+        lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = TRUE;            // Initialize as a real row
+        lpFmtRowLcl->bBlank      = FALSE;           // Initialize as not all blank
         lpFmtRowLcl->uColOff     = 0;               // Initialize the col offset
-        lpFmtRowLcl->lpFmtRowNxt = NULL;         // Initialize the ptr
+        lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr
 
         // Link into the row chain
         lpFmtHeader->lpFmtRowLst = lpFmtRowLcl;
@@ -2096,7 +2122,8 @@ LPAPLCHAR CompileArrNestedCon
 ////lpFmtHeader->lpFmtRow1st =                      // Filled in below
 ////lpFmtHeader->lpFmtRowLst =                      // ...
 ////lpFmtHeader->lpFmtCol1st =                      // ...
-////lpFmtHeader->uActRows    = 0;                   // Already zero from ZeroMemory (initial value)
+////lpFmtHeader->uRealRows   = 0;                   // Already zero from ZeroMemory (initial value)
+////lpFmtHeader->uActRows    = 0;                   // ...
     lpFmtHeader->uActCols    = (UINT) aplDimNCols;
 ////lpFmtHeader->uFmtRows    = 0;                   // Already zero from ZeroMemory (initial value)
 ////lpFmtHeader->uFmtInts    = 0;                   // ...                           ...
@@ -2266,7 +2293,8 @@ LPAPLCHAR CompileArrNestedGlb
 ////lpFmtHeader->lpFmtRow1st =                      // Filled in below
 ////lpFmtHeader->lpFmtRowLst =                      // ...
 ////lpFmtHeader->lpFmtCol1st =                      // ...
-////lpFmtHeader->uActRows    = 0;                   // Already zero from ZeroMemory (initial value)
+////lpFmtHeader->uRealRows   = 0;                   // Already zero from ZeroMemory (initial value)
+////lpFmtHeader->uActRows    = 0;                   // ...
     lpFmtHeader->uActCols    = (UINT) aplChrNCols;
 ////lpFmtHeader->uFmtRows    = 0;                   // Already zero from ZeroMemory (initial value)
 ////lpFmtHeader->uFmtInts    = 0;                   // ...                           ...
@@ -2398,7 +2426,8 @@ LPAPLCHAR CompileArrNestedGlb
                                aplRank,                                 // Right arg rank
                                lpMemDim,                                // Ptr to right arg dimensions
                                FALSE,                                   // TRUE iff top level array
-                               FALSE);                                  // TRUE iff nested
+                               FALSE,                                   // TRUE iff nested
+                               TRUE);                                   // TRUE iff handle []TCLF specially
             break;
 
         case ARRAY_NESTED:
@@ -2547,8 +2576,9 @@ LPAPLCHAR AppendBlankRows
         lpFmtRowLcl->Sig.nature  = FMTROWSTR_SIGNATURE;
         lpFmtRowLcl->lpFmtColUp  = lpFmtColStr;
 #endif
-        lpFmtRowLcl->uBlank      = TRUE;
         lpFmtRowLcl->uFmtRows    = 1;               // Initialize the count
+        lpFmtRowLcl->bRealRow    = FALSE;           // Initialize as not a real row
+        lpFmtRowLcl->bBlank      = TRUE;            // Initialize as a blank row
 ////////lpFmtRowLcl->lpFmtRowNxt = NULL;            // Initialize the ptr (filled in below)
 
         // Skip over the FMTROWSTR to the next available position

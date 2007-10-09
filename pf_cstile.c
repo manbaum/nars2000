@@ -452,12 +452,11 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // Scalar left arg matches everything
-    if (aplRankLft NE 0)
+    // Scalar or one-element vector left arg matches everything
+    if (!(aplRankLft EQ 0 || (aplRankLft EQ 1 && aplNELMLft EQ 1)))
     {
         // Check for RANK ERROR
-        if (!(aplRankLft EQ 1 && aplNELMLft NE 1 && aplRankRht EQ 1)
-         && (aplRankRht - aplRankLft) NE 1)
+        if ((aplRankRht - aplRankLft) NE 1)
         {
             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                        lptkLftArg);

@@ -1206,7 +1206,6 @@ ArrExpr:
                                                  FreeResult (&$3.tkToken);
                                                  YYERROR;
                                              } // End IF
-
                                              lpplLocalVars->lpYYRes = ExecFunc_EM_YY (&$3.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              lpplLocalVars->lpYYStr = lpplLocalVars->lpYYFcn;

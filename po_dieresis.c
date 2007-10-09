@@ -1084,7 +1084,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     } // End FOR
 
     // Unlock the result global memory in case TypeDemote actually demotes
-    if (lpMemRes)
+    if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

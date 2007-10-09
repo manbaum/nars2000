@@ -169,7 +169,8 @@ void DisplayGlbArr
     LPFMTCOLSTR  lpFmtColStr;       // Ptr to format col struc
     APLUINT      uQuadPP,           // []PP
                  uQuadPW;           // []PW
-    BOOL         bLineCont = FALSE; // TRUE iff this line is a continuation
+    BOOL         bLineCont = FALSE, // TRUE iff this line is a continuation
+                 bRawOut;           // TRUE iff using raw output
     APLUINT      uOutLen;           // Output length for this line
 
 #define DEF_DISPLAY_INITSIZE    (64*1024)
@@ -249,13 +250,14 @@ void DisplayGlbArr
 #ifdef DEBUG
     lpFmtHeader->Sig.nature  = FMTHEADER_SIGNATURE;
 #endif
-////lpFmtHeader->lpFmtRowUp  = NULL;                // Filled in by ZeroMemory
+////lpFmtHeader->lpFmtRowUp  = NULL;                // Already zero from ZeroMemory
 ////lpFmtHeader->lpFmtColUp  = NULL;                // ...
 ////lpFmtHeader->lpFmtRow1st =                      // Filled in below
 ////lpFmtHeader->lpFmtCol1st =                      // ...
+    lpFmtHeader->uRealRows   = (UINT) aplDimNRows;  // # real rows from dimensions
+////lpFmtHeader->uActRows    = 0;                   // Already zero from ZeroMemory (initial value)
     lpFmtHeader->uActCols    = (UINT) aplChrNCols;
-////lpFmtHeader->uActRows    = 0;                   // Filled in by ZeroMemory
-////lpFmtHeader->uFmtRows    = 0;                   // ...
+////lpFmtHeader->uFmtRows    = 0;                   // Already zero from ZeroMemory (initial value)
 ////lpFmtHeader->uFmtInts    = 0;                   // ...
 ////lpFmtHeader->uFmtFrcs    = 0;                   // ...
 ////lpFmtHeader->uFmtTrBl    = 0;                   // ...
@@ -371,7 +373,8 @@ void DisplayGlbArr
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
                                TRUE,                    // TRUE iff top level array
-                               FALSE);                  // TRUE iff nested
+                               FALSE,                   // TRUE iff nested
+                               TRUE);                   // TRUE iff handle []TCLF specially
             break;
 
         case ARRAY_NESTED:
@@ -424,6 +427,9 @@ void DisplayGlbArr
     // Run through the array again processing the
     //   output stream into lpwszFormat
 
+    // Calc when to use raw output
+    bRawOut = (aplType NE ARRAY_CHAR && aplType NE ARRAY_NESTED);
+
     // Split cases based upon the array's storage type
     switch (aplType)
     {
@@ -445,7 +451,7 @@ void DisplayGlbArr
                              lpMemDim,              // Ptr to this array's dimensions
                              aplType,               // Storage type of this array
                              TRUE,                  // TRUE iff skip to next row after this item
-                             aplType NE ARRAY_CHAR, // TRUE iff raw (not {thorn}) output
+                             bRawOut,               // TRUE iff raw (not {thorn}) output
                              bEndingCR);            // TRUE iff last line has CR
             break;
 
@@ -461,7 +467,7 @@ void DisplayGlbArr
                              aplRank,               // Rank of this array
                              lpMemDim,              // Ptr to this array's dimensions
                              aplLastDim,            // Length of last dim in result (NULL for !bRawOutput)
-                             FALSE,                 // TRUE iff raw (not {thorn}) output
+                             bRawOut,               // TRUE iff raw (not {thorn}) output
                              bEndingCR);            // TRUE iff last line has CR
             break;
 
@@ -469,25 +475,58 @@ void DisplayGlbArr
             break;
     } // End SWITCH
 
-    // Raw output is done inside FormatArrSimple for all
-    //   but ARRAY_CHAR so we need to do it now for
-    //   that type and ARRAY_NESTED.
-    if (aplType EQ ARRAY_CHAR
-     || aplType EQ ARRAY_NESTED)
+    // If we didn't use raw output in the
+    //   FormatArrxxx routines, do it now
+    if (!bRawOut)
     {
-        APLDIM aplDimRow;           // Loop counter
-        UINT   uFmtRow;             // Loop counter
+        APLDIM      aplDimRow;          // Loop counter
+        UINT        uFmtRow;            // Loop counter
+        APLDIM      aplRealNRows,       // # real rows
+                    aplRealRow;         // Loop counter
+        BOOL        bRealRow;           // TRUE iff this is a real row
+        LPFMTROWSTR lpFmtRowStr;        // Ptr to next FMTROWSTR
+
+        // Initialize the # real rows
+        aplRealNRows = lpFmtHeader->uRealRows;
 
         uOutLen = uQuadPW;          // Initial output length
 
         // Loop through the formatted rows
-        for (lpwsz = lpwszFormat, uFmtRow = 0, aplDimRow = 0;
-             uFmtRow < lpFmtHeader->uFmtRows;   // ***FIXME*** -- Formatted or Actual??
-             uFmtRow++, aplDimRow++, lpwsz += aplLastDim)
+        for (lpwsz = lpwszFormat,
+               uFmtRow = 0,
+               aplDimRow = 0,
+               aplRealRow = 0,
+               lpFmtRowStr = lpFmtHeader->lpFmtRow1st;
+             uFmtRow < lpFmtHeader->uFmtRows;
+             uFmtRow++,
+               aplDimRow++,
+               lpwsz += aplLastDim,
+               lpFmtRowStr = lpFmtRowStr->lpFmtRowNxt)
         {
             WCHAR   wch;                // The replaced WCHAR
             APLDIM  aplDimTmp;          // Remaining line length to output
             APLUINT uOffset;            // Offset in line to start of display
+
+            // Accumulate the # real rows so far
+            bRealRow = lpFmtRowStr->bRealRow;
+            aplRealRow += bRealRow;
+
+            // Handle blank lines between planes
+            if (bRealRow && aplRealRow NE 1)        // Real row and not first row
+            {
+                APLDIM  aplDimAcc;
+                APLRANK uRank;
+
+                aplDimAcc = 1;
+                for (uRank = 0; uRank < (aplRank - 1); uRank++)
+                {
+                    aplDimAcc *= lpMemDim[(aplRank - 2) - uRank];
+                    if ((aplRealRow - 1) % aplDimAcc)
+                        break;
+
+                    AppendLine (L"", FALSE, TRUE);
+                } // End FOR
+            } // End IF
 
             // ***FIXME*** -- this routine may split a number in half
             //                because it doesn't know the difference
@@ -523,23 +562,6 @@ void DisplayGlbArr
             lpwsz[uOffset + aplDimTmp] = L'\0';     // Terminate the line
             AppendLine (lpwsz + uOffset, bLineCont, TRUE);// Display the line
             lpwsz[uOffset + aplDimTmp] = wch;       // Restore the ending char
-
-            // Handle blank lines between planes
-            if (aplDimRow NE (aplDimNRows - 1))     // Not last row
-            {
-                APLDIM  aplDimAcc;
-                APLRANK uRank;
-
-                aplDimAcc = 1;
-                for (uRank = 0; uRank < (aplRank - 1); uRank++)
-                {
-                    aplDimAcc *= lpMemDim[(aplRank - 2) - uRank];
-                    if ((aplDimRow + 1) % aplDimAcc)
-                        break;
-
-                    AppendLine (L"", FALSE, TRUE);
-                } // End FOR
-            } // End IF
         } // End FOR
     } // End IF
 
@@ -619,8 +641,9 @@ LPAPLCHAR FormatImmed
 
                     break;
 
-                case TCLF:      // LF       -- handled by caller
-                    DbgStop ();             // We should never get here
+                case TCLF:      // LF       // Handled during raw output
+                    *lpaplChar++ = wc;      // Append it
+                    *lpaplChar++ = L' ';    // Append a blank to be deleted
 
                     break;
 

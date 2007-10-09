@@ -181,6 +181,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
      LPTOKEN       lptkFunc)        // Ptr to function token
 
 {
+    APLSTYPE     aplTypeRes;        // Result storage type
     APLRANK      aplRankRes;        // Result rank
     HGLOBAL      hGlbRes;           // Result global memory handle
     LPVOID       lpMemRes;          // Ptr to result global memory
@@ -229,12 +230,14 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     bTableRes = (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
     aplRankRes = 1 + bTableRes;
 
+    // Set the result storage type
+    aplTypeRes = TranslateImmTypeToArrayType (immType);
+
     //***************************************************************
     // Calculate space needed for the result
     //***************************************************************
-    ByteRes = CalcArraySize (TranslateImmTypeToArrayType (immType),
-                             1,
-                             aplRankRes);
+    ByteRes = CalcArraySize (aplTypeRes, 1, aplRankRes);
+
     //***************************************************************
     // Now we can allocate the storage for the result
     // N.B.:  Conversion from APLUINT to UINT.
@@ -254,7 +257,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = TranslateImmTypeToArrayType (immType);
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->Perm       = 0;               // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -271,7 +274,32 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
     // Copy the immediate value to the result
-    *((LPAPLLONGEST) lpMemRes) = aplLongest;
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_BOOL:
+            *((LPAPLBOOL)  lpMemRes) = (APLBOOL)  aplLongest;
+
+            break;
+
+        case ARRAY_INT:
+            *((LPAPLINT)   lpMemRes) = (APLINT)   aplLongest;
+
+            break;
+
+        case ARRAY_FLOAT:
+            *((LPAPLFLOAT) lpMemRes) = *(LPAPLFLOAT) &aplLongest;
+
+            break;
+
+        case ARRAY_CHAR:
+            *((LPAPLCHAR)  lpMemRes) = (APLCHAR)  aplLongest;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

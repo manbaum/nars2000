@@ -14,16 +14,17 @@ typedef struct tagFMTHEADER
     struct tagFMTROWSTR *lpFmtRow1st;   // 10:  Ptr to 1st child FMTROWSTR
     struct tagFMTROWSTR *lpFmtRowLst;   // 14:  Ptr to last child FMTROWSTR
     struct tagFMTCOLSTR *lpFmtCol1st;   // 18:  Ptr to 1st child FMTCOLSTR
-    UINT        uActRows,               // 1C:  # FMTROWSTRs to follow
-                uActCols,               // 20:  # FMTCOLSTRs to follow
-                uFmtRows,               // 24:  # formatted rows in this block (+/FMTROWSTR.uFmtRows)
-                uFmtLdBl,               // 28:  ...         LdBl ...           (+/FMTCOLSTR.uLdBl)
-                uFmtInts,               // 2C:  ...         ints ...           (+/FMTCOLSTR.uInts)
-                uFmtFrcs,               // 30:  ...         frcs ...           (+/FMTCOLSTR.uFrcs)
-                uFmtTrBl;               // 34:  ...         TrBl ...           (+/FMTCOLSTR.uTrBl)
-    UINT        uDepth:31,              // 38:  7FFFFFFF:  Depth of this struct (0 = top)
+    UINT        uRealRows,              // 1C:  # rows in the array's dimensions (top level only)
+                uActRows,               // 20:  # FMTROWSTRs to follow
+                uActCols,               // 24:  # FMTCOLSTRs to follow
+                uFmtRows,               // 28:  # formatted rows in this block (+/FMTROWSTR.uFmtRows)
+                uFmtLdBl,               // 2C:  ...         LdBl ...           (+/FMTCOLSTR.uLdBl)
+                uFmtInts,               // 30:  ...         ints ...           (+/FMTCOLSTR.uInts)
+                uFmtFrcs,               // 34:  ...         frcs ...           (+/FMTCOLSTR.uFrcs)
+                uFmtTrBl;               // 38:  ...         TrBl ...           (+/FMTCOLSTR.uTrBl)
+    UINT        uDepth:31,              // 3C:  7FFFFFFF:  Depth of this struct (0 = top)
                 uMatRes:1;              //      80000000:  TRUE iff there is a rank > 1 item contained in this item
-                                        // 3C:  Length
+                                        // 40:  Length
 } FMTHEADER, *LPFMTHEADER;
 
 typedef struct tagFMTCOLSTR
@@ -49,8 +50,9 @@ typedef struct tagFMTROWSTR
     HEADER_SIGNATURE Sig;               // 00:  FMTROWSTR signature
     FMTCOLSTR   *lpFmtColUp;            // 04:  Ptr to parent FMTCOLSTR
 #endif
-    UINT        uFmtRows:31,            // 08:  7FFFFFFF:  # formatted rows in this row
-                uBlank:1;               //      80000000:  TRUE iff this row is blank
+    UINT        uFmtRows:30,            // 08:  3FFFFFFF:  # formatted rows in this row
+                bRealRow:1,             //      40000000:  TRUE iff a real row (not from []TCLF)
+                bBlank:1;               //      80000000:  TRUE iff this row is blank
     UINT        uColOff;                // 0C:  Column offset of this row
     struct tagFMTROWSTR *lpFmtRowNxt;   // 10:  Ptr to next sibling FMTROWSTR
                                         // 14:  Length

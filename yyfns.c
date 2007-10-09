@@ -59,7 +59,7 @@ LPPL_YYSTYPE YYAlloc
         lpYYRes = &lpMemPTD->lpYYRes[u];
 
 #ifdef DEBUG
-        if (YYIndex EQ 0x168F)
+        if (YYIndex EQ 0x0DAF)
             DbgBrk ();
 #endif
         // Zero the memory
@@ -84,7 +84,7 @@ RESTART_EXCEPTION_YYALLOC:
     __try
     {
 #ifdef DEBUG
-        if (YYIndex EQ 0x168F)
+        if (YYIndex EQ 0x0DAF)
             DbgBrk ();
 #endif
         // Zero the memory
@@ -231,7 +231,6 @@ void YYFree
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
-////lpYYRes->YYInuse = 0;       // Free it
     ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 } // End YYFree
 

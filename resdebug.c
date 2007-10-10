@@ -647,8 +647,17 @@ LPVOID _MyGlobalLock
 
     if (!lpVoid)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGlobalLock");
         GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_GLOBAL, hMem, uLine);
 

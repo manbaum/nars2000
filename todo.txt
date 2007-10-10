@@ -175,7 +175,8 @@ DONE:  General
 * Right double click on the name of a user-defined function/operator
   or available name opens up the function editor
 * Axis error if defined function given an axis but not accepting one
-*
+* Control chars ([]TCBEL, []TCBS, []TCDEL, []TCESC, []TCFF, []TCHT, []TCLF, []TCNL, and []TCNUL)
+  display correctly in simple and nested output.
 
 
 DONE:  Session Manager

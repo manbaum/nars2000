@@ -8,7 +8,6 @@ ENAME = NARS2000                # Executable name
 PROJPATH = $(SRCROOT)$(NAME)\trunk\  # Project path
 BIN = $(PROJPATH)binaries\      # Binaries directory
 DEBUG=0
-RESDEBUG=1
 A=$(PROJPATH)Images\            # Images & artwork
 BC=$(BIN)COM\                   # Directory for common binaries
 WS=WineHQ\                      # Wine source
@@ -25,8 +24,10 @@ WIN=32
 WDEF=_WIN$(WIN)
 
 !if "$(DEBUG)" == "1"
+RESDEBUG=1
 CFLAGS_DEBUG=/Zd /D "DEBUG" /D "RESDEBUG=$(RESDEBUG)"
 !else
+RESDEBUG=0
 CFLAGS_DEBUG=/D "RESDEBUG=$(RESDEBUG)" /Ox
 !endif
 
@@ -176,6 +177,7 @@ $(O)pf_dtackjot.DEP     \
 $(O)pf_epsilon.DEP      \
 $(O)pf_equal.DEP        \
 $(O)pf_equalund.DEP     \
+$(O)pf_index.DEP        \
 $(O)pf_iota.DEP         \
 $(O)pf_lcaret.DEP       \
 $(O)pf_lcaretund.DEP    \
@@ -390,6 +392,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)pf_equalund.DEP)
 !       include $(O)pf_equalund.DEP
+!endif
+!if exist ($(O)pf_index.DEP)
+!       include $(O)pf_index.DEP
 !endif
 !if exist ($(O)pf_iota.DEP)
 !       include $(O)pf_iota.DEP
@@ -651,6 +656,7 @@ $(O)pf_dtackjot.PRO     \
 $(O)pf_epsilon.PRO      \
 $(O)pf_equal.PRO        \
 $(O)pf_equalund.PRO     \
+$(O)pf_index.PRO        \
 $(O)pf_iota.PRO         \
 $(O)pf_lcaret.PRO       \
 $(O)pf_lcaretund.PRO    \
@@ -803,6 +809,7 @@ $(O)pf_dtackjot.OBJ:    $(@B).C         $(PF_DTACKJOT_DEP)
 $(O)pf_epsilon.OBJ:     $(@B).C         $(PF_EPSILON_DEP)
 $(O)pf_equal.OBJ:       $(@B).C         $(PF_EQUAL_DEP)
 $(O)pf_equalund.OBJ:    $(@B).C         $(PF_EQUALUND_DEP)
+$(O)pf_index.OBJ:       $(@B).C         $(PF_INDEX_DEP)
 $(O)pf_iota.OBJ:        $(@B).C         $(PF_IOTA_DEP)
 $(O)pf_lcaret.OBJ:      $(@B).C         $(PF_LCARET_DEP)
 $(O)pf_lcaretund.OBJ:   $(@B).C         $(PF_LCARETUND_DEP)
@@ -934,6 +941,7 @@ OBJS=                       \
      $(O)pf_epsilon.OBJ     \
      $(O)pf_equal.OBJ       \
      $(O)pf_equalund.OBJ    \
+     $(O)pf_index.OBJ       \
      $(O)pf_iota.OBJ        \
      $(O)pf_lcaret.OBJ      \
      $(O)pf_lcaretund.OBJ   \

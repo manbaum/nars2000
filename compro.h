@@ -44,6 +44,7 @@
 #include "pf_epsilon.pro"
 #include "pf_equal.pro"
 #include "pf_equalund.pro"
+#include "pf_index.pro"
 #include "pf_iota.pro"
 #include "pf_lcaret.pro"
 #include "pf_lcaretund.pro"

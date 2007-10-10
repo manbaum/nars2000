@@ -154,9 +154,6 @@
             <li>Axis operator is allowed on user-defined functions/operators (e.g.,
               <span class="APL">foo[2 3] R</span> by specifying it in the
               function header, as in <span class="APL">{del} Z{is}foo[X] R</span>)</li>
-            <li>User-defined operators (e.g., <span class="APL">{del}
-              Z{is}L (LO OP1[X]) R</span> or <span class="APL">{del}
-              Z{is}L (LO OP2[X] RO) R</span>)</li>
             <li>Strand left and right arguments and result to user-defined
               functions/operators along with optional left argument (e.g., <span class="APL">{del}
               Z{is}FOO (R1 R2 R3 R4)</span> or, more fully, <span class="APL">{del}

@@ -1842,12 +1842,11 @@ LPPL_YYSTYPE InitList1_YY
 //***************************************************************************
 
 LPPL_YYSTYPE PushList_YY
-    (LPPL_YYSTYPE lpYYStrand,        // Ptr to base of strand
-     LPPL_YYSTYPE lpYYArg)           // Ptr to incoming token
+    (LPPL_YYSTYPE lpYYStrand,       // Ptr to base of strand
+     LPPL_YYSTYPE lpYYArg)          // Ptr to incoming token (may be NULL)
 
 {
     LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
-    PL_YYSTYPE    YYTmp;
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -1862,10 +1861,22 @@ LPPL_YYSTYPE PushList_YY
     // If the token is NULL, push an empty token
     if (lpYYArg EQ NULL)
     {
-        YYTmp.tkToken.tkFlags.TknType  = TKT_LISTSEP;
-        YYTmp.tkToken.tkData.tkLongest = NEG1U;         // Debug value
-        YYTmp.tkToken.tkCharIndex      = NEG1U;
-        YYTmp.lpYYStrandBase           = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
+        PL_YYSTYPE YYTmp = {0};     // Temporary YYSTYPE
+
+        YYTmp.tkToken.tkFlags.TknType   = TKT_LISTSEP;
+////////YYTmp.tkToken.tkFlags.ImmType   = 0;     // Already zero from = {0}
+////////YYTmp.tkToken.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+        YYTmp.tkToken.tkData.tkLongest  = NEG1U;         // Debug value
+        YYTmp.tkToken.tkCharIndex       = NEG1U;
+////////YYTmp.TknCount                  = 0;    // Already zero from = {0}
+////////YYTmp.FcnCount                  = 0;    // Already zero from = {0}
+////////YYTmp.YYInuse                   = 0;    // Already zero from = {0}
+////////YYTmp.Indirect                  = 0;    // Already zero from = {0}
+////////YYTmp.Avail                     = 0;    // Already zero from = {0}
+////////YYTmp.YYIndex                   = 0;    // Already zero from = {0}
+////////YYTmp.YYFlag                    = 0;    // Already zero from = {0}
+////////YYTmp.lpYYFcn                   = NULL; // Already zero from = {0]
+        YYTmp.lpYYStrandBase            = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
         lpYYArg = &YYTmp;
     } // End IF
 
@@ -1992,7 +2003,13 @@ LPPL_YYSTYPE MakeList_EM_YY
             case TKT_VARARRAY:  // 1('ab')
             case TKT_STRING:    // 1 'ab'
                 // Copy the nested entry to the result
-                *((LPAPLLIST) lpMemLst)++ = MakeGlbTypeGlb (lpYYToken->tkToken.tkData.tkGlbData);
+                *((LPAPLLIST) lpMemLst)++ = CopySymGlbDirGlb (lpYYToken->tkToken.tkData.tkGlbData);
+
+                break;
+
+            case TKT_LISTSEP:
+                // Use this entry as a placeholder for an elided index
+                *((LPAPLLIST) lpMemLst)++ = PTR_REUSED;
 
                 break;
 

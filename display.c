@@ -418,6 +418,10 @@ void DisplayGlbArr
                                          + lpFmtHeader->uFmtFrcs
                                          + lpFmtHeader->uFmtTrBl));
 #ifdef PREFILL
+    // Fill the output area with all zeros
+    if (aplType EQ ARRAY_CHAR)
+        ZeroMemory (lpwszFormat, (UINT) aplNELMRes * sizeof (APLCHAR));
+    else
     // Fill the output area with all blanks
     for (lpaplChar = lpwszFormat, aplDimCol = 0; aplDimCol < aplNELMRes; aplDimCol++)
         *lpaplChar++ = L' ';
@@ -535,7 +539,11 @@ void DisplayGlbArr
             if (bLineCont)
                 AppendLine (wszIndent, bLineCont, FALSE);   // Display the indent
 
-            aplDimTmp = aplLastDim;     // Save line length
+            // For char lines with embedded []TCLFs, the actual line
+            //   length is smaller than the total length, so we need
+            //   to compare against that here
+            aplDimTmp = lstrlenW (lpwsz);   // Get line length
+            aplDimTmp = min (aplDimTmp, aplLastDim);// Use the smaller
             uOffset = 0;                // Initialize the line offset
             while (aplDimTmp > uQuadPW)
             {

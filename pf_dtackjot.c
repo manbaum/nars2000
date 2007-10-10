@@ -1568,9 +1568,37 @@ LPAPLCHAR CompileArrChar
 
                 break;
 
+            case TCHT:          // []TCHT -- Move ahead to the next tab stop
+                uTmp = (1 + (uCurPos % uTabs)) * uTabs;
+                while (uCurPos < uTmp)
+                {
+                    lpaplChar[uCurPos] = L' ';
+                    uCurPos++;
+                    uCurWidth++;
+                    uItmWidth++;
+                    uMaxWidth = max (uMaxWidth, uCurWidth);
+                } // End WHILE
+
+                break;
+
+            case TCBS:          // []TCBS -- Backspace if there's room
+                if (uCurPos)
+                {
+                    uCurPos--;
+                    uCurWidth--;
+                } // End IF
+
+                break;
+
+            case TCNL:          // []TCNL -- Restart at the beginning of this line
+                // Start at the leftmost position
+                uCurPos = 0;
+
+                break;
+
             case TCLF:          // []TCLF -- Start a new line
-                // Skip over the maximum col width
-                lpaplChar += uMaxWidth;
+                // Skip over the item width
+                lpaplChar += uItmWidth;
 
                 // Ensure properly terminated
                 *lpaplChar++ = L'\0';
@@ -1604,34 +1632,6 @@ LPAPLCHAR CompileArrChar
 
                 // Start at the leftmost position
                 uCurPos = uItmWidth = 0;
-
-                break;
-
-            case TCHT:          // []TCHT -- Move ahead to the next tab stop
-                uTmp = (1 + (uCurPos % uTabs)) * uTabs;
-                while (uCurPos < uTmp)
-                {
-                    lpaplChar[uCurPos] = L' ';
-                    uCurPos++;
-                    uCurWidth++;
-                    uItmWidth++;
-                    uMaxWidth = max (uMaxWidth, uCurWidth);
-                } // End WHILE
-
-                break;
-
-            case TCNL:          // []TCNL -- Restart at the beginning of this line
-                // Start at the leftmost position
-                uCurPos = 0;
-
-                break;
-
-            case TCBS:          // []TCBS -- Backspace if there's room
-                if (uCurPos)
-                {
-                    uCurPos--;
-                    uCurWidth--;
-                } // End IF
 
                 break;
 

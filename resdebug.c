@@ -23,102 +23,131 @@
 // ************** DEBUGGING DATA ********************************************
 
 UINT
-    auLinNumPEN        [MAXOBJ],            //  1
-    auLinNumBRUSH      [MAXOBJ],            //  2
-    auLinNumDC         [MAXOBJ],            //  3
-    auLinNumMETADC     [MAXOBJ],            //  4
-    auLinNumPAL        [MAXOBJ],            //  5
-    auLinNumFONT       [MAXOBJ],            //  6
-    auLinNumBITMAP     [MAXOBJ],            //  7
-    auLinNumREGION     [MAXOBJ],            //  8
-    auLinNumMETAFILE   [MAXOBJ],            //  9
-    auLinNumMEMDC      [MAXOBJ],            // 10
-    auLinNumEXTPEN     [MAXOBJ],            // 11
-    auLinNumENHMETADC  [MAXOBJ],            // 12
-    auLinNumENHMETAFILE[MAXOBJ],            // 13
-    auLinNumCOLORSPACE [MAXOBJ],            // 14
-    auLinNumGLOBAL     [MAXOBJ];            // 15
+ auLinNumPEN        [MAXOBJ],               //  1
+ auLinNumBRUSH      [MAXOBJ],               //  2
+ auLinNumDC         [MAXOBJ],               //  3
+ auLinNumMETADC     [MAXOBJ],               //  4
+ auLinNumPAL        [MAXOBJ],               //  5
+ auLinNumFONT       [MAXOBJ],               //  6
+ auLinNumBITMAP     [MAXOBJ],               //  7
+ auLinNumREGION     [MAXOBJ],               //  8
+ auLinNumMETAFILE   [MAXOBJ],               //  9
+ auLinNumMEMDC      [MAXOBJ],               // 10
+ auLinNumEXTPEN     [MAXOBJ],               // 11
+ auLinNumENHMETADC  [MAXOBJ],               // 12
+ auLinNumENHMETAFILE[MAXOBJ],               // 13
+ auLinNumCOLORSPACE [MAXOBJ],               // 14
+ auLinNumGLOBAL     [MAXOBJ];               // 15
 
-UINT *lpaauLinNum[] = {&auLinNumPEN        [0],
-                       &auLinNumBRUSH      [0],
-                       &auLinNumDC         [0],
-                       &auLinNumMETADC     [0],
-                       &auLinNumPAL        [0],
-                       &auLinNumFONT       [0],
-                       &auLinNumBITMAP     [0],
-                       &auLinNumREGION     [0],
-                       &auLinNumMETAFILE   [0],
-                       &auLinNumMEMDC      [0],
-                       &auLinNumEXTPEN     [0],
-                       &auLinNumENHMETADC  [0],
-                       &auLinNumENHMETAFILE[0],
-                       &auLinNumCOLORSPACE [0],
-                       &auLinNumGLOBAL     [0]};
+UINT *lpaauLinNum[] =
+{&auLinNumPEN        [0],                   //  1
+ &auLinNumBRUSH      [0],                   //  2
+ &auLinNumDC         [0],                   //  3
+ &auLinNumMETADC     [0],                   //  4
+ &auLinNumPAL        [0],                   //  5
+ &auLinNumFONT       [0],                   //  6
+ &auLinNumBITMAP     [0],                   //  7
+ &auLinNumREGION     [0],                   //  8
+ &auLinNumMETAFILE   [0],                   //  9
+ &auLinNumMEMDC      [0],                   // 10
+ &auLinNumEXTPEN     [0],                   // 11
+ &auLinNumENHMETADC  [0],                   // 12
+ &auLinNumENHMETAFILE[0],                   // 13
+ &auLinNumCOLORSPACE [0],                   // 14
+ &auLinNumGLOBAL     [0],                   // 15
+};
 
-int iCountPEN         = 0,                  //  1
-    iCountBRUSH       = 0,                  //  2
-    iCountDC          = 0,                  //  3
-    iCountMETADC      = 0,                  //  4
-    iCountPAL         = 0,                  //  5
-    iCountFONT        = 0,                  //  6
-    iCountBITMAP      = 0,                  //  7
-    iCountREGION      = 0,                  //  8
-    iCountMETAFILE    = 0,                  //  9
-    iCountMEMDC       = 0,                  // 10
-    iCountEXTPEN      = 0,                  // 11
-    iCountENHMETADC   = 0,                  // 12
-    iCountENHMETAFILE = 0,                  // 13
-    iCountCOLORSPACE  = 0,                  // 14
-    iCountGLOBAL      = 0;                  // 15
+int
+ iCountPEN         = 0,                     //  1
+ iCountBRUSH       = 0,                     //  2
+ iCountDC          = 0,                     //  3
+ iCountMETADC      = 0,                     //  4
+ iCountPAL         = 0,                     //  5
+ iCountFONT        = 0,                     //  6
+ iCountBITMAP      = 0,                     //  7
+ iCountREGION      = 0,                     //  8
+ iCountMETAFILE    = 0,                     //  9
+ iCountMEMDC       = 0,                     // 10
+ iCountEXTPEN      = 0,                     // 11
+ iCountENHMETADC   = 0,                     // 12
+ iCountENHMETAFILE = 0,                     // 13
+ iCountCOLORSPACE  = 0,                     // 14
+ iCountGLOBAL      = 0;                     // 15
 
-int *lpiaCount[] = {&iCountPEN        ,     //  1
-                    &iCountBRUSH      ,     //  2
-                    &iCountDC         ,     //  3
-                    &iCountMETADC     ,     //  4
-                    &iCountPAL        ,     //  5
-                    &iCountFONT       ,     //  6
-                    &iCountBITMAP     ,     //  7
-                    &iCountREGION     ,     //  8
-                    &iCountMETAFILE   ,     //  9
-                    &iCountMEMDC      ,     // 10
-                    &iCountEXTPEN     ,     // 11
-                    &iCountENHMETADC  ,     // 12
-                    &iCountENHMETAFILE,     // 13
-                    &iCountCOLORSPACE ,     // 14
-                    &iCountGLOBAL     };    // 15
+int *lpiaCount[] =
+{&iCountPEN        ,                        //  1
+ &iCountBRUSH      ,                        //  2
+ &iCountDC         ,                        //  3
+ &iCountMETADC     ,                        //  4
+ &iCountPAL        ,                        //  5
+ &iCountFONT       ,                        //  6
+ &iCountBITMAP     ,                        //  7
+ &iCountREGION     ,                        //  8
+ &iCountMETAFILE   ,                        //  9
+ &iCountMEMDC      ,                        // 10
+ &iCountEXTPEN     ,                        // 11
+ &iCountENHMETADC  ,                        // 12
+ &iCountENHMETAFILE,                        // 13
+ &iCountCOLORSPACE ,                        // 14
+ &iCountGLOBAL     ,                        // 15
+};
 
-HANDLE ahPEN         [MAXOBJ],              //  1
-       ahBRUSH       [MAXOBJ],              //  2
-       ahDC          [MAXOBJ],              //  3
-       ahMETADC      [MAXOBJ],              //  4
-       ahPAL         [MAXOBJ],              //  5
-       ahFONT        [MAXOBJ],              //  6
-       ahBITMAP      [MAXOBJ],              //  7
-       ahREGION      [MAXOBJ],              //  8
-       ahMETAFILE    [MAXOBJ],              //  9
-       ahMEMDC       [MAXOBJ],              // 10
-       ahEXTPEN      [MAXOBJ],              // 11
-       ahENHMETADC   [MAXOBJ],              // 12
-       ahENHMETAFILE [MAXOBJ],              // 13
-       ahCOLORSPACE  [MAXOBJ],              // 14
-       ahGLOBAL      [MAXOBJ];              // 15
+HANDLE
+ ahPEN         [MAXOBJ],                    //  1
+ ahBRUSH       [MAXOBJ],                    //  2
+ ahDC          [MAXOBJ],                    //  3
+ ahMETADC      [MAXOBJ],                    //  4
+ ahPAL         [MAXOBJ],                    //  5
+ ahFONT        [MAXOBJ],                    //  6
+ ahBITMAP      [MAXOBJ],                    //  7
+ ahREGION      [MAXOBJ],                    //  8
+ ahMETAFILE    [MAXOBJ],                    //  9
+ ahMEMDC       [MAXOBJ],                    // 10
+ ahEXTPEN      [MAXOBJ],                    // 11
+ ahENHMETADC   [MAXOBJ],                    // 12
+ ahENHMETAFILE [MAXOBJ],                    // 13
+ ahCOLORSPACE  [MAXOBJ],                    // 14
+ ahGLOBAL      [MAXOBJ];                    // 15
 
-HANDLE *lpaah[] = {&ahPEN        [0],
-                   &ahBRUSH      [0],
-                   &ahDC         [0],
-                   &ahMETADC     [0],
-                   &ahPAL        [0],
-                   &ahFONT       [0],
-                   &ahBITMAP     [0],
-                   &ahREGION     [0],
-                   &ahMETAFILE   [0],
-                   &ahMEMDC      [0],
-                   &ahEXTPEN     [0],
-                   &ahENHMETADC  [0],
-                   &ahENHMETAFILE[0],
-                   &ahCOLORSPACE [0],
-                   &ahGLOBAL     [0]};
+LPCHAR
+ lpaFileNameGLOBAL   [MAXOBJ];              // 15
 
+HANDLE *lpaah[] =
+{&ahPEN        [0],                         //  1
+ &ahBRUSH      [0],                         //  2
+ &ahDC         [0],                         //  3
+ &ahMETADC     [0],                         //  4
+ &ahPAL        [0],                         //  5
+ &ahFONT       [0],                         //  6
+ &ahBITMAP     [0],                         //  7
+ &ahREGION     [0],                         //  8
+ &ahMETAFILE   [0],                         //  9
+ &ahMEMDC      [0],                         // 10
+ &ahEXTPEN     [0],                         // 11
+ &ahENHMETADC  [0],                         // 12
+ &ahENHMETAFILE[0],                         // 13
+ &ahCOLORSPACE [0],                         // 14
+ &ahGLOBAL     [0],                         // 15
+};
+
+LPCHAR *lpaaFileName[] =
+{
+ NULL,                                      //  1
+ NULL,                                      //  2
+ NULL,                                      //  3
+ NULL,                                      //  4
+ NULL,                                      //  5
+ NULL,                                      //  6
+ NULL,                                      //  7
+ NULL,                                      //  8
+ NULL,                                      //  9
+ NULL,                                      // 10
+ NULL,                                      // 11
+ NULL,                                      // 12
+ NULL,                                      // 13
+ NULL,                                      // 14
+ &lpaFileNameGLOBAL[0],                     // 15
+};
 
 
 //***************************************************************************
@@ -139,7 +168,7 @@ void MyDbgBrk
 //  Save the allocation of an object
 //***************************************************************************
 
-void _SaveObj
+int _SaveObj
     (DWORD   dwType,
      HGDIOBJ hObject,
      UINT    uLine)
@@ -150,8 +179,8 @@ void _SaveObj
     // Get a ptr to the counter
     lpiCount = lpiaCount[dwType - 1];
 
-    if (*lpiCount >= MAXOBJ)
-        return;
+    if (*lpiCount >= (MAXOBJ - 1))
+        return -1;
 
     // Save the line number
     lpaauLinNum[dwType - 1][*lpiCount] = uLine;
@@ -160,7 +189,7 @@ void _SaveObj
     lpaah[dwType - 1][*lpiCount] = hObject;
 
     // Increment the counter
-    (*lpiCount)++;
+    return (*lpiCount)++;
 } // _SaveObj
 
 
@@ -183,8 +212,9 @@ void _DeleObj
     lpiCount = lpiaCount[dwType - 1];
 
     // Find this object in the array
+    //   looking backwards
     iLen = *lpiCount;
-    for (i = 0; i < iLen; i++)
+    for (i = iLen - 1; i >= 0; i--)
     if (hObject EQ lpaah[dwType - 1][i])
         break;
 
@@ -202,6 +232,10 @@ void _DeleObj
         MoveMemory (&lpaah[dwType - 1][i],
                     &lpaah[dwType - 1][i + 1],
                     (iLen - i) * sizeof (lpaah[0][0]));
+        if (lpaaFileName[dwType - 1])
+            MoveMemory (&lpaaFileName[dwType - 1][i],
+                        &lpaaFileName[dwType - 1][i + 1],
+                        (iLen - i) * sizeof (lpaaFileName[0][0]));
     } // End IF/ELSE
 
     if (*lpiCount < MAXOBJ)
@@ -213,6 +247,43 @@ void _DeleObj
             MyDbgBrk ("DeleObj 1");
     } // End IF
 } // _DeleObj
+
+
+//***************************************************************************
+//  $_LastLock
+//
+//  Format a message about the last place a global memory handle was locked
+//***************************************************************************
+
+void _LastLock
+    (char   *szTemp,
+     HGLOBAL hMem,
+     DWORD   dwType)
+
+{
+    int i,
+        iLen,
+       *lpiCount;
+
+    // Get a ptr to the counter
+    lpiCount = lpiaCount[dwType - 1];
+
+    // Find this object in the array
+    iLen = *lpiCount;
+    for (i = 0; i < iLen; i++)
+    if (hMem EQ lpaah[dwType - 1][i])
+        break;
+
+    // If we didn't find it, ...
+    if (i EQ iLen)
+        DbgBrk ();
+    else
+        wsprintf (szTemp,
+                  "The global (%08X) was last locked in (%s#%d).",
+                  hMem,
+                  lpaaFileName[dwType - 1][i],
+                  lpaauLinNum[dwType - 1][i]);
+} // End _LastLock
 
 
 //***************************************************************************
@@ -234,8 +305,16 @@ HBITMAP _MyCreateCompatibleBitmap
 
     if (!hBitmap)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyCreateCompatibleBitmap");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_BITMAP, hBitmap, uLine);
 
@@ -260,8 +339,16 @@ HDC _MyCreateCompatibleDC
 
     if (hMEMDC EQ NULL)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyCreateCompatibleDC");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_MEMDC, hMEMDC, uLine);
 
@@ -288,8 +375,16 @@ HPEN _MyCreatePen
 
     if (!hPen)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyCreatePen");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_PEN, hPen, uLine);
 
@@ -314,8 +409,16 @@ HFONT _MyCreateFontIndirect
 
     if (!hFont)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyCreateFontIndirect");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_FONT, hFont, uLine);
 
@@ -342,8 +445,16 @@ HRGN _MyCreatePolygonRgn
 
     if (!hRgn)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyCreatePolygonRgn");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_REGION, hRgn, uLine);
 
@@ -368,8 +479,16 @@ HRGN _MyCreateRectRgnIndirect
 
     if (!hRgn)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyCreateRgnIndirect");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_REGION, hRgn, uLine);
 
@@ -394,8 +513,16 @@ HBRUSH _MyCreateSolidBrush
 
     if (!hBrush)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyCreateSolidBrush");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_BRUSH, hBrush, uLine);
 
@@ -420,8 +547,16 @@ BOOL _MyDeleteDC
 
     if (!bRet)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyDeleteDC");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _DeleObj (OBJ_MEMDC, hMEMDC, uLine);
 
@@ -456,8 +591,16 @@ BOOL _MyDeleteObject
     // If it failed, ...
     if (!bRet)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyDeleteObject 2");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _DeleObj (dwType, hObject, uLine);
 
@@ -482,8 +625,16 @@ HDC _MyGetDC
 
     if (!hDC)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGetDC");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_DC, hDC, uLine);
 
@@ -508,8 +659,16 @@ HDC _MyGetWindowDC
 
     if (!hDC)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGetWindowDC");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_DC, hDC, uLine);
 
@@ -535,8 +694,16 @@ HBITMAP _MyLoadBitmap
 
     if (!hBitmap)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyLoadBitmap");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_BITMAP, hBitmap, uLine);
 
@@ -566,8 +733,16 @@ HANDLE _MyLoadImage
 
     if (!hBitmap)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyLoadImage");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _SaveObj (OBJ_BITMAP, hBitmap, uLine);
 
@@ -593,8 +768,16 @@ BOOL _MyReleaseDC
 
     if (!bRet)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyReleaseDC");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } else
         _DeleObj (OBJ_DC, hDC, uLine);
 
@@ -620,8 +803,16 @@ LPVOID _MyGlobalAlloc
 
     if (!lpVoid)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGlobalAlloc");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
         CheckMemStat ();
     } else
         _SaveObj (OBJ_GLOBAL, lpVoid, uLine);
@@ -637,11 +828,46 @@ LPVOID _MyGlobalAlloc
 //***************************************************************************
 
 LPVOID _MyGlobalLock
-    (HGLOBAL hMem,      // Address of the global memory object
-     UINT    uLine)
+    (HGLOBAL hMem,          // Address of the global memory object
+     char   *lpFileName,    // Ptr to filename
+     UINT    uLine)         // Line #
+
+{
+    return _MyGlobalLockSub (hMem, TRUE, lpFileName, uLine);
+} // End _MyGlobalLock
+
+
+//***************************************************************************
+//  $MyGlobalLockNS
+//
+//  Lock a global variable, no save filename
+//***************************************************************************
+
+LPVOID _MyGlobalLockNS
+    (HGLOBAL hMem,          // Address of the global memory object
+     char   *lpFileName,    // Ptr to filename
+     UINT    uLine)         // Line #
+
+{
+    return _MyGlobalLockSub (hMem, FALSE, lpFileName, uLine);
+} // End _MyGlobalLockNS
+
+
+//***************************************************************************
+//  $MyGlobalLockSub
+//
+//  Lock a global variable subroutine
+//***************************************************************************
+
+LPVOID _MyGlobalLockSub
+    (HGLOBAL hMem,          // Address of the global memory object
+     BOOL    bSaveFileName, // TRUE iff we should save the filename
+     char   *lpFileName,    // Ptr to filename
+     UINT    uLine)         // Line #
 
 {
     LPVOID lpVoid;
+    int    iCount;
 
     lpVoid = GlobalLock (hMem);
 
@@ -650,7 +876,6 @@ LPVOID _MyGlobalLock
         char szTemp[1024];
 
         MyDbgBrk ("MyGlobalLock");
-        GetLastError ();
         FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
                        NULL,                        // Pointer to  message source
                        GetLastError (),             // Requested message identifier
@@ -659,10 +884,14 @@ LPVOID _MyGlobalLock
                        sizeof (szTemp),             // Maximum size of message buffer
                        NULL);                       // Address of array of message inserts
     } else
-        _SaveObj (OBJ_GLOBAL, hMem, uLine);
+    {
+        iCount = _SaveObj (OBJ_GLOBAL, hMem, uLine);
+        if (bSaveFileName)
+            lpaaFileName[OBJ_GLOBAL - 1][iCount] = lpFileName;
+    } // End IF/ELSE
 
     return lpVoid;
-} // End _MyGlobalLock
+} // End _MyGlobalLockSub
 
 
 //***************************************************************************
@@ -676,11 +905,18 @@ BOOL _MyGlobalUnlock
      UINT    uLine)
 
 {
-    BOOL bRet;
+    BOOL  bRet;
 
     // Ensure the lock count is non-zero
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) EQ 0)
+    {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGlobalUnlock");
+
+        // Format a message about the last lock
+        _LastLock (szTemp, hMem, OBJ_GLOBAL);
+    } // End IF
 
     bRet = GlobalUnlock (hMem);
     _DeleObj (OBJ_GLOBAL, hMem, uLine);
@@ -705,8 +941,16 @@ DWORD _MyGlobalSize
     dwRet = GlobalSize (hMem);
     if (dwRet EQ 0)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGlobalSize");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } // End IF
 
     return dwRet;
@@ -729,8 +973,16 @@ DWORD _MyGlobalFlags
     dwRet = GlobalFlags (hMem);
     if (dwRet EQ GMEM_INVALID_HANDLE)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGlobalFlags");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } // End IF
 
     return dwRet;
@@ -756,18 +1008,41 @@ HGLOBAL _MyGlobalReAlloc
     dwRet = GlobalSize (hMem);
     if (dwRet EQ 0)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGlobalReAlloc #1");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } // End IF
 
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) NE 0)
+    {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGlobalReAlloc #2");
+
+        // Format a message about the last lock
+        _LastLock (szTemp, hMem, OBJ_GLOBAL);
+    } // End IF
 
     hGlb = GlobalReAlloc (hMem, dwBytes, uFlags);
     if (!hGlb)
     {
+        char szTemp[1024];
+
         MyDbgBrk ("MyGlobalReAlloc #3");
-        GetLastError ();
+        FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM,  // Source and processing options
+                       NULL,                        // Pointer to  message source
+                       GetLastError (),             // Requested message identifier
+                       0,                           // Language identifier for requested message
+                       szTemp,                      // Pointer to message buffer
+                       sizeof (szTemp),             // Maximum size of message buffer
+                       NULL);                       // Address of array of message inserts
     } // End IF
 
     return hGlb;
@@ -781,17 +1056,23 @@ HGLOBAL _MyGlobalReAlloc
 //***************************************************************************
 
 HGLOBAL _MyGlobalFree
-    (HGLOBAL hGlb,              // Handle
+    (HGLOBAL hMem,              // Handle
      UINT    uLine)             // Line #
 
 {
     // GlobalFlags returns the lock count in the low-order byte
-    if (_MyGlobalFlags (hGlb, uLine) & GMEM_LOCKCOUNT)
-        MyDbgBrk ("MyGlobalFree"); // We should never get here
-    else
-        _DeleObj (OBJ_GLOBAL, hGlb, uLine);
+    if (_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT)
+    {
+        char szTemp[1024];
 
-    return GlobalFree (hGlb);
+        MyDbgBrk ("MyGlobalFree"); // We should never get here
+
+        // Format a message about the last lock
+        _LastLock (szTemp, hMem, OBJ_GLOBAL);
+    } else
+        _DeleObj (OBJ_GLOBAL, hMem, uLine);
+
+    return GlobalFree (hMem);
 } // MyGlobalFree
 
 

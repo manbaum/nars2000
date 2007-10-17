@@ -96,7 +96,7 @@ LPPL_YYSTYPE PrimFnMonSquad_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc);
+    return PrimFnValenceError_EM (lptkFunc);
 } // End PrimFnMonSquad_EM_YY
 #undef  APPEND_NAME
 
@@ -169,7 +169,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
 
             return PrimFnDydSquadGlb_EM_YY
                    (lptkLftArg,                                         // Ptr to left arg token
-                    ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
+                    ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // Right arg global memory handle
                     lptkAxis,                                           // Ptr to axis token (may be NULL)
                     lptkFunc);                                          // Ptr to function token
         defstop
@@ -225,7 +225,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
 //***************************************************************************
 //  $PrimFnDydSquadGlb_EM_YY
 //
-//  Dyadic Squad ("rectangular indexing") on a global memory object
+//  Dyadic Squad ("rectangular indexing") on a right arg global memory object
 //***************************************************************************
 
 #ifdef DEBUG
@@ -236,7 +236,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
 
 LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     HGLOBAL hGlbRht,               // Right arg handle
+     HGLOBAL hGlbRht,               // Right arg global memory handle
      LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
      LPTOKEN lptkFunc)              // Ptr to function token
 
@@ -267,7 +267,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                  iAxisNxt;          // Index of next axis value
     LPAPLUINT    lpMemAxis = NULL,  // Ptr to axis global memory
                  lpMemAxisAct,      // Ptr to actual axis values
-                 lpMemAxisEli,      // Ptr to elided ...
+                 lpMemAxisLst,      // Ptr to (last + 1) of actual axis values
+                 lpMemAxisEli,      // Ptr to elided axis values
                  lpMemOdo = NULL,   // Ptr to odometer global memory
                  lpMemLimLft;       // Ptr to left arg limit vector
     LPAPLDIM     lpMemDimRht,       // Ptr to right arg dimensions
@@ -344,53 +345,78 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     //   sum of ranks and product of NELMs
     // Note that for simple NH arrays, the NELM and Rank above are all we need
     //***************************************************************
-    if (!IsSimpleNH (aplTypeLft))
-    for (uLft = 0; uLft < aplNELMLft; uLft++)
+    if (!IsSimpleNH (aplTypeLft))   // Meaning we accept '' as a valid left arg
     {
-        HGLOBAL    hGlbSub;
-        APLLONGEST aplLongestSub;
-        IMM_TYPES  immTypeSub;
+        HGLOBAL hGlbSub;        // Left arg item global memory handle
+        APLSTYPE aplTypeSub;    // Left arg item storage type
+        APLNELM  aplNELMSub;    // Left arg item NELM
+        APLRANK  aplRankSub;    // Left arg item rank
 
-        // Get next value from the left arg
-        GetNextValue (hGlbLft, uLft, &hGlbSub, &aplLongestSub, &immTypeSub);
-
-        // If the left arg item is a global, ...
-        if (hGlbSub)
+        // Check for empty left arg
+        if (aplNELMLft EQ 0)
         {
-            APLSTYPE aplTypeSub;
-            APLNELM  aplNELMSub;
-            APLRANK  aplRankSub;
+            // The prototype for the left arg must be
+            //   a nested numeric array
+
+            // Get next value from the left arg
+            GetNextValue (hGlbLft, 0, &hGlbSub, NULL, NULL);
+
+            // The item must be a global
+            Assert (hGlbSub NE NULL);
 
             // Get the global attrs
-            AttrsOfGlb (hGlbSub, &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
+            AttrsOfGlb (hGlbSub, &aplTypeSub, &aplNELMSub, NULL, NULL);
 
-            // Ensure the item is simple numeric
+            // Check for DOMAIN ERROR
             if (!IsSimpleNum (aplTypeSub))
             {
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);
                 goto ERROR_EXIT;
             } // End IF
-
-            // Accumulate the NELM & rank
-            aplNELMRes *= aplNELMSub;
-            aplRankRes += aplRankSub;
         } else
-        // The left arg item is immediate (in <aplLongestSub> and of type <immTypeSub>)
+        for (uLft = 0; uLft < aplNELMLft; uLft++)
         {
-            // Ensure the left arg item is simple numeric
-            if (!IsImmNum (immTypeSub))
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+            APLLONGEST aplLongestSub;       // Left arg item immediate value
+            IMM_TYPES  immTypeSub;          // Left arg item immediate type
 
-            // Accumulate the NELM & rank
-            aplNELMRes *= 1;            // No action:  compiler will eliminate
-            aplRankRes += 0;            // ...
-        } // End IF/ELSE
-    } // End FOR
+            // Get next value from the left arg
+            GetNextValue (hGlbLft, uLft, &hGlbSub, &aplLongestSub, &immTypeSub);
+
+            // If the left arg item is a global, ...
+            if (hGlbSub)
+            {
+                // Get the global attrs
+                AttrsOfGlb (hGlbSub, &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
+
+                // Ensure the item is simple numeric
+                if (!IsSimpleNum (aplTypeSub))
+                {
+                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    goto ERROR_EXIT;
+                } // End IF
+
+                // Accumulate the NELM & rank
+                aplNELMRes *= aplNELMSub;
+                aplRankRes += aplRankSub;
+            } else
+            // The left arg item is immediate (in <aplLongestSub> and of type <immTypeSub>)
+            {
+                // Ensure the left arg item is simple numeric
+                if (!IsImmNum (immTypeSub))
+                {
+                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    goto ERROR_EXIT;
+                } // End IF
+
+                // Accumulate the NELM & rank
+                aplNELMRes *= 1;            // No action:  compiler will eliminate
+                aplRankRes += 0;            // ...
+            } // End IF/ELSE
+        } // End FOR
+    } // End IF
 
     // Handle elided axes
     if (lptkAxis)
@@ -471,6 +497,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     // Calc ptr to first of actual axes
     lpMemAxisAct = &lpMemAxis[aplRankRht - aplNELMAxis];
 
+    // Calc ptr to (last + 1) of actual dimensions
+    lpMemAxisLst = &lpMemAxis[aplRankRht];
+
     // Initialize axis index
     iAxisNxt = uLft = 0;
 
@@ -481,9 +510,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 #define uAxisNxt    ((APLUINT) iAxisNxt)
     while (uAxisNxt < aplRankRht)
     {
-        if (aplNELMAxis EQ aplRankRht           // No or full axis operator
-         || (lpMemAxisAct < lpMemLimLft         //   or ptr is within range
-          && uAxisNxt EQ *lpMemAxisAct))        //     and next axis value is an actual one
+        if (aplNELMAxis EQ aplRankRht       // No or full axis operator
+         || (lpMemAxisAct < lpMemAxisLst    //   or ptr is within range
+          && uAxisNxt EQ *lpMemAxisAct))    //     and next axis value is an actual one
         {
             HGLOBAL hGlbSub;
 
@@ -677,12 +706,12 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     } else
                         aplLongestNxt = aplLongestSub;
                 } // End IF/ELSE
+
+                // Convert to origin-0
+                aplLongestNxt -= bQuadIO;
             } else  // Elided dimension:  use dimension from right arg
                 // Copy dimension index
                 aplLongestNxt = lpMemOdo[iAxisNxt];
-
-            // Convert to origin-0
-            aplLongestNxt -= bQuadIO;
 
             // Ensure that the value is within range
             // Note that because <aplLongestNxt> is unsigned,

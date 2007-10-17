@@ -22,7 +22,7 @@ TKT_VARIMMED This container's tkData is one of Boolean, Integer,
             Floating Point, or Character as distinguished by
             the value in tkFlags.ImmType.
 
-TKT_LIST    This container's tkData points to an HGLOBAL which
+TKT_LISTBR  This container's tkData points to an HGLOBAL which
             contains a list array in global memory.
 
 TKT_VARARRAY The main workhorse.  Its tkData is an HGLOBAL which
@@ -49,7 +49,7 @@ typedef enum tagTOKEN_TYPES
  TKT_STRING   ,             // 02: String  (data is HGLOBAL)
  TKT_VARIMMED ,             // 03: An immediate constant (Boolean, Integer, Character, or Floating point,
                             //     distinguished by the value in tkFlags.ImmType)
- TKT_COMMENT  ,             // 04: Comment (data is HGLOBAL)
+ TKT_COMMENT  ,             // 04: Comment (data is NULL)
  TKT_ASSIGN   ,             // 05: Assignment symbol (data is UTF16_LEFTARROW)
  TKT_LISTSEP  ,             // 06: List separator    (data is ';')
  TKT_COLON    ,             // 07: Label separator   (data is ':')

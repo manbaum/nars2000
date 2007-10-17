@@ -103,7 +103,7 @@ LPPL_YYSTYPE PrimFnMonSlash_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc);
+    return PrimFnValenceError_EM (lptkFunc);
 } // End PrimFnMonSlash_EM_YY
 #undef  APPEND_NAME
 

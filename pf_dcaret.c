@@ -21,7 +21,7 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecDownCaret = {
     // Monadic functions
-    &PrimFnMonSyntaxError_EM,
+    &PrimFnMonValenceError_EM,
     NULL,   // &PrimSpecDownCaretStorageTypeMon, -- Can't happen w/DownCaret
     NULL,   // &PrimFnMonDownCaretAPA_EM, -- Can't happen w/DownCaret
 

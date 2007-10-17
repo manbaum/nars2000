@@ -102,7 +102,7 @@ LPPL_YYSTYPE PrimFnMonDownArrow_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnSyntaxError_EM (lptkFunc);
+    return PrimFnValenceError_EM (lptkFunc);
 } // End PrimFnMonDownArrow_EM_YY
 #undef  APPEND_NAME
 
@@ -461,7 +461,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
                 ((LPAPLBOOL)   lpMemRes)[uRes >> LOG2NBIB] |=
-                ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (((UINT) uRes) & MASKLOG2NBIB);
+                ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (MASKLOG2NBIB & (UINT) uRes);
 
                 break;
 

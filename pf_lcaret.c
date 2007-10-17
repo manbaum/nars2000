@@ -20,7 +20,7 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecLeftCaret = {
     // Monadic functions
-    &PrimFnMonSyntaxError_EM,
+    &PrimFnMonValenceError_EM,
     NULL,   // &PrimSpecLeftCaretStorageTypeMon, -- Can't happen w/LeftCaret
     NULL,   // &PrimFnMonLeftCaretAPA_EM, -- Can't happen w/LeftCaret
 

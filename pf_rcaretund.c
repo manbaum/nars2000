@@ -20,7 +20,7 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecRightCaretUnderbar = {
     // Monadic functions
-    &PrimFnMonSyntaxError_EM,
+    &PrimFnMonValenceError_EM,
     NULL,   // &PrimSpecRightCaretUnderbarStorageTypeMon, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarAPA_EM, -- Can't happen w/RightCaretUnderbar
 

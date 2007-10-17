@@ -1440,7 +1440,8 @@ SimpExpr:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->lpYYRes = ArrayIndex_EM_YY (&$2.tkToken, &$1.tkToken);
+                                             lpplLocalVars->lpYYRes =
+                                               ArrayIndexRef_EM_YY (&$2.tkToken, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
                                              FreeResult (&$2.tkToken);
 
@@ -1464,7 +1465,8 @@ SimpExpr:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->bRet = ArrayDisplay_EM (&$1.tkToken, TRUE);
+                                             lpplLocalVars->bRet =
+                                               ArrayDisplay_EM (&$1.tkToken, TRUE);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
 
                                              if (!lpplLocalVars->bRet)
@@ -1490,7 +1492,8 @@ SimpExpr:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->bRet = ArrayDisplay_EM (&$1.tkToken, FALSE);
+                                             lpplLocalVars->bRet =
+                                               ArrayDisplay_EM (&$1.tkToken, FALSE);
 /////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
 
                                              if (!lpplLocalVars->bRet)
@@ -1554,13 +1557,15 @@ SimpExpr:
                                          {
                                              $4.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-
-
-                                             PrimFnNonceError_EM (&$3.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                             lpplLocalVars->bRet =
+                                               ArrayIndexSet_EM (&$4.tkToken, &$3.tkToken, &$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeResult (&$3.tkToken);
                                              FreeResult (&$4.tkToken);               // Validation only
-                                             YYERROR;
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | error   ASSIGN   ')' NameSpec '(' {DbgMsgW2 (L"%%SimpExpr:  (NameSpec)" WS_UTF16_LEFTARROW L"error");
@@ -1617,13 +1622,15 @@ SimpExpr:
                                          {
                                              $5.tkToken.tkFlags.TknType = TKT_VARNAMED;
 
-
-
-                                             PrimFnNonceError_EM (&$4.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                             lpplLocalVars->bRet =
+                                               ArrayIndexSet_EM (&$5.tkToken, &$4.tkToken, &$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeResult (&$4.tkToken);
                                              FreeResult (&$5.tkToken);               // Validation only
-                                             YYERROR;
+
+                                             if (!lpplLocalVars->bRet)
+                                                 YYERROR;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | error   ASSIGN LeftOper  NAMEVAR  {DbgMsgW2 (L"%%SimpExpr:  NAMEVAR LeftOper" WS_UTF16_LEFTARROW L"error");
@@ -2004,17 +2011,17 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             lpplLocalVars->bRet = FALSE;
-                                             PrimFnNonceError_EM (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
-                                             FreeResult (&$4.tkToken);
+                                             lpplLocalVars->bRet =
+                                               ArrayIndexFcnSet_EM (&$5.tkToken, &$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeYYFcn (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$1.tkToken);
+                                             FreeResult (&$4.tkToken);
+                                             FreeResult (&$5.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                                  YYERROR;
 
-                                             YYERROR;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     | error   ASSIGN AxisFunc ILBR NAMEVAR
@@ -2070,17 +2077,17 @@ SimpExpr:
                                                  YYERROR;
                                              } // End IF
 
-                                             lpplLocalVars->bRet = FALSE;
-                                             PrimFnNonceError_EM (&$4.tkToken);
-                                             FreeResult (&$5.tkToken);               // Validation only
-                                             FreeResult (&$4.tkToken);
+                                             lpplLocalVars->bRet =
+                                               ArrayIndexFcnSet_EM (&$5.tkToken, &$4.tkToken, lpplLocalVars->lpYYFcn, &$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
                                              FreeYYFcn (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
-                                             FreeResult (&$1.tkToken);
+                                             FreeResult (&$4.tkToken);
+                                             FreeResult (&$5.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                                  YYERROR;
 
-                                             YYERROR;
+                                             $$ = $1; $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
     ;
@@ -3812,7 +3819,6 @@ DydOpAxis:
 // Index list w/brackets, allowing for A[A][A]...
 ILBR:
            ']'      '['                 {DbgMsgW2 (L"%%ILBR:  []");
-                                         DbgBrk ();         // ***FIXME*** -- Finish empty bracket list
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -3859,7 +3865,16 @@ ILBR:
                                              $$ = *lpplLocalVars->lpYYLst; YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
                                          } // End IF
                                         }
-    | ILBR ']' ILWE '['                 {DbgMsgW2 (L"%%ILBR:  [ILWE] ILBR ");       // ***FIXME*** -- Do we need ILBR ']' '[' ??
+    | ILBR ']'      '['                 {DbgMsgW2 (L"%%ILBR:  [] ILBR ");
+                                         if (lpplLocalVars->bCtrlBreak)
+                                         {
+                                             FreeResult (&$1.tkToken);
+                                             YYERROR;
+                                         } else
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
+    | ILBR ']' ILWE '['                 {DbgMsgW2 (L"%%ILBR:  [ILWE] ILBR ");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              lpplLocalVars->lpYYLst =
@@ -3880,17 +3895,21 @@ ILBR:
                                                MakeList_EM_YY (&$3, TRUE);
                                              FreeResult (&$3.tkToken);
 
-                                             if (lpplLocalVars->lpYYLst)             // If defined, free it
+                                             if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
                                              {
-                                                 FreeResult (&lpplLocalVars->lpYYLst->tkToken); YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR;
                                              } // End IF
 
-
-
-
-                                             PrimFnNonceError_EM (&$1.tkToken);
+                                             lpplLocalVars->lpYYRes =
+                                               ListIndexRef_EM_YY (&lpplLocalVars->lpYYLst->tkToken, &$1.tkToken);
                                              FreeResult (&$1.tkToken);
-                                             YYERROR;
+                                             FreeResult (&lpplLocalVars->lpYYLst->tkToken); YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR;
+
+                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
     ;
@@ -3901,11 +3920,17 @@ ILWE:
               ';'                       {DbgMsgW2 (L"%%ILWE:  ;");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Initialize the list with an empty item
                                              lpplLocalVars->lpYYLst =
-                                               InitList0_YY ();
+                                               InitList1_YY (NULL);
+
+                                             if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
+                                                 YYERROR;
+
+                                             // Push an empty item onto the list
                                              lpplLocalVars->lpYYRes =
                                                PushList_YY (lpplLocalVars->lpYYLst, NULL);
-                                             YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+                                             FreeResult (&lpplLocalVars->lpYYLst->tkToken); YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR;
@@ -3913,12 +3938,12 @@ ILWE:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | ILWE    ';'                       {DbgMsgW2 (L"%%ILWE:  ILWE;");
+    | ILWE    ';'                       {DbgMsgW2 (L"%%ILWE:  ;ILWE");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Push an empty item onto the list
                                              lpplLocalVars->lpYYRes =
                                                PushList_YY (&$1, NULL);
-                                             FreeResult (&$1.tkToken);
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR;
@@ -3929,9 +3954,10 @@ ILWE:
     |          ArrExpr                  {DbgMsgW2 (L"%%ILWE:  ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Initialize the list with the arg
                                              lpplLocalVars->lpYYRes =
                                                InitList1_YY (&$1);
-                                             FreeResult (&$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);  // Copied w/o IncrRefCnt in PushList_YY
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR;
@@ -3944,8 +3970,7 @@ ILWE:
                                          {
                                              lpplLocalVars->lpYYRes =
                                                PushList_YY (&$1, &$3);
-                                             FreeResult (&$3.tkToken);
-                                             FreeResult (&$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$3.tkToken);  // Copied w/o IncrRefCnt in PushList_YY
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR;

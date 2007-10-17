@@ -259,6 +259,7 @@ void DisplayGlbArr
     lpFmtHeader->uActCols    = (UINT) aplChrNCols;
 ////lpFmtHeader->uFmtRows    = 0;                   // Already zero from ZeroMemory (initial value)
 ////lpFmtHeader->uFmtInts    = 0;                   // ...
+////lpFmtHeader->uFmtChrs    = 0;                   // ...
 ////lpFmtHeader->uFmtFrcs    = 0;                   // ...
 ////lpFmtHeader->uFmtTrBl    = 0;                   // ...
 ////lpFmtHeader->uDepth      = 0;                   // ...
@@ -302,8 +303,7 @@ void DisplayGlbArr
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
-                               TRUE,                    // TRUE iff top level array
-                               FALSE);                  // TRUE iff nested
+                               TRUE);                   // TRUE iff top level array
             break;
 
         case ARRAY_INT:
@@ -316,8 +316,7 @@ void DisplayGlbArr
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
-                               TRUE,                    // TRUE iff top level array
-                               FALSE);                  // TRUE iff nested
+                               TRUE);                   // TRUE iff top level array
             break;
 
         case ARRAY_FLOAT:
@@ -330,8 +329,7 @@ void DisplayGlbArr
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
-                               TRUE,                    // TRUE iff top level array
-                               FALSE);                  // TRUE iff nested
+                               TRUE);                   // TRUE iff top level array
             break;
 
         case ARRAY_APA:
@@ -344,8 +342,7 @@ void DisplayGlbArr
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
-                               TRUE,                    // TRUE iff top level array
-                               FALSE);                  // TRUE iff nested
+                               TRUE);                   // TRUE iff top level array
             break;
 
         case ARRAY_CHAR:
@@ -358,8 +355,7 @@ void DisplayGlbArr
                                aplDimNCols,             // # cols
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
-                               TRUE,                    // TRUE iff top level array
-                               FALSE);                  // TRUE iff nested
+                               TRUE);                   // TRUE iff top level array
             break;
 
         case ARRAY_HETERO:
@@ -373,7 +369,6 @@ void DisplayGlbArr
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
                                TRUE,                    // TRUE iff top level array
-                               FALSE,                   // TRUE iff nested
                                TRUE);                   // TRUE iff handle []TCLF specially
             break;
 
@@ -388,7 +383,8 @@ void DisplayGlbArr
                                aplRank,                 // Right arg rank
                                lpMemDim,                // Ptr to right arg dimensions
                                TRUE,                    // TRUE iff top level array
-                               FALSE);                  // TRUE iff nested
+                               TRUE,                    // TRUE iff first (leftmost) col
+                               TRUE);                   // TRUE iff last (rightmost) col
             break;
 
         defstop
@@ -396,27 +392,19 @@ void DisplayGlbArr
     } // End SWITCH
 
     // Propagate the row & col count up the line
-    PropagateRowColCount (lpFmtHeader,
-                          FALSE);
+    PropagateRowColCount (lpFmtHeader);
 
     // lpaplCharStart now contains the compiled version of the output
 
     // Add up the width of each column to get the
     //   # cols in the result
     for (aplLastDim = aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
-        aplLastDim += (lpFmtColStr[aplDimCol].uLdBl
-                     + lpFmtColStr[aplDimCol].uInts
-                     + lpFmtColStr[aplDimCol].uFrcs
-                     + lpFmtColStr[aplDimCol].uTrBl);
-    Assert (aplLastDim EQ (lpFmtHeader->uFmtLdBl
-                         + lpFmtHeader->uFmtInts
-                         + lpFmtHeader->uFmtFrcs
-                         + lpFmtHeader->uFmtTrBl));
+        aplLastDim += ExteriorColWidth (&lpFmtColStr[aplDimCol]);
+    Assert (aplLastDim EQ ExteriorHdrWidth (lpFmtHeader));
+
     // Calculate the NELM of the result
-    aplNELMRes = (lpFmtHeader->uFmtRows * (lpFmtHeader->uFmtLdBl
-                                         + lpFmtHeader->uFmtInts
-                                         + lpFmtHeader->uFmtFrcs
-                                         + lpFmtHeader->uFmtTrBl));
+    aplNELMRes = lpFmtHeader->uFmtRows * ExteriorHdrWidth (lpFmtHeader);
+
 #ifdef PREFILL
     // Fill the output area with all zeros
     if (aplType EQ ARRAY_CHAR)
@@ -481,56 +469,23 @@ void DisplayGlbArr
 
     // If we didn't use raw output in the
     //   FormatArrxxx routines, do it now
+    // The following code handles wrapping at []PW
     if (!bRawOut)
     {
-        APLDIM      aplDimRow;          // Loop counter
-        UINT        uFmtRow;            // Loop counter
-        APLDIM      aplRealNRows,       // # real rows
-                    aplRealRow;         // Loop counter
-        BOOL        bRealRow;           // TRUE iff this is a real row
-        LPFMTROWSTR lpFmtRowStr;        // Ptr to next FMTROWSTR
-
-        // Initialize the # real rows
-        aplRealNRows = lpFmtHeader->uRealRows;
+        UINT uFmtRow;               // Loop counter
 
         uOutLen = uQuadPW;          // Initial output length
 
         // Loop through the formatted rows
         for (lpwsz = lpwszFormat,
-               uFmtRow = 0,
-               aplDimRow = 0,
-               aplRealRow = 0,
-               lpFmtRowStr = lpFmtHeader->lpFmtRow1st;
+               uFmtRow = 0;
              uFmtRow < lpFmtHeader->uFmtRows;
              uFmtRow++,
-               aplDimRow++,
-               lpwsz += aplLastDim,
-               lpFmtRowStr = lpFmtRowStr->lpFmtRowNxt)
+               lpwsz += aplLastDim)
         {
             WCHAR   wch;                // The replaced WCHAR
             APLDIM  aplDimTmp;          // Remaining line length to output
             APLUINT uOffset;            // Offset in line to start of display
-
-            // Accumulate the # real rows so far
-            bRealRow = lpFmtRowStr->bRealRow;
-            aplRealRow += bRealRow;
-
-            // Handle blank lines between planes
-            if (bRealRow && aplRealRow NE 1)        // Real row and not first row
-            {
-                APLDIM  aplDimAcc;
-                APLRANK uRank;
-
-                aplDimAcc = 1;
-                for (uRank = 0; uRank < (aplRank - 1); uRank++)
-                {
-                    aplDimAcc *= lpMemDim[(aplRank - 2) - uRank];
-                    if ((aplRealRow - 1) % aplDimAcc)
-                        break;
-
-                    AppendLine (L"", FALSE, TRUE);
-                } // End FOR
-            } // End IF
 
             // ***FIXME*** -- this routine may split a number in half
             //                because it doesn't know the difference

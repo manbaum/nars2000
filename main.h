@@ -44,8 +44,9 @@
 #define QWORD   ULONGLONG
 
 #define defstop \
-default:    \
-    DbgStop();      // We should never get here
+default:        \
+    DbgStop();  \
+    nop ();
 
 #define FNLN    FileNameOnly (__FILE__), __LINE__
 

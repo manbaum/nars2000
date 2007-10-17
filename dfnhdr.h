@@ -65,7 +65,7 @@ typedef struct tagDFN_HEADER        // Function header structure
                      steFcnName,    // 48:  Function name STE
                      steAxisOpr,    // 4C:  Axis operator STE
                      steRhtOpr;     // 50:  Right operand STE (may be NULL if monadic operator or not an operator)
-    HGLOBAL          hGlbTxtHdr,    // 54:  Text of function header (APLCHAR) ...
+    HGLOBAL          hGlbTxtHdr,    // 54:  Text of function header (APLCHAR) global memory handle
                      hGlbTknHdr,    // 58:  Tokenized function header (TOKEN) ...
                      hGlbUndoBuff;  // 5C:  Undo buffer                       ... (may be NULL)
     FILETIME         ftCreation;    // 60:  Time of last creation

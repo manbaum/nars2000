@@ -715,7 +715,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
-                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (((UINT) uRes) & MASKLOG2NBIB);
+                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (MASKLOG2NBIB & (UINT) uRes);
                 } // End FOR
 
                 break;

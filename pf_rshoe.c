@@ -309,8 +309,6 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     {
                         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                                    lptkFunc);
-                        bRet = FALSE;
-
                         goto ERROR_EXIT;
                     } // End IF
                 } // End IF
@@ -339,7 +337,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                            NULL,            // Return last axis value
                           &aplNELMAxis,     // Return # elements in axis vector
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
-            return NULL;
+            goto ERROR_EXIT;
     } else
         // No axis means disclose all dimensions
         aplNELMAxis = aplRankCom;
@@ -349,8 +347,6 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     {
         ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
                                    lptkFunc);
-        bRet = FALSE;
-
         goto ERROR_EXIT;
     } // End IF
 
@@ -383,8 +379,6 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    lptkFunc);
-        bRet = FALSE;
-
         goto ERROR_EXIT;
     } // End IF
 
@@ -463,9 +457,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    lptkFunc);
-        bRet = FALSE;
-
-        return NULL;
+        goto ERROR_EXIT;
     } // End IF
 
     // Lock the memory to get a ptr to it
@@ -781,8 +773,6 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                         {
                             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                                        lptkFunc);
-                            bRet = FALSE;
-
                             goto ERROR_EXIT;
                         } // End IF
 
@@ -860,8 +850,6 @@ NORMAL_EXIT:
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                        lptkFunc);
-            bRet = FALSE;
-
             goto ERROR_EXIT;
         } // End IF
 
@@ -945,6 +933,8 @@ ERROR_EXIT:
         // We no longer need this storage
         FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
     } // End IF
+
+    bRet = FALSE;
 TAIL_EXIT:
     if (hGlbDimCom)
     {
@@ -1082,8 +1072,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     APLNELM      aplNELMLft;        // Left arg NELM
     APLRANK      aplRankLft;        // Left arg rank
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    HGLOBAL      hGlbLft;           // Left arg global memory handle
-    LPVOID       lpMemLft;          // Ptr to left arg global memory
+    HGLOBAL      hGlbLft = NULL;    // Left arg global memory handle
+    LPVOID       lpMemLft = NULL;   // Ptr to left arg global memory
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left arg
@@ -1094,7 +1084,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
-        return NULL;
+        goto ERROR_EXIT;
     } // End IF
 
     // If the left arg is simple, it must be empty (i.e., {zilde} or '')
@@ -1104,7 +1094,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
         {
             ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                        lptkFunc);
-            return NULL;
+            goto ERROR_EXIT;
         } // End IF
 
         goto NORMAL_EXIT;
@@ -1115,7 +1105,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
-        return NULL;
+        goto ERROR_EXIT;
     } // End IF
 
     // From here on the left arg is a nested scalar or vector
@@ -1464,7 +1454,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
-        return NULL;
+        goto ERROR_EXIT;
     } // End IF
 
     // Get the current value of []IO
@@ -1744,7 +1734,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             {
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);
-                return NULL;
+                goto ERROR_EXIT;
             } // End IF
         } // End IF/ELSE
 

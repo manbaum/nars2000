@@ -633,7 +633,7 @@ static TOKENNAMES tokenNames[] =
 {{"VARNAMED"  , TKT_VARNAMED }, // 01: Symbol table entry for a named var (data is LPSYMENTRY)
  {"STRING"    , TKT_STRING   }, // 02: String  (data is HGLOBAL)
  {"VARIMMED"  , TKT_VARIMMED }, // 03: Immediate data (data is immediate)
- {"COMMENT"   , TKT_COMMENT  }, // 04: Comment (data is HGLOBAL)
+ {"COMMENT"   , TKT_COMMENT  }, // 04: Comment (data is NULL)
  {"ASSIGN"    , TKT_ASSIGN   }, // 05: Assignment symbol (data is UTF16_LEFTARROW)
  {"LISTSEP"   , TKT_LISTSEP  }, // 06: List separator    (data is ';')
  {"COLON"     , TKT_COLON    }, // 07: Label ...         (data is ':')

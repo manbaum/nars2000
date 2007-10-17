@@ -688,7 +688,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     ((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] |=
-                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (((UINT) uSub) & MASKLOG2NBIB);
+                    ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << (MASKLOG2NBIB & (UINT) uSub);
                 } // End FOR
 
                 // We no longer need this ptr
@@ -1247,6 +1247,8 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    return PrimFnNonceError_EM (lptkFunc);
+
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
     {

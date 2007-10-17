@@ -143,7 +143,8 @@ void ErrorMessageDirect
     LPAPLCHAR     lpMemRes;     // Ptr to result global memory
     HGLOBAL       hGlbPTD;      // PerTabData global memory handle
     LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory
-    UINT          uNameLen;     // Length of function name[line #]
+    UINT          uNameLen,     // Length of function name[line #]
+                  uMsgLen;      // Message length
     LPMEMTXT_UNION lpMemTxtLine = NULL; // Ptr to text header/line global memory
 
     // Get the thread's PerTabData global memory handle
@@ -272,7 +273,9 @@ void ErrorMessageDirect
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the error message to the result
-    lstrcpyW (lpMemRes, lpwszMsg); lpMemRes += lstrlenW (lpwszMsg);
+    uMsgLen = lstrlenW (lpwszMsg);
+    CopyMemory (lpMemRes, lpwszMsg, uMsgLen * sizeof (APLCHAR));
+    lpMemRes += uMsgLen;
 
     // Copy a line terminator to the result
     *lpMemRes++ = L'\r'; *lpMemRes++ = L'\n';
@@ -285,7 +288,9 @@ void ErrorMessageDirect
     } // End IF
 
     // Copy the function line to the result
-    lstrcpyW (lpMemRes, lpwszLine); lpMemRes += lstrlenW (lpwszLine);
+    uMsgLen = lstrlenW (lpwszLine);
+    CopyMemory (lpMemRes, lpwszLine, uMsgLen * sizeof (APLCHAR));
+    lpMemRes += uMsgLen;
 
     // If the caret is not -1, display a caret
     if (uCaret NE NEG1U)

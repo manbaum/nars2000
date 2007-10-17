@@ -100,6 +100,29 @@ LPPL_YYSTYPE PrimFnSyntaxError_EM
 
 
 //***************************************************************************
+//  $PrimFnValenceError_EM
+//
+//  Primitive function VALENCE ERROR
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnValenceError_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnValenceError_EM
+    (LPTOKEN lptkFunc)
+
+{
+    ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End PrimFnValenceError_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PrimFnNonceError_EM
 //
 //  Primitive function NONCE ERROR
@@ -168,28 +191,26 @@ void PrimFnValueError_EM
 
 
 //***************************************************************************
-//  $PrimFnMonSyntaxError_EM
+//  $PrimFnMonValenceError_EM
 //
-//  Primitive scalar monadic function SYNTAX ERROR
+//  Primitive scalar monadic function VALENCE ERROR
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonSyntaxError_EM"
+#define APPEND_NAME     L" -- PrimFnMonValenceError_EM"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE PrimFnMonSyntaxError_EM
+LPPL_YYSTYPE PrimFnMonValenceError_EM
     (LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
      LPTOKEN    lptkAxis,           // Ptr to axis token (may be NULL)
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkFunc);
-    return NULL;
-} // End PrimFnMonSyntaxError_EM
+    return PrimFnValenceError_EM (lptkFunc);
+} // End PrimFnMonValenceError_EM
 #undef  APPEND_NAME
 
 
@@ -1005,7 +1026,6 @@ RESTART_EXCEPTION:
                         *((LPAPLBOOL) lpMemRes) |=
                           (*lpPrimSpec->BisB) ((APLBOOL) (BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex)),
                                                lpPrimSpec) << uBitIndex;
-
                         // Check for end-of-byte
                         if (++uBitIndex EQ NBIB)
                         {

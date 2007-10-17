@@ -20,7 +20,7 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecEqual = {
     // Monadic functions
-    &PrimFnMonSyntaxError_EM,
+    &PrimFnMonValenceError_EM,
     NULL,   // &PrimSpecEqualStorageTypeMon, -- Can't happen w/Equal
     NULL,   // &PrimFnMonEqualAPA_EM, -- Can't happen w/Equal
 

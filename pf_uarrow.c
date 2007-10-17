@@ -581,7 +581,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
                 // Copy element # uRhtWVec from the right arg to lpMemRes]
                 ((LPAPLBOOL)   lpMemRes)[uResWVec >> LOG2NBIB] |=
-                ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRhtWVec >> LOG2NBIB]) ? 1 : 0) << (((UINT) uResWVec) & MASKLOG2NBIB);
+                ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRhtWVec >> LOG2NBIB]) ? 1 : 0) << (MASKLOG2NBIB & (UINT) uResWVec);
 
                 break;
 

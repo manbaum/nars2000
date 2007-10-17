@@ -96,7 +96,6 @@ LPPL_YYSTYPE PushVarStrand_YY
     // Save this token on the strand stack
     //   and skip over it
     YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_VAR]++, lpYYArg);
-
 #ifdef DEBUG
     // Display the strand stack
     DisplayStrand (STRAND_VAR);
@@ -281,8 +280,7 @@ void FreeStrand
             case TKT_OP1IMMED:
             case TKT_OP2IMMED:
             case TKT_OPJOTDOT:
-            case TKT_LPAREN:
-            case TKT_RPAREN:
+            case TKT_LISTSEP:
                 break;
 
             defstop
@@ -1769,8 +1767,7 @@ LPPL_YYSTYPE InitList0_YY
     (void)
 
 {
-    LPPL_YYSTYPE  lpYYRes,          // Ptr to the result
-                  lpYYLst;
+    LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
     // Get this thread's LocalVars ptr
@@ -1790,10 +1787,7 @@ LPPL_YYSTYPE InitList0_YY
     lpYYRes->lpYYStrandBase                   =
     lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
 
-    lpYYLst = PushList_YY (lpYYRes, NULL);
-    FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
-
-    return lpYYLst;
+    return lpYYRes;
 } // End InitList0_YY
 
 
@@ -1808,26 +1802,12 @@ LPPL_YYSTYPE InitList1_YY
 
 {
     LPPL_YYSTYPE  lpYYRes,          // Ptr to the result
-                  lpYYLst;
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
+                  lpYYLst;          // Ptr to the list
 
-    // Get this thread's LocalVars ptr
-    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+    // Initialize the list
+    lpYYRes = InitList0_YY ();
 
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_LISTINT;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
-    lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
-
-    // Set the base of this strand to the next available location
-    lpYYRes->lpYYStrandBase                   =
-    lpplLocalVars->lpYYStrandBase[STRAND_VAR] = lpplLocalVars->lpYYStrandNext[STRAND_VAR];
-
+    // Push an item onto the list
     lpYYLst = PushList_YY (lpYYRes, lpYYArg);
     FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
 
@@ -1861,13 +1841,13 @@ LPPL_YYSTYPE PushList_YY
     // If the token is NULL, push an empty token
     if (lpYYArg EQ NULL)
     {
-        PL_YYSTYPE YYTmp = {0};     // Temporary YYSTYPE
+        PL_YYSTYPE YYTmp = {0};     // Temporary PL_YYSTYPE
 
         YYTmp.tkToken.tkFlags.TknType   = TKT_LISTSEP;
-////////YYTmp.tkToken.tkFlags.ImmType   = 0;     // Already zero from = {0}
-////////YYTmp.tkToken.tkFlags.NoDisplay = 0;     // Already zero from = {0}
-        YYTmp.tkToken.tkData.tkLongest  = NEG1U;         // Debug value
-        YYTmp.tkToken.tkCharIndex       = NEG1U;
+////////YYTmp.tkToken.tkFlags.ImmType   = 0;    // Already zero from = {0}
+////////YYTmp.tkToken.tkFlags.NoDisplay = 0;    // Already zero from = {0}
+        YYTmp.tkToken.tkData.tkLongest  = NEG1U;        // Debug value
+        YYTmp.tkToken.tkCharIndex       = NEG1U;        // ...
 ////////YYTmp.TknCount                  = 0;    // Already zero from = {0}
 ////////YYTmp.FcnCount                  = 0;    // Already zero from = {0}
 ////////YYTmp.YYInuse                   = 0;    // Already zero from = {0}
@@ -1880,10 +1860,9 @@ LPPL_YYSTYPE PushList_YY
         lpYYArg = &YYTmp;
     } // End IF
 
-    // Save this token on the strand stack
+    // Copy this token to the strand stack
     //   and skip over it
     YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_VAR]++, lpYYArg);
-
 #ifdef DEBUG
     // Display the strand stack
     DisplayStrand (STRAND_VAR);
@@ -1895,7 +1874,7 @@ LPPL_YYSTYPE PushList_YY
 //***************************************************************************
 //  $MakeList_EM_YY
 //
-//  Make the listy into a global memory array.
+//  Make the list into a global memory array.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1909,14 +1888,14 @@ LPPL_YYSTYPE MakeList_EM_YY
      BOOL         bBrackets)        // TRUE iff surrounding brackets (otherwise parens)
 
 {
-    LPPL_YYSTYPE  lpYYStrand,
-                  lpYYToken;
-    int           iLen;
+    LPPL_YYSTYPE  lpYYStrand,       // Ptr to strand base
+                  lpYYToken;        // Ptr to current strand token
+    int           iLen;             // # items in the list
     APLUINT       ByteRes;          // # bytes in the result
-    HGLOBAL       hGlbLst;
-    LPVOID        lpMemLst;
-    LPSYMENTRY    lpSymEntry;
-    BOOL          bRet = TRUE;
+    HGLOBAL       hGlbLst;          // List global memory handle
+    LPVOID        lpMemLst;         // Ptr to list global memory
+    LPSYMENTRY    lpSymEntry;       // Ptr to SYMENTRY for immediate values
+    BOOL          bRet = TRUE;      // TRUE iff the result is valid
     LPPL_YYSTYPE  lpYYRes;          // Ptr to the result
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
 
@@ -1953,13 +1932,6 @@ LPPL_YYSTYPE MakeList_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL; return NULL;
     } // End IF
 
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = bBrackets ? TKT_LISTBR : TKT_LISTPAR;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbLst);
-    lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
-
     // Lock the memory to get a ptr to it
     lpMemLst = MyGlobalLock (hGlbLst);
 
@@ -1974,6 +1946,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     lpHeader->Rank       = 1;
 #undef  lpHeader
 
+    // Fill in the dimension
     *VarArrayBaseToDim (lpMemLst) = iLen;
 
     // Skip over the header and one dimension (it's a vector)
@@ -2020,6 +1993,16 @@ LPPL_YYSTYPE MakeList_EM_YY
 
     // Unlock the handle
     MyGlobalUnlock (hGlbLst); lpMemLst = NULL;
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = bBrackets ? TKT_LISTBR : TKT_LISTPAR;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbLst);
+    lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
+
+    // Free the tokens on this portion of the strand stack
+    FreeStrand (lpplLocalVars->lpYYStrandNext[STRAND_VAR], lpplLocalVars->lpYYStrandBase[STRAND_VAR]);
 
     // Strip from the strand stack
     StripStrand (lpYYRes, STRAND_VAR);

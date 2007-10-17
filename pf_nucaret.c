@@ -19,7 +19,7 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecUpCaretTilde = {
     // Monadic functions
-    &PrimFnMonSyntaxError_EM,
+    &PrimFnMonValenceError_EM,
     NULL,   // &PrimSpecUpCaretTildeStorageTypeMon, -- Can't happen w/UpCaretTilde
     NULL,   // &PrimFnMonUpCaretTildeAPA_EM, -- Can't happen w/UpCaretTilde
 

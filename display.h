@@ -20,11 +20,12 @@ typedef struct tagFMTHEADER
                 uFmtRows,               // 28:  # formatted rows in this block (+/FMTROWSTR.uFmtRows)
                 uFmtLdBl,               // 2C:  ...         LdBl ...           (+/FMTCOLSTR.uLdBl)
                 uFmtInts,               // 30:  ...         ints ...           (+/FMTCOLSTR.uInts)
-                uFmtFrcs,               // 34:  ...         frcs ...           (+/FMTCOLSTR.uFrcs)
-                uFmtTrBl;               // 38:  ...         TrBl ...           (+/FMTCOLSTR.uTrBl)
-    UINT        uDepth:31,              // 3C:  7FFFFFFF:  Depth of this struct (0 = top)
+                uFmtChrs,               // 34:  ...         chars...           (+/FMTCOLSTR.uChrs)
+                uFmtFrcs,               // 38:  ...         frcs ...           (+/FMTCOLSTR.uFrcs)
+                uFmtTrBl;               // 3C:  ...         TrBl ...           (+/FMTCOLSTR.uTrBl)
+    UINT        uDepth:31,              // 40:  7FFFFFFF:  Depth of this struct (0 = top)
                 uMatRes:1;              //      80000000:  TRUE iff there is a rank > 1 item contained in this item
-                                        // 40:  Length
+                                        // 44:  Length
 } FMTHEADER, *LPFMTHEADER;
 
 typedef struct tagFMTCOLSTR
@@ -35,12 +36,12 @@ typedef struct tagFMTCOLSTR
 #endif
     UINT        uLdBl,                  // 04:  # leading blanks
                 uInts,                  // 08:  # Integer digits in Boolean/Integer/APA/Float column,
-                                        //      or # chars in Char column
                                         //      including sign
-                uFrcs,                  // 0C:  # Fractional digits in Float column
+                uChrs,                  // 0C:  # CHARs
+                uFrcs,                  // 10:  # Fractional digits in Float column
                                         //      including decimal point
-                uTrBl;                  // 10:  # trailing blanks
-                                        // 14:  Length
+                uTrBl;                  // 14:  # trailing blanks
+                                        // 18:  Length
 } FMTCOLSTR, *LPFMTCOLSTR;
 
 typedef struct tagFMTROWSTR
@@ -54,8 +55,9 @@ typedef struct tagFMTROWSTR
                 bRealRow:1,             //      40000000:  TRUE iff a real row (not from []TCLF)
                 bBlank:1;               //      80000000:  TRUE iff this row is blank
     UINT        uColOff;                // 0C:  Column offset of this row
-    struct tagFMTROWSTR *lpFmtRowNxt;   // 10:  Ptr to next sibling FMTROWSTR
-                                        // 14:  Length
+    UINT        uItemCount;             // 10:  # following items
+    struct tagFMTROWSTR *lpFmtRowNxt;   // 14:  Ptr to next sibling FMTROWSTR
+                                        // 18:  Length
 } FMTROWSTR, *LPFMTROWSTR;
 
 ////typedef enum tagFMT_TYPES

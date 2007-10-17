@@ -38,6 +38,8 @@
 #define UTF16_QUADRIGHTARROW     0x2348         //
 #define UTF16_QUADUPARROW        0x2350         //
 #define UTF16_QUADDOWNARROW      0x2357         //
+#define UTF16_LEFTSINGLEQUOTE    0x2018         // Left single quotation mark
+#define UTF16_RIGHTSINGLEQUOTE   0x2019         // Right ...
 
 // The alphabet, unshifted
 #define UTF16_ALPHA              0x237A         // Alt-'a' - alpha

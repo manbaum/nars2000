@@ -3308,6 +3308,7 @@ void GetNextValue
             break;
 
         case ARRAY_NESTED:
+        case ARRAY_LIST:
             // Get the item
             lpSymSub = ((LPAPLNESTED) lpMemSub)[uSub];
 
@@ -4981,6 +4982,11 @@ APLUINT CalcArraySize
 
             break;
 
+        case ARRAY_LIST:
+            ByteRes = sizeof (APLNESTED) * aplNELM;
+
+            break;
+
         case ARRAY_NESTED:
             // Make room for the prototype
             ByteRes = sizeof (APLNESTED) * max (aplNELM, 1);
@@ -5480,7 +5486,28 @@ void DemoteData
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
-                        *((LPAPLBOOL) lpMemRes) |= ((*((LPAPLHETERO) lpMemRht)++)->stData.stInteger) << uBitIndex;
+                        // Split cases based upon the immediate type
+                        switch ((*((LPAPLHETERO) lpMemRht))->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:
+                                *((LPAPLBOOL) lpMemRes) |= ((*((LPAPLHETERO) lpMemRht)++)->stData.stBoolean) << uBitIndex;
+
+                                break;
+
+                            case IMMTYPE_INT:
+                                *((LPAPLBOOL) lpMemRes) |= ((*((LPAPLHETERO) lpMemRht)++)->stData.stInteger) << uBitIndex;
+
+                                break;
+
+                            case IMMTYPE_FLOAT:
+                                *((LPAPLBOOL) lpMemRes) |= ((APLINT) (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat) << uBitIndex;
+
+                                break;
+
+                            case IMMTYPE_CHAR:
+                            defstop
+                                break;
+                        } // End SWITCH
 
                         // Check for end-of-byte
                         if (++uBitIndex EQ NBIB)
@@ -5512,7 +5539,29 @@ void DemoteData
                 case ARRAY_NESTED:  // Res = INT , Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
-                        *((LPAPLINT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stInteger;
+                    // Split cases based upon the immediate type
+                    switch ((*((LPAPLHETERO) lpMemRht))->stFlags.ImmType)
+                    {
+                        case IMMTYPE_BOOL:
+                            *((LPAPLINT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stBoolean;
+
+                            break;
+
+                        case IMMTYPE_INT:
+                            *((LPAPLINT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stInteger;
+
+                            break;
+
+                        case IMMTYPE_FLOAT:
+                            *((LPAPLINT) lpMemRes)++ = (APLINT) (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat;
+
+                            break;
+
+                        case IMMTYPE_CHAR:
+                        defstop
+                            break;
+                    } // End FOR/SWITCH
+
                     break;
 
                 defstop
@@ -5529,7 +5578,29 @@ void DemoteData
                 case ARRAY_NESTED:  // Res = FLOAT, Rht = NESTED
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
-                        *((LPAPLFLOAT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat;
+                    // Split cases based upon the immediate type
+                    switch ((*((LPAPLHETERO) lpMemRht))->stFlags.ImmType)
+                    {
+                        case IMMTYPE_BOOL:
+                            *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (*((LPAPLHETERO) lpMemRht)++)->stData.stBoolean;
+
+                            break;
+
+                        case IMMTYPE_INT:
+                            *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) (*((LPAPLHETERO) lpMemRht)++)->stData.stInteger;
+
+                            break;
+
+                        case IMMTYPE_FLOAT:
+                            *((LPAPLFLOAT) lpMemRes)++ = (*((LPAPLHETERO) lpMemRht)++)->stData.stFloat;
+
+                            break;
+
+                        case IMMTYPE_CHAR:
+                        defstop
+                            break;
+                    } // End FOR/SWITCH
+
                     break;
 
                 defstop

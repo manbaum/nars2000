@@ -48,9 +48,9 @@
 %name-prefix="fh_yy"
 %parse-param {LPFHLOCALVARS lpfhLocalVars}
 %lex-param   {LPFHLOCALVARS lpfhLocalVars}
-%token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK
+%token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK COMMENT
 
-%start Header
+%start HeaderComm
 
 %%
 
@@ -97,7 +97,7 @@ Right Arg
 This yields 768 (=4 x 8 x 8 x 3) distinct Monadic/Dyadic Function/Operator headers
 and           8 (=4 x 1 x 2 x 1) distinct Niladic Function headers
 for a total of 776 (=768 + 8) User-defined function/operator headers,
-not counting the presence/absence of locals.
+not counting the presence/absence of locals and presence/absence of a comment.
 
  */
 
@@ -391,35 +391,29 @@ Locals:
 
 Header:
         /* Empty */             {DbgMsgW2 (L"%%Header:  <empty>");
-#ifdef DEBUG
-                                 DisplayFnHdr (lpfhLocalVars);
-#endif
                                 }
-    |         error             {DbgMsgW2 (L"%%Header:  error");
-                                 YYABORT;
-                                }
-
     |         NoResHdr          {DbgMsgW2 (L"%%Header:  NoResHdr");
-#ifdef DEBUG
-                                 DisplayFnHdr (lpfhLocalVars);
-#endif
                                 }
     |         NoResHdr Locals   {DbgMsgW2 (L"%%Header:  NoResHdr Locals");
                                  lpfhLocalVars->lpYYLocals = MakeHdrStrand (&$2);
-#ifdef DEBUG
-                                 DisplayFnHdr (lpfhLocalVars);
-#endif
                                 }
     | Result  NoResHdr          {DbgMsgW2 (L"%%Header:  Result NoResHdr");
-#ifdef DEBUG
-                                 DisplayFnHdr (lpfhLocalVars);
-#endif
                                 }
     | Result  NoResHdr Locals   {DbgMsgW2 (L"%%Header:  Result NoResHdr Locals");
                                  lpfhLocalVars->lpYYLocals = MakeHdrStrand (&$3);
+                                }
+    ;
+
+HeaderComm:
+      error                     {DbgMsgW2 (L"%%HeaderComm:  error");
+                                 YYABORT;
+                                }
+    | Header                    {DbgMsgW2 (L"%%HeaderComm:  Header");
 #ifdef DEBUG
                                  DisplayFnHdr (lpfhLocalVars);
 #endif
+                                }
+    | Header COMMENT            {DbgMsgW2 (L"%%HeaderComm:  Header COMMENT");
                                 }
     ;
 
@@ -606,6 +600,9 @@ int fh_yylex
 
         case TKT_RBRACKET:
             return ']';
+
+        case TKT_COMMENT:
+            return COMMENT;
 
         default:
             return UNK;

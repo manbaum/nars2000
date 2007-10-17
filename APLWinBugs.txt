@@ -56,6 +56,17 @@ instead of
 
 followed by a blank row
 
-6.
 
+6.  Incorrect Display
+
+0{rho}1 2
+
+displays an empty line
+
+0{rho}{enclose}1 2
+
+displays without skipping a line
+
+
+7.
 

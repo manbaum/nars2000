@@ -1734,6 +1734,7 @@ LRESULT WINAPI LclEditCtrlWndProc
         case WM_PASTE:              // 0 = wParam
                                     // 0 = lParam
             // Insert text from the clipboard, deleting selected text (if any)
+            PasteAPLChars (hWnd, UNITRANS_NORMAL);
 
             // Undo deletes the inserted (pasted) chars
             //   and insert the deleted chars (if any)
@@ -1829,16 +1830,19 @@ LRESULT WINAPI LclEditCtrlWndProc
 
         case MYWM_PASTE_APLWIN:
             PasteAPLChars (hWnd, UNITRANS_APLWIN);
+            PostMessageW (hWnd, WM_PASTE, 0, 0);
 
             return FALSE;           // We handled the msg
 
         case MYWM_PASTE_APL2:
             PasteAPLChars (hWnd, UNITRANS_APL2);
+            PostMessageW (hWnd, WM_PASTE, 0, 0);
 
             return FALSE;           // We handled the msg
 
         case MYWM_PASTE_ISO:
             PasteAPLChars (hWnd, UNITRANS_ISO);
+            PostMessageW (hWnd, WM_PASTE, 0, 0);
 
             return FALSE;           // We handled the msg
 
@@ -2117,8 +2121,8 @@ void PasteAPLChars
         // Place the changed data onto the clipboard
         SetClipboardData (CF_PRIVATEFIRST, hGlbText); hGlbText = NULL;
 
-        // Pass on to the Edit Control
-        SendMessageW (hWndEC, WM_PASTE, 0, 0);
+////////// Pass on to the Edit Control
+////////SendMessageW (hWndEC, WM_PASTE, 0, 0);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;

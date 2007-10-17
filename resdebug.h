@@ -17,7 +17,7 @@
 #define MyGetWindowDC(a)                _MyGetWindowDC(a,__LINE__)
 #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(a,b,__LINE__)
 #define MyGlobalFree(a)                 _MyGlobalFree(a,__LINE__)
-#define MyGlobalLock(a)                 _MyGlobalLock(a,__LINE__)
+#define MyGlobalLock(a)                 _MyGlobalLock(a,FNLN)
 #define MyGlobalSize(a)                 _MyGlobalSize(a,__LINE__)
 #define MyGlobalFlags(a)                _MyGlobalFlags(a,__LINE__)
 #define MyGlobalReAlloc(a,b,c)          _MyGlobalReAlloc(a,b,c,__LINE__)

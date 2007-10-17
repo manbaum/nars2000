@@ -2326,9 +2326,11 @@ BOOL fnComDone
 
 {
     int     iLen, iLen2;
-    HGLOBAL hGlb;
-    APLINT  aplInteger;
+////HGLOBAL hGlb;
+////APLINT  aplInteger;
+    TKFLAGS tkFlags = {0};
     LPWCHAR lpwch;
+////APLUINT ByteRes;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnComDone");
@@ -2348,38 +2350,60 @@ BOOL fnComDone
     //   increment it, too
     lptkLocalVars->uChar += iLen - 1;
 
-    // Allocate global memory for the comment ("+1" for the terminating zero)
-    hGlb = DbgGlobalAlloc (GHND, (iLen + 1) * sizeof (WCHAR));
-    if (!hGlb)
-    {
-        ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
-
-        return FALSE;
-    } else
-    {
-        LPWCHAR lpwsz;
-        TKFLAGS tkFlags = {0};
-
-        // Lock the memory to get a ptr to it
-        lpwsz = MyGlobalLock (hGlb);
-
-        // Copy the comment to the global memory
-        lstrcpyW (lpwsz, lptkLocalVars->lpwsz);
-        MyGlobalUnlock (hGlb); lpwsz = NULL;
+////     // Calculate space needed for the result ("+1" for the terminating zero)
+////     ByteRes = CalcArraySize (ARRAY_CHAR, iLen + 1, 1);
+////
+////     // Allocate global memory for the comment
+////     hGlb = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+////     if (!hGlb)
+////     {
+////         ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+////
+////         return FALSE;
+////     } else
+////     {
+////         LPWCHAR lpwsz;
+////         TKFLAGS tkFlags = {0};
+////
+////         // Lock the memory to get a ptr to it
+////         lpwsz = MyGlobalLock (hGlb);
+////
+////         // Fill in the result header
+//// #define lpHeader        ((LPVARARRAY_HEADER) lpwsz)
+////         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+////         lpHeader->ArrType    = ARRAY_CHAR;
+//// ////////lpHeader->Perm       = 0;
+//// ////////lpHeader->SysVar     = 0;
+////         lpHeader->RefCnt     = 1;
+////         lpHeader->NELM       = iLen + 1;
+////         lpHeader->Rank       = 1;
+//// #undef  lpHeader
+////
+////         // Fill in the dimension
+////         *VarArrayBaseToDim (lpwsz) = iLen + 1;
+////
+////         // Skip over the header and dimension to the data
+////         lpwsz = VarArrayBaseToData (lpwsz, 1);
+////
+////         // Copy the comment to the global memory
+////         lstrcpyW (lpwsz, lptkLocalVars->lpwsz);
+////
+////         // We no longer need this ptr
+////         MyGlobalUnlock (hGlb); lpwsz = NULL;
 
         // Mark the data as a comment in a global memory handle
         tkFlags.TknType = TKT_COMMENT;
 
-        // Copy to local var so we may pass its address
-        aplInteger = MakeGlbType (hGlb);
+////         // Copy to local var so we may pass its address
+////         aplInteger = MakeGlbType (hGlb);
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         return AppendNewToken_EM (lptkLocalVars,
-                                  &tkFlags,
-                                  &aplInteger,
+                                 &tkFlags,
+                                  NULL,
                                   0);
-    } // End IF
+////     } // End IF
 } // End fnComDone
 #undef  APPEND_NAME
 
@@ -3416,18 +3440,7 @@ void Untokenize
 
                 break;
 
-            case TKT_COMMENT:           // Comment (data is HGLOBAL)
-                // Free the global
-                DbgGlobalFree (ClrPtrTypeDirGlb (lpToken->tkData.tkGlbData));
-#ifdef DEBUG_ZAP
-                dprintfW (L"**Zapping in Untokenize: %08X (%d) (%S#%d)",
-                          ClrPtrTypeDir (lpToken->tkData.tkGlbData),
-                          FNLN);
-#endif
-                lpToken->tkData.tkGlbData = NULL;
-
-                break;
-
+            case TKT_COMMENT:           // Comment (data is NULL)
             case TKT_ASSIGN:            // Assignment symbol (data is UTF16_LEFTARROW)
             case TKT_LISTSEP:           // List separator    (...     ';')
             case TKT_COLON:             // Label ...         (...     ':')
@@ -3553,7 +3566,7 @@ BOOL AppendEOSToken
 BOOL AppendNewToken_EM
     (LPTKLOCALVARS lptkLocalVars,
      LPTKFLAGS     lptkFlags,
-     LPAPLLONGEST  lptkData,
+     LPAPLLONGEST  lptkData,            // Ptr to token data (may be NULL)
      int           iCharOffset)
 
 {
@@ -3588,7 +3601,10 @@ BOOL AppendNewToken_EM
     } // End IF
 
     // Insert this token into the stream:
-    lptkLocalVars->lpNext->tkData.tkLongest = *lptkData;
+    if (lptkData)
+        lptkLocalVars->lpNext->tkData.tkLongest = *lptkData;
+    else
+        lptkLocalVars->lpNext->tkData.tkLongest = 0;
     lptkLocalVars->lpNext->tkFlags          = *lptkFlags;// Append the flags
 
     // Save index in input line of this token

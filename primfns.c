@@ -1157,6 +1157,8 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
     {
         case TKT_OP1IMMED:
         case TKT_OP1NAMED:
+        case TKT_OP3IMMED:
+        case TKT_OP3NAMED:
             return ExecOp1_EM_YY
                    (lptkLftArg,     // Ptr to left arg token
                     lpYYFcnStr,     // Ptr to operator function strand
@@ -1422,6 +1424,7 @@ BOOL IsFcnOpr
         case 'F':
         case '1':
         case '2':
+        case '3':
             return TRUE;
 
         case 'V':
@@ -1442,6 +1445,7 @@ BOOL IsFcnOpr
 //  'V' = Variable
 //  '1' = Monadic operator
 //  '2' = Dyadic operator
+//  '3' = Ambiguous operator
 //  '?' = None of the above
 //
 //***************************************************************************
@@ -1472,6 +1476,10 @@ char TokenTypeFV
         case TKT_OP2IMMED:
         case TKT_OP2NAMED:
             return '2';
+
+        case TKT_OP3IMMED:
+        case TKT_OP3NAMED:
+            return '3';
 
         case TKT_COMMENT:
         case TKT_ASSIGN:

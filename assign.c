@@ -47,7 +47,8 @@ BOOL AssignName_EM
          || lptkNam->tkFlags.TknType EQ TKT_FCNNAMED
          || lptkNam->tkFlags.TknType EQ TKT_FCNIMMED
          || lptkNam->tkFlags.TknType EQ TKT_OP1NAMED
-         || lptkNam->tkFlags.TknType EQ TKT_OP2NAMED);
+         || lptkNam->tkFlags.TknType EQ TKT_OP2NAMED
+         || lptkNam->tkFlags.TknType EQ TKT_OP3NAMED);
 
     // If the target is a system var, validate the assignment
     //   before we free the old value
@@ -77,6 +78,7 @@ BOOL AssignName_EM
         case TKT_FCNNAMED:
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
+        case TKT_OP3NAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkSrc->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -234,6 +236,20 @@ BOOL AssignName_EM
                            lptkSrc->tkData.tkLongest;
             break;
 
+        case TKT_OP3IMMED:
+            // Free the old value for this name
+            FreeResultName (lptkNam);
+
+            // It's an immediate primitive operator
+            lptkNam->tkData.tkSym->stFlags.Imm     = 1;
+            lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_PRIMOP3;
+            lptkNam->tkData.tkSym->stFlags.ObjType = NAMETYPE_OP3;
+
+            // Copy the constant data
+            lptkNam->tkData.tkSym->stData.stLongest=
+                           lptkSrc->tkData.tkLongest;
+            break;
+
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable
             Assert (IsGlbTypeVarDir (lptkSrc->tkData.tkVoid));
@@ -261,7 +277,8 @@ BOOL AssignName_EM
     //   mark the source with its type
     if ((lptkSrc->tkFlags.TknType EQ TKT_FCNNAMED
       || lptkSrc->tkFlags.TknType EQ TKT_OP1NAMED
-      || lptkSrc->tkFlags.TknType EQ TKT_OP2NAMED)
+      || lptkSrc->tkFlags.TknType EQ TKT_OP2NAMED
+      || lptkSrc->tkFlags.TknType EQ TKT_OP3NAMED)
      && !lptkSrc->tkData.tkSym->stFlags.FcnDir)     // Valid as the TknType is TKT_xxxNAMED
         lptkSrc->tkData.tkSym->stFlags.ObjType = GetNameType (lptkSrc);
 
@@ -273,7 +290,9 @@ BOOL AssignName_EM
             || lptkSrc->tkFlags.TknType EQ TKT_OP1NAMED
             || lptkSrc->tkFlags.TknType EQ TKT_OP1IMMED
             || lptkSrc->tkFlags.TknType EQ TKT_OP2NAMED
-            || lptkSrc->tkFlags.TknType EQ TKT_OP2IMMED);
+            || lptkSrc->tkFlags.TknType EQ TKT_OP2IMMED
+            || lptkSrc->tkFlags.TknType EQ TKT_OP3NAMED
+            || lptkSrc->tkFlags.TknType EQ TKT_OP3IMMED);
     if (bFcnOpr)
     {
         // Set the object type
@@ -299,6 +318,11 @@ BOOL AssignName_EM
 
             case NAMETYPE_OP2:
                 lptkNam->tkFlags.TknType = TKT_OP2NAMED;
+
+                break;
+
+            case NAMETYPE_OP3:
+                lptkNam->tkFlags.TknType = TKT_OP3NAMED;
 
                 break;
 
@@ -393,6 +417,9 @@ NAME_TYPES GetNameType
                 case IMMTYPE_PRIMOP2:
                     return NAMETYPE_OP2;
 
+                case IMMTYPE_PRIMOP3:
+                    return NAMETYPE_OP3;
+
                 defstop
                     break;
             } // End SWITCH
@@ -409,6 +436,10 @@ NAME_TYPES GetNameType
         case TKT_OP2NAMED:
         case TKT_OP2IMMED:
             return NAMETYPE_OP2;
+
+        case TKT_OP3NAMED:
+        case TKT_OP3IMMED:
+            return NAMETYPE_OP3;
 
         case TKT_FCNARRAY:
             hGlbData = lptkFunc->tkData.tkGlbData;
@@ -489,18 +520,18 @@ void AssignArrayCommon
 
 
 //***************************************************************************
-//  $AssignNameSpec_EM
+//  $AssignSelectSpec_EM
 //
-//  Assign values to a name strand
+//  Assign values to selective specification (currently a name strand)
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- AssignNameSpec_EM"
+#define APPEND_NAME     L" -- AssignSelectSpec_EM"
 #else
 #define APPEND_NAME
 #endif
 
-BOOL AssignNameSpec_EM
+BOOL AssignSelectSpec_EM
     (LPTOKEN       lptkStr,         // Ptr to named strand token
      LPTOKEN       lptkVal)         // Ptr to value token
 
@@ -834,7 +865,7 @@ NORMAL_EXIT:
     DBGLEAVE;
 
     return bRet;
-} // End AssignNameSpec_EM
+} // End AssignSelectSpec_EM
 #undef  APPEND_NAME
 
 

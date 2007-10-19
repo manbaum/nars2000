@@ -177,6 +177,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
             case TKT_FCNIMMED:
             case TKT_OP1IMMED:
             case TKT_OP2IMMED:
+            case TKT_OP3IMMED:
             case TKT_OPJOTDOT:
                 // Get a ptr to the prototype function for the first symbol (a function or operator)
                 lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
@@ -840,6 +841,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
             case TKT_FCNIMMED:
             case TKT_OP1IMMED:
             case TKT_OP2IMMED:
+            case TKT_OP3IMMED:
             case TKT_OPJOTDOT:
                 // Get a ptr to the prototype function for the first symbol (a function or operator)
                 lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];

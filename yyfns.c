@@ -341,7 +341,8 @@ LPPL_YYSTYPE YYCopyFcn
             // Special case for named functions/operators
             if (lpToken->tkFlags.TknType EQ TKT_FCNNAMED
              || lpToken->tkFlags.TknType EQ TKT_OP1NAMED
-             || lpToken->tkFlags.TknType EQ TKT_OP2NAMED)
+             || lpToken->tkFlags.TknType EQ TKT_OP2NAMED
+             || lpToken->tkFlags.TknType EQ TKT_OP3NAMED)
             {
                 // tkData is an LPSYMENTRY
                 Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);

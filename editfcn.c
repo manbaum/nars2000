@@ -906,7 +906,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     case NAMETYPE_FN12:
                     case NAMETYPE_OP1:
                     case NAMETYPE_OP2:
-                    case NAMETYPE_AMB:
+                    case NAMETYPE_OP3:
                         // Lock the memory to get a ptr to it
                         lpMemPTD = MyGlobalLock (hGlbPTD);
 

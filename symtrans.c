@@ -135,6 +135,7 @@ UINT SymTrans
     Assert (lptkFunc->tkFlags.TknType EQ TKT_FCNIMMED
          || lptkFunc->tkFlags.TknType EQ TKT_OP1IMMED
          || lptkFunc->tkFlags.TknType EQ TKT_OP2IMMED
+         || lptkFunc->tkFlags.TknType EQ TKT_OP3IMMED
          || lptkFunc->tkFlags.TknType EQ TKT_OPJOTDOT);
 
     // Get the symbol
@@ -148,6 +149,7 @@ UINT SymTrans
 
         case TKT_OP1IMMED:
         case TKT_OP2IMMED:
+        case TKT_OP3IMMED:
         case TKT_OPJOTDOT:
             return OprTrans (wch);
 

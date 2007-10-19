@@ -49,6 +49,10 @@ TOKEN_TYPES TranslateTknTypeToTknTypeNamed
         case TKT_OP2IMMED:
             return TKT_OP2NAMED;
 
+        case TKT_OP3NAMED:
+        case TKT_OP3IMMED:
+            return TKT_OP3NAMED;
+
         defstop
             return -1;              // To keep the compiler happy
     } // End SWITCH
@@ -127,6 +131,9 @@ TOKEN_TYPES TranslateImmTypeToTknType
         case IMMTYPE_PRIMOP2:
             return TKT_OP2IMMED;
 
+        case IMMTYPE_PRIMOP3:
+            return TKT_OP3IMMED;
+
         defstop
             return -1;              // To keep the compiler happy
     } // End SWITCH
@@ -160,6 +167,9 @@ TOKEN_TYPES TranslateImmTypeToTknType
 ////
 ////         case IMMTYPE_PRIMOP2:
 ////             return TKT_OP2NAMED;
+////
+////         case IMMTYPE_PRIMOP3:
+////             return TKT_OP3NAMED;
 ////
 ////         defstop
 ////             return -1;              // To keep the compiler happy

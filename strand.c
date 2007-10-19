@@ -213,6 +213,7 @@ void FreeStrand
             case TKT_FCNNAMED:
             case TKT_OP1NAMED:
             case TKT_OP2NAMED:
+            case TKT_OP3NAMED:
                 // tkData is an LPSYMENTRY
                 Assert (GetPtrTypeDir (lpYYToken->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -279,6 +280,7 @@ void FreeStrand
             case TKT_FCNIMMED:
             case TKT_OP1IMMED:
             case TKT_OP2IMMED:
+            case TKT_OP3IMMED:
             case TKT_OPJOTDOT:
             case TKT_LISTSEP:
                 break;
@@ -486,6 +488,7 @@ static char tabConvert[][STRAND_LENGTH] =
             case TKT_COMMENT:
             case TKT_OP1IMMED:
             case TKT_OP2IMMED:
+            case TKT_OP3IMMED:
             case TKT_OPJOTDOT:
             case TKT_LPAREN:
             case TKT_RPAREN:
@@ -1061,7 +1064,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
                   lpYYMemStart,
                   lpYYMemData,
                   lpYYBase = (LPPL_YYSTYPE) -1,
-                  lpYYRes;
+                  lpYYRes;          // Ptr to the result
     BOOL          bRet = TRUE;
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
     SYSTEMTIME    systemTime;       // Current system (UTC) time
@@ -1495,38 +1498,6 @@ LPPL_YYSTYPE MakeOp1_YY
 
 
 //***************************************************************************
-//  $MakeNameOp1_YY
-//
-//  Make a named monadic operator
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeNameOp1_YY"
-#else
-#define APPEND_NAME
-#endif
-
-LPPL_YYSTYPE MakeNameOp1_YY
-    (LPPL_YYSTYPE lpYYOp1)
-
-{
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-
-    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYOp1, FALSE);
-    lpYYRes->lpYYFcn                 = NULL;
-    lpYYRes->TknCount                =
-    lpYYRes->FcnCount                =
-    lpYYRes->Avail                   = 0;
-#ifdef DEBUG
-    lpYYRes->YYIndex                 = NEG1U;
-    lpYYRes->YYFlag                  = 0;
-#endif
-    return lpYYRes;
-} // End MakeNameOp1_YY
-#undef  APPEND_NAME
-
-
-//***************************************************************************
 //  $MakeOp2_YY
 //
 //  Make a dyadic operator
@@ -1563,24 +1534,28 @@ LPPL_YYSTYPE MakeOp2_YY
 
 
 //***************************************************************************
-//  $MakeNameOp2_YY
+//  $MakeOp3_YY
 //
-//  Make a named dyadic operator
+//  Make an ambiguous operator
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeNameOp2_YY"
+#define APPEND_NAME     L" -- MakeOp3_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE MakeNameOp2_YY
-    (LPPL_YYSTYPE lpYYOp2)
+LPPL_YYSTYPE MakeOp3_YY
+    (LPPL_YYSTYPE lpYYOp3)
 
 {
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
-    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYOp2, FALSE);
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    YYCopy (lpYYRes, lpYYOp3);      // No need to CopyPL_YYSTYPE_EM_YY immediates
+    lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP3;
     lpYYRes->lpYYFcn                 = NULL;
     lpYYRes->TknCount                =
     lpYYRes->FcnCount                =
@@ -1590,7 +1565,39 @@ LPPL_YYSTYPE MakeNameOp2_YY
     lpYYRes->YYFlag                  = 0;
 #endif
     return lpYYRes;
-} // End MakeNameOp2_YY
+} // End MakeOp3_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MakeNameOp123_YY
+//
+//  Make a named monadic/dyadic/ambiguous operator
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- MakeNameOp123_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE MakeNameOp123_YY
+    (LPPL_YYSTYPE lpYYOp123)
+
+{
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+
+    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYOp123, FALSE);
+    lpYYRes->lpYYFcn                 = NULL;
+    lpYYRes->TknCount                =
+    lpYYRes->FcnCount                =
+    lpYYRes->Avail                   = 0;
+#ifdef DEBUG
+    lpYYRes->YYIndex                 = NEG1U;
+    lpYYRes->YYFlag                  = 0;
+#endif
+    return lpYYRes;
+} // End MakeNameOp123_YY
 #undef  APPEND_NAME
 
 
@@ -2111,6 +2118,7 @@ LPTOKEN CopyToken_EM
         case TKT_FCNNAMED:      // tkData is LPSYMENTRY
         case TKT_OP1NAMED:      // tkData is LPSYMENTRY
         case TKT_OP2NAMED:      // tkData is LPSYMENTRY
+        case TKT_OP3NAMED:      // tkData is LPSYMENTRY
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -2159,6 +2167,7 @@ LPTOKEN CopyToken_EM
         case TKT_AXISIMMED:     // ...
         case TKT_OP1IMMED:      // ...
         case TKT_OP2IMMED:      // ...
+        case TKT_OP3IMMED:      // ...
         case TKT_OPJOTDOT:      // ...
             break;              // Ignore immediates
 

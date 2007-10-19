@@ -13,8 +13,9 @@ TO DO:  General:  Important
 * ...       bracket list indexing        A[L1;...;Ln][M]
 * ...       bracket list indexing        A[L1;...;Ln][M1;...;Mn]
 * ...       bracket indexed assignment   A[L]{is}R
-* ...       bracket indexed assignment  (A[L]){is}R
-* ...       bracket indexed modified assignment  (A[L])Fcn{is}R
+* ...       bracket indexed strand assignment  (B (A[L])){is}R
+* ...       bracket indexed modified assignment  A[L]Fcn{is}R
+* ...       bracket indexed modified strand assignment  (B (A[L]))Fcn{is}R
 * ...       )LOAD
 * ...       )COPY
 * ...       minimum set of system functions, to wit:

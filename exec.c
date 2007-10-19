@@ -69,7 +69,7 @@ enum COL_INDICES
  COL_COLON     ,        // 0C: Colon symbol
  COL_PRIM_FN   ,        // 0D: Primitive monadic or dyadic function
  COL_PRIM_FN0  ,        // 0E: ...       niladic function
- COL_PRIM_OP1  ,        // 0F: ...       monadic operator
+ COL_PRIM_OP1  ,        // 0F: ...       monadic/ambiguous operator
  COL_PRIM_OP2  ,        // 10: ...       dyadic  ...
  COL_JOT       ,        // 11: Jot symbol
  COL_LPAREN    ,        // 12: Left paren
@@ -188,7 +188,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , NULL        , fnClnDone   },   // Colon  ...
   {FSA_INIT    , NULL        , fnPrmDone   },   // Primitive monadic or dyadic function
   {FSA_INIT    , NULL        , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , NULL        , fnOp1Done   },   // ...       monadic operator
+  {FSA_INIT    , NULL        , fnOp1Done   },   // ...       monadic/ambiguous operator
   {FSA_INIT    , NULL        , fnOp2Done   },   // ...       dyadic  ...
   {FSA_JOTAMBIG, NULL        , NULL        },   // Jot
   {FSA_INIT    , NULL        , fnParInit   },   // Left paren
@@ -2180,16 +2180,16 @@ BOOL fnOp1Done
 
 {
     TKFLAGS    tkFlags = {0};
-////WCHAR      wch;
+    WCHAR      wch;
     APLLONGEST aplLongest;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnOp1Done");
 #endif
 
-////// Copy current WCHAR
-////wch = *lptkLocalVars->lpwsz;
-////
+    // Copy current WCHAR
+    wch = *lptkLocalVars->lpwsz;
+
 ////// If this is a slash/slope and the preceding token is
 //////   a left paren or a dyadic operator, convert this
 //////   symbol into a primitive function
@@ -2202,8 +2202,15 @@ BOOL fnOp1Done
 ////  || lptkLocalVars->lpNext[-1].tkFlags.TknType EQ TKT_OP2IMMED))
 ////    return fnPrmDone (lptkLocalVars);
 
-    // Mark the data as a monadic primitive operator
-    tkFlags.TknType = TKT_OP1IMMED;
+    if (wch EQ UTF16_SLASH
+     || wch EQ UTF16_SLOPE
+     || wch EQ UTF16_SLASHBAR
+     || wch EQ UTF16_SLOPEBAR)
+        // Mark the data as an ambiguous primitive operator
+        tkFlags.TknType = TKT_OP3IMMED;
+    else
+        // Mark the data as a monadic primitive operator
+        tkFlags.TknType = TKT_OP1IMMED;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
@@ -3403,6 +3410,7 @@ void Untokenize
             case TKT_FCNNAMED:          // ...
             case TKT_OP1NAMED:          // ...
             case TKT_OP2NAMED:          // ...
+            case TKT_OP3NAMED:          // ...
                 // tkData is an LPSYMENTRY
                 Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -3448,6 +3456,7 @@ void Untokenize
             case TKT_FCNIMMED:          // Immediate primitive function (any valence) (data is UTF16_***)
             case TKT_OP1IMMED:          // ...       Monadic primitive operator (data is UTF16_***)
             case TKT_OP2IMMED:          // ...       Dyadic  ...
+            case TKT_OP3IMMED:          // ...       Ambiguous  ...
             case TKT_OPJOTDOT:          // Outer product (data is NULL)
             case TKT_LPAREN:            // Left paren (data is TKT_***)
             case TKT_RPAREN:            // Right ...   ...

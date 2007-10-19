@@ -142,8 +142,9 @@ typedef enum tagIMM_TYPES
     IMMTYPE_PRIMFCN,        // 04:  Primitive monadic/dyadic function
     IMMTYPE_PRIMOP1,        // 05:  Primitive monadic operator
     IMMTYPE_PRIMOP2,        // 06:  ...       dyadic  ...
-                            // 07-0E:  Available entries (4 bits)
-    IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type
+    IMMTYPE_PRIMOP3,        // 07:  ...       ambiguous ...
+                            // 08-0E:  Available entries (4 bits)
+    IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type)
 } IMM_TYPES;
 
 // Note that the following macros depend upon
@@ -160,16 +161,16 @@ typedef enum tagNAME_TYPES
     NAMETYPE_FN12,          // 03:  ...       monadic/dyadic/ambivalent function
     NAMETYPE_OP1,           // 04:  ...       monadic operator
     NAMETYPE_OP2,           // 05:  ...       dyadic operator
-    NAMETYPE_AMB,           // 06:  ...       ambiguous function/operator
+    NAMETYPE_OP3,           // 06:  ...       ambiguous function/operator
     NAMETYPE_FILL1,         // 07:  ...       filler
     NAMETYPE_LST,           // 08:  ...       list
                             // 09-0F:  Available entries (4 bits)
 } NAME_TYPES;
 
-#define NAMETYPE_STRING     "?VNF12A?L"
+#define NAMETYPE_STRING     "?VNF123?L"
 //                              0       1       2       3       4       5       6       7       8
-#define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2",  "Amb",  "???",  "Lst"}
-#define NAMETYPE_WSTRPTR    {L"Unk", L"Var", L"Nil", L"Fcn", L"Op1", L"Op2", L"Amb", L"???", L"Lst"}
+#define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2",  "Op3",  "???",  "Lst"}
+#define NAMETYPE_WSTRPTR    {L"Unk", L"Var", L"Nil", L"Fcn", L"Op1", L"Op2", L"Op3", L"???", L"Lst"}
 
 // The above enum is constructed so as to allow the following masks to be used:
 #define NAMETYPEMASK_FN     0x02    // Name is a function
@@ -180,7 +181,7 @@ typedef enum tagNAME_TYPES
 #define IsNameTypeOp(a)     ((a) &                    NAMETYPEMASK_OP )
 #define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
 #define IsNameTypeVar(a)    ((a) EQ NAMETYPE_VAR)
-#define IsNameTypeName(a)   (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_AMB)
+#define IsNameTypeName(a)   (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_OP3)
 
 typedef enum tagOBJ_NAMES
 {

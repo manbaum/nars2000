@@ -640,27 +640,29 @@ static TOKENNAMES tokenNames[] =
  {"FCNIMMED"  , TKT_FCNIMMED }, // 08: Primitive function (any valence) (data is UTF16_***)
  {"OP1IMMED"  , TKT_OP1IMMED }, // 09: Monadic primitive operator (data is UTF16_***)
  {"OP2IMMED"  , TKT_OP2IMMED }, // 0A: Dyadic  ...
- {"OPJOTDOT"  , TKT_OPJOTDOT }, // 0B: Outer product monadic operator (with right scope) (data is NULL)
- {"LPAREN"    , TKT_LPAREN   }, // 0C: Left paren (data is TKT_LPAREN)
- {"RPAREN"    , TKT_RPAREN   }, // 0D: Right ...   ...         RPAREN
- {"LBRACKET"  , TKT_LBRACKET }, // 0E: Left bracket ...        LBRACKET
- {"RBRACKET"  , TKT_RBRACKET }, // 0F: Right ...   ...         RBRACKET
- {"EOS"       , TKT_EOS      }, // 10: End-of-Stmt (data is length of stmt including this token)
- {"EOL"       , TKT_EOL      }, // 11: End-of-Line  ...
- {"LINECONT"  , TKT_LINECONT }, // 12: Line continuation (data is NULL)
- {"INPOUT"    , TKT_INPOUT   }, // 13: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
- {"STRAND"    , TKT_STRAND   }, // 14: Strand accumulating (data is LPTOKEN)
- {"LISTINT"   , TKT_LISTINT  }, // 15: List in parens    (data is HGLOBAL)
- {"LISTPAR"   , TKT_LISTPAR  }, // 16: List in parens    (data is HGLOBAL)
- {"LISTBR"    , TKT_LISTBR   }, // 17: List in brackets  (data is HGLOBAL)
- {"VARARRAY"  , TKT_VARARRAY }, // 18: Array of data (data is HGLOBAL)
- {"FCNARRAY"  , TKT_FCNARRAY }, // 19: Array of functions (data is HGLOBAL)
- {"FCNNAMED"  , TKT_FCNNAMED }, // 1A: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED" , TKT_AXISIMMED}, // 1B: An immediate axis specification (data is immediate)
- {"AXISARRAY" , TKT_AXISARRAY}, // 1C: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"  , TKT_OP1NAMED }, // 1D: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"  , TKT_OP2NAMED }, // 1E: ...     dyadic  ...
- {"STRNAMED"  , TKT_STRNAMED }, // 1F: ...     strand  ...
+ {"OP3IMMED"  , TKT_OP3IMMED }, // 0B: Ambiguous ...
+ {"OPJOTDOT"  , TKT_OPJOTDOT }, // 0C: Outer product monadic operator (with right scope) (data is NULL)
+ {"LPAREN"    , TKT_LPAREN   }, // 0D: Left paren (data is TKT_LPAREN)
+ {"RPAREN"    , TKT_RPAREN   }, // 0E: Right ...   ...         RPAREN
+ {"LBRACKET"  , TKT_LBRACKET }, // 0F: Left bracket ...        LBRACKET
+ {"RBRACKET"  , TKT_RBRACKET }, // 10: Right ...   ...         RBRACKET
+ {"EOS"       , TKT_EOS      }, // 11: End-of-Stmt (data is length of stmt including this token)
+ {"EOL"       , TKT_EOL      }, // 12: End-of-Line  ...
+ {"LINECONT"  , TKT_LINECONT }, // 13: Line continuation (data is NULL)
+ {"INPOUT"    , TKT_INPOUT   }, // 14: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+ {"STRAND"    , TKT_STRAND   }, // 15: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"   , TKT_LISTINT  }, // 16: List in parens    (data is HGLOBAL)
+ {"LISTPAR"   , TKT_LISTPAR  }, // 17: List in parens    (data is HGLOBAL)
+ {"LISTBR"    , TKT_LISTBR   }, // 18: List in brackets  (data is HGLOBAL)
+ {"VARARRAY"  , TKT_VARARRAY }, // 19: Array of data (data is HGLOBAL)
+ {"FCNARRAY"  , TKT_FCNARRAY }, // 1A: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"  , TKT_FCNNAMED }, // 1B: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED" , TKT_AXISIMMED}, // 1C: An immediate axis specification (data is immediate)
+ {"AXISARRAY" , TKT_AXISARRAY}, // 1D: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"  , TKT_OP1NAMED }, // 1E: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"  , TKT_OP2NAMED }, // 1F: ...     dyadic  ...
+ {"OP3NAMED"  , TKT_OP3NAMED }, // 20: ...     ambiguous ...
+ {"STRNAMED"  , TKT_STRNAMED }, // 21: ...     strand  ...
 };
 
 // The # rows in the above table
@@ -722,6 +724,7 @@ void DisplayFcnStrand
         case TKT_FCNIMMED:
         case TKT_OP1IMMED:
         case TKT_OP2IMMED:
+        case TKT_OP3IMMED:
             lpaplChar += wsprintfW (lpaplChar,
                                     L"NameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
                                     NAMETYPE_FN12,  // lpHeader->NameType,
@@ -734,6 +737,7 @@ void DisplayFcnStrand
         case TKT_FCNNAMED:
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
+        case TKT_OP3NAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -864,6 +868,7 @@ LPWCHAR DisplayFcnSub
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
     {
         case TKT_OP1IMMED:
+        case TKT_OP3IMMED:
             // Check for axis operator
             if (fcnNELM > 1
              && (lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
@@ -922,6 +927,15 @@ LPWCHAR DisplayFcnSub
 
         case TKT_OP2NAMED:
             DbgBrk ();          // ***FINISHME*** -- TKT_OP2NAMED in DisplayFcnSub
+
+
+
+
+
+            break;
+
+        case TKT_OP3NAMED:
+            DbgBrk ();          // ***FINISHME*** -- TKT_OP3NAMED in DisplayFcnSub
 
 
 

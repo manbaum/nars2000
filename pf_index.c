@@ -1552,6 +1552,8 @@ BOOL ArrayIndexSet_EM
 {
     PrimFnNonceError_EM (lptkNamArg);
 
+    return FALSE;
+
     DbgBrk ();          // ***FINISHME*** -- A[L]{is}R
 
 

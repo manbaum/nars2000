@@ -58,10 +58,6 @@ LPPL_YYSTYPE YYAlloc
         // Set the return value
         lpYYRes = &lpMemPTD->lpYYRes[u];
 
-#ifdef DEBUG
-        if (YYIndex EQ 0x0DAF)
-            DbgBrk ();
-#endif
         // Zero the memory
         ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 
@@ -83,10 +79,6 @@ LPPL_YYSTYPE YYAlloc
 RESTART_EXCEPTION_YYALLOC:
     __try
     {
-#ifdef DEBUG
-        if (YYIndex EQ 0x0DAF)
-            DbgBrk ();
-#endif
         // Zero the memory
         ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 
@@ -99,7 +91,7 @@ RESTART_EXCEPTION_YYALLOC:
         // Save unique number for debugging/tracking purposes
         lpYYRes->YYIndex = ++YYIndex;
 #endif
-    } __except (CheckException (GetExceptionInformation ()))
+    } __except (CheckException (GetExceptionInformation (), "YYAlloc"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %08X (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -133,7 +125,12 @@ RESTART_EXCEPTION_YYALLOC:
 
             } // End EXCEPTION_ACCESS_VIOLATION
 
-            defstop
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+#ifdef DEBUG
+                DbgStop ();         // We should never get here
+#endif
                 break;
         } // End SWITCH
     } // End __try/__except

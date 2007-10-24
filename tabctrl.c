@@ -379,8 +379,10 @@ BOOL WINAPI CreateNewTabInThread
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-////__try
-////{
+#ifndef DEBUG
+    __try
+    {
+#endif
         // Main message loop
         while (GetMessage (&Msg, NULL, 0, 0))
         {
@@ -392,24 +394,13 @@ BOOL WINAPI CreateNewTabInThread
                 DispatchMessage  (&Msg);
             } // End IF
         } // End WHILE
-////} __except (CheckException (GetExceptionInformation ()))
-////{
-////    // Lock the memory to get a ptr to it
-////    lpMemPTD = MyGlobalLock (hGlbPTD);
-////
-////    // Handle unhandled exceptions
-////    DbgBrk ();          // ***FIXME*** -- unhandled exceptions
-////
-////    // Display message for unhandled exception
-////
-////
-////
-////
-////
-////    // We no longer need this ptr
-////    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-////} // End __try/__except
-
+#ifndef DEBUG
+    } __except (CheckException (GetExceptionInformation (), "CreateNewTabInThread"))
+    {
+        // Display message for unhandled exception
+        DisplayException ();
+    } // End __try/__except
+#endif
     // GetMessage returned FALSE for a Quit message
 
     goto NORMAL_EXIT;

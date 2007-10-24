@@ -106,6 +106,8 @@ DecrRefCntInd (hGlbData);
 
 #define CheckMemStat()      _CheckMemStat ()
 
+#define DisplayException()
+
 #else
 
 #define LCLODSAPI
@@ -132,7 +134,10 @@ DecrRefCntInd (hGlbData);
 
 #define CheckMemStat()
 
+#define DisplayException()      _DisplayException()
+
 #endif
+
 
 //*************************** Window Data ********************************
 

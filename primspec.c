@@ -20,63 +20,6 @@
 
 
 //***************************************************************************
-//  $MyGetExceptionCode
-//
-//  Return the current ExceptionCode
-//***************************************************************************
-
-EXCEPTION_CODES MyGetExceptionCode
-    (void)
-
-{
-    HGLOBAL         hGlbPTD;        // PerTabData global memory handle
-    LPPERTABDATA    lpMemPTD;       // Ptr to PerTabData global memory
-    EXCEPTION_CODES ExceptionCode;  // Exception code
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the ExceptionCode
-    ExceptionCode = lpMemPTD->ExceptionCode;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return ExceptionCode;
-} // End MyGetExceptionCode
-
-
-//***************************************************************************
-//  $MySetExceptionCode
-//
-//  Set the current ExceptionCode
-//***************************************************************************
-
-void MySetExceptionCode
-    (EXCEPTION_CODES ExceptionCode) // Exception code
-
-{
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Set the ExceptionCode
-    lpMemPTD->ExceptionCode = ExceptionCode;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-} // End MySetExceptionCode
-
-
-//***************************************************************************
 //  $PrimFnSyntaxError_EM
 //
 //  Primitive function SYNTAX ERROR
@@ -623,11 +566,13 @@ RESTART_EXCEPTION_VARNAMED:
                 defstop
                     return NULL;
             } // SWITCH
-            } __except (CheckException (GetExceptionInformation ()))
+            } __except (CheckException (GetExceptionInformation (), "PrimFnMon_EM_YY #1"))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
+                DisplayException ();
+
                 // Split cases based upon the ExceptionCode
                 switch (MyGetExceptionCode ())
                 {
@@ -657,7 +602,12 @@ RESTART_EXCEPTION_VARNAMED:
 
                         // Fall through to never-never-land
 
-                    defstop
+                    default:
+                        // Display message for unhandled exception
+                        DisplayException ();
+#ifdef DEBUG
+                        DbgStop ();         // We should never get here
+#endif
                         break;
                 } // End SWITCH
             } // End __try/__except
@@ -760,11 +710,13 @@ RESTART_EXCEPTION_VARIMMED:
                 defstop
                     return NULL;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation ()))
+            } __except (CheckException (GetExceptionInformation (), "PrimFnMon_EM_YY #2"))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
+                DisplayException ();
+
                 // Split cases based upon the ExceptionCode
                 switch (MyGetExceptionCode ())
                 {
@@ -794,7 +746,12 @@ RESTART_EXCEPTION_VARIMMED:
 
                         // Fall through to never-never-land
 
-                    defstop
+                    default:
+                        // Display message for unhandled exception
+                        DisplayException ();
+#ifdef DEBUG
+                        DbgStop ();         // We should never get here
+#endif
                         break;
                 } // End SWITCH
             } // End __try/__except
@@ -1357,11 +1314,13 @@ RESTART_EXCEPTION:
         defstop
             break;
     } // End SWITCH
-    } __except (CheckException (GetExceptionInformation ()))
+    } __except (CheckException (GetExceptionInformation (), "PrimFnMonGlb_EM"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
+        DisplayException ();
+
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
@@ -1401,7 +1360,12 @@ RESTART_EXCEPTION:
 
                 // Fall through to never-never-land
 
-            defstop
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+#ifdef DEBUG
+                DbgStop ();         // We should never get here
+#endif
                 break;
         } // End SWITCH
     } // End __try/__except
@@ -3554,11 +3518,13 @@ RESTART_EXCEPTION:
         defstop
             break;
     } // End SWITCH
-    } __except (CheckException (GetExceptionInformation ()))
+    } __except (CheckException (GetExceptionInformation (), "PrimFnDydSingMult_EM"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
+        DisplayException ();
+
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
@@ -3590,7 +3556,12 @@ RESTART_EXCEPTION:
 
                 // Fall through to never-never-land
 
-            defstop
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+#ifdef DEBUG
+                DbgStop ();         // We should never get here
+#endif
                 break;
         } // End SWITCH
     } // End __try/__except
@@ -4292,11 +4263,13 @@ RESTART_EXCEPTION:
         defstop
             break;
     } // End SWITCH
-    } __except (CheckException (GetExceptionInformation ()))
+    } __except (CheckException (GetExceptionInformation (), "PrimFnDydMultSing_EM"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
+        DisplayException ();
+
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
@@ -4328,7 +4301,12 @@ RESTART_EXCEPTION:
 
                 // Fall through to never-never-land
 
-            defstop
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+#ifdef DEBUG
+                DbgStop ();         // We should never get here
+#endif
                 break;
         } // End SWITCH
     } // End __try/__except
@@ -4803,11 +4781,13 @@ RESTART_EXCEPTION_IMMED:
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckException (GetExceptionInformation ()))
+    } __except (CheckException (GetExceptionInformation (), "PrimDydSiScSiScSub_EM"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
+        DisplayException ();
+
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
@@ -4837,7 +4817,12 @@ RESTART_EXCEPTION_IMMED:
 
                 // Fall through to never-never-land
 
-            defstop
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+#ifdef DEBUG
+                DbgStop ();         // We should never get here
+#endif
                 break;
         } // End SWITCH
     } // End __try/__except
@@ -5093,11 +5078,13 @@ RESTART_EXCEPTION_SINGLETON:
                 defstop
                     break;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation ()))
+            } __except (CheckException (GetExceptionInformation (), "PrimFnDydSimpSimp_EM #1"))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
+                DisplayException ();
+
                 // Split cases based upon the ExceptionCode
                 switch (GetExceptionCode ())
                 {
@@ -5127,7 +5114,12 @@ RESTART_EXCEPTION_SINGLETON:
 
                         // Fall through to never-never-land
 
-                    defstop
+                    default:
+                        // Display message for unhandled exception
+                        DisplayException ();
+#ifdef DEBUG
+                        DbgStop ();         // We should never get here
+#endif
                         break;
                 } // End SWITCH
             } // End __try/__except
@@ -5589,11 +5581,13 @@ RESTART_EXCEPTION_AXIS:
                 defstop
                     break;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation ()))
+            } __except (CheckException (GetExceptionInformation (), "PrimFnDydSimpSimp_EM #2"))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
+                DisplayException ();
+
                 // Split cases based upon the ExceptionCode
                 switch (GetExceptionCode ())
                 {
@@ -5628,7 +5622,12 @@ RESTART_EXCEPTION_AXIS:
 
                         // Fall through to never-never-land
 
-                    defstop
+                    default:
+                        // Display message for unhandled exception
+                        DisplayException ();
+#ifdef DEBUG
+                        DbgStop ();         // We should never get here
+#endif
                         break;
                 } // End SWITCH
             } // End __try/__except
@@ -5795,11 +5794,13 @@ RESTART_EXCEPTION_NOAXIS:
                 defstop
                     break;
             } // End SWITCH
-            } __except (CheckException (GetExceptionInformation ()))
+            } __except (CheckException (GetExceptionInformation (), "PrimFnDydSimpSimp_EM #3"))
             {
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
+                DisplayException ();
+
                 // Split cases based upon the ExceptionCode
                 switch (GetExceptionCode ())
                 {
@@ -5830,7 +5831,12 @@ RESTART_EXCEPTION_NOAXIS:
 
                         // Fall through to never-never-land
 
-                    defstop
+                    default:
+                        // Display message for unhandled exception
+                        DisplayException ();
+#ifdef DEBUG
+                        DbgStop ();         // We should never get here
+#endif
                         break;
                 } // End SWITCH
             } // End __try/__except

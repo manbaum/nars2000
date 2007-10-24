@@ -247,7 +247,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
 #ifdef DEBUG
         dprintfW (L"~~Localize:    %08X (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
 #endif
-    } __except (CheckException (GetExceptionInformation ()))
+    } __except (CheckException (GetExceptionInformation (), "ExecDfnGlb_EM_YY"))
     {
         switch (MyGetExceptionCode ())
         {
@@ -277,7 +277,12 @@ RESTART_EXCEPTION_EXECDFNGLB:
 
             } // End EXCEPTION_ACCESS_VIOLATION
 
-            defstop
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+#ifdef DEBUG
+                DbgStop ();         // We should never get here
+#endif
                 break;
         } // End SWITCH
     } // End __try/__except

@@ -152,12 +152,13 @@ $(O)editfcn.DEP         \
 $(O)editmat.DEP         \
 $(O)editvec.DEP         \
 $(O)errmsg.DEP          \
-$(O)exec.DEP            \
+$(O)except.DEP          \
 $(O)execdfn.DEP         \
 $(O)fastbool.DEP        \
 $(O)free.DEP            \
 $(O)g_fmt.DEP           \
 $(O)goto.DEP            \
+$(O)immexec.DEP         \
 $(O)main.DEP            \
 $(O)parse.DEP           \
 $(O)pf_bar.DEP          \
@@ -244,6 +245,7 @@ $(O)symtrans.DEP        \
 $(O)syscmds.DEP         \
 $(O)sysvars.DEP         \
 $(O)tabctrl.DEP         \
+$(O)tokenize.DEP        \
 $(O)translate.DEP       \
 $(O)ver.DEP             \
 $(O)main.DEV            \
@@ -321,8 +323,8 @@ $(O)yyfns.DEP
 !if exist ($(O)errmsg.DEP)
 !       include $(O)errmsg.DEP
 !endif
-!if exist ($(O)exec.DEP)
-!       include $(O)exec.DEP
+!if exist ($(O)except.DEP)
+!       include $(O)except.DEP
 !endif
 !if exist ($(O)execdfn.DEP)
 !       include $(O)execdfn.DEP
@@ -338,6 +340,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)goto.DEP)
 !       include $(O)goto.DEP
+!endif
+!if exist ($(O)immexec.DEP)
+!       include $(O)immexec.DEP
 !endif
 !if exist ($(O)main.DEP)
 !       include $(O)main.DEP
@@ -594,6 +599,9 @@ $(O)yyfns.DEP
 !if exist ($(O)tabctrl.DEP)
 !       include $(O)tabctrl.DEP
 !endif
+!if exist ($(O)tokenize.DEP)
+!       include $(O)tokenize.DEP
+!endif
 !if exist ($(O)translate.DEP)
 !       include $(O)translate.DEP
 !endif
@@ -631,12 +639,13 @@ $(O)editfcn.PRO         \
 $(O)editmat.PRO         \
 $(O)editvec.PRO         \
 $(O)errmsg.PRO          \
-$(O)exec.PRO            \
+$(O)except.PRO          \
 $(O)execdfn.PRO         \
 $(O)fastbool.PRO        \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
 $(O)goto.PRO            \
+$(O)immexec.PRO         \
 $(O)main.PRO            \
 $(O)parse.PRO           \
 $(O)pf_bar.PRO          \
@@ -723,6 +732,7 @@ $(O)symtrans.PRO        \
 $(O)syscmds.PRO         \
 $(O)sysvars.PRO         \
 $(O)tabctrl.PRO         \
+$(O)tokenize.PRO        \
 $(O)translate.PRO       \
 $(O)ver.PRO             \
 $(O)yyfns.PRO
@@ -786,11 +796,12 @@ $(O)editfcn.OBJ:        $(@B).C         $(EDITFCN_DEP)
 $(O)editmat.OBJ:        $(@B).C         $(EDITMAT_DEP)
 $(O)editvec.OBJ:        $(@B).C         $(EDITVEC_DEP)
 $(O)errmsg.OBJ:         $(@B).C         $(ERRMSG_DEP)
-$(O)exec.OBJ:           $(@B).C         $(EXEC_DEP)
+$(O)except.OBJ:         $(@B).C         $(EXCEPT_DEP)
 $(O)execdfn.OBJ:        $(@B).C         $(EXECDFN_DEP)
 $(O)fastbool.OBJ:       $(@B).C         $(FASTBOOL_DEP)
 $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
 $(O)goto.OBJ:           $(@B).C         $(GOTO_DEP)
+$(O)immexec.OBJ:        $(@B).C         $(IMMEXEC_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
 $(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
 $(O)pf_circle.OBJ:      $(@B).C         $(PF_CIRCLE_DEP)
@@ -878,6 +889,7 @@ $(O)symtrans.OBJ:       $(@B).C         $(SYMTRANS_DEP)
 $(O)syscmds.OBJ:        $(@B).C         $(SYSCMDS_DEP)
 $(O)sysvars.OBJ:        $(@B).C         $(SYSVARS_DEP)
 $(O)tabctrl.OBJ:        $(@B).C         $(TABCTRL_DEP)
+$(O)tokenize.OBJ:       $(@B).C         $(TOKENIZE_DEP)
 $(O)translate.OBJ:      $(@B).C         $(TRANSLATE_DEP)
 $(O)ver.OBJ:            $(@B).C         $(VER_DEP)
 $(O)yyfns.OBJ:          $(@B).C         $(YYFNS_DEP)
@@ -915,13 +927,14 @@ OBJS=                       \
      $(O)editmat.OBJ        \
      $(O)editvec.OBJ        \
      $(O)errmsg.OBJ         \
-     $(O)exec.OBJ           \
+     $(O)except.OBJ         \
      $(O)execdfn.OBJ        \
      $(O)fastbool.OBJ       \
      $(O)free.OBJ           \
      $(O)g_fmt.obj          \
      $(O)getreent.OBJ       \
      $(O)goto.obj           \
+     $(O)immexec.OBJ        \
      $(O)main.OBJ           \
      $(O)parse.OBJ          \
      $(O)pf_bar.OBJ         \
@@ -1010,6 +1023,7 @@ OBJS=                       \
      $(O)syscmds.OBJ        \
      $(O)sysvars.OBJ        \
      $(O)tabctrl.OBJ        \
+     $(O)tokenize.OBJ       \
      $(O)translate.OBJ      \
      $(O)ver.OBJ            \
      $(O)yyfns.OBJ          \

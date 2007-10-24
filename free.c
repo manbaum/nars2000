@@ -544,7 +544,7 @@ BOOL FreeResultGlobalFcn
 
                 break;
 
-////////////case TKT_VARARRAY:      // Free the var array
+            case TKT_VARARRAY:      // Free the var array (strand arg to dyadic op)
             case TKT_AXISARRAY:     // Free the axis array
                 // Get the global handle
                 hGlbLcl = lpYYToken->tkToken.tkData.tkGlbData;
@@ -776,11 +776,14 @@ void FreeYYFcn
     (LPPL_YYSTYPE lpYYFcn)
 
 {
-    UINT u;
+    UINT u, uCnt;
 
-    Assert (lpYYFcn->TknCount NE 0);
+    // Get the token count
+    uCnt = lpYYFcn->TknCount;
 
-    for (u = 0; u < lpYYFcn->TknCount; u++)
+    Assert (uCnt NE 0);
+
+    for (u = 0; u < uCnt; u++)
     {
         FreeResult (&lpYYFcn[u].tkToken); YYFree (&lpYYFcn[u]);
     } // End FOR

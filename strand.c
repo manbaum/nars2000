@@ -108,6 +108,8 @@ LPPL_YYSTYPE PushVarStrand_YY
 //  $PushFcnStrand_YY
 //
 //  Push a function token onto the strand stack.
+//  No RefCnt copies aer made by this routine, so don't free
+//    the argument.
 //***************************************************************************
 
 LPPL_YYSTYPE PushFcnStrand_YY
@@ -146,7 +148,6 @@ LPPL_YYSTYPE PushFcnStrand_YY
     lpYYCopy = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
     YYCopyFreeDst (lpplLocalVars->lpYYStrandNext[STRAND_FCN]++, lpYYCopy);
     YYFree (lpYYCopy); lpYYCopy = NULL;
-
 #ifdef DEBUG
     // Display the strand stack
     DisplayStrand (STRAND_FCN);
@@ -1462,18 +1463,18 @@ LPPL_YYSTYPE MakeNameFcn_YY
 
 
 //***************************************************************************
-//  $MakeOp1_YY
+//  $MakePrimOp1_YY
 //
-//  Make a monadic operator
+//  Make a primitive monadic operator
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeOp1_YY"
+#define APPEND_NAME     L" -- MakePrimOp1_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE MakeOp1_YY
+LPPL_YYSTYPE MakePrimOp1_YY
     (LPPL_YYSTYPE lpYYOp1)
 
 {
@@ -1493,23 +1494,23 @@ LPPL_YYSTYPE MakeOp1_YY
     lpYYRes->YYFlag                  = 0;
 #endif
     return lpYYRes;
-} // End MakeOp1_YY
+} // End MakePrimOp1_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $MakeOp2_YY
+//  $MakePrimOp2_YY
 //
-//  Make a dyadic operator
+//  Make a primitive dyadic operator
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeOp2_YY"
+#define APPEND_NAME     L" -- MakePrimOp2_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE MakeOp2_YY
+LPPL_YYSTYPE MakePrimOp2_YY
     (LPPL_YYSTYPE lpYYOp2)
 
 {
@@ -1529,23 +1530,23 @@ LPPL_YYSTYPE MakeOp2_YY
     lpYYRes->YYFlag                  = 0;
 #endif
     return lpYYRes;
-} // End MakeOp2_YY
+} // End MakePrimOp2_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $MakeOp3_YY
+//  $MakePrimOp3_YY
 //
-//  Make an ambiguous operator
+//  Make a primitive ambiguous operator
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeOp3_YY"
+#define APPEND_NAME     L" -- MakePrimOp3_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE MakeOp3_YY
+LPPL_YYSTYPE MakePrimOp3_YY
     (LPPL_YYSTYPE lpYYOp3)
 
 {
@@ -1565,7 +1566,7 @@ LPPL_YYSTYPE MakeOp3_YY
     lpYYRes->YYFlag                  = 0;
 #endif
     return lpYYRes;
-} // End MakeOp3_YY
+} // End MakePrimOp3_YY
 #undef  APPEND_NAME
 
 

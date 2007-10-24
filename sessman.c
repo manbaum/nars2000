@@ -9,6 +9,7 @@
 #include <colors.h>
 
 #include "main.h"
+#include "aplerrors.h"
 #include "resdebug.h"
 #include "resource.h"
 #include "externs.h"
@@ -639,6 +640,140 @@ APLUINT GetQuadRL
 
     return uQuadRL;
 } // End GetQuadRL
+
+
+//***************************************************************************
+//  $FormatQQuadInput
+//
+//  Format QQ input and save in global memory
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FormatQQuadInput"
+#else
+#define APPEND_NAME
+#endif
+
+void FormatQQuadInput
+    (UINT          uLineNum,        // Line #
+     HWND          hWndEC,          // Handle of Edit Control window
+     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+
+{
+    UINT         uLinePos,      // Char position of start of line
+                 uLineLen;      // Line length
+    APLUINT      ByteRes;       // # bytes in the result
+    HGLOBAL      hGlbRes;       // Result global memory handle
+    LPAPLCHAR    lpMemRes;      // Ptr to result global memory
+    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
+
+    // Get the position of the start of the line
+    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+
+    // Get the line length
+    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+
+    // Calculate space needed for the result
+    // N.B.:  max is needed because, in order to get the line,
+    //        we need to tell EM_GETLINE the buffer size which
+    //        takes up one APLCHAR (WORD) at the start of the buffer.
+    ByteRes = CalcArraySize (ARRAY_CHAR, max (uLineLen, 1), 1);
+
+    // Allocate space for the result
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lpMemPTD->lpSISCur->lptkFunc);
+        // Make a PL_YYSTYPE NoValue entry
+        lpYYRes = MakeNoValue_YY (lpMemPTD->lpSISCur->lptkFunc);
+    } else
+    {
+        // Lock the memory to get a ptr to it
+        lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+        // Fill in the header
+        lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeaderRes->ArrType    = ARRAY_CHAR;
+////////lpHeaderRes->Perm       = 0;        // Already zero from GHND
+////////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
+        lpHeaderRes->RefCnt     = 1;
+        lpHeaderRes->NELM       = uLineLen;
+        lpHeaderRes->Rank       = 1;
+#undef  lpHeaderRes
+
+        // Save the dimension in the result
+        *VarArrayBaseToDim (lpMemRes) = uLineLen;
+
+        // Skip over the header and dimensions to the data
+        lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+        // Tell EM_GETLINE maximum # chars in the buffer
+        // Because we allocated space for max (uLineLen, 1)
+        //   chars, we don't have to worry about overwriting
+        //   the allocation limits of the buffer
+        ((LPWORD) lpMemRes)[0] = (WORD) uLineLen;
+
+        // Get the contents of the line
+        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemRes);
+
+        // Replace leading Prompt Replacement chars
+        if (lpMemPTD->cQuadPR NE L'\0')
+        {
+            UINT QQPromptLen,   // Length of QQ prompt
+                 u;             // Loop counter
+
+            // Get the length of the QQ prompt
+            QQPromptLen = lpMemPTD->lpSISCur->QQPromptLen;
+
+            // ***FIXME*** -- we're supposed to save the actual prompt
+            //                and compare it with the chars after the
+            //                user has responded to the request for
+            //                Quote-Quad input.
+
+            // Replace all prompt chars
+            for (u = 0; u < QQPromptLen; u++)
+                lpMemRes[u] = lpMemPTD->cQuadPR;
+        } // End IF
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Fill in the result token
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
+        lpYYRes->tkToken.tkFlags.NoDisplay = 1;
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+        lpYYRes->tkToken.tkCharIndex       = lpMemPTD->lpSISCur->lptkFunc->tkCharIndex;
+    } // End IF/ELSE
+
+    // Save the result in PerTabData
+    lpMemPTD->YYResExec = *lpYYRes;
+
+    // Free the YYRes we allocated
+    YYFree (lpYYRes); lpYYRes = NULL;
+
+    Assert (lpMemPTD->lpSISCur->hSemaphore NE NULL);
+
+    if (lpMemPTD->lpSISCur->hSemaphore)
+    {
+#ifdef DEBUG
+        dprintfW (L"~~Releasing semaphore:  %08X (%S#%d)", lpMemPTD->lpSISCur->hSemaphore, FNLN);
+#endif
+        // Signal WaitForInput that we have a result
+        ReleaseSemaphore (lpMemPTD->lpSISCur->hSemaphore, 1, NULL);
+
+        // Release our time slice so the released thread can act
+        Sleep (0);
+    } // End IF
+} // End FormatQQuadInput
+#undef  APPEND_NAME
 
 
 //***************************************************************************

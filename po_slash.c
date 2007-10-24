@@ -189,7 +189,8 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     {
         // No axis specified:
         // if Slash, use last dimension
-        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH)
+        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
             aplAxis = aplRankRht - 1;
         else
             // Otherwise, it's SlashBar on the first dimension
@@ -895,7 +896,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     {
         // No axis specified:
         // if Slash, use last dimension
-        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH)
+        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
             aplAxis = max (aplRankRht, 1) - 1;
         else
             // Otherwise, it's SlashBar on the first dimension
@@ -1157,6 +1159,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
              &apaMulRht,            // ...                  multiplier
               lpYYFcnStrOpr))       // Ptr to operator function strand
             goto ERROR_EXIT;
+
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
         // Fill in the right arg token
 ////////tkRhtArg.tkFlags.TknType   =            // To be filled in below
@@ -1634,12 +1639,12 @@ BOOL PrimOpDydSlashAllocate_EM
 
     // lpMemRes now points to its data
 
-    // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-
     // If the right arg is an APA, ...
     if (aplTypeRht EQ ARRAY_APA)
     {
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
         *lpapaOffRht = lpAPA->Off;

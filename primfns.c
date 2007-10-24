@@ -2948,14 +2948,14 @@ void GetValueIntoToken
             break;
 
         case ARRAY_INT:
-            lptkArg->tkFlags.TknType      = TKT_VARIMMED;
+            lptkArg->tkFlags.TknType  = TKT_VARIMMED;
             lptkArg->tkFlags.ImmType  = IMMTYPE_INT;
             lptkArg->tkData.tkInteger = ((LPAPLINT) lpMemArg)[uArg];
 
             break;
 
         case ARRAY_FLOAT:
-            lptkArg->tkFlags.TknType      = TKT_VARIMMED;
+            lptkArg->tkFlags.TknType  = TKT_VARIMMED;
             lptkArg->tkFlags.ImmType  = IMMTYPE_FLOAT;
             lptkArg->tkData.tkFloat   = ((LPAPLFLOAT) lpMemArg)[uArg];
 
@@ -4845,41 +4845,6 @@ APLINT RoundUpBitsInArray
 
 
 //***************************************************************************
-//  $CheckException
-//
-//  Check on a structured exception
-//***************************************************************************
-
-long CheckException
-    (LPEXCEPTION_POINTERS lpExcept)
-
-{
-    // Save the exception code for later use
-    MySetExceptionCode (lpExcept->ExceptionRecord->ExceptionCode);
-
-    // Split cases based upon the exception code
-    switch (MyGetExceptionCode ())
-    {
-////////case EXCEPTION_RESULT_BOOL:
-////////case EXCEPTION_RESULT_INT:
-        case EXCEPTION_RESULT_FLOAT:
-        case EXCEPTION_BREAKPOINT:
-        case EXCEPTION_DOMAIN_ERROR:
-        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-        case EXCEPTION_INT_DIVIDE_BY_ZERO:
-        case EXCEPTION_ACCESS_VIOLATION:
-            return EXCEPTION_EXECUTE_HANDLER;
-
-        case EXCEPTION_CTRL_BREAK:
-            return EXCEPTION_CONTINUE_EXECUTION;
-
-        default:
-            return EXCEPTION_CONTINUE_SEARCH;
-    } // End SWITCH
-} // End CheckException
-
-
-//***************************************************************************
 //  $abs64
 //
 //  Return the absolute value of a 64-bit integer
@@ -5750,7 +5715,7 @@ RESTART_EXCEPTION_FILLSISNXT:
             lpMemPTD->lpSISCur->lpSISNxt = lpMemPTD->lpSISNxt;
         lpMemPTD->lpSISCur = lpMemPTD->lpSISNxt;
         lpMemPTD->lpSISNxt = lpMemPTD->lpSISNxt->lpSISNxt;
-    } __except (CheckException (GetExceptionInformation ()))
+    } __except (CheckException (GetExceptionInformation (), "FillSISNxt"))
     {
         switch (MyGetExceptionCode ())
         {
@@ -5780,7 +5745,12 @@ RESTART_EXCEPTION_FILLSISNXT:
 
             } // End EXCEPTION_ACCESS_VIOLATION
 
-            defstop
+            default:
+                // Display message for unhandled exception
+                DisplayException ();
+#ifdef DEBUG
+                DbgStop ();         // We should never get here
+#endif
                 break;
         } // End SWITCH
     } // End __try/__except

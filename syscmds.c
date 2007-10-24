@@ -6,6 +6,7 @@
 #include <windows.h>
 
 #include "main.h"
+#include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
 #include "pertab.h"
@@ -58,6 +59,27 @@ SYSCMDSTAB SysCmdsTab[]
 
 // The # rows in the above table
 #define SYSCMDSTAB_NROWS    (sizeof (SysCmdsTab) / sizeof (SysCmdsTab[0]))
+
+
+//***************************************************************************
+//  $IncorrectCommand
+//
+//  Signal an incorrect command
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- IncorrectCommand"
+#else
+#define APPEND_NAME
+#endif
+
+void IncorrectCommand
+    (void)
+
+{
+    AppendLine (ERRMSG_INCORRECT_COMMAND APPEND_NAME, FALSE, TRUE);
+} // End IncorrectCommand
+#undef  APPEND_NAME
 
 
 //***************************************************************************

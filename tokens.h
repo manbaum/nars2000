@@ -102,9 +102,10 @@ typedef enum tagTOKEN_TYPES
 typedef struct tagTKFLAGS
 {
     UINT TknType:6,         // 0000003F:  Data token type (see TOKEN_TYPES)
-         ImmType:4,         // 000003C0:  Type of immediate data (see IMM_TYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
-         NoDisplay:1,       // 00000400:  Do not display this token
-         Avail:21;          // FFFFF800:  Available bits
+         Align:2,           // 000000C0:  Alignment bits (available if necessary)
+         ImmType:4,         // 00000F00:  Type of immediate data (see IMM_TYPES) (if .Type is TKT_VARIMMED/TKT_FCNIMMED)
+         NoDisplay:1,       // 00000000:  Do not display this token
+         Avail:19;          // FFFFE000:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
 typedef union tagTOKEN_DATA

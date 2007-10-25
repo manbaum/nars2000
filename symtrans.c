@@ -127,35 +127,76 @@ UINT OprTrans
 //***************************************************************************
 
 UINT SymTrans
-    (LPTOKEN lptkFunc)      // Ptr to function token
+    (LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    WCHAR wch;              // The symbol
+    WCHAR        wch;               // The symbol
+    HGLOBAL      hGlbFcn = NULL;    // Function array global memory handle
+    LPPL_YYSTYPE lpMemFcn;          // Ptr to function array global memory
+    UINT         uRet;              // Result
 
-    Assert (lptkFunc->tkFlags.TknType EQ TKT_FCNIMMED
-         || lptkFunc->tkFlags.TknType EQ TKT_OP1IMMED
-         || lptkFunc->tkFlags.TknType EQ TKT_OP2IMMED
-         || lptkFunc->tkFlags.TknType EQ TKT_OP3IMMED
-         || lptkFunc->tkFlags.TknType EQ TKT_OPJOTDOT);
-
-    // Get the symbol
-    wch = lptkFunc->tkData.tkChar;
-
-    // Split cases based upon the token type
+    // Split cases based upon the function token type
     switch (lptkFunc->tkFlags.TknType)
     {
         case TKT_FCNIMMED:
-            return FcnTrans (wch);
+        case TKT_OP1IMMED:
+        case TKT_OP2IMMED:
+        case TKT_OP3IMMED:
+        case TKT_OPJOTDOT:
+            // This caset works because TOKEN is the first element of PL_YYSTYPE
+            lpMemFcn = (LPPL_YYSTYPE) lptkFunc;
+
+            break;
+
+        case TKT_FCNARRAY:
+            // Get the function array global memory handle
+            hGlbFcn = ClrPtrTypeDirGlb (lptkFunc->tkData.tkGlbData);
+
+            // Lock the memory to get a ptr to it
+            lpMemFcn = MyGlobalLock (hGlbFcn);
+
+            // Skip over the header to the data (PL_YYSTYPEs)
+            lpMemFcn = FcnArrayBaseToData (lpMemFcn);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Get the symbol of the primary function/operator
+    wch = lpMemFcn->tkToken.tkData.tkChar;
+
+    // Split cases based upon the token type
+    switch (lpMemFcn->tkToken.tkFlags.TknType)
+    {
+        case TKT_FCNIMMED:
+            uRet = FcnTrans (wch);
+
+            break;
 
         case TKT_OP1IMMED:
         case TKT_OP2IMMED:
         case TKT_OP3IMMED:
         case TKT_OPJOTDOT:
-            return OprTrans (wch);
+            uRet = OprTrans (wch);
+
+            break;
 
         defstop
-            return 0;
+            uRet = 0;
+
+            break;
     } // End SWITCH
+
+    // If we locked a function array, unlock it now
+    if (hGlbFcn)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbFcn); lpMemFcn = NULL;
+    } // End IF
+
+    return uRet;
 } // End SymTrans
 
 

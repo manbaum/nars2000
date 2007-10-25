@@ -497,6 +497,7 @@ static char tabConvert[][STRAND_LENGTH] =
             case TKT_RBRACKET:
             case TKT_EOS:
             case TKT_EOL:
+            case TKT_SOS:
             case TKT_LINECONT:
             case TKT_STRAND:
             defstop
@@ -1194,7 +1195,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
-    // Skip over the header and dimensions to the data
+    // Skip over the header to the data (PL_YYSTYPEs)
     lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
 
     // Copy the PL_YYSTYPEs to the global memory object

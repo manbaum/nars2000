@@ -1,0 +1,194 @@
+//***************************************************************************
+//  NARS2000 -- System Function -- Quad ERROR
+//***************************************************************************
+
+#define STRICT
+#include <windows.h>
+
+#include "main.h"
+#include "aplerrors.h"
+#include "resdebug.h"
+#include "externs.h"
+#include "pertab.h"
+#include "sis.h"
+
+// Include prototypes unless prototyping
+#ifndef PROTO
+#include "compro.h"
+#endif
+
+
+//***************************************************************************
+//  $SysFnNC_EM_YY
+//
+//  System function:  []ERROR -- Error Signal
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnERROR_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE SysFnERROR_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
+    // Split cases based upon monadic or dyadic
+    if (lptkLftArg EQ NULL)
+        return SysFnMonERROR_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+    else
+        return SysFnDydERROR_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End SysFnERROR_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SysFnMonERROR_EM_YY
+//
+//  Monadic []ERROR -- Error Signal
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnMonERROR_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE SysFnMonERROR_EM_YY
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMRht;        // Right arg NELM
+    APLRANK      aplRankRht;        // Right arg Rank
+    APLLONGEST   aplLongestRht;     // Right arg longest if immediate
+    HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
+    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for RANK ERROR
+    if (aplRankRht > 2)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // Check for DOMAIN ERROR
+    if (!IsSimple (aplTypeRht)
+     || (aplTypeRht NE ARRAY_CHAR
+      && aplNELMRht NE 0))
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
+
+    // If the right arg is empty, return NoValue
+    if (aplNELMRht EQ 0)
+        lpYYRes = MakeNoValue_YY (lptkFunc);
+    else
+    {
+        // Get the thread's PerTabData global memory handle
+        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Get right arg's global ptrs
+        aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+        // If the message is a global, ...
+        if (hGlbRht)
+        {
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+            // Copy the error message to temporary storage
+            CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
+        } else
+            lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht;
+
+        // Ensure properly terminated
+        lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = L'\0';
+
+        // Save in PTD -- note that the tkCharIndex in the
+        //   function token passed here isn't used unless this is
+        //   immediate execution mode; normally, the tkCharIndex of the
+        //   caller's is used.
+        ErrorMessageIndirectToken (lpMemPTD->lpwszQuadErrorMsg, lptkFunc);
+        lpMemPTD->tkErrorCharIndex = lptkFunc->tkCharIndex;
+
+        // Set the reset flag
+        lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    } // End IF/ELSE
+
+    // We no longer need this ptr
+    if (hGlbRht && lpMemRht)
+    {
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End SysFnMonERROR_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SysFnDydERROR_EM_YY
+//
+//  Dyadic []ERROR -- ERROR
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnDydERROR_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE SysFnDydERROR_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    return PrimFnValenceError_EM (lptkFunc);
+} // End SysFnDydERROR_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  End of File: qf_error.c
+//***************************************************************************

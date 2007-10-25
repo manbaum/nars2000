@@ -489,7 +489,7 @@ BOOL FreeResultGlobalFcn
             DbgGlobalFree (hGlbTxtLine); hGlbTxtLine = NULL;
         } // End IF
 
-        // Point to the array data (PL_YYSTYPEs)
+        // Skip over the header to the data (PL_YYSTYPEs)
         lpYYToken = FcnArrayBaseToData (lpMemData);
 
         // Loop through the PL_YYSTYPEs

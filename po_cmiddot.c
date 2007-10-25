@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- Primitive Operator -- DieresisTilde
+//  NARS2000 -- Primitive Operator -- CircleMiddleDot
 //***************************************************************************
 
 #define STRICT
@@ -18,19 +18,19 @@
 
 
 //***************************************************************************
-//  $PrimOpDieresisTilde_EM_YY
+//  $PrimOpCircleMiddleDot_EM_YY
 //
 //  Primitive operator for monadic and dyadic derived functions from
-//    monadic operator DieresisTilde ("duplicate" and "commute")
+//    monadic operator CircleMiddleDot ("null op" and "null op")
 //***************************************************************************
 
-LPPL_YYSTYPE PrimOpDieresisTilde_EM_YY
+LPPL_YYSTYPE PrimOpCircleMiddleDot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DIERESISTILDE);
+    Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_CIRCLEMIDDLEDOT);
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
@@ -38,23 +38,23 @@ LPPL_YYSTYPE PrimOpDieresisTilde_EM_YY
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonDieresisTilde_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
-                                             lptkRhtArg);   // Ptr to right arg
+        return PrimOpMonCircleMiddleDot_EM_YY (lpYYFcnStrOpr,   // Ptr to operator function strand
+                                               lptkRhtArg);     // Ptr to right arg
     else
-        return PrimOpDydDieresisTilde_EM_YY (lptkLftArg,    // Ptr to left arg token
-                                             lpYYFcnStrOpr, // Ptr to operator function strand
-                                             lptkRhtArg);   // Ptr to right arg token
-} // End PrimOpDieresisTilde_EM_YY
+        return PrimOpDydCircleMiddleDot_EM_YY (lptkLftArg,      // Ptr to left arg token
+                                               lpYYFcnStrOpr,   // Ptr to operator function strand
+                                               lptkRhtArg);     // Ptr to right arg token
+} // End PrimOpCircleMiddleDot_EM_YY
 
 
 //***************************************************************************
-//  $PrimProtoOpDieresisTilde_EM_YY
+//  $PrimProtoOpCircleMiddleDot_EM_YY
 //
 //  Generate a prototype for the derived functions from
-//    monadic operator DieresisTilde ("duplicate" and "commute")
+//    monadic operator CircleMiddleDot ("duplicate" and "commute")
 //***************************************************************************
 
-LPPL_YYSTYPE PrimProtoOpDieresisTilde_EM_YY
+LPPL_YYSTYPE PrimProtoOpCircleMiddleDot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
@@ -70,53 +70,53 @@ LPPL_YYSTYPE PrimProtoOpDieresisTilde_EM_YY
         // Called monadically
         //***************************************************************
 
-        return PrimOpMonDieresisTildeCommon_EM_YY (lpYYFcnStrOpr,   // Ptr to operator function strand
-                                                   lptkRhtArg,      // Ptr to right arg token
-                                                   TRUE);           // TRUE iff prototyping
+        return PrimOpMonCircleMiddleDotCommon_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
+                                                     lptkRhtArg,    // Ptr to right arg token
+                                                     TRUE);         // TRUE iff prototyping
     } else
     {
         //***************************************************************
         // Called dyadically
         //***************************************************************
 
-        return PrimOpDydDieresisTildeCommon_EM_YY (lptkLftArg,      // Ptr to left arg token
-                                                   lpYYFcnStrOpr,   // Ptr to operator function strand
-                                                   lptkRhtArg,      // Ptr to right arg token
-                                                   TRUE);           // TRUE iff prototyping
+        return PrimOpDydCircleMiddleDotCommon_EM_YY (lptkLftArg,    // Ptr to left arg token
+                                                     lpYYFcnStrOpr, // Ptr to operator function strand
+                                                     lptkRhtArg,    // Ptr to right arg token
+                                                     TRUE);         // TRUE iff prototyping
     } // End IF/ELSE
-} // End PrimProtoOpDieresisTilde_EM_YY
+} // End PrimProtoOpCircleMiddleDot_EM_YY
 
 
 //***************************************************************************
-//  $PrimOpMonDieresisTilde_EM_YY
+//  $PrimOpMonCircleMiddleDot_EM_YY
 //
-//  Primitive operator for monadic derived function from DieresisTilde ("duplicate")
+//  Primitive operator for monadic derived function from CircleMiddleDot ("duplicate")
 //***************************************************************************
 
-LPPL_YYSTYPE PrimOpMonDieresisTilde_EM_YY
+LPPL_YYSTYPE PrimOpMonCircleMiddleDot_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimOpMonDieresisTildeCommon_EM_YY (lpYYFcnStrOpr,   // Ptr to operator function strand
-                                               lptkRhtArg,      // Ptr to right arg token
-                                               FALSE);          // TRUE iff prototyping
-} // End PrimOpMonDieresisTilde_EM_YY
+    return PrimOpMonCircleMiddleDotCommon_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
+                                                 lptkRhtArg,    // Ptr to right arg token
+                                                 FALSE);        // TRUE iff prototyping
+} // End PrimOpMonCircleMiddleDot_EM_YY
 
 
 //***************************************************************************
-//  $PrimOpMonDieresisTilde_EM_YY
+//  $PrimOpMonCircleMiddleDot_EM_YY
 //
-//  Primitive operator for monadic derived function from DieresisTilde ("duplicate")
+//  Primitive operator for monadic derived function from CircleMiddleDot ("duplicate")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonDieresisTildeCommon_EM_YY"
+#define APPEND_NAME     L" -- PrimOpMonCircleMiddleDotCommon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
+LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      BOOL         bPrototyping)         // TRUE if prototyping
@@ -157,57 +157,57 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
             return NULL;
         } // End IF
 
-        // Execute the function dyadically between the right arg and itself
+        // Execute the function monadically on the right arg
         // Note that we cast the function strand to LPTOKEN
         //   to bridge the two types of calls -- one to a primitive
         //   function which takes a function token, and one to a
         //   primitive operator which takes a function strand
-        return (*lpPrimProtoLft) (lptkRhtArg,       // Ptr to left arg token
+        return (*lpPrimProtoLft) (NULL,             // Ptr to left arg token
                         (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand fnuction strand
                                   lptkRhtArg,       // Ptr to right arg token
                                   lptkAxis);        // Ptr to axis token
     } else
-        // Execute the function dyadically between the right arg and itself
-        return ExecFuncStr_EM_YY (lptkRhtArg,       // Ptr to left arg token
+        // Execute the function monadically on the right arg
+        return ExecFuncStr_EM_YY (NULL,             // Ptr to left arg token
                                   lpYYFcnStrLft,    // Ptr to left operand function strand
                                   lptkRhtArg,       // Ptr to right arg token
                                   lptkAxis);        // Ptr to axis token (may be NULL)
-} // End PrimOpMonDieresisTildeCommon_EM_YY
+} // End PrimOpMonCircleMiddleDotCommon_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $PrimOpDydDieresisTilde_EM_YY
+//  $PrimOpDydCircleMiddleDot_EM_YY
 //
-//  Primitive operator for dyadic derived function from DieresisTilde ("commute")
+//  Primitive operator for dyadic derived function from CircleMiddleDot ("commute")
 //***************************************************************************
 
-LPPL_YYSTYPE PrimOpDydDieresisTilde_EM_YY
+LPPL_YYSTYPE PrimOpDydCircleMiddleDot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimOpDydDieresisTildeCommon_EM_YY (lptkLftArg,      // Ptr to left arg token
-                                               lpYYFcnStrOpr,   // Ptr to operator function strand
-                                               lptkRhtArg,      // Ptr to right arg token
-                                               FALSE);          // TRUE iff prototyping
-} // End PrimOpDydDieresisTilde_EM_YY
+    return PrimOpDydCircleMiddleDotCommon_EM_YY (lptkLftArg,    // Ptr to left arg token
+                                                 lpYYFcnStrOpr, // Ptr to operator function strand
+                                                 lptkRhtArg,    // Ptr to right arg token
+                                                 FALSE);        // TRUE iff prototyping
+} // End PrimOpDydCircleMiddleDot_EM_YY
 
 
 //***************************************************************************
-//  $PrimOpDydDieresisTildeCommon_EM_YY
+//  $PrimOpDydCircleMiddleDotCommon_EM_YY
 //
-//  Primitive operator for dyadic derived function from DieresisTilde ("commute")
+//  Primitive operator for dyadic derived function from CircleMiddleDot ("commute")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydDieresisTildeCommon_EM_YY"
+#define APPEND_NAME     L" -- PrimOpDydCircleMiddleDotCommon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
+LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
@@ -249,25 +249,25 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
             return NULL;
         } // End IF
 
-        // Execute the function dyadically between the two args switched
+        // Execute the function dyadically between the two args
         // Note that we cast the function strand to LPTOKEN
         //   to bridge the two types of calls -- one to a primitive
         //   function which takes a function token, and one to a
         //   primitive operator which takes a function strand
-        return (*lpPrimProtoLft) (lptkRhtArg,       // Ptr to left arg token
+        return (*lpPrimProtoLft) (lptkLftArg,       // Ptr to left arg token
                         (LPTOKEN) lpYYFcnStrLft,    // Ptr to left operand function strand
-                                  lptkLftArg,       // Ptr to right arg token
+                                  lptkRhtArg,       // Ptr to right arg token
                                   lptkAxis);        // Ptr to axis token
     } else
-        // Execute the function dyadically between the two args switched
-        return ExecFuncStr_EM_YY (lptkRhtArg,   // Ptr to left arg token
+        // Execute the function dyadically between the two args
+        return ExecFuncStr_EM_YY (lptkLftArg,   // Ptr to left arg token
                                   lpYYFcnStrLft,// Ptr to left operand function strand
-                                  lptkLftArg,   // Ptr to right arg token
+                                  lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis);    // Ptr to axis token (may be NULL)
-} // End PrimOpDydDieresisTildeCommon_EM_YY
+} // End PrimOpDydCircleMiddleDotCommon_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  End of File: po_ditilde.c
+//  End of File: po_cmiddot.c
 //***************************************************************************

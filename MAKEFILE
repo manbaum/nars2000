@@ -207,6 +207,7 @@ $(O)pf_ucaret.DEP       \
 $(O)pf_ustile.DEP       \
 $(O)pf_utack.DEP        \
 $(O)pf_utackjot.DEP     \
+$(O)po_cmiddot.DEP      \
 $(O)po_dieresis.DEP     \
 $(O)po_ditilde.DEP      \
 $(O)po_dot.DEP          \
@@ -485,6 +486,9 @@ $(O)yyfns.DEP
 !if exist ($(O)pf_utackjot.DEP)
 !       include $(O)pf_utackjot.DEP
 !endif
+!if exist ($(O)po_cmiddot.DEP)
+!       include $(O)po_cmiddot.DEP
+!endif
 !if exist ($(O)po_dieresis.DEP)
 !       include $(O)po_dieresis.DEP
 !endif
@@ -694,6 +698,7 @@ $(O)pf_ucaret.PRO       \
 $(O)pf_ustile.PRO       \
 $(O)pf_utack.PRO        \
 $(O)pf_utackjot.PRO     \
+$(O)po_cmiddot.PRO      \
 $(O)po_dieresis.PRO     \
 $(O)po_ditilde.PRO      \
 $(O)po_dot.PRO          \
@@ -849,6 +854,7 @@ $(O)pf_ucaret.OBJ:      $(@B).C         $(PF_UCARET_DEP)
 $(O)pf_ustile.OBJ:      $(@B).C         $(PF_USTILE_DEP)
 $(O)pf_utack.OBJ:       $(@B).C         $(PF_UTACK_DEP)
 $(O)pf_utackjot.OBJ:    $(@B).C         $(PF_UTACKJOT_DEP)
+$(O)po_cmiddot.OBJ:     $(@B).C         $(PO_CMIDDOT_DEP)
 $(O)po_dieresis.OBJ:    $(@B).C         $(PO_DIERESIS_DEP)
 $(O)po_ditilde.OBJ:     $(@B).C         $(PO_DITILDE_DEP)
 $(O)po_dot.OBJ:         $(@B).C         $(PO_DOT_DEP)
@@ -983,6 +989,7 @@ OBJS=                       \
      $(O)pf_ustile.OBJ      \
      $(O)pf_utack.OBJ       \
      $(O)pf_utackjot.OBJ    \
+     $(O)po_cmiddot.OBJ     \
      $(O)po_dieresis.OBJ    \
      $(O)po_ditilde.OBJ     \
      $(O)po_dot.OBJ         \

@@ -4,6 +4,7 @@ TO DO:  General:  Important
 * Fix display of chars in a saved ws (surround with quotes, etc.)
 * Handle multiple SI levels in a saved ws
 * Handle SI Damage
+* Finish filling in <startaddr.h>
 * Implement dyadic epsilon              (member of)
 * ...       dyadic down tack jot        (format by specification)
 * ...       dyadic iota                 (index of)
@@ -28,7 +29,6 @@ TO DO:  General:  Important
 * ...        L []EA R
 * ...        L []ES R
 * ...        L []TF R
-* ...       ambiguous operators
 * ...
 
 
@@ -167,6 +167,7 @@ DONE:  General
 * ...       bracket indexing             A[L]
 * ...       bracket list indexing        A[L][M]
 * ...       bracket list indexing        A[L][M1;...;Mn]
+* ...       ambiguous operators
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

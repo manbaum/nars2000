@@ -799,6 +799,8 @@ LPVOID _MyGlobalAlloc
 {
     LPVOID lpVoid;
 
+    CheckMemStat ();
+
     lpVoid = GlobalAlloc (uFlags, dwBytes);
 
     if (!lpVoid)
@@ -869,6 +871,8 @@ LPVOID _MyGlobalLockSub
     LPVOID lpVoid;
     int    iCount;
 
+    CheckMemStat ();
+
     lpVoid = GlobalLock (hMem);
 
     if (!lpVoid)
@@ -907,6 +911,8 @@ BOOL _MyGlobalUnlock
 {
     BOOL  bRet;
 
+    CheckMemStat ();
+
     // Ensure the lock count is non-zero
     if ((_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT) EQ 0)
     {
@@ -937,6 +943,8 @@ DWORD _MyGlobalSize
 
 {
     DWORD dwRet;
+
+    CheckMemStat ();
 
     dwRet = GlobalSize (hMem);
     if (dwRet EQ 0)
@@ -969,6 +977,8 @@ DWORD _MyGlobalFlags
 
 {
     DWORD dwRet;
+
+    CheckMemStat ();
 
     dwRet = GlobalFlags (hMem);
     if (dwRet EQ GMEM_INVALID_HANDLE)
@@ -1004,6 +1014,8 @@ HGLOBAL _MyGlobalReAlloc
 {
     DWORD dwRet;
     HGLOBAL hGlb;
+
+    CheckMemStat ();
 
     dwRet = GlobalSize (hMem);
     if (dwRet EQ 0)
@@ -1060,6 +1072,8 @@ HGLOBAL _MyGlobalFree
      UINT    uLine)             // Line #
 
 {
+    CheckMemStat ();
+
     // GlobalFlags returns the lock count in the low-order byte
     if (_MyGlobalFlags (hMem, uLine) & GMEM_LOCKCOUNT)
     {

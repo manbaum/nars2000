@@ -130,7 +130,7 @@ BOOL CreateFcnWindow
     UpdateWindow (hWnd);
 
     // Set the appropriate font in place
-    SendMessageW (hWnd, WM_SETFONT, (WPARAM) hFontFE, TRUE);
+    SendMessageW (hWnd, WM_SETFONT, (WPARAM) hFontFE, MAKELPARAM (TRUE, 0));
 
     return TRUE;
 } // End CreateFcnWindow
@@ -2065,71 +2065,74 @@ void PasteAPLChars
     // Get a handle to the clipboard data for CF_UNICODETEXT
     hGlbClip = GetClipboardData (CF_UNICODETEXT);
 
-    // Get the memory size
-    dwSize = GlobalSize (hGlbClip);
-
-    // Allocate space for the new object
-    // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
-    //   because after we pass this handle to the clipboard
-    //   we won't own it anymore.
-    hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
-    if (!hGlbText)
+    if (hGlbClip)
     {
-        MessageBox (hWndEC,
-                    "Unable to allocate memory for the copy of CF_UNICODETEXT format",
-                    lpszAppName,
-                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-        goto ERROR_EXIT;
-    } else
-    {
-        // Lock the memory to get a ptr to it
-        // Note we can't use MyGlobalLock/Unlock as the lock count
-        //   is not modified for a clipboard (non-owned) handle
-        lpMemClip = GlobalLock (hGlbClip); Assert (lpMemClip NE NULL);
-        lpMemText = GlobalLock (hGlbText); Assert (lpMemText NE NULL);
+        // Get the memory size
+        dwSize = GlobalSize (hGlbClip);
 
-        // Make a copy of the clipboard data
-        CopyMemory (lpMemText, lpMemClip, dwSize);
-
-        // We no longer need this ptr
-        GlobalUnlock (hGlbClip); lpMemClip = NULL;
-
-        // Convert dwSize to # elements
-        dwSize /= sizeof (WCHAR);
-
-        // Translate the APL charset to the NARS charset
-        for (uText = 0; uText < dwSize; uText++, lpMemText++)
-        if (*lpMemText)
-        for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
-        if (*lpMemText EQ uniTrans[uTran][uIndex])
+        // Allocate space for the new object
+        // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
+        //   because after we pass this handle to the clipboard
+        //   we won't own it anymore.
+        hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
+        if (!hGlbText)
         {
-            *lpMemText  = uniTrans[uTran][UNITRANS_NARS];
+            MessageBox (hWndEC,
+                        "Unable to allocate memory for the copy of CF_UNICODETEXT format",
+                        lpszAppName,
+                        MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            goto ERROR_EXIT;
+        } else
+        {
+            // Lock the memory to get a ptr to it
+            // Note we can't use MyGlobalLock/Unlock as the lock count
+            //   is not modified for a clipboard (non-owned) handle
+            lpMemClip = GlobalLock (hGlbClip); Assert (lpMemClip NE NULL);
+            lpMemText = GlobalLock (hGlbText); Assert (lpMemText NE NULL);
 
-            break;      // out of the innermost loop
-        } // End FOR/FOR/IF
+            // Make a copy of the clipboard data
+            CopyMemory (lpMemText, lpMemClip, dwSize);
 
-        // We no longer need this ptr
-        GlobalUnlock (hGlbText); lpMemText = NULL;
+            // We no longer need this ptr
+            GlobalUnlock (hGlbClip); lpMemClip = NULL;
 
-        // Empty the clipboard
-        EmptyClipboard (); hGlbClip = NULL;
+            // Convert dwSize to # elements
+            dwSize /= sizeof (WCHAR);
 
-        // Place all the other formats on the clipboard first
-        for (uFmt = 0; uFmt < uCount; uFmt++)
-            SetClipboardData (lpMemFmts[uFmt].uFmtNum, lpMemFmts[uFmt].hGlbFmt);
+            // Translate the APL charset to the NARS charset
+            for (uText = 0; uText < dwSize; uText++, lpMemText++)
+            if (*lpMemText)
+            for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
+            if (*lpMemText EQ uniTrans[uTran][uIndex])
+            {
+                *lpMemText  = uniTrans[uTran][UNITRANS_NARS];
 
-        // Place the changed data onto the clipboard
-        SetClipboardData (CF_PRIVATEFIRST, hGlbText); hGlbText = NULL;
+                break;      // out of the innermost loop
+            } // End FOR/FOR/IF
 
-////////// Pass on to the Edit Control
-////////SendMessageW (hWndEC, WM_PASTE, 0, 0);
+            // We no longer need this ptr
+            GlobalUnlock (hGlbText); lpMemText = NULL;
 
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;
+            // Empty the clipboard
+            EmptyClipboard (); hGlbClip = NULL;
 
-        // We no longer need this storage
-        MyGlobalFree (hGlbFmts); hGlbFmts = NULL;
-    } // End IF/ELSE
+            // Place all the other formats on the clipboard first
+            for (uFmt = 0; uFmt < uCount; uFmt++)
+                SetClipboardData (lpMemFmts[uFmt].uFmtNum, lpMemFmts[uFmt].hGlbFmt);
+
+            // Place the changed data onto the clipboard
+            SetClipboardData (CF_PRIVATEFIRST, hGlbText); hGlbText = NULL;
+        } // End IF/ELSE
+    } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbFmts); lpMemFmts = NULL;
+
+    // We no longer need this storage
+    MyGlobalFree (hGlbFmts); hGlbFmts = NULL;
+
+    // We're done with the clipboard and its handle
+    CloseClipboard (); hGlbClip = NULL;
 ERROR_EXIT:
     if (hGlbText && lpMemText)
     {

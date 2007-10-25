@@ -84,73 +84,83 @@ BOOL WINAPI CreateDebuggerInThread
                  hWndDB;        // Debugger window handle
     MSG          Msg;           // Message for GetMessage loop
 
-    // Save the thread type ('DB')
-    TlsSetValue (dwTlsType, (LPVOID) 'DB');
-
-    // Extract values from the arg struc
-    hGlbPTD = lpcdbThread->hGlbPTD;
-
-    // Save the thread's PerTabData global memory handle
-    TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the MDI Client window handle
-    hWndMC = lpMemPTD->hWndMC;
-
-    // Create the debugger window
-    hWndDB =
-    lpMemPTD->hWndDB =
-    CreateMDIWindow (szDBClass,             // Class name
-                     szDBTitle,             // Window title
-                     0,                     // Styles
-                     CW_USEDEFAULT,         // X-pos
-                     CW_USEDEFAULT,         // Y-pos
-                     CW_USEDEFAULT,         // Height
-                     CW_USEDEFAULT,         // Width
-                     hWndMC,                // Parent
-                     _hInstance,            // Instance
-                     0);                    // Extra data
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    // If it didn't succeed, ...
-    if (hWndDB EQ NULL)
-        MB (pszNoCreateDBWnd);
-    else
+#ifndef DEBUG
+    __try
     {
-        // Show and paint the window
-        ShowWindow (hWndDB, SW_SHOWNORMAL);
-        UpdateWindow (hWndDB);
+#endif
+        // Save the thread type ('DB')
+        TlsSetValue (dwTlsType, (LPVOID) 'DB');
 
-        // Make sure we can communicate between windows
-        AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
+        // Extract values from the arg struc
+        hGlbPTD = lpcdbThread->hGlbPTD;
+
+        // Save the thread's PerTabData global memory handle
+        TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
 
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
-        // Tell the SM we're active
-        PostMessage (lpMemPTD->hWndSM, WM_PARENTNOTIFY, MAKEWPARAM (WM_CREATE, IDWC_SM_DB), (LPARAM) hWndDB);
+        // Get the MDI Client window handle
+        hWndMC = lpMemPTD->hWndMC;
 
+        // Create the debugger window
+        hWndDB =
+        lpMemPTD->hWndDB =
+        CreateMDIWindow (szDBClass,             // Class name
+                         szDBTitle,             // Window title
+                         0,                     // Styles
+                         CW_USEDEFAULT,         // X-pos
+                         CW_USEDEFAULT,         // Y-pos
+                         CW_USEDEFAULT,         // Height
+                         CW_USEDEFAULT,         // Width
+                         hWndMC,                // Parent
+                         _hInstance,            // Instance
+                         0);                    // Extra data
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-        // Main message loop
-        while (GetMessage (&Msg, NULL, 0, 0))
+        // If it didn't succeed, ...
+        if (hWndDB EQ NULL)
+            MB (pszNoCreateDBWnd);
+        else
         {
-            // Handle MDI messages and accelerators
-            if (!TranslateMDISysAccel (hWndMC, &Msg)
-             && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+            // Show and paint the window
+            ShowWindow (hWndDB, SW_SHOWNORMAL);
+            UpdateWindow (hWndDB);
+
+            // Make sure we can communicate between windows
+            AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Tell the SM we're active
+            PostMessage (lpMemPTD->hWndSM, WM_PARENTNOTIFY, MAKEWPARAM (WM_CREATE, IDWC_SM_DB), (LPARAM) hWndDB);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            // Main message loop
+            while (GetMessage (&Msg, NULL, 0, 0))
             {
-                TranslateMessage (&Msg);
-                DispatchMessage  (&Msg);
-            } // End IF
-        } // End WHILE
+                // Handle MDI messages and accelerators
+                if (!TranslateMDISysAccel (hWndMC, &Msg)
+                 && ((!hAccel) || !TranslateAccelerator (hWndMF, hAccel, &Msg)))
+                {
+                    TranslateMessage (&Msg);
+                    DispatchMessage  (&Msg);
+                } // End IF
+            } // End WHILE
 
-        // GetMessage returned FALSE for a Quit message
-    } // End IF
-
+            // GetMessage returned FALSE for a Quit message
+        } // End IF
+#ifndef DEBUG
+    } __except (CheckException (GetExceptionInformation (), "CreateDebuggerInThread"))
+    {
+        // Display message for unhandled exception
+        DisplayException ();
+    } // End __try/__except
+#endif
     return 0;
 } // End CreateDebuggerInThread
 #endif
@@ -280,13 +290,14 @@ LRESULT APIENTRY DBWndProc
 
         case MYWM_INIT_DB:
             // Tell the Listbox Control about its font
-            SendMessageW (hWndLB, WM_SETFONT, (WPARAM) hFontSM, TRUE);
+            SendMessageW (hWndLB, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
 
             return FALSE;           // We handled the msg
 
-        case WM_SETFONT:
+        case WM_SETFONT:            // hFont = (HFONT) wParam;
+                                    // fRedraw = LOWORD (lParam);
         case WM_MOUSEWHEEL:
-            // Pass these message through to the ListBox
+            // Pass these messages through to the ListBox
             SendMessageW (hWndLB, message, wParam, lParam);
 
             return FALSE;           // We handled the msg

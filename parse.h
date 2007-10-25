@@ -48,40 +48,41 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     HGLOBAL      hGlbTxtLine,       // 00:  Line text global memory handle
                  hGlbToken;         // 04:  Tokenized line global memory handle
     UNION_TOKEN  t2;                // 08:  Locked base of hGlbToken
-    LPTOKEN      lpStart,           // 0C:  Ptr to first available entry after the header
-                 lpNext,            // 10:  Ptr to next  ...
-                 lpStop;            // 14:  Ptr to stop token if LookAhead
+    LPTOKEN      lptkStart,         // 0C:  Ptr to first available entry after the header
+                 lptkNext,          // 10:  Ptr to next  ...
+                 lptkStop;          // 14:  Ptr to stop token if LookAhead
     LPAPLCHAR    lpwszLine;         // 18:  Ptr to line text (zero-terminated)
-    UINT         tkErrorCharIndex;  // 1C:  Error char index
-    UINT         NameType:4,        // 20:  0000000F:  Object type (see NAME_TYPES)
+    UINT         tkErrorCharIndex,  // 1C:  Error char index
+                 tkLACharIndex;     // 20:  LookAhead char index
+    UINT         NameType:4,        // 24:  0000000F:  Object type (see NAME_TYPES)
                  bLookAhead:1,      //      00000010:  TRUE iff looking for object type within surrounding parens
                  ExitType:4,        //      000001E0:  Exit Type (see EXIT_TYPES)
                  bRet:1,            //      00000200   Various function results
                  bCtrlBreak:1,      //      00000400   TRUE iff Ctrl-Break pressed
                  Avail:21;          //      FFFFF800:  Available bits
-    LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 24:  Strand stack start (static)
-                 lpYYStrandBase [STRAND_LEN],   // 2C:  ...          base (dynamic)
-                 lpYYStrandNext [STRAND_LEN];   // 34:  ...          next token (dynamic)
-    HGLOBAL      hGlbPTD;           // 3C:  Handle to PerTabData
-    HWND         hWndSM;            // 40:  Window handle to Session Manager
-    LPPL_YYSTYPE lpYYStr,           // 44:  Ptr to PL_YYSTYPE strand
-                 lpYYStrL,          // 48:  ...               left strand
-                 lpYYStrR,          // 4C:  ...               right strand
-                 lpYYStrN,          // 50:  ...               name strand
-                 lpYYRes,           // 54:  ...               result
-                 lpYYFcn,           // 58:  ...               function strand
-                 lpYYLst,           // 5C:  ...               list
-                 lpYYAxis,          // 60:  ...               axis
-                 lpYYOp1,           // 64:  ...               monadic operator
-                 lpYYOp2,           // 68:  ...               dyadic  ...
-                 lpYYOp3,           // 6C:  ...               ambiguous ...
-                 lpYYLft,           // 70:  ...               left operand
-                 lpYYRht,           // 74:  ...               right operand
-                 lpYYMak;           // 78:  ...               MakeXXX function
+    LPPL_YYSTYPE lpYYStrandStart[STRAND_LEN],   // 28:  Strand stack start (static)
+                 lpYYStrandBase [STRAND_LEN],   // 30:  ...          base (dynamic)
+                 lpYYStrandNext [STRAND_LEN];   // 38:  ...          next token (dynamic)
+    HGLOBAL      hGlbPTD;           // 40:  Handle to PerTabData
+    HWND         hWndSM;            // 48:  Window handle to Session Manager
+    LPPL_YYSTYPE lpYYStr,           // 48:  Ptr to PL_YYSTYPE strand
+                 lpYYStrL,          // 4C:  ...               left strand
+                 lpYYStrR,          // 50:  ...               right strand
+                 lpYYStrN,          // 54:  ...               name strand
+                 lpYYRes,           // 58:  ...               result
+                 lpYYFcn,           // 5C:  ...               function strand
+                 lpYYLst,           // 60:  ...               list
+                 lpYYAxis,          // 64:  ...               axis
+                 lpYYOp1,           // 68:  ...               monadic operator
+                 lpYYOp2,           // 6C:  ...               dyadic  ...
+                 lpYYOp3,           // 70:  ...               ambiguous ...
+                 lpYYLft,           // 74:  ...               left operand
+                 lpYYRht,           // 78:  ...               right operand
+                 lpYYMak;           // 7C:  ...               MakeXXX function
     struct tagPLLOCALVARS
-                *lpPLPrev;          // 7C:  Ptr to previous PLLOCALVARS struct
+                *lpPLPrev;          // 80:  Ptr to previous PLLOCALVARS struct
                                     //      in thread creation order (NULL = none)
-                                    // 80:  Length
+                                    // 84:  Length
 } PLLOCALVARS, *LPPLLOCALVARS;
 
 

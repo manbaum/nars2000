@@ -74,6 +74,7 @@
 #include "pf_ustile.pro"
 #include "pf_utack.pro"
 #include "pf_utackjot.pro"
+#include "po_cmiddot.pro"
 #include "po_dieresis.pro"
 #include "po_ditilde.pro"
 #include "po_dot.pro"

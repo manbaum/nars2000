@@ -378,7 +378,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
 
     // CHARs are handled above
 
-    // For nested arrays, the ran of the result is one
+    // For nested arrays, the rank of the result is one
     //   if all items are scalars or vectors, otherwise
     //   the rank is two.
     // For non-CHAR simple arrays, the rank of the result
@@ -1440,6 +1440,10 @@ LPAPLCHAR CompileArrNested
     LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to local FMTROWSTR
     UINT        NotCharPlus;        // ({rho}{rho}L) + NOTCHAR L
 
+    // Set the Matrix result bit if the arg is
+    //   a matrix or higher rank array
+    lpFmtHeader->uMatRes |= (aplRank > 1);
+
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
     {
@@ -2488,8 +2492,8 @@ LPAPLCHAR FormatArrNested
                         break;
                 } // End SWITCH
 
-                // Back off to start of row
-                lpwszOut -= uPrvWid;
+////////////////// Back off to start of row
+////////////////lpwszOut -= uPrvWid;
 
                 // Return the output string ptr
                 *lplpwszOut = max (lpwszOut, *lplpwszOut);
@@ -2498,8 +2502,16 @@ LPAPLCHAR FormatArrNested
             // Skip over the blanks to the next row
             *lplpwszOut += aplLastDim;
 #ifdef PREFILL
-////////// Skip to end of row
-////////lpwszOut += uPrvWid;
+        // Skip to end of row
+        lpwszOut = lpwszOutStart
+                 + aplLastDim
+                 * (((aplLastDim - 1)
+                   + lpwszOut
+                   - lpwszOutStart)
+                  / aplLastDim);
+        // Use the larger
+        *lplpwszOut = max (lpwszOut, *lplpwszOut);
+
 #else
         {
             UINT uCol;              // Loop counter
@@ -2611,8 +2623,6 @@ LPAPLCHAR FormatArrNestedGlb
              uCol;              // Loop counter
     LPFMTHEADER lpFmtHeader;    // Ptr to this item's FMTHEADER
     LPFMTCOLSTR lpFmtColLcl;    // Ptr to this item's FMTCOLSTRs
-    UINT     uLclWid,           // Local column wiodth
-             uGlbWid;           // Global ...
 
     // Get the attributes (Type, NELM, Rank) of the global
     AttrsOfGlb (hGlb, &aplType, NULL, &aplRank, NULL);
@@ -2654,16 +2664,19 @@ LPAPLCHAR FormatArrNestedGlb
     //   amongst the FMTCOLSTRs for this item (in lpaplChar)
     if (aplDimNCols NE 0)
     {
+        UINT uLclWid,           // Local column width
+             uGlbWid;           // Global ...
+
         // Calculate the global interior width
         uGlbWid = InteriorColWidth (lpFmtColStr);
 
-        // Calculate the local interior width
+        // Calculate the local exterior width
         for (uLclWid = 0, uCol = 0; uCol < aplDimNCols; uCol++)
             uLclWid += ExteriorColWidth (&lpFmtColLcl[uCol]);
 
         // Less the leading and trailing blanks to get interior width
         if (aplDimNCols)
-            uLclWid -= lpFmtColLcl[0              ].uLdBl;
+            uLclWid -= lpFmtColLcl[0              ].uLdBl
                      + lpFmtColLcl[aplDimNCols - 1].uTrBl;
 
         Assert (uLclWid <= uGlbWid);

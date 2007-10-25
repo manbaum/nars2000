@@ -40,6 +40,7 @@
 #define UTF16_QUADDOWNARROW      0x2357         //
 #define UTF16_LEFTSINGLEQUOTE    0x2018         // Left single quotation mark
 #define UTF16_RIGHTSINGLEQUOTE   0x2019         // Right ...
+#define UTF16_DELTILDE           0x236B         // Del-tilde
 
 // The alphabet, unshifted
 #define UTF16_ALPHA              0x237A         // Alt-'a' - alpha
@@ -115,7 +116,7 @@
 // Top row, shifted
 #define UTF16_COMMABAR           0x236A         // Alt-'~' - comma-bar
 #define UTF16_EQUALUNDERBAR      0x2261         // Alt-'!' - match
-#define UTF16_DELTILDE           0x236B         // Alt-'@' - del-tilde
+#define UTF16_CIRCLEMIDDLEDOT    0x2299         // Alt-'@' - circle-middle-dot
 #define UTF16_DELSTILE           0x2352         // Alt-'#' - grade-down
 #define UTF16_DELTASTILE         0x234B         // Alt-'$' - grade-up
 #define UTF16_CIRCLESTILE        0x233D         // Alt-'%' - rotate
@@ -195,6 +196,7 @@
 #define WS_UTF16_QUADRIGHTARROW     L"\x2348"   //
 #define WS_UTF16_QUADUPARROW        L"\x2350"   //
 #define WS_UTF16_QUADDOWNARROW      L"\x2357"   //
+#define WS_UTF16_DELTILDE           L"\x236B"   // Del-tilde
 
 // The alphabet, unshifted
 #define WS_UTF16_ALPHA              L"\x237A"   // Alt-'a' - alpha
@@ -270,7 +272,7 @@
 // Top row, shifted
 #define WS_UTF16_COMMABAR           L"\x236A"   // Alt-'~' - comma-bar
 #define WS_UTF16_EQUALUNDERBAR      L"\x2261"   // Alt-'!' - match
-#define WS_UTF16_DELTILDE           L"\x236B"   // Alt-'@' - del-tilde
+#define WS_UTF16_CIRCLEMIDDLEDOT    L"\x2299"   // Alt-'@' - circle-middle-dot
 #define WS_UTF16_DELSTILE           L"\x2352"   // Alt-'#' - grade-down
 #define WS_UTF16_DELTASTILE         L"\x234B"   // Alt-'$' - grade-up
 #define WS_UTF16_CIRCLESTILE        L"\x233D"   // Alt-'%' - rotate

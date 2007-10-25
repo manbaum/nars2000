@@ -205,12 +205,12 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                         //   primitive operator which takes a function strand
                         lpYYRes3 = (*lpPrimProtoRht) (NULL,                     // Ptr to left arg token
                                             (LPTOKEN) lpYYFcnStrRht,            // Ptr to right operand function strand
-                                                      lptkRhtArg,               // Ptr to right arg token
+                                                      lptkLftArg,               // Ptr to right arg token
                                                       lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
                     else
                         lpYYRes3 = ExecFuncStr_EM_YY (NULL,                     // Ptr to left arg token
                                                       lpYYFcnStrRht,            // Ptr to right operand function strand
-                                                      lptkRhtArg,               // Ptr to right arg token
+                                                      lptkLftArg,               // Ptr to right arg token
                                                       lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
                     if (lpYYRes3)
                     {

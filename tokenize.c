@@ -87,9 +87,9 @@ enum COL_INDICES
 };
 
 // Whenever you add a new COL_*** entry,
-//   be sure to put code into <CharTrans> in <exec.c>
+//   be sure to put code into <CharTrans> in <tokenize.c>
 //   to return the newly defined value,
-//   and insert a new entry into <GetColName> in <exec.c>.
+//   and insert a new entry into <GetColName> in <tokenize.c>.
 
 
 // The order of the values of these constants *MUST* match the
@@ -956,8 +956,8 @@ BOOL fnIntDone
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     bRet = AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &lpMemPTD->aplInteger,
+                             &tkFlags,
+                             &lpMemPTD->aplInteger,
                               -lpMemPTD->iNumAlpLen);
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
@@ -1385,8 +1385,8 @@ BOOL fnAsnDone
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &aplLongest,
+                             &tkFlags,
+                             &aplLongest,
                               0);
 } // End fnAsnDone
 
@@ -1417,8 +1417,8 @@ BOOL fnLstDone
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &aplLongest,
+                             &tkFlags,
+                             &aplLongest,
                               0);
 } // End fnLstDone
 
@@ -1449,8 +1449,8 @@ BOOL fnClnDone
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &aplLongest,
+                             &tkFlags,
+                             &aplLongest,
                               0);
 } // End fnClnDone
 
@@ -1494,8 +1494,8 @@ BOOL fnPrmDone
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &aplInteger,
+                             &tkFlags,
+                             &aplInteger,
                               0);
 } // End fnPrmDone
 
@@ -1537,7 +1537,7 @@ BOOL fnInfinity
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     bRet = AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
+                             &tkFlags,
                               (LPAPLLONGEST) &aplFloat,
                               0);
     //  Initialize the accumulation variables for the next constant
@@ -1571,34 +1571,27 @@ BOOL fnOp1Done
     // Copy current WCHAR
     wch = *lptkLocalVars->lpwsz;
 
-////// If this is a slash/slope and the preceding token is
-//////   a left paren or a dyadic operator, convert this
-//////   symbol into a primitive function
-////if ((wch EQ '/'
-////  || wch EQ '\\'
-////  || wch EQ UTF16_SLASHBAR
-////  || wch EQ UTF16_SLOPEBAR)
-//// && lptkLocalVars->lpStart NE lptkLocalVars->lpNext
-//// && (lptkLocalVars->lpNext[-1].tkFlags.TknType EQ TKT_LPAREN
-////  || lptkLocalVars->lpNext[-1].tkFlags.TknType EQ TKT_OP2IMMED))
-////    return fnPrmDone (lptkLocalVars);
-
     if (wch EQ UTF16_SLASH
      || wch EQ UTF16_SLOPE
      || wch EQ UTF16_SLASHBAR
      || wch EQ UTF16_SLOPEBAR)
+    {
         // Mark the data as an ambiguous primitive operator
         tkFlags.TknType = TKT_OP3IMMED;
-    else
+        tkFlags.ImmType = IMMTYPE_PRIMOP3;
+    } else
+    {
         // Mark the data as a monadic primitive operator
         tkFlags.TknType = TKT_OP1IMMED;
+        tkFlags.ImmType = IMMTYPE_PRIMOP1;
+    } // End IF/ELSE
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     aplLongest = *lptkLocalVars->lpwsz;
     return AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &aplLongest,
+                             &tkFlags,
+                             &aplLongest,
                               0);
 } // End fnOp1Done
 
@@ -1627,8 +1620,8 @@ BOOL fnOp2Done
     //   and resize as necessary.
     aplLongest = lptkLocalVars->PrevWchar;
     return AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &aplLongest,
+                             &tkFlags,
+                             &aplLongest,
                               -1);
 } // End fnOp2Done
 
@@ -1659,8 +1652,8 @@ BOOL fnJotDone
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &aplInteger,
+                             &tkFlags,
+                             &aplInteger,
                               -1);
 } // End fnJotDone
 
@@ -1691,8 +1684,8 @@ BOOL fnOutDone
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
     return AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &aplInteger,
+                             &tkFlags,
+                             &aplInteger,
                               -1);
 } // End fnOutDone
 
@@ -2053,8 +2046,8 @@ BOOL GroupInitCom
     //   and resize as necessary.
     aplLongest = lptkLocalVars->t2.lpHeader->PrevGroup;
     bRet = AppendNewToken_EM (lptkLocalVars,
-                              &tkFlags,
-                              &aplLongest,
+                             &tkFlags,
+                             &aplLongest,
                               0);
     // Save as location of previous left grouping symbol
     lptkLocalVars->t2.lpHeader->PrevGroup = lpNext - lptkLocalVars->lpStart;
@@ -2146,8 +2139,8 @@ BOOL GroupDoneCom
         //   and resize as necessary.
         aplLongest = uPrevGroup;
         bRet = AppendNewToken_EM (lptkLocalVars,
-                                  &tkFlags,
-                                  &aplLongest,
+                                 &tkFlags,
+                                 &aplLongest,
                                   0);
         // Save index of previous grouping symbol
         lptkLocalVars->t2.lpHeader->PrevGroup = lptkLocalVars->lpStart[uPrevGroup].tkData.tkIndex;
@@ -2168,12 +2161,29 @@ BOOL fnDiaDone
     (LPTKLOCALVARS lptkLocalVars)
 
 {
+    TKFLAGS tkFlags = {0};
+    APLINT  aplInteger;
+
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnDiaDone");
 #endif
 
     // Test for mismatched or improperly nested grouping symbols
     if (!CheckGroupSymbols_EM (lptkLocalVars))
+        return FALSE;
+
+    // Mark as an SOS
+    tkFlags.TknType = TKT_SOS;
+
+    // Copy to a local var so we may pass its address
+    aplInteger = 0;
+
+    // Attempt to append as new token, check for TOKEN TABLE FULL,
+    //   and resize as necessary.
+    if (!AppendNewToken_EM (lptkLocalVars,
+                           &tkFlags,
+                           &aplInteger,
+                            0))
         return FALSE;
 
     // Append the EOS token
@@ -2254,7 +2264,10 @@ HGLOBAL Tokenize_EM
     // Initialize EOS
     tkLocalVars.lpLastEOS = tkLocalVars.lpStart;
     tkLocalVars.lpwsz = &lpwszLine[0];          // Just so it has a known value
-    AppendEOSToken (&tkLocalVars, TRUE);
+
+    // Attempt to append an EOS token
+    if (!AppendEOSToken (&tkLocalVars, TRUE))
+        return NULL;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     // Display the tokens so far
@@ -2307,7 +2320,7 @@ HGLOBAL Tokenize_EM
             if (AppendNewToken_EM (&tkLocalVars,
                                    &tkFlags,
                                    &aplInteger,
-                                   0))
+                                    0))
                 continue;
             else
                 goto ERROR_EXIT;
@@ -2367,10 +2380,26 @@ HGLOBAL Tokenize_EM
 
             case FSA_EXIT:
             {
-                UINT uNext;             // Offset from Start to Next in units of sizeof (TOKEN)
+                UINT    uNext;              // Offset from Start to Next in units of sizeof (TOKEN)
+                APLINT  aplInteger;         // Temporary integer for SOS token
+                TKFLAGS tkFlags = {0};      // Token flags for SOS token
 
                 // Test for mismatched or improperly nested grouping symbols
                 if (!CheckGroupSymbols_EM (&tkLocalVars))
+                    goto ERROR_EXIT;
+
+                // Mark as an SOS
+                tkFlags.TknType = TKT_SOS;
+
+                // Copy to a local var so we may pass its address
+                aplInteger = 0;
+
+                // Attempt to append as new token, check for TOKEN TABLE FULL,
+                //   and resize as necessary.
+                if (!AppendNewToken_EM (&tkLocalVars,
+                                        &tkFlags,
+                                        &aplInteger,
+                                         0))
                     goto ERROR_EXIT;
 
                 // Calculate the # tokens in this last stmt
@@ -2592,6 +2621,7 @@ void Untokenize
             case TKT_RBRACKET:          // Right ...   ...
             case TKT_EOS:               // End-of-Stmt (data is length of stmt including this token)
             case TKT_EOL:               // End-of-Line (data is NULL)
+            case TKT_SOS:               // Start-of-Stmt (data is NULL)
             case TKT_LINECONT:          // Line continuation (data is NULL)
             case TKT_INPOUT:            // Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
                 break;                  // Nothing to do
@@ -2676,8 +2706,8 @@ BOOL AppendEOSToken
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         return AppendNewToken_EM (lptkLocalVars,
-                                  &tkFlags,
-                                  &aplInteger,
+                                 &tkFlags,
+                                 &aplInteger,
                                   0);
     } else
         return TRUE;
@@ -2939,7 +2969,7 @@ WCHAR CharTrans
         case UTF16_COLONBAR:            // Alt-'=' - divide
 ////////case UTF16_                     // Alt-'>' - (none)
 ////////case UTF16_                     // Alt-'?' - (none)
-////////case UTF16_DELTILDE:            // Alt-'@' - del-tilde (COL_UNK)
+////////case UTF16_CIRCLEMIDDLEDOT      // Alt-'@' - circle-middle-dot (COL_PRIM_OP1)
 ////////case UTF16_                     // Alt-'A' - (none)
 ////////case UTF16_                     // Alt-'B' - (none)
 ////////case UTF16_                     // Alt-'C' - (none)
@@ -2996,6 +3026,7 @@ WCHAR CharTrans
         case UTF16_SLASHBAR:            // Alt-'/' - slash-bar
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
         case UTF16_DIERESISTILDE:       // Alt-'T' - commute/duplicate
+        case UTF16_CIRCLEMIDDLEDOT:     // Alt-'@' - circle-middle-dot
             return COL_PRIM_OP1;
 
         case UTF16_DIERESISDEL:         // Alt-'G' - dual
@@ -3049,7 +3080,6 @@ WCHAR CharTrans
         case L':':                      // Control structures ***FIXME***
             return COL_COLON;
 
-        case UTF16_DELTILDE:            // Alt-'@' - del-tilde
         case UTF16_DEL:                 // Alt-'g' - del
         case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot)
         case UTF16_DIERESISCIRCLE:      // Alt-'O' - holler

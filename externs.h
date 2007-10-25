@@ -1052,7 +1052,7 @@ CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
 {'=', UTF16_COLONBAR          },  // Equal             61
 {'>', 0                       },  // More              62
 {'?', 0                       },  // Query             63
-{'@', UTF16_DELTILDE          },  // At sign           64
+{'@', UTF16_CIRCLEMIDDLEDOT   },  // At sign           64
 {'A', 0                       },  // A                 65
 {'B', 0                       },  // B                 66
 {'C', 0                       },  // C                 67
@@ -1222,7 +1222,7 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
 // Top row, shifted
   {UTF16_COMMABAR             , "{commabar}"            },  // Alt-'~' - comma-bar
   {UTF16_EQUALUNDERBAR        , "{equalunderbar}"       },  // Alt-'!' - match
-  {UTF16_DELTILDE             , "{deltilde}"            },  // Alt-'@' - del-tilde
+  {UTF16_CIRCLEMIDDLEDOT      , "{circlemiddledot}"     },  // Alt-'@' - circle-middle-dot
   {UTF16_DELSTILE             , "{delstile}"            },  // Alt-'#' - grade-down
   {UTF16_DELTASTILE           , "{deltastile}"          },  // Alt-'$' - grade-up
   {UTF16_CIRCLESTILE          , "{circlestile}"         },  // Alt-'%' - rotate

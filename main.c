@@ -157,10 +157,7 @@ BOOL CALLBACK EnumCallbackSetFont
     // If this is the matching class name,
     //   set the new font in place and redraw.
     if (lstrcmpi (lpEnumSetFont->lpClassName, szTemp) EQ 0)
-    {
-        SendMessage (hWnd, WM_SETFONT, (WPARAM) lpEnumSetFont->hFont, TRUE);
-        InvalidateRect (hWnd, NULL, TRUE);
-    } // End IF
+        SendMessage (hWnd, WM_SETFONT, (WPARAM) lpEnumSetFont->hFont, MAKELPARAM (TRUE, 0));
 
     return TRUE;        // Keep on truckin'
 #undef  lpEnumSetFont
@@ -302,7 +299,7 @@ void CreateNewFontTC
                       &cxAveCharTC,
                       &cyAveCharTC);
     // Tell the TC about the new font
-    SendMessage (hWndTC, WM_SETFONT, (WPARAM) hFontTC, TRUE);
+    SendMessage (hWndTC, WM_SETFONT, (WPARAM) hFontTC, MAKELPARAM (TRUE, 0));
 
     // Repaint the TC labels
     InvalidateRect (hWndTC, NULL, TRUE);

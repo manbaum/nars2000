@@ -115,6 +115,8 @@ void MakeQuadAV
         lpMemRes[uRes] = L' ';
 
     // Fill in the result:  miscellaneous 0x80-0xFF
+    // This order was takne mostly from the one used
+    //   by APL2 in their 1994 manual.
     lpMemRes[0x7F] = UTF16_ZILDE;
     lpMemRes[0x80] = 0x00C7;            // C cedilla
     lpMemRes[0x81] = 0x00FC;            // u umlaut
@@ -147,8 +149,7 @@ void MakeQuadAV
     lpMemRes[0x9B] = 0x00F8;            // 0 slash
     lpMemRes[0x9C] = 0x00A3;            // Pound sign
     lpMemRes[0x9D] = UTF16_UPTACK;
-////lpMemRes[0x9E] = 0x20A7;            // Pts
-    lpMemRes[0x9E] = 0x20AC;            // Euro
+    lpMemRes[0x9E] = 0x20A7;            // Pts
     lpMemRes[0x9F] = UTF16_IBEAM;
 
     lpMemRes[0xA0] = 0x00E1;            // a right
@@ -222,7 +223,8 @@ void MakeQuadAV
     lpMemRes[0xDF] = 0x00  ;            // Filler           // Available???
 
     lpMemRes[0xE0] = UTF16_ALPHA;
-    lpMemRes[0xE1] = 0x00DF;            // Beta             // Available???
+////lpMemRes[0xE1] = 0x00DF;            // Beta             // Available???
+    lpMemRes[0xE1] = 0x2299;            // Circle middle dot
     lpMemRes[0xE2] = UTF16_LEFTSHOE;
     lpMemRes[0xE3] = UTF16_RIGHTSHOE;
     lpMemRes[0xE4] = UTF16_LAMP;
@@ -248,12 +250,13 @@ void MakeQuadAV
     lpMemRes[0xF7] = UTF16_DELTAUNDERBAR;
     lpMemRes[0xF8] = UTF16_JOT;
     lpMemRes[0xF9] = UTF16_OMEGA;
-    lpMemRes[0xFA] = UTF16_DELTILDE;
+    lpMemRes[0xFA] = UTF16_CIRCLEMIDDLEDOT;
     lpMemRes[0xFB] = UTF16_DELTASTILE;
     lpMemRes[0xFC] = UTF16_DELSTILE;
     lpMemRes[0xFD] = UTF16_OVERBAR;
     lpMemRes[0xFE] = UTF16_DIERESIS;
-    lpMemRes[0xFF] = 0x00  ;            // Blank            // Available???
+////lpMemRes[0xFF] = 0x00  ;            // Blank            // Available???
+    lpMemRes[0xFF] = 0x20AC;            // Euro
 
 ////lpMemRes[0x??] = UTF16_DIERESISDOWNTACK;
 ////lpMemRes[0x??] = UTF16_DIERESISCIRCLE;

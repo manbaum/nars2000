@@ -1395,7 +1395,7 @@ LRESULT APIENTRY SMWndProc
             InvalidateRect (hWndEC, NULL, FALSE);
 
             // Tell the Edit Control about its font
-            SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, TRUE);
+            SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
 #ifdef DEBUG
             PostMessage (hWnd, MYWM_INIT_SMDB, 0, 0);
 #endif
@@ -1444,7 +1444,7 @@ LRESULT APIENTRY SMWndProc
         case WM_SETFONT:            // hFont = (HFONT) wParam;
                                     // fRedraw = LOWORD (lParam);
         case WM_KILLFOCUS:          // hwndGainFocus = (HWND) wParam; // handle of window gaining focus
-            // Pass it on the the edit control
+            // Pass these messages through to the EditCtrl
             SendMessageW (hWndEC, message, wParam, lParam);
 
             break;

@@ -1367,7 +1367,7 @@ BOOL InitFcnSTEs
 ////////////lpHeader->hGlbTxtLine = NULL;           // Already zero from GHND
 #undef  lpHeader
 
-            // Skip over the header and dimensions to the data
+            // Skip over the header to the data (PL_YYSTYPEs)
             lpMemRes = FcnArrayBaseToData (lpMemRes);
 
             // Copy the PL_YYSTYPEs to the global memory object

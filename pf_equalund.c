@@ -1006,17 +1006,14 @@ BOOL PrimFnDydEqualUnderbarNested
      || aplNELMLft NE aplNELMRht)
         return FALSE;
 
-    // Ensure the dimensions are the same
-    if (aplRankLft NE 0)
-    {
-        // Skip over the headers to the dimensions
-        lpMemLft = VarArrayBaseToDim (lpMemLft);
-        lpMemRht = VarArrayBaseToDim (lpMemRht);
+    // Skip over the headers to the dimensions (data if scalar)
+    lpMemLft = VarArrayBaseToDim (lpMemLft);
+    lpMemRht = VarArrayBaseToDim (lpMemRht);
 
-        for (uDim = 0; uDim < aplRankLft; uDim++)
-        if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
-            return FALSE;
-    } // End IF
+    // Ensure the dimensions are the same
+    for (uDim = 0; uDim < aplRankLft; uDim++)
+    if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
+        return FALSE;
 
     // lpMemLft and lpMemRht now point to the data
 

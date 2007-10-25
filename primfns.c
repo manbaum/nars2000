@@ -131,6 +131,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimOpJotDot_EM_YY                          // ERROR            Outer Product
 /////// PrimOpSlash_EM_YY                           // Reduction        N-wise reduction
 /////// PrimOpSlope_EM_YY                           // Scan             ERROR
+/////// PrimOpCircleMiddleDot_EM_YY                 // Null Op          Null Op
 
 
 // First coordinate functions handled by common function
@@ -254,7 +255,7 @@ void InitPrimFns
     InitPrimFn (UTF16_COLONBAR          , &PrimFnColonBar_EM_YY          ); // Alt-'=' - divide
 ////                                                                        // Alt-'>' - (none)
 ////                                                                        // Alt-'?' - (none)
-////                                                                        // Alt-'@' - del-tilde
+    InitPrimFn (UTF16_CIRCLEMIDDLEDOT   , (LPPRIMFNS) -1                 ); // Alt-'@' - circle-middle-dot
 ////                                                                        // Alt-'A' - (none)
 ////                                                                        // Alt-'B' - (none)
 ////                                                                        // Alt-'C' - (none)
@@ -525,7 +526,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_COLONBAR          , &PrimProtoFnColonBar_EM_YY          );   // Alt-'=' - divide
 ////                                                                                    // Alt-'>' - (none)
 ////                                                                                    // Alt-'?' - (none)
-////                                                                                    // Alt-'@' - del-tilde
+    InitPrimProtoOp (UTF16_CIRCLEMIDDLEDOT   , &PrimProtoOpCircleMiddleDot_EM_YY   );   // Alt-'@' - circle-middle-dot
 ////                                                                                    // Alt-'A' - (none)
 ////                                                                                    // Alt-'B' - (none)
 ////                                                                                    // Alt-'C' - (none)
@@ -1112,7 +1113,7 @@ LPPL_YYSTYPE ExecFuncGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpYYFcnStr = MyGlobalLock (hGlbFcn);
 
-    // Skip over the header to the data
+    // Skip over the header to the data (PL_YYSTYPEs)
     lpYYFcnStr = FcnArrayBaseToData (lpYYFcnStr);
 
     // The contents of the global memory object consist of
@@ -1317,6 +1318,10 @@ LPPL_YYSTYPE ExecOp1_EM_YY
             return PrimOpDieresisTilde_EM_YY (lptkLftArg,   // Ptr to left arg token (may be NULL if monadic)
                                               lpYYFcnStrOpr,// Ptr to operator function strand
                                               lptkRhtArg);  // Ptr to right arg token
+        case UTF16_CIRCLEMIDDLEDOT: // Null Op
+            return PrimOpCircleMiddleDot_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
+                                                lpYYFcnStrOpr,  // Ptr to operator function strand
+                                                lptkRhtArg);    // Ptr to right arg token
         defstop
             return NULL;
     } // End SWITCH
@@ -1491,6 +1496,7 @@ char TokenTypeFV
         case TKT_RBRACKET:
         case TKT_EOS:
         case TKT_EOL:
+        case TKT_SOS:
         case TKT_LINECONT:
         case TKT_INPOUT:
         case TKT_STRAND:

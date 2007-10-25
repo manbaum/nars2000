@@ -648,21 +648,22 @@ static TOKENNAMES tokenNames[] =
  {"RBRACKET"  , TKT_RBRACKET }, // 10: Right ...   ...         RBRACKET
  {"EOS"       , TKT_EOS      }, // 11: End-of-Stmt (data is length of stmt including this token)
  {"EOL"       , TKT_EOL      }, // 12: End-of-Line  ...
- {"LINECONT"  , TKT_LINECONT }, // 13: Line continuation (data is NULL)
- {"INPOUT"    , TKT_INPOUT   }, // 14: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
- {"STRAND"    , TKT_STRAND   }, // 15: Strand accumulating (data is LPTOKEN)
- {"LISTINT"   , TKT_LISTINT  }, // 16: List in parens    (data is HGLOBAL)
- {"LISTPAR"   , TKT_LISTPAR  }, // 17: List in parens    (data is HGLOBAL)
- {"LISTBR"    , TKT_LISTBR   }, // 18: List in brackets  (data is HGLOBAL)
- {"VARARRAY"  , TKT_VARARRAY }, // 19: Array of data (data is HGLOBAL)
- {"FCNARRAY"  , TKT_FCNARRAY }, // 1A: Array of functions (data is HGLOBAL)
- {"FCNNAMED"  , TKT_FCNNAMED }, // 1B: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED" , TKT_AXISIMMED}, // 1C: An immediate axis specification (data is immediate)
- {"AXISARRAY" , TKT_AXISARRAY}, // 1D: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"  , TKT_OP1NAMED }, // 1E: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"  , TKT_OP2NAMED }, // 1F: ...     dyadic  ...
- {"OP3NAMED"  , TKT_OP3NAMED }, // 20: ...     ambiguous ...
- {"STRNAMED"  , TKT_STRNAMED }, // 21: ...     strand  ...
+ {"SOS"       , TKT_SOS      }, // 13: Start-of-Stmt (data is NULL)
+ {"LINECONT"  , TKT_LINECONT }, // 14: Line continuation (data is NULL)
+ {"INPOUT"    , TKT_INPOUT   }, // 15: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+ {"STRAND"    , TKT_STRAND   }, // 16: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"   , TKT_LISTINT  }, // 17: List in parens    (data is HGLOBAL)
+ {"LISTPAR"   , TKT_LISTPAR  }, // 18: List in parens    (data is HGLOBAL)
+ {"LISTBR"    , TKT_LISTBR   }, // 19: List in brackets  (data is HGLOBAL)
+ {"VARARRAY"  , TKT_VARARRAY }, // 1A: Array of data (data is HGLOBAL)
+ {"FCNARRAY"  , TKT_FCNARRAY }, // 1B: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"  , TKT_FCNNAMED }, // 1C: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED" , TKT_AXISIMMED}, // 1D: An immediate axis specification (data is immediate)
+ {"AXISARRAY" , TKT_AXISARRAY}, // 1E: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"  , TKT_OP1NAMED }, // 1F: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"  , TKT_OP2NAMED }, // 20: ...     dyadic  ...
+ {"OP3NAMED"  , TKT_OP3NAMED }, // 21: ...     ambiguous ...
+ {"STRNAMED"  , TKT_STRNAMED }, // 22: ...     strand  ...
 };
 
 // The # rows in the above table
@@ -837,7 +838,7 @@ LPWCHAR DisplayFcnGlb
 
     lpaplChar =
       DisplayFcnSub (lpaplChar,
-                     FcnArrayBaseToData (lpMemFcnArr),  // Skip over the header to the data
+                     FcnArrayBaseToData (lpMemFcnArr),  // Skip over the header to the data (PL_YYSTYPEs)
                      fcnNELM);
     // We no longer need this ptr
     MyGlobalUnlock (hGlbFcnArr); lpMemFcnArr = NULL;
@@ -1078,7 +1079,7 @@ LPWCHAR DisplayFcnSub
                         *lpaplChar++ = L'(';
                     lpaplChar =
                       DisplayFcnSub (lpaplChar,
-                                     FcnArrayBaseToData (lpMemData),    // Skip over the header to the data
+                                     FcnArrayBaseToData (lpMemData),    // Skip over the header to the data (PL_YYSTYPEs)
                                      fcnNELM);
                     if (fcnNELM > 1)
                         *lpaplChar++ = L')';

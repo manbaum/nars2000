@@ -6,7 +6,6 @@
 #include <windows.h>
 
 #include "main.h"
-#include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
 #include "pertab.h"
@@ -52,14 +51,12 @@ EXCEPTION_CODES MyGetExceptionCode
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    if (hGlbPTD EQ NULL)            // ***DEBUG***
-        MB ("hGlbPTD EQ NULL");
+    // If hGlbPTD isn't set, just exit
+    if (hGlbPTD EQ NULL)
+        return EXCEPTION_SUCCESS;
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    if (lpMemPTD EQ NULL)           // ***DEBUG***
-        MB ("lpMemPTD EQ NULL");
 
     // Get the ExceptionCode
     ExceptionCode = lpMemPTD->ExceptionCode;
@@ -87,14 +84,12 @@ void MySetExceptionCode
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    if (hGlbPTD EQ NULL)            // ***DEBUG***
-        MB ("hGlbPTD EQ NULL");
+    // If hGlbPTD isn't set, just exit
+    if (hGlbPTD EQ NULL)
+        return;
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    if (lpMemPTD EQ NULL)           // ***DEBUG***
-        MB ("lpMemPTD EQ NULL");
 
     // Set the ExceptionCode
     lpMemPTD->ExceptionCode = ExceptionCode;
@@ -120,14 +115,12 @@ void MySetExceptionAddr
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    if (hGlbPTD EQ NULL)            // ***DEBUG***
-        MB ("hGlbPTD EQ NULL");
+    // If hGlbPTD isn't set, just exit
+    if (hGlbPTD EQ NULL)
+        return;
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    if (lpMemPTD EQ NULL)           // ***DEBUG***
-        MB ("lpMemPTD EQ NULL");
 
     // Set the ExceptionAddr
     lpMemPTD->ExceptionAddr = (UINT) ExceptionAddr;
@@ -153,14 +146,12 @@ void MySetExceptionText
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    if (hGlbPTD EQ NULL)            // ***DEBUG***
-        MB ("hGlbPTD EQ NULL");
+    // If hGlbPTD isn't set, just exit
+    if (hGlbPTD EQ NULL)
+        return;
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    if (lpMemPTD EQ NULL)           // ***DEBUG***
-        MB ("lpMemPTD EQ NULL");
 
     // Set the ExceptionText
     lpMemPTD->ExceptionText = ExceptionText;
@@ -186,8 +177,6 @@ long CheckException
     MySetExceptionAddr (lpExcept->ExceptionRecord->ExceptionAddress);
     MySetExceptionText (lpText);
 
-    DisplayException ();
-
     // Split cases based upon the exception code
     switch (MyGetExceptionCode ())
     {
@@ -211,7 +200,7 @@ long CheckException
 } // End CheckException
 
 
-#ifdef START_ADDRESSES_ENABLE
+#ifndef DEBUG
 //***************************************************************************
 //  $CompareStartAddresses
 //
@@ -234,7 +223,7 @@ int __cdecl CompareStartAddresses
 #endif
 
 
-#ifdef START_ADDRESSES_ENABLE
+#ifndef DEBUG
 //***************************************************************************
 //  $_DisplayException
 //
@@ -299,23 +288,19 @@ void _DisplayException
 
     wsprintf (szTemp,
               "Exception code = %08X (%s) at %08X"
-#ifdef START_ADDRESSES_ENABLE
               " (%s + %08X)"
-#endif
-              " from %s"
-            ,
+              " from %s",
               exceptCode,
               (exceptIndex EQ EXCEPT_NAMES_LENGTH)
                 ? "Exception Unknown"
                 : ExceptNames[exceptIndex].ExceptName,
-              exceptAddr
-#ifdef START_ADDRESSES_ENABLE
-            , StartAddresses[nearIndex].StartAddressName,
-              nearAddress
-#endif
-            , exceptText
-              );
+              exceptAddr,
+              StartAddresses[nearIndex].StartAddressName,
+              nearAddress,
+              exceptText);
     MB (szTemp);
+
+    exit (1);
 } // End _DisplayException
 #endif
 

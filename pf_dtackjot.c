@@ -2008,7 +2008,6 @@ void PropagateRowColCount
     UINT        uActRows,           // Accumulator for actual    rows
                 uFmtRows,           // ...             formatted rows
                 uInts,              // ...             integer widths
-                uChrs,              // ...             CHARS
                 uFrcs,              // ...             fraction widths
                 uLdBl,              // ...             leading blanks
                 uTrBl,              // ...             trailing blanks
@@ -2030,14 +2029,14 @@ void PropagateRowColCount
     lpFmtHeader->uFmtRows = max (lpFmtHeader->uFmtRows, uFmtRows);
 
     // Count the col width in this block
-    for (uInts = uChrs = uFrcs = uCol = 0,
+    for (uInts = uFrcs = uCol = 0,
            lpFmtColLcl = lpFmtHeader->lpFmtCol1st;
          uCol < lpFmtHeader->uActCols;
          uCol++, lpFmtColLcl++)
     {
         uInts += lpFmtColLcl->uLdBl + lpFmtColLcl->uInts;
-        uChrs +=                      lpFmtColLcl->uChrs;
-        uFrcs += lpFmtColLcl->uTrBl + lpFmtColLcl->uFrcs;
+        uInts +=                      lpFmtColLcl->uChrs;
+        uFrcs +=                      lpFmtColLcl->uFrcs + lpFmtColLcl->uTrBl;
     } // End FOR
 
     // Handle leading and trailing blanks
@@ -2055,7 +2054,6 @@ void PropagateRowColCount
     {
         lpFmtHeader->lpFmtColUp->uLdBl = max (lpFmtHeader->lpFmtColUp->uLdBl, uLdBl);
         lpFmtHeader->lpFmtColUp->uInts = max (lpFmtHeader->lpFmtColUp->uInts, uInts);
-        lpFmtHeader->lpFmtColUp->uChrs = max (lpFmtHeader->lpFmtColUp->uChrs, uChrs);
         lpFmtHeader->lpFmtColUp->uFrcs = max (lpFmtHeader->lpFmtColUp->uFrcs, uFrcs);
         lpFmtHeader->lpFmtColUp->uTrBl = max (lpFmtHeader->lpFmtColUp->uTrBl, uTrBl);
     } // End IF
@@ -2063,7 +2061,6 @@ void PropagateRowColCount
     // Save in head struc
     lpFmtHeader->uFmtLdBl = max (lpFmtHeader->uFmtLdBl, uLdBl);
     lpFmtHeader->uFmtInts = max (lpFmtHeader->uFmtInts, uInts);
-    lpFmtHeader->uFmtChrs = max (lpFmtHeader->uFmtChrs, uChrs);
     lpFmtHeader->uFmtFrcs = max (lpFmtHeader->uFmtFrcs, uFrcs);
     lpFmtHeader->uFmtTrBl = max (lpFmtHeader->uFmtTrBl, uTrBl);
 
@@ -2281,7 +2278,7 @@ LPAPLCHAR FormatArrSimple
                         uCol = lpwszOut - lpwszOutStart;
                         if (bRawOutput
                          && DEF_INDENT < uCol
-                         && uQuadPW < (uCmpWid + uCol))
+                         && uQuadPW < (uLead + uCmpWid + uCol))
                         {
                             // Ensure properly terminated
                             *lpwszOut = L'\0';
@@ -2303,7 +2300,7 @@ LPAPLCHAR FormatArrSimple
                             // Shorten the width to act like this is the first col
                             //   (which doesn't have a leading blank)
                             uCmpWid = max (uCmpWid, uActLen + 1) - 1;
-                            uCol = 0;
+                            uCol = uLead;
                         } else
                         {
                             // Include this row's col offset
@@ -2498,30 +2495,30 @@ LPAPLCHAR FormatArrNested
                 // Return the output string ptr
                 *lplpwszOut = max (lpwszOut, *lplpwszOut);
             } // End FOR
+#ifdef PREFILL
+            // Skip to end of row
+            lpwszOut = lpwszOutStart
+                     + aplLastDim
+                     * (((aplLastDim - 1)
+                       + lpwszOut
+                       - lpwszOutStart)
+                      / aplLastDim);
+            // Use the larger
+            *lplpwszOut = max (lpwszOut, *lplpwszOut);
+#else
+            {
+                UINT uCol;              // Loop counter
+
+                // Skip over trailing blanks
+                for (uCol = 0; uCol < lpFmtHeader->uFmtTrBl; uCol++)
+                    *lpwszOut++ = L' ';
+            }
+#endif
         } else
             // Skip over the blanks to the next row
             *lplpwszOut += aplLastDim;
-#ifdef PREFILL
-        // Skip to end of row
-        lpwszOut = lpwszOutStart
-                 + aplLastDim
-                 * (((aplLastDim - 1)
-                   + lpwszOut
-                   - lpwszOutStart)
-                  / aplLastDim);
-        // Use the larger
-        *lplpwszOut = max (lpwszOut, *lplpwszOut);
 
-#else
-        {
-            UINT uCol;              // Loop counter
-
-            // Skip over trailing blanks
-            for (uCol = 0; uCol < lpFmtHeader->uFmtTrBl; uCol++)
-                *lpwszOut++ = L' ';
-        }
-#endif
-        // Skip to the next row
+        // Reset local ptr
         lpwszOut = *lplpwszOut;
     } // End FOR
 
@@ -2706,7 +2703,7 @@ LPAPLCHAR FormatArrNestedGlb
                              aplRank,           // Rank of this array
                              lpMemDim,          // Ptr to this array's dimensions
                              aplType,           // Storage type of this array
-                             TRUE,              // TRUE iff skip to next row after this item
+                             FALSE,             // TRUE iff skip to next row after this item
                              FALSE,             // TRUE iff raw output
                              TRUE);             // TRUE iff last line has CR
             break;

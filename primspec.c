@@ -1919,18 +1919,18 @@ BOOL PrimFnDydSimpNest_EM
                 {
                     case ARRAY_BOOL:
                     case ARRAY_INT:
-                        aplIntegerLft = GetNextInteger (lpMemLft, aplTypeLft, uLft, apaOffLft, apaMulLft);
+                        aplIntegerLft = GetNextInteger (lpMemLft, aplTypeLft, uLft);
                         aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
 
                         break;
 
                     case ARRAY_FLOAT:
-                        aplFloatLft   = GetNextFloat   (lpMemLft, aplTypeLft, uLft, apaOffLft, apaMulLft);
+                        aplFloatLft   = GetNextFloat   (lpMemLft, aplTypeLft, uLft);
 
                         break;
 
                     case ARRAY_CHAR:
-                        aplCharLft    = ((LPAPLCHAR) lpMemLft)[uRes];
+                        aplCharLft    = ((LPAPLCHAR) lpMemLft)[uLft];
 
                         break;
 
@@ -2277,18 +2277,18 @@ BOOL PrimFnDydNestSimp_EM
                 {
                     case ARRAY_BOOL:
                     case ARRAY_INT:
-                        aplIntegerRht = GetNextInteger (lpMemRht, aplTypeRht, uRht, apaOffRht, apaMulRht);
+                        aplIntegerRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
                         aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
 
                         break;
 
                     case ARRAY_FLOAT:
-                        aplFloatRht   = GetNextFloat   (lpMemRht, aplTypeRht, uRht, apaOffRht, apaMulRht);
+                        aplFloatRht   = GetNextFloat   (lpMemRht, aplTypeRht, uRht);
 
                         break;
 
                     case ARRAY_CHAR:
-                        aplCharRht    = ((LPAPLCHAR) lpMemRht)[uRes];
+                        aplCharRht    = ((LPAPLCHAR) lpMemRht)[uRht];
 
                         break;
 
@@ -5347,8 +5347,8 @@ RESTART_EXCEPTION_AXIS:
                                                   lpMemWVec,
                                                   lpMemDimRes);
                             *((LPAPLBOOL)  lpMemRes) |=
-                              (*lpPrimSpec->BisBvB) ((APLBOOL) GetNextInteger (lpMemLft, aplTypeLft, uLft, apaOffLft, apaMulLft),
-                                                     (APLBOOL) GetNextInteger (lpMemRht, aplTypeRht, uRht, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->BisBvB) ((APLBOOL) GetNextInteger (lpMemLft, aplTypeLft, uLft),
+                                                     (APLBOOL) GetNextInteger (lpMemRht, aplTypeRht, uRht),
                                                      lpPrimSpec) << uBitIndex;
                             // Check for end-of-byte
                             if (++uBitIndex EQ NBIB)
@@ -5381,8 +5381,8 @@ RESTART_EXCEPTION_AXIS:
                                                   lpMemWVec,
                                                   lpMemDimRes);
                             *((LPAPLBOOL)  lpMemRes) |=
-                              (*lpPrimSpec->BisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uLft, apaOffLft, apaMulLft),
-                                                     GetNextInteger (lpMemRht, aplTypeRht, uRht, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->BisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uLft),
+                                                     GetNextInteger (lpMemRht, aplTypeRht, uRht),
                                                      lpPrimSpec) << uBitIndex;
                             // Check for end-of-byte
                             if (++uBitIndex EQ NBIB)
@@ -5449,8 +5449,8 @@ RESTART_EXCEPTION_AXIS:
                                                   lpMemWVec,
                                                   lpMemDimRes);
                             *((LPAPLBOOL)  lpMemRes) |=
-                              (*lpPrimSpec->BisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uLft, apaOffLft, apaMulLft),
-                                                     GetNextFloat (lpMemRht, aplTypeRht, uRht, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->BisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uLft),
+                                                     GetNextFloat (lpMemRht, aplTypeRht, uRht),
                                                      lpPrimSpec) << uBitIndex;
                             // Check for end-of-byte
                             if (++uBitIndex EQ NBIB)
@@ -5485,8 +5485,8 @@ RESTART_EXCEPTION_AXIS:
                                                   lpMemWVec,
                                                   lpMemDimRes);
                             *((LPAPLINT)   lpMemRes)++ =
-                              (*lpPrimSpec->IisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uLft, apaOffLft, apaMulLft),
-                                                     GetNextInteger (lpMemRht, aplTypeRht, uRht, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->IisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uLft),
+                                                     GetNextInteger (lpMemRht, aplTypeRht, uRht),
                                                      lpPrimSpec);
                         } // End FOR
                     } else
@@ -5513,8 +5513,8 @@ RESTART_EXCEPTION_AXIS:
                                                   lpMemWVec,
                                                   lpMemDimRes);
                             *((LPAPLINT)   lpMemRes)++ =
-                              (*lpPrimSpec->IisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uLft, apaOffLft, apaMulLft),
-                                                     GetNextFloat (lpMemRht, aplTypeRht, uRht, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->IisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uLft),
+                                                     GetNextFloat (lpMemRht, aplTypeRht, uRht),
                                                      lpPrimSpec);
                         } // End FOR
                     } else
@@ -5544,8 +5544,8 @@ RESTART_EXCEPTION_AXIS:
                                                   lpMemWVec,
                                                   lpMemDimRes);
                             *((LPAPLFLOAT) lpMemRes)++ =
-                              (*lpPrimSpec->FisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uLft, apaOffLft, apaMulLft),
-                                                     GetNextInteger (lpMemRht, aplTypeRht, uRht, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->FisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uLft),
+                                                     GetNextInteger (lpMemRht, aplTypeRht, uRht),
                                                      lpPrimSpec);
                         } // End FOR
                     } else
@@ -5570,8 +5570,8 @@ RESTART_EXCEPTION_AXIS:
                                                   lpMemWVec,
                                                   lpMemDimRes);
                             *((LPAPLFLOAT) lpMemRes)++ =
-                              (*lpPrimSpec->FisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uLft, apaOffLft, apaMulLft),
-                                                     GetNextFloat (lpMemRht, aplTypeRht, uRht, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->FisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uLft),
+                                                     GetNextFloat (lpMemRht, aplTypeRht, uRht),
                                                      lpPrimSpec);
                         } // End FOR
                     } else
@@ -5651,8 +5651,8 @@ RESTART_EXCEPTION_NOAXIS:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLBOOL)  lpMemRes) |=
-                              (*lpPrimSpec->BisBvB) ((APLBOOL) GetNextInteger (lpMemLft, aplTypeLft, uRes, apaOffLft, apaMulLft),
-                                                     (APLBOOL) GetNextInteger (lpMemRht, aplTypeRht, uRes, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->BisBvB) ((APLBOOL) GetNextInteger (lpMemLft, aplTypeLft, uRes),
+                                                     (APLBOOL) GetNextInteger (lpMemRht, aplTypeRht, uRes),
                                                      lpPrimSpec) << uBitIndex;
                             // Check for end-of-byte
                             if (++uBitIndex EQ NBIB)
@@ -5671,8 +5671,8 @@ RESTART_EXCEPTION_NOAXIS:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLBOOL)  lpMemRes) |=
-                              (*lpPrimSpec->BisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uRes, apaOffLft, apaMulLft),
-                                                     GetNextInteger (lpMemRht, aplTypeRht, uRes, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->BisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uRes),
+                                                     GetNextInteger (lpMemRht, aplTypeRht, uRes),
                                                      lpPrimSpec) << uBitIndex;
                             // Check for end-of-byte
                             if (++uBitIndex EQ NBIB)
@@ -5711,8 +5711,8 @@ RESTART_EXCEPTION_NOAXIS:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLBOOL)  lpMemRes) |=
-                              (*lpPrimSpec->BisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uRes, apaOffLft, apaMulLft),
-                                                     GetNextFloat (lpMemRht, aplTypeRht, uRes, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->BisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uRes),
+                                                     GetNextFloat (lpMemRht, aplTypeRht, uRes),
                                                      lpPrimSpec) << uBitIndex;
                             // Check for end-of-byte
                             if (++uBitIndex EQ NBIB)
@@ -5735,8 +5735,8 @@ RESTART_EXCEPTION_NOAXIS:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLINT)   lpMemRes)++ =
-                              (*lpPrimSpec->IisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uRes, apaOffLft, apaMulLft),
-                                                     GetNextInteger (lpMemRht, aplTypeRht, uRes, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->IisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uRes),
+                                                     GetNextInteger (lpMemRht, aplTypeRht, uRes),
                                                      lpPrimSpec);
                         } // End FOR
                     } else
@@ -5751,8 +5751,8 @@ RESTART_EXCEPTION_NOAXIS:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLINT)   lpMemRes)++ =
-                              (*lpPrimSpec->IisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uRes, apaOffLft, apaMulLft),
-                                                     GetNextFloat (lpMemRht, aplTypeRht, uRes, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->IisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uRes),
+                                                     GetNextFloat (lpMemRht, aplTypeRht, uRes),
                                                      lpPrimSpec);
                         } // End FOR
                     } else
@@ -5769,8 +5769,8 @@ RESTART_EXCEPTION_NOAXIS:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLFLOAT) lpMemRes)++ =
-                              (*lpPrimSpec->FisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uRes, apaOffLft, apaMulLft),
-                                                     GetNextInteger (lpMemRht, aplTypeRht, uRes, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->FisIvI) (GetNextInteger (lpMemLft, aplTypeLft, uRes),
+                                                     GetNextInteger (lpMemRht, aplTypeRht, uRes),
                                                      lpPrimSpec);
                         } // End FOR
                     } else
@@ -5783,8 +5783,8 @@ RESTART_EXCEPTION_NOAXIS:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
                         {
                             *((LPAPLFLOAT) lpMemRes)++ =
-                              (*lpPrimSpec->FisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uRes, apaOffLft, apaMulLft),
-                                                     GetNextFloat (lpMemRht, aplTypeRht, uRes, apaOffRht, apaMulRht),
+                              (*lpPrimSpec->FisFvF) (GetNextFloat (lpMemLft, aplTypeLft, uRes),
+                                                     GetNextFloat (lpMemRht, aplTypeRht, uRes),
                                                      lpPrimSpec);
                         } // End FOR
                     } else

@@ -507,55 +507,228 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     APLRANK      aplRankLft,        // Left arg rank
                  aplRankRht;        // Right ...
     HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL;    // Right ...
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL;   // Ptr to right ...
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+                 hGlbRht = NULL,    // Right ...
+                 hGlbRes = NULL;    // Result   ...
+    LPVOID       lpMemLft,          // Ptr to left arg global memory
+                 lpMemRht;          // Ptr to right ...
+    LPAPLUINT    lpMemRes = NULL;   // Ptr to result   ...
+    BOOL         bQuadIO;           // []IO
+    APLUINT      NotFound;          // Not found value
+    APLUINT      ByteRes;           // # bytes in the result
+    APLLONGEST   aplLongestLft,     // Left arg immediate value
+                 aplLongestRht;     // Right ...
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        goto ERROR_EXIT;
+    } // End IF
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Check for RANK ERROR
+    // Check for LEFT RANK ERROR
     if (aplRankLft NE 1)
     {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        bRet = FALSE;
+        HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+        LPPL_YYSTYPE lpYYRes;           // Prt to result
 
+        // Get the PerTabData global memory handle
+        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // ***FIXME*** -- Extend to aplRankLft != 1 args by returning
+        //                an array of index vectors where the length
+        //                of each vector is aplRankLft.
+        //                Use an internal magic function.
+        lpYYRes = ExecuteMagicFcn_EM_YY (lptkLftArg,
+                                         lpMemPTD->lpMagicFcnDydIota,
+                                         lptkRhtArg,
+                                         lptkAxis);
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+        return lpYYRes;
+
+////////ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+////////                           lptkLftArg);
+////////goto ERROR_EXIT;
+    } // End IF
+
+    // Get left and right arg's global ptrs
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    //***************************************************************
+    // Calculate space needed for the result
+    //***************************************************************
+    ByteRes = CalcArraySize (ARRAY_INT, aplNELMRht, aplRankRht);
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    // N.B.:  Conversion from APLUINT to UINT.
+    //***************************************************************
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
-    return PrimFnNonceError_EM (lptkFunc);
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
 
-    DbgBrk ();          // ***FINISHME*** -- PrimFnDydIota_EM_YY
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_INT;
+////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRht;
+    lpHeader->Rank       = aplRankRht;
+#undef  lpHeader
 
-    // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    // Skip over the header to the dimensions
+    lpMemRes = (LPAPLUINT) VarArrayBaseToDim (lpMemRes);
 
+    // Fill in the result's dimension
+    if (lpMemRht)
+    {
+        // Skip over the header to the dimensions
+        lpMemRht = VarArrayBaseToDim (lpMemRht);
 
+        // Copy the left arg dimensions to the result
+        CopyMemory (lpMemRes, lpMemRht, (UINT) aplRankRht * sizeof (APLDIM));
 
+        // Skip over the dimensions to the data
+        lpMemRes = VarArrayDimToData (lpMemRes, aplRankRht);
+        lpMemRht = VarArrayDimToData (lpMemRht, aplRankRht);
+    } else
+        // Point to the right arg immediate value
+        lpMemRht = &aplLongestRht;
 
+    if (lpMemLft)
+        // Skip over the header and dimensions to the data
+        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+    else
+        // Point to the left arg immediate value
+        lpMemLft = &aplLongestLft;
 
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
+    // Calculate the NotFound value
+    NotFound = bQuadIO + aplNELMLft;
 
+    // If the result is non-empty, and
+    //    the right arg is non-empty, and
+    //    the left and right args are not different types (numeric vs. char), ...
+    if (!(aplNELMLft EQ 0
+       || aplNELMRht EQ 0
+       || (IsSimpleNum (aplTypeLft) && aplTypeRht EQ ARRAY_CHAR)
+       || (IsSimpleNum (aplTypeRht) && aplTypeLft EQ ARRAY_CHAR)))
+    {
+        // Split cases based upon the left & right arg storage types
+        if (aplTypeLft EQ ARRAY_BOOL && aplTypeRht EQ ARRAY_BOOL)
+            // Handle APLBOOL vs. APLBOOL
+            PrimFnDydIotaBvB (lpMemRes,             // Ptr to result global memory data
+                              aplNELMLft,           // Left arg NELM
+                              lpMemLft,             // Ptr to left arg global memory data
+                              aplNELMRht,           // Right arg NELM
+                              lpMemRht,             // Ptr to right arg global memory data
+                              bQuadIO,              // []IO
+                              NotFound);            // Not found value
+        else
+        if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))
+        {
+            // Handle APLBOOL/APLINT/APLAPA vs. APLBOOL/APLINT/APLAPA
+            if (!PrimFnDydIotaIvI_EM (lpMemRes,     // Ptr to result global memory data
+                                      aplTypeLft,   // Left arg storage type
+                                      aplNELMLft,   // Left arg NELM
+                                      lpMemLft,     // Ptr to left arg global memory data
+                                      aplTypeRht,   // Right arg storage type
+                                      aplNELMRht,   // Right arg NELM
+                                      lpMemRht,     // Ptr to right arg global memory data
+                                      bQuadIO,      // []IO
+                                      NotFound,     // Not found value
+                                      lptkFunc))    // Ptr to function token
+                goto ERROR_EXIT;
+        } else
+        if (aplTypeLft EQ ARRAY_CHAR && aplTypeRht EQ ARRAY_CHAR)
+        {
+            // Handle APLCHAR vs. APLCHAR
+            if (!PrimFnDydIotaCvC_EM (lpMemRes,     // Ptr to result global memory data
+                                      aplNELMLft,   // Left arg NELM
+                                      lpMemLft,     // Ptr to left arg global memory data
+                                      aplNELMRht,   // Right arg NELM
+                                      lpMemRht,     // Ptr to right arg global memory data
+                                      bQuadIO,      // []IO
+                                      NotFound,     // Not found value
+                                      lptkFunc))    // Ptr to function token
+                goto ERROR_EXIT;
+        } else
+            // Handle all other combinations
+            PrimFnDydIotaOther (lpMemRes,           // Ptr to result global memory data
+                                aplTypeLft,         // Left arg storage type
+                                aplNELMLft,         // Left arg NELM
+                                lpMemLft,           // Ptr to left arg global memory data
+                                aplTypeRht,         // Right arg storage type
+                                aplNELMRht,         // Right arg NELM
+                                lpMemRht,           // Ptr to right arg global memory data
+                                bQuadIO,            // []IO
+                                NotFound,           // Not found value
+                                lptkFunc);          // Ptr to function token
+    } else
+    {
+        APLUINT uRht;           // Loop counter
 
+        // Fill the result with NotFound
+        for (uRht = 0; uRht < aplNELMRht; uRht++)
+            *lpMemRes++ = NotFound;
+    } // End IF/ELSE
 
-
-
-
-
-
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-
+    goto NORMAL_EXIT;
 
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
@@ -571,6 +744,449 @@ ERROR_EXIT:
     return lpYYRes;
 } // End PrimFnDydIota_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydIotaBvB
+//
+//  Dyadic iota between Boolean args
+//***************************************************************************
+
+void PrimFnDydIotaBvB
+    (LPAPLUINT lpMemRes,            // Ptr to result global memory data
+     APLNELM   aplNELMLft,          // Left arg NELM
+     LPAPLBOOL lpMemLft,            // Ptr to left arg global memory data
+     APLNELM   aplNELMRht,          // Right arg (and result) NELM
+     LPAPLBOOL lpMemRht,            // Ptr to right arg global memory data
+     BOOL      bQuadIO,             // []IO
+     APLUINT   NotFound)            // Not found value
+
+{
+    BOOL    Found0,                 // TRUE iff there is at least one 0 in the right arg
+            Found1;                 // ...                            1 ...
+    APLUINT Index0,                 // Index of the first 0 in the left arg
+            Index1,                 // ...                1 ...
+            BytesInLftBits,         // # bytes in the left arg data
+            BytesInRhtBits,         // ...            right ...
+            uLft,                   // Loop counter
+            uRht,                   // Loop counter
+            uTmp;                   // Temporary
+    UINT    uBitMaskRht;            // Bit mask for the right arg
+
+    // The result is either all NotFounds       (if left arg is empty -- already ruled out), or
+    //                      same as Lft         (if left arg is all 1s), or
+    //                      complement of Lft   (if left arg is all 0s), or
+    //                      all 1s              (if left arg has at least one 0 and one 1)
+
+    // Calculate the # bytes in the left arg (result) data
+    BytesInLftBits = RoundUpBits8 (aplNELMLft);
+
+    // Calculate the # bytes in the right arg data
+    BytesInRhtBits = RoundUpBits8 (aplNELMRht);
+
+    // Search the left arg for a 0
+    for (Found0 = FALSE, Index0 = bQuadIO, uLft = 0; uLft < (BytesInLftBits - 1); uLft++)
+    {
+        uTmp = FastBoolTrans[lpMemLft[uLft]][0];
+        Index0 += uTmp;
+
+        if (uTmp < NBIB)
+        {
+            Found0 = TRUE;
+
+            break;
+        } // End IF
+    } // End FOR
+
+    // If we didn't find a 0, check the last byte (may be short)
+    if (!Found0)
+    {
+        uTmp = FastBoolTrans[lpMemLft[uLft]][0];
+        Index0 += uTmp;
+    } // End IF
+
+    // Search the left arg for a 1
+    for (Found1 = FALSE, Index1 = bQuadIO, uLft = 0; uLft < (BytesInLftBits - 1); uLft++)
+    {
+        uTmp = FastBoolTrans[lpMemLft[uLft]][1];
+        Index1 += uTmp;
+
+        if (uTmp < NBIB)
+        {
+            Found1 = TRUE;
+
+            break;
+        } // End IF
+    } // End FOR
+
+    // If we didn't find a 1, check the last byte (may be short)
+    if (!Found1)
+    {
+        uTmp = FastBoolTrans[lpMemLft[uLft]][1];
+        Index1 += uTmp;
+    } // End IF
+
+    uBitMaskRht = 0x01;
+
+    // Loop throught the right arg,
+    //   saving in the result Index0 for each 0 in the right arg, and
+    //                        Index1 for each 1 in the right arg
+    for (uRht = 0; uRht < aplNELMRht; uRht++)
+    {
+        if (*lpMemRht & uBitMaskRht)
+            *lpMemRes++ = Index1;
+        else
+            *lpMemRes++ = Index0;
+
+        // Shift over the right bit mask
+        uBitMaskRht <<= 1;
+
+        // Check for end-of-byte
+        if (uBitMaskRht EQ END_OF_BYTE)
+        {
+            uBitMaskRht = 0x01;     // Start over
+            lpMemRht++;             // Skip to next byte
+        } // End IF
+    } // End FOR
+} // End PrimFnDydIotaBvB
+
+
+//***************************************************************************
+//  $PrimFnDydIotaIvI_EM
+//
+//  Dyadic iota between simple ints (APLBOOL/APLINT/APLAPA)
+//***************************************************************************
+
+BOOL PrimFnDydIotaIvI_EM
+    (LPAPLUINT lpMemRes,            // Ptr to result global memory data
+     APLSTYPE  aplTypeLft,          // Left arg storage type
+     APLNELM   aplNELMLft,          // Left arg NELM
+     LPVOID    lpMemLft,            // Ptr to left arg global memory data
+     APLSTYPE  aplTypeRht,          // Right arg storage type
+     APLNELM   aplNELMRht,          // Right arg NELM
+     LPVOID    lpMemRht,            // Ptr to right arg global memory data
+     BOOL      bQuadIO,             // []IO
+     APLUINT   NotFound,            // Not found value
+     LPTOKEN   lptkFunc)            // Ptr to function token
+
+{
+    APLUINT   uLft,                 // Loop counter
+              uRht;                 // Loop counter
+    APLINT    aplIntegerLft,        // Left arg integer
+              aplIntegerRht;        // Right arg integer
+
+    // Here's where we might do something clever such as sort the right arg
+    //   or perhaps hash it assuming one or both args are large enough
+    //   to warrant such extra work.
+
+    // For the moment, we'll do an outer product
+    for (uRht = 0; uRht < aplNELMRht; uRht++)
+    {
+        aplIntegerRht =
+          GetNextInteger (lpMemRht,
+                          aplTypeRht,
+                          uRht);
+        // Loop through the left arg
+        for (uLft = 0; uLft < aplNELMLft; uLft++)
+        {
+            aplIntegerLft =
+              GetNextInteger (lpMemLft,
+                              aplTypeLft,
+                              uLft);
+            if (aplIntegerLft EQ aplIntegerRht)
+            {
+                // Set the result value
+                *lpMemRes++ = uLft + bQuadIO;
+
+                break;
+            } // End IF
+        } // End FOR
+
+        // If we didn't find the value, ...
+        if (uLft EQ aplNELMLft)
+            // Set the result value
+            *lpMemRes++ = NotFound;
+    } // End FOR
+
+    return TRUE;
+} // End PrimFnDydIotaIvI_EM
+
+
+//***************************************************************************
+//  $PrimFnDydIotaCvC_EM
+//
+//  Dyadic iota between char args
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydIotaCvC_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL PrimFnDydIotaCvC_EM
+    (LPAPLUINT lpMemRes,            // Ptr to result global memory data
+     APLNELM   aplNELMLft,          // Left arg (and result) NELM
+     LPAPLCHAR lpMemLft,            // Ptr to left arg global memory data
+     APLNELM   aplNELMRht,          // Right arg NELM
+     LPAPLCHAR lpMemRht,            // Ptr to right arg global memory data
+     BOOL      bQuadIO,             // []IO
+     APLUINT   NotFound,            // Not found value
+     LPTOKEN   lptkFunc)            // Ptr to function token
+
+{
+    LPAPLUINT lpMemTT;              // Translate table gloabl memory handle
+    UINT      ByteTT;               // # bytes in the Translate Table
+    APLUINT   uRht;                 // Loop counter
+    APLINT    iLft;                 // ...
+
+    // Calculate # bytes in the TT at one APLUINT per 16-bit index (APLCHAR)
+    ByteTT = (1 << (NBIB * sizeof (APLCHAR))) * sizeof (APLUINT);
+
+    // Allocate space for a ByteTT Translate Table
+    // Note that this allocation is GMEM_FIXED
+    //   because we'll use it quickly and then free it.
+    lpMemTT = MyGlobalAlloc (GMEM_FIXED, ByteTT);
+    if (!lpMemTT)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        return FALSE;
+    } // End IF
+
+    // Trundle through the TT setting each value to NotFound
+    for (uRht = 0; uRht < (1 << (NBIB * sizeof (APLCHAR))); uRht++)
+        lpMemTT[uRht] = NotFound;
+
+    // Trundle through the left arg backwards marking the TT
+    for (iLft = aplNELMLft - 1, lpMemLft += (aplNELMLft - 1);
+         iLft >= 0;
+         iLft--)
+        lpMemTT[*lpMemLft--] = iLft + bQuadIO;
+
+    // Trundle through the right arg looking the chars in the TT
+    //   and setting the result value
+    for (uRht = 0; uRht < aplNELMRht; uRht++)
+        // Save the index from the TT in the result
+        *lpMemRes++ = lpMemTT[*lpMemRht++];
+
+    // We no longer need this storage
+    MyGlobalFree (lpMemTT); lpMemTT = NULL;
+
+    return TRUE;
+} // End PrimFnDydIotaCvC_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydIotaOther
+//
+//  Dyadic iota between all other arg combinations
+//***************************************************************************
+
+void PrimFnDydIotaOther
+    (LPAPLUINT lpMemRes,            // Ptr to result global memory data
+     APLSTYPE  aplTypeLft,          // Left arg storage type
+     APLNELM   aplNELMLft,          // Left arg NELM
+     LPVOID    lpMemLft,            // Ptr to left arg global memory data
+     APLSTYPE  aplTypeRht,          // Right arg storage type
+     APLNELM   aplNELMRht,          // Right arg NELM
+     LPVOID    lpMemRht,            // Ptr to right arg global memory data
+     BOOL      bQuadIO,             // []IO
+     APLUINT   NotFound,            // Not found value
+     LPTOKEN   lptkFunc)            // Ptr to function token
+
+{
+    HGLOBAL      hGlbSubLft,        // Left arg item global memory handle
+                 hGlbSubRht;        // Right ...
+    APLLONGEST   aplLongestSubLft,  // Left arg item immediate value
+                 aplLongestSubRht;  // Right ...
+    IMM_TYPES    immTypeSubLft,     // Left arg item immediate type
+                 immTypeSubRht;     // Right ...
+    APLFLOAT     fQuadCT;           // []CT
+    APLUINT      uLft,              // Loop counter
+                 uRht;              // ...
+    LPPL_YYSTYPE lpYYTmp;           // Ptr to the temporary result
+    BOOL         bCmp;              // TRUE iff the comparison is TRUE
+
+    // This leaves:  Left vs. Right
+    //                B   vs.    FHN
+    //                I   vs.    FHN
+    //                A   vs.    FHN
+    //                F   vs. BIAFHN
+    //                H   vs. BIAFHN
+    //                N   vs. BIAFHN
+
+    // Get the current value of []CT
+    fQuadCT = GetQuadCT ();
+
+    // Loop through the right arg
+    for (uRht = 0; uRht < aplNELMRht; uRht++)
+    {
+        TOKEN tkSubRht = {0};       // Right arg item token
+
+        // Get the next value from the right arg
+        GetNextValueMem (lpMemRht,              // Ptr to right arg global memory
+                         aplTypeRht,            // Right arg storage type
+                         uRht,                  // Right arg index
+                        &hGlbSubRht,            // Right arg item global memory handle
+                        &aplLongestSubRht,      // Ptr to right arg immediate value
+                        &immTypeSubRht);        // Ptr to right arg immediate type
+        // Fill in the right arg item token
+        tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
+////////tkSubRht.tkFlags.ImmType   = 0;     // Already zero from = {0}
+////////tkSubRht.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+        tkSubRht.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbSubRht);
+        tkSubRht.tkCharIndex       = NEG1U;
+
+        // Loop through the left arg
+        for (uLft = 0; uLft < aplNELMLft; uLft++)
+        {
+            // Get the next value from the left arg
+            GetNextValueMem (lpMemLft,              // Ptr to left arg global memory
+                             aplTypeLft,            // Left arg storage type
+                             uLft,                  // Left arg index
+                            &hGlbSubLft,            // Left arg item global memory handle
+                            &aplLongestSubLft,      // Ptr to left arg immediate value
+                            &immTypeSubLft);        // Ptr to left arg immediate type
+            // If both items are globals, ...
+            if ((hGlbSubLft NE NULL) && (hGlbSubRht NE NULL))
+            {
+                TOKEN tkSubLft = {0};       // Left arg item token
+
+                // Fill in the left arg item token
+                tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
+////////////////tkSubLft.tkFlags.ImmType   = 0;     // Already zero from = {0}
+////////////////tkSubLft.tkFlags.NoDisplay = 0;     // Already zero from = {0}
+                tkSubLft.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbSubLft);
+                tkSubLft.tkCharIndex       = NEG1U;
+
+                // Use match to determine equality
+                lpYYTmp =
+                  PrimFnDydEqualUnderbar_EM_YY (&tkSubLft,      // Ptr to left arg token
+                                                 lptkFunc,      // Ptr to function token
+                                                &tkSubRht,      // Ptr to right arg token
+                                                 NULL);         // Ptr to axis token (may be NULL)
+                // Save the result of the comparison
+                bCmp = lpYYTmp->tkToken.tkData.tkBoolean;
+
+                // Free the temporary result
+                YYFree (lpYYTmp); lpYYTmp = NULL;
+
+                if (bCmp)
+                    goto SET_RESULT_VALUE;
+            } else
+            // If both items are simple, ...
+            if ((hGlbSubLft EQ NULL) && (hGlbSubRht EQ NULL))
+            {
+                // If both items are APLCHARs, ...
+                if ((immTypeSubLft EQ IMMTYPE_CHAR) && (immTypeSubRht EQ IMMTYPE_CHAR))
+                {
+                    // Compare the APLCHARs
+                    if (((APLCHAR) aplLongestSubLft) EQ (APLCHAR) aplLongestSubRht)
+                        goto SET_RESULT_VALUE;
+                } else
+                // If both items are numeric, ...
+                if (IsImmNum (immTypeSubLft) && IsImmNum (immTypeSubRht))
+                {
+                    // This leaves BIF vs. BIF
+
+                    // Split cases based upon the left arg item immediate type
+                    switch (immTypeSubLft)
+                    {
+                        case IMMTYPE_BOOL:              // Lft = BOOL
+                            // Split cases based upon the right arg item immediate type
+                            switch (immTypeSubRht)
+                            {
+                                case IMMTYPE_BOOL:      // Lft = BOOL, Rht = BOOL
+                                    if (((APLBOOL) aplLongestSubLft) EQ (APLBOOL) aplLongestSubRht)
+                                        goto SET_RESULT_VALUE;
+                                    break;
+
+                                case IMMTYPE_INT:       // Lft = BOOL, Rht = INT
+                                    if (((APLBOOL) aplLongestSubLft) EQ (APLINT)  aplLongestSubRht)
+                                        goto SET_RESULT_VALUE;
+                                    break;
+
+                                case IMMTYPE_FLOAT:     // Lft = BOOL, Rht = FLOAT
+                                    if (CompareCT ((APLBOOL) aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, NULL))
+                                        goto SET_RESULT_VALUE;
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            break;
+
+                        case IMMTYPE_INT:               // Lft = INT
+                            // Split cases based upon the right arg item immediate type
+                            switch (immTypeSubRht)
+                            {
+                                case IMMTYPE_BOOL:      // Lft = INT, Rht = BOOL
+                                    if (((APLINT)  aplLongestSubLft) EQ (APLBOOL) aplLongestSubRht)
+                                        goto SET_RESULT_VALUE;
+                                    break;
+
+                                case IMMTYPE_INT:       // Lft = INT, Rht = INT
+                                    if (((APLINT)  aplLongestSubLft) EQ (APLINT)  aplLongestSubRht)
+                                        goto SET_RESULT_VALUE;
+                                    break;
+
+                                case IMMTYPE_FLOAT:     // Lft = INT, Rht = FLOAT
+                                    if (CompareCT ((APLFLOAT) (APLINT)  aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, NULL))
+                                        goto SET_RESULT_VALUE;
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            break;
+
+                        case IMMTYPE_FLOAT:             // Lft = FLOAT
+                            // Split cases based upon the right arg item immediate type
+                            switch (immTypeSubRht)
+                            {
+                                case IMMTYPE_BOOL:      // Lft = FLOAT, Rht = BOOL
+                                    if (CompareCT (*(LPAPLFLOAT) &aplLongestSubLft, (APLBOOL) aplLongestSubRht, fQuadCT, NULL))
+                                        goto SET_RESULT_VALUE;
+                                    break;
+
+                                case IMMTYPE_INT:       // Lft = FLOAT, Rht = INT
+                                    if (CompareCT (*(LPAPLFLOAT) &aplLongestSubLft, (APLFLOAT) (APLINT) aplLongestSubRht, fQuadCT, NULL))
+                                        goto SET_RESULT_VALUE;
+                                    break;
+
+                                case IMMTYPE_FLOAT:     // Lft = FLOAT, Rht = FLOAT
+                                    if (CompareCT (*(LPAPLFLOAT) &aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, NULL))
+                                        goto SET_RESULT_VALUE;
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+                } // End IF/ELSE/...
+            } // End IF/ELSE/...
+        } // End FOR
+
+        // We didn't find the it, so
+        //   set the result value to NotFound
+        *lpMemRes ++ = NotFound;
+
+        continue;
+
+SET_RESULT_VALUE:
+        // Set the result value
+        *lpMemRes++ = uLft + bQuadIO;
+    } // End FOR
+} // End PrimFnDydIotaOther
 
 
 //***************************************************************************

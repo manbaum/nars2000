@@ -163,6 +163,10 @@
               &mdash; Is this an <b>inconsistent</b> extension?</li>
             <li>User-defined function/operator prototype entry point
               (<span class="APL">{quad}PROTOTYPE:</span>)</li>
+            <li>Monadic operator null ({circlemiddledot}) to aid in
+              resolving ambiguities with slash/slope as function/operator
+              (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
+               instead of <span class="APL">//3 4</span>)</li>
           </ul>
         </li>
 
@@ -217,6 +221,8 @@
       <ul>
         <li>Complex numbers (e.g., <span class="APL">2j3.4</span>
           or <span class="APL">2i3.4</span>)</li>
+        <li>Quaternions (e.g., <span class="APL">2i3j4k5</span>)</li>
+        <li>Octonions (e.g., <span class="APL">2i3j4k5l6il7jl8kl9</span>)</li>
         <li>Rational numbers (e.g., <span class="APL">1r3</span>)</li>
         <li>Array predicates (a la Bernecky)</li>
         <li>Datatypes user extensible via user-defined APL functions</li>
@@ -244,7 +250,15 @@
           <span class="APL">{quad}TCDEL</span>, <span class="APL">{quad}TCESC</span>,
           <span class="APL">{quad}TCFF</span>, <span class="APL">{quad}TCHT</span>,
           <span class="APL">{quad}TCLF</span>, <span class="APL">{quad}TCNL</span>, and
-          <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output</ul>
+          <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output
+        <li>Out of range numeric assignments to
+          <span class="APL">{quad}PP</span> and
+          <span class="APL">{quad}PW</span> are set to the value in the allowable range
+          nearer the ceiling of the given number.  For example, if
+          <span class="APL">{quad}PP</span> is set to <span class="APL">23.7</span>,
+          that value is rounded down to <span class="APL">17</span>, the largest value
+          that system variable may assume.</li>
+      </ul>
 
       <h3>Miscellaneous Wish List</h3>
       <ul>
@@ -314,6 +328,8 @@
             <li>Dyadic down tack ({encode}) &mdash; encode/representation</li>
             <li>Dyadic up tack ({decode}) &mdash; decode/base value</li>
             <li>Dyadic squad ({squad}) &mdash; index (with and without axis operator)</li>
+            <li>Dyadic epsilon ({epsilon}) &mdash; member of</li>
+            <li>Dyadic iota ({iota}) &mdash; index of</li>
           </ul>
         </li>
       </ul>
@@ -330,6 +346,10 @@
                reduce and N-wise reduce (with and without axis operator)</li>
             <li>Monadic operator slope ({\}) monadic derived function &mdash;
                scan (with and without axis operator)</li>
+            <li>Monadic operator null ({circlemiddledot}) to aid in
+              resolving ambiguities with slash/slope as function/operator
+              (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
+               instead of <span class="APL">//3 4</span>)</li>
           </ul>
         </li>
         <li>Dyadic

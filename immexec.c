@@ -436,7 +436,8 @@ DWORD WINAPI ImmExecLineInThread
                     NULL,                   // Semaphore handle
                     DFNTYPE_IMM,            // DfnType
                     FCNVALENCE_IMM,         // FcnValence
-                    FALSE);                 // Suspended
+                    FALSE,                  // Suspended
+                    TRUE);                  // LinkIntoChain
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -522,9 +523,10 @@ DWORD WINAPI ImmExecLineInThread
 
                 break;
 
-            case EXITTYPE_ERROR:        // If from Quad Input, tell SM to redisplay the prompt
+            case EXITTYPE_ERROR:
+                // If from Quad Input, tell SM to redisplay the prompt
                 if (lpSISPrv
-                 && lpSISPrv->DfnType EQ DFNTYPE_QUAD)
+                 &&lpSISPrv->DfnType EQ DFNTYPE_QUAD)
                     PostMessage (hWndSM, MYWM_QUOTEQUAD, FALSE, 13);
                 break;
 

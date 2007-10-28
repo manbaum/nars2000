@@ -3,11 +3,8 @@ TO DO:  General:  Important
 * Move registry info into <nars2000.ini> file
 * Fix display of chars in a saved ws (surround with quotes, etc.)
 * Handle multiple SI levels in a saved ws
-* Handle SI Damage
 * Finish filling in <startaddr.h>
-* Implement dyadic epsilon              (member of)
-* ...       dyadic down tack jot        (format by specification)
-* ...       dyadic iota                 (index of)
+* Implement dyadic down tack jot        (format by specification)
 * ...       dyadic tilde                (without)
 * ...       dyadic dot                  (inner product)
 * ...       monadic down shoe           (unique)
@@ -48,6 +45,7 @@ TO DO:  General:  Wish List
 * Strings in the symbol table??
 * Implement user/session options dialog
 * Implement Redo (Ctrl-Y)
+* Handle SI Damage to be more forgiving
 * Check for overflow on integer multiplication
 * ...       selective assignment
 * ...       dynamic functions
@@ -168,6 +166,8 @@ DONE:  General
 * ...       bracket list indexing        A[L][M]
 * ...       bracket list indexing        A[L][M1;...;Mn]
 * ...       ambiguous operators
+* ...       dyadic epsilon
+* ...       dyadic iota
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector
@@ -215,20 +215,20 @@ DONE:  Features
 
 QUESTIONS
 ---------
-* In assignment, can a var overwrite a fn, and vice versa
-  or must the original object be erased first?
+* In assignment, can a var overwrite a fn (prim or user), and vice versa
+  or must the original object be erased first?  Are there any limitations?
 * In function assignment,
 
-  f{is}+
+  f{is}+/
   g{is}f[1]
 
-  what should <g> reference?
+  what should <g> reference?  By value or by reference?
   what happens to <g> if we change <f>?
 * Should we allow f {is} {jot}fn or {jot}{dot} ?? (right operator)
 * Should we allow f {is} {jot}fn               ?? (left operator)
 * How should an empty vector display?
   On APL+WIN systems 3.6 + 5.x, '' displays by skipping one blank line
-  but 0{rho}{enclose}{zilde} displays without skipping a blank line.
+  but 0{rho}{enclose}'' displays without skipping a blank line.
 * If a defined function indicates in its header that a result is to be
   returned, should we allow it to exit if that var has not been set?
 

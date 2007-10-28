@@ -275,7 +275,7 @@ typedef enum tagEXIT_TYPES
 #define LOG2NBIB        3
 
 // Mask for LOG2NBIB bits
-#define MASKLOG2NBIB    ((1 << LOG2NBIB) - 1)
+#define MASKLOG2NBIB    ((1 << LOG2NBIB) - 1)       // a.k.a. (NBIB - 1)
 
 // # bits in a dword
 #define NBID           32
@@ -284,7 +284,7 @@ typedef enum tagEXIT_TYPES
 #define LOG2NBID        5
 
 // Mask for LOG2NBID bits
-#define MASKLOG2NBID    ((1 << LOG2NBID) - 1)
+#define MASKLOG2NBID    ((1 << LOG2NBID) - 1)       // a.k.a. (NBID - 1)
 
 // End value for shift mask
 #define END_OF_BYTE     (1 << NBIB)
@@ -296,6 +296,7 @@ typedef enum tagEXIT_TYPES
 // Extensions
 #define WKSEXT          ".ws.nars"
 #define WS_WKSEXT       L".ws.nars"
+
 
 //***************************************************************************
 //  End of File: main.h

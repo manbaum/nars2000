@@ -405,8 +405,7 @@ void DisplayGlobals
         //   fail and trigger a hard error which we prefer to catch softly.
 
         // Lock the memory to get a ptr to it
-        lpMem = GlobalLock (hGlb); Assert (lpMem NE NULL);
-
+        lpMem = GlobalLock (hGlb);
         if (!lpMem)
         {
             wsprintf (lpszDebug,

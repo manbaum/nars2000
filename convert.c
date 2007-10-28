@@ -35,7 +35,7 @@ APLINT FloatToAplint_SCT
     // Convert to an integer (rounding down)
     aplInteger = (APLINT) floor (fFloat);
 
-    // See how the number and its floor compare
+    // See how the number and its tolerant floor compare
     if (CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL))
     {
         if (lpbRet)
@@ -46,7 +46,7 @@ APLINT FloatToAplint_SCT
     // Convert to an integer (rounding up)
     aplInteger = (APLINT) ceil (fFloat);
 
-    // See how the number and its ceiling compare
+    // See how the number and its tolerant ceiling compare
     if (CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL))
     {
         if (lpbRet)
@@ -59,6 +59,7 @@ APLINT FloatToAplint_SCT
         *lpbRet = FALSE;
 
     // Return the ceiling of the fractional value
+    // The ceiling is important in CheckAxis for laminate
     return aplInteger;
 } // End FloatToAplint_SCT
 

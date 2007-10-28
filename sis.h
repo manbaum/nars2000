@@ -21,7 +21,7 @@ typedef struct tagSIS_HEADER
     HEADER_SIGNATURE Sig;           // 00:  SIS header signature
     HANDLE           hSemaphore,    // 04:  Semaphore handle
                      hSigaphore;    // 08:  Semaphore handle to signal on exit (NULL if none)
-    HGLOBAL          hGlbDfnHdr,    // 0C:  User-defined function/operator global memory handle
+    HGLOBAL          hGlbDfnHdr,    // 0C:  User-defined function/operator global memory handle (may be NULL if not fcn/op)
                      hGlbFcnName;   // 10:  Function name global memory handle
     UINT             DfnType:4,     // 14:  0000000F:  User-defined function/operator Type (see DFN_TYPES)
                      FcnValence:3,  //      00000070:  User-defined function/operator Valence (see FCN_VALENCES)
@@ -32,24 +32,16 @@ typedef struct tagSIS_HEADER
     UINT             CurLineNum,    // 18:  Current line # (origin-1)
                      NxtLineNum,    // 1C:  Next    ...
                      numLabels,     // 20:  # line labels
-                     numResultSTE,  // 24:  # result STEs (may be zero if no result)
-                     offResultSTE,  // 28:  Offset to result STEs (ignored if numResultSTE is zero)
-                     numLftArgSTE,  // 2C:  # left arg STEs (may be zero if niladic/monadic)
-                     offLftArgSTE,  // 30:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
-                     numRhtArgSTE,  // 34:  # right arg STEs (may be zero if niladic)
-                     offRhtArgSTE,  // 38:  Offset to right arg STEs (ignored if numRhtArgSTE is zero)
-                     numLocalsSTE,  // 3C:  # right arg STEs (may be zero if niladic)
-                     offLocalsSTE,  // 40:  Offset to start of function lines (FCNLINE[nLines])
-                     numFcnLines,   // 44:  # lines in the function (not counting the header)
-                     numSymEntries, // 48:  # SYMENTRYs on the stack
-                     QQPromptLen,   // 4C:  Quote-Quad input prompt length
-                     ErrorCode;     // 50:  Error code (see ERROR_CODES)
+                     numFcnLines,   // 24:  # lines in the function (not counting the header)
+                     numSymEntries, // 28:  # SYMENTRYs on the stack
+                     QQPromptLen,   // 2C:  Quote-Quad input prompt length
+                     ErrorCode;     // 30:  Error code (see ERROR_CODES)
     struct tagSIS_HEADER
-                    *lpSISPrv,      // 54:  Ptr to previous SIS header (NULL = none)
-                    *lpSISNxt;      // 58:  Ptr to next     ...         ...
-    LPTOKEN          lptkFunc;      // 5C:  Ptr to function token for Quote-Quad input
-                                    // 60:  Length
-                                    // 60:  Array of SYMENTRYs (previous value for results, args, & locals)
+                    *lpSISPrv,      // 34:  Ptr to previous SIS header (NULL = none)
+                    *lpSISNxt;      // 38:  Ptr to next     ...         ...
+    LPTOKEN          lptkFunc;      // 3C:  Ptr to function token for Quote-Quad input
+                                    // 40:  Length
+                                    // 40:  Array of SYMENTRYs (previous value for results, args, & locals)
 } SIS_HEADER, *LPSIS_HEADER;
 
 

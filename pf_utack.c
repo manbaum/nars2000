@@ -356,7 +356,7 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
 
                 // Get the next right arg value
                 if (hGlbRht)
-                    GetNextValue (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
+                    GetNextValueGlb (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
 
                 // If the right arg is int, convert it to float
                 if (IsSimpleInt (aplTypeRht))
@@ -369,7 +369,7 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
 
                 // Get the next left arg value
                 if (hGlbLft)
-                    GetNextValue (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
+                    GetNextValueGlb (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
 
                 // If the left arg is int, convert it to float
                 if (IsSimpleInt (aplTypeLft))
@@ -383,7 +383,7 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
             {
                 // Get the next right arg value
                 if (hGlbRht)
-                    GetNextValue (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
+                    GetNextValueGlb (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
 
                 // Add into accumulator
                 // ***FIXME*** -- Check for integer overflow
@@ -391,7 +391,7 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
 
                 // Get the next left arg value
                 if (hGlbLft)
-                    GetNextValue (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
+                    GetNextValueGlb (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
 
                 // Multiply into the weighting value
                 // ***FIXME*** -- Check for integer overflow

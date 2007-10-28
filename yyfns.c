@@ -248,6 +248,8 @@ BOOL YYResIsEmpty
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     BOOL         bRet = TRUE;   // TRUE iff result is valid
 
+    CheckMemStat ();
+
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 

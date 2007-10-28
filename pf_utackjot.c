@@ -429,7 +429,8 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
                 NULL,                   // Semaphore handle
                 DFNTYPE_EXEC,           // DfnType
                 FCNVALENCE_MON,         // FcnValence
-                FALSE);                 // Suspended
+                FALSE,                  // Suspended
+                TRUE);                  // LinkIntoChain
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 

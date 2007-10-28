@@ -788,14 +788,17 @@ BOOL ValidateInteger_EM
     (LPTOKEN  lptkName,             // Ptr to name token
      LPTOKEN  lptkExpr,             // Ptr to value token
      UINT     uValidLo,             // Low range value (inclusive)
-     UINT     uValidHi)             // High ...
+     UINT     uValidHi,             // High ...
+     BOOL     bRangeLimit)          // TRUE iff an incoming value outside
+                                    //   the given range [uValidLo, uValidHi]
+                                    //   is adjusted to be the closer range limit
 
 {
-    APLSTYPE aplTypeRht;        // Right arg storage type
-    APLNELM  aplNELMRht;        // Right arg NELM
-    APLRANK  aplRankRht;        // Right arg rank
-    HGLOBAL  hGlbRht;           // Right arg global memory handle
-    LPVOID   lpMemRht;          // Ptr to right arg global memory
+    APLSTYPE aplTypeRht;            // Right arg storage type
+    APLNELM  aplNELMRht;            // Right arg NELM
+    APLRANK  aplRankRht;            // Right arg rank
+    HGLOBAL  hGlbRht;               // Right arg global memory handle
+    LPVOID   lpMemRht;              // Ptr to right arg global memory
     BOOL     bRet = TRUE;
     LPWCHAR  lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     APLINT   aplInteger;
@@ -828,8 +831,8 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkSym->stData.stBoolean;
 
                     // Test the value
-                    bRet = (uValidLo <= aplInteger
-                         &&             aplInteger <= uValidHi);
+                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+
                     break;
 
                 case IMMTYPE_INT:
@@ -837,8 +840,8 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkSym->stData.stInteger;
 
                     // Test the value
-                    bRet = (uValidLo <= aplInteger
-                         &&             aplInteger <= uValidHi);
+                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -846,8 +849,9 @@ BOOL ValidateInteger_EM
                     aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkSym->stData.stFloat,
                                                    &bRet);
                     // Test the value
-                    bRet = (uValidLo <= aplInteger
-                         &&             aplInteger <= uValidHi);
+                    if (bRangeLimit || bRet)
+                        bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+
                     break;
 
                 case IMMTYPE_CHAR:
@@ -867,8 +871,8 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkBoolean;
 
                     // Test the value
-                    bRet = (uValidLo <= aplInteger
-                         &&             aplInteger <= uValidHi);
+                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+
                     break;
 
                 case IMMTYPE_INT:
@@ -876,8 +880,8 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkInteger;
 
                     // Test the value
-                    bRet = (uValidLo <= aplInteger
-                         &&             aplInteger <= uValidHi);
+                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -885,8 +889,9 @@ BOOL ValidateInteger_EM
                     aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkFloat,
                                                    &bRet);
                     // Test the value
-                    bRet = (uValidLo <= aplInteger
-                         &&             aplInteger <= uValidHi);
+                    if (bRangeLimit || bRet)
+                        bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+
                     break;
 
                 case IMMTYPE_CHAR:
@@ -951,8 +956,8 @@ BOOL ValidateInteger_EM
             aplInteger = *(LPAPLBOOL) lpMemRht;
 
             // Test the value
-            bRet = (uValidLo <= aplInteger
-                 &&             aplInteger <= uValidHi);
+            bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+
             break;
 
         case ARRAY_INT:
@@ -960,8 +965,8 @@ BOOL ValidateInteger_EM
             aplInteger = *(LPAPLINT) lpMemRht;
 
             // Test the value
-            bRet = (uValidLo <= aplInteger
-                 &&             aplInteger <= uValidHi);
+            bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+
             break;
 
         case ARRAY_CHAR:
@@ -976,8 +981,9 @@ BOOL ValidateInteger_EM
             aplInteger = FloatToAplint_SCT (*(LPAPLFLOAT) lpMemRht,
                                            &bRet);
             // Test the value
-            bRet = (uValidLo <= aplInteger
-                 &&             aplInteger <= uValidHi);
+            if (bRangeLimit || bRet)
+                bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+
             break;
 
         defstop
@@ -1001,6 +1007,37 @@ NORMAL_EXIT:
     return bRet;
 } // End ValidateInteger_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ValidateIntegerTest
+//
+//  Validate an integer within a given range, possibly range limited
+//***************************************************************************
+
+BOOL ValidateIntegerTest
+    (LPAPLINT lpaplInteger,         // Ptr to the integer to test
+     UINT     uValidLo,             // Low range value (inclusive)
+     UINT     uValidHi,             // High ...
+     BOOL     bRangeLimit)          // TRUE iff an incoming value outside
+                                    //   the given range [uValidLo, uValidHi]
+                                    //   is adjusted to be the closer range limit
+
+{
+    // If we're range limiting, ...
+    if (bRangeLimit)
+    {
+        // If it's too small, use the lower limit
+        if (*lpaplInteger < uValidLo)
+            *lpaplInteger = uValidLo;
+        // If it's too large, use the upper limit
+        if (*lpaplInteger > uValidHi)
+            *lpaplInteger = uValidHi;
+        return TRUE;
+    } else
+        return (uValidLo <= *lpaplInteger
+             &&             *lpaplInteger <= uValidHi);
+} // End ValidateIntegerTest
 
 
 //***************************************************************************
@@ -1963,7 +2000,8 @@ BOOL ValidatePP_EM
     return ValidateInteger_EM (lptkName,            // Ptr to token name
                                lpToken,             // Ptr to token value
                                DEF_MIN_QUADPP,      // Minimum value
-                               DEF_MAX_QUADPP);     // Maximum ...
+                               DEF_MAX_QUADPP,      // Maximum ...
+                               TRUE);               // TRUE if range limiting
 } // End ValidatePP_EM
 
 
@@ -2168,7 +2206,8 @@ BOOL ValidatePW_EM
     return ValidateInteger_EM (lptkName,            // Ptr to token name
                                lpToken,             // Ptr to token value
                                DEF_MIN_QUADPW,      // Minimum value
-                               DEF_MAX_QUADPW);     // Maximum ...
+                               DEF_MAX_QUADPW,      // Maximum ...
+                               TRUE);               // TRUE if range limiting
 } // End ValidatePW_EM
 
 
@@ -2189,7 +2228,8 @@ BOOL ValidateRL_EM
     return ValidateInteger_EM (lptkName,            // Ptr to token name
                                lpToken,             // Ptr to token value
                                DEF_MIN_QUADRL,      // Minimum value
-                               DEF_MAX_QUADRL);     // Maximum ...
+                               DEF_MAX_QUADRL,      // Maximum ...
+                               FALSE);              // TRUE if range limiting
 } // End ValidateRL_EM
 
 

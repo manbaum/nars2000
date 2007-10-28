@@ -221,28 +221,20 @@ RESTART_EXCEPTION_EXECDFNGLB:
     __try
     {
         // Fill in the SIS header for a User-Defined Function/Operator
-        lpMemPTD->lpSISNxt->Sig.nature   = SIS_HEADER_SIGNATURE;
-////////lpMemPTD->lpSISNxt->hThread      =          // Filled in by ExecuteFunction_EM_YY
-////////lpMemPTD->lpSISNxt->hSemaphore   =          // ...
-        lpMemPTD->lpSISNxt->hSigaphore   = NULL;
+        FillSISNxt (lpMemPTD,                   // Ptr to PerTabData global memory
+                    NULL,                       // Semaphore handle (Filled in by ExecuteFunction_EM_YY)
+                    lpMemDfnHdr->DfnType,       // DfnType
+                    lpMemDfnHdr->FcnValence,    // FcnValence
+                    FALSE,                      // Suspended
+                    FALSE);                     // LinkIntoChain
+        // Fill in the non-default SIS header entries
         lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
         lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
-        lpMemPTD->lpSISNxt->DfnType      = lpMemDfnHdr->DfnType;
-        lpMemPTD->lpSISNxt->FcnValence   = lpMemDfnHdr->FcnValence;
         lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
-        lpMemPTD->lpSISNxt->Suspended    = FALSE;
-        lpMemPTD->lpSISNxt->Avail        = FALSE;
         lpMemPTD->lpSISNxt->CurLineNum   = 1;
         lpMemPTD->lpSISNxt->NxtLineNum   = 2;
 ////////lpMemPTD->lpSISNxt->numLabels    =              // Filled in below
-        lpMemPTD->lpSISNxt->numResultSTE = lpMemDfnHdr->numResultSTE;
-        lpMemPTD->lpSISNxt->numLftArgSTE = lpMemDfnHdr->numLftArgSTE;
-        lpMemPTD->lpSISNxt->numRhtArgSTE = lpMemDfnHdr->numRhtArgSTE;
-        lpMemPTD->lpSISNxt->numLocalsSTE = lpMemDfnHdr->numLocalsSTE;
         lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
-        lpMemPTD->lpSISNxt->QQPromptLen  = 0;
-        lpMemPTD->lpSISNxt->ErrorCode    = ERRORCODE_NONE;
-        lpMemPTD->lpSISNxt->lpSISPrv     = lpMemPTD->lpSISCur;
 ////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in below
 #ifdef DEBUG
         dprintfW (L"~~Localize:    %08X (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
@@ -292,9 +284,6 @@ RESTART_EXCEPTION_EXECDFNGLB:
     //***************************************************************
 
     lpMemPTD->lpSISCur               = lpMemPTD->lpSISNxt;
-
-    // Increment to the next SI Level
-    lpMemPTD->SILevel++;
 
     // Point to the destination SYMENTRYs
     lpSymEntryBeg =
@@ -431,8 +420,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 {
     LPPL_YYSTYPE   lpYYRes = NULL;  // Ptr to the result
     LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header
-    LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
-    LPTOKEN        lptkLine;        // Ptr to tokenized line
+////LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
+////LPTOKEN        lptkLine;        // Ptr to tokenized line
     HGLOBAL        hGlbDfnHdr,      // User-defined function/operator global memory handle
                    hGlbTxtLine,     // Line text global memory handle
                    hGlbTknLine,     // Tokenized line global memory handle
@@ -534,22 +523,30 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             case EXITTYPE_NOVALUE:      // ...
             case EXITTYPE_ERROR:        // ...
             case EXITTYPE_GOTO_LINE:    // ...
+            case EXITTYPE_NONE:         // ...
             case EXITTYPE_RESET_ONE:
             case EXITTYPE_RESET_ONE_INIT:
             case EXITTYPE_RESET_ALL:
                 break;
 
             case EXITTYPE_QUADERROR_INIT:
-                DbgBrk ();
+                DbgBrk ();          // ***FINISHME*** []ERROR
+
+
+
+
 
                 break;
 
             case EXITTYPE_QUADERROR_EXEC:
-                DbgBrk ();
+                DbgBrk ();          // ***FINISHME*** []ERROR
+
+
+
+
 
                 break;
 
-            case EXITTYPE_NONE:
             defstop
                 break;
         } // End SWITCH
@@ -584,6 +581,11 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             lpMemPTD = MyGlobalLock (hGlbPTD);
         } // End IF
 
+        // Get the user-defined function/operator header global memory handle
+        //   in case it changed while waiting for the semaphore to trigger
+        Assert (hGlbDfnHdr EQ lpMemPTD->lpSISCur->hGlbDfnHdr);
+        hGlbDfnHdr = lpMemPTD->lpSISCur->hGlbDfnHdr;
+
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
@@ -614,6 +616,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Get ptr to 1st result STE
     lplpSymEntry = (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE);
 
+    // Assume all is OK
+    bRet = TRUE;
+
     // Ensure that all STEs in the result have a value
     switch (numResultSTE)
     {
@@ -630,25 +635,31 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                 lpYYRes = MakeNoValue_YY (lptkFunc);
             else
             {
-                // Lock the memory to get a ptr to it
-                lptkHdr = MyGlobalLock (hGlbTknHdr);
-
-                // Get ptr to the tokens in the line
-                lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
-
-                // Loop 'til we point to the first named token
-                while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
-                    lptkLine++;
-
-                // If it's not a variable, ...
-                if ((*lplpSymEntry)->stFlags.ObjType NE NAMETYPE_VAR)
-                {
-                    // Set the error message
-                    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-
-                    // Set the error token
-                    ErrorMessageSetToken (lptkLine);
-                } else
+////////////////// Lock the memory to get a ptr to it
+////////////////lptkHdr = MyGlobalLock (hGlbTknHdr);
+////////////////
+////////////////// Get ptr to the tokens in the line
+////////////////lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
+////////////////
+////////////////// Loop 'til we point to the first named token
+////////////////while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
+////////////////    lptkLine++;
+////////////////
+////////////////// If it's not a variable, ...
+////////////////if ((*lplpSymEntry)->stFlags.ObjType NE NAMETYPE_VAR)
+////////////////{
+////////////////    // Set the error message
+////////////////    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+////////////////
+////////////////    // Set the error token
+////////////////    ErrorMessageSetToken (lptkLine);
+////////////////
+////////////////    // Mark as an error on line 0
+////////////////    lpMemPTD->lpSISCur->CurLineNum = 0;
+////////////////
+////////////////    // Mark as in error
+////////////////    bRet = FALSE;
+////////////////} else
                 {
                     // Allocate a new YYRes
                     lpYYRes = YYAlloc ();
@@ -661,7 +672,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                         lpYYRes->tkToken.tkFlags.ImmType   = (*lplpSymEntry)->stFlags.ImmType;
 ////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
                         lpYYRes->tkToken.tkData.tkLongest  = (*lplpSymEntry)->stData.stLongest;
-                        lpYYRes->tkToken.tkCharIndex       = lptkLine->tkCharIndex;
+                        lpYYRes->tkToken.tkCharIndex       = NEG1U;
                     } else
                     {
                         // Fill in the result token
@@ -669,12 +680,12 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 ////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
 ////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
                         lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir ((*lplpSymEntry)->stData.stGlbData);
-                        lpYYRes->tkToken.tkCharIndex       = lptkLine->tkCharIndex;
+                        lpYYRes->tkToken.tkCharIndex       = NEG1U;
                     } // End IF/ELSE
                 } // End IF/ELSE
 
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbTknHdr); lptkHdr = NULL; lptkLine = NULL;
+////////////////// We no longer need this ptr
+////////////////MyGlobalUnlock (hGlbTknHdr); lptkHdr = NULL; lptkLine = NULL;
             } // End IF/ELSE
 
             break;
@@ -685,55 +696,55 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             HGLOBAL hGlbRes;        // Result global memory handle
             LPVOID  lpMemRes;       // Ptr to result global memory
 
-            // Ensure all result names are vars and have a value
-            for (bRet = TRUE, numRes = 0; numRes < numResultSTE; numRes++)
-            {
-                // Lock the memory to get a ptr to it
-                lptkHdr = MyGlobalLock (hGlbTknHdr);
-
-                // Get ptr to the tokens in the line
-                lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
-
-                // Loop 'til we point to the first named token
-                while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
-                    lptkLine++;
-
-                // If the name has no value, ...
-                if (!lplpSymEntry[numRes]->stFlags.Value)
-                {
-                    // Set the error message
-                    ErrorMessageIndirect (ERRMSG_VALUE_ERROR APPEND_NAME);
-
-                    // Set the error token
-                    ErrorMessageSetToken (&lptkLine[numRes]);
-
-                    // Mark as in error
-                    bRet = FALSE;
-                } else
-                // If the name is not a variable, ...
-                if (lplpSymEntry[numRes]->stFlags.ObjType NE NAMETYPE_VAR)
-                {
-                    // Set the error message
-                    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-
-                    // Set the error token
-                    ErrorMessageSetToken (&lptkLine[numRes]);
-
-                    // Mark as in error
-                    bRet = FALSE;
-                } // End IF/ELSE/...
-
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbTknHdr); lptkHdr = NULL; lptkLine = NULL;
-
-                if (!bRet)
-                {
-                    // Mark as an error on line 0
-                    lpMemPTD->lpSISCur->CurLineNum = 0;
-
-                    goto ERROR_EXIT;
-                } // End IF
-            } // End FOR
+////////////// Lock the memory to get a ptr to it
+////////////lptkHdr = MyGlobalLock (hGlbTknHdr);
+////////////
+////////////// Get ptr to the tokens in the line
+////////////lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
+////////////
+////////////// Loop 'til we point to the first named token
+////////////while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
+////////////    lptkLine++;
+////////////
+////////////// Ensure all result names have a value and are vars
+////////////for (bRet = TRUE, numRes = 0; bRet && numRes < numResultSTE; numRes++)
+////////////{
+////////////    // If the name has no value, ...
+////////////    if (!lplpSymEntry[numRes]->stFlags.Value)
+////////////    {
+////////////        // Set the error message
+////////////        ErrorMessageIndirect (ERRMSG_VALUE_ERROR APPEND_NAME);
+////////////
+////////////        // Set the error token
+////////////        ErrorMessageSetToken (&lptkLine[numRes]);
+////////////
+////////////        // Mark as in error
+////////////        bRet = FALSE;
+////////////    } else
+////////////    // If the name is not a variable, ...
+////////////    if (lplpSymEntry[numRes]->stFlags.ObjType NE NAMETYPE_VAR)
+////////////    {
+////////////        // Set the error message
+////////////        ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+////////////
+////////////        // Set the error token
+////////////        ErrorMessageSetToken (&lptkLine[numRes]);
+////////////
+////////////        // Mark as in error
+////////////        bRet = FALSE;
+////////////    } // End IF/ELSE/...
+////////////} // End FOR
+////////////
+////////////// We no longer need this ptr
+////////////MyGlobalUnlock (hGlbTknHdr); lptkHdr = NULL; lptkLine = NULL;
+////////////
+////////////if (!bRet)
+////////////{
+////////////    // Mark as an error on line 0
+////////////    lpMemPTD->lpSISCur->CurLineNum = 0;
+////////////
+////////////    goto ERROR_EXIT;
+////////////} // End IF
 
             // Calculate space needed for the result
             ByteRes = CalcArraySize (ARRAY_NESTED, numResultSTE, 1);
@@ -812,6 +823,167 @@ ERROR_EXIT:
 
     return lpYYRes;
 } // End ExecuteFunction_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CheckDfnExitError_EM
+//
+//  Check on user-defined function/operator error on exit
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CheckDfnExitError_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL CheckDfnExitError_EM
+    (LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+
+{
+    LPSIS_HEADER   lpSISCur;            // Ptr to current SIS header
+    LPDFN_HEADER   lpMemDfnHdr = NULL;  // Ptr to user-defined function/operator header
+    BOOL           bRet = FALSE;        // TRUE iff error on exit
+    UINT           numResultSTE,        // # result STEs (may be zero if no result)
+                   numRes;              // Loop counter
+    LPSYMENTRY    *lplpSymEntry;        // Ptr to 1st result STE
+    LPTOKEN_HEADER lptkHdr = NULL;      // Ptr to header of tokenized line
+    LPTOKEN        lptkLine;            // Ptr to tokenized line
+
+    // Get a ptr to the current SIS
+    lpSISCur = lpMemPTD->lpSISCur;
+
+    // If the current level isn't a user-defined function/operator, quit
+    if (lpSISCur->DfnType NE DFNTYPE_OP1
+     && lpSISCur->DfnType NE DFNTYPE_OP2
+     && lpSISCur->DfnType NE DFNTYPE_FCN)
+        goto NORMAL_EXIT;
+
+    // If the function is already suspended, quit
+    if (lpSISCur->Suspended)
+        goto NORMAL_EXIT;
+
+    // If we're resetting, quit
+    if (lpSISCur->ResetFlag NE RESETFLAG_NONE)
+        goto NORMAL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
+
+    // If the next line # would not exit the function, quit
+    if (lpSISCur->NxtLineNum NE 0
+     && lpSISCur->NxtLineNum <= lpMemDfnHdr->numFcnLines)
+        goto NORMAL_EXIT;
+
+    // Get the # STEs in the result
+    numResultSTE = lpMemDfnHdr->numResultSTE;
+
+    // Get ptr to 1st result STE
+    lplpSymEntry = (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE);
+
+    // Ensure that all STEs in the result have a value
+    switch (numResultSTE)
+    {
+        case 0:         // No result:  Nothing to check
+            break;
+
+        case 1:         // Single result name:  If it has a value, ensure it's a var
+            // Check for a value
+            if ((*lplpSymEntry)->stFlags.Value)
+            {
+                // Lock the memory to get a ptr to it
+                lptkHdr = MyGlobalLock (lpMemDfnHdr->hGlbTknHdr);
+
+                // Get ptr to the tokens in the line
+                lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
+
+                // Loop 'til we point to the first named token
+                while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
+                    lptkLine++;
+
+                // If it's not a variable, ...
+                if ((*lplpSymEntry)->stFlags.ObjType NE NAMETYPE_VAR)
+                {
+                    // Set the error message
+                    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+
+                    // Initialize for ERROR_EXIT code
+                    numRes = 0;
+
+                    goto ERROR_EXIT;
+                } // End IF
+            } // End IF/ELSE
+
+            break;
+
+        default:        // Multiple result names:  Ensure they all have a value and all are vars
+            // Lock the memory to get a ptr to it
+            lptkHdr = MyGlobalLock (lpMemDfnHdr->hGlbTknHdr);
+
+            // Get ptr to the tokens in the line
+            lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
+
+            // Loop 'til we point to the first named token
+            while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
+                lptkLine++;
+
+            // Ensure all result names have a value and are vars
+            for (bRet = TRUE, numRes = 0; bRet && numRes < numResultSTE; numRes++)
+            {
+                // If the name has no value, ...
+                if (!lplpSymEntry[numRes]->stFlags.Value)
+                {
+                    // Set the error message
+                    ErrorMessageIndirect (ERRMSG_VALUE_ERROR APPEND_NAME);
+
+                    goto ERROR_EXIT;
+                } else
+                // If the name is not a variable, ...
+                if (lplpSymEntry[numRes]->stFlags.ObjType NE NAMETYPE_VAR)
+                {
+                    // Set the error message
+                    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+
+                    goto ERROR_EXIT;
+                } // End IF/ELSE/...
+            } // End FOR
+
+            break;
+    } // End SWITCH
+
+    // Mark as not error on exit
+    bRet = FALSE;
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT:
+    // Set the error token
+    ErrorMessageSetToken (&lptkLine[numRes]);
+
+    // Mark as an error on line 0
+    lpSISCur->CurLineNum = 0;
+
+    // Mark as suspended
+    lpSISCur->Suspended = TRUE;
+
+    // Mark as error on exit
+    bRet = TRUE;
+NORMAL_EXIT:
+    if (lptkHdr)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpMemDfnHdr->hGlbTknHdr); lptkHdr = NULL;
+    } // End IF
+
+    if (lpMemDfnHdr)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
+
+    return bRet;
+} // End CheckDfnExitError_EM
 #undef  APPEND_NAME
 
 

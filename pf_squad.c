@@ -359,7 +359,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             //   a nested numeric array
 
             // Get next value from the left arg
-            GetNextValue (hGlbLft, 0, &hGlbSub, NULL, NULL);
+            GetNextValueGlb (hGlbLft, 0, &hGlbSub, NULL, NULL);
 
             // The item must be a global
             Assert (hGlbSub NE NULL);
@@ -381,7 +381,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             IMM_TYPES  immTypeSub;          // Left arg item immediate type
 
             // Get next value from the left arg
-            GetNextValue (hGlbLft, uLft, &hGlbSub, &aplLongestSub, &immTypeSub);
+            GetNextValueGlb (hGlbLft, uLft, &hGlbSub, &aplLongestSub, &immTypeSub);
 
             // If the left arg item is a global, ...
             if (hGlbSub)
@@ -523,7 +523,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             if (hGlbLft)
             {
                 // Get next value from the left arg
-                GetNextValue (hGlbLft, uLft++, &hGlbSub, NULL, NULL);
+                GetNextValueGlb (hGlbLft, uLft++, &hGlbSub, NULL, NULL);
 
                 // If the left arg item is a global, ...
                 if (hGlbSub)
@@ -645,13 +645,13 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 if (hGlbLft)
                 {
                     // Get the array of indices from the left arg
-                    GetNextValue (hGlbLft, iLft--, &hGlbSub, &aplLongestSub, &immTypeSub);
+                    GetNextValueGlb (hGlbLft, iLft--, &hGlbSub, &aplLongestSub, &immTypeSub);
 
                     // If the left arg item is a global, ...
                     if (hGlbSub)
                     {
                         // The index value is the <lpMemOdo[iAxisNxt]> value in <hGlbSub>
-                        GetNextValue (hGlbSub, lpMemOdo[iAxisNxt], NULL, &aplLongestNxt, &immTypeNxt);
+                        GetNextValueGlb (hGlbSub, lpMemOdo[iAxisNxt], NULL, &aplLongestNxt, &immTypeNxt);
 
                         // If the index value is float, attempt to convert it to int
                         if (immTypeNxt EQ IMMTYPE_FLOAT)
@@ -735,7 +735,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
         // Extract the <aplIntAcc> value from the right arg
         //   and save into the result
-        GetNextValue (hGlbRht, aplIntAcc, &hGlbSub, &aplLongestSub, &immTypeSub);
+        GetNextValueGlb (hGlbRht, aplIntAcc, &hGlbSub, &aplLongestSub, &immTypeSub);
 
         // If the right arg item is a global, ...
         if (hGlbSub)

@@ -1368,11 +1368,11 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             } // End IF
 
             // Extract an element from the right arg
-            GetNextValue (hGlbRht,                  // Right arg global memory handle
-                          aplLongestLft,            // Index
-                         &hGlbRes,                  // Ptr to result as HGLOBAL
-                         &aplLongestRes,            // Ptr to result immediate value
-                         &immTypeRes);              // Ptr to result immediate type
+            GetNextValueGlb (hGlbRht,               // Right arg global memory handle
+                             aplLongestLft,         // Index
+                            &hGlbRes,               // Ptr to result as HGLOBAL
+                            &aplLongestRes,         // Ptr to result immediate value
+                            &immTypeRes);           // Ptr to result immediate type
             // Allocate a new YYRes
             lpYYRes = YYAlloc ();
 
@@ -1497,11 +1497,11 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
         // Get the indexed value from the left arg
-        GetNextValue (hGlbLft,                  // Left arg global memory handle
-                      uLft,                     // Index
-                     &hGlbSubLft,               // Ptr to result as HGLOBAL (may be NULL if singleton)
-                     &aplLongestSubLft,         // Ptr to result as singleton value
-                     &immTypeSubLft);           // Ptr to result as singleton type
+        GetNextValueGlb (hGlbLft,               // Left arg global memory handle
+                         uLft,                  // Index
+                        &hGlbSubLft,            // Ptr to result as HGLOBAL (may be NULL if singleton)
+                        &aplLongestSubLft,      // Ptr to result as singleton value
+                        &immTypeSubLft);        // Ptr to result as singleton type
         // If it's a global value, ...
         if (hGlbSubLft)
         {
@@ -1739,11 +1739,11 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         } // End IF/ELSE
 
         // Get the indexed value from the right arg
-        GetNextValue (hGlbRht,                  // Right arg global memory handle
-                      aplLongestSubLft,         // Index
-                     &hGlbSubRht,               // Ptr to result as HGLOBAL (may be NULL if singleton)
-                     &aplLongestSubRht,         // Ptr to result as singleton value
-                     &immTypeSubRht);           // Ptr to result as singleton type
+        GetNextValueGlb (hGlbRht,               // Right arg global memory handle
+                         aplLongestSubLft,      // Index
+                        &hGlbSubRht,            // Ptr to result as HGLOBAL (may be NULL if singleton)
+                        &aplLongestSubRht,      // Ptr to result as singleton value
+                        &immTypeSubRht);        // Ptr to result as singleton type
         // If the item from the right arg is a singleton, ...
         if (!hGlbSubRht)
         {

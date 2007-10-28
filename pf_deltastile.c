@@ -329,7 +329,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     GRADE_ROUTINE (lpMemRes,                // Ptr to result global memory
                    lpMemRht,                // Ptr to right arg global memory
                    aplNELMRes,              // Result NELM
-                  &PrimFnMonGradeCompare,   // Ptr to comparison routine
+                  &PrimFnGradeCompare,      // Ptr to comparison routine
                   &gradeData);              // Ptr to extra grade data
     // Add in []IO
     for (uRes = 0; uRes < aplNELMRes; uRes++)
@@ -608,7 +608,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     GRADE_ROUTINE (lpMemRes,                // Ptr to result global memory
                    lpMemRht,                // Ptr to right arg global memory
                    aplNELMRes,              // Result NELM
-                  &PrimFnMonGradeCompare,   // Ptr to comparison routine
+                  &PrimFnGradeCompare,      // Ptr to comparison routine
                   &gradeData);              // Ptr to extra grade data
     // Add in []IO
     for (uRes = 0; uRes < aplNELMRes; uRes++)
@@ -677,12 +677,12 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  $PrimFnMonGradeCompare
+//  $PrimFnGradeCompare
 //
 //  Comparison routine for PrimFnMonGradeCommon_EM_YY & PrimFnDydGradeCommon_EM_YY
 //***************************************************************************
 
-APLINT PrimFnMonGradeCompare
+APLINT PrimFnGradeCompare
     (LPVOID       lpMemRht,         // Ptr to right arg array
      APLUINT      aplUIntLft,       // Left index
      APLUINT      aplUIntRht,       // Right index
@@ -731,7 +731,8 @@ APLINT PrimFnMonGradeCompare
                         return  1 * lpGradeData->iMul;
 
                     case 0:
-                        break;
+                        Assert (aplUIntLft NE aplUIntRht);
+                        return PrimFnMonTimesIisI (aplUIntLft - aplUIntRht, NULL) * lpGradeData->iMul;
 
                     case -1:
                         return -1 * lpGradeData->iMul;
@@ -755,7 +756,8 @@ APLINT PrimFnMonGradeCompare
                     return  1 * lpGradeData->iMul;
 
                 case 0:
-                    break;
+                    Assert (aplUIntLft NE aplUIntRht);
+                    return PrimFnMonTimesIisI (aplUIntLft - aplUIntRht, NULL) * lpGradeData->iMul;
 
                 case -1:
                     return -1 * lpGradeData->iMul;
@@ -778,7 +780,8 @@ APLINT PrimFnMonGradeCompare
                     return  1 * lpGradeData->iMul;
 
                 case 0:
-                    break;
+                    Assert (aplUIntLft NE aplUIntRht);
+                    return PrimFnMonTimesIisI (aplUIntLft - aplUIntRht, NULL) * lpGradeData->iMul;
 
                 case -1:
                     return -1 * lpGradeData->iMul;
@@ -803,7 +806,8 @@ APLINT PrimFnMonGradeCompare
                     return  1 * lpGradeData->iMul;
 
                 case 0:
-                    break;
+                    Assert (aplUIntLft NE aplUIntRht);
+                    return PrimFnMonTimesIisI (aplUIntLft - aplUIntRht, NULL) * lpGradeData->iMul;
 
                 case -1:
                     return -1 * lpGradeData->iMul;
@@ -858,16 +862,18 @@ APLINT PrimFnMonGradeCompare
                 } // End FOR
             } // End FOR
 
-            return (bSame ? 0
+            return (bSame ? PrimFnMonTimesIisI (aplUIntLft - aplUIntRht, NULL) * lpGradeData->iMul
                           : bToggle ? -1 * lpGradeData->iMul
                                     :  1 * lpGradeData->iMul);
         defstop
             break;
     } // End SWITCH
 
-    // They are equal
+    // We should never get here
+    DbgStop ();
+
     return 0;
-} // End PrimFnMonGradeCompare
+} // End PrimFnGradeCompare
 
 
 //***************************************************************************

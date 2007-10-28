@@ -3119,9 +3119,7 @@ APLLONGEST GetGlbPtrs_LOCK
 APLINT GetNextInteger
     (LPVOID   lpMem,                // Ptr to global memory
      APLSTYPE aplType,              // Storage type
-     APLINT   uRes,                 // Index
-     APLINT   apaOff,               // Offset if APA
-     APLINT   apaMul)               // Multiplier if APA
+     APLINT   uRes)                 // Index
 
 {
     // Split cases based upon the storage type
@@ -3137,7 +3135,7 @@ APLINT GetNextInteger
             return (APLINT) ((LPAPLFLOAT) lpMem)[uRes];
 
         case ARRAY_APA:
-            return apaOff + apaMul * uRes;
+            return ((LPAPLAPA) lpMem)->Off + ((LPAPLAPA) lpMem)->Mul * uRes;
 
         defstop
             return 0;
@@ -3154,9 +3152,7 @@ APLINT GetNextInteger
 APLFLOAT GetNextFloat
     (LPVOID   lpMem,                // Ptr to global memory
      APLSTYPE aplType,              // Storage type
-     APLINT   uRes,                 // Index
-     APLINT   apaOff,               // Offset if APA
-     APLINT   apaMul)               // Multiplier if APA
+     APLINT   uRes)                 // Index
 
 {
     // Split cases based upon the storage type
@@ -3166,13 +3162,15 @@ APLFLOAT GetNextFloat
             return (APLFLOAT) (BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (uRes & MASKLOG2NBIB)));
 
         case ARRAY_INT:
-            return (APLFLOAT) ((LPAPLINT) lpMem)[uRes]; // ***FIXME*** -- Possible loss of precision
+            // ***FIXME*** -- Possible loss of precision
+            return (APLFLOAT) ((LPAPLINT) lpMem)[uRes];
 
         case ARRAY_FLOAT:
             return ((LPAPLFLOAT) lpMem)[uRes];
 
         case ARRAY_APA:
-            return (APLFLOAT) (apaOff + apaMul * uRes); // ***FIXME*** -- Possible loss of precision
+            // ***FIXME*** -- Possible loss of precision
+            return (APLFLOAT) (((LPAPLAPA) lpMem)->Off + ((LPAPLAPA) lpMem)->Mul * uRes);
 
         defstop
             return 0;
@@ -3234,13 +3232,13 @@ APLSTYPE GetNextHetero
 
 
 //***************************************************************************
-//  $GetNextValue
+//  $GetNextValueGlb
 //
-//  Get next value from an item
+//  Get next value from a global memory handle
 //  If *lphGlbRes is NULL on exit, the result is an immediate.
 //***************************************************************************
 
-void GetNextValue
+void GetNextValueGlb
     (HGLOBAL     hGlbSub,               // Item global memory handle
      APLUINT     uSub,                  // Index into item
      HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
@@ -3249,27 +3247,62 @@ void GetNextValue
 
 {
     APLSTYPE  aplTypeSub;               // Item storage type
-////APLNELM   aplNELMSub;               // Item NELM
+#ifdef DEBUG
+    APLNELM   aplNELMSub;               // Item NELM
+#endif
     APLRANK   aplRankSub;               // Item rank
     LPVOID    lpMemSub;                 // Ptr to item global memory
-    APLHETERO lpSymSub;                 // Item as APLHETERO
-
-    // Assume the result is an immediate
-    if (lphGlbRes)
-        *lphGlbRes = NULL;
 
     // Lock the memory to get a ptr to it
     lpMemSub = MyGlobalLock (hGlbSub);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
-    // Get the Array Type, NELM, and Rank
+    // Get the Array Type and Rank
     aplTypeSub = lpHeader->ArrType;
-////aplNELMSub = lpHeader->NELM;
+#ifdef DEBUG
+    aplNELMSub = lpHeader->NELM;
+#endif
     aplRankSub = lpHeader->Rank;
 #undef  lpHeader
 
+    Assert (uSub < aplNELMSub);
+
     // Skip over the header and dimensions to the data
     lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
+
+    // Get next value from global memory
+    GetNextValueMem (lpMemSub,              // Ptr to item global memory data
+                     aplTypeSub,            // Item storage type
+                     uSub,                  // Index into item
+                     lphGlbRes,             // Ptr to result global memory handle (may be NULL)
+                     lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
+                     lpimmTypeRes);         // Ptr to result immediate type (may be NULL)
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+} // End GetNextValueGlb
+
+
+//***************************************************************************
+//  $GetNextValueMem
+//
+//  Get next value from global memory
+//  If *lphGlbRes is NULL on exit, the result is an immediate.
+//***************************************************************************
+
+void GetNextValueMem
+    (LPVOID      lpMemSub,              // Ptr to item global memory data
+     APLSTYPE    aplTypeSub,            // Item storage type
+     APLUINT     uSub,                  // Index into item
+     HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
+     APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
+     IMM_TYPES  *lpimmTypeRes)          // Ptr to result immediate type (may be NULL)
+
+{
+    APLHETERO lpSymSub;                 // Item as APLHETERO
+
+    // Assume the result is an immediate
+    if (lphGlbRes)
+        *lphGlbRes = NULL;
 
     // Split cases based upon the right arg storage type
     switch (aplTypeSub)
@@ -3352,10 +3385,7 @@ void GetNextValue
         defstop
             break;
     } // End SWITCH
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
-} // End GetNextValue
+} // End GetNextValueMem
 
 
 //***************************************************************************
@@ -5010,10 +5040,8 @@ APLUINT CalcHeaderSize
 //  homogeneous array in nested array format.  In other words,
 //  structural functions such as
 //
-//    unique
 //    partition
 //    without
-//    bracket indexing
 //    bracket indexed assignment
 //    etc.
 //
@@ -5037,6 +5065,7 @@ APLUINT CalcHeaderSize
 //    pick
 //    take
 //    drop
+//    bracket indexing
 //
 //  must call this function to check their result to see if it
 //  can be stored more simply.  Note that more simply does not
@@ -5122,6 +5151,12 @@ LPTOKEN TypeDemote
         lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
         lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
         lptkRhtArg->tkData.tkLongest = *(LPAPLLONGEST) lpMemRht;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = lpMemRhtHdr = NULL;
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
 
         goto IMMED_EXIT;
     } // End IF
@@ -5678,7 +5713,8 @@ void FillSISNxt
      HANDLE       hSemaphore,           // Semaphore handle
      DFN_TYPES    DfnType,              // DFNTYPE_xxx
      FCN_VALENCES FcnValence,           // FCNVALENCE_xxx
-     BOOL         Suspended)            // TRUE iff starts Suspended
+     BOOL         Suspended,            // TRUE iff starts Suspended
+     BOOL         LinkIntoChain)        // TRUE iff we should link this entry into the SIS chain
 
 {
     lpMemPTD->SILevel++;
@@ -5700,14 +5736,10 @@ RESTART_EXCEPTION_FILLSISNXT:
         lpMemPTD->lpSISNxt->CurLineNum    = 0;
         lpMemPTD->lpSISNxt->NxtLineNum    = 0;
         lpMemPTD->lpSISNxt->numLabels     = 0;
-        lpMemPTD->lpSISNxt->numResultSTE  = 0;
-        lpMemPTD->lpSISNxt->offResultSTE  = 0;
-        lpMemPTD->lpSISNxt->numLftArgSTE  = 0;
-        lpMemPTD->lpSISNxt->offLftArgSTE  = 0;
-        lpMemPTD->lpSISNxt->numRhtArgSTE  = 0;
-        lpMemPTD->lpSISNxt->offRhtArgSTE  = 0;
-        lpMemPTD->lpSISNxt->numLocalsSTE  = 0;
-        lpMemPTD->lpSISNxt->offLocalsSTE  = 0;
+////    lpMemPTD->lpSISNxt->numResultSTE  = 0;
+////    lpMemPTD->lpSISNxt->numLftArgSTE  = 0;
+////    lpMemPTD->lpSISNxt->numRhtArgSTE  = 0;
+////    lpMemPTD->lpSISNxt->numLocalsSTE  = 0;
         lpMemPTD->lpSISNxt->numFcnLines   = 0;
         lpMemPTD->lpSISNxt->QQPromptLen   = 0;
         lpMemPTD->lpSISNxt->ErrorCode     = ERRORCODE_NONE;
@@ -5716,11 +5748,14 @@ RESTART_EXCEPTION_FILLSISNXT:
 #ifdef DEBUG
         dprintfW (L"~~Localize:    %08X (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
 #endif
-        // Link this SIS into the chain
-        if (lpMemPTD->lpSISCur)
-            lpMemPTD->lpSISCur->lpSISNxt = lpMemPTD->lpSISNxt;
-        lpMemPTD->lpSISCur = lpMemPTD->lpSISNxt;
-        lpMemPTD->lpSISNxt = lpMemPTD->lpSISNxt->lpSISNxt;
+        // Link this SIS into the chain, if requested
+        if (LinkIntoChain)
+        {
+            if (lpMemPTD->lpSISCur)
+                lpMemPTD->lpSISCur->lpSISNxt = lpMemPTD->lpSISNxt;
+            lpMemPTD->lpSISCur = lpMemPTD->lpSISNxt;
+            lpMemPTD->lpSISNxt = lpMemPTD->lpSISNxt->lpSISNxt;
+        } // End IF
     } __except (CheckException (GetExceptionInformation (), "FillSISNxt"))
     {
         switch (MyGetExceptionCode ())

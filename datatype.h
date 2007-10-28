@@ -91,8 +91,8 @@ typedef enum tagARRAY_TYPES
 // Whenever changing this <enum>, be sure to make a
 //   corresponding change to <StorageType> and <TypeDemote>
 //   in <primfns.c>,  <uTypeMap> in <externs.h>,
-//   <IsSimpleNH> and <IsSimpleNum> macros in <datatype.h>,
-//   and BPE_VEC in this file.
+//   <IsSimpleNH> and <IsSimpleNum> macros
+//   and BPE_VEC in <datatype.h>.
 
 } ARRAY_TYPES;
 

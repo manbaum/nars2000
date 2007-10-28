@@ -630,11 +630,11 @@ LPPL_YYSTYPE ArrayIndexRefRhtImm_EM_YY
     if (IsSimple (aplTypeLft))
     {
         // Get the indexed value
-        GetNextValue (hGlbLft,              // Item global memory handle
-                      aplLongestRht,        // Index into item
-                      NULL,                 // Ptr to result global memory handle (may be NULL)
-                     &aplLongestLft,        // Ptr to result immediate value (may be NULL)
-                     &immTypeLft);          // Ptr to result immediate type (may be NULL)
+        GetNextValueGlb (hGlbLft,           // Item global memory handle
+                         aplLongestRht,     // Index into item
+                         NULL,              // Ptr to result global memory handle (may be NULL)
+                        &aplLongestLft,     // Ptr to result immediate value (may be NULL)
+                        &immTypeLft);       // Ptr to result immediate type (may be NULL)
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
 
@@ -680,11 +680,11 @@ LPPL_YYSTYPE ArrayIndexRefRhtImm_EM_YY
         lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
         // Get the indexed value
-        GetNextValue (hGlbLft,              // Item global memory handle
-                      aplLongestRht,        // Index into item
-                     &hGlbSub,              // Ptr to result global memory handle (may be NULL)
-                      NULL,                 // Ptr to result immediate value (may be NULL)
-                      NULL);                // Ptr to result immediate type (may be NULL)
+        GetNextValueGlb (hGlbLft,           // Item global memory handle
+                         aplLongestRht,     // Index into item
+                        &hGlbSub,           // Ptr to result global memory handle (may be NULL)
+                         NULL,              // Ptr to result immediate value (may be NULL)
+                         NULL);             // Ptr to result immediate type (may be NULL)
         // Copy the global memory handle to the result
         *((LPAPLNESTED) lpMemRes) = CopySymGlbDirGlb (hGlbSub);
 
@@ -827,11 +827,11 @@ LPPL_YYSTYPE ArrayIndexRefRhtSimpGlb_EM_YY
         IMM_TYPES  immTypeLft;              // Left arg immediate type
 
         // Get the next index from the right arg
-        GetNextValue (hGlbRht,              // Right arg global memory handle
-                      uRht,                 // Index into right arg
-                      NULL,                 // Ptr to result global memory handle (may be NULL)
-                     &aplLongestRht,        // Ptr to result immediate value (may be NULL)
-                      NULL);                // Ptr to result immediate type (may be NULL)
+        GetNextValueGlb (hGlbRht,           // Right arg global memory handle
+                         uRht,              // Index into right arg
+                         NULL,              // Ptr to result global memory handle (may be NULL)
+                        &aplLongestRht,     // Ptr to result immediate value (may be NULL)
+                         NULL);             // Ptr to result immediate type (may be NULL)
         // Convert float to int if necessary
         if (aplTypeRht EQ ARRAY_FLOAT)
         {
@@ -856,11 +856,11 @@ LPPL_YYSTYPE ArrayIndexRefRhtSimpGlb_EM_YY
         } // End IF
 
         // Get the indexed value from the left arg
-        GetNextValue (hGlbLft,              // Item global memory handle
-                      aplLongestRht,        // Index into item
-                     &hGlbSub,              // Ptr to result global memory handle (may be NULL)
-                     &aplLongestLft,        // Ptr to result immediate value (may be NULL)
-                     &immTypeLft);          // Ptr to result immediate type (may be NULL)
+        GetNextValueGlb (hGlbLft,           // Item global memory handle
+                         aplLongestRht,     // Index into item
+                        &hGlbSub,           // Ptr to result global memory handle (may be NULL)
+                        &aplLongestLft,     // Ptr to result immediate value (may be NULL)
+                        &immTypeLft);       // Ptr to result immediate type (may be NULL)
         // Split cases based upon the result storage type
         switch (aplTypeRes)
         {

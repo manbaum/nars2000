@@ -48,7 +48,7 @@
 %name-prefix="fh_yy"
 %parse-param {LPFHLOCALVARS lpfhLocalVars}
 %lex-param   {LPFHLOCALVARS lpfhLocalVars}
-%token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK COMMENT
+%token NAMEUNK NAMEOPR NAMESYS ASSIGN LINECONT UNK COMMENT SOS
 
 %start HeaderComm
 
@@ -105,9 +105,9 @@ not counting the presence/absence of locals and presence/absence of a comment.
 AxisOpr:
       NAMEOPR '[' NAMEUNK ']'   {DbgMsgW2 (L"%%AxisOpr:  NAMEUNK[NAMEUNK]");
                                  InitHdrStrand (&$1);
-                                 PushHdrStrand (&$1);
-                                 PushHdrStrand (&$3);
-                                 $$ = *MakeHdrStrand (&$1);
+                                 PushHdrStrand_YY (&$1);
+                                 PushHdrStrand_YY (&$3);
+                                 $$ = *MakeHdrStrand_YY (&$1);
                                  lpfhLocalVars->DfnAxis  = 1;
                                  lpfhLocalVars->lpYYAxisOpr = $3.lpYYStrandIndirect;
                                  $$ = $1;
@@ -117,10 +117,10 @@ AxisOpr:
 OpenList:
                NAMEUNK          {DbgMsgW2 (L"%%OpenList:  NAMEUNK");
                                  InitHdrStrand (&$1);
-                                 $$ = *PushHdrStrand (&$1);
+                                 $$ = *PushHdrStrand_YY (&$1);
                                 }
     | OpenList NAMEUNK          {DbgMsgW2 (L"%%OpenList:  OpenList NAMEUNK");
-                                 $$ = *PushHdrStrand (&$2);
+                                 $$ = *PushHdrStrand_YY (&$2);
                                 }
     ;
 
@@ -129,29 +129,29 @@ AxisList:
                                 {DbgMsgW2 (L"%%AxisList:  (AxisOpr)");
                                  InitHdrStrand (&$2);
                                  $2.Indirect = 1;
-                                 PushHdrStrand (&$2);
-                                 $$ = *MakeHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$2);
+                                 $$ = *MakeHdrStrand_YY (&$2);
                                 }
     | '(' NAMEUNK  AxisOpr          ')'
                                 {DbgMsgW2 (L"%%AxisList:  (NAMEUNK AxisOpr)");
-                                 PushHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$2);
                                  $3.Indirect = 1;
-                                 PushHdrStrand (&$3);
-                                 $$ = *MakeHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$3);
+                                 $$ = *MakeHdrStrand_YY (&$2);
                                 }
     | '(' NAMEUNK  AxisOpr NAMEUNK ')'
                                 {DbgMsgW2 (L"%%AxisList:  (NAMEUNK AxisOpr NAMEUNK)");
-                                 PushHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$2);
                                  $3.Indirect = 1;
-                                 PushHdrStrand (&$3);
-                                 PushHdrStrand (&$4);
-                                 $$ = *MakeHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$3);
+                                 PushHdrStrand_YY (&$4);
+                                 $$ = *MakeHdrStrand_YY (&$2);
                                 }
     ;
 
 List:
       '(' OpenList ')'          {DbgMsgW2 (L"%%List:  '(' OpenList ')'");
-                                 $$ = *MakeHdrStrand (&$2);
+                                 $$ = *MakeHdrStrand_YY (&$2);
                                 }
     ;
 
@@ -162,8 +162,8 @@ Result:
                                 }
     | NAMEUNK ASSIGN            {DbgMsgW2 (L"%%Result:  NAMEUNK" WS_UTF16_LEFTARROW);
                                  InitHdrStrand (&$1);
-                                 PushHdrStrand (&$1);
-                                 $$ = *MakeHdrStrand (&$1);
+                                 PushHdrStrand_YY (&$1);
+                                 $$ = *MakeHdrStrand_YY (&$1);
                                  lpfhLocalVars->lpYYResult = $1.lpYYStrandBase;
                                 }
     ;
@@ -173,10 +173,10 @@ OptArg:
                                  $$ = $2;
                                 }
     | '[' OpenList ']'          {DbgMsgW2 (L"%%OptArg:  [OpenList]");
-                                 $$ = *MakeHdrStrand (&$2);
+                                 $$ = *MakeHdrStrand_YY (&$2);
                                 }
     | '(' '[' OpenList ']' ')'  {DbgMsgW2 (L"%%OptArg:  ([OpenList])");
-                                 $$ = *MakeHdrStrand (&$3);
+                                 $$ = *MakeHdrStrand_YY (&$3);
                                 }
     ;
 
@@ -186,8 +186,8 @@ RhtArg:
                                 }
     | NAMEUNK                   {DbgMsgW2 (L"%%RhtArg:  NAMEUNK");
                                  InitHdrStrand (&$1);
-                                 PushHdrStrand (&$1);
-                                 $$ = *MakeHdrStrand (&$1);
+                                 PushHdrStrand_YY (&$1);
+                                 $$ = *MakeHdrStrand_YY (&$1);
                                 }
     ;
 
@@ -196,8 +196,8 @@ NoResHdr:                       // N.B. that this production does not need to re
                                 //   lpfhLocalVars->lpYY... and lpfhLocalVars->u???Valence
               NAMEUNK           {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK");                // Niladic function
                                  InitHdrStrand (&$1);
-                                 PushHdrStrand (&$1);
-                                 MakeHdrStrand (&$1);
+                                 PushHdrStrand_YY (&$1);
+                                 MakeHdrStrand_YY (&$1);
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
@@ -206,8 +206,8 @@ NoResHdr:                       // N.B. that this production does not need to re
 
     |         AxisOpr  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  AxisOpr RhtArg");         // Monadic function w/axis operator
                                  InitHdrStrand (&$1);
-                                 PushHdrStrand (&$1);
-                                 MakeHdrStrand (&$1);
+                                 PushHdrStrand_YY (&$1);
+                                 MakeHdrStrand_YY (&$1);
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
@@ -217,8 +217,8 @@ NoResHdr:                       // N.B. that this production does not need to re
 
     |         NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK RhtArg");         // Monadic function
                                  InitHdrStrand (&$1);
-                                 PushHdrStrand (&$1);
-                                 MakeHdrStrand (&$1);
+                                 PushHdrStrand_YY (&$1);
+                                 MakeHdrStrand_YY (&$1);
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
@@ -228,12 +228,12 @@ NoResHdr:                       // N.B. that this production does not need to re
 
     | NAMEUNK AxisOpr  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK AxisOpr RhtArg"); // Dyadic function w/axis operator
                                  InitHdrStrand (&$1);
-                                 PushHdrStrand (&$1);
-                                 MakeHdrStrand (&$1);
+                                 PushHdrStrand_YY (&$1);
+                                 MakeHdrStrand_YY (&$1);
 
                                  InitHdrStrand (&$2);
-                                 PushHdrStrand (&$2);
-                                 MakeHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$2);
+                                 MakeHdrStrand_YY (&$2);
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
@@ -243,12 +243,12 @@ NoResHdr:                       // N.B. that this production does not need to re
                                 }
     | NAMEUNK NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  NAMEUNK NAMEUNK RhtArg"); // Dyadic function
                                  InitHdrStrand (&$1);
-                                 PushHdrStrand (&$1);
-                                 MakeHdrStrand (&$1);
+                                 PushHdrStrand_YY (&$1);
+                                 MakeHdrStrand_YY (&$1);
 
                                  InitHdrStrand (&$2);
-                                 PushHdrStrand (&$2);
-                                 MakeHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$2);
+                                 MakeHdrStrand_YY (&$2);
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
@@ -258,8 +258,8 @@ NoResHdr:                       // N.B. that this production does not need to re
                                 }
     | List    AxisOpr  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  List AxisOpr RhtArg");    // Dyadic function w/axis operator
                                  InitHdrStrand (&$2);
-                                 PushHdrStrand (&$2);
-                                 MakeHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$2);
+                                 MakeHdrStrand_YY (&$2);
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
@@ -269,8 +269,8 @@ NoResHdr:                       // N.B. that this production does not need to re
                                 }
     | List    NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  List NAMEUNK RhtArg");    // Dyadic function
                                  InitHdrStrand (&$2);
-                                 PushHdrStrand (&$2);
-                                 MakeHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$2);
+                                 MakeHdrStrand_YY (&$2);
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
@@ -280,8 +280,8 @@ NoResHdr:                       // N.B. that this production does not need to re
                                 }
     | OptArg  AxisOpr  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg AxisOpr RhtArg");  // Bivalent function w/axis operator
                                  InitHdrStrand (&$2);
-                                 PushHdrStrand (&$2);
-                                 MakeHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$2);
+                                 MakeHdrStrand_YY (&$2);
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
@@ -291,8 +291,8 @@ NoResHdr:                       // N.B. that this production does not need to re
                                 }
     | OptArg  NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg NAMEUNK RhtArg");  // Bivalent function
                                  InitHdrStrand (&$2);
-                                 PushHdrStrand (&$2);
-                                 MakeHdrStrand (&$2);
+                                 PushHdrStrand_YY (&$2);
+                                 MakeHdrStrand_YY (&$2);
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
@@ -369,23 +369,23 @@ Locals:
                                 }
     |         ';'      NAMEUNK  {DbgMsgW2 (L"%%Locals:  ':' NAMEUNK");
                                  InitHdrStrand (&$2);
-                                 $$ = *PushHdrStrand (&$2);
+                                 $$ = *PushHdrStrand_YY (&$2);
                                 }
     |         ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  ':' NAMESYS");
                                  if (!$2.tkToken.tkData.tkSym->stFlags.Value)
                                      YYERROR;
                                  InitHdrStrand (&$2);
-                                 $$ = *PushHdrStrand (&$2);
+                                 $$ = *PushHdrStrand_YY (&$2);
                                 }
     | Locals  LINECONT          {DbgMsgW2 (L"%%Locals:  Locals LINECONT");
                                 }
     | Locals  ';'      NAMEUNK  {DbgMsgW2 (L"%%Locals:  Locals ';' NAMEUNK");
-                                 $$ = *PushHdrStrand (&$3);
+                                 $$ = *PushHdrStrand_YY (&$3);
                                 }
     | Locals  ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  Locals ':' NAMESYS");
                                  if (!$3.tkToken.tkData.tkSym->stFlags.Value)
                                      YYERROR;
-                                 $$ = *PushHdrStrand (&$3);
+                                 $$ = *PushHdrStrand_YY (&$3);
                                 }
     ;
 
@@ -395,12 +395,12 @@ Header:
     |         NoResHdr          {DbgMsgW2 (L"%%Header:  NoResHdr");
                                 }
     |         NoResHdr Locals   {DbgMsgW2 (L"%%Header:  NoResHdr Locals");
-                                 lpfhLocalVars->lpYYLocals = MakeHdrStrand (&$2);
+                                 lpfhLocalVars->lpYYLocals = MakeHdrStrand_YY (&$2);
                                 }
     | Result  NoResHdr          {DbgMsgW2 (L"%%Header:  Result NoResHdr");
                                 }
     | Result  NoResHdr Locals   {DbgMsgW2 (L"%%Header:  Result NoResHdr Locals");
-                                 lpfhLocalVars->lpYYLocals = MakeHdrStrand (&$3);
+                                 lpfhLocalVars->lpYYLocals = MakeHdrStrand_YY (&$3);
                                 }
     ;
 
@@ -408,12 +408,15 @@ HeaderComm:
       error                     {DbgMsgW2 (L"%%HeaderComm:  error");
                                  YYABORT;
                                 }
-    | Header                    {DbgMsgW2 (L"%%HeaderComm:  Header");
+    | Header SOS                {DbgMsgW2 (L"%%HeaderComm:  Header SOS");
 #ifdef DEBUG
                                  DisplayFnHdr (lpfhLocalVars);
 #endif
                                 }
-    | Header COMMENT            {DbgMsgW2 (L"%%HeaderComm:  Header COMMENT");
+    | Header COMMENT SOS        {DbgMsgW2 (L"%%HeaderComm:  Header COMMENT SOS");
+#ifdef DEBUG
+                                 DisplayFnHdr (lpfhLocalVars);
+#endif
                                 }
     ;
 
@@ -604,6 +607,9 @@ int fh_yylex
         case TKT_COMMENT:
             return COMMENT;
 
+        case TKT_SOS:
+            return SOS;
+
         default:
             return UNK;
     } // End SWITCH
@@ -770,7 +776,7 @@ void InitHdrStrand
 //  Push a header token onto the strand stack.
 //***************************************************************************
 
-LPFH_YYSTYPE PushHdrStrand
+LPFH_YYSTYPE PushHdrStrand_YY
     (LPFH_YYSTYPE lpYYArg)          // Ptr to the incoming argument
 
 {
@@ -792,22 +798,22 @@ LPFH_YYSTYPE PushHdrStrand
     *lpfhLocalVars->lpYYStrandNext++ = *lpYYArg;
 
     return lpYYArg;
-} // End PushHdrStrand
+} // End PushHdrStrand_YY
 
 
 //***************************************************************************
-//  $MakeHdrStrand
+//  $MakeHdrStrand_YY
 //
 //  Make a header strand
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeHdrStrand"
+#define APPEND_NAME     L" -- MakeHdrStrand_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPFH_YYSTYPE MakeHdrStrand
+LPFH_YYSTYPE MakeHdrStrand_YY
     (LPFH_YYSTYPE lpYYArg)          // Ptr to incoming token
 
 {
@@ -825,7 +831,7 @@ LPFH_YYSTYPE MakeHdrStrand
 
     // Return the base of the current strand
     return lpYYArg->lpYYStrandBase;
-} // End MakeHdrStrand
+} // End MakeHdrStrand_YY
 #undef  APPEND_NAME
 
 

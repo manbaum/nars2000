@@ -102,14 +102,16 @@ typedef struct tagPERTABDATA
     WNDPROC lpfnOldListboxWndProc,  // D8:  Save area for old Listbox procedure
             lpfnOldEditCtrlWndProc; // DC:  Save area for old Edit Control procedure
 
-    UINT         SILevel;           // E0:  Current State Indicator level
-    HANDLE       hSemaDelay;        // E4:  Delay semaphore (NULL if no delay active)
-    PL_YYSTYPE   YYResExec;         // E8:  Result from execute primitive
+    LPPRIMFNS    lpMagicFcnDydIota; // E0:  Ptr to magic function:  extended dyadic iota
 
-    APLCHAR      cQuadPR;           //118:  []PR     (' ') (When a char scalar)
-    APLBOOL      bQuadxSA;          //11A:  []SA (in its index form)
-    char         DPFE[_MAX_PATH];   //11B:  The Drive, Path, Filename, & Ext of the WS
-                                    //21F:  Length
+    UINT         SILevel;           // E4:  Current State Indicator level
+    HANDLE       hSemaDelay;        // E8:  Delay semaphore (NULL if no delay active)
+    PL_YYSTYPE   YYResExec;         // EC:  Result from execute primitive
+
+    APLCHAR      cQuadPR;           //11C:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //11E:  []SA (in its index form)
+    char         DPFE[_MAX_PATH];   //11F:  The Drive, Path, Filename, & Ext of the WS
+                                    //223:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

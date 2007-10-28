@@ -290,7 +290,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     {
         // Get the next right arg value
         if (hGlbRht)
-            GetNextValue (hGlbRht, uRht, NULL, &aplLongestRht, NULL);
+            GetNextValueGlb (hGlbRht, uRht, NULL, &aplLongestRht, NULL);
 
         // The left arg is treated as a three-dimensional array of shape
         //   aplRestLft aplRowsLft aplColsLft

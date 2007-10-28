@@ -17,6 +17,7 @@
 #include "Unitrans.h"
 #include "dfnhdr.h"
 #include "pertab.h"
+#include "sis.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -563,6 +564,12 @@ LRESULT APIENTRY FEWndProc
             // Set the formatting rectangle -- make room
             //   for FCN_INDENT chars for the [line numbers]
             SetFmtRect (hWndEC, FCN_INDENT * cxAveCharFE);
+
+            return FALSE;           // We handled the msg
+
+        case MYWM_SETFOCUS:
+            // Set the focus to the Function Editor so the cursor displays
+            SetFocus (hWnd);
 
             return FALSE;           // We handled the msg
 
@@ -1978,7 +1985,10 @@ HGLOBAL CopyGlbMemory
     dwSize = GlobalSize (hGlbSrc);
 
     // Allocate space for the result
-    hGlbDst = MyGlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
+    // Note we do not use MyGlobalAlloc here as the global memory handle
+    //   is to be placed onto the clipboard at which point the system
+    //   will own the handle
+    hGlbDst = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
     if (hGlbDst)
     {
         // We don't use MyGlobalLock/Unlock on the source
@@ -2062,8 +2072,11 @@ void PasteAPLChars
             break;
     } // End FOR
 
-    // Get a handle to the clipboard data for CF_UNICODETEXT
-    hGlbClip = GetClipboardData (CF_UNICODETEXT);
+    // Get a handle to the clipboard data for CF_PRIVATEFIRST
+    hGlbClip = GetClipboardData (CF_PRIVATEFIRST);
+    if (hGlbClip EQ NULL)
+        // Get a handle to the clipboard data for CF_UNICODETEXT
+        hGlbClip = GetClipboardData (CF_UNICODETEXT);
 
     if (hGlbClip)
     {
@@ -2078,7 +2091,7 @@ void PasteAPLChars
         if (!hGlbText)
         {
             MessageBox (hWndEC,
-                        "Unable to allocate memory for the copy of CF_UNICODETEXT format",
+                        "Unable to allocate memory for the copy of CF_UNICODETEXT/CF_PRIVATEFIRST format",
                         lpszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             goto ERROR_EXIT;
@@ -2099,16 +2112,18 @@ void PasteAPLChars
             // Convert dwSize to # elements
             dwSize /= sizeof (WCHAR);
 
-            // Translate the APL charset to the NARS charset
+            // Translate the other APL charset to the NARS charset
             for (uText = 0; uText < dwSize; uText++, lpMemText++)
             if (*lpMemText)
-            for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
-            if (*lpMemText EQ uniTrans[uTran][uIndex])
             {
-                *lpMemText  = uniTrans[uTran][UNITRANS_NARS];
+                for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
+                if (*lpMemText EQ uniTrans[uTran][uIndex])
+                {
+                    *lpMemText  = uniTrans[uTran][UNITRANS_NARS];
 
-                break;      // out of the innermost loop
-            } // End FOR/FOR/IF
+                    break;      // out of the innermost loop
+                } // End FOR/IF/...
+            } // End FOR/IF
 
             // We no longer need this ptr
             GlobalUnlock (hGlbText); lpMemText = NULL;
@@ -2894,13 +2909,70 @@ BOOL SaveFunction
         LPSYMENTRY  lpSymName = NULL,   // Ptr to SYMENTRY for the function name
                    *lplpSymDfnHdr;      // Ptr to LPSYMENTRYs at end of user-defined function/operator header
         SYSTEMTIME  systemTime;         // Current system (UTC) time
+        FILETIME    ftCreation;         // Creation time
+        HGLOBAL     hGlbOldDfn;         // Old Dfn global memory handle
+
+        // Check on invalid function name (e.g. empty function header/body)
+        if (!fhLocalVars.lpYYFcnName)
+            goto ERROR_EXIT;
+
+        // Get the current system (UTC) time
+        GetSystemTime (&systemTime);
 
         // Check to see if this function is already in global memory
         lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
 
-        // If it's already in memory, free it
-        if (lpSymName->stData.stGlbData)
-            FreeResultGlobalDfn (lpSymName->stData.stGlbData);
+        // Get the old Dfn global memory handle
+        hGlbOldDfn = lpSymName->stData.stGlbData;
+
+        // If it's already in memory, get its creation time
+        //   and then free it
+        if (hGlbOldDfn)
+        {
+            LPSIS_HEADER lpSISCur;
+
+            // Clear the ptr type bits
+            hGlbOldDfn = ClrPtrTypeDirGlb (hGlbOldDfn);
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Get a ptr to the current SI stack
+            lpSISCur = lpMemPTD->lpSISCur;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            // Check for already on the SI stack
+            for (;
+                 lpSISCur;
+                 lpSISCur = lpSISCur->lpSISPrv)
+            if (lpSISCur->hGlbDfnHdr EQ hGlbOldDfn)
+            {
+                // Signal SI Damage
+                MessageBox (hWndEC,
+                            "SI Damage in pending function:  changes to this function NOT saved",
+                            lpszAppName,
+                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                SetFocus (GetParent (hWndEC));
+
+                goto ERROR_EXIT;
+            } // End FOR
+
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLock (hGlbOldDfn);
+
+            // Get the creation time
+            ftCreation = lpMemDfnHdr->ftCreation;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbOldDfn); lpMemDfnHdr = NULL;
+
+            // Free it
+            FreeResultGlobalDfn (hGlbOldDfn); hGlbOldDfn = NULL;
+        } else
+            // Convert system time to file time and save as creation time
+            SystemTimeToFileTime (&systemTime, &ftCreation);
 
         // Get # extra result STEs
         if (fhLocalVars.lpYYResult)
@@ -2978,11 +3050,11 @@ BOOL SaveFunction
         lpMemDfnHdr->hGlbTxtHdr   = hGlbTxtHdr;
         lpMemDfnHdr->hGlbTknHdr   = hGlbTknHdr;
 
-        // Get the current system (UTC) time
-        GetSystemTime (&systemTime);
+        // Save creation time
+        lpMemDfnHdr->ftCreation = ftCreation;
 
-        // Convert system time to file time and save as creation time
-        SystemTimeToFileTime (&systemTime, &lpMemDfnHdr->ftCreation);
+        // Convert system time to file time and save as last modification time
+        SystemTimeToFileTime (&systemTime, &lpMemDfnHdr->ftLastMod);
 
         // Get the ptr to the start of the Undo Buffer
         (long) lpUndoBeg = GetWindowLong (hWndFE, GWLSF_UNDO_BEG);
@@ -3182,7 +3254,7 @@ BOOL SaveFunction
 
             // Skip to the next struct
             lpFcnLines++;
-        } // End WHILE
+        } // End FOR
 
         // Check for special labels ([]PROTOTYPE, []INVERSE, and []SINGLETON)
         GetSpecialLabelNums (lpMemDfnHdr);

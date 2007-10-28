@@ -290,7 +290,15 @@ Stmt:
                                                      break;
 
                                                  case EXITTYPE_GOTO_LINE:   // Valid line #
-                                                     YYACCEPT;              // Stop executing this line
+                                                     // If we're not at the EOS or EOL, YYERROR
+                                                     if (lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOL
+                                                      && lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOS)
+                                                     {
+                                                         PrimFnSyntaxError_EM (&$2.tkToken);
+                                                         lpplLocalVars->ExitType = EXITTYPE_ERROR;
+                                                         YYERROR;
+                                                     } else
+                                                         YYACCEPT;          // Stop executing this line
 
                                                  case EXITTYPE_ERROR:       // Error
                                                      YYERROR;               // Stop on error
@@ -307,6 +315,14 @@ Stmt:
                                          {
                                              LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
                                              LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
+
+                                             // If we're not at the EOS or EOL, YYERROR
+                                             if (lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOL
+                                              && lpplLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_EOS)
+                                             {
+                                                 PrimFnSyntaxError_EM (&$1.tkToken);
+                                                 YYERROR;
+                                             } // End IF
 
                                              // Lock the memory to get a ptr to it
                                              lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
@@ -488,6 +504,14 @@ Stmt:
                                          if (lpplLocalVars->bLookAhead)
                                          {
                                              lpplLocalVars->NameType = NAMETYPE_OP1;
+                                             YYACCEPT;
+                                         } else
+                                             YYERROR;
+                                        }
+    |     Op1Spec LeftOper EOL          {DbgMsgW2 (L"%%Stmt:  EOL LeftOper Op1Spec");
+                                         if (lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->NameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -930,7 +954,7 @@ Op1Spec:
 ////
 ////                                         // The result is always the root of the function tree
 ////                                         DbgBrk ();      // ***FIXME*** -- Won't returning a FcnStr conflict with
-////                                                        //                Op1Spec always being DIRECT??
+////                                                         //                Op1Spec always being DIRECT??
 ////                                         $$ = *lpplLocalVars->YYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
 ////                                         $$.tkToken.tkFlags.NoDisplay = TRUE;
 ////                                     } // End IF
@@ -970,7 +994,7 @@ Op2Spec:
 
                                              // The result is always the root of the function tree
                                              DbgBrk ();      // ***FIXME*** -- Won't returning a FcnStr conflict with
-                                                            //                Op2Spec always being DIRECT??
+                                                             //                Op2Spec always being DIRECT??
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
@@ -1009,7 +1033,7 @@ Op3Spec:
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             DbgBrk ();      // ***FIXME*** -- Won't returning a FcnStr conflict with
+                                             DbgBrk ();     // ***FIXME*** -- Won't returning a FcnStr conflict with
                                                             //                Op3Spec always being DIRECT??
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
@@ -3016,16 +3040,45 @@ ParenFunc:
     | '>' FcnSpec '('                   {DbgMsgW2 (L"%%ParenFunc:  (FcnSpec)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             $$ = $2;
-////                                              lpplLocalVars->lpYYFcn =
-////                                                PushFcnStrand_YY (&$2, 1, INDIRECT);  // Function (Indirect)
-//// /////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (&$2, 1, DIRECT);    // Function (Direct)
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                                 YYERROR;
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                         } // End IF
+                                        }
+    |     '>' Op1Spec LeftOper '('      {DbgMsgW2 (L"%%ParenFunc:  (LeftOper Op1Spec)");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (&$2, 2, DIRECT);    // Monadic operator (Direct)
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR;
+                                             } // End IF
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+
+                                             lpplLocalVars->lpYYFcn =
+                                               PushFcnStrand_YY (&$3, 1, INDIRECT);  // Left operand (Indirect)
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR;
+                                             } // End IF
+
+                                             YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                          } // End IF
                                         }
     ;
@@ -4155,16 +4208,15 @@ MonOp:
     |              '>' Op1Spec '('      {DbgMsgW2 (L"%%MonOp:  (Op1Spec)");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             $$ = $2;
-////                                              lpplLocalVars->lpYYOp1 =
-////                                                PushFcnStrand_YY (&$2, 1, DIRECT);    // Monadic operator (Direct)
-//// /////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
-////
-////                                              if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
-////                                                  YYERROR;
-////
-////                                              // The result is always the root of the function tree
-////                                              $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
+                                             lpplLocalVars->lpYYOp1 =
+                                               PushFcnStrand_YY (&$2, 1, DIRECT);    // Monadic operator (Direct)
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // DO NOT FREE:  RefCnt not incremented by PushFcnStrand_YY
+
+                                             if (!lpplLocalVars->lpYYOp1)            // If not defined, free args and YYERROR
+                                                 YYERROR;
+
+                                             // The result is always the root of the function tree
+                                             $$ = *lpplLocalVars->lpYYOp1; YYFree (lpplLocalVars->lpYYOp1); lpplLocalVars->lpYYOp1 = NULL;
                                          } // End IF
                                         }
     ;
@@ -4814,10 +4866,11 @@ EXIT_TYPES ParseLine
             // Get a ptr to the current SIS header
             lpSISCur = lpMemPTD->lpSISCur;
 
-            // If this level or an adjacent preceding level is
-            //   from the Execute primitive, peel back to the
-            //   preceding level
-            while (lpSISCur && lpSISCur->DfnType EQ DFNTYPE_EXEC)
+            // If this level or an adjacent preceding level is from
+            //   the Execute primitive or immediate execution mode,
+            //   peel back to the preceding level
+            while (lpSISCur && lpSISCur->DfnType EQ DFNTYPE_EXEC
+                || lpSISCur && lpSISCur->DfnType EQ DFNTYPE_IMM)
                 lpSISCur = lpSISCur->lpSISPrv;
 
             // If this level is a user-defined function/operator,
@@ -4826,7 +4879,7 @@ EXIT_TYPES ParseLine
              && (lpSISCur->DfnType EQ DFNTYPE_OP1
               || lpSISCur->DfnType EQ DFNTYPE_OP2
               || lpSISCur->DfnType EQ DFNTYPE_FCN))
-                lpMemPTD->lpSISCur->Suspended = TRUE;
+                lpSISCur->Suspended = TRUE;
 
             break;
         } // End EXITTYPE_ERROR
@@ -4836,9 +4889,17 @@ EXIT_TYPES ParseLine
         case EXITTYPE_NOVALUE:      // ...
         case EXITTYPE_GOTO_ZILDE:   // ...
         case EXITTYPE_GOTO_LINE:    // ...
+        case EXITTYPE_NONE:         // ...
+            // Check on user-defined function/operator exit error
+            if (CheckDfnExitError_EM (lpMemPTD))
+            {
+                // Mark as an APL error
+                plLocalVars.ExitType = EXITTYPE_ERROR;
+                uRet = 1;
+            } // End IF
+
             break;
 
-        case EXITTYPE_NONE:
         defstop
             break;
     } // End IF/SWITCH
@@ -5029,9 +5090,9 @@ NORMAL_EXIT:
             case EXITTYPE_NODISPLAY:    // ...
             case EXITTYPE_NOVALUE:      // ...
             case EXITTYPE_GOTO_ZILDE:   // ...
+            case EXITTYPE_NONE:         // ...
                 break;
 
-            case EXITTYPE_NONE:
             defstop
                 break;
         } // End SWITCH
@@ -5304,7 +5365,7 @@ char LookaheadAdjacent
         case TKT_LPAREN:            // To allow (//R)
             if (!bSkipBrackets)
             {
-                cRes = 'V';         // Variable
+                cRes = '(';         // Left paren
 
                 goto NORMAL_EXIT;
             } // End IF
@@ -5588,6 +5649,7 @@ int pl_yylex
         case TKT_STRING:
             return STRING;
 
+        case TKT_OP1NAMED:
         case TKT_OP1IMMED:
             // Check for / or /[I] or /[A]
             if (CheckNullOp3 (lpplLocalVars))
@@ -5608,7 +5670,6 @@ int pl_yylex
             // Split cases based upon the lookahead result
             switch (LookaheadAdjacent (lpplLocalVars, FALSE))
             {
-                case 'E':               // If the next token is EOL/EOS, or
                 case '1':               // If the next token is a monadic operator, or
                 case 'F':               // If the next token is a function,
                                         //   then this token is a monadic operator
@@ -5647,6 +5708,22 @@ int pl_yylex
 
                     return OP1;
 
+                case '(':               // If the next token is left paren,
+                    // If the preceding token is OP3, ...
+                    // ***FIXME*** -- This doesn't catch the OP3NAMED case
+                    //                or the tricky /(f{is}/)3 4 -- note that f isn't assigned as yet
+                    if (lpplLocalVars->lptkNext[1].tkFlags.TknType EQ TKT_OP3IMMED)
+                    {
+                        // Then this token is a function
+                        lpYYLval->tkToken.tkFlags.TknType = TKT_FCNIMMED;
+                        lpYYLval->tkToken.tkFlags.ImmType = IMMTYPE_PRIMFCN;
+
+                        return PRIMFCN;
+                    } // End IF
+
+                    return OP3;
+
+                case 'E':               // If the next token is EOL/EOS, or
                 case '2':               // If the next token is a dyadic operator,
                                         //   then this token is a function
                     lpYYLval->tkToken.tkFlags.TknType = TKT_FCNIMMED;
@@ -5763,41 +5840,61 @@ BOOL CheckNullOp3
     (LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    // First of all, the current token must be NULLOP
-    if (lpplLocalVars->lptkNext[0].tkData.tkChar EQ UTF16_CIRCLEMIDDLEDOT)
+    LPTOKEN lptkNext;               // Ptr to next token to check
+
+    // Split cases based upon the current token type
+    switch (lpplLocalVars->lptkNext->tkFlags.TknType)
     {
-        LPTOKEN lptkNext;           // Ptr to next token to check
+        case TKT_OP1IMMED:
+            // First of all, the current token must be NULLOP
+            if (lpplLocalVars->lptkNext->tkData.tkChar NE UTF16_CIRCLEMIDDLEDOT)
+                return FALSE;
+            break;
 
-        // Then, either the next token is OP3, ...
-        if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_OP3IMMED)
-            lptkNext = &lpplLocalVars->lptkNext[-2];
-        else
-        // or the next four tokens are /[I] or /[A]
-        if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_RBRACKET
-         && (lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_VARIMMED
-          || lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_VARNAMED
-          || lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_VARARRAY)
-         && lpplLocalVars->lptkNext[-3].tkFlags.TknType EQ TKT_LBRACKET
-         && lpplLocalVars->lptkNext[-4].tkFlags.TknType EQ TKT_OP3IMMED)
-            lptkNext = &lpplLocalVars->lptkNext[-5];
-        else
-            return FALSE;
+        case TKT_OP1NAMED:
+            Assert (lpplLocalVars->lptkNext->tkData.tkSym->stFlags.Imm);
 
-        if ((lptkNext->tkFlags.TknType EQ TKT_LPAREN
-          || lptkNext->tkFlags.TknType EQ TKT_EOS
-          || lptkNext->tkFlags.TknType EQ TKT_EOL
-          || lptkNext->tkFlags.TknType EQ TKT_ASSIGN))
-        {
-            // Change the first token from ambiguous operator to a function
-            lptkNext[1].tkFlags.TknType = TKT_FCNIMMED;
-            lptkNext[1].tkFlags.ImmType = IMMTYPE_PRIMFCN;
+////        // First of all, the current token must be NULLOP
+////        if (lpplLocalVars->lptkNext->tkData.tkSym->stData.stChar NE UTF16_CIRCLEMIDDLEDOT)
+                return FALSE;
 
-            return TRUE;
-        } else
-            return FALSE;
-    } else
+            DbgBrk ();      // ***FIXME*** -- Just because it's OP1NAMED, doesn't mean
+                            //                it isn't about to be assigned some other
+                            //                value or type
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Then, either the next token is OP3, ...
+    if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_OP3IMMED)
+        lptkNext = &lpplLocalVars->lptkNext[-2];
+    else
+    // or the next four tokens are /[I] or /[A]
+    if (lpplLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_RBRACKET
+     && (lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_VARIMMED
+      || lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_VARNAMED
+      || lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_VARARRAY)
+     && lpplLocalVars->lptkNext[-3].tkFlags.TknType EQ TKT_LBRACKET
+     && lpplLocalVars->lptkNext[-4].tkFlags.TknType EQ TKT_OP3IMMED)
+        lptkNext = &lpplLocalVars->lptkNext[-5];
+    else
         return FALSE;
 
+    if (lptkNext->tkFlags.TknType EQ TKT_LPAREN
+     || lptkNext->tkFlags.TknType EQ TKT_EOS
+     || lptkNext->tkFlags.TknType EQ TKT_EOL
+     || lptkNext->tkFlags.TknType EQ TKT_ASSIGN)
+    {
+        // Change the first token from ambiguous operator to a function
+        lptkNext[1].tkFlags.TknType = TKT_FCNIMMED;
+        lptkNext[1].tkFlags.ImmType = IMMTYPE_PRIMFCN;
+
+        return TRUE;
+    } else
+        return FALSE;
 } // End CheckNullOp3
 
 
@@ -5998,7 +6095,8 @@ LPPL_YYSTYPE WaitForInput
                 hSemaphore,             // Semaphore handle
                 bQuoteQuad ? DFNTYPE_QQUAD: DFNTYPE_QUAD, // DfnType
                 FCNVALENCE_NIL,         // FcnValence
-                TRUE);                  // Suspended
+                TRUE,                   // Suspended
+                TRUE);                  // LinkIntoChain
     // Save a ptr to the function token
     lpMemPTD->lpSISCur->lptkFunc = lptkFunc;
 

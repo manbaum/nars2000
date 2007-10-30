@@ -9,6 +9,8 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
+#include "execmfn.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -239,17 +241,9 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht;        // Right ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht;        // Right ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL;    // Right ...
-    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL;   // Ptr to right ...
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    APLRANK      aplRankLft;        // Left arg rank
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // If the right arg is a list, ...
@@ -268,62 +262,61 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
-    // Get the attributes (Type, NELM, and Rank) of the left & right args
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+    // Get the attributes (Type, NELM, and Rank) of the left arg
+    AttrsOfToken (lptkLftArg, NULL, NULL, &aplRankLft, NULL);
 
     // Check for RANK ERROR
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkLftArg);
-        bRet = FALSE;
-
         goto ERROR_EXIT;
     } // End IF
 
-    return PrimFnNonceError_EM (lptkFunc);
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    DbgBrk ();          // ***FINISHME*** -- PrimFnDydTilde_EM_YY
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-
-
-
-
+    //  Return the elements in L not in R.
+    //  Use an internal magic function.
+    lpYYRes =
+      ExecuteMagicFunction_EM_YY (lptkLftArg,                   // Ptr to left arg token
+                                  lptkFunc,                     // Ptr to function token
+                                  lptkRhtArg,                   // Ptr to right arg token
+                                  lptkAxis,                     // Ptr to axis token
+                                  lpMemPTD->hGlbMF_DydTilde);   // Magic function global memory handle
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 ERROR_EXIT:
-    if (hGlbLft && lpMemLft)
-    {
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-    } // End IF
-
-    if (hGlbRht && lpMemRht)
-    {
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-    } // End IF
-
     return lpYYRes;
 } // End PrimFnDydTilde_EM_YY
+
+
+//***************************************************************************
+//  Magic function for dyadic Tilde
+//
+//  Dyadic Tilde -- Without
+//
+//  Return the elements in L not in R.
+//***************************************************************************
+
+static APLCHAR Header[] =
+  $Z $IS $L L" " $F L" " $R;
+
+static APLCHAR Line1[] =
+  $Z $IS L"(~" $L $EPSILON $R L")/" $L;
+
+static LPAPLCHAR Body[] =
+{Line1,
+};
+
+MAGIC_FUNCTION MF_DydTilde =
+{Header,
+ Body,
+ sizeof (Body) / sizeof (Body[0]),
+};
 
 
 //***************************************************************************

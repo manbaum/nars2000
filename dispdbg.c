@@ -635,34 +635,35 @@ static TOKENNAMES tokenNames[] =
  {"COMMENT"   , TKT_COMMENT  }, // 04: Comment (data is NULL)
  {"ASSIGN"    , TKT_ASSIGN   }, // 05: Assignment symbol (data is UTF16_LEFTARROW)
  {"LISTSEP"   , TKT_LISTSEP  }, // 06: List separator    (data is ';')
- {"COLON"     , TKT_COLON    }, // 07: Label ...         (data is ':')
- {"FCNIMMED"  , TKT_FCNIMMED }, // 08: Primitive function (any valence) (data is UTF16_***)
- {"OP1IMMED"  , TKT_OP1IMMED }, // 09: Monadic primitive operator (data is UTF16_***)
- {"OP2IMMED"  , TKT_OP2IMMED }, // 0A: Dyadic  ...
- {"OP3IMMED"  , TKT_OP3IMMED }, // 0B: Ambiguous ...
- {"OPJOTDOT"  , TKT_OPJOTDOT }, // 0C: Outer product monadic operator (with right scope) (data is NULL)
- {"LPAREN"    , TKT_LPAREN   }, // 0D: Left paren (data is TKT_LPAREN)
- {"RPAREN"    , TKT_RPAREN   }, // 0E: Right ...   ...         RPAREN
- {"LBRACKET"  , TKT_LBRACKET }, // 0F: Left bracket ...        LBRACKET
- {"RBRACKET"  , TKT_RBRACKET }, // 10: Right ...   ...         RBRACKET
- {"EOS"       , TKT_EOS      }, // 11: End-of-Stmt (data is length of stmt including this token)
- {"EOL"       , TKT_EOL      }, // 12: End-of-Line  ...
- {"SOS"       , TKT_SOS      }, // 13: Start-of-Stmt (data is NULL)
- {"LINECONT"  , TKT_LINECONT }, // 14: Line continuation (data is NULL)
- {"INPOUT"    , TKT_INPOUT   }, // 15: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
- {"STRAND"    , TKT_STRAND   }, // 16: Strand accumulating (data is LPTOKEN)
- {"LISTINT"   , TKT_LISTINT  }, // 17: List in parens    (data is HGLOBAL)
- {"LISTPAR"   , TKT_LISTPAR  }, // 18: List in parens    (data is HGLOBAL)
- {"LISTBR"    , TKT_LISTBR   }, // 19: List in brackets  (data is HGLOBAL)
- {"VARARRAY"  , TKT_VARARRAY }, // 1A: Array of data (data is HGLOBAL)
- {"FCNARRAY"  , TKT_FCNARRAY }, // 1B: Array of functions (data is HGLOBAL)
- {"FCNNAMED"  , TKT_FCNNAMED }, // 1C: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED" , TKT_AXISIMMED}, // 1D: An immediate axis specification (data is immediate)
- {"AXISARRAY" , TKT_AXISARRAY}, // 1E: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"  , TKT_OP1NAMED }, // 1F: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"  , TKT_OP2NAMED }, // 20: ...     dyadic  ...
- {"OP3NAMED"  , TKT_OP3NAMED }, // 21: ...     ambiguous ...
- {"STRNAMED"  , TKT_STRNAMED }, // 22: ...     strand  ...
+ {"LABELSEP"  , TKT_LABELSEP }, // 07: Label ...         (data is ':')
+ {"COLON"     , TKT_COLON    }, // 08: Colon             (data is ':')
+ {"FCNIMMED"  , TKT_FCNIMMED }, // 09: Primitive function (any valence) (data is UTF16_***)
+ {"OP1IMMED"  , TKT_OP1IMMED }, // 0A: Monadic primitive operator (data is UTF16_***)
+ {"OP2IMMED"  , TKT_OP2IMMED }, // 0B: Dyadic  ...
+ {"OP3IMMED"  , TKT_OP3IMMED }, // 0C: Ambiguous ...
+ {"OPJOTDOT"  , TKT_OPJOTDOT }, // 0D: Outer product monadic operator (with right scope) (data is NULL)
+ {"LPAREN"    , TKT_LPAREN   }, // 0E: Left paren (data is TKT_LPAREN)
+ {"RPAREN"    , TKT_RPAREN   }, // 0F: Right ...   ...         RPAREN
+ {"LBRACKET"  , TKT_LBRACKET }, // 10: Left bracket ...        LBRACKET
+ {"RBRACKET"  , TKT_RBRACKET }, // 11: Right ...   ...         RBRACKET
+ {"EOS"       , TKT_EOS      }, // 12: End-of-Stmt (data is length of stmt including this token)
+ {"EOL"       , TKT_EOL      }, // 13: End-of-Line  ...
+ {"SOS"       , TKT_SOS      }, // 14: Start-of-Stmt (data is NULL)
+ {"LINECONT"  , TKT_LINECONT }, // 15: Line continuation (data is NULL)
+ {"INPOUT"    , TKT_INPOUT   }, // 16: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+ {"STRAND"    , TKT_STRAND   }, // 17: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"   , TKT_LISTINT  }, // 18: List in parens    (data is HGLOBAL)
+ {"LISTPAR"   , TKT_LISTPAR  }, // 19: List in parens    (data is HGLOBAL)
+ {"LISTBR"    , TKT_LISTBR   }, // 1A: List in brackets  (data is HGLOBAL)
+ {"VARARRAY"  , TKT_VARARRAY }, // 1B: Array of data (data is HGLOBAL)
+ {"FCNARRAY"  , TKT_FCNARRAY }, // 1C: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"  , TKT_FCNNAMED }, // 1D: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED" , TKT_AXISIMMED}, // 1E: An immediate axis specification (data is immediate)
+ {"AXISARRAY" , TKT_AXISARRAY}, // 1F: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"  , TKT_OP1NAMED }, // 20: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"  , TKT_OP2NAMED }, // 21: ...     dyadic  ...
+ {"OP3NAMED"  , TKT_OP3NAMED }, // 22: ...     ambiguous ...
+ {"STRNAMED"  , TKT_STRNAMED }, // 23: ...     strand  ...
 };
 
 // The # rows in the above table

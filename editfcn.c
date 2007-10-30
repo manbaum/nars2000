@@ -2783,7 +2783,6 @@ BOOL SaveFunction
                    hGlbTknHdr = NULL,   // Tokenized header text ...
                    hGlbDfnHdr = NULL;   // User-defined function/operator header ...
     LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/line text global memory
-    LPDFN_HEADER   lpMemDfnHdr;         // Ptr to user-defined function/operator header ...
     BOOL           bRet = FALSE;        // TRUE iff result is valid
     FHLOCALVARS    fhLocalVars = {0};   // Re-entrant vars
     HGLOBAL        hGlbPTD;             // PerTabData global memory handle
@@ -2895,22 +2894,23 @@ BOOL SaveFunction
     // Parse the header
     if (ParseHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
     {
-        UINT        uLineNum,           // Current line # in the Edit Control
-                    uOffset,            // Cumulative offset
-                    numResultSTE,       // # result STEs (may be zero)
-                    numLftArgSTE,       // # left arg ...
-                    numRhtArgSTE,       // # right ...
-                    numLocalsSTE,       // # locals ...
-                    numFcnLines,        // # lines in the function
-                    numSTE;             // Loop counter
-        LPFCNLINE   lpFcnLines;         // Ptr to array of function line structs (FCNLINE[numFcnLines])
-        LPUNDO_BUF  lpUndoBeg,          // Ptr to start of Undo buffer
-                    lpUndoLst;          // Ptr to end ...
-        LPSYMENTRY  lpSymName = NULL,   // Ptr to SYMENTRY for the function name
-                   *lplpSymDfnHdr;      // Ptr to LPSYMENTRYs at end of user-defined function/operator header
-        SYSTEMTIME  systemTime;         // Current system (UTC) time
-        FILETIME    ftCreation;         // Creation time
-        HGLOBAL     hGlbOldDfn;         // Old Dfn global memory handle
+        UINT         uLineNum,          // Current line # in the Edit Control
+                     uOffset,           // Cumulative offset
+                     numResultSTE,      // # result STEs (may be zero)
+                     numLftArgSTE,      // # left arg ...
+                     numRhtArgSTE,      // # right ...
+                     numLocalsSTE,      // # locals ...
+                     numFcnLines,       // # lines in the function
+                     numSTE;            // Loop counter
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
+        LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
+        LPUNDO_BUF   lpUndoBeg,         // Ptr to start of Undo buffer
+                     lpUndoLst;         // Ptr to end ...
+        LPSYMENTRY   lpSymName = NULL,  // Ptr to SYMENTRY for the function name
+                    *lplpSymDfnHdr;     // Ptr to LPSYMENTRYs at end of user-defined function/operator header
+        SYSTEMTIME   systemTime;        // Current system (UTC) time
+        FILETIME     ftCreation;        // Creation time
+        HGLOBAL      hGlbOldDfn;        // Old Dfn global memory handle
 
         // Check on invalid function name (e.g. empty function header/body)
         if (!fhLocalVars.lpYYFcnName)
@@ -3028,6 +3028,7 @@ BOOL SaveFunction
         lpMemDfnHdr->numResultSTE = numResultSTE;
         lpMemDfnHdr->numLftArgSTE = numLftArgSTE;
         lpMemDfnHdr->numRhtArgSTE = numRhtArgSTE;
+        lpMemDfnHdr->numLocalsSTE = numLocalsSTE;
 
         // Save the static parts of the function into global memory
         lpMemDfnHdr->Sig.nature   = DFN_HEADER_SIGNATURE;
@@ -3169,8 +3170,7 @@ BOOL SaveFunction
         for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
         {
             HGLOBAL hGlbTxtLine;    // Line text global memory handle
-            UINT    uLineLen,       // Line length
-                    uLineNdx;       // Line index
+            UINT    uLineNdx;       // Line index
 
             // Get the char pos at the start of this line
             uLineNdx = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum + 1, 0);
@@ -3398,10 +3398,10 @@ void GetSpecialLabelNums
              || lptkLine[0].tkFlags.TknType EQ TKT_EOS);
 
         // If there are at least three tokens, ...
-        //   (TKT_EOL, TKT_VARNAMED, TKT_COLON)
+        //   (TKT_EOL, TKT_VARNAMED, TKT_LABELSEP)
         if (numTokens >= 3)
         {
-            if (lptkLine[2].tkFlags.TknType EQ TKT_COLON
+            if (lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP
              && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED)
             {
                 HGLOBAL   hGlbName;     // Name's global memory handle

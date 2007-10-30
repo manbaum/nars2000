@@ -405,7 +405,7 @@ ERROR_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End PrimFnDownTack_EM_YY
+} // End PrimFnDydDownTack_EM_YY
 #undef  APPEND_NAME
 
 

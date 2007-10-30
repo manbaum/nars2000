@@ -458,8 +458,6 @@ DWORD WINAPI ImmExecLineInThread
         switch (exitType)
         {
             case EXITTYPE_QUADERROR_INIT:
-                DbgBrk ();
-
                 // If there are no more SI layers, ...
                 if (lpSISPrv EQ NULL)
                 {
@@ -508,8 +506,6 @@ DWORD WINAPI ImmExecLineInThread
                 break;
 
             case EXITTYPE_QUADERROR_EXEC:
-                DbgBrk ();
-
                 // Execute []ELX in immediate execution mode
 ////////////////exitType =
                 ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX",   // Ptr to line to execute

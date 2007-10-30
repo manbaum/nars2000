@@ -643,10 +643,11 @@ LPAPLCHAR CompileArrBool
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
-        // If this is not the last row,
+        // If this is not at the top level and not the last row,
         //   we need to count the interplanar spacing
         //   as blank rows in the row count
-        if (aplDimRow NE (aplDimNRows - 1))     // Not last row
+        if ((!bTopLevel)                        // Not top level
+         && aplDimRow NE (aplDimNRows - 1))     // Not last row
             lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
                                           lpMemDim,         // Ptr to item dimensions
                                           aplRank,          // Item rank
@@ -751,10 +752,11 @@ LPAPLCHAR CompileArrInteger
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
-        // If this is not the last row,
+        // If this is not at the top level and not the last row,
         //   we need to count the interplanar spacing
         //   as blank rows in the row count
-        if (aplDimRow NE (aplDimNRows - 1))     // Not last row
+        if ((!bTopLevel)                        // Not top level
+         && aplDimRow NE (aplDimNRows - 1))     // Not last row
             lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
                                           lpMemDim,         // Ptr to item dimensions
                                           aplRank,          // Item rank
@@ -887,10 +889,11 @@ LPAPLCHAR CompileArrFloat
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
-        // If this is not the last row,
+        // If this is not at the top level and not the last row,
         //   we need to count the interplanar spacing
         //   as blank rows in the row count
-        if (aplDimRow NE (aplDimNRows - 1))     // Not last row
+        if ((!bTopLevel)                        // Not top level
+         && aplDimRow NE (aplDimNRows - 1))     // Not last row
             lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
                                           lpMemDim,         // Ptr to item dimensions
                                           aplRank,          // Item rank
@@ -1071,9 +1074,12 @@ LPAPLCHAR CompileArrChar
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
+////    // If this is not at the top level and not the last row,
         // If this is not the last row,
         //   we need to count the interplanar spacing
         //   as blank rows in the row count
+////    if ((!bTopLevel)                        // Not top level
+////     && aplDimRow NE (aplDimNRows - 1))     // Not last row
         if (aplDimRow NE (aplDimNRows - 1))     // Not last row
             lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
                                           lpMemDim,         // Ptr to item dimensions
@@ -1183,10 +1189,11 @@ LPAPLCHAR CompileArrAPA
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
-        // If this is not the last row,
+        // If this is not at the top level and not the last row,
         //   we need to count the interplanar spacing
         //   as blank rows in the row count
-        if (aplDimRow NE (aplDimNRows - 1))     // Not last row
+        if ((!bTopLevel)                        // Not top level
+         && aplDimRow NE (aplDimNRows - 1))     // Not last row
             lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
                                           lpMemDim,         // Ptr to item dimensions
                                           aplRank,          // Item rank
@@ -1397,10 +1404,11 @@ LPAPLCHAR CompileArrHetero
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
-        // If not the last row,
+        // If this is not at the top level and not the last row,
         //   we need to count the interplanar spacing
         //   as blank rows in the row count
-        if (aplDimRow NE (aplDimNRows - 1))     // Not last row
+        if ((!bTopLevel)                        // Not top level
+         && aplDimRow NE (aplDimNRows - 1))     // Not last row
             lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
                                           lpMemDim,         // Ptr to item dimensions
                                           aplRank,          // Item rank
@@ -2355,12 +2363,11 @@ LPAPLCHAR FormatArrSimple
                     *lpwszOut++ = L' ';
             }
 #endif
-        } else
-            // Run through this row again
-            aplDimRow--;
+        } // End IF
 
-        // Skip to the next row
-        if (bNextRow)
+        // If blank row or requested to do so, ...
+        if (lpFmtRowStr->bBlank || bNextRow)
+            // Skip to the start of the next row
             lpwszOut = lpwszOutStart + aplLastDim;
 
         // If this is raw output, output it
@@ -2496,13 +2503,14 @@ LPAPLCHAR FormatArrNested
                 *lplpwszOut = max (lpwszOut, *lplpwszOut);
             } // End FOR
 #ifdef PREFILL
-            // Skip to end of row
-            lpwszOut = lpwszOutStart
-                     + aplLastDim
-                     * (((aplLastDim - 1)
-                       + lpwszOut
-                       - lpwszOutStart)
-                      / aplLastDim);
+            // Skip to the start of the next row
+            if (aplLastDim)
+                lpwszOut = lpwszOutStart
+                         + aplLastDim
+                         * (((aplLastDim - 1)
+                           + lpwszOut
+                           - lpwszOutStart)
+                          / aplLastDim);
             // Use the larger
             *lplpwszOut = max (lpwszOut, *lplpwszOut);
 #else

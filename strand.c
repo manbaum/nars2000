@@ -484,6 +484,7 @@ static char tabConvert[][STRAND_LENGTH] =
 
             case TKT_ASSIGN:
             case TKT_LISTSEP:
+            case TKT_LABELSEP:
             case TKT_COLON:
             case TKT_FCNIMMED:
             case TKT_COMMENT:

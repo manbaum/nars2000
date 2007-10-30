@@ -441,7 +441,7 @@ ERROR_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End PrimFnUpTack_EM_YY
+} // End PrimFnDydUpTack_EM_YY
 #undef  APPEND_NAME
 
 

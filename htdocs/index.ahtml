@@ -166,7 +166,9 @@
             <li>Monadic operator null ({circlemiddledot}) to aid in
               resolving ambiguities with slash/slope as function/operator
               (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
-               instead of <span class="APL">//3 4</span>)</li>
+              instead of <span class="APL">//3 4</span>)</li>
+            <li>Dyadic iota ({iota}) extended to rank > 1 left arguments returns an array
+              of vector indices to the left arg (via an internal magic function)</li>
           </ul>
         </li>
 
@@ -299,6 +301,7 @@
             <li>Monadic right shoe ({disclose}) &mdash; disclose (with and without axis operator)</li>
             <li>Monadic delta stile ({gradeup}) &mdash; numeric grade up</li>
             <li>Monadic del stile ({gradedown}) &mdash; numeric grade down</li>
+            <li>Monadic downshoe ({downshoe}) &mdash; unique (via an internal magic function)</li>
           </ul>
         </li>
         <li>Dyadic
@@ -330,6 +333,9 @@
             <li>Dyadic squad ({squad}) &mdash; index (with and without axis operator)</li>
             <li>Dyadic epsilon ({epsilon}) &mdash; member of</li>
             <li>Dyadic iota ({iota}) &mdash; index of</li>
+            <li>Dyadic iota ({iota}) extended to rank > 1 left arguments returns an array
+              of vector indices to the left arg (via an internal magic function)</li>
+            <li>Dyadic tilde ({tilde}) &mdash; without (via an internal magic function)</li>
           </ul>
         </li>
       </ul>
@@ -471,6 +477,7 @@
             <li><span class="APL">{quad}CR</span></li>
             <li><span class="APL">{quad}DL</span></li>
             <li><span class="APL">{quad}DR</span></li>
+            <li><span class="APL">{quad}ERROR</span></li>
             <li><span class="APL">{quad}NC</span></li>
             <li><span class="APL">{quad}NL</span></li>
             <li><span class="APL">{quad}SIZE</span></li>

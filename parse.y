@@ -65,7 +65,6 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
 %parse-param {LPPLLOCALVARS lpplLocalVars}
 %lex-param   {LPPLLOCALVARS lpplLocalVars}
 
-%token DIAMOND
 %token NAMEVAR NAMEUNK CONSTANT STRING USRFN0 SYSFN0 QUAD QUOTEQUAD SYSLBL
 %token UNK EOL
 
@@ -75,10 +74,11 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
     declared here in the %left list.  Similarly, operators in APL
     have long left scope, so they are declared in the %right list.
  */
+%right DIAMOND
 %left  ASSIGN PRIMFCN NAMEFCN SYSFN12 GOTO
 %right NULLOP NAMEOP1 OP1 NAMEOP2 OP2 NAMEOP3 OP3 JOTDOT
 
-%start Line
+%start Stmts
 
 %%
 
@@ -100,15 +100,7 @@ void pl_yyprint (FILE *yyoutput, unsigned short int yytoknum, PL_YYSTYPE const y
       as above, otherwise 1 2 op2 3 4 is way too ambiguous.
  */
 
-// Line
-Line:
-      Stmts                             {DbgMsgW2 (L"%%Line:  Stmts");}
-    | Stmts ':' NAMEUNK                 {DbgMsgW2 (L"%%Line:  NAMEUNK: Stmts");}
-    | Stmts ':' NAMEVAR                 {DbgMsgW2 (L"%%Line:  NAMEVAR: Stmts");}
-    | Stmts ':' SYSLBL                  {DbgMsgW2 (L"%%Line:  SYSLBL: Stmts");}
-    ;
-
-// Statements
+// One or more statements
 Stmts:
       // All errors propagate up to this point where we ABORT -- this ensures
       //   that the call to pl_yyparse terminates with a non-zero error code.
@@ -136,7 +128,7 @@ Stmts:
                                          } else
                                              YYABORT;
                                         }
-    | Stmt                              {DbgMsgW2 (L"%%Stmts:  Stmt");
+    |               Stmt                {DbgMsgW2 (L"%%Stmts:  Stmt");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -145,7 +137,11 @@ Stmts:
                                              Assert (YYResIsEmpty ());
                                          } // End IF
                                         }
-    | Stmts DIAMOND Stmt                {DbgMsgW2 (L"%%Stmts:  Stmts " WS_UTF16_DIAMOND L" Stmt");
+    |       DIAMOND                     {DbgMsgW2 (L"%%Stmts:  " WS_UTF16_DIAMOND);
+                                         if (!lpplLocalVars->bLookAhead)
+                                             lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
+                                        }
+    | Stmts DIAMOND Stmt                {DbgMsgW2 (L"%%Stmts:  Stmt " WS_UTF16_DIAMOND L" Stmts");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
                                          else
@@ -156,13 +152,9 @@ Stmts:
                                         }
     ;
 
-// Statement
+// Single statement
 Stmt:
-          /* Empty */                   {DbgMsgW2 (L"%%Stmt:  <empty>");
-                                         if (!lpplLocalVars->bLookAhead)
-                                             lpplLocalVars->ExitType = EXITTYPE_NOVALUE;
-                                        }
-    | ArrExpr                           {DbgMsgW2 (L"%%Stmt:  ArrExpr");
+      ArrExpr                           {DbgMsgW2 (L"%%Stmt:  ArrExpr");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1033,8 +1025,8 @@ Op3Spec:
                                              } // End IF
 
                                              // The result is always the root of the function tree
-                                             DbgBrk ();     // ***FIXME*** -- Won't returning a FcnStr conflict with
-                                                            //                Op3Spec always being DIRECT??
+                                             DbgBrk ();      // ***FIXME*** -- Won't returning a FcnStr conflict with
+                                                             //                Op3Spec always being DIRECT??
                                              $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
@@ -3881,7 +3873,7 @@ AmbOp:
                                          } // End IF
                                         }
     | '>' StrandInst DydOp AmbOp '('    {DbgMsgW2 (L"%%AmbOp:  (AmbOp DydOp StrandInst)");
-                                         DbgBrk ();      // ***FIXME***
+                                         DbgBrk ();      // ***FINISHME***
 
 
 
@@ -4835,12 +4827,6 @@ EXIT_TYPES ParseLine
 
             break;
 
-        case EXITTYPE_QUADERROR_EXEC:
-            // Set the reset flag
-            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_EXEC;
-
-            break;
-
         case EXITTYPE_RESET_ALL:
             // Set the reset flag
             lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_ALL;
@@ -4859,12 +4845,33 @@ EXIT_TYPES ParseLine
 
             break;
 
+        case EXITTYPE_QUADERROR_EXEC:
+            // Set the exit type
+            plLocalVars.ExitType = EXITTYPE_ERROR;
+
+            // Set the reset flag
+            lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
+
+            // Fall through to common code
+
         case EXITTYPE_ERROR:        // Mark user-defined function/operator as suspended
         {
             LPSIS_HEADER lpSISCur;
 
             // Get a ptr to the current SIS header
             lpSISCur = lpMemPTD->lpSISCur;
+
+            // If it's a Magic Function, don't suspend at this level
+            if (lpSISCur->Perm)
+            {
+                // Set the exit type
+                plLocalVars.ExitType = EXITTYPE_QUADERROR_INIT;
+
+                // Set the reset flag
+                lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
+
+                break;
+            } // End IF
 
             // If this level or an adjacent preceding level is from
             //   the Execute primitive or immediate execution mode,
@@ -5387,6 +5394,7 @@ char LookaheadAdjacent
             goto NORMAL_EXIT;
 
         case TKT_LISTSEP:
+        case TKT_LABELSEP:
         case TKT_COLON:
         case TKT_LBRACKET:
         case TKT_STRAND:
@@ -5447,6 +5455,7 @@ BOOL LookaheadDyadicOp
         case TKT_SOS:
         case TKT_ASSIGN:
         case TKT_LISTSEP:
+        case TKT_LABELSEP:
         case TKT_COLON:
         case TKT_OP1IMMED:
         case TKT_OP1NAMED:
@@ -5513,7 +5522,7 @@ int pl_yylex
     static UINT YYIndex = 0;        // Unique index for each YYRes
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 #endif
-
+PL_YYLEX_START:
     // Because we're parsing the stmt from right to left
     lpplLocalVars->lptkNext--;
 
@@ -5632,9 +5641,6 @@ int pl_yylex
         case TKT_LISTSEP:
             return ';';
 
-        case TKT_COLON:
-            return ':';
-
         case TKT_FCNIMMED:
             if (lpplLocalVars->lptkNext->tkData.tkIndex EQ UTF16_RIGHTARROW)
                 return GOTO;
@@ -5644,7 +5650,8 @@ int pl_yylex
         case TKT_COMMENT:
         case TKT_LINECONT:
         case TKT_SOS:
-            return pl_yylex (lpYYLval, lpplLocalVars); // Ignore these tokens
+////////////return pl_yylex (lpYYLval, lpplLocalVars); // Ignore these tokens
+            goto PL_YYLEX_START;
 
         case TKT_STRING:
             return STRING;
@@ -5814,15 +5821,21 @@ int pl_yylex
                     return UNK;
             } // End SWITCH
 
+        case TKT_LABELSEP:
         case TKT_EOS:
             // Skip to end of this stmt
             lpplLocalVars->lptkNext = &lpplLocalVars->lptkNext[lpplLocalVars->lptkNext->tkData.tkIndex];
+
+            // And again to the end of the next stmt
             lpplLocalVars->lptkNext = &lpplLocalVars->lptkNext[lpplLocalVars->lptkNext->tkData.tkIndex];
 
             return DIAMOND;
 
         case TKT_EOL:
             return '\0';
+
+        case TKT_COLON:
+            return UNK;
 
         defstop
             return UNK;

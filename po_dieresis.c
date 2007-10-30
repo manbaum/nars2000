@@ -1047,8 +1047,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
             } // End IF/ELSE
         } else
         {
-            uLft = uRes % aplNELMLft;
-            uRht = uRes % aplNELMRht;
+            uLft = (aplNELMLft NE 0) ? uRes % aplNELMLft : uRes;
+            uRht = (aplNELMRht NE 0) ? uRes % aplNELMRht : uRes;
         } // End IF/ELSE
 
         // If the left arg is not immediate, get the next value

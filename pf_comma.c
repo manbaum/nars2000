@@ -410,8 +410,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             return NULL;
         } // End WHILE
     } else
+    {
         // No axis means ravel/table all dimensions
-        aplLastAxis = aplNELMAxis = aplRankRht;
+        aplNELMAxis = aplRankRht;
+        aplLastAxis = aplRankRht - 1;
+    } // End IF/ELSE
 
     //***************************************************************
     // If the function is Comma-bar (table), the result is a
@@ -434,7 +437,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     //   the lowest axis value, inclusive.
     // For example, for ,[1 3 2] (in origin-0)
     //   aplFirstAxis is 1, and
-    //   apllastAxis  is 3
+    //   aplLastAxis  is 3
     aplFirstAxis = 1 + aplLastAxis - aplNELMAxis;
 
     //***************************************************************

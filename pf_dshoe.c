@@ -1,0 +1,207 @@
+//***************************************************************************
+//  NARS2000 -- Primitive Function -- DownShoe
+//***************************************************************************
+
+#define STRICT
+#include <windows.h>
+
+#include "main.h"
+#include "aplerrors.h"
+#include "resdebug.h"
+#include "externs.h"
+#include "pertab.h"
+#include "execmfn.h"
+
+// Include prototypes unless prototyping
+#ifndef PROTO
+#include "compro.h"
+#endif
+
+
+//***************************************************************************
+//  $PrimFnDownShoe_EM_YY
+//
+//  Primitive function for monadic and dyadic DownShoe ("unique" and ERROR)
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDownShoe_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnDownShoe_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    // Ensure not an overflow function
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_DOWNSHOE);
+
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
+
+    // Split cases based upon monadic or dyadic
+    if (lptkLftArg EQ NULL)
+        return PrimFnMonDownShoe_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+    else
+        return PrimFnDydDownShoe_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End PrimFnDownShoe_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimProtoFnDownShoe_EM_YY
+//
+//  Generate a prototype for the primitive functions monadic & dyadic DownShoe
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoFnDownShoe_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimProtoFnDownShoe_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // Called monadically or dyadically
+    //***************************************************************
+
+    // Convert to a prototype
+    return PrimProtoFnMixed_EM_YY (&PrimFnDownShoe_EM_YY,   // Ptr to primitive function routine
+                                    lptkLftArg,             // Ptr to left arg token
+                                    lptkFunc,               // Ptr to function token
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    lptkAxis);              // Ptr to axis token (may be NULL)
+} // End PrimProtoFnDownShoe_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnMonDownShoe_EM_YY
+//
+//  Primitive function for monadic DownShoe ("unique")
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonDownShoe_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLRANK      aplRankRht;        // Right arg rank
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYRes = NULL;    // Prt to result
+
+    // Get the right arg rank
+    AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
+
+    // Check for RIGHT RANK ERROR
+    if (aplRankRht > 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    //  Return the unique elements in the right arg.
+    //  Use an internal magic function.
+    lpYYRes =
+      ExecuteMagicFunction_EM_YY (NULL,                         // Ptr to left arg token
+                                  lptkFunc,                     // Ptr to function token
+                                  lptkRhtArg,                   // Ptr to right arg token
+                                  lptkAxis,                     // Ptr to axis token
+                                  lpMemPTD->hGlbMF_MonUpShoe);  // Magic function global memory handle
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+ERROR_EXIT:
+    return lpYYRes;
+} // End PrimFnMonDownShoe_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  Magic function for monadic DownShoe
+//
+//  Monadic DownShoe -- Unique
+//
+//  On scalar or vector right args, return the unique values
+//***************************************************************************
+
+static APLCHAR Header[] =
+  $Z $IS $F L" " $R;
+
+static APLCHAR Line1[] =
+  $Z $IS L"((" $R $IOTA $R L")=" $IOTA $RHO $R L")/" $R $IS L"," $R;
+
+static LPAPLCHAR Body[] =
+{Line1,
+};
+
+MAGIC_FUNCTION MF_MonUpShoe =
+{Header,
+ Body,
+ sizeof (Body) / sizeof (Body[0]),
+};
+
+
+//***************************************************************************
+//  $PrimFnDydDownShoe_EM_YY
+//
+//  Primitive function for dyadic DownShoe (ERROR)
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydDownShoe_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnDydDownShoe_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    return PrimFnValenceError_EM (lptkFunc);
+} // End PrimFnDydDownShoe_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  End of File: pf_dshoe.c
+//***************************************************************************

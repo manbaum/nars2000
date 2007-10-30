@@ -1411,7 +1411,7 @@ BOOL fnLstDone
     // Copy current WCHAR
     aplLongest = *lptkLocalVars->lpwsz;
 
-    // Mark the data as an assignment
+    // Mark the data as a list separator
     tkFlags.TknType = TKT_LISTSEP;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
@@ -1443,8 +1443,16 @@ BOOL fnClnDone
     // Copy current WCHAR
     aplLongest = *lptkLocalVars->lpwsz;
 
-    // Mark the data as an assignment
-    tkFlags.TknType = TKT_COLON;
+    // If the first token is a name, and
+    //   this is the second token,
+    //   then it's a label separator
+    if (lptkLocalVars->lpStart[1].tkFlags.TknType EQ TKT_VARNAMED
+     && (lptkLocalVars->lpNext - lptkLocalVars->lpStart) EQ 2)
+        // Mark the data as a label separator
+        tkFlags.TknType = TKT_LABELSEP;
+    else
+        // Mark the data as a colon
+        tkFlags.TknType = TKT_COLON;
 
     // Attempt to append as new token, check for TOKEN TABLE FULL,
     //   and resize as necessary.
@@ -2608,7 +2616,8 @@ void Untokenize
             case TKT_COMMENT:           // Comment (data is NULL)
             case TKT_ASSIGN:            // Assignment symbol (data is UTF16_LEFTARROW)
             case TKT_LISTSEP:           // List separator    (...     ';')
-            case TKT_COLON:             // Label ...         (...     ':')
+            case TKT_LABELSEP:          // Label ...         (...     ':')
+            case TKT_COLON:             // Colon             (...     ':')
             case TKT_VARIMMED:          // Immediate data (data is immediate)
             case TKT_FCNIMMED:          // Immediate primitive function (any valence) (data is UTF16_***)
             case TKT_OP1IMMED:          // ...       Monadic primitive operator (data is UTF16_***)
@@ -2684,6 +2693,12 @@ BOOL AppendEOSToken
 
     // Calculate the # tokens in this stmt
     lptkLocalVars->lpLastEOS->tkData.tkIndex = lptkLocalVars->lpNext - lptkLocalVars->lpLastEOS;
+
+    if (lptkLocalVars->lpStart EQ lptkLocalVars->lpLastEOS
+     && lptkLocalVars->lpNext >   lptkLocalVars->lpStart
+     && lptkLocalVars->lpStart[2].tkFlags.TknType EQ TKT_LABELSEP)
+        // Calculate the # tokens in the stmt after the label
+        lptkLocalVars->lpStart[2].tkData.tkIndex = lptkLocalVars->lpStart->tkData.tkIndex - 2;
 
     // If no append, mark this one as the last
     if (!bAppend)
@@ -3077,7 +3092,8 @@ WCHAR CharTrans
         case L';':                      // Lists (bracketed and otherwise)
             return COL_SEMICOLON;
 
-        case L':':                      // Control structures ***FIXME***
+        case L':':                      // Line labels
+                                        // Control structures ***FIXME***
             return COL_COLON;
 
         case UTF16_DEL:                 // Alt-'g' - del

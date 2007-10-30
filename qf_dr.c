@@ -108,8 +108,6 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 #define DR_LIST64        6413   // 64 ... ...
 #define DR_RATIONAL        14   // ??
 
-    DbgBrk ();
-
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, NULL, NULL);
@@ -586,12 +584,12 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
 
 {
     APLSTYPE     aplTypeRht;    // Right arg storage type
-    LPAPLCHAR    lpw;           // Ptr to WCHAR text
     APLUINT      ByteRes;       // # bytes in the result
     HGLOBAL      hGlbRes;       // Result global memory handle
     LPVOID       lpMemRes;      // Ptr to result global memory
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
     APLNELM      aplNELMRes;    // Result NELM
+    APLCHAR      wszTemp[128];  // Temporary APLCHARs
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -601,43 +599,51 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:
-            lpw = L"Boolean:  1 bit per element";
-
+            wsprintfW (wszTemp,
+                      L"Boolean (%d):  1 bit per element",
+                       DR_BOOL);
             break;
 
         case ARRAY_INT:
-            lpw = L"Integer:  64 bits per element";
-
+            wsprintfW (wszTemp,
+                      L"Integer (%d):  64 bits per element",
+                       DR_INT);
             break;
 
         case ARRAY_FLOAT:
-            lpw = L"Floating Point:  64 bits per element";
-
+            wsprintfW (wszTemp,
+                      L"Floating Point (%d):  64 bits per element",
+                       DR_FLOAT);
             break;
 
         case ARRAY_CHAR:
-            lpw = L"Character:  16 bits per element";
-
+            wsprintfW (wszTemp,
+                      L"Character (%d):  16 bits per element",
+                       DR_CHAR);
             break;
 
         case ARRAY_APA:
-            lpw = L"Arithmetic Progression Array:  64 bit offset + 64 bit multiplier";
-
+            wsprintfW (wszTemp,
+                      L"Arithmetic Progression Array (%d):  64 bit offset + 64 bit multiplier",
+                      DR_APA);
             break;
 
         case ARRAY_LIST:
-            lpw = L"List:  32 bits per element";
-
+            wsprintfW (wszTemp,
+                      L"List (%d):  32 bits per element",
+                      DR_LIST32);
             break;
 
         case ARRAY_NESTED:
-            lpw = L"Nested Array:  32 bits per element";
-
+            wsprintfW (wszTemp,
+                      L"Nested Array (%d):  32 bits per element",
+                      DR_NESTED32);
             break;
 
         case ARRAY_HETERO:
-            lpw = L"Heterogeneous Array:  32 bits per element";
-
+            wsprintfW (wszTemp,
+                      L"Heterogeneous Array (%d):  32 bits per element",
+                      DR_HETERO32);
             break;
 
         defstop
@@ -645,7 +651,7 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
     } // End SWITCH
 
     // Get the result NELM
-    aplNELMRes = lstrlenW (lpw);
+    aplNELMRes = lstrlenW (wszTemp);
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
@@ -682,7 +688,7 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Copy the text to the result
-    CopyMemory (lpMemRes, lpw, (UINT) aplNELMRes * sizeof (APLCHAR));
+    CopyMemory (lpMemRes, wszTemp, (UINT) aplNELMRes * sizeof (APLCHAR));
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

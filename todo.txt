@@ -5,9 +5,7 @@ TO DO:  General:  Important
 * Handle multiple SI levels in a saved ws
 * Finish filling in <startaddr.h>
 * Implement dyadic down tack jot        (format by specification)
-* ...       dyadic tilde                (without)
 * ...       dyadic dot                  (inner product)
-* ...       monadic down shoe           (unique)
 * ...       bracket list indexing        A[L1;...;Ln][M]
 * ...       bracket list indexing        A[L1;...;Ln][M1;...;Mn]
 * ...       bracket indexed assignment   A[L]{is}R
@@ -22,7 +20,6 @@ TO DO:  General:  Important
 * ...          []EX R
 * ...          []FX R
 * ...          []ES R
-* ...          []ERROR R
 * ...        L []EA R
 * ...        L []ES R
 * ...        L []TF R
@@ -53,6 +50,8 @@ TO DO:  General:  Wish List
 * ...       magic functions for primitive operators
 * ...       magic functions for primitive datatypes
 * ...       complex numbers
+* ...       quaternions
+* ...       octonions
 * ...       array predicates
 * ...       syntax highlighting
 * ...       control structures
@@ -151,6 +150,7 @@ DONE:  General
 * ...     2 []CR R
 * ...     1 []CR R
 * ...     L []DR R
+* ...       []ERROR R
 * ...       monadic right shoe
 * ...       dyadic down arrow
 * ...       dyadic up arrow
@@ -168,6 +168,9 @@ DONE:  General
 * ...       ambiguous operators
 * ...       dyadic epsilon
 * ...       dyadic iota
+* ...       dyadic iota extended to non-vector left args (via an internal magic function)
+* ...       dyadic tilde
+* ...       monadic down shoe
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

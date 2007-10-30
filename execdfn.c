@@ -89,7 +89,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     HGLOBAL      hGlbPTD = NULL;    // PerTabData global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
-                 lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operaor or not an operator)
+                 lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
     LPTOKEN      lptkAxis;          // Ptr to axis token
 
     // Check for axis operator
@@ -231,6 +231,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
         lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
         lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
         lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
+        lpMemPTD->lpSISNxt->Perm         = lpMemDfnHdr->Perm;
         lpMemPTD->lpSISNxt->CurLineNum   = 1;
         lpMemPTD->lpSISNxt->NxtLineNum   = 2;
 ////////lpMemPTD->lpSISNxt->numLabels    =              // Filled in below
@@ -435,9 +436,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
     BOOL           bRet;            // TRUE iff result is valid
-#ifdef DEBUG
     EXIT_TYPES     exitType;        // Return code from ParseLine
-#endif
+
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -505,52 +505,12 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         // Execute the function line
-#ifdef DEBUG
         exitType =
-#endif
         ParseLine (hWndSM,                  // Session Manager window handle
                    hGlbTxtLine,             // Line text global memory handle
                    hGlbTknLine,             // Tokenixed line global memory handle
                    NULL,                    // Ptr to line text global memory
                    hGlbPTD);                // PerTabData global memory handle
-#ifdef DEBUG
-        // Split cases based upon the exit type
-        switch (exitType)
-        {
-            case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types
-            case EXITTYPE_DISPLAY:      // ...
-            case EXITTYPE_NODISPLAY:    // ...
-            case EXITTYPE_NOVALUE:      // ...
-            case EXITTYPE_ERROR:        // ...
-            case EXITTYPE_GOTO_LINE:    // ...
-            case EXITTYPE_NONE:         // ...
-            case EXITTYPE_RESET_ONE:
-            case EXITTYPE_RESET_ONE_INIT:
-            case EXITTYPE_RESET_ALL:
-                break;
-
-            case EXITTYPE_QUADERROR_INIT:
-                DbgBrk ();          // ***FINISHME*** []ERROR
-
-
-
-
-
-                break;
-
-            case EXITTYPE_QUADERROR_EXEC:
-                DbgBrk ();          // ***FINISHME*** []ERROR
-
-
-
-
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
-#endif
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -602,6 +562,18 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Close the semaphore handle as it isn't used anymore
     CloseHandle (hSemaphore); hSemaphore = NULL;
 
+    // If we're initially resetting through []ERROR or the equivalent,
+    //   convert to execute resetting
+    if (exitType EQ EXITTYPE_QUADERROR_INIT)
+    {
+        // Convert to reset execute
+        exitType = EXITTYPE_QUADERROR_EXEC;
+        lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_EXEC;
+
+        // Set the caret to point to the user-defined function/operator
+        ErrorMessageSetToken (lptkFunc);
+    } // End IF
+
     // If we're resetting, Unlocalize
     if (lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
         goto UNLOCALIZE_EXIT;
@@ -635,57 +607,27 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                 lpYYRes = MakeNoValue_YY (lptkFunc);
             else
             {
-////////////////// Lock the memory to get a ptr to it
-////////////////lptkHdr = MyGlobalLock (hGlbTknHdr);
-////////////////
-////////////////// Get ptr to the tokens in the line
-////////////////lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
-////////////////
-////////////////// Loop 'til we point to the first named token
-////////////////while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
-////////////////    lptkLine++;
-////////////////
-////////////////// If it's not a variable, ...
-////////////////if ((*lplpSymEntry)->stFlags.ObjType NE NAMETYPE_VAR)
-////////////////{
-////////////////    // Set the error message
-////////////////    ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-////////////////
-////////////////    // Set the error token
-////////////////    ErrorMessageSetToken (lptkLine);
-////////////////
-////////////////    // Mark as an error on line 0
-////////////////    lpMemPTD->lpSISCur->CurLineNum = 0;
-////////////////
-////////////////    // Mark as in error
-////////////////    bRet = FALSE;
-////////////////} else
+                // Allocate a new YYRes
+                lpYYRes = YYAlloc ();
+
+                // If it's immediate, ...
+                if ((*lplpSymEntry)->stFlags.Imm)
                 {
-                    // Allocate a new YYRes
-                    lpYYRes = YYAlloc ();
-
-                    // If it's immediate, ...
-                    if ((*lplpSymEntry)->stFlags.Imm)
-                    {
-                        // Fill in the result token
-                        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-                        lpYYRes->tkToken.tkFlags.ImmType   = (*lplpSymEntry)->stFlags.ImmType;
-////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
-                        lpYYRes->tkToken.tkData.tkLongest  = (*lplpSymEntry)->stData.stLongest;
-                        lpYYRes->tkToken.tkCharIndex       = NEG1U;
-                    } else
-                    {
-                        // Fill in the result token
-                        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
-////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
-                        lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir ((*lplpSymEntry)->stData.stGlbData);
-                        lpYYRes->tkToken.tkCharIndex       = NEG1U;
-                    } // End IF/ELSE
+                    // Fill in the result token
+                    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                    lpYYRes->tkToken.tkFlags.ImmType   = (*lplpSymEntry)->stFlags.ImmType;
+////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
+                    lpYYRes->tkToken.tkData.tkLongest  = (*lplpSymEntry)->stData.stLongest;
+                    lpYYRes->tkToken.tkCharIndex       = NEG1U;
+                } else
+                {
+                    // Fill in the result token
+                    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
+////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
+                    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir ((*lplpSymEntry)->stData.stGlbData);
+                    lpYYRes->tkToken.tkCharIndex       = NEG1U;
                 } // End IF/ELSE
-
-////////////////// We no longer need this ptr
-////////////////MyGlobalUnlock (hGlbTknHdr); lptkHdr = NULL; lptkLine = NULL;
             } // End IF/ELSE
 
             break;
@@ -695,56 +637,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             APLUINT ByteRes;        // # bytes in the result
             HGLOBAL hGlbRes;        // Result global memory handle
             LPVOID  lpMemRes;       // Ptr to result global memory
-
-////////////// Lock the memory to get a ptr to it
-////////////lptkHdr = MyGlobalLock (hGlbTknHdr);
-////////////
-////////////// Get ptr to the tokens in the line
-////////////lptkLine = (LPTOKEN) ByteAddr (lptkHdr, sizeof (TOKEN_HEADER));
-////////////
-////////////// Loop 'til we point to the first named token
-////////////while (lptkLine->tkFlags.TknType NE TKT_VARNAMED)
-////////////    lptkLine++;
-////////////
-////////////// Ensure all result names have a value and are vars
-////////////for (bRet = TRUE, numRes = 0; bRet && numRes < numResultSTE; numRes++)
-////////////{
-////////////    // If the name has no value, ...
-////////////    if (!lplpSymEntry[numRes]->stFlags.Value)
-////////////    {
-////////////        // Set the error message
-////////////        ErrorMessageIndirect (ERRMSG_VALUE_ERROR APPEND_NAME);
-////////////
-////////////        // Set the error token
-////////////        ErrorMessageSetToken (&lptkLine[numRes]);
-////////////
-////////////        // Mark as in error
-////////////        bRet = FALSE;
-////////////    } else
-////////////    // If the name is not a variable, ...
-////////////    if (lplpSymEntry[numRes]->stFlags.ObjType NE NAMETYPE_VAR)
-////////////    {
-////////////        // Set the error message
-////////////        ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
-////////////
-////////////        // Set the error token
-////////////        ErrorMessageSetToken (&lptkLine[numRes]);
-////////////
-////////////        // Mark as in error
-////////////        bRet = FALSE;
-////////////    } // End IF/ELSE/...
-////////////} // End FOR
-////////////
-////////////// We no longer need this ptr
-////////////MyGlobalUnlock (hGlbTknHdr); lptkHdr = NULL; lptkLine = NULL;
-////////////
-////////////if (!bRet)
-////////////{
-////////////    // Mark as an error on line 0
-////////////    lpMemPTD->lpSISCur->CurLineNum = 0;
-////////////
-////////////    goto ERROR_EXIT;
-////////////} // End IF
 
             // Calculate space needed for the result
             ByteRes = CalcArraySize (ARRAY_NESTED, numResultSTE, 1);
@@ -1160,10 +1052,10 @@ LPSYMENTRY LocalizeLabels
              || lptkLine[0].tkFlags.TknType EQ TKT_EOS);
 
         // If there are at least three tokens, ...
-        //   (TKT_EOL, TKT_VARNAMED, TKT_COLON)
+        //   (TKT_EOL, TKT_VARNAMED, TKT_LABELSEP)
         if (numTokens >= 3)
         {
-            if (lptkLine[2].tkFlags.TknType EQ TKT_COLON
+            if (lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP
              && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED)
             {
                 LPSYMENTRY lpSymEntrySrc;   // Ptr to source SYMENTRY

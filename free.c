@@ -661,7 +661,7 @@ BOOL FreeResultGlobalDfn
     (HGLOBAL hGlbData)
 
 {
-    LPDFN_HEADER lpMemDfn;          // Ptr to user-defined function/operator header global memory
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
     UINT         numFcnLines,       // # lines in the function
                  RefCnt;            // Reference count
     LPFCNLINE    lpFcnLines;        // Ptr to the array of structs (FCNLINE[numFcnLine])
@@ -673,12 +673,16 @@ BOOL FreeResultGlobalDfn
     hGlbData = ClrPtrTypeDirGlb (hGlbData);
 
     // Lock the memory to get a ptr to it
-    lpMemDfn = MyGlobalLock (hGlbData);
+    lpMemDfnHdr = MyGlobalLock (hGlbData);
 
     // Get the reference count
-    RefCnt = lpMemDfn->RefCnt;
+    RefCnt = lpMemDfnHdr->RefCnt;
 
     Assert (RefCnt > 0);
+
+    // Quit if it's permanent (i.e. Magic Function)
+    if (lpMemDfnHdr->Perm)
+        goto NORMAL_EXIT;
 
     // Decrement it
     // If the RefCnt is zero, free the globals
@@ -694,35 +698,35 @@ BOOL FreeResultGlobalDfn
         stFlags.SysVarValid = NEG1U;
 
         // Clear the symbol table flags for the function name
-        *(PUINT_PTR) &lpMemDfn->steFcnName->stFlags &= *(PUINT_PTR) &stFlags;
+        *(PUINT_PTR) &lpMemDfnHdr->steFcnName->stFlags &= *(PUINT_PTR) &stFlags;
 
         // Check the static HGLOBALs
-        if (lpMemDfn->hGlbTxtHdr)
+        if (lpMemDfnHdr->hGlbTxtHdr)
         {
             // We no longer need this storage
-            DbgGlobalFree (lpMemDfn->hGlbTxtHdr); lpMemDfn->hGlbTxtHdr = NULL;
+            DbgGlobalFree (lpMemDfnHdr->hGlbTxtHdr); lpMemDfnHdr->hGlbTxtHdr = NULL;
         } // End IF
 
-        if (lpMemDfn->hGlbTknHdr)
+        if (lpMemDfnHdr->hGlbTknHdr)
         {
             // Free the tokens
-            Untokenize (lpMemDfn->hGlbTknHdr);
+            Untokenize (lpMemDfnHdr->hGlbTknHdr);
 
             // We no longer need this storage
-            DbgGlobalFree (lpMemDfn->hGlbTknHdr); lpMemDfn->hGlbTknHdr = NULL;
+            DbgGlobalFree (lpMemDfnHdr->hGlbTknHdr); lpMemDfnHdr->hGlbTknHdr = NULL;
         } // End IF
 
-        if (lpMemDfn->hGlbUndoBuff)
+        if (lpMemDfnHdr->hGlbUndoBuff)
         {
             // We no longer need this storage
-            DbgGlobalFree (lpMemDfn->hGlbUndoBuff); lpMemDfn->hGlbUndoBuff = NULL;
+            DbgGlobalFree (lpMemDfnHdr->hGlbUndoBuff); lpMemDfnHdr->hGlbUndoBuff = NULL;
         } // End IF
 
         // Get the # lines in the function
-        numFcnLines = lpMemDfn->numFcnLines;
+        numFcnLines = lpMemDfnHdr->numFcnLines;
 
         // Get a ptr to the start of the function line structs (FCNLINE[numFcnLines])
-        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfn, lpMemDfn->offFcnLines);
+        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
         // Loop through the lines
         while (numFcnLines--)
@@ -757,9 +761,9 @@ BOOL FreeResultGlobalDfn
             lpFcnLines++;
         } // End WHILE
     } // End IF
-
+NORMAL_EXIT:
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMemDfn = NULL;
+    MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
 
     return (RefCnt EQ 0);
 } // End FreeResultGlobalDfn

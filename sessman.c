@@ -1347,6 +1347,16 @@ LRESULT APIENTRY SMWndProc
             ShowWindow (hWndEC, SW_SHOWNORMAL);
             UpdateWindow (hWndEC);
 
+            // *************** Magic Functions *************************
+
+            // Initialize all magic functions
+            if (!InitMagicFunctions (hGlbPTD, hWndEC))
+            {
+                DbgMsg ("WM_CREATE:  InitMagicFunctions failed");
+
+                return -1;          // Mark as failed
+            } // End IF
+
             return FALSE;           // We handled the msg
         } // End WM_CREATE
 

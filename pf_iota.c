@@ -9,6 +9,8 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
+#include "execmfn.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -536,7 +538,14 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft NE 1)
+    if (aplRankLft EQ 0)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } else
+    // Check for extended dyadic iota
+    if (aplRankLft > 1)
     {
         HGLOBAL      hGlbPTD;           // PerTabData global memory handle
         LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -548,22 +557,20 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
-        // ***FIXME*** -- Extend to aplRankLft != 1 args by returning
-        //                an array of index vectors where the length
-        //                of each vector is aplRankLft.
-        //                Use an internal magic function.
-        lpYYRes = ExecuteMagicFcn_EM_YY (lptkLftArg,
-                                         lpMemPTD->lpMagicFcnDydIota,
-                                         lptkRhtArg,
-                                         lptkAxis);
+        //  Extend to aplRankLft > 1 args by returning
+        //    an array of index vectors where the length
+        //    of each vector is aplRankLft.
+        //  Use an internal magic function.
+        lpYYRes =
+          ExecuteMagicFunction_EM_YY (lptkLftArg,               // Ptr to left arg token
+                                      lptkFunc,                 // Ptr to function token
+                                      lptkRhtArg,               // Ptr to right arg token
+                                      lptkAxis,                 // Ptr to axis token
+                                      lpMemPTD->hGlbMF_DydIota);// Magic function global memory handle
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
         return lpYYRes;
-
-////////ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-////////                           lptkLftArg);
-////////goto ERROR_EXIT;
     } // End IF
 
     // Get left and right arg's global ptrs
@@ -1187,6 +1194,37 @@ SET_RESULT_VALUE:
         *lpMemRes++ = uLft + bQuadIO;
     } // End FOR
 } // End PrimFnDydIotaOther
+
+
+//***************************************************************************
+//  Magic function for extended dyadic iota
+//
+//  Extended dyadic iota
+//
+//  On rank > 1 left args, return an array of vector indices
+//    such that A[A iota R] is R, assuming that all of R is in A.
+//***************************************************************************
+
+static APLCHAR Header[] =
+  $Z $IS $L L" " $F L" " $R L";" $QUAD_IO L";" $O;
+
+static APLCHAR Line1[] =
+  $O $IS $QUAD_IO
+  $DIAMOND $QUAD_IO $IS L"0";
+
+static APLCHAR Line2[] =
+  $Z $IS $ENCLOSE L"[0]" $O L"+(1+" $RHO $L L")" $ENCODE L"(" $NEG L"1" $DROP L",(1+" $RHO $L L")" $TAKE $L L")" $IOTA $R;
+
+static LPAPLCHAR Body[] =
+{Line1,
+ Line2,
+};
+
+MAGIC_FUNCTION MF_DydIota =
+{Header,
+ Body,
+ sizeof (Body) / sizeof (Body[0]),
+};
 
 
 //***************************************************************************

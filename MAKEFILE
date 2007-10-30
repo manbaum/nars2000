@@ -154,6 +154,7 @@ $(O)editvec.DEP         \
 $(O)errmsg.DEP          \
 $(O)except.DEP          \
 $(O)execdfn.DEP         \
+$(O)execmfn.DEP         \
 $(O)fastbool.DEP        \
 $(O)free.DEP            \
 $(O)g_fmt.DEP           \
@@ -172,6 +173,7 @@ $(O)pf_darrow.DEP       \
 $(O)pf_dcaret.DEP       \
 $(O)pf_deltastile.DEP   \
 $(O)pf_domino.DEP       \
+$(O)pf_dshoe.DEP        \
 $(O)pf_dstile.DEP       \
 $(O)pf_dtack.DEP        \
 $(O)pf_dtackjot.DEP     \
@@ -330,6 +332,9 @@ $(O)yyfns.DEP
 !if exist ($(O)execdfn.DEP)
 !       include $(O)execdfn.DEP
 !endif
+!if exist ($(O)execmfn.DEP)
+!       include $(O)execmfn.DEP
+!endif
 !if exist ($(O)fastbool.DEP)
 !       include $(O)fastbool.DEP
 !endif
@@ -380,6 +385,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)pf_domino.DEP)
 !       include $(O)pf_domino.DEP
+!endif
+!if exist ($(O)pf_dshoe.DEP)
+!       include $(O)pf_dshoe.DEP
 !endif
 !if exist ($(O)pf_dstile.DEP)
 !       include $(O)pf_dstile.DEP
@@ -645,6 +653,7 @@ $(O)editvec.PRO         \
 $(O)errmsg.PRO          \
 $(O)except.PRO          \
 $(O)execdfn.PRO         \
+$(O)execmfn.PRO         \
 $(O)fastbool.PRO        \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
@@ -663,6 +672,7 @@ $(O)pf_darrow.PRO       \
 $(O)pf_dcaret.PRO       \
 $(O)pf_deltastile.PRO   \
 $(O)pf_domino.PRO       \
+$(O)pf_dshoe.PRO        \
 $(O)pf_dstile.PRO       \
 $(O)pf_dtack.PRO        \
 $(O)pf_dtackjot.PRO     \
@@ -803,6 +813,7 @@ $(O)editvec.OBJ:        $(@B).C         $(EDITVEC_DEP)
 $(O)errmsg.OBJ:         $(@B).C         $(ERRMSG_DEP)
 $(O)except.OBJ:         $(@B).C         $(EXCEPT_DEP)
 $(O)execdfn.OBJ:        $(@B).C         $(EXECDFN_DEP)
+$(O)execmfn.OBJ:        $(@B).C         $(EXECMFN_DEP)
 $(O)fastbool.OBJ:       $(@B).C         $(FASTBOOL_DEP)
 $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
 $(O)goto.OBJ:           $(@B).C         $(GOTO_DEP)
@@ -819,6 +830,7 @@ $(O)pf_darrow.OBJ:      $(@B).C         $(PF_DARROW_DEP)
 $(O)pf_dcaret.OBJ:      $(@B).C         $(PF_DCARET_DEP)
 $(O)pf_deltastile.OBJ:  $(@B).C         $(PF_DELTASTILE_DEP)
 $(O)pf_domino.OBJ:      $(@B).C         $(PF_DOMINO_DEP)
+$(O)pf_dshoe.OBJ:       $(@B).C         $(PF_DSHOE_DEP)
 $(O)pf_dstile.OBJ:      $(@B).C         $(PF_DSTILE_DEP)
 $(O)pf_dtack.OBJ:       $(@B).C         $(PF_DTACK_DEP)
 $(O)pf_dtackjot.OBJ:    $(@B).C         $(PF_DTACKJOT_DEP)
@@ -935,6 +947,7 @@ OBJS=                       \
      $(O)errmsg.OBJ         \
      $(O)except.OBJ         \
      $(O)execdfn.OBJ        \
+     $(O)execmfn.OBJ        \
      $(O)fastbool.OBJ       \
      $(O)free.OBJ           \
      $(O)g_fmt.obj          \
@@ -954,6 +967,7 @@ OBJS=                       \
      $(O)pf_dcaret.OBJ      \
      $(O)pf_deltastile.OBJ  \
      $(O)pf_domino.OBJ      \
+     $(O)pf_dshoe.OBJ       \
      $(O)pf_dstile.OBJ      \
      $(O)pf_dtack.OBJ       \
      $(O)pf_dtackjot.OBJ    \

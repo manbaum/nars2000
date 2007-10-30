@@ -54,12 +54,11 @@ extern PRIMSPEC PrimSpecUpStile;
 
 
 // Primitive functions TO DO                           Monadic          Dyadic
-#define PrimFnDownShoe_EM_YY        PrimFn_EM       // Mixed (*)        ERROR
 #define PrimFnEpsilonUnderbar_EM_YY PrimFn_EM       // ERROR            Mixed (*)
 
 
 // Monadic Operators TO DO                             Monadic          Dyadic
-/////// PrimOpStileTilde_EM_YY                      // ERROR            Partition
+/////// PrimOpStileTilde_EM_YY                      // ERROR            Partition (*)
 
 // Dyadic  Operators TO DO                             Monadic          Dyadic
 /////// PrimProtoOpDieresisCircle_EM_YY             // ?????            ?????
@@ -79,19 +78,20 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnComma_EM_YY                           // Mixed            Mixed
 /////// PrimFnCommaBar_EM_YY                        // Mixed            Mixed
 /////// PrimFnColonBar_EM_YY                        // Scalar           Scalar
-/////// PrimFnDelStile_EM_YY                        // Mixed            Mixed (*)
-/////// PrimFnDeltaStile_EM_YY                      // Mixed            Mixed (*)
+/////// PrimFnDelStile_EM_YY                        // Mixed            Mixed
+/////// PrimFnDeltaStile_EM_YY                      // Mixed            Mixed
 /////// PrimFnDomino_EM_YY                          // Mixed            Mixed
 /////// PrimFnDownArrow_EM_YY                       // ERROR            Mixed
 /////// PrimFnDownCaret_EM_YY                       // ERROR            Scalar
 /////// PrimFnDownCaretTilde_EM_YY                  // ERROR            Scalar
+/////// PrimFnDownShoe_EM_YY                        // Mixed            ERROR
 /////// PrimFnDownStile_EM_YY                       // Scalar           Scalar
 /////// PrimFnDownTack_EM_YY                        // ERROR            Mixed
 /////// PrimFnDownTackJot_EM_YY                     // Mixed            Mixed (*)
-/////// PrimFnEpsilon_EM_YY                         // Mixed            Mixed (*)
+/////// PrimFnEpsilon_EM_YY                         // Mixed            Mixed
 /////// PrimFnEqual_EM_YY                           // ERROR            Scalar
 /////// PrimFnEqualUnderbar_EM_YY                   // Mixed            Mixed
-/////// PrimFnIota_EM_YY                            // Mixed            Mixed (*)
+/////// PrimFnIota_EM_YY                            // Mixed            Mixed
 /////// PrimFnLeftCaret_EM_YY                       // ERROR            Scalar
 /////// PrimFnLeftCaretUnderbar_EM_YY               // ERROR            Scalar
 /////// PrimFnLeftShoe_EM_YY                        // Mixed            Mixed (*)
@@ -102,23 +102,23 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnQuery_EM_YY                           // Scalar           Mixed
 /////// PrimFnRightCaret_EM_YY                      // ERROR            Scalar
 /////// PrimFnRightCaretUnderbar_EM_YY              // ERROR            Scalar
-/////// PrimFnRightShoe_EM_YY                       // Mixed            Mixed (*)
+/////// PrimFnRightShoe_EM_YY                       // Mixed            Mixed
 /////// PrimFnRightTack_EM_YY                       // ERROR            Mixed
 /////// PrimFnRho_EM_YY                             // Mixed            Mixed
 /////// PrimFnSlash_EM_YY                           // ERROR            Mixed
 /////// PrimFnSlashBar_EM_YY                        // ERROR            Mixed
 /////// PrimFnSlope_EM_YY                           // ERROR            Mixed
 /////// PrimFnSlopeBar_EM_YY                        // ERROR            Mixed
-/////// PrimFnSquad_EM_YY                           // ERROR            Mixed (*)
+/////// PrimFnSquad_EM_YY                           // ERROR            Mixed
 /////// PrimFnStar_EM_YY                            // Scalar           Scalar
 /////// PrimFnStile_EM_YY                           // Scalar           Scalar
-/////// PrimFnTilde_EM_YY                           // Scalar           Mixed (*)
+/////// PrimFnTilde_EM_YY                           // Scalar           Mixed
 /////// PrimFnTimes_EM_YY                           // Scalar           Scalar
 /////// PrimFnUpArrow_EM_YY                         // Mixed            Mixed
 /////// PrimFnUpCaret_EM_YY                         // ERROR            Scalar
 /////// PrimFnUpCaretTilde_EM_YY                    // ERROR            Scalar
 /////// PrimFnUpStile_EM_YY                         // Scalar           Scalar
-/////// PrimFnUpTack_EM_YY                          // ERROR            Mixed (*)
+/////// PrimFnUpTack_EM_YY                          // ERROR            Mixed
 /////// PrimFnUpTackJot_EM_YY                       // Mixed            ERROR
 
 // (*) = Unfinished
@@ -862,7 +862,8 @@ LPTOKEN CheckAxisOper
     (LPPL_YYSTYPE lpYYFcnStr)       // Ptr to function strand
 
 {
-    if (lpYYFcnStr->FcnCount
+    if (lpYYFcnStr
+     && lpYYFcnStr->FcnCount
      && lpYYFcnStr->FcnCount > 1
      && (lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
       || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
@@ -1489,6 +1490,7 @@ char TokenTypeFV
         case TKT_COMMENT:
         case TKT_ASSIGN:
         case TKT_LISTSEP:
+        case TKT_LABELSEP:
         case TKT_COLON:
         case TKT_LPAREN:
         case TKT_RPAREN:
@@ -5732,6 +5734,7 @@ RESTART_EXCEPTION_FILLSISNXT:
         lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
         lpMemPTD->lpSISNxt->DfnAxis       = FALSE;
         lpMemPTD->lpSISNxt->Suspended     = Suspended;
+        lpMemPTD->lpSISNxt->Perm          = FALSE;
         lpMemPTD->lpSISNxt->Avail         = 0;
         lpMemPTD->lpSISNxt->CurLineNum    = 0;
         lpMemPTD->lpSISNxt->NxtLineNum    = 0;

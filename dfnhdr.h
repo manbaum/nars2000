@@ -46,7 +46,8 @@ typedef struct tagDFN_HEADER        // Function header structure
     UINT             DfnType:4,     // 08:  0000000F:  User-defined function/operator type (see DFN_TYPES)
                      FcnValence:3,  //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
-                     Avail:24;      //      FFFFFF00:  Available bits
+                     Perm:1,        //      00000100:  Permanent function (i.e. Magic Function)
+                     Avail:23;      //      FFFFFE00:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
                      nPrototypeLine,// 10:  Line # of the []PROTOTYPE label (0 if not present)
                      nInverseLine,  // 14:  Line # of the []INVERSE label (0 if not present)

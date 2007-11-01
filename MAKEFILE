@@ -1089,6 +1089,7 @@ $(LIBS_WEXE) $(LIBS_EXT)
         @del $(O)$(@B).exp
         @del $(O)$(@B).lib
         @pkzip $(B)$(ENAME) $@ LICENSE $(BC)$(ENAME).HLP >NUL
+        @copy $(O)$(MAPFILE) $(B)$(@B).MAP >NUL
 
 $(L)$(ENAME).EXE:       $(O)$(ENAME).EXE
         @xc/r    %s      $@ >NUL

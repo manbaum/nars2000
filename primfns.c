@@ -5733,6 +5733,7 @@ RESTART_EXCEPTION_FILLSISNXT:
         lpMemPTD->lpSISNxt->Suspended     = Suspended;
         lpMemPTD->lpSISNxt->Perm          = FALSE;
         lpMemPTD->lpSISNxt->Avail         = 0;
+        lpMemPTD->lpSISNxt->EventType     = 0;
         lpMemPTD->lpSISNxt->CurLineNum    = 0;
         lpMemPTD->lpSISNxt->NxtLineNum    = 0;
         lpMemPTD->lpSISNxt->numLabels     = 0;

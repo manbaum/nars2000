@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- System Function -- Quad EM
+//  NARS2000 -- System Function -- Quad ET
 //***************************************************************************
 
 #define STRICT
@@ -12,6 +12,7 @@
 #include "pertab.h"
 #include "sis.h"
 #include "dfnhdr.h"
+#include "eventtypes.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -20,18 +21,18 @@
 
 
 //***************************************************************************
-//  $SysFnEM_EM_YY
+//  $SysFnET_EM_YY
 //
-//  System function:  []EM -- Event Message
+//  System function:  []ET -- Event Type
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnEM_EM_YY"
+#define APPEND_NAME     L" -- SysFnET_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnEM_EM_YY
+LPPL_YYSTYPE SysFnET_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token  (should be NULL)
@@ -41,8 +42,11 @@ LPPL_YYSTYPE SysFnEM_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS header
     HGLOBAL      hGlbRes = NULL;    // Result ...
+    LPAPLUINT    lpMemRes = NULL;   // Ptr to result global memory
     HGLOBAL      hGlbPTD;           // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    EVENT_TYPES  EventType;         // Event type
+    APLUINT      ByteRes;           // # bytes in the result
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
@@ -65,9 +69,50 @@ LPPL_YYSTYPE SysFnEM_EM_YY
         lpSISCur = lpSISCur->lpSISPrv;
 
     if (lpSISCur)
-        hGlbRes = CopySymGlbDirGlb (MakeGlbTypeGlb (lpSISCur->hGlbQuadEM));
+        EventType = lpSISCur->EventType;
     else
-        hGlbRes = hGlbM3x0Char;
+        EventType = EVENTTYPE_NOERROR;
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_INT, 2, 1);
+
+    // Allocate space for the result
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_INT;
+////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = 2;
+    lpHeader->Rank       = 1;
+#undef  lpHeader
+
+    // Skip over the header to the dimension
+    lpMemRes = VarArrayBaseToDim (lpMemRes);
+
+    // Fill in the result's dimension
+    *((LPAPLDIM) lpMemRes)++ = 2;
+
+    // lpMemRes now points to the data
+
+    *lpMemRes++ = ET_MAJOR (EventType);
+    *lpMemRes++ = ET_MINOR (EventType);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Allocate a YYRes
     lpYYRes = YYAlloc ();
@@ -78,12 +123,12 @@ LPPL_YYSTYPE SysFnEM_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
+ERROR_EXIT:
     return lpYYRes;
-} // End SysFnEM_EM_YY
+} // End SysFnET_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  End of File: qf_em.c
+//  End of File: qf_et.c
 //***************************************************************************

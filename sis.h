@@ -31,19 +31,20 @@ typedef struct tagSIS_HEADER
                      ResetFlag:3,   //      00000E00:  SI stack is resetting (see RESET_FLAGS)
                      Perm:1,        //      00001000:  Permanent (i.e. Magic Function)
                      Avail:19;      //      FFFFE000:  Available bits
-    UINT             CurLineNum,    // 1C:  Current line # (origin-1)
-                     NxtLineNum,    // 20:  Next    ...
-                     numLabels,     // 24:  # line labels
-                     numFcnLines,   // 28:  # lines in the function (not counting the header)
-                     numSymEntries, // 2C:  # SYMENTRYs on the stack
-                     QQPromptLen,   // 30:  Quote-Quad input prompt length
-                     ErrorCode;     // 34:  Error code (see ERROR_CODES)
+    UINT             EventType,     // 1C:  Event type (Major, Minor) (see EVENT_TYPES)
+                     CurLineNum,    // 20:  Current line # (origin-1)
+                     NxtLineNum,    // 24:  Next    ...
+                     numLabels,     // 28:  # line labels
+                     numFcnLines,   // 2C:  # lines in the function (not counting the header)
+                     numSymEntries, // 30:  # SYMENTRYs on the stack
+                     QQPromptLen,   // 34:  Quote-Quad input prompt length
+                     ErrorCode;     // 38:  Error code (see ERROR_CODES)
     struct tagSIS_HEADER
-                    *lpSISPrv,      // 38:  Ptr to previous SIS header (NULL = none)
-                    *lpSISNxt;      // 3C:  Ptr to next     ...         ...
-    LPTOKEN          lptkFunc;      // 40:  Ptr to function token for Quote-Quad input
-                                    // 44:  Length
-                                    // 44:  Array of SYMENTRYs (previous value for results, args, & locals)
+                    *lpSISPrv,      // 3C:  Ptr to previous SIS header (NULL = none)
+                    *lpSISNxt;      // 40:  Ptr to next     ...         ...
+    LPTOKEN          lptkFunc;      // 44:  Ptr to function token for Quote-Quad input
+                                    // 48:  Length
+                                    // 48:  Array of SYMENTRYs (previous value for results, args, & locals)
 } SIS_HEADER, *LPSIS_HEADER;
 
 

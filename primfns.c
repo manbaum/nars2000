@@ -3734,8 +3734,9 @@ HGLOBAL MakeMonPrototype_EM
             } // End SWITCH
 
             // Convert the chars to blanks
-            for (u = 0; u < aplNELM; u++)
-                *((LPAPLCHAR)  lpMemArr)++ = L' ';
+            Assert (aplNELM EQ (UINT) aplNELM);
+            FillMemoryW (lpMemArr, (UINT) aplNELM, L' ');
+
             break;
 
         case ARRAY_APA:
@@ -3868,11 +3869,6 @@ NORMAL_EXIT:
 
     DBGLEAVE;
 
-    // ***FIXME*** -- Do we still need to TypeDemote the result??
-////if (hGlbArr)
-////    return TypeDemote (hGlbArr);
-////else
-////    return hGlbArr;
     return hGlbArr;
 } // End MakeMonPrototype_EM
 #undef  APPEND_NAME
@@ -5730,6 +5726,7 @@ RESTART_EXCEPTION_FILLSISNXT:
         lpMemPTD->lpSISNxt->hSigaphore    = NULL;
         lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;
         lpMemPTD->lpSISNxt->hGlbFcnName   = NULL;
+        lpMemPTD->lpSISNxt->hGlbQuadEM    = hGlbM3x0Char;
         lpMemPTD->lpSISNxt->DfnType       = DfnType;
         lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
         lpMemPTD->lpSISNxt->DfnAxis       = FALSE;

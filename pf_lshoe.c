@@ -429,7 +429,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
                 case ARRAY_CHAR:
                     bRet = PrimFnMonLeftShoeProto_EM (&hGlbProto,
-                                                      hGlbMTChar,
+                                                      hGlbV0Char,
                                                       ARRAY_CHAR,
                                                       aplNELMSub,
                                                       aplNELMAxis,
@@ -547,7 +547,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 case ARRAY_CHAR:
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
                         // Save the HGLOBAL in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbMTChar);
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbV0Char);
                     break;
 
                 case ARRAY_NESTED:
@@ -1098,8 +1098,8 @@ BOOL PrimFnMonLeftShoeProto_EM
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    APLUINT ByteRes,                // # bytes in the result
-            uRes;                   // Result loop counter
+    APLUINT ByteRes;                // # bytes in the result
+////APLUINT uRes;                   // Result loop counter
     LPVOID lpMemProto;              // Ptr to prototype global memory
 
     // If the subarray is empty, the result is zilde
@@ -1141,10 +1141,9 @@ BOOL PrimFnMonLeftShoeProto_EM
         lpMemProto = VarArrayBaseToData (lpMemProto, aplNELMAxis);
 
         // Fill in the values if character
+        Assert (aplNELMSub EQ (UINT) aplNELMSub);
         if (aplType EQ ARRAY_CHAR)
-        for (uRes = 0; uRes < aplNELMSub; uRes++)
-            *((LPAPLCHAR) lpMemProto)++ = L' ';
-
+            FillMemoryW (lpMemProto, (UINT) aplNELMSub, L' ');
         // We no longer need this ptr
         MyGlobalUnlock (*lphGlbProto); lpMemProto = NULL;
     } // End IF/ELSE

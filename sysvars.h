@@ -13,7 +13,7 @@
 #define DEF_QUADPR_CWS   L' '
 #define DEF_QUADxSA_CWS     0   // 0 = "", 1 = "CLEAR", 2 = "ERROR", 3 = "EXIT", 4 = "OFF"
 #define DEF_QUADLX_CWS    L""
-#define DEF_QUADLX_GLB  hGlbMTChar
+#define DEF_QUADLX_GLB  hGlbV0Char
 #define WS_QUADDM       (WS_UTF16_QUAD L"DM")
 #define DEF_QUADALX_CWS WS_QUADDM
 #define DEF_QUADELX_CWS WS_QUADDM
@@ -36,7 +36,7 @@
 #define SYS_CT  3E-15
 
 // Various string constants for []SA
-#define MTChar      L""
+#define V0Char      L""
 
 #define SAEmpty     L""
 #define SAClear     L"CLEAR"

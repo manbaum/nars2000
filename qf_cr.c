@@ -522,6 +522,7 @@ LPVOID SysFnCR_Copy_EM
         CopyMemory (lpMemResChar, &lpMemTxtLine->C, uLineLen * sizeof (lpMemTxtLine->C));
 
         // Fill the remainder of the line with blanks
+        // Could use FillMemoryW ??
         if (aplRankRes EQ 2)
         for (lpMemResChar += uLineLen;
              uLineLen < uMaxLineLen;

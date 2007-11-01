@@ -225,7 +225,9 @@ $(O)qf_cr.DEP           \
 $(O)qf_dl.DEP           \
 $(O)qf_dm.DEP           \
 $(O)qf_dr.DEP           \
+$(O)qf_em.DEP           \
 $(O)qf_error.DEP        \
+$(O)qf_es.DEP           \
 $(O)qf_lc.DEP           \
 $(O)qf_nc.DEP           \
 $(O)qf_nl.DEP           \
@@ -542,8 +544,14 @@ $(O)yyfns.DEP
 !if exist ($(O)qf_dr.DEP)
 !       include $(O)qf_dr.DEP
 !endif
+!if exist ($(O)qf_em.DEP)
+!       include $(O)qf_em.DEP
+!endif
 !if exist ($(O)qf_error.DEP)
 !       include $(O)qf_error.DEP
+!endif
+!if exist ($(O)qf_es.DEP)
+!       include $(O)qf_es.DEP
 !endif
 !if exist ($(O)qf_lc.DEP)
 !       include $(O)qf_lc.DEP
@@ -724,7 +732,9 @@ $(O)qf_cr.PRO           \
 $(O)qf_dl.PRO           \
 $(O)qf_dm.PRO           \
 $(O)qf_dr.PRO           \
+$(O)qf_em.PRO           \
 $(O)qf_error.PRO        \
+$(O)qf_es.PRO           \
 $(O)qf_lc.PRO           \
 $(O)qf_nc.PRO           \
 $(O)qf_nl.PRO           \
@@ -882,7 +892,9 @@ $(O)qf_cr.OBJ:          $(@B).C         $(QF_CR_DEP)
 $(O)qf_dl.OBJ:          $(@B).C         $(QF_DL_DEP)
 $(O)qf_dm.OBJ:          $(@B).C         $(QF_DM_DEP)
 $(O)qf_dr.OBJ:          $(@B).C         $(QF_DR_DEP)
+$(O)qf_em.OBJ:          $(@B).C         $(QF_EM_DEP)
 $(O)qf_error.OBJ:       $(@B).C         $(QF_ERROR_DEP)
+$(O)qf_es.OBJ:          $(@B).C         $(QF_ES_DEP)
 $(O)qf_lc.OBJ:          $(@B).C         $(QF_LC_DEP)
 $(O)qf_nc.OBJ:          $(@B).C         $(QF_NC_DEP)
 $(O)qf_nl.OBJ:          $(@B).C         $(QF_NL_DEP)
@@ -1019,7 +1031,9 @@ OBJS=                       \
      $(O)qf_dl.OBJ          \
      $(O)qf_dm.OBJ          \
      $(O)qf_dr.OBJ          \
+     $(O)qf_em.OBJ          \
      $(O)qf_error.OBJ       \
+     $(O)qf_es.OBJ          \
      $(O)qf_lc.OBJ          \
      $(O)qf_nc.OBJ          \
      $(O)qf_nl.OBJ          \

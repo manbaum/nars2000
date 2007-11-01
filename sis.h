@@ -22,27 +22,28 @@ typedef struct tagSIS_HEADER
     HANDLE           hSemaphore,    // 04:  Semaphore handle
                      hSigaphore;    // 08:  Semaphore handle to signal on exit (NULL if none)
     HGLOBAL          hGlbDfnHdr,    // 0C:  User-defined function/operator global memory handle (may be NULL if not fcn/op)
-                     hGlbFcnName;   // 10:  Function name global memory handle
-    UINT             DfnType:4,     // 14:  0000000F:  User-defined function/operator Type (see DFN_TYPES)
+                     hGlbFcnName,   // 10:  Function name global memory handle
+                     hGlbQuadEM;    // 14:  []EM global memory handle
+    UINT             DfnType:4,     // 18:  0000000F:  User-defined function/operator Type (see DFN_TYPES)
                      FcnValence:3,  //      00000070:  User-defined function/operator Valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      Suspended:1,   //      00000100:  Function is suspended
                      ResetFlag:3,   //      00000E00:  SI stack is resetting (see RESET_FLAGS)
                      Perm:1,        //      00001000:  Permanent (i.e. Magic Function)
                      Avail:19;      //      FFFFE000:  Available bits
-    UINT             CurLineNum,    // 18:  Current line # (origin-1)
-                     NxtLineNum,    // 1C:  Next    ...
-                     numLabels,     // 20:  # line labels
-                     numFcnLines,   // 24:  # lines in the function (not counting the header)
-                     numSymEntries, // 28:  # SYMENTRYs on the stack
-                     QQPromptLen,   // 2C:  Quote-Quad input prompt length
-                     ErrorCode;     // 30:  Error code (see ERROR_CODES)
+    UINT             CurLineNum,    // 1C:  Current line # (origin-1)
+                     NxtLineNum,    // 20:  Next    ...
+                     numLabels,     // 24:  # line labels
+                     numFcnLines,   // 28:  # lines in the function (not counting the header)
+                     numSymEntries, // 2C:  # SYMENTRYs on the stack
+                     QQPromptLen,   // 30:  Quote-Quad input prompt length
+                     ErrorCode;     // 34:  Error code (see ERROR_CODES)
     struct tagSIS_HEADER
-                    *lpSISPrv,      // 34:  Ptr to previous SIS header (NULL = none)
-                    *lpSISNxt;      // 38:  Ptr to next     ...         ...
-    LPTOKEN          lptkFunc;      // 3C:  Ptr to function token for Quote-Quad input
-                                    // 40:  Length
-                                    // 40:  Array of SYMENTRYs (previous value for results, args, & locals)
+                    *lpSISPrv,      // 38:  Ptr to previous SIS header (NULL = none)
+                    *lpSISNxt;      // 3C:  Ptr to next     ...         ...
+    LPTOKEN          lptkFunc;      // 40:  Ptr to function token for Quote-Quad input
+                                    // 44:  Length
+                                    // 44:  Array of SYMENTRYs (previous value for results, args, & locals)
 } SIS_HEADER, *LPSIS_HEADER;
 
 

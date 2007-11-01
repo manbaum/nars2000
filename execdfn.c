@@ -915,6 +915,9 @@ BOOL Unlocalize
         // Save the reset flag
         resetFlag = lpMemPTD->lpSISCur->ResetFlag;
 
+        // Free the outgoing value of []EM
+        FreeResultGlobalVar (lpMemPTD->lpSISCur->hGlbQuadEM);
+
         // Get # SYMENTRYs on the stack
         numSymEntries = lpMemPTD->lpSISCur->numSymEntries;
 

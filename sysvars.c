@@ -21,6 +21,7 @@
 #define SysFnDL_EM_YY       NULL
 #define SysFnDM_EM_YY       NULL
 #define SysFnDR_EM_YY       NULL
+#define SysFnEM_EM_YY       NULL
 #define SysFnERROR_EM_YY    NULL
 #define SysFnLC_EM_YY       NULL
 #define SysFnNC_EM_YY       NULL
@@ -74,6 +75,7 @@ SYSNAME aSystemNames[] =
 
     {WS_UTF16_QUAD L"av"       ,      0,      FALSE, SysFnAV_EM_YY     , 0          },  // Atomic Vector
     {WS_UTF16_QUAD L"dm"       ,      0,      FALSE, SysFnDM_EM_YY     , 0          },  // Diagnostic Message
+    {WS_UTF16_QUAD L"em"       ,      0,      FALSE, SysFnEM_EM_YY     , 0          },  // Event Message
     {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, SysFnLC_EM_YY     , 0          },  // Line Counter
 ////{WS_UTF16_QUAD L"si"       ,      0,      FALSE, SysFnSI_EM_YY     , 0          },  // State Indicator
 ////{WS_UTF16_QUAD L"sinl"     ,      0,      FALSE, SysFnSINL_EM_YY   , 0          },  // State Indicator w/Name List
@@ -172,15 +174,41 @@ void MakePermVars
     // We no longer need this ptr
     MyGlobalUnlock (hGlbZilde); lpHeader = NULL;
 
+    // Create initial value for []EM (3 x 0 char matrix)
+    hGlbM3x0Char = MyGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, 0, 2));
+    if (!hGlbM3x0Char)
+    {
+        DbgStop ();         // We should never get here
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpHeader = MyGlobalLock (hGlbM3x0Char);
+
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+    lpHeader->Perm       = 1;       // So we don't free it
+////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->RefCnt     = 0;       // Ignore as this is perm
+////lpHeader->NELM       = 0;       // Already zero from GHND
+    lpHeader->Rank       = 2;
+
+    // Mark as shape 3 by 0
+    (VarArrayBaseToDim (lpHeader))[0] = 3;
+////(VarArrayBaseToDim (lpHeader))[1] = 0;  // Already zero from GHND
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbM3x0Char); lpHeader = NULL;
+
     // Create various permanent char vectors
     hGlbQuadDM  = MakePermCharVector (WS_QUADDM);
-    hGlbMTChar  = MakePermCharVector (MTChar);
-    hGlbSAEmpty = hGlbMTChar;
+    hGlbV0Char  = MakePermCharVector (V0Char);
+    hGlbSAEmpty = hGlbV0Char;
     hGlbSAClear = MakePermCharVector (SAClear);
     hGlbSAError = MakePermCharVector (SAError);
     hGlbSAExit  = MakePermCharVector (SAExit);
     hGlbSAOff   = MakePermCharVector (SAOff);
-    hGlbQuadWSID_CWS = hGlbMTChar;
+    hGlbQuadWSID_CWS = hGlbV0Char;
 
     // Create []AV
     MakeQuadAV ();
@@ -1481,7 +1509,7 @@ BOOL ValidateCharVector_EM
         } else
         {
             // The result is an empry char vector
-            hGlbRes = hGlbMTChar;
+            hGlbRes = hGlbV0Char;
 
             // We no longer need this ptr
             MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbRht)); lpMemRht = NULL;
@@ -2175,7 +2203,7 @@ MAKE_SCALAR:
     {
         lptkName->tkData.tkSym->stFlags.Imm = (lpMemPTD->cQuadPR NE 0);
         if (lpMemPTD->cQuadPR EQ 0)
-            lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeGlb (hGlbMTChar);
+            lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeGlb (hGlbV0Char);
         else
             lptkName->tkData.tkSym->stData.stChar = lpMemPTD->cQuadPR;
         lptkName->tkFlags.NoDisplay = 1;

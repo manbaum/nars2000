@@ -659,7 +659,8 @@ HWND hWndTC,                            // Global Tab Control window handle
 EXTERN
 HGLOBAL hGlbZilde,
         hGlbQuadDM,
-        hGlbMTChar,
+        hGlbV0Char,
+        hGlbM3x0Char,
         hGlbSAEmpty,
         hGlbSAClear,
         hGlbSAError,

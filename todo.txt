@@ -15,11 +15,10 @@ TO DO:  General:  Important
 * ...       )LOAD
 * ...       )COPY
 * ...       minimum set of system functions, to wit:
-* ...          []EM
 * ...          []ET
+* ...          []ES R
 * ...          []EX R
 * ...          []FX R
-* ...          []ES R
 * ...        L []EA R
 * ...        L []ES R
 * ...        L []TF R
@@ -55,6 +54,7 @@ TO DO:  General:  Wish List
 * ...       array predicates
 * ...       syntax highlighting
 * ...       control structures
+* ...       []L and []R
 * ...       expanded set of system functions, to wit:
 * ...         []SI
 * ...         []SINL
@@ -151,6 +151,7 @@ DONE:  General
 * ...     1 []CR R
 * ...     L []DR R
 * ...       []ERROR R
+* ...       []EM
 * ...       monadic right shoe
 * ...       dyadic down arrow
 * ...       dyadic up arrow
@@ -240,7 +241,8 @@ QUESTIONS
 
   What if no Zn is set -- should we allow the function to exit
   with no result as in {del}Z{is}FOO R when Z is unset??
-*
+* In an error message ([]DM) which symbol is used for the caret:
+  UTF16_CIRCUMFLEX or UTF16_UPCARET??
 
 
 File Extensions

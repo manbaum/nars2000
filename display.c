@@ -410,9 +410,11 @@ void DisplayGlbArr
     if (aplType EQ ARRAY_CHAR)
         ZeroMemory (lpwszFormat, (UINT) aplNELMRes * sizeof (APLCHAR));
     else
-    // Fill the output area with all blanks
-    for (lpaplChar = lpwszFormat, aplDimCol = 0; aplDimCol < aplNELMRes; aplDimCol++)
-        *lpaplChar++ = L' ';
+    {
+        // Fill the output area with all blanks
+        Assert (aplNELMRes EQ (UINT) aplNELMRes);
+        FillMemoryW (lpwszFormat, (UINT) aplNELMRes, L' ');
+    } // End IF/ELSE
 #endif
     lpaplChar = lpwszFormat;
 
@@ -557,7 +559,7 @@ LPAPLCHAR FormatImmed
 
 {
     WCHAR wc;
-    UINT  uRht;
+////UINT  uRht;
 
     switch (ImmType)
     {
@@ -598,9 +600,8 @@ LPAPLCHAR FormatImmed
                 case TCHT:      // HT
                     // We're always at the (virtual) left margin,
                     //   so insert enough blanks for a TAB
-                    for (uRht = 0; uRht < uTabs; uRht)
-                        *lpaplChar++ = L' ';
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+                    lpaplChar = FillMemoryW (lpaplChar, uTabs + 1, L' ');
+////////////////////*lpaplChar++ = L' ';    // Append a blank to be deleted
 
                     break;
 

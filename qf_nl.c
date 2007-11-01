@@ -454,6 +454,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         lpMemRes = CopySteName (lpMemRes, lpSymSort[uSymNum]);
 
         // Fill in the tail of the name with blanks
+        // Could use FillMemoryW ??
         for (uRht = uNameLen; uRht < uMaxNameLen; uRht++)
             *lpMemRes++ = L' ';
     } // End FOR

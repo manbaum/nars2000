@@ -149,7 +149,7 @@ void ReadRegGlb
     //   as the empty vector case.
     // Because we only reference this var when
     //   it's an empty vector, it always has that value.
-    hGlbQuadPR_CWS = hGlbMTChar;
+    hGlbQuadPR_CWS = hGlbV0Char;
 
     // Read in []PW
     uQuadPW_CWS =
@@ -175,7 +175,7 @@ void ReadRegGlb
     switch (bQuadxSA_CWS)
     {
         case 0:         // ""
-            hGlbQuadSA_CWS = hGlbMTChar;
+            hGlbQuadSA_CWS = hGlbV0Char;
             break;
 
         case 1:         // "CLEAR"

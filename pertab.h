@@ -4,7 +4,7 @@
 
 #define INIT_PERTABVARS                                     \
     lpMemPTD->Sig.nature         = ' DTP';                  \
-    lpMemPTD->hGlbQuadDM         = hGlbMTChar;              \
+    lpMemPTD->hGlbQuadDM         = hGlbV0Char;              \
     lpMemPTD->iMaxNumAlp         = DEF_NUMALP_MAXSIZE;      \
     lpMemPTD->iMaxString         = DEF_STRING_MAXSIZE;      \
     lpMemPTD->uHashMask          = DEF_HSHTAB_HASHMASK;     \

@@ -4577,6 +4577,10 @@ SingTokn:
                                          if (!lpplLocalVars->bLookAhead)
                                              $$ = $1;
                                         }
+    | SYSLBL                            {DbgMsgW2 (L"%%SingTokn:  SYSLBL");
+                                         if (!lpplLocalVars->bLookAhead)
+                                             $$ = $1;
+                                        }
     | USRFN0                            {DbgMsgW2 (L"%%SingTokn:  USRFN0");
                                          if (lpplLocalVars->bCtrlBreak)
                                              YYERROR;
@@ -5822,8 +5826,14 @@ PL_YYLEX_START:
             } // End SWITCH
 
         case TKT_LABELSEP:
+            // If we're at the EOL, return '\0'
+            if (lpplLocalVars->lptkNext[-2].tkFlags.TknType EQ TKT_EOL)
+                return '\0';
+
+            // Fall through to common code
+
         case TKT_EOS:
-            // Skip to end of this stmt
+            // Skip to end of the current stmt
             lpplLocalVars->lptkNext = &lpplLocalVars->lptkNext[lpplLocalVars->lptkNext->tkData.tkIndex];
 
             // And again to the end of the next stmt

@@ -451,8 +451,8 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     // lpMemRes now points to the result's data
 #ifdef PREFILL
     // Fill it with all blanks
-    for (lpaplChar = lpMemRes, aplDimCol = 0; aplDimCol < aplNELMRes; aplDimCol++)
-        *lpaplChar++ = L' ';
+    Assert (aplNELMRes EQ (UINT) aplNELMRes);
+    FillMemoryW (lpMemRes, (UINT) aplNELMRes, L' ');
 #endif
     // Output the result at appropriate widths
 
@@ -2192,8 +2192,7 @@ LPAPLCHAR FormatArrSimple
                 uCol,               //
                 uCmpWid,            // Compiled width
                 uColOff;            // Current row's col offset
-    LPWCHAR     lpw,                //
-                lpwszOut,           //
+    LPWCHAR     lpwszOut,           //
                 lpwszOutStart;      //
     LPFMTROWSTR lpFmtRowStr;        // Ptr to this item's FMTROWSTR
     LPAPLCHAR   lpaplChar = lpaplChar2;
@@ -2246,6 +2245,8 @@ LPAPLCHAR FormatArrSimple
             // Loop through the cols
             for (aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
             {
+                    LPWCHAR lpw;
+
 ////////////////// Split cases based upon the format type
 ////////////////switch (lpFmtColStr[aplDimCol].uFmtType)
 ////////////////{
@@ -2299,8 +2300,7 @@ LPAPLCHAR FormatArrSimple
 
                             // Fill the output area with all blanks
                             uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
-                            while (uCol--)
-                                *lpw++ = L' ';
+                            FillMemoryW (lpw, uCol, L' ');
 
                             // Skip over leading indent
                             lpwszOut += DEF_INDENT;
@@ -2319,8 +2319,7 @@ LPAPLCHAR FormatArrSimple
                             uCol = uLead;
 #else
                             // Fill with leading blanks
-                            for (uCol = 0; uCol < uLead; uCol++)
-                                *lpwszOut++ = L' ';
+                            lpwszOut = FillMemoryW (lpwszOut, uLead, L' ');
 #endif
                             // Subtract out as the col offset isn't in the compiled width
                             uCol -= uColOff;
@@ -2345,8 +2344,7 @@ LPAPLCHAR FormatArrSimple
                 lpwszOut += (uCmpWid - uCol);
 #else
                 // Fill with trailing blanks
-                for (; uCol < uCmpWid; uCol++)
-                    *lpwszOut++ = L' ';
+                lpwszOut = FillMemoryW (lpwszOut, uCmpWid - uCol, L' ');
 #endif
                 lpaplChar += (uActLen + 1);
             } // End FOR
@@ -2355,13 +2353,8 @@ LPAPLCHAR FormatArrSimple
             // Skip over trailing blanks
             lpwszOut += lpFmtHeader->uFmtTrBl;
 #else
-            {
-                UINT uCol;              // Loop counter
-
-                // Skip over trailing blanks
-                for (uCol = 0; uCol < lpFmtHeader->uFmtTrBl; uCol++)
-                    *lpwszOut++ = L' ';
-            }
+            // Skip over trailing blanks
+            lpwszOut = FillMemoryW (lpwszOut, lpFmtHeader->uFmtTrBl, L' ');
 #endif
         } // End IF
 
@@ -2383,12 +2376,11 @@ LPAPLCHAR FormatArrSimple
             AppendLine (lpwszOutStart, FALSE, bEndingCR || aplDimRow < (aplDimNRows - 1));
 
             // Reset the line start
-            lpwszOut = lpw = *lplpwszOut;
+            lpwszOut = *lplpwszOut;
 
             // Fill the output area with all blanks
             uCol = (UINT) aplLastDim - (*lplpwszOut - lpwszOutStart);
-            while (uCol--)
-                *lpw++ = L' ';
+            FillMemoryW (lpwszOut, uCol, L' ');
         } // End IF
     } // End FOR
 
@@ -2514,13 +2506,8 @@ LPAPLCHAR FormatArrNested
             // Use the larger
             *lplpwszOut = max (lpwszOut, *lplpwszOut);
 #else
-            {
-                UINT uCol;              // Loop counter
-
-                // Skip over trailing blanks
-                for (uCol = 0; uCol < lpFmtHeader->uFmtTrBl; uCol++)
-                    *lpwszOut++ = L' ';
-            }
+            // Skip over trailing blanks
+            lpwszOut = FillMemoryW (lpwszOut, lpFmtHeader->uFmtTrBl, L' ');
 #endif
         } else
             // Skip over the blanks to the next row

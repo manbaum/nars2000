@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- System Function -- Quad ERROR
+//  NARS2000 -- System Function -- Quad ES
 //***************************************************************************
 
 #define STRICT
@@ -19,18 +19,18 @@
 
 
 //***************************************************************************
-//  $SysFnERROR_EM_YY
+//  $SysFnES_EM_YY
 //
-//  System function:  []ERROR -- Error Signal
+//  System function:  []ES -- Event Simulate
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnERROR_EM_YY"
+#define APPEND_NAME     L" -- SysFnES_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnERROR_EM_YY
+LPPL_YYSTYPE SysFnES_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -58,23 +58,23 @@ LPPL_YYSTYPE SysFnERROR_EM_YY
         return SysFnMonERROR_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydERROR_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End SysFnERROR_EM_YY
+} // End SysFnES_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnMonERROR_EM_YY
+//  $SysFnMonES_EM_YY
 //
-//  Monadic []ERROR -- Error Signal
+//  Monadic []ES -- Event Simulate w/ Message or Type
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonERROR_EM_YY"
+#define APPEND_NAME     L" -- SysFnMonES_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnMonERROR_EM_YY
+LPPL_YYSTYPE SysFnMonES_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -102,10 +102,8 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
-    // Check for DOMAIN ERROR
-    if (!IsSimpleNH (aplTypeRht)
-     || (aplTypeRht NE ARRAY_CHAR
-      && aplNELMRht NE 0))
+    // Check for RIGHT DOMAIN ERROR
+    if (!IsSimpleNH (aplTypeRht))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -117,6 +115,15 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
         lpYYRes = MakeNoValue_YY (lptkFunc);
     else
     {
+        // Check for RIGHT LENGTH ERROR
+        if (IsSimpleNum (aplTypeRht)
+         && aplNELMRht NE 2)
+        {
+            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+        } // End IF
+
         // Get the thread's PerTabData global memory handle
         hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -126,26 +133,40 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
         // Get right arg's global ptrs
         aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-        // If the message is a global, ...
-        if (hGlbRht)
+        // Split cases based upon the numeric vs. char storage type
+        if (aplTypeRht EQ ARRAY_CHAR)
         {
-            // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            // If the message is a global, ...
+            if (hGlbRht)
+            {
+                // Skip over the header and dimensions to the data
+                lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-            // Copy the error message to temporary storage
-            CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
+                // Copy the error message to temporary storage
+                CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
+            } else
+                lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht;
+
+            // Ensure properly terminated
+            lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = L'\0';
+
+            // Save in PTD -- note that the tkCharIndex in the
+            //   function token passed here isn't used unless this is
+            //   immediate execution mode; normally, the tkCharIndex of the
+            //   caller's is used.
+            ErrorMessageIndirectToken (lpMemPTD->lpwszQuadErrorMsg, lptkFunc);
+            lpMemPTD->tkErrorCharIndex = lptkFunc->tkCharIndex;
         } else
-            lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht;
+        {
+            // The right arg is simple numeric
 
-        // Ensure properly terminated
-        lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = L'\0';
 
-        // Save in PTD -- note that the tkCharIndex in the
-        //   function token passed here isn't used unless this is
-        //   immediate execution mode; normally, the tkCharIndex of the
-        //   caller's is used.
-        ErrorMessageIndirectToken (lpMemPTD->lpwszQuadErrorMsg, lptkFunc);
-        lpMemPTD->tkErrorCharIndex = lptkFunc->tkCharIndex;
+
+
+
+
+
+        } // End IF/ELSE
 
         // Set the reset flag
         lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
@@ -161,23 +182,23 @@ ERROR_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End SysFnMonERROR_EM_YY
+} // End SysFnMonES_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnDydERROR_EM_YY
+//  $SysFnDydES_EM_YY
 //
-//  Dyadic []ERROR -- ERROR
+//  Dyadic []ES -- Event Simulate w/ Message and Type
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydERROR_EM_YY"
+#define APPEND_NAME     L" -- SysFnDydES_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnDydERROR_EM_YY
+LPPL_YYSTYPE SysFnDydES_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -185,10 +206,10 @@ LPPL_YYSTYPE SysFnDydERROR_EM_YY
 
 {
     return PrimFnValenceError_EM (lptkFunc);
-} // End SysFnDydERROR_EM_YY
+} // End SysFnDydES_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  End of File: qf_error.c
+//  End of File: qf_es.c
 //***************************************************************************

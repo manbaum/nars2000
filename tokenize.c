@@ -1896,7 +1896,7 @@ BOOL fnQuoDone
         tkFlags.TknType = TKT_STRING;
 
         // Copy to local var so we may pass its address
-        aplInteger = MakeGlbType (hGlbMTChar);
+        aplInteger = MakeGlbType (hGlbV0Char);
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.

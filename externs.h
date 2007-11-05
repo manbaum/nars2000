@@ -1,67 +1,67 @@
 //***************************************************************************
-//  NARS2000 -- Extern Variables
+//	NARS2000 -- Extern Variables
 //***************************************************************************
 
 // Default definitions
-#define DEF_TCFONTNAME      "Georgia"           // Or "SImPL"
-#define DEF_SMFONTNAME      "APL385 Unicode"
-#define DEF_FEFONTNAME      "APL385 Unicode"
-#define DEF_MEFONTNAME      "APL385 Unicode"
-#define DEF_VEFONTNAME      "APL385 Unicode"
+#define DEF_TCFONTNAME		"Georgia"           // Or "SImPL"
+#define DEF_SMFONTNAME		"APL385 Unicode"
+#define DEF_FEFONTNAME		"APL385 Unicode"
+#define DEF_MEFONTNAME		"APL385 Unicode"
+#define DEF_VEFONTNAME		"APL385 Unicode"
 
-#define DEF_TCLOGFONT       0,0,0,0,FW_BOLD  ,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,VARIABLE_PITCH | FF_ROMAN ,DEF_TCFONTNAME
-#define DEF_SMLOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_SMFONTNAME
-#define DEF_FELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_FEFONTNAME
-#define DEF_MELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_MEFONTNAME
-#define DEF_VELOGFONT       0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_VEFONTNAME
+#define DEF_TCLOGFONT		0,0,0,0,FW_BOLD  ,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,VARIABLE_PITCH | FF_ROMAN ,DEF_TCFONTNAME
+#define DEF_SMLOGFONT		0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_SMFONTNAME
+#define DEF_FELOGFONT		0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_FEFONTNAME
+#define DEF_MELOGFONT		0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_MEFONTNAME
+#define DEF_VELOGFONT		0,0,0,0,FW_NORMAL,0,0,0,ANSI_CHARSET,OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,FIXED_PITCH    | FF_MODERN,DEF_VEFONTNAME
 
-#define DEF_TCPTSIZE        8           // Point size for TC font
-#define DEF_SMPTSIZE       13           // ...            SM ...
-#define DEF_FEPTSIZE       13           // ...            FE ...
-#define DEF_MEPTSIZE       13           // ...            ME ...
-#define DEF_VEPTSIZE       13           // ...            VE ...
+#define DEF_TCPTSIZE		8			// Point size for TC font
+#define DEF_SMPTSIZE	   13			// ...			  SM ...
+#define DEF_FEPTSIZE	   13			// ...			  FE ...
+#define DEF_MEPTSIZE	   13			// ...			  ME ...
+#define DEF_VEPTSIZE	   13			// ...			  VE ...
 
-#define DEF_INDENT          6           // Prompt indent
-#define DEF_TABS            4           // Tab insertion
-#define DEF_CURWID_INS      5           // Cursor width for insert mode
-#define DEF_CURWID_REP      2           // ...              replace ...
-#define DEF_HISTLINES    3000           // # lines in history buffer
-#define DEF_TEXT_FG_COLOR   COLOR_RED
-#define DEF_TEXT_BG_COLOR   COLOR_WHITE
+#define DEF_INDENT			6			// Prompt indent
+#define DEF_TABS			4			// Tab insertion
+#define DEF_CURWID_INS		5			// Cursor width for insert mode
+#define DEF_CURWID_REP		2			// ...				replace ...
+#define DEF_HISTLINES	 3000			// # lines in history buffer
+#define DEF_TEXT_FG_COLOR	COLOR_RED
+#define DEF_TEXT_BG_COLOR	COLOR_WHITE
 
 // Size of storage areas
-#define DEF_CURLINE_INITSIZE    (   4*1024)                 // Initial line size in bytes
-#define DEF_CURLINE_MAXSIZE     (   4*1024)                 // Maximum ...
-#define DEF_CURLINE_MAXLEN      (DEF_CURLINE_INITSIZE - 1)  // Maximum current line length
-#define DEF_NUMALP_INITSIZE     (  64*1024)                 // Initial size for lpszNumAlp
-#define DEF_NUMALP_MAXSIZE      (  64*1024)                 // Maximum ...
-#define DEF_STRING_INITSIZE     (  64*1024)                 // Initial size for lpwszString
-#define DEF_STRING_MAXSIZE      (  64*1024)                 // Maximum ...
-////ine DEF_TOKENSTACK_INITSIZE (  64*1024)                 // Initial size of token stack
-////ine DEF_TOKENSTACK_MAXSIZE  (  64*1024)                 // Maximum ...
-#define DEF_SIS_INITSIZE        (   0*1024)                 // Initial size for State Indicator Stack
-#define DEF_SIS_INCRSIZE        (  64*1024)                 // Increment ..
-#define DEF_SIS_MAXSIZE         (1024*1024)                 // Maximum ...
-#define DEF_YYRES_INITSIZE      (   0*1024)                 // Initial size of YYRes buffer
-#define DEF_YYRES_INCRSIZE      (   4*1024)                 // Increment ...
-#define DEF_YYRES_MAXSIZE       (1024*1024)                 // Maximum ...
-#define DEF_CTEMP_INITSIZE      (  64*1024)                 // Initial size of char  temporary storage
-#define DEF_CTEMP_MAXSIZE       (  64*1024)                 // Maximum ...
-#define DEF_WTEMP_INITSIZE      (  64*1024)                 // Initial size of WCHAR ...
-#define DEF_WTEMP_MAXSIZE       (  64*1024)                 // Maximum ...
-#define DEF_DEBUG_INITSIZE      (  64*1024)                 // Initial size of debug ...
-#define DEF_DEBUG_MAXSIZE       (  64*1024)                 // Maximum ...
-#define DEF_WFORMAT_INITSIZE    (  64*1024)                 // Initial size of WCHAR Formatting storage
-#define DEF_WFORMAT_MAXSIZE     (1024*1024)                 // Maximum ...
-#define DEF_UNDOBUF_INITSIZE    (   4*1024)                 // Initial size of Undo buffer
-#define DEF_UNDOBUF_MAXSIZE     (  64*1024)                 // Maximum ...
-#define DEF_QUADERROR_INITSIZE  (   4*1024)                 // Initial size of []ERROR buffer
-#define DEF_QUADERROR_MAXSIZE   (  64*1024)                 // Maximum ...
+#define DEF_CURLINE_INITSIZE	(	4*1024) 				// Initial line size in bytes
+#define DEF_CURLINE_MAXSIZE 	(	4*1024) 				// Maximum ...
+#define DEF_CURLINE_MAXLEN		(DEF_CURLINE_INITSIZE - 1)	// Maximum current line length
+#define DEF_NUMALP_INITSIZE 	(  64*1024) 				// Initial size for lpszNumAlp
+#define DEF_NUMALP_MAXSIZE		(  64*1024) 				// Maximum ...
+#define DEF_STRING_INITSIZE 	(  64*1024) 				// Initial size for lpwszString
+#define DEF_STRING_MAXSIZE		(  64*1024) 				// Maximum ...
+////ine DEF_TOKENSTACK_INITSIZE (  64*1024) 				// Initial size of token stack
+////ine DEF_TOKENSTACK_MAXSIZE	(  64*1024) 				// Maximum ...
+#define DEF_SIS_INITSIZE		(	0*1024) 				// Initial size for State Indicator Stack
+#define DEF_SIS_INCRSIZE		(  64*1024) 				// Increment ..
+#define DEF_SIS_MAXSIZE 		(1024*1024) 				// Maximum ...
+#define DEF_YYRES_INITSIZE		(	0*1024) 				// Initial size of YYRes buffer
+#define DEF_YYRES_INCRSIZE		(	4*1024) 				// Increment ...
+#define DEF_YYRES_MAXSIZE		(1024*1024) 				// Maximum ...
+#define DEF_CTEMP_INITSIZE		(  64*1024) 				// Initial size of char  temporary storage
+#define DEF_CTEMP_MAXSIZE		(  64*1024) 				// Maximum ...
+#define DEF_WTEMP_INITSIZE		(  64*1024) 				// Initial size of WCHAR ...
+#define DEF_WTEMP_MAXSIZE		(  64*1024) 				// Maximum ...
+#define DEF_DEBUG_INITSIZE		(  64*1024) 				// Initial size of debug ...
+#define DEF_DEBUG_MAXSIZE		(  64*1024) 				// Maximum ...
+#define DEF_WFORMAT_INITSIZE	(  64*1024) 				// Initial size of WCHAR Formatting storage
+#define DEF_WFORMAT_MAXSIZE 	(1024*1024) 				// Maximum ...
+#define DEF_UNDOBUF_INITSIZE	(	4*1024) 				// Initial size of Undo buffer
+#define DEF_UNDOBUF_MAXSIZE 	(  64*1024) 				// Maximum ...
+#define DEF_QUADERROR_INITSIZE	(	4*1024) 				// Initial size of []ERROR/[]ES buffer
+#define DEF_QUADERROR_MAXSIZE	(  64*1024) 				// Maximum ...
 
 
 // Global Options
-#define DEF_NEWTABONCLEAR   TRUE
-#define DEF_NEWTABONLOAD    TRUE
+#define DEF_NEWTABONCLEAR	TRUE
+#define DEF_NEWTABONLOAD	TRUE
 
 #include <commctrl.h>
 #include "datatype.h"
@@ -82,57 +82,57 @@
 #endif
 
 //***************************************************************************
-//  Below this point, define variables which do not need to be saved
-//    in the per tab structure.  By definition, these vars are all static
-//    in valud.
+//	Below this point, define variables which do not need to be saved
+//	  in the per tab structure.  By definition, these vars are all static
+//	  in valud.
 //***************************************************************************
 
 //***************************************************************************
-//  Default global values of system variables -- these values
-//    are used to set the variables in a CLEAR WS.
+//	Default global values of system variables -- these values
+//	  are used to set the variables in a CLEAR WS.
 //***************************************************************************
 
 EXTERN
-HGLOBAL  hGlbQuadALX_CWS    ,           // []ALX    ([]dm)
-         hGlbQuadELX_CWS    ,           // []ELX    ([]dm)
-         hGlbQuadLX_CWS     ,           // []LX     ("")
-         hGlbQuadSA_CWS     ,           // []SA     ("")
-         hGlbQuadWSID_CWS   ,           // []WSID   ("\0")
-         hGlbQuadPR_CWS     ;           // []PR     ("") (When an empty vector)
+HGLOBAL  hGlbQuadALX_CWS	,			// []ALX	([]dm)
+		 hGlbQuadELX_CWS	,			// []ELX	([]dm)
+		 hGlbQuadLX_CWS 	,			// []LX 	("")
+		 hGlbQuadSA_CWS 	,			// []SA 	("")
+		 hGlbQuadWSID_CWS	,			// []WSID	("\0")
+		 hGlbQuadPR_CWS 	;			// []PR 	("") (When an empty vector)
 EXTERN
-APLFLOAT fQuadCT_CWS        ;           // []CT
+APLFLOAT fQuadCT_CWS		;			// []CT
 
 EXTERN
-APLBOOL  bQuadIO_CWS        ,           // []IO
-         bQuadxSA_CWS       ;           // []SA (in its index form)
+APLBOOL  bQuadIO_CWS		,			// []IO
+		 bQuadxSA_CWS		;			// []SA (in its index form)
 
 EXTERN
-APLUINT  uQuadPP_CWS        ,           // []PP
-         uQuadPW_CWS        ,           // []PW
-         uQuadRL_CWS        ;           // []RL
+APLUINT  uQuadPP_CWS		,			// []PP
+		 uQuadPW_CWS		,			// []PW
+		 uQuadRL_CWS		;			// []RL
 
 EXTERN
-APLCHAR  cQuadPR_CWS        ;           // []PR     (' ') (When a char scalar)
+APLCHAR  cQuadPR_CWS		;			// []PR 	(' ') (When a char scalar)
 
 //***************************************************************************
-//  Application values
+//	Application values
 //***************************************************************************
 
 EXTERN
-HINSTANCE _hInstance;                   // Global instance handle
+HINSTANCE _hInstance;					// Global instance handle
 
 EXTERN
-HANDLE hAccel;                          // Keyboard accelerators
+HANDLE hAccel;							// Keyboard accelerators
 
 EXTERN
-HMENU hMenuSM,                          // Handle for Session Manager menu
-      hMenuFE,                          // ...        Function Editor ...
-      hMenuME,                          // ...        Matrix   ...
-      hMenuVE,                          // ...        Vector   ...
-      hMenuSMWindow,                    // ...        window entry in hMenuSM
-      hMenuFEWindow,                    // ...        ...             hMenuFE
-      hMenuMEWindow,                    // ...        ...             hMenuME
-      hMenuVEWindow;                    // ...        ...             hMenuVE
+HMENU hMenuSM,							// Handle for Session Manager menu
+	  hMenuFE,							// ...		  Function Editor ...
+	  hMenuME,							// ...		  Matrix   ...
+	  hMenuVE,							// ...		  Vector   ...
+	  hMenuSMWindow,					// ...		  window entry in hMenuSM
+	  hMenuFEWindow,					// ...		  ...			  hMenuFE
+	  hMenuMEWindow,					// ...		  ...			  hMenuME
+	  hMenuVEWindow;					// ...		  ...			  hMenuVE
 
 #ifdef DEBUG
 #define  APPEND_DEBUG  " (DEBUG)"
@@ -143,34 +143,34 @@ HMENU hMenuSM,                          // Handle for Session Manager menu
 #endif
 
 EXTERN
-WCHAR lpwszAppName[]                    // Application name for MessageBox
+WCHAR lpwszAppName[]					// Application name for MessageBox
 #ifdef DEFINE_VALUES
  = L"NARS2000" LAPPEND_DEBUG
 #endif
 ;
 
 EXTERN
-char lpszAppName[]                      // Application name for MessageBox
+char lpszAppName[]						// Application name for MessageBox
 #ifdef DEFINE_VALUES
  = "NARS2000" APPEND_DEBUG
 #endif
 ,
-     szAppDPFE  [_MAX_PATH],            // .EXE drive, path, filename.ext
-     szHlpDPFE  [_MAX_PATH],            // .HLP ...
-/////szInitDir  [_MAX_PATH],            // Initial directory for File Open & Save
-     szOpenFile [_MAX_PATH];            // Save area for multiple files to open
+	 szAppDPFE	[_MAX_PATH],			// .EXE drive, path, filename.ext
+	 szHlpDPFE	[_MAX_PATH],			// .HLP ...
+/////szInitDir	[_MAX_PATH],			// Initial directory for File Open & Save
+	 szOpenFile [_MAX_PATH];			// Save area for multiple files to open
 
 EXTERN
-WCHAR wszLoadDir[_MAX_PATH],            // Load workspaces directory
-      wszSaveDir[_MAX_PATH],            // Save ...
-      wszDefDrive[_MAX_DRIVE];          // Default drive letter
+WCHAR wszLoadDir[_MAX_PATH],			// Load workspaces directory
+	  wszSaveDir[_MAX_PATH],			// Save ...
+	  wszDefDrive[_MAX_DRIVE];			// Default drive letter
 
 #define WKSNAME "workspaces"            // Name of Workspaces subdirectory under main dir
 
 EXTERN
-CRITICAL_SECTION CSO0,                  // Critical Section Object #0
-                 CSO1,                  // ...                     #1
-                 CSOPL;                 // ...                     for ParseLine
+CRITICAL_SECTION CSO0,					// Critical Section Object #0
+				 CSO1,					// ...					   #1
+				 CSOPL; 				// ...					   for ParseLine
 
 
 //***************************************************************************
@@ -178,31 +178,31 @@ CRITICAL_SECTION CSO0,                  // Critical Section Object #0
 //***************************************************************************
 
 EXTERN
-DWORD dwMainThreadId;                   // Thread ID of the main application
+DWORD dwMainThreadId;					// Thread ID of the main application
 
 EXTERN
-DWORD dwTlsType,                        // Thread type (e.g.
-                                        //   'MF' for Master Frame,
-                                        //   'TC' for Tab Control,
-                                        //   'PL' for ParseLine,
-                                        //   etc.)
-      dwTlsPlLocalVars,                 // Ptr to lpplLocalVars for PL thread only
-      dwTlsFhLocalVars,                 // Ptr to lpfhLocalVars for SM and PL threads
-      dwTlsPerTabData;                  // Ptr to PerTabData    for TC, SM, and PL threads
+DWORD dwTlsType,						// Thread type (e.g.
+										//	 'MF' for Master Frame,
+										//	 'TC' for Tab Control,
+										//	 'PL' for ParseLine,
+										//	 etc.)
+	  dwTlsPlLocalVars, 				// Ptr to lpplLocalVars for PL thread only
+	  dwTlsFhLocalVars, 				// Ptr to lpfhLocalVars for SM and PL threads
+	  dwTlsPerTabData;					// Ptr to PerTabData	for TC, SM, and PL threads
 
 //***************************************************************************
 // Temporary storage
 //***************************************************************************
 
 EXTERN
-LPCHAR lpszTemp;                        // Used for temporary char storage
+LPCHAR lpszTemp;						// Used for temporary char storage
 
 EXTERN
-LPWCHAR lpwszTemp,                      // Used for temporary WCHAR storage
-        lpwszFormat;                    // Used for formatting
+LPWCHAR lpwszTemp,						// Used for temporary WCHAR storage
+		lpwszFormat;					// Used for formatting
 
 EXTERN
-UCHAR gDbgLvl                           // Debug level 0 = none
+UCHAR gDbgLvl							// Debug level 0 = none
 #ifdef DEFINE_VALUES
  = 0
 #endif
@@ -210,11 +210,11 @@ UCHAR gDbgLvl                           // Debug level 0 = none
 
 #ifdef DEBUG
 EXTERN
-LPCHAR lpszDebug;                       // Used for temporary storage of char
-                                        //   debug output
+LPCHAR lpszDebug;						// Used for temporary storage of char
+										//	 debug output
 EXTERN
-LPWCHAR lpwszDebug;                     // Used for temporary storage of WCHAR
-                                        //   debug output
+LPWCHAR lpwszDebug; 					// Used for temporary storage of WCHAR
+										//	 debug output
 EXTERN
 LPWCHAR lpwNameTypeStr[]
 #ifdef DEFINE_VALUES
@@ -239,94 +239,94 @@ LPWCHAR lpwObjNameStr[]
 #endif
 
 //***************************************************************************
-//  Primitive function and operator tables
+//	Primitive function and operator tables
 //***************************************************************************
 
 EXTERN
-LPPRIMFNS PrimFnsTab[256];              // The jump table for all primitive functions
+LPPRIMFNS PrimFnsTab[256];				// The jump table for all primitive functions
 
 EXTERN
-LPPRIMFNS PrimProtoFnsTab[256];         // The jump table for all primitive functions/operator prototypes
+LPPRIMFNS PrimProtoFnsTab[256]; 		// The jump table for all primitive functions/operator prototypes
 
 EXTERN
-LPPRIMSPEC PrimSpecTab[256];            // The table of corresponding LPPRIMSPECs
-                                        //   for all of the primitive scalar functions
+LPPRIMSPEC PrimSpecTab[256];			// The table of corresponding LPPRIMSPECs
+										//	 for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
-    WORD Index:4,                       // 000F:  Function index (see FBFN_INDS)
-         Available:5,                   // 01F0:  Available flag bits
-         IdentElem:1,                   // 0200:  TRUE iff this function has an identity element
-         DydScalar:1,                   // 0400:  ...                    is scalar dyadic
-         MonScalar:1,                   // 0800:  ...                       ...    monadic
-         Alter:1,                       // 1000:  ...                       alternating
-         AssocBool:1,                   // 2000:  ...                       associative on Booleans only
-         AssocNumb:1,                   // 4000:  ...                       associative on all numbers
-         FastBool:1;                    // 8000:  Boolean function w/reduction & scan can be sped up
-                                        // 0000:  No available bits
+	WORD Index:4,						// 000F:  Function index (see FBFN_INDS)
+		 Available:5,					// 01F0:  Available flag bits
+		 IdentElem:1,					// 0200:  TRUE iff this function has an identity element
+		 DydScalar:1,					// 0400:  ...					 is scalar dyadic
+		 MonScalar:1,					// 0800:  ...						...    monadic
+		 Alter:1,						// 1000:  ...						alternating
+		 AssocBool:1,					// 2000:  ...						associative on Booleans only
+		 AssocNumb:1,					// 4000:  ...						associative on all numbers
+		 FastBool:1;					// 8000:  Boolean function w/reduction & scan can be sped up
+										// 0000:  No available bits
 } PRIMFLAGS, *LPPRIMFLAGS;
 
 EXTERN
-PRIMFLAGS PrimFlags[256];               // The flag tables for all primitive functions/operators
+PRIMFLAGS PrimFlags[256];				// The flag tables for all primitive functions/operators
 
 
 //***************************************************************************
-//  Fast Boolean Reduction and Scan tables
+//	Fast Boolean Reduction and Scan tables
 //***************************************************************************
 
-typedef enum tagFBFN_INDS               // Fast Boolean function indices
-{   PF_INDEX_UNK = 0 ,                  // 00 = No entry so we can catch this as an error
-    PF_INDEX_LESS    ,                  // 01 = Index for "less than" ...
-    PF_INDEX_OR      ,                  // 02 = ...       "or"    ...
-    PF_INDEX_NOR     ,                  // 03 = ...       "nor"   ...
-    PF_INDEX_MOREEQ  ,                  // 04 = ...       "more than or equal" ...
-    PF_INDEX_NAND    ,                  // 05 = ...       "nand"  ...
-    PF_INDEX_MORE    ,                  // 06 = ...       "more than" ...
-    PF_INDEX_LESSEQ  ,                  // 07 = ...       "less than or equal" ...
-    PF_INDEX_AND     ,                  // 08 = ...       "and"   ...
-    PF_INDEX_EQUAL   ,                  // 09 = ...       "equal" ...
-    PF_INDEX_NOTEQUAL,                  // 0A = ...       "not equal" ...
-    PF_INDEX_MAX     ,                  // 0B = ...       "max"   ...
-    PF_INDEX_MIN     ,                  // 0C = ...       "min"   ...
-    PF_INDEX_PLUS    ,                  // 0D = ...       "plus"  ...
-    PF_INDEX_MINUS   ,                  // 0E = ...       "minus" ...
-    PF_INDEX_DIVIDE  ,                  // 0F = ...       "divide" ...
-    PF_INDEX_NEXT                       // 10 = No available entries
-                                        // If another entry is made, be sure
-                                        //   to increase Index:4 to Index:5
-                                        //   in tagPRIMFLAGS
+typedef enum tagFBFN_INDS				// Fast Boolean function indices
+{	PF_INDEX_UNK = 0 ,					// 00 = No entry so we can catch this as an error
+	PF_INDEX_LESS	 ,					// 01 = Index for "less than" ...
+	PF_INDEX_OR 	 ,					// 02 = ... 	  "or"    ...
+	PF_INDEX_NOR	 ,					// 03 = ... 	  "nor"   ...
+	PF_INDEX_MOREEQ  ,					// 04 = ... 	  "more than or equal" ...
+	PF_INDEX_NAND	 ,					// 05 = ... 	  "nand"  ...
+	PF_INDEX_MORE	 ,					// 06 = ... 	  "more than" ...
+	PF_INDEX_LESSEQ  ,					// 07 = ... 	  "less than or equal" ...
+	PF_INDEX_AND	 ,					// 08 = ... 	  "and"   ...
+	PF_INDEX_EQUAL	 ,					// 09 = ... 	  "equal" ...
+	PF_INDEX_NOTEQUAL,					// 0A = ... 	  "not equal" ...
+	PF_INDEX_MAX	 ,					// 0B = ... 	  "max"   ...
+	PF_INDEX_MIN	 ,					// 0C = ... 	  "min"   ...
+	PF_INDEX_PLUS	 ,					// 0D = ... 	  "plus"  ...
+	PF_INDEX_MINUS	 ,					// 0E = ... 	  "minus" ...
+	PF_INDEX_DIVIDE  ,					// 0F = ... 	  "divide" ...
+	PF_INDEX_NEXT						// 10 = No available entries
+										// If another entry is made, be sure
+										//	 to increase Index:4 to Index:5
+										//	 in tagPRIMFLAGS
 } FBFN_INDS;
 
 EXTERN
-APLFLOAT PrimIdent[PF_INDEX_NEXT];      // Primitive scalar function identity elements
-                                        //   in the same order as FBFN_INDS
+APLFLOAT PrimIdent[PF_INDEX_NEXT];		// Primitive scalar function identity elements
+										//	 in the same order as FBFN_INDS
 
-typedef void (FASTBOOLFCN) (APLSTYPE     aplTypeRht,        // Right arg storage type
-                            APLNELM      aplNELMRht,        // Right arg NELM
-                            LPVOID       lpMemRht,          // Ptr to right arg global memory
-                            LPVOID       lpMemRes,          // Ptr to result    ...
-                            APLUINT      uDimLo,            // Product of dimensions below axis
-                            APLUINT      uDimAxRht,         // Length of right arg axis dimension
-                            FBFN_INDS    uIndex,            // FBFN_INDS value (e.g., index into FastBoolFns[])
-                            LPPL_YYSTYPE lpYYFcnStrOpr);    // Ptr to operator function strand
+typedef void (FASTBOOLFCN) (APLSTYPE	 aplTypeRht,		// Right arg storage type
+							APLNELM 	 aplNELMRht,		// Right arg NELM
+							LPVOID		 lpMemRht,			// Ptr to right arg global memory
+							LPVOID		 lpMemRes,			// Ptr to result	...
+							APLUINT 	 uDimLo,			// Product of dimensions below axis
+							APLUINT 	 uDimAxRht, 		// Length of right arg axis dimension
+							FBFN_INDS	 uIndex,			// FBFN_INDS value (e.g., index into FastBoolFns[])
+							LPPL_YYSTYPE lpYYFcnStrOpr);	// Ptr to operator function strand
 typedef FASTBOOLFCN *LPFASTBOOLFCN;
 
 typedef struct tagFASTBOOLFNS
 {
-    LPFASTBOOLFCN lpReduction;          // 00:  Ptr to Fast Boolean reduction routine
-    LPFASTBOOLFCN lpScan;               // 04:  ...                 scan      ...
-    UINT          NotMarker:1,          // 08:  00000001:  Complement of Marker
-                  IdentElem:1,          //      00000002:  Identity element (if it exists)
-                  Suffix:1;             //      00000004:  Suffix equivalence value
-                                        //      FFFFFFF8:  Available bits
-                                        // 0C:  Length
+	LPFASTBOOLFCN lpReduction;			// 00:	Ptr to Fast Boolean reduction routine
+	LPFASTBOOLFCN lpScan;				// 04:	... 				scan	  ...
+	UINT		  NotMarker:1,			// 08:	00000001:  Complement of Marker
+				  IdentElem:1,			//		00000002:  Identity element (if it exists)
+				  Suffix:1; 			//		00000004:  Suffix equivalence value
+										//		FFFFFFF8:  Available bits
+										// 0C:	Length
 } FASTBOOLFNS, *LPFASTBOOLFNS;
 
 // This array translates a byte index into
-//   [byte][0] = the index of the first 0 in the byte (from right to left)
-//   [byte][1] = the index of the first 1 in the byte (from right to left)
-//   [byte][2] = the sum of the bits in the byte
-//   [byte][3] = its {notequal} scan
-//   [byte][4] = its {equal} scan
+//	 [byte][0] = the index of the first 0 in the byte (from right to left)
+//	 [byte][1] = the index of the first 1 in the byte (from right to left)
+//	 [byte][2] = the sum of the bits in the byte
+//	 [byte][3] = its {notequal} scan
+//	 [byte][4] = its {equal} scan
 EXTERN
 UCHAR FastBoolTrans[256][5]
 #ifdef DEFINE_VALUES
@@ -645,51 +645,51 @@ WCHAR wszIndent[DEF_INDENT + 1]
 ;
 
 EXTERN
-HGLOBAL hGlbCurTab                      // Global handle of current tab ***FIXME*** -- Make PerTabData
+HGLOBAL hGlbCurTab						// Global handle of current tab ***FIXME*** -- Make PerTabData
 #ifdef DEFINE_VALUES
  = NULL
 #endif
 ;
 
 EXTERN
-HWND hWndTC,                            // Global Tab Control window handle
-     hWndMF,                            // ...    Master Frame ...
-     hWndTT;                            // ...    ToolTip      ...
+HWND hWndTC,							// Global Tab Control window handle
+	 hWndMF,							// ...	  Master Frame ...
+	 hWndTT;							// ...	  ToolTip	   ...
 
 EXTERN
 HGLOBAL hGlbZilde,
-        hGlbQuadDM,
-        hGlbV0Char,
-        hGlbM3x0Char,
-        hGlbSAEmpty,
-        hGlbSAClear,
-        hGlbSAError,
-        hGlbSAExit,
-        hGlbSAOff,
-        hGlbQuadWSID_CWS,
-        hGlbAV;
+		hGlbQuadDM,
+		hGlbV0Char,
+		hGlbM3x0Char,
+		hGlbSAEmpty,
+		hGlbSAClear,
+		hGlbSAError,
+		hGlbSAExit,
+		hGlbSAOff,
+		hGlbQuadWSID_CWS,
+		hGlbAV;
 
 EXTERN
-APLFLOAT PosInfinity,                   // Positive infinity
-         NegInfinity,                   // Negative ...
-         Float2Pow53;                   // 2*53 in floating point
+APLFLOAT PosInfinity,					// Positive infinity
+		 NegInfinity,					// Negative ...
+		 Float2Pow53;					// 2*53 in floating point
 
 typedef enum tagSYS_VARS
 {
-    SYSVAR_UNK = 0,             // 00:  Unknown name
-    SYSVAR_ALX ,                // 01:  []ALX
-    SYSVAR_CT  ,                // 02:  []CT
-    SYSVAR_ELX ,                // 03:  []ELX
-    SYSVAR_IO  ,                // 04:  []IO
-    SYSVAR_LX  ,                // 05:  []LX
-    SYSVAR_PP  ,                // 06:  []PP
-    SYSVAR_PR  ,                // 07:  []PR
-    SYSVAR_PW  ,                // 08:  []PW
-    SYSVAR_RL  ,                // 09:  []RL
-    SYSVAR_SA  ,                // 0A:  []SA
-    SYSVAR_WSID,                // 0B:  []WSID
-    SYSVAR_LENGTH               // 0C:  # entries in the enum
-                                // 0D-0F:  Available entries (4 bits)
+	SYSVAR_UNK = 0, 			// 00:	Unknown name
+	SYSVAR_ALX ,				// 01:	[]ALX
+	SYSVAR_CT  ,				// 02:	[]CT
+	SYSVAR_ELX ,				// 03:	[]ELX
+	SYSVAR_IO  ,				// 04:	[]IO
+	SYSVAR_LX  ,				// 05:	[]LX
+	SYSVAR_PP  ,				// 06:	[]PP
+	SYSVAR_PR  ,				// 07:	[]PR
+	SYSVAR_PW  ,				// 08:	[]PW
+	SYSVAR_RL  ,				// 09:	[]RL
+	SYSVAR_SA  ,				// 0A:	[]SA
+	SYSVAR_WSID,				// 0B:	[]WSID
+	SYSVAR_LENGTH				// 0C:	# entries in the enum
+								// 0D-0F:  Available entries (4 bits)
 } SYS_VARS;
 
 EXTERN
@@ -704,53 +704,53 @@ char lpszVersion[]
 ;
 
 EXTERN
-int MFSizeState                         // Size state for MF (SIZE_xxx)
+int MFSizeState 						// Size state for MF (SIZE_xxx)
 #ifdef DEFINE_VALUES
  = SIZE_RESTORED
 #endif
 ;
 
 EXTERN
-POINT MFPosCtr;                         // X- and Y- center of Master Frame Window position
+POINT MFPosCtr; 						// X- and Y- center of Master Frame Window position
 
 EXTERN
-SIZE  MFSize;                           // Size of Master Frame Window window rectangle
+SIZE  MFSize;							// Size of Master Frame Window window rectangle
 
 EXTERN
-int iLogPixelsY;                        // # logical pixels/inch in screen Y-dimension
+int iLogPixelsY;						// # logical pixels/inch in screen Y-dimension
 
 EXTERN
-HBITMAP hBitMapLineCont;                // Bitmap for the line continuation char
+HBITMAP hBitMapLineCont;				// Bitmap for the line continuation char
 
 EXTERN
-int     iLCWidth;                       // Width of the line continuation column
+int 	iLCWidth;						// Width of the line continuation column
 
 EXTERN
-BITMAP  bmLineCont;                     // Bitmap metrics for the line continuation char
+BITMAP	bmLineCont; 					// Bitmap metrics for the line continuation char
 
 // FONTS
 EXTERN
-LOGFONT lfSM                            // LOGFONT for the SM
+LOGFONT lfSM							// LOGFONT for the SM
 #ifdef DEFINE_VALUES
  = {DEF_SMLOGFONT}
 #endif
 ,
-        lfTC                            // LOGFONT for the TC
+		lfTC							// LOGFONT for the TC
 #ifdef DEFINE_VALUES
  = {DEF_TCLOGFONT}
 #endif
 ,
-        lfFE                            // LOGFONT for the FE
+		lfFE							// LOGFONT for the FE
 #ifdef DEFINE_VALUES
  = {DEF_FELOGFONT}
 #endif
 ,
-        lfME                            // LOGFONT for the ME
+		lfME							// LOGFONT for the ME
 #ifdef DEFINE_VALUES
  = {DEF_MELOGFONT}
 #endif
 ,
-        lfVE                            // LOGFONT for the VE
+		lfVE							// LOGFONT for the VE
 #ifdef DEFINE_VALUES
  = {DEF_VELOGFONT}
 #endif
@@ -759,42 +759,42 @@ LOGFONT lfSM                            // LOGFONT for the SM
 ;
 
 EXTERN
-HFONT hFontTC,                          // Handle to font for the TC
-      hFontSM,                          // ...                    SM
-      hFontFE,                          // ...                    FE
-      hFontME,                          // ...                    ME
-      hFontVE;                          // ...                    VE
+HFONT hFontTC,							// Handle to font for the TC
+	  hFontSM,							// ...					  SM
+	  hFontFE,							// ...					  FE
+	  hFontME,							// ...					  ME
+	  hFontVE;							// ...					  VE
 
 EXTERN
-CHOOSEFONT cfTC,                        // Global for ChooseFont for the TC
-           cfSM,                        // ...                           SM
-           cfFE,                        // ...                           FE
-           cfME,                        // ...                           ME
-           cfVE;                        // ...                           VE
+CHOOSEFONT cfTC,						// Global for ChooseFont for the TC
+		   cfSM,						// ...							 SM
+		   cfFE,						// ...							 FE
+		   cfME,						// ...							 ME
+		   cfVE;						// ...							 VE
 
 EXTERN
-TEXTMETRIC tmTC,                        // Global for TEXTMETRIC for the TC
-           tmSM,                        // ...                           SM
-           tmFE,                        // ...                           FE
-           tmME,                        // ...                           ME
-           tmVE;                        // ...                           VE
+TEXTMETRIC tmTC,						// Global for TEXTMETRIC for the TC
+		   tmSM,						// ...							 SM
+		   tmFE,						// ...							 FE
+		   tmME,						// ...							 ME
+		   tmVE;						// ...							 VE
 
 EXTERN
-long cxAveCharTC, cyAveCharTC,          // Size of an average character in the TC font
-     cxAveCharSM, cyAveCharSM,          // ...                                 SM ...
-     cxAveCharFE, cyAveCharFE,          // ...                                 FE ...
-     cxAveCharME, cyAveCharME,          // ...                                 ME ...
-     cxAveCharVE, cyAveCharVE;          // ...                                 VE ...
+long cxAveCharTC, cyAveCharTC,			// Size of an average character in the TC font
+	 cxAveCharSM, cyAveCharSM,			// ...								   SM ...
+	 cxAveCharFE, cyAveCharFE,			// ...								   FE ...
+	 cxAveCharME, cyAveCharME,			// ...								   ME ...
+	 cxAveCharVE, cyAveCharVE;			// ...								   VE ...
 
 EXTERN
-int iOverTab                            // Index of the tab the mouse is over
+int iOverTab							// Index of the tab the mouse is over
 #ifdef DEFINE_VALUES
  = -1
 #endif
 ;
 
 EXTERN
-WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure
+WNDPROC lpfnOldTabCtrlWndProc;			// Save area for old Tab Control procedure
 
 #ifdef DEBUG_ODS
 EXTERN
@@ -811,12 +811,12 @@ BOOL bNewTabOnClear
  = DEF_NEWTABONCLEAR
 #endif
 ,
-     bNewTabOnLoad
+	 bNewTabOnLoad
 #ifdef DEFINE_VALUES
  = DEF_NEWTABONLOAD
 #endif
 ,
-     bUseLocalTime
+	 bUseLocalTime
 #ifdef DEFINE_VALUES
  = TRUE;
 #endif
@@ -828,67 +828,67 @@ char pszNoInsertTCTab[]
  = "Unable to create a new Tab"
 #endif
 ,
-     pszNoEditPrimFn[]
+	 pszNoEditPrimFn[]
 #ifdef DEFINE_VALUES
  = "NONCE ERROR:  Unable to edit named primitive function/operator"
 #endif
 ,
-     pszNoCreateFEEditCtrl[]
+	 pszNoCreateFEEditCtrl[]
 #ifdef DEFINE_VALUES
  = "Unable to create the Edit Control in the Function Editor"
 #endif
 ,
-     pszNoCreateSMEditCtrl[]
+	 pszNoCreateSMEditCtrl[]
 #ifdef DEFINE_VALUES
  = "Unable to create the Edit Control in the Session Manager"
 #endif
 ,
-     pszNoCreateMCWnd[]
+	 pszNoCreateMCWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create MDI Client window"
 #endif
 ,
-     pszNoCreateSMWnd[]
+	 pszNoCreateSMWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create Session Manager window"
 #endif
 #ifdef DEBUG
 ,
-     pszNoCreateDBWnd[]
+	 pszNoCreateDBWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create Debugger window"
 #endif
 #endif
 ,
-     pszNoCreateFEWnd[]
+	 pszNoCreateFEWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create Function Editor window"
 #endif
 ,
-     pszNoCreateMEWnd[]
+	 pszNoCreateMEWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create Matrix Editor window"
 #endif
 ,
-     pszNoCreateVEWnd[]
+	 pszNoCreateVEWnd[]
 #ifdef DEFINE_VALUES
  = "Unable to create Vector Editor window"
 #endif
 ;
 
 EXTERN
-char szMCTitle[]                        // MDI Client ... (for debugging purposes only)
+char szMCTitle[]						// MDI Client ... (for debugging purposes only)
 #ifdef DEFINE_VALUES
  = "NARS2000 MDI Client Window" APPEND_DEBUG
 #endif
 ,
-     szSMTitle[]                        // Session Manager ...
+	 szSMTitle[]						// Session Manager ...
 #ifdef DEFINE_VALUES
  = "NARS2000 Session Manager" APPEND_DEBUG
 #endif
 #ifdef DEBUG
 ,
-     szDBTitle[]                        // Debugger ...
+	 szDBTitle[]						// Debugger ...
 #ifdef DEFINE_VALUES
  = "NARS2000 Debugger Window" APPEND_DEBUG
 #endif
@@ -896,127 +896,127 @@ char szMCTitle[]                        // MDI Client ... (for debugging purpose
 ;
 
 EXTERN
-WCHAR wszFETitle[]                      // Function Editor ...
+WCHAR wszFETitle[]						// Function Editor ...
 #ifdef DEFINE_VALUES
  = L"NARS2000 Function Editor" LAPPEND_DEBUG
 #endif
 ,
-      wszMETitle[]                      // Matrix Editor ...
+	  wszMETitle[]						// Matrix Editor ...
 #ifdef DEFINE_VALUES
  = L"NARS2000 Matrix Editor" LAPPEND_DEBUG
 #endif
 ,
-      wszVETitle[]                      // Vector Editor ...
+	  wszVETitle[]						// Vector Editor ...
 #ifdef DEFINE_VALUES
  = L"NARS2000 Vector Editor" LAPPEND_DEBUG
 #endif
 ;
 
-#define MCWNDCLASS      "MDIClient"     // MDI Client window class
-#define SMWNDCLASS      "SMClass"       // Session Manager ...
+#define MCWNDCLASS		"MDIClient"     // MDI Client window class
+#define SMWNDCLASS		"SMClass"       // Session Manager ...
 #ifdef DEBUG
-#define DBWNDCLASS      "DBClass"       // Debugger     ...
+#define DBWNDCLASS		"DBClass"       // Debugger     ...
 #endif
-#define  FEWNDCLASS     "FEClass"       // Function Editor ...
+#define  FEWNDCLASS 	"FEClass"       // Function Editor ...
 #define LFEWNDCLASS    L"FEClass"       // Function Editor ...
-#define  MEWNDCLASS     "MEClass"       // Matrix Editor ...
+#define  MEWNDCLASS 	"MEClass"       // Matrix Editor ...
 #define LMEWNDCLASS    L"MEClass"       // Matrix Editor ...
-#define  VEWNDCLASS     "VEClass"       // Vector Editor ...
+#define  VEWNDCLASS 	"VEClass"       // Vector Editor ...
 #define LVEWNDCLASS    L"VEClass"       // Vector Editor ...
-#define  ECWNDCLASS     "ECClass"       // Edit Control Window class
+#define  ECWNDCLASS 	"ECClass"       // Edit Control Window class
 #define LECWNDCLASS    L"ECClass"       // Edit Control Window class
 
 EXTERN
-char szMCClass[]                        // MDI Client window class
+char szMCClass[]						// MDI Client window class
 #ifdef DEFINE_VALUES
  = MCWNDCLASS
 #endif
 ,
-     szSMClass[]                        // Session Manager ...
+	 szSMClass[]						// Session Manager ...
 #ifdef DEFINE_VALUES
  = SMWNDCLASS
 #endif
 #ifdef DEBUG
 ,
-     szDBClass[]                        // Debugger     ...
+	 szDBClass[]						// Debugger 	...
 #ifdef DEFINE_VALUES
  = DBWNDCLASS
 #endif
 #endif
 ,
-     szFEClass[]                        // Function Editor ...
+	 szFEClass[]						// Function Editor ...
 #ifdef DEFINE_VALUES
  = FEWNDCLASS
 #endif
 ,
-     szMEClass[]                        // Matrix Editor ...
+	 szMEClass[]						// Matrix Editor ...
 #ifdef DEFINE_VALUES
  = MEWNDCLASS
 #endif
 ,
-     szVEClass[]                        // Vector Editor ...
+	 szVEClass[]						// Vector Editor ...
 #ifdef DEFINE_VALUES
  = VEWNDCLASS
 #endif
 ;
 
 EXTERN
-HIMAGELIST hImageList;                  // Handle to the common image list
+HIMAGELIST hImageList;					// Handle to the common image list
 
 // Same order as in ARRAY_TYPES
 // so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED
 EXTERN
 UINT uTypeMap[]
 #ifdef DEFINE_VALUES
-//  BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA
- = {   0,   1,     2,    4,      5,      6,    7,   3}
+//	BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA
+ = {   0,	1,	   2,	 4, 	 5, 	 6,    7,	3}
 #endif
 ;
 
 typedef struct
 {
-    char  nrm;      // 00:  Normal           (shifted & unshifted) (unused)
-    WCHAR alt;      // 01:  Alt key pressed  (shifted & unshifted)
+	char  nrm;		// 00:	Normal			 (shifted & unshifted) (unused)
+	WCHAR alt;		// 01:	Alt key pressed  (shifted & unshifted)
 } CHARCODE;
 
 // If you are looking for places on the keyboard to put new symbols,
-//   there are fifteen free Alt-Shift- combinations:
-//     Alt-Shift-A
-//     Alt-Shift-B
-//     Alt-Shift-C
-//     Alt-Shift-D
-//     Alt-Shift-F
-//     Alt-Shift-K
-//     Alt-Shift-S
-//     Alt-Shift-U
-//     Alt-Shift-Q
-//     Alt-Shift-R
-//     Alt-Shift-V
-//     Alt-Shift-W
-//     Alt-Shift-X
-//     Alt-Shift-Y
-//     Alt-Shift-Z
-//     Alt-Shift-LeftCaret
-//     Alt-Shift-RightCaret
-//     Alt-Shift-QuestionMark
+//	 there are fifteen free Alt-Shift- combinations:
+//	   Alt-Shift-A
+//	   Alt-Shift-B
+//	   Alt-Shift-C
+//	   Alt-Shift-D
+//	   Alt-Shift-F
+//	   Alt-Shift-K
+//	   Alt-Shift-S
+//	   Alt-Shift-U
+//	   Alt-Shift-Q
+//	   Alt-Shift-R
+//	   Alt-Shift-V
+//	   Alt-Shift-W
+//	   Alt-Shift-X
+//	   Alt-Shift-Y
+//	   Alt-Shift-Z
+//	   Alt-Shift-LeftCaret
+//	   Alt-Shift-RightCaret
+//	   Alt-Shift-QuestionMark
 //
-//   as well as eleven duplicated symbols:
+//	 as well as eleven duplicated symbols:
 //
-//     Asterisk
-//     Equal
-//     Left Caret
-//     Question Mark
-//     Right Caret
-//     Shreik
-//     Single Quote
-//     Stile
-//     Tilde
-//     Underscore
-//     Up Caret (Circumflex)
+//	   Asterisk
+//	   Equal
+//	   Left Caret
+//	   Question Mark
+//	   Right Caret
+//	   Shreik
+//	   Single Quote
+//	   Stile
+//	   Tilde
+//	   Underscore
+//	   Up Caret (Circumflex)
 
 EXTERN
-CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
-                                //   from 32 to 126 inclusive
+CHARCODE aCharCodes[1+126-32]	// This ordering follows the ASCII charset
+								//	 from 32 to 126 inclusive
 #ifdef DEFINE_VALUES
 =
 {
@@ -1121,16 +1121,16 @@ CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
 ;
 
 // The # rows in the above table
-#define ACHARCODES_NROWS    (sizeof (aCharCodes) / sizeof (aCharCodes[0]))
+#define ACHARCODES_NROWS	(sizeof (aCharCodes) / sizeof (aCharCodes[0]))
 
 typedef struct tagSYMBOLNAMES
 {
-    WCHAR  Symbol;      // Symbol
-    LPCHAR lpName;      // Ptr to name
+	WCHAR  Symbol;		// Symbol
+	LPCHAR lpName;		// Ptr to name
 } SYMBOLNAMES, *LPSYMBOLNAMES;
 
 // The # rows in the above table
-#define ASYMBOLNAMES_NROWS  89
+#define ASYMBOLNAMES_NROWS	89
 
 // Translate table for symbols to names
 EXTERN
@@ -1139,204 +1139,204 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
 =
 {
 // No keystroke equivalents for these as yet
-  {UTF16_DIERESISDOT          , "{dieresisdot}"         },
-  {UTF16_NOTEQUALUNDERBAR     , "{notequalunderbar}"    },
-  {UTF16_IBEAM                , "{ibeam}"               },
-  {UTF16_QUADJOT              , "{quadjot}"             },
-  {UTF16_QUADSLOPE            , "{quadslope}"           },
-  {UTF16_QUADLEFTARROW        , "{quadleftarrow}"       },
-  {UTF16_QUADRIGHTARROW       , "{quadrightarrow}"      },
-  {UTF16_QUADUPARROW          , "{quaduparrow}"         },
-  {UTF16_QUADDOWNARROW        , "{quaddownarrow}"       },
+  {UTF16_DIERESISDOT		  , "{dieresisdot}"         },
+  {UTF16_NOTEQUALUNDERBAR	  , "{notequalunderbar}"    },
+  {UTF16_IBEAM				  , "{ibeam}"               },
+  {UTF16_QUADJOT			  , "{quadjot}"             },
+  {UTF16_QUADSLOPE			  , "{quadslope}"           },
+  {UTF16_QUADLEFTARROW		  , "{quadleftarrow}"       },
+  {UTF16_QUADRIGHTARROW 	  , "{quadrightarrow}"      },
+  {UTF16_QUADUPARROW		  , "{quaduparrow}"         },
+  {UTF16_QUADDOWNARROW		  , "{quaddownarrow}"       },
 
 // The alphabet, unshifted
-  {UTF16_ALPHA                , "{alpha}"               },  // Alt-'a' - alpha
-  {UTF16_UPTACK               , "{uptack}"              },  // Alt-'b' - base
-  {UTF16_UPSHOE               , "{upshoe}"              },  // Alt-'c' - intersection
-  {UTF16_DOWNSTILE            , "{downstile}"           },  // Alt-'d' - floor
-  {UTF16_EPSILON              , "{epsilon}"             },  // Alt-'e' - epsilon
-  {UTF16_UNDERBAR             , "{underbar}"            },  // Alt-'f' - underbar
-  {UTF16_DEL                  , "{del}"                 },  // Alt-'g' - del
-  {UTF16_DELTA                , "{delta}"               },  // Alt-'h' - delta
-  {UTF16_IOTA                 , "{iota}"                },  // Alt-'i' - iota
-  {UTF16_JOT                  , "{jot}"                 },  // Alt-'j' - jot
-  {UTF16_APOSTROPHE           , "{apostrophe}"          },  // Alt-'k' - single-quote
-  {UTF16_QUAD                 , "{quad}"                },  // Alt-'l' - quad (9109??)
-  {UTF16_STILE                , "{stile}"               },  // Alt-'m' - modulus
-  {UTF16_DOWNTACK             , "{downtack}"            },  // Alt-'n' - representation
-  {UTF16_CIRCLE               , "{circle}"              },  // Alt-'o' - circle
-  {UTF16_STAR                 , "{star}"                },  // Alt-'p' - power
-  {UTF16_QUERY                , "{query}"               },  // Alt-'q' - question-mark
-  {UTF16_RHO                  , "{rho}"                 },  // Alt-'r' - rho
-  {UTF16_UPSTILE              , "{upstile}"             },  // Alt-'s' - ceiling
-  {UTF16_TILDE                , "{tilde}"               },  // Alt-'t' - tilde
-  {UTF16_DOWNARROW            , "{downarrow}"           },  // Alt-'u' - down arrow
-  {UTF16_DOWNSHOE             , "{downshoe}"            },  // Alt-'v' - union
-  {UTF16_OMEGA                , "{omega}"               },  // Alt-'w' - omega
-  {UTF16_RIGHTSHOE            , "{rightshoe}"           },  // Alt-'x' - disclose
-  {UTF16_UPARROW              , "{uparrow}"             },  // Alt-'y' - up arrow
-  {UTF16_LEFTSHOE             , "{leftshoe}"            },  // Alt-'z' - enclose
+  {UTF16_ALPHA				  , "{alpha}"               },  // Alt-'a' - alpha
+  {UTF16_UPTACK 			  , "{uptack}"              },  // Alt-'b' - base
+  {UTF16_UPSHOE 			  , "{upshoe}"              },  // Alt-'c' - intersection
+  {UTF16_DOWNSTILE			  , "{downstile}"           },  // Alt-'d' - floor
+  {UTF16_EPSILON			  , "{epsilon}"             },  // Alt-'e' - epsilon
+  {UTF16_UNDERBAR			  , "{underbar}"            },  // Alt-'f' - underbar
+  {UTF16_DEL				  , "{del}"                 },  // Alt-'g' - del
+  {UTF16_DELTA				  , "{delta}"               },  // Alt-'h' - delta
+  {UTF16_IOTA				  , "{iota}"                },  // Alt-'i' - iota
+  {UTF16_JOT				  , "{jot}"                 },  // Alt-'j' - jot
+  {UTF16_APOSTROPHE 		  , "{apostrophe}"          },  // Alt-'k' - single-quote
+  {UTF16_QUAD				  , "{quad}"                },  // Alt-'l' - quad (9109??)
+  {UTF16_STILE				  , "{stile}"               },  // Alt-'m' - modulus
+  {UTF16_DOWNTACK			  , "{downtack}"            },  // Alt-'n' - representation
+  {UTF16_CIRCLE 			  , "{circle}"              },  // Alt-'o' - circle
+  {UTF16_STAR				  , "{star}"                },  // Alt-'p' - power
+  {UTF16_QUERY				  , "{query}"               },  // Alt-'q' - question-mark
+  {UTF16_RHO				  , "{rho}"                 },  // Alt-'r' - rho
+  {UTF16_UPSTILE			  , "{upstile}"             },  // Alt-'s' - ceiling
+  {UTF16_TILDE				  , "{tilde}"               },  // Alt-'t' - tilde
+  {UTF16_DOWNARROW			  , "{downarrow}"           },  // Alt-'u' - down arrow
+  {UTF16_DOWNSHOE			  , "{downshoe}"            },  // Alt-'v' - union
+  {UTF16_OMEGA				  , "{omega}"               },  // Alt-'w' - omega
+  {UTF16_RIGHTSHOE			  , "{rightshoe}"           },  // Alt-'x' - disclose
+  {UTF16_UPARROW			  , "{uparrow}"             },  // Alt-'y' - up arrow
+  {UTF16_LEFTSHOE			  , "{leftshoe}"            },  // Alt-'z' - enclose
 
 // The alphabet, shifted
-//{UTF16_                     ,                         },  // Alt-'A' - (none)
-//{UTF16_                     ,                         },  // Alt-'B' - (none)
-//{UTF16_                     ,                         },  // Alt-'C' - (none)
-//{UTF16_                     ,                         },  // Alt-'D' - (none)
-  {UTF16_EPSILONUNDERBAR      , "{epsilonunderbar}"     },  // Alt-'E' - epsilon-underbar
-//{UTF16_                     ,                         },  // Alt-'F' - (none)
-  {UTF16_DIERESISDEL          , "{dieresisdel}"         },  // Alt-'G' - Dual operator        (frog)
-  {UTF16_DELTAUNDERBAR        , "{deltaunderbar}"       },  // Alt-'H' - delta-underbar
-  {UTF16_IOTAUNDERBAR         , "{iotaunderbar}"        },  // Alt-'I' - iota-underbar
-  {UTF16_DIERESISJOT          , "{dieresisjot}"         },  // Alt-'J' - Rank operator        (hoot)
-//{UTF16_                     ,                         },  // Alt-'K' - (none)
-  {UTF16_SQUAD                , "{squad}"               },  // Alt-'L' - squad
-  {UTF16_STILETILDE           , "{stiletilde}"          },  // Alt-'M' - Partition operator   (dagger)
-  {UTF16_DIERESISDOWNTACK     , "{dieresisdowntack}"    },  // Alt-'N' - Convolution operator (snout)
-  {UTF16_DIERESISCIRCLE       , "{dieresiscircle}"      },  // Alt-'O' -                      (holler)
-  {UTF16_DIERESISSTAR         , "{dieresisstar}"        },  // Alt-'P' - Power operator       (sourpuss)
-//{UTF16_                     ,                         },  // Alt-'Q' - (none)
-//{UTF16_                     ,                         },  // Alt-'R' - (none)
-//{UTF16_                     ,                         },  // Alt-'S' - (none)
-  {UTF16_DIERESISTILDE        , "{dieresistilde}"       },  // Alt-'T' - Commute operator     (frown)
-//{UTF16_                     ,                         },  // Alt-'U' - (none)
-//{UTF16_                     ,                         },  // Alt-'V' - (none)
-//{UTF16_                     ,                         },  // Alt-'W' - (none)
-//{UTF16_                     ,                         },  // Alt-'X' - (none)
-//{UTF16_                     ,                         },  // Alt-'Y' - (none)
-//{UTF16_                     ,                         },  // Alt-'Z' - (none)
+//{UTF16_					  , 						},	// Alt-'A' - (none)
+//{UTF16_					  , 						},	// Alt-'B' - (none)
+//{UTF16_					  , 						},	// Alt-'C' - (none)
+//{UTF16_					  , 						},	// Alt-'D' - (none)
+  {UTF16_EPSILONUNDERBAR	  , "{epsilonunderbar}"     },  // Alt-'E' - epsilon-underbar
+//{UTF16_					  , 						},	// Alt-'F' - (none)
+  {UTF16_DIERESISDEL		  , "{dieresisdel}"         },  // Alt-'G' - Dual operator        (frog)
+  {UTF16_DELTAUNDERBAR		  , "{deltaunderbar}"       },  // Alt-'H' - delta-underbar
+  {UTF16_IOTAUNDERBAR		  , "{iotaunderbar}"        },  // Alt-'I' - iota-underbar
+  {UTF16_DIERESISJOT		  , "{dieresisjot}"         },  // Alt-'J' - Rank operator        (hoot)
+//{UTF16_					  , 						},	// Alt-'K' - (none)
+  {UTF16_SQUAD				  , "{squad}"               },  // Alt-'L' - squad
+  {UTF16_STILETILDE 		  , "{stiletilde}"          },  // Alt-'M' - Partition operator   (dagger)
+  {UTF16_DIERESISDOWNTACK	  , "{dieresisdowntack}"    },  // Alt-'N' - Convolution operator (snout)
+  {UTF16_DIERESISCIRCLE 	  , "{dieresiscircle}"      },  // Alt-'O' -                      (holler)
+  {UTF16_DIERESISSTAR		  , "{dieresisstar}"        },  // Alt-'P' - Power operator       (sourpuss)
+//{UTF16_					  , 						},	// Alt-'Q' - (none)
+//{UTF16_					  , 						},	// Alt-'R' - (none)
+//{UTF16_					  , 						},	// Alt-'S' - (none)
+  {UTF16_DIERESISTILDE		  , "{dieresistilde}"       },  // Alt-'T' - Commute operator     (frown)
+//{UTF16_					  , 						},	// Alt-'U' - (none)
+//{UTF16_					  , 						},	// Alt-'V' - (none)
+//{UTF16_					  , 						},	// Alt-'W' - (none)
+//{UTF16_					  , 						},	// Alt-'X' - (none)
+//{UTF16_					  , 						},	// Alt-'Y' - (none)
+//{UTF16_					  , 						},	// Alt-'Z' - (none)
 
 // Top row, unshifted
-  {UTF16_DIAMOND              , "{diamond}"             },  // Alt-'`' - diamond (9674??)
-  {UTF16_DIERESIS             , "{dieresis}"            },  // Alt-'1' - dieresis
-  {UTF16_OVERBAR              , "{overbar}"             },  // Alt-'2' - high minus
-  {UTF16_LEFTCARET            , "{leftcaret}"           },  // Alt-'3' - less
-  {UTF16_LEFTCARETUNDERBAR    , "{leftcaretunderbar}"   },  // Alt-'4' - not more
-  {UTF16_EQUAL                , "{equal}"               },  // Alt-'5' - equal
+  {UTF16_DIAMOND			  , "{diamond}"             },  // Alt-'`' - diamond (9674??)
+  {UTF16_DIERESIS			  , "{dieresis}"            },  // Alt-'1' - dieresis
+  {UTF16_OVERBAR			  , "{overbar}"             },  // Alt-'2' - high minus
+  {UTF16_LEFTCARET			  , "{leftcaret}"           },  // Alt-'3' - less
+  {UTF16_LEFTCARETUNDERBAR	  , "{leftcaretunderbar}"   },  // Alt-'4' - not more
+  {UTF16_EQUAL				  , "{equal}"               },  // Alt-'5' - equal
   {UTF16_RIGHTCARETUNDERBAR   , "{rightcaretunderbar}"  },  // Alt-'6' - not less
-  {UTF16_RIGHTCARET           , "{rightcaret}"          },  // Alt-'7' - more
-  {UTF16_NOTEQUAL             , "{notequal}"            },  // Alt-'8' - not equal
-  {UTF16_DOWNCARET            , "{downcaret}"           },  // Alt-'9' - or
-  {UTF16_UPCARET              , "{upcaret}"             },  // Alt-'0' - and (94??)
-  {UTF16_TIMES                , "{times}"               },  // Alt-'-' - times
-  {UTF16_COLONBAR             , "{colonbar}"            },  // Alt-'=' - divide
+  {UTF16_RIGHTCARET 		  , "{rightcaret}"          },  // Alt-'7' - more
+  {UTF16_NOTEQUAL			  , "{notequal}"            },  // Alt-'8' - not equal
+  {UTF16_DOWNCARET			  , "{downcaret}"           },  // Alt-'9' - or
+  {UTF16_UPCARET			  , "{upcaret}"             },  // Alt-'0' - and (94??)
+  {UTF16_TIMES				  , "{times}"               },  // Alt-'-' - times
+  {UTF16_COLONBAR			  , "{colonbar}"            },  // Alt-'=' - divide
 
 // Top row, shifted
-  {UTF16_COMMABAR             , "{commabar}"            },  // Alt-'~' - comma-bar
-  {UTF16_EQUALUNDERBAR        , "{equalunderbar}"       },  // Alt-'!' - match
-  {UTF16_CIRCLEMIDDLEDOT      , "{circlemiddledot}"     },  // Alt-'@' - circle-middle-dot
-  {UTF16_DELSTILE             , "{delstile}"            },  // Alt-'#' - grade-down
-  {UTF16_DELTASTILE           , "{deltastile}"          },  // Alt-'$' - grade-up
-  {UTF16_CIRCLESTILE          , "{circlestile}"         },  // Alt-'%' - rotate
-  {UTF16_CIRCLESLOPE          , "{circleslope}"         },  // Alt-'^' - transpose
-  {UTF16_CIRCLEBAR            , "{circlebar}"           },  // Alt-'&' - circle-bar
-  {UTF16_CIRCLESTAR           , "{circlestar}"          },  // Alt-'*' - log
-  {UTF16_DOWNCARETTILDE       , "{downcarettilde}"      },  // Alt-'(' - nor
-  {UTF16_UPCARETTILDE         , "{upcarettilde}"        },  // Alt-')' - nand
-  {UTF16_QUOTEDOT             , "{quotedot}"            },  // Alt-'_' - quote-dot
-  {UTF16_DOMINO               , "{domino}"              },  // Alt-'+' - domino
+  {UTF16_COMMABAR			  , "{commabar}"            },  // Alt-'~' - comma-bar
+  {UTF16_EQUALUNDERBAR		  , "{equalunderbar}"       },  // Alt-'!' - match
+  {UTF16_CIRCLEMIDDLEDOT	  , "{circlemiddledot}"     },  // Alt-'@' - circle-middle-dot
+  {UTF16_DELSTILE			  , "{delstile}"            },  // Alt-'#' - grade-down
+  {UTF16_DELTASTILE 		  , "{deltastile}"          },  // Alt-'$' - grade-up
+  {UTF16_CIRCLESTILE		  , "{circlestile}"         },  // Alt-'%' - rotate
+  {UTF16_CIRCLESLOPE		  , "{circleslope}"         },  // Alt-'^' - transpose
+  {UTF16_CIRCLEBAR			  , "{circlebar}"           },  // Alt-'&' - circle-bar
+  {UTF16_CIRCLESTAR 		  , "{circlestar}"          },  // Alt-'*' - log
+  {UTF16_DOWNCARETTILDE 	  , "{downcarettilde}"      },  // Alt-'(' - nor
+  {UTF16_UPCARETTILDE		  , "{upcarettilde}"        },  // Alt-')' - nand
+  {UTF16_QUOTEDOT			  , "{quotedot}"            },  // Alt-'_' - quote-dot
+  {UTF16_DOMINO 			  , "{domino}"              },  // Alt-'+' - domino
 
 // Second row, unshifted
-  {UTF16_LEFTARROW            , "{leftarrow}"           },  // Alt-'[' - left arrow
-  {UTF16_RIGHTARROW           , "{rightarrow}"          },  // Alt-']' - right arrow
-  {UTF16_LEFTTACK             , "{lefttack}"            },  // Alt-'\\'- left tack
+  {UTF16_LEFTARROW			  , "{leftarrow}"           },  // Alt-'[' - left arrow
+  {UTF16_RIGHTARROW 		  , "{rightarrow}"          },  // Alt-']' - right arrow
+  {UTF16_LEFTTACK			  , "{lefttack}"            },  // Alt-'\\'- left tack
 
 // Second row, shifted
-  {UTF16_QUOTEQUAD            , "{quotequad}"           },  // Alt-'{' - quote-quad
-  {UTF16_ZILDE                , "{zilde}"               },  // Alt-'}' - zilde
-  {UTF16_RIGHTTACK            , "{righttack}"           },  // Alt-'|' - right tack
+  {UTF16_QUOTEQUAD			  , "{quotequad}"           },  // Alt-'{' - quote-quad
+  {UTF16_ZILDE				  , "{zilde}"               },  // Alt-'}' - zilde
+  {UTF16_RIGHTTACK			  , "{righttack}"           },  // Alt-'|' - right tack
 
 // Third row, unshifted
-  {UTF16_UPTACKJOT            , "{uptackjot}"           },  // Alt-';' - execute
-  {UTF16_DOWNTACKJOT          , "{downtackjot}"         },  // Alt-'\''- format
+  {UTF16_UPTACKJOT			  , "{uptackjot}"           },  // Alt-';' - execute
+  {UTF16_DOWNTACKJOT		  , "{downtackjot}"         },  // Alt-'\''- format
 
 // Third row, shifted
-//{UTF16_                     ,                         },  // Alt-':' - (none)
-//{UTF16_                     ,                         },  // Alt-'"' - (none)
+//{UTF16_					  , 						},	// Alt-':' - (none)
+//{UTF16_					  , 						},	// Alt-'"' - (none)
 
 // Fourth row, unshifted
-  {UTF16_LAMP                 , "{lamp}"                },  // Alt-',' - comment
-  {UTF16_SLOPEBAR             , "{slopebar}"            },  // Alt-'.' - slope-bar
-  {UTF16_SLASHBAR             , "{slashbar}"            },  // Alt-'/' - slash-bar
+  {UTF16_LAMP				  , "{lamp}"                },  // Alt-',' - comment
+  {UTF16_SLOPEBAR			  , "{slopebar}"            },  // Alt-'.' - slope-bar
+  {UTF16_SLASHBAR			  , "{slashbar}"            },  // Alt-'/' - slash-bar
 
 // Fourth row, shifted
-//{UTF16_                     ,                         },  // Alt-'<' - (none)
-//{UTF16_                     ,                         },  // Alt-'>' - (none)
-//{UTF16_                     ,                         },  // Alt-'?' - (none)
+//{UTF16_					  , 						},	// Alt-'<' - (none)
+//{UTF16_					  , 						},	// Alt-'>' - (none)
+//{UTF16_					  , 						},	// Alt-'?' - (none)
 
 // Non-Alt key equivalents (these are the only ones we need for SaveWS)
-  {UTF16_LBRACE               , "{leftbrace}"           },  // Left brace
-  {UTF16_RBRACE               , "{rightbrace}"          },  // Right brace
-  {UTF16_SLOPE                , "{slope}"               },  // Slope
-  {UTF16_STILE2               , "|"                     },  // Stile (a.k.a. 0x2223)
-  {UTF16_CIRCUMFLEX           , "^"                     },  // Circumflex
-  {UTF16_DOUBLEQUOTE          , "{doublequote}"         },  // Double quote
+  {UTF16_LBRACE 			  , "{leftbrace}"           },  // Left brace
+  {UTF16_RBRACE 			  , "{rightbrace}"          },  // Right brace
+  {UTF16_SLOPE				  , "{slope}"               },  // Slope
+  {UTF16_STILE2 			  , "|"                     },  // Stile (a.k.a. 0x2223)
+  {UTF16_CIRCUMFLEX 		  , "^"                     },  // Circumflex
+  {UTF16_DOUBLEQUOTE		  , "{doublequote}"         },  // Double quote
 }
 #endif
 ;
 
 typedef enum tagUNDO_ACTS
 {
-    undoNone = 0,       // 0000:  No action
-    undoIns,            // 0001:  Insert a character
-    undoRep,            // 0002:  Replace a character
-    undoDel,            // 0003:  Delete one or more characters
-    undoSel,            // 0004:  Select one or more characters
-    undoInsToggle,      // 0005:  Toggle the insert mode
-                        // 0006-FFFF:  Available entries (16 bits)
+	undoNone = 0,		// 0000:  No action
+	undoIns,			// 0001:  Insert a character
+	undoRep,			// 0002:  Replace a character
+	undoDel,			// 0003:  Delete one or more characters
+	undoSel,			// 0004:  Select one or more characters
+	undoInsToggle,		// 0005:  Toggle the insert mode
+						// 0006-FFFF:  Available entries (16 bits)
 } UNDO_ACTS;
 
-#define UNDO_NOGROUP    0
+#define UNDO_NOGROUP	0
 
 typedef struct tagUNDO_BUF
 {
-    UINT  CharPosBeg,   // 00:  Beginning character position (from start of text),
-                        //      -1 = current position
-          CharPosEnd,   // 04:  Ending    ...
-          Group;        // 08:  Group index identifies actions to be performed together,
-                        //      0 = no grouping
-    short Action;       // 0C:  Action (see UNDO_ACTS)
-    WCHAR Char;         // 0E:  The character (if any),
-                        //       0 = none
-                        // 10:  Length
+	UINT  CharPosBeg,	// 00:	Beginning character position (from start of text),
+						//		-1 = current position
+		  CharPosEnd,	// 04:	Ending	  ...
+		  Group;		// 08:	Group index identifies actions to be performed together,
+						//		0 = no grouping
+	short Action;		// 0C:	Action (see UNDO_ACTS)
+	WCHAR Char; 		// 0E:	The character (if any),
+						//		 0 = none
+						// 10:	Length
 } UNDO_BUF, *LPUNDO_BUF;
 
 
 typedef union tagMEMTXT_UNION
 {
-    struct
-    {
-        UINT U;             // 00:  The line length
-        union
-        {
-            APLCHAR C;      // 04:  Followed by an APLCHAR
-            WORD    W;      // 04:  ...          a WORD
-        };
-    };
+	struct
+	{
+		UINT U; 			// 00:	The line length
+		union
+		{
+			APLCHAR C;		// 04:	Followed by an APLCHAR
+			WORD	W;		// 04:	... 		 a WORD
+		};
+	};
 } MEMTXT_UNION, *LPMEMTXT_UNION;
 
 typedef void (*LPERRHANDFN) (LPWCHAR lpwszMsg,
-                             LPWCHAR lpwszLine,
-                             UINT uCaret,
-                             HWND hWndEC);
+							 LPWCHAR lpwszLine,
+							 UINT uCaret,
+							 HWND hWndEC);
 typedef enum tagERROR_CODES
 {
-    ERRORCODE_NONE = 0,     // 00:  No error
-    ERRORCODE_ALX,          // 01:  Signal []ALX
-    ERRORCODE_ELX,          // 02:  Signal []ELX
+	ERRORCODE_NONE = 0, 	// 00:	No error
+	ERRORCODE_ALX,			// 01:	Signal []ALX
+	ERRORCODE_ELX,			// 02:	Signal []ELX
 } ERROR_CODES;
 
-typedef enum tagLINE_NUMS   // Starting line #s
+typedef enum tagLINE_NUMS	// Starting line #s
 {
-    LINENUM_ONE = 0,        // 00:  Line #1
-    LINENUM_PROTOTYPE,      // 01:  Line []PROTOTYPE
-    LINENUM_INVERSE,        // 02:  Line []INVERSE
-    LINENUM_SINGLETON,      // 03:  Line []SINGLETON
+	LINENUM_ONE = 0,		// 00:	Line #1
+	LINENUM_PROTOTYPE,		// 01:	Line []PROTOTYPE
+	LINENUM_INVERSE,		// 02:	Line []INVERSE
+	LINENUM_SINGLETON,		// 03:	Line []SINGLETON
 } LINE_NUMS;
 
 #define ENUMS_DEFINED
-#undef  EXTERN
+#undef	EXTERN
 
 
 //***************************************************************************
-//  End of File: externs.h
+//	End of File: externs.h
 //***************************************************************************

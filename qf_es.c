@@ -56,9 +56,9 @@ LPPL_YYSTYPE SysFnES_EM_YY
 
 	// Split cases based upon monadic or dyadic
 	if (lptkLftArg EQ NULL)
-		return SysFnMonERROR_EM_YY (			lptkFunc, lptkRhtArg, lptkAxis);
+		return SysFnMonES_EM_YY (			 lptkFunc, lptkRhtArg, lptkAxis);
 	else
-		return SysFnDydERROR_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+		return SysFnDydES_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnES_EM_YY
 #undef	APPEND_NAME
 
@@ -204,9 +204,16 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
 				goto ERROR_EXIT;
 			} // End IF
 
-			// Lock the memory to get a ptr to it
-			lpMemRht = MyGlobalLock (hGlbRht);
+			// Skip over the header and dimensions to the data
+			lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
+			// Get the first value
+			GetNextValueMem (lpMemRht,
+							 aplTypeRht,
+							 0,
+							 NULL,
+							&aplLongestRht1,
+							 NULL);
 			// Get the second value
 			GetNextValueMem (lpMemRht,
 							 aplTypeRht,

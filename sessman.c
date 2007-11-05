@@ -855,7 +855,7 @@ LRESULT APIENTRY SMWndProc
 
 			INIT_PERTABVARS
 
-			// Allocate virtual memory for the []ERROR buffer
+			// Allocate virtual memory for the []ERROR/[]ES buffer
 			p = lpMemPTD->lpwszQuadErrorMsg =
 			VirtualAlloc (NULL, 		 // Any address
 						  DEF_QUADERROR_MAXSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),

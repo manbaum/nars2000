@@ -145,7 +145,7 @@ typedef enum tagIMM_TYPES
     IMMTYPE_PRIMOP3,        // 07:  ...       ambiguous ...
                             // 08-0E:  Available entries (4 bits)
     IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type)
-} IMM_TYPES;
+} IMM_TYPES, *LPIMM_TYPES;
 
 // Note that the following macros depend upon
 //   the ordering of the above enum

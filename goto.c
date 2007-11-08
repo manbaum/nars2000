@@ -46,7 +46,7 @@ EXIT_TYPES GotoLine_EM
     APLSTYPE     aplTypeRht;        // Right arg storage type
     APLNELM      aplNELMRht;        // ...       NELM
     APLRANK      aplRankRht;        // ...       rank
-    UCHAR        immType;           // Right arg first value immediate type
+    IMM_TYPES    immType;           // Right arg first value immediate type
     APLINT       aplIntegerRht;     // First value as integer
     APLFLOAT     aplFloatRht;       // ...            float
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS header

@@ -984,17 +984,6 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                  aplCharRht;
     APLLONGEST   aplVal;
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    static APLSTYPE sType[ARRAY_LENGTH][ARRAY_LENGTH] =
-    //      BOOL          INT           FLOAT         CHAR        HETERO        NESTED        LIST         APA
-    {{ARRAY_BOOL  , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // BOOL
-     {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // INT
-     {ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_FLOAT },  // FLOAT
-     {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_CHAR  , ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO},  // CHAR
-     {ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_HETERO},  // HETERO
-     {ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_NESTED, ARRAY_ERROR , ARRAY_NESTED},  // NESTED
-     {ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR , ARRAY_ERROR },  // LIST
-     {ARRAY_INT   , ARRAY_INT   , ARRAY_FLOAT , ARRAY_HETERO, ARRAY_HETERO, ARRAY_NESTED, ARRAY_ERROR , ARRAY_INT   },  // APA
-    };
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1232,7 +1221,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     if (aplNELMRht EQ 0)
         aplTypeRes = aplTypeLft;
     else
-        aplTypeRes = sType[aplTypeLft][aplTypeRht];
+        aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
 
     // If the result is empty, use the prototype of the right arg
     if (aplNELMRes EQ 0)

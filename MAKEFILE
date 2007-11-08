@@ -139,6 +139,7 @@ DIR:
 
 DEP:                    \
 $(O)assign.DEP          \
+$(O)axisfns.DEP         \
 $(O)bjhash.DEP          \
 $(O)common.DEP          \
 $(O)convert.DEP         \
@@ -148,18 +149,22 @@ $(O)dispdbg.DEP         \
 $(O)display.DEP         \
 $(O)dtoa.DEP            \
 $(O)editctrl.DEP        \
+$(O)editctrl.DEP        \
 $(O)editfcn.DEP         \
 $(O)editmat.DEP         \
 $(O)editvec.DEP         \
 $(O)errmsg.DEP          \
 $(O)except.DEP          \
 $(O)execdfn.DEP         \
+$(O)execfns.DEP         \
+$(O)execfns.DEP         \
 $(O)execmfn.DEP         \
 $(O)fastbool.DEP        \
 $(O)free.DEP            \
 $(O)g_fmt.DEP           \
 $(O)goto.DEP            \
 $(O)immexec.DEP         \
+$(O)initdata.DEP        \
 $(O)main.DEP            \
 $(O)parse.DEP           \
 $(O)pf_bar.DEP          \
@@ -253,6 +258,7 @@ $(O)sysvars.DEP         \
 $(O)tabctrl.DEP         \
 $(O)tokenize.DEP        \
 $(O)translate.DEP       \
+$(O)typemote.DEP        \
 $(O)ver.DEP             \
 $(O)main.DEV            \
 $(O)ver.DEV             \
@@ -289,6 +295,9 @@ $(O)yyfns.DEP
 
 !if exist ($(O)assign.DEP)
 !       include $(O)assign.DEP
+!endif
+!if exist ($(O)axisfns.DEP)
+!       include $(O)axisfns.DEP
 !endif
 !if exist ($(O)bjhash.DEP)
 !       include $(O)bjhash.DEP
@@ -335,6 +344,9 @@ $(O)yyfns.DEP
 !if exist ($(O)execdfn.DEP)
 !       include $(O)execdfn.DEP
 !endif
+!if exist ($(O)execfns.DEP)
+!       include $(O)execfns.DEP
+!endif
 !if exist ($(O)execmfn.DEP)
 !       include $(O)execmfn.DEP
 !endif
@@ -352,6 +364,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)immexec.DEP)
 !       include $(O)immexec.DEP
+!endif
+!if exist ($(O)initdata.DEP)
+!       include $(O)initdata.DEP
 !endif
 !if exist ($(O)main.DEP)
 !       include $(O)main.DEP
@@ -629,6 +644,9 @@ $(O)yyfns.DEP
 !if exist ($(O)translate.DEP)
 !       include $(O)translate.DEP
 !endif
+!if exist ($(O)typemote.DEP)
+!       include $(O)typemote.DEP
+!endif
 !if exist ($(O)ver.DEP)
 !       include $(O)ver.DEP
 !endif
@@ -650,6 +668,7 @@ $(O)yyfns.DEP
 
 PRO:                    \
 $(O)assign.PRO          \
+$(O)axisfns.PRO         \
 $(O)bjhash.PRO          \
 $(O)common.PRO          \
 $(O)convert.PRO         \
@@ -665,12 +684,14 @@ $(O)editvec.PRO         \
 $(O)errmsg.PRO          \
 $(O)except.PRO          \
 $(O)execdfn.PRO         \
+$(O)execfns.PRO         \
 $(O)execmfn.PRO         \
 $(O)fastbool.PRO        \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
 $(O)goto.PRO            \
 $(O)immexec.PRO         \
+$(O)initdata.PRO        \
 $(O)main.PRO            \
 $(O)parse.PRO           \
 $(O)pf_bar.PRO          \
@@ -764,6 +785,7 @@ $(O)sysvars.PRO         \
 $(O)tabctrl.PRO         \
 $(O)tokenize.PRO        \
 $(O)translate.PRO       \
+$(O)typemote.PRO        \
 $(O)ver.PRO             \
 $(O)yyfns.PRO
 
@@ -816,6 +838,7 @@ $(O)editctrl.OBJ:       $(WS)$(@B).C    $(EDITCTRL_DEP)
 
 ## NARS-specific files
 $(O)assign.OBJ:         $(@B).C         $(ASSIGN_DEP)
+$(O)axisfns.OBJ:        $(@B).C         $(AXISFNS_DEP)
 $(O)bjhash.OBJ:         $(@B).C         $(BJHASH_DEP)
 $(O)common.OBJ:         $(@B).C         $(COMMON_DEP)
 $(O)convert.OBJ:        $(@B).C         $(CONVERT_DEP)
@@ -828,11 +851,13 @@ $(O)editvec.OBJ:        $(@B).C         $(EDITVEC_DEP)
 $(O)errmsg.OBJ:         $(@B).C         $(ERRMSG_DEP)
 $(O)except.OBJ:         $(@B).C         $(EXCEPT_DEP)
 $(O)execdfn.OBJ:        $(@B).C         $(EXECDFN_DEP)
+$(O)execfns.OBJ:        $(@B).C         $(EXECFNS_DEP)
 $(O)execmfn.OBJ:        $(@B).C         $(EXECMFN_DEP)
 $(O)fastbool.OBJ:       $(@B).C         $(FASTBOOL_DEP)
 $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
 $(O)goto.OBJ:           $(@B).C         $(GOTO_DEP)
 $(O)immexec.OBJ:        $(@B).C         $(IMMEXEC_DEP)
+$(O)initdata.OBJ:       $(@B).C         $(INITDATA_DEP)
 $(O)main.OBJ:           $(@B).C         $(MAIN_DEP)
 $(O)pf_bar.OBJ:         $(@B).C         $(PF_BAR_DEP)
 $(O)pf_circle.OBJ:      $(@B).C         $(PF_CIRCLE_DEP)
@@ -927,6 +952,7 @@ $(O)sysvars.OBJ:        $(@B).C         $(SYSVARS_DEP)
 $(O)tabctrl.OBJ:        $(@B).C         $(TABCTRL_DEP)
 $(O)tokenize.OBJ:       $(@B).C         $(TOKENIZE_DEP)
 $(O)translate.OBJ:      $(@B).C         $(TRANSLATE_DEP)
+$(O)typemote.OBJ:       $(@B).C         $(TYPEMOTE_DEP)
 $(O)ver.OBJ:            $(@B).C         $(VER_DEP)
 $(O)yyfns.OBJ:          $(@B).C         $(YYFNS_DEP)
 
@@ -950,6 +976,7 @@ $(WS)local.h:           editctrl.h   resource.h
 # Build the Win32 version
 OBJS=                       \
      $(O)assign.OBJ         \
+     $(O)axisfns.OBJ        \
      $(O)bjhash.OBJ         \
      $(O)common.OBJ         \
      $(O)convert.OBJ        \
@@ -965,6 +992,7 @@ OBJS=                       \
      $(O)errmsg.OBJ         \
      $(O)except.OBJ         \
      $(O)execdfn.OBJ        \
+     $(O)execfns.OBJ        \
      $(O)execmfn.OBJ        \
      $(O)fastbool.OBJ       \
      $(O)free.OBJ           \
@@ -972,6 +1000,7 @@ OBJS=                       \
      $(O)getreent.OBJ       \
      $(O)goto.obj           \
      $(O)immexec.OBJ        \
+     $(O)initdata.OBJ       \
      $(O)main.OBJ           \
      $(O)parse.OBJ          \
      $(O)pf_bar.OBJ         \
@@ -1067,6 +1096,7 @@ OBJS=                       \
      $(O)tabctrl.OBJ        \
      $(O)tokenize.OBJ       \
      $(O)translate.OBJ      \
+     $(O)typemote.OBJ       \
      $(O)ver.OBJ            \
      $(O)yyfns.OBJ          \
      $(O)DBGBRK.OBJ         \

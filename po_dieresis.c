@@ -751,7 +751,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                  apaOffRht,             // Right arg APA offset
                  apaMulRht,             // ...           multiplier
                  iDim;                  // Dimension loop counter
-    UCHAR        immType;               // Immediate type
+    IMM_TYPES    immType;               // Immediate type
     LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
                  lpYYFcnStrLft;         // Ptr to left operand function strand
     TOKEN        tkLftArg = {0},        // Left arg token

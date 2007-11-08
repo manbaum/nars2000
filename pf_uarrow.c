@@ -104,7 +104,7 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
 {
     APLLONGEST   aplLongest;
     HGLOBAL      lpSymGlb;
-    UCHAR        immType;
+    IMM_TYPES    immType;
     LPPL_YYSTYPE lpYYRes;
 
     //***************************************************************

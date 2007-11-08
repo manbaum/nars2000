@@ -175,7 +175,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     BOOL         bRet = TRUE;           // TRUE iff result is valid
     TOKEN        tkLftArg = {0},        // Left arg token
                  tkRhtArg = {0};        // Right ...
-    UCHAR        immType;               // Immediate type
+    IMM_TYPES    immType;               // Immediate type
     APLINT       apaOffLft,             // Left arg APA offset
                  apaMulLft,             // ...          multiplier
                  apaOffRht,             // Right arg APA offset

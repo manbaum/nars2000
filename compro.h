@@ -6,6 +6,7 @@
 #define COMPRO_INCLUDED
 
 #include "assign.pro"
+#include "axisfns.pro"
 #include "bjhash.pro"
 #include "common.pro"
 #include "convert.pro"
@@ -21,12 +22,14 @@
 #include "errmsg.pro"
 #include "except.pro"
 #include "execdfn.pro"
+#include "execfns.pro"
 #include "execmfn.pro"
 #include "fastbool.pro"
 #include "free.pro"
 #include "g_fmt.pro"
 #include "goto.pro"
 #include "immexec.pro"
+#include "initdata.pro"
 #include "main.pro"
 #include "parse.pro"
 #include "pf_bar.pro"
@@ -119,6 +122,7 @@
 #include "tabctrl.pro"
 #include "tokenize.pro"
 #include "translate.pro"
+#include "typemote.pro"
 #include "ver.pro"
 #include "yyfns.pro"
 #if RESDEBUG

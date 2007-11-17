@@ -423,7 +423,7 @@ void DisplayGlobals
              || !lpHeader->SysVar)
             {
                 // It's a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (MakeGlbTypeGlb (hGlb)));
+                Assert (IsGlbTypeVarDir (MakeGlbTypeAsGlb (hGlb)));
 
                 if (lpHeader->Rank EQ 0)
                     aplDim = (APLDIM) -1;
@@ -502,7 +502,7 @@ void DisplayGlobals
         if (lpHeader->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE)
         {
             // It's a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (MakeGlbTypeGlb (hGlb)));
+            Assert (IsGlbTypeFcnDir (MakeGlbTypeAsGlb (hGlb)));
 
             wsprintf (lpszDebug,
                       "hGlb=%08X, NamTyp=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
@@ -766,7 +766,7 @@ void DisplayFcnStrand
                     lpaplChar = CopySteName (lpaplChar, lptkFunc->tkData.tkSym);
                 } else
                 if (!lptkFunc->tkData.tkSym->stFlags.UsrDfn)
-                    lpaplChar = DisplayFcnGlb (lpaplChar, ClrPtrTypeDirGlb (hGlbData), TRUE);
+                    lpaplChar = DisplayFcnGlb (lpaplChar, ClrPtrTypeDirAsGlb (hGlbData), TRUE);
             } else
             {
                 // Start off with the header
@@ -786,7 +786,7 @@ void DisplayFcnStrand
             // tkData is an HGLOBAL function array
             Assert (IsGlbTypeFcnDir (hGlbData));
 
-            lpaplChar = DisplayFcnGlb (lpaplChar, ClrPtrTypeDirGlb (hGlbData), TRUE);
+            lpaplChar = DisplayFcnGlb (lpaplChar, ClrPtrTypeDirAsGlb (hGlbData), TRUE);
 
             break;
 
@@ -967,7 +967,7 @@ LPWCHAR DisplayFcnSub
 
                     // Display the function strand in global memory
                     lpaplChar =
-                      DisplayFcnGlb (lpaplChar, ClrPtrTypeDirGlb (hGlbData), FALSE);
+                      DisplayFcnGlb (lpaplChar, ClrPtrTypeDirAsGlb (hGlbData), FALSE);
                 } // End IF/ELSE
             } else
                 // Handle the immediate case
@@ -1062,7 +1062,7 @@ LPWCHAR DisplayFcnSub
                  || IsGlbTypeDfnDir (hGlbData));
 
             // Clear the ptr type bits
-            hGlbData = ClrPtrTypeDirGlb (hGlbData);
+            hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
 
             // Lock the memory to get a ptr to it
             lpMemData = MyGlobalLock (hGlbData);
@@ -1134,7 +1134,7 @@ void DisplayFcnArr
     (HGLOBAL hGlbStr)           // Function array global memory handle
 
 {
-    Assert (IsGlbTypeFcnDir (MakeGlbTypeGlb (hGlbStr)));
+    Assert (IsGlbTypeFcnDir (MakeGlbTypeAsGlb (hGlbStr)));
 
     DbgMsgW (L"********** Function Array ******************************");
 

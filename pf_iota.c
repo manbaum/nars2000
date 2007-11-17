@@ -146,7 +146,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
+                if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
                                          &aplNELMRes,
                                           lptkFunc))
                     return NULL;
@@ -219,7 +219,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
-            if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
+            if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),
                                      &aplNELMRes,
                                       lptkFunc))
                 return NULL;
@@ -278,7 +278,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
@@ -718,7 +718,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -1043,7 +1043,7 @@ void PrimFnDydIotaOther
         tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkSubRht.tkFlags.ImmType   = 0;     // Already zero from = {0}
 ////////tkSubRht.tkFlags.NoDisplay = 0;     // Already zero from = {0}
-        tkSubRht.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbSubRht);
+        tkSubRht.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbSubRht);
         tkSubRht.tkCharIndex       = NEG1U;
 
         // Loop through the left arg
@@ -1065,7 +1065,7 @@ void PrimFnDydIotaOther
                 tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubLft.tkFlags.ImmType   = 0;     // Already zero from = {0}
 ////////////////tkSubLft.tkFlags.NoDisplay = 0;     // Already zero from = {0}
-                tkSubLft.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbSubLft);
+                tkSubLft.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbSubLft);
                 tkSubLft.tkCharIndex       = NEG1U;
 
                 // Use match to determine equality

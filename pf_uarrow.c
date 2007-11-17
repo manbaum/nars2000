@@ -119,14 +119,14 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
     } // End IF
 
     // Extract the first item (or the prototype) from the right arg
-    FirstValue (lptkRhtArg,         // Ptr to right arg token
-                NULL,               // Ptr to integer result
-                NULL,               // Ptr to float ...
-                NULL,               // Ptr to WCHAR ...
-               &aplLongest,         // Ptr to longest ...
-               &lpSymGlb,           // Ptr to lpSym/Glb ...
-               &immType,            // Ptr to ...immediate type ...
-                NULL);              // Ptr to array type ...
+    GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                        NULL,           // Ptr to integer result
+                        NULL,           // Ptr to float ...
+                        NULL,           // Ptr to WCHAR ...
+                       &aplLongest,     // Ptr to longest ...
+                       &lpSymGlb,       // Ptr to lpSym/Glb ...
+                       &immType,        // Ptr to ...immediate type ...
+                        NULL);          // Ptr to array type ...
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -141,7 +141,7 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         // See if it fits into a lower (but not necessarily smaller) datatype
-        lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+        TypeDemote (&lpYYRes->tkToken);
     } else
     {
         // Fill in the result token
@@ -664,10 +664,10 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
         case ARRAY_NESTED:
             // Get the right arg prototype
-            aplProtoGlb = MakeMonPrototype_EM (ClrPtrTypeIndGlb (lpMemRht),     // Proto arg handle
+            aplProtoGlb = MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemRht),   // Proto arg handle
                                                lptkFunc,                        // Ptr to function token
                                                MP_CHARS);                       // CHARS allowed
-            aplProtoGlb = MakeGlbTypeGlb (aplProtoGlb);
+            aplProtoGlb = MakeGlbTypeAsGlb (aplProtoGlb);
 
             // Loop through the result filling in prototype values
             for (uRes = 0; uRes < aplNELMRes; uRes++)
@@ -689,11 +689,11 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
 

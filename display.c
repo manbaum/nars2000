@@ -57,7 +57,7 @@ BOOL ArrayDisplay_EM
 
                 // Check for NoDisplay flag
                 if (!lptkRes->tkFlags.NoDisplay)
-                    DisplayGlbArr (ClrPtrTypeDirGlb (lptkRes->tkData.tkSym->stData.stGlbData),
+                    DisplayGlbArr (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkSym->stData.stGlbData),
                                    bEndingCR);
                 return TRUE;
             } // End IF
@@ -109,7 +109,7 @@ BOOL ArrayDisplay_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    DisplayGlbArr (ClrPtrTypeDirGlb (lptkRes->tkData.tkGlbData),
+                    DisplayGlbArr (ClrPtrTypeDirAsGlb (lptkRes->tkData.tkGlbData),
                                    bEndingCR);
                     return TRUE;
 

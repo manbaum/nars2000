@@ -273,7 +273,7 @@ LPPL_YYSTYPE SysFnMonSIZE_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -379,7 +379,7 @@ APLINT CalcSymentrySize
              || IsGlbTypeDfnDir (hGlbDfnHdr));
 
         // Clear the ptr type bits
-        hGlbDfnHdr = ClrPtrTypeDirGlb (hGlbDfnHdr);
+        hGlbDfnHdr = ClrPtrTypeDirAsGlb (hGlbDfnHdr);
 
         // Split cases based upon the user-defined function/operator bit
         if (lpSymEntry->stFlags.UsrDfn)
@@ -434,7 +434,7 @@ APLINT CalcSymentrySize
         // Otherwise, it's a function array
             // Start with the size of the SYMENTRY
             aplSize = sizeof (SYMENTRY)
-                    + MyGlobalSize (ClrPtrTypeDirGlb (lpSymEntry->stData.stGlbData));
+                    + MyGlobalSize (ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData));
     } else
     // Otherwise, its size is zero
         aplSize = 0;
@@ -463,7 +463,7 @@ APLUINT CalcGlbSize
     // stData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (hGlbData));
 
-    hGlbData = ClrPtrTypeDirGlb (hGlbData);
+    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
 
     aplSize += MyGlobalSize (hGlbData);
 

@@ -2601,7 +2601,7 @@ void Untokenize
             case TKT_STRING:            // String  (data is HGLOBAL)
             case TKT_VARARRAY:          // Array of data (data is HGLOBAL)
                 // Free the array and all elements of it
-                if (FreeResultGlobalVar (ClrPtrTypeDirGlb (lpToken->tkData.tkGlbData)))
+                if (FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpToken->tkData.tkGlbData)))
                 {
 #ifdef DEBUG_ZAP
                     dprintfW (L"**Zapping in Untokenize: %08X (%d) (%S#%d)",

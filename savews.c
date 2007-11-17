@@ -121,7 +121,7 @@ BOOL CmdSaveWS_EM
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Lock the memory to get a ptr to it
-    lpMemOldWSID = MyGlobalLock (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
+    lpMemOldWSID = MyGlobalLock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemOldWSID)
     // Get the NELM and Rank
@@ -210,7 +210,7 @@ BOOL CmdSaveWS_EM
     } // End IF/ELSE
 
     // We no longer need this ptr
-    MyGlobalUnlock (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
+    MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
 
     // The full workspace name to save to is in lpMemSaveWSID
 
@@ -395,7 +395,7 @@ BOOL CmdSaveWS_EM
                          || IsGlbTypeDfnDir (hGlbObj));
 
                     // Clear the ptr type bits
-                    hGlbObj = ClrPtrTypeDirGlb (hGlbObj);
+                    hGlbObj = ClrPtrTypeDirAsGlb (hGlbObj);
 
                     // Lock the memory to get a ptr to it
                     lpMemObj = MyGlobalLock (hGlbObj);
@@ -591,10 +591,10 @@ BOOL CmdSaveWS_EM
     MyGlobalUnlock (hGlbWSID); lpMemNewWSID = NULL;
 
     // Free the old []WSID
-    FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
+    FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
     // Save the new []WSID
-    lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakeGlbTypeGlb (hGlbWSID);
+    lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakeGlbTypeAsGlb (hGlbWSID);
 
     // Mark as successful
     bRet = TRUE;
@@ -602,7 +602,7 @@ ERROR_EXIT:
     if (lpMemOldWSID)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
+        MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
     } // End IF
 
     // We no longer need this ptr
@@ -690,7 +690,7 @@ LPAPLCHAR TransferFormGlb
     Assert (IsGlbTypeVarDir (hGlbObj));
 
     // Clear the ptr type bits
-    hGlbObj = ClrPtrTypeDirGlb (hGlbObj);
+    hGlbObj = ClrPtrTypeDirAsGlb (hGlbObj);
 
     // Save as ptr to the profile keyname
     lpMemProKey = lpaplChar;
@@ -950,7 +950,7 @@ LPAPLCHAR TransferFormGlb
                     } else
                     {
                         // Get the global's Type
-                        AttrsOfGlb (ClrPtrTypeDirGlb (hGlbSub), &aplTypeSub, NULL, NULL, NULL);
+                        AttrsOfGlb (ClrPtrTypeDirAsGlb (hGlbSub), &aplTypeSub, NULL, NULL, NULL);
 
                         // Append a leading "({enclose}"
 #define APPEND_TEXT     L"({enclose}"

@@ -340,7 +340,7 @@ NORMAL_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 IMMED_EXIT:
     if (hGlbRes && lpMemRes)
@@ -486,14 +486,14 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     if (aplNELMLft EQ 1)
     {
         // Get the integer or float value
-        FirstValue (lptkLftArg,         // Ptr to left arg token
-                   &aplIntegerLft,      // Ptr to integer result
-                   &aplFloatLft,        // Ptr to float ...
-                    NULL,               // Ptr to WCHAR ...
-                    NULL,               // Ptr to longest ...
-                    NULL,               // Ptr to lpSym/Glb ...
-                    NULL,               // Ptr to ...immediate type ...
-                    NULL);              // Ptr to array type ...
+        GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
+                           &aplIntegerLft,  // Ptr to integer result
+                           &aplFloatLft,    // Ptr to float ...
+                            NULL,           // Ptr to WCHAR ...
+                            NULL,           // Ptr to longest ...
+                            NULL,           // Ptr to lpSym/Glb ...
+                            NULL,           // Ptr to ...immediate type ...
+                            NULL);          // Ptr to array type ...
         // Attempt to convert FLOAT left arg
         if (aplTypeLft EQ ARRAY_FLOAT)
         {
@@ -823,7 +823,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;

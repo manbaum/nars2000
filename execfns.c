@@ -46,21 +46,21 @@ LPPL_YYSTYPE ExecuteFn0
              || IsGlbTypeDfnDir (lpNameFcn));
 
         // Split cases based upon the array signature
-        switch (GetSignatureGlb (ClrPtrTypeDirGlb (lpNameFcn)))
+        switch (GetSignatureGlb (ClrPtrTypeDirAsGlb (lpNameFcn)))
         {
             case FCNARRAY_HEADER_SIGNATURE:
                 // Execute a function array global memory handle
-                return ExecFuncGlb_EM_YY (NULL,                         // Ptr to left arg token (may be NULL if monadic or niladic)
-                                          ClrPtrTypeDirGlb (lpNameFcn), // Function array global memory handle
-                                          NULL,                         // Ptr to right arg token (may be NULL if niladic)
-                                          NULL);                        // Ptr to axis token (may be NULL)
+                return ExecFuncGlb_EM_YY (NULL,                             // Ptr to left arg token (may be NULL if monadic or niladic)
+                                          ClrPtrTypeDirAsGlb (lpNameFcn),   // Function array global memory handle
+                                          NULL,                             // Ptr to right arg token (may be NULL if niladic)
+                                          NULL);                            // Ptr to axis token (may be NULL)
             case DFN_HEADER_SIGNATURE:
                 // Execute a user-defined function/operator global memory handle
-                return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (lpNameFcn),  // User-defined function/operator global memory handle
-                                         NULL,                          // Ptr to left arg token (may be NULL if monadic)
-                                         lpYYFcn0,                      // Ptr to function strand
-                                         NULL,                          // Ptr to right arg token
-                                         LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
+                return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (lpNameFcn),    // User-defined function/operator global memory handle
+                                         NULL,                              // Ptr to left arg token (may be NULL if monadic)
+                                         lpYYFcn0,                          // Ptr to function strand
+                                         NULL,                              // Ptr to right arg token
+                                         LINENUM_ONE);                      // Starting line # (see LINE_NUMS)
             defstop
                 return NULL;
         } // End SWITCH
@@ -154,17 +154,17 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
                 // If it's a user-defined function/operator, ...
                 if (stFlags.UsrDfn)
-                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbFcn),    // User-defined function/operator global memory handle
+                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbFcn),  // User-defined function/operator global memory handle
                                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
                                              lpYYFcnStr,                    // Ptr to function strand
                                              lptkRhtArg,                    // Ptr to right arg token
                                              LINENUM_ONE);                  // Starting line # (see LINE_NUMS)
                 else
                     // Execute a function array global memory handle
-                    return ExecFuncGlb_EM_YY (lptkLftArg,
-                                              ClrPtrTypeDirGlb (hGlbFcn),
-                                              lptkRhtArg,
-                                              NULL);
+                    return ExecFuncGlb_EM_YY (lptkLftArg,                   // Ptr to left arg token (may be NULL if monadic or niladic)
+                                              ClrPtrTypeDirAsGlb (hGlbFcn), // Function array global memory handle
+                                              lptkRhtArg,                   // Ptr to right arg token (may be NULL if niladic)
+                                              NULL);                        // Ptr to axis token (may be NULL)
             } // End IF
 
             // Handle the immediate case
@@ -208,7 +208,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                  || IsGlbTypeDfnDir (hGlbFcn));
 
             // If it's a user-defined function/operator, ...
-            switch (GetSignatureGlb (ClrPtrTypeDirGlb (hGlbFcn)))
+            switch (GetSignatureGlb (ClrPtrTypeDirAsGlb (hGlbFcn)))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Check for axis operator
@@ -216,12 +216,12 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
                     // Execute a function array global memory handle
                     return ExecFuncGlb_EM_YY (lptkLftArg,                   // Ptr to left arg token (may be NULL if monadic)
-                                              ClrPtrTypeDirGlb (hGlbFcn),   // Function array global memory handle
+                                              ClrPtrTypeDirAsGlb (hGlbFcn), // Function array global memory handle
                                               lptkRhtArg,                   // Ptr to right arg token
                                               lptkAxis);                    // Ptr to axis token (may be NULL)
                 case DFN_HEADER_SIGNATURE:
                     // Execute a user-defined function/operator global memory handle
-                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbFcn),    // User-defined function/operator global memory handle
+                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbFcn),  // User-defined function/operator global memory handle
                                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
                                              lpYYFcnStr,                    // Ptr to function strand
                                              lptkRhtArg,                    // Ptr to right arg token
@@ -357,7 +357,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                  || IsGlbTypeDfnDir (hGlbFcn));
 
             // Split cases based upon the array signature
-            switch (GetSignatureGlb (ClrPtrTypeDirGlb (hGlbFcn)))
+            switch (GetSignatureGlb (ClrPtrTypeDirAsGlb (hGlbFcn)))
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Check for axis operator
@@ -365,12 +365,12 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
 
                     // Execute a function array global memory handle
                     return ExecFuncGlb_EM_YY (lptkLftArg,                   // Ptr to left arg token (may be NULL if monadic)
-                                              ClrPtrTypeDirGlb (hGlbFcn),   // Function array global memory handle
+                                              ClrPtrTypeDirAsGlb (hGlbFcn), // Function array global memory handle
                                               lptkRhtArg,                   // Ptr to right arg token
                                               lptkAxis);                    // Ptr to axis token (may be NULL)
                 case DFN_HEADER_SIGNATURE:
                     // Execute a user-defined function/operator global memory handle
-                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirGlb (hGlbFcn),    // User-defined function/operator global memory handle
+                    return ExecDfnGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbFcn),  // User-defined function/operator global memory handle
                                              lptkLftArg,                    // Ptr to left arg token (may be NULL if monadic)
                                              lpYYFcnStr,                    // Ptr to function strand
                                              lptkRhtArg,                    // Ptr to right arg token
@@ -399,10 +399,10 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
             // tkData is a valid HGLOBAL function array
             Assert (IsGlbTypeFcnDir (lpPrimFn));
 
-            return ExecFuncGlb_EM_YY (lptkLftArg,
-                                      ClrPtrTypeDirGlb (lpPrimFn),
-                                      lptkRhtArg,
-                                      lptkAxis);
+            return ExecFuncGlb_EM_YY (lptkLftArg,                       // Ptr to left arg token (may be NULL if monadic or niladic)
+                                      ClrPtrTypeDirAsGlb (lpPrimFn),    // Function array global memory handle
+                                      lptkRhtArg,                       // Ptr to right arg token (may be NULL if niladic)
+                                      lptkAxis);                        // Ptr to axis token (may be NULL)
         defstop
             return NULL;
     } // End SWITCH

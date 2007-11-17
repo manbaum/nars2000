@@ -192,7 +192,7 @@ BOOL PrimFnMonPlusAPA_EM
     // Axis may be anything
 
     // Copy the HGLOBAL to the result
-    *lphGlbRes = CopySymGlbDirGlb (hGlbRht);
+    *lphGlbRes = CopySymGlbDirAsGlb (hGlbRht);
 
     // Fill in the result token
     if (lpYYRes)
@@ -402,7 +402,7 @@ BOOL PrimFnDydPlusAPA_EM
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
     } // End IF
 
     DBGLEAVE;

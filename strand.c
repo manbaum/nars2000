@@ -243,7 +243,7 @@ void FreeStrand
                     // tkData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkGlbData));
 
-                    if (FreeResultGlobalVar (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.tkGlbData)))
+                    if (FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpYYToken->tkToken.tkData.tkGlbData)))
                     {
 #ifdef DEBUG_ZAP
                         dprintfW (L"**Zapping in FreeStrand: %08X (%S#%d)",
@@ -263,7 +263,7 @@ void FreeStrand
                     // tkData is a valid HGLOBAL function array
                     Assert (IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkGlbData));
 
-                    if (FreeResultGlobalFcn (ClrPtrTypeDirGlb (lpYYToken->tkToken.tkData.tkGlbData)))
+                    if (FreeResultGlobalFcn (ClrPtrTypeDirAsGlb (lpYYToken->tkToken.tkData.tkGlbData)))
                     {
 #ifdef DEBUG_ZAP
                         dprintfW (L"**Zapping in FreeStrand: %08X (%S#%d)",
@@ -411,7 +411,7 @@ static char tabConvert[][STRAND_LENGTH] =
                     Assert (IsGlbTypeVarDir (hGlbData));
 
                     // Lock the memory to get a ptr to it
-                    lpMemStr = MyGlobalLock (ClrPtrTypeDirGlb (hGlbData));
+                    lpMemStr = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbData));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
                     if (lpHeader->Rank EQ 0)
@@ -420,7 +420,7 @@ static char tabConvert[][STRAND_LENGTH] =
                         cStrandNxtType = STRAND_NESTED;
 #undef  lpHeader
                     // We no longer need this ptr
-                    MyGlobalUnlock (ClrPtrTypeDirGlb (hGlbData)); lpMemStr = NULL;
+                    MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlbData)); lpMemStr = NULL;
 
                     break;
                 } // End IF
@@ -660,7 +660,7 @@ static char tabConvert[][STRAND_LENGTH] =
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the memory to get a ptr to it
@@ -1139,7 +1139,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;    // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;    // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
@@ -1725,7 +1725,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_STRNAMED;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbStr);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the memory to get a ptr to it
@@ -1986,7 +1986,7 @@ LPPL_YYSTYPE MakeList_EM_YY
             case TKT_VARARRAY:  // 1('ab')
             case TKT_STRING:    // 1 'ab'
                 // Copy the nested entry to the result
-                *((LPAPLLIST) lpMemLst)++ = CopySymGlbDirGlb (lpYYToken->tkToken.tkData.tkGlbData);
+                *((LPAPLLIST) lpMemLst)++ = CopySymGlbDirAsGlb (lpYYToken->tkToken.tkData.tkGlbData);
 
                 break;
 
@@ -2008,7 +2008,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = bBrackets ? TKT_LISTBR : TKT_LISTPAR;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbLst);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbLst);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Free the tokens on this portion of the strand stack

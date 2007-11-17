@@ -193,9 +193,9 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
             return NULL;
     } // End SWITCH
 
-    return PrimFnMonUpTackJotGlb_EM_YY (ClrPtrTypeDirGlb (hGlbRht), // HGLOBAL
-                                        lptkAxis,                   // Ptr to axis token (may be NULL)
-                                        lptkFunc);                  // Ptr to function token
+    return PrimFnMonUpTackJotGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbRht),   // HGLOBAL
+                                        lptkAxis,                       // Ptr to axis token (may be NULL)
+                                        lptkFunc);                      // Ptr to function token
 } // End PrimFnMonUpTackJot_EM_YY
 #undef  APPEND_NAME
 

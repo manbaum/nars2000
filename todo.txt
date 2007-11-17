@@ -1,29 +1,30 @@
-TO DO:	General:  Important (pre-alpha)
+TO DO:  General:  Important (pre-alpha)
 ---------------------------------------
 * Move registry info into <nars2000.ini> file
 * Fix display of chars in a saved ws (surround with quotes, etc.)
 * Handle multiple SI levels in a saved ws
 * Finish filling in <startaddr.h>
 * Implement these features:
-* ...	    dyadic down tack jot	(format by specification)
-* ...	    dyadic dot			(inner product)
-* ...	    bracket list indexing	 A[L1;...;Ln][M]
-* ...	    bracket list indexing	 A[L1;...;Ln][M1;...;Mn]
-* ...	    bracket indexed assignment	 A[L]{is}R
-* ...	    bracket indexed strand assignment  (B (A[L])){is}R
-* ...	    bracket indexed modified assignment  A[L]Fcn{is}R
-* ...	    bracket indexed modified strand assignment	(B (A[L]))Fcn{is}R
-* ...	    )LOAD
-* ...	    )COPY
-* ...	    minimum set of system functions, to wit:
-* ...	       []EX R
-* ...	       []FX R
-* ...	     L []EA R
-* ...	     L []TF R
+* ...       dyadic down tack jot        (format by specification)
+* ...       dyadic dot                  (inner product)
+* ...       bracket list indexing        A[L1;...;Ln][M]
+* ...       bracket list indexing        A[L1;...;Ln][M1;...;Mn]
+* ...       bracket indexed assignment   A[L]{is}R
+* ...       bracket indexed strand assignment  (B (A[L])){is}R
+* ...       bracket indexed modified assignment  A[L]Fcn{is}R
+* ...       bracket indexed modified strand assignment  (B (A[L]))Fcn{is}R
+* ...       )LOAD
+* ...       )COPY
+* ...       minimum set of system functions, to wit:
+* ...          []EC R
+* ...          []EX R
+* ...          []FX R
+* ...        L []EA R
+* ...        L []TF R
 * ...
 
 
-TO DO:	General:  Less Important (post-alpha)
+TO DO:  General:  Less Important (post-alpha)
 ---------------------------------------------
 * Check for stack overflow (recursion depth in parser)
 * Check for bison stack overflow
@@ -43,57 +44,57 @@ TO DO:	General:  Less Important (post-alpha)
 * Allow [first][-][last] as arg to )VARS/FNS/OPS/NMS
 * Check for overflow on integer multiplication
 * Implement these features:
-* ...	    selective assignment
-* ...	    dynamic functions
-* ...	    magic functions for primitive functions
-* ...	    magic functions for primitive operators
-* ...	    magic functions for primitive datatypes
-* ...	    complex numbers
-* ...	    quaternions
-* ...	    octonions
-* ...	    array predicates
-* ...	    syntax highlighting
-* ...	    control structures
-* ...	    []L and []R
-* ...	    expanded set of system functions, to wit:
-* ...	      []CALL R
-* ...	    L []CALL R
-* ...	      []CRL R
-* ...	      []CRLPC R
-* ...	      []DEF R
-* ...	      []DEFL R
-* ...	      []EC
-* ...	      []ERASE R
-* ...	      []FI R
-* ...	    L []FMT R
-* ...	      []IDLIST R
-* ...	    L []IDLIST R
-* ...	      []IDLOC R
-* ...	      []MF R
-* ...	    L []MF R
-* ...	      []SI
-* ...	      []SINL
-* ...	    L []SS R
-* ...	      []STOP R
-* ...	    L []STOP R
-* ...	      []TRACE R
-* ...	    L []TRACE R
-* ...	      []VI R
-* ...	      []VR R
-* ...	    extend associativity to derived functions such as {jot}{dot}+ ??
-* ...	    component file system
-* ...	    dyadic down tack jot	(format by example)
-* ...	    dyadic left shoe		(partitioned enclose)
-* ...	    dyadic epsilon underbar	(find)
-* ...	    dieresis-del		(dual)
-* ...	    dieresis-downtack		(convolution)
-* ...	    dieresis-jot		(rank)
-* ...	    dieresis-star		(power)
-* ...	    stile-tilde 		(partition)
-* ...	    vector editor	(requires someone to want it badly enough to code it)
-* ...	    matrix editor	(requires someone to want it badly enough to code it)
-* ...	    []INVERSE:		(requires power operator)
-* ...	    []SINGLETON:	(requires definition of singleton reduction/scan for all functions)
+* ...       selective assignment
+* ...       dynamic functions
+* ...       magic functions for primitive functions
+* ...       magic functions for primitive operators
+* ...       magic functions for primitive datatypes
+* ...       complex numbers
+* ...       quaternions
+* ...       octonions
+* ...       rational numbers
+* ...       array predicates
+* ...       syntax highlighting
+* ...       control structures
+* ...       []L and []R
+* ...       expanded set of system functions, to wit:
+* ...         []CALL R
+* ...       L []CALL R
+* ...         []CRL R
+* ...         []CRLPC R
+* ...         []DEF R
+* ...         []DEFL R
+* ...         []ERASE R
+* ...         []FI R
+* ...       L []FMT R
+* ...         []IDLIST R
+* ...       L []IDLIST R
+* ...         []IDLOC R
+* ...         []MF R
+* ...       L []MF R
+* ...         []SI
+* ...         []SINL
+* ...       L []SS R
+* ...         []STOP R
+* ...       L []STOP R
+* ...         []TRACE R
+* ...       L []TRACE R
+* ...         []VI R
+* ...         []VR R
+* ...       extend associativity to derived functions such as {jot}{dot}+ ??
+* ...       component file system
+* ...       dyadic down tack jot        (format by example)
+* ...       dyadic left shoe            (partitioned enclose)
+* ...       dyadic epsilon underbar     (find)
+* ...       dieresis-del                (dual)
+* ...       dieresis-downtack           (convolution)
+* ...       dieresis-jot                (rank)
+* ...       dieresis-star               (power)
+* ...       stile-tilde                 (partition)
+* ...       vector editor       (requires someone to want it badly enough to code it)
+* ...       matrix editor       (requires someone to want it badly enough to code it)
+* ...       []INVERSE:          (requires power operator)
+* ...       []SINGLETON:        (requires definition of singleton reduction/scan for all functions)
 * ...
 
 
@@ -112,70 +113,70 @@ DONE:  General
 * Check floating point accuracy in input and output
 * Remove non-"double" code from GSL functions
 * Implement scan
-* ...	    fast Boolean reduction
-* ...	    fast Boolean scan
-* ...	    N-wise reduction
-* ...	    function editing
-* ...	    dyadic jot with variables (e.g. 3{jot}+)
-* ...	    f{is}3{jot}+
-* ...	    (+{jot}(2+3))4
-* ...	    (+{jot}(2 3))4
-* ...	    (+{jot} 2 3 )4
-* ...	    )SAVE
-* ...	    )FNS
-* ...	    )NMS
-* ...	    )OPS
-* ...	    )VARS
-* ...	    )SI
-* ...	    )SIC
-* ...	    )RESET
-* ...	    function execution
-* ...	    goto
-* ...	    goto Line #
-* ...	    monadic up arrow
-* ...	    monadic up tack jot
-* ...	    quad input
-* ...	    quote-quad input
-* ...	    error handling ([]ELX)
-* ...	    event handling ([]ALX)
-* ...	    Ctrl-Break
-* ...	    []DR R
-* ...	    []PROTOTYPE:
-* ...	    []AV
-* ...	    []LC
-* ...	    []DL R
-* ...	    []NC R
-* ...	    []UCS R
-* ...	    []NL R
-* ...	  L []NL R
-* ...	  2 []CR R
-* ...	  1 []CR R
-* ...	  L []DR R
-* ...	    []ERROR R
-* ...	    []EM
-* ...	    []ET
-* ...	    []ES R
-* ...	  L []ES R
-* ...	    monadic right shoe
-* ...	    dyadic down arrow
-* ...	    dyadic up arrow
-* ...	    monadic grade-up
-* ...	    monadic grade-down
-* ...	    dyadic grade-up
-* ...	    dyadic grade-down
-* ...	    dyadic right shoe
-* ...	    dyadic down tack
-* ...	    dyadic up tack
-* ...	    dyadic squad
-* ...	    bracket indexing		 A[L]
-* ...	    bracket list indexing	 A[L][M]
-* ...	    bracket list indexing	 A[L][M1;...;Mn]
-* ...	    ambiguous operators
-* ...	    dyadic epsilon
-* ...	    dyadic iota
-* ...	    dyadic iota extended to non-vector left args (via an internal magic function)
-* ...	    dyadic tilde
-* ...	    monadic down shoe
+* ...       fast Boolean reduction
+* ...       fast Boolean scan
+* ...       N-wise reduction
+* ...       function editing
+* ...       dyadic jot with variables (e.g. 3{jot}+)
+* ...       f{is}3{jot}+
+* ...       (+{jot}(2+3))4
+* ...       (+{jot}(2 3))4
+* ...       (+{jot} 2 3 )4
+* ...       )SAVE
+* ...       )FNS
+* ...       )NMS
+* ...       )OPS
+* ...       )VARS
+* ...       )SI
+* ...       )SIC
+* ...       )RESET
+* ...       function execution
+* ...       goto
+* ...       goto Line #
+* ...       monadic up arrow
+* ...       monadic up tack jot
+* ...       quad input
+* ...       quote-quad input
+* ...       error handling ([]ELX)
+* ...       event handling ([]ALX)
+* ...       Ctrl-Break
+* ...       []DR R
+* ...       []PROTOTYPE:
+* ...       []AV
+* ...       []LC
+* ...       []DL R
+* ...       []NC R
+* ...       []UCS R
+* ...       []NL R
+* ...     L []NL R
+* ...     2 []CR R
+* ...     1 []CR R
+* ...     L []DR R
+* ...       []ERROR R
+* ...       []EM
+* ...       []ET
+* ...       []ES R
+* ...     L []ES R
+* ...       monadic right shoe
+* ...       dyadic down arrow
+* ...       dyadic up arrow
+* ...       monadic grade-up
+* ...       monadic grade-down
+* ...       dyadic grade-up
+* ...       dyadic grade-down
+* ...       dyadic right shoe
+* ...       dyadic down tack
+* ...       dyadic up tack
+* ...       dyadic squad
+* ...       bracket indexing             A[L]
+* ...       bracket list indexing        A[L][M]
+* ...       bracket list indexing        A[L][M1;...;Mn]
+* ...       ambiguous operators
+* ...       dyadic epsilon
+* ...       dyadic iota
+* ...       dyadic iota extended to non-vector left args (via an internal magic function)
+* ...       dyadic tilde
+* ...       monadic down shoe
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector
@@ -224,7 +225,7 @@ DONE:  Features
 QUESTIONS
 ---------
 * In assignment, can a var overwrite a fn (prim or user), and vice versa
-  or must the original object be erased first?	Are there any limitations?
+  or must the original object be erased first?  Are there any limitations?
 * In function assignment,
 
   f{is}+/
@@ -233,7 +234,7 @@ QUESTIONS
   what should <g> reference?  By value or by reference?
   what happens to <g> if we change <f>?
 * Should we allow f {is} {jot}fn or {jot}{dot} ?? (right operator)
-* Should we allow f {is} {jot}fn	       ?? (left operator)
+* Should we allow f {is} {jot}fn               ?? (left operator)
 * How should an empty vector display?
   On APL+WIN systems 3.6 + 5.x, '' displays by skipping one blank line
   but 0{rho}{enclose}'' displays without skipping a blank line.
@@ -247,7 +248,10 @@ QUESTIONS
   with no result as in {del}Z{is}FOO R when Z is unset??
 * In an error message ([]DM) which symbol is used for the caret:
   UTF16_CIRCUMFLEX or UTF16_UPCARET??
-
+* With a{is}0{rho}{enclose}0 0
+  should either a[]{is}0{rho}{enclose}0 0 0
+             or a[;]{is}0{rho}{enclose}0 0 0
+  transfer the prototype to the named var?
 
 File Extensions
 ---------------
@@ -256,10 +260,10 @@ All files will end in the extension ".nars".  There will be a secondary
 extension to the left of the global extension such as .ws.nars for workspaces,
 (e.g. porsche.ws.nars).
 
-Workspaces		.ws.nars
-File Systems		.file.nars
-Plugins 		.plugin.nars
-Initialization File	.ini
+Workspaces              .ws.nars
+File Systems            .file.nars
+Plugins                 .plugin.nars
+Initialization File     .ini
 
 
 Edge Conditions

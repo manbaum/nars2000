@@ -304,7 +304,7 @@ BOOL WINAPI CreateNewTabInThread
                     hWndParent,             // Parent
                     (HMENU) IDWC_TC_MC,     // ID
                     _hInstance,             // hInstance
-                    &ccs);                  // lParam
+                   &ccs);                   // lParam
     if (lpMemPTD->hWndMC EQ NULL)
     {
         MB (pszNoCreateMCWnd);
@@ -667,13 +667,13 @@ LRESULT WINAPI LclTabCtrlWndProc
 #endif
 
             // Free global storage
-            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadALX ->stData.stGlbData)); lpMemPTD->lpSymQuadALX ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadELX ->stData.stGlbData)); lpMemPTD->lpSymQuadELX ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadLX  ->stData.stGlbData)); lpMemPTD->lpSymQuadLX  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadSA  ->stData.stGlbData)); lpMemPTD->lpSymQuadSA  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadALX ->stData.stGlbData)); lpMemPTD->lpSymQuadALX ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadELX ->stData.stGlbData)); lpMemPTD->lpSymQuadELX ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadLX  ->stData.stGlbData)); lpMemPTD->lpSymQuadLX  ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadSA  ->stData.stGlbData)); lpMemPTD->lpSymQuadSA  ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
             if (lpMemPTD->cQuadPR)
-                FreeResultGlobalVar (ClrPtrTypeDirGlb (lpMemPTD->lpSymQuadPR  ->stData.stGlbData)); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
+                FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadPR  ->stData.stGlbData)); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
 
 #undef  APPEND_NAME
 
@@ -1043,7 +1043,7 @@ void DrawTab
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // We no longer need this DC
-    MyReleaseDC (hWndTC, hDC);
+    MyReleaseDC (hWndTC, hDC); hDC = NULL;
 } // End DrawTab
 
 

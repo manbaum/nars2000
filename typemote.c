@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include "main.h"
+#include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
 
@@ -67,7 +68,7 @@
 #define APPEND_NAME
 #endif
 
-LPTOKEN TypeDemote
+void TypeDemote
     (LPTOKEN lptkRhtArg)
 
 {
@@ -105,11 +106,25 @@ LPTOKEN TypeDemote
     // Split cases based upon the arg token type
     switch (lptkRhtArg->tkFlags.TknType)
     {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, we must look inside the array
+            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
+            {
+                // Get the global memory handle
+                hGlbRht = ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData);
+
+                break;          // Join common global code
+            } // End IF
+
+            // Handle the immediate case
         case TKT_VARIMMED:
-            return lptkRhtArg;
+            return;
 
         case TKT_VARARRAY:
-            hGlbRht = ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData);
+            hGlbRht = ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData);
 
             break;
 
@@ -136,10 +151,29 @@ LPTOKEN TypeDemote
     if (IsSimple (aplTypeRht)
      && aplRankRht EQ 0)
     {
-        // Fill in the result token
-        lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
-        lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
-        lptkRhtArg->tkData.tkLongest = *(LPAPLLONGEST) lpMemRht;
+        // Split cases based upon the right arg token type
+        switch (lptkRhtArg->tkFlags.TknType)
+        {
+            case TKT_VARNAMED:
+                DbgBrk ();
+
+                lptkRhtArg->tkData.tkSym->stFlags.Imm      = TRUE;
+                lptkRhtArg->tkData.tkSym->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+                lptkRhtArg->tkData.tkSym->stData.stLongest = *(LPAPLLONGEST) lpMemRht;
+
+                break;
+
+            case TKT_VARARRAY:
+                // Fill in the result token
+                lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
+                lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+                lptkRhtArg->tkData.tkLongest = *(LPAPLLONGEST) lpMemRht;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = lpMemRhtHdr = NULL;
@@ -338,16 +372,40 @@ LPTOKEN TypeDemote
         if (aplRankRht EQ 0
          && IsSimple (aplTypeRes))
         {
-            lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
-            lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
-            lptkRhtArg->tkData.tkLongest = 0;
+            LPAPLLONGEST lpaplLongestRht;
+
+            // Split cases based upon the right arg token type
+            switch (lptkRhtArg->tkFlags.TknType)
+            {
+                case TKT_VARNAMED:
+                    DbgBrk ();
+
+                    lptkRhtArg->tkData.tkSym->stFlags.Imm      = TRUE;
+                    lptkRhtArg->tkData.tkSym->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+                    lptkRhtArg->tkData.tkSym->stData.stLongest = 0;
+                    lpaplLongestRht = &lptkRhtArg->tkData.tkSym->stData.stLongest;
+
+                    break;
+
+                case TKT_VARARRAY:
+                    // Fill in the result token
+                    lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
+                    lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+                    lptkRhtArg->tkData.tkLongest = 0;
+                    lpaplLongestRht = &lptkRhtArg->tkData.tkLongest;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
 
             // Skip over header and dimensions to the data
             lpMemRht = VarArrayBaseToData (lpMemRhtHdr, aplRankRht);
 
             // Demote the data in the right arg, copying it to the result
             DemoteData (aplTypeRes,
-                       &lptkRhtArg->tkData.tkLongest,
+                        lpaplLongestRht,
                         aplTypeRht,
                         aplNELMRht,
                         lpMemRht);
@@ -410,16 +468,30 @@ LPTOKEN TypeDemote
             hGlbRes = hGlbRht;
     } // End IF/ELSE
 NORMAL_EXIT:
-    // Save the result in the right arg token
-    lptkRhtArg->tkData.tkGlbData = MakeGlbTypeGlb (hGlbRes);
+    // Split cases based upon the right arg token type
+    switch (lptkRhtArg->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // Save the result in the right arg token
+            lptkRhtArg->tkData.tkSym->stData.stGlbData = MakeGlbTypeAsGlb (hGlbRes);
+
+            break;
+
+        case TKT_VARARRAY:
+            // Save the result in the right arg token
+            lptkRhtArg->tkData.tkGlbData = MakeGlbTypeAsGlb (hGlbRes);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 IMMED_EXIT:
     if (hGlbRht && lpMemRht)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
-
-    return lptkRhtArg;
 } // End TypeDemote
 #undef  APPEND_NAME
 
@@ -633,6 +705,395 @@ void DemoteData
             break;
     } // End SWITCH
 } // End DemoteData
+
+
+//***************************************************************************
+//  $TypePromote_EM
+//
+//  Promote the type of the token to a given storage type
+//***************************************************************************
+
+BOOL TypePromote_EM
+    (LPTOKEN  lpToken,              // Ptr to the token
+     APLSTYPE aplTypeRes,           // The result storage type
+     LPTOKEN  lptkFunc)             // Ptr to function token
+
+{
+    HGLOBAL *lphGlbArg;             // Ptr to where the HGLOBAL came from
+
+    // Split cases based upon the token type
+    switch (lpToken->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, we must look inside the array
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
+            {
+                // Point to the HGLOBAL
+                lphGlbArg = &lpToken->tkData.tkSym->stData.stGlbData;
+
+                break;      // Continue below with global case
+            } // End IF
+
+            // Split cases based upon the result storage type
+            switch (aplTypeRes)
+            {
+                case ARRAY_INT:         // B -> I
+                    break;
+
+                case ARRAY_FLOAT:       // B/I -> F
+                    lpToken->tkData.tkSym->stData.stFloat = (APLFLOAT) lpToken->tkData.tkSym->stData.stInteger;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Change the immediate type in the token
+            lpToken->tkData.tkSym->stFlags.ImmType = TranslateArrayTypeToImmType (aplTypeRes);
+
+            return TRUE;
+
+        case TKT_VARIMMED:
+            // Split cases based upon the result storage type
+            switch (aplTypeRes)
+            {
+                case ARRAY_INT:         // B -> I
+                    break;
+
+                case ARRAY_FLOAT:       // B/I -> F
+                    lpToken->tkData.tkFloat = (APLFLOAT) lpToken->tkData.tkInteger;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Change the immediate type in the token
+            lpToken->tkFlags.ImmType = TranslateArrayTypeToImmType (aplTypeRes);
+
+            return TRUE;
+
+        case TKT_VARARRAY:
+            // Point to the HGLOBAL
+            lphGlbArg = &lpToken->tkData.tkGlbData;
+
+            break;      // Continue below with global case
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // tk/stData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir (*lphGlbArg));
+
+    // Handle the HGLOBAL case
+    return TypePromoteGlb_EM (lphGlbArg, aplTypeRes, lptkFunc);
+} // End TypePromote_EM
+
+
+//***************************************************************************
+//  $TypePromoteGlb_EM
+//
+//  Promote the type of the global memory handle to a given storage type
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- TypePromoteGlb_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL TypePromoteGlb_EM
+    (HGLOBAL *lphGlbArg,            // Ptr to global memory handle
+     APLSTYPE aplTypeRes,           // The result storage type
+     LPTOKEN  lptkFunc)             // Ptr to function token
+
+{
+    HGLOBAL  hGlbRes;               // Result global memory handle
+    BOOL     bRet = TRUE;           // TRUE iff the result is valid
+    LPVOID   lpMemArg,              // Ptr to global memory
+             lpMemRes;              // Ptr to result global memory
+    APLSTYPE aplTypeArg;            // Arg storage type of HGLOBAL
+    APLNELM  aplNELMArg;            // Arg NELM         ...
+    APLRANK  aplRankArg;            // Arg Rank         ...
+    APLUINT  ByteRes;               // # bytes in the result
+
+    // Clear the type bits
+    *lphGlbArg = ClrPtrTypeDirAsGlb (*lphGlbArg);
+
+    // Lock the memory to get a ptr to it
+    lpMemArg = MyGlobalLock (*lphGlbArg);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemArg)
+    // Get the Array Type and NELM
+    aplTypeArg = lpHeader->ArrType;
+    aplNELMArg = lpHeader->NELM;
+    aplRankArg = lpHeader->Rank;
+#undef  lpHeader
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMArg, aplRankArg);
+
+    // Allocate space for the result
+    hGlbRes = MyGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMArg;
+    lpHeader->Rank       = aplRankArg;
+#undef  lpHeader
+
+    // Skip over the dimensions to the data
+    lpMemArg = VarArrayBaseToDim (lpMemArg);
+    lpMemRes = VarArrayBaseToDim (lpMemRes);
+
+    // Copy the arg dimensions to the result
+    CopyMemory (lpMemRes, lpMemArg, (UINT) aplRankArg * sizeof (APLDIM));
+
+    // Skip over the dimensions to the data
+    lpMemArg = VarArrayDimToData (lpMemArg, aplRankArg);
+    lpMemRes = VarArrayDimToData (lpMemRes, aplRankArg);
+
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
+    {
+        APLUINT   uRes;                 // Loop counter
+        APLINT    apaOff,               // APA offset
+                  apaMul;               // APA multiplier
+        UINT      uBitMask;             // Bit mask for looping through Booleans
+        APLHETERO lpSym0,               // LPSYMENTRY for 0
+                  lpSym1;               // ...            1
+
+        case ARRAY_INT:                 // B/A -> I
+            Assert (aplTypeArg EQ ARRAY_BOOL
+                 || aplTypeArg EQ ARRAY_APA);
+            // Split cases based upon the arg storage type
+            switch (aplTypeArg)
+            {
+                case ARRAY_BOOL:
+                    uBitMask = 0x01;
+
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                    {
+                        *((LPAPLINT) lpMemRes)++ =
+                          (uBitMask & *(LPAPLBOOL) lpMemArg) ? 1 : 0;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMemArg)
+                    // Get the APA parameters
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                        *((LPAPLINT) lpMemRes)++ =
+                          apaOff + apaMul * uRes;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_FLOAT:               // B/I/A -> F
+            Assert (aplTypeArg EQ ARRAY_BOOL
+                 || aplTypeArg EQ ARRAY_INT
+                 || aplTypeArg EQ ARRAY_APA);
+
+            // Split cases based upon the arg storage type
+            switch (aplTypeArg)
+            {
+                case ARRAY_BOOL:
+                    uBitMask = 0x01;
+
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                    {
+                        *((LPAPLFLOAT) lpMemRes)++ =
+                          (uBitMask & *(LPAPLBOOL) lpMemArg) ? 1.0 : 0.0;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMemArg)
+                    // Get the APA parameters
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                        *((LPAPLFLOAT) lpMemRes)++ =
+                          (APLFLOAT) (APLINT) (apaOff + apaMul * uRes);
+                    break;
+
+                case ARRAY_INT:
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                        *((LPAPLFLOAT) lpMemRes)++ =
+                          (APLFLOAT) *((LPAPLINT) lpMemArg)++;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_HETERO:              // B/I/F/C/A -> H
+            Assert (aplTypeArg EQ ARRAY_BOOL
+                 || aplTypeArg EQ ARRAY_INT
+                 || aplTypeArg EQ ARRAY_FLOAT
+                 || aplTypeArg EQ ARRAY_CHAR
+                 || aplTypeArg EQ ARRAY_APA);
+        case ARRAY_NESTED:              // B/I/F/C/A/H -> N
+            Assert (aplTypeArg EQ ARRAY_BOOL
+                 || aplTypeArg EQ ARRAY_INT
+                 || aplTypeArg EQ ARRAY_FLOAT
+                 || aplTypeArg EQ ARRAY_CHAR
+                 || aplTypeArg EQ ARRAY_APA
+                 || aplTypeArg EQ ARRAY_HETERO);
+
+            // Split cases based upon the arg storage type
+            switch (aplTypeArg)
+            {
+                case ARRAY_BOOL:
+                    uBitMask = 0x01;
+                    lpSym0 = GetSteZero ();
+                    lpSym1 = GetSteOne ();
+
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                    {
+                        *((LPAPLHETERO) lpMemRes)++ =
+                          (uBitMask & *(LPAPLBOOL) lpMemArg) ? lpSym1 : lpSym0;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_INT:
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                        *((LPAPLHETERO) lpMemRes)++ =
+                          SymTabAppendInteger_EM (*((LPAPLINT) lpMemArg)++);
+                    break;
+
+                case ARRAY_FLOAT:
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                        *((LPAPLHETERO) lpMemRes)++ =
+                          SymTabAppendFloat_EM (*((LPAPLFLOAT) lpMemArg)++);
+                    break;
+
+                case ARRAY_CHAR:
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                        *((LPAPLHETERO) lpMemRes)++ =
+                          SymTabAppendChar_EM (*((LPAPLCHAR) lpMemArg)++);
+                    break;
+
+                case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMemArg)
+                    // Get the APA parameters
+                    apaOff = lpAPA->Off;
+                    apaMul = lpAPA->Mul;
+#undef  lpAPA
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                        *((LPAPLHETERO) lpMemRes)++ =
+                          SymTabAppendInteger_EM (apaOff + apaMul * uRes);
+                    break;
+
+                case ARRAY_HETERO:
+                    // Loop through the arg converting values to the result
+                    for (uRes = 0; uRes < aplNELMArg; uRes++)
+                        *((LPAPLHETERO) lpMemRes)++ =
+                          *((LPAPLHETERO) lpMemArg)++;
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need thess ptrs
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (*lphGlbArg); lpMemArg = NULL;
+
+    // Free the old HGLOBAL
+    FreeResultGlobalVar (*lphGlbArg); *lphGlbArg = NULL;
+
+    // Save the new HGLOBAL
+    *lphGlbArg = hGlbRes;
+ERROR_EXIT:
+    if (*lphGlbArg && lpMemArg)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbArg); lpMemArg = NULL;
+    } // End IF
+
+    return bRet;
+} // End TypePromoteGlb_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

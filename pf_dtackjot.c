@@ -248,14 +248,14 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     //   get its value
     bSimpleScalar = (aplRankRht EQ 0 && IsSimpleNH (aplTypeRht));
     if (bSimpleScalar)
-        FirstValue (lptkRhtArg,         // Ptr to right arg token
-                   &aplIntegerRht,      // Ptr to integer result
-                   &aplFloatRht,        // Ptr to float ...
-                   &aplCharRht,         // Ptr to WCHAR ...
-                    NULL,               // Ptr to longest ...
-                    NULL,               // Ptr to lpSym/Glb ...
-                    NULL,               // Ptr to ...immediate type ...
-                    NULL);              // Ptr to array type ...
+        GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                           &aplIntegerRht,  // Ptr to integer result
+                           &aplFloatRht,    // Ptr to float ...
+                           &aplCharRht,     // Ptr to WCHAR ...
+                            NULL,           // Ptr to longest ...
+                            NULL,           // Ptr to lpSym/Glb ...
+                            NULL,           // Ptr to ...immediate type ...
+                            NULL);          // Ptr to array type ...
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {
@@ -335,7 +335,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
             } else
             {
                 // Make a copy of the right arg
-                hGlbRes = CopySymGlbDirGlb (hGlbRht);
+                hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
 
                 goto NORMAL_EXIT;
             } // End IF/ELSE
@@ -514,7 +514,7 @@ NORMAL_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 QUICK_EXIT:
     if (hGlbRes && lpMemRes)
@@ -1495,7 +1495,7 @@ LPAPLCHAR CompileArrNested
 
                 case PTRTYPE_HGLOBAL:
                     lpaplChar =
-                    CompileArrNestedGlb (ClrPtrTypeIndGlb (lpMem),          // The HGLOBAL to format
+                    CompileArrNestedGlb (ClrPtrTypeIndAsGlb (lpMem),        // The HGLOBAL to format
                                          lpFmtHeader,                       // The parent FMTHEADER
                                          lpFmtRowLcl,                       // This row's FMTROWSTR
                                         &lpFmtColStr[aplDimCol],            // This col's FMTCOLSTR
@@ -1800,15 +1800,15 @@ LPAPLCHAR CompileArrNestedGlb
     //   get its value
     bSimpleScalar = (aplRank EQ 0 && IsSimpleNH (aplType));
     if (bSimpleScalar)
-        FirstValueGlb (hGlb,                    // The global memory handle
-                      &aplInteger,              // Ptr to integer result
-                      &aplFloat,                // Ptr to float ...
-                      &aplChar,                 // Ptr to WCHAR ...
-                       NULL,                    // Ptr to longest ...
-                       NULL,                    // Ptr to lpSym/Glb ...
-                       NULL,                    // Ptr to ...immediate type ...
-                       NULL,                    // Ptr to array type ...
-                       TRUE);                   // TRUE iff we should recurse through LPSYMENTRYs
+        GetFirstValueGlb (hGlb,                 // The global memory handle
+                         &aplInteger,           // Ptr to integer result
+                         &aplFloat,             // Ptr to float ...
+                         &aplChar,              // Ptr to WCHAR ...
+                          NULL,                 // Ptr to longest ...
+                          NULL,                 // Ptr to lpSym/Glb ...
+                          NULL,                 // Ptr to ...immediate type ...
+                          NULL,                 // Ptr to array type ...
+                          TRUE);                // TRUE iff we should recurse through LPSYMENTRYs
     // Split cases based upon the right arg's storage type
     switch (aplType)
     {
@@ -2478,7 +2478,7 @@ LPAPLCHAR FormatArrNested
 
                     case PTRTYPE_HGLOBAL:
                         lpaplChar =
-                        FormatArrNestedGlb (ClrPtrTypeIndGlb (lpMem),   // The global memory handle whose contents are to be formatted
+                        FormatArrNestedGlb (ClrPtrTypeIndAsGlb (lpMem), // The global memory handle whose contents are to be formatted
                                             lpaplChar,                  // Ptr to compiled input
                                            &lpwszOut,                   // Ptr to ptr to output string
                                            &lpFmtColStr[aplDimCol],     // Ptr to the FMTCOLSTR for this column

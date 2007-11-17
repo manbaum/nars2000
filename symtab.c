@@ -1720,6 +1720,21 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Split off common Boolean cases
+    if (aplInteger EQ 0)
+    {
+        lpSymEntryDest = lpMemPTD->steZero;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
+    if (aplInteger EQ 1)
+    {
+        lpSymEntryDest = lpMemPTD->steOne;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
     // Hash the integer
     uHash = hashlittle
            ((const uint32_t *) &aplInteger, // A ptr to the integer to hash
@@ -1790,6 +1805,7 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
         lpSymEntryDest->stHshEntry = lpHshEntryDest;
     } // End IF
 ERROR_EXIT:
+NORMAL_EXIT:
     Assert (HshTabFrisk ());
 
     // We no longer need this ptr

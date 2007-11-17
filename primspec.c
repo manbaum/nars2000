@@ -225,7 +225,7 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
             break;
 
         case TKT_VARARRAY:
-            hGlbRes = ClrPtrTypeDirGlb (lpYYRes->tkToken.tkData.tkGlbData);
+            hGlbRes = ClrPtrTypeDirAsGlb (lpYYRes->tkToken.tkData.tkGlbData);
 
             // Make the prototype
             hGlbResProto = MakeMonPrototype_EM (hGlbRes,    // Proto arg handle
@@ -233,7 +233,7 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
                                                 MP_CHARS);  // CHARs allowed
             // Save back into the result
             lpYYRes->tkToken.tkData.tkGlbData =
-              MakeGlbTypeGlb (hGlbResProto);
+              MakeGlbTypeAsGlb (hGlbResProto);
 
             // We no longer need this storage
             FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
@@ -345,7 +345,7 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -443,7 +443,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 Assert (IsGlbTypeVarDir (hGlbRes));
 
                 // Handle via subroutine
-                hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirGlb (hGlbRes),
+                hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirAsGlb (hGlbRes),
                                            lptkFunc,
                                            lpPrimSpec);
                 if (!hGlbRes)
@@ -457,7 +457,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+                lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 DBGLEAVE;
@@ -775,7 +775,7 @@ RESTART_EXCEPTION_VARIMMED:
             Assert (IsGlbTypeVarDir (hGlbRes));
 
             // Handle via subroutine
-            hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirGlb (hGlbRes),
+            hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirAsGlb (hGlbRes),
                                        lptkFunc,
                                        lpPrimSpec);
             if (!hGlbRes)
@@ -789,7 +789,7 @@ RESTART_EXCEPTION_VARIMMED:
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
             DBGLEAVE;
@@ -1170,7 +1170,7 @@ RESTART_EXCEPTION:
                                lpSymDst;
 
                     // Get the type of the SYMENTRY
-                    aplTypeRht2 = TranslateImmTypeToArrayType ((ClrPtrTypeIndSym (lpMemRht))->stFlags.ImmType);
+                    aplTypeRht2 = TranslateImmTypeToArrayType ((ClrPtrTypeIndAsSym (lpMemRht))->stFlags.ImmType);
 
                     // Get the storage type of the result
                     aplTypeRes2 = (*lpPrimSpec->StorageTypeMon) (1,
@@ -1186,7 +1186,7 @@ RESTART_EXCEPTION:
                     } // End IF
 
                     // Copy the SYMENTRY as the same type as the result
-                    lpSymSrc = ClrPtrTypeIndSym (lpMemRht);
+                    lpSymSrc = ClrPtrTypeIndAsSym (lpMemRht);
                     lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
                                                    TranslateArrayTypeToImmType (aplTypeRes2),
                                                    lptkFunc);
@@ -1288,7 +1288,7 @@ RESTART_EXCEPTION:
                         } // End SWITCH
 
                         // Save in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakeSymTypeSym (lpSymDst);
+                        *((LPAPLNESTED) lpMemRes)++ = MakeSymTypeAsSym (lpSymDst);
                     } else
                         bRet = FALSE;
                     break;
@@ -1296,11 +1296,11 @@ RESTART_EXCEPTION:
 
                 case PTRTYPE_HGLOBAL:
                     // Handle via subroutine
-                    hGlbSub = PrimFnMonGlb_EM (ClrPtrTypeIndGlb (lpMemRht),
+                    hGlbSub = PrimFnMonGlb_EM (ClrPtrTypeIndAsGlb (lpMemRht),
                                                lptkFunc,
                                                lpPrimSpec);
                     if (hGlbSub)
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
                     else
                         bRet = FALSE;
                     break;
@@ -1756,14 +1756,14 @@ BOOL PrimFnDydSimpNest_EM
 
     // If the left arg is immediate, get the one and only value
     if (!lpMemLft)
-        FirstValue (lptkLftArg,         // Ptr to left arg token
-                   &aplIntegerLft,      // Ptr to integer result
-                   &aplFloatLft,        // Ptr to float ...
-                   &aplCharLft,         // Ptr to WCHAR ...
-                    NULL,               // Ptr to longest ...
-                    NULL,               // Ptr to lpSym/Glb ...
-                    NULL,               // Ptr to ...immediate type ...
-                    NULL);              // Ptr to array type ...
+        GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
+                           &aplIntegerLft,  // Ptr to integer result
+                           &aplFloatLft,    // Ptr to float ...
+                           &aplCharLft,     // Ptr to WCHAR ...
+                            NULL,           // Ptr to longest ...
+                            NULL,           // Ptr to lpSym/Glb ...
+                            NULL,           // Ptr to ...immediate type ...
+                            NULL);          // Ptr to array type ...
     else
     {
         // Skip over the header to the dimensions
@@ -1952,15 +1952,15 @@ BOOL PrimFnDydSimpNest_EM
             switch (GetPtrTypeDir (hGlbSub))
             {
                 case PTRTYPE_STCONST:
-                    FirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
-                                   ((LPSYMENTRY) hGlbSub)->stData.stLongest,
-                                  &aplIntegerRht,
-                                  &aplFloatRht,
-                                  &aplCharRht,
-                                   NULL,
-                                   NULL,
-                                   NULL,
-                                  &aplTypeHetRht);
+                    GetFirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                      ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                     &aplIntegerRht,
+                                     &aplFloatRht,
+                                     &aplCharRht,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                     &aplTypeHetRht);
                     hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
                                                     aplTypeHetLft,
                                                     aplIntegerLft,
@@ -1988,7 +1988,7 @@ BOOL PrimFnDydSimpNest_EM
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     else
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
                     break;
 
                 defstop
@@ -2001,7 +2001,7 @@ BOOL PrimFnDydSimpNest_EM
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -2116,14 +2116,14 @@ BOOL PrimFnDydNestSimp_EM
 
     // If the right arg is immediate, get the one and only value
     if (!lpMemRht)
-        FirstValue (lptkRhtArg,         // Ptr to right arg token
-                   &aplIntegerRht,      // Ptr to integer result
-                   &aplFloatRht,        // Ptr to float ...
-                   &aplCharRht,         // Ptr to WCHAR ...
-                    NULL,               // Ptr to longest ...
-                    NULL,               // Ptr to lpSym/Glb ...
-                    NULL,               // Ptr to ...immediate type ...
-                    NULL);              // Ptr to array type ...
+       GetFirstValueToken (lptkRhtArg,      // Ptr to right arg token
+                          &aplIntegerRht,   // Ptr to integer result
+                          &aplFloatRht,     // Ptr to float ...
+                          &aplCharRht,      // Ptr to WCHAR ...
+                           NULL,            // Ptr to longest ...
+                           NULL,            // Ptr to lpSym/Glb ...
+                           NULL,            // Ptr to ...immediate type ...
+                           NULL);           // Ptr to array type ...
     else
     {
         // Skip over the header to the dimensions
@@ -2310,15 +2310,15 @@ BOOL PrimFnDydNestSimp_EM
             switch (GetPtrTypeDir (hGlbSub))
             {
                 case PTRTYPE_STCONST:
-                    FirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
-                                   ((LPSYMENTRY) hGlbSub)->stData.stLongest,
-                                  &aplIntegerLft,
-                                  &aplFloatLft,
-                                  &aplCharLft,
-                                   NULL,
-                                   NULL,
-                                   NULL,
-                                  &aplTypeHetLft);
+                    GetFirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                      ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                     &aplIntegerLft,
+                                     &aplFloatLft,
+                                     &aplCharLft,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                     &aplTypeHetLft);
                     hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
                                                     aplTypeHetLft,
                                                     aplIntegerLft,
@@ -2346,7 +2346,7 @@ BOOL PrimFnDydNestSimp_EM
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     else
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
                     break;
 
                 defstop
@@ -2359,7 +2359,7 @@ BOOL PrimFnDydNestSimp_EM
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -2454,7 +2454,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     Assert (IsGlbTypeVarDir (aplNestedLft));
 
     // Clear the identifying bits
-    hGlbLft = ClrPtrTypeDirGlb (aplNestedLft);
+    hGlbLft = ClrPtrTypeDirAsGlb (aplNestedLft);
 
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
@@ -2574,15 +2574,15 @@ HGLOBAL PrimFnDydNestSiSc_EM
             switch (GetPtrTypeDir (hGlbSub))
             {
                 case PTRTYPE_STCONST:
-                    FirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
-                                   ((LPSYMENTRY) hGlbSub)->stData.stLongest,
-                                  &aplIntegerLft,
-                                  &aplFloatLft,
-                                  &aplCharLft,
-                                   NULL,
-                                   NULL,
-                                   NULL,
-                                  &aplTypeHetLft);
+                    GetFirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                      ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                     &aplIntegerLft,
+                                     &aplFloatLft,
+                                     &aplCharLft,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                     &aplTypeHetLft);
                     hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
                                                     aplTypeHetLft,
                                                     aplIntegerLft,
@@ -2610,7 +2610,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     else
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
                     break;
 
                 defstop
@@ -2815,7 +2815,7 @@ BOOL PrimFnDydNestNest_EM
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF
 ERROR_EXIT:
@@ -4366,7 +4366,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     Assert (IsGlbTypeVarDir (aplNestedRht));
 
     // Clear the identifying bits
-    hGlbRht = ClrPtrTypeDirGlb (aplNestedRht);
+    hGlbRht = ClrPtrTypeDirAsGlb (aplNestedRht);
 
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
@@ -4485,15 +4485,15 @@ HGLOBAL PrimFnDydSiScNest_EM
             switch (GetPtrTypeDir (hGlbSub))
             {
                 case PTRTYPE_STCONST:
-                    FirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
-                                   ((LPSYMENTRY) hGlbSub)->stData.stLongest,
-                                  &aplIntegerRht,
-                                  &aplFloatRht,
-                                  &aplCharRht,
-                                   NULL,
-                                   NULL,
-                                   NULL,
-                                  &aplTypeHetRht);
+                    GetFirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                      ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                     &aplIntegerRht,
+                                     &aplFloatRht,
+                                     &aplCharRht,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                     &aplTypeHetRht);
                     hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
                                                     aplTypeLft,
                                                     aplIntegerLft,
@@ -4521,7 +4521,7 @@ HGLOBAL PrimFnDydSiScNest_EM
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     else
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
                     break;
 
                 defstop
@@ -4926,22 +4926,22 @@ BOOL PrimFnDydSimpSimp_EM
         if (aplRankRes EQ 0)
         {
             // Get the respective first values
-            FirstValue (lptkLftArg,         // Ptr to left arg token
-                       &aplIntegerLft,      // Ptr to integer result
-                       &aplFloatLft,        // Ptr to float ...
-                       &aplCharLft,         // Ptr to WCHAR ...
-                        NULL,               // Ptr to longest ...
-                        NULL,               // Ptr to lpSym/Glb ...
-                        NULL,               // Ptr to ...immediate type ...
-                        NULL);              // Ptr to array type ...
-            FirstValue (lptkRhtArg,         // Ptr to right arg token
-                       &aplIntegerRht,      // Ptr to integer result
-                       &aplFloatRht,        // Ptr to float ...
-                       &aplCharRht,         // Ptr to WCHAR ...
-                        NULL,               // Ptr to longest ...
-                        NULL,               // Ptr to lpSym/Glb ...
-                        NULL,               // Ptr to ...immediate type ...
-                        NULL);              // Ptr to array type ...
+            GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
+                               &aplIntegerLft,      // Ptr to integer result
+                               &aplFloatLft,        // Ptr to float ...
+                               &aplCharLft,         // Ptr to WCHAR ...
+                                NULL,               // Ptr to longest ...
+                                NULL,               // Ptr to lpSym/Glb ...
+                                NULL,               // Ptr to ...immediate type ...
+                                NULL);              // Ptr to array type ...
+            GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
+                               &aplIntegerRht,      // Ptr to integer result
+                               &aplFloatRht,        // Ptr to float ...
+                               &aplCharRht,         // Ptr to WCHAR ...
+                                NULL,               // Ptr to longest ...
+                                NULL,               // Ptr to lpSym/Glb ...
+                                NULL,               // Ptr to ...immediate type ...
+                                NULL);              // Ptr to array type ...
             PrimFnDydSiScSiScSub_EM (&lpYYRes->tkToken,
                                       lptkFunc,
                                       aplTypeRes,
@@ -4961,22 +4961,22 @@ BOOL PrimFnDydSimpSimp_EM
             lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
             // Get the respective values
-            FirstValue (lptkLftArg,         // Ptr to left arg token
-                       &aplIntegerLft,      // Ptr to integer result
-                       &aplFloatLft,        // Ptr to float ...
-                       &aplCharLft,         // Ptr to WCHAR ...
-                        NULL,               // Ptr to longest ...
-                        NULL,               // Ptr to lpSym/Glb ...
-                        NULL,               // Ptr to ...immediate type ...
-                        NULL);              // Ptr to array type ...
-            FirstValue (lptkRhtArg,         // Ptr to right arg token
-                       &aplIntegerRht,      // Ptr to integer result
-                       &aplFloatRht,        // Ptr to float ...
-                       &aplCharRht,         // Ptr to WCHAR ...
-                        NULL,               // Ptr to longest ...
-                        NULL,               // Ptr to lpSym/Glb ...
-                        NULL,               // Ptr to ...immediate type ...
-                        NULL);              // Ptr to array type ...
+            GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
+                               &aplIntegerLft,  // Ptr to integer result
+                               &aplFloatLft,    // Ptr to float ...
+                               &aplCharLft,     // Ptr to WCHAR ...
+                                NULL,           // Ptr to longest ...
+                                NULL,           // Ptr to lpSym/Glb ...
+                                NULL,           // Ptr to ...immediate type ...
+                                NULL);          // Ptr to array type ...
+            GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                               &aplIntegerRht,  // Ptr to integer result
+                               &aplFloatRht,    // Ptr to float ...
+                               &aplCharRht,     // Ptr to WCHAR ...
+                                NULL,           // Ptr to longest ...
+                                NULL,           // Ptr to lpSym/Glb ...
+                                NULL,           // Ptr to ...immediate type ...
+                                NULL);          // Ptr to array type ...
 RESTART_EXCEPTION_SINGLETON:
             __try
             {
@@ -5128,7 +5128,7 @@ RESTART_EXCEPTION_SINGLETON:
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
         } // End IF/ELSE
 
         // Finish with common code
@@ -5170,23 +5170,23 @@ RESTART_EXCEPTION_SINGLETON:
 
         // Get the value of the singleton
         if (aplNELMLft EQ 1)
-            FirstValue (lptkLftArg,         // Ptr to left arg token
-                       &aplIntegerLft,      // Ptr to integer result
-                       &aplFloatLft,        // Ptr to float ...
-                       &aplCharLft,         // Ptr to WCHAR ...
-                        NULL,               // Ptr to longest ...
-                        NULL,               // Ptr to lpSym/Glb ...
-                        NULL,               // Ptr to ...immediate type ...
-                        NULL);              // Ptr to array type ...
+            GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
+                               &aplIntegerLft,  // Ptr to integer result
+                               &aplFloatLft,    // Ptr to float ...
+                               &aplCharLft,     // Ptr to WCHAR ...
+                                NULL,           // Ptr to longest ...
+                                NULL,           // Ptr to lpSym/Glb ...
+                                NULL,           // Ptr to ...immediate type ...
+                                NULL);          // Ptr to array type ...
         else
-            FirstValue (lptkRhtArg,         // Ptr to right arg token
-                       &aplIntegerRht,      // Ptr to integer result
-                       &aplFloatRht,        // Ptr to float ...
-                       &aplCharRht,         // Ptr to WCHAR ...
-                        NULL,               // Ptr to longest ...
-                        NULL,               // Ptr to lpSym/Glb ...
-                        NULL,               // Ptr to ...immediate type ...
-                        NULL);              // Ptr to array type ...
+            GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                               &aplIntegerRht,  // Ptr to integer result
+                               &aplFloatRht,    // Ptr to float ...
+                               &aplCharRht,     // Ptr to WCHAR ...
+                                NULL,           // Ptr to longest ...
+                                NULL,           // Ptr to lpSym/Glb ...
+                                NULL,           // Ptr to ...immediate type ...
+                                NULL);          // Ptr to array type ...
         // Split cases based upon which argument is the simgleton
         if (aplNELMLft NE 1)    // Lft = Multipleton, Rht = Singleton
             bRet = PrimFnDydMultSing_EM (aplTypeRes,
@@ -5221,7 +5221,7 @@ RESTART_EXCEPTION_SINGLETON:
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
     {
@@ -5846,7 +5846,7 @@ RESTART_EXCEPTION_NOAXIS:
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (*lphGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE/...
 
@@ -5858,7 +5858,7 @@ RESTART_EXCEPTION_NOAXIS:
     } // End IF
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken);
 ERROR_EXIT:
     if (*lphGlbRes && lpMemRes)
     {

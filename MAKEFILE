@@ -162,6 +162,7 @@ $(O)execmfn.DEP         \
 $(O)fastbool.DEP        \
 $(O)free.DEP            \
 $(O)g_fmt.DEP           \
+$(O)getfns.DEP          \
 $(O)goto.DEP            \
 $(O)immexec.DEP         \
 $(O)initdata.DEP        \
@@ -358,6 +359,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)g_fmt.DEP)
 !       include $(O)g_fmt.DEP
+!endif
+!if exist ($(O)getfns.DEP)
+!       include $(O)getfns.DEP
 !endif
 !if exist ($(O)goto.DEP)
 !       include $(O)goto.DEP
@@ -689,6 +693,7 @@ $(O)execmfn.PRO         \
 $(O)fastbool.PRO        \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
+$(O)getfns.PRO          \
 $(O)goto.PRO            \
 $(O)immexec.PRO         \
 $(O)initdata.PRO        \
@@ -855,6 +860,7 @@ $(O)execfns.OBJ:        $(@B).C         $(EXECFNS_DEP)
 $(O)execmfn.OBJ:        $(@B).C         $(EXECMFN_DEP)
 $(O)fastbool.OBJ:       $(@B).C         $(FASTBOOL_DEP)
 $(O)free.OBJ:           $(@B).C         $(FREE_DEP)
+$(O)getfns.OBJ:         $(@B).C         $(GETFNS_DEP)
 $(O)goto.OBJ:           $(@B).C         $(GOTO_DEP)
 $(O)immexec.OBJ:        $(@B).C         $(IMMEXEC_DEP)
 $(O)initdata.OBJ:       $(@B).C         $(INITDATA_DEP)
@@ -998,6 +1004,7 @@ OBJS=                       \
      $(O)free.OBJ           \
      $(O)g_fmt.obj          \
      $(O)getreent.OBJ       \
+     $(O)getfns.obj         \
      $(O)goto.obj           \
      $(O)immexec.OBJ        \
      $(O)initdata.OBJ       \

@@ -110,7 +110,7 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonRightShoeGlb_EM_YY
-                       (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
+                       (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
                         lptkAxis,                                                       // Ptr to axis token (may be NULL)
                         lptkFunc);                                                      // Ptr to function token
             } // End IF
@@ -132,7 +132,7 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonRightShoeGlb_EM_YY
-                   (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
+                   (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),  // HGLOBAL
                     lptkAxis,                                           // Ptr to axis token (may be NULL)
                     lptkFunc);                                          // Ptr to function token
         defstop
@@ -295,7 +295,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
             case PTRTYPE_HGLOBAL:
                 // Get the attributes (Type, NELM, and Rank)
                 //   of the item
-                AttrsOfGlb (ClrPtrTypeDirGlb (((LPAPLNESTED) lpMemRht)[uRht]), NULL, NULL, &aplRankSub, NULL);
+                AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]), NULL, NULL, &aplRankSub, NULL);
 
                 // If the item is not a scalar, ...
                 if (aplRankSub > 0)
@@ -359,7 +359,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     if (IsSimple (aplTypeRht))
     {
         // Copy the right arg
-        hGlbRes = CopySymGlbDir (MakeGlbTypeGlb (hGlbRht));
+        hGlbRes = CopySymGlbDir (MakeGlbTypeAsGlb (hGlbRht));
 
         goto NORMAL_EXIT;
     } // End IF
@@ -398,7 +398,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
             case PTRTYPE_HGLOBAL:
                 // Get the attributes (Type, NELM, and Rank)
                 //   of the item
-                AttrsOfGlb (ClrPtrTypeDirGlb (((LPAPLNESTED) lpMemRht)[uRht]), NULL, &aplNELMSub, &aplRankSub, NULL);
+                AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]), NULL, &aplNELMSub, &aplRankSub, NULL);
 
                 // If the item is not a scalar, ...
                 if (aplRankSub > 0)
@@ -406,7 +406,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     LPAPLDIM lpMemSub;
 
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (ClrPtrTypeDirGlb (((LPAPLNESTED) lpMemRht)[uRht]));
+                    lpMemSub = MyGlobalLock (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]));
 
                     // Skip over the header to the dimensions
                     lpMemSub = VarArrayBaseToDim (lpMemSub);
@@ -416,7 +416,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     for (uSub = 0; uSub < aplRankSub; uSub++)
                         lpMemDimCom[uSub] = max (lpMemDimCom[uSub], lpMemSub[uSub]);
                     // We no longer need this ptr
-                    MyGlobalUnlock (ClrPtrTypeDirGlb (((LPAPLNESTED) lpMemRht)[uRht])); lpMemSub = NULL;
+                    MyGlobalUnlock (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht])); lpMemSub = NULL;
                 } // End IF
 
                 break;
@@ -494,7 +494,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     if (aplNELMRes EQ 0)
     {
         // Get the handle of the right arg item (prototype)
-        hGlbSub = ClrPtrTypeIndGlb ((LPAPLNESTED *) lpMemRht);
+        hGlbSub = ClrPtrTypeIndAsGlb ((LPAPLNESTED *) lpMemRht);
 
         // Get the attributes (Type, NELM, and Rank)
         //   of the right arg global
@@ -576,7 +576,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
             case PTRTYPE_HGLOBAL:
                 // Get the item's global handle
-                hGlbSub = ClrPtrTypeDirGlb (((LPAPLNESTED) lpMemRht)[uRht]);
+                hGlbSub = ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]);
 
                 // Lock the memory to get a ptr to it
                 lpMemSub = MyGlobalLock (hGlbSub);
@@ -763,7 +763,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     case ARRAY_HETERO:
                     case ARRAY_NESTED:
                         // Get the right arg item's first element global memory handle
-                        hGlbProto = ClrPtrTypeIndGlb ((LPAPLNESTED) lpMemSub);
+                        hGlbProto = ClrPtrTypeIndAsGlb ((LPAPLNESTED) lpMemSub);
 
                         // Calculate its prototype
                         hGlbProto = MakeMonPrototype_EM (hGlbProto,  // Proto arg handle
@@ -777,7 +777,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                         } // End IF
 
                         // Set the ptr bits
-                        hGlbProto = MakeGlbTypeGlb (hGlbProto);
+                        hGlbProto = MakeGlbTypeAsGlb (hGlbProto);
 
                         // Loop through the right arg item's elements
                         //   copying them to the result
@@ -829,7 +829,7 @@ NORMAL_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // If there's an axis, transpose the result
@@ -900,7 +900,7 @@ NORMAL_EXIT:
         lpYYRes2->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes2->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes2->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes2->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbLft);
+        lpYYRes2->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbLft);
         lpYYRes2->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         // Transpose the values
@@ -917,7 +917,7 @@ NORMAL_EXIT:
     } // End IF
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken);
 
     goto TAIL_EXIT;
 
@@ -1018,7 +1018,7 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnDydRightShoeGlb_EM_YY (lptkLftArg,
-                                                    ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
+                                                    ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
                                                     lptkFunc);
             } // End IF
 
@@ -1040,7 +1040,7 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnDydRightShoeGlb_EM_YY (lptkLftArg,
-                                                ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
+                                                ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),
                                                 lptkFunc);
         defstop
             return NULL;
@@ -1191,7 +1191,7 @@ BOOL PrimFnDydRightShoeGlbImm_EM
 
                 // Get the attributes (Type, NELM, and Rank)
                 //   of the item
-                AttrsOfGlb (ClrPtrTypeDirGlb (((LPAPLNESTED) lpMemLft)[uLft]), &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
+                AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemLft)[uLft]), &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
 
                 // Check for LEFT RANK ERROR
                 if (aplRankSub NE 1)
@@ -1261,7 +1261,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
                 Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnDydRightShoeGlbGlb_EM_YY
-                       (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),  // Left arg global memory handle
+                       (ClrPtrTypeDirAsGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),  // Left arg global memory handle
                         hGlbRht,                                                        // Right arg ...
                         lptkFunc);                                                      // Ptr to function token
             } // End IF
@@ -1283,7 +1283,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
             Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkGlbData));
 
             return PrimFnDydRightShoeGlbGlb_EM_YY
-                   (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkGlbData),    // Left arg global memory handle
+                   (ClrPtrTypeDirAsGlb (lptkLftArg->tkData.tkGlbData),  // Left arg global memory handle
                     hGlbRht,                                            // Right arg ...
                     lptkFunc);                                          // Ptr to function token
         defstop
@@ -1383,7 +1383,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (MakeGlbTypeGlb (hGlbRes));
+                lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (MakeGlbTypeAsGlb (hGlbRes));
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
             } else
             {
@@ -1783,7 +1783,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (MakeGlbTypeGlb (hGlbRht));
+    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (MakeGlbTypeAsGlb (hGlbRht));
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
 ////goto NORMAL_EXIT;

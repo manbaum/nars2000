@@ -175,26 +175,11 @@ BOOL CmdEdit_EM
     (LPWCHAR lpwszTail)
 
 {
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    BOOL         bRet;          // TRUE iff result is valid
-
     // ***FIXME*** -- Make sensitive to user option to edit a
     //                function, vector, or matrix by default
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
     // Open a Function Editor window
-    bRet = CreateFcnWindow (lpwszTail, lpMemPTD->hWndMC);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    return bRet;
+    return CreateFcnWindow (lpwszTail);
 } // End CmdEdit_EM
 
 

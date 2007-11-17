@@ -96,9 +96,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Cu&t",                        IDM_CUT
         MENUITEM "&Copy",                       IDM_COPY
-        POPUP "&Paste"
+        MENUITEM "&Paste Normal",               IDM_PASTE
+        POPUP "Paste &More"
         BEGIN
-            MENUITEM "&Normal",                 IDM_PASTE
             MENUITEM "Paste APL+&WIN",          IDM_PASTE_APLWIN
             MENUITEM "Paste APL&2",             IDM_PASTE_APL2
             MENUITEM "Paste &ISO",              IDM_PASTE_ISO
@@ -107,6 +107,13 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Select &All",                 IDM_SELECTALL
     END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
+        MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
+        MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
+        MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
+    END
     POPUP "&Options"
     BEGIN
         MENUITEM "&Screen Font",                IDM_SMFONT
@@ -114,13 +121,6 @@ BEGIN
         MENUITEM "&Function Edit Font",         IDM_FEFONT
         MENUITEM "&Matrix Edit Font",           IDM_MEFONT
         MENUITEM "&Vector Edit Font",           IDM_VEFONT
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "&Cascade\tShift+F6",          IDM_CASCADE
-        MENUITEM "Tile &Horizontally\tShift+F4",IDM_TILE_HORZ
-        MENUITEM "Tile &Vertically\tShift+F5",  IDM_TILE_VERT
-        MENUITEM "&Arrange Icons",              IDM_ARRANGE_ICONS
     END
     POPUP "&Help"
     BEGIN

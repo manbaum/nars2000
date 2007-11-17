@@ -8,8 +8,8 @@
 
 #define IDMPOS_SM_FILE                    0
 #define IDMPOS_SM_EDIT                    1
-#define IDMPOS_SM_OPTIONS                 2
-#define IDMPOS_SM_WINDOW                  3
+#define IDMPOS_SM_WINDOW                  2
+#define IDMPOS_SM_OPTIONS                 3
 #define IDMPOS_SM_HELP                    4
 
 #define IDMPOS_FE_FILE                    0

@@ -142,7 +142,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
 
                 return PrimFnDydSquadGlb_EM_YY
                        (lptkLftArg,                                                     // Ptr to left arg token
-                        ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
+                        ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
                         lptkAxis,                                                       // Ptr to axis token (may be NULL)
                         lptkFunc);                                                      // Ptr to function token
             } // End IF
@@ -169,7 +169,7 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
 
             return PrimFnDydSquadGlb_EM_YY
                    (lptkLftArg,                                         // Ptr to left arg token
-                    ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // Right arg global memory handle
+                    ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),    // Right arg global memory handle
                     lptkAxis,                                           // Ptr to axis token (may be NULL)
                     lptkFunc);                                          // Ptr to function token
         defstop
@@ -739,7 +739,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
         // If the right arg item is a global, ...
         if (hGlbSub)
-            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDirGlb (hGlbSub);
+            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDirAsGlb (hGlbSub);
         else
         // The right arg item is immediate
         //   (in <aplLongestSub> of immediate type <immTypeSub>)
@@ -816,11 +816,11 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
 

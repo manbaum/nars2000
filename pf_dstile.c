@@ -289,7 +289,7 @@ BOOL PrimFnMonDownStileAPA_EM
     // Axis may be anything
 
     // Copy the HGLOBAL to the result
-    *lphGlbRes = CopySymGlbDirGlb (hGlbRht);
+    *lphGlbRes = CopySymGlbDirAsGlb (hGlbRht);
 
     // Fill in the result token
     if (lpYYRes)

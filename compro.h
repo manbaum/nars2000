@@ -27,6 +27,7 @@
 #include "fastbool.pro"
 #include "free.pro"
 #include "g_fmt.pro"
+#include "getfns.pro"
 #include "goto.pro"
 #include "immexec.pro"
 #include "initdata.pro"

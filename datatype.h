@@ -264,13 +264,13 @@ typedef enum tagPTR_TYPES
 // Macros to clear the low-order bits of either an LPSYMENTRY,
 //   or HGLOBAL (luckily, both types of ptrs are the same size).
 // These macros come in either direct (Dir) or indirect (Ind) form
-#define ClrPtrTypeDir(lpMem)                     ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeDirSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeDirGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeDirFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeInd(lpMem)                     ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
-#define ClrPtrTypeIndSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
-#define ClrPtrTypeIndGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
+#define ClrPtrTypeDir(lpMem)                       ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeDirAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeDirAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeDirAsFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeInd(lpMem)                       ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
+#define ClrPtrTypeIndAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
+#define ClrPtrTypeIndAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
 
 // Macro to extract the low-order bits of a memory ptr used
 //   to distinguish between the various pointer types.
@@ -278,12 +278,12 @@ typedef enum tagPTR_TYPES
 #define GetPtrTypeDir(lpMem)    (  PTRTYPE_MASK  &  ( UINT)     lpMem)
 
 // Macro to create a masked LPSYMENTRY
-#define MakeSymType(lpMem)      (PTRTYPE_STCONST | (UINT) lpMem)
-#define MakeSymTypeSym(lpMem)   ((LPSYMENTRY) MakeSymType (lpMem))
+#define MakeSymType(lpMem)        (PTRTYPE_STCONST | (UINT) lpMem)
+#define MakeSymTypeAsSym(lpMem)   ((LPSYMENTRY) MakeSymType (lpMem))
 
 // Macro to create a masked HGLOBAL
-#define MakeGlbType(lpMem)      (PTRTYPE_HGLOBAL | (UINT) lpMem)
-#define MakeGlbTypeGlb(lpMem)   ((HGLOBAL) MakeGlbType (lpMem))
+#define MakeGlbType(lpMem)        (PTRTYPE_HGLOBAL | (UINT) lpMem)
+#define MakeGlbTypeAsGlb(lpMem)   ((HGLOBAL) MakeGlbType (lpMem))
 
 // For LPSYMENTRY and HGLOBAL values in a temporary array, sometimes
 //   those values can be re-used in another array without having

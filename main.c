@@ -183,7 +183,7 @@ void InitChooseFont
     hDC = MyGetDC (HWND_DESKTOP);
     iLogPixelsY = GetDeviceCaps (hDC, LOGPIXELSY);
     lplf->lfHeight = -MulDiv (iPtSize, iLogPixelsY, 72);
-    MyReleaseDC (HWND_DESKTOP, hDC);
+    MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
 
     lpcf->lStructSize = sizeof (CHOOSEFONT);
 ////lpcf->hDC =                     // Only w/CF_PRINTERFONTS
@@ -258,7 +258,7 @@ void CreateNewFontCom
     hFontOld = SelectObject (hDC, *lphFont);
     GetTextMetrics (hDC, lptm);
     SelectObject (hDC, hFontOld);
-    MyReleaseDC (HWND_DESKTOP, hDC);
+    MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
 
     // New height
     *lpcyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
@@ -820,7 +820,7 @@ LRESULT APIENTRY MFWndProc
                 return FALSE;           // We handled the msg
             } // End IF
 
-            break;                  // Continue with next handler
+            break;                  // *MUST* pass on to DefMDIChildProc
 
         case MYWM_MOVE:
             if (!IsIconic (hWnd))   // If we're not minimized, otherwise
@@ -836,7 +836,6 @@ LRESULT APIENTRY MFWndProc
             PostMessage (hWnd, MYWM_MOVE, 0, 0);
 
             break;                  // Continue with next handler
-
 
         case WM_RBUTTONDBLCLK:
             DbgBrk ();
@@ -1421,7 +1420,8 @@ BOOL InitApplication
     wc.hIconSm = hIconSM_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_SMMENU);
+////wc.lpszMenuName = MAKEINTRESOURCE (IDR_SMMENU);
+    wc.lpszMenuName = NULL;
     wc.lpszClassName = szSMClass;
 
     // Register the Session Manager window class
@@ -1441,7 +1441,8 @@ BOOL InitApplication
     wc.hIconSm = hIconFE_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_FEMENU);
+////wc.lpszMenuName = MAKEINTRESOURCE (IDR_FEMENU);
+    wc.lpszMenuName = NULL;
     wc.lpszClassName = szFEClass;
 
     // Register the Session Manager window class
@@ -1461,7 +1462,8 @@ BOOL InitApplication
     wc.hIconSm = hIconME_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_MEMENU);
+////wc.lpszMenuName = MAKEINTRESOURCE (IDR_MEMENU);
+    wc.lpszMenuName = NULL;
     wc.lpszClassName = szMEClass;
 
     // Register the Session Manager window class
@@ -1481,7 +1483,8 @@ BOOL InitApplication
     wc.hIconSm = hIconVE_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_VEMENU);
+////wc.lpszMenuName = MAKEINTRESOURCE (IDR_VEMENU);
+    wc.lpszMenuName = NULL;
     wc.lpszClassName = szVEClass;
 
     // Register the Session Manager window class
@@ -1501,7 +1504,8 @@ BOOL InitApplication
     wc.hIconSm = hIconDB_Small;
     wc.hCursor = LoadCursor (NULL, IDC_ARROW);
     wc.hbrBackground = GetStockObject (WHITE_BRUSH);
-    wc.lpszMenuName = MAKEINTRESOURCE (IDR_SMMENU);
+////wc.lpszMenuName = MAKEINTRESOURCE (IDR_SMMENU);
+    wc.lpszMenuName = NULL;
     wc.lpszClassName = szDBClass;
 
     // Register the Debugger window class

@@ -220,7 +220,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
             hGlbData = lpSymEntry->stData.stGlbData;
 
             // Clear the ptr type bits
-            hGlbData = ClrPtrTypeDirGlb (hGlbData);
+            hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
 
             // Lock the memory to get a ptr to it
             lpMemData = MyGlobalLock (hGlbData);
@@ -401,7 +401,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     if (hGlbRes && lpMemRes)
@@ -512,7 +512,7 @@ LPVOID SysFnCR_Copy_EM
         MyGlobalUnlock (hGlbCpy); lpMemCpy = NULL;
 
         // Save the HGLOBAL in the result and skip over it
-        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeGlb (hGlbCpy);
+        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbCpy);
     } else
     {
         // Get the length of the function header text

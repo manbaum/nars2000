@@ -63,7 +63,7 @@ LPPL_YYSTYPE SysFnDM_EM_YY
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the global memory handle for quad-DM
-    hGlbRes = CopySymGlbDir (MakeGlbTypeGlb (lpMemPTD->hGlbQuadDM));
+    hGlbRes = CopySymGlbDir (MakeGlbTypeAsGlb (lpMemPTD->hGlbQuadDM));
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

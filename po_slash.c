@@ -571,11 +571,11 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
 
@@ -646,7 +646,7 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRht);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRht);
 ////////lpYYRes->tkToken.tkCharIndex       =        // Filled in below
     } else  // It's an immediate
     {
@@ -853,14 +853,14 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     } // End IF
 
     // Get the one (and only) value from the left arg
-    FirstValue (lptkLftArg,             // Ptr to left arg token
-               &aplIntegerLft,          // Ptr to integer result
-               &aplFloatLft,            // Ptr to float ...
-                NULL,                   // Ptr to WCHAR ...
-                NULL,                   // Ptr to longest ...
-                NULL,                   // Ptr to lpSym/Glb ...
-                NULL,                   // Ptr to ...immediate type ...
-                NULL);                  // Ptr to array type ...
+    GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
+                       &aplIntegerLft,      // Ptr to integer result
+                       &aplFloatLft,        // Ptr to float ...
+                        NULL,               // Ptr to WCHAR ...
+                        NULL,               // Ptr to longest ...
+                        NULL,               // Ptr to lpSym/Glb ...
+                        NULL,               // Ptr to ...immediate type ...
+                        NULL);              // Ptr to array type ...
     // If the left arg is a float,
     //   attempt to convert it to an integer
     if (aplTypeLft EQ ARRAY_FLOAT)
@@ -1053,7 +1053,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     // If the absolute value of the left arg is one, the result is
     //   the right arg
     if (aplIntegerLftAbs EQ 1)
-        hGlbRes = CopySymGlbDir (MakeGlbTypeGlb (hGlbRht));
+        hGlbRes = CopySymGlbDir (MakeGlbTypeAsGlb (hGlbRht));
     else
     // If the left arg is uDimAxRht, the result is
     //   ({rho} Result) {rho} LeftOperand /[X] RightArg
@@ -1351,11 +1351,11 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
 
@@ -1506,7 +1506,7 @@ BOOL PrimOpDydSlashInsertDim_EM
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
         lpYYRes->tkToken.tkFlags.ImmType   = 0;
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbTmp);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbTmp);
 ////////lpYYRes->tkToken.tkCharIndex       =        // Already filled in by caller
 
         return TRUE;
@@ -1518,7 +1518,7 @@ BOOL PrimOpDydSlashInsertDim_EM
     Assert (IsGlbTypeVarDir (hGlbTmp));
 
     // Clear the ptr type bits
-    hGlbTmp = ClrPtrTypeDirGlb (hGlbTmp);
+    hGlbTmp = ClrPtrTypeDirAsGlb (hGlbTmp);
 
     // The result is the same as lpYYRes except we need
     //   to insert a unit dimension between aplAxis and

@@ -215,7 +215,7 @@ APLINT PrimFnMonEqualUnderBarGlb
             Assert (IsGlbTypeVarDir (hGlbRht));
 
             // Clear the ptr type bits
-            hGlbRht = ClrPtrTypeDirGlb (hGlbRht);
+            hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
 
             // Lock the memory to get a ptr to it
             lpMemRht = MyGlobalLock (hGlbRht);
@@ -391,22 +391,22 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
                     break;
 
                 // Get the respective first values
-                FirstValue (lptkLftArg,         // Ptr to left arg token
-                           &aplIntegerLft,      // Ptr to integer result
-                           &aplFloatLft,        // Ptr to float ...
-                           &aplCharLft,         // Ptr to WCHAR ...
-                            NULL,               // Ptr to longest ...
-                            NULL,               // Ptr to lpSym/Glb ...
-                            NULL,               // Ptr to ...immediate type ...
-                            NULL);              // Ptr to array type ...
-                FirstValue (lptkRhtArg,         // Ptr to right arg token
-                           &aplIntegerRht,      // Ptr to integer result
-                           &aplFloatRht,        // Ptr to float ...
-                           &aplCharRht,         // Ptr to WCHAR ...
-                            NULL,               // Ptr to longest ...
-                            NULL,               // Ptr to lpSym/Glb ...
-                            NULL,               // Ptr to ...immediate type ...
-                            NULL);              // Ptr to array type ...
+                GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
+                                   &aplIntegerLft,  // Ptr to integer result
+                                   &aplFloatLft,    // Ptr to float ...
+                                   &aplCharLft,     // Ptr to WCHAR ...
+                                    NULL,           // Ptr to longest ...
+                                    NULL,           // Ptr to lpSym/Glb ...
+                                    NULL,           // Ptr to ...immediate type ...
+                                    NULL);          // Ptr to array type ...
+                GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                                   &aplIntegerRht,  // Ptr to integer result
+                                   &aplFloatRht,    // Ptr to float ...
+                                   &aplCharRht,     // Ptr to WCHAR ...
+                                    NULL,           // Ptr to longest ...
+                                    NULL,           // Ptr to lpSym/Glb ...
+                                    NULL,           // Ptr to ...immediate type ...
+                                    NULL);          // Ptr to array type ...
                 // Split cases into Numeric and Char
                 if (bNumLft)
                 {               // Both are numeric
@@ -1068,8 +1068,8 @@ BOOL PrimFnDydEqualUnderbarNested
                 // Get the attrs (Type, NELM, and Rank) of the left and right elements
                 // Note that we overwrite the incoming parameters aplTypeXXX and aplRankXXX
                 //   as we no longer need those variables.
-                AttrsOfGlb (ClrPtrTypeIndGlb (lpMemLft), &aplTypeLft, &aplNELMLft2, &aplRankLft, NULL);
-                AttrsOfGlb (ClrPtrTypeIndGlb (lpMemRht), &aplTypeRht, &aplNELMRht2, &aplRankRht, NULL);
+                AttrsOfGlb (ClrPtrTypeIndAsGlb (lpMemLft), &aplTypeLft, &aplNELMLft2, &aplRankLft, NULL);
+                AttrsOfGlb (ClrPtrTypeIndAsGlb (lpMemRht), &aplTypeRht, &aplNELMRht2, &aplRankRht, NULL);
 
                 // Ensure same rank and # elements
                 if (aplRankLft NE aplRankRht
@@ -1077,8 +1077,8 @@ BOOL PrimFnDydEqualUnderbarNested
                     return FALSE;
 
                 // Lock the memory to get a ptr to it
-                lpMemLft2 = MyGlobalLock (ClrPtrTypeIndGlb (lpMemLft));
-                lpMemRht2 = MyGlobalLock (ClrPtrTypeIndGlb (lpMemRht));
+                lpMemLft2 = MyGlobalLock (ClrPtrTypeIndAsGlb (lpMemLft));
+                lpMemRht2 = MyGlobalLock (ClrPtrTypeIndAsGlb (lpMemRht));
 
                 // Split based upon Simple vs. Hetero vs. Nested
                 switch (2 * (aplTypeLft EQ ARRAY_NESTED)
@@ -1114,8 +1114,8 @@ BOOL PrimFnDydEqualUnderbarNested
                 } // End SWITCH
 
                 // We no longer need these ptrs
-                MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemLft)); lpMemLft2 = NULL;
-                MyGlobalUnlock (ClrPtrTypeIndGlb (lpMemRht)); lpMemRht2 = NULL;
+                MyGlobalUnlock (ClrPtrTypeIndAsGlb (lpMemLft)); lpMemLft2 = NULL;
+                MyGlobalUnlock (ClrPtrTypeIndAsGlb (lpMemRht)); lpMemRht2 = NULL;
 
                 break;
 

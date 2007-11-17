@@ -44,7 +44,7 @@ int ChangeRefCntDir
 
         case PTRTYPE_HGLOBAL:
             // Lock the memory to get a ptr to it
-            lpSig = MyGlobalLock (ClrPtrTypeDirGlb (hGlb));
+            lpSig = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlb));
 
             // Split cases based upon the array signature
             switch (((LPHEADER_SIGNATURE) lpSig)->nature)
@@ -110,7 +110,7 @@ int ChangeRefCntDir
                     return -1;
             } // End SWITCH
 
-            MyGlobalUnlock (ClrPtrTypeDirGlb (hGlb)); lpSig = NULL;
+            MyGlobalUnlock (ClrPtrTypeDirAsGlb (hGlb)); lpSig = NULL;
 
             return RefCnt;
 

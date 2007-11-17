@@ -134,8 +134,8 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonEpsilonGlb_EM_YY
-                       (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
-                        lptkFunc);                                                      // Ptr to function token
+                       (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),        // HGLOBAL
+                        lptkFunc);                                                              // Ptr to function token
             } // End IF
 
             // Handle the immediate case
@@ -153,7 +153,7 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonEpsilonGlb_EM_YY
-                   (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
+                   (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),  // HGLOBAL
                     lptkFunc);                                          // Ptr to function token
         defstop
             return NULL;
@@ -260,7 +260,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
@@ -343,7 +343,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     PrimFnMonEpsilonGlbCopy (aplTypeRes,
                             &lpMemRes,
                             &uBitIndex,
-                             ClrPtrTypeDirGlb (hGlbRht),
+                             ClrPtrTypeDirAsGlb (hGlbRht),
                              lptkFunc);
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -355,11 +355,11 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken);
 
     return lpYYRes;
 } // End PrimFnMonEpsilonGlb_EM_YY
@@ -444,7 +444,7 @@ void PrimFnMonEpsilonGlbCount
                     // It's a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarInd (lpMemRht));
 
-                    PrimFnMonEpsilonGlbCount (ClrPtrTypeIndGlb (lpMemRht),
+                    PrimFnMonEpsilonGlbCount (ClrPtrTypeIndAsGlb (lpMemRht),
                                               lpaplTypeRes,
                                               lpaplNELMRes);
                     break;
@@ -606,7 +606,7 @@ void PrimFnMonEpsilonGlbCopy
                             PrimFnMonEpsilonGlbCopy (aplTypeRes,
                                                      lplpMemRes,
                                                      lpuBitIndex,
-                                                     ClrPtrTypeIndGlb (lpMemRht),
+                                                     ClrPtrTypeIndAsGlb (lpMemRht),
                                                      lptkFunc);
                             break;
 
@@ -703,7 +703,7 @@ void PrimFnMonEpsilonGlbCopy
                             PrimFnMonEpsilonGlbCopy (aplTypeRes,
                                                      lplpMemRes,
                                                      lpuBitIndex,
-                                                     ClrPtrTypeIndGlb (lpMemRht),
+                                                     ClrPtrTypeIndAsGlb (lpMemRht),
                                                      lptkFunc);
                             break;
 
@@ -808,7 +808,7 @@ void PrimFnMonEpsilonGlbCopy
                             PrimFnMonEpsilonGlbCopy (aplTypeRes,
                                                      lplpMemRes,
                                                      lpuBitIndex,
-                                                     ClrPtrTypeIndGlb (lpMemRht),
+                                                     ClrPtrTypeIndAsGlb (lpMemRht),
                                                      lptkFunc);
                             break;
 
@@ -873,7 +873,7 @@ void PrimFnMonEpsilonGlbCopy
                             PrimFnMonEpsilonGlbCopy (aplTypeRes,
                                                      lplpMemRes,
                                                      lpuBitIndex,
-                                                     ClrPtrTypeIndGlb (lpMemRht),
+                                                     ClrPtrTypeIndAsGlb (lpMemRht),
                                                      lptkFunc);
                             break;
 
@@ -1017,7 +1017,7 @@ void PrimFnMonEpsilonGlbCopy
                             PrimFnMonEpsilonGlbCopy (aplTypeRes,
                                                      lplpMemRes,
                                                      lpuBitIndex,
-                                                     ClrPtrTypeIndGlb (lpMemRht),
+                                                     ClrPtrTypeIndAsGlb (lpMemRht),
                                                      lptkFunc);
                             break;
 
@@ -1220,7 +1220,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -1551,14 +1551,14 @@ void PrimFnDydEpsilonOther
                 tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubLft.tkFlags.ImmType   = 0;     // Already zero from = {0}
 ////////////////tkSubLft.tkFlags.NoDisplay = 0;     // Already zero from = {0}
-                tkSubLft.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbSubLft);
+                tkSubLft.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbSubLft);
                 tkSubLft.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // Fill in the right arg item token
                 tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubRht.tkFlags.ImmType   = 0;     // Already zero from = {0}
 ////////////////tkSubRht.tkFlags.NoDisplay = 0;     // Already zero from = {0}
-                tkSubRht.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbSubRht);
+                tkSubRht.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbSubRht);
                 tkSubRht.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // Use match to determine equality

@@ -150,7 +150,7 @@ UINT SymTrans
 
         case TKT_FCNARRAY:
             // Get the function array global memory handle
-            hGlbFcn = ClrPtrTypeDirGlb (lptkFunc->tkData.tkGlbData);
+            hGlbFcn = ClrPtrTypeDirAsGlb (lptkFunc->tkData.tkGlbData);
 
             // Lock the memory to get a ptr to it
             lpMemFcn = MyGlobalLock (hGlbFcn);

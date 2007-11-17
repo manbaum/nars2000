@@ -128,7 +128,7 @@ LPPL_YYSTYPE PrimFnMonRho_EM_YY
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
                 return PrimFnMonRhoGlb_EM_YY
-                       (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),  // HGLOBAL
+                       (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),// HGLOBAL
                         lptkFunc);                                                      // Ptr to function token
             } // End IF
 
@@ -144,7 +144,7 @@ LPPL_YYSTYPE PrimFnMonRho_EM_YY
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
             return PrimFnMonRhoGlb_EM_YY
-                   (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),    // HGLOBAL
+                   (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),  // HGLOBAL
                     lptkFunc);                                          // Ptr to function token
         defstop
             return NULL;
@@ -174,7 +174,7 @@ LPPL_YYSTYPE PrimFnMonRhoCon_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbZilde);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbZilde);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
@@ -280,7 +280,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     // We no longer need this ptr
@@ -378,14 +378,14 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
                 //   type to either char or Boolean.
 
                 // Get the storage type of the first value
-                FirstValue (lptkRhtArg,     // Ptr to right arg token
-                            NULL,           // Ptr to integer result
-                            NULL,           // Ptr to float ...
-                            NULL,           // Ptr to WCHAR ...
-                            NULL,           // Ptr to longest ...
-                            NULL,           // Ptr to lpSym/Glb ...
-                            NULL,           // Ptr to ...immediate type ...
-                           &aplTypeRes);    // Ptr to array type ...
+                GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                                    NULL,           // Ptr to integer result
+                                    NULL,           // Ptr to float ...
+                                    NULL,           // Ptr to WCHAR ...
+                                    NULL,           // Ptr to longest ...
+                                    NULL,           // Ptr to lpSym/Glb ...
+                                    NULL,           // Ptr to ...immediate type ...
+                                   &aplTypeRes);    // Ptr to array type ...
                 // If it's not char, it's Boolean
                 if (aplTypeRes NE ARRAY_CHAR)
                     aplTypeRes = ARRAY_BOOL;
@@ -528,14 +528,14 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
 
 #define lpAPA       ((LPAPLAPA) lpMemRes)
         // Get the first value from the right arg
-        FirstValue (lptkRhtArg,     // Ptr to right arg token
-                   &lpAPA->Off,     // Ptr to integer result
-                    NULL,           // Ptr to float ...
-                    NULL,           // Ptr to WCHAR ...
-                    NULL,           // Ptr to longest ...
-                    NULL,           // Ptr to lpSym/Glb ...
-                    NULL,           // Ptr to ...immediate type ...
-                    NULL);          // Ptr to array type ...
+        GetFirstValueToken (lptkRhtArg, // Ptr to right arg token
+                           &lpAPA->Off, // Ptr to integer result
+                            NULL,       // Ptr to float ...
+                            NULL,       // Ptr to WCHAR ...
+                            NULL,       // Ptr to longest ...
+                            NULL,       // Ptr to lpSym/Glb ...
+                            NULL,       // Ptr to ...immediate type ...
+                            NULL);      // Ptr to array type ...
         lpAPA->Mul = 0;
 #undef  lpAPA
     } else
@@ -546,7 +546,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     if (bPrototype)
     {
         // Make the prototype
-        hGlbProto = MakeMonPrototype_EM (ClrPtrTypeDirGlb (hGlbProto),// Proto arg handle
+        hGlbProto = MakeMonPrototype_EM (ClrPtrTypeDirAsGlb (hGlbProto),// Proto arg handle
                                          lptkFunc,  // Ptr to function token
                                          FALSE);    // Allow CHARs
         if (!hGlbProto)
@@ -557,7 +557,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
             lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
             // Save the handle
-            *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbProto);
+            *((LPAPLNESTED) lpMemRes) = MakeGlbTypeAsGlb (hGlbProto);
         } // End IF
     } else
     if (aplNELMRes)
@@ -581,11 +581,11 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeGlb (hGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         // See if it fits into a lower (but not necessarily smaller) datatype
-        lpYYRes->tkToken = *TypeDemote (&lpYYRes->tkToken);
+        TypeDemote (&lpYYRes->tkToken);
 
         return lpYYRes;
     } else
@@ -634,7 +634,7 @@ BOOL PrimFnDydRhoRhtCopyData
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
 
-                bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
+                bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
                                                       aplTypeRes,
                                                       aplNELMRes,
                                                       lpMemRes,
@@ -813,7 +813,7 @@ BOOL PrimFnDydRhoRhtCopyData
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
 
-            bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDirGlb (lptkRhtArg->tkData.tkGlbData),
+            bRet = PrimFnDydRhoRhtGlbCopyData_EM (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),
                                                   aplTypeRes,
                                                   aplNELMRes,
                                                   lpMemRes,
@@ -858,7 +858,7 @@ void PrimFnDydRhoCopyDim
                 Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkSym->stData.stGlbData));
 
                 // Copy the left argument's values to the result's dimensions
-                PrimFnDydRhoLftGlbCopyDim (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),
+                PrimFnDydRhoLftGlbCopyDim (ClrPtrTypeDirAsGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),
                                            lpDimRes);
                 break;
             } // End IF
@@ -927,7 +927,7 @@ void PrimFnDydRhoCopyDim
             Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkGlbData));
 
             // Copy the left argument's values to the result's dimensions
-            PrimFnDydRhoLftGlbCopyDim (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkGlbData),
+            PrimFnDydRhoLftGlbCopyDim (ClrPtrTypeDirAsGlb (lptkLftArg->tkData.tkGlbData),
                                        lpDimRes);
             break;
 
@@ -978,7 +978,7 @@ BOOL PrimFnDydRhoLftValid_EM
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkSym->stData.stGlbData));
 
-                bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),
+                bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirAsGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),
                                                    lpaplRankRes,
                                                    lpaplNELMRes,
                                                    lptkFunc);
@@ -1049,7 +1049,7 @@ BOOL PrimFnDydRhoLftValid_EM
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (lptkLftArg->tkData.tkGlbData));
 
-            bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirGlb (lptkLftArg->tkData.tkGlbData),
+            bRet = PrimFnDydRhoLftGlbValid_EM (ClrPtrTypeDirAsGlb (lptkLftArg->tkData.tkGlbData),
                                                lpaplRankRes,
                                                lpaplNELMRes,
                                                lptkFunc);

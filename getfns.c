@@ -4,17 +4,10 @@
 
 #define STRICT
 #include <windows.h>
-//#include <float.h>
-//#include <math.h>
 
 #include "main.h"
-//#include "aplerrors.h"
 #include "resdebug.h"
-//#include "sysvars.h"
 #include "externs.h"
-//#include "pertab.h"
-//#include "dfnhdr.h"
-//#include "sis.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

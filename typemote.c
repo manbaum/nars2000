@@ -381,7 +381,7 @@ void TypeDemote
                     DbgBrk ();
 
                     lptkRhtArg->tkData.tkSym->stFlags.Imm      = TRUE;
-                    lptkRhtArg->tkData.tkSym->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+                    lptkRhtArg->tkData.tkSym->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
                     lptkRhtArg->tkData.tkSym->stData.stLongest = 0;
                     lpaplLongestRht = &lptkRhtArg->tkData.tkSym->stData.stLongest;
 
@@ -390,7 +390,7 @@ void TypeDemote
                 case TKT_VARARRAY:
                     // Fill in the result token
                     lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
-                    lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
+                    lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
                     lptkRhtArg->tkData.tkLongest = 0;
                     lpaplLongestRht = &lptkRhtArg->tkData.tkLongest;
 

@@ -1721,14 +1721,14 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Split off common Boolean cases
-    if (aplInteger EQ 0)
+    if (aplInteger EQ 0 && lpMemPTD->steZero)
     {
         lpSymEntryDest = lpMemPTD->steZero;
 
         goto NORMAL_EXIT;
     } // End IF
 
-    if (aplInteger EQ 1)
+    if (aplInteger EQ 1 && lpMemPTD->steOne)
     {
         lpSymEntryDest = lpMemPTD->steOne;
 

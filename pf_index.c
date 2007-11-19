@@ -212,10 +212,11 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                                     aplRankSub,     // List arg item rank
                                                     lptkFunc);      // Ptr to function token
         else
-        //***************************************************************
-        // From here on the name arg is a global.
-        //***************************************************************
         {
+            //***************************************************************
+            // From here on the name arg is a global.
+            //***************************************************************
+
             //***************************************************************
             // If the list arg item is a nested array of equal length simple
             //   numeric vectors, do scatter indexing, in which case
@@ -266,6 +267,18 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
             // Skip over the header and dimensions to the data
             lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
+
+            // If the result is a HETERO/NESTED result, fill all items with PTR_REUSED
+            //   in case we fail later on
+            if (!IsSimple (aplTypeRes))
+            {
+                // Handle protoype case
+                if (aplTypeRes EQ ARRAY_NESTED)
+                    *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
+                // Fill result items with PTR_REUSED
+                for (uSub = 0; uSub < aplNELMSub; uSub++)
+                    ((LPAPLNESTED) lpMemRes)[uSub] = PTR_REUSED;
+            } // End IF
 
             // Validate each element of the list arg items as either reach (pick)
             //   or scatter (squad) index reference
@@ -417,9 +430,14 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                                             lptkFunc);          // Ptr to function token
                     } else
                         // Note the args get switched between indexing and pick
-                        lpYYItm = PrimFnDydRightShoeGlbGlb_EM_YY (hGlbItm,      // Name arg global memory handle
-                                                                  hGlbNam,      // Right arg global memory handle
-                                                                  lptkFunc);    // Ptr to function token
+                        lpYYItm =
+                          PrimFnDydRightShoeGlbGlb_EM_YY (hGlbItm,          // Name arg global memory handle
+                                                          hGlbNam,          // Right arg global memory handle
+                                                          lptkFunc,         // Ptr to function token
+                                                          FALSE,            // TRUE iff array assignment
+                                                          ARRAY_ERROR,      // Set arg storage type
+                                                          NULL,             // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+                                                          0);               // Set arg immediate value
                     if (lpYYItm)
                     {
                         // Split cases based upon the result storage type
@@ -485,7 +503,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // ALready zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
             lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
@@ -789,6 +807,19 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     lpMemRes = VarArrayDimToData (lpMemRes, aplRankLst);
 ////lpMemLst = VarArrayDimToData (lpMemRes, aplRankLst);
 
+
+    // If the result is a HETERO/NESTED result, fill all items with PTR_REUSED
+    //   in case we fail later on
+    if (!IsSimple (aplTypeRes))
+    {
+        // Handle protoype case
+        if (aplTypeRes EQ ARRAY_NESTED)
+            *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
+        // Fill result items with PTR_REUSED
+        for (uLst = 0; uLst < aplNELMLst; uLst++)
+            ((LPAPLNESTED) lpMemRes)[uLst] = PTR_REUSED;
+    } // End IF
+
     // Handle prototypes
     if (aplNELMLst EQ 0
      && aplTypeRes EQ ARRAY_NESTED)
@@ -848,7 +879,6 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
         } // End IF
 
         // Get the indexed item from the name arg
-        DbgBrk ();
         GetNextItemGlb (hGlbNam,            // Item global memory handle
                         aplLongestLst,      // Index into item
                        &hGlbSub,            // Ptr to result global memory handle (may be NULL)
@@ -887,15 +917,8 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
                 break;
 
             case ARRAY_HETERO:
-                DbgBrk ();
-////////////////// Save the value in the result
-////////////////*((LPAPLHETERO) lpMemRes)++ = MakeSymEntry_EM (immTypeNam,
-////////////////                                              &aplLongestNam,
-////////////////                                               lptkFunc);
-////////////////break;
-////////////////
             case ARRAY_NESTED:
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDirAsGlb (hGlbSub);
+                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (hGlbSub);
 
                 break;
 
@@ -2138,8 +2161,7 @@ BOOL ArrayIndexSetSingLst_EM
                aplRankRht;          // Right ...
     APLLONGEST aplLongestSubLst,    // List arg subitem immediate value
                aplLongestRht;       // Right arg item   ...
-    IMM_TYPES  immTypeSubLst,       // List arg item immediate type
-               immTypeRht;          // Right ...
+    IMM_TYPES  immTypeRht;          // Right ...
     APLUINT    uRht,                // Loop counter
                uRes;                // Loop counter
     UINT       uBitMask,            // Bit mask for when looping through Booleans
@@ -2325,6 +2347,7 @@ BOOL ArrayIndexSetSingLst_EM
 
                     case PTRTYPE_HGLOBAL:
                         FreeResultGlobalVar (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemNam)[aplLongestSubLst]));
+                        ((LPAPLNESTED) lpMemNam)[aplLongestSubLst] = NULL;
 
                         break;
 
@@ -2403,33 +2426,6 @@ BOOL ArrayIndexSetSingLst_EM
         //   changing the result as appropriate
         for (uRes = 0; uRes < aplNELMSubLst; uRes++)
         {
-            // Get the next value from the list item
-            GetNextValueMem (lpMemSubLst,
-                             aplTypeSubLst,
-                             uRes,
-                             NULL,
-                            &aplLongestSubLst,
-                            &immTypeSubLst);
-            if (immTypeSubLst EQ IMMTYPE_FLOAT)
-                aplLongestSubLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLst, &bRet);
-            if (!bRet)
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
-
-            // Convert to origin-0
-            aplLongestSubLst -= bQuadIO;
-
-            // Check for INDEX ERROR
-            if (aplLongestSubLst >=lpMemDimRes[0])
-            {
-                ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
-
             // Get the next value from the right arg
             if (aplNELMRht NE 1)
                 GetNextItemMem (lpMemRht,
@@ -2437,71 +2433,18 @@ BOOL ArrayIndexSetSingLst_EM
                                 uRes,
                                &hGlbSubRht,
                                &aplLongestRht);
-            // Split cases based upon the result storage type
-            switch (aplTypeRes)
-            {
-                case ARRAY_BOOL:
-                    // Replace the corresponding item in the result
-                    uBitMask = (BIT0 << (MASKLOG2NBIB & (UINT) aplLongestSubLst));
-                    if (aplLongestRht)
-                        ((LPAPLBOOL)    lpMemRes)[aplLongestSubLst >> LOG2NBIB] |= uBitMask;
-                    else
-                        ((LPAPLBOOL)    lpMemRes)[aplLongestSubLst >> LOG2NBIB] &= ~uBitMask;
-                    break;
-
-                case ARRAY_INT:
-                    // Replace the corresponding item in the result
-                    ((LPAPLINT)    lpMemRes)[aplLongestSubLst] = (APLINT) aplLongestRht;
-
-                    break;
-
-                case ARRAY_FLOAT:
-                    // Replace the corresponding item in the result
-                    ((LPAPLFLOAT)  lpMemRes)[aplLongestSubLst] = *(LPAPLFLOAT) &aplLongestRht;
-
-                    break;
-
-                case ARRAY_CHAR:
-                    // Replace the corresponding item in the result
-                    ((LPAPLCHAR)   lpMemRes)[aplLongestSubLst] = (APLCHAR) aplLongestRht;
-
-                    break;
-
-                case ARRAY_HETERO:
-                    DbgBrk ();      // ***TESTME***
-////////////////////// Replace the corresponding item in the result
-////////////////////if (hGlbSubRht)
-////////////////////    ((LPAPLHETERO) lpMemRes)[aplLongestSubLst] = hGlbSubRht;
-////////////////////else
-////////////////////    ((LPAPLHETERO) lpMemRes)[aplLongestSubLst] = MakeSymEntry_EM (immTypeRht, &aplLongestRht, lptkFunc);
-////////////////////break;
-////////////////////
-                case ARRAY_NESTED:
-                    // Free the old value
-                    // Split cases based upon the ptr type
-                    switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRes)[aplLongestSubLst]))
-                    {
-                        case PTRTYPE_STCONST:
-                            break;
-
-                        case PTRTYPE_HGLOBAL:
-                            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRes)[aplLongestSubLst]));
-                            ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] = NULL;
-
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
-
-                    // Replace the corresponding item in the result
-                    ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] = CopySymGlbDir (hGlbSubRht);
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
+            // Index assignment into a the top level of a vector
+            bRet = ArrayIndexSetVector_EM (aplNELMNam,      // Name arg NELM
+                                           lpMemSubLst,     // Ptr to list arg subitem
+                                           aplTypeRes,      // Result storage type
+                                           lpMemRes,        // Ptr to result global memory
+                                           uRes,            // Index into the result
+                                           hGlbSubRht,      // Right arg item global memory handle
+                                           aplLongestRht,   // Right arg immediate value
+                                           bQuadIO,         // []IO
+                                           lptkFunc);       // Ptr to function token
+            if (!bRet)
+                goto ERROR_EXIT;
         } // End FOR
     } else
     {
@@ -2521,82 +2464,74 @@ BOOL ArrayIndexSetSingLst_EM
         //   first element of each of the list arg sub items.
         //***************************************************************
 
-        DbgBrk ();          // ***FINISHME*** -- Singleton list arg -- A[L]{is}R
-
+        if (aplNELMRht EQ 1)
+            // Get the one (and only) item from the right arg
+            GetFirstItemToken (lptkRhtArg,      // Ptr to the token
+                              &aplLongestRht,   // Ptr to the longest (may be NULL)
+                              &immTypeRht,      // ...        immediate type (see IMM_TYPES) (may be NULL)
+                              &hGlbSubRht);     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
         // Loop through the list indices and the right arg
         //   changing the result as appropriate
         for (uRes = 0; uRes < aplNELMSubLst; uRes++)
-        // Split cases based upon the list arg subitem ptr type
-        switch (GetPtrTypeDir (((LPAPLHETERO) lpMemSubLst)[uRes]))
         {
-            case PTRTYPE_STCONST:
-                // Check for RANK ERROR
-                if (aplRankNam NE 1)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
-
-                // Get the immediate value
-                aplLongestSubLst = ((LPAPLHETERO) lpMemSubLst)[uRes]->stData.stLongest;
-
-                // Check for DOMAIN ERROR
-                // Split cases based upon the immediate type
-                switch (((LPAPLHETERO) lpMemSubLst)[uRes]->stFlags.ImmType)
-                {
-                    case IMMTYPE_BOOL:
-                        aplLongestSubLst &= BIT0;
-
-                        break;
-
-                    case IMMTYPE_INT:
-                        break;
-
-                    case IMMTYPE_FLOAT:
-                        // Attempt to convert to integer
-                        aplLongestSubLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLst, &bRet);
-                        if (bRet)
-                            break;
-
-                        // Fall through to common DOMAIN ERROR code
-
-                    case IMMTYPE_CHAR:
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+            // Get the next value from the right arg
+            if (aplNELMRht NE 1)
+                GetNextItemMem (lpMemRht,
+                                aplTypeRht,
+                                uRes,
+                               &hGlbSubRht,
+                               &aplLongestRht);
+            // Split cases based upon the list arg subitem ptr type
+            switch (GetPtrTypeDir (((LPAPLHETERO) lpMemSubLst)[uRes]))
+            {
+                case PTRTYPE_STCONST:
+                    // Check for RANK ERROR
+                    if (aplRankNam NE 1)
+                    {
+                        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                                    lptkFunc);
                         goto ERROR_EXIT;
+                    } // End IF
 
-                    defstop
-                        break;
-                } // End SWITCH
+                    // Index assignment into a the top level of a vector
+                    bRet = ArrayIndexSetVector_EM (aplNELMNam,      // Name arg NELM
+                                                   lpMemSubLst,     // Ptr to list arg subitem
+                                                   aplTypeRes,      // Result storage type
+                                                   lpMemRes,        // Ptr to result global memory
+                                                   uRes,            // Index into the result
+                                                   hGlbSubRht,      // Right arg item global memory handle
+                                                   aplLongestRht,   // Right arg immediate value
+                                                   bQuadIO,         // []IO
+                                                   lptkFunc);       // Ptr to function token
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                    break;
 
-                // Convert to origin-0
-                aplLongestSubLst -= bQuadIO;
+                case PTRTYPE_HGLOBAL:
+                    DbgBrk ();          // ***FINISHME*** -- Singleton list arg -- A[L]{is}R
 
-                // Check for INDEX ERROR
-                if (aplLongestSubLst >= aplNELMNam)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
-
-                DbgBrk ();
-
-                //
+                    // Set the corresponding element of the result
+                    PrimFnDydRightShoeGlbGlb_EM_YY (hGlbSubLst,     // Left arg global memory handle
+                                                   *lphGlbRes,      // Right arg global memory handle
+                                                    lptkFunc,       // Ptr to function token
+                                                    TRUE,           // TRUE iff array assignment
+                                                    aplTypeRes,     // Set arg storage type
+                                                    hGlbSubRht,     // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+                                                    aplLongestRht); // Set arg immediate value
 
 
 
 
-                break;
 
 
-            case PTRTYPE_HGLOBAL:
-                break;
 
-            defstop
-                break;
-        } // End FOR/SWITCH
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } // End FOR
     } // End IF/ELSE/...
 
     goto NORMAL_EXIT;
@@ -2648,6 +2583,146 @@ NORMAL_EXIT:
 
     return bRet;
 } // End ArrayIndexSetSingLst_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ArrayIndexSetVector_EM
+//
+//  Array assignment into a vector
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ArrayIndexSetVector_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL ArrayIndexSetVector_EM
+    (APLNELM    aplNELMNam,             // Name arg NELM
+     LPVOID     lpMemSubLst,            // Ptr to list arg subitem
+     APLSTYPE   aplTypeRes,             // Result storage type
+     LPVOID     lpMemRes,               // Ptr to result global memory
+     APLUINT    uRes,                   // Index into the result
+     HGLOBAL    hGlbSubRht,             // Right arg item global memory handle
+     APLLONGEST aplLongestRht,          // Right arg immediate value
+     BOOL       bQuadIO,                // []IO
+     LPTOKEN    lptkFunc)               // Ptr to function token
+
+{
+    BOOL bRet = TRUE;                   // TRUE iff the result is valid
+    APLLONGEST aplLongestSubLst;        // List arg subitem immediate value
+
+    // Get the immediate value
+    aplLongestSubLst = ((LPAPLHETERO) lpMemSubLst)[uRes]->stData.stLongest;
+
+    // Check for DOMAIN ERROR
+    // Split cases based upon the immediate type
+    switch (((LPAPLHETERO) lpMemSubLst)[uRes]->stFlags.ImmType)
+    {
+        case IMMTYPE_BOOL:
+            aplLongestSubLst &= BIT0;
+
+            break;
+
+        case IMMTYPE_INT:
+            break;
+
+        case IMMTYPE_FLOAT:
+            // Attempt to convert to integer
+            aplLongestSubLst = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLst, &bRet);
+            if (bRet)
+                break;
+
+            // Fall through to common DOMAIN ERROR code
+
+        case IMMTYPE_CHAR:
+            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Convert to origin-0
+    aplLongestSubLst -= bQuadIO;
+
+    // Check for INDEX ERROR
+    if (aplLongestSubLst >= aplNELMNam)
+    {
+        ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
+    {
+        UINT uBitMask;          // Mask for working with Booleans
+
+        case ARRAY_BOOL:
+            // Replace the corresponding item in the result
+            uBitMask = (BIT0 << (MASKLOG2NBIB & (UINT) aplLongestSubLst));
+            if (aplLongestRht)
+                ((LPAPLBOOL)    lpMemRes)[aplLongestSubLst >> LOG2NBIB] |= uBitMask;
+            else
+                ((LPAPLBOOL)    lpMemRes)[aplLongestSubLst >> LOG2NBIB] &= ~uBitMask;
+            break;
+
+        case ARRAY_INT:
+            // Replace the corresponding item in the result
+            ((LPAPLINT)    lpMemRes)[aplLongestSubLst] = (APLINT) aplLongestRht;
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Replace the corresponding item in the result
+            ((LPAPLFLOAT)  lpMemRes)[aplLongestSubLst] = *(LPAPLFLOAT) &aplLongestRht;
+
+            break;
+
+        case ARRAY_CHAR:
+            // Replace the corresponding item in the result
+            ((LPAPLCHAR)   lpMemRes)[aplLongestSubLst] = (APLCHAR) aplLongestRht;
+
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            // Free the old value
+            // Split cases based upon the ptr type
+            switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRes)[aplLongestSubLst]))
+            {
+                case PTRTYPE_STCONST:
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    FreeResultGlobalVar (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRes)[aplLongestSubLst]));
+                    ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] = NULL;
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Replace the corresponding item in the result
+            ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] = CopySymGlbDir (hGlbSubRht);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT:
+    bRet = FALSE;
+NORMAL_EXIT:
+    return bRet;
+} // End ArrayIndexSetVector_EM
 #undef  APPEND_NAME
 
 

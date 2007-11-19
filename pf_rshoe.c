@@ -1768,6 +1768,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         } else
         {
             // The right arg item is an immediate value
+
+            // Validate that the remaining left arg items are {zilde}s
             if (!PrimFnDydRightShoeGlbImm_EM (aplNELMLft,           // Left arg NELM
                                               lpMemLft,             // Ptr to left arg global memory
                                               uLft + 1,             // Left arg starting index
@@ -1776,15 +1778,30 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                                               lptkFunc))            // Ptr to function token
                 goto ERROR_EXIT;
 
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
+            // If we're assigning a new value, ...
+            if (bArraySet)
+            {
+                // If the types are different, promote the right arg
+                if (aplTypeSet NE aplTypeRht
+                 && !TypePromoteGlb_EM (&hGlbRht, aplTypeSet, lptkFunc))
+                    goto ERROR_EXIT;
+                // Save the new global memory handle back into the array
 
-            // Fill in the result token
-            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-            lpYYRes->tkToken.tkFlags.ImmType   = immTypeSubRht;
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkLongest  = aplLongestSubRht;
-            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+
+
+            } else
+            {
+                // Allocate a new YYRes
+                lpYYRes = YYAlloc ();
+
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+                lpYYRes->tkToken.tkFlags.ImmType   = immTypeSubRht;
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkLongest  = aplLongestSubRht;
+                lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+            } // End IF/ELSE
 
             goto NORMAL_EXIT;
         } // End IF/ELSE

@@ -77,7 +77,7 @@ void TypeDemote
     LPVOID            lpMemRht = NULL,  // Ptr to right arg global memory
                       lpMemRes = NULL;  // Ptr to result    ...
     APLNELM           aplNELMRht,       // Right arg NELM
-                      aplNELMNest;      // Right arg NELM in case empty nested
+                      aplNELMNstRht;    // Right arg NELM in case empty nested
     APLRANK           aplRankRht;       // Right arg rank
     APLUINT           uRht,             // Right arg loop counter
                       ByteRes;          // # bytes in the result
@@ -250,12 +250,12 @@ void TypeDemote
 
             // Take into account nested prototypes
             if (aplTypeRht EQ ARRAY_NESTED)
-                aplNELMNest = max (aplNELMRht, 1);
+                aplNELMNstRht = max (aplNELMRht, 1);
             else
-                aplNELMNest = aplNELMRht;
+                aplNELMNstRht = aplNELMRht;
 
             // Loop through the elements
-            for (uRht = 0; uRht < aplNELMNest; uRht++, ((LPAPLHETERO) lpMemRht)++)
+            for (uRht = 0; uRht < aplNELMNstRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
             {
                 // Split cases based upon the ptr type of the element
                 switch (GetPtrTypeInd (lpMemRht))

@@ -132,14 +132,15 @@
             <li>Sink (monadic {is}<span class="APL">A</span>
               to suppress the display of <span class="APL">A</span>)</li>
             <li>Function editing via <span class="APL">{del}</span> or <span class="APL">)EDIT</span></li>
-            <li>Unified indexing: <span class="APL">R[L]</span>
-              allows both Reach and Scatter indexing &mdash; that is, if
+            <li>Unified index reference and assignment: <span class="APL">R[L]</span>
+              and <span class="APL">R[L]{is}</span>
+              allow both Reach and Scatter indexing &mdash; that is, if
               <span class="APL">L{pick}R</span> is valid, it is equivalent to
               <span class="APL">{disclose}R[{enclose}L]</span>, and if
               <span class="APL">L{squad}R</span> is valid, it is equivalent to
               <span class="APL">R[{disclose}{jot}.,/L]</span> &mdash; Reach
               and Scatter indexing may be mixed within a single instance of
-              <span class="APL">R[L]</span></li>
+              <span class="APL">R[L]</span> and <span class="APL">R[L]{is}</span></li>
             <li>Dyadic operator jot ({jot}) (composition) (e.g.,
               <span class="APL">f{is},{jot}{gradeup}{jot}{gradeup}{jot},</span>)</li>
             <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
@@ -408,14 +409,15 @@
           <span class="APL">F{is}{jot}</span>)</li>
         <li>Function editing via <span class="APL">{del}</span> or <span class="APL">)EDIT</span></li>
         <li>Raw output</li>
-        <li>Unified indexing: <span class="APL">R[L]</span>
-          allows both Reach and Scatter indexing &mdash; that is, if
+        <li>Unified index reference and assignment: <span class="APL">R[L]</span>
+          and <span class="APL">R[L]{is}</span>
+          allow both Reach and Scatter indexing &mdash; that is, if
           <span class="APL">L{pick}R</span> is valid, it is equivalent to
           <span class="APL">{disclose}R[{enclose}L]</span>, and if
           <span class="APL">L{squad}R</span> is valid, it is equivalent to
           <span class="APL">R[{disclose}{jot}.,/L]</span> &mdash; Reach
           and Scatter indexing may be mixed within a single instance of
-          <span class="APL">R[L]</span></li>
+          <span class="APL">R[L]</span> and <span class="APL">R[L]{is}</span></li>
         <li>Quad and Quote-Quad output, e.g., (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
         <li>Prototypes for all primitive functions and operators</li>
         <li>Fast Boolean reduction ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus})

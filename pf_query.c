@@ -176,6 +176,10 @@ APLSTYPE PrimSpecQueryStorageTypeMon
 //  $PrimFnMonQueryIisI
 //
 //  Primitive scalar function monadic Query:  I {is} fn I
+//
+//  This algorithm was taken from
+//    "How the Roll Function Works" by E. E. McDonnell,
+//    APL Quote Quad, Vol. 8, Number 3, p. 42.
 //***************************************************************************
 
 APLINT PrimFnMonQueryIisI
@@ -224,6 +228,10 @@ APLINT PrimFnMonQueryIisI
 //  $PrimFnMonQueryIisF
 //
 //  Primitive scalar function monadic Query:  I {is} fn F
+//
+//  This algorithm was taken from
+//    "How the Roll Function Works" by E. E. McDonnell,
+//    APL Quote Quad, Vol. 8, Number 3, p. 42.
 //***************************************************************************
 
 APLINT PrimFnMonQueryIisF
@@ -275,8 +283,8 @@ APLINT PrimFnMonQueryIisF
 //
 //  Primitive function for dyadic Query ("deal")
 //
-//  This algorithm was taken from a paper by R. A. Kelley,
-//    "APLGOL, an Experimental Structured Programming Language",
+//  This algorithm was taken from
+//    "APLGOL, an Experimental Structured Programming Language" by R. A. Kelley,
 //    IBM Journal of Research and Delvelopment, January 1973, pp. 69-73.
 //***************************************************************************
 
@@ -326,7 +334,6 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
     //***************************************************************
-
     if (lptkAxis NE NULL)
     {
         ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
@@ -503,9 +510,9 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
 
         // Reallocate the memory down to the value of the left arg
         hGlbRes =
-        MyGlobalReAlloc (hGlbRes,
-                         MyGlobalSize (hGlbRes) - (UINT) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
-                         GHND);
+          MyGlobalReAlloc (hGlbRes,
+                           MyGlobalSize (hGlbRes) - (UINT) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
+                           GHND);
         lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
     } // End IF/ELSE
 ERROR_EXIT:

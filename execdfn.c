@@ -345,11 +345,11 @@ RESTART_EXCEPTION_EXECDFNGLB:
                    &lpMemPTD->lpSISNxt->numLabels,
                     lpMemDfnHdr);
 
-    // Save the # SYMENTRYs localized
+    // Save the # LPSYMENTRYs localized
     lpMemPTD->lpSISNxt->numSymEntries = lpSymEntryNxt - lpSymEntryBeg;
 
     // Save as new SISNxt ptr
-    lpMemPTD->lpSISNxt               = (LPSIS_HEADER) lpSymEntryNxt;
+    lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
 
     // Setup the left arg STEs
     InitVarSTEs (lptkLftArg,
@@ -896,9 +896,9 @@ BOOL Unlocalize
     HGLOBAL      hGlbPTD,           // PerTabData global memory handle
                  hGlbData;          // STE global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
-    UINT         numSymEntries,     // # SYMENTRYs localized
+    UINT         numSymEntries,     // # LPSYMENTRYs localized
                  numSym;            // Loop counter
-    LPSYMENTRY   lpSymEntryNxt;     // Ptr to next SYMENTRY on the SIS
+    LPSYMENTRY   lpSymEntryNxt;     // Ptr to next localized LPSYMENTRY on the SIS
     BOOL         bRet = TRUE;       // TRUE iff the result is valid
     RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
 
@@ -921,13 +921,13 @@ BOOL Unlocalize
         // Free the outgoing value of []EM
         FreeResultGlobalVar (lpMemPTD->lpSISCur->hGlbQuadEM);
 
-        // Get # SYMENTRYs on the stack
+        // Get # LPSYMENTRYs on the stack
         numSymEntries = lpMemPTD->lpSISCur->numSymEntries;
 
-        // Point to the destination SYMENTRYs
+        // Point to the localized LPSYMENTRYs
         lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISCur, sizeof (SIS_HEADER));
 
-        // Loop through the # SYMENTRYs
+        // Loop through the # LPSYMENTRYs
         for (numSym = 0; numSym < numSymEntries; numSym++)
         // If the hash entry is valid, ...
         if (lpSymEntryNxt[numSym].stHshEntry)
@@ -1467,7 +1467,7 @@ BOOL InitFcnSTEs
 //***************************************************************************
 //  $LocalizeSymEntries
 //
-//  Localize SYMENTRYs
+//  Localize LPSYMENTRYs
 //***************************************************************************
 
 LPSYMENTRY LocalizeSymEntries

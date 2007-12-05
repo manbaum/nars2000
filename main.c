@@ -1162,7 +1162,7 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVE_WS:
-                    CmdSaveWS_EM (L"");  // Handle the same as )SAVE
+                    CmdSave_EM (L"");   // Handle the same as )SAVE
 
                     return FALSE;   // We handled the msg
 
@@ -1188,7 +1188,7 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVECLOSE_WS:
-                    if (CmdSaveWS_EM (L""))  // Handle the same as )SAVE
+                    if (CmdSave_EM (L""))   // Handle the same as )SAVE
                         // Close the tab
                         CloseTab (iOverTab);
 

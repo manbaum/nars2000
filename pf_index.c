@@ -432,7 +432,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                         // Note the args get switched between indexing and pick
                         lpYYItm =
                           PrimFnDydRightShoeGlbGlb_EM_YY (hGlbItm,          // Name arg global memory handle
-                                                          hGlbNam,          // Right arg global memory handle
+                                                         &hGlbNam,          // Ptr to right arg global memory handle
                                                           lptkFunc,         // Ptr to function token
                                                           FALSE,            // TRUE iff array assignment
                                                           ARRAY_ERROR,      // Set arg storage type
@@ -2484,6 +2484,8 @@ BOOL ArrayIndexSetSingLst_EM
             // Split cases based upon the list arg subitem ptr type
             switch (GetPtrTypeDir (((LPAPLHETERO) lpMemSubLst)[uRes]))
             {
+                LPPL_YYSTYPE lpYYItm;
+
                 case PTRTYPE_STCONST:
                     // Check for RANK ERROR
                     if (aplRankNam NE 1)
@@ -2511,20 +2513,19 @@ BOOL ArrayIndexSetSingLst_EM
                     DbgBrk ();          // ***FINISHME*** -- Singleton list arg -- A[L]{is}R
 
                     // Set the corresponding element of the result
-                    PrimFnDydRightShoeGlbGlb_EM_YY (hGlbSubLst,     // Left arg global memory handle
-                                                   *lphGlbRes,      // Right arg global memory handle
-                                                    lptkFunc,       // Ptr to function token
-                                                    TRUE,           // TRUE iff array assignment
-                                                    aplTypeRes,     // Set arg storage type
-                                                    hGlbSubRht,     // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
-                                                    aplLongestRht); // Set arg immediate value
+                    // Note the args get switched between indexing and pick
+                    lpYYItm =
+                      PrimFnDydRightShoeGlbGlb_EM_YY (hGlbSubLst,       // Left arg global memory handle
+                                                      lphGlbRes,        // Ptr to right arg global memory handle
+                                                      lptkFunc,         // Ptr to function token
+                                                      TRUE,             // TRUE iff array assignment
+                                                      aplTypeRes,       // Set arg storage type
+                                                      hGlbSubRht,       // Set arg global memory handle/LPSYMENTRY (NULL if immediate)
+                                                      aplLongestRht);   // Set arg immediate value
+                    if (!lpYYItm)
+                        goto ERROR_EXIT;
 
-
-
-
-
-
-
+                    YYFree (lpYYItm); lpYYItm = NULL;
 
                     break;
 

@@ -1737,6 +1737,12 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End SWITCH
 
             break;
+
+        case WM_PAINT:
+            // Tell the ending code to draw the line #s afterwards
+            bDrawLineNums = TRUE;
+
+            break;
     } // End SWITCH
 
     // Lock the memory to get a ptr to it

@@ -559,14 +559,14 @@ LPAPLCHAR FormatImmed
 
 {
     WCHAR wc;
-////UINT  uRht;
 
+    // Split cases based upon the immediate type
     switch (ImmType)
     {
         case IMMTYPE_BOOL:
             lpaplChar =
             FormatAplint (lpaplChar,
-                          *(LPAPLBOOL) lpaplLongest);
+                          BIT0 & *(LPAPLBOOL) lpaplLongest);
             break;
 
         case IMMTYPE_INT:
@@ -601,7 +601,7 @@ LPAPLCHAR FormatImmed
                     // We're always at the (virtual) left margin,
                     //   so insert enough blanks for a TAB
                     lpaplChar = FillMemoryW (lpaplChar, uTabs + 1, L' ');
-////////////////////*lpaplChar++ = L' ';    // Append a blank to be deleted
+///////////////////*lpaplChar++ = L' ';     // Append a blank to be deleted
 
                     break;
 

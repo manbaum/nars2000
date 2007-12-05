@@ -242,8 +242,10 @@ void FastBoolScan
 
                 // If not found, ...
                 if (uFirstBitIndexInByte EQ uBitsInMask)
+                {
                     uBitCountVector += uBitsInMask;
-                else
+                    uFirstBitIndexInByte = 0;
+                } else
                     break;
             } // End IF
         } // End IF
@@ -533,13 +535,15 @@ void FastBoolRed
             // Because the APA has all the same element (lpAPA->Off),
             //   we find it either in the first position or not at all
             if (lpAPA->Off EQ !uNotMarker)
+            {
                 // Marker bit found in the first position:  the index is 0
                 // Fill with uInfix EQ uSuffix
                 if (uInfix EQ uSuffix)
                     FillMemory ((LPAPLBOOL) lpMemRes,
                                 (UINT) ((uDimLo + (NBIB - 1)) >> LOG2NBIB),
                                 0xFF);
-            else
+            } else
+            {
                 // Marker bit not found:  the index is uDimAxRht
                 // If the index is odd, use uNotMarker
                 //   otherwise, use uIdentElem
@@ -547,6 +551,7 @@ void FastBoolRed
                     FillMemory ((LPAPLBOOL) lpMemRes,
                                 (UINT) ((uDimLo + (NBIB - 1)) >> LOG2NBIB),
                                 0xFF);
+            } // End IF/ELSE
 #undef  lpAPA
         } else
             DbgStop ();         // We should never get here
@@ -613,10 +618,12 @@ void FastBoolRed
 
                 // If not found, ...
                 if (uFirstBitIndexInByte EQ uBitsInMask)
+                {
                     uBitCountVector += uBitsInMask;
-                else
+                    uFirstBitIndexInByte = 0;
+                } else
                     break;
-            } // End IF
+            } // End WHILE
         } // End IF
 
         // Get the index of the first marker bit in the vector (uDimAxRht if not found)
@@ -755,7 +762,8 @@ void FastBoolRedQual
         } // End IF
 
         // Save in the result
-        *((LPAPLBOOL) lpMemRes) |= ((uFBFNIndex EQ PF_INDEX_NOTEQUAL) EQ (BIT0 & uAccum)) << uDimRes++;
+        *((LPAPLBOOL) lpMemRes) |=
+          ((uFBFNIndex EQ PF_INDEX_NOTEQUAL) EQ (BIT0 & uAccum)) << uDimRes++;
 
         // Check to see if we need to skip to the next result byte
         CHECK_NEXT_RESULT_BYTE (lpMemRes, uDimRes);

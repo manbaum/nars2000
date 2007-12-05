@@ -13,8 +13,10 @@ TO DO:  General:  Important (pre-alpha)
 * ...       bracket indexed strand assignment  (B (A[L])){is}R
 * ...       bracket indexed modified assignment  A[L]Fcn{is}R
 * ...       bracket indexed modified strand assignment  (B (A[L]))Fcn{is}R
-* ...       )LOAD
 * ...       )COPY
+* ...       )ERASE
+* ...       )LOAD
+* ...       )SAVE
 * ...       minimum set of system functions, to wit:
 * ...          []EC R
 * ...          []EX R
@@ -41,7 +43,7 @@ TO DO:  General:  Less Important (post-alpha)
 * Implement user/session options dialog
 * Implement Redo (Ctrl-Y)
 * Handle SI Damage to be more forgiving
-* Allow [first][-][last] as arg to )VARS/FNS/OPS/NMS
+* Allow [first][-][last] as arg to )LIB/VARS/FNS/OPS/NMS
 * Check for overflow on integer multiplication
 * Implement these features:
 * ...       selective assignment
@@ -122,14 +124,21 @@ DONE:  General
 * ...       (+{jot}(2+3))4
 * ...       (+{jot}(2 3))4
 * ...       (+{jot} 2 3 )4
-* ...       )SAVE
+* ...       )CLEAR
+* ...       )CLOSE
+* ...       )DROP
+* ...       )EDIT
+* ...       )EXIT
 * ...       )FNS
+* ...       )LIB
 * ...       )NMS
 * ...       )OPS
-* ...       )VARS
+* ...       )RESET
 * ...       )SI
 * ...       )SIC
-* ...       )RESET
+* ...       )SINL
+* ...       )VARS
+* ...       )WSID
 * ...       function execution
 * ...       goto
 * ...       goto Line #
@@ -252,6 +261,8 @@ QUESTIONS
   should either a[]{is}0{rho}{enclose}0 0 0
              or a[;]{is}0{rho}{enclose}0 0 0
   transfer the prototype to the named var?
+* Why limit []PP on the high side?
+
 
 File Extensions
 ---------------

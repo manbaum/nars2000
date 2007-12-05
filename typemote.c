@@ -151,15 +151,23 @@ void TypeDemote
     if (IsSimple (aplTypeRht)
      && aplRankRht EQ 0)
     {
+        APLLONGEST aplLongestRht;
+
+        // Get the immediate value
+        aplLongestRht = *(LPAPLLONGEST) lpMemRht;
+
+        // If the type is Boolean, limit it to a single bit
+        if (aplTypeRht EQ ARRAY_BOOL)
+            aplLongestRht &= BIT0;
+
         // Split cases based upon the right arg token type
         switch (lptkRhtArg->tkFlags.TknType)
         {
             case TKT_VARNAMED:
-                DbgBrk ();
-
+                // Fill in the result token
                 lptkRhtArg->tkData.tkSym->stFlags.Imm      = TRUE;
                 lptkRhtArg->tkData.tkSym->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
-                lptkRhtArg->tkData.tkSym->stData.stLongest = *(LPAPLLONGEST) lpMemRht;
+                lptkRhtArg->tkData.tkSym->stData.stLongest = aplLongestRht;
 
                 break;
 
@@ -167,7 +175,7 @@ void TypeDemote
                 // Fill in the result token
                 lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
                 lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRht);
-                lptkRhtArg->tkData.tkLongest = *(LPAPLLONGEST) lpMemRht;
+                lptkRhtArg->tkData.tkLongest = aplLongestRht;
 
                 break;
 
@@ -378,8 +386,7 @@ void TypeDemote
             switch (lptkRhtArg->tkFlags.TknType)
             {
                 case TKT_VARNAMED:
-                    DbgBrk ();
-
+                    // Fill in the result token
                     lptkRhtArg->tkData.tkSym->stFlags.Imm      = TRUE;
                     lptkRhtArg->tkData.tkSym->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
                     lptkRhtArg->tkData.tkSym->stData.stLongest = 0;

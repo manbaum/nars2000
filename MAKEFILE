@@ -248,7 +248,13 @@ $(O)qf_ucs.DEP          \
 $(O)refcnt.DEP          \
 $(O)reg.DEP             \
 $(O)resdebug.DEP        \
-$(O)savews.DEP          \
+$(O)sc_drop.DEP         \
+$(O)sc_fnov.DEP         \
+$(O)sc_lib.DEP          \
+$(O)sc_reset.DEP        \
+$(O)sc_save.DEP         \
+$(O)sc_si.DEP           \
+$(O)sc_wsid.DEP         \
 $(O)sessman.DEP         \
 $(O)sort.DEP            \
 $(O)strand.DEP          \
@@ -615,8 +621,26 @@ $(O)yyfns.DEP
 !if exist ($(O)resdebug.DEP)
 !       include $(O)resdebug.DEP
 !endif
-!if exist ($(O)savews.DEP)
-!       include $(O)savews.DEP
+!if exist ($(O)sc_drop.DEP)
+!       include $(O)sc_drop.DEP
+!endif
+!if exist ($(O)sc_fnov.DEP)
+!       include $(O)sc_fnov.DEP
+!endif
+!if exist ($(O)sc_lib.DEP)
+!       include $(O)sc_lib.DEP
+!endif
+!if exist ($(O)sc_reset.DEP)
+!       include $(O)sc_reset.DEP
+!endif
+!if exist ($(O)sc_save.DEP)
+!       include $(O)sc_save.DEP
+!endif
+!if exist ($(O)sc_si.DEP)
+!       include $(O)sc_si.DEP
+!endif
+!if exist ($(O)sc_wsid.DEP)
+!       include $(O)sc_wsid.DEP
 !endif
 !if exist ($(O)sessman.DEP)
 !       include $(O)sessman.DEP
@@ -779,7 +803,13 @@ $(O)qf_ucs.PRO          \
 $(O)refcnt.PRO          \
 $(O)reg.PRO             \
 $(O)resdebug.PRO        \
-$(O)savews.PRO          \
+$(O)sc_drop.PRO         \
+$(O)sc_fnov.PRO         \
+$(O)sc_lib.PRO          \
+$(O)sc_reset.PRO        \
+$(O)sc_save.PRO         \
+$(O)sc_si.PRO           \
+$(O)sc_wsid.PRO         \
 $(O)sessman.PRO         \
 $(O)sort.PRO            \
 $(O)strand.PRO          \
@@ -947,7 +977,13 @@ $(O)reg.OBJ:            $(@B).C         $(REG_DEP)
 !if "$(RESDEBUG)" == "1"
 $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
 !endif
-$(O)savews.OBJ:         $(@B).C         $(SAVEWS_DEP)
+$(O)sc_drop.OBJ:        $(@B).C         $(SC_DROP_DEP)
+$(O)sc_fnov.OBJ:        $(@B).C         $(SC_FNOV_DEP)
+$(O)sc_lib.OBJ:         $(@B).C         $(SC_LIB_DEP)
+$(O)sc_reset.OBJ:       $(@B).C         $(SC_RESET_DEP)
+$(O)sc_save.OBJ:        $(@B).C         $(SC_SAVE_DEP)
+$(O)sc_si.OBJ:          $(@B).C         $(SC_SI_DEP)
+$(O)sc_wsid.OBJ:        $(@B).C         $(SC_WSID_DEP)
 $(O)sessman.OBJ:        $(@B).C         $(SESSMAN_DEP)
 $(O)sort.OBJ:           $(@B).C         $(SORT_DEP)
 $(O)strand.OBJ:         $(@B).C         $(STRAND_DEP)
@@ -1092,7 +1128,13 @@ OBJS=                       \
 !if "$(RESDEBUG)" == "1"
      $(O)resdebug.OBJ       \
 !endif
-     $(O)savews.OBJ         \
+     $(O)sc_drop.OBJ        \
+     $(O)sc_fnov.OBJ        \
+     $(O)sc_lib.OBJ         \
+     $(O)sc_reset.OBJ       \
+     $(O)sc_save.OBJ        \
+     $(O)sc_si.OBJ          \
+     $(O)sc_wsid.OBJ        \
      $(O)sessman.OBJ        \
      $(O)sort.OBJ           \
      $(O)strand.OBJ         \

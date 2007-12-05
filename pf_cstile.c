@@ -414,7 +414,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                  apaOffRht,         // Right arg APA offset
                  apaMulRht,         // Right arg APA multiplier
                  aplRot;            //
-    APLFLOAT     aplFloatLft;       // Temporary left arg float
+    APLLONGEST   aplLongestLft;     // Left arg immediate value
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     UINT         uBitMask,          //
                  uBitIndex;         //
@@ -449,8 +449,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     } // End IF/ELSE
 
     // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+                    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Scalar or one-element vector left arg matches everything
     if (!(aplRankLft EQ 0 || (aplRankLft EQ 1 && aplNELMLft EQ 1)))
@@ -470,7 +470,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         // Check for LENGTH ERROR
         for (uDim = 0; uDim < aplRankRht; uDim++)
         if (uDim NE aplAxis
-         && lpMemDimLft[uDim] NE lpMemDimRht[uDim + (uDim < aplAxis)])
+         && lpMemDimLft[uDim] NE lpMemDimRht[uDim + (uDim > aplAxis)])
         {
             ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                        lptkLftArg);
@@ -485,25 +485,19 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     // If the left arg is singleton, get its value
     if (aplNELMLft EQ 1)
     {
-        // Get the integer or float value
-        GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
-                           &aplIntegerLft,  // Ptr to integer result
-                           &aplFloatLft,    // Ptr to float ...
-                            NULL,           // Ptr to WCHAR ...
-                            NULL,           // Ptr to longest ...
-                            NULL,           // Ptr to lpSym/Glb ...
-                            NULL,           // Ptr to ...immediate type ...
-                            NULL);          // Ptr to array type ...
         // Attempt to convert FLOAT left arg
         if (aplTypeLft EQ ARRAY_FLOAT)
         {
-            aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
+            aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
             if (!bRet)
                 goto DOMAIN_EXIT;
-        } // End IF
+        } else
+            aplIntegerLft = aplLongestLft;
     } else
     // Split cases based upon the left arg's storage type
     {
+        LPAPLINT lpMemRotIni;
+
         // Copy left arg to temp storage (all APLINTs), and
         //   check the left arg for valid values
 
@@ -518,9 +512,14 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                                        lptkLftArg);
             goto ERROR_EXIT;
         } // End IF
-        // Lock the memory to get a ptr to it
-        lpMemRot = MyGlobalLock (hGlbRot);
 
+        // Lock the memory to get a ptr to it
+        lpMemRot = lpMemRotIni = MyGlobalLock (hGlbRot);
+
+        // Skip over the header and dimensions to the data
+        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+
+        // Split cases based upon the left arg storage type
         switch (aplTypeLft)
         {
             case ARRAY_BOOL:
@@ -575,8 +574,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         } // End SWITCH
 
         // Restore lpMemRot to the start of the block
-        MyGlobalUnlock (hGlbRot); lpMemRot = NULL;
-        lpMemRot = MyGlobalLock (hGlbRot);
+        lpMemRot = lpMemRotIni;
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;

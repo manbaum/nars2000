@@ -285,16 +285,18 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     // If the product of the dimensions above
     //   the axis dimension is one, and
     //   this is a primitive function, and
-    //   the right arg is Boolean or APA, and
+    //   the right arg is Boolean or APA Boolean, and
+    //   the axis dimension is > 1, and
     //   we're not doing prototypes, then
     //   check for the possibility of doing a
-    //   Fast Boolean Reduction
+    //   Fast Boolean Scan
     if (uDimHi EQ 1
      && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
      && (aplTypeRht EQ ARRAY_BOOL
       || (aplTypeRht EQ ARRAY_APA
        && (apaOffRht EQ 0 || apaOffRht EQ 1)
        && apaMulRht EQ 0 ))
+     && uDimAxRht > 1
      && lpPrimProtoLft EQ NULL
      && lpPrimFlags
      && lpPrimFlags->FastBool)

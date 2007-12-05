@@ -308,6 +308,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     //   the axis dimension is one, and
     //   this is a primitive function, and
     //   the right arg is Boolean or APA Boolean, and
+    //   the axis dimension is > 1, and
     //   we're not doing prototypes, then
     //   check for the possibility of doing a
     //   Fast Boolean Reduction
@@ -317,6 +318,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
       || (aplTypeRht EQ ARRAY_APA
        && (apaOffRht EQ 0 || apaOffRht EQ 1)
        && apaMulRht EQ 0 ))
+     && uDimAxRht > 1
      && lpPrimProtoLft EQ NULL
      && lpPrimFlags
      && (lpPrimFlags->FastBool || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PLUS))

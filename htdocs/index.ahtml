@@ -42,8 +42,8 @@
       <li><a href="#Introduction">Introduction</a></li>
       <li><a href="#Language_Features">Language Features</a></li>
       <li><a href="#Datatypes">Datatypes</a></li>
-      <li><a href="#Miscellaneous">Miscellaneous</a></li>
-      <li><a href="#Currently_Implemented">Available Features</a></li>
+      <li><a href="#Miscellaneous">Miscellaneous Features</a></li>
+      <li><a href="#Currently_Implemented">Currently Implemented Features</a></li>
       <li><a href="#Platforms">Platforms</a></li>
       <li><a href="#Documentation">Documentation</a></li>
       <li><a href="#What_It_Isnt">What It Isn't</a></li>
@@ -57,16 +57,10 @@
     <br />
     <br />
 
-    <script type="text/javascript">
-      <!--
-      google_ad_client = "pub-5069729984191471";
-      google_ad_width = 120;
-      google_ad_height = 600;
-      google_ad_format = "120x600_as";
-      google_color_border = "000000";
-      //-->
-    </script>
     <div style="margin-left:  1em;">
+    <script type="text/javascript"
+            src="http://www.qualitas.com/GoogleAds.js">
+    </script>
     <script type="text/javascript"
             src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
     </script>
@@ -172,6 +166,37 @@
               instead of <span class="APL">//3 4</span>)</li>
             <li>Dyadic iota ({iota}) extended to rank > 1 left arguments returns an array
               of vector indices to the left arg (via an internal magic function)</li>
+            <li>± Infinity (e.g., <span class="APL">{underbar}</span> for infinity
+              and <span class="APL">{overbar}{underbar}</span> for negative infinity)
+              &mdash; considerable development work needs to be done to this
+              feature to handle the many special cases</li>
+            <li>Monadic and dyadic domino ({domino}) &mdash; matrix inverse/divide extended to
+              use Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
+            <li>Prototypes for all primitive functions and operators</li>
+            <li>System functions:
+              <ul>
+                <li><span class="APL">1 {quad}CR R</span> and <span class="APL">2 {quad}CR R</span></li>
+                <li><span class="APL">{quad}DM</span></li>
+                <li><span class="APL">{quad}DR R</span></li>
+                <li><span class="APL">L {quad}DR R</span></li>
+                <li><span class="APL">{quad}ERROR R</span></li>
+                <li><span class="APL">{quad}SIZE R</span></li>
+                <li><span class="APL">{quad}SYSID</span></li>
+                <li><span class="APL">{quad}SYSVER</span></li>
+                <li><span class="APL">{quad}TC</span> and other related <span class="APL">{quad}TC</span>xxx</li>
+                <li><span class="APL">{quad}TYPE R</span></li>
+                <li><span class="APL">{quad}UCS R</span></li>
+              </ul>
+            </li>
+            <li>System commands:
+              <ul>
+                <li><span class="APL">)CLOSE</span></li>
+                <li><span class="APL">)EDIT</span></li>
+                <li><span class="APL">)EXIT</span></li>
+                <li><span class="APL">)NEWTAB</span></li>
+                <li><span class="APL">)RESET</span></li>
+              </ul>
+            </li>
           </ul>
         </li>
 
@@ -222,8 +247,8 @@
         <li>Nested arrays</li>
         <li>APAs (Arithmetic Progression Arrays) (e.g.,
           <span class="APL">2 3 4{rho}{iota}24</span>)</li>
-        <li>± Infinity (e.g., <span class="APL">_</span> for infinity
-          and <span class="APL">{overbar}_</span> for negative infinity)
+        <li>± Infinity (e.g., <span class="APL">{underbar}</span> for infinity
+          and <span class="APL">{overbar}{underbar}</span> for negative infinity)
           &mdash; considerable development work needs to be done to this
           feature to handle the many special cases</li>
         </ul>
@@ -385,8 +410,8 @@
           <li>Nested arrays</li>
           <li>APAs (Arithmetic Progression Arrays) (e.g.,
             <span class="APL">2 3 4{rho}{iota}24</span>)</li>
-          <li>± Infinity (e.g., <span class="APL">_</span> for infinity
-            and <span class="APL">{overbar}_</span> for negative infinity)
+          <li>± Infinity (e.g., <span class="APL">{underbar}</span> for infinity
+            and <span class="APL">{overbar}{underbar}</span> for negative infinity)
             &mdash; considerable development work needs to be done to this
             feature to handle the many special cases</li>
       </ul>
@@ -461,7 +486,7 @@
       <ul>
         <li>Tabbed Workspaces</li>
         <li>Function Editor</li>
-        <li>Character translation during Paste from APL+WIN</li>
+        <li>Character translation during Paste from APL+WIN and other contexts</li>
       </ul>
 
       <h3>System Functions</h3>
@@ -501,9 +526,9 @@
             <li><span class="APL">{quad}SIZE</span></li>
             <li><span class="APL">{quad}TYPE</span></li>
             <li><span class="APL">{quad}UCS</span></li>
-            <li><b>TBD:</b> <span class="APL">{quad}EC R</span></li>
-            <li><b>TBD:</b> <span class="APL">{quad}EX R</span></li>
-            <li><b>TBD:</b> <span class="APL">{quad}FX R</span></li>
+            <li><b>TBD:</b> <span class="APL">{quad}EC</span></li>
+            <li><b>TBD:</b> <span class="APL">{quad}EX</span></li>
+            <li><b>TBD:</b> <span class="APL">{quad}FX</span></li>
           </ul>
         </li>
 
@@ -516,8 +541,8 @@
               <span class="APL">0 {quad}DR</span> for character message</li>
             <li><span class="APL">{quad}ES</span></li>
             <li><span class="APL">{quad}NL</span></li>
-            <li><b>TBD:</b> <span class="APL">L {quad}EA R</span></li>
-            <li><b>TBD:</b> <span class="APL">L {quad}TF R</span></li>
+            <li><b>TBD:</b> <span class="APL">{quad}EA</span></li>
+            <li><b>TBD:</b> <span class="APL">{quad}TF</span></li>
           </ul>
         </li>
       </ul>
@@ -530,15 +555,20 @@
         <li><span class="APL">)EDIT</span></li>
         <li><span class="APL">)EXIT</span></li>
         <li><span class="APL">)FNS</span></li>
+        <li><span class="APL">)LIB</span></li>
         <li><span class="APL">)NEWTAB</span></li>
         <li><span class="APL">)NMS</span></li>
         <li><span class="APL">)OPS</span></li>
         <li><span class="APL">)RESET</span></li>
         <li><span class="APL">)SI</span></li>
         <li><span class="APL">)SIC</span></li>
+        <li><span class="APL">)SINL</span></li>
         <li><span class="APL">)VARS</span></li>
-        <li><b>TBD:</b> <span class="APL">)LOAD</span></li>
+        <li><span class="APL">)WSID</span></li>
         <li><b>TBD:</b> <span class="APL">)COPY</span></li>
+        <li><b>TBD:</b> <span class="APL">)ERASE</span></li>
+        <li><b>TBD:</b> <span class="APL">)LOAD</span></li>
+        <li><b>TBD:</b> <span class="APL">)SAVE</span></li>
       </ul>
     </div>
 

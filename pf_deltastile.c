@@ -484,7 +484,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     //   one per left arg dimension
     for (uDim = 0; uDim < aplRankLft; uDim++)
     {
-        // Allocate space for the TT -- note without GMEM_ZEROINIT as we'll init it ourselves
+        // Allocate space for the TT -- note we don't use GHND (which includes GMEM_ZEROINIT)
+        //    as we'll initialize it ourselves
         lpMemTTHandles[uDim].hGlbTT = DbgGlobalAlloc (GMEM_MOVEABLE, 64*1024*sizeof (APLCHAR));
         if (!lpMemTTHandles[uDim].hGlbTT)
         {
@@ -849,7 +850,7 @@ APLINT PrimFnGradeCompare
                     aplIndLft = lpMemTT[aplCharLft];
                     aplIndRht = lpMemTT[aplCharRht];
 
-                    // If the  indices are different, ...
+                    // If the indices are different, ...
                     if (aplIndLft NE aplIndRht)
                     {
                         // Mark as different

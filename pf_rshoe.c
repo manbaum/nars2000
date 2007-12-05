@@ -1262,7 +1262,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
 
                 return PrimFnDydRightShoeGlbGlb_EM_YY
                        (ClrPtrTypeDirAsGlb (lptkLftArg->tkData.tkSym->stData.stGlbData),  // Left arg global memory handle
-                        hGlbRht,                                // Right arg global memory handle
+                       &hGlbRht,                                // Right arg global memory handle
                         lptkFunc,                               // Ptr to function token
                         FALSE,                                  // TRUE iff array assignment
                         ARRAY_ERROR,                            // Set arg storage type
@@ -1288,7 +1288,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
 
             return PrimFnDydRightShoeGlbGlb_EM_YY
                    (ClrPtrTypeDirAsGlb (lptkLftArg->tkData.tkGlbData),  // Left arg global memory handle
-                    hGlbRht,                                    // Right arg global memory handle
+                   &hGlbRht,                                    // Right arg global memory handle
                     lptkFunc,                                   // Ptr to function token
                     FALSE,                                      // TRUE iff array assignment
                     ARRAY_ERROR,                                // Set arg storage type
@@ -1434,7 +1434,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
 
 LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     (HGLOBAL    hGlbLft,                // Left  arg global memory handle
-     HGLOBAL    hGlbRht,                // Right arg global memory handle
+     HGLOBAL   *lphGlbRht,              // Ptr to right arg global memory handle
      LPTOKEN    lptkFunc,               // Ptr to function token
      BOOL       bArraySet,              // TRUE iff in array assignment
      APLSTYPE   aplTypeSet,             // Set arg storage type
@@ -1497,10 +1497,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
         // Get the attributes (Type, NELM, and Rank)
         //   of the right arg global
-        AttrsOfGlb (hGlbRht, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+        AttrsOfGlb (*lphGlbRht, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
         // Lock the memory to get a ptr to it
-        lpMemRht = MyGlobalLock (hGlbRht);
+        lpMemRht = MyGlobalLock (*lphGlbRht);
 
         // Skip over the header to the dimensions
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
@@ -1752,7 +1752,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         } // End IF/ELSE
 
         // Get the indexed value from the right arg
-        GetNextValueGlb (hGlbRht,               // Right arg global memory handle
+        GetNextValueGlb (*lphGlbRht,            // Right arg global memory handle
                          aplLongestSubLft,      // Index
                         &hGlbSubRht,            // Ptr to result as HGLOBAL (may be NULL if singleton)
                         &aplLongestSubRht,      // Ptr to result as singleton value
@@ -1761,10 +1761,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         if (hGlbSubRht)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemRht = lpMemDimRht = NULL;
+            MyGlobalUnlock (*lphGlbRht); lpMemRht = lpMemDimRht = NULL;
 
             // Copy as new right arg global memory handle
-            hGlbRht = hGlbSubRht;
+            *lphGlbRht = hGlbSubRht;
         } else
         {
             // The right arg item is an immediate value
@@ -1783,7 +1783,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             {
                 // If the types are different, promote the right arg
                 if (aplTypeSet NE aplTypeRht
-                 && !TypePromoteGlb_EM (&hGlbRht, aplTypeSet, lptkFunc))
+                 && !TypePromoteGlb_EM (lphGlbRht, aplTypeSet, lptkFunc))
                     goto ERROR_EXIT;
                 // Save the new global memory handle back into the array
 
@@ -1814,7 +1814,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir (MakeGlbTypeAsGlb (hGlbRht));
+    lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (*lphGlbRht);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
 ////goto NORMAL_EXIT;
@@ -1827,10 +1827,10 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (*lphGlbRht && lpMemRht)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (*lphGlbRht); lpMemRht = NULL;
     } // End IF
 
     return lpYYRes;

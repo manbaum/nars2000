@@ -423,7 +423,7 @@ void DisplayGlobals
              || !lpHeader->SysVar)
             {
                 // It's a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (MakeGlbTypeAsGlb (hGlb)));
+                Assert (IsGlbTypeVarDir (MakePtrTypeGlb (hGlb)));
 
                 if (lpHeader->Rank EQ 0)
                     aplDim = (APLDIM) -1;
@@ -502,7 +502,7 @@ void DisplayGlobals
         if (lpHeader->Sig.nature EQ FCNARRAY_HEADER_SIGNATURE)
         {
             // It's a valid HGLOBAL function array
-            Assert (IsGlbTypeFcnDir (MakeGlbTypeAsGlb (hGlb)));
+            Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlb)));
 
             wsprintf (lpszDebug,
                       "hGlb=%08X, NamTyp=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
@@ -1134,7 +1134,7 @@ void DisplayFcnArr
     (HGLOBAL hGlbStr)           // Function array global memory handle
 
 {
-    Assert (IsGlbTypeFcnDir (MakeGlbTypeAsGlb (hGlbStr)));
+    Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlbStr)));
 
     DbgMsgW (L"********** Function Array ******************************");
 

@@ -1,5 +1,5 @@
 //***************************************************************************
-//	NARS2000 -- System Function -- Quad ES
+//  NARS2000 -- System Function -- Quad ES
 //***************************************************************************
 
 #define STRICT
@@ -20,383 +20,385 @@
 
 
 //***************************************************************************
-//	$SysFnES_EM_YY
+//  $SysFnES_EM_YY
 //
-//	System function:  []ES -- Event Simulate
+//  System function:  []ES -- Event Simulate
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- SysFnES_EM_YY"
+#define APPEND_NAME     L" -- SysFnES_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
 LPPL_YYSTYPE SysFnES_EM_YY
-	(LPTOKEN lptkLftArg,			// Ptr to left arg token (may be NULL if monadic)
-	 LPTOKEN lptkFunc,				// Ptr to function token
-	 LPTOKEN lptkRhtArg,			// Ptr to right arg token
-	 LPTOKEN lptkAxis)				// Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-	// If the right arg is a list, ...
-	if (IsTknParList (lptkRhtArg))
-		return PrimFnSyntaxError_EM (lptkFunc);
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
 
-	//***************************************************************
-	// This function is not sensitive to the axis operator,
-	//	 so signal a syntax error if present
-	//***************************************************************
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
 
-	if (lptkAxis NE NULL)
-	{
-		ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-								   lptkAxis);
-		return NULL;
-	} // End IF
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
 
-	// Split cases based upon monadic or dyadic
-	if (lptkLftArg EQ NULL)
-		return SysFnMonES_EM_YY (			 lptkFunc, lptkRhtArg, lptkAxis);
-	else
-		return SysFnDydES_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+    // Split cases based upon monadic or dyadic
+    if (lptkLftArg EQ NULL)
+        return SysFnMonES_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+    else
+        return SysFnDydES_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnES_EM_YY
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	$SysFnMonES_EM_YY
+//  $SysFnMonES_EM_YY
 //
-//	Monadic []ES -- Event Simulate w/ Message or Type
+//  Monadic []ES -- Event Simulate w/ Message or Type
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- SysFnMonES_EM_YY"
+#define APPEND_NAME     L" -- SysFnMonES_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
 LPPL_YYSTYPE SysFnMonES_EM_YY
-	(LPTOKEN lptkFunc,						// Ptr to function token
-	 LPTOKEN lptkRhtArg,					// Ptr to right arg token
-	 LPTOKEN lptkAxis)						// Ptr to axis token (may be NULL)
+    (LPTOKEN lptkFunc,                      // Ptr to function token
+     LPTOKEN lptkRhtArg,                    // Ptr to right arg token
+     LPTOKEN lptkAxis)                      // Ptr to axis token (may be NULL)
 
 {
-	return SysFnDydES_EM_YY (NULL,			// Ptr to left arg token
-							 lptkFunc,		// Ptr to function token
-							 lptkRhtArg,	// Ptr to right arg token
-							 lptkAxis); 	// Ptr to axis token (may be NULL)
+    return SysFnDydES_EM_YY (NULL,          // Ptr to left arg token
+                             lptkFunc,      // Ptr to function token
+                             lptkRhtArg,    // Ptr to right arg token
+                             lptkAxis);     // Ptr to axis token (may be NULL)
 } // End SysFnMonES_EM_YY
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	$SysFnDydES_EM_YY
+//  $SysFnDydES_EM_YY
 //
-//	Dyadic []ES -- Event Simulate w/ Message and Type
+//  Dyadic []ES -- Event Simulate w/ Message and Type
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- SysFnDydES_EM_YY"
+#define APPEND_NAME     L" -- SysFnDydES_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
 LPPL_YYSTYPE SysFnDydES_EM_YY
-	(LPTOKEN lptkLftArg,			// Ptr to left arg token (may be NULL if called monadically)
-	 LPTOKEN lptkFunc,				// Ptr to function token
-	 LPTOKEN lptkRhtArg,			// Ptr to right arg token
-	 LPTOKEN lptkAxis)				// Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if called monadically)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-	APLSTYPE	 aplTypeLft,		// Left arg storage type
-				 aplTypeRht;		// Right ...
-	APLNELM 	 aplNELMLft,		// Left arg NELM
-				 aplNELMRht;		// Right ...
-	APLRANK 	 aplRankLft,		// Left arg Rank
-				 aplRankRht;		// Right ...
-	APLLONGEST	 aplLongestRht1,	// Right arg longest if immediate, 1st
-				 aplLongestRht2;	// ...							   2nd
-	HGLOBAL 	 hGlbRht = NULL;	// Right arg global memory handle
-	LPVOID		 lpMemRht = NULL;	// Ptr to right arg global memory
-	HGLOBAL 	 hGlbPTD;			// PerTabData global memory handle
-	LPPERTABDATA lpMemPTD;			// Ptr to PerTabData global memory
-	LPPL_YYSTYPE lpYYRes = NULL;	// Ptr to result
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht;        // Right ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht;        // Right ...
+    APLRANK      aplRankLft,        // Left arg Rank
+                 aplRankRht;        // Right ...
+    APLLONGEST   aplLongestRht1,    // Right arg longest if immediate, 1st
+                 aplLongestRht2;    // ...                             2nd
+    HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
+    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
 
-	// Get the attributes (Type, NELM, and Rank)
-	//	 of the right arg
-	AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
-	if (lptkLftArg)
-		AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+    if (lptkLftArg)
+        AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
-	// Check for RIGHT RANK ERROR
-	if (aplRankRht > 1)
-	{
-		ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-								   lptkFunc);
-		goto ERROR_EXIT;
-	} // End IF
+    // Check for RIGHT RANK ERROR
+    if (aplRankRht > 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
 
-	// Check for LEFT RANK ERROR
-	if (lptkLftArg && aplRankLft > 1)
-	{
-		ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-								   lptkFunc);
-		goto ERROR_EXIT;
-	} // End IF
+    // Check for LEFT RANK ERROR
+    if (lptkLftArg && aplRankLft > 1)
+    {
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
 
-	// Check for RIGHT DOMAIN ERROR
-	if ((!IsSimpleNH (aplTypeRht))
-	 || (lptkLftArg && aplTypeRht EQ ARRAY_CHAR))
-	{
-		ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-								   lptkFunc);
-		goto ERROR_EXIT;
-	} // End IF
+    // Check for RIGHT DOMAIN ERROR
+    if ((!IsSimpleNH (aplTypeRht))
+     || (lptkLftArg && aplTypeRht EQ ARRAY_CHAR))
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
 
-	// Check for LEFT DOMAIN ERROR
-	if (lptkLftArg && aplTypeLft NE ARRAY_CHAR)
-	{
-		ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-								   lptkFunc);
-		goto ERROR_EXIT;
-	} // End IF
+    // Check for LEFT DOMAIN ERROR
+    if (lptkLftArg && aplTypeLft NE ARRAY_CHAR)
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
 
-	// If the right arg is empty, return NoValue
-	if (aplNELMRht EQ 0)
-		lpYYRes = MakeNoValue_YY (lptkFunc);
-	else
-	{
-		// Get the thread's PerTabData global memory handle
-		hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // If the right arg is empty, return NoValue
+    if (aplNELMRht EQ 0)
+        lpYYRes = MakeNoValue_YY (lptkFunc);
+    else
+    {
+        // Get the thread's PerTabData global memory handle
+        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-		// Lock the memory to get a ptr to it
-		lpMemPTD = MyGlobalLock (hGlbPTD);
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
 
-		// Get right arg's global ptrs
-		aplLongestRht1 = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+        // Get right arg's global ptrs
+        aplLongestRht1 = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-		// Split cases based upon the numeric vs. char storage type
-		if (aplTypeRht EQ ARRAY_CHAR)
-		{
-			// If the message is a global, ...
-			if (hGlbRht)
-			{
-				// Skip over the header and dimensions to the data
-				lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+        // Split cases based upon the numeric vs. char storage type
+        if (aplTypeRht EQ ARRAY_CHAR)
+        {
+            // If the message is a global, ...
+            if (hGlbRht)
+            {
+                // Skip over the header and dimensions to the data
+                lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-				// Copy the error message to temporary storage
-				CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
-			} else
-				lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht1;
+                // Copy the error message to temporary storage
+                CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (UINT) aplNELMRht * sizeof (APLCHAR));
+            } else
+                lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht1;
 
-			// Ensure properly terminated
-			lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = L'\0';
-		} else
-		{
-			BOOL		bRet;				// TRUE iff result is valid
-			EVENT_TYPES EventType;			// Event type
+            // Ensure properly terminated
+            lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = L'\0';
+        } else
+        {
+            BOOL        bRet;               // TRUE iff result is valid
+            EVENT_TYPES EventType;          // Event type
 
-			// Check for RIGHT LENGTH ERROR
-			if (aplNELMRht NE 2)
-			{
-				ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-										   lptkFunc);
-				goto ERROR_EXIT;
-			} // End IF
+            // Check for RIGHT LENGTH ERROR
+            if (aplNELMRht NE 2)
+            {
+                ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                           lptkFunc);
+                goto ERROR_EXIT;
+            } // End IF
 
-			// Skip over the header and dimensions to the data
-			lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-			// Get the first value
-			GetNextValueMem (lpMemRht,
-							 aplTypeRht,
-							 0,
-							 NULL,
-							&aplLongestRht1,
-							 NULL);
-			// Get the second value
-			GetNextValueMem (lpMemRht,
-							 aplTypeRht,
-							 1,
-							 NULL,
-							&aplLongestRht2,
-							 NULL);
-			// If the right arg is float, attempt to convert it to integer
-			if (aplTypeRht EQ ARRAY_FLOAT)
-			{
-				aplLongestRht1 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht1, &bRet);
-				if (bRet)
-					aplLongestRht2 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht2, &bRet);
-				if (!bRet)
-				{
-					ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-											   lptkFunc);
-					goto ERROR_EXIT;
-				} // End IF
-			} // End IF
+            // Get the first value
+            GetNextValueMem (lpMemRht,
+                             aplTypeRht,
+                             0,
+                             NULL,
+                            &aplLongestRht1,
+                             NULL);
+            // Get the second value
+            GetNextValueMem (lpMemRht,
+                             aplTypeRht,
+                             1,
+                             NULL,
+                            &aplLongestRht2,
+                             NULL);
+            // If the right arg is float, attempt to convert it to integer
+            if (aplTypeRht EQ ARRAY_FLOAT)
+            {
+                // Attempt to convert the float to an integer using System CT
+                aplLongestRht1 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht1, &bRet);
+                if (bRet)
+                    // Attempt to convert the float to an integer using System CT
+                    aplLongestRht2 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht2, &bRet);
+                if (!bRet)
+                {
+                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                               lptkFunc);
+                    goto ERROR_EXIT;
+                } // End IF
+            } // End IF
 
-			// Check for RIGHT DOMAIN ERROR
-			if (aplLongestRht1 >= (1 << 16)
-			 || aplLongestRht2 >= (1 << 16))
-			{
-				ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-										   lptkFunc);
-				goto ERROR_EXIT;
-			} // End IF
+            // Check for RIGHT DOMAIN ERROR
+            if (aplLongestRht1 >= (BIT0 << 16)
+             || aplLongestRht2 >= (BIT0 << 16))
+            {
+                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                           lptkFunc);
+                goto ERROR_EXIT;
+            } // End IF
 
-			// Combine the two elements into the Event Type
-			EventType = MAKE_ET (aplLongestRht1, aplLongestRht2);
+            // Combine the two elements into the Event Type
+            EventType = MAKE_ET (aplLongestRht1, aplLongestRht2);
 
-			// Save the event type
-			SetEventTypeMessage (EventType, NULL, NULL);
+            // Save the event type
+            SetEventTypeMessage (EventType, NULL, NULL);
 
-			// If there's a left arg, ...
-			if (lptkLftArg)
-			{
-				HGLOBAL    hGlbLft; 			// Left arg global memory handle
-				LPAPLCHAR  lpMemLft;			// Ptr to left arg global memory
-				APLLONGEST aplLongestLft;		// Left arg immediate value
+            // If there's a left arg, ...
+            if (lptkLftArg)
+            {
+                HGLOBAL    hGlbLft;             // Left arg global memory handle
+                LPAPLCHAR  lpMemLft;            // Ptr to left arg global memory
+                APLLONGEST aplLongestLft;       // Left arg immediate value
 
-				// Get left arg's global ptrs
-				aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+                // Get left arg's global ptrs
+                aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
 
-				// If the message is a global, ...
-				if (hGlbLft)
-				{
-					// Skip over the header and dimensions to the data
-					lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+                // If the message is a global, ...
+                if (hGlbLft)
+                {
+                    // Skip over the header and dimensions to the data
+                    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
-					// Copy the error message to temporary storage
-					CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemLft, (UINT) aplNELMLft * sizeof (APLCHAR));
+                    // Copy the error message to temporary storage
+                    CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpMemLft, (UINT) aplNELMLft * sizeof (APLCHAR));
 
-					// We no longer need this ptr
-					MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-				} else
-					lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestLft;
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+                } else
+                    lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestLft;
 
-				// Ensure properly terminated
-				lpMemPTD->lpwszQuadErrorMsg[aplNELMLft] = L'\0';
-			} else
-			{
-				LPAPLCHAR lpwErrMsg;
+                // Ensure properly terminated
+                lpMemPTD->lpwszQuadErrorMsg[aplNELMLft] = L'\0';
+            } else
+            {
+                LPAPLCHAR lpwErrMsg;
 
-				// Otherwise, use the default error text for the Event Type
+                // Otherwise, use the default error text for the Event Type
 
-				// Split cases based upon the Event Type
-				switch (EventType)
-				{
-					case EVENTTYPE_NOERROR:
-						lpwErrMsg = L"";
+                // Split cases based upon the Event Type
+                switch (EventType)
+                {
+                    case EVENTTYPE_NOERROR:
+                        lpwErrMsg = L"";
 
-						break;
+                        break;
 
-					case EVENTTYPE_UNK:
-						lpwErrMsg = L"UNKNOWN ERROR";
+                    case EVENTTYPE_UNK:
+                        lpwErrMsg = L"UNKNOWN ERROR";
 
-						break;
+                        break;
 
-					case EVENTTYPE_BREAK:
-						lpwErrMsg = L"INTERRUPT";
+                    case EVENTTYPE_BREAK:
+                        lpwErrMsg = L"INTERRUPT";
 
-						break;
+                        break;
 
-					case EVENTTYPE_SYSTEM_ERROR:
-						lpwErrMsg = L"SYSTEM ERROR";
+                    case EVENTTYPE_SYSTEM_ERROR:
+                        lpwErrMsg = L"SYSTEM ERROR";
 
-						break;
+                        break;
 
-					case EVENTTYPE_WS_FULL:
-						lpwErrMsg = ERRMSG_WS_FULL;
+                    case EVENTTYPE_WS_FULL:
+                        lpwErrMsg = ERRMSG_WS_FULL;
 
-						break;
+                        break;
 
-					case EVENTTYPE_LIMIT_ST:
-					case EVENTTYPE_LIMIT_RANK:
-					case EVENTTYPE_LIMIT_IMPL:
-						lpwErrMsg = L"SYSTEM LIMIT";
+                    case EVENTTYPE_LIMIT_ST:
+                    case EVENTTYPE_LIMIT_RANK:
+                    case EVENTTYPE_LIMIT_IMPL:
+                        lpwErrMsg = L"SYSTEM LIMIT";
 
-						break;
+                        break;
 
-					case EVENTTYPE_SYNTAX_ERROR_ARGOMITTED:
-					case EVENTTYPE_SYNTAX_ERROR_ILLFORMED:
-					case EVENTTYPE_SYNTAX_ERROR_NAMECLASS:
-					case EVENTTYPE_SYNTAX_ERROR_CONTEXT:
-						lpwErrMsg = ERRMSG_SYNTAX_ERROR;
+                    case EVENTTYPE_SYNTAX_ERROR_ARGOMITTED:
+                    case EVENTTYPE_SYNTAX_ERROR_ILLFORMED:
+                    case EVENTTYPE_SYNTAX_ERROR_NAMECLASS:
+                    case EVENTTYPE_SYNTAX_ERROR_CONTEXT:
+                        lpwErrMsg = ERRMSG_SYNTAX_ERROR;
 
-						break;
+                        break;
 
-					case EVENTTYPE_VALUE_ERROR_NAME:
-					case EVENTTYPE_VALUE_ERROR_FCN:
-						lpwErrMsg = ERRMSG_VALUE_ERROR;
+                    case EVENTTYPE_VALUE_ERROR_NAME:
+                    case EVENTTYPE_VALUE_ERROR_FCN:
+                        lpwErrMsg = ERRMSG_VALUE_ERROR;
 
-						break;
+                        break;
 
-					case EVENTTYPE_VALENCE_ERROR:
-						lpwErrMsg = ERRMSG_VALENCE_ERROR;
+                    case EVENTTYPE_VALENCE_ERROR:
+                        lpwErrMsg = ERRMSG_VALENCE_ERROR;
 
-						break;
+                        break;
 
-					case EVENTTYPE_RANK_ERROR:
-						lpwErrMsg = ERRMSG_RANK_ERROR;
+                    case EVENTTYPE_RANK_ERROR:
+                        lpwErrMsg = ERRMSG_RANK_ERROR;
 
-						break;
+                        break;
 
-					case EVENTTYPE_LENGTH_ERROR:
-						lpwErrMsg = ERRMSG_LENGTH_ERROR;
+                    case EVENTTYPE_LENGTH_ERROR:
+                        lpwErrMsg = ERRMSG_LENGTH_ERROR;
 
-						break;
+                        break;
 
-					case EVENTTYPE_DOMAIN_ERROR:
-						lpwErrMsg = ERRMSG_DOMAIN_ERROR;
+                    case EVENTTYPE_DOMAIN_ERROR:
+                        lpwErrMsg = ERRMSG_DOMAIN_ERROR;
 
-						break;
+                        break;
 
-					case EVENTTYPE_INDEX_ERROR:
-						lpwErrMsg = ERRMSG_INDEX_ERROR;
+                    case EVENTTYPE_INDEX_ERROR:
+                        lpwErrMsg = ERRMSG_INDEX_ERROR;
 
-						break;
+                        break;
 
-					case EVENTTYPE_AXIS_ERROR:
-						lpwErrMsg = ERRMSG_AXIS_ERROR;
+                    case EVENTTYPE_AXIS_ERROR:
+                        lpwErrMsg = ERRMSG_AXIS_ERROR;
 
-						break;
+                        break;
 
-					default:
-						lpwErrMsg = L"";
+                    default:
+                        lpwErrMsg = L"";
 
-						break;
-				} // End SWITCH
+                        break;
+                } // End SWITCH
 
-				// Copy the error message to temporary storage
-				CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpwErrMsg, (lstrlenW (lpwErrMsg) + 1) * sizeof (APLCHAR));
-			} // End IF/ELSE
-		} // End IF/ELSE
+                // Copy the error message to temporary storage
+                CopyMemory (lpMemPTD->lpwszQuadErrorMsg, lpwErrMsg, (lstrlenW (lpwErrMsg) + 1) * sizeof (APLCHAR));
+            } // End IF/ELSE
+        } // End IF/ELSE
 
-		// Save in PTD -- note that the tkCharIndex in the
-		//	 function token passed here isn't used unless this is
-		//	 immediate execution mode; normally, the tkCharIndex of the
-		//	 caller's is used.
-		ErrorMessageIndirectToken (lpMemPTD->lpwszQuadErrorMsg, lptkFunc);
-		lpMemPTD->tkErrorCharIndex = lptkFunc->tkCharIndex;
+        // Save in PTD -- note that the tkCharIndex in the
+        //   function token passed here isn't used unless this is
+        //   immediate execution mode; normally, the tkCharIndex of the
+        //   caller's is used.
+        ErrorMessageIndirectToken (lpMemPTD->lpwszQuadErrorMsg, lptkFunc);
+        lpMemPTD->tkErrorCharIndex = lptkFunc->tkCharIndex;
 
-		// Set the reset flag
-		lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
+        // Set the reset flag
+        lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_QUADERROR_INIT;
 
-		// We no longer need this ptr
-		MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-	} // End IF/ELSE
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    } // End IF/ELSE
 ERROR_EXIT:
-	// We no longer need this ptr
-	if (hGlbRht && lpMemRht)
-	{
-		MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-	} // End IF
+    // We no longer need this ptr
+    if (hGlbRht && lpMemRht)
+    {
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
 
-	return lpYYRes;
+    return lpYYRes;
 } // End SysFnDydES_EM_YY
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	End of File: qf_es.c
+//  End of File: qf_es.c
 //***************************************************************************

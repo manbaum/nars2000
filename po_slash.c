@@ -573,7 +573,7 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
@@ -648,7 +648,7 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRht);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRht);
 ////////lpYYRes->tkToken.tkCharIndex       =        // Filled in below
     } else  // It's an immediate
     {
@@ -867,6 +867,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     //   attempt to convert it to an integer
     if (aplTypeLft EQ ARRAY_FLOAT)
     {
+        // Attempt to convert the float to an integer using System CT
         aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
         if (!bRet)
         {
@@ -1055,7 +1056,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     // If the absolute value of the left arg is one, the result is
     //   the right arg
     if (aplIntegerLftAbs EQ 1)
-        hGlbRes = CopySymGlbDir (MakeGlbTypeAsGlb (hGlbRht));
+        hGlbRes = CopySymGlbDir (MakePtrTypeGlb (hGlbRht));
     else
     // If the left arg is uDimAxRht, the result is
     //   ({rho} Result) {rho} LeftOperand /[X] RightArg
@@ -1353,7 +1354,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
@@ -1508,7 +1509,7 @@ BOOL PrimOpDydSlashInsertDim_EM
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
         lpYYRes->tkToken.tkFlags.ImmType   = 0;
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbTmp);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbTmp);
 ////////lpYYRes->tkToken.tkCharIndex       =        // Already filled in by caller
 
         return TRUE;

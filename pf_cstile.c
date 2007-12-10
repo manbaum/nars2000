@@ -246,7 +246,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 {
                     uRes = uDim +                 uAx  * uDimHi;
                     uRht = uDim + ((uDimAx - 1) - uAx) * uDimHi;
-                    uBitMask  = 1 << (UINT) (uRht % NBIB);
+                    uBitMask  = BIT0 << (UINT) (uRht % NBIB);
                     uBitIndex = (UINT) (uRes % NBIB);
                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
                     ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << uBitIndex;
@@ -340,7 +340,7 @@ NORMAL_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 IMMED_EXIT:
     if (hGlbRes && lpMemRes)
@@ -485,9 +485,10 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     // If the left arg is singleton, get its value
     if (aplNELMLft EQ 1)
     {
-        // Attempt to convert FLOAT left arg
+        // If the left arg is float, ...
         if (aplTypeLft EQ ARRAY_FLOAT)
         {
+            // Attempt to convert the float to an integer using System CT
             aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
             if (!bRet)
                 goto DOMAIN_EXIT;
@@ -550,6 +551,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             case ARRAY_FLOAT:
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
+                    // Attempt to convert the float to an integer using System CT
                     aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
                     if (!bRet)
                         goto DOMAIN_EXIT;
@@ -710,7 +712,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 {
                     uRes = uDim +                  uAx           * uDimHi;
                     uRht = uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi;
-                    uBitMask  = 1 << (UINT) (uRht % NBIB);
+                    uBitMask  = BIT0 << (UINT) (uRht % NBIB);
                     uBitIndex = (UINT) (uRes % NBIB);
                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
                     ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << uBitIndex;
@@ -821,7 +823,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;

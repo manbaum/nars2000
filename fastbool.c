@@ -183,7 +183,7 @@ void FastBoolScan
     } // End IF
 
     // Calculate the mask for the first byte
-    uByteMaskIni = (UCHAR) ((1 << min (uDimAxRht, NBIB)) - 1);
+    uByteMaskIni = (UCHAR) ((BIT0 << min (uDimAxRht, NBIB)) - 1);
 
     // Get ptr to first byte
     lpaplBool = (LPAPLBOOL) lpMemRht;
@@ -204,11 +204,11 @@ void FastBoolScan
         uDimRht = uLo * uDimHi * uDimAxRht + uHi;
 
         // Calculate the byte mask
-        uByteMask = (UCHAR) (uByteMaskIni << (uDimRht & MASKLOG2NBIB));
+        uByteMask = (UCHAR) (uByteMaskIni << (MASKLOG2NBIB & uDimRht));
         uBitsInMask = FastBoolTrans[uByteMask][2];
 
         // Get the byte in question, shifted to the low-order
-        uByte = (UCHAR) ((uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]) >> (uDimRht & MASKLOG2NBIB));
+        uByte = (UCHAR) ((uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]) >> (MASKLOG2NBIB & uDimRht));
 
         // Find the first marker bit in uByte
         uFirstBitIndexInByte = FastBoolTrans[uByte][!uNotMarker];
@@ -227,7 +227,7 @@ void FastBoolScan
             // If there are more bits in this vector, ...
             while (uDimAxRht > uBitCountVector)
             {
-                uByteMask = (UCHAR) ((1 << (min (uDimAxRht - uBitCountVector, NBIB))) - 1);
+                uByteMask = (UCHAR) ((BIT0 << (min (uDimAxRht - uBitCountVector, NBIB))) - 1);
                 uBitsInMask = FastBoolTrans[uByteMask][2];
 
                 // Get the byte in question
@@ -388,7 +388,7 @@ void FastBoolScanQual
     } // End IF
 
     // Calculate the mask for the first byte
-    uByteMaskIni = (UCHAR) ((1 << min (uDimAxRht, NBIB)) - 1);
+    uByteMaskIni = (UCHAR) ((BIT0 << min (uDimAxRht, NBIB)) - 1);
 
     // Get ptr to first byte
     lpaplBool = (LPAPLBOOL) lpMemRht;
@@ -409,18 +409,18 @@ void FastBoolScanQual
         uDimRht = uLo * uDimHi * uDimAxRht + uHi;
 
         // Calculate the byte mask
-        uByteMask = (UCHAR) (uByteMaskIni << (uDimRht & MASKLOG2NBIB));
+        uByteMask = (UCHAR) (uByteMaskIni << (MASKLOG2NBIB & uDimRht));
         uBitsInMask = FastBoolTrans[uByteMask][2];
 
         // Get the byte in question, shifted to the low-order
         if (bAPA)
             uByte = apaByte;
         else
-            uByte = (UCHAR) ((uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]) >> (uDimRht & MASKLOG2NBIB));
+            uByte = (UCHAR) ((uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]) >> (MASKLOG2NBIB & uDimRht));
 
         // Translate this byte into its NotEqualScan or EqualScan
         uByte = FastBoolTrans[uByte][3 + (uFBFNIndex EQ PF_INDEX_EQUAL)];
-        uLastBit = ((uByte & (1 << (uBitsInMask - 1))) ? TRUE : FALSE);
+        uLastBit = ((uByte & (BIT0 << (uBitsInMask - 1))) ? TRUE : FALSE);
 
         // Save in the result
         for (uAx = 0; uAx < uBitsInMask; uAx++)
@@ -439,7 +439,7 @@ void FastBoolScanQual
         // If there are more bits in this vector, ...
         while (uDimAxRht > uBitCountVector)
         {
-            uByteMask = (UCHAR) ((1 << (min (uDimAxRht - uBitCountVector, NBIB))) - 1);
+            uByteMask = (UCHAR) ((BIT0 << (min (uDimAxRht - uBitCountVector, NBIB))) - 1);
             uBitsInMask = FastBoolTrans[uByteMask][2];
 
             // Get the byte in question
@@ -452,7 +452,7 @@ void FastBoolScanQual
             uByte = FastBoolTrans[uByte][3 + (uFBFNIndex EQ PF_INDEX_EQUAL)];
             if (uLastBit ^ (uFBFNIndex EQ PF_INDEX_EQUAL))
                 uByte = ~uByte;
-            uLastBit = ((uByte & (1 << (uBitsInMask - 1))) ? TRUE : FALSE);
+            uLastBit = ((uByte & (BIT0 << (uBitsInMask - 1))) ? TRUE : FALSE);
 
             // Save in the result
             for (uAx = 0; uAx < uBitsInMask; uAx++)
@@ -559,7 +559,7 @@ void FastBoolRed
     } // End IF
 
     // Calculate the mask for the first byte
-    uByteMaskIni = (UCHAR) ((1 << min (uDimAxRht, NBIB)) - 1);
+    uByteMaskIni = (UCHAR) ((BIT0 << min (uDimAxRht, NBIB)) - 1);
 
     // Get ptr to first byte
     lpaplBool = (LPAPLBOOL) lpMemRht;
@@ -580,11 +580,11 @@ void FastBoolRed
         uDimRht = uLo * uDimHi * uDimAxRht + uHi;
 
         // Calculate the byte mask
-        uByteMask = (UCHAR) (uByteMaskIni << (uDimRht & MASKLOG2NBIB));
+        uByteMask = (UCHAR) (uByteMaskIni << (MASKLOG2NBIB & uDimRht));
         uBitsInMask = FastBoolTrans[uByteMask][2];
 
         // Get the byte in question, shifted to the low-order
-        uByte = (UCHAR) ((uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]) >> (uDimRht & MASKLOG2NBIB));
+        uByte = (UCHAR) ((uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]) >> (MASKLOG2NBIB & uDimRht));
 
         // Find the first marker bit in uByte
         uFirstBitIndexInByte = FastBoolTrans[uByte][!uNotMarker];
@@ -603,7 +603,7 @@ void FastBoolRed
             // If there are more bits in this vector, ...
             while (uDimAxRht > uBitCountVector)
             {
-                uByteMask = (UCHAR) ((1 << (min (uDimAxRht - uBitCountVector, NBIB))) - 1);
+                uByteMask = (UCHAR) ((BIT0 << (min (uDimAxRht - uBitCountVector, NBIB))) - 1);
                 uBitsInMask = FastBoolTrans[uByteMask][2];
 
                 // Get the byte in question
@@ -717,7 +717,7 @@ void FastBoolRedQual
     } // End IF
 
     // Calculate the mask for the first byte
-    uByteMaskIni = (UCHAR) ((1 << min (uDimAxRht, NBIB)) - 1);
+    uByteMaskIni = (UCHAR) ((BIT0 << min (uDimAxRht, NBIB)) - 1);
 
     // Get ptr to first byte
     lpaplBool = (LPAPLBOOL) lpMemRht;
@@ -736,7 +736,7 @@ void FastBoolRedQual
         uDimRht = uLo * uDimHi * uDimAxRht + uHi;
 
         // Calculate the byte mask
-        uByteMask = (UCHAR) (uByteMaskIni << (uDimRht & MASKLOG2NBIB));
+        uByteMask = (UCHAR) (uByteMaskIni << (MASKLOG2NBIB & uDimRht));
         uBitsInMask = FastBoolTrans[uByteMask][2];
 
         // Get +/ on first byte or tail thereof
@@ -751,7 +751,7 @@ void FastBoolRedQual
         // If there are more bits in this vector, ...
         while (uDimAxRht > uBitCountVector)
         {
-            uByteMask = (UCHAR) ((1 << (min (uDimAxRht - uBitsInMask, NBIB))) - 1);
+            uByteMask = (UCHAR) ((BIT0 << (min (uDimAxRht - uBitsInMask, NBIB))) - 1);
             uBitsInMask = FastBoolTrans[uByteMask][2];
 
             uAccum += FastBoolTrans[uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]][2];
@@ -825,7 +825,7 @@ void FastBoolRedPlus
     } // End IF
 
     // Calculate the mask for the first byte
-    uByteMaskIni = (UCHAR) ((1 << min (uDimAxRht, NBIB)) - 1);
+    uByteMaskIni = (UCHAR) ((BIT0 << min (uDimAxRht, NBIB)) - 1);
 
     // Get ptr to first byte
     lpaplBool = (LPAPLBOOL) lpMemRht;
@@ -844,7 +844,7 @@ void FastBoolRedPlus
         uDimRht = uLo * uDimHi * uDimAxRht + uHi;
 
         // Calculate the byte mask
-        uByteMask = (UCHAR) (uByteMaskIni << (uDimRht & MASKLOG2NBIB));
+        uByteMask = (UCHAR) (uByteMaskIni << (MASKLOG2NBIB & uDimRht));
         uBitsInMask = FastBoolTrans[uByteMask][2];
 
         // Get +/ on first byte or tail thereof
@@ -859,7 +859,7 @@ void FastBoolRedPlus
         // If there are more bits in this vector, ...
         while (uDimAxRht > uBitCountVector)
         {
-            uByteMask = (UCHAR) ((1 << (min (uDimAxRht - uBitsInMask, NBIB))) - 1);
+            uByteMask = (UCHAR) ((BIT0 << (min (uDimAxRht - uBitsInMask, NBIB))) - 1);
             uBitsInMask = FastBoolTrans[uByteMask][2];
 
             uAccum += FastBoolTrans[uByteMask & lpaplBool[uBitCountTotal >> LOG2NBIB]][2];

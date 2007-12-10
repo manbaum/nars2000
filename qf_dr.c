@@ -235,7 +235,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
     {
         BOOL bRet;
 
-        // Attempt to convert the float to an integer
+        // Attempt to convert the float to an integer using System CT
         aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
         if (!bRet)
         {
@@ -262,7 +262,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
             return lpYYRes;
@@ -444,7 +444,7 @@ LPPL_YYSTYPE SysFnDydDR_Convert_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (hGlbRht && lpMemRht)
@@ -700,7 +700,7 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;

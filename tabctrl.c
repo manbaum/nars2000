@@ -881,9 +881,9 @@ int GetNextTabColorIndex
             // Search for the available bit within this byte
             for (j = 0; j < NBIB; j++)
                 // If it's this bit, ...
-                if (!(crIndices[i] & (1 << j)))
+                if (!(crIndices[i] & (BIT0 << j)))
                 {
-                    crIndices[i] |= 1 << j;     // Set the bit
+                    crIndices[i] |= BIT0 << j;  // Set the bit
                     return j + i * NBIB;        // Return its index
                 } // End IF
     return -1;
@@ -930,7 +930,7 @@ void ResetTabColorIndex
 
 {
     // Reset this tab's color index bit
-    crIndices[crIndex >> LOG2NBIB] &= ~(1 << (crIndex % NBIB));
+    crIndices[crIndex >> LOG2NBIB] &= ~(BIT0 << (crIndex % NBIB));
 } // End ResetTabColorIndex
 
 

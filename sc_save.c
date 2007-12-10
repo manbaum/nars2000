@@ -191,7 +191,7 @@ BOOL CmdSave_EM
             } // End IF
         } // End IF
 
-        // Save as the WSID to save to
+        // Save as the target WSID
         lpMemSaveWSID = wszTailDPFE;
     } else
     {
@@ -207,7 +207,7 @@ BOOL CmdSave_EM
         // Append the common workspace extension
         lstrcatW (wszWsidDPFE, WS_WKSEXT);
 
-        // Save as the WSID to save to
+        // Save as the target WSID
         lpMemSaveWSID = wszWsidDPFE;
     } // End IF/ELSE
 
@@ -599,7 +599,7 @@ BOOL CmdSave_EM
         FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
         // Save the new []WSID
-        lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakeGlbTypeAsGlb (hGlbWSID);
+        lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
     } // End IF
 
     // Mark as successful

@@ -457,7 +457,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         switch (aplTypeRht)
         {
             case ARRAY_BOOL:
-                uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
+                uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
                 ((LPAPLBOOL)   lpMemRes)[uRes >> LOG2NBIB] |=
@@ -511,7 +511,7 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
@@ -782,6 +782,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         case ARRAY_FLOAT:
             for (uDim = 0; bRet && uDim < aplNELMLft; uDim++)
             {
+                // Attempt to convert the float to an integer using System CT
                 aplIntLft = FloatToAplint_SCT (((LPAPLFLOAT) lpDataLft)[uDim], &bRet);
                 if (bRet)
                 {

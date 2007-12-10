@@ -640,7 +640,7 @@ BOOL ValidateBoolean_EM
                     break;
 
                 case IMMTYPE_FLOAT:
-                    // Convert the value to an integer using System CT
+                    // Attempt to convert the float to an integer using System CT
                     aplInteger = FloatToAplint_SCT (lpToken->tkData.tkSym->stData.stFloat,
                                                    &bRet);
                     // Test the value
@@ -676,7 +676,7 @@ BOOL ValidateBoolean_EM
                     break;
 
                 case IMMTYPE_FLOAT:
-                    // Convert the value to an integer using System CT
+                    // Attempt to convert the float to an integer using System CT
                     aplInteger = FloatToAplint_SCT (lpToken->tkData.tkFloat,
                                                    &bRet);
                     // Test the value
@@ -766,7 +766,7 @@ BOOL ValidateBoolean_EM
             break;
 
         case ARRAY_FLOAT:
-            // Convert the value to an integer using System CT
+            // Attempt to convert the float to an integer using System CT
             aplInteger = FloatToAplint_SCT (*(LPAPLFLOAT) lpMemRht,
                                            &bRet);
             // Test the value
@@ -877,7 +877,7 @@ BOOL ValidateInteger_EM
                     break;
 
                 case IMMTYPE_FLOAT:
-                    // Convert the value to an integer using System CT
+                    // Attempt to convert the float to an integer using System CT
                     aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkSym->stData.stFloat,
                                                    &bRet);
                     // Test the value
@@ -917,7 +917,7 @@ BOOL ValidateInteger_EM
                     break;
 
                 case IMMTYPE_FLOAT:
-                    // Convert the value to an integer using System CT
+                    // Attempt to convert the float to an integer using System CT
                     aplInteger = FloatToAplint_SCT (lptkExpr->tkData.tkFloat,
                                                    &bRet);
                     // Test the value
@@ -1009,7 +1009,7 @@ BOOL ValidateInteger_EM
             break;
 
         case ARRAY_FLOAT:
-            // Convert the value to an integer using System CT
+            // Attempt to convert the float to an integer using System CT
             aplInteger = FloatToAplint_SCT (*(LPAPLFLOAT) lpMemRht,
                                            &bRet);
             // Test the value
@@ -1596,7 +1596,7 @@ NORMAL_EXIT:
         FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lptkName->tkData.tkSym->stData.stGlbData));
 
         // Save as new value
-        lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeAsGlb (hGlbRes);
+        lptkName->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -1675,7 +1675,7 @@ BOOL ValidateIntegerVector_EM
                     goto MAKE_VECTOR;
 
                 case IMMTYPE_FLOAT:
-                    // Convert the value to an integer using System CT
+                    // Attempt to convert the float to an integer using System CT
                     aplInteger = FloatToAplint_SCT (lpToken->tkData.tkSym->stData.stFloat,
                                                    &bRet);
                     if (bRet)
@@ -1709,7 +1709,7 @@ BOOL ValidateIntegerVector_EM
                     goto MAKE_VECTOR;
 
                 case IMMTYPE_FLOAT:
-                    // Convert the value to an integer using System CT
+                    // Attempt to convert the float to an integer using System CT
                     aplInteger = FloatToAplint_SCT (lpToken->tkData.tkFloat,
                                                    &bRet);
                     if (bRet)
@@ -1779,7 +1779,7 @@ BOOL ValidateIntegerVector_EM
             break;
 
         case ARRAY_FLOAT:
-            // Convert the value to an integer using System CT
+            // Attempt to convert the float to an integer using System CT
             aplInteger = FloatToAplint_SCT (*(LPAPLFLOAT) lpMemRht,
                                            &bRet);
             bScalar = (aplRankRht EQ 0);
@@ -1842,7 +1842,7 @@ BOOL ValidateIntegerVector_EM
             // Loop through the right arg, converting to integers
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Convert the value to an integer using System CT
+                // Attempt to convert the float to an integer using System CT
                 aplInteger = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemRht)++,
                                                &bRet);
                 if (bRet)
@@ -1915,7 +1915,7 @@ NORMAL_EXIT:
         FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lptkName->tkData.tkSym->stData.stGlbData));
 
         // Save as new value
-        lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeAsGlb (hGlbRes);
+        lptkName->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 
@@ -2207,7 +2207,7 @@ MAKE_SCALAR:
     {
         lptkName->tkData.tkSym->stFlags.Imm = (lpMemPTD->cQuadPR NE 0);
         if (lpMemPTD->cQuadPR EQ 0)
-            lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeAsGlb (hGlbV0Char);
+            lptkName->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
         else
             lptkName->tkData.tkSym->stData.stChar = lpMemPTD->cQuadPR;
         lptkName->tkFlags.NoDisplay = 1;
@@ -2450,7 +2450,7 @@ BOOL ValidateSA_EM
         FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lptkName->tkData.tkSym->stData.stGlbData));
 
         // Save as new value
-        lptkName->tkData.tkSym->stData.stGlbData = MakeGlbTypeAsGlb (hGlbRes);
+        lptkName->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
         lptkName->tkFlags.NoDisplay = 1;
     } // End IF
 

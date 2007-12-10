@@ -223,7 +223,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 // Loop through the right arg elements
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
-                    uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
+                    uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
 
                     // Get the next value
                     aplLongestRht = (uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0;
@@ -237,7 +237,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     } // End IF
 
                     // Mark as nameclass aplLongestRht
-                    nameClasses |= 1 << (UINT) aplLongestRht;
+                    nameClasses |= BIT0 << (UINT) aplLongestRht;
                 } // End FOR
 
                 break;
@@ -258,7 +258,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     } // End IF
 
                     // Mark as nameclass aplLongestRht
-                    nameClasses |= 1 << (UINT) aplLongestRht;
+                    nameClasses |= BIT0 << (UINT) aplLongestRht;
                 } // End FOR
 
                 break;
@@ -268,8 +268,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Get the next value
+                    // Attempt to convert the float to an integer using System CT
                     aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht], &bRet);
-
                     if (!bRet
                      || aplLongestRht EQ 0
                      || aplLongestRht >= NAMECLASS_LENp1)
@@ -280,7 +280,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     } // End IF
 
                     // Mark as nameclass aplLongestRht
-                    nameClasses |= 1 << (UINT) aplLongestRht;
+                    nameClasses |= BIT0 << (UINT) aplLongestRht;
                 } // End FOR
 
                 break;
@@ -306,7 +306,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     } // End IF
 
                     // Mark as nameclass aplLongestRht
-                    nameClasses |= 1 << (UINT) aplLongestRht;
+                    nameClasses |= BIT0 << (UINT) aplLongestRht;
                 } // End FOR
 
                 break;
@@ -332,12 +332,12 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 } // End IF
 
                 // Mark as nameclass aplLongestRht
-                nameClasses |= 1 << (UINT) aplLongestRht;
+                nameClasses |= BIT0 << (UINT) aplLongestRht;
 
                 break;
 
             case ARRAY_FLOAT:
-                // Convert from float to APLINT
+                // Attempt to convert the float to an integer using System CT
                 aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                 if (!bRet
                  || aplLongestRht EQ 0
@@ -349,7 +349,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 } // End IF
 
                 // Mark as nameclass aplLongestRht
-                nameClasses |= 1 << (UINT) aplLongestRht;
+                nameClasses |= BIT0 << (UINT) aplLongestRht;
 
                 break;
 
@@ -370,7 +370,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
          lpSymEntry < lpMemPTD->lpSymTabNext;
          lpSymEntry++)
     if (lpSymEntry->stFlags.Inuse                   // It's in use
-     && nameClasses & (1 << CalcNameClass (lpSymEntry))) // It's in one of the specified name classes
+     && nameClasses & (BIT0 << CalcNameClass (lpSymEntry))) // It's in one of the specified name classes
     {
         // Lock the memory to get a ptr to it
         lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
@@ -466,7 +466,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (hGlbLft && lpMemLft)

@@ -260,7 +260,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
@@ -355,7 +355,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
@@ -1220,7 +1220,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -1298,7 +1298,7 @@ void PrimFnDydEpsilonBvB
 
     // If we didn't find a 0, check the last byte (may be short)
     if (!Found0)
-        Found0 = (FastBoolTrans[lpMemRht[uRht]][0] < (aplNELMRht & MASKLOG2NBIB));
+        Found0 = (FastBoolTrans[lpMemRht[uRht]][0] < (MASKLOG2NBIB & aplNELMRht));
 
     // Search the right arg for a 1
     for (Found1 = FALSE, uRht = 0; uRht < (BytesInRhtBits - 1); uRht++)
@@ -1311,7 +1311,7 @@ void PrimFnDydEpsilonBvB
 
     // If we didn't find a 1, check the last byte (may be short)
     if (!Found1)
-        Found1 = (FastBoolTrans[lpMemRht[uRht]][1] < (aplNELMRht & MASKLOG2NBIB));
+        Found1 = (FastBoolTrans[lpMemRht[uRht]][1] < (MASKLOG2NBIB & aplNELMRht));
 
     // If we found both a 0 and a 1, the result is all 1s
     if (Found0 && Found1)
@@ -1320,7 +1320,7 @@ void PrimFnDydEpsilonBvB
         FillMemory (lpMemRes, (UINT) BytesInLftBits - 1, 0xFF);
 
         // Handle the last byte specially
-        lpMemRes[BytesInLftBits - 1] |= (1 << (aplNELMLft & MASKLOG2NBIB)) - 1;
+        lpMemRes[BytesInLftBits - 1] |= (BIT0 << (MASKLOG2NBIB & aplNELMLft)) - 1;
     } else
     // If we found only 0s, the result is the complement of the left arg
     if (Found0)
@@ -1330,7 +1330,7 @@ void PrimFnDydEpsilonBvB
             *lpMemRes++ = ~*lpMemLft++;
 
         // Handle the last byte specially
-        lpMemRes[BytesInLftBits - 1] |= ((1 << (aplNELMLft & MASKLOG2NBIB)) - 1) & ~*lpMemLft;
+        lpMemRes[BytesInLftBits - 1] |= ((BIT0 << (MASKLOG2NBIB & aplNELMLft)) - 1) & ~*lpMemLft;
     } else
     // If we found only 1s, the result is the same as the left arg
     if (Found1)
@@ -1384,7 +1384,7 @@ BOOL PrimFnDydEpsilonIvI_EM
             if (aplIntegerLft EQ aplIntegerRht)
             {
                 // Set the result bit
-                *lpMemRes |= (1 << uBitIndex);
+                *lpMemRes |= (BIT0 << uBitIndex);
 
                 break;
             } // End IF
@@ -1431,7 +1431,7 @@ BOOL PrimFnDydEpsilonCvC_EM
     UINT      uBitIndex;            // Bit index for marching through Booleans
 
     // Calculate # bytes in the TT at one bit per 16-bit index (APLCHAR)
-    ByteTT = (UINT) RoundUpBits8 (1 << (NBIB * sizeof (APLCHAR)));
+    ByteTT = (UINT) RoundUpBits8 (APLCHAR_SIZE);
 
     // Allocate space for a ByteTT Translate Table
     // Note that this allocation is GPTR (GMEM_FIXED | GMEM_ZEROINIT)
@@ -1450,7 +1450,7 @@ BOOL PrimFnDydEpsilonCvC_EM
         // Get the APLCHAR from the right arg
         aplChar = *lpMemRht++;
 
-        lpMemTT[aplChar >> LOG2NBIB] |= 1 << (aplChar & MASKLOG2NBIB);
+        lpMemTT[aplChar >> LOG2NBIB] |= BIT0 << (MASKLOG2NBIB & aplChar);
     } // End FOR
 
     // Trundle through the left arg looking the chars in the TT
@@ -1462,8 +1462,8 @@ BOOL PrimFnDydEpsilonCvC_EM
         aplChar = *lpMemLft++;
 
         // If the char is in the TT, ...
-        if (lpMemTT[aplChar >> LOG2NBIB] & (1 << (aplChar & MASKLOG2NBIB)))
-            *lpMemRes |= (1 << uBitIndex);
+        if (lpMemTT[aplChar >> LOG2NBIB] & (BIT0 << (MASKLOG2NBIB & aplChar)))
+            *lpMemRes |= (BIT0 << uBitIndex);
         // Check for end-of-byte
         if (++uBitIndex EQ NBIB)
         {
@@ -1551,14 +1551,14 @@ void PrimFnDydEpsilonOther
                 tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubLft.tkFlags.ImmType   = 0;     // Already zero from = {0}
 ////////////////tkSubLft.tkFlags.NoDisplay = 0;     // Already zero from = {0}
-                tkSubLft.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbSubLft);
+                tkSubLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubLft);
                 tkSubLft.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // Fill in the right arg item token
                 tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubRht.tkFlags.ImmType   = 0;     // Already zero from = {0}
 ////////////////tkSubRht.tkFlags.NoDisplay = 0;     // Already zero from = {0}
-                tkSubRht.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbSubRht);
+                tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);
                 tkSubRht.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // Use match to determine equality
@@ -1670,7 +1670,7 @@ void PrimFnDydEpsilonOther
             continue;
 SET_RESULT_BIT:
             // Set the result bit
-            *lpMemRes |= (1 << uBitIndex);
+            *lpMemRes |= (BIT0 << uBitIndex);
 
             break;
         } // End FOR

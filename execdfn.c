@@ -698,7 +698,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
             lpYYRes->tkToken.tkCharIndex       = NEG1U;
 
             // See if it fits into a lower (but not necessarily smaller) datatype
@@ -1455,7 +1455,7 @@ BOOL InitFcnSTEs
             (*lplpSymEntry)->stFlags.Value    = 1;
             (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
             (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_FN12;
-            (*lplpSymEntry)->stData.stGlbData = MakeGlbTypeAsGlb (hGlbRes);
+            (*lplpSymEntry)->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
         } // End IF/ELSE
     } // End IF
 

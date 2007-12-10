@@ -121,7 +121,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
             // If the right arg is a simple float scalar, ...
             if (aplTypeRht EQ ARRAY_FLOAT)
             {
-                // Attempt to convert the float to an integer
+                // Attempt to convert the float to an integer using System CT
                 aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                 if (!bRet)
                 {
@@ -132,7 +132,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
             } // End IF
 
             // Check for out of range
-            if (64*1024 <= aplLongestRht)
+            if (APLCHAR_SIZE <= aplLongestRht)
             {
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);
@@ -247,7 +247,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
             {
                 // Check for out of range as an APLUINT
                 //   so we don't have to deal with negatives
-                if (64*1024 <= *(LPAPLUINT) lpMemRht)
+                if (APLCHAR_SIZE <= *(LPAPLUINT) lpMemRht)
                 {
                     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                lptkFunc);
@@ -262,7 +262,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
         case ARRAY_FLOAT:
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Attempt to convert the float to an integer
+                // Attempt to convert the float to an integer using System CT
                 aplLongestRht = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemRht)++, &bRet);
                 if (!bRet)
                 {
@@ -273,7 +273,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
 
                 // Check for out of range as an APLUINT
                 //   so we don't have to deal with negatives
-                if (64*1024 <= aplLongestRht)
+                if (APLCHAR_SIZE <= aplLongestRht)
                 {
                     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                lptkFunc);
@@ -324,7 +324,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
                         break;
 
                     case IMMTYPE_FLOAT:
-                        // Attempt to convert the float to an integer
+                        // Attempt to convert the float to an integer using System CT
                         aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
                         if (!bRet)
                         {
@@ -378,7 +378,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;

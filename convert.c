@@ -21,7 +21,7 @@
 //***************************************************************************
 //  $FloatToAplint_SCT
 //
-//  Convert a Floating Point number to an APLINT
+//  Attempt to convert a Floating Point number to an APLINT
 //    using System Comparison Tolerance
 //***************************************************************************
 

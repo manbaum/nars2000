@@ -479,7 +479,7 @@ void GetValueIntoToken
         case ARRAY_BOOL:
             lptkArg->tkFlags.TknType  = TKT_VARIMMED;
             lptkArg->tkFlags.ImmType  = IMMTYPE_BOOL;
-            lptkArg->tkData.tkInteger = BIT0 & (UCHAR) (((LPAPLBOOL) lpMemArg)[uArg >> LOG2NBIB] >> (uArg & MASKLOG2NBIB));
+            lptkArg->tkData.tkInteger = BIT0 & (UCHAR) (((LPAPLBOOL) lpMemArg)[uArg >> LOG2NBIB] >> (MASKLOG2NBIB & uArg));
 
             break;
 
@@ -558,7 +558,7 @@ APLINT GetNextInteger
     switch (aplType)
     {
         case ARRAY_BOOL:
-            return BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (uRes & MASKLOG2NBIB));
+            return BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (MASKLOG2NBIB & uRes));
 
         case ARRAY_INT:
             return ((LPAPLINT) lpMem)[uRes];
@@ -591,7 +591,7 @@ APLFLOAT GetNextFloat
     switch (aplType)
     {
         case ARRAY_BOOL:
-            return (APLFLOAT) (BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (uRes & MASKLOG2NBIB)));
+            return (APLFLOAT) (BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (MASKLOG2NBIB & uRes)));
 
         case ARRAY_INT:
             // ***FIXME*** -- Possible loss of precision
@@ -702,11 +702,11 @@ void GetNextItemGlb
     lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
 
     // Get next item from global memory
-    GetNextItemMem (lpMemSub,              // Ptr to item global memory data
-                    aplTypeSub,            // Item storage type
-                    uSub,                  // Index into item
-                    lphGlbRes,             // Ptr to result global memory handle (may be NULL)
-                    lpaplLongestRes);      // Ptr to result immediate value (may be NULL)
+    GetNextItemMem (lpMemSub,           // Ptr to item global memory data
+                    aplTypeSub,         // Item storage type
+                    uSub,               // Index into item
+                    lphGlbRes,          // Ptr to result global memory handle (may be NULL)
+                    lpaplLongestRes);   // Ptr to result immediate value (may be NULL)
     // We no longer need this ptr
     MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 } // End GetNextItemGlb
@@ -785,7 +785,8 @@ void GetNextValueMem
                         lphGlbRes,          // Ptr to result global memory handle (may be NULL)
                         lpaplLongestRes,    // Ptr to result immediate value (may be NULL)
                         lpimmTypeRes,       // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        TRUE);              // TRUE iff we should expand LPSYMENTRY into immediate value
+                        TRUE,               // TRUE iff we should expand LPSYMENTRY into immediate value
+                        FALSE);             // TRUE if we're returning item (not value)
 } // End GetNextValueMem
 
 
@@ -810,7 +811,8 @@ void GetNextItemMem
                         lphGlbRes,          // Ptr to result global memory handle (may be NULL)
                         lpaplLongestRes,    // Ptr to result immediate value (may be NULL)
                         NULL,               // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        FALSE);             // TRUE iff we should expand LPSYMENTRY into immediate value
+                        FALSE,              // TRUE iff we should expand LPSYMENTRY into immediate value
+                        TRUE);              // TRUE if we're returning item (not value)
 } // End GetNextItemMem
 
 
@@ -828,7 +830,8 @@ void GetNextValueMemSub
      HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
      APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
      IMM_TYPES  *lpimmTypeRes,          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-     BOOL         bExpandSym)           // TRUE iff we should expand LPSYMENTRY intoimmediate value
+     BOOL        bExpandSym,            // TRUE iff we should expand LPSYMENTRY intoimmediate value
+     BOOL        bGetItem)              // TRUE if we're returning item (not value)
 
 {
     APLHETERO lpSymSub;                 // Item as APLHETERO
@@ -842,7 +845,7 @@ void GetNextValueMemSub
     {
         case ARRAY_BOOL:
             if (lpaplLongestRes)
-                *lpaplLongestRes = BIT0 & (((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] >> (uSub & MASKLOG2NBIB));
+                *lpaplLongestRes = BIT0 & (((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] >> (MASKLOG2NBIB & uSub));
             if (lpimmTypeRes)
                 *lpimmTypeRes    = IMMTYPE_BOOL;
             break;
@@ -904,7 +907,13 @@ void GetNextValueMemSub
 
                 case PTRTYPE_HGLOBAL:
                     if (lphGlbRes)
-                        *lphGlbRes = ClrPtrTypeDirAsGlb (lpSymSub);
+                    {
+                        if (bGetItem)
+                            *lphGlbRes = lpSymSub;
+                        else
+                            *lphGlbRes = ClrPtrTypeDirAsGlb (lpSymSub);
+                    } // End IF
+
                     break;
 
                 defstop

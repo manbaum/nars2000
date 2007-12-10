@@ -749,7 +749,7 @@ void FormatQQuadInput
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
         lpYYRes->tkToken.tkFlags.NoDisplay = 1;
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lpMemPTD->lpSISCur->lptkFunc->tkCharIndex;
     } // End IF/ELSE
 
@@ -1771,9 +1771,13 @@ LRESULT APIENTRY SMWndProc
 #endif
 #ifdef DEBUG
                 case VK_F11:            // DbgBrk ()
+                {
+                    LPSYMENTRY lpSym = NULL;
+
                     DbgBrk ();      // ***FIXME*** -- Check on lock count of hGlbPTD
 
                     return FALSE;
+                } // End VK_F11
 #endif
 #ifdef DEBUG
                 case VK_F12:            // Clear the debugging display

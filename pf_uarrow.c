@@ -577,7 +577,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         switch (aplTypeRht)
         {
             case ARRAY_BOOL:
-                uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRhtWVec);
+                uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRhtWVec);
 
                 // Copy element # uRhtWVec from the right arg to lpMemRes]
                 ((LPAPLBOOL)   lpMemRes)[uResWVec >> LOG2NBIB] |=
@@ -667,7 +667,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             aplProtoGlb = MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemRht),   // Proto arg handle
                                                lptkFunc,                        // Ptr to function token
                                                MP_CHARS);                       // CHARS allowed
-            aplProtoGlb = MakeGlbTypeAsGlb (aplProtoGlb);
+            aplProtoGlb = MakePtrTypeGlb (aplProtoGlb);
 
             // Loop through the result filling in prototype values
             for (uRes = 0; uRes < aplNELMRes; uRes++)
@@ -689,7 +689,7 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype

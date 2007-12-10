@@ -98,6 +98,8 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
     {
+        HGLOBAL hGlbRht;
+
         case TKT_VARNAMED:
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
@@ -105,13 +107,16 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
             // If it's not immediate, we must look inside the array
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
+                // Get the right arg global memory handle
+                hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
+
                 // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+                Assert (IsGlbTypeVarDir (hGlbRht));
 
                 return PrimFnMonLeftShoeGlb_EM_YY
-                       (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),// HGLOBAL
-                        lptkAxis,                                                       // Ptr to axis token (may be NULL)
-                        lptkFunc);                                                      // Ptr to function token
+                       (ClrPtrTypeDirAsGlb (hGlbRht),   // Right arg global memory handle
+                        lptkAxis,                       // Ptr to axis token (may be NULL)
+                        lptkFunc);                      // Ptr to function token
             } // End IF
 
             // Handle the immediate case
@@ -127,13 +132,16 @@ LPPL_YYSTYPE PrimFnMonLeftShoe_EM_YY
                     lptkAxis,                                   // Ptr to axis token (may be NULL)
                     lptkFunc);                                  // Ptr to function token
         case TKT_VARARRAY:
+            // Get the right arg global memory handle
+            hGlbRht = lptkRhtArg->tkData.tkGlbData;
+
             // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
+            Assert (IsGlbTypeVarDir (hGlbRht));
 
             return PrimFnMonLeftShoeGlb_EM_YY
-                   (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),  // HGLOBAL
-                    lptkAxis,                                           // Ptr to axis token (may be NULL)
-                    lptkFunc);                                          // Ptr to function token
+                   (ClrPtrTypeDirAsGlb (hGlbRht),   // Right arg global memory handle
+                    lptkAxis,                       // Ptr to axis token (may be NULL)
+                    lptkFunc);                      // Ptr to function token
         defstop
             return NULL;
     } // End SWITCH
@@ -499,7 +507,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;    // Already zero from YYAlloc
 ////////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;    // Already zero from YYAlloc
-                            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbProto);
+                            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbProto);
                             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
                             // Free the prototype storage
@@ -516,7 +524,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             } // End SWITCH
 
             // Save the HGLOBAL in the result
-            *((LPAPLNESTED) lpMemRes) = MakeGlbTypeAsGlb (hGlbProto);
+            *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
 
             goto NORMAL_EXIT;
         } // End IF
@@ -541,13 +549,13 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 case ARRAY_APA:
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
                         // Save the HGLOBAL in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbZilde);
+                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbZilde);
                     break;
 
                 case ARRAY_CHAR:
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
                         // Save the HGLOBAL in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbV0Char);
+                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbV0Char);
                     break;
 
                 case ARRAY_NESTED:
@@ -684,7 +692,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
 
-                    uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
+                    uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
 
                     // Copy element # uRht from the right arg to lpMemSub[uSub]
                     ((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] |=
@@ -1014,7 +1022,7 @@ NORMAL_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
@@ -1196,7 +1204,7 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
     } // End IF
 
     // Save the HGLOBAL in the result
-    *lpMemRes = MakeGlbTypeAsGlb (*lphGlbSub);
+    *lpMemRes = MakePtrTypeGlb (*lphGlbSub);
 
     // Lock the memory to get a ptr to it
     *lplpMemSub = MyGlobalLock (*lphGlbSub);
@@ -1313,7 +1321,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
     APLINT       aplAxis;           // The (one and only) axis value
     APLRANK      aplRankRht;        // The rank of the right arg
     BOOL         bRet = TRUE;       // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -1356,16 +1364,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
 
 
 ////ERROR_EXIT:
-////if (bCopyArray && (!bRet) && hGlbRht)
-////{
-////    // We no longer need this storage
-////    FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
-////} // End IF
-
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnDydLeftShoeGlb_EM_YY
 
 

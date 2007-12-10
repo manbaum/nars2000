@@ -321,7 +321,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 #undef  lpAPA
     } // End IF
 
-    // Initialize the result with {iota}aplNELMRes
+    // Initialize the result with {iota}aplNELMRes (origin-0)
     for (uRes = 0; uRes < aplNELMRes; uRes++)
         ((LPAPLINT) lpMemRes)[uRes] = uRes;
 
@@ -345,7 +345,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (hGlbRes && lpMemRes)
@@ -480,13 +480,13 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     // Lock the memory to get a ptr to it
     lpMemTTHandles = MyGlobalLock (hGlbTTHandles);
 
-    // Allocate 128KB arrays for the translate tables,
+    // Allocate 16-bit arrays of APLCHARs for the translate tables,
     //   one per left arg dimension
     for (uDim = 0; uDim < aplRankLft; uDim++)
     {
         // Allocate space for the TT -- note we don't use GHND (which includes GMEM_ZEROINIT)
         //    as we'll initialize it ourselves
-        lpMemTTHandles[uDim].hGlbTT = DbgGlobalAlloc (GMEM_MOVEABLE, 64*1024*sizeof (APLCHAR));
+        lpMemTTHandles[uDim].hGlbTT = DbgGlobalAlloc (GMEM_MOVEABLE, APLCHAR_SIZE * sizeof (APLCHAR));
         if (!lpMemTTHandles[uDim].hGlbTT)
         {
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -498,7 +498,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         lpMemTTHandles[uDim].lpMemTT = MyGlobalLock (lpMemTTHandles[uDim].hGlbTT);
 
         // Fill with 0xFFs as identity element for min comparisons
-        FillMemory (lpMemTTHandles[uDim].lpMemTT, 64*1024*sizeof (APLCHAR), 0xFF);
+        FillMemory (lpMemTTHandles[uDim].lpMemTT, APLCHAR_SIZE * sizeof (APLCHAR), 0xFF);
     } // End FOR
 
     // Save in gradeData
@@ -524,6 +524,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         // Get the dimension length
         uDimLen = lpMemDimLft[iLft];
 
+        Assert (uDimLen < APLCHAR_SIZE);
+
         // Calculate product of the leading dimensions
         uBegLen = aplNELMLft / (uDimLen * uEndLen);
 
@@ -534,11 +536,13 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         for (uDim = 0; uDim < uDimLen; uDim++)
         for (uEnd = 0; uEnd < uEndLen; uEnd++)
         {
+            Assert (uDimLen < APLCHAR_SIZE);
+
             // Get the next char
             aplChar = ((LPAPLCHAR) lpMemLft)[uEnd + uEndLen * (uDimLen * uBeg + uDim)];
 
             // Compare with existing index
-            lpMemTT[aplChar] = min (lpMemTT[aplChar], (UINT) uDim);
+            lpMemTT[aplChar] = min (lpMemTT[aplChar], (APLCHAR) uDim);
         } // End FOR/FOR
 
         // Calculate product of trailing dimensions
@@ -601,7 +605,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 #undef  lpAPA
     } // End IF
 
-    // Initialize the result with {iota}aplNELMRes
+    // Initialize the result with {iota}aplNELMRes (origin-0)
     for (uRes = 0; uRes < aplNELMRes; uRes++)
         ((LPAPLINT) lpMemRes)[uRes] = uRes;
 
@@ -625,7 +629,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (hGlbLft && lpMemLft)
@@ -716,12 +720,12 @@ APLINT PrimFnGradeCompare
 
                 // Get the left hand indexed bit
                 aplBitLft = aplUIntLft * aplNELMRest + uRest;
-                uBitMask = 1 << (MASKLOG2NBIB & (UINT) aplBitLft);
+                uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) aplBitLft);
                 aplBitLft = (uBitMask & ((LPAPLBOOL) lpMemRht)[aplBitLft >> LOG2NBIB]) ? 1 : 0;
 
                 // Get the right hand indexed bit
                 aplBitRht = aplUIntRht * aplNELMRest + uRest;
-                uBitMask = 1 << (MASKLOG2NBIB & (UINT) aplBitRht);
+                uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) aplBitRht);
                 aplBitRht = (uBitMask & ((LPAPLBOOL) lpMemRht)[aplBitRht >> LOG2NBIB]) ? 1 : 0;
 
                 // Split cases based upon the signum of the difference

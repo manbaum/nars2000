@@ -1577,11 +1577,7 @@ StrandInst:
                                              $$ = *lpplLocalVars->lpYYStr; YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
                                          } // End IF
                                         }
-    ;
-
-// Simple array expression
-SimpExpr:
-      IndexListBR     StrandInst        {DbgMsgW2 (L"%%SimpExpr:  StrandInst IndexListBR");
+    | IndexListBR     Strand            {DbgMsgW2 (L"%%StrandInst:  Strand IndexListBR");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -1590,10 +1586,20 @@ SimpExpr:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->lpYYRes =
-                                               ArrayIndexRef_EM_YY (&$2.tkToken, &$1.tkToken);
-                                             FreeResult (&$1.tkToken);
+                                             lpplLocalVars->lpYYStr =
+                                               MakeVarStrand_EM_YY (&$2);
                                              FreeResult (&$2.tkToken);
+
+                                             if (!lpplLocalVars->lpYYStr)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR;
+                                             } // End IF
+
+                                             lpplLocalVars->lpYYRes =
+                                               ArrayIndexRef_EM_YY (&lpplLocalVars->lpYYStr->tkToken, &$1.tkToken);
+                                             FreeResult (&$1.tkToken);
+                                             YYFree (lpplLocalVars->lpYYStr); lpplLocalVars->lpYYStr = NULL;
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                                  YYERROR;
@@ -1601,7 +1607,7 @@ SimpExpr:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | error           StrandInst        {DbgMsgW2 (L"%%SimpExpr:  StrandInst error");
+    | error           Strand            {DbgMsgW2 (L"%%StrandInst:  Strand error");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              FreeResult (&$2.tkToken);
@@ -1609,7 +1615,11 @@ SimpExpr:
                                          } else
                                              YYERROR;
                                         }
-    | error   ASSIGN       QUAD         {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"error");
+    ;
+
+// Simple array expression
+SimpExpr:
+      error   ASSIGN       QUAD         {DbgMsgW2 (L"%%SimpExpr:  " WS_UTF16_QUAD WS_UTF16_LEFTARROW L"error");
                                          if (!lpplLocalVars->bLookAhead)
                                              YYERROR;
                                          else
@@ -4497,7 +4507,16 @@ IndexListBR:
 // Index list, with empties (meaning no ArrExpr between semicolons)
 // Skip Ctrl-Break checking here so the List processing isn't interrupted
 IndexListWE:
-              ';'                       {DbgMsgW2 (L"%%IndexListWE:  ;");
+      IndexListWE1                      {DbgMsgW2 (L"%%IndexListWE:  IndexListWE1");
+                                         $$ = $1;
+                                        }
+    | IndexListWE2                      {DbgMsgW2 (L"%%IndexListWE:  IndexListWE2");
+                                         $$ = $1;
+                                        }
+    ;
+
+IndexListWE1:
+                   ';'                  {DbgMsgW2 (L"%%IndexListWE1:  ;");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Initialize the list with an empty item
@@ -4518,13 +4537,40 @@ IndexListWE:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | IndexListWE    ';'                {DbgMsgW2 (L"%%IndexListWE:  ;IndexListWE");
+    |              ';' ArrExpr          {DbgMsgW2 (L"%%IndexListWE1:  ArrExpr;");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Initialize the list with an empty item
+                                             lpplLocalVars->lpYYLst =
+                                               InitList1_YY (NULL);
+
+                                             if (!lpplLocalVars->lpYYLst)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$2.tkToken);
+                                                 YYERROR;
+                                             } // End IF
+
+                                             // Push an item onto the list
+                                             lpplLocalVars->lpYYRes =
+                                               PushList_YY (lpplLocalVars->lpYYLst, &$2);
+/////////////////////////////////////////////FreeResult (&$2.tkToken);               // Copied w/o IncrRefCnt in PushList_YY
+                                             FreeResult (&lpplLocalVars->lpYYLst->tkToken); YYFree (lpplLocalVars->lpYYLst); lpplLocalVars->lpYYLst = NULL;
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                                 YYERROR;
+
+                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+
+
+
+    | IndexListWE1 ';'                  {DbgMsgW2 (L"%%IndexListWE1:  ;IndexListWE1");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Push an empty item onto the list
                                              lpplLocalVars->lpYYRes =
                                                PushList_YY (&$1, NULL);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);  // Copied w/o IncrRefCnt in PushList_YY
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
@@ -4535,13 +4581,32 @@ IndexListWE:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    |          ArrExpr                  {DbgMsgW2 (L"%%IndexListWE:  ArrExpr");
+    | IndexListWE1 ';' ArrExpr          {DbgMsgW2 (L"%%IndexListWE1:  ArrExpr;IndexListWE1");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             lpplLocalVars->lpYYRes =
+                                               PushList_YY (&$1, &$3);
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Copied w/o IncrRefCnt in PushList_YY
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$3.tkToken);
+                                                 YYERROR;
+                                             } // End IF
+
+                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    ;
+
+IndexListWE2:
+                       ArrExpr          {DbgMsgW2 (L"%%IndexListWE2:  ArrExpr");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
                                              // Initialize the list with the arg
                                              lpplLocalVars->lpYYRes =
                                                InitList1_YY (&$1);
-/////////////////////////////////////////////FreeResult (&$1.tkToken);  // Copied w/o IncrRefCnt in PushList_YY
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Copied w/o IncrRefCnt in PushList_YY
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {
@@ -4552,12 +4617,30 @@ IndexListWE:
                                              $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
                                          } // End IF
                                         }
-    | IndexListWE ';' ArrExpr           {DbgMsgW2 (L"%%IndexListWE:  ArrExpr;IndexListWE");
+    | IndexListWE2 ';'                  {DbgMsgW2 (L"%%IndexListWE2:  ;IndexListWE2");
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // Push an empty item onto the list
+                                             lpplLocalVars->lpYYRes =
+                                               PushList_YY (&$1, NULL);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // Copied w/o IncrRefCnt in PushList_YY
+
+                                             if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
+                                             {
+                                                 FreeResult (&$1.tkToken);
+                                                 YYERROR;
+                                             } // End IF
+
+                                             $$ = *lpplLocalVars->lpYYRes; YYFree (lpplLocalVars->lpYYRes); lpplLocalVars->lpYYRes = NULL;
+                                         } // End IF
+                                        }
+    | IndexListWE2 ';' ArrExpr          {DbgMsgW2 (L"%%IndexListWE2:  ArrExpr;IndexListWE2");
+                                         if (!lpplLocalVars->bLookAhead)
+                                         {
+                                             // Push an item onto the list
                                              lpplLocalVars->lpYYRes =
                                                PushList_YY (&$1, &$3);
-/////////////////////////////////////////////FreeResult (&$3.tkToken);  // Copied w/o IncrRefCnt in PushList_YY
+/////////////////////////////////////////////FreeResult (&$3.tkToken);               // Copied w/o IncrRefCnt in PushList_YY
 
                                              if (!lpplLocalVars->lpYYRes)            // If not defined, free args and YYERROR
                                              {

@@ -789,7 +789,7 @@ HGLOBAL MakeMonPrototype_EM
                         // We no longer need this storage
                         FreeResultGlobalVar (ClrPtrTypeIndAsGlb (lpMemArr)); *((LPAPLNESTED) lpMemArr) = NULL;
 
-                        *((LPAPLNESTED) lpMemArr)++ = MakeGlbTypeAsGlb (hGlbTmp);
+                        *((LPAPLNESTED) lpMemArr)++ = MakePtrTypeGlb (hGlbTmp);
                     } else
                         bRet = FALSE;
                     break;
@@ -1133,7 +1133,7 @@ HGLOBAL MakeDydPrototype_EM
                                                bBoolFn ? MP_NUMCONV : MP_NUMONLY);
                 if (!hGlbSub)
                     goto ERROR_EXIT;
-                *lpMemRes++ = MakeGlbTypeAsGlb (hGlbSub);
+                *lpMemRes++ = MakePtrTypeGlb (hGlbSub);
             } else
             // If the right arg is simple, the result is
             //   the prototype of the left arg
@@ -1144,7 +1144,7 @@ HGLOBAL MakeDydPrototype_EM
                                                bBoolFn ? MP_NUMCONV : MP_NUMONLY);
                 if (!hGlbSub)
                     goto ERROR_EXIT;
-                *lpMemRes++ = MakeGlbTypeAsGlb (hGlbSub);
+                *lpMemRes++ = MakePtrTypeGlb (hGlbSub);
             } else
             {
                 // Both args are nested
@@ -1246,7 +1246,7 @@ HGLOBAL MakeDydPrototype_EM
                                                        bBoolFn ? MP_NUMCONV : MP_NUMONLY);
                         if (!hGlbSub)
                             goto ERROR_EXIT;
-                        *lpMemRes++ = MakeGlbTypeAsGlb (hGlbSub);
+                        *lpMemRes++ = MakePtrTypeGlb (hGlbSub);
                     } else
                     // If the right arg element is an STE,
                     //   the result element is the prototype
@@ -1258,7 +1258,7 @@ HGLOBAL MakeDydPrototype_EM
                                                        bBoolFn ? MP_NUMCONV : MP_NUMONLY);
                         if (!hGlbSub)
                             goto ERROR_EXIT;
-                        *lpMemRes++ = MakeGlbTypeAsGlb (hGlbSub);
+                        *lpMemRes++ = MakePtrTypeGlb (hGlbSub);
                     } else
                     {
                         // Both args are nested HGLOBALs
@@ -1270,7 +1270,7 @@ HGLOBAL MakeDydPrototype_EM
                                                        NULL);
                         if (!hGlbSub)
                             goto ERROR_EXIT;
-                        *lpMemRes++ = MakeGlbTypeAsGlb (hGlbSub);
+                        *lpMemRes++ = MakePtrTypeGlb (hGlbSub);
                     } // End IF/ELSE/...
                 } // End FOR
             } // End IF/ELSE/...
@@ -1483,7 +1483,7 @@ HGLOBAL CopySymGlbDirAsGlb
     (HGLOBAL hGlb)
 
 {
-    return CopySymGlbDir (MakeGlbTypeAsGlb (hGlb));
+    return CopySymGlbDir (MakePtrTypeGlb (hGlb));
 } // End CopySymGlbDirAsGlb
 
 
@@ -1605,7 +1605,7 @@ HGLOBAL CopyArray_EM
                                                 lptkFunc);
                         if (hGlbTmp)
                             // Save into the destin
-                            *((LPAPLNESTED) lpMemDst) = MakeGlbTypeAsGlb (hGlbTmp);
+                            *((LPAPLNESTED) lpMemDst) = MakePtrTypeGlb (hGlbTmp);
                         else
                             bRet = FALSE;
                         break;

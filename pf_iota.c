@@ -116,121 +116,85 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLNELM      aplNELMRes;    // Result NELM
-    HGLOBAL      hGlbRes;       // Result global memory handle
-    UINT         ByteRes;       // # bytes in the result
-    LPVOID       lpMemRes;      // Ptr to result global memory
-    BOOL         bRet = TRUE;   // TRUE iff result is valid
-    APLINT       aplIntTmp;     // Temporary integer
-    LPPL_YYSTYPE lpYYRes;       // Ptr to the result
-    APLBOOL      bQuadIO;       // []IO
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMRht;        // Right arg NELM
+    APLRANK      aplRankRht;        // Right arg rank
+    HGLOBAL      hGlbRht,           // Right arg global memory handle
+                 hGlbRes;           // Result    ...
+    UINT         ByteRes;           // # bytes in the result
+    LPVOID       lpMemRes;          // Ptr to result global memory
+    BOOL         bRet;              // TRUE iff result is valid
+    APLLONGEST   aplLongestRht;     // Right arg iommediate value
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    APLBOOL      bQuadIO;           // []IO
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
 
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
     //***************************************************************
     // Check the right argument for RANK, LENGTH, and DOMAIN ERRORs
-    //   and fill in aplNELMRes.
     //***************************************************************
-
-    // Split cases based upon the right arg's token type
-    switch (lptkRhtArg->tkFlags.TknType)
+    if (aplRankRht > 1)
     {
-        case TKT_VARNAMED:
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
+        // Mark as a RANK ERROR
+        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
 
-            // If it's not immediate, we must traverse the array
-            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
-            {
-                // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkSym->stData.stGlbData));
+    if (aplNELMRht NE 1)
+    {
+        // Mark as a LENGTH ERROR
+        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
 
-                if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkSym->stData.stGlbData),
-                                         &aplNELMRes,
-                                          lptkFunc))
-                    return NULL;
-                break;
-            } // End IF
+    if (!IsSimpleNum (aplTypeRht))
+    {
+        // Mark as a DOMAIN ERROR
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
 
-            // Handle the immediate case
+    // Get right arg global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, NULL);
 
-            // stData is an immediate
-            Assert (lptkRhtArg->tkData.tkSym->stFlags.Imm);
+    // If it's a global, get the first value
+    if (hGlbRht)
+        GetFirstValueGlb (hGlbRht,          // The global memory handle
+                          NULL,             // Ptr to integer (or Boolean) (may be NULL)
+                          NULL,             // ...    float (may be NULL)
+                          NULL,             // ...    char (may be NULL)
+                         &aplLongestRht,    // ...    longest (may be NULL)
+                          NULL,             // ...    LPSYMENTRY or HGLOBAL (may be NULL)
+                          NULL,             // ...    immediate type (see IMM_TYPES) (may be NULL)
+                          NULL,             // ...    array type -- ARRAY_TYPES (may be NULL)
+                          FALSE);           // TRUE iff we should expand LPSYMENTRY into immediate value
+    // The singleton value is in aplLongestRht
 
-            if (!PrimFnMonIotaCon_EM (lptkRhtArg->tkData.tkSym,
-                                     &aplNELMRes,
-                                      lptkFunc))
-                return NULL;
-            break;              // Continue with common code
+    // If the storage type is float, attempt to convert it
+    if (aplTypeRht EQ ARRAY_FLOAT)
+    {
+        // Attempt to convert the float to an integer using System CT
+        aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
 
-        case TKT_VARIMMED:
-            // Split cases based upon the token's immediate type
-            switch (lptkRhtArg->tkFlags.ImmType)
-            {
-                case IMMTYPE_BOOL:          // All Booleans are OK
-                    aplNELMRes = lptkRhtArg->tkData.tkBoolean;
-
-                    break;                  // Continue with common code
-
-                case IMMTYPE_INT:           // Ensure non-negative integer
-                    // Ensure the immediate value isn't too large and isn't negative
-                    if (lptkRhtArg->tkData.tkInteger > MAX_APLNELM
-                     || lptkRhtArg->tkData.tkInteger < 0)
-                    {
-                        // Mark as a DOMAIN ERROR
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        return NULL;
-                    } // End IF
-
-                    aplNELMRes = lptkRhtArg->tkData.tkInteger;
-
-                    break;                  // Continue with common code
-
-                case IMMTYPE_FLOAT:         // Ensure it's close enough to a non-negative integer
-                    // Convert the value to an integer using System CT
-                    aplIntTmp = FloatToAplint_SCT (lptkRhtArg->tkData.tkFloat, &bRet);
-
-                    if (bRet
-                     && aplIntTmp < MAX_APLNELM
-                     && !SIGN_APLNELM (aplIntTmp))
-                    {
-                        aplNELMRes = (APLNELM) aplIntTmp;
-
-                        break;              // Continue with common code
-                    } // End IF
-
-                    // Fall through to IMMTYPE_CHAR to handle DOMAIN ERROR
-
-                case IMMTYPE_CHAR:
-                    // Mark as a DOMAIN ERROR
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    return NULL;
-
-                defstop
-                    return NULL;
-            } // End SWITCH
-
-            break;              // Continue with common code
-
-        case TKT_VARARRAY:
-            // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir (lptkRhtArg->tkData.tkGlbData));
-
-            if (!PrimFnMonIotaGlb_EM (ClrPtrTypeDirAsGlb (lptkRhtArg->tkData.tkGlbData),
-                                     &aplNELMRes,
-                                      lptkFunc))
-                return NULL;
-            break;              // Continue with common code
-
-        defstop
-            return NULL;
-    } // End SWITCH
+        if (!bRet)
+        {
+            // Mark as a DOMAIN ERROR
+            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+        } // End IF
+    } // End IF
 
     // Calculate space needed for the result
-    ByteRes = (UINT) CalcArraySize (ARRAY_APA, aplNELMRes, 1);
+    ByteRes = (UINT) CalcArraySize (ARRAY_APA, aplLongestRht, 1);
 
     // Allocate space for an APA
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
@@ -239,27 +203,27 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
         // Mark as a WS FULL
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    lptkFunc);
-        return NULL;
+        goto ERROR_EXIT;
     } // End IF
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
-    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = ARRAY_APA;
-////lpHeaderRes->Perm       = 0;        // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplNELMRes;
-    lpHeaderRes->Rank       = 1;
-#undef  lpHeaderRes
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_APA;
+////lpHeader->Perm       = 0;       // Already zero from GHND
+////lpHeader->SysVar     = 0;       // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplLongestRht;
+    lpHeader->Rank       = 1;
+#undef  lpHeader
 
     // Save the dimension in the result
-    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    *VarArrayBaseToDim (lpMemRes) = aplLongestRht;
 
-    // Point to the data (APLAPA struct)
+    // Skip over the header and dimensions to the data (APLAPA struct)
     lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
     // Save the APA values
@@ -278,208 +242,11 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
+ERROR_EXIT:
     return lpYYRes;
 } // End PrimFnMonIota_EM_YY
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $PrimFnMonIotaCon_EM
-//
-//  Monadic iota on a symbol table constant
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonIotaCon_EM"
-#else
-#define APPEND_NAME
-#endif
-
-BOOL PrimFnMonIotaCon_EM
-    (LPSYMENTRY lpSym,              // Ptr to the symbol table constant
-     LPAPLNELM  lpaplNELMRes,       // Ptr to result NELM
-     LPTOKEN    lptkFunc)           // Ptr to function token
-
-{
-    APLINT aplIntTmp;
-    BOOL   bRet = TRUE;
-
-    // stData is an immediate
-    Assert (lpSym->stFlags.Imm);
-
-    // Split cases based upon the symbol's immediate type
-    switch (lpSym->stFlags.ImmType)
-    {
-        case IMMTYPE_BOOL:
-            // Return the Boolean value
-            *lpaplNELMRes = lpSym->stData.stBoolean;
-
-            return TRUE;
-
-        case IMMTYPE_INT:
-            // Ensure the value is non-negative
-            if (lpSym->stData.stInteger >= 0)
-            {
-                // Return the Integer value
-                *lpaplNELMRes = lpSym->stData.stInteger;
-
-                return TRUE;
-            } // End IF
-
-            break;      // Continue with DOMAIN ERROR handling
-
-        case IMMTYPE_FLOAT:
-            // Convert the value to an integer using System CT
-            aplIntTmp = FloatToAplint_SCT (lpSym->stData.stFloat, &bRet);
-
-            if (bRet
-             && aplIntTmp < MAX_APLNELM
-             && !SIGN_APLNELM (aplIntTmp))
-            {
-                // Return the Integer value
-                *lpaplNELMRes = aplIntTmp;
-
-                return TRUE;
-            } // End IF
-
-            break;      // Continue with DOMAIN ERROR handling
-
-        case IMMTYPE_CHAR:
-            break;      // Continue with DOMAIN ERROR handling
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // Mark as a DOMAIN ERROR
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkFunc);
-    return FALSE;
-} // End PrimFnMonIotaCon_EM
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $PrimFnMonIotaGlobal_EM
-//
-//  Monadic iota on a global memory object
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonIotaGlb_EM"
-#else
-#define APPEND_NAME
-#endif
-
-BOOL PrimFnMonIotaGlb_EM
-    (HGLOBAL   hGlbRht,             // Handle to right arg
-     LPAPLNELM lpaplNELMRes,        // Ptr to result NELM
-     LPTOKEN   lptkFunc)            // Ptr to function token
-
-{
-    LPVOID   lpMem;
-    APLSTYPE aplType;           // The array storage type (see ARRAY_TYPES)
-    APLNELM  aplNELM;           // # elements in the array
-    APLRANK  aplRank;           // The rank of the array
-    BOOL     bRet = TRUE;
-
-    // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbRht);
-
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-    // It's an array
-    Assert (lpHeader->Sig.nature EQ VARARRAY_HEADER_SIGNATURE);
-
-    // Get the Array Type, NELM, and Rank
-    aplType = lpHeader->ArrType;
-    aplNELM = lpHeader->NELM;
-    aplRank = lpHeader->Rank;
-#undef  lpHeader
-
-    // Skip past the header and dimensions to the data
-    lpMem = VarArrayBaseToData (lpMem, aplRank);
-
-    // Only singletons allowed so far
-    if (aplNELM NE 1)
-    {
-        // If its rank is too high, it's a RANK ERROR,
-        //   otherwise it's a LENGTH ERROR
-        if (aplRank > 1)
-            ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkFunc);
-        else
-            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkFunc);
-        bRet = FALSE;
-    } else
-    // Traverse the array checking for DOMAIN ERROR
-    // Split cases based upon the array storage type
-    switch (aplType)
-    {
-        case ARRAY_BOOL:
-            // Return the Boolean value
-            *lpaplNELMRes = *(LPAPLBOOL) lpMem;
-
-            break;
-
-        case ARRAY_INT:
-            // Ensure the value is non-negative
-            if ((*(LPAPLINT) lpMem) < 0)
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                bRet = FALSE;
-            } else
-                // Return the Integer value
-                *lpaplNELMRes = *(LPAPLINT) lpMem;
-
-            break;
-
-        case ARRAY_APA:
-#define lpAPA       ((LPAPLAPA) lpMem)
-            // Ensure the value is non-negative
-            if (lpAPA->Off < 0)
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                bRet = FALSE;
-            } else
-                // Return the Integer value
-                *lpaplNELMRes = lpAPA->Off;
-#undef  lpAPA
-            break;
-
-        case ARRAY_FLOAT:
-            // Convert the value to an integer using System CT
-            *lpaplNELMRes = FloatToAplint_SCT (*(LPAPLFLOAT) lpMem, &bRet);
-
-            if (bRet
-             && *lpaplNELMRes < MAX_APLNELM
-             && !SIGN_APLNELM (*lpaplNELMRes))
-                break;
-
-            // Fall through to ARRAY_HETERO, etc. to handle DOMAIN ERROR
-
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            bRet = FALSE;
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbRht); lpMem = NULL;
-
-    return bRet;
-} // End PrimFnMonIotaGlb_EM
 #undef  APPEND_NAME
 
 
@@ -718,7 +485,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -882,11 +649,13 @@ BOOL PrimFnDydIotaIvI_EM
     APLINT    aplIntegerLft,        // Left arg integer
               aplIntegerRht;        // Right arg integer
 
-    // Here's where we might do something clever such as sort the right arg
-    //   or perhaps hash it assuming one or both args are large enough
-    //   to warrant such extra work.
+    // ***FIXME*** -- Here's where we might do something clever such as
+    //   sort the right arg or perhaps hash it assuming one or both args
+    //   are large enough to warrant such extra work.
 
-    // For the moment, we'll do an outer product
+    // Also, we could pick off BvI and BvA quite easily.  So much to do, so little time.
+
+    // For the moment, we'll go quadratic
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
         aplIntegerRht =
@@ -948,7 +717,7 @@ BOOL PrimFnDydIotaCvC_EM
     APLINT    iLft;                 // ...
 
     // Calculate # bytes in the TT at one APLUINT per 16-bit index (APLCHAR)
-    ByteTT = (1 << (NBIB * sizeof (APLCHAR))) * sizeof (APLUINT);
+    ByteTT = APLCHAR_SIZE * sizeof (APLUINT);
 
     // Allocate space for a ByteTT Translate Table
     // Note that this allocation is GMEM_FIXED
@@ -962,17 +731,17 @@ BOOL PrimFnDydIotaCvC_EM
     } // End IF
 
     // Trundle through the TT setting each value to NotFound
-    for (uRht = 0; uRht < (1 << (NBIB * sizeof (APLCHAR))); uRht++)
+    for (uRht = 0; uRht < APLCHAR_SIZE; uRht++)
         lpMemTT[uRht] = NotFound;
 
     // Trundle through the left arg backwards marking the TT
-    for (iLft = aplNELMLft - 1, lpMemLft += (aplNELMLft - 1);
+    for (iLft = aplNELMLft - 1, lpMemLft += iLft;
          iLft >= 0;
          iLft--)
         lpMemTT[*lpMemLft--] = iLft + bQuadIO;
 
-    // Trundle through the right arg looking the chars in the TT
-    //   and setting the result value
+    // Trundle through the right arg looking for the chars
+    //   in the TT and setting the result value
     for (uRht = 0; uRht < aplNELMRht; uRht++)
         // Save the index from the TT in the result
         *lpMemRes++ = lpMemTT[*lpMemRht++];
@@ -1043,7 +812,7 @@ void PrimFnDydIotaOther
         tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkSubRht.tkFlags.ImmType   = 0;     // Already zero from = {0}
 ////////tkSubRht.tkFlags.NoDisplay = 0;     // Already zero from = {0}
-        tkSubRht.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbSubRht);
+        tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);
         tkSubRht.tkCharIndex       = NEG1U;
 
         // Loop through the left arg
@@ -1065,7 +834,7 @@ void PrimFnDydIotaOther
                 tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubLft.tkFlags.ImmType   = 0;     // Already zero from = {0}
 ////////////////tkSubLft.tkFlags.NoDisplay = 0;     // Already zero from = {0}
-                tkSubLft.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbSubLft);
+                tkSubLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubLft);
                 tkSubLft.tkCharIndex       = NEG1U;
 
                 // Use match to determine equality

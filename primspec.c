@@ -233,7 +233,7 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
                                                 MP_CHARS);  // CHARs allowed
             // Save back into the result
             lpYYRes->tkToken.tkData.tkGlbData =
-              MakeGlbTypeAsGlb (hGlbResProto);
+              MakePtrTypeGlb (hGlbResProto);
 
             // We no longer need this storage
             FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
@@ -345,7 +345,7 @@ LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -457,7 +457,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+                lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 DBGLEAVE;
@@ -789,7 +789,7 @@ RESTART_EXCEPTION_VARIMMED:
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
             DBGLEAVE;
@@ -1288,7 +1288,7 @@ RESTART_EXCEPTION:
                         } // End SWITCH
 
                         // Save in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakeSymTypeAsSym (lpSymDst);
+                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeSym (lpSymDst);
                     } else
                         bRet = FALSE;
                     break;
@@ -1300,7 +1300,7 @@ RESTART_EXCEPTION:
                                                lptkFunc,
                                                lpPrimSpec);
                     if (hGlbSub)
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
                     else
                         bRet = FALSE;
                     break;
@@ -1988,7 +1988,7 @@ BOOL PrimFnDydSimpNest_EM
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     else
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
                     break;
 
                 defstop
@@ -2001,7 +2001,7 @@ BOOL PrimFnDydSimpNest_EM
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -2346,7 +2346,7 @@ BOOL PrimFnDydNestSimp_EM
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     else
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
                     break;
 
                 defstop
@@ -2359,7 +2359,7 @@ BOOL PrimFnDydNestSimp_EM
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
@@ -2610,7 +2610,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     else
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
                     break;
 
                 defstop
@@ -2815,7 +2815,7 @@ BOOL PrimFnDydNestNest_EM
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF
 ERROR_EXIT:
@@ -4521,7 +4521,7 @@ HGLOBAL PrimFnDydSiScNest_EM
                     if (!hGlbSub)
                         goto ERROR_EXIT;
                     else
-                        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
                     break;
 
                 defstop
@@ -5128,7 +5128,7 @@ RESTART_EXCEPTION_SINGLETON:
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0; // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
+            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         } // End IF/ELSE
 
         // Finish with common code
@@ -5221,7 +5221,7 @@ RESTART_EXCEPTION_SINGLETON:
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
     {
@@ -5846,7 +5846,7 @@ RESTART_EXCEPTION_NOAXIS:
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (*lphGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE/...
 

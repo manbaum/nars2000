@@ -65,7 +65,7 @@ LPPL_YYSTYPE SysFnEM_EM_YY
         lpSISCur = lpSISCur->lpSISPrv;
 
     if (lpSISCur)
-        hGlbRes = CopySymGlbDirAsGlb (MakeGlbTypeAsGlb (lpSISCur->hGlbQuadEM));
+        hGlbRes = CopySymGlbDirAsGlb (MakePtrTypeGlb (lpSISCur->hGlbQuadEM));
     else
         hGlbRes = hGlbM3x0Char;
 
@@ -76,7 +76,7 @@ LPPL_YYSTYPE SysFnEM_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;

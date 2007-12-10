@@ -272,6 +272,7 @@ APLFLOAT PrimFnDydStileFisFvF
 
     // If Rht divided-by Lft is near an integer within CT
     //   return 0.
+    // Attempt to convert the float to an integer using System CT
     FloatToAplint_SCT (aplFloatRht / aplFloatLft, &bRet);
     if (bRet)
         return 0;

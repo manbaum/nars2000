@@ -320,7 +320,7 @@ BOOL FreeResultGlobalVar
     DBGENTER;
 
     // Data is an valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (MakeGlbTypeAsGlb (hGlbData)));
+    Assert (IsGlbTypeVarDir (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
@@ -453,7 +453,7 @@ BOOL FreeResultGlobalFcn
     DBGENTER;
 
     // Data is an valid HGLOBAL function array
-    Assert (IsGlbTypeFcnDir (MakeGlbTypeAsGlb (hGlbData)));
+    Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlbData)));
 
     // Clear the ptr type bits
     hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
@@ -667,7 +667,7 @@ BOOL FreeResultGlobalDfn
     LPFCNLINE    lpFcnLines;        // Ptr to the array of structs (FCNLINE[numFcnLine])
 
     // Data is an valid HGLOBAL user-defined function/operator
-    Assert (IsGlbTypeDfnDir (MakeGlbTypeAsGlb (hGlbData)));
+    Assert (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlbData)));
 
     // Clear the ptr type bits
     hGlbData = ClrPtrTypeDirAsGlb (hGlbData);

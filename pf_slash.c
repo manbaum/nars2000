@@ -282,6 +282,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
         // Attempt to convert FLOAT left arg
         if (aplTypeLft EQ ARRAY_FLOAT)
         {
+            // Attempt to convert the float to an integer using System CT
             aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
             if (!bRet)
                 goto DOMAIN_EXIT;
@@ -366,6 +367,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             case ARRAY_FLOAT:
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
+                    // Attempt to convert the float to an integer using System CT
                     aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
                     if (!bRet || aplIntegerLft < 0)
                         goto DOMAIN_EXIT;
@@ -498,7 +500,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     if (lpMemRht)
                     {
                         uRht = uDimRht + uAx * uDimHi;
-                        uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
+                        uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
                         aplIntegerRep = (uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0;
                     } else
                         aplIntegerRep = aplIntegerRht;
@@ -663,7 +665,7 @@ PROTO_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype

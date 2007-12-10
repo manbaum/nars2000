@@ -660,7 +660,7 @@ static char tabConvert[][STRAND_LENGTH] =
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbStr);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the memory to get a ptr to it
@@ -960,7 +960,7 @@ static char tabConvert[][STRAND_LENGTH] =
                                                         &lpYYToken->tkToken);
                             if (lpSym)
                                 // Save the symbol table entry and skip past it
-                                *LPAPL.Sym++ = (LPSYMENTRY) MakeSymType (lpSym);
+                                *LPAPL.Sym++ = MakePtrTypeSym (lpSym);
                             else
                                 bRet = FALSE;
                         } else
@@ -1139,7 +1139,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;    // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;    // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbStr);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
     Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
@@ -1725,7 +1725,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_STRNAMED;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbStr);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbStr);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the memory to get a ptr to it
@@ -2008,7 +2008,7 @@ LPPL_YYSTYPE MakeList_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = bBrackets ? TKT_LISTBR : TKT_LISTPAR;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbLst);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLst);
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Free the tokens on this portion of the strand stack

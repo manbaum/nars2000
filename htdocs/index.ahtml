@@ -126,8 +126,10 @@
             <li>Sink (monadic {is}<span class="APL">A</span>
               to suppress the display of <span class="APL">A</span>)</li>
             <li>Function editing via <span class="APL">{del}</span> or <span class="APL">)EDIT</span></li>
-            <li>Unified index reference and assignment: <span class="APL">R[L]</span>
-              and <span class="APL">R[L]{is}</span>
+            <li>Unified index reference, assignment, and modify assignment:
+                  <span class="APL">R[L]</span>,
+                  <span class="APL">R[L]{is}A</span>,
+              and <span class="APL">R[L]</span><i>fcn</i><span class="APL">{is}A</span>
               allow both Reach and Scatter indexing &mdash; that is, if
               <span class="APL">L{pick}R</span> is valid, it is equivalent to
               <span class="APL">{disclose}R[{enclose}L]</span>, and if
@@ -434,8 +436,10 @@
           <span class="APL">F{is}{jot}</span>)</li>
         <li>Function editing via <span class="APL">{del}</span> or <span class="APL">)EDIT</span></li>
         <li>Raw output</li>
-        <li>Unified index reference and assignment: <span class="APL">R[L]</span>
-          and <span class="APL">R[L]{is}</span>
+        <li>Unified index reference, assignment, and modify assignment:
+              <span class="APL">R[L]</span>,
+              <span class="APL">R[L]{is}A</span>,
+          and <span class="APL">R[L]</span><i>fcn</i><span class="APL">{is}A</span>
           allow both Reach and Scatter indexing &mdash; that is, if
           <span class="APL">L{pick}R</span> is valid, it is equivalent to
           <span class="APL">{disclose}R[{enclose}L]</span>, and if
@@ -479,7 +483,6 @@
           <span class="APL">{quad}TCFF</span>, <span class="APL">{quad}TCHT</span>,
           <span class="APL">{quad}TCLF</span>, <span class="APL">{quad}TCNL</span>, and
           <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output</li>
-        <li><b>TBD:</b> Indexed assignment</li>
       </ul>
 
       <h3>Session Manager</h3>

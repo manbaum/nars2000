@@ -31,6 +31,8 @@ typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMT
 #define SIGN_APLDIM(a)  ((a) >> 63)     // ...            APLDIM
 #define SIGN_APLINT(a)  ((a) >> 63)     // ...            APLINT
 
+// # integers in an APLCHAR
+#define APLCHAR_SIZE    (BIT0 << (NBIB * sizeof (APLCHAR)))
 
 // Define ptrs
 typedef char      * LPCHAR;
@@ -278,12 +280,10 @@ typedef enum tagPTR_TYPES
 #define GetPtrTypeDir(lpMem)    (  PTRTYPE_MASK  &  ( UINT)     lpMem)
 
 // Macro to create a masked LPSYMENTRY
-#define MakeSymType(lpMem)        (PTRTYPE_STCONST | (UINT) lpMem)
-#define MakeSymTypeAsSym(lpMem)   ((LPSYMENTRY) MakeSymType (lpMem))
+#define MakePtrTypeSym(lpMem)        ((LPSYMENTRY) (PTRTYPE_STCONST | (UINT) lpMem))
 
 // Macro to create a masked HGLOBAL
-#define MakeGlbType(lpMem)        (PTRTYPE_HGLOBAL | (UINT) lpMem)
-#define MakeGlbTypeAsGlb(lpMem)   ((HGLOBAL) MakeGlbType (lpMem))
+#define MakePtrTypeGlb(lpMem)        ((HGLOBAL)    (PTRTYPE_HGLOBAL | (UINT) lpMem))
 
 // For LPSYMENTRY and HGLOBAL values in a temporary array, sometimes
 //   those values can be re-used in another array without having

@@ -401,7 +401,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     if (hGlbRes && lpMemRes)
@@ -512,7 +512,7 @@ LPVOID SysFnCR_Copy_EM
         MyGlobalUnlock (hGlbCpy); lpMemCpy = NULL;
 
         // Save the HGLOBAL in the result and skip over it
-        *((LPAPLNESTED) lpMemRes)++ = MakeGlbTypeAsGlb (hGlbCpy);
+        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbCpy);
     } else
     {
         // Get the length of the function header text
@@ -719,7 +719,7 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
     switch (aplTypeLft)
     {
         case ARRAY_FLOAT:
-            // Convert the float to APLINT
+            // Attempt to convert the float to an integer using System CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
 
             // Fall through to common code

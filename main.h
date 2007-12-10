@@ -1,61 +1,61 @@
 //****************************************************************************
-//	NARS2000 -- Main Header File
+//  NARS2000 -- Main Header File
 //****************************************************************************
 
 #define EQ ==
 #define NE !=
 
-#define LOSHORT(l)	((short)((DWORD)(l) & 0xffff))
-#define HISHORT(l)	((short)((DWORD)(l) >> 16))
+#define LOSHORT(l)  ((short)((DWORD)(l) & 0xffff))
+#define HISHORT(l)  ((short)((DWORD)(l) >> 16))
 
-#define TRUE	1
-#define FALSE	0
-#define NEG1U	(	(UINT) -1)
-#define NEG1A	((APLUINT) -1)
+#define TRUE    1
+#define FALSE   0
+#define NEG1U   (   (UINT) -1)
+#define NEG1A   ((APLUINT) -1)
 
-#define MB(a)	MessageBox (NULL, a, "NARS2000", MB_OK)
-#define MBC(a)	if (MessageBox (NULL, a, "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define IsGlbTypeVarDir(a) (IsGlobalTypeArray ( 		   a, VARARRAY_HEADER_SIGNATURE))
+#define MB(a)   MessageBox (NULL, a, "NARS2000", MB_OK)
+#define MBC(a)  if (MessageBox (NULL, a, "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define IsGlbTypeVarDir(a) (IsGlobalTypeArray (            a, VARARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeVarInd(a) (IsGlobalTypeArray (*(LPVOID *) a, VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnDir(a) (IsGlobalTypeArray ( 		   a, FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnDir(a) (IsGlobalTypeArray (            a, FCNARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeFcnInd(a) (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeDfnDir(a) (IsGlobalTypeArray ( 		   a, DFN_HEADER_SIGNATURE))
-#define IsGlbTypeNamDir(a) (IsGlobalTypeArray ( 		   a, VARNAMED_HEADER_SIGNATURE))
-#define IsSymNoValue(a) 	((a)->stHshEntry EQ NULL				\
-						  && (a)->stFlags.Perm						\
-						  && (a)->stFlags.Value EQ 0				\
-						  && (a)->stFlags.ObjName EQ OBJNAME_NONE	\
-						  && (a)->stFlags.ObjType EQ NAMETYPE_UNK)
-#define IsTokenNoValue(a)	((a)									\
-						  && (a)->tkFlags.TknType EQ TKT_VARNAMED	\
-						  && IsSymNoValue ((a)->tkData.tkSym))
+#define IsGlbTypeDfnDir(a) (IsGlobalTypeArray (            a, DFN_HEADER_SIGNATURE))
+#define IsGlbTypeNamDir(a) (IsGlobalTypeArray (            a, VARNAMED_HEADER_SIGNATURE))
+#define IsSymNoValue(a)     ((a)->stHshEntry EQ NULL                \
+                          && (a)->stFlags.Perm                      \
+                          && (a)->stFlags.Value EQ 0                \
+                          && (a)->stFlags.ObjName EQ OBJNAME_NONE   \
+                          && (a)->stFlags.ObjType EQ NAMETYPE_UNK)
+#define IsTokenNoValue(a)   ((a)                                    \
+                          && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
+                          && IsSymNoValue ((a)->tkData.tkSym))
 
-#define ByteAddr(a,b)		(&(((LPBYTE) (a))[b]))
+#define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
 
 #define AplModI(m,a) PrimFnDydStileIisIvI (m, a, NULL)
 #define AplModF(m,a) PrimFnDydStileFisFvF (m, a, NULL)
 
-#define LOPART_DWORDLONG		((DWORDLONG) 0x00000000FFFFFFFF)
-#define HIPART_DWORDLONG		((DWORDLONG) 0xFFFFFFFF00000000)
+#define LOPART_DWORDLONG        ((DWORDLONG) 0x00000000FFFFFFFF)
+#define HIPART_DWORDLONG        ((DWORDLONG) 0xFFFFFFFF00000000)
 
-#define LODWORD(x)				( (DWORD) (   (x) & LOPART_DWORDLONG ) )
-#define HIDWORD(x)				( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
+#define LODWORD(x)              ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
+#define HIDWORD(x)              ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
 
-#define QWORD	ULONGLONG
+#define QWORD   ULONGLONG
 
 #define defstop \
-default:		\
-	DbgStop();	\
-	nop ();
+default:        \
+    DbgStop();  \
+    nop ();
 
-#define FNLN	FileNameOnly (__FILE__), __LINE__
+#define FNLN    FileNameOnly (__FILE__), __LINE__
 
 #ifdef DEBUG
 
-#define LCLODSAPI	ODSAPI
+#define LCLODSAPI   ODSAPI
 
-#define DBGENTER	if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
-#define DBGLEAVE	if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
+#define DBGENTER    if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
+#define DBGLEAVE    if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
 
 #define IsGlbPtr(a) ((a) NE NULL && MyGlobalFlags (a) NE GMEM_INVALID_HANDLE)
 
@@ -104,7 +104,7 @@ DecrRefCntDir (hGlbData);
 DecrRefCntInd (hGlbData);
 #endif
 
-#define CheckMemStat()		_CheckMemStat ()
+#define CheckMemStat()      _CheckMemStat ()
 
 #define DisplayException()
 
@@ -117,24 +117,24 @@ DecrRefCntInd (hGlbData);
 
 #define IsGlbPtr(a) ((a) NE NULL && GlobalFlags (a) NE GMEM_INVALID_HANDLE)
 
-#define DbgGlobalAlloc(uFlags,ByteRes)	MyGlobalAlloc (uFlags, ByteRes);
+#define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc (uFlags, ByteRes);
 
-#define DbgGlobalFree(hGlbToken)		MyGlobalFree (hGlbToken);
+#define DbgGlobalFree(hGlbToken)        MyGlobalFree (hGlbToken);
 
-#define DbgIncrRefCntDir(hGlbData)		IncrRefCntDir (hGlbData);
+#define DbgIncrRefCntDir(hGlbData)      IncrRefCntDir (hGlbData);
 
-#define DbgIncrRefCntInd(hGlbData)		IncrRefCntInd (hGlbData);
+#define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData);
 
-#define DbgDecrRefCntDir(hGlbData)		DecrRefCntDir (hGlbData);
+#define DbgDecrRefCntDir(hGlbData)      DecrRefCntDir (hGlbData);
 
-#define DbgDecrRefCntInd(hGlbData)		DecrRefCntInd (hGlbData);
+#define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData);
 
 #define DbgMsg(a)
 #define DbgMsgW(a)
 
 #define CheckMemStat()
 
-#define DisplayException()		_DisplayException()
+#define DisplayException()      _DisplayException()
 
 #endif
 
@@ -142,162 +142,162 @@ DecrRefCntInd (hGlbData);
 //*************************** Window Data ********************************
 
 // Define offsets in DBWNDCLASS window extra bytes
-#define GWLDB_HWNDLB	0									// Window handle of Listbox
-#define GWLDB_EXTRA 	GWLDB_HWNDLB   + 1 * sizeof (long)	// Total # extra bytes
+#define GWLDB_HWNDLB    0                                   // Window handle of Listbox
+#define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (long)  // Total # extra bytes
 
 // Define common offset between the Session Manager and Function Editor
-#define GWLSF_PERTAB	0									// HGLOBAL of corresponding PERTABDATA struc
-#define GWLSF_HWNDEC	GWLSF_PERTAB   + 1 * sizeof (long)	// Handle of the matching Edit control
-#define GWLSF_UNDO_INI	GWLSF_HWNDEC   + 1 * sizeof (long)	// Ptr to Undo stack, initial (as allocated)
-#define GWLSF_UNDO_BEG	GWLSF_UNDO_INI + 1 * sizeof (long)	// ...				  beginning
-#define GWLSF_UNDO_NXT	GWLSF_UNDO_BEG + 1 * sizeof (long)	// ...				  next
-#define GWLSF_UNDO_LST	GWLSF_UNDO_NXT + 1 * sizeof (long)	// ...				  last
-#define GWLSF_UNDO_GRP	GWLSF_UNDO_LST + 1 * sizeof (long)	// Value of next Undo group index
-#define GWLSF_VKSTATE	GWLSF_UNDO_GRP + 1 * sizeof (long)	// Virtal Key state (VKSTATE struc)
-#define GWLSF_LASTKEY	GWLSF_VKSTATE  + 1 * sizeof (long)	// Value of last WM_KEYDOWN key
-#define GWLSF_CHANGED	GWLSF_LASTKEY  + 1 * sizeof (long)	// Boolean of whether or not the text has changed
+#define GWLSF_PERTAB    0                                   // HGLOBAL of corresponding PERTABDATA struc
+#define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (long)  // Handle of the matching Edit control
+#define GWLSF_UNDO_INI  GWLSF_HWNDEC   + 1 * sizeof (long)  // Ptr to Undo stack, initial (as allocated)
+#define GWLSF_UNDO_BEG  GWLSF_UNDO_INI + 1 * sizeof (long)  // ...                beginning
+#define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (long)  // ...                next
+#define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (long)  // ...                last
+#define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (long)  // Value of next Undo group index
+#define GWLSF_VKSTATE   GWLSF_UNDO_GRP + 1 * sizeof (long)  // Virtal Key state (VKSTATE struc)
+#define GWLSF_LASTKEY   GWLSF_VKSTATE  + 1 * sizeof (long)  // Value of last WM_KEYDOWN key
+#define GWLSF_CHANGED   GWLSF_LASTKEY  + 1 * sizeof (long)  // Boolean of whether or not the text has changed
 
 // Define offsets in SMWNDCLASS window extra bytes
-#define GWLSM_EXTRA 	GWLSF_CHANGED  + 1 * sizeof (long)	// Total # extra bytes
+#define GWLSM_EXTRA     GWLSF_CHANGED  + 1 * sizeof (long)  // Total # extra bytes
 
 // Define offsets in FEWNDCLASS window extra bytes
-#define GWLFE_EXTRA 	GWLSF_CHANGED  + 1 * sizeof (long)	// Total # extra bytes
+#define GWLFE_EXTRA     GWLSF_CHANGED  + 1 * sizeof (long)  // Total # extra bytes
 
 // Define offsets in MEWNDCLASS window extra bytes
-#define GWLME_EXTRA 	0									// Total # extra bytes
+#define GWLME_EXTRA     0                                   // Total # extra bytes
 
 // Define offsets in VEWNDCLASS window extra bytes
-#define GWLVE_EXTRA 	0									// Total # extra bytes
+#define GWLVE_EXTRA     0                                   // Total # extra bytes
 
 
 // Define local window messages
-#define MYWM_MOVE			(WM_APP + 0)	// MF
-#define MYWM_SETFOCUS		(WM_APP + 1)	// SM (SetFocus)
-#define MYWM_IZITNAME		(WM_APP + 2)	// FE (Izit A Name)
-#define MYWM_SAVE_FN		(WM_APP + 3)	// FE (SaveFunction)
-#define MYWM_SAVECLOSE_FN	(WM_APP + 4)	// FE (SaveFunction/CloseFunction)
-#define MYWM_SAVE_AS_FN 	(WM_APP + 5)	// FE (SaveAsFunction)
-#define MYWM_CLOSE_FN		(WM_APP + 6)	// FE (CloseFunction)
-#define MYWM_QUOTEQUAD		(WM_APP + 7)	// PL (Quote-Quad/Quad Input)
-#define MYWM_INIT_SMDB		(WM_APP + 8)	// SM (Initialize SM/DB windows)
+#define MYWM_MOVE           (WM_APP + 0)    // MF
+#define MYWM_SETFOCUS       (WM_APP + 1)    // SM (SetFocus)
+#define MYWM_IZITNAME       (WM_APP + 2)    // FE (Izit A Name)
+#define MYWM_SAVE_FN        (WM_APP + 3)    // FE (SaveFunction)
+#define MYWM_SAVECLOSE_FN   (WM_APP + 4)    // FE (SaveFunction/CloseFunction)
+#define MYWM_SAVE_AS_FN     (WM_APP + 5)    // FE (SaveAsFunction)
+#define MYWM_CLOSE_FN       (WM_APP + 6)    // FE (CloseFunction)
+#define MYWM_QUOTEQUAD      (WM_APP + 7)    // PL (Quote-Quad/Quad Input)
+#define MYWM_INIT_SMDB      (WM_APP + 8)    // SM (Initialize SM/DB windows)
 
 // Define Debug window messages
-#define MYWM_INIT_DB		(WM_APP + 0)	// DB
-#define MYWM_DBGMSGA		(WM_APP + 1)	// DB
-#define MYWM_DBGMSGW		(WM_APP + 2)	// DB
-#define MYWM_DBGMSG_CLR 	(WM_APP + 3)	// DB
-#define MYWM_DBGMSG_SCROLL	(WM_APP + 4)	// DB
+#define MYWM_INIT_DB        (WM_APP + 0)    // DB
+#define MYWM_DBGMSGA        (WM_APP + 1)    // DB
+#define MYWM_DBGMSGW        (WM_APP + 2)    // DB
+#define MYWM_DBGMSG_CLR     (WM_APP + 3)    // DB
+#define MYWM_DBGMSG_SCROLL  (WM_APP + 4)    // DB
 
 
 typedef enum tagEXCEPTION_CODES // Exception Codes
 {
-	EXCEPTION_SUCCESS = 0 , 	// 00:	All OK
-////EXCEPTION_RESULT_BOOL , 	//		Result should be Boolean
-////EXCEPTION_RESULT_INT  , 	//		... 			 Integer
-	EXCEPTION_RESULT_FLOAT, 	// 01:	... 			 Float
-	EXCEPTION_DOMAIN_ERROR, 	// 02:	Signal a DOMAIN ERROR
-	EXCEPTION_CTRL_BREAK,		// 03:	Ctrl-Break pressed
+    EXCEPTION_SUCCESS = 0 ,     // 00:  All OK
+////EXCEPTION_RESULT_BOOL ,     //      Result should be Boolean
+////EXCEPTION_RESULT_INT  ,     //      ...              Integer
+    EXCEPTION_RESULT_FLOAT,     // 01:  ...              Float
+    EXCEPTION_DOMAIN_ERROR,     // 02:  Signal a DOMAIN ERROR
+    EXCEPTION_CTRL_BREAK,       // 03:  Ctrl-Break pressed
 } EXCEPTION_CODES;
 
 typedef struct tagGLBHIST
 {
-	HGLOBAL *hGlb;				// 00:	Ptr to HGLOBAL
-	UINT	First:1,			// 04:	00000001:  This line is the first one in the array
-			ContPrev:1, 		//		00000002:  This line is connected to the previous line
-			ContNext:1, 		//		00000004:  ...							 next	  ...
-			Avail:29;			//		FFFFFFF8:  Available bits
-								// 08:	Length
+    HGLOBAL *hGlb;              // 00:  Ptr to HGLOBAL
+    UINT    First:1,            // 04:  00000001:  This line is the first one in the array
+            ContPrev:1,         //      00000002:  This line is connected to the previous line
+            ContNext:1,         //      00000004:  ...                           next     ...
+            Avail:29;           //      FFFFFFF8:  Available bits
+                                // 08:  Length
 } GLBHIST, *LPGLBHIST;
 
 typedef struct tagVKSTATE
 {
-	ULONG Shift:1,				// 00000001:  Left- or right-shift key up(0) or down(1)
-////	 lShift:1,
-////	 rShift:1,
-		  Alt:1,				// 00000002:  Left- or right-Alt key up(0) or down(1)
-////	 lAlt:1,
-////	 rAlt:1,
-		  Ctl:1,				// 00000004:  Left or -right Ctl key up(0) or down(1)
-////	 lCtl:1,
-////	 rCtl:1,
-		  Ins:1,				// 00000008:  Replace(0) or insert(1)
-		  Avail:28; 			// FFFFFFF0:  Available bits
+    ULONG Shift:1,              // 00000001:  Left- or right-shift key up(0) or down(1)
+////     lShift:1,
+////     rShift:1,
+          Alt:1,                // 00000002:  Left- or right-Alt key up(0) or down(1)
+////     lAlt:1,
+////     rAlt:1,
+          Ctl:1,                // 00000004:  Left or -right Ctl key up(0) or down(1)
+////     lCtl:1,
+////     rCtl:1,
+          Ins:1,                // 00000008:  Replace(0) or insert(1)
+          Avail:28;             // FFFFFFF0:  Available bits
 } VKSTATE, *LPVKSTATE;
 
 typedef enum tagMAKE_PROTO
 {
-	MP_CHARS,					// 00:	Chars allowed in MakePrototype arg
-	MP_NUMONLY, 				// 01:	Numerics only ...
-	MP_NUMCONV					// 02:	Convert chars to numerics ...
+    MP_CHARS,                   // 00:  Chars allowed in MakePrototype arg
+    MP_NUMONLY,                 // 01:  Numerics only ...
+    MP_NUMCONV                  // 02:  Convert chars to numerics ...
 } MAKE_PROTO;
 
 typedef enum tagEXIT_TYPES
 {
-	EXITTYPE_NONE = 0,			// 00:	Undefined
-	EXITTYPE_GOTO_ZILDE,		// 01:	{goto} {zilde}
-	EXITTYPE_GOTO_LINE, 		// 02:	{goto} LineNum
-	EXITTYPE_RESET_ONE, 		// 03:	{goto}
-	EXITTYPE_RESET_ONE_INIT,	// 04:	{goto}	(first time)
-	EXITTYPE_RESET_ALL, 		// 05:	)RESET
-	EXITTYPE_QUADERROR_INIT,	// 06:	[]ERROR/[]ES -- initialization
-	EXITTYPE_QUADERROR_EXEC,	// 07:	[]ERROR/[]ES -- execute []ELX
-	EXITTYPE_ERROR, 			// 08:	ERROR
-	EXITTYPE_DISPLAY,			// 09:	Value not already displayed
-	EXITTYPE_NODISPLAY, 		// 0A:	Value already displayed
-	EXITTYPE_NOVALUE,			// 0B:	No value returned
-								// 0C-0F:  Available entries (4 bits)
+    EXITTYPE_NONE = 0,          // 00:  Undefined
+    EXITTYPE_GOTO_ZILDE,        // 01:  {goto} {zilde}
+    EXITTYPE_GOTO_LINE,         // 02:  {goto} LineNum
+    EXITTYPE_RESET_ONE,         // 03:  {goto}
+    EXITTYPE_RESET_ONE_INIT,    // 04:  {goto}  (first time)
+    EXITTYPE_RESET_ALL,         // 05:  )RESET
+    EXITTYPE_QUADERROR_INIT,    // 06:  []ERROR/[]ES -- initialization
+    EXITTYPE_QUADERROR_EXEC,    // 07:  []ERROR/[]ES -- execute []ELX
+    EXITTYPE_ERROR,             // 08:  ERROR
+    EXITTYPE_DISPLAY,           // 09:  Value not already displayed
+    EXITTYPE_NODISPLAY,         // 0A:  Value already displayed
+    EXITTYPE_NOVALUE,           // 0B:  No value returned
+                                // 0C-0F:  Available entries (4 bits)
 } EXIT_TYPES;
 
 #ifndef DEBUG
 #define Assert(a)
 #endif
 
-#define DEF_STRAND_INITSIZE    (  64*1024)	// Initial size in tokens of the strand stack
-#define DEF_STRAND_MAXSIZE	   (1024*1024)	// Maximum ...
+#define DEF_STRAND_INITSIZE    (  64*1024)  // Initial size in tokens of the strand stack
+#define DEF_STRAND_MAXSIZE     (1024*1024)  // Maximum ...
 
 // Resource debugging
-#define MAXOBJ	128000
+#define MAXOBJ  128000
 
 // Define bit masks
-#define BIT0	0x00000001
-#define BIT1	0x00000010
-#define BIT2	0x00000100
-#define BIT3	0x00001000
-#define BIT4	0x00010000
-#define BIT5	0x00100000
-#define BIT6	0x01000000
-#define BIT7	0x10000000
+#define BIT0    0x00000001
+#define BIT1    0x00000010
+#define BIT2    0x00000100
+#define BIT3    0x00001000
+#define BIT4    0x00010000
+#define BIT5    0x00100000
+#define BIT6    0x01000000
+#define BIT7    0x10000000
 
 // # bits in a byte
-#define NBIB			8
+#define NBIB            8
 
 // Log base 2 of NBIB
-#define LOG2NBIB		3
+#define LOG2NBIB        3
 
 // Mask for LOG2NBIB bits
-#define MASKLOG2NBIB	((1 << LOG2NBIB) - 1)		// a.k.a. (NBIB - 1)
+#define MASKLOG2NBIB    ((BIT0 << LOG2NBIB) - 1)    // a.k.a. (NBIB - 1)
 
 // # bits in a dword
-#define NBID		   32
+#define NBID           32
 
 // Log base 2 of NBID
-#define LOG2NBID		5
+#define LOG2NBID        5
 
 // Mask for LOG2NBID bits
-#define MASKLOG2NBID	((1 << LOG2NBID) - 1)		// a.k.a. (NBID - 1)
+#define MASKLOG2NBID    ((BIT0 << LOG2NBID) - 1)    // a.k.a. (NBID - 1)
 
 // End value for shift mask
-#define END_OF_BYTE 	(1 << NBIB)
+#define END_OF_BYTE     (BIT0 << NBIB)
 
 // Width and height of each image in the image list
-#define IMAGE_CX		16
-#define IMAGE_CY		16
+#define IMAGE_CX        16
+#define IMAGE_CY        16
 
 // Extensions
-#define WKSEXT			".ws.nars"
-#define WS_WKSEXT		L".ws.nars"
+#define WKSEXT          ".ws.nars"
+#define WS_WKSEXT       L".ws.nars"
 
 
 //***************************************************************************
-//	End of File: main.h
+//  End of File: main.h
 //***************************************************************************

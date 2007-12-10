@@ -174,7 +174,7 @@ LPPL_YYSTYPE PrimFnMonRhoCon_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbZilde);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbZilde);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
@@ -280,7 +280,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     // We no longer need this ptr
@@ -557,7 +557,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
             lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
             // Save the handle
-            *((LPAPLNESTED) lpMemRes) = MakeGlbTypeAsGlb (hGlbProto);
+            *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
         } // End IF
     } else
     if (aplNELMRes)
@@ -581,7 +581,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         // See if it fits into a lower (but not necessarily smaller) datatype
@@ -675,9 +675,9 @@ BOOL PrimFnDydRhoRhtCopyData
                         *((LPAPLBOOL) lpMemRes)++ = aplBool;
 
                     // # valid bits in last byte
-                    uBits = (UINT) (aplNELMRes & MASKLOG2NBIB);
+                    uBits = MASKLOG2NBIB & (UINT) aplNELMRes;
                     if (uBits)
-                        *((LPAPLBOOL) lpMemRes) = aplBool & ((1 << uBits) - 1);
+                        *((LPAPLBOOL) lpMemRes) = aplBool & ((BIT0 << uBits) - 1);
                     break;
                 } // End IMMTYPE_BOOL
 
@@ -755,9 +755,9 @@ BOOL PrimFnDydRhoRhtCopyData
                         *((LPAPLBOOL) lpMemRes)++ = aplBool;
 
                     // # valid bits in last byte
-                    uBits = (UINT) (aplNELMRes & MASKLOG2NBIB);
+                    uBits = MASKLOG2NBIB & (UINT) aplNELMRes;
                     if (uBits)
-                        *((LPAPLBOOL) lpMemRes) = aplBool & ((1 << uBits) - 1);
+                        *((LPAPLBOOL) lpMemRes) = aplBool & ((BIT0 << uBits) - 1);
                     break;
                 } // End IMMTYPE_BOOL
 
@@ -1020,7 +1020,7 @@ BOOL PrimFnDydRhoLftValid_EM
                     break;
 
                 case IMMTYPE_FLOAT:     // Ensure it's close enough to a non-negative integer
-                    // Convert the value to an integer using System CT
+                    // Attempt to convert the float to an integer using System CT
                     aplIntTmp = FloatToAplint_SCT (lptkLftArg->tkData.tkSym->stData.stFloat, &bRet);
 
                     if (bRet
@@ -1082,7 +1082,7 @@ BOOL PrimFnDydRhoLftValid_EM
                     break;
 
                 case IMMTYPE_FLOAT:     // Ensure it's close enough to a non-negative integer
-                    // Convert the value to an integer using System CT
+                    // Attempt to convert the float to an integer using System CT
                     aplIntTmp = FloatToAplint_SCT (lptkLftArg->tkData.tkFloat, &bRet);
 
                     if (bRet
@@ -1184,9 +1184,9 @@ BOOL PrimFnDydRhoLftGlbValid_EM
                 // Check the last byte
 
                 // # valid bits in last byte
-                uBits = (UINT) (aplNELMLft & MASKLOG2NBIB);
+                uBits = MASKLOG2NBIB & (UINT) aplNELMLft;
                 if (uBits)                                  // Last byte not full
-                    *lpaplNELMRes &= ((LPAPLBOOL) lpDataLft)[u] EQ ((1 << uBits) - 1);
+                    *lpaplNELMRes &= ((LPAPLBOOL) lpDataLft)[u] EQ ((BIT0 << uBits) - 1);
 
                 break;
 
@@ -1216,6 +1216,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
                 *lpaplNELMRes = 1;      // Initialize with identity element for multiply
                 for (u = 0; bRet && u < aplNELMLft; u++)
                 {
+                    // Attempt to convert the float to an integer using System CT
                     aplIntTmp = FloatToAplint_SCT (((LPAPLFLOAT) lpDataLft)[u], &bRet);
                     if ((!bRet) || aplIntTmp > MAX_APLNELM)
                         bRet = FALSE;

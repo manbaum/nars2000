@@ -9,9 +9,7 @@ TO DO:  General:  Important (pre-alpha)
 * ...       dyadic dot                  (inner product)
 * ...       bracket list indexing        A[L1;...;Ln][M]
 * ...       bracket list indexing        A[L1;...;Ln][M1;...;Mn]
-* ...       bracket indexed assignment   A[L]{is}R
 * ...       bracket indexed strand assignment  (B (A[L])){is}R
-* ...       bracket indexed modified assignment  A[L]Fcn{is}R
 * ...       bracket indexed modified strand assignment  (B (A[L]))Fcn{is}R
 * ...       )COPY
 * ...       )ERASE
@@ -186,6 +184,8 @@ DONE:  General
 * ...       dyadic iota extended to non-vector left args (via an internal magic function)
 * ...       dyadic tilde
 * ...       monadic down shoe
+* ...       bracket indexed assignment   A[L]{is}R
+* ...       bracket indexed modified assignment  A[L]Fcn{is}R
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector
@@ -316,9 +316,8 @@ ToDo
 * Unlocalize in reverse order
 * Unlocalize in one pass (and clear .Value), and restore
   in another pass to handle duplicate localized names
-* Resolve NAMETYPE_UNK bug
 * Review IBM APL2 Deviations & Restrictions
-*
+* Optimize CopyArray_EM by copying the top level only
 
 
 

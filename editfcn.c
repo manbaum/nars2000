@@ -3060,7 +3060,7 @@ BOOL SaveFunction
         GetSpecialLabelNums (lpMemDfnHdr);
 
         // Save the global memory handle in the STE
-        lpSymName->stData.stGlbData = MakeGlbTypeAsGlb (hGlbDfnHdr);
+        lpSymName->stData.stGlbData = MakePtrTypeGlb (hGlbDfnHdr);
 
         // Mark as valued and user-defined function/operator
         lpSymName->stFlags.Value  =

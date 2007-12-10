@@ -90,6 +90,7 @@ EXIT_TYPES GotoLine_EM
     {
         BOOL bRet;
 
+        // Attempt to convert the float to an integer using System CT
         aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
         if (!bRet)
         {

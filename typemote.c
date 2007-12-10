@@ -480,13 +480,13 @@ NORMAL_EXIT:
     {
         case TKT_VARNAMED:
             // Save the result in the right arg token
-            lptkRhtArg->tkData.tkSym->stData.stGlbData = MakeGlbTypeAsGlb (hGlbRes);
+            lptkRhtArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
 
             break;
 
         case TKT_VARARRAY:
             // Save the result in the right arg token
-            lptkRhtArg->tkData.tkGlbData = MakeGlbTypeAsGlb (hGlbRes);
+            lptkRhtArg->tkData.tkGlbData = MakePtrTypeGlb (hGlbRes);
 
             break;
 
@@ -821,20 +821,21 @@ BOOL TypePromoteGlb_EM
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    HGLOBAL  hGlbRes;               // Result global memory handle
+    HGLOBAL  hGlbArg,               // Arg    ...
+             hGlbRes = NULL;        // Result global memory handle
     BOOL     bRet = TRUE;           // TRUE iff the result is valid
     LPVOID   lpMemArg,              // Ptr to global memory
-             lpMemRes;              // Ptr to result global memory
+             lpMemRes = NULL;       // Ptr to result global memory
     APLSTYPE aplTypeArg;            // Arg storage type of HGLOBAL
     APLNELM  aplNELMArg;            // Arg NELM         ...
     APLRANK  aplRankArg;            // Arg Rank         ...
     APLUINT  ByteRes;               // # bytes in the result
 
     // Clear the type bits
-    *lphGlbArg = ClrPtrTypeDirAsGlb (*lphGlbArg);
+    hGlbArg = ClrPtrTypeDirAsGlb (*lphGlbArg);
 
     // Lock the memory to get a ptr to it
-    lpMemArg = MyGlobalLock (*lphGlbArg);
+    lpMemArg = MyGlobalLock (hGlbArg);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemArg)
     // Get the Array Type and NELM
@@ -1084,23 +1085,49 @@ BOOL TypePromoteGlb_EM
 
     // We no longer need thess ptrs
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-    MyGlobalUnlock (*lphGlbArg); lpMemArg = NULL;
+    MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
 
     // Free the old HGLOBAL
-    FreeResultGlobalVar (*lphGlbArg); *lphGlbArg = NULL;
+    FreeResultGlobalVar (hGlbArg); hGlbArg = NULL;
 
     // Save the new HGLOBAL
     *lphGlbArg = hGlbRes;
 ERROR_EXIT:
-    if (*lphGlbArg && lpMemArg)
+    if (hGlbArg && lpMemArg)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (*lphGlbArg); lpMemArg = NULL;
+        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+    } // End IF
+
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
     return bRet;
 } // End TypePromoteGlb_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $QueryPromote
+//
+//  Determine if an arg should be promoted
+//***************************************************************************
+
+BOOL QueryPromote
+    (APLSTYPE  aplTypeNam,          // Name arg storage type
+     APLSTYPE  aplTypeSet,          // Set  ...
+     APLSTYPE *lpaplTypeRes)        // Result   ...
+
+{
+    // Calculate the result storage type
+    *lpaplTypeRes = aTypePromote[aplTypeNam][aplTypeSet];
+
+    // Compare the storage type of the result with the existing storage type
+    return (*lpaplTypeRes NE aplTypeNam);
+} // End QueryPromote
 
 
 //***************************************************************************

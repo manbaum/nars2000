@@ -270,7 +270,9 @@ void _LastLock
 
     // Find this object in the array
     iLen = *lpiCount;
-    for (i = 0; i < iLen; i++)
+
+    // Note we loop backwards to find the most recent entry
+    for (i = iLen - 1; i >= 0; i--)
     if (hMem EQ lpaah[dwType - 1][i])
         break;
 

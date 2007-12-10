@@ -2371,6 +2371,12 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
     } else
         x += EDIT_PaintText(es, dc, x, y, line, 0, ll, FALSE);
 
+#ifdef DEBUG
+    // ***DEBUG***
+    if (gDbgLvl EQ 9)
+        DbgBrk ();
+#endif
+
     // Fill out the rest of the line
     rc2.left   = x;
     rc2.top    = y;
@@ -2378,7 +2384,7 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
     rc2.bottom = y + es->line_height;
     IntersectRect (&rc1, &rc2, &es->format_rect);
     FillRect (dc, &rc1, hBrush);
-}
+} // End EDIT_PaintLine
 
 
 /*********************************************************************
@@ -2463,7 +2469,7 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
 #endif
     }
     return ret;
-}
+} // End EDIT_PaintText
 
 
 /*********************************************************************
@@ -2477,7 +2483,7 @@ static void EDIT_SetCaretPos(EDITSTATE *es, INT pos,
     LRESULT res = EDIT_EM_PosFromChar(es, pos, after_wrap);
 //  TRACE("%d - %dx%d\n", pos, (short)LOWORD(res), (short)HIWORD(res));
     SetCaretPos((short)LOWORD(res), (short)HIWORD(res));
-}
+} // End EDIT_SetCaretPos
 
 
 /*********************************************************************
@@ -5091,8 +5097,6 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
                     (es->style & ES_NOHIDESEL));
         dc = hdc ? hdc : BeginPaint(es->hwndSelf, &ps);
 
-    HideCaret (es->hwndSelf);
-
     GetClientRect(es->hwndSelf, &rcClient);
 
     /* get the background brush */
@@ -5123,8 +5127,8 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
             max(rc.right-bw, rc.left+bw), max(rc.bottom-bh, rc.top+bh));
     }
 
-    GetClipBox(dc, &rc);
-    // The following line was deleted to reduce screen flicker
+    // The following two lines were deleted to reduce screen flicker
+////GetClipBox(dc, &rc);
 ////FillRect(dc, &rc, brush);
 
     IntersectClipRect(dc, es->format_rect.left,
@@ -5156,7 +5160,6 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     if (es->font)
         SelectObject(dc, old_font);
 
-    ShowCaret(es->hwndSelf);
     if (!hdc)
         EndPaint(es->hwndSelf, &ps);
 } // End EDIT_WM_Paint

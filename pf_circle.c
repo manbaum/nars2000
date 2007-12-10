@@ -394,7 +394,7 @@ APLFLOAT PrimFnDydCircleFisFvF
     APLFLOAT aplFloatTmp;
 
 
-    // Ensure the left arg is integral
+    // Attempt to convert the float to an integer using System CT
     aplLft = FloatToAplint_SCT (aplFloatLft, &bRet);
 
     if (bRet)

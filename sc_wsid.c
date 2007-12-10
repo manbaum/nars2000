@@ -135,7 +135,7 @@ BOOL CmdWsid_EM
         FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
         // Save the new []WSID
-        lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakeGlbTypeAsGlb (hGlbWSID);
+        lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
     } else
     // Display the current WSID
     {

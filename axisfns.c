@@ -136,7 +136,7 @@ BOOL CheckAxisImm
             break;
 
         case IMMTYPE_FLOAT:     // Ensure it's close enough
-            // Convert the value to an integer using System CT
+            // Attempt to convert the float to an integer using System CT
             aplRank = FloatToAplint_SCT (lptkAxis->tkData.tkFloat, &bRet);
             aplRank -= bQuadIO; // Less the index origin
 
@@ -392,7 +392,7 @@ BOOL CheckAxisGlb
             // Loop through the elements
             for (u = 0; bRet && u < *lpaplNELM; u++)
             {
-                // Convert the value to an integer using System CT
+                // Attempt to convert the float to an integer using System CT
                 aplRankLcl = FloatToAplint_SCT (*lpaplFloat++, &bRet);
                 aplRankLcl -= bQuadIO; // Less the index origin
 
@@ -841,7 +841,7 @@ BOOL TestDupAxis
     UINT uBitMask;
 
     // Calculate the bit mask
-    uBitMask = (1 << (UINT) (aplRank % NBIB));
+    uBitMask = (BIT0 << (UINT) (aplRank % NBIB));
 
     // See if this value has already been seen
     if (!bAllowDups)

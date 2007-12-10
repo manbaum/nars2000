@@ -1273,7 +1273,7 @@ BOOL fnAlpDone
         tkFlags.TknType = TKT_VARNAMED;
 
         // Copy to local var so we may pass its address
-        aplInteger = MakeSymType (lpSymEntry);
+        (LPSYMENTRY) aplInteger = MakePtrTypeSym (lpSymEntry);
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
@@ -1338,7 +1338,7 @@ BOOL fnDirIdent
         tkFlags.TknType = TKT_VARNAMED;
 
         // Copy to local var so we may pass its address
-        aplInteger = MakeSymType (lpSymEntry);
+        (LPSYMENTRY) aplInteger = MakePtrTypeSym (lpSymEntry);
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
@@ -1491,7 +1491,7 @@ BOOL fnPrmDone
         tkFlags.TknType   = TKT_VARARRAY;
 ////////tkFlags.ImmType   = 0;      // Already zero from {0}
 ////////tkFlags.NoDisplay = 0;      // Already zero from {0}
-        aplInteger        = MakeGlbType (hGlbZilde);
+        (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlbZilde);
     } else
     {
         // Mark the data as a primitive function
@@ -1784,7 +1784,7 @@ BOOL fnComDone
         tkFlags.TknType = TKT_COMMENT;
 
 ////         // Copy to local var so we may pass its address
-////         aplInteger = MakeGlbType (hGlb);
+////         (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlb);
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
@@ -1896,7 +1896,7 @@ BOOL fnQuoDone
         tkFlags.TknType = TKT_STRING;
 
         // Copy to local var so we may pass its address
-        aplInteger = MakeGlbType (hGlbV0Char);
+        (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlbV0Char);
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
@@ -1965,7 +1965,7 @@ BOOL fnQuoDone
             tkFlags.TknType = TKT_STRING;
 
             // Copy to local var so we may pass its address
-            aplInteger = MakeGlbType (hGlb);
+            (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlb);
 
             // Attempt to append as new token, check for TOKEN TABLE FULL,
             //   and resize as necessary.

@@ -212,6 +212,7 @@ APLFLOAT PrimFnMonQuoteDotFisF
     // Check for DOMAIN ERROR
     if (aplFloatRht < 0)
     {
+        // Attempt to convert the float to an integer using System CT
         (void) FloatToAplint_SCT (aplFloatRht, &iRet);
         if (iRet)
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);

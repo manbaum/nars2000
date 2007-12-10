@@ -397,8 +397,10 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     if (bRet)
     {
         if (aplTypeLft EQ ARRAY_FLOAT)
+            // Attempt to convert the float to an integer using System CT
             aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
         if (bRet && aplTypeRht EQ ARRAY_FLOAT)
+            // Attempt to convert the float to an integer using System CT
             aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
     } // End IF
 
@@ -444,7 +446,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Lock the memory to get a ptr to it
@@ -513,7 +515,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
           MyGlobalReAlloc (hGlbRes,
                            MyGlobalSize (hGlbRes) - (UINT) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
                            GHND);
-        lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     } // End IF/ELSE
 ERROR_EXIT:
     if (hGlbRes && lpMemRes)

@@ -311,7 +311,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
@@ -714,7 +714,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     //   the values in lpMemDimRht[lpMemAxis]
                     IncrOdometer (lpMemOdo, lpMemDimRht, lpMemAxis, aplRankRht);
 
-                    uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
+                    uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
 
                     // Copy element # uRht from the right arg to lpMemRes[uRes]
                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |=
@@ -854,7 +854,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (hGlbRes && lpMemRes)
@@ -2028,7 +2028,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 ERROR_EXIT:
     if (lpMemLft)

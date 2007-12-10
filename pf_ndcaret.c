@@ -177,9 +177,10 @@ APLBOOL PrimFnDydDownCaretTildeBisFvF
            aplRht;
     BOOL   bRet = TRUE;
 
-    // Convert the value to an integer using System CT
+    // Attempt to convert the float to an integer using System CT
     aplLft = FloatToAplint_SCT (aplFloatLft, &bRet);
     if (bRet)
+        // Attempt to convert the float to an integer using System CT
         aplRht = FloatToAplint_SCT (aplFloatRht, &bRet);
     if (!bRet
      || !IsBooleanValue (aplLft)

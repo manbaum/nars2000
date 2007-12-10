@@ -178,7 +178,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbLft);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbLft);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Call the dyadic function
@@ -537,7 +537,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
 
-                uBitMask = 1 << (MASKLOG2NBIB & (UINT) uRht);
+                uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) uRht);
 
                 // Copy element # uRht from the right arg to lpMemRes[uRes]
                 *((LPAPLBOOL) lpMemRes) |= ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? 1 : 0) << uBitIndex;
@@ -676,7 +676,7 @@ PROTO_EXIT:
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakeGlbTypeAsGlb (hGlbRes);
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype

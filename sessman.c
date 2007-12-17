@@ -1357,6 +1357,19 @@ LRESULT APIENTRY SMWndProc
                 return -1;          // Mark as failed
             } // End IF
 
+            // ***FIXME*** -- For some reason, the
+            //                background of the MC window
+            //                doesn't get painted, so I'm
+            //                using this kludge for now.
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            InvalidateRect (lpMemPTD->hWndMC, NULL, TRUE);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
             return FALSE;           // We handled the msg
         } // End WM_CREATE
 

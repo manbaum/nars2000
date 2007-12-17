@@ -118,13 +118,13 @@ ul, ol
 
 .header
 {
-  color:  inherit;
-  background-color:  inherit;
+  color: inherit;
+  background-color: inherit;
 }
 
 .section
 {
-  color:  inherit;
+  color: inherit;
   background-color: white;
   border-color: rgb(24,24,24);
   border-width: 1px;
@@ -149,4 +149,12 @@ code
 .APL
 {
   white-space: nowrap;
+}
+
+li.TBD:before
+{
+  font-weight: bold;
+  color: red;
+  background-color: inherit;
+  content: "TBD: ";
 }

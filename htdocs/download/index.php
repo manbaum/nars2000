@@ -137,6 +137,11 @@ ul, ol
     <div class="section">
       <h2>Latest File Releases</h2>
 
+      <p>There are two types of files available for downloading:
+        <b>zip</b> and <b>map</b>.  The former contains
+        everything you need to run the program, whereas the latter contains
+        debugging information only in case we need it.</p>
+
       <table class="reltable" border="0" cellspacing="0" summary="">
       <tr>
         <th>File Name</th>

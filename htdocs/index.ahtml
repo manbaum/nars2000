@@ -25,11 +25,9 @@
 <div class="menu">&nbsp;&nbsp;
 <a href="/">Home</a> |
 <a href="/download/">Download</a> |
-<a href="/GetInvolved.html">Get Involved</a> |
 <a href="http://wiki.nars2000.org">Documentation</a> |
 <a href="/Contributors.ahtml">Contributors</a> |
 <a href="/LICENSE">License</a> |
-<a href="/ContactUs.html">Contact Us</a> |
 <a href="http://wiki.nars2000.org/index.php/NARS2000:About">About</a>
 </div>
 
@@ -296,7 +294,7 @@
           <span class="APL">{quad}TCDEL</span>, <span class="APL">{quad}TCESC</span>,
           <span class="APL">{quad}TCFF</span>, <span class="APL">{quad}TCHT</span>,
           <span class="APL">{quad}TCLF</span>, <span class="APL">{quad}TCNL</span>, and
-          <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output
+          <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output</li>
         <li>Out of range numeric assignments to
           <span class="APL">{quad}PP</span> and
           <span class="APL">{quad}PW</span> are set to the value in the allowable range
@@ -383,7 +381,7 @@
             <li>Dyadic iota ({iota}) extended to rank &gt; 1 left arguments returns an array
               of vector indices to the left argument (via an internal magic function)</li>
             <li>Dyadic tilde ({tilde}) &mdash; without (via an internal magic function)</li>
-            <li><b>TBD:</b>  Dyadic down tack jot (Format by Specification)</li>
+            <li class="TBD">Dyadic down tack jot (Format by Specification)</li>
           </ul>
         </li>
       </ul>
@@ -409,7 +407,7 @@
         <li>Dyadic
           <ul>
             <li>Dyadic operator jot ({jot}) monadic and dyadic derived functions &mdash; composition</li>
-            <li><b>TBD:</b>  Inner Product</li>
+            <li class="TBD">Inner Product</li>
           </ul>
         </li>
       </ul>
@@ -540,9 +538,9 @@
             <li><span class="APL">{quad}SIZE</span></li>
             <li><span class="APL">{quad}TYPE</span></li>
             <li><span class="APL">{quad}UCS</span></li>
-            <li><b>TBD:</b> <span class="APL">{quad}EC</span></li>
-            <li><b>TBD:</b> <span class="APL">{quad}EX</span></li>
-            <li><b>TBD:</b> <span class="APL">{quad}FX</span></li>
+            <li class="TBD"><span class="APL">{quad}EC</span></li>
+            <li class="TBD"><span class="APL">{quad}EX</span></li>
+            <li class="TBD"><span class="APL">{quad}FX</span></li>
           </ul>
         </li>
 
@@ -555,8 +553,8 @@
               <span class="APL">0 {quad}DR</span> for character message</li>
             <li><span class="APL">{quad}ES</span></li>
             <li><span class="APL">{quad}NL</span></li>
-            <li><b>TBD:</b> <span class="APL">{quad}EA</span></li>
-            <li><b>TBD:</b> <span class="APL">{quad}TF</span></li>
+            <li class="TBD"><span class="APL">{quad}EA</span></li>
+            <li class="TBD"><span class="APL">{quad}TF</span></li>
           </ul>
         </li>
       </ul>
@@ -579,10 +577,10 @@
         <li><span class="APL">)SINL</span></li>
         <li><span class="APL">)VARS</span></li>
         <li><span class="APL">)WSID</span></li>
-        <li><b>TBD:</b> <span class="APL">)COPY</span></li>
-        <li><b>TBD:</b> <span class="APL">)ERASE</span></li>
-        <li><b>TBD:</b> <span class="APL">)LOAD</span></li>
-        <li><b>TBD:</b> <span class="APL">)SAVE</span></li>
+        <li class="TBD"><span class="APL">)COPY</span></li>
+        <li class="TBD"><span class="APL">)ERASE</span></li>
+        <li class="TBD"><span class="APL">)LOAD</span></li>
+        <li class="TBD"><span class="APL">)SAVE</span></li>
       </ul>
     </div>
 

@@ -1226,12 +1226,6 @@ LRESULT APIENTRY MFWndProc
 
             break;                  // Continue with next handler ***MUST***
 
-////////case WM_ERASEBKGND:
-////////    DbgBrk ();
-////////    // In order to reduce screen flicker, we handle erase background
-////////    // in the WM_PAINT message for the child windows.
-////////    return TRUE;            // We erased the background
-
         case WM_QUERYENDSESSION:
         case WM_CLOSE:
         {

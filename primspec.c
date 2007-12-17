@@ -199,8 +199,8 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
 
 {
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-    HGLOBAL      hGlbRes,
-                 hGlbResProto;
+    HGLOBAL      hGlbRes,           // Result global memory handle
+                 hGlbProto;         // Prototype ...
 
     // Call the original function
     lpYYRes = (*lpPrimFn) (lptkLftArg,      // Ptr to left arg token
@@ -228,13 +228,17 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
             hGlbRes = ClrPtrTypeDirAsGlb (lpYYRes->tkToken.tkData.tkGlbData);
 
             // Make the prototype
-            hGlbResProto = MakeMonPrototype_EM (hGlbRes,    // Proto arg handle
-                                                lptkFunc,   // Ptr to function token
-                                                MP_CHARS);  // CHARs allowed
-            // Save back into the result
-            lpYYRes->tkToken.tkData.tkGlbData =
-              MakePtrTypeGlb (hGlbResProto);
-
+            hGlbProto =
+              MakeMonPrototype_EM (hGlbRes,     // Proto arg handle
+                                   lptkFunc,    // Ptr to function token
+                                   MP_CHARS);   // CHARs allowed
+            if (!hGlbProto)
+            {
+                YYFree (lpYYRes); lpYYRes = NULL;
+            } else
+                // Save back into the result
+                lpYYRes->tkToken.tkData.tkGlbData =
+                  MakePtrTypeGlb (hGlbProto);
             // We no longer need this storage
             FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
 

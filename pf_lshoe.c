@@ -450,10 +450,20 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                 case ARRAY_HETERO:
                 case ARRAY_NESTED:
                     if (aplNELMSub EQ 0)
-                        hGlbProto = MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemRht),// Proto arg handle
-                                                         lptkFunc,  // Ptr to function token
-                                                         MP_CHARS); // CHARs allowed
-                    else
+                    {
+                        hGlbProto =
+                          MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemRht),   // Proto arg handle
+                                               lptkFunc,                        // Ptr to function token
+                                               MP_CHARS);                       // CHARs allowed
+                        if (!hGlbProto)
+                        {
+                            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                                       lptkFunc);
+                            bRet = FALSE;
+
+                            goto ERROR_EXIT;
+                        } // End IF
+                    } else
                     {
                         // Calculate space needed for the result
                         ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMSub, aplNELMAxis);

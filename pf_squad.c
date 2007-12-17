@@ -600,10 +600,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
                     // If we're not assigning, ...
                     if (lptkSetArg EQ NULL)
-                    {
                         // Fill in the result's dimension
                         CopyMemory (lpMemDimRes, lpMemSub, (UINT) aplRankSub * sizeof (APLDIM));
-                    } else
+                    else
                     {
                         // Compare the left arg item & set arg dimensions
                         for (uSet = 0; uSet < aplRankSub; uSet++)
@@ -717,11 +716,12 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     if (aplTypeRes EQ ARRAY_HETERO
      || aplTypeRes EQ ARRAY_NESTED)
     {
-        // Fill in first one in case of prototypes
-        ((LPAPLNESTED) lpMemRes)[0] = PTR_REUSED;
+        // Fill in first one in case of nested prototypes
+        if (aplTypeRes EQ ARRAY_NESTED)
+            ((LPAPLNESTED) lpMemRes)[0] = PTR_REUSED;
 
         // Loop through the rest of the items
-        for (uRes = 1; uRes < aplNELMRes; uRes++)
+        for (uRes = 0; uRes < aplNELMRes; uRes++)
             ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
     } // End IF
 

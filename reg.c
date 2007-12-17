@@ -33,6 +33,7 @@ char lpszRegKeyRoot[]               = "Software\\NARS2000",
      lpszRegStrGlbALXName[]         = "GlbALX",
      lpszRegStrGlbCTName[]          = "GlbCT",
      lpszRegStrGlbELXName[]         = "GlbELX",
+     lpszRegStrGlbFCName[]          = "GlbFC",
      lpszRegStrGlbIOName[]          = "GlbIO",
      lpszRegStrGlbLXName[]          = "GlbLX",
      lpszRegStrGlbPPName[]          = "GlbPP",
@@ -124,6 +125,14 @@ void ReadRegGlb
                  lpszRegKeyRoot,
                  lpszRegStrGlbCTName,
                  DEF_QUADxCT_CWS);
+
+    // Read in []FC
+    hGlbQuadFC_CWS =
+    GetRegGlbChar (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbFCName,
+                   DEF_QUADFC_GLB,
+                   DEF_QUADFC_CWS);
 
     // Read in []IO
     bQuadIO_CWS = (APLBOOL)
@@ -431,6 +440,29 @@ void SaveEnvironment
                    (LPCHAR) &bQuadxSA_CWS,// Ptr to value
                    sizeof (bQuadxSA_CWS));// Size of value
 
+    //************************ []FC ***************************
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (hGlbQuadFC_CWS);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+    // Get the # bytes
+    nBytes = ((UINT) lpHeader->NELM) * sizeof (APLCHAR);
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMem = VarArrayBaseToData (lpMem, 1);
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrGlbFCName, // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) lpMem,      // Ptr to value
+                   nBytes);             // Size of value
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadFC_CWS); lpMem = NULL;
+
+    //************************ []LX ***************************
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbQuadLX_CWS);
 
@@ -452,6 +484,7 @@ void SaveEnvironment
     // We no longer need this ptr
     MyGlobalUnlock (hGlbQuadLX_CWS); lpMem = NULL;
 
+    //************************ []ALX **************************
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbQuadALX_CWS);
 
@@ -473,6 +506,7 @@ void SaveEnvironment
     // We no longer need this ptr
     MyGlobalUnlock (hGlbQuadALX_CWS); lpMem = NULL;
 
+    //************************ []ELX **************************
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbQuadELX_CWS);
 

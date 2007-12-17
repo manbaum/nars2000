@@ -20,6 +20,7 @@
 #include "compro.h"
 #endif
 
+extern MAGIC_FUNCTION MF_MonIota;
 extern MAGIC_FUNCTION MF_DydIota;
 extern MAGIC_FUNCTION MF_MonUpShoe;
 extern MAGIC_FUNCTION MF_DydTilde;
@@ -485,6 +486,7 @@ BOOL InitMagicFunctions
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Define the magic functions
+    lpMemPTD->hGlbMF_MonIota   = InitMagicFunction (&MF_MonIota,   lpMemPTD, hWndEC);
     lpMemPTD->hGlbMF_DydIota   = InitMagicFunction (&MF_DydIota,   lpMemPTD, hWndEC);
     lpMemPTD->hGlbMF_MonUpShoe = InitMagicFunction (&MF_MonUpShoe, lpMemPTD, hWndEC);
     lpMemPTD->hGlbMF_DydTilde  = InitMagicFunction (&MF_DydTilde,  lpMemPTD, hWndEC);

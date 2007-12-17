@@ -664,15 +664,22 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
         case ARRAY_NESTED:
             // Get the right arg prototype
-            aplProtoGlb = MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemRht),   // Proto arg handle
-                                               lptkFunc,                        // Ptr to function token
-                                               MP_CHARS);                       // CHARS allowed
+            aplProtoGlb =
+              MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemRht),   // Proto arg handle
+                                   lptkFunc,                        // Ptr to function token
+                                   MP_CHARS);                       // CHARS allowed
+            if (!aplProtoGlb)
+                goto ERROR_EXIT;
+            // Ensure its Ptr Type is marked as a global
             aplProtoGlb = MakePtrTypeGlb (aplProtoGlb);
 
             // Loop through the result filling in prototype values
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             if (((LPAPLNESTED) lpMemRes)[uRes] EQ NULL)
                 ((LPAPLNESTED) lpMemRes)[uRes] = CopySymGlbDir (aplProtoGlb);
+            // We no longer need this storage
+            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (aplProtoGlb)); aplProtoGlb = NULL;
+
             break;
 
         defstop

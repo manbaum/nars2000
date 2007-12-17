@@ -12,6 +12,8 @@
 #include "termcode.h"
 #include "externs.h"
 #include "display.h"
+#include "sysvars.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -565,14 +567,14 @@ LPAPLCHAR FormatImmed
     {
         case IMMTYPE_BOOL:
             lpaplChar =
-            FormatAplint (lpaplChar,
-                          BIT0 & *(LPAPLBOOL) lpaplLongest);
+              FormatAplint (lpaplChar,
+                            BIT0 & *(LPAPLBOOL) lpaplLongest);
             break;
 
         case IMMTYPE_INT:
             lpaplChar =
-            FormatAplint (lpaplChar,
-                          *(LPAPLINT) lpaplLongest);
+              FormatAplint (lpaplChar,
+                            *(LPAPLINT) lpaplLongest);
             break;
 
         case IMMTYPE_CHAR:
@@ -624,9 +626,9 @@ LPAPLCHAR FormatImmed
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-            FormatFloat (lpaplChar,                 // Prt to output save area
-                         *(LPAPLFLOAT) lpaplLongest,// The value to format
-                         0);                        // Use default precision
+              FormatFloat (lpaplChar,                 // Prt to output save area
+                           *(LPAPLFLOAT) lpaplLongest,// The value to format
+                           0);                        // Use default precision
             break;
 
         defstop
@@ -644,8 +646,26 @@ LPAPLCHAR FormatImmed
 //***************************************************************************
 
 LPAPLCHAR FormatAplint
-    (LPAPLCHAR lpaplChar,
-     APLINT    aplInt)
+    (LPAPLCHAR lpaplChar,           // Ptr to output save area
+     APLINT    aplInt)              // Integer to format
+
+{
+    return FormatAplintFC (lpaplChar,
+                           aplInt,
+                           UTF16_OVERBAR);
+} // End FormatAplint
+
+
+//***************************************************************************
+//  $FormatAplintFC
+//
+//  Format an APLINT using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplintFC
+    (LPAPLCHAR lpaplChar,           // Ptr to output save area
+     APLINT    aplInt,              // Integer to format
+     APLCHAR   aplCharOverbar)      // Char to use as overbar
 
 {
 
@@ -658,7 +678,7 @@ LPAPLCHAR FormatAplint
     // Check the sign bit -- if set, save and make positive
     if (aplInt < 0)
     {
-        *lpaplChar++ = UTF16_OVERBAR;
+        *lpaplChar++ = aplCharOverbar;
         aplInt = -aplInt;
     } // End IF
 
@@ -682,7 +702,7 @@ LPAPLCHAR FormatAplint
     *lpaplChar++ = L' ';
 
     return lpaplChar;
-} // End FormatAplint
+} // End FormatAplintFC
 
 
 //***************************************************************************
@@ -697,19 +717,39 @@ LPAPLCHAR FormatFloat
      APLUINT  uPrecision)       // Precision to use (0 = default)
 
 {
-    APLUINT uQuadPP;            // []PP
+    return FormatFloatFC (lpaplChar,        // Ptr to output save area
+                          fFloat,           // The value to format
+                          uPrecision,       // Precision to use (0 = default)
+                          L'.',             // Char to use as decimal separator
+                          UTF16_OVERBAR,    // Char to use as overbar
+                          2);               // DTOA mode (Mode 2: max (ndigits, 1))
+} // End FormatFloat
 
+
+//***************************************************************************
+//  $FormatFloatFC
+//
+//  Format a APLFLOAT using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatFloatFC
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     APLFLOAT fFloat,           // The value to format
+     APLUINT  uPrecision,       // Precision to use (0 = default)
+     APLCHAR  aplCharDecimal,   // Char to use as decimal separator
+     APLCHAR  aplCharOverbar,   // Char to use as overbar
+     UINT     dtoaMode)         // DTOA mode
+
+{
     if (uPrecision EQ 0)
         // Get the current value of []PP
-        uQuadPP = GetQuadPP ();
-    else
-        uQuadPP = uPrecision;
+        uPrecision = GetQuadPP ();
 
     if (!_finite (fFloat))
     {
         if (fFloat < 0)
-            *lpaplChar++ = UTF16_OVERBAR;
-        *lpaplChar++ = L'_';
+            *lpaplChar++ = aplCharOverbar;
+        *lpaplChar++ = L'_';    // Char for infinity
     } else
     {
         LPAPLCHAR p, ep, dp;
@@ -718,8 +758,8 @@ LPAPLCHAR FormatFloat
         // Use David Gay's routines
         g_fmt (lpszTemp,        // Output save area
                fFloat,          // # to convert to ASCII
-               2,               // Mode 2: max (ndigits, 1)
-         (int) uQuadPP);        // ndigits
+               dtoaMode,        // DTOA mode
+         (int) uPrecision);     // ndigits
 
         // Convert from one-byte ASCII to two-byte UTF16
         // The destin buffer length just needs be long enough
@@ -736,7 +776,7 @@ LPAPLCHAR FormatFloat
         // Check for minus sign in the mantissa
         if (lpaplChar[0] EQ L'-')
         {
-            lpaplChar[0] = UTF16_OVERBAR;
+            lpaplChar[0] = aplCharOverbar;
             p++;        // Skip over it
         } // End IF
 
@@ -750,9 +790,9 @@ LPAPLCHAR FormatFloat
         } else
         // Check for trailing zeros in integer only because
         //   of small uQuadPP.  Replace them with E-notation.
-        if (lstrlenW (p) > uQuadPP  // Too many digits vs. significant digits
-         && dp EQ NULL              // No fractional part
-         && ep EQ NULL)             // Not already E-notation
+        if (lstrlenW (p) > uPrecision   // Too many digits vs. significant digits
+         && dp EQ NULL                  // No fractional part
+         && ep EQ NULL)                 // Not already E-notation
         {
             // Move data to the right to make room for a decimal point
             // Use MoveMemory as the source and destin blocks overlap
@@ -760,9 +800,11 @@ LPAPLCHAR FormatFloat
             p[1] = L'.';        // Insert a decimal point
             dp = p + 1;         // Save location of decimal point
 
-            p[uQuadPP + 1] = L'E';
-            ep = &p[uQuadPP + 1];
-            p = FormatAplint (&p[uQuadPP + 2], lstrlenW (p) - 2);
+            p[uPrecision + 1] = L'E';
+            ep = &p[uPrecision + 1];
+            p = FormatAplintFC (&p[uPrecision + 2],
+                                 lstrlenW (p) - 2,
+                                 aplCharOverbar);
             p[-1] = L'\0';
         } // End IF/ELSE
 
@@ -773,12 +815,17 @@ LPAPLCHAR FormatFloat
             // Check for trailing decimal point in the mantissa
             if (ep[-1] EQ L'.')
             {
+                // Trailing decimal point present:  append "0"
+
                 // Use MoveMemory as the source and destin blocks overlap
-                MoveMemory (ep + 1, ep, (1 + p++ - ep) * sizeof (APLCHAR));
+                MoveMemory (ep + 1, ep, (1 + p - ep) * sizeof (APLCHAR));
+                p += 1;         // Add to length # chars we're inserting
                 *ep++ = L'0';   // Change to zero and skip over so it ends with ".0"
-            } else  // No trailing decimal point:  insert one if not already present
+            } else
             if (!dp)            // If not already present, ...
             {
+                // No trailing decimal point:  append ".0"
+
                 // Use MoveMemory as the source and destin blocks overlap
                 MoveMemory (ep + 2, ep, (1 + p - ep) * sizeof (APLCHAR));
                 p += 2;         // Add to length # chars we're inserting
@@ -791,7 +838,7 @@ LPAPLCHAR FormatFloat
 
             // Check for minus sign in the exponent
             if (ep[0] EQ L'-')
-                *ep++ = UTF16_OVERBAR;  // Change to high minus and skip over
+                *ep++ = aplCharOverbar; // Change to high minus and skip over
             else
             // Check for plus sign in the exponent
             if (ep[0] EQ L'+')
@@ -802,7 +849,6 @@ LPAPLCHAR FormatFloat
             while (ep[0] EQ L'0')
                 // Delete by copying over
                 CopyMemory (ep, ep + 1, (1 + p-- - (ep + 1)) * sizeof (APLCHAR));
-
         } else
         // Check for trailing decimal point in the mantissa
         if (p[-1] EQ '.')
@@ -810,13 +856,20 @@ LPAPLCHAR FormatFloat
 
         // Point to the terminating zero
         lpaplChar = p;
+
+        // Convert any decimal point to []FC value
+        if (dp)
+        {
+            Assert (*dp EQ L'.');
+            *dp = aplCharDecimal;
+        } // End IF
     } // End IF/ELSE/...
 
     // Append a separator
     *lpaplChar++ = L' ';
 
     return lpaplChar;
-} // End FormatFloat
+} // End FormatFloatFC
 
 
 //***************************************************************************
@@ -836,6 +889,63 @@ LPAPLCHAR FormatSymTabConst
                         lpSymEntry->stFlags.ImmType,
                        &lpSymEntry->stData.stLongest);
 } // End FormatSymTabConst
+
+
+//***************************************************************************
+//  $GetQuadFCValue
+//
+//  Return a specified value from []FC
+//***************************************************************************
+
+APLCHAR GetQuadFCValue
+    (UINT uIndex)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    HGLOBAL      hGlbQuadFC;    // []FC global memory handle
+    LPAPLCHAR    lpMemQuadFC;   // Ptr to []FC global memory
+    APLNELM      aplNELMQuadFC; // []FC NELM
+    APLRANK      aplRankQuadFC; // []FC rank
+    APLCHAR      aplCharQuadFC; // []FC[uIndex]
+
+    Assert (uIndex < FCVAL_LENGTH);
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the []FC global memory handle
+    hGlbQuadFC = ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadFC->stData.stGlbData);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemQuadFC = MyGlobalLock (hGlbQuadFC);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemQuadFC)
+    // Get the array NELM and rank
+    aplNELMQuadFC = lpHeader->NELM;
+    aplRankQuadFC = lpHeader->Rank;
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMemQuadFC = VarArrayBaseToData (lpMemQuadFC, aplRankQuadFC);
+
+    // Check for short []FC
+    if (uIndex >= aplNELMQuadFC)
+        aplCharQuadFC = (DEF_QUADFC_CWS)[uIndex];
+    else
+        aplCharQuadFC = lpMemQuadFC[uIndex];
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadFC); lpMemQuadFC = NULL;
+
+    return aplCharQuadFC;
+} // End GetQuadFCValue
 
 
 //***************************************************************************

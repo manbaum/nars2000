@@ -368,43 +368,46 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     if (aplTypeLft EQ ARRAY_NESTED)
         aplNELMLft = max (aplNELMLft, 1);
 
+    // Handle prototypes
+    if (aplNELMRes EQ 0
+     && aplTypeRes EQ ARRAY_NESTED)
+    {
+        if (!PrimOpDydJotDotProto_EM (&lpMemRes,        // Ptr to ptr to result global memory
+                                       0,               // Index to use
+                                       lpMemLft,        // Ptr to global memory object to index
+                                       aplTypeLft,      // Storage type of the arg
+                                       apaOffLft,       // APA offset (if needed)
+                                       apaMulLft,       // APA multiplier (if needed)
+                                      &tkLftArg,        // Ptr to token in which to place the result
+                                       0,               // Index to use
+                                       lpMemRht,        // Ptr to global memory object to index
+                                       aplTypeRht,      // Storage type of the arg
+                                       apaOffRht,       // APA offset (if needed)
+                                       apaMulRht,       // APA multiplier (if needed)
+                                      &tkRhtArg,        // Ptr to token in which to place the result
+                                       lpYYFcnStrRht,   // Ptr to function strand
+                                       lpPrimProtoRht)) // Ptr to right operand prototype function
+            goto ERROR_EXIT;
+    } else
     // Loop through the left & right args
     for (uLft = uRes = 0; uLft < aplNELMLft; uLft++)
     for (uRht = 0;        uRht < aplNELMRht; uRht++, uRes++)
-    {
-        // If the left arg is not immediate, get the next value
-        if (lpMemLft)
-            // Get the next value from the left arg
-            GetValueIntoToken (uLft,                // Index to use
-                               lpMemLft,            // Ptr to global memory object to i
-                               aplTypeLft,          // Storage type of the arg
-                               apaOffLft,           // APA offset (if needed)
-                               apaMulLft,           // APA multiplier (if needed)
-                              &tkLftArg);           // Ptr to token in which to place t
-        // If the right arg is not immediate, get the next value
-        if (lpMemRht)
-            // Get the next value from the right arg
-            GetValueIntoToken (uRht,                // Index to use
-                               lpMemRht,            // Ptr to global memory object to i
-                               aplTypeRht,          // Storage type of the arg
-                               apaOffRht,           // APA offset (if needed)
-                               apaMulRht,           // APA multiplier (if needed)
-                              &tkRhtArg);           // Ptr to token in which to place t
-        if (!ExecFuncOnToken_EM (&lpMemRes,         // Ptr to output storage
-                                 &tkLftArg,         // Ptr to left arg token
-                                  lpYYFcnStrRht,    // Ptr to function strand
-                                 &tkRhtArg,         // Ptr to right arg token
-                                  NULL,             // Ptr to axis token
-                                  lpPrimProtoRht))  // Ptr to right operand prototype function
-            goto ERROR_EXIT;
-
-        // Free the left & right arg tokens
-        if (lpMemLft)
-            FreeResult (&tkRhtArg);
-        if (lpMemRht)
-            FreeResult (&tkLftArg);
-    } // End FOR/FOR
-
+    if (!PrimOpDydJotDotProto_EM (&lpMemRes,        // Ptr to ptr to result global memory
+                                   uLft,            // Index to use
+                                   lpMemLft,        // Ptr to global memory object to index
+                                   aplTypeLft,      // Storage type of the arg
+                                   apaOffLft,       // APA offset (if needed)
+                                   apaMulLft,       // APA multiplier (if needed)
+                                  &tkLftArg,        // Ptr to token in which to place the result
+                                   uRht,            // Index to use
+                                   lpMemRht,        // Ptr to global memory object to index
+                                   aplTypeRht,      // Storage type of the arg
+                                   apaOffRht,       // APA offset (if needed)
+                                   apaMulRht,       // APA multiplier (if needed)
+                                  &tkRhtArg,        // Ptr to token in which to place the result
+                                   lpYYFcnStrRht,   // Ptr to function strand
+                                   lpPrimProtoRht)) // Ptr to right operand prototype function
+        goto ERROR_EXIT;
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
@@ -457,6 +460,66 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimOpDydJotDotCommon_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimOpDydJotDotProto_EM
+//
+//  Handle prototypes in dyadic jotdot
+//***************************************************************************
+
+BOOL PrimOpDydJotDotProto_EM
+    (LPVOID      *lplpMemRes,                       // Ptr to ptr to result global memory
+     APLUINT      uLft,                             // Index to use
+     LPVOID       lpMemLft,                         // Ptr to global memory object to index
+     APLSTYPE     aplTypeLft,                       // Storage type of the arg
+     APLINT       apaOffLft,                        // APA offset (if needed)
+     APLINT       apaMulLft,                        // APA multiplier (if needed)
+     LPTOKEN      lptkLftArg,                       // Ptr to token in which to place the result
+     APLUINT      uRht,                             // Index to use
+     LPVOID       lpMemRht,                         // Ptr to global memory object to index
+     APLSTYPE     aplTypeRht,                       // Storage type of the arg
+     APLINT       apaOffRht,                        // APA offset (if needed)
+     APLINT       apaMulRht,                        // APA multiplier (if needed)
+     LPTOKEN      lptkRhtArg,                       // Ptr to token in which to place the result
+     LPPL_YYSTYPE lpYYFcnStrRht,                    // Ptr to function strand
+     LPPRIMFNS    lpPrimProtoRht)                   // Ptr to right operand prototype function
+
+{
+    // If the left arg is not immediate, get the next value
+    if (lpMemLft)
+        // Get the next value from the left arg
+        GetValueIntoToken (uLft,                // Index to use
+                           lpMemLft,            // Ptr to global memory object to index
+                           aplTypeLft,          // Storage type of the arg
+                           apaOffLft,           // APA offset (if needed)
+                           apaMulLft,           // APA multiplier (if needed)
+                           lptkLftArg);         // Ptr to token in which to place the result
+    // If the right arg is not immediate, get the next value
+    if (lpMemRht)
+        // Get the next value from the right arg
+        GetValueIntoToken (uRht,                // Index to use
+                           lpMemRht,            // Ptr to global memory object to index
+                           aplTypeRht,          // Storage type of the arg
+                           apaOffRht,           // APA offset (if needed)
+                           apaMulRht,           // APA multiplier (if needed)
+                           lptkRhtArg);         // Ptr to token in which to place the result
+    if (!ExecFuncOnToken_EM (lplpMemRes,        // Ptr to ptr to result global memory
+                              lptkLftArg,       // Ptr to left arg token
+                              lpYYFcnStrRht,    // Ptr to function strand
+                              lptkRhtArg,       // Ptr to right arg token
+                              NULL,             // Ptr to axis token
+                              lpPrimProtoRht))  // Ptr to right operand prototype function
+        return FALSE;
+
+    // Free the left & right arg tokens
+    if (lpMemLft)
+        FreeResult (lptkRhtArg);
+    if (lpMemRht)
+        FreeResult (lptkLftArg);
+
+    return TRUE;
+} // End PrimOpDydJotDotProto_EM
 
 
 //***************************************************************************

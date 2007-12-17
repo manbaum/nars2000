@@ -40,9 +40,12 @@ TO DO:  General:  Less Important (post-alpha)
 * Strings in the symbol table??
 * Implement user/session options dialog
 * Implement Redo (Ctrl-Y)
-* Handle SI Damage to be more forgiving
+* Allow SI Damage to be more forgiving
 * Allow [first][-][last] as arg to )LIB/VARS/FNS/OPS/NMS
 * Check for overflow on integer multiplication
+* Make numeric formatting (through down tack jot) sensitive
+  to the local conventions for decimal point, 1000s separator,
+  overflow indicator, and negative sign
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
@@ -186,6 +189,7 @@ DONE:  General
 * ...       monadic down shoe
 * ...       bracket indexed assignment   A[L]{is}R
 * ...       bracket indexed modified assignment  A[L]Fcn{is}R
+* ...       []FC
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector
@@ -200,6 +204,7 @@ DONE:  General
 * Axis error if defined function given an axis but not accepting one
 * Control chars ([]TCBEL, []TCBS, []TCDEL, []TCESC, []TCFF, []TCHT, []TCLF, []TCNL, and []TCNUL)
   display correctly in simple and nested output.
+* Validate indexed assignment to system variables
 
 
 DONE:  Session Manager
@@ -262,6 +267,11 @@ QUESTIONS
              or a[;]{is}0{rho}{enclose}0 0 0
   transfer the prototype to the named var?
 * Why limit []PP on the high side?
+* Should LEFT xxx ERROR caret point to left arg, etc.?
+* What to do with format-by-specification on simple char right arg
+  (e.g. 5 0{thorn}'abc')?
+* In format-by-specification, does automatic width apply across planes
+  or is it different within each plane?
 
 
 File Extensions
@@ -318,7 +328,6 @@ ToDo
   in another pass to handle duplicate localized names
 * Review IBM APL2 Deviations & Restrictions
 * Optimize CopyArray_EM by copying the top level only
-
-
+*
 
 

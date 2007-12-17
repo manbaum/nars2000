@@ -730,8 +730,8 @@ LPAPLCHAR TransferFormGlb
         for (uObj = 0; uObj < aplRankObj; uObj++)
             // Format the dimension
             lpaplChar =
-            FormatAplint (lpaplChar,
-                         (VarArrayBaseToDim (lpMemObj))[uObj]);
+              FormatAplint (lpaplChar,
+                            (VarArrayBaseToDim (lpMemObj))[uObj]);
         lpaplChar--;        // Back up to the trailing blank
 
         // Append a {rho}
@@ -756,8 +756,8 @@ LPAPLCHAR TransferFormGlb
             {
                 // Format the value
                 lpaplChar =
-                FormatAplint (lpaplChar,
-                              BIT0 & ((*(LPAPLBOOL) lpMemObj) >> uBitIndex));
+                  FormatAplint (lpaplChar,
+                                BIT0 & ((*(LPAPLBOOL) lpMemObj) >> uBitIndex));
                 // Check for end-of-byte
                 if (++uBitIndex EQ NBIB)
                 {
@@ -773,8 +773,8 @@ LPAPLCHAR TransferFormGlb
             for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLINT) lpMemObj)++)
                 // Format the value
                 lpaplChar =
-                FormatAplint (lpaplChar,
-                              *(LPAPLINT) lpMemObj);
+                  FormatAplint (lpaplChar,
+                                *(LPAPLINT) lpMemObj);
             break;
 
         case ARRAY_FLOAT:
@@ -782,9 +782,9 @@ LPAPLCHAR TransferFormGlb
             for (uObj = 0; uObj < aplNELMObj; uObj++, ((LPAPLFLOAT) lpMemObj)++)
                 // Format the value
                 lpaplChar =
-                FormatFloat (lpaplChar,
-                             *(LPAPLFLOAT) lpMemObj,
-                             DEF_MAX_QUADPP);
+                  FormatFloat (lpaplChar,
+                               *(LPAPLFLOAT) lpMemObj,
+                               DEF_MAX_QUADPP);
             break;
 
         case ARRAY_CHAR:
@@ -825,8 +825,8 @@ LPAPLCHAR TransferFormGlb
 
             // Append the offset
             lpaplChar =
-            FormatAplint (lpaplChar,
-                          apaOff);
+              FormatAplint (lpaplChar,
+                            apaOff);
             lpaplChar--;        // Back up to the trailing blank
 
             // Append a comma
@@ -834,8 +834,8 @@ LPAPLCHAR TransferFormGlb
 
             // Append the multiplier
             lpaplChar =
-            FormatAplint (lpaplChar,
-                          apaMul);
+              FormatAplint (lpaplChar,
+                            apaMul);
             lpaplChar--;        // Back up to the trailing blank
 
             // Append a comma
@@ -843,8 +843,8 @@ LPAPLCHAR TransferFormGlb
 
             // Append the length
             lpaplChar =
-            FormatAplint (lpaplChar,
-                          aplNELMObj);
+              FormatAplint (lpaplChar,
+                            aplNELMObj);
             lpaplChar--;        // Back up to the trailing blank
 
             // Append the trailing marker
@@ -860,14 +860,14 @@ LPAPLCHAR TransferFormGlb
             {
                 case IMMTYPE_BOOL:
                     lpaplChar =
-                    FormatAplint (lpaplChar,
-                                  (*(LPAPLHETERO) lpMemObj)->stData.stBoolean);
+                      FormatAplint (lpaplChar,
+                                    (*(LPAPLHETERO) lpMemObj)->stData.stBoolean);
                     break;
 
                 case IMMTYPE_INT:
                     lpaplChar =
-                    FormatAplint (lpaplChar,
-                                  (*(LPAPLHETERO) lpMemObj)->stData.stInteger);
+                      FormatAplint (lpaplChar,
+                                    (*(LPAPLHETERO) lpMemObj)->stData.stInteger);
                     break;
 
                 case IMMTYPE_CHAR:
@@ -891,9 +891,9 @@ LPAPLCHAR TransferFormGlb
                 case IMMTYPE_FLOAT:
                     // Format the value
                     lpaplChar =
-                    FormatFloat (lpaplChar,
-                                 (*(LPAPLHETERO) lpMemObj)->stData.stFloat,
-                                 DEF_MAX_QUADPP);
+                      FormatFloat (lpaplChar,
+                                   (*(LPAPLHETERO) lpMemObj)->stData.stFloat,
+                                   DEF_MAX_QUADPP);
                     break;
 
                 defstop

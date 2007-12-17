@@ -146,7 +146,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
-    if (aplNELMRht NE 1)
+    if (aplNELMRht < 1)
     {
         // Mark as a LENGTH ERROR
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
@@ -162,6 +162,11 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
+    // Handle length > 1 args via magic function
+    if (aplNELMRht > 1)
+        return PrimFnMonIotaVector_EM_YY (lptkFunc,     // Ptr to function token
+                                          lptkRhtArg,   // Ptr to right arg token
+                                          lptkAxis);    // Ptr to axis token (may be NULL)
     // Get right arg global ptrs
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, NULL);
 
@@ -248,6 +253,69 @@ ERROR_EXIT:
     return lpYYRes;
 } // End PrimFnMonIota_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnMonIotaVector_EM_YY
+//
+//  Monadic iota extended to length > 1 numeric arguments
+//***************************************************************************
+
+LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    //  Return the elements in L not in R.
+    //  Use an internal magic function.
+    lpYYRes =
+      ExecuteMagicFunction_EM_YY (NULL,                         // Ptr to left arg token
+                                  lptkFunc,                     // Ptr to function token
+                                  lptkRhtArg,                   // Ptr to right arg token
+                                  lptkAxis,                     // Ptr to axis token
+                                  lpMemPTD->hGlbMF_MonIota);    // Magic function global memory handle
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpYYRes;
+} // End PrimFnMonIotaVector_EM_YY
+
+
+//***************************************************************************
+//  Magic function for Extended Monadic Iota
+//
+//  Extended Monadic Iota -- Index Generator For Arrays
+//
+//  Return an array of indices appropriate to an array of
+//    the same shape as the right arg.
+//***************************************************************************
+
+static APLCHAR MonHeader[] =
+  $Z $IS $F L" " $R;
+
+static APLCHAR MonLine1[] =
+  $Z $IS $DISCLOSE $JOT L".,/" $IOTA $EACH $R;
+
+static LPAPLCHAR MonBody[] =
+{MonLine1,
+};
+
+MAGIC_FUNCTION MF_MonIota =
+{MonHeader,
+ MonBody,
+ sizeof (MonBody) / sizeof (MonBody[0]),
+};
 
 
 //***************************************************************************
@@ -974,25 +1042,25 @@ SET_RESULT_VALUE:
 //    such that A[A iota R] is R, assuming that all of R is in A.
 //***************************************************************************
 
-static APLCHAR Header[] =
+static APLCHAR DydHeader[] =
   $Z $IS $L L" " $F L" " $R L";" $QUAD_IO L";" $O;
 
-static APLCHAR Line1[] =
+static APLCHAR DydLine1[] =
   $O $IS $QUAD_IO
   $DIAMOND $QUAD_IO $IS L"0";
 
-static APLCHAR Line2[] =
+static APLCHAR DydLine2[] =
   $Z $IS $ENCLOSE L"[0]" $O L"+(1+" $RHO $L L")" $ENCODE L"(" $NEG L"1" $DROP L",(1+" $RHO $L L")" $TAKE $L L")" $IOTA $R;
 
-static LPAPLCHAR Body[] =
-{Line1,
- Line2,
+static LPAPLCHAR DydBody[] =
+{DydLine1,
+ DydLine2,
 };
 
 MAGIC_FUNCTION MF_DydIota =
-{Header,
- Body,
- sizeof (Body) / sizeof (Body[0]),
+{DydHeader,
+ DydBody,
+ sizeof (DydBody) / sizeof (DydBody[0]),
 };
 
 

@@ -11,12 +11,21 @@
 #include "termcode.h"
 #include "externs.h"
 #include "display.h"
+#include "sysvars.h"
 #include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
 #include "compro.h"
 #endif
+
+
+typedef struct tagWID_PRC
+{
+    APLUINT uWid:31,                // Actual width (if Auto, then this field is initially 0)
+            Auto:1;                 // TRUE iff this width is automatic
+    APLINT  uPrc;                   // Actual precision (0=none)
+} WIDPRC, *LPWIDPRC;
 
 
 //***************************************************************************
@@ -172,6 +181,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     if (lpMemRht)
+        // Skip over the header to the dimensions
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Get the # rows & columns in the right arg
@@ -195,7 +205,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
 
 #ifdef DEBUG
     // Fill lpwszFormat with FFs so we can tell what we actually wrote
-    FillMemory (lpwszFormat, 1024, 0xFF);
+    FillMemory (lpwszFormat, 4096, 0xFF);
 #endif
 
     // Create a new FMTHEADER
@@ -713,8 +723,8 @@ LPAPLCHAR CompileArrInteger
         {
             // Format the integer
             lpaplChar =
-            FormatAplint (lpwszOut = lpaplChar,
-                          *lpMem++);
+              FormatAplint (lpwszOut = lpaplChar,
+                            *lpMem++);
             // Zap the trailing blank
             lpaplChar[-1] = L'\0';
 
@@ -1153,8 +1163,8 @@ LPAPLCHAR CompileArrAPA
         {
             // Format the integer
             lpaplChar =
-            FormatAplint (lpwszOut = lpaplChar,
-                          apaOff + apaMul * apaAcc);
+              FormatAplint (lpwszOut = lpaplChar,
+                            apaOff + apaMul * apaAcc);
             // Zap the trailing blank
             lpaplChar[-1] = L'\0';
 
@@ -2497,7 +2507,8 @@ LPAPLCHAR FormatArrNested
             } // End FOR
 #ifdef PREFILL
             // Skip to the start of the next row
-            if (aplLastDim)
+            //   if we're not at the last row
+            if (aplLastDim && aplDimRow NE (aplDimNRows - 1))
                 lpwszOut = lpwszOutStart
                          + aplLastDim
                          * (((aplLastDim - 1)
@@ -2607,13 +2618,13 @@ LPAPLCHAR FormatArrNestedGlb
      APLDIM      aplLastDim)    // Length of the last dimension in the result
 
 {
-    APLSTYPE aplType;           // This item's storage type
-    APLRANK  aplRank;           // This item's rank
-    LPVOID   lpMem;             // Ptr to this item's global memory
-    LPAPLDIM lpMemDim;          // Ptr to this item's dimensions
-    APLDIM   aplDimNRows,       // # formatted rows
-             aplDimNCols,       // # formatted cols
-             uCol;              // Loop counter
+    APLSTYPE    aplType;        // This item's storage type
+    APLRANK     aplRank;        // This item's rank
+    LPVOID      lpMem;          // Ptr to this item's global memory
+    LPAPLDIM    lpMemDim;       // Ptr to this item's dimensions
+    APLDIM      aplDimNRows,    // # formatted rows
+                aplDimNCols,    // # formatted cols
+                uCol;           // Loop counter
     LPFMTHEADER lpFmtHeader;    // Ptr to this item's FMTHEADER
     LPFMTCOLSTR lpFmtColLcl;    // Ptr to this item's FMTCOLSTRs
 
@@ -2734,7 +2745,8 @@ LPAPLCHAR FormatArrNestedGlb
 //***************************************************************************
 //  $PrimFnDydDownTackJot_EM_YY
 //
-//  Primitive function for dyadic DownTackJot ("format by example")
+//  Primitive function for dyadic DownTackJot
+//     ("format by specification"/"format by example")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -2751,66 +2763,640 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
 {
     APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht;        // Right ...
+                 aplTypeRht,        // Right ...
+                 aplTypeSubRht;     // Right arg item ...
     APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
+                 aplNELMRht,        // Right ...
+                 aplNELMRes;        // Result   ...
     APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht;        // Right ...
-    HGLOBAL      hGlbLft,           // Left arg global memory handle
-                 hGlbRht;           // Right ...
-    LPVOID       lpMemLft,          // Ptr to left arg global memory
-                 lpMemRht;          // Ptr to right ...
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
+                 aplRankRht,        // Right ...
+                 aplRankSubRht,     // Right arg item ...
+                 aplRankRes;        // Result   ...
+    APLDIM       aplDimNCols,       // # columns
+                 aplDimNRows,       // # rows
+                 aplDimCol,         // Loop counter
+                 aplDimRow,         // ...
+                 aplColsRht;        // Right arg # cols
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRht = NULL,    // Right ...
+                 hGlbRes = NULL,    // Result   ...
+                 hGlbWidPrc = NULL; // Left arg WIDPRC struct ...
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL;   // Ptr to right ...
+    LPAPLCHAR    lpMemRes = NULL;   // Ptr to result   ...
+    LPAPLDIM     lpMemDimRht = NULL;// Ptr to right arg dimensions
+    APLLONGEST   aplLongestLft,     // Left arg immediate value
+                 aplLongestRht;     // Right ...
+    LPWIDPRC     lpMemWidPrc = NULL;// Ptr to left arg WIDPRC struc
+    LPAPLCHAR    lpaplChar,         // Ptr to next available format position
+                 lpaplCharIni;      // Ptr to initial format position
+    APLINT       apaOffLft,         // Left arg APA offset
+                 apaMulLft,         // ...          multiplier
+                 aplIntegerLft;     // Left arg temporary integer
+    APLUINT      ByteRes,           // # bytes to allocate
+                 uDim,              // Loop counter
+                 uRht,              // Loop counter
+                 uPar,              // Parity indicator
+                 uTotWid,           // Total width for this col
+                 uAccWid,           // Accumulated width for this col
+                 uWid,              // Width for this col
+                 uPrc;              // Precision ...
+    APLCHAR      aplCharDecimal,    // []FC[FCVAL_DECIMAL_SEP]
+                 aplCharOverflow,   // []FC[FCVAL_OVERFLOW_FILL]
+                 aplCharOverbar;    // []FC[FCVAL_OVERBAR]
+    UINT         uBitMask,          // Bit mask for looping through Booleans
+                 uLen,              // Length of formatted number
+                 uExp;              // Size of exponent
+    BOOL         bRet = TRUE,       // TRUE iff result is valid
+                 Auto;              // TRUE iff the col is automatic width
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
-
-    return PrimFnNonceError_EM (lptkFunc);
-
-    DbgBrk ();          // ***FINISHME*** -- PrimFnDydDownTackJot_EM_YY
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
 
-    // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-
-    // Check for RANK ERROR
+    // Check for LEFT RANK ERROR
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        bRet = FALSE;
-
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
-    // Check for LENGTH ERROR
-////if (aplNELMLft NE 2
-//// && aplNELMLft NE (2 * 1))  // ***FIXME***
+    // Check for "format by example"
+    if (aplTypeLft EQ ARRAY_CHAR)
+        return PrimFnDydDownTackJotFBE_EM_YY (lptkLftArg,   // Ptr to left arg token
+                                              lptkFunc,     // Ptr to function token
+                                              lptkRhtArg,   // Ptr to right arg token
+                                              lptkAxis);    // Ptr to axis token (may be NULL)
+    // Check for LEFT LENGTH ERROR
+    if (aplNELMLft NE 1                     // Single number
+     && 0 NE (aplNELMLft % 2)               // Pairs of numbers
+     && ((aplNELMLft / 2) NE aplColsRht))   // One pair per right arg col
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        bRet = FALSE;
-
+                                   lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
+    // Check for LEFT DOMAIN ERROR
+    if (!IsSimpleNum (aplTypeLft))
+    {
+        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Continue with "format by specification"
+
+    // Get left and right arg's global ptrs
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+
+    // Allocate space for an integer copy of the left arg
+    hGlbWidPrc = DbgGlobalAlloc (GHND, (UINT) aplNELMLft * sizeof (APLINT));
+    if (!hGlbWidPrc)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Copy left arg to temp storage (all APLINTs),
+    //   and check the left arg for valid values
+
+    // Allocate temp storage for the normalized left arg
+    // N.B.: Conversion from APLUINT to UINT
+    ByteRes = aplColsRht * sizeof (WIDPRC);
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbWidPrc = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbWidPrc)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemWidPrc = MyGlobalLock (hGlbWidPrc);
+
+    // Skip over the header to the data
+    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+
+    // Handle singleton left arg
+    if (aplNELMLft EQ 1)
+    {
+        // Get the first value from the token
+        GetFirstValueToken (lptkLftArg,         // Ptr to the token
+                            NULL,               // Ptr to the integer (or Boolean) (may be NULL)
+                            NULL,               // ...        float (may be NULL)
+                            NULL,               // ...        char (may be NULL)
+                           &aplLongestLft,      // ...        longest (may be NULL)
+                            NULL,               // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+                            NULL,               // ...        immediate type (see IMM_TYPES) (may be NULL)
+                            NULL);              // ...        array type:  ARRAY_TYPES (may be NULL)
+        // If it's float, ...
+        if (aplTypeLft EQ ARRAY_FLOAT)
+            // Attempt to convert the float to an integer using System CT
+            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
+        if (!bRet)
+            goto DOMAIN_EXIT;
+
+        // Save as actual precision
+        lpMemWidPrc[0].uPrc = aplLongestLft;
+    } else
+    // Ensure that the first value in each pair is non-negative
+    // Split cases based upon the left arg's storage type
+    switch (aplTypeLft)
+    {
+        case ARRAY_BOOL:
+            uBitMask = 0x01;
+
+            for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
+            {
+                aplIntegerLft = (uBitMask & *(LPAPLBOOL) lpMemLft) ? 1 : 0;
+////////////////if ((!uPar) && aplIntegerLft < 0)   // Not needed on Booleans
+////////////////    goto DOMAIN_EXIT;
+                *((LPAPLINT) lpMemWidPrc)++ = aplIntegerLft;
+
+                // Shift over the left bit mask
+                uBitMask <<= 1;
+
+                // Check for end-of-byte
+                if (uBitMask EQ END_OF_BYTE)
+                {
+                    uBitMask = 0x01;            // Start over
+                    ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
+                } // End IF
+            } // End FOR
+
+            break;
+
+        case ARRAY_INT:
+            for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
+            {
+                aplIntegerLft = *((LPAPLINT) lpMemLft)++;
+                if ((!uPar) && aplIntegerLft < 0)
+                    goto DOMAIN_EXIT;
+                *((LPAPLINT) lpMemWidPrc)++ = aplIntegerLft;
+            } // End FOR
+
+            break;
+
+        case ARRAY_FLOAT:
+            for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
+            {
+                // Attempt to convert the float to an integer using System CT
+                aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
+                if ((!bRet) || ((!uPar) && aplIntegerLft < 0))
+                    goto DOMAIN_EXIT;
+                *((LPAPLINT) lpMemWidPrc)++ = aplIntegerLft;
+            } // End FOR
+
+            break;
+
+        case ARRAY_APA:
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+            // Get the APA parameters
+            apaOffLft = lpAPA->Off;
+            apaMulLft = lpAPA->Mul;
+#undef  lpAPA
+            for (uDim = uPar = 0; uDim < aplNELMLft; uDim++, uPar = 1 - uPar)
+            {
+                aplIntegerLft = apaOffLft + apaMulLft * uDim;
+                if ((!uPar) && aplIntegerLft < 0)
+                    goto DOMAIN_EXIT;
+                *((LPAPLINT) lpMemWidPrc)++ = aplIntegerLft;
+            } // End FOR
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+
+    // Restore lpMemWidPrc to the start of the block
+    MyGlobalUnlock (hGlbWidPrc); lpMemWidPrc = NULL;
+    lpMemWidPrc = MyGlobalLock (hGlbWidPrc);
+
+    // If there's only one pair and more than one right arg col,
+    //    spread the pair through lpMemWidPrc
+    if (aplNELMLft <= 2
+     && aplColsRht > 1)
+    {
+        // Get the corresponding attributes for this col
+        Auto = (BOOL) lpMemWidPrc[0].Auto;
+        uWid = lpMemWidPrc[0].uWid;
+        uPrc = lpMemWidPrc[0].uPrc;
+
+        for (uRht = 1; uRht < aplColsRht; uRht++)
+        {
+            // Save in temporary left arg
+            lpMemWidPrc[uRht].Auto = Auto;
+            lpMemWidPrc[uRht].uWid = uWid;
+            lpMemWidPrc[uRht].uPrc = uPrc;
+        } // End FOR
+    } // End IF
+
+    if (lpMemRht)
+        // Skip over the header to the dimensions
+        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+
+    // Get the # rows & columns in the right arg
+    if (aplRankRht EQ 0)
+        aplDimNCols = aplDimNRows = 1;
+    else
+    {
+        aplDimNCols = lpMemDimRht[aplRankRht - 1];
+
+        // Get the # rows (across all planes)
+        if (aplRankRht EQ 1
+         || aplDimNCols EQ 0)
+            aplDimNRows = 1;
+        else
+            aplDimNRows = aplNELMRht / aplDimNCols;
+    } // End IF/ELSE
+
+    if (lpMemRht)
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+    // Validate the right arg as either simple (including heterogeneous) or
+    //   nested consisting of numeric scalars and/or
+    //   simple character scalars or vectors
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_CHAR:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            // Loop through the right arg
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Split cases based upon the right arg item ptr type
+                switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht]))
+                {
+                    case PTRTYPE_STCONST:
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        // Get the attributes of the global memory handle
+                        AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]),
+                                   &aplTypeSubRht,
+                                    NULL,
+                                   &aplRankSubRht,
+                                    NULL);
+                        // Check for RANK ERROR
+                        switch (aplTypeSubRht)
+                        {
+                            case ARRAY_BOOL:
+                            case ARRAY_INT:
+                            case ARRAY_FLOAT:
+                            case ARRAY_APA:
+                                // Numeric scalars only
+                                if (aplRankSubRht > 0)
+                                    goto DOMAIN_EXIT;
+                                break;
+
+                            case ARRAY_CHAR:
+                                // Character scalars or vectors only
+                                if (aplRankSubRht > 1)
+                                    goto DOMAIN_EXIT;
+
+                                break;
+
+                            case ARRAY_HETERO:
+                            case ARRAY_NESTED:
+                                goto DOMAIN_EXIT;
+
+                                break;
+
+                            defstop
+                                break;
+                        } // End SWITCH
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // The result rank is at least a vector
+    aplRankRes = max (aplRankRht, 1);
+
+    // Initialize the output save area ptr
+    lpaplChar = lpwszFormat;
+
+    // Get the []FC values we need
+    aplCharDecimal  = GetQuadFCValue (FCVAL_DECIMAL_SEP);
+    aplCharOverflow = GetQuadFCValue (FCVAL_OVERFLOW_FILL);
+    aplCharOverbar =  GetQuadFCValue (FCVAL_OVERBAR);
+
+    DbgBrk ();          // ***FINISHME*** -- PrimFnDydDownTackJot_EM_YY ("format by specification")
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+            DbgBrk ();
+
+            break;
+
+        case ARRAY_INT:
+            // Loop through the right arg col by col
+            //   formatting the values into lpwszFormat
+            //   and accumulating the widths
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+            {
+                // Get the corresponding attributes for this col
+                Auto = (BOOL) lpMemWidPrc[aplDimCol].Auto;
+                uWid = lpMemWidPrc[aplDimCol].uWid;
+                uPrc = lpMemWidPrc[aplDimCol].uPrc;
+
+                // Loop through all rows (and across planes)
+                for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+                {
+                    // Save the initial position
+                    lpaplCharIni = lpaplChar;
+
+                    // Get the next value from the right arg
+                    if (lpMemRht NE NULL)
+                        aplLongestRht = ((LPAPLLONGEST) lpMemRht)[aplDimCol + aplDimRow * aplDimNCols];
+
+                    // Format the number
+                    lpaplChar =
+                      FormatAplintFC (lpaplChar,
+                                      aplLongestRht,
+                                      aplCharOverbar);
+                    // Zap the trailing blank
+                    lpaplChar[-1] = L'\0';
+
+                    // Fill with uPrc
+                    if (uPrc > 0)
+                    {
+                        // Append decimal separator followed by <uPrc> 0s
+                        lpaplChar[-1] = aplCharDecimal;
+                        FillMemoryW (lpaplChar, (UINT) uPrc, L'0');
+                        lpaplChar += uPrc;
+                        *lpaplChar++ = L'\0';
+                    } else
+                    if (uPrc < 0)
+                    {
+                        // Get the formatted length
+                        uLen = (lpaplChar - lpaplCharIni) - 1;
+
+                        // Calculate the exponent
+                        uExp = uLen - 1;
+
+                        DbgBrk ();
 
 
 
 
 
+                    } // End IF/ELSE
+
+                    // Get the formatted length
+                    uLen = (lpaplChar - lpaplCharIni) - 1;
+
+                    // Check for automatic width
+                    if (Auto)
+                        lpMemWidPrc[aplDimCol].uWid = max (uWid, uLen + 1);
+                    else
+                    // Check for width overflow
+                    if (uWid < uLen)
+                    {
+                        if (aplCharOverflow EQ L'0')
+                            goto DOMAIN_EXIT;
+
+                        FillMemoryW (lpaplCharIni, (UINT) uWid, aplCharOverflow);
+                        lpaplChar = lpaplCharIni + uWid;
+                        *lpaplChar++ = L'\0';
+                    } // End IF/ELSE/...
+                } // End FOR
+            } // End FOR
+
+            break;
+
+        case ARRAY_FLOAT:
+            DbgBrk ();
+            // Loop through the right arg col by col
+            //   formatting the values into lpwszFormat
+            //   and accumulating the widths
+            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
+            {
+                // Get the corresponding attributes for this col
+                Auto = (BOOL) lpMemWidPrc[aplDimCol].Auto;
+                uWid = lpMemWidPrc[aplDimCol].uWid;
+                uPrc = lpMemWidPrc[aplDimCol].uPrc;
+
+                // Loop through all rows (and across planes)
+                for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+                {
+                    // Save the initial position
+                    lpaplCharIni = lpaplChar;
+
+                    // Get the next value from the right arg
+                    if (lpMemRht NE NULL)
+                        aplLongestRht = ((LPAPLLONGEST) lpMemRht)[aplDimCol + aplDimRow * aplDimNCols];
+
+                    // Format the number
+                    lpaplChar =
+                      FormatFloatFC (lpaplChar,
+                                    *(LPAPLFLOAT) &aplLongestRht,
+                                     uWid,
+                                     aplCharDecimal,
+                                     aplCharOverbar,
+                                     3);
+                    // Zap the trailing blank
+                    lpaplChar[-1] = L'\0';
+
+                    // Fill with uPrc
+                    if (uPrc > 0)
+                    {
+                        // Append decimal separator followed by <uPrc> 0s
+                        lpaplChar[-1] = aplCharDecimal;
+                        FillMemoryW (lpaplChar, (UINT) uPrc, L'0');
+                        lpaplChar += uPrc;
+                        *lpaplChar++ = L'\0';
+                    } else
+                    if (uPrc < 0)
+                    {
+                        // Get the formatted length
+                        uLen = (lpaplChar - lpaplCharIni) - 1;
+
+                        // Calculate the exponent
+                        uExp = uLen - 1;
+
+                        DbgBrk ();
 
 
+
+
+
+                    } // End IF/ELSE
+
+                    // Get the formatted length
+                    uLen = (lpaplChar - lpaplCharIni) - 1;
+
+                    // Check for automatic width
+                    if (Auto)
+                        lpMemWidPrc[aplDimCol].uWid = max (uWid, uLen + 1);
+                    else
+                    // Check for width overflow
+                    if (uWid < uLen)
+                    {
+                        if (aplCharOverflow EQ L'0')
+                            goto DOMAIN_EXIT;
+
+                        FillMemoryW (lpaplCharIni, (UINT) uWid, aplCharOverflow);
+                        lpaplChar = lpaplCharIni + uWid;
+                        *lpaplChar++ = L'\0';
+                    } // End IF/ELSE/...
+                } // End FOR
+            } // End FOR
+
+            break;
+
+        case ARRAY_CHAR:
+            DbgBrk ();
+
+            break;
+
+        case ARRAY_APA:
+            DbgBrk ();
+
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            DbgBrk ();
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Calculate the total width
+    for (uRht = uTotWid = 0; uRht < aplColsRht; uRht++)
+        uTotWid += lpMemWidPrc[uRht].uWid;
+
+    // Calculate the result NELM
+    aplNELMRes = aplDimNRows * uTotWid;
+
+    // Calculate the space needed for the result
+    ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, aplRankRes);
+
+    // Allocate space for the result
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        goto ERROR_EXIT;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->Perm       = 0;           // Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
+
+    // Skip over the header to the dimensions
+    (LPVOID) lpMemRes = VarArrayBaseToDim (lpMemRes);
+
+    // Fill in the dimensions
+    *((LPAPLDIM) lpMemRes)++ = uTotWid;
+    if (aplRankRes EQ 2)
+        *((LPAPLDIM) lpMemRes)++ = aplDimNRows;
+
+    // Initialize the output save area ptr
+    lpaplChar = lpwszFormat;
+
+    // Fill in the data
+
+    // Fill the result with blanks
+    FillMemoryW (lpMemRes, (UINT) aplNELMRes, L' ');
+
+    // Loop through the formatted data and copy it to the result
+    for (aplDimCol = uAccWid = 0; aplDimCol < aplDimNCols; aplDimCol++, uAccWid += uWid)
+    {
+        // Get the corresponding attributes for this col
+////////Auto = (BOOL) lpMemWidPrc[aplDimCol].Auto;
+        uWid = lpMemWidPrc[aplDimCol].uWid;
+////////uPrc = lpMemWidPrc[aplDimCol].uPrc;
+
+        // Loop through all rows (and across planes)
+        for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
+        {
+            // Get the string length
+            uLen = lstrlenW (lpaplChar);
+
+            // Copy the next formatted value to the result,
+            //   right-justifying it in the process
+            CopyMemory (&lpMemRes[aplDimRow * uTotWid + uAccWid + (uWid - uLen)],
+                         lpaplChar,
+                         uLen * sizeof (APLCHAR));
+            // Skip over the formatted value and the trailing zero
+            lpaplChar += uLen + 1;
+        } // End FOR
+    } // End FOR
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
+    goto NORMAL_EXIT;
 
-
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
 ERROR_EXIT:
+NORMAL_EXIT:
+    if (hGlbWidPrc)
+    {
+        if (lpMemWidPrc)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbWidPrc); lpMemWidPrc = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        DbgGlobalFree (hGlbWidPrc); hGlbWidPrc = NULL;
+    } // End IF
+
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
@@ -2823,14 +3409,46 @@ ERROR_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
+    if (hGlbRes && lpMemRes)
     {
-        YYFree (lpYYRes); lpYYRes = NULL;
-        return NULL;
-    } // End IF/ELSE
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
+
+    return lpYYRes;
 } // End PrimFnDydDownTackJot_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydDownTackJotFBE_EM_YY
+//
+//  Primitive function for dyadic DownTackJot ("format by example")
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydDownTackJotFBE_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnDydDownTackJotFBE_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    return PrimFnNonceError_EM (lptkFunc);
+
+    DbgBrk ();          // ***FINISHME*** -- PrimFnDydDownTackJot_EM_YY ("format by example")
+
+
+
+
+
+
+} // End PrimFnDydDownTackJotFBE_EM_YY
 #undef  APPEND_NAME
 
 

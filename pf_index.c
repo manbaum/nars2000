@@ -852,14 +852,22 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
         lpMemNam = VarArrayBaseToData (lpMemNam, aplRankNam);
 
         // Make a prototype for the result
-        hGlbProto = MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemNam), // Proto arg handle
-                                         lptkFunc,                      // Ptr to function token
-                                         MP_CHARS);                     // CHARs allowed
-        // Save the value in the result
-        *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
-
+        hGlbProto =
+          MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemNam),   // Proto arg handle
+                               lptkFunc,                        // Ptr to function token
+                               MP_CHARS);                       // CHARs allowed
         // We no longer this ptr
         MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
+
+        if (!hGlbProto)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+        } // End IF
+
+        // Save the value in the result
+        *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
     } else
     // Loop through the list arg elements
     for (uLst = 0; uLst < aplNELMLst; uLst++)
@@ -1019,8 +1027,8 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
     APLNELM      aplNELMRes;        // Result NELM
     LPAPLDIM     lpMemDimLst;       // Ptr to list arg dimensions
     APLUINT      ByteRes;           // # bytes in the result
-    HGLOBAL      hGlbRes;           // Result global memory handle
-    LPVOID       lpMemRes;          // Ptr to result global memory
+    HGLOBAL      hGlbRes = NULL;    // Result global memory handle
+    LPVOID       lpMemRes = NULL;   // Ptr to result global memory
     APLUINT      uRes;              // Loop counter
 
     // Check for RANK ERROR
@@ -1115,11 +1123,17 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
 
             // If the list arg is empty, copy the name arg prototype to the result
             if (aplNELMLst EQ 0)
-                *((LPAPLNESTED) lpMemRes) =
+            {
+                HGLOBAL hGlbProto;          // Prototype global memory handle
+
+                hGlbProto =
                   MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemNam),   // Proto arg handle
                                        lptkFunc,                        // Ptr to function token
                                        MP_CHARS);                       // CHARs allowed
-            else
+                if (!hGlbProto)
+                    goto ERROR_EXIT;
+                *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbProto);
+            } else
             for (uRes = 0; uRes < aplNELMLst; uRes++)
                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbInd (lpMemNam);
             break;
@@ -1145,7 +1159,22 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
 
     // See if it fits into a lower (but not necessarily smaller) datatype
     TypeDemote (&lpYYRes->tkToken);
+
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
     return lpYYRes;
 } // End ArrayIndexRefNamScalar_EM_YY
 #undef  APPEND_NAME
@@ -1627,6 +1656,23 @@ BOOL ArrayIndexSet_EM
     // Get the attributes (Type, NELM, and Rank) of the name & list args
     AttrsOfToken (lptkNamArg, NULL,  NULL,       &aplRankNam, NULL);
     AttrsOfToken (lptkLstArg, NULL, &aplNELMLst,  NULL,       NULL);
+
+    // If the name arg is a system var, validate the args
+    if (IsNameTypeVar (lptkNamArg->tkData.tkSym->stFlags.ObjType)
+     && lptkNamArg->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
+    {
+        // If the target is a user-defined function/operator system label, signal a SYNTAX ERROR
+        if (lptkNamArg->tkData.tkSym->stFlags.DfnSysLabel)
+        {
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+        } // End IF
+
+        // Validate the value
+        if (!(*aSysVarValid[lptkNamArg->tkData.tkSym->stFlags.SysVarValid]) (lptkNamArg, lptkLstArg, lptkRhtArg))
+            goto ERROR_EXIT;
+    } // End IF
 
     // Split cases based upon whether or not the name
     //   var is scalar (this also covers immediates)
@@ -2236,7 +2282,8 @@ BOOL ArrayIndexSetSingLst_EM
 
     // Check for RANK ERROR between the list and right args
     if (aplNELMRht NE 1
-     && aplRankSubLst NE aplRankRht)
+     && aplRankSubLst NE aplRankRht
+     && aplNELMSubLst NE aplNELMRht)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -2249,16 +2296,42 @@ BOOL ArrayIndexSetSingLst_EM
     // Check for LENGTH ERROR between the list and right args
     if (aplNELMRht NE 1)
     {
+        APLRANK aplRankMax;
+
+        // Use the larger rank
+        aplRankMax = max (aplRankSubLst, aplRankRht);
+
         // Skip over the header to the dimensions
         lpMemRht = VarArrayBaseToDim (lpMemRht);
 
-        for (uRht = 0; uRht < aplRankRht; uRht++)
-        if (*((LPAPLDIM) lpMemSubLst)++ NE *((LPAPLDIM) lpMemRht)++)
+        for (uRht = 0; uRht < aplRankMax; uRht++)
         {
-            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+            APLDIM aplDimSubLst,        // Temporary dimension value
+                   aplDimRht;           // ...
+
+            // Get the respective dimensions
+            if (uRht < aplRankSubLst)
+                aplDimSubLst = *((LPAPLDIM) lpMemSubLst)++;
+            else
+                aplDimSubLst = 1;
+            if (uRht < aplRankRht)
+                aplDimRht    = *((LPAPLDIM) lpMemRht)++;
+            else
+                aplDimRht    = 1;
+
+            // Skip over equal or unit dimensions
+            if (aplDimSubLst      EQ aplDimRht
+             || aplDimSubLst EQ 1 && aplDimRht NE 1
+             || aplDimSubLst NE 1 && aplDimRht EQ 1)
+                continue;
+
+            // If the ranks differ, it's a RANK ERROR
+            //   otherwise, it's a LENGTH ERROR
+            ErrorMessageIndirectToken ((aplRankSubLst NE aplRankRht) ? ERRMSG_RANK_ERROR   APPEND_NAME
+                                                                     : ERRMSG_LENGTH_ERROR APPEND_NAME,
                                        lptkFunc);
             goto ERROR_EXIT;
-        } // End FOR/IF
+        } // End FOR
     } else
     {
         // Skip over the dimensions to the data

@@ -149,7 +149,7 @@ LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
     if (bPrototyping)
     {
         // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrOpr->tkToken)];
+        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
         if (!lpPrimProtoLft)
         {
             ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
@@ -241,7 +241,7 @@ LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
     if (bPrototyping)
     {
         // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrOpr->tkToken)];
+        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
         if (!lpPrimProtoLft)
         {
             ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,

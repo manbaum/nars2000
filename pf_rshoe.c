@@ -766,9 +766,10 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                         hGlbProto = ClrPtrTypeIndAsGlb ((LPAPLNESTED) lpMemSub);
 
                         // Calculate its prototype
-                        hGlbProto = MakeMonPrototype_EM (hGlbProto,  // Proto arg handle
-                                                         lptkFunc,   // Ptr to function token
-                                                         MP_CHARS);  // CHARs allowed
+                        hGlbProto =
+                          MakeMonPrototype_EM (hGlbProto,   // Proto arg handle
+                                               lptkFunc,    // Ptr to function token
+                                               MP_CHARS);   // CHARs allowed
                         if (!hGlbProto)
                         {
                             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -799,6 +800,9 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                         for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                               CopySymGlbDir (hGlbProto);
+                        // We no longer need this storage
+                        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (hGlbProto)); hGlbProto = NULL;
+
                         break;
 
                     defstop

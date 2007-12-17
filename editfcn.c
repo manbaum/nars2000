@@ -704,23 +704,32 @@ int LclECPaintHook
      UINT    uLen)      // Length of text to display
 
 {
+    RECT rc;
+
     // Syntax Color the line
 
     // To do this, we use a FSA to parse the line from the start
     //   through the last char to display
     // ***FINISHME*** -- Syntax coloring
 
+    rc.top    = y;
+    rc.left   = x;
+    rc.right  = x + 0xFFFF;
+    rc.bottom = y + 0xFFFF;
 
-
-
-    // Draw the line
-    return (int) LOWORD (TabbedTextOutW (hDC,
-                                         x, y,
-                                         lpwsz + uCol,
-                                         uLen,
-                                         0,
-                                         NULL,
-                                         0));
+    // Calculate the width & height of the line
+    DrawTextW (hDC,
+               lpwsz + uCol,
+               uLen,
+              &rc,
+               DT_CALCRECT);
+    // Draw the line for real
+    DrawTextW (hDC,
+               lpwsz + uCol,
+               uLen,
+              &rc,
+               DT_SINGLELINE);
+    return MAKELONG (rc.right - rc.left, rc.bottom - rc.top);
 } // End LclECPaintHook
 
 

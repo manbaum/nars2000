@@ -546,9 +546,10 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     if (bPrototype)
     {
         // Make the prototype
-        hGlbProto = MakeMonPrototype_EM (ClrPtrTypeDirAsGlb (hGlbProto),// Proto arg handle
-                                         lptkFunc,  // Ptr to function token
-                                         FALSE);    // Allow CHARs
+        hGlbProto =
+          MakeMonPrototype_EM (ClrPtrTypeDirAsGlb (hGlbProto),  // Proto arg handle
+                               lptkFunc,                        // Ptr to function token
+                               FALSE);                          // Allow CHARs
         if (!hGlbProto)
             bRet = FALSE;
         else

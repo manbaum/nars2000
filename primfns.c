@@ -578,7 +578,8 @@ HGLOBAL MakeMonPrototype_EM
     APLRANK     aplRank;
     UINT        u;
     APLNELM     uLen;
-    HGLOBAL     hGlbTmp;
+    HGLOBAL     hGlbTmp,            // Temporary global memory handle
+                hGlbProto;          // Prototype ...
     BOOL        bRet = TRUE;        // TRUE iff result is valid
     APLUINT     ByteRes;            // # bytes in the result
     LPSYMENTRY  lpSymArr,
@@ -780,16 +781,16 @@ HGLOBAL MakeMonPrototype_EM
                     // It's a valid HGLOBAL array
                     Assert (IsGlbTypeVarInd (lpMemArr));
 
-                    hGlbTmp =
-                    MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemArr), // Proto arg handle
-                                         lptkFunc,                      // Ptr to function token
-                                         mpEnum);                       // Pass flag through
-                    if (hGlbTmp)
+                    hGlbProto =
+                      MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemArr),   // Proto arg handle
+                                           lptkFunc,                        // Ptr to function token
+                                           mpEnum);                         // Pass flag through
+                    if (hGlbProto)
                     {
                         // We no longer need this storage
                         FreeResultGlobalVar (ClrPtrTypeIndAsGlb (lpMemArr)); *((LPAPLNESTED) lpMemArr) = NULL;
 
-                        *((LPAPLNESTED) lpMemArr)++ = MakePtrTypeGlb (hGlbTmp);
+                        *((LPAPLNESTED) lpMemArr)++ = MakePtrTypeGlb (hGlbProto);
                     } else
                         bRet = FALSE;
                     break;
@@ -1280,14 +1281,14 @@ HGLOBAL MakeDydPrototype_EM
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
-    if (lpMemRes)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-    } // End IF
-
     if (hGlbRes)
     {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
         // We no longer need this storage
         FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
     } // End IF
@@ -1521,6 +1522,7 @@ HGLOBAL CopyArray_EM
     dwSize = MyGlobalSize (hGlbSrc);
     Assert (dwSize NE 0);
 
+    // Allocate storage for the copy of the array
     hGlbDst = DbgGlobalAlloc (GHND, dwSize);
     if (hGlbDst)
     {

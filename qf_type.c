@@ -78,8 +78,8 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL      hGlbData,          //
-                 hGlbRes;           // Result global memory handle
+    HGLOBAL      hGlbRht,           // Right arg global memory handle
+                 hGlbRes;           // Result    ...
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     // Allocate a new YYRes
@@ -95,7 +95,7 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
             // If it's not immediate, it's an HGLOBAL
             if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
             {
-                hGlbData = lptkRhtArg->tkData.tkSym->stData.stGlbData;
+                hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
 
                 break;      // Continue with HGLOBAL case
             } // End IF
@@ -171,7 +171,7 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
             DbgStop ();         // We should never get here
 
         case TKT_VARARRAY:
-            hGlbData = lptkRhtArg->tkData.tkGlbData;
+            hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
             break;      // Continue with HGLOBAL case
 
@@ -182,12 +182,13 @@ LPPL_YYSTYPE SysFnMonTYPE_EM_YY
     // HGLOBAL case
 
     // tk/stData is a valid HGLOBAL variable array
-    Assert (IsGlbTypeVarDir (hGlbData));
+    Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Make the prototype
-    hGlbRes = MakeMonPrototype_EM (ClrPtrTypeDirAsGlb (hGlbData),// Proto arg handle
-                                   lptkFunc,        // Ptr to function token
-                                   MP_CHARS);       // CHARs allowed
+    hGlbRes =
+      MakeMonPrototype_EM (ClrPtrTypeDirAsGlb (hGlbRht),// Proto arg handle
+                           lptkFunc,                    // Ptr to function token
+                           MP_CHARS);                   // CHARs allowed
     if (!hGlbRes)
         return NULL;
 

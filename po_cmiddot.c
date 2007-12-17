@@ -65,25 +65,20 @@ LPPL_YYSTYPE PrimProtoOpCircleMiddleDot_EM_YY
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
-    {
         //***************************************************************
         // Called monadically
         //***************************************************************
-
         return PrimOpMonCircleMiddleDotCommon_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
                                                      lptkRhtArg,    // Ptr to right arg token
                                                      TRUE);         // TRUE iff prototyping
-    } else
-    {
+    else
         //***************************************************************
         // Called dyadically
         //***************************************************************
-
         return PrimOpDydCircleMiddleDotCommon_EM_YY (lptkLftArg,    // Ptr to left arg token
                                                      lpYYFcnStrOpr, // Ptr to operator function strand
                                                      lptkRhtArg,    // Ptr to right arg token
                                                      TRUE);         // TRUE iff prototyping
-    } // End IF/ELSE
 } // End PrimProtoOpCircleMiddleDot_EM_YY
 
 
@@ -149,7 +144,7 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
     if (bPrototyping)
     {
         // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrOpr->tkToken)];
+        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
         if (!lpPrimProtoLft)
         {
             ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
@@ -221,18 +216,6 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
 
-    //***************************************************************
-    // The derived functions from this operator are not sensitive
-    //   to the axis operator, so signal a syntax error if present
-    //***************************************************************
-
-    if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
-
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
@@ -241,7 +224,7 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
     if (bPrototyping)
     {
         // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrOpr->tkToken)];
+        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
         if (!lpPrimProtoLft)
         {
             ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,

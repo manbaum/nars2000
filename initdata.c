@@ -278,7 +278,7 @@ void InitPrimFns
 ////                                                                        // Alt-'Y' - (none)
 ////                                                                        // Alt-'Z' - (none)
 ////                                                                        // Alt-'[' - left arrow
-    InitPrimFn (UTF16_LEFTTACK          , &PrimFnLeftTack_EM_YY          ); // Alt-'\\'- left tack
+    InitPrimFn (UTF16_LEFTTACK          , &PrimFnLeftTack_EM_YY          ); // Alt-'\' - left tack
 ////                                                                        // Alt-']' - right arrow
     InitPrimFn (UTF16_QUOTEDOT          , &PrimFnQuoteDot_EM_YY          ); // Alt-'_' - quote-dot
 ////                                                                        // Alt-'`' - diamond
@@ -549,7 +549,7 @@ void InitPrimProtoFns
 ////                                                                                    // Alt-'Y' - (none)
 ////                                                                                    // Alt-'Z' - (none)
 ////                                                                                    // Alt-'[' - left arrow
-    InitPrimProtoFn (UTF16_LEFTTACK          , &PrimProtoFnLeftTack_EM_YY          );   // Alt-'\\'- left tack
+    InitPrimProtoFn (UTF16_LEFTTACK          , &PrimProtoFnLeftTack_EM_YY          );   // Alt-'\' - left tack
 ////                                                                                    // Alt-']' - right arrow
     InitPrimProtoFn (UTF16_QUOTEDOT          , &PrimProtoFnQuoteDot_EM_YY          );   // Alt-'_' - quote-dot
 ////                                                                                    // Alt-'`' - diamond

@@ -288,7 +288,8 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
      LPTOKEN lptkFunc)              // Ptr to function token
 
 {
-    APLSTYPE     aplTypeRes;        // The storage type of the result
+    APLSTYPE     aplTypeRes,        // Result storage type
+                 aplTypePro;        // Prototype ...
     APLNELM      aplNELMRes;        // # elements in the result
     HGLOBAL      hGlbRes;           // Result global memory handle
     LPVOID       lpMemRes;          // Ptr to result global memory
@@ -303,7 +304,11 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     //   it'll be simple homogeneous or heterogeneous.
     aplTypeRes = ARRAY_LIST;    // Initialize storage type
     aplNELMRes = 0;             // ...        count
-    PrimFnMonEpsilonGlbCount (hGlbRht, &aplTypeRes, &aplNELMRes);
+    PrimFnMonEpsilonGlbCount (hGlbRht, &aplTypeRes, &aplNELMRes, &aplTypePro);
+
+    // Handle empty result
+    if (aplNELMRes EQ 0)
+        aplTypeRes = aplTypePro;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, 1);
@@ -373,9 +378,10 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
 //***************************************************************************
 
 void PrimFnMonEpsilonGlbCount
-    (HGLOBAL    hGlbRht,
-     LPAPLSTYPE lpaplTypeRes,
-     LPAPLNELM  lpaplNELMRes)
+    (HGLOBAL    hGlbRht,                            // Right arg global memory handle
+     LPAPLSTYPE lpaplTypeRes,                       // Ptr to result storage type
+     LPAPLNELM  lpaplNELMRes,                       // Ptr to result NELM
+     LPAPLSTYPE lpaplTypePro)                       // Ptr to prototype storage type
 
 {
     LPVOID   lpMemRht;
@@ -405,6 +411,8 @@ void PrimFnMonEpsilonGlbCount
     aplRankRht = lpHeader->Rank;
 #undef  lpHeader
 
+    // If the right arg is empty, return the
+
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {
@@ -421,13 +429,17 @@ void PrimFnMonEpsilonGlbCount
             {
                 *lpaplTypeRes = aplTypeArr[*lpaplTypeRes][aplTypeRht];
                 (*lpaplNELMRes) += aplNELMRht;
-            } // End IF
+            } else
+                *lpaplTypePro = aplTypeRht;
 
             break;
 
         case ARRAY_NESTED:
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
+
+            // Take prototypes into account
+            aplNELMRht = max (aplNELMRht, 1);
 
             // Loop through the elements
             for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
@@ -446,7 +458,8 @@ void PrimFnMonEpsilonGlbCount
 
                     PrimFnMonEpsilonGlbCount (ClrPtrTypeIndAsGlb (lpMemRht),
                                               lpaplTypeRes,
-                                              lpaplNELMRes);
+                                              lpaplNELMRes,
+                                              lpaplTypePro);
                     break;
 
                 defstop

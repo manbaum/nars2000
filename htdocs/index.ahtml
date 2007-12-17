@@ -166,8 +166,11 @@
               resolving ambiguities with slash/slope as function/operator
               (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
               instead of <span class="APL">//3 4</span>)</li>
-            <li>Dyadic iota ({iota}) extended to rank > 1 left arguments returns an array
-              of vector indices to the left arg (via an internal magic function)</li>
+            <li>Dyadic iota ({iota}) extended to rank &gt; 1 left arguments returns an array
+              of vector indices to the left argument (via an internal magic function)</li>
+            <li>Monadic iota ({iota}) extended to length &gt; 1 vector right arguments
+              returns an array of indices whose shape is that of the right argument
+              (via an internal magic function)</li>
             <li>± Infinity (e.g., <span class="APL">{underbar}</span> for infinity
               and <span class="APL">{overbar}{underbar}</span> for negative infinity)
               &mdash; considerable development work needs to be done to this
@@ -175,6 +178,11 @@
             <li>Monadic and dyadic domino ({domino}) &mdash; matrix inverse/divide extended to
               use Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
             <li>Prototypes for all primitive functions and operators</li>
+            <li>System variables:
+              <ul>
+                <li><span class="APL">{quad}FC</span></li>
+              </ul>
+            </li>
             <li>System functions:
               <ul>
                 <li><span class="APL">1 {quad}CR R</span> and <span class="APL">2 {quad}CR R</span></li>
@@ -323,6 +331,9 @@
             <li>Monadic rho ({rho}) &mdash; shape</li>
             <li>Monadic left shoe ({enclose}) &mdash; enclose (with and without axis operator)</li>
             <li>Monadic iota ({iota}) &mdash; index generator</li>
+            <li>Monadic iota ({iota}) extended to length &gt; 1 vector right arguments
+              returns an array of indices whose shape is that of the right argument
+              (via an internal magic function)</li>
             <li>Monadic epsilon ({epsilon}) &mdash; enlist</li>
             <li>Monadic comma ({comma} and {commabar}) &mdash; ravel (with and without axis operator), and table
                &mdash; Axis operator to Ravel may transpose coordinates</li>
@@ -369,8 +380,8 @@
             <li>Dyadic squad ({squad}) &mdash; index (with and without axis operator)</li>
             <li>Dyadic epsilon ({epsilon}) &mdash; member of</li>
             <li>Dyadic iota ({iota}) &mdash; index of</li>
-            <li>Dyadic iota ({iota}) extended to rank > 1 left arguments returns an array
-              of vector indices to the left arg (via an internal magic function)</li>
+            <li>Dyadic iota ({iota}) extended to rank &gt; 1 left arguments returns an array
+              of vector indices to the left argument (via an internal magic function)</li>
             <li>Dyadic tilde ({tilde}) &mdash; without (via an internal magic function)</li>
             <li><b>TBD:</b>  Dyadic down tack jot (Format by Specification)</li>
           </ul>

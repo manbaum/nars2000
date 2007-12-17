@@ -95,10 +95,11 @@
 EXTERN
 HGLOBAL  hGlbQuadALX_CWS    ,           // []ALX    ([]dm)
          hGlbQuadELX_CWS    ,           // []ELX    ([]dm)
-         hGlbQuadLX_CWS     ,           // []LX     ("")
-         hGlbQuadSA_CWS     ,           // []SA     ("")
-         hGlbQuadWSID_CWS   ,           // []WSID   ("\0")
-         hGlbQuadPR_CWS     ;           // []PR     ("") (When an empty vector)
+         hGlbQuadFC_CWS     ,           // []FC     (L".,*0_" WS_UTF16_OVERBAR)
+         hGlbQuadLX_CWS     ,           // []LX     (L"")
+         hGlbQuadSA_CWS     ,           // []SA     (L"")
+         hGlbQuadWSID_CWS   ,           // []WSID   (L"\0")
+         hGlbQuadPR_CWS     ;           // []PR     (L"") (When an empty vector)
 EXTERN
 APLFLOAT fQuadCT_CWS        ;           // []CT
 
@@ -112,7 +113,7 @@ APLUINT  uQuadPP_CWS        ,           // []PP
          uQuadRL_CWS        ;           // []RL
 
 EXTERN
-APLCHAR  cQuadPR_CWS        ;           // []PR     (' ') (When a char scalar)
+APLCHAR  cQuadPR_CWS        ;           // []PR     (L' ') (When a char scalar)
 
 //***************************************************************************
 //  Application values
@@ -659,6 +660,7 @@ HWND hWndTC,                            // Global Tab Control window handle
 EXTERN
 HGLOBAL hGlbZilde,
         hGlbQuadDM,
+        hGlbQuadFC,
         hGlbV0Char,
         hGlbM3x0Char,
         hGlbSAEmpty,
@@ -680,21 +682,22 @@ typedef enum tagSYS_VARS
     SYSVAR_ALX ,                // 01:  []ALX
     SYSVAR_CT  ,                // 02:  []CT
     SYSVAR_ELX ,                // 03:  []ELX
-    SYSVAR_IO  ,                // 04:  []IO
-    SYSVAR_LX  ,                // 05:  []LX
-    SYSVAR_PP  ,                // 06:  []PP
-    SYSVAR_PR  ,                // 07:  []PR
-    SYSVAR_PW  ,                // 08:  []PW
-    SYSVAR_RL  ,                // 09:  []RL
-    SYSVAR_SA  ,                // 0A:  []SA
-    SYSVAR_WSID,                // 0B:  []WSID
-    SYSVAR_LENGTH               // 0C:  # entries in the enum
-                                // 0D-0F:  Available entries (4 bits)
+    SYSVAR_FC  ,                // 04:  []FC
+    SYSVAR_IO  ,                // 05:  []IO
+    SYSVAR_LX  ,                // 06:  []LX
+    SYSVAR_PP  ,                // 07:  []PP
+    SYSVAR_PR  ,                // 08:  []PR
+    SYSVAR_PW  ,                // 09:  []PW
+    SYSVAR_RL  ,                // 0A:  []RL
+    SYSVAR_SA  ,                // 0B:  []SA
+    SYSVAR_WSID,                // 0C:  []WSID
+    SYSVAR_LENGTH               // 0D:  # entries in the enum
+                                // 0E-0F:  Available entries (4 bits)
 } SYS_VARS;
 
 EXTERN
-// Use as in:  (*aSysVarValid[SYSVAR_IO]) (lptkName, lptkExpr);
-BOOL (*aSysVarValid[SYSVAR_LENGTH]) (LPTOKEN, LPTOKEN);
+// Use as in:  (*aSysVarValid[SYSVAR_IO]) (lptkNamArg, lptkLstArg, lptkRhtArg);
+BOOL (*aSysVarValid[SYSVAR_LENGTH]) (LPTOKEN, LPTOKEN, LPTOKEN);
 
 EXTERN
 char lpszVersion[]
@@ -995,40 +998,42 @@ typedef struct
     WCHAR alt;      // 01:  Alt key pressed  (shifted & unshifted)
 } CHARCODE;
 
-// If you are looking for places on the keyboard to put new symbols,
+// If you are looking for places on the keyboard to put a new symbol,
 //   there are fifteen free Alt-Shift- combinations:
-//     Alt-Shift-A
-//     Alt-Shift-B
-//     Alt-Shift-C
-//     Alt-Shift-D
-//     Alt-Shift-F
-//     Alt-Shift-K
-//     Alt-Shift-S
-//     Alt-Shift-U
-//     Alt-Shift-Q
-//     Alt-Shift-R
-//     Alt-Shift-V
-//     Alt-Shift-W
-//     Alt-Shift-X
-//     Alt-Shift-Y
-//     Alt-Shift-Z
-//     Alt-Shift-LeftCaret
-//     Alt-Shift-RightCaret
-//     Alt-Shift-QuestionMark
+//     Alt-'A'
+//     Alt-'B'
+//     Alt-'C'
+//     Alt-'D'
+//     Alt-'F'
+//     Alt-'K'
+//     Alt-'S'
+//     Alt-'U'
+//     Alt-'Q'
+//     Alt-'R'
+//     Alt-'V'
+//     Alt-'W'
+//     Alt-'X'
+//     Alt-'Y'
+//     Alt-'Z'
+//     Alt-'<'
+//     Alt-'>'
+//     Alt-'?'
 //
 //   as well as eleven duplicated symbols:
 //
-//     Asterisk
-//     Equal
-//     Left Caret
-//     Question Mark
-//     Right Caret
-//     Shreik
-//     Single Quote
-//     Stile
-//     Tilde
-//     Underscore
-//     Up Caret (Circumflex)
+//     Symbol Name              Keystroke
+//     --------------------------------------------------
+//     Asterisk                 Alt-'p'
+//     Equal                    Alt-'5'
+//     Left Caret               Alt-'3'
+//     Question Mark            Alt-'q'
+//     Right Caret              Alt-'7'
+//     Shreik                   Alt-'_'
+//     Single Quote             Alt-'k'
+//     Stile                    Alt-'m'
+//     Tilde                    Alt-'t'
+//     Underscore               Alt-'f'
+//     Up Caret (Circumflex)    Alt-'0'
 
 EXTERN
 CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
@@ -1254,7 +1259,7 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
 // Second row, unshifted
   {UTF16_LEFTARROW            , "{leftarrow}"           },  // Alt-'[' - left arrow
   {UTF16_RIGHTARROW           , "{rightarrow}"          },  // Alt-']' - right arrow
-  {UTF16_LEFTTACK             , "{lefttack}"            },  // Alt-'\\'- left tack
+  {UTF16_LEFTTACK             , "{lefttack}"            },  // Alt-'\' - left tack
 
 // Second row, shifted
   {UTF16_QUOTEQUAD            , "{quotequad}"           },  // Alt-'{' - quote-quad

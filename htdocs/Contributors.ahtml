@@ -73,17 +73,20 @@
 
       <ul>
         <li><a class="linkleft" href="http://www.gnu.org/software/gsl/">GNU
-          Scientific Library</a> for the factorial/binomial
-          functions as well as Singular Value Decomposition code for the
-          matrix inverse/matrix divide functions.</li>
+          Scientific Library</a> for the factorial/binomial functions
+          as well as matrix inverse/matrix divide functions
+          (using Singular Value Decomposition).</li>
 
         <li><a class="linkleft" href="http://www.burtleburtle.net/bob/c/lookup3.c">Hash
-          routines</a> by Bob Jenkins.</li>
+          routines</a> by Bob Jenkins were used in the Hash table.</li>
 
         <li>The <a class="linkleft" href="http://www.winehq.org/">Wine</a>
           library of Windows Emulation routines contributed
           an implementation of the Windows Edit Control when I
           couldn't get the one in Windows to do what I wanted.</li>
+
+        <li>Numeric input/output <a class="linkleft" href="http://www.netlib.org/fp/">conversion</a>
+          routines by David M. Gay were invaluable for full precision conversion (good to the last ULP!).</li>
       </ul>
     </div>
 

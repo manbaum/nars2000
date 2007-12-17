@@ -99,6 +99,121 @@ void GetFirstItemToken
 
 
 //***************************************************************************
+//  $GetNextValueToken
+//
+//  Return the next value from a token as either
+//    both an integer and a float, or as a character,
+//    or as an LPSYMENTRY/HGLOBAL.  The token may be
+//    an empty array in which case the value of the
+//    prototype is returned.
+//***************************************************************************
+
+void GetNextValueToken
+    (LPTOKEN      lpToken,      // Ptr to the token
+     APLUINT      uIndex,       // Index to use
+     LPAPLINT     lpaplInteger, // Ptr to the integer (or Boolean) (may be NULL)
+     LPAPLFLOAT   lpaplFloat,   // ...        float (may be NULL)
+     LPAPLCHAR    lpaplChar,    // ...        char (may be NULL)
+     LPAPLLONGEST lpaplLongest, // ...        longest (may be NULL)
+     LPVOID      *lpSymGlb,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+     LPIMM_TYPES  lpImmType,    // ...        immediate type (see IMM_TYPES) (may be NULL)
+     LPAPLSTYPE   lpArrType)    // ...        array type:  ARRAY_TYPES (may be NULL)
+
+{
+    HGLOBAL    hGlbData,
+               hGlbSub;
+    APLLONGEST aplLongest;
+    IMM_TYPES  immType;
+
+    // Split cases based upon the token type
+    switch (lpToken->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, we must look inside the array
+            if (!lpToken->tkData.tkSym->stFlags.Imm)
+            {
+                hGlbData = lpToken->tkData.tkSym->stData.stGlbData;
+
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir (hGlbData));
+
+                break;      // Continue below with global case
+            } // End IF
+
+            Assert (uIndex EQ 0);
+
+            // Handle the immediate case
+            GetFirstValueImm (lpToken->tkData.tkSym->stFlags.ImmType,
+                              lpToken->tkData.tkSym->stData.stLongest,
+                              lpaplInteger,
+                              lpaplFloat,
+                              lpaplChar,
+                              lpaplLongest,
+                              lpSymGlb,
+                              lpImmType,
+                              lpArrType);
+            return;
+
+        case TKT_VARIMMED:
+            Assert (uIndex EQ 0);
+
+            // Handle the immediate case
+            GetFirstValueImm (lpToken->tkFlags.ImmType,
+                              lpToken->tkData.tkLongest,
+                              lpaplInteger,
+                              lpaplFloat,
+                              lpaplChar,
+                              lpaplLongest,
+                              lpSymGlb,
+                              lpImmType,
+                              lpArrType);
+            return;
+
+        case TKT_VARARRAY:
+            hGlbData = lpToken->tkData.tkGlbData;
+
+            // tkData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir (hGlbData));
+
+            break;      // Continue below with global case
+
+        defstop
+            return;
+    } // End SWITCH
+
+    // Handle the HGLOBAL case
+    GetNextValueGlb (ClrPtrTypeDirAsGlb (hGlbData),     // The global memory handle
+                     uIndex,                            // Index into item
+                    &hGlbSub,                           // Ptr to result global memory handle (may be NULL)
+                    &aplLongest,                        // Ptr to result immediate value (may be NULL)
+                    &immType);                          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+    // Fill in various result values
+    if (lpaplLongest)
+       *lpaplLongest = aplLongest;
+    if (lpSymGlb)
+       *lpSymGlb = hGlbSub;
+    if (lpImmType)
+       *lpImmType = immType;
+    if (lpArrType)
+       *lpArrType    = TranslateImmTypeToArrayType (immType);;
+
+    // If the return value is immediate, ...
+    if (hGlbSub EQ NULL)
+    {
+        if (lpaplInteger)
+           *lpaplInteger = (APLINT) aplLongest;
+        if (lpaplFloat)
+           *lpaplFloat   = *(LPAPLFLOAT) &aplLongest;
+        if (lpaplChar)
+           *lpaplChar    = (APLCHAR) aplLongest;
+    } // End IF
+} // End GetNextValueToken
+
+
+//***************************************************************************
 //  $GetFirstValueToken
 //
 //  Return the first value from a token as either

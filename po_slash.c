@@ -617,6 +617,12 @@ NORMAL_EXIT:
 //  Handle the case where the right arg is a scalar
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimOpMonSlashScalar_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
     (LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      HGLOBAL      hGlbRht,              // Right arg global memory handle
@@ -627,9 +633,6 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
 {
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
     // If it's valid, ...
     if (lpMemRht)
     {
@@ -638,11 +641,24 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
 
         // Make a copy of the right arg
         if (bPrototyping)
-            hGlbRht = MakeMonPrototype_EM (hGlbRht,                 // Proto arg global memory handle
-                                          &lpYYFcnStrOpr->tkToken,  // Ptr to function token
-                                           MP_NUMONLY);             // Numerics only
-        else
-            hGlbRht = CopySymGlbDir (hGlbRht);
+        {
+            hGlbRht =
+              MakeMonPrototype_EM (hGlbRht,                 // Proto arg global memory handle
+                                  &lpYYFcnStrOpr->tkToken,  // Ptr to function token
+                                   MP_NUMONLY);             // Numerics only
+            if (!hGlbRht)
+            {
+                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                          &lpYYFcnStrOpr->tkToken);
+                goto ERROR_EXIT;
+            } // End IF
+
+            hGlbRht = MakePtrTypeGlb (hGlbRht);
+        } else
+            hGlbRht = CopySymGlbDirAsGlb (hGlbRht);
+
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -652,6 +668,9 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
 ////////lpYYRes->tkToken.tkCharIndex       =        // Filled in below
     } else  // It's an immediate
     {
+        // Allocate a new YYRes
+        lpYYRes = YYAlloc ();
+
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
 
@@ -670,9 +689,10 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
     } // End IF/ELSE
 
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
-
+ERROR_EXIT:
     return lpYYRes;
 } // End PrimOpMonSlashScalar_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

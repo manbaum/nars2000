@@ -445,13 +445,15 @@ static HBRUSH EDIT_NotifyCtlColor(EDITSTATE *es, HDC hdc)
         return hbrush;
 } // End EDIT_NotifyCtlColor
 
+
 static inline LRESULT DefWindowProcT(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, BOOL unicode)
 {
     if(unicode)
         return DefWindowProcW(hwnd, msg, wParam, lParam);
     else
         return DefWindowProcA(hwnd, msg, wParam, lParam);
-}
+} // End DefWindowProcT
+
 
 /*********************************************************************
  *
@@ -513,10 +515,10 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         if (lParam)
                 {
                     RECT16 *r16 = MapSL(lParam);
-                    r16->left   = (WORD) es->format_rect.left;
-                    r16->top    = (WORD) es->format_rect.top;
-                    r16->right  = (WORD) es->format_rect.right;
-                    r16->bottom = (WORD) es->format_rect.bottom;
+                    r16->left   = es->format_rect.left;
+                    r16->top    = es->format_rect.top;
+                    r16->right  = es->format_rect.right;
+                    r16->bottom = es->format_rect.bottom;
                 }
         break;
 #endif
@@ -641,9 +643,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         result = (LRESULT)EDIT_EM_GetHandle(es);
         break;
 
-//#ifdef _WIN16     // Use in EM_GETTHUMB
     case EM_GETTHUMB16:
-//#endif
     case EM_GETTHUMB:
         result = EDIT_EM_GetThumb(es);
         break;
@@ -1881,7 +1881,7 @@ static void EDIT_LockBuffer(EDITSTATE *es)
     }
         if(es->flags & EF_APP_HAS_HANDLE) text_buffer_changed(es);
     es->lock_count++;
-}
+} // End EDIT_LockBuffer
 
 
 /*********************************************************************
@@ -2351,9 +2351,6 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
 
 //  TRACE("line=%d\n", line);
 
-    /* get the background brush */
-    hBrush = EDIT_NotifyCtlColor(es, dc);
-
     pos = EDIT_EM_PosFromChar(es, EDIT_EM_LineIndex(es, line), FALSE);
     x = (short)LOWORD(pos);
     y = (short)HIWORD(pos);
@@ -2376,6 +2373,9 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev)
     if (gDbgLvl EQ 9)
         DbgBrk ();
 #endif
+
+    // Get the background brush
+    hBrush = EDIT_NotifyCtlColor(es, dc);
 
     // Fill out the rest of the line
     rc2.left   = x;
@@ -2437,7 +2437,7 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
 
         (long) lpPaintHook = GetWindowLongW (es->hwndSelf, GWLEC_PAINTHOOK);
         if (lpPaintHook)
-            ret = (*lpPaintHook) (dc, x, y, es->text + li, col, count);
+            ret = (INT)LOWORD((*lpPaintHook) (dc, x, y, es->text + li, col, count));
         else
             ret = (INT)LOWORD(TabbedTextOutW(dc, x, y, es->text + li + col, count,
                         es->tabs_count, es->tabs, es->format_rect.left - es->x_offset));
@@ -3164,7 +3164,8 @@ static BOOL EDIT_EM_LineScroll(EDITSTATE *es, INT dx, INT dy)
 
     dx *= es->char_width;
     return EDIT_EM_LineScroll_internal(es, dx, dy);
-}
+} // End EDIT_EM_LineScroll
+
 
 /*********************************************************************
  *
@@ -3222,7 +3223,7 @@ static BOOL EDIT_EM_LineScroll_internal(EDITSTATE *es, INT dx, INT dy)
     if (dy && !(es->flags & EF_VSCROLL_TRACK))
         EDIT_NOTIFY_PARENT(es, EN_VSCROLL);
     return TRUE;
-}
+} // End EDIT_EM_LineScroll_internal
 
 
 /*********************************************************************
@@ -3909,8 +3910,7 @@ static void EDIT_EM_SetMargins(EDITSTATE *es, INT action,
 
     if (action & (EC_LEFTMARGIN | EC_RIGHTMARGIN)) {
         EDIT_AdjustFormatRect(es);
-        if (repaint)
-            EDIT_UpdateText(es, NULL, TRUE);
+        if (repaint) EDIT_UpdateText(es, NULL, TRUE);
     }
 
 //  TRACE("left=%d, right=%d\n", es->left_margin, es->right_margin);
@@ -5097,6 +5097,8 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
                     (es->style & ES_NOHIDESEL));
         dc = hdc ? hdc : BeginPaint(es->hwndSelf, &ps);
 
+    Assert ((hdc NE NULL) || ps.fErase EQ FALSE);
+
     GetClientRect(es->hwndSelf, &rcClient);
 
     /* get the background brush */
@@ -5147,6 +5149,7 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     GetClipBox(dc, &rcRgn);
     if (es->style & ES_MULTILINE) {
         INT vlc = (es->format_rect.bottom - es->format_rect.top) / es->line_height;
+
         for (i = es->y_offset ; i <= min(es->y_offset + vlc, es->y_offset + es->line_count - 1) ; i++) {
             EDIT_GetLineRect(es, i, 0, -1, &rcLine);
             if (IntersectRect(&rc, &rcRgn, &rcLine))
@@ -5374,12 +5377,65 @@ static void EDIT_WM_SetText(EDITSTATE *es, LPCWSTR text, BOOL unicode)
 static void EDIT_WM_Size(EDITSTATE *es, UINT action, INT width, INT height)
 {
     if ((action == SIZE_MAXIMIZED) || (action == SIZE_RESTORED)) {
-        RECT rc;
+        RECT    rc, rcClient;
+        HDC     hDC, hDCMem;
+        HBITMAP hBitmap, hBitmapOld;
+        HFONT   hFontOld;
+        HBRUSH  hBrush;
+
+        // Get the client rectangle
+        GetClientRect (es->hwndSelf, &rcClient);
+
+        // Get a device context
+        hDC = GetDC (es->hwndSelf);
+
+        // Get the background brush
+        hBrush = EDIT_NotifyCtlColor(es, hDC);
+
+        // Create a compatible DC and bitmap
+        hDCMem = CreateCompatibleDC (hDC);
+        hBitmap = CreateCompatibleBitmap (hDC,
+                                          rcClient.right,
+                                          rcClient.bottom);
+        hBitmapOld = SelectObject (hDCMem, hBitmap);
+
+        // Handle WM_ERASEBKGND here by filling in the line
+        FillRect (hDCMem, &rcClient, hBrush);
+
+        // Select our font into the memory DC
+        hFontOld = SelectObject (hDCMem, GetCurrentObject (hDC, OBJ_FONT));
+
+        // Copy various attributes from the screen DC to the memory DC
+        SetBkMode    (hDCMem, GetBkMode    (hDC));
+        SetBkColor   (hDCMem, GetBkColor   (hDC));
+        SetTextColor (hDCMem, GetTextColor (hDC));
+
 //      TRACE("width = %d, height = %d\n", width, height);
         SetRect(&rc, 0, 0, width, height);
         EDIT_SetRectNP(es, &rc);
-        // The following line was deleted to reduce screen flicker
-////    EDIT_UpdateText(es, NULL, TRUE);
+        // The following line is replaced by a call to WM_PAINT
+        //   in order to reduce screen flicker
+////////EDIT_UpdateText(es, NULL, TRUE);
+        EDIT_WM_Paint (es, hDCMem);
+
+        // Copy the memory DC to the screen DC
+        BitBlt (hDC,
+                0,
+                0,
+                rcClient.right,
+                rcClient.bottom,
+                hDCMem,
+                0,
+                0,
+                SRCCOPY);
+        // Restore the old resources
+        SelectObject (hDCMem, hFontOld);
+        SelectObject (hDCMem, hBitmapOld);
+
+        // We no longer need these resources
+        DeleteObject (hBitmap); hBitmap = NULL;
+        DeleteDC (hDCMem); hDCMem = NULL;
+        ReleaseDC (es->hwndSelf, hDC);
     }
 } // End EDIT_WM_Size
 
@@ -5609,8 +5665,10 @@ static void EDIT_UpdateTextRegion(EDITSTATE *es, HRGN hrgn, BOOL bErase)
         es->flags &= ~EF_UPDATE;
         EDIT_NOTIFY_PARENT(es, EN_UPDATE);
     }
-    InvalidateRgn(es->hwndSelf, hrgn, bErase);
-}
+    // The following line was changed to reduce screen flicker
+////InvalidateRgn(es->hwndSelf, hrgn, bErase);
+    InvalidateRgn(es->hwndSelf, hrgn, FALSE);
+} // End EDIT_UpdateText
 
 
 /*********************************************************************
@@ -5624,8 +5682,11 @@ static void EDIT_UpdateText(EDITSTATE *es, LPRECT rc, BOOL bErase)
         es->flags &= ~EF_UPDATE;
         EDIT_NOTIFY_PARENT(es, EN_UPDATE);
     }
-    InvalidateRect(es->hwndSelf, rc, bErase);
+    // The following line was changed to reduce screen flicker
+////InvalidateRect(es->hwndSelf, rc, bErase);
+    InvalidateRect(es->hwndSelf, rc, FALSE);
 } // End EDIT_UpdateText
+
 
 #if USE_IME
 /********************************************************************

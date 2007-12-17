@@ -65,7 +65,7 @@ BOOL AssignName_EM
         } // End IF
 
         // Validate the value
-        return (*aSysVarValid[lptkNam->tkData.tkSym->stFlags.SysVarValid]) (lptkNam, lptkSrc);
+        return (*aSysVarValid[lptkNam->tkData.tkSym->stFlags.SysVarValid]) (lptkNam, NULL, lptkSrc);
     } // End IF
 
     // Note that we have to wait until all errors have been

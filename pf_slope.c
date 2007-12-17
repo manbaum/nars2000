@@ -235,9 +235,8 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
 
     // Calculate product of dimensions before, at, and after the axis dimension
     if (aplRankRht EQ 0)
-    {
         uDimLo = uDimAxRht = uDimHi = 1;
-    } else
+    else
     {
         // Calculate the product of the right arg's dimensions below the axis dimension
         uDimLo = 1;
@@ -665,9 +664,15 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                                &aplNestRht,     // Ptr to lpSym/Glb ...
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
-            aplNestProto = MakeMonPrototype_EM (aplNestRht,   // Proto arg handle
-                                                lptkFunc,     // Ptr to function token
-                                                MP_CHARS);    // CHARs allowed
+            aplNestProto =
+              MakeMonPrototype_EM (aplNestRht,  // Proto arg handle
+                                   lptkFunc,    // Ptr to function token
+                                   MP_CHARS);   // CHARs allowed
+            if (!aplNestProto)
+                goto ERROR_EXIT;
+            // Ensure its Ptr Type is marked as a global
+            aplNestProto = MakePtrTypeGlb (aplNestProto);
+
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -690,11 +695,12 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                             ((LPAPLNESTED) lpMemRes)[uDimRes + uAx * uDimHi] = CopySymGlbDir (aplNestRep);
                         } // End IF/ELSE
                     } else
-                    {
                         ((LPAPLNESTED) lpMemRes)[uDimRes + uAx * uDimHi] = CopySymGlbDir (aplNestProto);
-                    } // End IF/ELSE
                 } // End FOR
             } // End FOR/FOR
+
+            // We no longer need this storage
+            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (aplNestProto)); aplNestProto = NULL;
 
             break;
 
@@ -718,6 +724,18 @@ DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkLftArg);
 ERROR_EXIT:
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+
     bRet = FALSE;
 NORMAL_EXIT:
     if (hGlbRep)

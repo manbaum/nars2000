@@ -5995,7 +5995,10 @@ BOOL CheckNullOp3
     if (lptkNext->tkFlags.TknType EQ TKT_LPAREN
      || lptkNext->tkFlags.TknType EQ TKT_EOS
      || lptkNext->tkFlags.TknType EQ TKT_EOL
-     || lptkNext->tkFlags.TknType EQ TKT_ASSIGN)
+     || lptkNext->tkFlags.TknType EQ TKT_ASSIGN
+     || lptkNext->tkFlags.TknType EQ TKT_VARIMMED
+     || lptkNext->tkFlags.TknType EQ TKT_VARNAMED
+     || lptkNext->tkFlags.TknType EQ TKT_VARARRAY)
     {
         // Change the first token from ambiguous operator to a function
         lptkNext[1].tkFlags.TknType = TKT_FCNIMMED;

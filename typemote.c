@@ -1091,7 +1091,7 @@ BOOL TypePromoteGlb_EM
     FreeResultGlobalVar (hGlbArg); hGlbArg = NULL;
 
     // Save the new HGLOBAL
-    *lphGlbArg = hGlbRes;
+    *lphGlbArg = MakePtrTypeGlb (hGlbRes);
 ERROR_EXIT:
     if (hGlbArg && lpMemArg)
     {

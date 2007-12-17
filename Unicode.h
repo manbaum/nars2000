@@ -131,7 +131,7 @@
 // Second row, unshifted
 #define UTF16_LEFTARROW          0x2190         // Alt-'[' - left arrow
 #define UTF16_RIGHTARROW         0x2192         // Alt-']' - right arrow
-#define UTF16_LEFTTACK           0x22A3         // Alt-'\\'- left tack
+#define UTF16_LEFTTACK           0x22A3         // Alt-'\' - left tack
 
 // Second row, shifted
 #define UTF16_QUOTEQUAD          0x235E         // Alt-'{' - quote-quad
@@ -287,7 +287,7 @@
 // Second row, unshifted
 #define WS_UTF16_LEFTARROW          L"\x2190"   // Alt-'[' - left arrow
 #define WS_UTF16_RIGHTARROW         L"\x2192"   // Alt-']' - right arrow
-#define WS_UTF16_LEFTTACK           L"\x22A3"   // Alt-'\\'- left tack
+#define WS_UTF16_LEFTTACK           L"\x22A3"   // Alt-'\' - left tack
 
 // Second row, shifted
 #define WS_UTF16_QUOTEQUAD          L"\x235E"   // Alt-'{' - quote-quad

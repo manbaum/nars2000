@@ -55,8 +55,9 @@ main( int argc, char *argv[] ) {
                     if (!nQuiet)
                         fprintf( stderr, "VDIR 2.0 Copyright (C) 1996-2007 Qualitas, Inc.  All rights reserved.\n" );
 
-                    fprintf( stderr, "Syntax:\n  vdir [-c] [-v] dirlist\n"
+                    fprintf( stderr, "Syntax:\n  vdir [-c] [-q] [-v] dirlist\n"
                             "    -c creates missing directories\n"
+                            "    -q turn off non-error message display\n"
                             "    -v turns on verbose reporting\n"
                             "    dirlist is a list of one or more directories, ending with or without \\\n"
                             "    Default behavior is to test for existence of all directories in dirlist,\n"

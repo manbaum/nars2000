@@ -1,4 +1,6 @@
 
+#define GCL_HBRBACKGROUND   (-10)
+
 #define strlenW         (UINT) lstrlenW
 #define strcpyW         lstrcpyW
 

@@ -127,14 +127,16 @@
             <li>Unified index reference, assignment, and modify assignment:
                   <span class="APL">R[L]</span>,
                   <span class="APL">R[L]{is}A</span>,
-              and <span class="APL">R[L]</span><i>fcn</i><span class="APL">{is}A</span>
+              and <span class="APL">R[L]</span><i>fn</i><span class="APL">{is}A</span>
               allow both Reach and Scatter indexing &mdash; that is, if
               <span class="APL">L{pick}R</span> is valid, it is equivalent to
               <span class="APL">{disclose}R[{enclose}L]</span>, and if
               <span class="APL">L{squad}R</span> is valid, it is equivalent to
               <span class="APL">R[{disclose}{jot}.,/L]</span> &mdash; Reach
               and Scatter indexing may be mixed within a single instance of
-              <span class="APL">R[L]</span> and <span class="APL">R[L]{is}</span></li>
+                  <span class="APL">R[L]</span>,
+                  <span class="APL">R[L]{is}A</span>,
+              and <span class="APL">R[L]</span><i>fn</i><span class="APL">{is}A</span></li>
             <li>Dyadic operator jot ({jot}) (composition) (e.g.,
               <span class="APL">f{is},{jot}{gradeup}{jot}{gradeup}{jot},</span>)</li>
             <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
@@ -448,14 +450,16 @@
         <li>Unified index reference, assignment, and modify assignment:
               <span class="APL">R[L]</span>,
               <span class="APL">R[L]{is}A</span>,
-          and <span class="APL">R[L]</span><i>fcn</i><span class="APL">{is}A</span>
+          and <span class="APL">R[L]</span><i>fn</i><span class="APL">{is}A</span>
           allow both Reach and Scatter indexing &mdash; that is, if
           <span class="APL">L{pick}R</span> is valid, it is equivalent to
           <span class="APL">{disclose}R[{enclose}L]</span>, and if
           <span class="APL">L{squad}R</span> is valid, it is equivalent to
           <span class="APL">R[{disclose}{jot}.,/L]</span> &mdash; Reach
           and Scatter indexing may be mixed within a single instance of
-          <span class="APL">R[L]</span> and <span class="APL">R[L]{is}</span></li>
+              <span class="APL">R[L]</span>,
+              <span class="APL">R[L]{is}A</span>,
+          and <span class="APL">R[L]</span><i>fn</i><span class="APL">{is}A</span></li>
         <li>Quad and Quote-Quad output, e.g., (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
         <li>Prototypes for all primitive functions and operators</li>
         <li>Fast Boolean reduction ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus})
@@ -531,16 +535,16 @@
             <li><span class="APL">{quad}CR</span></li>
             <li><span class="APL">{quad}DL</span></li>
             <li><span class="APL">{quad}DR</span></li>
+            <li class="TBD"><span class="APL">{quad}EC</span></li>
             <li><span class="APL">{quad}ERROR</span></li>
             <li><span class="APL">{quad}ES</span></li>
+            <li class="TBD"><span class="APL">{quad}EX</span></li>
+            <li class="TBD"><span class="APL">{quad}FX</span></li>
             <li><span class="APL">{quad}NC</span></li>
             <li><span class="APL">{quad}NL</span></li>
             <li><span class="APL">{quad}SIZE</span></li>
             <li><span class="APL">{quad}TYPE</span></li>
             <li><span class="APL">{quad}UCS</span></li>
-            <li class="TBD"><span class="APL">{quad}EC</span></li>
-            <li class="TBD"><span class="APL">{quad}EX</span></li>
-            <li class="TBD"><span class="APL">{quad}FX</span></li>
           </ul>
         </li>
 
@@ -551,9 +555,9 @@
               <span class="APL">2 {quad}CR</span> for matrix result</li>
             <li><span class="APL">{quad}DR</span> &mdash;
               <span class="APL">0 {quad}DR</span> for character message</li>
+            <li class="TBD"><span class="APL">{quad}EA</span></li>
             <li><span class="APL">{quad}ES</span></li>
             <li><span class="APL">{quad}NL</span></li>
-            <li class="TBD"><span class="APL">{quad}EA</span></li>
             <li class="TBD"><span class="APL">{quad}TF</span></li>
           </ul>
         </li>
@@ -563,24 +567,24 @@
       <ul>
         <li><span class="APL">)CLEAR</span></li>
         <li><span class="APL">)CLOSE</span></li>
+        <li class="TBD"><span class="APL">)COPY</span></li>
         <li><span class="APL">)DROP</span></li>
         <li><span class="APL">)EDIT</span></li>
+        <li class="TBD"><span class="APL">)ERASE</span></li>
         <li><span class="APL">)EXIT</span></li>
         <li><span class="APL">)FNS</span></li>
         <li><span class="APL">)LIB</span></li>
+        <li class="TBD"><span class="APL">)LOAD</span></li>
         <li><span class="APL">)NEWTAB</span></li>
         <li><span class="APL">)NMS</span></li>
         <li><span class="APL">)OPS</span></li>
         <li><span class="APL">)RESET</span></li>
+        <li class="TBD"><span class="APL">)SAVE</span></li>
         <li><span class="APL">)SI</span></li>
         <li><span class="APL">)SIC</span></li>
         <li><span class="APL">)SINL</span></li>
         <li><span class="APL">)VARS</span></li>
         <li><span class="APL">)WSID</span></li>
-        <li class="TBD"><span class="APL">)COPY</span></li>
-        <li class="TBD"><span class="APL">)ERASE</span></li>
-        <li class="TBD"><span class="APL">)LOAD</span></li>
-        <li class="TBD"><span class="APL">)SAVE</span></li>
       </ul>
     </div>
 

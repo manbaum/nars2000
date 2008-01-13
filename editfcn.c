@@ -1747,7 +1747,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             break;
 
-        case WM_PAINT:
+        case WM_PAINT:              // hdc = (HDC) wParam; // the device context to draw in
             // Tell the ending code to draw the line #s afterwards
             bDrawLineNums = TRUE;
 

@@ -1974,6 +1974,22 @@ LPPL_YYSTYPE MakeList_EM_YY
         // Split cases based upon the token type
         switch (lpYYToken->tkToken.tkFlags.TknType)
         {
+            case TKT_VARNAMED:  // l[r]
+                lpSymEntry = lpYYToken->tkToken.tkData.tkSym;
+
+                if (lpSymEntry->stFlags.Imm)
+                {
+                    lpSymEntry = MakeSymEntry_EM (lpSymEntry->stFlags.ImmType,
+                                                 &lpSymEntry->stData.stLongest,
+                                                 &lpYYArg->tkToken);
+                    if (lpSymEntry)
+                        *((LPAPLLIST) lpMemLst)++ = lpSymEntry;
+                    else
+                        bRet = FALSE;
+                } else
+                    *((LPAPLLIST) lpMemLst)++ = CopySymGlbDirAsGlb (lpSymEntry->stData.stGlbData);
+                break;
+
             case TKT_VARIMMED:
                 // Copy the immediate token as an LPSYMENTRY
                 lpSymEntry = CopyImmToken_EM (&lpYYToken->tkToken);

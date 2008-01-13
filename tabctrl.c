@@ -142,7 +142,7 @@ BOOL CreateNewTab
     HANDLE hThread;
 
     // Save args in struc to pass to thread func
-    cntThread.hWndParent = hWndParent;
+    cntThread.hWndParent = hWndParent;      // ***FIXME*** -- Should this be hWndTC??
     cntThread.lpszDPFE   = lpszDPFE;
     cntThread.iTab       = iTab;
 

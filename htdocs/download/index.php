@@ -12,7 +12,7 @@
   <style type="text/css">
 body
 {
-  background-color: rgb(180,193,205);
+  background-color: rgb(180, 193, 205);
   background-image: url('/art/bg-grad.jpg');
   background-repeat: repeat-x;
   color: black;
@@ -25,11 +25,11 @@ img
 }
 h2
 {
-  background-color: rgb(204,213,221);
+  background-color: rgb(204, 213, 221);
   padding: 2px 0.5em 2px 0.5em;
   margin: 0;
   margin-right:  -0.45em;
-  border-bottom: dotted 1px rgb(180,193,205);
+  border-bottom: dotted 1px rgb(180, 193, 205);
   font-size: 110%;
 }
 h3
@@ -59,7 +59,7 @@ ul, ol
 }
 .title
 {
-  background-image: url(/art/NARS-TitleExt.jpg);
+  background-image: url('/art/NARS-TitleExt.jpg');
   background-repeat:  repeat-x;
 }
 .pagetable tr
@@ -77,7 +77,7 @@ ul, ol
 }
 .pagecolumn1 a, .pagecolumn1 a:visited
 {
-  color: rgb(0,0,164);
+  color: rgb(0, 0, 164);
   background-color:  inherit;
   text-decoration: none;
 }
@@ -93,7 +93,7 @@ ul, ol
 {
   color:  inherit;
   background-color: white;
-  border-color: rgb(24,24,24);
+  border-color: rgb(24, 24, 24);
   border-width: 1px;
   border-style: solid;
   padding-bottom: 0.5em;
@@ -107,18 +107,18 @@ ul, ol
 }
 .reltable th, .reltable tr, .reltable td
 {
-  color: rgb(0,0,164);
+  color: rgb(0, 0, 164);
   padding: 0 1em 0 1em;
 }
 .reltable td
 {
   border: solid blue 1px;
   font-weight: bold;
-  color: seagreen;
+  color: rgb(46, 139, 87); /* seagreen */
 }
 .relbutton
 {
-  background-color: orangered;
+  background-color: rgb(255, 69, 0); /* orangered */
 }
   </style>
 </head>
@@ -139,60 +139,70 @@ ul, ol
 
       <p>There are two types of files available for downloading:
         <b>zip</b> and <b>map</b>.  The former contains
-        everything you need to run the program, whereas the latter contains
-        debugging information only in case we need it.</p>
+        everything you need to run the program and is the recommended download.
+        The latter contains debugging information only in case the developers need it.</p>
 
-      <table class="reltable" border="0" cellspacing="0" summary="">
-      <tr>
-        <th>File Name</th>
-        <th>Release</th>
-        <th>Date</th>
-        <th>Size</th>
-        <th>Type</th>
-      </tr>
+      <table border="0" cellspacing="0" summary="">
+        <tr>
+          <td>
+            <table class="reltable" border="0" cellspacing="0" summary="">
+            <tr>
+              <th>File Name</th>
+              <th>Release</th>
+              <th>Date</th>
+              <th>Size</th>
+              <th>Type</th>
+            </tr>
 
-      <?php
-      ob_implicit_flush (true);
-      echo "\n";
-      $DirName = '/v/nars2000.org/htdocs/download/binaries/';
-      $dh = opendir ($DirName);
+            <?php
+            ob_implicit_flush (true);
+            echo "\n";
+            $DirName = '/v/nars2000.org/htdocs/download/binaries/';
+            $dh = opendir ($DirName);
 
-      // This is the correct way to loop over the directory.
-      while (false !== ($File = readdir ($dh)))
-      {
-          if (!is_dir ($File)
-           && strcmp ($File, "linestat.txt") != 0)
-          {
-              $Files[] = $File;
-          } // End IF
-      } // End WHILE
+            // This is the correct way to loop over the directory.
+            while (false !== ($File = readdir ($dh)))
+            {
+                if (!is_dir ($File)
+                 && strcmp ($File, "linestat.txt") != 0)
+                {
+                    $Files[] = $File;
+                } // End IF
+            } // End WHILE
 
-      // Sort files descendingly by version #
-      natsort ($Files);
-      $Files = array_reverse ($Files);
+            // Sort files descendingly by version #
+            natsort ($Files);
+            $Files = array_reverse ($Files);
 
-      foreach ($Files as $File)
-      {
-          $Pos  = strpos ($File, '-');
-          $Name = substr ($File, 0, $Pos);
-          $Rel  = substr ($File, $Pos + 1);
-          $ExtPos = strpos (strrev ($File), '.');
-          $Ext  = substr ($File, -$ExtPos);    // Extract the extension
-          $Rel  = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
-          $Date = date ("Y F d H:i:s", filemtime ($DirName . $File));
-          $Size = number_format (filesize ($DirName . $File));
+            $cnt = 0;
 
-          echo   "      <tr>\n"
-             .   "        <td>$Name</td>\n"
-             .   "        <td>$Rel</td>\n"
-             .   "        <td>$Date</td>\n"
-             .   "        <td>$Size</td>\n"
-             .   "        <td>$Ext</td>\n"
-             .   "        <td class=\"relbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
-             .   "      </tr>\n";
-      } // End FOREACH
-      closedir ($dh);
-      ?>
+            foreach ($Files as $File)
+            {
+                $Pos  = strpos ($File, '-');
+                $Name = substr ($File, 0, $Pos);
+                $Rel  = substr ($File, $Pos + 1);
+                $ExtPos = strpos (strrev ($File), '.');
+                $Ext  = substr ($File, -$ExtPos);    // Extract the extension
+                $Rel  = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
+                $Date = date ("Y F d H:i:s", filemtime ($DirName . $File));
+                $Size = number_format (filesize ($DirName . $File));
+
+                echo   "      <tr>\n"
+                   .   "        <td>$Name</td>\n"
+                   .   "        <td>$Rel</td>\n"
+                   .   "        <td>$Date</td>\n"
+                   .   "        <td>$Size</td>\n"
+                   .   "        <td>$Ext</td>\n"
+                   .   "        <td class=\"relbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
+                   .   "      </tr>\n";
+                $cnt++;
+            } // End FOREACH
+            closedir ($dh);
+            ?>
+            </table>
+          </td>
+          <td><br/><b>&nbsp;&larr;&nbsp;Recommended</b></td>
+        </tr>
       </table>
     </div>
   </td>

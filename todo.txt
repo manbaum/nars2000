@@ -105,6 +105,7 @@ TODO: Session Manager
 ---------------------
 * )SAVE as ASCII plain text file
 * Ensure APL font is installed
+* Language bar to speed entry of APL chars
 *
 
 

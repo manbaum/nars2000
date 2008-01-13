@@ -614,6 +614,7 @@ LRESULT APIENTRY MFWndProc
     RECT         rcDtop;    // Rectangle for desktop
     HWND         hWndActive,
                  hWndMC;
+    HGLOBAL      hGlbPTD;
     LPPERTABDATA lpMemPTD;
 
 ////static DWORD aHelpIDs[] = {
@@ -837,11 +838,6 @@ LRESULT APIENTRY MFWndProc
 
             break;                  // Continue with next handler
 
-        case WM_RBUTTONDBLCLK:
-            DbgBrk ();
-
-            break;
-
         case WM_NOTIFY:             // idCtrl = (int) wParam;
                                     // pnmh = (LPNMHDR) lParam;
 #define lpnmh   ((LPNMHDR) lParam)
@@ -852,7 +848,6 @@ LRESULT APIENTRY MFWndProc
                 case TTN_NEEDTEXT:      // idTT = (int) wParam;
                                         // lpttt = (LPTOOLTIPTEXT) lParam;
                 {
-                    HGLOBAL     hGlbPTD;
                     static char TooltipText[_MAX_PATH];
 
 #define lpttt   ((LPTOOLTIPTEXT) lParam)
@@ -863,15 +858,16 @@ LRESULT APIENTRY MFWndProc
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+#ifndef DEBUG
                     // Return a ptr to the stored tooltip text
                     lstrcpy (TooltipText, (LPCHAR) &lpMemPTD->DPFE);
-
-                    // ***DEBUG***
+#else
+                    // Return a ptr to the stored tooltip text
                     wsprintf (TooltipText,
                               "hWndMC=%08X, hGlbHist=%08X",
                               lpMemPTD->hWndMC,
                               0);   //// lpMem->hGlbHist);  // ***FIXME***
-
+#endif
                     lpttt->lpszText = TooltipText;
 
                     // We no longer need this ptr
@@ -946,7 +942,7 @@ LRESULT APIENTRY MFWndProc
                     break;
 
 ////////////////case ODA_FOCUS:     // These actions don't appear to occur with a tab ctrl
-////////////////case ODA_SELECT:
+////////////////case ODA_SELECT:    // ...
             } // End SWITCH
 
             break;
@@ -1225,6 +1221,11 @@ LRESULT APIENTRY MFWndProc
             } // End SWITCH
 
             break;                  // Continue with next handler ***MUST***
+
+        case WM_ERASEBKGND:
+            // In order to reduce screen flicker, we handle erase background
+            // in the WM_PAINT message for the child windows.
+            return TRUE;            // We erased the background
 
         case WM_QUERYENDSESSION:
         case WM_CLOSE:

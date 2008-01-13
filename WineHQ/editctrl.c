@@ -293,6 +293,7 @@ static LRESULT  EDIT_WM_MButtonDown(EDITSTATE *es);
 static LRESULT  EDIT_WM_MouseMove(EDITSTATE *es, INT x, INT y);
 static LRESULT  EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode);
 static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc);
+static void EDIT_WM_Paint2(EDITSTATE *es, HDC hdc, HDC hdcbg);
 static void EDIT_WM_Paste(EDITSTATE *es);
 static void EDIT_WM_SetFocus(EDITSTATE *es);
 static void EDIT_WM_SetFont(EDITSTATE *es, HFONT font, BOOL redraw);
@@ -5081,9 +5082,68 @@ static LRESULT EDIT_WM_NCCreate(HWND hwnd, LPCREATESTRUCTW lpcs, BOOL unicode)
  */
 static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
 {
+    HDC         hDCInc;
+    HDC         hDCMem;
+    RECT        rcClient;
+    HBRUSH      hBrush;
+    HBITMAP     hBitmap,
+                hBitmapOld;
     PAINTSTRUCT ps;
+
+    // Get the incoming DC
+    hDCInc = hdc ? hdc : BeginPaint(es->hwndSelf, &ps);
+
+    // Get the client rectangle
+    GetClientRect (es->hwndSelf, &rcClient);
+
+    // Get the background brush
+    hBrush = (HBRUSH) GetClassLongW (es->hwndSelf, GCL_HBRBACKGROUND);
+
+    // Create a compatible DC and bitmap
+    hDCMem = CreateCompatibleDC (hDCInc);
+    hBitmap = CreateCompatibleBitmap (hDCInc,
+                                      rcClient.right,
+                                      rcClient.bottom);
+    hBitmapOld = SelectObject (hDCMem, hBitmap);
+
+    // Handle WM_ERASEBKGND here by filling in the client area
+    //   with the class background brush
+    FillRect (hDCMem, &rcClient, hBrush);
+
+    // Copy various attributes from the screen DC to the memory DC
+    SetBkMode    (hDCMem, GetBkMode    (hDCInc));
+    SetBkColor   (hDCMem, GetBkColor   (hDCInc));
+    SetTextColor (hDCMem, GetTextColor (hDCInc));
+
+    // Call the original handler
+    EDIT_WM_Paint2 (es, hDCMem, hDCInc);
+
+    // Copy the memory DC to the screen DC
+    BitBlt (hDCInc,
+            0,
+            0,
+            rcClient.right,
+            rcClient.bottom,
+            hDCMem,
+            0,
+            0,
+            SRCCOPY);
+    // Restore the old resources
+    SelectObject (hDCMem, hBitmapOld);
+
+    // We no longer need these resources
+    DeleteObject (hBitmap); hBitmap = NULL;
+    DeleteDC (hDCMem); hDCMem = NULL;
+
+    // If we called BeginPaint at the start, ...
+    if (!hdc)
+        EndPaint(es->hwndSelf, &ps);
+} // End EDIT_WM_Paint
+
+
+static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg)
+{
     INT i;
-    HDC dc;
     HFONT old_font = 0;
     RECT rc;
     RECT rcClient;
@@ -5095,17 +5155,14 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     BOOL rev = es->bEnableState &&
                 ((es->flags & EF_FOCUSED) ||
                     (es->style & ES_NOHIDESEL));
-        dc = hdc ? hdc : BeginPaint(es->hwndSelf, &ps);
-
-    Assert ((hdc NE NULL) || ps.fErase EQ FALSE);
 
     GetClientRect(es->hwndSelf, &rcClient);
 
     /* get the background brush */
-    brush = EDIT_NotifyCtlColor(es, dc);
+    brush = EDIT_NotifyCtlColor(es, dcbg);
 
     /* paint the border and the background */
-    IntersectClipRect(dc, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom);
+    IntersectClipRect(dcbg, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom);
 
     if(es->style & WS_BORDER) {
         bw = GetSystemMetrics(SM_CXBORDER);
@@ -5117,15 +5174,15 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
         }
 
         /* Draw the frame. Same code as in nonclient.c */
-        old_brush = SelectObject(dc, GetSysColorBrush(COLOR_WINDOWFRAME));
-        PatBlt(dc, rc.left, rc.top, rc.right - rc.left, bh, PATCOPY);
-        PatBlt(dc, rc.left, rc.top, bw, rc.bottom - rc.top, PATCOPY);
-        PatBlt(dc, rc.left, rc.bottom - 1, rc.right - rc.left, -bw, PATCOPY);
-        PatBlt(dc, rc.right - 1, rc.top, -bw, rc.bottom - rc.top, PATCOPY);
-        SelectObject(dc, old_brush);
+        old_brush = SelectObject(dcbg, GetSysColorBrush(COLOR_WINDOWFRAME));
+        PatBlt(dcbg, rc.left, rc.top, rc.right - rc.left, bh, PATCOPY);
+        PatBlt(dcbg, rc.left, rc.top, bw, rc.bottom - rc.top, PATCOPY);
+        PatBlt(dcbg, rc.left, rc.bottom - 1, rc.right - rc.left, -bw, PATCOPY);
+        PatBlt(dcbg, rc.right - 1, rc.top, -bw, rc.bottom - rc.top, PATCOPY);
+        SelectObject(dcbg, old_brush);
 
         /* Keep the border clean */
-        IntersectClipRect(dc, rc.left+bw, rc.top+bh,
+        IntersectClipRect(dcbg, rc.left+bw, rc.top+bh,
             max(rc.right-bw, rc.left+bw), max(rc.bottom-bh, rc.top+bh));
     }
 
@@ -5149,7 +5206,6 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     GetClipBox(dc, &rcRgn);
     if (es->style & ES_MULTILINE) {
         INT vlc = (es->format_rect.bottom - es->format_rect.top) / es->line_height;
-
         for (i = es->y_offset ; i <= min(es->y_offset + vlc, es->y_offset + es->line_count - 1) ; i++) {
             EDIT_GetLineRect(es, i, 0, -1, &rcLine);
             if (IntersectRect(&rc, &rcRgn, &rcLine))
@@ -5162,10 +5218,7 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     }
     if (es->font)
         SelectObject(dc, old_font);
-
-    if (!hdc)
-        EndPaint(es->hwndSelf, &ps);
-} // End EDIT_WM_Paint
+} // End EDIT_WM_Paint2
 
 
 /*********************************************************************
@@ -5377,7 +5430,8 @@ static void EDIT_WM_SetText(EDITSTATE *es, LPCWSTR text, BOOL unicode)
 static void EDIT_WM_Size(EDITSTATE *es, UINT action, INT width, INT height)
 {
     if ((action == SIZE_MAXIMIZED) || (action == SIZE_RESTORED)) {
-        RECT    rc, rcClient;
+        RECT    rc;
+        RECT    rcClient;
         HDC     hDC, hDCMem;
         HBITMAP hBitmap, hBitmapOld;
         HFONT   hFontOld;
@@ -5399,7 +5453,7 @@ static void EDIT_WM_Size(EDITSTATE *es, UINT action, INT width, INT height)
                                           rcClient.bottom);
         hBitmapOld = SelectObject (hDCMem, hBitmap);
 
-        // Handle WM_ERASEBKGND here by filling in the line
+        // Handle WM_ERASEBKGND here by filling in the client area
         FillRect (hDCMem, &rcClient, hBrush);
 
         // Select our font into the memory DC
@@ -5415,19 +5469,9 @@ static void EDIT_WM_Size(EDITSTATE *es, UINT action, INT width, INT height)
         EDIT_SetRectNP(es, &rc);
         // The following line is replaced by a call to WM_PAINT
         //   in order to reduce screen flicker
-////////EDIT_UpdateText(es, NULL, TRUE);
-        EDIT_WM_Paint (es, hDCMem);
+////    EDIT_UpdateText(es, NULL, TRUE);
+        EDIT_WM_Paint2 (es, hDCMem, hDC);
 
-        // Copy the memory DC to the screen DC
-        BitBlt (hDC,
-                0,
-                0,
-                rcClient.right,
-                rcClient.bottom,
-                hDCMem,
-                0,
-                0,
-                SRCCOPY);
         // Restore the old resources
         SelectObject (hDCMem, hFontOld);
         SelectObject (hDCMem, hBitmapOld);
@@ -5656,7 +5700,7 @@ static LRESULT EDIT_WM_VScroll(EDITSTATE *es, INT action, INT pos)
 
 /*********************************************************************
  *
- *  EDIT_UpdateText
+ *  EDIT_UpdateTextRegion
  *
  */
 static void EDIT_UpdateTextRegion(EDITSTATE *es, HRGN hrgn, BOOL bErase)
@@ -5668,7 +5712,7 @@ static void EDIT_UpdateTextRegion(EDITSTATE *es, HRGN hrgn, BOOL bErase)
     // The following line was changed to reduce screen flicker
 ////InvalidateRgn(es->hwndSelf, hrgn, bErase);
     InvalidateRgn(es->hwndSelf, hrgn, FALSE);
-} // End EDIT_UpdateText
+} // End EDIT_UpdateTextRegion
 
 
 /*********************************************************************

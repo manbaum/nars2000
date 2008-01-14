@@ -17,7 +17,6 @@ TO DO:  General:  Important (pre-alpha)
 * ...       )SAVE
 * ...       minimum set of system functions, to wit:
 * ...          []EC R
-* ...          []EX R
 * ...          []FX R
 * ...        L []EA R
 * ...        L []TF R
@@ -191,6 +190,7 @@ DONE:  General
 * ...       bracket indexed assignment   A[L]{is}R
 * ...       bracket indexed modified assignment  A[L]Fcn{is}R
 * ...       []FC
+* ...       []EX R
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

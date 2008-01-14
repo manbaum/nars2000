@@ -538,7 +538,7 @@
             <li class="TBD"><span class="APL">{quad}EC</span></li>
             <li><span class="APL">{quad}ERROR</span></li>
             <li><span class="APL">{quad}ES</span></li>
-            <li class="TBD"><span class="APL">{quad}EX</span></li>
+            <li><span class="APL">{quad}EX</span></li>
             <li class="TBD"><span class="APL">{quad}FX</span></li>
             <li><span class="APL">{quad}NC</span></li>
             <li><span class="APL">{quad}NL</span></li>

@@ -1229,7 +1229,6 @@ LRESULT APIENTRY MFWndProc
 
         case WM_QUERYENDSESSION:
         case WM_CLOSE:
-        {
             if (fHelp && szHlpDPFE[0])   // If we used help and there's a valid .HLP file, ...
             {
                 WinHelp (hWnd, szHlpDPFE, HELP_QUIT, 0); // Quit it
@@ -1244,7 +1243,6 @@ LRESULT APIENTRY MFWndProc
                 // This also tells the child windows to close
                 DestroyWindow (hWnd);
             break;                  // Continue with default handler
-        } // End WM_CLOSE
 
         case WM_DESTROY:
             // Uninitialize window-specific resources

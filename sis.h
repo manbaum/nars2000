@@ -22,7 +22,7 @@ typedef struct tagSIS_HEADER
     HANDLE           hSemaphore,    // 04:  Semaphore handle
                      hSigaphore;    // 08:  Semaphore handle to signal on exit (NULL if none)
     HGLOBAL          hGlbDfnHdr,    // 0C:  User-defined function/operator global memory handle (may be NULL if not fcn/op)
-                     hGlbFcnName,   // 10:  Function name global memory handle
+                     hGlbFcnName,   // 10:  Function name global memory handle (may be NULL if not fcn/op)
                      hGlbQuadEM;    // 14:  []EM global memory handle
     UINT             DfnType:4,     // 18:  0000000F:  User-defined function/operator Type (see DFN_TYPES)
                      FcnValence:3,  //      00000070:  User-defined function/operator Valence (see FCN_VALENCES)

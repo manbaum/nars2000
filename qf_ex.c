@@ -1,5 +1,5 @@
 //***************************************************************************
-//  NARS2000 -- System Function -- Quad NC
+//  NARS2000 -- System Function -- Quad EX
 //***************************************************************************
 
 #define STRICT
@@ -9,6 +9,9 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
+#include "sis.h"
+#include "dfnhdr.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -17,18 +20,18 @@
 
 
 //***************************************************************************
-//  $SysFnNC_EM_YY
+//  $SysFnEX_EM_YY
 //
-//  System function:  []NC -- Name Class
+//  System function:  []EX -- Expunge Name
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNC_EM_YY"
+#define APPEND_NAME     L" -- SysFnEX_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnNC_EM_YY
+LPPL_YYSTYPE SysFnEX_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -53,26 +56,26 @@ LPPL_YYSTYPE SysFnNC_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonNC_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+        return SysFnMonEX_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return SysFnDydNC_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End SysFnNC_EM_YY
+        return SysFnDydEX_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+} // End SysFnEX_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $SysFnMonNC_EM_YY
+//  $SysFnMonEX_EM_YY
 //
-//  Monadic []NC -- Name Class
+//  Monadic []EX -- Expunge Name
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNC_EM_YY"
+#define APPEND_NAME     L" -- SysFnMonEX_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnMonNC_EM_YY
+LPPL_YYSTYPE SysFnMonEX_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -90,7 +93,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                  lpMemRes = NULL;   // Ptr to result    ...
     LPAPLCHAR    lpMemDataRht,      // Ptr to right arg char data
                  lpMemDataStart;    // Ptr to start of identifier
-    LPAPLINT     lpMemDataRes;      // Ptr to result integer data
+    LPAPLBOOL    lpMemDataRes;      // Ptr to result Boolean data
     APLUINT      uRht,              // Loop counter
                  uCol,              // ...
                  ByteRes;           // # bytes in the result
@@ -98,6 +101,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
     STFLAGS      stFlags;           // STE flags
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     BOOL         bRet = TRUE;       // TRUE iff result is valid
+    UINT         uBitIndex;         // Bit index for looping through Boolean result
 
     // The right arg may be of three forms:
     //   1.  a scalar    name  as in 'a'
@@ -142,7 +146,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
     // Note that if bRet EQ FALSE, aplNELMRes EQ 1
 
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
+    ByteRes = CalcArraySize (ARRAY_BOOL, aplNELMRes, 1);
 
     // Allocate space for the result
     // N.B. Conversion from APLUINT to UINT
@@ -161,7 +165,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_INT;
+    lpHeader->ArrType    = ARRAY_BOOL;
 ////lpHeader->Perm       = 0;           // Already zero from GHND
 ////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
@@ -177,13 +181,12 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
     // If we failed in CalcNumIDs, quit now
     if (!bRet)
-    {
-        *lpMemDataRes++ = NAMECLASS_INV;
-
         goto YYALLOC_EXIT;
-    } // End IF
 
-    // Calculate the name class of each element
+    // Expunge each name
+
+    // Initialize the bit index
+    uBitIndex = 0;
 
     // Split cases based upon the right arg rank
     switch (aplRankRht)
@@ -196,12 +199,13 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
             lpSymEntry = SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
                                                  1,
                                                 &stFlags);
-            // If not found, return NAMECLASS_INV or NAMECLASS_AVL
-            if (!lpSymEntry)
-                *lpMemDataRes++ = ValidName ((LPAPLCHAR) &aplLongestRht, 1)
-                                ? NAMECLASS_AVL : NAMECLASS_INV;
+            // If found, attempt to expunge the name
+            // If not found, return a one if it's a valid name, zero otherwise
+            if (lpSymEntry)
+                *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
             else
-                *lpMemDataRes++ = CalcNameClass (lpSymEntry);
+                *lpMemDataRes |= (ValidName ((LPAPLCHAR) &aplLongestRht,
+                                             1)) << uBitIndex;
             break;
 
         case 1:
@@ -230,12 +234,19 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                     lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
                                                         &lpMemDataRht[uRht] - lpMemDataStart,
                                                         &stFlags);
-                    // If not found, return NAMECLASS_INV or NAMECLASS_AVL
-                    if (!lpSymEntry)
-                        *lpMemDataRes++ = ValidName (lpMemDataStart, &lpMemDataRht[uRht] - lpMemDataStart)
-                                        ? NAMECLASS_AVL : NAMECLASS_INV;
+                    // If found, attempt to expunge the name
+                    // If not found, return a one if it's a valid name, zero otherwise
+                    if (lpSymEntry)
+                        *lpMemDataRes |= (ExpungeName (lpSymEntry)) << uBitIndex;
                     else
-                        *lpMemDataRes++ = CalcNameClass (lpSymEntry);
+                        *lpMemDataRes |= (ValidName (lpMemDataStart,
+                                                    &lpMemDataRht[uRht] - lpMemDataStart)) << uBitIndex;
+                    // Check for end-of-byte
+                    if (++uBitIndex EQ NBIB)
+                    {
+                        uBitIndex = 0;      // Start over
+                        lpMemDataRes++;     // Skip to next byte
+                    } // End IF
                 } else
                     break;
             } // End WHILE
@@ -263,12 +274,19 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
                 lpSymEntry = SymTabLookupNameLength (&lpMemDataStart[uCol],
                                                       (UINT) (aplNELMCol - uCol),
                                                      &stFlags);
-                // If not found, return NAMECLASS_INV or NAMECLASS_AVL
-                if (!lpSymEntry)
-                    *lpMemDataRes++ = ValidName (&lpMemDataStart[uCol], (UINT) (aplNELMCol - uCol))
-                                    ? NAMECLASS_AVL : NAMECLASS_INV;
+                // If found, attempt to expunge the name
+                // If not found, return a one if it's a valid name, zero otherwise
+                if (lpSymEntry)
+                    *lpMemDataRes |= ExpungeName (lpSymEntry);
                 else
-                    *lpMemDataRes++ = CalcNameClass (lpSymEntry);
+                    *lpMemDataRes |= (ValidName (lpMemDataStart,
+                                                 (UINT) (aplNELMCol - uCol))) << uBitIndex;
+                // Check for end-of-byte
+                if (++uBitIndex EQ NBIB)
+                {
+                    uBitIndex = 0;      // Start over
+                    lpMemDataRes++;     // Skip to next byte
+                } // End IF
             } // End FOR
 
             break;
@@ -318,227 +336,200 @@ NORMAL_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End SysFnMonNC_EM_YY
+} // End SysFnMonEX_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $ValidName
+//  ExpungeName
 //
-//  Determine if a name is validly constructed
-//
-//  A name is validly constructed if
-//
-//   first:  QUAD | QUOTEQUAD | ALPHABETIC;
-//   second: ALPHABETIC | NUMERIC | OVERBAR;
-//   name:   OVERBAR | ALPHA | OMEGA | first second;
-//
+//  Expunge a given name and
+//    return a one iff successful
 //***************************************************************************
 
-BOOL ValidName
-    (LPAPLCHAR lpaplChar,
-     UINT      uLen)
-
-{
-    UINT uNam;
-
-    // Check the first char
-    if (lpaplChar[0] EQ UTF16_QUAD
-     || lpaplChar[0] EQ UTF16_QUOTEQUAD
-     || lpaplChar[0] EQ UTF16_DELTA
-     || lpaplChar[0] EQ UTF16_DELTAUNDERBAR
-     || lpaplChar[0] EQ UTF16_OVERBAR
-     || lpaplChar[0] EQ UTF16_ALPHA
-     || lpaplChar[0] EQ UTF16_OMEGA
-     || (L'a' <= lpaplChar[0]
-      &&         lpaplChar[0] <= L'z')
-     || (L'A' <= lpaplChar[0]
-      &&         lpaplChar[0] <= L'Z'))
-    {
-        // If the first char is overbar | alpha | omega,
-        //   it must be the only char
-        if ((lpaplChar[0] EQ UTF16_OVERBAR
-          || lpaplChar[0] EQ UTF16_ALPHA
-          || lpaplChar[0] EQ UTF16_OMEGA)
-         && uLen NE 1)
-            return FALSE;
-
-        // Loop through the rest of the chars
-        for (uNam = 1; uNam < uLen; uNam++)
-        if (!((L'a' <= lpaplChar[uNam]
-            &&         lpaplChar[uNam] <= L'z')
-           || (L'A' <= lpaplChar[uNam]
-            &&         lpaplChar[uNam] <= L'Z')
-           || (L'0' <= lpaplChar[uNam]
-            &&         lpaplChar[uNam] <= L'9')
-           || lpaplChar[0] EQ UTF16_DELTA
-           || lpaplChar[0] EQ UTF16_DELTAUNDERBAR
-           || lpaplChar[0] EQ UTF16_OVERBAR))
-            return FALSE;
-        return TRUE;
-    } // End IF
-
-    return FALSE;
-} // End ValidName
-
-
-//***************************************************************************
-//  $CalcNameClass
-//
-//  Calculate the name class of each element
-//
-//  -1 = Invalid name or unknown sysname
-//   0 = Available name
-//   1 = User label
-//   2 = User variable
-//   3 = User-defined function
-//   4 = User-defined operator (monadic or dyadic)
-//   5 = System variable
-//   6 = System function
-//   7 = System label
-//
-//  Note that )NMS in <syscmds.c> assumes that the Name Class
-//    is a single digit.  If you add enough classes to invalidate
-//    that assumptioon, be sure make )NMS work, too.
-//***************************************************************************
-
-APLINT CalcNameClass
+APLBOOL ExpungeName
     (LPSYMENTRY lpSymEntry)
 
 {
+    STFLAGS stFlagsMT = {0};    // STE flags for empty entry
+
+    // Fill in mask flag values for empty entry
+    stFlagsMT.Inuse   = 1;          // Retain Inuse flag
+    stFlagsMT.ObjName = NEG1U;      // ...    ObjName setting
+
+    // Check for eraseability
+    if (!EraseableName (lpSymEntry))
+        return 0;
+
+    // If the STE is not immediate, free the global memory handle
+    if (!lpSymEntry->stFlags.Imm)
+        FreeResultGlobalDFV (ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData));
+
+    // If the entry is not a system name, mark it as empty (e.g., VALUE ERROR)
+    if (lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
+    {
+        // Clear the STE flags & data
+        *(PUINT_PTR) &lpSymEntry->stFlags &= *(PUINT_PTR) &stFlagsMT;
+        lpSymEntry->stData.stLongest = 0;
+    } // End IF
+
+    return 1;
+} // End ExpungeName
+
+
+//***************************************************************************
+//  EraseableName
+//
+//  Return a one iff the name is erasable
+//***************************************************************************
+
+APLBOOL EraseableName
+    (LPSYMENTRY lpSymEntry)
+
+{
+    HGLOBAL   htGlbName;        // Name global memory handle
+    LPAPLCHAR lpMemName;        // Ptr to name global memory
+    APLBOOL   bRet;             // TRUE iff eraseable name
+
     // Split cases based upon the Name Type
     switch (lpSymEntry->stFlags.ObjType)
     {
         case NAMETYPE_UNK:
-            return NAMECLASS_AVL;
-
         case NAMETYPE_VAR:
-            if (lpSymEntry->stFlags.DfnLabel)
-                return NAMECLASS_USRLBL;
-            else
-            if (lpSymEntry->stFlags.DfnSysLabel)
-                return NAMECLASS_SYSLBL;
-            else
-            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_USR)
-                return NAMECLASS_USRVAR;
-            else
-                return NAMECLASS_SYSVAR;
-
         case NAMETYPE_FN0:
         case NAMETYPE_FN12:
-            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_USR)
-                return NAMECLASS_USRFCN;
-            else
-                return NAMECLASS_SYSFCN;
-
         case NAMETYPE_OP1:
         case NAMETYPE_OP2:
-            return NAMECLASS_USROPR;
+            // If the name is suspended or pendent, it's not eraseable
+            if (IzitSusPendent (lpSymEntry))
+                return 0;
 
-        case NAMETYPE_LST:
+            // Get the name global memory handle
+            htGlbName = lpSymEntry->stHshEntry->htGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLock (htGlbName);
+
+            // Izit a valid name?
+            bRet = ValidName (lpMemName, lstrlenW (lpMemName));
+
+            // Not if the first char is Quad or Quote-quad
+            bRet &= (lpMemName[0] NE UTF16_QUAD && lpMemName[0] NE UTF16_QUOTEQUAD);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (htGlbName); lpMemName = NULL;
+
+            return bRet;
+
+////////case NAMETYPE_LST:
         defstop
-            return NAMECLASS_INV;
+            return 0;
     } // End SWITCH
-} // End CalcNameClass
+} // End EraseableName
 
 
 //***************************************************************************
-//  $SysFnDydNC_EM_YY
+//  IzitSusPendent
 //
-//  Dyadic []NC -- ERROR
+//  Return a one if the name is that of a suspended or
+//    pendent defined function/operator
+//***************************************************************************
+
+APLBOOL IzitSusPendent
+    (LPSYMENTRY lpSymEntry)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLBOOL      bRet = FALSE;  // TRUE iff name is suspended or pendent
+    LPSIS_HEADER lpSISCur;      // Ptr to current SIS layer
+    HGLOBAL      htGlbName;     // Name global memory handle
+    LPAPLCHAR    lpMemName,     // Ptr to name global memory
+                 lpFcnName;     // Ptr to function name global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get a ptr to the innermost SIS layer
+    lpSISCur = lpMemPTD->lpSISCur;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Get the name global memory handle
+    htGlbName = lpSymEntry->stHshEntry->htGlbName;
+
+    // Lock the memory to get a ptr to it
+    lpMemName = MyGlobalLock (htGlbName);
+
+    while (lpSISCur && !bRet)
+    {
+        // Split cases based upon the function type
+        switch (lpSISCur->DfnType)
+        {
+            case DFNTYPE_IMM:
+            case DFNTYPE_EXEC:
+            case DFNTYPE_QUAD:
+                break;
+
+            case DFNTYPE_OP1:
+            case DFNTYPE_OP2:
+            case DFNTYPE_FCN:
+                // Lock the memory to get a ptr to it
+                lpFcnName = MyGlobalLock (lpSISCur->hGlbFcnName);
+
+                // Compare the names
+                bRet = (lstrcmpW (lpMemName, lpFcnName) EQ 0);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (lpSISCur->hGlbFcnName); lpFcnName = NULL;
+
+                break;
+
+            case DFNTYPE_UNK:
+            defstop
+                break;
+        } // End SWITCH
+
+        // Skip to the previous SIS layer
+        lpSISCur = lpSISCur->lpSISPrv;
+    } // End WHILE
+
+    // We no longer need this ptr
+    MyGlobalUnlock (htGlbName); lpMemName = NULL;
+
+    return bRet;
+} // End IzitSusPendent
+
+
+//***************************************************************************
+//  $SysFnDydEX_EM_YY
+//
+//  Dyadic []EX -- ERROR
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNC_EM_YY"
+#define APPEND_NAME     L" -- SysFnDydEX_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE SysFnDydNC_EM_YY
+LPPL_YYSTYPE SysFnDydEX_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
+
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
     return PrimFnValenceError_EM (lptkFunc);
-} // End SysFnDydNC_EM_YY
+} // End SysFnDydEX_EM_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $CalcNumIDs
-//
-//  Calculate the # identifiers in an arg
-//***************************************************************************
-
-BOOL CalcNumIDs
-    (APLNELM    aplNELMRht,         // Right arg NELM
-     APLRANK    aplRankRht,         // Right arg rank
-     APLLONGEST aplLongestRht,      // Right arg longest
-     BOOL       bVectorOfNames,     // TRUE iff we allow multiple names in a vector (e.g., 'a b c')
-     LPAPLCHAR  lpMemRht,           // Ptr to right arg global memory
-     LPAPLNELM  lpaplNELMRes,       // Ptr to # right arg IDs
-     LPAPLNELM  lpaplNELMCol)       // Ptr to # right arg cols (matrix only)
-
-{
-    APLUINT uRht;               // Loop counter
-
-    // Split cases based upon the right arg rank
-    switch (aplRankRht)
-    {
-        case 0:
-            *lpaplNELMRes = (L' ' NE (APLCHAR) aplLongestRht);
-
-            break;
-
-        case 1:
-            *lpaplNELMRes = 0;      // Initialize
-
-            // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-
-            // Loop through the right arg looking for identifiers
-            uRht = 0;
-            while (TRUE)
-            {
-                // Skip over leading white space
-                while (uRht < aplNELMRht && lpMemRht[uRht] EQ L' ')
-                    uRht++;
-                if (uRht < aplNELMRht)
-                {
-                    // If multiple names in a vector are not allowed
-                    //   and this is the second name, ...
-                    if (!bVectorOfNames
-                     && *lpaplNELMRes EQ 1)
-                        return FALSE;
-
-                    // Count in another element in the result
-                    (*lpaplNELMRes)++;
-
-                    // Skip over black space
-                    while (uRht < aplNELMRht && lpMemRht[uRht] NE L' ')
-                        uRht++;
-                } else
-                    break;
-            } // End FOR
-
-            break;
-
-        case 2:
-            *lpaplNELMRes = (VarArrayBaseToDim (lpMemRht))[0];
-            *lpaplNELMCol = (VarArrayBaseToDim (lpMemRht))[1];
-
-            break;
-
-        defstop
-            break;
-    } // End IF
-
-    return TRUE;
-} // End CalcNumIDs
-
-
-//***************************************************************************
-//  End of File: qf_nc.c
+//  End of File: qf_ex.c
 //***************************************************************************

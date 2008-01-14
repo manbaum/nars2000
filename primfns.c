@@ -2032,7 +2032,7 @@ LPPL_YYSTYPE MakeNoValue_YY
 //***************************************************************************
 
 LPSIS_HEADER GetSISLayer
-    (LPSIS_HEADER lpSISCur)
+    (LPSIS_HEADER lpSISCur)             // Ptr to current SIS layer
 
 {
     while (lpSISCur

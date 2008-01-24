@@ -24,6 +24,8 @@
 #define ERRMSG_NOT_SAVED_WS_FULL    L"NOT SAVED, WS FULL"
 #define ERRMSG_WS_NOT_FOUND         L"WS NOT FOUND"
 
+#define ERRMSG_NOT_ERASED           L"NOT ERASED:"
+
 
 //***************************************************************************
 //  End of File: aplerrors.h

@@ -348,15 +348,9 @@ NORMAL_EXIT:
 //***************************************************************************
 
 APLBOOL ExpungeName
-    (LPSYMENTRY lpSymEntry)
+    (LPSYMENTRY lpSymEntry)         // Ptr to the Symbol Table Entry
 
 {
-    STFLAGS stFlagsMT = {0};    // STE flags for empty entry
-
-    // Fill in mask flag values for empty entry
-    stFlagsMT.Inuse   = 1;          // Retain Inuse flag
-    stFlagsMT.ObjName = NEG1U;      // ...    ObjName setting
-
     // Check for eraseability
     if (!EraseableName (lpSymEntry))
         return 0;
@@ -365,16 +359,37 @@ APLBOOL ExpungeName
     if (!lpSymEntry->stFlags.Imm)
         FreeResultGlobalDFV (ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData));
 
-    // If the entry is not a system name, mark it as empty (e.g., VALUE ERROR)
-    if (lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
-    {
-        // Clear the STE flags & data
-        *(PUINT_PTR) &lpSymEntry->stFlags &= *(PUINT_PTR) &stFlagsMT;
-        lpSymEntry->stData.stLongest = 0;
-    } // End IF
+	// Erase the Symbol Table Entry
+    EraseSTE (lpSymEntry);
 
     return 1;
 } // End ExpungeName
+
+
+//***************************************************************************
+//	EraseSTE
+//
+//	Erase a Symbol Table Entry
+//***************************************************************************
+
+void EraseSTE
+	(LPSYMENTRY lpSymEntry)
+
+{
+    // If the entry is not a system name, mark it as empty (e.g., VALUE ERROR)
+    if (lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
+	{
+    	STFLAGS stFlagsMT = {0};    	// STE flags for empty entry
+
+    	// Fill in mask flag values for erased entry
+    	stFlagsMT.Inuse   = 1;          // Retain Inuse flag
+    	stFlagsMT.ObjName = NEG1U;      // ...    ObjName setting
+
+    	// Clear the STE flags & data
+    	*(PUINT_PTR) &lpSymEntry->stFlags &= *(PUINT_PTR) &stFlagsMT;
+    	lpSymEntry->stData.stLongest = 0;
+    } // End IF
+} // End EraseSTE
 
 
 //***************************************************************************

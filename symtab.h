@@ -270,7 +270,8 @@ typedef struct tagSYMENTRY
     STFLAGS     stFlags;        // 00:  Flags
     SYMTAB_DATA stData;         // 04:  For immediates, the data value; for others, the HGLOBAL
     LPHSHENTRY  stHshEntry;     // 0C:  Ptr to the matching HSHENTRY
-                                // 10:  Length
+    struct tagSYMENTRY *stPrvEntry;// 10:  Ptr to previous (shadowed) STE (NULL = none)
+                                // 14:  Length
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)

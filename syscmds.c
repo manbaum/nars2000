@@ -31,10 +31,10 @@ SYSCMDSTAB SysCmdsTab[]
 {
     {L"clear" ,     &CmdClear_EM    },
     {L"close" ,     &CmdClose_EM    },
-////{L"copy"  ,     &CmdCopyName_EM },
+////{L"copy"  ,     &CmdCopy_EM     },
     {L"drop"  ,     &CmdDrop_EM     },
     {L"edit"  ,     &CmdEdit_EM     },
-////{L"erase" ,     &CmdEraseName_EM},
+    {L"erase" ,     &CmdErase_EM    },
     {L"exit"  ,     &CmdExit_EM     },
     {L"fns"   ,     &CmdFns_EM      },
     {L"lib"   ,     &CmdLib_EM      },

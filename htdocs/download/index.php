@@ -9,108 +9,21 @@
   <link rel="stylesheet"
         href="http://www.sudleyplace.com/styles/common.css"
         type="text/css" />
+  <link rel="stylesheet"
+        href="http://www.nars2000.org/styles/common.css"
+        type="text/css" />
   <style type="text/css">
-body
-{
-  background-color: rgb(180, 193, 205);
-  background-image: url('/art/bg-grad.jpg');
-  background-repeat: repeat-x;
-  color: black;
-  font-family: "trebuchet ms", arial, sans-serif;
-  margin: 0;
-}
-img
-{
-  border: none;
-}
-h2
-{
-  background-color: rgb(204, 213, 221);
-  padding: 2px 0.5em 2px 0.5em;
-  margin: 0;
-  margin-right:  -0.45em;
-  border-bottom: dotted 1px rgb(180, 193, 205);
-  font-size: 110%;
-}
-h3
-{
-  padding: 2px 0.5em 2px 0.5em;
-  margin: 0;
-  font-size: 100%;
-  font-weight: bold;
-}
-h4
-{
-  padding: 2px 0.5em 2px 0.5em;
-  margin: 0;
-  font-size: 90%;
-  font-weight: bold;
-  background-color: inherit;
-}
-p
-{
-  padding: 0.25em 0 0.50em 0.5em;
-  margin: 0;
-}
-ul, ol
-{
-  padding: 0 0 0 0.5em;
-  margin: 0 0 0 0.2in;
-}
-.title
-{
-  background-image: url('/art/NARS-TitleExt.jpg');
-  background-repeat:  repeat-x;
-}
-.pagetable tr
-{
-  vertical-align: top;
-}
-.pagetable
-{
-  width: 100%;
-}
-.pagecolumn1
-{
-  width: 175px;
-  padding: 1em 0 0 0;
-}
-.pagecolumn1 a, .pagecolumn1 a:visited
-{
-  color: rgb(0, 0, 164);
-  background-color:  inherit;
-  text-decoration: none;
-}
-.pagecolumn1 a:hover
-{
-  text-decoration: underline;
-}
-.pagecolumn2
-{
-  padding: 1em 2em;
-}
-.section
-{
-  color:  inherit;
-  background-color: white;
-  border-color: rgb(24, 24, 24);
-  border-width: 1px;
-  border-style: solid;
-  padding-bottom: 0.5em;
-  padding-right: 0.5em;
-  margin-bottom: 1.5em;
-}
-.reltable
+#reltable
 {
   margin-left: 1em;
-  border-collapse: collapse;
+  /* border-collapse: collapse; */
 }
-.reltable th, .reltable tr, .reltable td
+#reltable th, #reltable tr, #reltable td
 {
   color: rgb(0, 0, 164);
   padding: 0 1em 0 1em;
 }
-.reltable td
+#reltable td
 {
   border: solid blue 1px;
   font-weight: bold;
@@ -129,6 +42,15 @@ ul, ol
 <img src="/art/NARS-Title.jpg"
      alt="NARS2000: An Experimental APL Interpreter"
      title="Last Changed <?php echo date ('d F Y H:i:s', filemtime (__FILE__));?>" />
+
+</div>
+<div class="menu">&nbsp;&nbsp;
+<a href="/">Home</a> |
+<a href="/download/">Download</a> |
+<a href="http://wiki.nars2000.org">Documentation</a> |
+<a href="/Contributors.ahtml">Contributors</a> |
+<a href="/LICENSE">License</a> |
+<a href="http://wiki.nars2000.org/index.php/NARS2000:About">About</a>
 </div>
 
 <table class="pagetable" summary="">
@@ -138,14 +60,19 @@ ul, ol
       <h2>Latest File Releases</h2>
 
       <p>There are two types of files available for downloading:
-        <b>zip</b> and <b>map</b>.  The former contains
-        everything you need to run the program and is the recommended download.
-        The latter contains debugging information only in case the developers need it.</p>
+        <b>zip</b> and <b>map</b>.  The former contains everything you
+        need to run the program and is the recommended download for end
+        users.  The latter files contain debugging information and are used
+        by developers.</p>
+
+      <form id="DisplayForm" action="">&nbsp;
+        <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="DisplayTab ();" />
+      </form>
 
       <table border="0" cellspacing="0" summary="">
         <tr>
           <td>
-            <table class="reltable" border="0" cellspacing="0" summary="">
+            <table id="reltable" border="0" cellspacing="0" summary="">
             <tr>
               <th>File Name</th>
               <th>Release</th>
@@ -174,8 +101,6 @@ ul, ol
             natsort ($Files);
             $Files = array_reverse ($Files);
 
-            $cnt = 0;
-
             foreach ($Files as $File)
             {
                 $Pos  = strpos ($File, '-');
@@ -187,7 +112,7 @@ ul, ol
                 $Date = date ("Y F d H:i:s", filemtime ($DirName . $File));
                 $Size = number_format (filesize ($DirName . $File));
 
-                echo   "      <tr>\n"
+                echo   "      <tr class=\"$Ext\">\n"
                    .   "        <td>$Name</td>\n"
                    .   "        <td>$Rel</td>\n"
                    .   "        <td>$Date</td>\n"
@@ -195,8 +120,8 @@ ul, ol
                    .   "        <td>$Ext</td>\n"
                    .   "        <td class=\"relbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
                    .   "      </tr>\n";
-                $cnt++;
             } // End FOREACH
+
             closedir ($dh);
             ?>
             </table>
@@ -204,6 +129,51 @@ ul, ol
           <td><br/><b>&nbsp;&larr;&nbsp;Recommended</b></td>
         </tr>
       </table>
+
+      <script type="text/javascript">
+      <!--
+        function DisplayTab ()
+        {
+            // Overcome mis-interpretation/limitation in IE
+        var TableRow = gIE ? 'block' : 'table-row';
+        var rows = document.getElementsByTagName ('tr');
+        var i;
+            for (i = 0; i < rows.length; i++)
+            {
+            var tr = rows[i];
+////////////var attr = tr.getAttribute ('class');   // Doesn't work in IE
+            var attr = tr.attributes['class'];
+                if (attr && attr.value == 'map')
+                    tr.style.display = gAllFiles ? TableRow : 'none';
+            } // End FOR
+
+        var el = document.getElementById ('IDtoggle');
+
+            // Toggle the button text
+            el.value = gAllFiles ? 'Display end user files only'
+                                 : 'Display all files';
+            // Toggle the state
+            gAllFiles = !gAllFiles;
+        } // End DisplayTab
+
+        // We need to overcome various problems with IE
+    var gIE = (navigator.appName == "Microsoft Internet Explorer");
+        if (!gIE)
+        {
+            // IE screws up border-collapse, so we enable
+            //   it for non-IE browsers.  On IE, the inner
+            //   lines will be a little thicker than necessary,
+            //   but if we allow border-collapse on IE then the
+            //   bottom line for zip-only display is missing.
+        var el = document.getElementById ('reltable');
+            el.style.borderCollapse = 'collapse';
+        } // End IF
+
+        // Start with just zip files displayed
+    var gAllFiles = false;
+        document.getElementById ("IDtoggle").click ();
+      -->
+      </script>
     </div>
   </td>
 </tr>

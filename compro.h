@@ -114,6 +114,7 @@
 #include "reg.pro"
 //nclude "resdebug.pro"
 #include "sc_drop.pro"
+#include "sc_erase.pro"
 #include "sc_fnov.pro"
 #include "sc_lib.pro"
 #include "sc_reset.pro"

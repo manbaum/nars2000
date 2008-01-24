@@ -84,7 +84,7 @@ BOOL CALLBACK EnumCallbackShowHide
     // Show or hide the window
     ShowWindow (hWnd, lParam);
 
-    return TRUE;
+    return TRUE;                        // Continue enumerating
 } // End EnumCallbackShowHide
 
 
@@ -102,21 +102,53 @@ void ShowHideChildWindows
     if (!hWndMC)
         return;
 
-    // Put the MDI Client window at the top (SHOW) or bottom (HIDE)
-    //   of the Z-order
-    SetWindowPos (hWndMC,
-                  bShow ? HWND_TOP : HWND_BOTTOM,
-                  0, 0, 0, 0,
-                  SWP_NOMOVE
-                | SWP_NOSIZE);
+    if (bShow)
+    {
+        // Put the MDI Client window at the top (SHOW) or bottom (HIDE)
+        //   of the Z-order
+        SetWindowPos (hWndMC,
+                      HWND_TOP,
+                      0, 0, 0, 0,
+                      SWP_NOMOVE
+                    | SWP_NOSIZE);
+        // Show/hide the MDI Client window
+        ShowWindow (hWndMC, SW_SHOWNORMAL);
 
-    // Show/hide the MDI Client window
-    ShowWindow (hWndMC, bShow ? SW_SHOW : SW_HIDE);
+        // Loop through the child windows
+        EnumChildWindows (hWndMC,
+                          EnumCallbackShowHide,
+                          SW_SHOWNORMAL);
+    } else
+    {
+        // Loop through the child windows
+        EnumChildWindows (hWndMC,
+                          EnumCallbackShowHide,
+                          SW_HIDE);
+        // Put the MDI Client window at the top (SHOW) or bottom (HIDE)
+        //   of the Z-order
+        SetWindowPos (hWndMC,
+                      HWND_BOTTOM,
+                      0, 0, 0, 0,
+                      SWP_NOMOVE
+                    | SWP_NOSIZE);
 
-    // Loop through the child windows
-    EnumChildWindows (hWndMC,
-                      EnumCallbackShowHide,
-                      bShow ? SW_SHOW : SW_HIDE);
+        // Show/hide the MDI Client window
+        ShowWindow (hWndMC, SW_HIDE);
+    } // End IF/ELSE
+
+////// Loop through the child windows
+////EnumChildWindows (hWndMC,
+////                  EnumCallbackShowHide,
+////                  bShow ? SW_SHOWNORMAL : SW_HIDE);
+////// Put the MDI Client window at the top (SHOW) or bottom (HIDE)
+//////   of the Z-order
+////SetWindowPos (hWndMC,
+////              bShow ? HWND_TOP : HWND_BOTTOM,
+////              0, 0, 0, 0,
+////              SWP_NOMOVE
+////            | SWP_NOSIZE);
+////// Show/hide the MDI Client window
+////ShowWindow (hWndMC, bShow ? SW_SHOWNORMAL : SW_HIDE);
 } // End ShowHideChildWindows
 
 
@@ -142,7 +174,7 @@ BOOL CreateNewTab
     HANDLE hThread;
 
     // Save args in struc to pass to thread func
-    cntThread.hWndParent = hWndParent;      // ***FIXME*** -- Should this be hWndTC??
+    cntThread.hWndParent = hWndTC;  //hWndParent;      // ***FIXME*** -- Should this be hWndTC??
     cntThread.lpszDPFE   = lpszDPFE;
     cntThread.iTab       = iTab;
 
@@ -642,14 +674,8 @@ LRESULT WINAPI LclTabCtrlWndProc
                     iNewTab++;
             } // End IF
 
-////////////// Save data from the current WS into global memory
-////////////SaveWsData (hGlbCurTab);
-
             // Get the outgoing per tab global memory handle
             hGlbPTD = GetPerTabHandle (iTab);
-
-////////////// Restore data into the current WS from global memory
-////////////RestWsData (hGlbPTD);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -696,9 +722,6 @@ LRESULT WINAPI LclTabCtrlWndProc
 
             // Get the per tab global memory handle
             hGlbCurTab = GetPerTabHandle (iNewTab);
-
-////////////// Restore data into the current WS from global memory
-////////////RestWsData (hGlbCurTab);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbCurTab);
@@ -848,10 +871,10 @@ void FillTabBackground
     {
         // Fill the rectangle with one band
         SetRect (&rcBand,
-                 lpRect->left,
-                 (nBands - i) + lpRect->top,
-                 lpRect->right + 1,
-                 (nBands - i) + lpRect->top + 1);
+                  lpRect->left,
+                  (nBands - i) + lpRect->top,
+                  lpRect->right + 1,
+                  (nBands - i) + lpRect->top + 1);
         crBand = RGB ((int) (((float) GetRValue (rgbStart)) - fRStep * i),
                       (int) (((float) GetGValue (rgbStart)) - fGStep * i),
                       (int) (((float) GetBValue (rgbStart)) - fBStep * i));
@@ -910,6 +933,7 @@ int GetTabColorIndex
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Get the color index
     crIndex = lpMemPTD->crIndex;
 
     // We no longer need this ptr
@@ -975,6 +999,9 @@ void DrawTab
     int          crIndex;
     COLORREF     crfg,
                  crbk;
+    HDC          hDCMem;
+    HBITMAP      hBitmap,
+                 hBitmapOld;
 
     // Get the per tab global memory handle
     hGlbPTD = GetPerTabHandle (iCurTab);
@@ -997,20 +1024,28 @@ void DrawTab
     hDC = MyGetDC (hWndTC);
     SetAttrs (hDC, hFontTC, crfg, crbk);
 
+    // Create a compatible DC and bitmap
+    hDCMem = CreateCompatibleDC (hDC);
+    hBitmap = CreateCompatibleBitmap (hDC,
+                                      lpRect->right,
+                                      lpRect->bottom);
+    hBitmapOld = SelectObject (hDCMem, hBitmap);
+    SetAttrs (hDCMem, hFontTC, crfg, crbk);
+
     // Remove the border from the rectangle
     AdjustTabRect (lpRect, iCurTab);
 
     // Fill the background of the tab
-    FillTabBackground (hDC, lpRect, crbk);
+    FillTabBackground (hDCMem, lpRect, crbk);
 
     // Draw transparently so the background shows through
-    SetBkMode  (hDC, TRANSPARENT);
+    SetBkMode (hDCMem, TRANSPARENT);
 
     // Reduce the right side of the rectangle to make room for the image
     lpRect->right -= IMAGE_WIDTH;
 
     // Draw the text
-    DrawText (hDC,
+    DrawText (hDCMem,
              &lpMemPTD->DPFE[lpMemPTD->iLabelText],
               lstrlen (&lpMemPTD->DPFE[lpMemPTD->iLabelText]),
               lpRect,
@@ -1022,27 +1057,47 @@ void DrawTab
     // Restore the original value
     lpRect->right += IMAGE_WIDTH;
 
-    // Get the image rectangle
-    GetImageRect (lpRect);
-
-    // Draw transparently
-    ImageList_SetBkColor (hImageList, CLR_NONE);
-
     // If there's only one tab, don't draw the close button
     if (TabCtrl_GetItemCount (hWnd) NE 1)
+    {
+        RECT rcImage;
+
+        // Get the image rectangle
+        GetImageRect (&rcImage);
+
+        // Draw transparently
+        ImageList_SetBkColor (hImageList, CLR_NONE);
+
         // Draw the image
         ImageList_Draw (hImageList,         // Handle to the image list
                         0,                  // Index of the image to draw
-                        hDC,                // Handle of the DC
-                        lpRect->left,       // X-coordinate
-                        lpRect->top,        // Y-...
-                        0
+                        hDCMem,             // Handle of the DC
+                        rcImage.left,       // X-coordinate
+                        rcImage.top,        // Y-...
+                        0                   // Styles
                       | ILD_TRANSPARENT
-                        );                  // Styles
+                        );
+    } // End IF
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    // We no longer need this DC
+    // Copy the memory DC to the screen DC
+    BitBlt (hDC,
+            lpRect->left,
+            lpRect->top,
+            lpRect->right  - lpRect->left,
+            lpRect->bottom - lpRect->top,
+            hDCMem,
+            lpRect->left,
+            lpRect->top,
+            SRCCOPY);
+    // Restore the old resources
+    SelectObject (hDCMem, hBitmapOld);
+
+    // We no longer need these resources
+    DeleteObject (hBitmap); hBitmap = NULL;
+    DeleteDC (hDCMem); hDCMem = NULL;
     MyReleaseDC (hWndTC, hDC); hDC = NULL;
 } // End DrawTab
 

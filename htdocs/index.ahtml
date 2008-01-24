@@ -570,7 +570,7 @@
         <li class="TBD"><span class="APL">)COPY</span></li>
         <li><span class="APL">)DROP</span></li>
         <li><span class="APL">)EDIT</span></li>
-        <li class="TBD"><span class="APL">)ERASE</span></li>
+        <li><span class="APL">)ERASE</span></li>
         <li><span class="APL">)EXIT</span></li>
         <li><span class="APL">)FNS</span></li>
         <li><span class="APL">)LIB</span></li>
@@ -650,10 +650,10 @@
                 as well as downloaded, one file at a time, from your browser.
               </li>
 
-              <li>Or, the source may be downloaded, one file at a time
-                or the whole lot, by running a version control program.
-                In particular, the source code is maintained on this
-                site using <a class="linkleft" href="http://subversion.tigris.org/">Subversion</a>.
+              <li>Or, using a version control program, the source may be
+                downloaded, one file at a time or the whole lot.  In
+                particular, the source code is maintained on this site using
+                <a class="linkleft" href="http://subversion.tigris.org/">Subversion</a>.
                 There are various clients which may commmunicate with a Subversion
                 server depending upon the operating system running on your computer.
                 For example, if you are running Windows, you may download (for free)
@@ -666,7 +666,7 @@
 
               <li>The <a class="linkleft" href="http://svn.nars2000.org">browser view</a>
                 also allows you to download the entire source code as a compressed file.
-                Try the link at the bottom of each index page labeled "Download tarball".
+                Try the link at the bottom of each index page labeled "Download GNU tarball".
               </li>
             </ul>
           </li>
@@ -722,7 +722,7 @@
       <p>This project was started by
       <script type="text/javascript"
               src="/email.cgi?n=bsmith&amp;d=sudleyplace.com&amp;t=Bob%20Smith&amp;class=mailright"></script>
-      and is &copy; 2006-2007, Sudley Place Software.</p>
+      and is &copy; 2006-2008, Sudley Place Software.</p>
     </div>
   </td>
 </tr>

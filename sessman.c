@@ -76,13 +76,13 @@ WS_UTF16_QUAD L":";
 //***************************************************************************
 
 void SetAttrs
-    (HDC      hDC,
-     HFONT    hFont,
-     COLORREF crfg,
-     COLORREF crbk)
+    (HDC      hDC,              // Handle to the device context
+     HFONT    hFont,            // Handle to the font
+     COLORREF crfg,             // Foreground text color
+     COLORREF crbk)             // Background ...
 
 {
-    // Set the
+    // Set the mapping mode
     SetMapMode (hDC, MM_TEXT);
 
     // Select the font into the DC
@@ -104,9 +104,9 @@ void SetAttrs
 //***************************************************************************
 
 void AppendLine
-    (LPWCHAR lpwszLine,
-     BOOL    bLineCont,
-     BOOL    bEndingCR)
+    (LPWCHAR lpwszLine,         // Ptr to the line to append
+     BOOL    bLineCont,         // TRUE iff this is a line continuation
+     BOOL    bEndingCRLF)       // TRUE iff this line should end with a CR/LF
 
 {
     HWND         hWndEC;        // Window handle to Edit Control
@@ -134,12 +134,9 @@ void AppendLine
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 
     // If requested, end the line
-    if (bEndingCR)
-    {
+    if (bEndingCRLF)
         // Replace the selection (none) with "\r\n"
         SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
-    } // End IF
-
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 } // End AppendLine
@@ -1340,7 +1337,7 @@ LRESULT APIENTRY SMWndProc
             // Set the paint hook
             SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
 
-////////////// Set the soft-break flag
+////////////// Set the soft-break flag (not supported by WineHQ edit ctrl)
 ////////////SendMessageW (hWndEC, EM_FMTLINES, TRUE, 0);
 
             // Paint the window

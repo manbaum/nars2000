@@ -250,6 +250,7 @@ $(O)refcnt.DEP          \
 $(O)reg.DEP             \
 $(O)resdebug.DEP        \
 $(O)sc_drop.DEP         \
+$(O)sc_erase.DEP        \
 $(O)sc_fnov.DEP         \
 $(O)sc_lib.DEP          \
 $(O)sc_reset.DEP        \
@@ -628,6 +629,9 @@ $(O)yyfns.DEP
 !if exist ($(O)sc_drop.DEP)
 !       include $(O)sc_drop.DEP
 !endif
+!if exist ($(O)sc_erase.DEP)
+!       include $(O)sc_erase.DEP
+!endif
 !if exist ($(O)sc_fnov.DEP)
 !       include $(O)sc_fnov.DEP
 !endif
@@ -809,6 +813,7 @@ $(O)refcnt.PRO          \
 $(O)reg.PRO             \
 $(O)resdebug.PRO        \
 $(O)sc_drop.PRO         \
+$(O)sc_erase.PRO        \
 $(O)sc_fnov.PRO         \
 $(O)sc_lib.PRO          \
 $(O)sc_reset.PRO        \
@@ -984,6 +989,7 @@ $(O)reg.OBJ:            $(@B).C         $(REG_DEP)
 $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
 !endif
 $(O)sc_drop.OBJ:        $(@B).C         $(SC_DROP_DEP)
+$(O)sc_erase.OBJ:       $(@B).C         $(SC_ERASE_DEP)
 $(O)sc_fnov.OBJ:        $(@B).C         $(SC_FNOV_DEP)
 $(O)sc_lib.OBJ:         $(@B).C         $(SC_LIB_DEP)
 $(O)sc_reset.OBJ:       $(@B).C         $(SC_RESET_DEP)
@@ -1136,6 +1142,7 @@ OBJS=                       \
      $(O)resdebug.OBJ       \
 !endif
      $(O)sc_drop.OBJ        \
+     $(O)sc_erase.OBJ       \
      $(O)sc_fnov.OBJ        \
      $(O)sc_lib.OBJ         \
      $(O)sc_reset.OBJ       \
@@ -1180,7 +1187,7 @@ $(LIBS_WEXE) $(LIBS_EXT)
 $(L)$(ENAME).EXE:       $(O)$(ENAME).EXE
         @xc/r    %s      $@ >NUL
 ####    @ff $(B)$(ENAME)
-        @dir $(B)$(ENAME).*|grep "$(ENAME)\."
+        @dir /ON $(B)$(ENAME).*|grep "$(ENAME)\."
 
 zip:
         pkzip $(ZIPNAME) @nars2000.inp
@@ -1207,4 +1214,3 @@ $(L)$(MV).exe:          $(O)$(MV).exe
 
 $(ENAME).ver:           $(O)$(ENAME).exe
         @$(O)$(MV).exe $(O)$(ENAME).exe
-

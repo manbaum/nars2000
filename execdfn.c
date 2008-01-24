@@ -85,7 +85,6 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
                  aplRankRht;        // Right ...
     LPSYMENTRY   lpSymEntryBeg,     // Ptr to start of SYMENTRYs on the SIS
                  lpSymEntryNxt;     // Ptr to next     ...
-    STFLAGS      stFlagsMT = {0};   // STE flags for empty entry
     HGLOBAL      hGlbPTD = NULL;    // PerTabData global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
@@ -290,10 +289,6 @@ RESTART_EXCEPTION_EXECDFNGLB:
     lpSymEntryBeg =
     lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
 
-    // Fill in mask flag values for empty entry
-    stFlagsMT.Inuse   = 1;          // Retain Inuse flag
-    stFlagsMT.ObjName = NEG1U;      // ...    ObjName setting
-
     // Copy onto the SIS the current STEs for each local
     //   and undefine all but the system vars
 
@@ -301,44 +296,37 @@ RESTART_EXCEPTION_EXECDFNGLB:
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->numResultSTE,
-                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE),
-                       &stFlagsMT);
+                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offResultSTE));
     // Localize and clear the left arg STEs
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->numLftArgSTE,
-                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE),
-                       &stFlagsMT);
+                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE));
     // Localize and clear the left operand STE
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->steLftOpr NE NULL,
-                       &lpMemDfnHdr->steLftOpr,
-                       &stFlagsMT);
+                       &lpMemDfnHdr->steLftOpr);
     // Localize and clear the axis operand STE
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->steAxisOpr NE NULL,
-                       &lpMemDfnHdr->steAxisOpr,
-                       &stFlagsMT);
+                       &lpMemDfnHdr->steAxisOpr);
     // Localize and clear the right operand STE
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->steRhtOpr NE NULL,
-                       &lpMemDfnHdr->steRhtOpr,
-                       &stFlagsMT);
+                       &lpMemDfnHdr->steRhtOpr);
     // Localize and clear the right arg STEs
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->numRhtArgSTE,
-                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE),
-                       &stFlagsMT);
+                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE));
     // Localize and clear the locals STEs
     lpSymEntryNxt =
     LocalizeSymEntries (lpSymEntryNxt,
                         lpMemDfnHdr->numLocalsSTE,
-                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLocalsSTE),
-                       &stFlagsMT);
+                        (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLocalsSTE));
     // Search for line labels, localize and initialize them
     lpSymEntryNxt =
     LocalizeLabels (lpSymEntryNxt,
@@ -1089,6 +1077,9 @@ LPSYMENTRY LocalizeLabels
                 lpSymEntrySrc->stFlags.DfnLabel = 1;
                 lpSymEntrySrc->stData.stInteger = uLineNum + 1;
 
+                // Set the ptr to the previous entry to the STE on the stack
+                lpSymEntrySrc->stPrvEntry       = &lpSymEntryNxt[-1];
+
                 // Count in another label
                 (*lpNumLabels)++;
             } // End IF
@@ -1473,8 +1464,7 @@ BOOL InitFcnSTEs
 LPSYMENTRY LocalizeSymEntries
     (LPSYMENTRY  lpSymEntryNxt,
      UINT        numSymEntries,
-     LPSYMENTRY *lplpSymEntrySrc,
-     LPSTFLAGS   lpstFlagsMT)
+     LPSYMENTRY *lplpSymEntrySrc)
 
 {
     UINT uSym;          // Loop counter
@@ -1485,13 +1475,11 @@ LPSYMENTRY LocalizeSymEntries
         // Copy the SYMENTRY to the SIS
         *lpSymEntryNxt++ = **lplpSymEntrySrc;
 
-        // If the entry is not a system name, mark it as empty (e.g., VALUE ERROR)
-        if ((*lplpSymEntrySrc)->stFlags.ObjName NE OBJNAME_SYS)
-        {
-            // Clear the STE flags & data
-            *(PUINT_PTR) &(*lplpSymEntrySrc)->stFlags &= *(PUINT_PTR) lpstFlagsMT;
-            (*lplpSymEntrySrc)->stData.stLongest = 0;
-        } // End IF
+		// Erase the Symbol Table Entry
+		EraseSTE (*lplpSymEntrySrc);
+
+        // Set the ptr to the previous entry to the STE on the stack
+        (*lplpSymEntrySrc)->stPrvEntry = &lpSymEntryNxt[-1];
 
         // Skip to next source entry
         lplpSymEntrySrc++;

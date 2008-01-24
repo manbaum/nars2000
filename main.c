@@ -62,6 +62,9 @@ BOOL fHelp = FALSE,                     // TRUE iff we displayed help
 
 HMODULE user32_module;
 
+int gLstTab = -1,                       // Index of the previous (outgoing) tab (-1 = none)
+    gCurTab = -1;                       // Index of the current (incoming) tab  (-1 = none)
+
 HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconSM_Large, hIconSM_Small,
 #ifdef DEBUG
@@ -877,48 +880,36 @@ LRESULT APIENTRY MFWndProc
                 } // End TTN_NEEDTEXT
 
                 case TCN_SELCHANGING:   // idTabCtl = (int) LOWORD(wParam);
-                                        // hwndTabCtl = (HWND) lParam;
-////////////////////// Save data from the current WS into global memory
-////////////////////SaveWsData (hGlbCurTab);
-////////////////////
+                                        // lpnmhdr = (LPNMHDR) lParam;
                     DestroyCaret ();    // 'cause we just lost the focus
 
                     // If the user clicked on the close button,
                     //   disallow this change so as to avoid
                     //   screen flicker
-                    return ClickOnClose ();
+                    if (ClickOnClose ())
+                        return TRUE;
+                    // Save the index of the outgoing tab
+                    gLstTab = TabCtrl_GetCurSel (hWndTC);
+
+                    return FALSE;
 
                 case TCN_SELCHANGE:     // idTabCtl = (int) LOWORD(wParam);
-                                        // hwndTabCtl = (HWND) lParam;
-                {
-////////////////////int iCurTab;
-
-                    // Get the window handle of the currently active MDI Client
-                    hWndMC = GetActiveMC (hWndTC);
+                                        // lpnmhdr = (LPNMHDR) lParam;
+                    // Save the index of the incoming tab
+                    gCurTab = TabCtrl_GetCurSel (hWndTC);
 
                     // Hide the child windows of the outgoing tab
-                    ShowHideChildWindows (hWndMC, FALSE);
-
-////////////////////// Get the index of the currently selected tab
-////////////////////iCurTab = TabCtrl_GetCurSel (hWndTC);
-////////////////////
-////////////////////// Get the per tab global memory handle
-////////////////////hGlbCurTab = GetPerTabHandle (iCurTab);
-////////////////////
-////////////////////// Restore data into the current WS from global memory
-////////////////////RestWsData (hGlbCurTab);
-
+                    if (gLstTab NE -1)
+                        ShowHideChildWindows (GetWndMC (gLstTab), FALSE);
                     // Show the child windows of the incoming tab
-                    ShowHideChildWindows (hWndMC, TRUE);
-
+                    if (gCurTab NE -1)
+                        ShowHideChildWindows (GetWndMC (gCurTab), TRUE);
                     return FALSE;       // We handled the msg
 
                 default:
                     break;
-                } // End TCN_SELCHANGE
             } // End SWITCH
 #undef  lpnmh
-
             break;                  // Continue with next handler
 
         case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // control identifier
@@ -1313,10 +1304,7 @@ HWND GetActiveMC
     (HWND hWndTC)           // Window handle of Tab Control
 
 {
-    int          iCurTab;
-    HGLOBAL      hGlbCurTab;
-    LPPERTABDATA lpMem;
-    HWND         hWndMC;
+    int iCurTab;            // Index of the current tab
 
     // If the Tab Control is not defined, quit
     if (hWndTC EQ NULL)
@@ -1329,24 +1317,50 @@ HWND GetActiveMC
     if (iCurTab EQ -1)
         return NULL;
 
+    return GetWndMC (iCurTab);
+} // End GetActiveMC
+
+
+//***************************************************************************
+//  $GetWndMC
+//
+//  Get the window handle of the MDI Client of a given tab
+//***************************************************************************
+
+HWND GetWndMC
+    (int iCurTab)           // Index of the tab of interest (-1 = none)
+
+{
+    HGLOBAL      hGlbPTD;
+    LPPERTABDATA lpMemPTD;
+    HWND         hWndMC;
+
+    // If the Tab Control is not defined, quit
+    if (hWndTC EQ NULL)
+        return NULL;
+
+    // If no tab selected (early in MFWndProc processing), quit
+    if (iCurTab EQ -1)
+        return NULL;
+
     // Get the per tab global memory handle
-    hGlbCurTab = GetPerTabHandle (iCurTab);
+    hGlbPTD = GetPerTabHandle (iCurTab);
 
     // Ensure it's a valid ptr
     if (!IsGlbPtr (hGlbCurTab))
         return NULL;
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbCurTab);
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get window handle of MDI Client
-    hWndMC = lpMem->hWndMC;
+    hWndMC = lpMemPTD->hWndMC;
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbCurTab); lpMem = NULL;
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return hWndMC;
-} // End GetActiveMC
+} // End GetWndMC
 
 
 //***************************************************************************

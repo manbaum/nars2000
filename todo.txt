@@ -12,7 +12,6 @@ TO DO:  General:  Important (pre-alpha)
 * ...       bracket indexed strand assignment  (B (A[L])){is}R
 * ...       bracket indexed modified strand assignment  (B (A[L]))Fcn{is}R
 * ...       )COPY
-* ...       )ERASE
 * ...       )LOAD
 * ...       )SAVE
 * ...       minimum set of system functions, to wit:
@@ -32,19 +31,16 @@ TO DO:  General:  Less Important (post-alpha)
 * Test implementation limits (stack, FP, Integer, etc.)
 * Test _MAXSIZE limits on VirtualAlloc
 * Check on freeing intermediate variables on error
-* Idiom recognition in the tokenizer
+* Idiom recognition in the tokenizer???
 * Test ± infinity code
 * Get permission to redistribute APL385 Unicode or SimPL font
-* Reference count on symbol table entries??
-* Strings in the symbol table??
+* Reference count on symbol table entries???
+* Strings in the symbol table???
 * Implement user/session options dialog
 * Implement Redo (Ctrl-Y)
 * Allow SI Damage to be more forgiving
 * Allow [first][-][last] as arg to )LIB/VARS/FNS/OPS/NMS
 * Check for overflow on integer multiplication
-* Make numeric formatting (through down tack jot) sensitive
-  to the local conventions for decimal point, 1000s separator,
-  overflow indicator, and negative sign
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
@@ -83,7 +79,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       L []TRACE R
 * ...         []VI R
 * ...         []VR R
-* ...       extend associativity to derived functions such as {jot}{dot}+ ??
+* ...       extend associativity to derived functions such as {jot}{dot}+ ???
 * ...       component file system
 * ...       dyadic down tack jot        (format by example)
 * ...       dyadic left shoe            (partitioned enclose)
@@ -129,6 +125,7 @@ DONE:  General
 * ...       )CLOSE
 * ...       )DROP
 * ...       )EDIT
+* ...       )ERASE
 * ...       )EXIT
 * ...       )FNS
 * ...       )LIB
@@ -206,6 +203,9 @@ DONE:  General
 * Control chars ([]TCBEL, []TCBS, []TCDEL, []TCESC, []TCFF, []TCHT, []TCLF, []TCNL, and []TCNUL)
   display correctly in simple and nested output.
 * Validate indexed assignment to system variables
+* Make numeric formatting (through down tack jot) sensitive
+  to the local conventions for decimal point, 1000s separator,
+  overflow indicator, and negative sign
 
 
 DONE:  Session Manager
@@ -278,9 +278,9 @@ QUESTIONS
 File Extensions
 ---------------
 
-All files will end in the extension ".nars".  There will be a secondary
-extension to the left of the global extension such as .ws.nars for workspaces,
-(e.g. porsche.ws.nars).
+All files specific to NARS will end in the extension ".nars".  There will be a
+secondary extension to the left of the global extension such as .ws.nars for
+workspaces, (e.g. porsche.ws.nars).
 
 Workspaces              .ws.nars
 File Systems            .file.nars
@@ -306,16 +306,8 @@ Anomalous Results
 
 MISSING On Laptop
 -----------------
-
 * Qualitas.h (SVN)
 * Fix Filezilla access to BOB
-* DEPSCAN.exe (SVN)
-* VDIR.exe (SVN)
-* Look at Zview for APL to see what controls they use
-* M: MSVC152
-* N: MSVC4
-* $(HCDIR)HCRTF
-* Axialis
 * VCCORE
 * MSDN
 *
@@ -330,5 +322,4 @@ ToDo
 * Review IBM APL2 Deviations & Restrictions
 * Optimize CopyArray_EM by copying the top level only
 *
-
 

@@ -534,9 +534,12 @@ BOOL SymTabResize_EM
 
     Assert (lpSymTabNew EQ lpMemPTD->lpSymTab);
 
-    // Initialize the lpHshEntry values
+    // Initialize the stHshEntry & stPrvEntry values
     for (i = lpMemPTD->iSymTabTotalSize; i < iSymTabNewSize; i++)
+    {
         lpMemPTD->lpSymTab[i].stHshEntry = LPHSHENTRY_NONE;
+        lpMemPTD->lpSymTab[i].stPrvEntry = NULL;
+    } // End FOR
 
     // Set new symbol table size
     lpMemPTD->iSymTabTotalSize = iSymTabNewSize;

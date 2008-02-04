@@ -80,7 +80,8 @@ typedef struct tagHTFLAGS
 {
     UINT Inuse:1,           // 00000001:  Inuse entry
          PrinHash:1,        // 00000002:  Entry with principal hash
-         CharIsValid:1,     // 00000004:  htChar is valid (and hGlbname is a ptr to the name)
+         CharIsValid:1,     // 00000004:  htChar is valid (and htGlbname is the
+                            //            name's global memory handle)
 #ifdef DEBUG
          Temp:1,            // 00000008:  Temporary flag used for debugging
          Avail:11,          // 0000FFF0:  Available bits
@@ -206,7 +207,7 @@ typedef enum tagNAME_CLASS
     NAMECLASS_SYSLBL,       //  7 = System label
     NAMECLASS_LENp1,        //  8 = # valid entries + 1 (1-7)
 } NAME_CLASS;
-// Note that )NMS in <syscmds.c> assumes that the Name Class
+// Note that )NMS in <sc_fnov.c> assumes that the Name Class
 //   is a single digit.  If you add enough classes to invalidate
 //   that assumptioon, be sure make )NMS work, too.
 
@@ -235,7 +236,7 @@ typedef struct tagSTFLAGS
 
 // N.B.:  Whenever changing the above struct (STFLAGS),
 //   be sure to make a corresponding change to
-//   <astFlagNames> in <display.c>.
+//   <astFlagNames> in <dispdbg.c>.
 
 // .Inuse and .PrinHash are valid for all entries.
 // .Inuse   = 0 implies that all but .PrinHash are zero.
@@ -249,7 +250,7 @@ typedef struct tagSTFLAGS
 // .UsrDfn  is set for .UsrType when the function is user-defined.
 // .FcnDir  may be set for any function/operator in .SysType or .UsrType; it is a
 //          direct pointer to the code.
-// hGlbName in SYMENTRY is set for .UsrType and .SysType when .Imm and .FcnDir are clear.
+// htGlbName in HSHENTRY is set for .UsrType and .SysType when .Imm and .FcnDir are clear.
 
 typedef union tagSYMTAB_DATA    // Immediate data or a handle to global data
 {
@@ -275,26 +276,6 @@ typedef struct tagSYMENTRY
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)
-
-/*
-
-Reference Counts -- HGLOBALs
-----------------------------
-
-In any HGLOBAL, the array reference count is used.
-
-An HGLOBAL is referenced (and its count incremented) when it is
-
-* assigned to any part of a variable or function
-
-An HGLOBAL is dereferenced (and its count decremented) when
-
-* the variable or function to which it is assigned is erased or reassigned
-
-When an array is dereferenced and the reference count goes to zero,
-the array may be freed.
-
- */
 
 //***************************************************************************
 //  End of File: symtab.h

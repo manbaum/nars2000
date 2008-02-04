@@ -909,8 +909,9 @@ LRESULT APIENTRY MFWndProc
                 default:
                     break;
             } // End SWITCH
-#undef  lpnmh
+
             break;                  // Continue with next handler
+#undef  lpnmh
 
         case WM_DRAWITEM:           // idCtl = (UINT) wParam;             // control identifier
                                     // lpdis = (LPDRAWITEMSTRUCT) lParam; // item-drawing information
@@ -926,14 +927,15 @@ LRESULT APIENTRY MFWndProc
             {
                 case ODA_DRAWENTIRE:
                     // Draw the tab
-                    DrawTab (hWndTC,
-                             lpdis->hDC,
+                    DrawTab (lpdis->hDC,
                              lpdis->itemID,
                             &lpdis->rcItem);
                     break;
 
-////////////////case ODA_FOCUS:     // These actions don't appear to occur with a tab ctrl
+////////////////case ODA_FOCUS:     // These actions don't appear to occur with
+////////////////                    //   an owner-drawn tab ctrl
 ////////////////case ODA_SELECT:    // ...
+////////////////    break;
             } // End SWITCH
 
             break;

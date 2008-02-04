@@ -3,14 +3,9 @@ TO DO:  General:  Important (pre-alpha)
 * Move registry info into <nars2000.ini> file
 * Fix display of chars in a saved ws (surround with quotes, etc.)
 * Handle multiple SI levels in a saved ws
-* Finish filling in <startaddr.h>
 * Implement these features:
 * ...       dyadic down tack jot        (format by specification)
 * ...       dyadic dot                  (inner product)
-* ...       bracket list indexing        A[L1;...;Ln][M]
-* ...       bracket list indexing        A[L1;...;Ln][M1;...;Mn]
-* ...       bracket indexed strand assignment  (B (A[L])){is}R
-* ...       bracket indexed modified strand assignment  (B (A[L]))Fcn{is}R
 * ...       )COPY
 * ...       )LOAD
 * ...       )SAVE
@@ -25,6 +20,7 @@ TO DO:  General:  Important (pre-alpha)
 TO DO:  General:  Less Important (post-alpha)
 ---------------------------------------------
 * Check for stack overflow (recursion depth in parser)
+* Finish filling in <startaddr.h>
 * Check for bison stack overflow
 * Allocate bison stack from virtual memory
 * Implement Garbage Collection???
@@ -93,6 +89,10 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       matrix editor       (requires someone to want it badly enough to code it)
 * ...       []INVERSE:          (requires power operator)
 * ...       []SINGLETON:        (requires definition of singleton reduction/scan for all functions)
+* ...       bracket indexed strand assignment  (B (A[L])){is}R
+* ...       bracket indexed modified strand assignment  (B (A[L]))Fcn{is}R
+* ...       bracket list indexing        A[L1;...;Ln][M]
+* ...       bracket list indexing        A[L1;...;Ln][M1;...;Mn]
 * ...
 
 

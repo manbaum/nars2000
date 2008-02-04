@@ -108,7 +108,8 @@ BOOL WINAPI CreateDebuggerInThread
         lpMemPTD->hWndDB =
         CreateMDIWindow (szDBClass,             // Class name
                          szDBTitle,             // Window title
-                         0,                     // Styles
+                         0
+                       | WS_CLIPCHILDREN,       // Styles
                          CW_USEDEFAULT,         // X-pos
                          CW_USEDEFAULT,         // Y-pos
                          CW_USEDEFAULT,         // Height
@@ -243,6 +244,7 @@ LRESULT APIENTRY DBWndProc
                         | WS_CHILD
                         | WS_VSCROLL
                         | WS_HSCROLL
+                        | WS_CLIPCHILDREN
                         | LBS_NOINTEGRALHEIGHT
                         | LBS_EXTENDEDSEL
                         | LBS_MULTIPLESEL

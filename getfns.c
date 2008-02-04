@@ -8,6 +8,7 @@
 #include "main.h"
 #include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -1139,6 +1140,250 @@ APLLONGEST GetGlbPtrs_LOCK
 
     return (APLLONGEST) 0;
 } // End GetGlbPtrs_LOCK
+
+
+//***************************************************************************
+//  $GetSteZero
+//
+//  Return the LPSYMENTRY corresponding to the constant zero
+//***************************************************************************
+
+LPSYMENTRY GetSteZero
+    (void)
+
+{
+    LPSYMENTRY    lpSym;        // Ptr to result
+    HGLOBAL       hGlbPTD;      // PerTabData global memory handle
+    LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
+
+    // Ensure we are where we think we are
+    Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+
+    // Get the PerTabData global handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the STE
+    lpSym = lpMemPTD->steZero;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpSym;
+} // End GetSteZero
+
+
+//***************************************************************************
+//  $GetSteOne
+//
+//  Return the LPSYMENTRY corresponding to the constant one
+//***************************************************************************
+
+LPSYMENTRY GetSteOne
+    (void)
+
+{
+    LPSYMENTRY    lpSym;        // Ptr to result
+    HGLOBAL       hGlbPTD;      // PerTabData global memory handle
+    LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
+
+    // Ensure we are where we think we are
+    Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+
+    // Get the PerTabData global handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the STE
+    lpSym = lpMemPTD->steOne;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpSym;
+} // End GetSteOne
+
+
+//***************************************************************************
+//  $GetSteBlank
+//
+//  Return the LPSYMENTRY corresponding to the constant blank
+//***************************************************************************
+
+LPSYMENTRY GetSteBlank
+    (void)
+
+{
+    LPSYMENTRY    lpSym;        // Ptr to result
+    HGLOBAL       hGlbPTD;      // PerTabData global memory handle
+    LPPERTABDATA  lpMemPTD;     // Ptr to PerTabData global memory handle
+
+    // Ensure we are where we think we are
+    Assert ('PL' EQ (UINT) TlsGetValue (dwTlsType));
+
+    // Get the PerTabData global handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the STE
+    lpSym = lpMemPTD->steBlank;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpSym;
+} // End GetSteBlank
+
+
+//***************************************************************************
+//  $GetQuadCT
+//
+//  Get the current value of []CT
+//***************************************************************************
+
+APLFLOAT GetQuadCT
+    (void)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLFLOAT     fQuadCT;       // []CT
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    fQuadCT = lpMemPTD->lpSymQuadCT->stData.stFloat;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return fQuadCT;
+} // End GetQuadCT
+
+
+//***************************************************************************
+//  $GetQuadIO
+//
+//  Get the current value of []IO
+//***************************************************************************
+
+APLBOOL GetQuadIO
+    (void)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLBOOL      bQuadIO;       // []IO
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    bQuadIO = lpMemPTD->lpSymQuadIO->stData.stBoolean;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bQuadIO;
+} // End GetQuadIO
+
+
+//***************************************************************************
+//  $GetQuadPP
+//
+//  Get the current value of []PP
+//***************************************************************************
+
+APLUINT GetQuadPP
+    (void)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLUINT      uQuadPP;       // []PP
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return uQuadPP;
+} // End GetQuadPP
+
+
+//***************************************************************************
+//  $GetQuadPW
+//
+//  Get the current value of []PW
+//***************************************************************************
+
+APLUINT GetQuadPW
+    (void)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLUINT      uQuadPW;       // []PW
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    uQuadPW = lpMemPTD->lpSymQuadPW->stData.stInteger;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return uQuadPW;
+} // End GetQuadPW
+
+
+//***************************************************************************
+//  $GetQuadRL
+//
+//  Get the current value of []RL
+//***************************************************************************
+
+APLUINT GetQuadRL
+    (void)
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    APLUINT      uQuadRL;       // []RL
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    uQuadRL = lpMemPTD->lpSymQuadRL->stData.stInteger;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return uQuadRL;
+} // End GetQuadRL
 
 
 //***************************************************************************

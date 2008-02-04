@@ -361,7 +361,8 @@ BOOL WINAPI CreateNewTabInThread
     lpMemPTD->hWndSM =
     CreateMDIWindow (szSMClass,             // Class name
                      szSMTitle,             // Window title
-                     0,                     // Styles
+                     0
+                   | WS_CLIPCHILDREN,       // Styles
                      CW_USEDEFAULT,         // X-pos
                      CW_USEDEFAULT,         // Y-pos
                      CW_USEDEFAULT,         // Height
@@ -510,7 +511,7 @@ LRESULT WINAPI LclTabCtrlWndProc
     HMENU          hMenu;
     UINT           uCloseState,
                    uOverTabState;
-    int            iTmpTab;
+    ////int            iTmpTab;
     HGLOBAL        hGlbPTD;         // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
 
@@ -518,6 +519,11 @@ LRESULT WINAPI LclTabCtrlWndProc
     // Split cases
     switch (message)
     {
+////    case WM_ERASEBKGND:
+////        // In order to reduce screen flicker, we handle erase background
+////        // in the WM_PAINT message for the individual tabs
+////        return TRUE;            // We erased the background
+#if 0
         case WM_MOUSEMOVE:          // fwKeys = wParam;        // Key flags
                                     // xPos = LOWORD(lParam);  // Horizontal position of cursor in CA
                                     // yPos = HIWORD(lParam);  // Vertical position of cursor  in CA
@@ -566,7 +572,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             InvalidateRect (hWnd, NULL, FALSE);
 
             break;
-
+#endif
         case WM_RBUTTONDOWN:                // fwKeys = wParam;        // Key flags
                                             // xPos = LOWORD(lParam);  // Horizontal position of cursor
                                             // yPos = HIWORD(lParam);  // Vertical position of cursor
@@ -988,20 +994,21 @@ void AdjustTabRect
 //***************************************************************************
 
 void DrawTab
-    (HWND     hWnd,
-     HDC      hDC,
-     int      iCurTab,
-     LPRECT   lpRect)
+    (HDC      hDC,                  // Handle to device context
+     int      iCurTab,              // Index of current tab
+     LPRECT   lpRect)               // Ptr to surrounding rectangle
 
 {
-    HGLOBAL      hGlbPTD;
-    LPPERTABDATA lpMemPTD;
-    int          crIndex;
-    COLORREF     crfg,
-                 crbk;
-    HDC          hDCMem;
-    HBITMAP      hBitmap,
-                 hBitmapOld;
+    HGLOBAL      hGlbPTD;           // Handle of PerTabData
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    int          crIndex;           // Index into crTab for this tab
+    COLORREF     crfg,              // Foreground color
+                 crbk;              // Background color
+#if 0
+    HDC          hDCMem;            // Handle to memory device context
+    HBITMAP      hBitmap,           // Handle to bitmap
+                 hBitmapOld;        // Handle to old bitmap
+#endif
 
     // Get the per tab global memory handle
     hGlbPTD = GetPerTabHandle (iCurTab);
@@ -1021,9 +1028,9 @@ void DrawTab
     else
         crfg = crTab[crIndex].fg;
 
-    hDC = MyGetDC (hWndTC);
     SetAttrs (hDC, hFontTC, crfg, crbk);
 
+#if 0
     // Create a compatible DC and bitmap
     hDCMem = CreateCompatibleDC (hDC);
     hBitmap = CreateCompatibleBitmap (hDC,
@@ -1031,6 +1038,9 @@ void DrawTab
                                       lpRect->bottom);
     hBitmapOld = SelectObject (hDCMem, hBitmap);
     SetAttrs (hDCMem, hFontTC, crfg, crbk);
+#endif
+
+#define hDCMem  hDC
 
     // Remove the border from the rectangle
     AdjustTabRect (lpRect, iCurTab);
@@ -1058,9 +1068,12 @@ void DrawTab
     lpRect->right += IMAGE_WIDTH;
 
     // If there's only one tab, don't draw the close button
-    if (TabCtrl_GetItemCount (hWnd) NE 1)
+    if (TabCtrl_GetItemCount (hWndTC) NE 1)
     {
         RECT rcImage;
+
+        // Copy the original rectangle
+        rcImage = *lpRect;
 
         // Get the image rectangle
         GetImageRect (&rcImage);
@@ -1082,6 +1095,7 @@ void DrawTab
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
+#if 0
     // Copy the memory DC to the screen DC
     BitBlt (hDC,
             lpRect->left,
@@ -1098,7 +1112,7 @@ void DrawTab
     // We no longer need these resources
     DeleteObject (hBitmap); hBitmap = NULL;
     DeleteDC (hDCMem); hDCMem = NULL;
-    MyReleaseDC (hWndTC, hDC); hDC = NULL;
+#endif
 } // End DrawTab
 
 

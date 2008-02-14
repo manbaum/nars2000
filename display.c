@@ -719,7 +719,7 @@ LPAPLCHAR FormatFloat
 {
     return FormatFloatFC (lpaplChar,        // Ptr to output save area
                           fFloat,           // The value to format
-                          uPrecision,       // Precision to use (0 = default)
+                          (uPrecision EQ 0) ? GetQuadPP () : uPrecision, // Precision to use
                           L'.',             // Char to use as decimal separator
                           UTF16_OVERBAR,    // Char to use as overbar
                           2);               // DTOA mode (Mode 2: max (ndigits, 1))
@@ -735,16 +735,12 @@ LPAPLCHAR FormatFloat
 LPAPLCHAR FormatFloatFC
     (LPWCHAR  lpaplChar,        // Ptr to output save area
      APLFLOAT fFloat,           // The value to format
-     APLUINT  uPrecision,       // Precision to use (0 = default)
+     APLUINT  uPrecision,       // Precision to use
      APLCHAR  aplCharDecimal,   // Char to use as decimal separator
      APLCHAR  aplCharOverbar,   // Char to use as overbar
      UINT     dtoaMode)         // DTOA mode
 
 {
-    if (uPrecision EQ 0)
-        // Get the current value of []PP
-        uPrecision = GetQuadPP ();
-
     if (!_finite (fFloat))
     {
         if (fFloat < 0)
@@ -791,6 +787,7 @@ LPAPLCHAR FormatFloatFC
         // Check for trailing zeros in integer only because
         //   of small uQuadPP.  Replace them with E-notation.
         if (lstrlenW (p) > uPrecision   // Too many digits vs. significant digits
+         && uPrecision NE 0             // Some significant digits
          && dp EQ NULL                  // No fractional part
          && ep EQ NULL)                 // Not already E-notation
         {

@@ -165,7 +165,8 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     APLUINT      ByteRes,           // # bytes in the result
                  uRes,              // Loop counter
                  uOutLft,           // Loop counter
-                 uOutRht;           // Loop counter
+                 uOutRht,           // Loop counter
+                 uDimCopy;          // # dimensions to copy
     APLINT       iInnMax;           // Loop counter
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
@@ -207,35 +208,37 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     aplInnrMax = max (aplColsLft, aplFrstRht);
 
     // Calc product of the remaining dimensions in left arg
-    aplRestLft = aplNELMLft / aplColsLft;
+    if (aplColsLft)
+        aplRestLft = aplNELMLft / aplColsLft;
+    else
+    for (aplRestLft = 1, uOutLft = 0; uOutLft < (aplRankLft - 1); uOutLft++)
+        aplRestLft *= (VarArrayBaseToDim (lpMemLft))[uOutLft];
 
-    // Calc product of the remaining dimensions in left arg
-    aplRestRht = aplNELMRht / aplFrstRht;
+    // Calc product of the remaining dimensions in right arg
+    if (aplFrstRht)
+        aplRestRht = aplNELMRht / aplFrstRht;
+    else
+    for (aplRestRht = 1, uOutRht = 1; uOutRht < aplRankRht; uOutRht++)
+        aplRestRht *= (VarArrayBaseToDim (lpMemRht))[uOutRht];
 
     // Calc result rank
     aplRankRes = max (aplRankLft, 1) + max (aplRankRht, 1) - 2;
 
-    // Check for empty result
-    if (aplNELMLft EQ 0
-     || aplNELMRht EQ 0)
-    {
-        // Calc result NELM & Type
-        aplNELMRes = 0;
-        aplTypeRes = ARRAY_BOOL;
-    } else
-    {
-        // Calc result NELM & Type
-        aplNELMRes = aplRestLft * aplRestRht;
-        if (aplNELMRes EQ 0)
-            aplTypeRes = ARRAY_BOOL;
-        else
-        if (aplTypeLft EQ ARRAY_FLOAT
-         || aplTypeRht EQ ARRAY_FLOAT)
-            aplTypeRes = ARRAY_FLOAT;
-        else
-            aplTypeRes = ARRAY_INT;
-    } // End IF/ELSE
+    // Calc result NELM
+    aplNELMRes = aplRestLft * aplRestRht;
 
+    // Check for empty result
+    if (aplNELMRes EQ 0)
+        // Calc result Type
+        aplTypeRes = ARRAY_BOOL;
+    else
+    // Calc result Type
+    if (aplTypeLft EQ ARRAY_FLOAT
+     || aplTypeRht EQ ARRAY_FLOAT)
+        aplTypeRes = ARRAY_FLOAT;
+    else
+        aplTypeRes = ARRAY_INT;
+RESTART_EXCEPTION:
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
@@ -276,29 +279,32 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     // Fill in the result's dimension
     //   by copying the left arg dimensions (except for the last)
     //   and then the right arg dimensions  (except for the first)
+
+    // If the left arg is an array, ...
     if (hGlbLft)
     {
-        CopyMemory (lpMemDimRes, lpMemDimLft, (UINT) (max (aplRankLft, 1) - 1) * sizeof (APLDIM));
+        // Calc # dimensions to copy
+        uDimCopy = max (aplRankLft, 1) - 1;
+
+        // Copy the dimensions
+        CopyMemory (lpMemDimRes, lpMemDimLft, (UINT) uDimCopy * sizeof (APLDIM));
 
         // Skip over the copied dimensions
-        lpMemDimRes += max (aplRankLft, 1) - 1;
+        lpMemDimRes += uDimCopy;
+    } // End IF
 
-        // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
-    } else
-        lpMemLft = &aplLongestLft;
-
+    // If the right arg is an array, ...
     if (hGlbRht)
     {
-        CopyMemory (lpMemDimRes, &lpMemDimRht[1], (UINT) (max (aplRankRht, 1) - 1) * sizeof (APLDIM));
+        // Calc # dimensions to copy
+        uDimCopy = max (aplRankRht, 1) - 1;
+
+        // Copy the dimensions
+        CopyMemory (lpMemDimRes, &lpMemDimRht[1], (UINT) uDimCopy * sizeof (APLDIM));
 
         // Skip over the copied dimensions
-        lpMemDimRes += max (aplRankRht, 1) - 1;
-
-        // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
-    } else
-        lpMemRht = &aplLongestRht;
+        lpMemDimRes += uDimCopy;
+    } // End IF
 
     // Check for empty result
     if (aplNELMRes EQ 0)
@@ -331,11 +337,11 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
         InnValInt = 1;
         InnValFlt = 1.0;
 
-        // Trundle through the inner dimensions
+        // Trundle through the inner dimensions, back to front
         for (iInnMax = aplInnrMax - 1; iInnMax >= 0; iInnMax--)
         {
-            APLUINT uInnLft,
-                    uInnRht;
+            APLUINT uInnLft,            // Index into left arg
+                    uInnRht;            // ...        right ...
 
             // Calc left inner index, taking into account scalar extension
             if (aplColsLft EQ 1)
@@ -354,8 +360,9 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
                 APLFLOAT aplFloatLft,
                          aplFloatRht;
 
-                // Get the next right arg value
+                // If the right arg is an array, ...
                 if (hGlbRht)
+                    // Get the next right arg value
                     GetNextValueGlb (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
 
                 // If the right arg is int, convert it to float
@@ -365,10 +372,11 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
                     aplFloatRht = *(LPAPLFLOAT) &aplLongestRht;
 
                 // Add into accumulator
-                aplFloatAcc += InnValFlt * ((LPAPLFLOAT) lpMemRht)[uInnRht];
+                aplFloatAcc += InnValFlt * aplFloatRht;
 
-                // Get the next left arg value
+                // If the left arg is an array, ...
                 if (hGlbLft)
+                    // Get the next left arg value
                     GetNextValueGlb (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
 
                 // If the left arg is int, convert it to float
@@ -385,17 +393,50 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
                 if (hGlbRht)
                     GetNextValueGlb (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
 
-                // Add into accumulator
-                // ***FIXME*** -- Check for integer overflow
-                aplIntAcc += InnValInt * aplLongestRht;
+                __try
+                {
+                    // Add into accumulator
+                    aplIntAcc = iadd64 (aplIntAcc, imul64 (InnValInt, aplLongestRht, NULL), NULL);
 
-                // Get the next left arg value
-                if (hGlbLft)
-                    GetNextValueGlb (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
+                    // Get the next left arg value
+                    if (hGlbLft)
+                        GetNextValueGlb (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
 
-                // Multiply into the weighting value
-                // ***FIXME*** -- Check for integer overflow
-                InnValInt *= aplLongestLft;
+                    // Multiply into the weighting value
+                    InnValInt = imul64 (InnValInt, aplLongestLft, NULL);
+                } __except (CheckException (GetExceptionInformation (), "PrimFnDydUpTack_EM_YY"))
+                {
+                    switch (MyGetExceptionCode ())
+                    {
+                        case EXCEPTION_RESULT_FLOAT:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                            if (aplTypeRes NE ARRAY_FLOAT)
+                            {
+                                aplTypeRes = ARRAY_FLOAT;
+#ifdef DEBUG
+                                dprintfW (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+#endif
+                                // We no longer need these ptrs
+                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+                                // We no longer need this storage
+                                FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+
+                                goto RESTART_EXCEPTION;
+                            } // End IF
+
+                            // Fall through to never-never-land
+
+                        default:
+                            // Display message for unhandled exception
+                            DisplayException ();
+#ifdef DEBUG
+                            DbgStop ();         // We should never get here
+#endif
+                            break;
+                    } // End SWITCH
+                } // End __try/__except
             } // End IF/ELSE
         } // End FOR
 

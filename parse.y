@@ -6077,7 +6077,7 @@ void pl_yyfprintf
      ...)                   // Zero or more arguments
 
 {
-#if (defined (DEBUG)) //&& FALSE      // or && TRUE
+#if (defined (DEBUG)) && FALSE      // or && TRUE
     va_list vl;
     int     i1,
             i2,

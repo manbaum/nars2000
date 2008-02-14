@@ -24,7 +24,7 @@ typedef struct tagWID_PRC
 {
     APLUINT uWid:31,                // Actual width (if Auto, then this field is initially 0)
             Auto:1;                 // TRUE iff this width is automatic
-    APLINT  uPrc;                   // Actual precision (0=none)
+    APLINT  iPrc;                   // Actual precision (0 = none, >0 = decimal notation, <0 = E-notation)
 } WIDPRC, *LPWIDPRC;
 
 
@@ -2780,7 +2780,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
                  hGlbRht = NULL,    // Right ...
                  hGlbRes = NULL,    // Result   ...
-                 hGlbWidPrc = NULL; // Left arg WIDPRC struct ...
+                 hGlbWidPrc = NULL, // Left arg WIDPRC struct ...
+                 hGlbItmRht = NULL; // Right arg item ...
     LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
                  lpMemRht = NULL;   // Ptr to right ...
     LPAPLCHAR    lpMemRes = NULL;   // Ptr to result   ...
@@ -2792,21 +2793,21 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                  lpaplCharIni;      // Ptr to initial format position
     APLINT       apaOffLft,         // Left arg APA offset
                  apaMulLft,         // ...          multiplier
-                 aplIntegerLft;     // Left arg temporary integer
+                 aplIntegerLft,     // Left arg temporary integer
+                 iPrc;              // Precision ...
     APLUINT      ByteRes,           // # bytes to allocate
                  uDim,              // Loop counter
                  uRht,              // Loop counter
                  uPar,              // Parity indicator
                  uTotWid,           // Total width for this col
                  uAccWid,           // Accumulated width for this col
-                 uWid,              // Width for this col
-                 uPrc;              // Precision ...
+                 uWid;              // Width for this col
+    IMM_TYPES    immTypeRht;        // Right arg element immediate type
     APLCHAR      aplCharDecimal,    // []FC[FCVAL_DECIMAL_SEP]
                  aplCharOverflow,   // []FC[FCVAL_OVERFLOW_FILL]
                  aplCharOverbar;    // []FC[FCVAL_OVERBAR]
     UINT         uBitMask,          // Bit mask for looping through Booleans
-                 uLen,              // Length of formatted number
-                 uExp;              // Size of exponent
+                 uLen;              // Length of formatted number
     BOOL         bRet = TRUE,       // TRUE iff result is valid
                  Auto;              // TRUE iff the col is automatic width
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
@@ -2829,10 +2830,12 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                               lptkFunc,     // Ptr to function token
                                               lptkRhtArg,   // Ptr to right arg token
                                               lptkAxis);    // Ptr to axis token (may be NULL)
+    // Continue with "format by specification"
+
     // Check for LEFT LENGTH ERROR
     if (aplNELMLft NE 1                     // Single number
-     && 0 NE (aplNELMLft % 2)               // Pairs of numbers
-     && ((aplNELMLft / 2) NE aplColsRht))   // One pair per right arg col
+     && (0 NE (aplNELMLft % 2)              // Pairs of numbers
+      || ((aplNELMLft / 2) NE aplColsRht))) // One pair per right arg col
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -2847,23 +2850,9 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
-    // Continue with "format by specification"
-
     // Get left and right arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-
-    // Allocate space for an integer copy of the left arg
-    hGlbWidPrc = DbgGlobalAlloc (GHND, (UINT) aplNELMLft * sizeof (APLINT));
-    if (!hGlbWidPrc)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
-
-    // Copy left arg to temp storage (all APLINTs),
-    //   and check the left arg for valid values
 
     // Allocate temp storage for the normalized left arg
     // N.B.: Conversion from APLUINT to UINT
@@ -2877,11 +2866,15 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         goto ERROR_EXIT;
     } // End IF
 
+    // Copy left arg to temp storage (as WIDPRCs),
+    //   and check the left arg for valid values
+
     // Lock the memory to get a ptr to it
     lpMemWidPrc = MyGlobalLock (hGlbWidPrc);
 
-    // Skip over the header to the data
-    lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
+    if (hGlbLft)
+        // Skip over the header to the data
+        lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
     // Handle singleton left arg
     if (aplNELMLft EQ 1)
@@ -2903,7 +2896,8 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             goto DOMAIN_EXIT;
 
         // Save as actual precision
-        lpMemWidPrc[0].uPrc = aplLongestLft;
+        lpMemWidPrc[0].iPrc = aplLongestLft;
+        lpMemWidPrc[0].Auto = TRUE;
     } else
     // Ensure that the first value in each pair is non-negative
     // Split cases based upon the left arg's storage type
@@ -2975,8 +2969,11 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             break;
     } // End SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    if (hGlbLft)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
 
     // Restore lpMemWidPrc to the start of the block
     MyGlobalUnlock (hGlbWidPrc); lpMemWidPrc = NULL;
@@ -2988,18 +2985,20 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
      && aplColsRht > 1)
     {
         // Get the corresponding attributes for this col
-        Auto = (BOOL) lpMemWidPrc[0].Auto;
         uWid = lpMemWidPrc[0].uWid;
-        uPrc = lpMemWidPrc[0].uPrc;
+        iPrc = lpMemWidPrc[0].iPrc;
 
         for (uRht = 1; uRht < aplColsRht; uRht++)
         {
             // Save in temporary left arg
-            lpMemWidPrc[uRht].Auto = Auto;
             lpMemWidPrc[uRht].uWid = uWid;
-            lpMemWidPrc[uRht].uPrc = uPrc;
+            lpMemWidPrc[uRht].iPrc = iPrc;
         } // End FOR
     } // End IF
+
+    // Set the Auto bit if the width is zero
+    for (uRht = 0; uRht < aplColsRht; uRht++)
+        lpMemWidPrc[uRht].Auto = (lpMemWidPrc[uRht].uWid EQ 0);
 
     if (lpMemRht)
         // Skip over the header to the dimensions
@@ -3071,7 +3070,6 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                 // Character scalars or vectors only
                                 if (aplRankSubRht > 1)
                                     goto DOMAIN_EXIT;
-
                                 break;
 
                             case ARRAY_HETERO:
@@ -3108,94 +3106,15 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     aplCharOverflow = GetQuadFCValue (FCVAL_OVERFLOW_FILL);
     aplCharOverbar =  GetQuadFCValue (FCVAL_OVERBAR);
 
-    DbgBrk ();          // ***FINISHME*** -- PrimFnDydDownTackJot_EM_YY ("format by specification")
-
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:
-            DbgBrk ();
-
-            break;
-
         case ARRAY_INT:
-            // Loop through the right arg col by col
-            //   formatting the values into lpwszFormat
-            //   and accumulating the widths
-            for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
-            {
-                // Get the corresponding attributes for this col
-                Auto = (BOOL) lpMemWidPrc[aplDimCol].Auto;
-                uWid = lpMemWidPrc[aplDimCol].uWid;
-                uPrc = lpMemWidPrc[aplDimCol].uPrc;
-
-                // Loop through all rows (and across planes)
-                for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
-                {
-                    // Save the initial position
-                    lpaplCharIni = lpaplChar;
-
-                    // Get the next value from the right arg
-                    if (lpMemRht NE NULL)
-                        aplLongestRht = ((LPAPLLONGEST) lpMemRht)[aplDimCol + aplDimRow * aplDimNCols];
-
-                    // Format the number
-                    lpaplChar =
-                      FormatAplintFC (lpaplChar,
-                                      aplLongestRht,
-                                      aplCharOverbar);
-                    // Zap the trailing blank
-                    lpaplChar[-1] = L'\0';
-
-                    // Fill with uPrc
-                    if (uPrc > 0)
-                    {
-                        // Append decimal separator followed by <uPrc> 0s
-                        lpaplChar[-1] = aplCharDecimal;
-                        FillMemoryW (lpaplChar, (UINT) uPrc, L'0');
-                        lpaplChar += uPrc;
-                        *lpaplChar++ = L'\0';
-                    } else
-                    if (uPrc < 0)
-                    {
-                        // Get the formatted length
-                        uLen = (lpaplChar - lpaplCharIni) - 1;
-
-                        // Calculate the exponent
-                        uExp = uLen - 1;
-
-                        DbgBrk ();
-
-
-
-
-
-                    } // End IF/ELSE
-
-                    // Get the formatted length
-                    uLen = (lpaplChar - lpaplCharIni) - 1;
-
-                    // Check for automatic width
-                    if (Auto)
-                        lpMemWidPrc[aplDimCol].uWid = max (uWid, uLen + 1);
-                    else
-                    // Check for width overflow
-                    if (uWid < uLen)
-                    {
-                        if (aplCharOverflow EQ L'0')
-                            goto DOMAIN_EXIT;
-
-                        FillMemoryW (lpaplCharIni, (UINT) uWid, aplCharOverflow);
-                        lpaplChar = lpaplCharIni + uWid;
-                        *lpaplChar++ = L'\0';
-                    } // End IF/ELSE/...
-                } // End FOR
-            } // End FOR
-
-            break;
-
+        case ARRAY_APA:
         case ARRAY_FLOAT:
-            DbgBrk ();
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
             // Loop through the right arg col by col
             //   formatting the values into lpwszFormat
             //   and accumulating the widths
@@ -3204,7 +3123,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                 // Get the corresponding attributes for this col
                 Auto = (BOOL) lpMemWidPrc[aplDimCol].Auto;
                 uWid = lpMemWidPrc[aplDimCol].uWid;
-                uPrc = lpMemWidPrc[aplDimCol].uPrc;
+                iPrc = lpMemWidPrc[aplDimCol].iPrc;
 
                 // Loop through all rows (and across planes)
                 for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -3213,51 +3132,133 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                     lpaplCharIni = lpaplChar;
 
                     // Get the next value from the right arg
-                    if (lpMemRht NE NULL)
-                        aplLongestRht = ((LPAPLLONGEST) lpMemRht)[aplDimCol + aplDimRow * aplDimNCols];
+                    if (lpMemRht)
+                        GetNextValueMem (lpMemRht,
+                                         aplTypeRht,
+                                         aplDimCol + aplDimRow * aplDimNCols,
+                                        &hGlbItmRht,
+                                        &aplLongestRht,
+                                        &immTypeRht);
+                    else
+                        immTypeRht = TranslateArrayTypeToImmType (aplTypeRht);
 
-                    // Format the number
-                    lpaplChar =
-                      FormatFloatFC (lpaplChar,
-                                    *(LPAPLFLOAT) &aplLongestRht,
-                                     uWid,
-                                     aplCharDecimal,
-                                     aplCharOverbar,
-                                     3);
-                    // Zap the trailing blank
-                    lpaplChar[-1] = L'\0';
-
-                    // Fill with uPrc
-                    if (uPrc > 0)
+                    // If the item is an HGLOBAL, ...
+                    if (hGlbItmRht)
                     {
-                        // Append decimal separator followed by <uPrc> 0s
-                        lpaplChar[-1] = aplCharDecimal;
-                        FillMemoryW (lpaplChar, (UINT) uPrc, L'0');
-                        lpaplChar += uPrc;
+                        LPAPLCHAR lpMemItmRht;
+                        APLNELM   aplNELMItmRht;
+                        APLRANK   aplRankItmRht;
+
+                        // The item must be a char vector
+
+                        // Lock the memory to get a ptr to it
+                        lpMemItmRht = MyGlobalLock (hGlbItmRht);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemItmRht)
+                        // Get the array parameters
+                        aplNELMItmRht = lpHeader->NELM;
+                        aplRankItmRht = lpHeader->Rank;
+#undef  lpHeader
+                        // Skip over the header to the data
+                        lpMemItmRht = VarArrayBaseToData (lpMemItmRht, aplRankItmRht);
+
+                        // Copy the data to the format area
+                        CopyMemory (lpaplChar, lpMemItmRht, (UINT) aplNELMItmRht * sizeof (APLCHAR));
+
+                        // Skip over the copied data
+                        lpaplChar += aplNELMItmRht;
+
+                        // Ensure it's properly terminated
                         *lpaplChar++ = L'\0';
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbItmRht); lpMemItmRht = NULL;
                     } else
-                    if (uPrc < 0)
+                    // Split cases based upon the immediate type
+                    switch (immTypeRht)
                     {
-                        // Get the formatted length
-                        uLen = (lpaplChar - lpaplCharIni) - 1;
+                        case IMMTYPE_BOOL:
+                        case IMMTYPE_INT:
+                            // Split cases based upon the sgn of iPrc
+                            if (iPrc >= 0)
+                            {
+                                // Format the number
+                                lpaplChar =
+                                  FormatAplintFC (lpaplChar,
+                                                  aplLongestRht,
+                                                  aplCharOverbar);
+                                // Zap the trailing blank
+                                lpaplChar[-1] = L'\0';
 
-                        // Calculate the exponent
-                        uExp = uLen - 1;
+                                if (iPrc)
+                                {
+                                    // Append decimal separator followed by iPrc 0s
+                                    lpaplChar[-1] = aplCharDecimal;
+                                    FillMemoryW (lpaplChar, (UINT) iPrc, L'0');
+                                    lpaplChar += iPrc;
+                                    *lpaplChar++ = L'\0';
+                                } // End IF
+                            } else
+                            if (iPrc < 0)
+                            {
+                                // ***FIXME*** -- We need a way to force the format to E-notation if iPrc < 0
 
-                        DbgBrk ();
+
+
+                                // Format the number
+                                lpaplChar =
+                                  FormatFloatFC (lpaplChar,
+                                                 (APLFLOAT) (APLINT) aplLongestRht,
+                                                 -iPrc,
+                                                 aplCharDecimal,
+                                                 aplCharOverbar,
+                                                 3);
+                            } // End IF/ELSE
+
+                            break;
+
+                        case IMMTYPE_FLOAT:
+                            // ***FIXME*** -- We need a way to force the format to E-notation if iPrc < 0
+
+
+
+                            // Format the number
+                            lpaplChar =
+                              FormatFloatFC (lpaplChar,
+                                            *(LPAPLFLOAT) &aplLongestRht,
+                                             abs64 (iPrc),
+                                             aplCharDecimal,
+                                             aplCharOverbar,
+                                             3);
+                            // If iPrc is positive, ensure there are at least that many
+                            //   digits to the right of the decimal point -- pad with zeros
+                            //   if not.
 
 
 
 
 
-                    } // End IF/ELSE
+                            // Zap the trailing blank
+                            lpaplChar[-1] = L'\0';
+
+                            break;
+
+                        case IMMTYPE_CHAR:
+                            *lpaplChar++ = (APLCHAR) aplLongestRht;
+                            *lpaplChar++ = L'\0';
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
 
                     // Get the formatted length
                     uLen = (lpaplChar - lpaplCharIni) - 1;
 
                     // Check for automatic width
                     if (Auto)
-                        lpMemWidPrc[aplDimCol].uWid = max (uWid, uLen + 1);
+                        lpMemWidPrc[aplDimCol].uWid = uWid = max (uWid, uLen);
                     else
                     // Check for width overflow
                     if (uWid < uLen)
@@ -3275,28 +3276,18 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             break;
 
         case ARRAY_CHAR:
-            DbgBrk ();
+            // Pass the right arg on as the result
+            hGlbRes = CopySymGlbDirAsGlb (hGlbRht);
 
-            break;
-
-        case ARRAY_APA:
-            DbgBrk ();
-
-            break;
-
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            DbgBrk ();
-
-            break;
+            goto YYALLOC_EXIT;
 
         defstop
             break;
     } // End SWITCH
 
-    // Calculate the total width
+    // Calculate the total width, including extra column for auto width
     for (uRht = uTotWid = 0; uRht < aplColsRht; uRht++)
-        uTotWid += lpMemWidPrc[uRht].uWid;
+        uTotWid += lpMemWidPrc[uRht].Auto + lpMemWidPrc[uRht].uWid;
 
     // Calculate the result NELM
     aplNELMRes = aplDimNRows * uTotWid;
@@ -3332,9 +3323,9 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     (LPVOID) lpMemRes = VarArrayBaseToDim (lpMemRes);
 
     // Fill in the dimensions
-    *((LPAPLDIM) lpMemRes)++ = uTotWid;
     if (aplRankRes EQ 2)
         *((LPAPLDIM) lpMemRes)++ = aplDimNRows;
+    *((LPAPLDIM) lpMemRes)++ = uTotWid;
 
     // Initialize the output save area ptr
     lpaplChar = lpwszFormat;
@@ -3345,12 +3336,12 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     FillMemoryW (lpMemRes, (UINT) aplNELMRes, L' ');
 
     // Loop through the formatted data and copy it to the result
-    for (aplDimCol = uAccWid = 0; aplDimCol < aplDimNCols; aplDimCol++, uAccWid += uWid)
+    for (aplDimCol = uAccWid = 0; aplDimCol < aplDimNCols; aplDimCol++, uAccWid += Auto + uWid)
     {
         // Get the corresponding attributes for this col
-////////Auto = (BOOL) lpMemWidPrc[aplDimCol].Auto;
+        Auto = (BOOL) lpMemWidPrc[aplDimCol].Auto;
         uWid = lpMemWidPrc[aplDimCol].uWid;
-////////uPrc = lpMemWidPrc[aplDimCol].uPrc;
+////////iPrc = lpMemWidPrc[aplDimCol].iPrc;
 
         // Loop through all rows (and across planes)
         for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -3358,16 +3349,19 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
             // Get the string length
             uLen = lstrlenW (lpaplChar);
 
+            // ***FIXME*** -- Align the decimal points
+            // ***FIXME*** -- If the col is entirely chars, left-justify the items
+
             // Copy the next formatted value to the result,
             //   right-justifying it in the process
-            CopyMemory (&lpMemRes[aplDimRow * uTotWid + uAccWid + (uWid - uLen)],
+            CopyMemory (&lpMemRes[aplDimRow * uTotWid + uAccWid + Auto + (uWid - uLen)],
                          lpaplChar,
                          uLen * sizeof (APLCHAR));
             // Skip over the formatted value and the trailing zero
             lpaplChar += uLen + 1;
         } // End FOR
     } // End FOR
-
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 

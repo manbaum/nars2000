@@ -312,9 +312,6 @@
           which also allows comments within a line</li>
         <li>Control structures on one line or split across multiple lines</li>
         <li>Idiom recognition at tokenization time</li>
-        <li>Beating and drag-along (a la P.S. Abrams
-          <a class="linkleft" href="http://www.slac.stanford.edu/pubs/slacreports/slac-r-114.html">"An APL Machine"</a>),
-          at least for Selective Assignment</li>
         <li>Workspaces saved as plain text ASCII files</li>
         <li>Syntax highlighting</li>
       </ul>
@@ -351,7 +348,7 @@
             <li>Monadic downshoe ({downshoe}) &mdash; unique (via an internal magic function)</li>
           </ul>
         </li>
-        <li>Dyadic
+        <li>Dyadic (<b>ALL DONE</b>)
           <ul>
             <li>All dyadic primitive scalar functions ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}{minus}{multiply}{divide}{circle}{circlestar}{star}{stile}{downstile}{upstile}{shreik})
               (with and without axis operator)</li>
@@ -383,7 +380,7 @@
             <li>Dyadic iota ({iota}) extended to rank &gt; 1 left arguments returns an array
               of vector indices to the left argument (via an internal magic function)</li>
             <li>Dyadic tilde ({tilde}) &mdash; without (via an internal magic function)</li>
-            <li class="TBD">Dyadic down tack jot (Format by Specification)</li>
+            <li>Dyadic down tack jot ({downtackjot}) &mdash; format by specification &mdash; needs work on spacing</li>
           </ul>
         </li>
       </ul>
@@ -406,10 +403,10 @@
                instead of <span class="APL">//3 4</span>)</li>
           </ul>
         </li>
-        <li>Dyadic
+        <li>Dyadic (<b>ALL DONE</b>)
           <ul>
             <li>Dyadic operator jot ({jot}) monadic and dyadic derived functions &mdash; composition</li>
-            <li class="TBD">Inner Product</li>
+            <li>Dyadic operator dot ({dot}) dyadic derived function &mdash; inner product</li>
           </ul>
         </li>
       </ul>
@@ -680,8 +677,8 @@
       user (via APL magic functions) as well as by developers.  This is
       your chance to add a valuable feature to NARS2000.</p>
 
-      <p>The source code is written in a combination of APL (as internal magic
-      functions) and C, so knowledge of just APL or both languages
+      <p>The source code is written in a combination of APL (as internal
+      magic functions) and C, so knowledge of either or both languages
       is all you need.</p>
 
       <p>Also, don't forget that documentation is an area in need of

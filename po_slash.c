@@ -526,10 +526,10 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                 if (lpYYRes)
                 {
                     // Copy the result to the right arg token
-                    tkRhtArg = *CopyToken_EM (&lpYYRes->tkToken, FALSE);
+                    tkRhtArg = lpYYRes->tkToken;
 
-                    // Free the YYRes
-                    FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+                    // Free the YYRes (but not the storage)
+                    YYFree (lpYYRes); lpYYRes = NULL;
                 } else
                     goto ERROR_EXIT;
             } // End FOR
@@ -1273,9 +1273,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                         if (lpYYRes)
                         {
                             // Copy the result to the right arg token
-                            tkRhtArg = *CopyToken_EM (&lpYYRes->tkToken, FALSE);
+                            tkRhtArg = lpYYRes->tkToken;
 
-                            // Free the YYRes
+                            // Free the YYRes (but not the storage)
                             YYFree (lpYYRes); lpYYRes = NULL;
                         } else
                             goto ERROR_EXIT;
@@ -1328,9 +1328,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                         if (lpYYRes)
                         {
                             // Copy the result to the right arg token
-                            tkRhtArg = *CopyToken_EM (&lpYYRes->tkToken, FALSE);
+                            tkRhtArg = lpYYRes->tkToken;
 
-                            // Free the YYRes
+                            // Free the YYRes (but not the storage)
                             YYFree (lpYYRes); lpYYRes = NULL;
                         } else
                             goto ERROR_EXIT;

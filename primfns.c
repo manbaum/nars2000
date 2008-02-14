@@ -1865,6 +1865,45 @@ APLINT abs64
 
 
 //***************************************************************************
+//  $iadd64
+//
+//  Add two 64-bit integers retaining maximum precision
+//***************************************************************************
+
+APLINT iadd64
+    (APLINT aplLft,
+     APLINT aplRht,
+     LPBOOL lpbRet)     // Is the result valid?? (may be NULL)
+
+{
+    APLINT aplRes;
+
+    _clear87 ();
+
+    _asm
+    {
+        fild    aplLft;
+        fild    aplRht;
+        faddp   st(1),st(0);
+        fistp   aplRes;
+    }
+
+    // Check for overflow including unexpected change of sign
+    if (_SW_INVALID & _status87 ()
+     || ((SIGN_APLINT (aplLft) EQ SIGN_APLINT (aplRht))         // Lft & Rht signs the same
+      && (SIGN_APLINT (aplRes) NE SIGN_APLINT (aplLft))))       // and result sign not
+    {
+        if (lpbRet)
+            *lpbRet = FALSE;
+        else
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    } // End IF
+
+    return aplRes;
+} // End iadd64
+
+
+//***************************************************************************
 //  $imul64
 //
 //  Multiply two 64-bit integers retaining maximum precision
@@ -1888,8 +1927,9 @@ APLINT imul64
         fistp   aplRes;
     }
 
-    // Check for overflow
-    if (_SW_INVALID & _status87 ())
+    // Check for overflow including unexpected change of sign
+    if (_SW_INVALID & _status87 ()
+     || (SIGN_APLINT (aplRes) EQ 0) NE (SIGN_APLINT (aplLft) EQ SIGN_APLINT (aplRht)))
     {
         if (lpbRet)
             *lpbRet = FALSE;

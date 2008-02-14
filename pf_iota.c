@@ -299,6 +299,8 @@ LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
 //
 //  Return an array of indices appropriate to an array of
 //    the same shape as the right arg.
+//
+//  I believe this algorithm was first created by Carl M. Cheney.
 //***************************************************************************
 
 static APLCHAR MonHeader[] =

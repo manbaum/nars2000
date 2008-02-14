@@ -254,6 +254,8 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
 
         case DR_DISPFLOAT:
             hGlbRes = SysFnDydDR_FloatToChar_EM (lptkRhtArg, lptkFunc);
+            if (hGlbRes EQ NULL)
+                return NULL;
 
             // Allocate a new YYRes
             lpYYRes = YYAlloc ();

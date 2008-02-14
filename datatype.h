@@ -29,7 +29,7 @@ typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMT
 
 #define SIGN_APLNELM(a) ((a) >> 63)     // Sign bit of an APLNELM
 #define SIGN_APLDIM(a)  ((a) >> 63)     // ...            APLDIM
-#define SIGN_APLINT(a)  ((a) >> 63)     // ...            APLINT
+#define SIGN_APLINT(a)  (((APLUINT) a) >> 63) // ...      APLINT
 
 // # integers in an APLCHAR
 #define APLCHAR_SIZE    (BIT0 << (NBIB * sizeof (APLCHAR)))

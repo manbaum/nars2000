@@ -428,8 +428,8 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
             // If this function is associative, speed it up
             if (lpPrimFlags
-             && (lpPrimFlags->AssocBool && aplTypeRht EQ ARRAY_BOOL
-              || lpPrimFlags->AssocNumb && IsSimpleNum (aplTypeRht)))
+             && ((lpPrimFlags->AssocBool && aplTypeRht EQ ARRAY_BOOL)
+              || (lpPrimFlags->AssocNumb && IsSimpleNum (aplTypeRht))))
             {
                 // Calculate the first index in this vector
                 uRht = uDimRht + 0 * uDimHi;
@@ -496,10 +496,12 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                     // If it succeeded, ...
                     if (lpYYRes)
                     {
-                        // Copy the result to the left arg token
-                        tkLftArg = *CopyToken_EM (&lpYYRes->tkToken, FALSE);
+                        DbgBrk ();
 
-                        // Free the YYRes
+                        // Copy the result to the left arg token
+                        tkLftArg = lpYYRes->tkToken;
+
+                        // Free the YYRes (but not the storage)
                         YYFree (lpYYRes); lpYYRes = NULL;
                     } else
                         goto ERROR_EXIT;
@@ -583,9 +585,9 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                     if (lpYYRes)
                     {
                         // Copy the result to the right arg token
-                        tkRhtArg = *CopyToken_EM (&lpYYRes->tkToken, FALSE);
+                        tkRhtArg = lpYYRes->tkToken;
 
-                        // Free the YYRes
+                        // Free the YYRes (but not the storage)
                         YYFree (lpYYRes); lpYYRes = NULL;
                     } else
                         goto ERROR_EXIT;

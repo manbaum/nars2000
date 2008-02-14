@@ -862,7 +862,8 @@ void GetNextValueGlb
     aplRankSub = lpHeader->Rank;
 #undef  lpHeader
 
-    Assert (uSub < aplNELMSub);
+    Assert ((uSub < aplNELMSub)
+         || ((uSub EQ 0) && (aplTypeSub EQ ARRAY_NESTED)));
 
     // Skip over the header and dimensions to the data
     lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);

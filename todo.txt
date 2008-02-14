@@ -4,8 +4,6 @@ TO DO:  General:  Important (pre-alpha)
 * Fix display of chars in a saved ws (surround with quotes, etc.)
 * Handle multiple SI levels in a saved ws
 * Implement these features:
-* ...       dyadic down tack jot        (format by specification)
-* ...       dyadic dot                  (inner product)
 * ...       )COPY
 * ...       )LOAD
 * ...       )SAVE
@@ -188,6 +186,8 @@ DONE:  General
 * ...       bracket indexed modified assignment  A[L]Fcn{is}R
 * ...       []FC
 * ...       []EX R
+* ...       dyadic down tack jot        (format by specification)
+* ...       dyadic dot                  (inner product)
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

@@ -2100,15 +2100,12 @@ LPTOKEN CopyToken_EM
      BOOL    bChanging) // TRUE iff we're going to change the HGLOBAL
 
 {
-    static TOKEN tkRes;     // ***FIXME*** -- dynamic rather than static
     LPSYMENTRY lpSymEntry;  // Ptr to SYMENTRY in the token
 
     DBGENTER;
 
     // We haven't defined an instance of TRUE as yet
     Assert (bChanging EQ FALSE);
-
-    tkRes = *lpToken;
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -2198,7 +2195,7 @@ LPTOKEN CopyToken_EM
 
     DBGLEAVE;
 
-    return &tkRes;
+    return lpToken;
 } // End CopyToken_EM
 #undef  APPEND_NAME
 

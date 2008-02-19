@@ -8,10 +8,8 @@ TO DO:  General:  Important (pre-alpha)
 * ...       )LOAD
 * ...       )SAVE
 * ...       minimum set of system functions, to wit:
-* ...          []EC R
 * ...        L []EA R
 * ...        L []TF R
-* ...
 
 
 TO DO:  General:  Less Important (post-alpha)
@@ -55,6 +53,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...         []CRLPC R
 * ...         []DEF R
 * ...         []DEFL R
+* ...         []EC R
 * ...         []ERASE R
 * ...         []FI R
 * ...       L []FMT R

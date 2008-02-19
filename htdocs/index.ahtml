@@ -527,12 +527,11 @@
           </ul>
         </li>
 
-        <li>Monadic
+        <li>Monadic (<b>ALL DONE</b>)
           <ul>
             <li><span class="APL">{quad}CR</span></li>
             <li><span class="APL">{quad}DL</span></li>
             <li><span class="APL">{quad}DR</span></li>
-            <li class="TBD"><span class="APL">{quad}EC</span></li>
             <li><span class="APL">{quad}ERROR</span></li>
             <li><span class="APL">{quad}ES</span></li>
             <li><span class="APL">{quad}EX</span></li>
@@ -609,13 +608,13 @@
       <h2 id="What_It_Isnt">What It Isn't</h2>
 
         <ul>
-          <li>Performance:  NARS2000 is not intended to be a high performance
+          <li><b>Performance:</b>  NARS2000 is not intended to be a high performance
             system, other than as a fallout of interesting algorithms.
             Any good or bad performance on your favorite benchmark is
             purely accidental.
           </li>
 
-          <li>Commercial Use:  NARS2000 is not intended to compete with
+          <li><b>Commercial Systems:</b>  NARS2000 is not intended to compete with
             commercial systems.
             As such it lacks the features one expects to find in a
             commercial system, such as a Windows interface, .NET interface, COM
@@ -637,11 +636,11 @@
         available in several forms:</p>
 
         <ul>
-          <li>Executable:
+          <li><b>Executable:</b>
             <a class="linkleft" href="http://www.nars2000.org/download/">Windows only</a>.
           </li>
 
-          <li>Source Code Under Version Control:
+          <li><b>Source Code Under Version Control:</b>
             <ul>
               <li>The source may be <a class="linkleft" href="http://svn.nars2000.org">viewed</a>,
                 as well as downloaded, one file at a time, from your browser.

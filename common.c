@@ -569,5 +569,24 @@ void nop
 
 
 //***************************************************************************
+//  $EnumCallbackRemoveProp
+//
+//  Callback function to remove all window properties
+//***************************************************************************
+
+BOOL CALLBACK EnumCallbackRemoveProp
+    (HWND   hWnd,           // Handle of window with property
+     LPCSTR lpszString,     // Property string or atom
+     HANDLE hData)          // Data handle
+{
+    // Remove the property
+    RemoveProp (hWnd, lpszString);
+
+    // Continue enumerating
+    return TRUE;
+} // End EnumCallbackRemoveProp
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

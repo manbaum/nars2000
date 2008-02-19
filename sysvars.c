@@ -26,6 +26,7 @@
 #define SysFnES_EM_YY       NULL
 #define SysFnET_EM_YY       NULL
 #define SysFnEX_EM_YY       NULL
+#define SysFnFX_EM_YY       NULL
 #define SysFnLC_EM_YY       NULL
 #define SysFnNC_EM_YY       NULL
 #define SysFnNL_EM_YY       NULL
@@ -113,7 +114,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"ex"       ,      1,      FALSE, SysFnEX_EM_YY     , 0          },  // Expunge Names
 ////{WS_UTF16_QUAD L"fi"       ,      1,      FALSE, SysFnFI_EM_YY     , 0          },  // Format Items
 ////{WS_UTF16_QUAD L"fmt"      ,      1,      FALSE, SysFnFMT_EM_YY    , 0          },  // Format
-////{WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM_YY     , 0          },  // Fix Function
+    {WS_UTF16_QUAD L"fx"       ,      1,      FALSE, SysFnFX_EM_YY     , 0          },  // Function Fix
 ////{WS_UTF16_QUAD L"idlist"   ,      1,      FALSE, SysFnIDLIST_EM_YY , 0          },  // Identifier List
 ////{WS_UTF16_QUAD L"idloc"    ,      1,      FALSE, SysFnIDLOC_EM_YY  , 0          },  // Identifier Localization
 ////{WS_UTF16_QUAD L"mf"       ,      1,      FALSE, SysFnMF_EM_YY     , 0          },  // Monitor Function

@@ -61,7 +61,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimOpDieresisDowntack_EM_YY                // ERROR            Convolution (*)
 /////// PrimOpDieresisJot_EM_YY                     // Rank (*)         Rank (*)
 /////// PrimOpDieresisStar_EM_YY                    // ERROR            Power (*)
-/////// PrimOpDot_EM_YY                             // Determinant (*)  Inner product (*)
+/////// PrimOpDot_EM_YY                             // Determinant (*)  Inner product
 
 // Primitive Functions DONE                            Monadic          Dyadic
 /////// PrimFnBar_EM_YY                             // Scalar           Scalar
@@ -82,7 +82,7 @@ extern PRIMSPEC PrimSpecUpStile;
 /////// PrimFnDownShoe_EM_YY                        // Mixed            ERROR
 /////// PrimFnDownStile_EM_YY                       // Scalar           Scalar
 /////// PrimFnDownTack_EM_YY                        // ERROR            Mixed
-/////// PrimFnDownTackJot_EM_YY                     // Mixed            Mixed (*)
+/////// PrimFnDownTackJot_EM_YY                     // Mixed            Mixed
 /////// PrimFnEpsilon_EM_YY                         // Mixed            Mixed
 /////// PrimFnEqual_EM_YY                           // ERROR            Scalar
 /////// PrimFnEqualUnderbar_EM_YY                   // Mixed            Mixed

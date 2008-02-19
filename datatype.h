@@ -118,6 +118,9 @@ typedef enum tagARRAY_TYPES
 // Define macro for detecting simple integer-like array type
 #define IsSimpleInt(a)      (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA)
 
+// Define macro for detecting simple character array type
+#define IsSimpleChar(a)     (a EQ ARRAY_CHAR)
+
 // Define macro for detecting simple character or heterogeneous array type
 #define IsSimpleCH(a)       (a EQ ARRAY_CHAR || a EQ ARRAY_HETERO)
 

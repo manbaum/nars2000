@@ -5,7 +5,7 @@
 NAME = NARS2000                 # Directory name
 ZIPNAME = NARS-SRC              # Zip file name
 ENAME = NARS2000                # Executable name
-PROJPATH = $(SRCROOT)$(NAME)\trunk\  # Project path
+PROJPATH = .\                   # Project path
 BIN = $(PROJPATH)binaries\      # Binaries directory
 DEBUG=0
 A=$(PROJPATH)Images\            # Images & artwork
@@ -236,6 +236,7 @@ $(O)qf_error.DEP        \
 $(O)qf_es.DEP           \
 $(O)qf_et.DEP           \
 $(O)qf_ex.DEP           \
+$(O)qf_fx.DEP           \
 $(O)qf_lc.DEP           \
 $(O)qf_nc.DEP           \
 $(O)qf_nl.DEP           \
@@ -249,6 +250,7 @@ $(O)qf_ucs.DEP          \
 $(O)refcnt.DEP          \
 $(O)reg.DEP             \
 $(O)resdebug.DEP        \
+$(O)savefcn.DEP         \
 $(O)sc_drop.DEP         \
 $(O)sc_erase.DEP        \
 $(O)sc_fnov.DEP         \
@@ -587,6 +589,9 @@ $(O)yyfns.DEP
 !if exist ($(O)qf_ex.DEP)
 !       include $(O)qf_ex.DEP
 !endif
+!if exist ($(O)qf_fx.DEP)
+!       include $(O)qf_fx.DEP
+!endif
 !if exist ($(O)qf_lc.DEP)
 !       include $(O)qf_lc.DEP
 !endif
@@ -625,6 +630,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)resdebug.DEP)
 !       include $(O)resdebug.DEP
+!endif
+!if exist ($(O)savefcn.DEP)
+!       include $(O)savefcn.DEP
 !endif
 !if exist ($(O)sc_drop.DEP)
 !       include $(O)sc_drop.DEP
@@ -799,6 +807,7 @@ $(O)qf_error.PRO        \
 $(O)qf_es.PRO           \
 $(O)qf_et.PRO           \
 $(O)qf_ex.PRO           \
+$(O)qf_fx.PRO           \
 $(O)qf_lc.PRO           \
 $(O)qf_nc.PRO           \
 $(O)qf_nl.PRO           \
@@ -812,6 +821,7 @@ $(O)qf_ucs.PRO          \
 $(O)refcnt.PRO          \
 $(O)reg.PRO             \
 $(O)resdebug.PRO        \
+$(O)savefcn.PRO         \
 $(O)sc_drop.PRO         \
 $(O)sc_erase.PRO        \
 $(O)sc_fnov.PRO         \
@@ -973,6 +983,7 @@ $(O)qf_error.OBJ:       $(@B).C         $(QF_ERROR_DEP)
 $(O)qf_es.OBJ:          $(@B).C         $(QF_ES_DEP)
 $(O)qf_et.OBJ:          $(@B).C         $(QF_ET_DEP)
 $(O)qf_ex.OBJ:          $(@B).C         $(QF_EX_DEP)
+$(O)qf_fx.OBJ:          $(@B).C         $(QF_FX_DEP)
 $(O)qf_lc.OBJ:          $(@B).C         $(QF_LC_DEP)
 $(O)qf_nc.OBJ:          $(@B).C         $(QF_NC_DEP)
 $(O)qf_nl.OBJ:          $(@B).C         $(QF_NL_DEP)
@@ -988,6 +999,7 @@ $(O)reg.OBJ:            $(@B).C         $(REG_DEP)
 !if "$(RESDEBUG)" == "1"
 $(O)resdebug.OBJ:       $(@B).C         $(RESDEBUG_DEP)
 !endif
+$(O)savefcn.OBJ:        $(@B).C         $(SAVEFCN_DEP)
 $(O)sc_drop.OBJ:        $(@B).C         $(SC_DROP_DEP)
 $(O)sc_erase.OBJ:       $(@B).C         $(SC_ERASE_DEP)
 $(O)sc_fnov.OBJ:        $(@B).C         $(SC_FNOV_DEP)
@@ -1126,6 +1138,7 @@ OBJS=                       \
      $(O)qf_es.OBJ          \
      $(O)qf_et.OBJ          \
      $(O)qf_ex.OBJ          \
+     $(O)qf_fx.OBJ          \
      $(O)qf_lc.OBJ          \
      $(O)qf_nc.OBJ          \
      $(O)qf_nl.OBJ          \
@@ -1141,6 +1154,7 @@ OBJS=                       \
 !if "$(RESDEBUG)" == "1"
      $(O)resdebug.OBJ       \
 !endif
+     $(O)savefcn.OBJ        \
      $(O)sc_drop.OBJ        \
      $(O)sc_erase.OBJ       \
      $(O)sc_fnov.OBJ        \

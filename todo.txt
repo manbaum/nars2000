@@ -9,7 +9,6 @@ TO DO:  General:  Important (pre-alpha)
 * ...       )SAVE
 * ...       minimum set of system functions, to wit:
 * ...          []EC R
-* ...          []FX R
 * ...        L []EA R
 * ...        L []TF R
 * ...
@@ -34,7 +33,7 @@ TO DO:  General:  Less Important (post-alpha)
 * Implement Redo (Ctrl-Y)
 * Allow SI Damage to be more forgiving
 * Allow [first][-][last] as arg to )LIB/VARS/FNS/OPS/NMS
-* Check for overflow on integer multiplication
+* Check for overflow on integer addition/multiplication
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
@@ -188,6 +187,7 @@ DONE:  General
 * ...       []EX R
 * ...       dyadic down tack jot        (format by specification)
 * ...       dyadic dot                  (inner product)
+* ...       []FX R
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

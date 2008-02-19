@@ -302,7 +302,7 @@ BOOL CmdSave_EM
 
                     // Ensure we format with full precision in case it's floating point
                     uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
-                    if (stFlags.ImmType EQ IMMTYPE_FLOAT)
+                    if (IsImmFlt (stFlags.ImmType))
                         lpMemPTD->lpSymQuadPP->stData.stInteger = DEF_MAX_QUADPP;
 
                     // Format the value
@@ -925,7 +925,7 @@ LPAPLCHAR TransferFormGlb
 
                     // Ensure we format with full precision in case it's floating point
                     uQuadPP = lpMemPTD->lpSymQuadPP->stData.stInteger;
-                    if (lpSymEntry->stFlags.ImmType EQ IMMTYPE_FLOAT)
+                    if (IsImmFlt (lpSymEntry->stFlags.ImmType))
                         lpMemPTD->lpSymQuadPP->stData.stInteger = DEF_MAX_QUADPP;
 
                     // ***FIXME*** -- Handle non-printable chars (e.g. []TCxxx)

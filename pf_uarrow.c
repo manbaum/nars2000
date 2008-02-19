@@ -425,7 +425,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // If the result is simple char, and
     //   the common NELM is less than the result NELM
     //   fill the result with the prototype of the right arg
-    if (aplTypeRes EQ ARRAY_CHAR
+    if (IsSimpleChar (aplTypeRes)
      && aplNELMCom < aplNELMRes)
     for (uRes = 0; uRes < aplNELMRes; uRes++)
         ((LPAPLCHAR) lpMemRes)[uRes] = L' ';

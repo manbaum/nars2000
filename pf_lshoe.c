@@ -1160,7 +1160,7 @@ BOOL PrimFnMonLeftShoeProto_EM
 
         // Fill in the values if character
         Assert (aplNELMSub EQ (UINT) aplNELMSub);
-        if (aplType EQ ARRAY_CHAR)
+        if (IsSimpleChar (aplType))
             FillMemoryW (lpMemProto, (UINT) aplNELMSub, L' ');
         // We no longer need this ptr
         MyGlobalUnlock (*lphGlbProto); lpMemProto = NULL;

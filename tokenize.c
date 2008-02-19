@@ -835,6 +835,7 @@ BOOL NumAlpAccum_EM
     if (bRet)
         lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen++] = (char) wch;
     else
+        // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
     // We no longer need this ptr
@@ -1004,6 +1005,7 @@ BOOL fnFPAccum
     if (bRet)
         lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen++] = (char) *lptkLocalVars->lpwsz;
     else
+        // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
     // We no longer need this ptr
@@ -1051,6 +1053,7 @@ BOOL fnNegInit
     if (bRet)
         lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen++] = '-';
     else
+        // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
     // We no longer need this ptr
@@ -1098,6 +1101,7 @@ BOOL fnNegExp
     if (bRet)
         lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen++] = L'-';
     else
+        // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
     // We no longer need this ptr
@@ -1199,6 +1203,7 @@ BOOL fnAlpha
         // Save the char
         lpMemPTD->lpwszString[lpMemPTD->iStringLen++] = *lptkLocalVars->lpwsz;
     else
+        // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
     // We no longer need this ptr
@@ -1715,11 +1720,8 @@ BOOL fnComDone
 
 {
     int     iLen, iLen2;
-////HGLOBAL hGlb;
-////APLINT  aplInteger;
     TKFLAGS tkFlags = {0};
     LPWCHAR lpwch;
-////APLUINT ByteRes;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnComDone");
@@ -1739,60 +1741,15 @@ BOOL fnComDone
     //   increment it, too
     lptkLocalVars->uChar += iLen - 1;
 
-////     // Calculate space needed for the result ("+1" for the terminating zero)
-////     ByteRes = CalcArraySize (ARRAY_CHAR, iLen + 1, 1);
-////
-////     // Allocate global memory for the comment
-////     hGlb = DbgGlobalAlloc (GHND, (UINT) ByteRes);
-////     if (!hGlb)
-////     {
-////         ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
-////
-////         return FALSE;
-////     } else
-////     {
-////         LPWCHAR lpwsz;
-////         TKFLAGS tkFlags = {0};
-////
-////         // Lock the memory to get a ptr to it
-////         lpwsz = MyGlobalLock (hGlb);
-////
-////         // Fill in the result header
-//// #define lpHeader        ((LPVARARRAY_HEADER) lpwsz)
-////         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-////         lpHeader->ArrType    = ARRAY_CHAR;
-//// ////////lpHeader->Perm       = 0;
-//// ////////lpHeader->SysVar     = 0;
-////         lpHeader->RefCnt     = 1;
-////         lpHeader->NELM       = iLen + 1;
-////         lpHeader->Rank       = 1;
-//// #undef  lpHeader
-////
-////         // Fill in the dimension
-////         *VarArrayBaseToDim (lpwsz) = iLen + 1;
-////
-////         // Skip over the header and dimension to the data
-////         lpwsz = VarArrayBaseToData (lpwsz, 1);
-////
-////         // Copy the comment to the global memory
-////         lstrcpyW (lpwsz, lptkLocalVars->lpwsz);
-////
-////         // We no longer need this ptr
-////         MyGlobalUnlock (hGlb); lpwsz = NULL;
+    // Mark the data as a comment in a global memory handle
+    tkFlags.TknType = TKT_COMMENT;
 
-        // Mark the data as a comment in a global memory handle
-        tkFlags.TknType = TKT_COMMENT;
-
-////         // Copy to local var so we may pass its address
-////         (HGLOBAL) aplInteger = MakePtrTypeGlb (hGlb);
-
-        // Attempt to append as new token, check for TOKEN TABLE FULL,
-        //   and resize as necessary.
-        return AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                  NULL,
-                                  0);
-////     } // End IF
+    // Attempt to append as new token, check for TOKEN TABLE FULL,
+    //   and resize as necessary.
+    return AppendNewToken_EM (lptkLocalVars,
+                             &tkFlags,
+                              NULL,
+                              0);
 } // End fnComDone
 #undef  APPEND_NAME
 
@@ -1832,6 +1789,7 @@ BOOL fnQuoAccum
     if (bRet)
         lpMemPTD->lpwszString[lpMemPTD->iStringLen++] = *lptkLocalVars->lpwsz;
     else
+        // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
     // We no longer need this ptr
@@ -1932,6 +1890,7 @@ BOOL fnQuoDone
         hGlb = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlb)
         {
+            // Save the error message
             ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
 
             bRet = FALSE;
@@ -2101,6 +2060,33 @@ BOOL fnBrkDone
 
 
 //***************************************************************************
+//  $SaveErrorPosition
+//
+//  Save the error caret position
+//***************************************************************************
+
+void SaveErrorPosition
+    (UINT uChar)            // Error caret position
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Save the caret position
+    lpMemPTD->uCaret = uChar;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End SaveErrorPosition
+
+
+//***************************************************************************
 //  $GroupDoneCom
 //
 //  Group (Right paren/bracket) common ending
@@ -2129,6 +2115,10 @@ BOOL GroupDoneCom
     if (uPrevGroup EQ NO_PREVIOUS_GROUPING_SYMBOL
      || lptkLocalVars->lpStart[uPrevGroup].tkFlags.TknType NE (UINT) uTypePrev)
     {
+        // Save the error caret position
+        SaveErrorPosition (lptkLocalVars->uChar);
+
+        // Save the error message
         ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 
         bRet = FALSE;
@@ -2296,6 +2286,9 @@ HGLOBAL Tokenize_EM
     {
         // Use a FSA to tokenize the line
 
+        // Save current index (may be modified by an action)
+        tkLocalVars.uChar = uChar;
+
         /* The FSA works as follows:
 
            1.  Get the next WCHAR from the input;
@@ -2358,9 +2351,6 @@ HGLOBAL Tokenize_EM
         // Save pointer to current wch
         tkLocalVars.lpwsz = &lpwszLine[uChar];
 
-        // Save current index (may be modified by an action)
-        tkLocalVars.uChar = uChar;
-
         // Check for primary action
         tkLocalVars.ActionNum = 1;
         if (fnAction1_EM
@@ -2377,11 +2367,16 @@ HGLOBAL Tokenize_EM
         switch (tkLocalVars.State)
         {
             case FSA_NONCE:
+                // Save the error message
                 ErrorMessageIndirect (ERRMSG_NONCE_ERROR APPEND_NAME);
 
                 goto ERROR_EXIT;
 
             case FSA_SYNTERR:
+                // Save the error caret position
+                SaveErrorPosition (tkLocalVars.uChar);
+
+                // Save the error message
                 ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 
                 goto ERROR_EXIT;
@@ -2521,6 +2516,10 @@ BOOL CheckGroupSymbols_EM
 {
     if (lptkLocalVars->t2.lpHeader->PrevGroup NE NO_PREVIOUS_GROUPING_SYMBOL)
     {
+        // Save the error caret position
+        SaveErrorPosition (lptkLocalVars->uChar);
+
+        // Save the error message
         ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
 
         return FALSE;
@@ -2773,6 +2772,7 @@ BOOL AppendNewToken_EM
         if (hGlbToken EQ NULL)
         {
             // We ran into TOKEN TABLE FULL and couldn't resize
+            // Save the error message
             ErrorMessageIndirect (ERRMSG_TOKEN_TABLE_FULL APPEND_NAME);
 
             return FALSE;

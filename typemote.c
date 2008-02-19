@@ -993,18 +993,9 @@ BOOL TypePromoteGlb_EM
             break;
 
         case ARRAY_HETERO:              // B/I/F/C/A -> H
-            Assert (aplTypeArg EQ ARRAY_BOOL
-                 || aplTypeArg EQ ARRAY_INT
-                 || aplTypeArg EQ ARRAY_FLOAT
-                 || aplTypeArg EQ ARRAY_CHAR
-                 || aplTypeArg EQ ARRAY_APA);
+            Assert (IsSimpleNH (aplTypeArg));
         case ARRAY_NESTED:              // B/I/F/C/A/H -> N
-            Assert (aplTypeArg EQ ARRAY_BOOL
-                 || aplTypeArg EQ ARRAY_INT
-                 || aplTypeArg EQ ARRAY_FLOAT
-                 || aplTypeArg EQ ARRAY_CHAR
-                 || aplTypeArg EQ ARRAY_APA
-                 || aplTypeArg EQ ARRAY_HETERO);
+            Assert (IsSimple   (aplTypeArg));
 
             // Split cases based upon the arg storage type
             switch (aplTypeArg)

@@ -152,6 +152,8 @@ typedef enum tagIMM_TYPES
 //   the ordering of the above enum
 #define IsImmInt(a)     ((a) < IMMTYPE_FLOAT)
 #define IsImmNum(a)     ((a) < IMMTYPE_CHAR)
+#define IsImmFlt(a)     ((a) EQ IMMTYPE_FLOAT)
+#define IsImmChr(a)     ((a) EQ IMMTYPE_CHAR)
 
 // Name types
 typedef enum tagNAME_TYPES

@@ -174,7 +174,7 @@ BOOL CreateNewTab
     HANDLE hThread;
 
     // Save args in struc to pass to thread func
-    cntThread.hWndParent = hWndTC;  //hWndParent;      // ***FIXME*** -- Should this be hWndTC??
+    cntThread.hWndParent = hWndParent;
     cntThread.lpszDPFE   = lpszDPFE;
     cntThread.iTab       = iTab;
 
@@ -247,16 +247,19 @@ BOOL WINAPI CreateNewTabInThread
     // Get the size and position of the parent window.
     GetClientRect (hWndParent, &rc);
 
-    if (hGlbCurTab)
+    if (gCurTab NE -1)
     {
+        // Get the per tab global memory handle
+        hGlbPTD = GetPerTabHandle (gCurTab);
+
         // Lock the memory to get a ptr to it
-        lpMemPTD = MyGlobalLock (hGlbCurTab);
+        lpMemPTD = MyGlobalLock (hGlbPTD);
 
         // Hide the child windows of the outgoing tab
         ShowHideChildWindows (lpMemPTD->hWndMC, FALSE);
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbCurTab); lpMemPTD = NULL;
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
 
     // Allocate per tab data
@@ -393,7 +396,6 @@ BOOL WINAPI CreateNewTabInThread
     lpMemPTD->hWndActive = lpMemPTD->hWndSM;
 
     // Save the handle
-    hGlbCurTab = hGlbPTD;
     SetWindowLong (lpMemPTD->hWndSM, GWLSF_PERTAB, (long) hGlbPTD);
 
     // Show the child windows of the incoming tab
@@ -551,24 +553,24 @@ LRESULT WINAPI LclTabCtrlWndProc
             } // End IF
 
             // If it's not the same tab, restore the state of the previous one
-            if (iTmpTab NE iOverTab)
+            if (iTmpTab NE gOverTab)
                 SendMessage (hWnd, WM_MOUSELEAVE, wParam, lParam);
 
-            iOverTab = iTmpTab;
+            gOverTab = iTmpTab;
 
             // Draw the tab with the text highlighted
-            SetTabText (iOverTab, TRUE);
+            SetTabText (gOverTab, TRUE);
             InvalidateRect (hWnd, NULL, FALSE);
 
             break;
 
         case WM_MOUSELEAVE:
             // If the tab index is invalid, ignore this message
-            if (iOverTab EQ -1)
+            if (gOverTab EQ -1)
                 break;
 
             // Draw the tab with the text normal
-            SetTabText (iOverTab, FALSE);
+            SetTabText (gOverTab, FALSE);
             InvalidateRect (hWnd, NULL, FALSE);
 
             break;
@@ -588,7 +590,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             tcHit.pt.y = HIWORD (lParam);
 
             // Ask the Tab Control if we're over a tab
-            iOverTab = TabCtrl_HitTest (hWnd, &tcHit);
+            gOverTab = TabCtrl_HitTest (hWnd, &tcHit);
 
             // Get the mouse position in screen coordinates
             GetCursorPos (&ptScr);
@@ -598,13 +600,13 @@ LRESULT WINAPI LclTabCtrlWndProc
 
             // If we're not over a tab, disallow any actions
             //   which require a valid tab indsex
-            uOverTabState = (iOverTab EQ -1)
+            uOverTabState = (gOverTab EQ -1)
                           ? MF_GRAYED
                           : MF_ENABLED;
 
             // If we're not over a tab or this is the last open tab,
             //   disallow closing the WS
-            uCloseState = (iOverTab EQ -1 || TabCtrl_GetItemCount (hWnd) EQ 1)
+            uCloseState = (gOverTab EQ -1 || TabCtrl_GetItemCount (hWnd) EQ 1)
                         ? MF_GRAYED
                         : MF_ENABLED;
 
@@ -648,21 +650,23 @@ LRESULT WINAPI LclTabCtrlWndProc
                                             // yPos = HIWORD(lParam);  // vertical position of cursor
             // If the user clicked on the icon, close the tab
             if (ClickOnClose ())
-                CloseTab (iOverTab);
+                CloseTab (gOverTab);
             break;
 
         case TCM_DELETEITEM:                    // itemID = (int) wParam;
                                                 // 0 = lParam;
         {
             int  iNewTab;
-            HWND hWndClose;
+            HWND hWndMC,
+                 hWndEC,
+                 hWndSM;
 
 #define iTab    ((int) wParam)
 
-            // If iOverTab is this tab or to the right ot it,
-            //    decrement iOverTab.
-            if (iOverTab >= iTab)
-                iOverTab--;
+            // If gOverTab is this tab or to the right of it,
+            //    decrement gOverTab.
+            if (gOverTab >= iTab)
+                gOverTab--;
 
             // If the current tab is the one being deleted,
             //   the index of the new tab is one to the right
@@ -709,28 +713,41 @@ LRESULT WINAPI LclTabCtrlWndProc
 
 #undef  APPEND_NAME
 
-            hWndClose = lpMemPTD->hWndMC;
+            hWndMC = lpMemPTD->hWndMC;
+
+            // Get the Edit Ctrl window handle
+            hWndEC = (HWND) GetWindowLong (lpMemPTD->hWndSM, GWLSF_HWNDEC);
+
+            // Unhook the LclEditCtrlWndProc
+            SetWindowLongW (hWndEC,
+                            GWL_WNDPROC,
+                            (long) lpMemPTD->lpfnOldEditCtrlWndProc);
+            // Get the SM window handle
+            hWndSM = lpMemPTD->hWndSM;
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            // We no longer need this storage
-            MyGlobalFree (hGlbPTD); hGlbPTD = NULL;
+            // Destroy the SM window
+            SendMessage (hWndMC, WM_MDIDESTROY, (WPARAM) hWndSM, 0);
+
+            // The storage for hGlbPTD is freed in
+            //   SMWndProc's WM_DESTROY message handler
 
             // In order to reduce screen flicker, we
             //   postpone removing the tab until the new
             //   tab has been displayed.
 
             // Close the matching MDI client window
-            DestroyWindow (hWndClose);
+            DestroyWindow (hWndMC);
 
             DestroyCaret ();    // 'cause we just lost the focus
 
             // Get the per tab global memory handle
-            hGlbCurTab = GetPerTabHandle (iNewTab);
+            hGlbPTD = GetPerTabHandle (iNewTab);
 
             // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbCurTab);
+            lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Show the child windows of the incoming tab
             ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
@@ -738,9 +755,12 @@ LRESULT WINAPI LclTabCtrlWndProc
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
+            // Save as new tab index
+            gCurTab = TabCtrl_GetCurSel (hWndTC);
+
             break;
 #undef  iTab
-        } // End TCM_DELETETEM
+        } // End TCM_DELETEITEM
     } // End SWITCH
 
     return CallWindowProcW (lpfnOldTabCtrlWndProc,
@@ -771,10 +791,10 @@ BOOL ClickOnClose
     ScreenToClient (hWndTC, &tcHit.pt);
 
     // Ask the Tab Control if we're over a tab
-    iOverTab = TabCtrl_HitTest (hWndTC, &tcHit);
+    gOverTab = TabCtrl_HitTest (hWndTC, &tcHit);
 
     // If we're not over a tab, quit
-    if (iOverTab EQ -1)
+    if (gOverTab EQ -1)
         return FALSE;
 
     // If there's only one tab, don't check the close button
@@ -782,10 +802,10 @@ BOOL ClickOnClose
         return FALSE;
 
     // Get the item's bounding rectangle
-    TabCtrl_GetItemRect (hWndTC, iOverTab, &rcTab);
+    TabCtrl_GetItemRect (hWndTC, gOverTab, &rcTab);
 
     // Remove the border from the rectangle
-    AdjustTabRect (&rcTab, iOverTab);
+    AdjustTabRect (&rcTab, gOverTab);
 
     // Transform the bounding rectangle into an image rectangle
     GetImageRect (&rcTab);
@@ -805,14 +825,6 @@ BOOL CloseTab
     (int iTab)
 
 {
-    // Close any and all thread handles associated with the SM
-    DbgBrk ();      // ***FINISHME*** -- CloseTab
-
-
-
-
-
-
     // Close the tab
     return (TabCtrl_DeleteItem (hWndTC, iTab) NE -1);
 } // End CloseTab
@@ -926,7 +938,7 @@ int GetNextTabColorIndex
 //***************************************************************************
 
 int GetTabColorIndex
-    (int iOverTab)
+    (int iTab)
 
 {
     HGLOBAL      hGlbPTD;
@@ -934,7 +946,7 @@ int GetTabColorIndex
     int          crIndex;
 
     // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (iOverTab);
+    hGlbPTD = GetPerTabHandle (iTab);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);

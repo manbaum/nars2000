@@ -214,7 +214,7 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
     switch (lpYYRes->tkToken.tkFlags.TknType)
     {
         case TKT_VARIMMED:
-            if (lpYYRes->tkToken.tkFlags.ImmType EQ IMMTYPE_CHAR)
+            if (IsImmChr (lpYYRes->tkToken.tkFlags.ImmType))
                 lpYYRes->tkToken.tkData.tkChar = L' ';
             else
             {
@@ -2899,8 +2899,8 @@ RESTART_EXCEPTION:
 
                 // If both arguments are CHAR,
                 //   use BisCvC
-                if (aplTypeLft EQ ARRAY_CHAR
-                 && aplTypeRht EQ ARRAY_CHAR)
+                if (IsSimpleChar (aplTypeLft)
+                 && IsSimpleChar (aplTypeRht))
                 {
                     // Loop through the result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -2919,8 +2919,8 @@ RESTART_EXCEPTION:
                 } else
                 // If the other argument is simple numeric,
                 //   use bCvN
-                if ((IsSimpleNum (aplTypeLft) && aplTypeRht EQ ARRAY_CHAR)
-                 || (IsSimpleNum (aplTypeRht) && aplTypeLft EQ ARRAY_CHAR))
+                if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))
+                 || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))
                 {
                     // Loop through the result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3644,8 +3644,8 @@ RESTART_EXCEPTION:
 
                 // If both arguments are CHAR,
                 //   use BisCvC
-                if (aplTypeLft EQ ARRAY_CHAR
-                 && aplTypeRht EQ ARRAY_CHAR)
+                if (IsSimpleChar (aplTypeLft)
+                 && IsSimpleChar (aplTypeRht))
                 {
                     // Loop through the result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -3664,8 +3664,8 @@ RESTART_EXCEPTION:
                 } else
                 // If the other argument is simple numeric,
                 //   use BisCvN
-                if ((IsSimpleNum (aplTypeLft) && aplTypeRht EQ ARRAY_CHAR)
-                 || (IsSimpleNum (aplTypeRht) && aplTypeLft EQ ARRAY_CHAR))
+                if ((IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))
+                 || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft)))
                 {
                     // Loop through the result
                     for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -4668,9 +4668,7 @@ RESTART_EXCEPTION_IMMED:
     // Get the immediate type for the token
     immType = TranslateArrayTypeToImmType (aplTypeRes);
 
-    Assert (IMMTYPE_BOOL  EQ immType
-         || IMMTYPE_INT   EQ immType
-         || IMMTYPE_FLOAT EQ immType);
+    Assert (IsImmNum (immType));
 
     // Fill in the result token
     lptkRes->tkFlags.TknType   = TKT_VARIMMED;
@@ -4697,7 +4695,7 @@ RESTART_EXCEPTION_IMMED:
                 // If both arguments are integer-like (BOOL, INT, or APA),
                 //   use BisIvI
                 if (IsSimpleInt (aplTypeLft)
-                 && IsSimpleInt (aplTypeRht))  // Res = BOOL, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
+                 && IsSimpleInt (aplTypeRht))   // Res = BOOL, Lft = BOOL/INT/APA(S), Rht = BOOL/INT/APA(S)
                 {
                     lptkRes->tkData.tkBoolean  =
                       (*lpPrimSpec->BisIvI) (aplIntegerLft,
@@ -4706,8 +4704,8 @@ RESTART_EXCEPTION_IMMED:
                 } else
                 // If both arguments are CHAR,
                 //   use BisCvC
-                if (aplTypeLft EQ ARRAY_CHAR
-                 && aplTypeRht EQ ARRAY_CHAR)  // Res = BOOL, Lft = CHAR(S), Rht = CHAR(S)
+                if (IsSimpleChar (aplTypeLft)
+                 && IsSimpleChar (aplTypeRht))  // Res = BOOL, Lft = CHAR(S), Rht = CHAR(S)
                 {
                     lptkRes->tkData.tkBoolean  =
                       (*lpPrimSpec->BisCvC) (aplCharLft,
@@ -5010,8 +5008,8 @@ RESTART_EXCEPTION_SINGLETON:
                     } else
                     // If both arguments are CHAR,
                     //   use BisCvC
-                    if (aplTypeLft EQ ARRAY_CHAR
-                     && aplTypeRht EQ ARRAY_CHAR)
+                    if (IsSimpleChar (aplTypeLft)
+                     && IsSimpleChar (aplTypeRht))
                     {
                         *((LPAPLBOOL)  lpMemRes) =
                           (*lpPrimSpec->BisCvC) (aplCharLft,
@@ -5398,8 +5396,8 @@ RESTART_EXCEPTION_AXIS:
                     } else
                     // If both arguments are CHAR,
                     //   use BisCvC
-                    if (aplTypeLft EQ ARRAY_CHAR
-                     && aplTypeRht EQ ARRAY_CHAR)   // Res = BOOL(Axis), Lft = CHAR, Rht = CHAR
+                    if (IsSimpleChar (aplTypeLft)
+                     && IsSimpleChar (aplTypeRht))  // Res = BOOL(Axis), Lft = CHAR, Rht = CHAR
                     {
                         DbgBrk ();      // ***TESTME*** -- No such primitive
 
@@ -5688,8 +5686,8 @@ RESTART_EXCEPTION_NOAXIS:
                     } else
                     // If both arguments are CHAR,
                     //   use BisCvC
-                    if (aplTypeLft EQ ARRAY_CHAR
-                     && aplTypeRht EQ ARRAY_CHAR)   // Res = BOOL(No Axis), Lft = CHAR, Rht = CHAR
+                    if (IsSimpleChar (aplTypeLft)
+                     && IsSimpleChar (aplTypeRht))  // Res = BOOL(No Axis), Lft = CHAR, Rht = CHAR
                     {
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)

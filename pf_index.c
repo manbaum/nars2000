@@ -149,7 +149,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
         // Handle obvious DOMAIN ERRORs
         if (aplTypeSub EQ ARRAY_HETERO
-         || (aplTypeSub EQ ARRAY_CHAR
+         || (IsSimpleChar (aplTypeSub)
           && aplNELMSub NE 0))
         {
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
@@ -308,7 +308,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     immTypeItm    = (((LPAPLHETERO) lpMemSub)[uSub])->stFlags.ImmType;
 
                     // Check for DOMAIN ERROR
-                    if (immTypeItm EQ IMMTYPE_CHAR)
+                    if (IsImmChr (immTypeItm))
                     {
                         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                    lptkFunc);
@@ -316,7 +316,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     } // End IF
 
                     // If the immediate is a float, attempt to convert it
-                    if (immTypeItm EQ IMMTYPE_FLOAT)
+                    if (IsImmFlt (immTypeItm))
                     {
                         // Attempt to convert the float to an integer using System CT
                         aplLongestItm = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestItm, &bRet);
@@ -2349,7 +2349,7 @@ BOOL ArrayIndexSetSingLst_EM
 
     // Handle obvious DOMAIN ERRORs
     if (aplTypeSubLst EQ ARRAY_HETERO
-     || (aplTypeSubLst EQ ARRAY_CHAR
+     || (IsSimpleChar (aplTypeSubLst)
       && aplNELMSubLst NE 0))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,

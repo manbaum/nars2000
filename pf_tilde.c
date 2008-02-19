@@ -154,10 +154,10 @@ APLSTYPE PrimSpecTildeStorageTypeMon
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
-    if (*lpaplTypeRht EQ ARRAY_CHAR
+    if (IsSimpleChar (*lpaplTypeRht)
      || *lpaplTypeRht EQ ARRAY_LIST)
         return ARRAY_ERROR;
 

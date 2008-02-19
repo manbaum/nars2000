@@ -146,7 +146,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
 
     // Check for RIGHT DOMAIN ERROR
     if ((!IsSimpleNH (aplTypeRht))
-     || (lptkLftArg && aplTypeRht EQ ARRAY_CHAR))
+     || (lptkLftArg && IsSimpleChar (aplTypeRht)))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -176,7 +176,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
         aplLongestRht1 = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
         // Split cases based upon the numeric vs. char storage type
-        if (aplTypeRht EQ ARRAY_CHAR)
+        if (IsSimpleChar (aplTypeRht))
         {
             // If the message is a global, ...
             if (hGlbRht)

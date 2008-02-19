@@ -1287,7 +1287,7 @@ LPAPLCHAR CompileArrHetero
 
             // If we're to handle []TCLF specially, ...
             if (bTCLF                                   // Handle specially, and
-             && immTypeCur EQ IMMTYPE_CHAR              //   it's char, and
+             && IsImmChr (immTypeCur)                   //   it's char, and
              && (*lpSymEntry)->stData.stChar EQ TCLF)   //   it's []TCLF
             {
                 APLDIM uCol;            // Loop counter
@@ -1387,7 +1387,7 @@ LPAPLCHAR CompileArrHetero
                 uLen = lpaplChar - lpwszOut;
                 uLen = max (uLen, 1) - 1;
 
-                if (immTypeCur EQ IMMTYPE_CHAR)
+                if (IsImmChr (immTypeCur))
                     // Max the current integer width with this
                     lpFmtColStr[aplDimCol].uChrs = max (lpFmtColStr[aplDimCol].uChrs, uLen);
                 else
@@ -1758,7 +1758,7 @@ LPAPLCHAR CompileArrNestedGlb
     lpMem = VarArrayBaseToData (lpMem, aplRank);
 
     // Format char arrays as one col
-    aplChrNCols = (aplType EQ ARRAY_CHAR) ? 1 : aplDimNCols;
+    aplChrNCols = (IsSimpleChar (aplType)) ? 1 : aplDimNCols;
 
     // Create a new FMTHEADER
     ZeroMemory ((LPFMTHEADER) lpaplChar, sizeof (FMTHEADER));
@@ -2219,7 +2219,7 @@ LPAPLCHAR FormatArrSimple
     aplRealNRows = lpFmtHeader->uRealRows;
 
     // Format char arrays as one col
-    aplChrNCols = (aplType EQ ARRAY_CHAR) ? 1 : aplDimNCols;
+    aplChrNCols = (IsSimpleChar (aplType)) ? 1 : aplDimNCols;
 
     // Loop through the formatted rows
     for (aplDimRow = aplRealRow = 0;
@@ -2272,7 +2272,7 @@ LPAPLCHAR FormatArrSimple
                         Assert (uActLen <= uCmpWid);
 
                         // Check for fractional part unless char ***FIXME*** -- Fails on '.' in hetero array??
-                        if (aplType EQ ARRAY_CHAR)
+                        if (IsSimpleChar (aplType))
                             lpw = NULL;
                         else
                             lpw = strchrW (lpaplChar, L'.');
@@ -2281,7 +2281,7 @@ LPAPLCHAR FormatArrSimple
                             lpw = lpaplChar + uActLen;              // Place decimal point after integer part
 
                         // Align the decimal points unless char ***FIXME*** -- Fails on '.' in hetero array??
-                        if (aplType EQ ARRAY_CHAR)
+                        if (IsSimpleChar (aplType))
                             uLead = 0;
                         else
                         {
@@ -2825,7 +2825,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     } // End IF
 
     // Check for "format by example"
-    if (aplTypeLft EQ ARRAY_CHAR)
+    if (IsSimpleChar (aplTypeLft))
         return PrimFnDydDownTackJotFBE_EM_YY (lptkLftArg,   // Ptr to left arg token
                                               lptkFunc,     // Ptr to function token
                                               lptkRhtArg,   // Ptr to right arg token

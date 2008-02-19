@@ -413,8 +413,14 @@ LRESULT APIENTRY DBWndProc
             return FALSE;           // We handled the msg
 
         case WM_DESTROY:
+            // Remove all saved window properties
+            EnumProps (hWnd, EnumCallbackRemoveProp);
+
             // Uninitialize window-specific resources
             DB_Delete (hWnd);
+
+            // Tell the thread to quit, too
+            PostQuitMessage (0);
 
             return FALSE;           // We handled the msg
     } // End SWITCH

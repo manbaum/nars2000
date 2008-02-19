@@ -62,9 +62,6 @@ BOOL fHelp = FALSE,                     // TRUE iff we displayed help
 
 HMODULE user32_module;
 
-int gLstTab = -1,                       // Index of the previous (outgoing) tab (-1 = none)
-    gCurTab = -1;                       // Index of the current (incoming) tab  (-1 = none)
-
 HICON hIconMF_Large, hIconMF_Small,     // Icon handles
       hIconSM_Large, hIconSM_Small,
 #ifdef DEBUG
@@ -527,7 +524,6 @@ BOOL CreateChildWindows
       SetWindowLong (hWndTC,
                      GWL_WNDPROC,
                      (long) (WNDPROC) &LclTabCtrlWndProc);
-
     // Show and paint the window
     ShowWindow (hWndTC, SW_SHOWNORMAL);
     UpdateWindow (hWndTC);
@@ -701,8 +697,8 @@ LRESULT APIENTRY MFWndProc
 ////////////// Allocate per tab data as a dummy holder
 //////////////   so that the first call to SaveWsData
 //////////////   has something to save into.
-////////////hGlbCurTab = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
-////////////if (!hGlbCurTab)
+////////////hGlbPTD = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
+////////////if (!hGlbPTD)
 ////////////    return -1;          // Stop the whole process
 
             // Load a CLEAR WS
@@ -1117,7 +1113,7 @@ LRESULT APIENTRY MFWndProc
                     // Load a CLEAR WS
                     if (!CreateNewTab (hWnd,
                                        "CLEAR WS",
-                                       (iOverTab EQ -1) ? 999 : iOverTab + 1))
+                                       (gOverTab EQ -1) ? 999 : gOverTab + 1))
                         return -1;          // Stop the whole process
 
                     return FALSE;   // We handled the msg
@@ -1179,13 +1175,13 @@ LRESULT APIENTRY MFWndProc
                 case IDM_SAVECLOSE_WS:
                     if (CmdSave_EM (L""))   // Handle the same as )SAVE
                         // Close the tab
-                        CloseTab (iOverTab);
+                        CloseTab (gOverTab);
 
                     return FALSE;   // We handled the msg
 
                 case IDM_CLOSE_WS:
                     // Close the tab
-                    CloseTab (iOverTab);
+                    CloseTab (gOverTab);
 
                     return FALSE;   // We handled the msg
 
@@ -1215,10 +1211,10 @@ LRESULT APIENTRY MFWndProc
 
             break;                  // Continue with next handler ***MUST***
 
-        case WM_ERASEBKGND:
-            // In order to reduce screen flicker, we handle erase background
-            // in the WM_PAINT message for the child windows.
-            return TRUE;            // We erased the background
+////    case WM_ERASEBKGND:
+////        // In order to reduce screen flicker, we handle erase background
+////        // in the WM_PAINT message for the child windows.
+////        return TRUE;            // We erased the background
 
         case WM_QUERYENDSESSION:
         case WM_CLOSE:
@@ -1238,6 +1234,9 @@ LRESULT APIENTRY MFWndProc
             break;                  // Continue with default handler
 
         case WM_DESTROY:
+            // Remove all saved window properties
+            EnumProps (hWnd, EnumCallbackRemoveProp);
+
             // Uninitialize window-specific resources
             MF_Delete (hWnd);
 
@@ -1349,7 +1348,7 @@ HWND GetWndMC
     hGlbPTD = GetPerTabHandle (iCurTab);
 
     // Ensure it's a valid ptr
-    if (!IsGlbPtr (hGlbCurTab))
+    if (!IsGlbPtr (hGlbPTD))
         return NULL;
 
     // Lock the memory to get a ptr to it

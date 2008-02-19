@@ -243,7 +243,7 @@ void DisplayGlbArr
     } // End IF/ELSE
 
     // Format char arrays as one col
-    aplChrNCols = (aplType EQ ARRAY_CHAR) ? 1 : aplDimNCols;
+    aplChrNCols = (IsSimpleChar (aplType)) ? 1 : aplDimNCols;
 
     // Create a new FMTHEADER
     ZeroMemory ((LPFMTHEADER) lpaplCharIni, sizeof (FMTHEADER));
@@ -409,7 +409,7 @@ void DisplayGlbArr
 
 #ifdef PREFILL
     // Fill the output area with all zeros
-    if (aplType EQ ARRAY_CHAR)
+    if (IsSimpleChar (aplType))
         ZeroMemory (lpwszFormat, (UINT) aplNELMRes * sizeof (APLCHAR));
     else
     {

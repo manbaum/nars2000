@@ -108,12 +108,12 @@ APLSTYPE PrimSpecRightCaretStorageTypeDyd
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMLft EQ 0 && *lpaplTypeLft EQ ARRAY_CHAR)
+    if (aplNELMLft EQ 0 && IsSimpleChar (*lpaplTypeLft))
         *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && *lpaplTypeRht EQ ARRAY_CHAR)
+    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     // Calculate the storage type of the result

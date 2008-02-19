@@ -82,12 +82,6 @@
 #endif
 
 //***************************************************************************
-//  Below this point, define variables which do not need to be saved
-//    in the per tab structure.  By definition, these vars are all static
-//    in valud.
-//***************************************************************************
-
-//***************************************************************************
 //  Default global values of system variables -- these values
 //    are used to set the variables in a CLEAR WS.
 //***************************************************************************
@@ -646,9 +640,14 @@ WCHAR wszIndent[DEF_INDENT + 1]
 ;
 
 EXTERN
-HGLOBAL hGlbCurTab                      // Global handle of current tab ***FIXME*** -- Make PerTabData
+int gLstTab                             // Index of the previous (outgoing) tab (-1 = none)
 #ifdef DEFINE_VALUES
- = NULL
+ = -1
+#endif
+,
+    gCurTab                             // Index of the current (incoming) tab  (-1 = none)
+#ifdef DEFINE_VALUES
+ = -1
 #endif
 ;
 
@@ -790,7 +789,7 @@ long cxAveCharTC, cyAveCharTC,          // Size of an average character in the T
      cxAveCharVE, cyAveCharVE;          // ...                                 VE ...
 
 EXTERN
-int iOverTab                            // Index of the tab the mouse is over
+int gOverTab                            // Index of the tab the mouse is over
 #ifdef DEFINE_VALUES
  = -1
 #endif

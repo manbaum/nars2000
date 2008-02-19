@@ -557,7 +557,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
         {
             case PTRTYPE_STCONST:
                 // Get the item as a prototype
-                if (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType EQ IMMTYPE_CHAR)
+                if (IsImmChr (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType))
                     lpSymProto = GetSteBlank ();
                 else
                     lpSymProto = GetSteZero ();
@@ -1742,7 +1742,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             } // End IF
 
             // Ensure that the left arg immediate value can convert to an integer
-            if (immTypeSubLft EQ IMMTYPE_FLOAT)
+            if (IsImmFlt (immTypeSubLft))
             {
                 // Attempt to convert the float to an integer using System CT
                 aplLongestSubLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLft, &bRet);

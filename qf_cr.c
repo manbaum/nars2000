@@ -688,7 +688,7 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
     //   of the left arg
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
-    // Check forLEFT RANK ERROR
+    // Check for LEFT RANK ERROR
     if (aplRankLft > 1)
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,

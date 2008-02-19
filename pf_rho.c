@@ -714,7 +714,7 @@ BOOL PrimFnDydRhoRhtCopyData
                 {
                     APLCHAR aplChar;
 
-                    Assert (aplTypeRes EQ ARRAY_CHAR);
+                    Assert (IsSimpleChar (aplTypeRes));
 
                     // Copy the single value to avoid recalling it everytime
                     aplChar = lptkRhtArg->tkData.tkSym->stData.stChar;
@@ -794,7 +794,7 @@ BOOL PrimFnDydRhoRhtCopyData
                 {
                     APLCHAR aplChar;
 
-                    Assert (aplTypeRes EQ ARRAY_CHAR);
+                    Assert (IsSimpleChar (aplTypeRes));
 
                     // Copy the single value to avoid recalling it everytime
                     aplChar = lptkRhtArg->tkData.tkChar;

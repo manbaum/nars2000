@@ -349,7 +349,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     } // End IF
 
     // Check for LEFT DOMAIN ERROR
-    if (aplTypeLft EQ ARRAY_CHAR
+    if (IsSimpleChar (aplTypeLft)
      || aplTypeLft EQ ARRAY_HETERO)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
@@ -791,7 +791,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                         GetNextValueGlb (hGlbSub, lpMemOdo[iAxisNxt], NULL, &aplLongestNxt, &immTypeNxt);
 
                         // If the index value is float, attempt to convert it to int
-                        if (immTypeNxt EQ IMMTYPE_FLOAT)
+                        if (IsImmFlt (immTypeNxt))
                         {
                             // Attempt to convert the float to an integer using System CT
                             aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestNxt, &bRet);
@@ -809,7 +809,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                         Assert (lpMemOdo[iAxisNxt] EQ 0);
 
                         // If the index value is float, attempt to convert it to int
-                        if (immTypeSub EQ IMMTYPE_FLOAT)
+                        if (IsImmFlt (immTypeSub))
                         {
                             // Attempt to convert the float to an integer using System CT
                             aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSub, &bRet);
@@ -833,7 +833,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     immTypeSub    = TranslateArrayTypeToImmType (aplTypeLft);
 
                     // If the index value is float, attempt to convert it to int
-                    if (immTypeSub EQ IMMTYPE_FLOAT)
+                    if (IsImmFlt (immTypeSub))
                     {
                         // Attempt to convert the float to an integer using System CT
                         aplLongestNxt = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSub, &bRet);

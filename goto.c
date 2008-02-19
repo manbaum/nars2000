@@ -79,14 +79,14 @@ EXIT_TYPES GotoLine_EM
                        &immType,        // Ptr to ...immediate type ...
                         NULL);          // Ptr to array type ...
     if (immType EQ IMMTYPE_ERROR
-     || immType EQ IMMTYPE_CHAR)
+     || IsImmChr (immType))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
         goto ERROR_EXIT;
     } // End IF
 
-    if (immType EQ IMMTYPE_FLOAT)
+    if (IsImmFlt (immType))
     {
         BOOL bRet;
 

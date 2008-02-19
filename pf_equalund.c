@@ -1035,8 +1035,8 @@ BOOL PrimFnDydEqualUnderbarNested
                 aplTypeRht = GetNextHetero (lpMemRht, 0, &aplIntegerRht, &aplFloatRht, &aplCharRht);
 
                 // Strip out char vs. char
-                if (aplTypeLft EQ ARRAY_CHAR
-                 && aplTypeRht EQ ARRAY_CHAR)
+                if (IsSimpleChar (aplTypeLft)
+                 && IsSimpleChar (aplTypeRht))
                 {
                     if (aplCharLft NE aplCharRht)
                         return FALSE;
@@ -1045,8 +1045,8 @@ BOOL PrimFnDydEqualUnderbarNested
                 } // End IF
 
                 // Strip out char vs. num and num vs. char
-                if (aplTypeLft EQ ARRAY_CHAR
-                 || aplTypeRht EQ ARRAY_CHAR)
+                if (IsSimpleChar (aplTypeLft)
+                 || IsSimpleChar (aplTypeRht))
                     return FALSE;
 
                 // Strip out BOOL/INT vs. BOOL/INT

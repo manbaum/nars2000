@@ -1176,8 +1176,8 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     //    the left and right args are not different types (numeric vs. char), ...
     if (!(aplNELMLft EQ 0
        || aplNELMRht EQ 0
-       || (IsSimpleNum (aplTypeLft) && aplTypeRht EQ ARRAY_CHAR)
-       || (IsSimpleNum (aplTypeRht) && aplTypeLft EQ ARRAY_CHAR)))
+       || (IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))
+       || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft))))
     {
         // Split cases based upon the left & right arg storage types
         if (aplTypeLft EQ ARRAY_BOOL && aplTypeRht EQ ARRAY_BOOL)
@@ -1201,7 +1201,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
                                          lptkFunc))     // Ptr to function token
                 goto ERROR_EXIT;
         } else
-        if (aplTypeLft EQ ARRAY_CHAR && aplTypeRht EQ ARRAY_CHAR)
+        if (IsSimpleChar (aplTypeLft) && IsSimpleChar (aplTypeRht))
         {
             // Handle APLCHAR vs. APLCHAR
             if (!PrimFnDydEpsilonCvC_EM (lpMemRes,      // Ptr to result global memory data
@@ -1585,7 +1585,7 @@ void PrimFnDydEpsilonOther
             if ((hGlbSubLft EQ NULL) && (hGlbSubRht EQ NULL))
             {
                 // If both items are APLCHARs, ...
-                if ((immTypeSubLft EQ IMMTYPE_CHAR) && (immTypeSubRht EQ IMMTYPE_CHAR))
+                if (IsImmChr (immTypeSubLft) && IsImmChr (immTypeSubRht))
                 {
                     // Compare the APLCHARs
                     if (((APLCHAR) aplLongestSubLft) EQ (APLCHAR) aplLongestSubRht)

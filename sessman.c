@@ -1659,7 +1659,9 @@ LRESULT APIENTRY SMWndProc
             return FALSE;           // We handled the msg
 
         case WM_DESTROY:
-        {
+            // Remove all saved window properties
+            EnumProps (hWnd, EnumCallbackRemoveProp);
+
             // Get the thread's PerTabData global memory handle
             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -1720,14 +1722,38 @@ LRESULT APIENTRY SMWndProc
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            return FALSE;           // We handled the msg
-        } // End WM_DESTROY
+            // We no longer need this storage
+            MyGlobalFree (hGlbPTD); hGlbPTD = NULL;
+
+            // Tell the thread to quit, too
+            PostQuitMessage (0);
+
+            break;
     } // End SWITCH
 
 ////LCLODSAPI ("SMZ:", hWnd, message, wParam, lParam);
     return DefMDIChildProc (hWnd, message, wParam, lParam);
 } // End SMWndProc
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $EnumCallbackRemoveProp
+//
+//  Callback function to remove all window properties
+//***************************************************************************
+
+BOOL CALLBACK EnumCallbackRemoveProp
+    (HWND   hWnd,           // Handle of window with property
+     LPCSTR lpszString,     // Property string or atom
+     HANDLE hData)          // Data handle
+{
+    // Remove the property
+    RemoveProp (hWnd, lpszString);
+
+    // Continue enumerating
+    return TRUE;
+} // End EnumCallbackRemoveProp
 
 
 //***************************************************************************

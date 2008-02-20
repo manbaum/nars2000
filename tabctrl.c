@@ -104,6 +104,8 @@ void ShowHideChildWindows
 
     if (bShow)
     {
+        HWND hWndAct;
+
         // Put the MDI Client window at the top (SHOW) or bottom (HIDE)
         //   of the Z-order
         SetWindowPos (hWndMC,
@@ -118,6 +120,12 @@ void ShowHideChildWindows
         EnumChildWindows (hWndMC,
                           EnumCallbackShowHide,
                           SW_SHOWNORMAL);
+        // Set the focus to the active window
+        hWndAct = (HWND) SendMessage (hWndMC, WM_MDIGETACTIVE, 0, 0);
+        if (hWndAct)
+            SetFocus (hWndAct);
+        else
+            DbgBrk ();
     } else
     {
         // Loop through the child windows

@@ -211,13 +211,15 @@ LRESULT APIENTRY DBWndProc
      LONG lParam)   // ...
 
 {
-    char       szTemp[1204];
-    WCHAR      wszTemp[1024];
-    int        iLineNum,
-               iIndex,
-               iHeight;
-    RECT       rcClient;
-    HWND       hWndLB;
+    char         szTemp[1204];
+    WCHAR        wszTemp[1024];
+    int          iLineNum,
+                 iIndex,
+                 iHeight;
+    RECT         rcClient;
+    HWND         hWndLB;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
 #define PROP_LINENUM    "iLineNum"
 
@@ -230,9 +232,6 @@ LRESULT APIENTRY DBWndProc
     {
         case WM_CREATE:
         {
-            HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
             iLineNum = 0;
             SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
@@ -618,9 +617,6 @@ LRESULT WINAPI LclListboxWndProc
                                     // lKeyData = lParam;           // Key data
 #define nVirtKey ((int) wParam)
         {
-            HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
             // Process the virtual key
             switch (nVirtKey)
             {
@@ -653,6 +649,25 @@ LRESULT WINAPI LclListboxWndProc
             break;
         } // End WM_KEYDOWN
 #undef  nVirtKey
+
+        case WM_CLOSE:
+        case WM_DESTROY:
+            DbgBrk ();
+
+            // Get the thread's PerTabData global memory handle
+            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Unhook the LclListboxWndProc
+            SetWindowLongW (hWnd,
+                            GWL_WNDPROC,
+                            (long) lpMemPTD->lpfnOldListboxWndProc);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            break;
     } // End SWITCH
 
     lResult = CallWindowProcW (lpfnOldListboxWndProc,

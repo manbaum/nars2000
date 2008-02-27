@@ -55,9 +55,33 @@
 
 <table class="pagetable" summary="">
 <tr>
+  <td class="pagecolumn1">
+    <h4>On this page:</h4>
+
+    <ul class="bookmarks">
+      <li><a href="#Latest_File_Releases">Latest File Releases</a></li>
+      <li><a href="#Statistics">Statistics</a></li>
+    </ul>
+
+    <br />
+    <br />
+    <br />
+
+    <div style="margin-left:  1em;">
+    <script type="text/javascript"
+            src="http://www.qualitas.com/GoogleAds.js">
+    </script>
+    <script type="text/javascript"
+            src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+    </script>
+    </div>
+  </td>
+
   <td class="pagecolumn2">
+    <h1 class="header">Downloads</h1>
+
     <div class="section">
-      <h2>Latest File Releases</h2>
+      <h2 id="Latest_File_Releases">Latest File Releases</h2>
 
       <p>There are two types of files available for downloading:
         <b>zip</b> and <b>map</b>.  The former contains everything you
@@ -175,13 +199,9 @@
       -->
       </script>
     </div>
-  </td>
-</tr>
 
-<tr>
-  <td class="pagecolumn2">
     <div class="section">
-      <h2>Statistics On The Most Current File Release</h2>
+      <h2 id="Statistics">Statistics On The Most Current File Release</h2>
       <pre style="margin-left: 1em;"><?php readfile ($DirName . "linestat.txt");?></pre>
     </div>
   </td>

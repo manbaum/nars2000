@@ -274,7 +274,8 @@ typedef struct tagSYMENTRY
     SYMTAB_DATA stData;         // 04:  For immediates, the data value; for others, the HGLOBAL
     LPHSHENTRY  stHshEntry;     // 0C:  Ptr to the matching HSHENTRY
     struct tagSYMENTRY *stPrvEntry;// 10:  Ptr to previous (shadowed) STE (NULL = none)
-                                // 14:  Length
+    UINT        stSILevel;      // 14:  State Indicator Level for this STE
+                                // 18:  Length
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)

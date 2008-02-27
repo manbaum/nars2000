@@ -609,9 +609,11 @@ AmbOpTermFunc:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
+                                             // If there is more than one token in $1,
                                              // Change the first token from ambiguous operator to a function
                                              //   and swap the first two tokens
-                                             if (!AmbOpSwap_EM (&$1))
+                                             if ($1.TknCount > 1
+                                              && !AmbOpSwap_EM (&$1))
                                              {
                                                  FreeResult (&$1.tkToken);
                                                  YYERROR;
@@ -1005,30 +1007,21 @@ Op3Spec:
                                          } else
                                          if (!lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->lpYYFcn =
-                                               MakeFcnStrand_EM_YY (&$1, NAMETYPE_OP3, TRUE);
-                                             FreeResult (&$1.tkToken);
-
-                                             if (!lpplLocalVars->lpYYFcn)            // If not defined, free args and YYERROR
-                                             {
-                                                 FreeResult (&$3.tkToken);          // Validation only
-                                                 YYERROR;
-                                             } // End IF
-
                                              lpplLocalVars->bRet =
-                                               AssignName_EM (&$3.tkToken, &lpplLocalVars->lpYYFcn->tkToken);
-                                             FreeResult (&$3.tkToken);              // Validation only
+                                               AssignName_EM (&$3.tkToken, &$1.tkToken);
+/////////////////////////////////////////////FreeResult (&$1.tkToken);               // DO NOT FREE:  Passed on as result
+                                             FreeResult (&$3.tkToken);               // Validation only
 
                                              if (!lpplLocalVars->bRet)
                                              {
-                                                 FreeYYFcn1 (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                                 FreeResult (&$1.tkToken);
                                                  YYERROR;
                                              } // End IF
 
                                              // The result is always the root of the function tree
                                              DbgBrk ();      // ***FIXME*** -- Won't returning a FcnStr conflict with
                                                              //                Op3Spec always being DIRECT??
-                                             $$ = *lpplLocalVars->lpYYFcn; YYFree (lpplLocalVars->lpYYFcn); lpplLocalVars->lpYYFcn = NULL;
+                                             $$ = $1;
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
@@ -5472,14 +5465,7 @@ char LookaheadAdjacent
             goto NORMAL_EXIT;
 
         case TKT_ASSIGN:            // To allow f{is}/[1]
-            if (!bSkipBrackets)
-            {
-                cRes = 'F';         // Function
-
-                goto NORMAL_EXIT;
-            } // End IF
-
-            cRes = '?';             // SYNTAX ERROR
+            cRes = 'A';             // Assignment arrow
 
             goto NORMAL_EXIT;
 
@@ -5829,6 +5815,7 @@ PL_YYLEX_START:
                     return PRIMFCN;
 
                 case '3':               // If the next token is an ambiguous operator,
+                case 'A':               //   or an assignment arrow
                 case 'V':               //   or a variable
                 case '0':               //   or a niladic function,
                     return OP3;         //   then this token is ambiguous
@@ -5896,6 +5883,7 @@ PL_YYLEX_START:
 
                 case '1':               // If the next token is a monadic operator, or
                 case '3':               // If the next token is an ambiguous operator
+                case 'A':               //   or an assignment arrow
                 case 'F':               //   or a function,
                     return '}';         //   then this token is an axis operator
 

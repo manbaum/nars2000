@@ -1229,9 +1229,19 @@ LRESULT APIENTRY MFWndProc
 
             // Ask the child windows if it's OK to close
             if (EnumChildWindows (hWnd, EnumCallbackQueryClose, 0))
+            {
+                // Delete all the tabs
+                TabCtrl_DeleteAllItems (hWndTC);
+
                 // This also tells the child windows to close
                 DestroyWindow (hWnd);
-            break;                  // Continue with default handler
+
+                if (message EQ WM_QUERYENDSESSION)
+                    return TRUE;        // OK to terminate
+                else
+                    return FALSE;       // We handled the msg
+            } else
+                return FALSE;           // Not OK to terminate/we handled the msg
 
         case WM_DESTROY:
             // Remove all saved window properties

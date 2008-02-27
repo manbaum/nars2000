@@ -667,6 +667,9 @@ LRESULT WINAPI LclTabCtrlWndProc
             int  iNewTab;
             HWND hWndMC,
                  hWndEC,
+#ifdef DEBUG
+                 hWndDB,
+#endif
                  hWndSM;
 
 #define iTab    ((int) wParam)
@@ -721,8 +724,12 @@ LRESULT WINAPI LclTabCtrlWndProc
 
 #undef  APPEND_NAME
 
+            // Get the various window handles
             hWndMC = lpMemPTD->hWndMC;
-
+            hWndSM = lpMemPTD->hWndSM;
+#ifdef DEBUG
+            hWndDB = lpMemPTD->hWndDB;
+#endif
             // Get the Edit Ctrl window handle
             hWndEC = (HWND) GetWindowLong (lpMemPTD->hWndSM, GWLSF_HWNDEC);
 
@@ -730,12 +737,13 @@ LRESULT WINAPI LclTabCtrlWndProc
             SetWindowLongW (hWndEC,
                             GWL_WNDPROC,
                             (long) lpMemPTD->lpfnOldEditCtrlWndProc);
-            // Get the SM window handle
-            hWndSM = lpMemPTD->hWndSM;
-
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
+#ifdef DEBUG
+            if (hWndDB)
+                // Destroy the DB window
+                SendMessage (hWndMC, WM_MDIDESTROY, (WPARAM) hWndDB, 0);
+#endif
             // Destroy the SM window
             SendMessage (hWndMC, WM_MDIDESTROY, (WPARAM) hWndSM, 0);
 

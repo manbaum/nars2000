@@ -140,7 +140,7 @@ void FloatToAplchar
 //***************************************************************************
 //  $ConvertWideToName
 //
-//  Convert wide chars to ASCII or {name}
+//  Convert wide chars to ASCII or {name} or {\xXXXX}
 //***************************************************************************
 
 UINT ConvertWideToName
@@ -157,7 +157,10 @@ UINT ConvertWideToName
 
     // Loop through the wide chars
     while (wc = *lpwszInp++)
-    if (wc < 0x80)
+    if (32 <= wc && wc <= 0x7E
+     && wc NE L'\''
+     && wc NE L'{'
+     && wc NE L'}')
         *lpwsz++ = wc;
     else
     {
@@ -169,9 +172,8 @@ UINT ConvertWideToName
                                 lpSymbolName);
         else
             lpwsz += wsprintfW (lpwsz,
-                                L"\\x%04X",
+                                L"{\\x%04X}",
                                 wc);
-
     } // End IF/ELSE
 
     // Ensure properly terminated

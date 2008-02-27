@@ -1,15 +1,11 @@
 TO DO:  General:  Important (pre-alpha)
 ---------------------------------------
 * Move registry info into <nars2000.ini> file
-* Fix display of chars in a saved ws (surround with quotes, etc.)
 * Handle multiple SI levels in a saved ws
 * Implement these features:
 * ...       )COPY
 * ...       )LOAD
 * ...       )SAVE
-* ...       minimum set of system functions, to wit:
-* ...        L []EA R
-* ...        L []TF R
 
 
 TO DO:  General:  Less Important (post-alpha)
@@ -53,6 +49,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...         []CRLPC R
 * ...         []DEF R
 * ...         []DEFL R
+* ...       L []EA R
 * ...         []EC R
 * ...         []ERASE R
 * ...         []FI R
@@ -67,6 +64,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       L []SS R
 * ...         []STOP R
 * ...       L []STOP R
+* ...       L []TF R
 * ...         []TRACE R
 * ...       L []TRACE R
 * ...         []VI R
@@ -205,6 +203,7 @@ DONE:  General
 * Make numeric formatting (through down tack jot) sensitive
   to the local conventions for decimal point, 1000s separator,
   overflow indicator, and negative sign
+* Fix display of chars in a saved ws (surround with quotes, etc.)
 
 
 DONE:  Session Manager

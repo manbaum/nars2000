@@ -447,7 +447,6 @@ LPPL_YYSTYPE YYCopyFcn
     if (bResUsed)
         Assert (YYCheckInuse (lpYYMem));            // ***DEBUG***
 #endif
-
     return lpYYMem;
 } // End YYCopyFcn
 #undef  APPEND_NAME

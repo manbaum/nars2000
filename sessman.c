@@ -1667,7 +1667,11 @@ LRESULT APIENTRY SMWndProc
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
-
+#ifdef DEBUG
+            // If the debugger is still active, close it
+            if (lpMemPTD->hWndDB)
+                SendMessage (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) lpMemPTD->hWndDB, 0);
+#endif
             // *************** Undo Buffer *****************************
             // Get the ptr to the start of the Undo Buffer
             (long) lpUndoBeg = GetWindowLong (hWnd, GWLSF_UNDO_BEG);

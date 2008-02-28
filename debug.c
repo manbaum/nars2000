@@ -411,7 +411,26 @@ LRESULT APIENTRY DBWndProc
 
             return FALSE;           // We handled the msg
 
+        case MYWM_UNHOOK:
+            // Get the thread's PerTabData global memory handle
+            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Unhook the LclListboxWndProc
+            SetWindowLongW (hWndLB,
+                            GWL_WNDPROC,
+                            (long) lpMemPTD->lpfnOldListboxWndProc);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            return FALSE;           // We handled the msg
+
         case WM_DESTROY:
+            // Unhook out hooks
+            SendMessage (hWnd, MYWM_UNHOOK, 0, 0);
+
             // Remove all saved window properties
             EnumProps (hWnd, EnumCallbackRemoveProp);
 
@@ -652,8 +671,6 @@ LRESULT WINAPI LclListboxWndProc
 
         case WM_CLOSE:
         case WM_DESTROY:
-            DbgBrk ();
-
             // Get the thread's PerTabData global memory handle
             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 

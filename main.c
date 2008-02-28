@@ -1230,6 +1230,10 @@ LRESULT APIENTRY MFWndProc
             // Ask the child windows if it's OK to close
             if (EnumChildWindows (hWnd, EnumCallbackQueryClose, 0))
             {
+#ifdef DEBUG
+                // Tell the debugger windows to unhook its hooks
+                EnumChildWindows (hWnd, EnumCallbackUnhookDebugger, 0);
+#endif
                 // Delete all the tabs
                 TabCtrl_DeleteAllItems (hWndTC);
 
@@ -1377,11 +1381,11 @@ HWND GetWndMC
 //***************************************************************************
 //  $EnumCallbackQueryClose
 //
-//  EnumChildWindows callback to qeury whether or not they can close
+//  EnumChildWindows callback to query whether or not they can close
 //***************************************************************************
 
 BOOL CALLBACK EnumCallbackQueryClose
-    (HWND  hWnd,            // Handle to child window
+    (HWND   hWnd,           // Handle to child window
      LPARAM lParam)         // Application-defined value
 
 {
@@ -1394,6 +1398,55 @@ BOOL CALLBACK EnumCallbackQueryClose
 
     return SendMessage (hWnd, WM_QUERYENDSESSION, 0, 0);
 } // End EnumCallbackQueryClose
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $EnumCallbackCloseDebugger
+//
+//  EnumChildWindows callback to tell debugger windows to unhook its hooks
+//***************************************************************************
+
+BOOL CALLBACK EnumCallbackUnhookDebugger
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
+
+{
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
+
+    // If it's a debugger window, ...
+    if (IzitDB (hWnd))
+        // Tell it to unhook its hooks
+        SendMessage (hWnd, MYWM_UNHOOK, 0, 0);
+
+    return TRUE;
+} // End EnumCallbackUnhookDebugger
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $IzitDB
+//
+//  Is the window DBWNDCLASS?
+//***************************************************************************
+
+BOOL IzitDB
+    (HWND hWnd)
+
+{
+    char szClassName[32];
+
+    GetClassName (hWnd, szClassName, sizeof (szClassName) - 1);
+
+    return (lstrcmp (szClassName, DBWNDCLASS) EQ 0);
+} // End IzitDB
+#endif
 
 
 //***************************************************************************

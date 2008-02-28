@@ -187,6 +187,7 @@ DecrRefCntInd (hGlbData);
 #define MYWM_DBGMSGW        (WM_APP + 2)    // DB
 #define MYWM_DBGMSG_CLR     (WM_APP + 3)    // DB
 #define MYWM_DBGMSG_SCROLL  (WM_APP + 4)    // DB
+#define MYWM_UNHOOK         (WM_APP + 5)    // DB
 
 
 typedef enum tagEXCEPTION_CODES // Exception Codes

@@ -1,11 +1,9 @@
 TO DO:  General:  Important (pre-alpha)
 ---------------------------------------
 * Move registry info into <nars2000.ini> file
-* Handle multiple SI levels in a saved ws
-* Implement these features:
+* Implement these system commands:
 * ...       )COPY
 * ...       )LOAD
-* ...       )SAVE
 
 
 TO DO:  General:  Less Important (post-alpha)
@@ -126,6 +124,7 @@ DONE:  General
 * ...       )NMS
 * ...       )OPS
 * ...       )RESET
+* ...       )SAVE
 * ...       )SI
 * ...       )SIC
 * ...       )SINL
@@ -204,6 +203,7 @@ DONE:  General
   to the local conventions for decimal point, 1000s separator,
   overflow indicator, and negative sign
 * Fix display of chars in a saved ws (surround with quotes, etc.)
+* Handle multiple SI levels in a saved ws
 
 
 DONE:  Session Manager
@@ -271,6 +271,8 @@ QUESTIONS
   (e.g. 5 0{thorn}'abc')?
 * In format-by-specification, does automatic width apply across planes
   or is it different within each plane?
+* Is there any reason to lmiit []AV to 256 elements?
+*
 
 
 File Extensions

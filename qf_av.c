@@ -79,10 +79,17 @@ void MakeQuadAV
 {
     LPVARARRAY_HEADER lpHeader;     // Ptr to array header
     LPAPLCHAR         lpMemRes;     // Ptr to result global memory
+    APLUINT           ByteRes;      // # bytes in the result
     UINT              uRes;         // Loop counter
 
+////#define QUADAV_LEN      (256 + 10)
+#define QUADAV_LEN      APLCHAR_SIZE
+
+    // Calculate # bytes in the result
+    ByteRes = CalcArraySize (ARRAY_CHAR, QUADAV_LEN, 1);
+
     // Create []AV
-    hGlbAV = MyGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, 256, 1));
+    hGlbAV = MyGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbAV)
     {
         DbgStop ();         // We should never get here
@@ -97,171 +104,177 @@ void MakeQuadAV
     lpHeader->Perm       = 1;       // So we don't free it
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
 ////lpHeader->RefCnt     = 0;       // Ignore as this is perm
-    lpHeader->NELM       = 256;
+    lpHeader->NELM       = QUADAV_LEN;
     lpHeader->Rank       = 1;
 
     // Fill in the dimension
-    *VarArrayBaseToDim (lpHeader) = 256;
+    *VarArrayBaseToDim (lpHeader) = QUADAV_LEN;
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayBaseToData (lpHeader, 1);
 
-    // Fill in the result:  0-0x7E
-    for (uRes = 0; uRes < 0x7F;  uRes++)
+    // Fill in the result with 0-0xFFFF
+    for (uRes = 0; uRes < QUADAV_LEN;  uRes++)
         lpMemRes[uRes] = uRes;
-
-    // Fill in the result:  0x7F-0xFF
-    for (        ; uRes < 0x100; uRes++)
-        lpMemRes[uRes] = L' ';
+#if 0
+    // Fill in the result:  0-0x7F
+    for (uRes = 0; uRes < 0x80;  uRes++)
+        lpMemRes[uRes] = uRes;
 
     // Fill in the result:  miscellaneous 0x80-0xFF
     // This order was takne mostly from the one used
     //   by APL2 in their 1994 manual.
-    lpMemRes[0x7F] = UTF16_ZILDE;
-    lpMemRes[0x80] = 0x00C7;            // C cedilla
-    lpMemRes[0x81] = 0x00FC;            // u umlaut
-    lpMemRes[0x82] = 0x00E9;            // e right
-    lpMemRes[0x83] = 0x00E2;            // a circumflex
-    lpMemRes[0x84] = 0x00E4;            // a umlaut
-    lpMemRes[0x85] = 0x00E0;            // a left
-    lpMemRes[0x86] = 0x00E5;            // a circle
-    lpMemRes[0x87] = 0x00E7;            // c cedilla
-    lpMemRes[0x88] = 0x00EA;            // e circumflex
-    lpMemRes[0x89] = 0x00EB;            // e dieresis
-    lpMemRes[0x8A] = 0x00E8;            // e left
-    lpMemRes[0x8B] = 0x00EF;            // i dieresis
-    lpMemRes[0x8C] = 0x00EE;            // i circumflex
-    lpMemRes[0x8D] = 0x00EC;            // i left
-    lpMemRes[0x8E] = 0x00C4;            // A dieresis
-    lpMemRes[0x8F] = 0x00C2;            // A circumflex
+    lpMemRes[0x080] = 0x00C7;            // C cedilla
+    lpMemRes[0x081] = 0x00FC;            // u umlaut
+    lpMemRes[0x082] = 0x00E9;            // e right
+    lpMemRes[0x083] = 0x00E2;            // a circumflex
+    lpMemRes[0x084] = 0x00E4;            // a umlaut
+    lpMemRes[0x085] = 0x00E0;            // a left
+    lpMemRes[0x086] = 0x00E5;            // a circle
+    lpMemRes[0x087] = 0x00E7;            // c cedilla
+    lpMemRes[0x088] = 0x00EA;            // e circumflex
+    lpMemRes[0x089] = 0x00EB;            // e dieresis
+    lpMemRes[0x08A] = 0x00E8;            // e left
+    lpMemRes[0x08B] = 0x00EF;            // i dieresis
+    lpMemRes[0x08C] = 0x00EE;            // i circumflex
+    lpMemRes[0x08D] = 0x00EC;            // i left
+    lpMemRes[0x08E] = 0x00C4;            // A dieresis
+    lpMemRes[0x08F] = 0x00C5;            // A circle
 
-    lpMemRes[0x90] = UTF16_QUAD;
-    lpMemRes[0x91] = UTF16_QUOTEQUAD;
-    lpMemRes[0x92] = UTF16_DOMINO;
-    lpMemRes[0x93] = 0x00F4;            // o circumflex
-    lpMemRes[0x94] = 0x00F6;            // o dieresis
-    lpMemRes[0x95] = 0x00F2;            // o left
-    lpMemRes[0x96] = 0x00FC;            // u dieresis
-    lpMemRes[0x97] = 0x00F9;            // u left
-    lpMemRes[0x98] = UTF16_DOWNTACK;
-    lpMemRes[0x99] = 0x00D6;            // O dieresis
-    lpMemRes[0x9A] = 0x00DC;            // U dieresis
-    lpMemRes[0x9B] = 0x00F8;            // 0 slash
-    lpMemRes[0x9C] = 0x00A3;            // Pound sign
-    lpMemRes[0x9D] = UTF16_UPTACK;
-    lpMemRes[0x9E] = 0x20A7;            // Pts
-    lpMemRes[0x9F] = UTF16_IBEAM;
+    lpMemRes[0x090] = UTF16_QUAD;
+    lpMemRes[0x091] = UTF16_QUOTEQUAD;
+    lpMemRes[0x092] = UTF16_DOMINO;
+    lpMemRes[0x093] = 0x00F4;            // o circumflex
+    lpMemRes[0x094] = 0x00F6;            // o dieresis
+    lpMemRes[0x095] = 0x00F2;            // o left
+    lpMemRes[0x096] = 0x00FB;            // u circumflex
+    lpMemRes[0x097] = 0x00F9;            // u left
+    lpMemRes[0x098] = UTF16_DOWNTACK;
+    lpMemRes[0x099] = 0x00D6;            // O dieresis
+    lpMemRes[0x09A] = 0x00DC;            // U dieresis
+    lpMemRes[0x09B] = 0x00F8;            // 0 slash
+    lpMemRes[0x09C] = 0x00A3;            // Pound sign
+    lpMemRes[0x09D] = UTF16_UPTACK;
+    lpMemRes[0x09E] = 0x20A7;            // Pts
+    lpMemRes[0x09F] = UTF16_IBEAM;
 
-    lpMemRes[0xA0] = 0x00E1;            // a right
-    lpMemRes[0xA1] = 0x00ED;            // i right
-    lpMemRes[0xA2] = 0x00F3;            // o right
-    lpMemRes[0xA3] = 0x00FA;            // u right
-    lpMemRes[0xA4] = 0x00F1;            // n tilde
-    lpMemRes[0xA5] = 0x00D1;            // N tilde
-////lpMemRes[0xA6] = 0x00AA;            // a underbar
-////lpMemRes[0xA7] = 0x00BA;            // o underbar
-    lpMemRes[0xA6] = UTF16_DIERESISDEL;
-    lpMemRes[0xA7] = UTF16_DIERESISSTAR;
-    lpMemRes[0xA8] = 0x00BF;            // Inverted query
-    lpMemRes[0xA9] = UTF16_UPSTILE;
-    lpMemRes[0xAA] = 0x00AC;            // PL1 not          // Available???
-    lpMemRes[0xAB] = UTF16_DIERESISTILDE;
-    lpMemRes[0xAC] = UTF16_DOWNSHOE;
-    lpMemRes[0xAD] = 0x00A1;            // Inverted shreik
-    lpMemRes[0xAE] = UTF16_DOWNTACKJOT;
-    lpMemRes[0xAF] = UTF16_UPTACKJOT;
+    lpMemRes[0x0A0] = 0x00E1;            // a right
+    lpMemRes[0x0A1] = 0x00ED;            // i right
+    lpMemRes[0x0A2] = 0x00F3;            // o right
+    lpMemRes[0x0A3] = 0x00FA;            // u right
+    lpMemRes[0x0A4] = 0x00F1;            // n tilde
+    lpMemRes[0x0A5] = 0x00D1;            // N tilde
+    lpMemRes[0x0A6] = 0x00AA;            // a superscript underbar
+    lpMemRes[0x0A7] = 0x00BA;            // o superscript underbar
+    lpMemRes[0x0A8] = 0x00BF;            // Inverted query
+    lpMemRes[0x0A9] = UTF16_UPSTILE;
+    lpMemRes[0x0AA] = 0x00AC;            // PL1 not
+    lpMemRes[0x0AB] = 0x0000;            // ***Available***
+    lpMemRes[0x0AC] = UTF16_DOWNSHOE;
+    lpMemRes[0x0AD] = 0x00A1;            // Inverted shreik
+    lpMemRes[0x0AE] = UTF16_DOWNTACKJOT;
+    lpMemRes[0x0AF] = UTF16_UPTACKJOT;
 
-    lpMemRes[0xB0] = 0x00  ;            // Filler           // Available???
-    lpMemRes[0xB1] = 0x00  ;            // Filler           // Available???
-    lpMemRes[0xB2] = 0x00  ;            // Filler           // Available???
-    lpMemRes[0xB3] = UTF16_STILE;
-    lpMemRes[0xB4] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xB5] = UTF16_CIRCLESTAR;
-    lpMemRes[0xB6] = UTF16_DELTA;
-    lpMemRes[0xB7] = UTF16_DEL;
-    lpMemRes[0xB8] = UTF16_RIGHTARROW;
-    lpMemRes[0xB9] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xBA] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xBB] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xBC] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xBD] = UTF16_LEFTARROW;
-    lpMemRes[0xBE] = UTF16_DOWNSTILE;
-    lpMemRes[0xBF] = 0x00  ;            // Line draw        // Available???
+    lpMemRes[0x0B0] = 0x2591;            // Light shade
+    lpMemRes[0x0B1] = 0x2592;            // Medium shade
+    lpMemRes[0x0B2] = 0x2593;            // Dark shade
+    lpMemRes[0x0B3] = 0x2502;            // Box drawing:  Light vertical
+    lpMemRes[0x0B4] = 0x2524;            // Box drawing:  Light vertical left
+    lpMemRes[0x0B5] = UTF16_CIRCLESTAR;
+    lpMemRes[0x0B6] = UTF16_DELTA;
+    lpMemRes[0x0B7] = UTF16_DEL;
+    lpMemRes[0x0B8] = UTF16_RIGHTARROW;
+    lpMemRes[0x0B9] = 0x2563;            // Box drawing:  Double vertical left
+    lpMemRes[0x0BA] = 0x2551;            // Box drawing:  Double vertical
+    lpMemRes[0x0BB] = 0x2557;            // Box drawing:  Double down left
+    lpMemRes[0x0BC] = 0x255D;            // Box drawing:  Double up left
+    lpMemRes[0x0BD] = UTF16_LEFTARROW;
+    lpMemRes[0x0BE] = UTF16_DOWNSTILE;
+    lpMemRes[0x0BF] = 0x2510;            // Box drawing:  Light down left
 
-    lpMemRes[0xC0] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xC1] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xC2] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xC3] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xC4] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xC5] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xC6] = UTF16_UPARROW;
-    lpMemRes[0xC7] = UTF16_DOWNARROW;
-    lpMemRes[0xC8] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xC9] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xCA] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xCB] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xCC] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xCD] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xCE] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xCF] = UTF16_EQUALUNDERBAR;
+    lpMemRes[0x0C0] = 0x2514;            // Box drawing:  Light up right
+    lpMemRes[0x0C1] = 0x2534;            // Box drawing:  Light up horizontal
+    lpMemRes[0x0C2] = 0x252C;            // Box drawing:  Light down horizontal
+    lpMemRes[0x0C3] = 0x251C;            // Box drawing:  Light vertical right
+    lpMemRes[0x0C4] = 0x2500;            // Box drawing:  Light horizontal
+    lpMemRes[0x0C5] = 0x253C;            // Box drawing:  Light vertical horizontal
+    lpMemRes[0x0C6] = UTF16_UPARROW;
+    lpMemRes[0x0C7] = UTF16_DOWNARROW;
+    lpMemRes[0x0C8] = 0x255A;            // Box drawing:  Double up right
+    lpMemRes[0x0C9] = 0x2554;            // Box drawing:  Double down right
+    lpMemRes[0x0CA] = 0x2569;            // Box drawing:  Double up horizontal
+    lpMemRes[0x0CB] = 0x2566;            // Box drawing:  Double down horizontal
+    lpMemRes[0x0CC] = 0x2560;            // Box drawing:  Double vertical right
+    lpMemRes[0x0CD] = 0x2550;            // Box drawing:  Double horizontal
+    lpMemRes[0x0CE] = 0x256C;            // Box drawing:  Double vertical horizontal
+    lpMemRes[0x0CF] = UTF16_EQUALUNDERBAR;
 
-    lpMemRes[0xD0] = UTF16_IOTAUNDERBAR;
-    lpMemRes[0xD1] = UTF16_EPSILONUNDERBAR;
-    lpMemRes[0xD2] = UTF16_DIERESISDOT;
-    lpMemRes[0xD3] = UTF16_SQUAD;
-    lpMemRes[0xD4] = UTF16_QUADSLOPE;
-    lpMemRes[0xD5] = UTF16_QUADJOT;
-    lpMemRes[0xD6] = UTF16_RIGHTTACK;
-    lpMemRes[0xD7] = UTF16_LEFTTACK;
-    lpMemRes[0xD8] = UTF16_DIAMOND;
-    lpMemRes[0xD9] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xDA] = 0x00  ;            // Line draw        // Available???
-    lpMemRes[0xDB] = 0x00  ;            // Filler           // Available???
-    lpMemRes[0xDC] = 0x00  ;            // Filler           // Available???
-    lpMemRes[0xDD] = 0x00  ;            // Filler           // Available???
-    lpMemRes[0xDE] = 0x00  ;            // Filler           // Available???
-    lpMemRes[0xDF] = 0x00  ;            // Filler           // Available???
+    lpMemRes[0x0D0] = UTF16_IOTAUNDERBAR;
+    lpMemRes[0x0D1] = UTF16_EPSILONUNDERBAR;
+    lpMemRes[0x0D2] = UTF16_DIERESISDOT;
+    lpMemRes[0x0D3] = UTF16_SQUAD;
+    lpMemRes[0x0D4] = UTF16_QUADSLOPE;
+    lpMemRes[0x0D5] = UTF16_QUADJOT;
+    lpMemRes[0x0D6] = UTF16_RIGHTTACK;
+    lpMemRes[0x0D7] = UTF16_LEFTTACK;
+    lpMemRes[0x0D8] = UTF16_DIAMOND;
+    lpMemRes[0x0D9] = 0x2518;            // Box drawing:  Light up left
+    lpMemRes[0x0DA] = 0x250C;            // Box drawing:  Light down right
+    lpMemRes[0x0DB] = 0x2588;            // Full block
+    lpMemRes[0x0DC] = 0x2584;            // Lower half block
+    lpMemRes[0x0DD] = 0x258C;            // Left half block
+    lpMemRes[0x0DE] = 0x2590;            // Right half block
+    lpMemRes[0x0DF] = 0x2580;            // Upper half block
 
-    lpMemRes[0xE0] = UTF16_ALPHA;
-////lpMemRes[0xE1] = 0x00DF;            // Beta             // Available???
-    lpMemRes[0xE1] = 0x2299;            // Circle middle dot
-    lpMemRes[0xE2] = UTF16_LEFTSHOE;
-    lpMemRes[0xE3] = UTF16_RIGHTSHOE;
-    lpMemRes[0xE4] = UTF16_LAMP;
-    lpMemRes[0xE5] = UTF16_UPCARETTILDE;
-    lpMemRes[0xE6] = UTF16_RHO;
-    lpMemRes[0xE7] = UTF16_DOWNCARETTILDE;
-    lpMemRes[0xE8] = UTF16_CIRCLESTILE;
-    lpMemRes[0xE9] = UTF16_CIRCLEBAR;
-    lpMemRes[0xEA] = UTF16_CIRCLE;
-    lpMemRes[0xEB] = UTF16_DOWNCARET;
-    lpMemRes[0xEC] = UTF16_IOTA;
-    lpMemRes[0xED] = UTF16_CIRCLESLOPE;
-    lpMemRes[0xEE] = UTF16_EPSILON;
-    lpMemRes[0xEF] = UTF16_UPSHOE;
+    lpMemRes[0x0E0] = UTF16_ALPHA;
+    lpMemRes[0x0E1] = 0x03B2;            // Beta
+    lpMemRes[0x0E2] = UTF16_LEFTSHOE;
+    lpMemRes[0x0E3] = UTF16_RIGHTSHOE;
+    lpMemRes[0x0E4] = UTF16_LAMP;
+    lpMemRes[0x0E5] = UTF16_UPCARETTILDE;
+    lpMemRes[0x0E6] = UTF16_RHO;
+    lpMemRes[0x0E7] = UTF16_DOWNCARETTILDE;
+    lpMemRes[0x0E8] = UTF16_CIRCLESTILE;
+    lpMemRes[0x0E9] = UTF16_CIRCLEBAR;
+    lpMemRes[0x0EA] = UTF16_CIRCLE;
+    lpMemRes[0x0EB] = UTF16_DOWNCARET;
+    lpMemRes[0x0EC] = UTF16_IOTA;
+    lpMemRes[0x0ED] = UTF16_CIRCLESLOPE;
+    lpMemRes[0x0EE] = UTF16_EPSILON;
+    lpMemRes[0x0EF] = UTF16_UPSHOE;
 
-    lpMemRes[0xF0] = UTF16_SLASHBAR;
-    lpMemRes[0xF1] = UTF16_SLOPEBAR;
-    lpMemRes[0xF2] = UTF16_RIGHTCARETUNDERBAR;
-    lpMemRes[0xF3] = UTF16_LEFTCARETUNDERBAR;
-    lpMemRes[0xF4] = UTF16_NOTEQUAL;
-    lpMemRes[0xF5] = UTF16_TIMES;
-    lpMemRes[0xF6] = UTF16_COLONBAR;
-    lpMemRes[0xF7] = UTF16_DELTAUNDERBAR;
-    lpMemRes[0xF8] = UTF16_JOT;
-    lpMemRes[0xF9] = UTF16_OMEGA;
-    lpMemRes[0xFA] = UTF16_CIRCLEMIDDLEDOT;
-    lpMemRes[0xFB] = UTF16_DELTASTILE;
-    lpMemRes[0xFC] = UTF16_DELSTILE;
-    lpMemRes[0xFD] = UTF16_OVERBAR;
-    lpMemRes[0xFE] = UTF16_DIERESIS;
-////lpMemRes[0xFF] = 0x00  ;            // Blank            // Available???
-    lpMemRes[0xFF] = 0x20AC;            // Euro
+    lpMemRes[0x0F0] = UTF16_SLASHBAR;
+    lpMemRes[0x0F1] = UTF16_SLOPEBAR;
+    lpMemRes[0x0F2] = UTF16_RIGHTCARETUNDERBAR;
+    lpMemRes[0x0F3] = UTF16_LEFTCARETUNDERBAR;
+    lpMemRes[0x0F4] = UTF16_NOTEQUAL;
+    lpMemRes[0x0F5] = UTF16_TIMES;
+    lpMemRes[0x0F6] = UTF16_COLONBAR;
+    lpMemRes[0x0F7] = UTF16_DELTAUNDERBAR;
+    lpMemRes[0x0F8] = UTF16_JOT;
+    lpMemRes[0x0F9] = UTF16_OMEGA;
+    lpMemRes[0x0FA] = UTF16_DELTILDE;
+    lpMemRes[0x0FB] = UTF16_DELTASTILE;
+    lpMemRes[0x0FC] = UTF16_DELSTILE;
+    lpMemRes[0x0FD] = UTF16_OVERBAR;
+    lpMemRes[0x0FE] = UTF16_DIERESIS;
+    lpMemRes[0x0FF] = 0x0000;            // ***Available***
 
-////lpMemRes[0x??] = UTF16_DIERESISDOWNTACK;
-////lpMemRes[0x??] = UTF16_DIERESISCIRCLE;
-////lpMemRes[0x??] = UTF16_STILETILDE;
+    lpMemRes[0x100] = 0x20AC;            // Euro
+    lpMemRes[0x101] = UTF16_STILE;
+    lpMemRes[0x102] = UTF16_ZILDE;
+    lpMemRes[0x103] = UTF16_DIERESISDEL;
+    lpMemRes[0x104] = UTF16_DIERESISSTAR;
+    lpMemRes[0x105] = UTF16_DIERESISTILDE;
+    lpMemRes[0x106] = UTF16_CIRCLEMIDDLEDOT;
+    lpMemRes[0x107] = UTF16_DIERESISDOWNTACK;
+    lpMemRes[0x108] = UTF16_DIERESISCIRCLE;
+    lpMemRes[0x109] = UTF16_STILETILDE;
 
+#if QUADAV_LEN != (0x109 + 1)
+#error Incorrect length for []AV
+#endif
+#endif
     // We no longer need this ptr
     MyGlobalUnlock (hGlbAV); lpMemRes = NULL;
 } // End MakeQuadAV

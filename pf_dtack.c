@@ -330,10 +330,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                              aplFloatRes;
 
                     // If the left arg is int, convert it to float
-                    if (IsSimpleInt (aplTypeLft))
-                        aplFloatLft = (APLFLOAT) ((LPAPLINT) lpMemLft)[uLft];
-                    else
-                        aplFloatLft = ((LPAPLFLOAT) lpMemLft)[uLft];
+                    aplFloatLft = GetNextFloat (lpMemLft, aplTypeLft, uLft);
 
                     // Calculate the result item
                     aplFloatRes = AplModF (aplFloatLft, aplFloatRht);
@@ -352,7 +349,10 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                            aplIntRes;
 
                     // Get the left arg int
-                    aplIntLft = ((LPAPLINT)   lpMemLft)[uLft];
+                    if (hGlbLft)
+                        aplIntLft = GetNextInteger (lpMemLft, aplTypeLft, uLft);
+                    else
+                        aplIntLft = aplLongestLft;
 
                     // Calculate the result item
                     aplIntRes = AplModI (aplIntLft, aplIntRht);

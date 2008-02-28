@@ -223,7 +223,7 @@ APLFLOAT PrimFnDydCircleStarFisIvI
      && aplIntegerRht EQ 1)
         return (APLFLOAT) 1;
 
-    return log ((APLFLOAT) aplIntegerLft) / log ((APLFLOAT) aplIntegerRht);
+    return log ((APLFLOAT) aplIntegerRht) / log ((APLFLOAT) aplIntegerLft);
 } // End PrimFnDydCircleStarFisIvI
 
 
@@ -242,7 +242,7 @@ APLFLOAT PrimFnDydCircleStarFisFvF
     // ***FIXME*** -- Handle overflow/underflow
     // ***FIXME*** -- Handle DOMAIN ERROR
 
-    return log (aplFloatLft) / log (aplFloatRht);
+    return log (aplFloatRht) / log (aplFloatLft);
 } // End PrimFnDydCircleStarFisFvF
 
 

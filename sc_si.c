@@ -31,7 +31,7 @@ BOOL CmdSi_EM
     (LPWCHAR lpwszTail)         // Ptr to command line tail
 
 {
-    return CmdSiSinlCom_EM (lpwszTail, FALSE);
+    return CmdSiSinlCom_EM (lpwszTail, FALSE, NULL);
 } // End CmdSi_EM
 
 
@@ -45,7 +45,7 @@ BOOL CmdSinl_EM
     (LPWCHAR lpwszTail)         // Ptr to command line tail
 
 {
-    return CmdSiSinlCom_EM (lpwszTail, TRUE);
+    return CmdSiSinlCom_EM (lpwszTail, TRUE, NULL);
 } // End CmdSinl_EM
 
 
@@ -56,13 +56,16 @@ BOOL CmdSinl_EM
 //***************************************************************************
 
 BOOL CmdSiSinlCom_EM
-    (LPWCHAR lpwszTail,         // Ptr to command line tail
-     BOOL    bSINL)             // TRUE iff )SINL
+    (LPWCHAR   lpwszTail,       // Ptr to command line tail
+     BOOL      bSINL,           // TRUE iff )SINL
+     LPAPLCHAR lpMemSaveWSID)   // Ptr to the file name (NULL = not called from CmdSave_EM)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPSIS_HEADER lpSISCur;      // Ptr to current SIS_HEADER srtuc
+    UINT         SILevel;       // SI level (for CmdSave_EM)
+    APLCHAR      szSILevel[10]; // Formatted SI level
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -78,19 +81,31 @@ BOOL CmdSiSinlCom_EM
     else
 #endif
     // Loop backwards through the SI levels
-    for (lpSISCur = lpMemPTD->lpSISCur;
+    for (lpSISCur = lpMemPTD->lpSISCur, SILevel = 0;
          lpSISCur;
-         lpSISCur = lpSISCur->lpSISPrv)
+         lpSISCur = lpSISCur->lpSISPrv, SILevel++)
     {
         LPAPLCHAR lpMemName;            // Ptr to function name global memory
 
+        // Format the SI level
+        wsprintfW (szSILevel,
+                   L"%d",
+                   SILevel);
         // Split cases based upon the caller's function type
         switch (lpSISCur->DfnType)
         {
             case DFNTYPE_IMM:
+                // If it's not CmsSave_EM, ...
+                if (lpMemSaveWSID EQ NULL)
+                {
 #ifdef DEBUG
-                AppendLine (WS_UTF16_EPSILON, FALSE, TRUE);
+                    AppendLine (WS_UTF16_IOTA, FALSE, TRUE);
 #endif
+                } else
+                    WritePrivateProfileStringW (L"SI",          // Ptr to the section name
+                                                szSILevel,      // Ptr to the key name
+                                                L"{iota}",      // Ptr to the key value
+                                                lpMemSaveWSID); // Ptr to the file name
                 break;
 
             case DFNTYPE_OP1:
@@ -99,18 +114,31 @@ BOOL CmdSiSinlCom_EM
                 // Lock the memory to get a ptr to it
                 lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
 
+                // If it's CmsSave_EM, ...
+                if (lpMemSaveWSID)
+                    // Format the text as an ASCII string with non-ASCII chars
+                    //   represented as either {symbol} or {\xXXXX} where XXXX is
+                    //   a four-digit hex number.
+                    ConvertWideToName (lpwszFormat, lpMemName);
+
                 // Format the Name, Line #, and Suspension marker
                 wsprintfW (lpwszTemp,
                            L"%s[%d] %c",
-                           lpMemName,
+                           (lpMemSaveWSID EQ NULL) ? lpMemName : lpwszFormat,
                            lpSISCur->CurLineNum,
                            " *"[lpSISCur->Suspended]);
                 // We no longer need this ptr
                 MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
 
-                // Display the function name & line #
-                AppendLine (lpwszTemp, FALSE, !bSINL);
-
+                // If it's not CmsSave_EM, ...
+                if (lpMemSaveWSID EQ NULL)
+                    // Display the function name & line #
+                    AppendLine (lpwszTemp, FALSE, !bSINL);
+                else
+                    WritePrivateProfileStringW (L"SI",          // Ptr to the section name
+                                                szSILevel,      // Ptr to the key name
+                                                lpwszTemp,      // Ptr to the key value
+                                                lpMemSaveWSID); // Ptr to the file name
                 // If it's )SINL, display the namelist
                 if (bSINL)
                 {
@@ -171,13 +199,25 @@ BOOL CmdSiSinlCom_EM
                 break;
 
             case DFNTYPE_EXEC:
-                AppendLine (WS_UTF16_UPTACKJOT, FALSE, TRUE);
-
+                // If it's not CmsSave_EM, ...
+                if (lpMemSaveWSID EQ NULL)
+                    AppendLine (WS_UTF16_UPTACKJOT, FALSE, TRUE);
+                else
+                    WritePrivateProfileStringW (L"SI",              // Ptr to the section name
+                                                szSILevel,          // Ptr to the key name
+                                                L"{uptackjot}",     // Ptr to the key value
+                                                lpMemSaveWSID);     // Ptr to the file name
                 break;
 
             case DFNTYPE_QUAD:
-                AppendLine (WS_UTF16_QUAD, FALSE, TRUE);
-
+                // If it's not CmsSave_EM, ...
+                if (lpMemSaveWSID EQ NULL)
+                    AppendLine (WS_UTF16_QUAD, FALSE, TRUE);
+                else
+                    WritePrivateProfileStringW (L"SI",              // Ptr to the section name
+                                                szSILevel,          // Ptr to the key name
+                                                L"{quad}",          // Ptr to the key value
+                                                lpMemSaveWSID);     // Ptr to the file name
                 break;
 
             case DFNTYPE_UNK:

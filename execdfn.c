@@ -88,8 +88,21 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     HGLOBAL      hGlbPTD = NULL;    // PerTabData global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
-                 lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
-    LPTOKEN      lptkAxis;          // Ptr to axis token
+                 lpYYFcnStrRht,     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
+                 lpYYFcnTmpLft,     // Ptr to temp left operand function strand (may be NULL if not an operator)
+                 lpYYFcnTmpRht;     // Ptr to temp right operand function strand (may be NULL if monadic operator or not an operator)
+    PL_YYSTYPE   YYFcnTmpLft,       // Left operand temp function strand (may be NULL if not an operator)
+                 YYFcnTmpRht;       // Right operand temp function strand (may be NULL if monadic operator or not an operator)
+    LPTOKEN      lptkAxis,          // Ptr to axis token
+                 lptkLftTmp,        // Ptr to temp left arg token
+                 lptkRhtTmp;        // ...         right
+    TOKEN        tkLftTmp,          // Temp left arg token
+                 tkRhtTmp;          // ...  right ...
+    SYMENTRY     symLftArg,         // Temp SYMENTRY for left arg
+                 symRhtArg,         // ...               right ...
+                 symLftFcn,         // ...               left operand
+                 symRhtFcn;         // ...               right ...
+    TOKEN_TYPES  TknType;           // Temp token type
 
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStr);
@@ -230,7 +243,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
         lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
         lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
         lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
-        lpMemPTD->lpSISNxt->Perm         = lpMemDfnHdr->Perm;
+        lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
         lpMemPTD->lpSISNxt->CurLineNum   = 1;
         lpMemPTD->lpSISNxt->NxtLineNum   = 2;
 ////////lpMemPTD->lpSISNxt->numLabels    =              // Filled in below
@@ -284,6 +297,98 @@ RESTART_EXCEPTION_EXECDFNGLB:
     //***************************************************************
 
     lpMemPTD->lpSISCur               = lpMemPTD->lpSISNxt;
+
+    // In case any of the operands/args is a named var/fcn and that same name
+    //   is local to the function/operator, we need to copy the STE of the name
+    //   or else it'll get wiped out by a call to LocalizeSymEntries before we
+    //   get to use it in InitVarSTEs/InitFcnSTEs
+    if (lptkLftArg)
+    {
+        // Copy the token
+        tkLftTmp = *lptkLftArg;
+        lptkLftTmp = &tkLftTmp;
+
+        // Copy the token type
+        TknType = lptkLftTmp->tkFlags.TknType;
+
+        // If the token is named, ...
+        if (TknType EQ TKT_VARNAMED
+         || TknType EQ TKT_FCNNAMED
+         || TknType EQ TKT_OP1NAMED
+         || TknType EQ TKT_OP2NAMED
+         || TknType EQ TKT_OP3NAMED)
+        {
+            symLftArg = *lptkLftTmp->tkData.tkSym;
+            lptkLftTmp->tkData.tkSym = &symLftArg;
+        } // End IF
+    } else
+        lptkLftTmp = NULL;
+
+    if (lpYYFcnStrLft)
+    {
+        // Copy the PL_YYSTYPE
+        YYFcnTmpLft = *lpYYFcnStrLft;
+        lpYYFcnTmpLft = &YYFcnTmpLft;
+
+        // Copy the token type
+        TknType = lpYYFcnTmpLft->tkToken.tkFlags.TknType;
+
+        // If the token is named, ...
+        if (TknType EQ TKT_VARNAMED
+         || TknType EQ TKT_FCNNAMED
+         || TknType EQ TKT_OP1NAMED
+         || TknType EQ TKT_OP2NAMED
+         || TknType EQ TKT_OP3NAMED)
+        {
+            symLftFcn = *lpYYFcnTmpLft->tkToken.tkData.tkSym;
+            lpYYFcnTmpLft->tkToken.tkData.tkSym = &symLftFcn;
+        } // End IF
+    } else
+        lpYYFcnTmpLft = NULL;
+
+    if (lpYYFcnStrRht)
+    {
+        // Copy the PL_YYSTYPE
+        YYFcnTmpRht = *lpYYFcnStrRht;
+        lpYYFcnTmpRht = &YYFcnTmpRht;
+
+        // Copy the token type
+        TknType = lpYYFcnTmpRht->tkToken.tkFlags.TknType;
+
+        // If the token is named, ...
+        if (TknType EQ TKT_VARNAMED
+         || TknType EQ TKT_FCNNAMED
+         || TknType EQ TKT_OP1NAMED
+         || TknType EQ TKT_OP2NAMED
+         || TknType EQ TKT_OP3NAMED)
+        {
+            symRhtFcn = *lpYYFcnTmpRht->tkToken.tkData.tkSym;
+            lpYYFcnTmpRht->tkToken.tkData.tkSym = &symRhtFcn;
+        } // End IF
+    } else
+        lpYYFcnTmpRht = NULL;
+
+    if (lptkRhtArg)
+    {
+        // Copy the token
+        tkRhtTmp = *lptkRhtArg;
+        lptkRhtTmp = &tkRhtTmp;
+
+        // Copy the token type
+        TknType = lptkRhtTmp->tkFlags.TknType;
+
+        // If the token is named, ...
+        if (TknType EQ TKT_VARNAMED
+         || TknType EQ TKT_FCNNAMED
+         || TknType EQ TKT_OP1NAMED
+         || TknType EQ TKT_OP2NAMED
+         || TknType EQ TKT_OP3NAMED)
+        {
+            symRhtArg = *lptkRhtTmp->tkData.tkSym;
+            lptkRhtTmp->tkData.tkSym = &symRhtArg;
+        } // End IF
+    } else
+        lptkRhtTmp = NULL;
 
     // Point to the destination SYMENTRYs
     lpSymEntryBeg =
@@ -348,11 +453,11 @@ RESTART_EXCEPTION_EXECDFNGLB:
     lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
 
     // Setup the left arg STEs
-    InitVarSTEs (lptkLftArg,
+    InitVarSTEs (lptkLftTmp,
                  lpMemDfnHdr->numLftArgSTE,
                  (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE));
     // Setup the left operand STE
-    if (!InitFcnSTEs (lpYYFcnStrLft,
+    if (!InitFcnSTEs (lpYYFcnTmpLft,
                       lpMemDfnHdr->steLftOpr NE NULL,
                      &lpMemDfnHdr->steLftOpr))
         goto UNLOCALIZE_EXIT;
@@ -361,12 +466,12 @@ RESTART_EXCEPTION_EXECDFNGLB:
                  lpMemDfnHdr->steAxisOpr NE NULL,
                 &lpMemDfnHdr->steAxisOpr);
     // Setup the right operand STE
-    if (!InitFcnSTEs (lpYYFcnStrRht,
+    if (!InitFcnSTEs (lpYYFcnTmpRht,
                       lpMemDfnHdr->steRhtOpr NE NULL,
                      &lpMemDfnHdr->steRhtOpr))
         goto UNLOCALIZE_EXIT;
     // Setup the right arg STEs
-    InitVarSTEs (lptkRhtArg,
+    InitVarSTEs (lptkRhtTmp,
                  lpMemDfnHdr->numRhtArgSTE,
                  (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offRhtArgSTE));
 
@@ -660,7 +765,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_NESTED;
-////////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////////lpHeader->SysVar     = 0;               // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = numResultSTE;
@@ -1090,7 +1195,8 @@ LPSYMENTRY LocalizeLabels
                 lpSymEntrySrc->stPrvEntry       = &lpSymEntryNxt[-1];
 
                 // Save the SI level for this SYMENTRY
-                lpSymEntrySrc->stSILevel        = lpMemPTD->SILevel;
+                Assert (lpMemPTD->SILevel);
+                lpSymEntrySrc->stSILevel        = lpMemPTD->SILevel - 1;
 
                 // Count in another label
                 (*lpNumLabels)++;
@@ -1495,7 +1601,8 @@ LPSYMENTRY LocalizeSymEntries
         (*lplpSymEntrySrc)->stPrvEntry = &lpSymEntryNxt[-1];
 
         // Save the SI level for this SYMENTRY
-        (*lplpSymEntrySrc)->stSILevel  = lpMemPTD->SILevel;
+        Assert (lpMemPTD->SILevel);
+        (*lplpSymEntrySrc)->stSILevel  = lpMemPTD->SILevel - 1;
 
         // Skip to next source entry
         lplpSymEntrySrc++;

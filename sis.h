@@ -29,7 +29,7 @@ typedef struct tagSIS_HEADER
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      Suspended:1,   //      00000100:  Function is suspended
                      ResetFlag:3,   //      00000E00:  SI stack is resetting (see RESET_FLAGS)
-                     Perm:1,        //      00001000:  Permanent (i.e. Magic Function)
+                     PermFn:1,      //      00001000:  Permanent function (i.e. Magic Function)
                      Avail:19;      //      FFFFE000:  Available bits
     UINT             EventType,     // 1C:  Event type (Major, Minor) (see EVENT_TYPES)
                      CurLineNum,    // 20:  Current line # (origin-1)

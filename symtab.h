@@ -148,6 +148,11 @@ typedef enum tagIMM_TYPES
     IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type)
 } IMM_TYPES, *LPIMM_TYPES;
 
+// Translate an immediate type to a char
+// Note that the order of the chars in this #define
+//   depends upon the ordering of the above enum
+#define ImmTypeAsChar   L"BIFC?123"
+
 // Note that the following macros depend upon
 //   the ordering of the above enum
 #define IsImmInt(a)     ((a) < IMMTYPE_FLOAT)

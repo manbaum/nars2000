@@ -489,7 +489,7 @@ BOOL PrimScalarFnDydAllocate_EM
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
-////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
@@ -667,8 +667,8 @@ HGLOBAL MakeMonPrototype_EM
                     // Fill in the header
                     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                     lpHeader->ArrType    = ARRAY_BOOL;
-////////////////////lpHeader->Perm       = 0;   // Already zero from GHND
-////////////////////lpHeader->SysVar     = 0;   // Already zero from GHND
+////////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
                     lpHeader->RefCnt     = 1;
                     lpHeader->NELM       = aplNELM;
                     lpHeader->Rank       = aplRank;
@@ -1035,7 +1035,7 @@ HGLOBAL MakeDydPrototype_EM
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
-////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////lpHeader->SysVar     = 0;               // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
@@ -1681,7 +1681,7 @@ BOOL IsGlobalTypeArray
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
         // Ensure it has the correct signature
         bRet = (lpHeader->Sig.nature EQ Signature)
-            && (lpHeader->Perm || lpHeader->RefCnt > 0);
+            && ((lpHeader->PermNdx NE PERMNDX_NONE) || (lpHeader->RefCnt > 0));
 #undef  lpHeader
 
         // We no longer need this ptr
@@ -2115,7 +2115,7 @@ RESTART_EXCEPTION_FILLSISNXT:
         lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
         lpMemPTD->lpSISNxt->DfnAxis       = FALSE;
         lpMemPTD->lpSISNxt->Suspended     = Suspended;
-        lpMemPTD->lpSISNxt->Perm          = FALSE;
+        lpMemPTD->lpSISNxt->PermFn        = FALSE;
         lpMemPTD->lpSISNxt->Avail         = 0;
         lpMemPTD->lpSISNxt->EventType     = 0;
         lpMemPTD->lpSISNxt->CurLineNum    = 0;

@@ -400,8 +400,8 @@ LPPL_YYSTYPE SysFnDydDR_Convert_EM_YY
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
-////lpHeaderRes->Perm       = 0;        // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
+////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
+////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = aplRankRes;
@@ -676,8 +676,8 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_CHAR;
-////lpHeaderRes->Perm       = 0;        // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
+////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
+////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = 1;
@@ -773,8 +773,8 @@ HGLOBAL SysFnDydDR_FloatToChar_EM
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
-////lpHeader->Perm       = 0;   // Already zero from GHND
-////lpHeader->SysVar     = 0;   // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRht * 16;
     lpHeader->Rank       = aplRankRht + 1;

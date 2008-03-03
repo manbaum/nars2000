@@ -1305,6 +1305,9 @@ typedef enum tagUNDO_ACTS
                         // 0006-FFFF:  Available entries (16 bits)
 } UNDO_ACTS;
 
+// Define the corresponding one-letter actions
+#define UndoActToChar   L"NIRDST"
+
 #define UNDO_NOGROUP    0
 
 typedef struct tagUNDO_BUF

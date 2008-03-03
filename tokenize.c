@@ -1907,7 +1907,7 @@ BOOL fnQuoDone
 #define lpHeader    ((LPVARARRAY_HEADER) lpwsz)
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_CHAR;
-////////////lpHeader->Perm       = 0;
+////////////lpHeader->PermNdx    = PERMNDX_NONE;
 ////////////lpHeader->SysVar     = 0;
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = lpMemPTD->iStringLen;

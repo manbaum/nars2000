@@ -391,5 +391,33 @@ EXIT_TYPES TranslateResetFlagToExitType
 
 
 //***************************************************************************
+//  $TranslateImmTypeToChar
+//
+//  Convert an immediate type to a char
+//***************************************************************************
+
+APLCHAR TranslateImmTypeToChar
+    (IMM_TYPES immType)
+
+{
+    return ImmTypeAsChar[immType];
+} // End TranslateImmTypeToChar
+
+
+//***************************************************************************
+//  $TranslateArrayTypeToChar
+//
+//  Convert an array type to a char
+//***************************************************************************
+
+APLCHAR TranslateArrayTypeToChar
+    (ARRAY_TYPES arrType)
+
+{
+    return ArrayTypeAsChar[arrType];
+} // End TranslateArrayTypeToChar
+
+
+//***************************************************************************
 //  End of File: translate.c
 //***************************************************************************

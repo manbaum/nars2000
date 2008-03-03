@@ -46,7 +46,7 @@ typedef struct tagDFN_HEADER        // Function header structure
     UINT             DfnType:4,     // 08:  0000000F:  User-defined function/operator type (see DFN_TYPES)
                      FcnValence:3,  //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
-                     Perm:1,        //      00000100:  Permanent function (i.e. Magic Function)
+                     PermFn:1,      //      00000100:  Permanent function (i.e. Magic Function)
                      Avail:23;      //      FFFFFE00:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
                      nPrototypeLine,// 10:  Line # of the []PROTOTYPE label (0 if not present)
@@ -68,7 +68,7 @@ typedef struct tagDFN_HEADER        // Function header structure
                      steRhtOpr;     // 50:  Right operand STE (may be NULL if monadic operator or not an operator)
     HGLOBAL          hGlbTxtHdr,    // 54:  Text of function header (APLCHAR) global memory handle
                      hGlbTknHdr,    // 58:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff;  // 5C:  Undo buffer                       ... (may be NULL)
+                     hGlbUndoBuff;  // 5C:  Undo buffer (UNDO_BUF)            ... (may be NULL)
     FILETIME         ftCreation,    // 60:  Time of creation
                      ftLastMod;     // 64:  Time of last modification
                                     // 6C:  Length
@@ -109,7 +109,7 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  lpNext,            // 14:  Next  ...
                  lpStop;            // 18:  Stopping token
     UINT         tkErrorCharIndex;  // 1C:  Error char index
-    UINT         DfnType:4,         // 20:  0000000F:  User-defined function/operator type (see DFN_TYPES enum)
+    UINT         DfnType:4,         // 20:  0000000F:  User-defined function/operator type (see DFN_TYPES)
                  FcnValence:3,      //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                  DfnAxis:1,         //      00000080:  User-defined function/operator accepts axis value
                  DisplayErr:1,      //      00000100:  TRUE iff we should display error messages

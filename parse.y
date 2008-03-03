@@ -4944,8 +4944,8 @@ EXIT_TYPES ParseLine
             // Get a ptr to the current SIS header
             lpSISCur = lpMemPTD->lpSISCur;
 
-            // If it's a Magic Function, don't suspend at this level
-            if (lpSISCur->Perm)
+            // If it's a permanent function (i.e. Magic Function), don't suspend at this level
+            if (lpSISCur->PermFn)
             {
                 // Set the exit type
                 plLocalVars.ExitType = EXITTYPE_QUADERROR_INIT;

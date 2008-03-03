@@ -297,8 +297,8 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_INT;
-////lpHeaderRes->Perm       = 0;        // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
+////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
+////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = 1;
@@ -581,8 +581,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_INT;
-////lpHeaderRes->Perm       = 0;        // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
+////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
+////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
     lpHeaderRes->Rank       = 1;

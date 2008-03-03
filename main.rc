@@ -200,7 +200,7 @@ BEGIN
     ICON            IDI_ABOUT,IDC_STATIC,160,30,18,20
     LTEXT           "NARS2000\nVersion %u.%u%u",IDC_VERSION,10,
                     5,115,18,NOT WS_GROUP
-    LTEXT           "Copyright © 2006-2007 Sudley Place Software, Inc.\nAll rights reserved.",
+    LTEXT           "Copyright © 2006-2008 Sudley Place Software, Inc.\nAll rights reserved.",
                     IDC_STATIC,10,30,150,18,NOT WS_GROUP
     LTEXT           "This program is released under version 2 of the GNU GPL license.  For more details, see",
                     IDC_STATIC,10,55,170,20

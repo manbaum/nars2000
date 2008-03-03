@@ -381,7 +381,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = ARRAY_NESTED;
-////lpHeaderRes->Perm       = 0;            // Already zero from GHND
+////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
 ////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;
@@ -487,8 +487,8 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         // Fill in the header
                         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                         lpHeader->ArrType    = ARRAY_NESTED;
-////////////////////////lpHeader->Perm       = 0;       // Already zero from GHND
-////////////////////////lpHeader->SysVar     = 0;       // Already zero from GHND
+////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
                         lpHeader->RefCnt     = 1;
                         lpHeader->NELM       = aplNELMSub;
                         lpHeader->Rank       = aplNELMAxis;
@@ -1145,8 +1145,8 @@ BOOL PrimFnMonLeftShoeProto_EM
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplType;
-////////lpHeader->Perm       = 0;   // ALready zero from GHND
-////////lpHeader->SysVar     = 0;   // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;// ALready zero from GHND
+////////lpHeader->SysVar     = 0;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMSub;
         lpHeader->Rank       = aplNELMAxis;
@@ -1223,8 +1223,8 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
     // Fill in the subarray header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeSub;
-////lpHeader->Perm       = 0;       // Already zero from GHND
-////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMSub;
     lpHeader->Rank       = aplNELMAxis;

@@ -479,13 +479,13 @@ void DisplayGlobals
                 // Check for non-permanents
                 if (uDispGlb EQ 1
                  || uDispGlb EQ 2
-                 || !lpHeader->Perm)
+                 || lpHeader->PermNdx EQ PERMNDX_NONE)
                 {
                     wsprintfW (lpwszDebug,
                                L"hGlb=%08X, ArrType=%c%c, NELM=%3d, RC=%1d, Rank=%2d, Dim1=%3d, Lock=%d, Line#=%4d, (%s)",
                                hGlb,
-                               L"BIFCHNLA"[lpHeader->ArrType],
-                               L" *"[lpHeader->Perm],
+                               ArrayTypeAsChar[lpHeader->ArrType],
+                               L" *"[lpHeader->PermNdx NE PERMNDX_NONE],
                                LODWORD (lpHeader->NELM),
                                lpHeader->RefCnt,
                                LODWORD (lpHeader->Rank),

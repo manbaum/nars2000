@@ -451,8 +451,8 @@ void FormatQQuadInput
         // Fill in the header
         lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeaderRes->ArrType    = ARRAY_CHAR;
-////////lpHeaderRes->Perm       = 0;        // Already zero from GHND
-////////lpHeaderRes->SysVar     = 0;        // Already zero from GHND
+////////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
+////////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
         lpHeaderRes->RefCnt     = 1;
         lpHeaderRes->NELM       = uLineLen;
         lpHeaderRes->Rank       = 1;

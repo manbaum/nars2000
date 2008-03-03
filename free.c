@@ -326,7 +326,8 @@ BOOL FreeResultGlobalVar
     lpMem = MyGlobalLock (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
-    if (!lpHeader->Perm)
+    // If the var is not permanent, ...
+    if (lpHeader->PermNdx EQ PERMNDX_NONE)
     {
         // Get the Type, RefCnt, NELM, and Rank
         aplType = lpHeader->ArrType;
@@ -680,8 +681,8 @@ BOOL FreeResultGlobalDfn
 
     Assert (RefCnt > 0);
 
-    // Quit if it's permanent (i.e. Magic Function)
-    if (lpMemDfnHdr->Perm)
+    // Quit if it's permanent function (i.e. Magic Function)
+    if (lpMemDfnHdr->PermFn)
         goto NORMAL_EXIT;
 
     // Decrement it

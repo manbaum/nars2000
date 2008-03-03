@@ -258,7 +258,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
-////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = 1;
@@ -541,7 +541,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
-////lpHeaderRes->Perm       = 0;            // Already zero from GHND
+////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
 ////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRht;
@@ -1275,7 +1275,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // Fill in the header
     lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeaderRes->ArrType    = aplTypeRes;
-////lpHeaderRes->Perm       = 0;            // Already zero from GHND
+////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
 ////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
     lpHeaderRes->RefCnt     = 1;
     lpHeaderRes->NELM       = aplNELMRes;

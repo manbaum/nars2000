@@ -154,7 +154,9 @@ void MakePermVars
 {
     LPVARARRAY_HEADER lpHeader;     // Ptr to array header
 
+    //***************************************************************
     // Create zilde
+    //***************************************************************
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
     hGlbZilde = MyGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_BOOL, 0, 1));
@@ -169,19 +171,21 @@ void MakePermVars
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
-    lpHeader->Perm       = 1;       // So we don't free it
-////lpHeader->SysVar     = 0;       // Already zero from GHND
-////lpHeader->RefCnt     = 0;       // Ignore as this is perm
-////lpHeader->NELM       = 0;       // Already zero from GHND
+    lpHeader->PermNdx    = PERMNDX_ZILDE;   // So we don't free it
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->RefCnt     = 0;               // Ignore as this is perm
+////lpHeader->NELM       = 0;               // Already zero from GHND
     lpHeader->Rank       = 1;
 
     // Mark as zero length
-////*VarArrayBaseToDim (lpHeader) = 0;  // Already zero from GHND
+////*VarArrayBaseToDim (lpHeader) = 0;      // Already zero from GHND
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbZilde); lpHeader = NULL;
 
+    //***************************************************************
     // Create initial value for []EM (3 x 0 char matrix)
+    //***************************************************************
     hGlbM3x0Char = MyGlobalAlloc (GHND, (UINT) CalcArraySize (ARRAY_CHAR, 0, 2));
     if (!hGlbM3x0Char)
     {
@@ -194,10 +198,10 @@ void MakePermVars
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
-    lpHeader->Perm       = 1;       // So we don't free it
-////lpHeader->SysVar     = 0;       // Already zero from GHND
-////lpHeader->RefCnt     = 0;       // Ignore as this is perm
-////lpHeader->NELM       = 0;       // Already zero from GHND
+    lpHeader->PermNdx    = PERMNDX_QUADEM;  // So we don't free it
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->RefCnt     = 0;               // Ignore as this is perm
+////lpHeader->NELM       = 0;               // Already zero from GHND
     lpHeader->Rank       = 2;
 
     // Mark as shape 3 by 0
@@ -207,16 +211,18 @@ void MakePermVars
     // We no longer need this ptr
     MyGlobalUnlock (hGlbM3x0Char); lpHeader = NULL;
 
+    //***************************************************************
     // Create various permanent char vectors
-    hGlbQuadDM  = MakePermCharVector (WS_QUADDM);
-    hGlbV0Char  = MakePermCharVector (V0Char);
+    //***************************************************************
+    hGlbQuadDM  = MakePermCharVector (WS_QUADDM     , PERMNDX_QUADDM);
+    hGlbV0Char  = MakePermCharVector (V0Char        , PERMNDX_MTCHAR);
     hGlbSAEmpty = hGlbV0Char;
-    hGlbSAClear = MakePermCharVector (SAClear);
-    hGlbSAError = MakePermCharVector (SAError);
-    hGlbSAExit  = MakePermCharVector (SAExit);
-    hGlbSAOff   = MakePermCharVector (SAOff);
+    hGlbSAClear = MakePermCharVector (SAClear       , PERMNDX_SACLEAR);
+    hGlbSAError = MakePermCharVector (SAError       , PERMNDX_SAERROR);
+    hGlbSAExit  = MakePermCharVector (SAExit        , PERMNDX_SAEXIT);
+    hGlbSAOff   = MakePermCharVector (SAOff         , PERMNDX_SAOFF);
     hGlbQuadWSID_CWS = hGlbV0Char;
-    hGlbQuadFC  = MakePermCharVector (DEF_QUADFC_CWS);
+    hGlbQuadFC  = MakePermCharVector (DEF_QUADFC_CWS, PERMNDX_QUADFC);
 
     // Create []AV
     MakeQuadAV ();
@@ -237,7 +243,8 @@ void MakePermVars
 #endif
 
 HGLOBAL MakePermCharVector
-    (LPWCHAR lpwc)
+    (LPWCHAR  lpwc,                 // Ptr to char vector
+     PERM_NDX permNdx)              // PERM_NDX value
 
 {
     HGLOBAL hGlbRes;
@@ -261,7 +268,7 @@ HGLOBAL MakePermCharVector
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
-    lpHeader->Perm       = 1;       // So we don't free it
+    lpHeader->PermNdx    = permNdx; // So we don't free it
 ////lpHeader->SysVar     = 0;       // Already zero from GHND
 ////lpHeader->RefCnt     = 0;       // Ignore as this is perm
     lpHeader->NELM       = uLen;
@@ -1566,8 +1573,8 @@ ALLOC_VECTOR:
         // Fill in the header values
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_CHAR;
-////////lpHeader->Perm       = 0;       // Already zero from GHND
-////////lpHeader->SysVar     = 0;       // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////lpHeader->SysVar     = 0;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = 1;
@@ -1831,8 +1838,8 @@ BOOL ValidateIntegerVector_EM
             // Fill in the header values
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_INT;
-////////////lpHeader->Perm       = 0;       // Already zero from GHND
-////////////lpHeader->SysVar     = 0;       // Already zero from GHND
+////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////////lpHeader->SysVar     = 0;           // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMRht;
             lpHeader->Rank       = 1;
@@ -1882,8 +1889,8 @@ MAKE_VECTOR:
         // Fill in the header values
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
-////////lpHeader->Perm       = 0;       // Already zero from GHND
-////////lpHeader->SysVar     = 0;       // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////lpHeader->SysVar     = 0;           // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;
         lpHeader->Rank       = 1;

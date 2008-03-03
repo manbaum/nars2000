@@ -101,9 +101,9 @@ void MakeQuadAV
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
-    lpHeader->Perm       = 1;       // So we don't free it
-////lpHeader->SysVar     = 0;       // Already zero from GHND
-////lpHeader->RefCnt     = 0;       // Ignore as this is perm
+    lpHeader->PermNdx    = PERMNDX_QUADAV;  // So we don't free it
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+////lpHeader->RefCnt     = 0;               // Ignore as this is perm
     lpHeader->NELM       = QUADAV_LEN;
     lpHeader->Rank       = 1;
 

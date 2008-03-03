@@ -244,7 +244,7 @@ HGLOBAL InitMagicFunction
         lpMemDfnHdr->DfnType      = fhLocalVars.DfnType;
         lpMemDfnHdr->FcnValence   = fhLocalVars.FcnValence;
         lpMemDfnHdr->DfnAxis      = fhLocalVars.DfnAxis;
-        lpMemDfnHdr->Perm         = TRUE;
+        lpMemDfnHdr->PermFn       = TRUE;
         lpMemDfnHdr->RefCnt       = 1;
         lpMemDfnHdr->numFcnLines  = numFcnLines;
         lpMemDfnHdr->steLftOpr    = fhLocalVars.lpYYLftOpr

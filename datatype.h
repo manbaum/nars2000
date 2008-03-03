@@ -98,6 +98,11 @@ typedef enum tagARRAY_TYPES
 
 } ARRAY_TYPES;
 
+// Translate an array type to a char
+// Note that the order of the chars in this #define
+//   depends upon the ordering of the above enum
+#define ArrayTypeAsChar     L"BIFCHNLA"
+
 // Bites per element vector
 // N.B. the order of elements in this vector matches
 //   the order of elements in the above ARRAY_TYPES enum.
@@ -201,6 +206,21 @@ typedef struct tagHEADER_SIGNATURE
     UINT             nature;    // 00:  Array header signature (common to all types of arrays)
 } HEADER_SIGNATURE, *LPHEADER_SIGNATURE;
 
+typedef enum tagPERM_NDX
+{
+    PERMNDX_NONE = 0,           // 00:  Not a permanent array
+    PERMNDX_ZILDE,              // 01:  {zilde}
+    PERMNDX_QUADEM,             // 02:  {quad}EM default
+    PERMNDX_QUADDM,             // 03:  {quad}DM default
+    PERMNDX_MTCHAR,             // 04:  ''
+    PERMNDX_SACLEAR,            // 05:  'CLEAR'
+    PERMNDX_SAERROR,            // 06:  'ERROR'
+    PERMNDX_SAEXIT,             // 07:  'EXIT'
+    PERMNDX_SAOFF,              // 08:  'OFF'
+    PERMNDX_QUADFC,             // 09:  []FC default
+    PERMNDX_QUADAV,             // 0A:  []AV
+} PERM_NDX;
+
 // Variable array header
 #define VARARRAY_HEADER_SIGNATURE   'SRAV'
 
@@ -208,9 +228,9 @@ typedef struct tagVARARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;       // 00:  Array header signature
     UINT             ArrType:4, // 04:  0000000F:  The type of the array (see ARRAY_TYPES)
-                     Perm:1,    //      00000010:  Permanent array (e.g., {zilde})
-                     SysVar:1,  //      00000020:  Izit for a Sysvar (***DEBUG*** only)?
-                     Avail:26;  //      FFFFFFC0:  Available bits
+                     PermNdx:4, //      000000F0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
+                     SysVar:1,  //      00000100:  Izit for a Sysvar (***DEBUG*** only)?
+                     Avail:23;  //      FFFFFE00:  Available bits
     UINT             RefCnt;    // 08:  Reference count
     APLNELM          NELM;      // 0C:  # elements in the array
     APLRANK          Rank;      // 10:  The rank of the array

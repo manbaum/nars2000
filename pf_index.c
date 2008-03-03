@@ -247,7 +247,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeRes;
-////////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////////lpHeader->SysVar     = 0;               // Already zero from GHND
             lpHeader->RefCnt     = 1;
             lpHeader->NELM       = aplNELMSub;
@@ -696,7 +696,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
-////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////lpHeader->SysVar     = 0;               // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = 1;
@@ -807,7 +807,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
-////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMLst;
@@ -1076,7 +1076,7 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeNam;
-////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMLst;
@@ -1336,7 +1336,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_NESTED;
-////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////lpHeader->SysVar     = 0;               // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uCount;
@@ -1388,7 +1388,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
-////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////lpHeader->SysVar     = 0;               // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uCount;
@@ -1558,7 +1558,7 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
                 // Fill in the header
                 lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                 lpHeader->ArrType    = ARRAY_LIST;
-////////////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////////////lpHeader->SysVar     = 0;               // Already zero from GHND
                 lpHeader->RefCnt     = 1;
                 lpHeader->NELM       = 1;
@@ -1977,7 +1977,7 @@ BOOL ArrayIndexSetNamScalar_EM
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_NESTED;
-////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////lpHeader->SysVar     = 0;               // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = 1;
@@ -2960,7 +2960,7 @@ BOOL ArrayIndexSetRect_EM
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_NESTED;
-////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////lpHeader->SysVar     = 0;               // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uCount;
@@ -3012,7 +3012,7 @@ BOOL ArrayIndexSetRect_EM
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
-////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////lpHeader->SysVar     = 0;               // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = uCount;

@@ -150,8 +150,8 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_APA;
-////lpHeader->Perm       = 0;       // Already zero from GHND
-////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplRankRht;
     lpHeader->Rank       = 1;
@@ -415,8 +415,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
-////lpHeader->Perm       = 0;       // Already zero from GHND
-////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = aplRankRes;

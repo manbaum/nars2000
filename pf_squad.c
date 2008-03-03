@@ -499,7 +499,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
-////////lpHeader->Perm       = 0;               // Already zero from GHND
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////lpHeader->SysVar     = 0;               // Already zero from GHND
         lpHeader->RefCnt     = 1;
         lpHeader->NELM       = aplNELMRes;

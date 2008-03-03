@@ -52,7 +52,7 @@ int ChangeRefCntDir
                 case VARARRAY_HEADER_SIGNATURE:
 #define lpHeader        ((LPVARARRAY_HEADER) lpSig)
                     // Don't change the reference count on Perms
-                    if (lpHeader->Perm)
+                    if (lpHeader->PermNdx NE PERMNDX_NONE)
                     {
 #ifdef DEBUG
 ////////////////////////dprintfW (L"  RefCntNC in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);
@@ -87,8 +87,8 @@ int ChangeRefCntDir
                 case DFN_HEADER_SIGNATURE:
 #define lpHeader        ((LPDFN_HEADER) lpSig)
 
-                    // Don't change the reference count on Perms
-                    if (lpHeader->Perm)
+                    // Don't change the reference count on permanent functions (i.e. Magic Functions)
+                    if (lpHeader->PermFn)
                     {
 #ifdef DEBUG
 ////////////////////////dprintfW (L"  RefCntNC in " APPEND_NAME L": %08X(res=%d) (%S#%d)", lpHeader, lpHeader->RefCnt, FNLN);

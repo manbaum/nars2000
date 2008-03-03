@@ -206,8 +206,8 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
-////lpHeader->Perm       =          // Already zero from GHND
-////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = 1;
     lpHeader->Rank       = 1;
@@ -331,8 +331,8 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
-////lpHeader->Perm       = 0;       // Already zero from GHND
-////lpHeader->SysVar     = 0;       // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;
@@ -1138,7 +1138,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
-////lpHeader->Perm       = 0;               // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = 0;               // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMLft;

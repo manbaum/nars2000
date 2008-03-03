@@ -166,7 +166,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
-////lpHeader->Perm       = 0;           // Already zero from GHND
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = 0;           // Already zero from GHND
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
@@ -359,7 +359,7 @@ APLBOOL ExpungeName
     if (!lpSymEntry->stFlags.Imm)
         FreeResultGlobalDFV (ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData));
 
-	// Erase the Symbol Table Entry
+    // Erase the Symbol Table Entry
     EraseSTE (lpSymEntry);
 
     return 1;
@@ -367,27 +367,27 @@ APLBOOL ExpungeName
 
 
 //***************************************************************************
-//	EraseSTE
+//  EraseSTE
 //
-//	Erase a Symbol Table Entry
+//  Erase a Symbol Table Entry
 //***************************************************************************
 
 void EraseSTE
-	(LPSYMENTRY lpSymEntry)
+    (LPSYMENTRY lpSymEntry)
 
 {
     // If the entry is not a system name, mark it as empty (e.g., VALUE ERROR)
     if (lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
-	{
-    	STFLAGS stFlagsMT = {0};    	// STE flags for empty entry
+    {
+        STFLAGS stFlagsMT = {0};        // STE flags for empty entry
 
-    	// Fill in mask flag values for erased entry
-    	stFlagsMT.Inuse   = 1;          // Retain Inuse flag
-    	stFlagsMT.ObjName = NEG1U;      // ...    ObjName setting
+        // Fill in mask flag values for erased entry
+        stFlagsMT.Inuse   = 1;          // Retain Inuse flag
+        stFlagsMT.ObjName = NEG1U;      // ...    ObjName setting
 
-    	// Clear the STE flags & data
-    	*(PUINT_PTR) &lpSymEntry->stFlags &= *(PUINT_PTR) &stFlagsMT;
-    	lpSymEntry->stData.stLongest = 0;
+        // Clear the STE flags & data
+        *(PUINT_PTR) &lpSymEntry->stFlags &= *(PUINT_PTR) &stFlagsMT;
+        lpSymEntry->stData.stLongest = 0;
     } // End IF
 } // End EraseSTE
 

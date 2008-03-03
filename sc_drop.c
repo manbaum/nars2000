@@ -5,10 +5,8 @@
 #define STRICT
 #include <windows.h>
 #include <stdio.h>
-#include <time.h>
 
 #include "main.h"
-#include "resdebug.h"
 #include "externs.h"
 #include "aplerrors.h"
 
@@ -50,24 +48,8 @@ BOOL CmdDrop_EM
         // Attempt to open the workspace
         if (!_wremove (wszTailDPFE))
         {
-            SYSTEMTIME SystemTime;
-
-            // Display the current timne & date of the drop
-
-            // Get the current time
-            if (bUseLocalTime)
-                GetLocalTime  (&SystemTime);
-            else
-                GetSystemTime (&SystemTime);
-
-            wsprintfW (wszTemp,
-                       L"%02d/%02d/%04d %2d:%02d:%02d",
-                       SystemTime.wMonth,
-                       SystemTime.wDay,
-                       SystemTime.wYear,
-                       SystemTime.wHour,
-                       SystemTime.wMinute,
-                       SystemTime.wSecond);
+            // Display the current date & time of the drop
+            FormatCurDateTime (wszTemp);
 
             AppendLine (wszTemp, FALSE, TRUE);
 

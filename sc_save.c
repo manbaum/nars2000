@@ -694,6 +694,27 @@ BOOL CmdSave_EM
     CmdSiSinlCom_EM (L"",               // Ptr to command tail
                      FALSE,             // TRUE iff )SINL
                      lpMemSaveWSID);    // Ptr to the file name
+    // Note if the SI is non-empty
+    if (lpMemPTD->SILevel)
+        AppendLine (L"WARNING:  SI non-empty -- not restartable after )LOAD", FALSE, TRUE);
+
+    // Get the length of the []WSID excluding WKSEXT
+    iCmp = lstrlenW (lpMemSaveWSID) - ((sizeof WKSEXT) - 1);
+
+    // Omit the trailing WKSEXT
+    Assert (lpMemSaveWSID[iCmp] EQ L'.');
+    lpMemSaveWSID[iCmp] = L'\0';
+
+    // Copy the WSID & " SAVED "
+    lstrcpyW (lpwszTemp, lpMemSaveWSID),
+    lstrcatW (lpwszTemp, L" SAVED ");
+
+    // Format the current date & time
+    FormatCurDateTime (&lpwszTemp[lstrlenW (lpwszTemp)]);
+
+    // Write out the WSID and save date & time
+    AppendLine (lpwszTemp, FALSE, TRUE);
+
     // Mark as successful
     bRet = TRUE;
 ERROR_EXIT:

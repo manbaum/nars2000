@@ -184,5 +184,34 @@ UINT ConvertWideToName
 
 
 //***************************************************************************
+//  $FormatCurDateTime
+//
+//  Format the current date & time as "dd/mm/yyyy hh:mm:ss"
+//***************************************************************************
+
+void FormatCurDateTime
+    (LPAPLCHAR wszTemp)
+
+{
+    SYSTEMTIME SystemTime;
+
+    // Get the current date & time
+    if (bUseLocalTime)
+        GetLocalTime  (&SystemTime);
+    else
+        GetSystemTime (&SystemTime);
+
+    wsprintfW (wszTemp,
+               L"%02d/%02d/%04d %2d:%02d:%02d",
+               SystemTime.wMonth,
+               SystemTime.wDay,
+               SystemTime.wYear,
+               SystemTime.wHour,
+               SystemTime.wMinute,
+               SystemTime.wSecond);
+} // End FormatCurDateTime
+
+
+//***************************************************************************
 //  End of File: convert.c
 //***************************************************************************

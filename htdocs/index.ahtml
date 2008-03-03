@@ -314,6 +314,7 @@
         <li>Idiom recognition at tokenization time</li>
         <li>Workspaces saved as plain text ASCII files</li>
         <li>Syntax highlighting</li>
+        <li>Language bar</li>
       </ul>
     </div>
 

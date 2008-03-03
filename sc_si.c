@@ -76,7 +76,7 @@ BOOL CmdSiSinlCom_EM
     // ***FIXME*** -- Make sensitive to [n] in lpwszTail
 
 #ifdef DEBUG
-    if (lpMemPTD->lpSISCur EQ NULL)
+    if (lpMemPTD->lpSISCur EQ NULL && lpMemSaveWSID EQ NULL)
        AppendLine (WS_UTF16_ZILDE, FALSE, TRUE);
     else
 #endif

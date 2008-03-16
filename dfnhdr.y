@@ -559,16 +559,16 @@ int fh_yylex
      LPFHLOCALVARS lpfhLocalVars)       // Ptr to local fhLocalVars
 
 {
+    // Check for stopping point
+    if (lpfhLocalVars->lpStop EQ lpfhLocalVars->lpNext)
+        return '\0';
+
     // Return the current token
     lpYYLval->tkToken            = *lpfhLocalVars->lpNext;
     lpYYLval->uStrandLen         =
     lpYYLval->Indirect           = 0;
     lpYYLval->lpYYStrandIndirect = NULL;
     lpYYLval->lpYYStrandBase     = lpfhLocalVars->lpYYStrandBase;
-
-    // Check for stopping point
-    if (lpfhLocalVars->lpStop EQ lpfhLocalVars->lpNext)
-        return '\0';
 
     // Split cases based upon the token type
     switch (lpfhLocalVars->lpNext++->tkFlags.TknType)

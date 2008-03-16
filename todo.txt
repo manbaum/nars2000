@@ -90,7 +90,6 @@ TO DO:  General:  Less Important (post-alpha)
 
 TODO: Session Manager
 ---------------------
-* )SAVE as ASCII plain text file
 * Ensure APL font is installed
 * Language bar to speed entry of APL chars
 *
@@ -179,11 +178,12 @@ DONE:  General
 * ...       monadic down shoe
 * ...       bracket indexed assignment   A[L]{is}R
 * ...       bracket indexed modified assignment  A[L]Fcn{is}R
-* ...       []FC
+* ...       []FC                        (Format Control)
 * ...       []EX R
 * ...       dyadic down tack jot        (format by specification)
 * ...       dyadic dot                  (inner product)
 * ...       []FX R
+* ...       []IC                        (Indeterminate Control)
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector
@@ -212,6 +212,7 @@ DONE:  Session Manager
 * CUA keystrokes:  e.g. Ctrl-RightArrow, etc.
 * Tabs for workspaces
 * Implement Undo
+* )SAVE as ASCII plain text file
 *
 
 

@@ -334,9 +334,9 @@ BOOL CmdSave_EM
 
                             // Format the value
                             lpaplChar =
-                            FormatImmed (lpaplChar,
-                                         stFlags.ImmType,
-                                        &lpSymEntry->stData.stLongest);
+                              FormatImmed (lpaplChar,
+                                           stFlags.ImmType,
+                                          &lpSymEntry->stData.stLongest);
                             // Restore user's precision
                             lpMemPTD->lpSymQuadPP->stData.stInteger = uQuadPP;
 
@@ -354,9 +354,9 @@ BOOL CmdSave_EM
 
                         // Convert the gloabl memory to transfer form
                         lpaplChar =
-                        TransferFormGlb (lpaplChar,
-                                         lpSymEntry->stData.stGlbData,
-                                         lpMemSaveWSID);
+                          TransferFormGlb (lpaplChar,
+                                           lpSymEntry->stData.stGlbData,
+                                           lpMemSaveWSID);
                     } // End IF/ELSE
 
                     // Format the counter
@@ -692,7 +692,7 @@ BOOL CmdSave_EM
                                 lpMemSaveWSID);                     // Ptr to the file name
     // Write out the SI stack to the [SI] section
     CmdSiSinlCom_EM (L"",               // Ptr to command tail
-                     FALSE,             // TRUE iff )SINL
+                     TRUE,              // TRUE iff )SINL
                      lpMemSaveWSID);    // Ptr to the file name
     // Note if the SI is non-empty
     if (lpMemPTD->SILevel)
@@ -712,7 +712,7 @@ BOOL CmdSave_EM
     // Format the current date & time
     FormatCurDateTime (&lpwszTemp[lstrlenW (lpwszTemp)]);
 
-    // Write out the WSID and save date & time
+    // Write out the WSID and SAVED date & time
     AppendLine (lpwszTemp, FALSE, TRUE);
 
     // Mark as successful
@@ -1144,9 +1144,9 @@ LPAPLCHAR TransferFormGlb
 
                     // Format the value
                     lpaplChar =
-                    FormatImmed (lpaplChar,
-                                 lpSymEntry->stFlags.ImmType,
-                                &lpSymEntry->stData.stLongest);
+                      FormatImmed (lpaplChar,
+                                   lpSymEntry->stFlags.ImmType,
+                                  &lpSymEntry->stData.stLongest);
 #undef  lpSymEntry
                     // Restore user's precision
                     lpMemPTD->lpSymQuadPP->stData.stInteger = uQuadPP;
@@ -1163,8 +1163,8 @@ LPAPLCHAR TransferFormGlb
                     {
                         // Append the HGLOBAL name
                         lpaplChar +=
-                        wsprintfW (lpaplChar,
-                                   L"REUSED ");
+                          wsprintfW (lpaplChar,
+                                     L"REUSED ");
                     } else
                     {
                         // Get the global's Type
@@ -1179,9 +1179,9 @@ LPAPLCHAR TransferFormGlb
                         } // End IF
 #undef  APPEND_TEXT
                         lpaplChar =
-                        TransferFormGlb (lpaplChar,
-                                        hGlbSub,
-                                        lpMemSaveWSID);
+                          TransferFormGlb (lpaplChar,
+                                          hGlbSub,
+                                          lpMemSaveWSID);
 #undef  hGlbSub
                         if (!IsSimple (aplTypeSub))
                         {

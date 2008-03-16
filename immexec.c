@@ -77,7 +77,7 @@ VOID CALLBACK WaitForImmExecStmt
 #ifdef DEBUG
     dwRet =
 #endif
-    UnregisterWait (lpMemWFSO->WaitHandle); lpMemWFSO->WaitHandle = NULL;
+      UnregisterWait (lpMemWFSO->WaitHandle); lpMemWFSO->WaitHandle = NULL;
     Assert (dwRet EQ 0 || dwRet EQ ERROR_IO_PENDING);
 
     // Signal the next level (if appropriate)
@@ -410,10 +410,10 @@ DWORD WINAPI ImmExecStmtInThread
         {
             // Execute the statement in immediate execution mode
             exitType =
-            ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
-                         FALSE,         // TRUE iff free the lpwszLine on completion
-                         TRUE,          // TRUE iff wait until finished
-                         (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+              ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                           FALSE,               // TRUE iff free the lpwszLine on completion
+                           TRUE,                // TRUE iff wait until finished
+                           (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
             // Split cases based upon the exit type
             switch (exitType)
             {
@@ -454,11 +454,11 @@ DWORD WINAPI ImmExecStmtInThread
 
         // Run the parser in a separate thread
         exitType =
-        ParseLine (hWndSM,              // Session Manager window handle
-                   NULL,                // Line text global memory handle
-                   hGlbToken,           // Tokenized line global memory handle
-                   lpwszCompLine,       // Ptr to the complete line
-                   hGlbPTD);            // PerTabData global memory handle
+          ParseLine (hWndSM,                // Session Manager window handle
+                     NULL,                  // Line text global memory handle
+                     hGlbToken,             // Tokenized line global memory handle
+                     lpwszCompLine,         // Ptr to the complete line
+                     hGlbPTD);              // PerTabData global memory handle
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -481,10 +481,10 @@ DWORD WINAPI ImmExecStmtInThread
                                         hWndSM);                        // Window handle to the Session Manager
                     // Execute []ELX in immediate execution mode
 ////////////////////exitType =
-                    ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX",   // Ptr to line to execute
-                                 FALSE,         // TRUE iff free the lpwszLine on completion
-                                 TRUE,          // TRUE iff wait until finished
-                                 (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+                      ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                                   FALSE,           // TRUE iff free the lpwszLine on completion
+                                   TRUE,            // TRUE iff wait until finished
+                                   (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
                     // Set the reset flag
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
@@ -519,10 +519,10 @@ DWORD WINAPI ImmExecStmtInThread
             case EXITTYPE_QUADERROR_EXEC:
                 // Execute []ELX in immediate execution mode
 ////////////////exitType =
-                ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX",   // Ptr to line to execute
-                             FALSE,         // TRUE iff free the lpwszLine on completion
-                             TRUE,          // TRUE iff wait until finished
-                             (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+                  ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
+                               FALSE,           // TRUE iff free the lpwszLine on completion
+                               TRUE,            // TRUE iff wait until finished
+                               (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 

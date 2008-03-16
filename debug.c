@@ -415,15 +415,19 @@ LRESULT APIENTRY DBWndProc
             // Get the thread's PerTabData global memory handle
             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
+            // In case hGlbPTD has already been freed, ...
+            if (IsGlbPtr (hGlbPTD))
+            {
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Unhook the LclListboxWndProc
-            SetWindowLongW (hWndLB,
-                            GWL_WNDPROC,
-                            (long) lpMemPTD->lpfnOldListboxWndProc);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+                // Unhook the LclListboxWndProc
+                SetWindowLongW (hWndLB,
+                                GWL_WNDPROC,
+                                (long) lpMemPTD->lpfnOldListboxWndProc);
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+            } // End IF
 
             return FALSE;           // We handled the msg
 

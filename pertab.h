@@ -85,39 +85,40 @@ typedef struct tagPERTABDATA
                  lpSymQuadCT  ,     // A0:  ...            []CT
                  lpSymQuadELX ,     // A4:  ...            []ELX
                  lpSymQuadFC  ,     // A8:  ...            []FC
-                 lpSymQuadIO  ,     // AC:  ...            []IO
-                 lpSymQuadLX  ,     // B0:  ...            []LX
-                 lpSymQuadPP  ,     // B4:  ...            []PP
-                 lpSymQuadPR  ,     // B8:  ...            []PR
-                 lpSymQuadPW  ,     // BC:  ...            []PW
-                 lpSymQuadRL  ,     // C0:  ...            []RL
-                 lpSymQuadSA  ,     // C4:  ...            []SA
-                 lpSymQuadWSID;     // C8:  ...            []WSID
+                 lpSymQuadIC  ,     // AC:  ...            []IC
+                 lpSymQuadIO  ,     // B0:  ...            []IO
+                 lpSymQuadLX  ,     // B4:  ...            []LX
+                 lpSymQuadPP  ,     // B8:  ...            []PP
+                 lpSymQuadPR  ,     // BC:  ...            []PR
+                 lpSymQuadPW  ,     // C0:  ...            []PW
+                 lpSymQuadRL  ,     // C4:  ...            []RL
+                 lpSymQuadSA  ,     // C8:  ...            []SA
+                 lpSymQuadWSID;     // CC:  ...            []WSID
     struct tagSIS_HEADER
-                *lpSISBeg,          // CC:  Ptr to State Indicator Stack beginning
-                *lpSISCur,          // D0:  ...                          current (may be NULL if SI is empty)
-                *lpSISNxt;          // D4:  ...                          next
+                *lpSISBeg,          // D0:  Ptr to State Indicator Stack beginning
+                *lpSISCur,          // D4:  ...                          current (may be NULL if SI is empty)
+                *lpSISNxt;          // D8:  ...                          next
     struct tagPLLOCALVARS
-                *lpPLCur;           // D8:  Ptr to current plLocalVars struct
+                *lpPLCur;           // DC:  Ptr to current plLocalVars struct
                                     //      in thread creation order (NULL = none)
-    WNDPROC lpfnOldListboxWndProc,  // DC:  Save area for old Listbox procedure
-            lpfnOldEditCtrlWndProc; // E0:  Save area for old Edit Control procedure
+    WNDPROC lpfnOldListboxWndProc,  // E0:  Save area for old Listbox procedure
+            lpfnOldEditCtrlWndProc; // E4:  Save area for old Edit Control procedure
 
     // Magic function global memory handles
-    HGLOBAL      hGlbMF_MonIota,    // E4:  Extended Monadic Iota
-                 hGlbMF_DydIota,    // E8:  Extended Dyadic Iota
-                 hGlbMF_MonUpShoe,  // EC:  Monadic UpShoe
-                 hGlbMF_DydTilde;   // F0:  Dyadic Tilde
+    HGLOBAL      hGlbMF_MonIota,    // E8:  Extended Monadic Iota
+                 hGlbMF_DydIota,    // EC:  Extended Dyadic Iota
+                 hGlbMF_MonUpShoe,  // F0:  Monadic UpShoe
+                 hGlbMF_DydTilde;   // F4:  Dyadic Tilde
 
-    UINT         SILevel;           // F4:  Current State Indicator level
-    HANDLE       hSemaDelay;        // F8:  Delay semaphore (NULL if no delay active)
-    EXIT_TYPES   ImmExecExitType;   // FC:  ImmExec exit type (see EXIT_TYPES)
-    PL_YYSTYPE   YYResExec;         //100:  Result from execute primitive
+    UINT         SILevel;           // F8:  Current State Indicator level
+    HANDLE       hSemaDelay;        // FC:  Delay semaphore (NULL if no delay active)
+    EXIT_TYPES   ImmExecExitType;   //100:  ImmExec exit type (see EXIT_TYPES)
+    PL_YYSTYPE   YYResExec;         //104:  Result from execute primitive
 
-    APLCHAR      cQuadPR;           //130:  []PR     (' ') (When a char scalar)
-    APLBOOL      bQuadxSA;          //132:  []SA (in its index form)
-    char         DPFE[_MAX_PATH];   //133:  The Drive, Path, Filename, & Ext of the WS
-                                    //237:  Length
+    APLCHAR      cQuadPR;           //134:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //136:  []SA (in its index form)
+    char         DPFE[_MAX_PATH];   //137:  The Drive, Path, Filename, & Ext of the WS
+                                    //23B:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

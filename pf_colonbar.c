@@ -4,6 +4,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <float.h>
 
 #include "main.h"
 #include "aplerrors.h"
@@ -136,6 +137,10 @@ APLFLOAT PrimFnMonColonBarFisI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for indeterminates:  {div} 0
+    if (aplIntegerRht EQ 0)
+        return TranslateQuadICIndex (ICNDX_DIV0);
+
     // The FPU handles overflow and underflow for us
     return (1 / (APLFLOAT) aplIntegerRht);
 } // End PrimFnMonColonBarFisI
@@ -152,6 +157,10 @@ APLFLOAT PrimFnMonColonBarFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for indeterminates:  {div} 0
+    if (aplFloatRht EQ 0)
+        return TranslateQuadICIndex (ICNDX_DIV0);
+
     // The FPU handles overflow and underflow for us
     return (1 / aplFloatRht);
 } // End PrimFnMonColonBarFisF
@@ -206,6 +215,11 @@ APLFLOAT PrimFnDydColonBarFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for indeterminates:  0 {div} 0
+    if (aplIntegerLft EQ 0
+     && aplIntegerRht EQ 0)
+        return TranslateQuadICIndex (ICNDX_0DIV0);
+
     // The FPU handles overflow and underflow for us
     return (((APLFLOAT) aplIntegerLft) / (APLFLOAT) aplIntegerRht);
 } // End PrimFnDydColonBarFisIvI
@@ -223,6 +237,21 @@ APLFLOAT PrimFnDydColonBarFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for indeterminates:  0 {div} 0
+    if (aplFloatLft EQ 0
+     && aplFloatRht EQ 0)
+        return TranslateQuadICIndex (ICNDX_0DIV0);
+
+    // Check for indeterminates:  _ {div} _ (same or different signs)
+    if (!_finite (aplFloatLft)
+     && !_finite (aplFloatRht))
+    {
+        if ((aplFloatLft > 0) EQ (aplFloatRht > 0))
+            return TranslateQuadICIndex (ICNDX_PiDIVPi);
+        else
+            return TranslateQuadICIndex (ICNDX_NiDIVPi);
+    } // End IF
+
     // The FPU handles overflow and underflow for us
     return (aplFloatLft / aplFloatRht);
 } // End PrimFnDydColonBarFisFvF

@@ -918,7 +918,7 @@ BOOL ModifyAssignNameVals_EM
         LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
         lpYYRes =
-        ExecFunc_EM_YY (&lpMemName[uName].tkToken, lpYYFcnStr, lptkVal);
+          ExecFunc_EM_YY (&lpMemName[uName].tkToken, lpYYFcnStr, lptkVal);
 
         if (lpYYRes)
         {

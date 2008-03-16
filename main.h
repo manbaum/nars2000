@@ -57,7 +57,7 @@ default:        \
 #define DBGENTER    if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
 #define DBGLEAVE    if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
 
-#define IsGlbPtr(a) ((a) NE NULL && MyGlobalFlags (a) NE GMEM_INVALID_HANDLE)
+#define IsGlbPtr(a) (((a) NE NULL) && (GlobalFlags (a) NE GMEM_INVALID_HANDLE))
 
 #ifdef DEBUG_ALLOCFREE
 #define DbgGlobalAlloc(uFlags,ByteRes) \

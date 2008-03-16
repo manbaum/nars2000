@@ -137,9 +137,6 @@ APLFLOAT PrimFnMonStarFisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow
-    // ***FIXME*** -- Possible loss of precision
-
     return exp ((APLFLOAT) aplIntegerRht);
 } // End PrimFnMonStarFisI
 
@@ -155,8 +152,6 @@ APLFLOAT PrimFnMonStarFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow
-
     return exp (aplFloatRht);
 } // End PrimFnMonStarFisF
 
@@ -212,8 +207,10 @@ APLFLOAT PrimFnDydStarFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow/underflow
-    // ***FIXME*** -- Possible loss of precision
+    // Check for indeterminates:  0 * 0
+    if (aplIntegerLft EQ 0
+     && aplIntegerRht EQ 0)
+        return TranslateQuadICIndex (ICNDX_0EXP0);
 
     return pow ((APLFLOAT) aplIntegerLft, (APLFLOAT) aplIntegerRht);
 } // End PrimFnDydStarFisIvI
@@ -231,7 +228,10 @@ APLFLOAT PrimFnDydStarFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow/underflow
+    // Check for indeterminates:  0 * 0
+    if (aplFloatLft EQ 0
+     && aplFloatRht EQ 0)
+        return TranslateQuadICIndex (ICNDX_0EXP0);
 
     return pow (aplFloatLft, aplFloatRht);
 } // End PrimFnDydStarFisFvF

@@ -446,9 +446,9 @@ void DisplayGlobals
                         } else
                         {
                             lpwsz =
-                            FormatImmed (aplArrChar,
-                                         TranslateArrayTypeToImmType (lpHeader->ArrType),
-                                         (LPAPLLONGEST) lpData);
+                              FormatImmed (aplArrChar,
+                                           TranslateArrayTypeToImmType (lpHeader->ArrType),
+                                           (LPAPLLONGEST) lpData);
                             // Delete the trailing blank
                             lpwsz[-1] = L'\0';
                         } // End IF/ELSE

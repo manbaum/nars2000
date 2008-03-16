@@ -272,8 +272,6 @@ APLFLOAT PrimFnDydCircleFisIvI
 
         case  3:        // tan (R)
 #if TRUE
-            DbgBrk ();
-
             _asm
             {                           //  ST0     ST1
                 fild    aplIntegerRht;  //  Rht
@@ -447,7 +445,7 @@ APLFLOAT PrimFnDydCircleFisFvF
             return aplFloatTmp;
 
         case -6:        // acosh (R)
-                        // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5)
+                        // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
             aplFloatTmp = gsl_acosh (aplFloatRht);
 
             // Check for NaN

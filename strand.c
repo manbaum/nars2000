@@ -1231,9 +1231,9 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     {
         // Resize the block downwards
         hGlbStr =
-        MyGlobalReAlloc (hGlbStr,
-                         (UINT) ByteRes - (uIniLen - uActLen) * sizeof (PL_YYSTYPE),
-                         GHND);
+          MyGlobalReAlloc (hGlbStr,
+                           (UINT) ByteRes - (uIniLen - uActLen) * sizeof (PL_YYSTYPE),
+                           GHND);
     } // End IF/ELSE/IF
 
     Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***

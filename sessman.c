@@ -610,10 +610,10 @@ LRESULT APIENTRY SMWndProc
 
             // Allocate virtual memory for the []ERROR/[]ES buffer
             p = lpMemPTD->lpwszQuadErrorMsg =
-            VirtualAlloc (NULL,          // Any address
-                          DEF_QUADERROR_MAXSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
-                          MEM_RESERVE,
-                          PAGE_READWRITE);
+              VirtualAlloc (NULL,       // Any address
+                            DEF_QUADERROR_MAXSIZE * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -622,7 +622,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_NCCREATE:  VirtualAlloc for <lpwszQuadErrorMsg> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Lock the memory to get a ptr to it
@@ -672,16 +672,16 @@ LRESULT APIENTRY SMWndProc
 
             // Allocate virtual memory for the Undo Buffer
             p = lpUndoBeg =
-            VirtualAlloc (NULL,          // Any address
-                          DEF_UNDOBUF_MAXSIZE * sizeof (lpUndoBeg[0]),
-                          MEM_RESERVE,
-                          PAGE_READWRITE);
+              VirtualAlloc (NULL,       // Any address
+                            DEF_UNDOBUF_MAXSIZE * sizeof (lpUndoBeg[0]),
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
             if (!p)
             {
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpUndoBeg> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -725,7 +725,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszCurLine> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -753,7 +753,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszTmpLine> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -781,7 +781,7 @@ LRESULT APIENTRY SMWndProc
 ////////////    // ***FIXME*** -- WS FULL before we got started???
 ////////////    DbgMsg ("WM_CREATE:  VirtualAlloc for <lptkStackBase> failed");
 ////////////
-////////////    return -1;          // Mark as failed
+////////////    return -1;              // Mark as failed
 ////////////} // End IF
 ////////////
 ////////////// Commit the intial size
@@ -809,7 +809,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpszNumAlp> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -837,7 +837,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszString> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -865,7 +865,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpHshTab> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -915,7 +915,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSymTab> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -962,7 +962,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpStateInd> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -989,7 +989,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpYYRes> failed");
 
-                return -1;          // Mark as failed
+                return -1;              // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -1388,7 +1388,7 @@ LRESULT APIENTRY SMWndProc
 
                     // Save the (new) current line
                     uLineLen =
-                    SendMessageW (hWndEC, EM_GETLINE, max (uLineNum, 1) - 1, (LPARAM) lpMemPTD->lpwszCurLine);
+                      SendMessageW (hWndEC, EM_GETLINE, max (uLineNum, 1) - 1, (LPARAM) lpMemPTD->lpwszCurLine);
 
                     // Ensure properly terminated
                     lpMemPTD->lpwszCurLine[uLineLen] = L'\0';
@@ -1419,7 +1419,7 @@ LRESULT APIENTRY SMWndProc
 
                     // Save the (new) current line
                     uLineLen =
-                    SendMessageW (hWndEC, EM_GETLINE, uLineNum + 1, (LPARAM) lpMemPTD->lpwszCurLine);
+                      SendMessageW (hWndEC, EM_GETLINE, uLineNum + 1, (LPARAM) lpMemPTD->lpwszCurLine);
 
                     // Ensure properly terminated
                     lpMemPTD->lpwszCurLine[uLineLen] = L'\0';

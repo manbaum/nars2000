@@ -218,7 +218,8 @@ typedef enum tagPERM_NDX
     PERMNDX_SAEXIT,             // 07:  'EXIT'
     PERMNDX_SAOFF,              // 08:  'OFF'
     PERMNDX_QUADFC,             // 09:  []FC default
-    PERMNDX_QUADAV,             // 0A:  []AV
+    PERMNDX_QUADIC,             // 0A:  []IC default
+    PERMNDX_QUADAV,             // 0B:  []AV
 } PERM_NDX;
 
 // Variable array header

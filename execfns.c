@@ -446,6 +446,8 @@ LPPL_YYSTYPE ExecOp1_EM_YY
                                       lpYYFcnStrOpr,// Ptr to operator function strand
                                       lptkRhtArg);  // Ptr to right arg token
         case UTF16_STILETILDE:  // Partition
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
+
             DbgBrk ();          // ***FINISHME*** -- UTF16_STILETILDE
 
 
@@ -488,31 +490,33 @@ LPPL_YYSTYPE ExecOp1_EM_YY
 
 LPPL_YYSTYPE ExecOp2_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
-     LPPL_YYSTYPE lpYYFcnStr,           // Ptr to function strand
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
     LPTOKEN lptkAxis;           // Ptr to axis token (may be NULL)
 
     // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStr);
+    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
 
     // Split cases based upon the type of the dyadic operator
-    switch (lpYYFcnStr->tkToken.tkData.tkChar)
+    switch (lpYYFcnStrOpr->tkToken.tkData.tkChar)
     {
         case UTF16_JOTDOT:      // Outer product
-            return PrimOpJotDot_EM_YY (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
-                                       lpYYFcnStr,  // Ptr to operator function strand
-                                       lptkRhtArg); // Ptr to right arg token
+            return PrimOpJotDot_EM_YY (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                                       lpYYFcnStrOpr,   // Ptr to operator function strand
+                                       lptkRhtArg);     // Ptr to right arg token
         case UTF16_DOT:         // Inner product
-            return PrimOpDot_EM_YY    (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
-                                       lpYYFcnStr,  // Ptr to operator function strand
-                                       lptkRhtArg); // Ptr to right arg token
+            return PrimOpDot_EM_YY    (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                                       lpYYFcnStrOpr,   // Ptr to operator function strand
+                                       lptkRhtArg);     // Ptr to right arg token
         case UTF16_JOT:         // Compose
-            return PrimOpJot_EM_YY    (lptkLftArg,  // Ptr to left arg token (may be NULL if monadic)
-                                       lpYYFcnStr,  // Ptr to operator function strand
-                                       lptkRhtArg); // Ptr to right arg token
+            return PrimOpJot_EM_YY    (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                                       lpYYFcnStrOpr,   // Ptr to operator function strand
+                                       lptkRhtArg);     // Ptr to right arg token
         case UTF16_DIERESISDEL: // Dual
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
+
             DbgBrk ();          // ***FINISHME*** -- UTF16_DIERESISDEL
 
 
@@ -523,6 +527,8 @@ LPPL_YYSTYPE ExecOp2_EM_YY
             return NULL;        // break;
 
         case UTF16_DIERESISJOT: // Rank
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
+
             DbgBrk ();          // ***FINISHME*** -- UTF16_DIERESISJOT
 
 
@@ -533,6 +539,8 @@ LPPL_YYSTYPE ExecOp2_EM_YY
             return NULL;        // break;
 
         case UTF16_DIERESISDOWNTACK:// Convolution
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
+
             DbgBrk ();          // ***FINISHME*** -- UTF16_DIERESISDOWNTACK
 
 
@@ -543,6 +551,8 @@ LPPL_YYSTYPE ExecOp2_EM_YY
             return NULL;        // break;
 
         case UTF16_DIERESISSTAR:// Power
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken);
+
             DbgBrk ();          // ***FINISHME*** -- UTF16_DIERESISSTAR
 
 

@@ -7,7 +7,9 @@
 #define DEF_QUADCT_CWS  3E-15
 #define DEF_QUADxCT_CWS 0x3CEB05876E5B0120  // 3E-15 in hex
 #define DEF_QUADFC_CWS  L".,*0_" WS_UTF16_OVERBAR
-#define DEF_QUADFC_GLB  hGlbQuadFC
+#define DEF_QUADIC_CWS  aplDefaultIC
+#define DEF_QUADFC_GLB  hGlbQuadFC_SYS
+#define DEF_QUADIC_GLB  hGlbQuadIC_SYS
 #define DEF_QUADIO_CWS      1
 #define DEF_QUADPP_CWS     10
 #define DEF_QUADPW_CWS     80
@@ -56,16 +58,16 @@ typedef enum tagSA_VALUES
 } SA_VALUES;
 
 // Format Control
-typedef enum tagFC_VALUES
+typedef enum tagFC_INDICES
 {
-    FCVAL_DECIMAL_SEP,      // 00:  Decimal separator (L'.')
-    FCVAL_THOUSANDS_SEP,    // 01:  Thousands separator (L',')
-    FCVAL_FBE_8_FILL,       // 02:  Format-by-example '8' fill (L'*')
-    FCVAL_OVERFLOW_FILL,    // 03:  Format-by-example overflow fill (L'0')
-    FCVAL_BLANK_FILL,       // 04:  Blank fill (L'_')
-    FCVAL_OVERBAR,          // 05:  Overbar (WS_UTF16_OVERBAR)
-    FCVAL_LENGTH,           // 06:  Length
-} FC_VALUES;
+    FCNDX_DECIMAL_SEP,      // 00:  Decimal separator (L'.')
+    FCNDX_THOUSANDS_SEP,    // 01:  Thousands separator (L',')
+    FCNDX_FBE_8_FILL,       // 02:  Format-by-example '8' fill (L'*')
+    FCNDX_OVERFLOW_FILL,    // 03:  Format-by-example overflow fill (L'0')
+    FCNDX_BLANK_FILL,       // 04:  Blank fill (L'_')
+    FCNDX_OVERBAR,          // 05:  Overbar (WS_UTF16_OVERBAR)
+    FCNDX_LENGTH,           // 06:  Length
+} FC_INDICES;
 
 
 //***************************************************************************

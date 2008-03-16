@@ -60,12 +60,12 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
 
 
 //***************************************************************************
-//  $InitMagicFunction
+//  $Init1MagicFunction
 //
 //  Initialize a single magic function
 //***************************************************************************
 
-HGLOBAL InitMagicFunction
+HGLOBAL Init1MagicFunction
     (LPMAGIC_FUNCTION lpMagicFunction,  // Ptr to magic function struc
      LPPERTABDATA     lpMemPTD,         // Ptr to PerTabData global memory
      HWND             hWndEC)           // Edit Control window handle
@@ -149,10 +149,10 @@ HGLOBAL InitMagicFunction
 
     // Allocate virtual memory for the Variable Strand accumulator
     fhLocalVars.lpYYStrandStart =
-        VirtualAlloc (NULL,      // Any address
-                      DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
-                      MEM_RESERVE,
-                      PAGE_READWRITE);
+      VirtualAlloc (NULL,       // Any address
+                    DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
+                    MEM_RESERVE,
+                    PAGE_READWRITE);
     if (!fhLocalVars.lpYYStrandStart)
     {
         MessageBox (hWndEC,
@@ -463,7 +463,7 @@ NORMAL_EXIT:
     } // End IF
 
     return hGlbDfnHdr;
-} // End InitMagicFunction
+} // End Init1MagicFunction
 
 
 //***************************************************************************
@@ -486,10 +486,10 @@ BOOL InitMagicFunctions
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Define the magic functions
-    lpMemPTD->hGlbMF_MonIota   = InitMagicFunction (&MF_MonIota,   lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_DydIota   = InitMagicFunction (&MF_DydIota,   lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_MonUpShoe = InitMagicFunction (&MF_MonUpShoe, lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_DydTilde  = InitMagicFunction (&MF_DydTilde,  lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_MonIota   = Init1MagicFunction (&MF_MonIota,   lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_DydIota   = Init1MagicFunction (&MF_DydIota,   lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_MonUpShoe = Init1MagicFunction (&MF_MonUpShoe, lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_DydTilde  = Init1MagicFunction (&MF_DydTilde,  lpMemPTD, hWndEC);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

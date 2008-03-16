@@ -441,25 +441,25 @@ HWND CreateToolTip
 
     // Create the ToolTip window
     hWnd =
-    CreateWindowEx (0L,             // Extended styles
+      CreateWindowEx (0L,               // Extended styles
 #if QTT
-                    WC_TOOLTIPS,    // Class for Qcontrols
+                      WC_TOOLTIPS,      // Class for Qcontrols
 #else
-                    TOOLTIPS_CLASS, // Class for MS Controls
+                      TOOLTIPS_CLASS,   // Class for MS Controls
 #endif
-                    NULL,           // Window title
-                    0
-                  | TTS_NOANIMATE
-                  | TTS_ALWAYSTIP
-                    ,               // Styles
-                    CW_USEDEFAULT,  // X-coord
-                    CW_USEDEFAULT,  // Y-...
-                    CW_USEDEFAULT,  // Width
-                    CW_USEDEFAULT,  // Height
-                    NULL,           // Parent window
-                    NULL,           // Menu
-                    _hInstance,     // Instance
-                    NULL);          // No extra data
+                      NULL,             // Window title
+                      0
+                    | TTS_NOANIMATE
+                    | TTS_ALWAYSTIP
+                      ,                 // Styles
+                      CW_USEDEFAULT,    // X-coord
+                      CW_USEDEFAULT,    // Y-...
+                      CW_USEDEFAULT,    // Width
+                      CW_USEDEFAULT,    // Height
+                      NULL,             // Parent window
+                      NULL,             // Menu
+                      _hInstance,       // Instance
+                      NULL);            // No extra data
 
     if (hWnd EQ NULL)
     {
@@ -660,12 +660,12 @@ LRESULT APIENTRY MFWndProc
 
             // *************** Image Lists *****************************
             hImageList =
-            ImageList_Create (IMAGE_CX,         // Common width in pixels
-                              IMAGE_CY,         // ...    height ...
-                              ILC_COLOR32
-                            | ILC_MASK,         // Flags
-                              1,                // Max # images
-                              0);               // # images by which the list can grow
+              ImageList_Create (IMAGE_CX,       // Common width in pixels
+                                IMAGE_CY,       // ...    height ...
+                                ILC_COLOR32
+                              | ILC_MASK,       // Flags
+                                1,              // Max # images
+                                0);             // # images by which the list can grow
             if (!hImageList)
                 return -1;          // Stop the whole process
 
@@ -1640,16 +1640,16 @@ BOOL InitInstance
 
     // Allocate virtual memory for the char temporary storage
     lpszTemp =
-    VirtualAlloc (NULL,         // Any address
-                  DEF_CTEMP_MAXSIZE * sizeof (char),
-                  MEM_RESERVE,
-                  PAGE_READWRITE);
+      VirtualAlloc (NULL,       // Any address
+                    DEF_CTEMP_MAXSIZE * sizeof (char),
+                    MEM_RESERVE,
+                    PAGE_READWRITE);
     if (!lpszTemp)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("InitInstance:  VirtualAlloc for <lpszTemp> failed");
 
-        return FALSE;       // Mark as failed
+        return FALSE;           // Mark as failed
     } // End IF
 
     // Commit the intial size
@@ -1660,10 +1660,10 @@ BOOL InitInstance
 
     // Allocate virtual memory for the WCHAR temporary storage
     lpwszTemp =
-    VirtualAlloc (NULL,         // Any address
-                  DEF_WTEMP_MAXSIZE * sizeof (WCHAR),
-                  MEM_RESERVE,
-                  PAGE_READWRITE);
+      VirtualAlloc (NULL,       // Any address
+                    DEF_WTEMP_MAXSIZE * sizeof (WCHAR),
+                    MEM_RESERVE,
+                    PAGE_READWRITE);
     if (!lpwszTemp)
     {
         // ***FIXME*** -- WS FULL before we got started???
@@ -1680,16 +1680,16 @@ BOOL InitInstance
 
     // Allocate virtual memory for the WCHAR Formatting storage
     lpwszFormat =
-    VirtualAlloc (NULL,         // Any address
-                  DEF_WFORMAT_MAXSIZE * sizeof (WCHAR),
-                  MEM_RESERVE,
-                  PAGE_READWRITE);
+      VirtualAlloc (NULL,       // Any address
+                    DEF_WFORMAT_MAXSIZE * sizeof (WCHAR),
+                    MEM_RESERVE,
+                    PAGE_READWRITE);
     if (!lpwszFormat)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("InitInstance:  VirtualAlloc for <lpwszFormat> failed");
 
-        return FALSE;       // Mark as failed
+        return FALSE;           // Mark as failed
     } // End IF
 
     // Commit the intial size
@@ -1700,16 +1700,16 @@ BOOL InitInstance
 #ifdef DEBUG
     // Allocate virtual memory for the char debug storage
     lpszDebug =
-    VirtualAlloc (NULL,         // Any address
-                  DEF_DEBUG_MAXSIZE * sizeof (char),
-                  MEM_RESERVE,
-                  PAGE_READWRITE);
+      VirtualAlloc (NULL,       // Any address
+                    DEF_DEBUG_MAXSIZE * sizeof (char),
+                    MEM_RESERVE,
+                    PAGE_READWRITE);
     if (!lpszDebug)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("InitInstance:  VirtualAlloc for <lpszDebug> failed");
 
-        return FALSE;       // Mark as failed
+        return FALSE;           // Mark as failed
     } // End IF
 
     // Commit the intial size
@@ -1720,16 +1720,16 @@ BOOL InitInstance
 
     // Allocate virtual memory for the WCHAR debug storage
     lpwszDebug =
-    VirtualAlloc (NULL,         // Any address
-                  DEF_DEBUG_MAXSIZE * sizeof (WCHAR),
-                  MEM_RESERVE,
-                  PAGE_READWRITE);
+      VirtualAlloc (NULL,       // Any address
+                    DEF_DEBUG_MAXSIZE * sizeof (WCHAR),
+                    MEM_RESERVE,
+                    PAGE_READWRITE);
     if (!lpwszDebug)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("InitInstance:  VirtualAlloc for <lpwszDebug> failed");
 
-        return FALSE;       // Mark as failed
+        return FALSE;           // Mark as failed
     } // End IF
 
     // Commit the intial size

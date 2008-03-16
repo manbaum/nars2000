@@ -563,12 +563,12 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     } else
     if (aplNELMRes)
         bRet =
-        PrimFnDydRhoRhtCopyData (lptkRhtArg,        // Ptr to right arg token
-                                 aplTypeRes,        // Result storage type
-                                 aplNELMRes,        // Result NELM
-                                 aplRankRes,        // Result rank
-                                 lpMemRes,          // Ptr to result memory
-                                 lptkFunc);         // Ptr to function token
+          PrimFnDydRhoRhtCopyData (lptkRhtArg,      // Ptr to right arg token
+                                   aplTypeRes,      // Result storage type
+                                   aplNELMRes,      // Result NELM
+                                   aplRankRes,      // Result rank
+                                   lpMemRes,        // Ptr to result memory
+                                   lptkFunc);       // Ptr to function token
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 

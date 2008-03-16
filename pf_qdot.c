@@ -4,6 +4,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <float.h>
 #include <math.h>
 
 #define __GSL_MATRIX_COMPLEX_LONG_DOUBLE_H__
@@ -157,6 +158,7 @@ APLINT PrimFnMonQuoteDotIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    APLFLOAT aplFloatRes;
     static APLINT factorial[] =
     {
                     1,      //  0
@@ -182,9 +184,18 @@ APLINT PrimFnMonQuoteDotIisI
   2432902008176640000,      // 20
     };
 
-    // Check for DOMAIN ERROR
+    // Check for indeterminates:  !N for integer N < 0
     if (aplIntegerRht < 0)
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    {
+        // Get the result as float
+        aplFloatRes = TranslateQuadICIndex (ICNDX_QDOTn);
+
+        // If it's infinite, ...
+        if (!_finite (aplFloatRes))
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+        else
+            return (APLINT) aplFloatRes;
+    } // End IF
 
     // Check for results too large to express as integers
     if (aplIntegerRht > 20)
@@ -209,13 +220,13 @@ APLFLOAT PrimFnMonQuoteDotFisF
     INT      iRet;
     gsl_sf_result gsr = {0};
 
-    // Check for DOMAIN ERROR
+    // Check for indeterminates:  !N for integer N < 0
     if (aplFloatRht < 0)
     {
         // Attempt to convert the float to an integer using System CT
         (void) FloatToAplint_SCT (aplFloatRht, &iRet);
         if (iRet)
-            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+            return TranslateQuadICIndex (ICNDX_QDOTn);
     } // End IF
 
     // Use the GNU Scientific Library Gamma function

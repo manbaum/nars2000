@@ -564,10 +564,10 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Create a semaphore
     hSemaphore =
     lpMemPTD->lpSISCur->hSemaphore =
-    CreateSemaphore (NULL,              // No security attrs
-                     0,                 // Initial count (non-signalled)
-                     64*1024,           // Maximum count
-                     NULL);             // No name
+      CreateSemaphore (NULL,            // No security attrs
+                       0,               // Initial count (non-signalled)
+                       64*1024,         // Maximum count
+                       NULL);           // No name
     // Loop through the function lines
     while (0 < uLineNum && uLineNum <= lpMemPTD->lpSISCur->numFcnLines)
     {
@@ -607,11 +607,11 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 
         // Execute the function line
         exitType =
-        ParseLine (hWndSM,                  // Session Manager window handle
-                   hGlbTxtLine,             // Line text global memory handle
-                   hGlbTknLine,             // Tokenixed line global memory handle
-                   NULL,                    // Ptr to line text global memory
-                   hGlbPTD);                // PerTabData global memory handle
+          ParseLine (hWndSM,                // Session Manager window handle
+                     hGlbTxtLine,           // Line text global memory handle
+                     hGlbTknLine,           // Tokenixed line global memory handle
+                     NULL,                  // Ptr to line text global memory
+                     hGlbPTD);              // PerTabData global memory handle
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
 

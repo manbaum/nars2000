@@ -295,38 +295,95 @@ void GetRegStr
 //***************************************************************************
 //  $GetRegGlbChar
 //
+//  Get a registry HGLOBAL value as an APLCHAR.
+//***************************************************************************
+
+HGLOBAL GetRegGlbChar
+    (HKEY    hKey,                              // Handle of root key
+     LPCHAR  pSubKey,                           // Ptr to key subordinate to root
+     LPCHAR  pKeyStr,                           // Ptr to name of value to query
+     HGLOBAL hDefVal,                           // Default value global memory handle
+     LPWCHAR pDefVal)                           // Ptr to default values
+
+{
+    return GetRegGlbCom (hKey,                  // Handle of root key
+                         pSubKey,               // Ptr to key subordinate to root
+                         pKeyStr,               // Ptr to name of value to query
+                         hDefVal,               // Default value global memory handle
+                         pDefVal,               // Ptr to default values
+                         ARRAY_CHAR,            // Array storage type
+                         sizeof (APLCHAR),      // Size of each item in the array
+                         lstrlenW (pDefVal));   // Length of the default char vector
+} // End GetRegGlbChar
+
+
+//***************************************************************************
+//  $GetRegGlbInt
+//
+//  Get a registry HGLOBAL value as an APLINT.
+//***************************************************************************
+
+HGLOBAL GetRegGlbInt
+    (HKEY     hKey,                             // Handle of root key
+     LPCHAR   pSubKey,                          // Ptr to key subordinate to root
+     LPCHAR   pKeyStr,                          // Ptr to name of value to query
+     HGLOBAL  hDefVal,                          // Default value global memory handle
+     LPAPLINT pDefVal,                          // Ptr to default values
+     UINT     uVecLen)                          // Length of the default integer vector
+
+{
+    return GetRegGlbCom (hKey,                  // Handle of root key
+                         pSubKey,               // Ptr to key subordinate to root
+                         pKeyStr,               // Ptr to name of value to query
+                         hDefVal,               // Default value global memory handle
+                         pDefVal,               // Ptr to default values
+                         ARRAY_INT,             // Array storage type
+                         sizeof (APLINT),       // Size of each item in the array
+                         uVecLen);              // Length of the default integer vector
+} // End GetRegGlbInt
+
+
+//***************************************************************************
+//  $GetRegGlbCom
+//
 //  Get a registry HGLOBAL value.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- GetRegGlbChar"
+#define APPEND_NAME     L" -- GetRegGlbCom"
 #else
 #define APPEND_NAME
 #endif
-HGLOBAL GetRegGlbChar
-    (HKEY    hKey,
-     LPCHAR  pSubKey,
-     LPCHAR  pKeyStr,
-     HGLOBAL hDefVal,
-     LPWCHAR pDefVal)
+
+HGLOBAL GetRegGlbCom
+    (HKEY     hKey,                             // Handle of root key
+     LPCHAR   pSubKey,                          // Ptr to key subordinate to root
+     LPCHAR   pKeyStr,                          // Ptr to name of value to query
+     HGLOBAL  hDefVal,                          // Default value global memory handle
+     LPVOID   pDefVal,                          // Ptr to default values
+     APLSTYPE aplTypeCom,                       // Array storage type
+     UINT     aplSizeCom,                       // Size of each item in the array
+     UINT     uVecLen)                          // Length of the default vector
 
 {
-    HKEY    hKey2;
-    HGLOBAL hGlbVal;
-    LPVOID  lpMem;
-    UINT    ByteRes;
-    int     iActSize = 0;
-    UINT    uLen;
+    HKEY    hKey2;                              // Ptr to created key
+    HGLOBAL hGlbRes;                            // Result global memory handle
+    LPVOID  lpMemRes;                           // Ptr to result global memory
+    UINT    ByteRes,                            // # bytes in the result
+            uLen,                               // Loop counter
+            uActLen,                            // Actual length of incoming value
+            uTstLen;                            // Smaller of actual length and vector length
+    int     iActSize = 0;                       // Actual size in bytes
 
     if (RegCreateKey (hKey, pSubKey, &hKey2) EQ ERROR_SUCCESS)
     {
         // Request the data size
         switch (RegQueryValueEx (hKey2,     // Handle of key to query
-                                 pKeyStr,   // Address of name of value to query
+                                 pKeyStr,   // Ptr to name of value to query
                                  NULL,      // Reserved
-                                 NULL,      // Address of buffer for value type
-                                 NULL,      // Address of data buffer
-                                 &iActSize))// Address of data buffer size
+                                 NULL,      // Ptr to buffer for value type
+                                 NULL,      // Ptr to data buffer
+                                &iActSize)) // Ptr to data buffer size
         {
             case ERROR_FILE_NOT_FOUND:
                 // The keyname was not found --
@@ -336,61 +393,78 @@ HGLOBAL GetRegGlbChar
             case ERROR_SUCCESS:     // The stored value is of zero length
             case ERROR_MORE_DATA:
                 // iActSize contains the # bytes needed
-                uLen = iActSize / sizeof (APLCHAR);
+                uActLen = iActSize / aplSizeCom;
 
                 // Calculate space needed for the result
-                ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, uLen, 1);
+                ByteRes = (UINT) CalcArraySize (aplTypeCom, uActLen, 1);
 
                 // Allocate space for the data
                 // Note, we can't use DbgGlobalAlloc here as the
                 //   PTD has not been allocated as yet
-                hGlbVal = MyGlobalAlloc (GHND, ByteRes);
-                if (!hGlbVal)
-                    return hGlbVal;
+                hGlbRes = MyGlobalAlloc (GHND, ByteRes);
+                if (!hGlbRes)
+                    return hGlbRes;
 
                 // Lock the memory to get a ptr to it
-                lpMem = MyGlobalLock (hGlbVal);
+                lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
                 // Fill in the header values
                 lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                lpHeader->ArrType    = ARRAY_CHAR;
+                lpHeader->ArrType    = aplTypeCom;
 ////////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////////////////lpHeader->SysVar     = 0;           // Already zero from GHND
                 lpHeader->RefCnt     = 1;
-                lpHeader->NELM       = uLen;
+                lpHeader->NELM       = uActLen;
                 lpHeader->Rank       = 1;
 #undef  lpHeader
 
                 // Save the dimension
-                *VarArrayBaseToDim (lpMem) = uLen;
+                *VarArrayBaseToDim (lpMemRes) = uActLen;
 
                 // Skip over the header and dimensions to the data
-                lpMem = VarArrayBaseToData (lpMem, 1);
+                lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-                RegQueryValueEx (hKey2,         // Handle of key to query
-                                 pKeyStr,       // Address of name of value to query
-                                 NULL,          // Reserved
-                                 NULL,          // Address of buffer for value type
-                                 (LPCHAR) lpMem,// Address of data buffer
-                                 &iActSize);    // Address of data buffer size
+                RegQueryValueEx (hKey2,             // Handle of key to query
+                                 pKeyStr,           // Ptr to name of value to query
+                                 NULL,              // Reserved
+                                 NULL,              // Ptr to buffer for value type
+                                 (LPCHAR) lpMemRes, // Ptr to data buffer
+                                &iActSize);         // Ptr to data buffer size
                 RegCloseKey (hKey2); hKey2 = NULL;
 
-                // See if this is the default value
-                iActSize = lstrlenW (pDefVal);
-                for (uLen = 0; uLen < (UINT) iActSize; uLen++)
-                if (((LPWCHAR) lpMem)[uLen] NE pDefVal[uLen])
-                    break;
+                // Test to see if the incoming value is the same as the default value
+                uTstLen = min (uActLen, uVecLen);
+
+                // Split cases based upon the array storage type
+                switch (aplTypeCom)
+                {
+                    case ARRAY_CHAR:
+                        for (uLen = 0; uLen < uTstLen; uLen++)
+                        if (((LPAPLCHAR) lpMemRes)[uLen] NE ((LPAPLCHAR) pDefVal)[uLen])
+                            break;
+                        break;
+
+                    case ARRAY_INT:
+                        for (uLen = 0; uLen < uTstLen; uLen++)
+                        if (((LPAPLINT)  lpMemRes)[uLen] NE ((LPAPLINT)  pDefVal)[uLen])
+                            break;
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
 
                 // We no longer need this ptr
-                MyGlobalUnlock (hGlbVal); lpMem = NULL;
+                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
                 // If it's the default value, ...
-                if (uLen EQ (UINT) iActSize)
+                if (uActLen EQ uVecLen
+                 && uLen    EQ uVecLen)
                 {
-                    MyGlobalFree (hGlbVal); hGlbVal = NULL;
+                    MyGlobalFree (hGlbRes); hGlbRes = NULL;
                 } else
-                    hDefVal = hGlbVal;
+                    hDefVal = hGlbRes;
                 break;
 
             defstop
@@ -400,7 +474,7 @@ HGLOBAL GetRegGlbChar
         hDefVal = NULL;
 
     return hDefVal;
-} // End GetRegGlbChar
+} // End GetRegGlbCom
 #undef  APPEND_NAME
 
 
@@ -415,6 +489,7 @@ HGLOBAL GetRegGlbChar
 #else
 #define APPEND_NAME
 #endif
+
 void GetRegBinary
     (HKEY    hKey,          // Main key
      LPCHAR  pSubKey,       // Ptr to sub key

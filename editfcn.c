@@ -113,16 +113,16 @@ BOOL CreateFcnWindow
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     hWnd =
-    CreateMDIWindowW (LFEWNDCLASS,          // Class name
-                      wszFETitle,           // Window title
-                      0,                    // Styles
-                      CW_USEDEFAULT,        // X-pos
-                      CW_USEDEFAULT,        // Y-pos
-                      CW_USEDEFAULT,        // Height
-                      CW_USEDEFAULT,        // Width
-                      lpMemPTD->hWndMC,     // Parent
-                      _hInstance,           // Instance
-            (LPARAM) &feCreateStruct);      // Extra data,
+      CreateMDIWindowW (LFEWNDCLASS,        // Class name
+                        wszFETitle,         // Window title
+                        0,                  // Styles
+                        CW_USEDEFAULT,      // X-pos
+                        CW_USEDEFAULT,      // Y-pos
+                        CW_USEDEFAULT,      // Height
+                        CW_USEDEFAULT,      // Width
+                        lpMemPTD->hWndMC,   // Parent
+                        _hInstance,         // Instance
+              (LPARAM) &feCreateStruct);    // Extra data,
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -284,10 +284,10 @@ LRESULT APIENTRY FEWndProc
 
             // Allocate virtual memory for the Undo Buffer
             lpUndoBeg =
-            VirtualAlloc (NULL,          // Any address
-                          DEF_UNDOBUF_MAXSIZE * sizeof (UNDO_BUF),
-                          MEM_RESERVE,
-                          PAGE_READWRITE);
+              VirtualAlloc (NULL,           // Any address
+                            DEF_UNDOBUF_MAXSIZE * sizeof (UNDO_BUF),
+                            MEM_RESERVE,
+                            PAGE_READWRITE);
             // Commit the intial size
             VirtualAlloc (lpUndoBeg,
                           DEF_UNDOBUF_INITSIZE * sizeof (UNDO_BUF),
@@ -2525,16 +2525,16 @@ LPSYMENTRY ParseFunctionName
 
     // Allocate virtual memory for the Variable Strand accumulator
     fhLocalVars.lpYYStrandStart =
-        VirtualAlloc (NULL,      // Any address
-                      DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
-                      MEM_RESERVE,
-                      PAGE_READWRITE);
+      VirtualAlloc (NULL,       // Any address
+                    DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
+                    MEM_RESERVE,
+                    PAGE_READWRITE);
     if (!fhLocalVars.lpYYStrandStart)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("ParseFunctionName:  VirtualAlloc for <fhLocalVars.lpYYStrandStart> failed");
 
-        goto ERROR_EXIT;    // Mark as failed
+        goto ERROR_EXIT;        // Mark as failed
     } // End IF
 
     // Commit the intial size

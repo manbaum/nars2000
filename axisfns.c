@@ -228,7 +228,7 @@ BOOL CheckAxisGlb
     LPVOID   lpMem,
              lpDup = NULL;
     HGLOBAL  hGlbDup = NULL;
-    UINT     uBitMask;
+    UINT     uBitMask;          // Bit mask for looping through Booleans
     APLUINT  ByteDup,
              ByteAxis,
              u;

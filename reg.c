@@ -34,6 +34,7 @@ char lpszRegKeyRoot[]               = "Software\\NARS2000",
      lpszRegStrGlbCTName[]          = "GlbCT",
      lpszRegStrGlbELXName[]         = "GlbELX",
      lpszRegStrGlbFCName[]          = "GlbFC",
+     lpszRegStrGlbICName[]          = "GlbIC",
      lpszRegStrGlbIOName[]          = "GlbIO",
      lpszRegStrGlbLXName[]          = "GlbLX",
      lpszRegStrGlbPPName[]          = "GlbPP",
@@ -128,32 +129,41 @@ void ReadRegGlb
 
     // Read in []FC
     hGlbQuadFC_CWS =
-    GetRegGlbChar (HKEY_CURRENT_USER,
-                   lpszRegKeyRoot,
-                   lpszRegStrGlbFCName,
-                   DEF_QUADFC_GLB,
-                   DEF_QUADFC_CWS);
+      GetRegGlbChar (HKEY_CURRENT_USER,
+                     lpszRegKeyRoot,
+                     lpszRegStrGlbFCName,
+                     DEF_QUADFC_GLB,
+                     DEF_QUADFC_CWS);
+
+    // Read in []IC
+    hGlbQuadIC_CWS =
+      GetRegGlbInt (HKEY_CURRENT_USER,
+                    lpszRegKeyRoot,
+                    lpszRegStrGlbICName,
+                    DEF_QUADIC_GLB,
+                    DEF_QUADIC_CWS,
+                    ICNDX_LENGTH);
 
     // Read in []IO
     bQuadIO_CWS = (APLBOOL)
-    GetRegDword (HKEY_CURRENT_USER,
-                 lpszRegKeyRoot,
-                 lpszRegStrGlbIOName,
-                 DEF_QUADIO_CWS);
+      GetRegDword (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbIOName,
+                   DEF_QUADIO_CWS);
 
     // Read in []PP
     uQuadPP_CWS =
-    GetRegQword (HKEY_CURRENT_USER,
-                 lpszRegKeyRoot,
-                 lpszRegStrGlbPPName,
-                 DEF_QUADPP_CWS);
+      GetRegQword (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbPPName,
+                   DEF_QUADPP_CWS);
 
     // Read in []PR
     cQuadPR_CWS =
-    GetRegWchar (HKEY_CURRENT_USER,
-                 lpszRegKeyRoot,
-                 lpszRegStrGlbPRName,
-                 DEF_QUADPR_CWS);
+      GetRegWchar (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbPRName,
+                   DEF_QUADPR_CWS);
     // If the WCHAR is 0, we interpret that
     //   as the empty vector case.
     // Because we only reference this var when
@@ -162,24 +172,24 @@ void ReadRegGlb
 
     // Read in []PW
     uQuadPW_CWS =
-    GetRegQword (HKEY_CURRENT_USER,
-                 lpszRegKeyRoot,
-                 lpszRegStrGlbPWName,
-                 DEF_QUADPW_CWS);
+      GetRegQword (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbPWName,
+                   DEF_QUADPW_CWS);
 
     // Read in []RL
     uQuadRL_CWS =
-    GetRegQword (HKEY_CURRENT_USER,
-                 lpszRegKeyRoot,
-                 lpszRegStrGlbRLName,
-                 DEF_QUADRL_CWS);
+      GetRegQword (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbRLName,
+                   DEF_QUADRL_CWS);
 
     // Read in []SA
     bQuadxSA_CWS = (APLBOOL)
-    GetRegDword (HKEY_CURRENT_USER,
-                 lpszRegKeyRoot,
-                 lpszRegStrGlbSAName,
-                 DEF_QUADxSA_CWS);
+      GetRegDword (HKEY_CURRENT_USER,
+                   lpszRegKeyRoot,
+                   lpszRegStrGlbSAName,
+                   DEF_QUADxSA_CWS);
     // Set the correct value for []SA
     switch (bQuadxSA_CWS)
     {
@@ -209,27 +219,27 @@ void ReadRegGlb
 
     // Read in []LX
     hGlbQuadLX_CWS =
-    GetRegGlbChar (HKEY_CURRENT_USER,
-                   lpszRegKeyRoot,
-                   lpszRegStrGlbLXName,
-                   DEF_QUADLX_GLB,
-                   DEF_QUADLX_CWS);
+      GetRegGlbChar (HKEY_CURRENT_USER,
+                     lpszRegKeyRoot,
+                     lpszRegStrGlbLXName,
+                     DEF_QUADLX_GLB,
+                     DEF_QUADLX_CWS);
 
     // Read in []ALX
     hGlbQuadALX_CWS =
-    GetRegGlbChar (HKEY_CURRENT_USER,
-                   lpszRegKeyRoot,
-                   lpszRegStrGlbALXName,
-                   DEF_QUADALX_GLB,
-                   DEF_QUADALX_CWS);
+      GetRegGlbChar (HKEY_CURRENT_USER,
+                     lpszRegKeyRoot,
+                     lpszRegStrGlbALXName,
+                     DEF_QUADALX_GLB,
+                     DEF_QUADALX_CWS);
 
     // Read in []ELX
     hGlbQuadELX_CWS =
-    GetRegGlbChar (HKEY_CURRENT_USER,
-                   lpszRegKeyRoot,
-                   lpszRegStrGlbELXName,
-                   DEF_QUADELX_GLB,
-                   DEF_QUADELX_CWS);
+      GetRegGlbChar (HKEY_CURRENT_USER,
+                     lpszRegKeyRoot,
+                     lpszRegStrGlbELXName,
+                     DEF_QUADELX_GLB,
+                     DEF_QUADELX_CWS);
 } // End ReadRegGlb
 
 
@@ -461,6 +471,28 @@ void SaveEnvironment
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbQuadFC_CWS); lpMem = NULL;
+
+    //************************ []IC ***************************
+    // Lock the memory to get a ptr to it
+    lpMem = MyGlobalLock (hGlbQuadIC_CWS);
+
+#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+    // Get the # bytes
+    nBytes = ((UINT) lpHeader->NELM) * sizeof (APLINT);
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMem = VarArrayBaseToData (lpMem, 1);
+
+    RegSetValueEx (hKeyRoot,            // Handle of key to set
+                   lpszRegStrGlbICName, // Name of value to set
+                   0,                   // Reserved
+                   REG_BINARY,          // Flag for type
+                   (LPCHAR) lpMem,      // Ptr to value
+                   nBytes);             // Size of value
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadIC_CWS); lpMem = NULL;
 
     //************************ []LX ***************************
     // Lock the memory to get a ptr to it

@@ -86,10 +86,66 @@
 //    are used to set the variables in a CLEAR WS.
 //***************************************************************************
 
+// Indeterminate Control Values
+typedef enum tagIC_VALUES
+{
+    ICVAL_ZERO,             // 00:  Result is 0
+    ICVAL_ONE,              // 01:  ...       1
+    ICVAL_DOMAIN_ERROR,     // 02:  ...       DOMAIN ERROR
+    ICVAL_POS_INFINITY,     // 03:  ...       + infinity
+    ICVAL_NEG_INFINITY,     // 04:  ...       - infinity
+    ICVAL_LENGTH,           // 05:  Length
+} IC_VALUES;
+
+// Indeterminate Control Indices
+typedef enum tagIC_INDICES
+{
+    ICNDX_DIV0,             // 00:    {div} 0
+    ICNDX_LOG0,             // 01:    {log} 0
+    ICNDX_QDOTn,            // 02:      !N for integer N < 0
+    ICNDX_0MULPi,           // 03:  0 {times} _
+    ICNDX_0MULNi,           // 04:  0 {times} {neg}_
+    ICNDX_0DIV0,            // 05:  0 {div} 0
+    ICNDX_PiDIVPi,          // 06:  _ {div} _   (same sign)
+    ICNDX_NiDIVPi,          // 07:  _ {div} _   (different sign)
+    ICNDX_0EXP0,            // 08:  0   *   0
+    ICNDX_0LOG0,            // 09:  0 {log} 0
+    ICNDX_0LOG1,            // 0A:  0 {log} 1
+    ICNDX_1LOG0,            // 0B:  1 {log} 0
+    ICNDX_1LOG1,            // 0C:  1 {log} 1
+    ICNDX_LENGTH,           // 0D:  Length
+} IC_INDICES;
+
+// Define the maximum allowable value for []IC
+#define ICVAL_MAXVAL    (ICVAL_LENGTH - 1)
+
+EXTERN
+APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
+#ifdef DEFINE_VALUES
+ = {ICVAL_POS_INFINITY,     // 00:    {div} 0
+    ICVAL_NEG_INFINITY,     // 01:    {log} 0
+    ICVAL_DOMAIN_ERROR,     // 02:      ! {neg}1
+    ICVAL_DOMAIN_ERROR,     // 03:  0 {times} _
+    ICVAL_DOMAIN_ERROR,     // 04:  0 {times} {neg}_
+    ICVAL_ONE,              // 05:  0 {div} 0
+    ICVAL_DOMAIN_ERROR,     // 06:  _ {div} _   (same sign)
+    ICVAL_DOMAIN_ERROR,     // 07:  _ {div} _   (different sign)
+    ICVAL_ONE,              // 08:  0   *   0
+    ICVAL_DOMAIN_ERROR,     // 09:  0 {log} 0
+    ICVAL_DOMAIN_ERROR,     // 0A:  0 {log} 1
+    ICVAL_DOMAIN_ERROR,     // 0B:  1 {log} 0
+    ICVAL_ONE,              // 0C:  1 {log} 1
+   }
+#endif
+;
+
 EXTERN
 HGLOBAL  hGlbQuadALX_CWS    ,           // []ALX    ([]dm)
          hGlbQuadELX_CWS    ,           // []ELX    ([]dm)
-         hGlbQuadFC_CWS     ,           // []FC     (L".,*0_" WS_UTF16_OVERBAR)
+         hGlbQuadFC_SYS     ,           // []FC     (L".,*0_" WS_UTF16_OVERBAR)
+         hGlbQuadFC_CWS     ,           // []FC     hGlbQuadFC_SYS or from )LOAD
+         hGlbQuadIC_SYS     ,           // []IC     (aplDefaultIC)
+         hGlbQuadIC_CWS     ,           // []IC     hGlbQuadIC_SYS or from )LOAD
          hGlbQuadLX_CWS     ,           // []LX     (L"")
          hGlbQuadSA_CWS     ,           // []SA     (L"")
          hGlbQuadWSID_CWS   ,           // []WSID   (L"\0")
@@ -108,6 +164,7 @@ APLUINT  uQuadPP_CWS        ,           // []PP
 
 EXTERN
 APLCHAR  cQuadPR_CWS        ;           // []PR     (L' ') (When a char scalar)
+
 
 //***************************************************************************
 //  Application values
@@ -660,6 +717,7 @@ EXTERN
 HGLOBAL hGlbZilde,
         hGlbQuadDM,
         hGlbQuadFC,
+        hGlbQuadIC,
         hGlbV0Char,
         hGlbM3x0Char,
         hGlbSAEmpty,
@@ -682,16 +740,17 @@ typedef enum tagSYS_VARS
     SYSVAR_CT  ,                // 02:  []CT
     SYSVAR_ELX ,                // 03:  []ELX
     SYSVAR_FC  ,                // 04:  []FC
-    SYSVAR_IO  ,                // 05:  []IO
-    SYSVAR_LX  ,                // 06:  []LX
-    SYSVAR_PP  ,                // 07:  []PP
-    SYSVAR_PR  ,                // 08:  []PR
-    SYSVAR_PW  ,                // 09:  []PW
-    SYSVAR_RL  ,                // 0A:  []RL
-    SYSVAR_SA  ,                // 0B:  []SA
-    SYSVAR_WSID,                // 0C:  []WSID
-    SYSVAR_LENGTH               // 0D:  # entries in the enum
-                                // 0E-0F:  Available entries (4 bits)
+    SYSVAR_IC  ,                // 05:  []IC
+    SYSVAR_IO  ,                // 06:  []IO
+    SYSVAR_LX  ,                // 07:  []LX
+    SYSVAR_PP  ,                // 08:  []PP
+    SYSVAR_PR  ,                // 09:  []PR
+    SYSVAR_PW  ,                // 0A:  []PW
+    SYSVAR_RL  ,                // 0B:  []RL
+    SYSVAR_SA  ,                // 0C:  []SA
+    SYSVAR_WSID,                // 0D:  []WSID
+    SYSVAR_LENGTH               // 0E:  # entries in the enum
+                                // 0F-1F:  Available entries (5 bits)
 } SYS_VARS;
 
 EXTERN

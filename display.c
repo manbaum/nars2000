@@ -77,8 +77,8 @@ BOOL ArrayDisplay_EM
             Assert (lptkRes->tkData.tkSym->stFlags.Imm);
 
             lpaplChar =
-            FormatSymTabConst (lpwszFormat,
-                               lptkRes->tkData.tkSym);
+              FormatSymTabConst (lpwszFormat,
+                                 lptkRes->tkData.tkSym);
             break;
 
         case TKT_VARIMMED:  // The tkData is an immediate constant
@@ -87,9 +87,9 @@ BOOL ArrayDisplay_EM
                 return TRUE;
 
             lpaplChar =
-            FormatImmed (lpwszFormat,
-                         lptkRes->tkFlags.ImmType,
-                        &lptkRes->tkData.tkLongest);
+              FormatImmed (lpwszFormat,
+                           lptkRes->tkFlags.ImmType,
+                          &lptkRes->tkData.tkLongest);
             break;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
@@ -106,8 +106,8 @@ BOOL ArrayDisplay_EM
             {
                 case PTRTYPE_STCONST:
                     lpaplChar =
-                    FormatSymTabConst (lpwszFormat,
-                                       lptkRes->tkData.tkSym);
+                      FormatSymTabConst (lpwszFormat,
+                                         lptkRes->tkData.tkSym);
                     break;
 
                 case PTRTYPE_HGLOBAL:
@@ -297,96 +297,96 @@ void DisplayGlbArr
     {
         case ARRAY_BOOL:
 ////////////lpaplChar =
-            CompileArrBool    ((LPAPLBOOL)    lpMem,    // Ptr to right arg memory
-                               lpFmtHeader,             // Ptr to parent header
-                               lpFmtColStr,             // Ptr to vector of ColStrs
-                               lpaplCharStart,          // Ptr to compiled output
-                               aplDimNRows,             // # rows
-                               aplDimNCols,             // # cols
-                               aplRank,                 // Right arg rank
-                               lpMemDim,                // Ptr to right arg dimensions
-                               TRUE);                   // TRUE iff top level array
+              CompileArrBool    ((LPAPLBOOL)    lpMem,  // Ptr to right arg memory
+                                 lpFmtHeader,           // Ptr to parent header
+                                 lpFmtColStr,           // Ptr to vector of ColStrs
+                                 lpaplCharStart,        // Ptr to compiled output
+                                 aplDimNRows,           // # rows
+                                 aplDimNCols,           // # cols
+                                 aplRank,               // Right arg rank
+                                 lpMemDim,              // Ptr to right arg dimensions
+                                 TRUE);                 // TRUE iff top level array
             break;
 
         case ARRAY_INT:
 ////////////lpaplChar =
-            CompileArrInteger ((LPAPLINT)    lpMem,     // Ptr to right arg memory
-                               lpFmtHeader,             // Ptr to parent header
-                               lpFmtColStr,             // Ptr to vector of ColStrs
-                               lpaplCharStart,          // Ptr to compiled output
-                               aplDimNRows,             // # rows
-                               aplDimNCols,             // # cols
-                               aplRank,                 // Right arg rank
-                               lpMemDim,                // Ptr to right arg dimensions
-                               TRUE);                   // TRUE iff top level array
+              CompileArrInteger ((LPAPLINT)    lpMem,   // Ptr to right arg memory
+                                 lpFmtHeader,           // Ptr to parent header
+                                 lpFmtColStr,           // Ptr to vector of ColStrs
+                                 lpaplCharStart,        // Ptr to compiled output
+                                 aplDimNRows,           // # rows
+                                 aplDimNCols,           // # cols
+                                 aplRank,               // Right arg rank
+                                 lpMemDim,              // Ptr to right arg dimensions
+                                 TRUE);                 // TRUE iff top level array
             break;
 
         case ARRAY_FLOAT:
 ////////////lpaplChar =
-            CompileArrFloat   ((LPAPLFLOAT)  lpMem,     // Ptr to right arg memory
-                               lpFmtHeader,             // Ptr to parent header
-                               lpFmtColStr,             // Ptr to vector of ColStrs
-                               lpaplCharStart,          // Ptr to compiled output
-                               aplDimNRows,             // # rows
-                               aplDimNCols,             // # cols
-                               aplRank,                 // Right arg rank
-                               lpMemDim,                // Ptr to right arg dimensions
-                               TRUE);                   // TRUE iff top level array
+              CompileArrFloat   ((LPAPLFLOAT)  lpMem,   // Ptr to right arg memory
+                                 lpFmtHeader,           // Ptr to parent header
+                                 lpFmtColStr,           // Ptr to vector of ColStrs
+                                 lpaplCharStart,        // Ptr to compiled output
+                                 aplDimNRows,           // # rows
+                                 aplDimNCols,           // # cols
+                                 aplRank,               // Right arg rank
+                                 lpMemDim,              // Ptr to right arg dimensions
+                                 TRUE);                 // TRUE iff top level array
             break;
 
         case ARRAY_APA:
 ////////////lpaplChar =
-            CompileArrAPA     ((LPAPLAPA)    lpMem,     // Ptr to right arg memory
-                               lpFmtHeader,             // Ptr to parent header
-                               lpFmtColStr,             // Ptr to vector of ColStrs
-                               lpaplCharStart,          // Ptr to compiled output
-                               aplDimNRows,             // # rows
-                               aplDimNCols,             // # cols
-                               aplRank,                 // Right arg rank
-                               lpMemDim,                // Ptr to right arg dimensions
-                               TRUE);                   // TRUE iff top level array
+              CompileArrAPA     ((LPAPLAPA)    lpMem,   // Ptr to right arg memory
+                                 lpFmtHeader,           // Ptr to parent header
+                                 lpFmtColStr,           // Ptr to vector of ColStrs
+                                 lpaplCharStart,        // Ptr to compiled output
+                                 aplDimNRows,           // # rows
+                                 aplDimNCols,           // # cols
+                                 aplRank,               // Right arg rank
+                                 lpMemDim,              // Ptr to right arg dimensions
+                                 TRUE);                 // TRUE iff top level array
             break;
 
         case ARRAY_CHAR:
 ////////////lpaplChar =
-            CompileArrChar    ((LPAPLCHAR)   lpMem,     // Ptr to right arg memory
-                               lpFmtHeader,             // Ptr to parent header
-                               lpFmtColStr,             // Ptr to vector of ColStrs
-                               lpaplCharStart,          // Ptr to compiled output
-                               aplDimNRows,             // # rows
-                               aplDimNCols,             // # cols
-                               aplRank,                 // Right arg rank
-                               lpMemDim,                // Ptr to right arg dimensions
-                               TRUE);                   // TRUE iff top level array
+              CompileArrChar    ((LPAPLCHAR)   lpMem,   // Ptr to right arg memory
+                                 lpFmtHeader,           // Ptr to parent header
+                                 lpFmtColStr,           // Ptr to vector of ColStrs
+                                 lpaplCharStart,        // Ptr to compiled output
+                                 aplDimNRows,           // # rows
+                                 aplDimNCols,           // # cols
+                                 aplRank,               // Right arg rank
+                                 lpMemDim,              // Ptr to right arg dimensions
+                                 TRUE);                 // TRUE iff top level array
             break;
 
         case ARRAY_HETERO:
 ////////////lpaplChar =
-            CompileArrHetero  ((LPAPLHETERO) lpMem,     // Ptr to right arg memory
-                               lpFmtHeader,             // Ptr to parent header
-                               lpFmtColStr,             // Ptr to vector of ColStrs
-                               lpaplCharStart,          // Ptr to compiled output
-                               aplDimNRows,             // # rows
-                               aplDimNCols,             // # cols
-                               aplRank,                 // Right arg rank
-                               lpMemDim,                // Ptr to right arg dimensions
-                               TRUE,                    // TRUE iff top level array
-                               TRUE);                   // TRUE iff handle []TCLF specially
+              CompileArrHetero  ((LPAPLHETERO) lpMem,   // Ptr to right arg memory
+                                 lpFmtHeader,           // Ptr to parent header
+                                 lpFmtColStr,           // Ptr to vector of ColStrs
+                                 lpaplCharStart,        // Ptr to compiled output
+                                 aplDimNRows,           // # rows
+                                 aplDimNCols,           // # cols
+                                 aplRank,               // Right arg rank
+                                 lpMemDim,              // Ptr to right arg dimensions
+                                 TRUE,                  // TRUE iff top level array
+                                 TRUE);                 // TRUE iff handle []TCLF specially
             break;
 
         case ARRAY_NESTED:
 ////////////lpaplChar =
-            CompileArrNested  ((LPAPLNESTED) lpMem,     // Ptr to right arg memory
-                               lpFmtHeader,             // Ptr to parent header
-                               lpFmtColStr,             // Ptr to vector of ColStrs
-                               lpaplCharStart,          // Ptr to compiled output
-                               aplDimNRows,             // # rows
-                               aplDimNCols,             // # cols
-                               aplRank,                 // Right arg rank
-                               lpMemDim,                // Ptr to right arg dimensions
-                               TRUE,                    // TRUE iff top level array
-                               TRUE,                    // TRUE iff first (leftmost) col
-                               TRUE);                   // TRUE iff last (rightmost) col
+              CompileArrNested  ((LPAPLNESTED) lpMem,   // Ptr to right arg memory
+                                 lpFmtHeader,           // Ptr to parent header
+                                 lpFmtColStr,           // Ptr to vector of ColStrs
+                                 lpaplCharStart,        // Ptr to compiled output
+                                 aplDimNRows,           // # rows
+                                 aplDimNCols,           // # cols
+                                 aplRank,               // Right arg rank
+                                 lpMemDim,              // Ptr to right arg dimensions
+                                 TRUE,                  // TRUE iff top level array
+                                 TRUE,                  // TRUE iff first (leftmost) col
+                                 TRUE);                 // TRUE iff last (rightmost) col
             break;
 
         defstop
@@ -436,35 +436,35 @@ void DisplayGlbArr
         case ARRAY_APA:
         case ARRAY_HETERO:
 ////////////lpaplChar =
-            FormatArrSimple (lpFmtHeader,           // Ptr to FMTHEADER
-                             lpFmtColStr,           // Ptr to vector of <aplChrNCols> FMTCOLSTRs
-                             lpaplCharStart,        // Ptr to compiled input
-                            &lpaplChar,             // Ptr to output string
-                             lpFmtHeader->uActRows, // # formatted rows in this array
-                             aplDimNCols,           // # formatted cols in this array
-                             aplLastDim,            // Length of last dim in result (NULL for !bRawOutput)
-                             aplRank,               // Rank of this array
-                             lpMemDim,              // Ptr to this array's dimensions
-                             aplType,               // Storage type of this array
-                             TRUE,                  // TRUE iff skip to next row after this item
-                             bRawOut,               // TRUE iff raw (not {thorn}) output
-                             bEndingCR);            // TRUE iff last line has CR
+              FormatArrSimple (lpFmtHeader,             // Ptr to FMTHEADER
+                               lpFmtColStr,             // Ptr to vector of <aplChrNCols> FMTCOLSTRs
+                               lpaplCharStart,          // Ptr to compiled input
+                              &lpaplChar,               // Ptr to output string
+                               lpFmtHeader->uActRows,   // # formatted rows in this array
+                               aplDimNCols,             // # formatted cols in this array
+                               aplLastDim,              // Length of last dim in result (NULL for !bRawOutput)
+                               aplRank,                 // Rank of this array
+                               lpMemDim,                // Ptr to this array's dimensions
+                               aplType,                 // Storage type of this array
+                               TRUE,                    // TRUE iff skip to next row after this item
+                               bRawOut,                 // TRUE iff raw (not {thorn}) output
+                               bEndingCR);              // TRUE iff last line has CR
             break;
 
         case ARRAY_NESTED:
 ////////////lpaplChar =
-            FormatArrNested (lpFmtHeader,           // Ptr to FMTHEADER
-                             lpMem,                 // Ptr to raw input
-                             lpFmtColStr,           // Ptr to vector of <aplDimNCols> FMTCOLSTRs
-                             lpaplCharStart,        // Ptr to compiled input
-                            &lpaplChar,             // Ptr to ptr to output string
-                             lpFmtHeader->uActRows, // # formatted rows in this array
-                             aplDimNCols,           // # formatted cols ...
-                             aplRank,               // Rank of this array
-                             lpMemDim,              // Ptr to this array's dimensions
-                             aplLastDim,            // Length of last dim in result (NULL for !bRawOutput)
-                             bRawOut,               // TRUE iff raw (not {thorn}) output
-                             bEndingCR);            // TRUE iff last line has CR
+              FormatArrNested (lpFmtHeader,             // Ptr to FMTHEADER
+                               lpMem,                   // Ptr to raw input
+                               lpFmtColStr,             // Ptr to vector of <aplDimNCols> FMTCOLSTRs
+                               lpaplCharStart,          // Ptr to compiled input
+                              &lpaplChar,               // Ptr to ptr to output string
+                               lpFmtHeader->uActRows,   // # formatted rows in this array
+                               aplDimNCols,             // # formatted cols ...
+                               aplRank,                 // Rank of this array
+                               lpMemDim,                // Ptr to this array's dimensions
+                               aplLastDim,              // Length of last dim in result (NULL for !bRawOutput)
+                               bRawOut,                 // TRUE iff raw (not {thorn}) output
+                               bEndingCR);              // TRUE iff last line has CR
             break;
 
         defstop
@@ -906,7 +906,7 @@ APLCHAR GetQuadFCValue
     APLRANK      aplRankQuadFC; // []FC rank
     APLCHAR      aplCharQuadFC; // []FC[uIndex]
 
-    Assert (uIndex < FCVAL_LENGTH);
+    Assert (uIndex < FCNDX_LENGTH);
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -943,6 +943,69 @@ APLCHAR GetQuadFCValue
 
     return aplCharQuadFC;
 } // End GetQuadFCValue
+
+
+//***************************************************************************
+//  $GetQuadICValue
+//
+//  Return a specified value from []IC
+//***************************************************************************
+
+APLINT GetQuadICValue
+    (IC_INDICES uIndex)
+
+{
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    HGLOBAL      hGlbQuadIC;        // []IC global memory handle
+    LPAPLINT     lpMemQuadIC;       // Ptr to []IC global memory
+    APLSTYPE     aplTypeQuadIC;     // []IC storage type
+    APLNELM      aplNELMQuadIC;     // []IC NELM
+    APLRANK      aplRankQuadIC;     // []IC rank
+    APLINT       aplIntQuadIC;      // []IC[uIndex]
+
+    Assert (uIndex < ICNDX_LENGTH);
+
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the []IC global memory handle
+    hGlbQuadIC = ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadIC->stData.stGlbData);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemQuadIC = MyGlobalLock (hGlbQuadIC);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemQuadIC)
+    // Get the array Type, NELM, and rank
+    aplTypeQuadIC = lpHeader->ArrType;
+    aplNELMQuadIC = lpHeader->NELM;
+    aplRankQuadIC = lpHeader->Rank;
+#undef  lpHeader
+
+    // Skip over the header and dimensions to the data
+    lpMemQuadIC = VarArrayBaseToData (lpMemQuadIC, aplRankQuadIC);
+
+    // Check for short []IC
+    if (uIndex >= aplNELMQuadIC)
+        aplIntQuadIC = aplDefaultIC[uIndex];
+    else
+        // Get next item from global memory ([]IC can be BOOL, INT, or APA only)
+        GetNextItemMem (lpMemQuadIC,        // Ptr to item global memory data
+                        aplTypeQuadIC,      // Item storage type
+                        uIndex,             // Index into item
+                        NULL,               // Ptr to result global memory handle (may be NULL)
+                       &aplIntQuadIC);      // Ptr to result immediate value (may be NULL)
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbQuadIC); lpMemQuadIC = NULL;
+
+    return aplIntQuadIC;
+} // End GetQuadICValue
 
 
 //***************************************************************************

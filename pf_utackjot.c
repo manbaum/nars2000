@@ -222,15 +222,15 @@ LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
 
     // Allocate space for the immediate value
     lpwszCompLine =
-    VirtualAlloc (NULL,             // Any address
-                  (1 + 1) * sizeof (WCHAR),  // "+ 1" for the terminating zero
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
+      VirtualAlloc (NULL,           // Any address
+                    (1 + 1) * sizeof (WCHAR),  // "+ 1" for the terminating zero
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
     if (!lpwszCompLine)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    lptkFunc);
-        return NULL;            // Mark as failed
+        return NULL;                // Mark as failed
     } // End IF
 
     // Save the char in the line
@@ -280,15 +280,15 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     // Allocate space for the global value
     Assert (aplNELMRht EQ (UINT) aplNELMRht);
     lpwszCompLine =
-    VirtualAlloc (NULL,             // Any address
-                  ((UINT) aplNELMRht + 1) * sizeof (APLCHAR),  // "+ 1" for the terminating zero
-                  MEM_COMMIT,
-                  PAGE_READWRITE);
+      VirtualAlloc (NULL,           // Any address
+                    ((UINT) aplNELMRht + 1) * sizeof (APLCHAR),  // "+ 1" for the terminating zero
+                    MEM_COMMIT,
+                    PAGE_READWRITE);
     if (!lpwszCompLine)
     {
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    lptkFunc);
-        return NULL;            // Mark as failed
+        return NULL;                // Mark as failed
     } // End IF
 
     // Copy the chars into the line
@@ -436,11 +436,11 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
 
     // Run the parser in a separate thread
     exitType =
-    ParseLine (hWndSM,              // Session Manager window handle
-               NULL,                // Line text global memory handle
-               hGlbToken,           // Tokenized line global memory handle
-               lpwszCompLine,       // Ptr to the complete line
-               hGlbPTD);            // PerTabData global memory handle
+      ParseLine (hWndSM,            // Session Manager window handle
+                 NULL,              // Line text global memory handle
+                 hGlbToken,         // Tokenized line global memory handle
+                 lpwszCompLine,     // Ptr to the complete line
+                 hGlbPTD);          // PerTabData global memory handle
     // Split cases based upon the exit type
     switch (exitType)
     {

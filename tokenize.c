@@ -2420,10 +2420,10 @@ HGLOBAL Tokenize_EM
 
                 // Reallocate the tokenized line to the actual size
                 tkLocalVars.hGlbToken =
-                MyGlobalReAlloc (tkLocalVars.hGlbToken,
-                                 sizeof (TOKEN_HEADER)
-                               + uNext * sizeof (TOKEN),
-                                 GHND);
+                  MyGlobalReAlloc (tkLocalVars.hGlbToken,
+                                   sizeof (TOKEN_HEADER)
+                                 + uNext * sizeof (TOKEN),
+                                   GHND);
                 goto UNLOCKED_EXIT;
             } // End FSA_EXIT
         } // End SWITCH

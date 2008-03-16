@@ -63,7 +63,8 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecCircleStar};
 //***************************************************************************
 //  $PrimFnCircleStar_EM_YY
 //
-//  Primitive function for monadic and dyadic CircleStar ("natural logarithm" and "logarithm")
+//  Primitive function for monadic and dyadic CircleStar
+//     ("natural logarithm" and "logarithm")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -137,9 +138,9 @@ APLFLOAT PrimFnMonCircleStarFisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow
-    // ***FIXME*** -- Possible loss of precision
-    // ***FIXME*** -- Handle DOMAIN ERROR
+    // Check for indeterminates:  {log} 0
+    if (aplIntegerRht EQ 0)
+        return TranslateQuadICIndex (ICNDX_LOG0);
 
     return log ((APLFLOAT) aplIntegerRht);
 } // End PrimFnMonCircleStarFisI
@@ -156,8 +157,9 @@ APLFLOAT PrimFnMonCircleStarFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow
-    // ***FIXME*** -- Handle DOMAIN ERROR
+    // Check for indeterminates:  {log} 0
+    if (aplFloatRht EQ 0)
+        return TranslateQuadICIndex (ICNDX_LOG0);
 
     return log (aplFloatRht);
 } // End PrimFnMonCircleStarFisF
@@ -214,14 +216,26 @@ APLFLOAT PrimFnDydCircleStarFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow/underflow
-    // ***FIXME*** -- Possible loss of precision
-    // ***FIXME*** -- Handle DOMAIN ERROR
+    // Check for indeterminates:  B {log} B
+    if (IsBooleanValue (aplIntegerLft)
+     && IsBooleanValue (aplIntegerRht))
+    switch (2 * aplIntegerLft + 1 * aplIntegerRht)
+    {
+        case 2 * 0 + 1 * 0:
+            return TranslateQuadICIndex (ICNDX_0LOG0);
 
-    // Handle special cases
-    if (aplIntegerLft EQ 1
-     && aplIntegerRht EQ 1)
-        return (APLFLOAT) 1;
+        case 2 * 0 + 1 * 1:
+            return TranslateQuadICIndex (ICNDX_0LOG1);
+
+        case 2 * 1 + 1 * 0:
+            return TranslateQuadICIndex (ICNDX_1LOG0);
+
+        case 2 * 1 + 1 * 1:
+            return TranslateQuadICIndex (ICNDX_1LOG1);
+
+        defstop
+            break;
+    } // End SWITCH
 
     return log ((APLFLOAT) aplIntegerRht) / log ((APLFLOAT) aplIntegerLft);
 } // End PrimFnDydCircleStarFisIvI
@@ -239,9 +253,17 @@ APLFLOAT PrimFnDydCircleStarFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow/underflow
-    // ***FIXME*** -- Handle DOMAIN ERROR
+    static UINT icndxLog[] = {ICNDX_0LOG0,
+                              ICNDX_0LOG1,
+                              ICNDX_1LOG0,
+                              ICNDX_1LOG1};
 
+    DbgBrk ();      // ***FIXME*** -- Check conversion from double to UINT
+
+    // Check for indeterminates:  B {log} B
+    if (IsBooleanValue (aplFloatLft)
+     && IsBooleanValue (aplFloatRht))
+        return TranslateQuadICIndex (icndxLog[(UINT) (2 * aplFloatLft + 1 * aplFloatRht)]);
     return log (aplFloatRht) / log (aplFloatLft);
 } // End PrimFnDydCircleStarFisFvF
 

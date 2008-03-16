@@ -231,14 +231,13 @@ typedef struct tagSTFLAGS
                             //            (see OBJ_NAMES)
          ObjType:4,         // 00007800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
                             //            (see NAME_TYPES)
-         SysVarValid:4,     // 00078000:  Index to validation routine for System Vars
-                            //            (see SYS_VARS)
-         UsrDfn:1,          // 00080000:  User-defined function/operator
-         DfnLabel:1,        // 00100000:  User-defined function/operator label        (valid only if .Value is set)
-         DfnSysLabel:1,     // 00200000:  User-defined function/operator system label (valid only if .Value is set)
-         DfnAxis:1,         // 00400000:  User-defined function/operator accepts axis value
-         FcnDir:1,          // 00800000:  Direct function/operator               (stNameFcn is valid)
-         Avail:8;           // FF000000:  Available bits
+         SysVarValid:5,     // 000F8000:  Index to validation routine for System Vars (see SYS_VARS)
+         UsrDfn:1,          // 00100000:  User-defined function/operator
+         DfnLabel:1,        // 00200000:  User-defined function/operator label        (valid only if .Value is set)
+         DfnSysLabel:1,     // 00400000:  User-defined function/operator system label (valid only if .Value is set)
+         DfnAxis:1,         // 00800000:  User-defined function/operator accepts axis value
+         FcnDir:1,          // 01000000:  Direct function/operator               (stNameFcn is valid)
+         Avail:7;           // FE000000:  Available bits
 } STFLAGS, *LPSTFLAGS;
 
 // N.B.:  Whenever changing the above struct (STFLAGS),

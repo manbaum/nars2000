@@ -553,10 +553,10 @@ BOOL SaveFunctionCom
 
     // Allocate virtual memory for the Variable Strand accumulator
     fhLocalVars.lpYYStrandStart =
-        VirtualAlloc (NULL,      // Any address
-                      DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
-                      MEM_RESERVE,
-                      PAGE_READWRITE);
+      VirtualAlloc (NULL,       // Any address
+                    DEF_STRAND_MAXSIZE * sizeof (PL_YYSTYPE),
+                    MEM_RESERVE,
+                    PAGE_READWRITE);
     if (!fhLocalVars.lpYYStrandStart)
     {
         if (hWndFE)
@@ -567,7 +567,7 @@ BOOL SaveFunctionCom
         else
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                        lpFX_Save->lptkFunc);
-        goto ERROR_EXIT;    // Mark as failed
+        goto ERROR_EXIT;        // Mark as failed
     } // End IF
 
     // Commit the intial size

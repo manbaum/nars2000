@@ -274,7 +274,19 @@ APLFLOAT PrimFnDydTimesFisFvF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    // ***FIXME*** -- Handle overflow/underflow
+    // Check for indeterminates:  0 {times} _
+    if ((aplFloatLft EQ 0
+      && aplFloatRht EQ PosInfinity)
+     || (aplFloatLft EQ PosInfinity
+      && aplFloatRht EQ 0))
+        return TranslateQuadICIndex (ICNDX_0MULPi);
+
+    // Check for indeterminates:  0 {times} {neg}_
+    if ((aplFloatLft EQ 0
+      && aplFloatRht EQ NegInfinity)
+     || (aplFloatLft EQ NegInfinity
+      && aplFloatRht EQ 0))
+        return TranslateQuadICIndex (ICNDX_0MULNi);
 
     return (aplFloatLft * aplFloatRht);
 } // End PrimFnDydTimesFisFvF

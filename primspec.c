@@ -16,8 +16,6 @@
 #include "compro.h"
 #endif
 
-#define PRIMPROTOFNSCALAR
-
 
 //***************************************************************************
 //  $PrimFnSyntaxError_EM
@@ -253,7 +251,6 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
 #undef  APPEND_NAME
 
 
-#ifdef PRIMPROTOFNSCALAR
 //***************************************************************************
 //  $PrimProtoFnScalar_EM_YY
 //
@@ -359,7 +356,6 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimProtoFnScalar_EM_YY
 #undef  APPEND_NAME
-#endif
 
 
 //***************************************************************************
@@ -406,14 +402,12 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
     //   of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-#ifdef PRIMPROTOFNSCALAR
     // Handle prototypes separately
     if (aplNELMRht EQ 0)
         return PrimProtoFnScalar_EM_YY (NULL,       // Ptr to left arg token
                                         lptkFunc,   // Ptr to function token
                                         lptkRhtArg, // Ptr to right arg token
                                         lptkAxis);  // Ptr to axis token (may be NULL)
-#endif
     // Get the storage type of the result
     aplTypeRes = (*lpPrimSpec->StorageTypeMon) (aplNELMRht,
                                                &aplTypeRht,
@@ -933,29 +927,6 @@ RESTART_EXCEPTION:
     // lpMemRes now points to the result's data
     // lpMemRht now points to the right arg's data
 
-#ifndef PRIMPROTOFNSCALAR
-    // Handle prototypes separately
-    if (aplNELMRht EQ 0)
-    {
-        HGLOBAL hGlbProto;
-
-        // In case we fail
-        *((LPAPLNESTED) lpMemRes) = PTR_REUSED;
-
-        // Make the prototype
-        hGlbProto = MakeMonPrototype_EM (hGlbRht,       // Proto arg handle
-                                         lptkFunc,      // Ptr to function token
-                                         MP_NUMONLY);   // Numerics only
-        if (!hGlbProto)
-            goto ERROR_EXIT;
-
-        // Save the handle
-        *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbProto);
-
-        goto NORMAL_EXIT;
-    } // End IF
-#endif
-
     // If the right arg is an APA, ...
     if (aplTypeRht EQ ARRAY_APA)
     {
@@ -1466,7 +1437,6 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-#ifdef PRIMPROTOFNSCALAR
     // Handle prototypes separately
     if (aplNELMLft EQ 0
      || aplNELMRht EQ 0)
@@ -1479,7 +1449,6 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
 
         goto NORMAL_EXIT;
     } // End IF
-#endif
 
     // The rank of the result is the larger of the two args
     aplRankRes = max (aplRankLft, aplRankRht);
@@ -1807,199 +1776,180 @@ BOOL PrimFnDydSimpNest_EM
             ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
     } // End IF
 
-#ifndef PRIMPROTOFNSCALAR
-    // Handle prototypes separately
-    if (aplNELMRes EQ 0)
+    // Handle axis if present
+    if (aplNELMAxis NE aplRankRes)
     {
-        HGLOBAL hGlbProto;
-
-        // Make the prototype
-        hGlbProto = MakeMonPrototype_EM (hGlbRht,       // Proto arg handle
-                                         lptkFunc,      // Ptr to function token
-                                         MP_NUMCONV);   // Convert to numerics
-        if (hGlbProto)
-            // Save the handle
-            *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbProto);
-        else
-            goto ERROR_EXIT;
-    } else
-#endif
-    {
-        // Handle axis if present
-        if (aplNELMAxis NE aplRankRes)
+        //***************************************************************
+        // Allocate space for the weighting vector which is
+        //   {times}{backscan}1{drop}({rho}Z),1
+        // N.B.  Conversion from APLUINT to UINT.
+        //***************************************************************
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+        Assert (ByteAlloc EQ (UINT) ByteAlloc);
+        hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        if (!hGlbWVec)
         {
-            //***************************************************************
-            // Allocate space for the weighting vector which is
-            //   {times}{backscan}1{drop}({rho}Z),1
-            // N.B.  Conversion from APLUINT to UINT.
-            //***************************************************************
-            ByteAlloc = aplRankRes * sizeof (APLUINT);
-            Assert (ByteAlloc EQ (UINT) ByteAlloc);
-            hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
-            if (!hGlbWVec)
-            {
-                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
-
-            // Lock the memory to get a ptr to it
-            lpMemWVec = MyGlobalLock (hGlbWVec);
-
-            // Loop through the dimensions of the result in reverse
-            //   order {backscan} and compute the cumulative product
-            //   (weighting vector).
-            // Note we use a signed index variable because we're
-            //   walking backwards and the test against zero must be
-            //   made as a signed variable.
-            for (uRes = 1, iDim = aplRankRes - 1; iDim >= 0; iDim--)
-            {
-                lpMemWVec[iDim] = uRes;
-                uRes *= lpMemDimRes[iDim];
-            } // End FOR
-
-            //***************************************************************
-            // Allocate space for the odometer array, one value per dimension
-            //   in the right arg, with values initially all zero (thanks to GHND).
-            // N.B.  Conversion from APLUINT to UINT.
-            //***************************************************************
-            ByteAlloc = aplRankRes * sizeof (APLUINT);
-            Assert (ByteAlloc EQ (UINT) ByteAlloc);
-            hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
-            if (!hGlbOdo)
-            {
-                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
-
-            // Lock the memory to get a ptr to it
-            lpMemOdo = MyGlobalLock (hGlbOdo);
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
         } // End IF
 
-        // Loop through the result
-        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+        // Lock the memory to get a ptr to it
+        lpMemWVec = MyGlobalLock (hGlbWVec);
+
+        // Loop through the dimensions of the result in reverse
+        //   order {backscan} and compute the cumulative product
+        //   (weighting vector).
+        // Note we use a signed index variable because we're
+        //   walking backwards and the test against zero must be
+        //   made as a signed variable.
+        for (uRes = 1, iDim = aplRankRes - 1; iDim >= 0; iDim--)
         {
-            APLINT   uLft, uRht, uArg;
-            APLSTYPE aplTypeHetLft,
-                     aplTypeHetRht;
+            lpMemWVec[iDim] = uRes;
+            uRes *= lpMemDimRes[iDim];
+        } // End FOR
 
-            // Copy in case we are heterogeneous
-            aplTypeHetLft = aplTypeLft;
+        //***************************************************************
+        // Allocate space for the odometer array, one value per dimension
+        //   in the right arg, with values initially all zero (thanks to GHND).
+        // N.B.  Conversion from APLUINT to UINT.
+        //***************************************************************
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+        Assert (ByteAlloc EQ (UINT) ByteAlloc);
+        hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        if (!hGlbOdo)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+        } // End IF
 
-            // If the left arg is not immediate, get the next value
-            if (lpMemLft)
+        // Lock the memory to get a ptr to it
+        lpMemOdo = MyGlobalLock (hGlbOdo);
+    } // End IF
+
+    // Loop through the result
+    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+    {
+        APLINT   uLft, uRht, uArg;
+        APLSTYPE aplTypeHetLft,
+                 aplTypeHetRht;
+
+        // Copy in case we are heterogeneous
+        aplTypeHetLft = aplTypeLft;
+
+        // If the left arg is not immediate, get the next value
+        if (lpMemLft)
+        {
+            if (aplNELMAxis NE aplRankRes)
             {
-                if (aplNELMAxis NE aplRankRes)
+                // Loop through the odometer values accumulating
+                //   the weighted sum
+                for (uArg = 0, uRht = aplRankRes - aplNELMAxis; uRht < (APLRANKSIGN) aplRankRes; uRht++)
+                    uArg += lpMemOdo[lpMemAxisHead[uRht]] * lpMemWVec[uRht];
+
+                // Increment the odometer in lpMemOdo subject to
+                //   the values in lpMemDimRes
+                IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                // Use the just computed index for the argument
+                //   with the smaller rank
+                if (aplRankLft < aplRankRht)
                 {
-                    // Loop through the odometer values accumulating
-                    //   the weighted sum
-                    for (uArg = 0, uRht = aplRankRes - aplNELMAxis; uRht < (APLRANKSIGN) aplRankRes; uRht++)
-                        uArg += lpMemOdo[lpMemAxisHead[uRht]] * lpMemWVec[uRht];
-
-                    // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRes
-                    IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
-
-                    // Use the just computed index for the argument
-                    //   with the smaller rank
-                    if (aplRankLft < aplRankRht)
-                    {
-                        uLft = uArg;
-                        uRht = uRes;
-                    } else
-                    {
-                        uRht = uArg;
-                        uLft = uRes;
-                    } // End IF/ELSE
+                    uLft = uArg;
+                    uRht = uRes;
                 } else
                 {
-                    uLft = uRes % aplNELMLft;
-                    uRht = uRes % aplNELMRht;
+                    uRht = uArg;
+                    uLft = uRes;
                 } // End IF/ELSE
-
-                // Split cases based upon the left arg's storage type
-                switch (aplTypeLft)
-                {
-                    case ARRAY_BOOL:
-                    case ARRAY_INT:
-                        aplIntegerLft = GetNextInteger (lpMemLft, aplTypeLft, uLft);
-                        aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
-
-                        break;
-
-                    case ARRAY_FLOAT:
-                        aplFloatLft   = GetNextFloat   (lpMemLft, aplTypeLft, uLft);
-
-                        break;
-
-                    case ARRAY_CHAR:
-                        aplCharLft    = ((LPAPLCHAR) lpMemLft)[uLft];
-
-                        break;
-
-                    case ARRAY_HETERO:
-                        aplTypeHetLft = GetNextHetero (lpMemLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft);
-
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
             } else
-                uRht = uRes;
-
-            // Get the right arg element
-            hGlbSub = ((LPAPLNESTED) lpMemRht)[uRht];
-
-            // Split cases based upon the ptr type of the nested right arg
-            switch (GetPtrTypeDir (hGlbSub))
             {
-                case PTRTYPE_STCONST:
-                    GetFirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
-                                      ((LPSYMENTRY) hGlbSub)->stData.stLongest,
-                                     &aplIntegerRht,
-                                     &aplFloatRht,
-                                     &aplCharRht,
-                                      NULL,
-                                      NULL,
-                                      NULL,
-                                     &aplTypeHetRht);
-                    hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
-                                                    aplTypeHetLft,
-                                                    aplIntegerLft,
-                                                    aplFloatLft,
-                                                    aplCharLft,
-                                                    aplTypeHetRht,
-                                                    aplIntegerRht,
-                                                    aplFloatRht,
-                                                    aplCharRht,
-                                                    lpPrimSpec);
-                    if (!hGlbSub)
-                        goto ERROR_EXIT;
-                    else
-                        *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
+                uLft = uRes % aplNELMLft;
+                uRht = uRes % aplNELMRht;
+            } // End IF/ELSE
+
+            // Split cases based upon the left arg's storage type
+            switch (aplTypeLft)
+            {
+                case ARRAY_BOOL:
+                case ARRAY_INT:
+                    aplIntegerLft = GetNextInteger (lpMemLft, aplTypeLft, uLft);
+                    aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
+
                     break;
 
-                case PTRTYPE_HGLOBAL:
-                    hGlbSub = PrimFnDydSiScNest_EM (lptkFunc,
-                                                    aplTypeHetLft,
-                                                    aplIntegerLft,
-                                                    aplFloatLft,
-                                                    aplCharLft,
-                                                    hGlbSub,
-                                                    lpPrimSpec);
-                    if (!hGlbSub)
-                        goto ERROR_EXIT;
-                    else
-                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                case ARRAY_FLOAT:
+                    aplFloatLft   = GetNextFloat   (lpMemLft, aplTypeLft, uLft);
+
+                    break;
+
+                case ARRAY_CHAR:
+                    aplCharLft    = ((LPAPLCHAR) lpMemLft)[uLft];
+
+                    break;
+
+                case ARRAY_HETERO:
+                    aplTypeHetLft = GetNextHetero (lpMemLft, uLft, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+
                     break;
 
                 defstop
                     break;
             } // End SWITCH
-        } // End FOR
-    } // End IF/ELSE/...
+        } else
+            uRht = uRes;
+
+        // Get the right arg element
+        hGlbSub = ((LPAPLNESTED) lpMemRht)[uRht];
+
+        // Split cases based upon the ptr type of the nested right arg
+        switch (GetPtrTypeDir (hGlbSub))
+        {
+            case PTRTYPE_STCONST:
+                GetFirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                  ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                 &aplIntegerRht,
+                                 &aplFloatRht,
+                                 &aplCharRht,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                 &aplTypeHetRht);
+                hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                aplTypeHetLft,
+                                                aplIntegerLft,
+                                                aplFloatLft,
+                                                aplCharLft,
+                                                aplTypeHetRht,
+                                                aplIntegerRht,
+                                                aplFloatRht,
+                                                aplCharRht,
+                                                lpPrimSpec);
+                if (!hGlbSub)
+                    goto ERROR_EXIT;
+                else
+                    *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
+                break;
+
+            case PTRTYPE_HGLOBAL:
+                hGlbSub = PrimFnDydSiScNest_EM (lptkFunc,
+                                                aplTypeHetLft,
+                                                aplIntegerLft,
+                                                aplFloatLft,
+                                                aplCharLft,
+                                                hGlbSub,
+                                                lpPrimSpec);
+                if (!hGlbSub)
+                    goto ERROR_EXIT;
+                else
+                    *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End FOR
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -2167,197 +2117,180 @@ BOOL PrimFnDydNestSimp_EM
             ((LPAPLNESTED) lpMemRes)[uRes] = PTR_REUSED;
     } // End IF
 
-#ifndef PRIMPROTOFNSCALAR
-    // Handle prototypes separately
-    if (aplNELMRes EQ 0)
+    // Handle axis if present
+    if (aplNELMAxis NE aplRankRes)
     {
-        // Make the prototype
-        hGlbSub = MakeMonPrototype_EM (hGlbLft,     // Proto arg handle
-                                       lptkFunc,    // Ptr to function token
-                                       MP_NUMCONV); // Convert to numerics
-        if (hGlbSub)
-            // Save the handle
-            *((LPAPLNESTED) lpMemRes) = MakeGlbTypeGlb (hGlbSub);
-        else
-            goto ERROR_EXIT;
-    } else
-#endif
-    {
-        // Handle axis if present
-        if (aplNELMAxis NE aplRankRes)
+        //***************************************************************
+        // Allocate space for the weighting vector which is
+        //   {times}{backscan}1{drop}({rho}Z),1
+        // N.B.  Conversion from APLUINT to UINT.
+        //***************************************************************
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+        Assert (ByteAlloc EQ (UINT) ByteAlloc);
+        hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        if (!hGlbWVec)
         {
-            //***************************************************************
-            // Allocate space for the weighting vector which is
-            //   {times}{backscan}1{drop}({rho}Z),1
-            // N.B.  Conversion from APLUINT to UINT.
-            //***************************************************************
-            ByteAlloc = aplRankRes * sizeof (APLUINT);
-            Assert (ByteAlloc EQ (UINT) ByteAlloc);
-            hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
-            if (!hGlbWVec)
-            {
-                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
-
-            // Lock the memory to get a ptr to it
-            lpMemWVec = MyGlobalLock (hGlbWVec);
-
-            // Loop through the dimensions of the result in reverse
-            //   order {backscan} and compute the cumulative product
-            //   (weighting vector).
-            // Note we use a signed index variable because we're
-            //   walking backwards and the test against zero must be
-            //   made as a signed variable.
-            for (uRes = 1, iDim = aplRankRes - 1; iDim >= 0; iDim--)
-            {
-                lpMemWVec[iDim] = uRes;
-                uRes *= lpMemDimRes[iDim];
-            } // End FOR
-
-            //***************************************************************
-            // Allocate space for the odometer array, one value per dimension
-            //   in the right arg, with values initially all zero (thanks to GHND).
-            // N.B.  Conversion from APLUINT to UINT.
-            //***************************************************************
-            ByteAlloc = aplRankRes * sizeof (APLUINT);
-            Assert (ByteAlloc EQ (UINT) ByteAlloc);
-            hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
-            if (!hGlbOdo)
-            {
-                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
-
-            // Lock the memory to get a ptr to it
-            lpMemOdo = MyGlobalLock (hGlbOdo);
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
         } // End IF
 
-        // Loop through the result
-        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+        // Lock the memory to get a ptr to it
+        lpMemWVec = MyGlobalLock (hGlbWVec);
+
+        // Loop through the dimensions of the result in reverse
+        //   order {backscan} and compute the cumulative product
+        //   (weighting vector).
+        // Note we use a signed index variable because we're
+        //   walking backwards and the test against zero must be
+        //   made as a signed variable.
+        for (uRes = 1, iDim = aplRankRes - 1; iDim >= 0; iDim--)
         {
-            APLINT   uLft, uRht, uArg;
-            APLSTYPE aplTypeHetLft,
-                     aplTypeHetRht;
+            lpMemWVec[iDim] = uRes;
+            uRes *= lpMemDimRes[iDim];
+        } // End FOR
 
-            // Copy in case we are heterogeneous
-            aplTypeHetRht = aplTypeRht;
+        //***************************************************************
+        // Allocate space for the odometer array, one value per dimension
+        //   in the right arg, with values initially all zero (thanks to GHND).
+        // N.B.  Conversion from APLUINT to UINT.
+        //***************************************************************
+        ByteAlloc = aplRankRes * sizeof (APLUINT);
+        Assert (ByteAlloc EQ (UINT) ByteAlloc);
+        hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteAlloc);
+        if (!hGlbOdo)
+        {
+            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                       lptkFunc);
+            goto ERROR_EXIT;
+        } // End IF
 
-            // If the right arg is not immediate, get the next value
-            if (lpMemRht)
+        // Lock the memory to get a ptr to it
+        lpMemOdo = MyGlobalLock (hGlbOdo);
+    } // End IF
+
+    // Loop through the result
+    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+    {
+        APLINT   uLft, uRht, uArg;
+        APLSTYPE aplTypeHetLft,
+                 aplTypeHetRht;
+
+        // Copy in case we are heterogeneous
+        aplTypeHetRht = aplTypeRht;
+
+        // If the right arg is not immediate, get the next value
+        if (lpMemRht)
+        {
+            if (aplNELMAxis NE aplRankRes)
             {
-                if (aplNELMAxis NE aplRankRes)
+                // Loop through the odometer values accumulating
+                //   the weighted sum
+                for (uArg = 0, uLft = aplRankRes - aplNELMAxis; uLft < (APLRANKSIGN) aplRankRes; uLft++)
+                    uArg += lpMemOdo[lpMemAxisHead[uLft]] * lpMemWVec[uLft];
+
+                // Increment the odometer in lpMemOdo subject to
+                //   the values in lpMemDimRes
+                IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
+
+                // Use the just computed index for the argument
+                //   with the smaller rank
+                if (aplRankLft < aplRankRht)
                 {
-                    // Loop through the odometer values accumulating
-                    //   the weighted sum
-                    for (uArg = 0, uLft = aplRankRes - aplNELMAxis; uLft < (APLRANKSIGN) aplRankRes; uLft++)
-                        uArg += lpMemOdo[lpMemAxisHead[uLft]] * lpMemWVec[uLft];
-
-                    // Increment the odometer in lpMemOdo subject to
-                    //   the values in lpMemDimRes
-                    IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
-
-                    // Use the just computed index for the argument
-                    //   with the smaller rank
-                    if (aplRankLft < aplRankRht)
-                    {
-                        uLft = uArg;
-                        uRht = uRes;
-                    } else
-                    {
-                        uRht = uArg;
-                        uLft = uRes;
-                    } // End IF/ELSE
+                    uLft = uArg;
+                    uRht = uRes;
                 } else
                 {
-                    uLft = uRes % aplNELMLft;
-                    uRht = uRes % aplNELMRht;
+                    uRht = uArg;
+                    uLft = uRes;
                 } // End IF/ELSE
-
-                // Split cases based upon the right arg's storage type
-                switch (aplTypeRht)
-                {
-                    case ARRAY_BOOL:
-                    case ARRAY_INT:
-                        aplIntegerRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
-                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
-
-                        break;
-
-                    case ARRAY_FLOAT:
-                        aplFloatRht   = GetNextFloat   (lpMemRht, aplTypeRht, uRht);
-
-                        break;
-
-                    case ARRAY_CHAR:
-                        aplCharRht    = ((LPAPLCHAR) lpMemRht)[uRht];
-
-                        break;
-
-                    case ARRAY_HETERO:
-                        aplTypeHetRht = GetNextHetero (lpMemRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht);
-
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
             } else
-                uLft = uRes;
-
-            // Get the left arg element
-            hGlbSub = ((LPAPLNESTED) lpMemLft)[uLft];
-
-            // Split cases based upon the ptr type of the nested left arg
-            switch (GetPtrTypeDir (hGlbSub))
             {
-                case PTRTYPE_STCONST:
-                    GetFirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
-                                      ((LPSYMENTRY) hGlbSub)->stData.stLongest,
-                                     &aplIntegerLft,
-                                     &aplFloatLft,
-                                     &aplCharLft,
-                                      NULL,
-                                      NULL,
-                                      NULL,
-                                     &aplTypeHetLft);
-                    hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
-                                                    aplTypeHetLft,
-                                                    aplIntegerLft,
-                                                    aplFloatLft,
-                                                    aplCharLft,
-                                                    aplTypeHetRht,
-                                                    aplIntegerRht,
-                                                    aplFloatRht,
-                                                    aplCharRht,
-                                                    lpPrimSpec);
-                    if (!hGlbSub)
-                        goto ERROR_EXIT;
-                    else
-                        *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
+                uLft = uRes % aplNELMLft;
+                uRht = uRes % aplNELMRht;
+            } // End IF/ELSE
+
+            // Split cases based upon the right arg's storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_BOOL:
+                case ARRAY_INT:
+                    aplIntegerRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
+                    aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
+
                     break;
 
-                case PTRTYPE_HGLOBAL:
-                    hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
-                                                    aplTypeHetRht,
-                                                    aplIntegerRht,
-                                                    aplFloatRht,
-                                                    aplCharRht,
-                                                    hGlbSub,
-                                                    lpPrimSpec);
-                    if (!hGlbSub)
-                        goto ERROR_EXIT;
-                    else
-                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                case ARRAY_FLOAT:
+                    aplFloatRht   = GetNextFloat   (lpMemRht, aplTypeRht, uRht);
+
+                    break;
+
+                case ARRAY_CHAR:
+                    aplCharRht    = ((LPAPLCHAR) lpMemRht)[uRht];
+
+                    break;
+
+                case ARRAY_HETERO:
+                    aplTypeHetRht = GetNextHetero (lpMemRht, uRht, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+
                     break;
 
                 defstop
                     break;
             } // End SWITCH
-        } // End FOR
-    } // End IF/ELSE/...
+        } else
+            uLft = uRes;
+
+        // Get the left arg element
+        hGlbSub = ((LPAPLNESTED) lpMemLft)[uLft];
+
+        // Split cases based upon the ptr type of the nested left arg
+        switch (GetPtrTypeDir (hGlbSub))
+        {
+            case PTRTYPE_STCONST:
+                GetFirstValueImm (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,
+                                  ((LPSYMENTRY) hGlbSub)->stData.stLongest,
+                                 &aplIntegerLft,
+                                 &aplFloatLft,
+                                 &aplCharLft,
+                                  NULL,
+                                  NULL,
+                                  NULL,
+                                 &aplTypeHetLft);
+                hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                aplTypeHetLft,
+                                                aplIntegerLft,
+                                                aplFloatLft,
+                                                aplCharLft,
+                                                aplTypeHetRht,
+                                                aplIntegerRht,
+                                                aplFloatRht,
+                                                aplCharRht,
+                                                lpPrimSpec);
+                if (!hGlbSub)
+                    goto ERROR_EXIT;
+                else
+                    *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
+                break;
+
+            case PTRTYPE_HGLOBAL:
+                hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
+                                                aplTypeHetRht,
+                                                aplIntegerRht,
+                                                aplFloatRht,
+                                                aplCharRht,
+                                                hGlbSub,
+                                                lpPrimSpec);
+                if (!hGlbSub)
+                    goto ERROR_EXIT;
+                else
+                    *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End FOR
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -2559,10 +2492,6 @@ HGLOBAL PrimFnDydNestSiSc_EM
     // If nested result, ...
     if (aplTypeRes EQ ARRAY_NESTED)
     {
-#ifndef PRIMPROTOFNSCALAR
-        // Handle the prototype case
-        aplNELMLft = max (aplNELMLft, 1);
-#endif
         // Loop through the left arg/result
         for (uLft = 0; uLft < (APLNELMSIGN) aplNELMLft; uLft++)
         {
@@ -2770,17 +2699,6 @@ BOOL PrimFnDydNestNest_EM
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-#ifndef PRIMPROTOFNSCALAR
-    // Handle prototypes separately
-    if (aplNELMRes EQ 0)
-    {
-        DbgBrk ();      // ***FINISHME*** -- Should we delete this??
-
-
-
-
-    } else
-#endif
     // Loop through the left and right args
     for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++)
     {
@@ -4470,10 +4388,6 @@ HGLOBAL PrimFnDydSiScNest_EM
     // If nested result, ...
     if (aplTypeRes EQ ARRAY_NESTED)
     {
-#ifndef PRIMPROTOFNSCALAR
-        // Handle the prototype case
-        aplNELMRht = max (aplNELMRht, 1);
-#endif
         // Loop through the right arg/result
         for (uRht = 0; uRht < (APLNELMSIGN) aplNELMRht; uRht++)
         {
@@ -4944,18 +4858,19 @@ BOOL PrimFnDydSimpSimp_EM
                                 NULL,               // Ptr to lpSym/Glb ...
                                 NULL,               // Ptr to ...immediate type ...
                                 NULL);              // Ptr to array type ...
-            PrimFnDydSiScSiScSub_EM (&lpYYRes->tkToken,
-                                      lptkFunc,
-                                      aplTypeRes,
-                                      aplTypeLft,
-                                      aplIntegerLft,
-                                      aplFloatLft,
-                                      aplCharLft,
-                                      aplTypeRht,
-                                      aplIntegerRht,
-                                      aplFloatRht,
-                                      aplCharRht,
-                                      lpPrimSpec);
+            bRet =
+              PrimFnDydSiScSiScSub_EM (&lpYYRes->tkToken,
+                                        lptkFunc,
+                                        aplTypeRes,
+                                        aplTypeLft,
+                                        aplIntegerLft,
+                                        aplFloatLft,
+                                        aplCharLft,
+                                        aplTypeRht,
+                                        aplIntegerRht,
+                                        aplFloatRht,
+                                        aplCharRht,
+                                        lpPrimSpec);
         } else
         // It's a singleton array
         {
@@ -5219,6 +5134,10 @@ RESTART_EXCEPTION_SINGLETON:
                                          lpMemDimArg,
                                          lptkFunc,
                                          lpPrimSpec);
+        // Check for error
+        if (!bRet)
+            goto ERROR_EXIT;
+
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
@@ -5943,6 +5862,40 @@ void CalcLftRhtArgIndices
         *lpuLft = uRes;
     } // End IF/ELSE
 } // End CalcLftRhtArgIndices
+
+
+//***************************************************************************
+//  $TranslateQuadICIndex
+//
+//  Translate a given []IC index into an APLFLOAT return value
+//***************************************************************************
+
+APLFLOAT TranslateQuadICIndex
+    (IC_INDICES icIndex)
+
+{
+    // Split cases based upon the DIV0 value
+    switch (GetQuadICValue (icIndex))
+    {
+        case ICVAL_ZERO:
+            return 0;
+
+        case ICVAL_ONE:
+            return 1;
+
+        case ICVAL_DOMAIN_ERROR:
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+        case ICVAL_POS_INFINITY:
+            return PosInfinity;
+
+        case ICVAL_NEG_INFINITY:
+            return NegInfinity;
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // TranslateQuadICIndex
 
 
 //***************************************************************************

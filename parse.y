@@ -5652,7 +5652,6 @@ PL_YYLEX_START:
             if (IsNameTypeVar (stFlags.ObjType))
             {
 ////////////////lpYYLval->tkToken.tkFlags.TknType                     =
-////////////////lpplLocalVars->lptkNext->lptkOrig->tkFlags.TknType    =
 ////////////////lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_VARNAMED;    // Already set
 
                 return NAMEVAR;
@@ -5660,7 +5659,6 @@ PL_YYLEX_START:
             if (stFlags.ObjType EQ NAMETYPE_FN0)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->lptkOrig->tkFlags.TknType    =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_VARNAMED; // Instead of TKT_FCNNAMED because it'll be executed right away
                 lpplLocalVars->lptkNext->tkData.tkSym->stFlags.FcnDir = (stFlags.ObjName EQ OBJNAME_SYS);
 
@@ -5672,7 +5670,6 @@ PL_YYLEX_START:
             if (stFlags.ObjType EQ NAMETYPE_FN12)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->lptkOrig->tkFlags.TknType    =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_FCNNAMED;
                 lpplLocalVars->lptkNext->tkData.tkSym->stFlags.FcnDir = (stFlags.ObjName EQ OBJNAME_SYS);
 
@@ -5684,7 +5681,6 @@ PL_YYLEX_START:
             if (stFlags.ObjType EQ NAMETYPE_OP1)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->lptkOrig->tkFlags.TknType    =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_OP1NAMED;
 
                 return NAMEOP1;
@@ -5692,7 +5688,6 @@ PL_YYLEX_START:
             if (stFlags.ObjType EQ NAMETYPE_OP2)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->lptkOrig->tkFlags.TknType    =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_OP2NAMED;
 
                 return NAMEOP2;
@@ -5700,7 +5695,6 @@ PL_YYLEX_START:
             if (stFlags.ObjType EQ NAMETYPE_OP3)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
-                lpplLocalVars->lptkNext->lptkOrig->tkFlags.TknType    =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_OP3NAMED;
 
                 return NAMEOP3;
@@ -5726,7 +5720,6 @@ PL_YYLEX_START:
         case TKT_COMMENT:
         case TKT_LINECONT:
         case TKT_SOS:
-////////////return pl_yylex (lpYYLval, lpplLocalVars); // Ignore these tokens
             goto PL_YYLEX_START;
 
         case TKT_STRING:

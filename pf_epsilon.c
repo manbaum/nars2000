@@ -516,7 +516,7 @@ void PrimFnMonEpsilonGlbCopy
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // If the right arg is an APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -1180,7 +1180,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
        || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft))))
     {
         // Split cases based upon the left & right arg storage types
-        if (aplTypeLft EQ ARRAY_BOOL && aplTypeRht EQ ARRAY_BOOL)
+        if (IsSimpleBool (aplTypeLft) && IsSimpleBool (aplTypeRht))
             // Handle APLBOOL vs. APLBOOL
             PrimFnDydEpsilonBvB (lpMemRes,              // Ptr to result global memory data
                                  aplNELMLft,            // Left arg NELM

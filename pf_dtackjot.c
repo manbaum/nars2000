@@ -393,7 +393,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     //   the rank is two.
     // For non-CHAR simple arrays, the rank of the result
     //   is the larger of the rank of the right arg and one.
-    if (aplTypeRht EQ ARRAY_NESTED || lpFmtHeader->uMatRes)
+    if (IsNested (aplTypeRht) || lpFmtHeader->uMatRes)
         aplRankRes = 1 + lpFmtHeader->uMatRes;
     else
         aplRankRes = max (aplRankRht, 1);
@@ -443,7 +443,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     // If this is a nested array and the rank
     //   of the result is two, fill in the
     //   next-to-the-last dimension
-    if ((aplTypeRht EQ ARRAY_NESTED || lpFmtHeader->uMatRes)
+    if ((IsNested (aplTypeRht) || lpFmtHeader->uMatRes)
      && aplRankRes EQ 2)
         // Fill in the # rows
         *((LPAPLDIM) lpMemRes)++ = lpFmtHeader->uFmtRows;
@@ -1928,7 +1928,7 @@ LPAPLCHAR CompileArrNestedGlb
     MyGlobalUnlock (hGlb); lpMem = NULL;
 
     // Set current NOTCHAR+ var
-    NotCharPlus = ((UINT) aplRank) + (aplType NE ARRAY_CHAR);
+    NotCharPlus = ((UINT) aplRank) + !IsSimpleChar (aplType);
 
     // Increment leading blanks as per NotCharPlus
     if (*lpNotCharPlus NE NEG1U)
@@ -2889,7 +2889,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                             NULL,               // ...        immediate type (see IMM_TYPES) (may be NULL)
                             NULL);              // ...        array type:  ARRAY_TYPES (may be NULL)
         // If it's float, ...
-        if (aplTypeLft EQ ARRAY_FLOAT)
+        if (IsSimpleFlt (aplTypeLft))
             // Attempt to convert the float to an integer using System CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
         if (!bRet)

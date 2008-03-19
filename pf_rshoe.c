@@ -264,7 +264,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     AttrsOfGlb (hGlbRht, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Take into account nested prototypes
-    if (aplTypeRht EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRht))
         aplNELMNstRht = max (aplNELMRht, 1);
     else
         aplNELMNstRht = aplNELMRht;
@@ -1105,7 +1105,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     } // End IF
 
     // Check for LEFT DOMAIN ERROR
-    if (aplTypeLft NE ARRAY_NESTED)
+    if (!IsNested (aplTypeLft))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -1492,7 +1492,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
     // Take into account nested prototypes
-    if (aplTypeLft EQ ARRAY_NESTED)
+    if (IsNested (aplTypeLft))
         aplNELMNstLft = max (aplNELMLft, 1);
     else
         aplNELMNstLft = aplNELMLft;
@@ -1527,9 +1527,9 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         // Get the index value from the left arg
         GetNextValueGlb (hGlbLft,               // Left arg global memory handle
                          uLft,                  // Index
-                        &hGlbSubLft,            // Ptr to result as HGLOBAL (may be NULL if singleton)
-                        &aplLongestSubLft,      // Ptr to result as singleton value
-                        &immTypeSubLft);        // Ptr to result as singleton type
+                        &hGlbSubLft,            // Ptr to result as HGLOBAL (may be NULL if singleton or simple)
+                        &aplLongestSubLft,      // Ptr to result as singleton or simple value
+                        &immTypeSubLft);        // Ptr to result as singleton or simple type
         // If index value from the left arg is a global value, ...
         if (hGlbSubLft)
         {
@@ -1723,7 +1723,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 goto ERROR_EXIT;
         } else
         {
-            // The left arg is an immediate value
+            // The left arg is an immediate or simple value
 
             // Ensure that the right arg is a vector
             if (aplRankRht NE 1)
@@ -1828,16 +1828,26 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             } // End IF/ELSE
         } else
         {
-            // The right arg item is an immediate value
+            // The right arg item is an immediate or simple value
 
+            // If the left arg is nested, ...
             // Validate that the remaining left arg items are {zilde}s
-            if (!PrimFnDydRightShoeGlbImm_EM (aplNELMLft,           // Left arg NELM
-                                              lpMemLft,             // Ptr to left arg global memory
-                                              uLft + 1,             // Left arg starting index
-                                              immTypeSubRht,        // Right arg singleton type
-                                              aplLongestSubRht,     // Right arg singleton value
-                                              lptkFunc))            // Ptr to function token
+            if (IsNested (aplTypeLft))
+            {
+                if (!PrimFnDydRightShoeGlbImm_EM (aplNELMLft,           // Left arg NELM
+                                                  lpMemLft,             // Ptr to left arg global memory
+                                                  uLft + 1,             // Left arg starting index
+                                                  immTypeSubRht,        // Right arg singleton type
+                                                  aplLongestSubRht,     // Right arg singleton value
+                                                  lptkFunc))            // Ptr to function token
+                    goto ERROR_EXIT;
+            } else
+            if (aplNELMLft NE 1)
+            {
+                ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                                           lptkFunc);
                 goto ERROR_EXIT;
+            } // End IF/ELSE/...
 
             // If we're assigning a new value, ...
             if (bArraySet)

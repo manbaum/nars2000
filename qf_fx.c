@@ -123,7 +123,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
             // Fill in common values
             FX_Save.aplRowsRht = 1;
 
-            if (aplTypeRht EQ ARRAY_NESTED)
+            if (IsNested (aplTypeRht))
             {
                 // Ensure that each item is a char scalar/vector
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -219,7 +219,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                 FX_Save.SF_ReadLine = SF_ReadLineN;
                 FX_Save.SF_NumLines = SF_NumLinesN;
             } else
-            if (aplTypeRht NE ARRAY_CHAR)
+            if (!IsSimpleChar (aplTypeRht))
             {
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);
@@ -245,7 +245,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
             break;
 
         case 2:                     // Right arg matrix
-            if (aplTypeRht NE ARRAY_CHAR)
+            if (!IsSimpleChar (aplTypeRht))
             {
                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                            lptkFunc);

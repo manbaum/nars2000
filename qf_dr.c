@@ -231,7 +231,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
                         NULL);          // Ptr to array type ...
 
     // If it's a float, ...
-    if (aplTypeLft EQ ARRAY_FLOAT)
+    if (IsSimpleFlt (aplTypeLft))
     {
         BOOL bRet;
 
@@ -360,7 +360,7 @@ LPPL_YYSTYPE SysFnDydDR_Convert_EM_YY
         goto ERROR_EXIT;
 
     // Check on right arg APA
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
         // Get the # bits per element for the result
         aplNELMRes = (2 * 64) / SysFnDydDR_BPE (aplTypeRes);
@@ -374,12 +374,12 @@ LPPL_YYSTYPE SysFnDydDR_Convert_EM_YY
         aplNELMRes = 0;
 
     // Calculate the result rank
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
         aplRankRes = 1;
     else
         aplRankRes = max (aplRankRht, 1);
 
-    // Calculate space in the result
+    // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
     // Allocate space for the result
@@ -396,16 +396,16 @@ LPPL_YYSTYPE SysFnDydDR_Convert_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
-    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = aplTypeRes;
-////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplNELMRes;
-    lpHeaderRes->Rank       = aplRankRes;
-#undef  lpHeaderRes
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
 
     // Get right arg's global ptrs
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -414,7 +414,7 @@ LPPL_YYSTYPE SysFnDydDR_Convert_EM_YY
     if (hGlbRht)
     {
         // Copy the right arg dimensions to the result unless APA
-        if (aplTypeRht NE ARRAY_APA)
+        if (!IsSimpleAPA (aplTypeRht))
             CopyMemory (VarArrayBaseToDim (lpMemRes),
                         VarArrayBaseToDim (lpMemRht),
                         (UINT) (aplRankRes - 1) * sizeof (APLDIM));
@@ -672,16 +672,16 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
-    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = ARRAY_CHAR;
-////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplNELMRes;
-    lpHeaderRes->Rank       = 1;
-#undef  lpHeaderRes
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
+#undef  lpHeader
 
     // Save the dimension in the result
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
@@ -743,7 +743,7 @@ HGLOBAL SysFnDydDR_FloatToChar_EM
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Ensure the right arg is float
-    if (aplTypeRht NE ARRAY_FLOAT)
+    if (!IsSimpleFlt (aplTypeRht))
     {
         ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                    lptkFunc);

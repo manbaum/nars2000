@@ -299,7 +299,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     // lpMemLft now points to the left arg's data
     // lpMemRht now points to the right arg's data
 
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Fill nested result with PTR_REUSED
         //   in case we fail part way through
@@ -343,7 +343,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     } // End IF
 
     // If the left arg is APA, ...
-    if (aplTypeLft EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeLft))
     {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
         // Get the APA parameters
@@ -353,7 +353,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     } // End IF
 
     // If the right arg is APA, fill in the offset and multiplier
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -363,14 +363,14 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     } // End IF
 
     // Take into account nested prototypes
-    if (aplTypeRht EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRht))
         aplNELMRht = max (aplNELMRht, 1);
-    if (aplTypeLft EQ ARRAY_NESTED)
+    if (IsNested (aplTypeLft))
         aplNELMLft = max (aplNELMLft, 1);
 
     // Handle prototypes
     if (aplNELMRes EQ 0
-     && aplTypeRes EQ ARRAY_NESTED)
+     && IsNested (aplTypeRes))
     {
         if (!PrimOpDydJotDotProto_EM (&lpMemRes,        // Ptr to ptr to result global memory
                                        0,               // Index to use

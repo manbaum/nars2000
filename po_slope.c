@@ -234,7 +234,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // If the right arg is an APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -292,8 +292,8 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     //   Fast Boolean Scan
     if (uDimHi EQ 1
      && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-     && (aplTypeRht EQ ARRAY_BOOL
-      || (aplTypeRht EQ ARRAY_APA
+     && (IsSimpleBool (aplTypeRht)
+      || (IsSimpleAPA (aplTypeRht)
        && (apaOffRht EQ 0 || apaOffRht EQ 1)
        && apaMulRht EQ 0 ))
      && uDimAxRht > 1
@@ -368,7 +368,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
     // lpMemRes now points to its data
 
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Fill nested result with PTR_REUSED
         //   in case we fail part way through
@@ -428,7 +428,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
             // If this function is associative, speed it up
             if (lpPrimFlags
-             && ((lpPrimFlags->AssocBool && aplTypeRht EQ ARRAY_BOOL)
+             && ((lpPrimFlags->AssocBool && IsSimpleBool (aplTypeRht))
               || (lpPrimFlags->AssocNumb && IsSimpleNum (aplTypeRht))))
             {
                 // Calculate the first index in this vector

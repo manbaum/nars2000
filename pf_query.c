@@ -392,14 +392,14 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
                         NULL,           // Ptr to ...immediate type ...
                         NULL);          // Ptr to array type ...
     // Check for LEFT/RIGHT DOMAIN ERRORs
-    bRet = (aplTypeLft NE ARRAY_CHAR
-         && aplTypeRht NE ARRAY_CHAR);
+    bRet = ((!IsSimpleChar (aplTypeLft))
+         && (!IsSimpleChar (aplTypeRht)));
     if (bRet)
     {
-        if (aplTypeLft EQ ARRAY_FLOAT)
+        if (IsSimpleFlt (aplTypeLft))
             // Attempt to convert the float to an integer using System CT
             aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
-        if (bRet && aplTypeRht EQ ARRAY_FLOAT)
+        if (bRet && IsSimpleFlt (aplTypeRht))
             // Attempt to convert the float to an integer using System CT
             aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
     } // End IF

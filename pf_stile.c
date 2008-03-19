@@ -119,7 +119,7 @@ APLSTYPE PrimSpecStileStorageTypeMon
     aplTypeRes = *lpaplTypeRht;
 
     // Except APA becomes INT
-    if (aplTypeRes EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRes))
         aplTypeRes = ARRAY_INT;
 
     return aplTypeRes;

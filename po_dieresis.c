@@ -275,7 +275,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRht);
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Fill nested result with PTR_REUSED
         //   in case we fail part way through
@@ -379,7 +379,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     } else
     {
         // Translate ARRAY_APA args to ARRAY_INT
-        if (aplTypeRht EQ ARRAY_APA)
+        if (IsSimpleAPA (aplTypeRht))
             tkRhtArg.tkFlags.ImmType = ARRAY_INT;
         else
             tkRhtArg.tkFlags.ImmType = aplTypeRht;
@@ -502,7 +502,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
             case ARRAY_NESTED:
                 // Take into account nested prototypes
-                if (aplTypeRht EQ ARRAY_NESTED)
+                if (IsNested (aplTypeRht))
                     aplNELMRht = max (aplNELMRht, 1);
             case ARRAY_HETERO:
                 // Loop through the right arg
@@ -925,7 +925,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // If the left arg is APA, ...
-    if (aplTypeLft EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeLft))
     {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
         // Get the APA parameters
@@ -935,7 +935,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     } // End IF
 
     // If the right arg is APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -1003,11 +1003,11 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     } // End IF
 
     // Take into account nested prototypes
-    if (aplTypeLft EQ ARRAY_NESTED)
+    if (IsNested (aplTypeLft))
         aplNELMLft = max (aplNELMLft, 1);
-    if (aplTypeRht EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRht))
         aplNELMRht = max (aplNELMRht, 1);
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
         aplNELMRes = max (aplNELMRes, 1);
 
     // Check for secondary axis operator

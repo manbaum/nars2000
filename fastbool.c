@@ -101,7 +101,7 @@ void FastBoolScan
     uSuffix    = FastBoolFns[uFBFNIndex].Suffix;        // J[2]
 
     // If the right arg is an APA, handle it specially
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
         // The possibilities are as follows (where V can be any non-negative integer vector):
         //   1.  V   {rho}0   or 1
@@ -348,7 +348,7 @@ void FastBoolScanQual
     BOOL      bAPA;                 // TRUE iff right arg is an APA
 
     // If the right arg is an APA, handle it specially
-    bAPA = (aplTypeRht EQ ARRAY_APA);
+    bAPA = IsSimpleAPA (aplTypeRht);
     if (bAPA)
     {
         // The possibilities are as follows (where V can be any non-negative integer vector):
@@ -509,7 +509,7 @@ void FastBoolRed
     uSuffix    = FastBoolFns[uFBFNIndex].Suffix;        // J[2]
 
     // If the right arg is an APA, handle it specially
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
         // The possibilities are as follows (where V can be any non-negative integer vector):
         //   1.  V   {rho}0   or 1
@@ -686,7 +686,7 @@ void FastBoolRedQual
     LPAPLBOOL lpaplBool;            // Ptr to Booleans to reduce
 
     // If the right arg is an APA, handle it specially
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
 
@@ -800,7 +800,7 @@ void FastBoolRedPlus
     LPAPLBOOL lpaplBool;            // Ptr to Booleans to reduce
 
     // If the right arg is an APA, handle it specially
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
         // The possibilities are as follows (where V can be any non-negative integer vector):
         //   1.  V   {rho}0   or 1

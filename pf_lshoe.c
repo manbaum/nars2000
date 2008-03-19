@@ -317,7 +317,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // If the right arg is an APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -377,16 +377,16 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
-    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = ARRAY_NESTED;
-////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplNELMRes;
-    lpHeaderRes->Rank       = aplRankRes;
-#undef  lpHeaderRes
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_NESTED;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
 
     // Point to the result's dimension
     lpMemRes = VarArrayBaseToDim (lpMemRes);
@@ -639,7 +639,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         // Calculate space needed for each subarray.
         //***************************************************************
         // Handle APAs as INTs
-        if (aplTypeRht EQ ARRAY_APA)
+        if (IsSimpleAPA (aplTypeRht))
             ByteRes = CalcArraySize (ARRAY_INT , aplNELMSub, aplNELMAxis);
         else
             ByteRes = CalcArraySize (aplTypeRht, aplNELMSub, aplNELMAxis);

@@ -184,7 +184,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     // The singleton value is in aplLongestRht
 
     // If the storage type is float, attempt to convert it
-    if (aplTypeRht EQ ARRAY_FLOAT)
+    if (IsSimpleFlt (aplTypeRht))
     {
         // Attempt to convert the float to an integer using System CT
         aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
@@ -487,7 +487,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
        || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft))))
     {
         // Split cases based upon the left & right arg storage types
-        if (aplTypeLft EQ ARRAY_BOOL && aplTypeRht EQ ARRAY_BOOL)
+        if (IsSimpleBool (aplTypeLft) && IsSimpleBool (aplTypeRht))
             // Handle APLBOOL vs. APLBOOL
             PrimFnDydIotaBvB (lpMemRes,             // Ptr to result global memory data
                               aplNELMLft,           // Left arg NELM

@@ -447,16 +447,16 @@ void FormatQQuadInput
         // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
-        lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-        lpHeaderRes->ArrType    = ARRAY_CHAR;
-////////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
-////////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-        lpHeaderRes->RefCnt     = 1;
-        lpHeaderRes->NELM       = uLineLen;
-        lpHeaderRes->Rank       = 1;
-#undef  lpHeaderRes
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_CHAR;
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////lpHeader->SysVar     = 0;               // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = uLineLen;
+        lpHeader->Rank       = 1;
+#undef  lpHeader
 
         // Save the dimension in the result
         *VarArrayBaseToDim (lpMemRes) = uLineLen;

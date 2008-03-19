@@ -349,8 +349,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     } // End IF
 
     // Check for LEFT DOMAIN ERROR
-    if (IsSimpleChar (aplTypeLft)
-     || aplTypeLft EQ ARRAY_HETERO)
+    if (IsSimpleCH (aplTypeLft))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -358,7 +357,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     } // End IF
 
     // Calc result storage type
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = aplTypeRht;
@@ -713,11 +712,11 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     // If the result is nested or hetero, fill the data with PTR_REUSED
     //   in case we fail along the way
     if (lptkSetArg EQ NULL)
-    if (aplTypeRes EQ ARRAY_HETERO
-     || aplTypeRes EQ ARRAY_NESTED)
+    if (IsSimpleHet (aplTypeRes)
+     || IsNested (aplTypeRes))
     {
         // Fill in first one in case of nested prototypes
-        if (aplTypeRes EQ ARRAY_NESTED)
+        if (IsNested (aplTypeRes))
             ((LPAPLNESTED) lpMemRes)[0] = PTR_REUSED;
 
         // Loop through the rest of the items

@@ -154,7 +154,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
     } // End IF
 
     // Check for LEFT DOMAIN ERROR
-    if (lptkLftArg && aplTypeLft NE ARRAY_CHAR)
+    if (lptkLftArg && !IsSimpleChar (aplTypeLft))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -222,7 +222,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                             &aplLongestRht2,
                              NULL);
             // If the right arg is float, attempt to convert it to integer
-            if (aplTypeRht EQ ARRAY_FLOAT)
+            if (IsSimpleFlt (aplTypeRht))
             {
                 // Attempt to convert the float to an integer using System CT
                 aplLongestRht1 = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht1, &bRet);

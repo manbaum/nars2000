@@ -104,7 +104,7 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
 
     // Check for DOMAIN ERROR
     if (!IsSimpleNH (aplTypeRht)
-     || (aplTypeRht NE ARRAY_CHAR
+     || ((!IsSimpleChar (aplTypeRht))
       && aplNELMRht NE 0))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,

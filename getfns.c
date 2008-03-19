@@ -529,7 +529,7 @@ void GetFirstValueGlb
                         break;
                     } // End IF
 
-                    Assert ((aplType EQ ARRAY_NESTED) || aplNELM > 0);
+                    Assert (IsNested (aplType) || aplNELM > 0);
 
                     // Handle the immediate case
                     GetFirstValueImm (lpSym->stFlags.ImmType,
@@ -578,12 +578,12 @@ void GetFirstValueGlb
 //***************************************************************************
 
 void GetValueIntoToken
-    (APLUINT  uArg,         // Index to use
-     LPVOID   lpMemArg,     // Ptr to global memory object to index
-     APLSTYPE aplTypeArg,   // Storage type of the arg
-     APLINT   apaOff,       // APA offset (if needed)
-     APLINT   apaMul,       // APA multiplier (if needed)
-     LPTOKEN  lptkArg)      // Ptr to token in which to place the value
+    (APLUINT  uArg,                         // Index to use
+     LPVOID   lpMemArg,                     // Ptr to global memory object to index
+     APLSTYPE aplTypeArg,                   // Storage type of the arg
+     APLINT   apaOff,                       // APA offset (if needed)
+     APLINT   apaMul,                       // APA multiplier (if needed)
+     LPTOKEN  lptkArg)                      // Ptr to token in which to place the value
 
 {
     // Clear the NoDisplay flag
@@ -665,9 +665,9 @@ void GetValueIntoToken
 //***************************************************************************
 
 APLINT GetNextInteger
-    (LPVOID   lpMem,                // Ptr to global memory
-     APLSTYPE aplType,              // Storage type
-     APLINT   uRes)                 // Index
+    (LPVOID   lpMem,                        // Ptr to global memory
+     APLSTYPE aplType,                      // Storage type
+     APLINT   uRes)                         // Index
 
 {
     // Split cases based upon the storage type
@@ -698,9 +698,9 @@ APLINT GetNextInteger
 //***************************************************************************
 
 APLFLOAT GetNextFloat
-    (LPVOID   lpMem,                // Ptr to global memory
-     APLSTYPE aplType,              // Storage type
-     APLINT   uRes)                 // Index
+    (LPVOID   lpMem,                        // Ptr to global memory
+     APLSTYPE aplType,                      // Storage type
+     APLINT   uRes)                         // Index
 
 {
     // Split cases based upon the storage type
@@ -733,11 +733,11 @@ APLFLOAT GetNextFloat
 //***************************************************************************
 
 APLSTYPE GetNextHetero
-    (LPAPLHETERO lpMem,             // Ptr to global memory
-     APLINT      uRes,              // Index
-     LPAPLINT    lpaplInteger,      // Ptr to Boolean/Integer result
-     LPAPLFLOAT  lpaplFloat,        // Ptr to Float result
-     LPAPLCHAR   lpaplChar)         // Ptr to Char result
+    (LPAPLHETERO lpMem,                     // Ptr to global memory
+     APLINT      uRes,                      // Index
+     LPAPLINT    lpaplInteger,              // Ptr to Boolean/Integer result
+     LPAPLFLOAT  lpaplFloat,                // Ptr to Float result
+     LPAPLCHAR   lpaplChar)                 // Ptr to Char result
 
 {
     LPSYMENTRY lpSymEntry;
@@ -787,18 +787,18 @@ APLSTYPE GetNextHetero
 //***************************************************************************
 
 void GetNextItemGlb
-    (HGLOBAL     hGlbSub,               // Item global memory handle
-     APLUINT     uSub,                  // Index into item
-     HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
-     APLLONGEST *lpaplLongestRes)       // Ptr to result immediate value (may be NULL)
+    (HGLOBAL     hGlbSub,                   // Item global memory handle
+     APLUINT     uSub,                      // Index into item
+     HGLOBAL    *lphGlbRes,                 // Ptr to result global memory handle (may be NULL)
+     APLLONGEST *lpaplLongestRes)           // Ptr to result immediate value (may be NULL)
 
 {
-    APLSTYPE  aplTypeSub;               // Item storage type
+    APLSTYPE  aplTypeSub;                   // Item storage type
 #ifdef DEBUG
-    APLNELM   aplNELMSub;               // Item NELM
+    APLNELM   aplNELMSub;                   // Item NELM
 #endif
-    APLRANK   aplRankSub;               // Item rank
-    LPVOID    lpMemSub;                 // Ptr to item global memory
+    APLRANK   aplRankSub;                   // Item rank
+    LPVOID    lpMemSub;                     // Ptr to item global memory
 
     // Lock the memory to get a ptr to it
     lpMemSub = MyGlobalLock (hGlbSub);
@@ -818,11 +818,11 @@ void GetNextItemGlb
     lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
 
     // Get next item from global memory
-    GetNextItemMem (lpMemSub,           // Ptr to item global memory data
-                    aplTypeSub,         // Item storage type
-                    uSub,               // Index into item
-                    lphGlbRes,          // Ptr to result global memory handle (may be NULL)
-                    lpaplLongestRes);   // Ptr to result immediate value (may be NULL)
+    GetNextItemMem (lpMemSub,               // Ptr to item global memory data
+                    aplTypeSub,             // Item storage type
+                    uSub,                   // Index into item
+                    lphGlbRes,              // Ptr to result global memory handle (may be NULL)
+                    lpaplLongestRes);       // Ptr to result immediate value (may be NULL)
     // We no longer need this ptr
     MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 } // End GetNextItemGlb
@@ -836,19 +836,19 @@ void GetNextItemGlb
 //***************************************************************************
 
 void GetNextValueGlb
-    (HGLOBAL     hGlbSub,               // Item global memory handle
-     APLUINT     uSub,                  // Index into item
-     HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
-     APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
-     IMM_TYPES  *lpimmTypeRes)          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+    (HGLOBAL     hGlbSub,                   // Item global memory handle
+     APLUINT     uSub,                      // Index into item
+     HGLOBAL    *lphGlbRes,                 // Ptr to result global memory handle (may be NULL)
+     APLLONGEST *lpaplLongestRes,           // Ptr to result immediate value (may be NULL)
+     IMM_TYPES  *lpimmTypeRes)              // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
 
 {
-    APLSTYPE  aplTypeSub;               // Item storage type
+    APLSTYPE  aplTypeSub;                   // Item storage type
 #ifdef DEBUG
-    APLNELM   aplNELMSub;               // Item NELM
+    APLNELM   aplNELMSub;                   // Item NELM
 #endif
-    APLRANK   aplRankSub;               // Item rank
-    LPVOID    lpMemSub;                 // Ptr to item global memory
+    APLRANK   aplRankSub;                   // Item rank
+    LPVOID    lpMemSub;                     // Ptr to item global memory
 
     // Lock the memory to get a ptr to it
     lpMemSub = MyGlobalLock (hGlbSub);
@@ -863,7 +863,7 @@ void GetNextValueGlb
 #undef  lpHeader
 
     Assert ((uSub < aplNELMSub)
-         || ((uSub EQ 0) && (aplTypeSub EQ ARRAY_NESTED)));
+         || ((uSub EQ 0) && IsNested (aplTypeSub)));
 
     // Skip over the header and dimensions to the data
     lpMemSub = VarArrayBaseToData (lpMemSub, aplRankSub);
@@ -888,12 +888,12 @@ void GetNextValueGlb
 //***************************************************************************
 
 void GetNextValueMem
-    (LPVOID      lpMemSub,              // Ptr to item global memory data
-     APLSTYPE    aplTypeSub,            // Item storage type
-     APLUINT     uSub,                  // Index into item
-     HGLOBAL    *lphGlbRes,             // Ptr to result global memory handle (may be NULL)
-     APLLONGEST *lpaplLongestRes,       // Ptr to result immediate value (may be NULL)
-     IMM_TYPES  *lpimmTypeRes)          // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
+    (LPVOID      lpMemSub,                  // Ptr to item global memory data
+     APLSTYPE    aplTypeSub,                // Item storage type
+     APLUINT     uSub,                      // Index into item
+     HGLOBAL    *lphGlbRes,                 // Ptr to result global memory handle (may be NULL)
+     APLLONGEST *lpaplLongestRes,           // Ptr to result immediate value (may be NULL)
+     IMM_TYPES  *lpimmTypeRes)              // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
 
 {
     GetNextValueMemSub (lpMemSub,           // Ptr to item global memory data

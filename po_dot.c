@@ -378,7 +378,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     // Skip over the dimensions to the data
     lpMemRes = lpMemDimRes;
 
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Fill nested result with PTR_REUSED
         //   in case we fail part way through

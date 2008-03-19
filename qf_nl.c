@@ -163,7 +163,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 
         // Check for LEFT DOMAIN ERROR
         if (!IsSimple (aplTypeLft)
-         || (aplTypeLft NE ARRAY_CHAR
+         || ((!IsSimpleChar (aplTypeLft))
           && aplNELMLft NE 0))
         {
             ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,

@@ -120,14 +120,29 @@ typedef enum tagARRAY_TYPES
 /////// IsSimpleNum(a)      (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT)
 #define IsSimpleNum(a)      (uTypeMap[a] < uTypeMap[ARRAY_CHAR])
 
+// Define macro for detecting simple Boolean array type
+#define IsSimpleBool(a)     (a EQ ARRAY_BOOL)
+
 // Define macro for detecting simple integer-like array type
 #define IsSimpleInt(a)      (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA)
+
+// Define macro for detecting simple APA array type
+#define IsSimpleAPA(a)      (a EQ ARRAY_APA)
+
+// Define macro for detecting simple float array type
+#define IsSimpleFlt(a)      (a EQ ARRAY_FLOAT)
 
 // Define macro for detecting simple character array type
 #define IsSimpleChar(a)     (a EQ ARRAY_CHAR)
 
 // Define macro for detecting simple character or heterogeneous array type
 #define IsSimpleCH(a)       (a EQ ARRAY_CHAR || a EQ ARRAY_HETERO)
+
+// Define macro for detecting simple hetero array type
+#define IsSimpleHet(a)      (a EQ ARRAY_HETERO)
+
+// Define macro for detecting nested array type
+#define IsNested(a)         (a EQ ARRAY_NESTED)
 
 // Define macro for detecting simple Boolean value
 #define IsBooleanValue(a)   (a EQ 0 || a EQ 1)
@@ -283,7 +298,7 @@ typedef enum tagPTR_TYPES
  PTRTYPE_HGLOBAL,       // 01:  This ptr is an HGLOBAL
  PTRTYPE_AVAIL,         // 02:  Available entries (2 bits)
  PTRTYPE_REUSED,        // 03:  Used by PTR_REUSED
-} PTR_TYPES;
+} PTR_TYPES;            // No available entries (2 bits)
 
 #define PTRTYPE_MASK     3      // This masks the two low-order bits
 

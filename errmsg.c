@@ -64,7 +64,7 @@ void BreakMessage
     // We no longer need this ptr
     MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
 
-    // Calculate space needed for te result
+    // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
 
     // Allocate space for the result
@@ -252,7 +252,7 @@ void ErrorMessageDirect
                + ((uCaret EQ NEG1U) ? 0
                                     : lstrlenW (L"\r\n")
                                     + uCaretLen + 1);
-    // Calculate space needed for te result
+    // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
 
     // Allocate space for the result

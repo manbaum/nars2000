@@ -118,7 +118,7 @@ APLSTYPE PrimSpecUpStileStorageTypeMon
     //   the same as that of the right arg
     //   except FLOAT goes to INT
     // IisF promotes to FisF as necessary.
-    if (*lpaplTypeRht EQ ARRAY_FLOAT)
+    if (IsSimpleFlt (*lpaplTypeRht))
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = *lpaplTypeRht;

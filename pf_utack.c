@@ -233,8 +233,8 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
         aplTypeRes = ARRAY_BOOL;
     else
     // Calc result Type
-    if (aplTypeLft EQ ARRAY_FLOAT
-     || aplTypeRht EQ ARRAY_FLOAT)
+    if (IsSimpleFlt (aplTypeLft)
+     || IsSimpleFlt (aplTypeRht))
         aplTypeRes = ARRAY_FLOAT;
     else
         aplTypeRes = ARRAY_INT;
@@ -355,7 +355,7 @@ RESTART_EXCEPTION:
             else
                 uInnRht = 1 * uOutRht + aplRestRht * iInnMax;
 
-            if (aplTypeRes EQ ARRAY_FLOAT)
+            if (IsSimpleFlt (aplTypeRes))
             {
                 APLFLOAT aplFloatLft,
                          aplFloatRht;
@@ -411,7 +411,7 @@ RESTART_EXCEPTION:
                         case EXCEPTION_RESULT_FLOAT:
                             MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                            if (aplTypeRes NE ARRAY_FLOAT)
+                            if (!IsSimpleFlt (aplTypeRes))
                             {
                                 aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
@@ -441,7 +441,7 @@ RESTART_EXCEPTION:
         } // End FOR
 
         // Save in result
-        if (aplTypeRes EQ ARRAY_FLOAT)
+        if (IsSimpleFlt (aplTypeRes))
             ((LPAPLFLOAT) lpMemRes)[uRes] = aplFloatAcc;
         else
             ((LPAPLINT)   lpMemRes)[uRes] = aplIntAcc;

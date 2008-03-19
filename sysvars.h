@@ -26,13 +26,16 @@
 
 #define QUADRL_MODULUS  0x7FFFFFFF      // (2*31)-1 is a prime
 
-#define DEF_MIN_QUADPP   1                  // Minimum value for QuadPP
+#define DEF_MIN_QUADCT   0                  // Minimum value for []CT
+#define DEF_MAX_QUADCT   1E-10              // Maximum ...
+
+#define DEF_MIN_QUADPP   1                  // Minimum value for []PP
 #define DEF_MAX_QUADPP  17                  // Maximum ...
 
-#define DEF_MIN_QUADPW  30                  // Minimum value for QuadPW
+#define DEF_MIN_QUADPW  30                  // Minimum value for []PW
 #define DEF_MAX_QUADPW 255                  // Maximum ...
 
-#define DEF_MIN_QUADRL   1                  // Minimum value for QuadRL
+#define DEF_MIN_QUADRL   1                  // Minimum value for []RL
 #define DEF_MAX_QUADRL (QUADRL_MODULUS - 1) // Maximum ...
 
 

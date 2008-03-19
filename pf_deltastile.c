@@ -293,16 +293,16 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
-    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = ARRAY_INT;
-////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplNELMRes;
-    lpHeaderRes->Rank       = 1;
-#undef  lpHeaderRes
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_INT;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
+#undef  lpHeader
 
     // Save the dimension in the result
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
@@ -312,7 +312,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // If the right arg is an APA, ...
-    if (gradeData.aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (gradeData.aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -448,7 +448,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     } // End IF
 
     // Check for LEFT DOMAIN ERROR
-    if (aplTypeLft NE ARRAY_CHAR)
+    if (!IsSimpleChar (aplTypeLft))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkLftArg);
@@ -456,7 +456,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     } // End IF
 
     // Check for RIGHT DOMAIN ERROR
-    if (gradeData.aplTypeRht NE ARRAY_CHAR
+    if (!IsSimpleChar (gradeData.aplTypeRht)
      && aplNELMRht NE 0)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
@@ -577,16 +577,16 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
-    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = ARRAY_INT;
-////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplNELMRes;
-    lpHeaderRes->Rank       = 1;
-#undef  lpHeaderRes
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_INT;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = 1;
+#undef  lpHeader
 
     // Save the dimension in the result
     *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
@@ -596,7 +596,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // If the right arg is an APA, ...
-    if (gradeData.aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (gradeData.aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters

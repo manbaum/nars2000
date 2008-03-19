@@ -304,7 +304,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     } // End IF
 
     // Map APA right arg to INT result
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = aplTypeRht;
@@ -449,7 +449,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     // lpMemRes now points to the result's data
 
     // Handle empty nested array results (prototypes)
-    if (aplNELMRes EQ 0 && aplTypeRes EQ ARRAY_NESTED)
+    if (aplNELMRes EQ 0 && IsNested (aplTypeRes))
     {
         *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
 

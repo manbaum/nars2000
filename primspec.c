@@ -589,7 +589,7 @@ RESTART_EXCEPTION_VARNAMED:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
-                         && aplTypeRes NE ARRAY_FLOAT)
+                         && !IsSimpleFlt (aplTypeRes))
                         {
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
@@ -733,7 +733,7 @@ RESTART_EXCEPTION_VARIMMED:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
-                         && aplTypeRes NE ARRAY_FLOAT)
+                         && !IsSimpleFlt (aplTypeRes))
                         {
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
@@ -870,7 +870,7 @@ HGLOBAL PrimFnMonGlb_EM
     } // End IF
 
     // In case the result is APA
-    if (aplTypeRes EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRes))
     {
         if (!(*lpPrimSpec->ApaResultMon_EM) (NULL,
                                              lptkFunc,
@@ -882,8 +882,6 @@ HGLOBAL PrimFnMonGlb_EM
         else
             goto NORMAL_EXIT;
     } // End IF
-
-    // Calculate space for the result
 RESTART_EXCEPTION:
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRht, aplRankRht);
@@ -928,7 +926,7 @@ RESTART_EXCEPTION:
     // lpMemRht now points to the right arg's data
 
     // If the right arg is an APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -1312,7 +1310,7 @@ RESTART_EXCEPTION:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 if (IsSimpleNum (aplTypeRes)
-                 && aplTypeRes NE ARRAY_FLOAT)
+                 && !IsSimpleFlt (aplTypeRes))
                 {
                     aplTypeRes = ARRAY_FLOAT;
 
@@ -1492,7 +1490,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     } // End IF
 
     Assert (IsSimpleNum (aplTypeRes)
-         || aplTypeRes EQ ARRAY_NESTED);
+         || IsNested (aplTypeRes));
 
     // Get left and right arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -1522,9 +1520,9 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     lpYYRes = YYAlloc ();
 
     // Handle APA result separately
-    if (aplTypeRes EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRes))
     {
-        if (aplTypeLft EQ ARRAY_APA)
+        if (IsSimpleAPA (aplTypeLft))
             aplInteger = aplLongestRht;
         else
             aplInteger = aplLongestLft;
@@ -1567,23 +1565,23 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     //   Nested     Nested     Nested
 
     // Split cases based upon the combined left vs. right types
-    if (aplTypeLft EQ ARRAY_NESTED
-     && aplTypeRht EQ ARRAY_NESTED)
+    if (IsNested (aplTypeLft)
+     && IsNested (aplTypeRht))
         // Left arg is NESTED, right arg is NESTED
         lpPrimFn = &PrimFnDydNestNest_EM;
     else
-    if (aplTypeLft NE ARRAY_NESTED
-     && aplTypeRht EQ ARRAY_NESTED)
+    if ((!IsNested (aplTypeLft))
+     && IsNested (aplTypeRht))
         // Left arg is SIMPLE, right arg is NESTED
         lpPrimFn = &PrimFnDydSimpNest_EM;
     else
-    if (aplTypeLft EQ ARRAY_NESTED
-     && aplTypeRht NE ARRAY_NESTED)
+    if (IsNested (aplTypeLft)
+     && !IsNested (aplTypeRht))
         // Left arg is NESTED, right arg is SIMPLE
         lpPrimFn = &PrimFnDydNestSimp_EM;
     else
-    if (aplTypeLft NE ARRAY_NESTED
-     && aplTypeRht NE ARRAY_NESTED)
+    if ((!IsNested (aplTypeLft))
+     && (!IsNested (aplTypeRht)))
         // Left arg is SIMPLE, right arg is SIMPLE
         lpPrimFn = &PrimFnDydSimpSimp_EM;
     else
@@ -1747,7 +1745,7 @@ BOOL PrimFnDydSimpNest_EM
     } // End IF/ELSE
 
     // If the left arg is APA, ...
-    if (aplTypeLft EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeLft))
     {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
         // Get the APA parameters
@@ -1767,7 +1765,7 @@ BOOL PrimFnDydSimpNest_EM
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Fill nested result with PTR_REUSED
         //   in case we fail part way through
@@ -2088,7 +2086,7 @@ BOOL PrimFnDydNestSimp_EM
     } // End IF/ELSE
 
     // If the right arg is APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -2108,7 +2106,7 @@ BOOL PrimFnDydNestSimp_EM
     lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Fill nested result with PTR_REUSED
         //   in case we fail part way through
@@ -2420,7 +2418,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     } // End IF
 
     // Special case APA result
-    if (aplTypeRes EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRes))
     {
         if (!(*lpPrimSpec->ApaResultDyd_EM) (NULL,
                                              lptkFunc,
@@ -2439,7 +2437,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     } // End IF
 
     Assert (IsSimpleNum (aplTypeRes)
-         || aplTypeRes EQ ARRAY_NESTED);
+         || IsNested (aplTypeRes));
 
     // Allocate space for result
     if (!PrimScalarFnDydAllocate_EM (lptkFunc,
@@ -2463,7 +2461,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
     // If the left arg is an APA, ...
-    if (aplTypeLft EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeLft))
     {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
         // Get the APA parameters
@@ -2490,7 +2488,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
 
     else
     // If nested result, ...
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Loop through the left arg/result
         for (uLft = 0; uLft < (APLNELMSIGN) aplNELMLft; uLft++)
@@ -2855,7 +2853,7 @@ RESTART_EXCEPTION:
                 } else
                 // If the multipleton argument is HETERO,
                 //   look at each LPSYMENTRY
-                if (aplTypeRht EQ ARRAY_HETERO)
+                if (IsSimpleHet (aplTypeRht))
                 {
                     // Split cases based upon the left arg's storage type
                     switch (aplTypeLft)
@@ -2988,7 +2986,7 @@ RESTART_EXCEPTION:
             switch (aplTypeLft)
             {
                 case ARRAY_BOOL:            // Res = BOOL, Lft = BOOL(S)
-                    if (aplTypeRht EQ ARRAY_BOOL)
+                    if (IsSimpleBool (aplTypeRht))
                     {
                         // ***FIXME*** -- Optimize by chunking
 
@@ -3463,7 +3461,7 @@ RESTART_EXCEPTION:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 if (IsSimpleNum (aplTypeRes)
-                 && aplTypeRes NE ARRAY_FLOAT)
+                 && !IsSimpleFlt (aplTypeRes))
                 {
                     aplTypeRes = ARRAY_FLOAT;
 
@@ -3600,7 +3598,7 @@ RESTART_EXCEPTION:
                 } else
                 // If the multipleton argument is HETERO,
                 //   look at each LPSYMENTRY
-                if (aplTypeLft EQ ARRAY_HETERO)
+                if (IsSimpleHet (aplTypeLft))
                 {
                     // Split cases based upon the right arg's storage type
                     switch (aplTypeRht)
@@ -3733,7 +3731,7 @@ RESTART_EXCEPTION:
             switch (aplTypeRht)
             {
                 case ARRAY_BOOL:            // Res = BOOL,                  Rht = BOOL(S)
-                    if (aplTypeLft EQ ARRAY_BOOL)
+                    if (IsSimpleBool (aplTypeLft))
                     {
                         // ***FIXME*** -- Optimize by chunking
 
@@ -4208,7 +4206,7 @@ RESTART_EXCEPTION:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 if (IsSimpleNum (aplTypeRes)
-                 && aplTypeRes NE ARRAY_FLOAT)
+                 && !IsSimpleFlt (aplTypeRes))
                 {
                     aplTypeRes = ARRAY_FLOAT;
 
@@ -4317,7 +4315,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     } // End IF
 
     // Special case APA result
-    if (aplTypeRes EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRes))
     {
         if (!(*lpPrimSpec->ApaResultDyd_EM) (NULL,
                                              lptkFunc,
@@ -4336,7 +4334,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     } // End IF
 
     Assert (IsSimpleNum (aplTypeRes)
-         || aplTypeRes EQ ARRAY_NESTED);
+         || IsNested (aplTypeRes));
 
     // Allocate space for result
     if (!PrimScalarFnDydAllocate_EM (lptkFunc,
@@ -4360,7 +4358,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
     // If the right arg is an APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -4386,7 +4384,7 @@ HGLOBAL PrimFnDydSiScNest_EM
                                      lpPrimSpec);
     else
     // If nested result, ...
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Loop through the right arg/result
         for (uRht = 0; uRht < (APLNELMSIGN) aplNELMRht; uRht++)
@@ -4598,8 +4596,8 @@ RESTART_EXCEPTION_IMMED:
             case ARRAY_BOOL:                    // Res = BOOL
                 // If both arguments are BOOL,
                 //   use BisBvB
-                if (aplTypeLft EQ ARRAY_BOOL
-                 && aplTypeRht EQ ARRAY_BOOL)  // Res = BOOL, Lft = BOOL(S), Rht = BOOL(S)
+                if (IsSimpleBool (aplTypeLft)
+                 && IsSimpleBool (aplTypeRht))  // Res = BOOL, Lft = BOOL(S), Rht = BOOL(S)
                 {
                     lptkRes->tkData.tkBoolean  =
                       (*lpPrimSpec->BisBvB) ((APLBOOL) aplIntegerLft,
@@ -4628,8 +4626,8 @@ RESTART_EXCEPTION_IMMED:
                 } else
                 // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
                 //   use BisFvF
-                if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = BOOL, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
-                 || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = BOOL, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
+                if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = BOOL, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
+                 || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = BOOL, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
                 {
                     lptkRes->tkData.tkBoolean  =
                       (*lpPrimSpec->BisFvF) (aplFloatLft,
@@ -4659,8 +4657,8 @@ RESTART_EXCEPTION_IMMED:
                 } else
                 // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
                 //   use IisFvF
-                if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
-                 || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
+                if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
+                 || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
                 {
                     lptkRes->tkData.tkInteger  =
                       (*lpPrimSpec->IisFvF) (aplFloatLft,
@@ -4722,7 +4720,7 @@ RESTART_EXCEPTION_IMMED:
                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                 if (IsSimpleNum (aplTypeRes)
-                 && aplTypeRes NE ARRAY_FLOAT)
+                 && !IsSimpleFlt (aplTypeRes))
                 {
                     aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
@@ -4903,8 +4901,8 @@ RESTART_EXCEPTION_SINGLETON:
                 case ARRAY_BOOL:                    // Res = BOOL
                     // If both arguments are BOOL,
                     //   use BisBvB
-                    if (aplTypeLft EQ ARRAY_BOOL
-                     && aplTypeRht EQ ARRAY_BOOL)  // Res = BOOL, Lft = BOOL(S), Rht = BOOL(S)
+                    if (IsSimpleBool (aplTypeLft)
+                     && IsSimpleBool (aplTypeRht))  // Res = BOOL, Lft = BOOL(S), Rht = BOOL(S)
                     {
                         *((LPAPLBOOL)  lpMemRes) =
                           (*lpPrimSpec->BisBvB) ((APLBOOL) aplIntegerLft,
@@ -4933,8 +4931,8 @@ RESTART_EXCEPTION_SINGLETON:
                     } else
                     // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
                     //   use BisFvF
-                    if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = BOOL, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
-                     || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = BOOL, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
+                    if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = BOOL, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
+                     || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = BOOL, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
                     {
                         *((LPAPLBOOL)  lpMemRes) =
                           (*lpPrimSpec->BisFvF) (aplFloatLft,
@@ -4957,8 +4955,8 @@ RESTART_EXCEPTION_SINGLETON:
                     } else
                     // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
                     //   use IisFvF
-                    if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
-                     || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
+                    if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT, Lft = FLOAT(S), Rht = BOOL/INT/APA/FLOAT(S)
+                     || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT, Lft = BOOL/INT/APA/FLOAT(S), Rht = FLOAT(S)
                     {
                         *((LPAPLINT)   lpMemRes) =
                           (*lpPrimSpec->IisFvF) (aplFloatLft,
@@ -5020,7 +5018,7 @@ RESTART_EXCEPTION_SINGLETON:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
-                         && aplTypeRes NE ARRAY_FLOAT)
+                         && !IsSimpleFlt (aplTypeRes))
                         {
                             aplTypeRes = ARRAY_FLOAT;
 #ifdef DEBUG
@@ -5076,7 +5074,7 @@ RESTART_EXCEPTION_SINGLETON:
         lpMemDimArg = VarArrayBaseToData (lpMemDimArg, aplRankRes);
 
         // If the non-singleton arg is an APA, ...
-        if (aplTypeArg EQ ARRAY_APA)
+        if (IsSimpleAPA (aplTypeArg))
         {
 #define lpAPA       ((LPAPLAPA) lpMemDimArg)
             // Get the APA parameters
@@ -5165,7 +5163,7 @@ RESTART_EXCEPTION_SINGLETON:
         lpMemResStart = lpMemRes;
 
         // If the left arg is an APA, ...
-        if (aplTypeLft EQ ARRAY_APA)
+        if (IsSimpleAPA (aplTypeLft))
         {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
             // Get the APA parameters
@@ -5175,7 +5173,7 @@ RESTART_EXCEPTION_SINGLETON:
         } // End IF
 
         // If the right arg is an APA, ...
-        if (aplTypeRht EQ ARRAY_APA)
+        if (IsSimpleAPA (aplTypeRht))
         {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
             // Get the APA parameters
@@ -5247,8 +5245,8 @@ RESTART_EXCEPTION_AXIS:
                 case ARRAY_BOOL:                    // Res = BOOL(Axis)
                     // If both arguments are BOOL,
                     //   use BisBvB
-                    if (aplTypeLft EQ ARRAY_BOOL
-                     && aplTypeRht EQ ARRAY_BOOL)   // Res = BOOL(Axis), Lft = BOOL, Rht = BOOL
+                    if (IsSimpleBool (aplTypeLft)
+                     && IsSimpleBool (aplTypeRht))  // Res = BOOL(Axis), Lft = BOOL, Rht = BOOL
                     {
                         // ***FIXME*** -- Optimize by chunking
 
@@ -5349,8 +5347,8 @@ RESTART_EXCEPTION_AXIS:
                     } else
                     // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
                     //   use BisFvF
-                    if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = BOOL(Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
-                     || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = BOOL(Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
+                    if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = BOOL(Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
+                     || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = BOOL(Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
                         DbgBrk ();      // ***TESTME*** -- No such primitive
 
@@ -5413,8 +5411,8 @@ RESTART_EXCEPTION_AXIS:
                     } else
                     // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
                     //   use IisFvF
-                    if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = INT(Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
-                     || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = INT(Axis), Rht = BOOL/INT/APA/FLOAT, Rht = FLOAT
+                    if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT(Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
+                     || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT(Axis), Rht = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
                         DbgBrk ();      // ***TESTME*** -- No such primitive
 
@@ -5525,7 +5523,7 @@ RESTART_EXCEPTION_AXIS:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
-                         && aplTypeRes NE ARRAY_FLOAT)
+                         && !IsSimpleFlt (aplTypeRes))
                         {
                             aplTypeRes = ARRAY_FLOAT;
 
@@ -5563,8 +5561,8 @@ RESTART_EXCEPTION_NOAXIS:
                 case ARRAY_BOOL:                    // Res = BOOL(No Axis)
                     // If both arguments are BOOL,
                     //   use BisBvB
-                    if (aplTypeLft EQ ARRAY_BOOL
-                     && aplTypeRht EQ ARRAY_BOOL)   // Res = BOOL(No Axis), Lft = BOOL, Rht = BOOL
+                    if (IsSimpleBool (aplTypeLft)
+                     && IsSimpleBool (aplTypeRht))  // Res = BOOL(No Axis), Lft = BOOL, Rht = BOOL
                     {
                         // ***FIXME*** -- Optimize by chunking
 
@@ -5625,8 +5623,8 @@ RESTART_EXCEPTION_NOAXIS:
                     } else
                     // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
                     //   use BisFvF
-                    if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = BOOL(No Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
-                     || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
+                    if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = BOOL(No Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
+                     || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -5663,8 +5661,8 @@ RESTART_EXCEPTION_NOAXIS:
                     } else
                     // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
                     //   use IisFvF
-                    if ((aplTypeLft EQ ARRAY_FLOAT && IsSimpleNum (aplTypeRht))   // Res = INT(No Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
-                     || (aplTypeRht EQ ARRAY_FLOAT && IsSimpleNum (aplTypeLft)))  // Res = INT(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
+                    if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = INT(No Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
+                     || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = INT(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
                         DbgBrk ();      // ***TESTME*** -- No such primitive
 
@@ -5738,7 +5736,7 @@ RESTART_EXCEPTION_NOAXIS:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         if (IsSimpleNum (aplTypeRes)
-                         && aplTypeRes NE ARRAY_FLOAT)
+                         && !IsSimpleFlt (aplTypeRes))
                         {
                             aplTypeRes = ARRAY_FLOAT;
 

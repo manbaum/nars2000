@@ -321,8 +321,8 @@ APLSTYPE StorageType
             if (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
              || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL)
             {
-                if (aplTypeLft EQ ARRAY_NESTED
-                 || aplTypeRht EQ ARRAY_NESTED)
+                if (IsNested (aplTypeLft)
+                 || IsNested (aplTypeRht))
                     return ARRAY_NESTED;
                 else
                     return ARRAY_BOOL;
@@ -533,7 +533,7 @@ BOOL PrimScalarFnDydAllocate_EM
 
     // Fill nested result with PTR_REUSED
     //   in case we fail part way through
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Skip over the header and dimensions to the data
         lpMem = VarArrayBaseToData (lpMemRes, *lpaplRankRes);
@@ -776,7 +776,7 @@ HGLOBAL MakeMonPrototype_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    Assert (aplType EQ ARRAY_NESTED);
+                    Assert (IsNested (aplType));
 
                     // It's a valid HGLOBAL array
                     Assert (IsGlbTypeVarInd (lpMemArr));
@@ -981,7 +981,7 @@ HGLOBAL MakeDydPrototype_EM
     } // End IF
 
     Assert (IsSimpleNum (aplTypeRes)
-         || aplTypeRes EQ ARRAY_NESTED);
+         || IsNested (aplTypeRes));
 
     // Lock the memory to get a ptr to it
     if (hGlbLft)
@@ -1012,7 +1012,7 @@ HGLOBAL MakeDydPrototype_EM
         aplNELMRes = max (aplNELMLft, aplNELMRht);
 
     // Handle APA result separately
-    if (aplTypeRes EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRes))
     {
         // Calculate space needed for the result
         ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
@@ -1102,11 +1102,11 @@ HGLOBAL MakeDydPrototype_EM
             goto ERROR_EXIT;
 
         // Take into account nested prototypes
-        if (aplTypeLft EQ ARRAY_NESTED)
+        if (IsNested (aplTypeLft))
             aplNELMLft = max (aplNELMLft, 1);
-        if (aplTypeRht EQ ARRAY_NESTED)
+        if (IsNested (aplTypeRht))
             aplNELMRht = max (aplNELMRht, 1);
-        if (aplTypeRes EQ ARRAY_NESTED)
+        if (IsNested (aplTypeRes))
             aplNELMRes = max (aplNELMRes, 1);
 
         // Lock the memory to get a ptr to it
@@ -1378,14 +1378,14 @@ BOOL IsFirstSimpleGlb
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (*lphGlbRht);
 
-#define lpHeaderRht     ((LPVARARRAY_HEADER) lpMemRht)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type and Rank
-    aplTypeRht = lpHeaderRht->ArrType;
-    aplRankRht = lpHeaderRht->Rank;
-#undef  lpHeaderRht
+    aplTypeRht = lpHeader->ArrType;
+    aplRankRht = lpHeader->Rank;
+#undef  lpHeader
 
     // It's a nested element
-    Assert (aplTypeRht EQ ARRAY_NESTED);
+    Assert (IsNested (aplTypeRht));
 
     // Point to the data
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
@@ -1537,14 +1537,14 @@ HGLOBAL CopyArray_EM
 #ifdef DEBUG_REFCNT
         dprintfW (L"##RefCnt=1 in " APPEND_NAME L": %08X (%S#%d)", lpMemDst, FNLN);
 #endif
-#define lpHeaderDst ((LPVARARRAY_HEADER) lpMemDst)
-        lpHeaderDst->RefCnt = 1;
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemDst)
+        lpHeader->RefCnt = 1;
 
         // Recurse through the array, copying all the global ptrs
-        aplType = lpHeaderDst->ArrType;
-        aplNELM = lpHeaderDst->NELM;
-        aplRank = lpHeaderDst->Rank;
-#undef  lpHeaderDst
+        aplType = lpHeader->ArrType;
+        aplNELM = lpHeader->NELM;
+        aplRank = lpHeader->Rank;
+#undef  lpHeader
 
         lpMemDstBase = lpMemDst = VarArrayBaseToData (lpMemDst, aplRank);
         lpMemSrcBase = lpMemSrc = VarArrayBaseToData (lpMemSrc, aplRank);
@@ -1597,7 +1597,7 @@ HGLOBAL CopyArray_EM
                         break;
 
                     case PTRTYPE_HGLOBAL:
-                        Assert (aplType EQ ARRAY_NESTED);
+                        Assert (IsNested (aplType));
 
                         // It's a valid HGLOBAL array
                         Assert (IsGlbTypeVarInd (lpMemSrc));
@@ -1636,6 +1636,192 @@ HGLOBAL CopyArray_EM
     return hGlbDst;
 } // End CopyArray_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CopyArrayAsType
+//
+//  Copy a simple array as a given (simple and possibly wider
+//    but never narrower) storage type
+//***************************************************************************
+
+HGLOBAL CopyArrayAsType
+    (HGLOBAL  hGlbArg,                  // Arg global memory handle
+     APLSTYPE aplTypeRes)               // Result storage type
+
+{
+    APLSTYPE aplTypeArg;                // Arg storage type
+    APLNELM  aplNELMArg;                // Arg/result NELM
+    APLRANK  aplRankArg;                // Arg/result rank
+    APLUINT  ByteRes;                   // # bytes in the result
+    HGLOBAL  hGlbRes = NULL;            // Result global memory handle
+    LPVOID   lpMemArg = NULL,           // Ptr to arg global memory
+             lpMemRes = NULL;           // Ptr to result ...
+    APLUINT  uArg;                      // Loop counter
+    UINT     uBitMask;                  // Bit mask for looping through Booleans
+
+    // Get the attributes (Type, NELM, and Rank) of the arg
+    AttrsOfGlb (hGlbArg, &aplTypeArg, &aplNELMArg, &aplRankArg, NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemArg = MyGlobalLock (hGlbArg);
+
+    // Calculate space for the result
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMArg, aplRankArg);
+
+    // Allocate space for the result
+    // N.B.:  Conversion from APLUINT to UINT
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+        goto ERROR_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMArg;
+    lpHeader->Rank       = aplRankArg;
+#undef  lpHeader
+
+    // Skip over the header to the data
+    lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
+    lpMemRes = VarArrayBaseToData (lpMemRes, aplRankArg);
+
+    // Copy the existing named values to the result
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_BOOL:                    // Res = BOOL, Arg = BOOL
+            // Split cases based upon the arg storage type
+            switch (aplTypeArg)
+            {
+                case ARRAY_BOOL:            // Res = INT, Arg = BOOL
+                    // Copy the arg elements to the result
+                    CopyMemory (lpMemRes, lpMemArg, (UINT) RoundUpBits8 (aplNELMArg));
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_INT:                     // Res = INT, Arg = BOOL/INT
+            // Split cases based upon the arg storage type
+            switch (aplTypeArg)
+            {
+                case ARRAY_BOOL:            // Res = INT, Arg = BOOL
+                    uBitMask = 0x01;
+
+                    // Loop through the arg elements
+                    for (uArg = 0; uArg < aplNELMArg; uArg++)
+                    {
+                        if (uBitMask & *(LPAPLBOOL) lpMemArg)
+                            *((LPAPLINT) lpMemRes) = 1;
+                        ((LPAPLINT) lpMemRes)++;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
+                        } // End IF
+                    } // End IF
+
+                    break;
+
+                case ARRAY_INT:             // Res = INT, Arg = INT
+                    // Copy the arg elements to the result
+                    CopyMemory (lpMemRes, lpMemArg, (UINT) aplNELMArg * sizeof (APLINT));
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_FLOAT:                   // Res = FLOAT, Arg = BOOL/INT/FLOAT
+            // Split cases based upon the arg storage type
+            switch (aplTypeArg)
+            {
+                case ARRAY_BOOL:            // Res = FLOAT, Arg = BOOL
+                    uBitMask = 0x01;
+
+                    // Loop through the arg elements
+                    for (uArg = 0; uArg < aplNELMArg; uArg++)
+                    {
+                        if (uBitMask & *(LPAPLBOOL) lpMemArg)
+                            *((LPAPLINT) lpMemRes) = 1;
+                        ((LPAPLINT) lpMemRes)++;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemArg)++;   // Skip to next byte
+                        } // End IF
+                    } // End IF
+
+                    break;
+
+                case ARRAY_INT:             // Res = FLOAT, Arg = INT
+                    // Loop through the arg elements
+                    for (uArg = 0; uArg < aplNELMArg; uArg++)
+                        *((LPAPLFLOAT) lpMemRes)++ = (APLFLOAT) *((LPAPLINT) lpMemArg)++;
+                    break;
+
+                case ARRAY_FLOAT:           // Res = FLOAT, Arg = FLOAT
+                    // Copy the arg elements to the result
+                    CopyMemory (lpMemRes, lpMemArg, (UINT) aplNELMArg * sizeof (APLFLOAT));
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case ARRAY_CHAR:
+            // Copy the memory to the result
+            CopyMemory (lpMemRes, lpMemArg, (UINT) aplNELMArg * sizeof (APLCHAR));
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+ERROR_EXIT:
+    if (hGlbArg && lpMemArg)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+    } // End IF
+
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+    } // End IF
+
+    return hGlbRes;
+} // End CopyArrayAsType
 
 
 #ifdef DEBUG

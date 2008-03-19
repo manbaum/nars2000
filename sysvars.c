@@ -831,7 +831,7 @@ NORMAL_EXIT:
 //***************************************************************************
 
 BOOL ValidateIntegerTest
-    (LPAPLINT lpaplInteger,         // The integer to test
+    (LPAPLINT lpaplInteger,         // Ptr to the integer to test
      APLINT   uValidLo,             // Low range value (inclusive)
      APLINT   uValidHi,             // High ...
      BOOL     bRangeLimit)          // TRUE iff an incoming value outside
@@ -1350,7 +1350,7 @@ BOOL ValidateCharVector_EM
 MAKE_VECTOR:
     aplNELMRes = 1;
 
-    // If the Quad-var is []WSID, expand the name to be fully-qualified
+    // If the []var is []WSID, expand the name to be fully-qualified
     if (bWSID)
     {
         WCHAR wsz[2];
@@ -1453,6 +1453,7 @@ BOOL ValidateIntegerVector_EM
 
 {
     LPVOID   lpMemRht,              // Ptr to right arg global memory
+             lpMemIniRht,           // ...
              lpMemRes;              // Ptr to result    ...
     BOOL     bRet = TRUE,           // TRUE iff result is valid
              bScalar = FALSE;       // TRUE iff right arg is a scalar
@@ -1608,7 +1609,7 @@ BOOL ValidateIntegerVector_EM
     Assert (IsGlbTypeVarDir (hGlbRht));
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
+    lpMemIniRht = lpMemRht = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbRht));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type, NELM, and Rank
@@ -1627,7 +1628,7 @@ BOOL ValidateIntegerVector_EM
 
         bRet = FALSE;
     } else
-    // Split cases based upon the array type
+    // Split cases based upon the right arg storage type
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:
@@ -1733,58 +1734,100 @@ BOOL ValidateIntegerVector_EM
     if (bScalar)
         goto MAKE_VECTOR;
 
-    // If the right arg is a simple Boolean/Integer, copy the right arg
-    if (IsSimpleInt (aplTypeRht))
-        // Copy the right arg global as the result
-        hGlbRes = CopySymGlbDir (hGlbRht);
-    else
+    // Split cases based upon the storage type of the right arg
+    switch (aplTypeRht)
     {
-        // The right arg is a vector of floating point numbers
+        case ARRAY_INT:
+            // Copy the right arg global as the result
+            hGlbRes = CopySymGlbDir (hGlbRht);
 
-        // Calculate space needed for a duplicate vector of integers
-        ByteRes = CalcArraySize (ARRAY_INT, aplNELMRht, 1);
+            break;
 
-        // Allocate space for the result
-        hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
-        if (hGlbRes NE NULL)
-        {
-            // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+        case ARRAY_BOOL:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+            // Calculate space needed for a duplicate vector of integers
+            ByteRes = CalcArraySize (ARRAY_INT, aplNELMRht, 1);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
-            // Fill in the header values
-            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-            lpHeader->ArrType    = ARRAY_INT;
-////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////////////lpHeader->SysVar     = 0;           // Already zero from GHND
-            lpHeader->RefCnt     = 1;
-            lpHeader->NELM       = aplNELMRht;
-            lpHeader->Rank       = 1;
-#undef  lpHeader
-
-            // Save the dimension
-            *VarArrayBaseToDim (lpMemRes) = aplNELMRht;
-
-            // Skip over the header and dimensions to the data
-            lpMemRes = VarArrayBaseToData (lpMemRes, 1);
-
-            // Loop through the right arg, converting to integers
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            // Allocate space for the result
+            hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+            if (hGlbRes NE NULL)
             {
-                // Attempt to convert the float to an integer using System CT
-                aplInteger = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemRht)++,
-                                               &bRet);
-                if (bRet)
-                    *((LPAPLINT) lpMemRes)++ = aplInteger;
-                else
-                    break;
-            } // End FOR
+                // Lock the memory to get a ptr to it
+                lpMemRes = MyGlobalLock (hGlbRes);
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-        } else
-            bRet = FALSE;
-    } // End IF/ELSE
+    #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+                // Fill in the header values
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = ARRAY_INT;
+    ////////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+    ////////////lpHeader->SysVar     = 0;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = aplNELMRht;
+                lpHeader->Rank       = 1;
+    #undef  lpHeader
+
+                // Save the dimension
+                *VarArrayBaseToDim (lpMemRes) = aplNELMRht;
+
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+
+                // Point back to the start of the right data
+                lpMemRht = lpMemIniRht;
+
+                // Loop through the right arg, converting to integers
+                //   and copying them to the result
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                // Split cases based upon the storage type of the right arg
+                switch (aplTypeRht)
+                {
+                    case ARRAY_BOOL:
+                        if (uBitMask & *(LPAPLBOOL) lpMemRht)
+                            *((LPAPLINT) lpMemRes) = 1;
+
+                        // Skip over the result value
+                        ((LPAPLINT) lpMemRes)++;
+
+                        // Shift over the bit mask
+                        uBitMask <<= 1;
+
+                        // Check for end-of-byte
+                        if (uBitMask EQ END_OF_BYTE)
+                        {
+                            uBitMask = 0x01;            // Start over
+                            ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                        } // End IF
+
+                        break;
+
+                    case ARRAY_FLOAT:
+                        // Attempt to convert the float to an integer using System CT
+                        aplInteger = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemRht)++,
+                                                       &bRet);
+                        if (bRet)
+                            *((LPAPLINT) lpMemRes)++ = aplInteger;
+                        else
+                            break;
+
+                    case ARRAY_APA:
+                        *((LPAPLINT) lpMemRes)++ = apaOffRht + apaMulRht * uRht;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End FOR/SWITCH
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            } else
+                bRet = FALSE;
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     goto NORMAL_EXIT;
 
@@ -1855,91 +1898,112 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $ValidateALX_EM
+//  $ValidSetALX_EM
 //
-//  Validate a value about to be assigned to Quad-ALX
+//  Validate a value before assigning it to []ALX
 //***************************************************************************
 
-BOOL ValidateALX_EM
+BOOL ValidSetALX_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_CHAR, 0, 0, 0, 0, FALSE);
-
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
-} // End ValidateALX_EM
+} // End ValidSetALX_EM
 
 
 //***************************************************************************
-//  $ValidateCT_EM
+//  $ValidSetCT_EM
 //
-//  Validate a value about to be assigned to Quad-CT
+//  Validate a value before assigning it to []CT
 //***************************************************************************
 
-BOOL ValidateCT_EM
+BOOL ValidSetCT_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_FLOAT, 0, 0, 0, 1E-10, TRUE);
-
     // Ensure the argument is a real scalar or
     //   one-element vector (demoted to a scalar)
-    //   between 0 and 1E-10 inclusive.
-    return ValidateFloat_EM (lptkNamArg, lptkRhtArg, 0, 1E-10, TRUE);
-} // End ValidateCT_EM
+    //   between DEF_MIN_QUADCT and DEF_MAX_QUADCT inclusive.
+    return ValidateFloat_EM (lptkNamArg, lptkRhtArg, DEF_MIN_QUADCT, DEF_MAX_QUADCT, TRUE);
+} // End ValidSetCT_EM
 
 
 //***************************************************************************
-//  $ValidateELX_EM
+//  $ValidNdxCT
 //
-//  Validate a value about to be assigned to Quad-ELX
+//  Validate a single value before assigning it to a position in []CT.
+//
+//  We allow any number between DEF_MIN_QUADCT and DEF_MAX_QUADCT inclusive.
 //***************************************************************************
 
-BOOL ValidateELX_EM
+BOOL ValidNdxCT
+    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+
+{
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            *((LPAPLFLOAT) lpaplLongestRht) = (APLFLOAT) (APLINT) *lpaplLongestRht;
+
+            break;
+
+        case ARRAY_FLOAT:
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Test the value
+    return ValidateFloatTest ((LPAPLFLOAT) lpaplLongestRht, DEF_MIN_QUADCT, DEF_MAX_QUADCT, TRUE);
+} // End ValidNdxCT
+
+
+//***************************************************************************
+//  $ValidSetELX_EM
+//
+//  Validate a value before assigning it to []ELX
+//***************************************************************************
+
+BOOL ValidSetELX_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_CHAR, 0, 0, 0, 0, FALSE);
-
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
-} // End ValidateELX_EM
+} // End ValidSetELX_EM
 
 
 //***************************************************************************
-//  $ValidateFC_EM
+//  $ValidSetFC_EM
 //
-//  Validate a value about to be assigned to Quad-FC
+//  Validate a value before assigning it to []FC
 //***************************************************************************
 
-BOOL ValidateFC_EM
+BOOL ValidSetFC_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
     APLSTYPE aplTypeRht;            // Right arg storage type
     APLNELM  aplNELMRht;            // ...       NELM
     APLRANK  aplRankRht;            // ...       rank
-
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_CHAR, 0, 0, 0, 0, FALSE);
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -1964,32 +2028,25 @@ BOOL ValidateFC_EM
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
-} // End ValidateFC_EM
+} // End ValidSetFC_EM
 
 
 //***************************************************************************
-//  $ValidateIC_EM
+//  $ValidSetIC_EM
 //
-//  Validate a value about to be assigned to Quad-IC
+//  Validate a value before assigning it to []IC.
 //
 //  We allow any numeric singleton or vector whose values are 0 through ICVAL_MAXVAL.
-//
-//  The order of error checking is RANK, LENGTH, DOMAIN.
 //***************************************************************************
 
-BOOL ValidateIC_EM
+BOOL ValidSetIC_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
     APLSTYPE aplTypeRht;            // Right arg storage type
     APLNELM  aplNELMRht;            // ...       NELM
     APLRANK  aplRankRht;            // ...       rank
-
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_INT, 0, ICVAL_MAXVAL, 0, 0, TRUE);
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -2014,78 +2071,150 @@ BOOL ValidateIC_EM
     // Ensure the argument is an integer scalar (promoted to a vector)
     //   or an integer vector
     return ValidateIntegerVector_EM (lptkNamArg, lptkRhtArg, 0, ICVAL_MAXVAL, TRUE);
-} // End ValidateIC_EM
+} // End ValidSetIC_EM
 
 
 //***************************************************************************
-//  $ValidateIO_EM
+//  $ValidNdxIC
 //
-//  Validate a value about to be assigned to Quad-IO
+//  Validate a single value before assigning it to a position in []IC.
 //
-//  We allow any numeric singleton whose value is 0 or 1.
-//
-//  The order of error checking is RANK, LENGTH, DOMAIN.
+//  We allow any number between 0 and ICVAL_MAXVAL inclusive.
 //***************************************************************************
 
-BOOL ValidateIO_EM
-    (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
-     LPTOKEN lptkRhtArg)            // Ptr to right arg token
+BOOL ValidNdxIC
+    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
 
 {
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_BOOL, 0, 1, 0, 0, TRUE);
+    BOOL bRet;                          // TRUE iff the result is valid
 
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_FLOAT:
+            // The right arg is float -- convert to integer
+            *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
+            if (!bRet)
+                return bRet;
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Test the value
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, 0, ICVAL_MAXVAL, TRUE);
+} // End ValidNdxIC
+
+
+//***************************************************************************
+//  $ValidSetIO_EM
+//
+//  Validate a value before assigning it to []IO
+//
+//  We allow any numeric singleton whose value is 0 or 1.
+//***************************************************************************
+
+BOOL ValidSetIO_EM
+    (LPTOKEN lptkNamArg,                // Ptr to name arg token
+     LPTOKEN lptkRhtArg)                // Ptr to right arg token
+
+{
     // Ensure the argument is a Boolean scalar or
     //   one-element vector (demoted to a scalar).
-////return ValidateBoolean_EM (lptkNamArg, lptkRhtArg, TRUE);
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
                                0,                   // Minimum value
                                1,                   // Maximum ...
                                TRUE);               // TRUE if range limiting
-} // End ValidateIO_EM
+} // End ValidSetIO_EM
 
 
 //***************************************************************************
-//  $ValidateLX_EM
+//  $ValidNdxIO
 //
-//  Validate a value about to be assigned to Quad-LX
+//  Validate a single value before assigning it to a position in []IO.
+//
+//  We allow any number between 0 and 1 inclusive.
 //***************************************************************************
 
-BOOL ValidateLX_EM
-    (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
-     LPTOKEN lptkRhtArg)            // Ptr to right arg token
+BOOL ValidNdxIO
+    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
 
 {
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_CHAR, 0, 0, 0, 0, FALSE);
+    BOOL bRet;                          // TRUE iff the result is valid
 
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_FLOAT:
+            // The right arg is float -- convert to integer
+            *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
+            if (!bRet)
+                return bRet;
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Test the value
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, 0, 1, TRUE);
+} // End ValidNdxIO
+
+
+//***************************************************************************
+//  $ValidSetLX_EM
+//
+//  Validate a value before assigning it to []LX
+//***************************************************************************
+
+BOOL ValidSetLX_EM
+    (LPTOKEN lptkNamArg,                // Ptr to name arg token
+     LPTOKEN lptkRhtArg)                // Ptr to right arg token
+
+{
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, FALSE);
-} // End ValidateLX_EM
+} // End ValidSetLX_EM
 
 
 //***************************************************************************
-//  $ValidatePP_EM
+//  $ValidSetPP_EM
 //
-//  Validate a value about to be assigned to Quad-PP
+//  Validate a value before assigning it to []PP
 //***************************************************************************
 
-BOOL ValidatePP_EM
+BOOL ValidSetPP_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_INT, DEF_MIN_QUADPP, DEF_MAX_QUADPP, 0, 0, TRUE);
-
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range for []PP.
@@ -2094,24 +2223,68 @@ BOOL ValidatePP_EM
                                DEF_MIN_QUADPP,      // Minimum value
                                DEF_MAX_QUADPP,      // Maximum ...
                                TRUE);               // TRUE if range limiting
-} // End ValidatePP_EM
+} // End ValidSetPP_EM
 
 
 //***************************************************************************
-//  $ValidatePR_EM
+//  $ValidNdxPP
 //
-//  Validate a value about to be assigned to Quad-PR
+//  Validate a single value before assigning it to a position in []PP.
+//
+//  We allow any number between DEF_MIN_QUADPP and DEF_MAX_QUADPP inclusive.
+//***************************************************************************
+
+BOOL ValidNdxPP
+    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+
+{
+    BOOL bRet;                          // TRUE iff the result is valid
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_FLOAT:
+            // The right arg is float -- convert to integer
+            *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
+            if (!bRet)
+                return bRet;
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Test the value
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, DEF_MIN_QUADPP, DEF_MAX_QUADPP, TRUE);
+} // End ValidNdxPP
+
+
+//***************************************************************************
+//  $ValidSetPR_EM
+//
+//  Validate a value before assigning it to []PR
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ValidatePR_EM"
+#define APPEND_NAME     L" -- ValidSetPR_EM"
 #else
 #define APPEND_NAME
 #endif
 
-BOOL ValidatePR_EM
+BOOL ValidSetPR_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
@@ -2121,10 +2294,6 @@ BOOL ValidatePR_EM
     LPWCHAR      lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_CHAR, 0, 0, 0, 0, FALSE);
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -2282,26 +2451,21 @@ MAKE_SCALAR:
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
-} // End ValidatePR_EM
+} // End ValidSetPR_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $ValidatePW_EM
+//  $ValidSetPW_EM
 //
-//  Validate a value about to be assigned to Quad-PW
+//  Validate a value before assigning it to []PW
 //***************************************************************************
 
-BOOL ValidatePW_EM
+BOOL ValidSetPW_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_INT, DEF_MIN_QUADPW, DEF_MAX_QUADPW, 0, 0, TRUE);
-
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range for []PW.
@@ -2310,25 +2474,65 @@ BOOL ValidatePW_EM
                                DEF_MIN_QUADPW,      // Minimum value
                                DEF_MAX_QUADPW,      // Maximum ...
                                TRUE);               // TRUE if range limiting
-} // End ValidatePW_EM
+} // End ValidSetPW_EM
 
 
 //***************************************************************************
-//  $ValidateRL_EM
+//  $ValidNdxPW
 //
-//  Validate a value about to be assigned to Quad-RL
+//  Validate a single value before assigning it to a position in []PW.
+//
+//  We allow any number between DEF_MIN_QUADPW and DEF_MAX_QUADPW inclusive.
 //***************************************************************************
 
-BOOL ValidateRL_EM
+BOOL ValidNdxPW
+    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+
+{
+    BOOL bRet;                          // TRUE iff the result is valid
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_FLOAT:
+            // The right arg is float -- convert to integer
+            *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
+            if (!bRet)
+                return bRet;
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Test the value
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, DEF_MIN_QUADPW, DEF_MAX_QUADPW, TRUE);
+} // End ValidNdxPW
+
+
+//***************************************************************************
+//  $ValidSetRL_EM
+//
+//  Validate a value before assigning it to []RL
+//***************************************************************************
+
+BOOL ValidSetRL_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_INT, DEF_MIN_QUADRL, DEF_MAX_QUADRL, 0, 0, TRUE);
-
     // Ensure the argument is an integer scalar or
     //   one-element vector (demoted to a scalar)
     //   in the range for []RL.
@@ -2337,24 +2541,68 @@ BOOL ValidateRL_EM
                                DEF_MIN_QUADRL,      // Minimum value
                                DEF_MAX_QUADRL,      // Maximum ...
                                TRUE);               // TRUE if range limiting
-} // End ValidateRL_EM
+} // End ValidSetRL_EM
 
 
 //***************************************************************************
-//  $ValidateSA_EM
+//  $ValidNdxRL
 //
-//  Validate a value about to be assigned to Quad-SA
+//  Validate a single value before assigning it to a position in []RL.
+//
+//  We allow any number between DEF_MIN_QUADRL and DEF_MAX_QUADRL inclusive.
+//***************************************************************************
+
+BOOL ValidNdxRL
+    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+
+{
+    BOOL bRet;                          // TRUE iff the result is valid
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            break;
+
+        case ARRAY_FLOAT:
+            // The right arg is float -- convert to integer
+            *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
+            if (!bRet)
+                return bRet;
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Test the value
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, DEF_MIN_QUADRL, DEF_MAX_QUADRL, TRUE);
+} // End ValidNdxRL
+
+
+//***************************************************************************
+//  $ValidSetSA_EM
+//
+//  Validate a value before assigning it to []SA
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ValidateSA_EM"
+#define APPEND_NAME     L" -- ValidSetSA_EM"
 #else
 #define APPEND_NAME
 #endif
 
-BOOL ValidateSA_EM
+BOOL ValidSetSA_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
@@ -2368,10 +2616,6 @@ BOOL ValidateSA_EM
     LPWCHAR      lpwErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_CHAR, 0, 0, 0, 0, FALSE);
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -2538,279 +2782,31 @@ BOOL ValidateSA_EM
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
-} // End ValidateSA_EM
+} // End ValidSetSA_EM
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $ValidateWSID_EM
+//  $ValidSetWSID_EM
 //
-//  Validate a value about to be assigned to Quad-WSID
+//  Validate a value before assigning it to []WSID
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ValidateWSID_EM"
+#define APPEND_NAME     L" -- ValidSetWSID_EM"
 #else
 #define APPEND_NAME
 #endif
 
-BOOL ValidateWSID_EM
+BOOL ValidSetWSID_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
-     LPTOKEN lptkLstArg,            // Ptr to list arg token (may be NULL)
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
 
 {
-    // Check on indexed assignment
-    if (lptkLstArg NE NULL)
-        return IsArrayType (lptkNamArg, lptkLstArg, lptkRhtArg, ARRAY_CHAR, 0, 0, 0, 0, FALSE);
-
     // Ensure the argument is a character scalar (promoted to a vector)
     //   or a character vector.
     return ValidateCharVector_EM (lptkNamArg, lptkRhtArg, TRUE);
-} // End ValidateWSID_EM
-#undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $IsArrayType
-//
-//  Indexed assignment of a system var.
-//***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- IsArrayType"
-#else
-#define APPEND_NAME
-#endif
-
-BOOL IsArrayType
-    (LPTOKEN  lptkNamArg,       // Ptr to name arg token
-     LPTOKEN  lptkLstArg,       // Ptr to list arg token
-     LPTOKEN  lptkRhtArg,       // Ptr to right arg token
-     APLSTYPE aplTypeVal,       // Given storage type
-     APLINT   aplIntMin,        // Minimum integer value (if integer) (inclusive)
-     APLINT   aplIntMax,        // Maximum integer value (if integer) (inclusive)
-     APLFLOAT aplFltMin,        // Minimum float value (if float) (inclusive)
-     APLFLOAT aplFltMax,        // Maximum float value (if float) (inclusive)
-     BOOL     bRangeLimit)      // TRUE iff an incoming value outside
-                                //   the given range [aplXXXMin, aplXXXMax]
-                                //   is adjusted to be the closer range limit
-
-{
-    APLSTYPE   aplTypeRht;      // Right arg storage type
-    APLNELM    aplNELMRht;      // Right arg NELM
-    APLLONGEST aplLongestRht;   // Right arg immediate value
-    APLUINT    uRht;            // Loop counter
-    BOOL       bRet;            // TRUE iff the result is valid
-
-    // Indexed assignment of a system var
-
-    // If the system var is a scalar, allow indices of {enclose}{zilde} only
-    //   otherwise, the indices must be near-integers
-
-    // Validate the right arg as of the correct (or coercible) storage type
-
-    // Copy the named arg HGLOBAL as the result
-
-    // Copy the existing named value
-
-    // Change the values in the copy as per the indices/right arg
-
-    // Free the named arg HGLOBAL
-
-    // Copy the result HGLOBAL into the named arg
-
-
-
-
-////// Copy the array
-////hGlbRes = CopyArray_EM (
-
-
-
-    // Get the attributes (Array type) of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, NULL, NULL);
-
-    // Split cases based upon the desired storage type
-    switch (aplTypeVal)
-    {
-        case ARRAY_BOOL:
-            // Ensure that all of the values in the right arg are near-Booleans
-            //   and within range
-
-            // Split cases based upon the right arg storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_BOOL:
-                case ARRAY_INT:
-                case ARRAY_APA:
-                case ARRAY_FLOAT:
-                    for (uRht = 0; uRht < aplNELMRht; uRht++)
-                    {
-                        // Get the next value
-                        GetNextValueToken (lptkRhtArg,
-                                           uRht,
-                                           NULL,
-                                           NULL,
-                                           NULL,
-                                          &aplLongestRht,
-                                           NULL,
-                                           NULL,
-                                           NULL);
-                        // If the right arg is float, ...
-                        if (aplTypeRht EQ ARRAY_FLOAT)
-                        {
-                            // Attempt to convert the float to an integer using System CT
-                            aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht,
-                                                              &bRet);
-                            if (!bRet)
-                                goto ERROR_EXIT;
-                        } // End IF
-
-                        // Test the value
-                        if (!ValidateIntegerTest (&aplLongestRht, aplIntMin, aplIntMax, bRangeLimit))
-                            goto ERROR_EXIT;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_CHAR:
-                case ARRAY_HETERO:
-                case ARRAY_NESTED:
-                    goto ERROR_EXIT;
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            break;
-
-        case ARRAY_INT:
-            // Ensure that all of the values in the right arg are near-integers
-            //   and within range
-
-            // Split cases based upon the right arg storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_BOOL:
-                case ARRAY_INT:
-                case ARRAY_APA:
-                case ARRAY_FLOAT:
-                    for (uRht = 0; uRht < aplNELMRht; uRht++)
-                    {
-                        // Get the next value
-                        GetNextValueToken (lptkRhtArg,
-                                           uRht,
-                                           NULL,
-                                           NULL,
-                                           NULL,
-                                          &aplLongestRht,
-                                           NULL,
-                                           NULL,
-                                           NULL);
-                        // If the right arg is float, ...
-                        if (aplTypeRht EQ ARRAY_FLOAT)
-                        {
-                            // Attempt to convert the float to an integer using System CT
-                            aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht,
-                                                              &bRet);
-                            if (!bRet)
-                                goto ERROR_EXIT;
-                        } // End IF
-
-                        // Test the value
-                        if (!ValidateIntegerTest (&aplLongestRht, aplIntMin, aplIntMax, bRangeLimit))
-                            goto ERROR_EXIT;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_CHAR:
-                case ARRAY_HETERO:
-                case ARRAY_NESTED:
-                    goto ERROR_EXIT;
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            break;
-
-        case ARRAY_FLOAT:
-            // Ensure that all the values in the right arg are numeric
-            //   and within range
-
-            // Split cases based upon the right arg storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_BOOL:
-                case ARRAY_INT:
-                case ARRAY_APA:
-                case ARRAY_FLOAT:
-                    for (uRht = 0; uRht < aplNELMRht; uRht++)
-                    {
-                        // Get the next value
-                        GetNextValueToken (lptkRhtArg,
-                                           uRht,
-                                           NULL,
-                                           NULL,
-                                           NULL,
-                                          &aplLongestRht,
-                                           NULL,
-                                           NULL,
-                                           NULL);
-                        // Test the value
-                        if (!ValidateFloatTest ((LPAPLFLOAT) &aplLongestRht, aplFltMin, aplFltMax, bRangeLimit))
-                            goto ERROR_EXIT;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_CHAR:
-                case ARRAY_HETERO:
-                case ARRAY_NESTED:
-                    goto ERROR_EXIT;
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            break;
-
-        case ARRAY_CHAR:
-            // Ensure that all the values in the right arg are character
-
-            // Split cases based upon the right arg storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_BOOL:
-                case ARRAY_INT:
-                case ARRAY_APA:
-                case ARRAY_FLOAT:
-                case ARRAY_HETERO:
-                case ARRAY_NESTED:
-                    goto ERROR_EXIT;
-
-                case ARRAY_CHAR:
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    return TRUE;
-
-ERROR_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkRhtArg);
-    return FALSE;
-} // End IsArrayType
+} // End ValidSetWSID_EM
 #undef  APPEND_NAME
 
 
@@ -2833,20 +2829,35 @@ BOOL InitSystemVars
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Set the validation routines
-    aSysVarValid[SYSVAR_ALX ] = ValidateALX_EM ;
-    aSysVarValid[SYSVAR_CT  ] = ValidateCT_EM  ;
-    aSysVarValid[SYSVAR_ELX ] = ValidateELX_EM ;
-    aSysVarValid[SYSVAR_FC  ] = ValidateFC_EM  ;
-    aSysVarValid[SYSVAR_IC  ] = ValidateIC_EM  ;
-    aSysVarValid[SYSVAR_IO  ] = ValidateIO_EM  ;
-    aSysVarValid[SYSVAR_LX  ] = ValidateLX_EM  ;
-    aSysVarValid[SYSVAR_PP  ] = ValidatePP_EM  ;
-    aSysVarValid[SYSVAR_PR  ] = ValidatePR_EM  ;
-    aSysVarValid[SYSVAR_PW  ] = ValidatePW_EM  ;
-    aSysVarValid[SYSVAR_RL  ] = ValidateRL_EM  ;
-    aSysVarValid[SYSVAR_SA  ] = ValidateSA_EM  ;
-    aSysVarValid[SYSVAR_WSID] = ValidateWSID_EM;
+    // Set the array set validation routines
+    aSysVarValidSet[SYSVAR_ALX ] = ValidSetALX_EM ;
+    aSysVarValidSet[SYSVAR_CT  ] = ValidSetCT_EM  ;
+    aSysVarValidSet[SYSVAR_ELX ] = ValidSetELX_EM ;
+    aSysVarValidSet[SYSVAR_FC  ] = ValidSetFC_EM  ;
+    aSysVarValidSet[SYSVAR_IC  ] = ValidSetIC_EM  ;
+    aSysVarValidSet[SYSVAR_IO  ] = ValidSetIO_EM  ;
+    aSysVarValidSet[SYSVAR_LX  ] = ValidSetLX_EM  ;
+    aSysVarValidSet[SYSVAR_PP  ] = ValidSetPP_EM  ;
+    aSysVarValidSet[SYSVAR_PR  ] = ValidSetPR_EM  ;
+    aSysVarValidSet[SYSVAR_PW  ] = ValidSetPW_EM  ;
+    aSysVarValidSet[SYSVAR_RL  ] = ValidSetRL_EM  ;
+    aSysVarValidSet[SYSVAR_SA  ] = ValidSetSA_EM  ;
+    aSysVarValidSet[SYSVAR_WSID] = ValidSetWSID_EM;
+
+    // Set the array index validation routine
+    aSysVarValidNdx[SYSVAR_ALX ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_CT  ] = ValidNdxCT     ;
+    aSysVarValidNdx[SYSVAR_ELX ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_FC  ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_IC  ] = ValidNdxIC     ;
+    aSysVarValidNdx[SYSVAR_IO  ] = ValidNdxIO     ;
+    aSysVarValidNdx[SYSVAR_LX  ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_PP  ] = ValidNdxPP     ;
+    aSysVarValidNdx[SYSVAR_PR  ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_PW  ] = ValidNdxPW     ;
+    aSysVarValidNdx[SYSVAR_RL  ] = ValidNdxRL     ;
+    aSysVarValidNdx[SYSVAR_SA  ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_WSID] = NULL           ;
 
     // Assign default values to the system vars
     if (!AssignGlobalCWS     (hGlbQuadALX_CWS   , SYSVAR_ALX , lpMemPTD->lpSymQuadALX      )) return FALSE;   // Attention Latent Expression

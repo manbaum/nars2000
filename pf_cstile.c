@@ -164,7 +164,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
 
     // The type of the result is the same as the
     //   type of the right arg except APA -> INT
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = aplTypeRht;
@@ -212,7 +212,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     // Handle prototypes
     if (aplNELMRht EQ 0)
     {
-        if (aplTypeRht EQ ARRAY_NESTED)
+        if (IsNested (aplTypeRht))
             *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
         goto NORMAL_EXIT;
     } // End IF
@@ -486,7 +486,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     if (aplNELMLft EQ 1)
     {
         // If the left arg is float, ...
-        if (aplTypeLft EQ ARRAY_FLOAT)
+        if (IsSimpleFlt (aplTypeLft))
         {
             // Attempt to convert the float to an integer using System CT
             aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
@@ -583,7 +583,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     } // End IF
 
     // Map APA right arg to INT result
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = aplTypeRht;
@@ -691,7 +691,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     // lpMemRht now points to the right arg's data
 
     // Handle empty nested array results (prototypes)
-    if (aplNELMRht EQ 0 && aplTypeRes EQ ARRAY_NESTED)
+    if (aplNELMRht EQ 0 && IsNested (aplTypeRes))
         *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
     else
     // Copy the data to the result

@@ -501,7 +501,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 
     // If we're reordering and the right arg is ARRAY_APA,
     //   calculate the array size based upon APLINTs
-    if (bReorder && aplTypeRht EQ ARRAY_APA)
+    if (bReorder && IsSimpleAPA (aplTypeRht))
     {
         // Set the array storage type for the result
         aplTypeRes = ARRAY_INT;
@@ -537,16 +537,16 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
-    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = aplTypeRes;
-////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplNELMRht;
-    lpHeaderRes->Rank       = aplRankRes;
-#undef  lpHeaderRes
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRht;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
 
     // Calculate the length of the raveled dimension
     if (bFract)
@@ -617,7 +617,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         // We're about to copy the entries from the right arg
         //   into the result.  If the right arg is ARRAY_NESTED,
         //   we need to increment each HGLOBAL's reference count.
-        if (aplTypeRht EQ ARRAY_NESTED)
+        if (IsNested (aplTypeRht))
         {
             // In case the right arg is empty, include its prototype
             aplNELM = max (aplNELMRht, 1);
@@ -635,7 +635,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     // Reorder the right arg into the result
     {
         // If the right arg is an APA, ...
-        if (aplTypeRht EQ ARRAY_APA)
+        if (IsSimpleAPA (aplTypeRht))
         {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
             // Get the APA parameters
@@ -997,7 +997,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // Get the respective first values
     if (aplRankLft EQ 0                         // Scalar
      && aplNELMLft NE 0                         // and non-empty
-     && aplTypeLft NE ARRAY_NESTED)             // and non-nested
+     && !IsNested (aplTypeLft))                 // and non-nested
         GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
                            &aplIntegerLft,      // Ptr to integer result
                            &aplFloatLft,        // Ptr to float ...
@@ -1008,7 +1008,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             NULL);              // Ptr to array type ...
     else                                        // otherwise,
     if ((aplRankLft EQ 0 || aplNELMLft EQ 0)    // Scalar or empty
-     && aplTypeLft EQ ARRAY_NESTED)             // and nested
+     && IsNested (aplTypeLft))                  // and nested
         GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
                             NULL,               // Ptr to integer result
                             NULL,               // Ptr to float ...
@@ -1019,7 +1019,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             NULL);              // Ptr to array type ...
     if (aplRankRht EQ 0                         // Scalar
      && aplNELMRht NE 0                         // and non-empty
-     && aplTypeRht NE ARRAY_NESTED)             // and non-nested
+     && !IsNested (aplTypeRht))                 // and non-nested
         GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
                            &aplIntegerRht,      // Ptr to integer result
                            &aplFloatRht,        // Ptr to float ...
@@ -1030,7 +1030,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             NULL);              // Ptr to array type ...
     else                                        // otherwise,
     if ((aplRankRht EQ 0 || aplNELMRht EQ 0)    // Scalar or empty
-     && aplTypeRht EQ ARRAY_NESTED)             // and nested
+     && IsNested (aplTypeRht))                  // and nested
         GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
                             NULL,               // Ptr to integer result
                             NULL,               // Ptr to float ...
@@ -1271,16 +1271,16 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
-    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = aplTypeRes;
-////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
-////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplNELMRes;
-    lpHeaderRes->Rank       = aplRankRes;
-#undef  lpHeaderRes
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
 
     // Skip over the result header to the dimensions
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
@@ -1351,7 +1351,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
         // If the left arg is an APA, ...
-        if (aplTypeLft EQ ARRAY_APA)
+        if (IsSimpleAPA (aplTypeLft))
         {
 #define lpAPA       ((LPAPLAPA) lpMemLft)
             // Get the APA parameters
@@ -1370,7 +1370,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
         // If the left arg is an APA, ...
-        if (aplTypeRht EQ ARRAY_APA)
+        if (IsSimpleAPA (aplTypeRht))
         {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
             // Get the APA parameters

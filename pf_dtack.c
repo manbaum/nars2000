@@ -191,8 +191,8 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     if (aplNELMRes EQ 0)
         aplTypeRes = ARRAY_BOOL;
     else
-    if (aplTypeLft EQ ARRAY_FLOAT
-     || aplTypeRht EQ ARRAY_FLOAT)
+    if (IsSimpleFlt (aplTypeLft)
+     || IsSimpleFlt (aplTypeRht))
         aplTypeRes = ARRAY_FLOAT;
     else
         aplTypeRes = ARRAY_INT;
@@ -302,7 +302,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
             APLFLOAT aplFloatRht;
             APLINT   aplIntRht;
 
-            if (aplTypeRes EQ ARRAY_FLOAT)
+            if (IsSimpleFlt (aplTypeRes))
             {
                 // If the right arg is int, convert it to float
                 if (IsSimpleInt (aplTypeRht))
@@ -324,7 +324,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
                 // Get result index
                 uRes = 1 * uRht + aplNELMRht * uLft;
 
-                if (aplTypeRes EQ ARRAY_FLOAT)
+                if (IsSimpleFlt (aplTypeRes))
                 {
                     APLFLOAT aplFloatLft,
                              aplFloatRes;

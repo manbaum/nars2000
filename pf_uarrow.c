@@ -345,11 +345,11 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // The storage type of the result is the same as that of the right arg
     //   unless the right arg is hetero and the result is a singleton, or
     //   the right arg is APA
-    if (aplTypeRht EQ ARRAY_HETERO
+    if (IsSimpleHet (aplTypeRht)
      && aplNELMRes EQ 1)
         aplTypeRes = TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType);
     else
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = aplTypeRht;
@@ -410,7 +410,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     if (aplNELMRes EQ 0)
     {
         // If the result is nested, copy the prototype from the right arg
-        if (aplTypeRes EQ ARRAY_NESTED)
+        if (IsNested (aplTypeRes))
             *((LPAPLNESTED) lpMemRes) = *(LPAPLNESTED) lpMemRht;
         goto YYALLOC_EXIT;
     } // End IF
@@ -536,7 +536,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     CopyMemory (lpMemOdoRes, lpMemLoHiRes, (UINT) aplRankRes * sizeof (APLUINT));
 
     // If the right arg is an APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters

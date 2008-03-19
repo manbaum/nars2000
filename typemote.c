@@ -157,7 +157,7 @@ void TypeDemote
         aplLongestRht = *(LPAPLLONGEST) lpMemRht;
 
         // If the type is Boolean, limit it to a single bit
-        if (aplTypeRht EQ ARRAY_BOOL)
+        if (IsSimpleBool (aplTypeRht))
             aplLongestRht &= BIT0;
 
         // Split cases based upon the right arg token type
@@ -257,7 +257,7 @@ void TypeDemote
             aplTypeRes = ARRAY_LIST;
 
             // Take into account nested prototypes
-            if (aplTypeRht EQ ARRAY_NESTED)
+            if (IsNested (aplTypeRht))
                 aplNELMNstRht = max (aplNELMRht, 1);
             else
                 aplNELMNstRht = aplNELMRht;
@@ -308,8 +308,8 @@ void TypeDemote
                         aplTypeRes = aplTypeArr[aplTypeRes][aplTypeSub];
 
                         // Check for no demotion
-                        if (aplTypeRes EQ ARRAY_HETERO
-                         && aplTypeRht EQ ARRAY_HETERO)
+                        if (IsSimpleHet (aplTypeRes)
+                         && IsSimpleHet (aplTypeRht))
                             goto NORMAL_EXIT;
                         break;
 
@@ -334,8 +334,8 @@ void TypeDemote
         goto NORMAL_EXIT;
 
     // Check for demotion from Nested to Hetero
-    if (aplTypeRes EQ ARRAY_HETERO
-     && aplTypeRht EQ ARRAY_NESTED)
+    if (IsSimpleHet (aplTypeRes)
+     && IsNested (aplTypeRht))
     {
         // If the reference count of this array is one, just
         //   change the array type from ARRAY_NESTED to ARRAY_HETERO.
@@ -357,11 +357,11 @@ void TypeDemote
 #ifdef DEBUG_REFCNT
                 dprintfW (L"##RefCnt=1 in " APPEND_NAME L": %08X (%S#%d)", lpMemRes, FNLN);
 #endif
-#define lpHeaderRes ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
                 // Set the reference count and array type
-                lpHeaderRes->RefCnt  = 1;
-                lpHeaderRes->ArrType = ARRAY_HETERO;
-#undef  lpHeaderRes
+                lpHeader->RefCnt  = 1;
+                lpHeader->ArrType = ARRAY_HETERO;
+#undef  lpHeader
                 // We no longer need these ptrs
                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
                 MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
@@ -892,8 +892,8 @@ BOOL TypePromoteGlb_EM
                   lpSym1;               // ...            1
 
         case ARRAY_INT:                 // B/A -> I
-            Assert (aplTypeArg EQ ARRAY_BOOL
-                 || aplTypeArg EQ ARRAY_APA);
+            Assert (IsSimpleBool (aplTypeArg)
+                 || IsSimpleAPA (aplTypeArg));
             // Split cases based upon the arg storage type
             switch (aplTypeArg)
             {
@@ -938,9 +938,7 @@ BOOL TypePromoteGlb_EM
             break;
 
         case ARRAY_FLOAT:               // B/I/A -> F
-            Assert (aplTypeArg EQ ARRAY_BOOL
-                 || aplTypeArg EQ ARRAY_INT
-                 || aplTypeArg EQ ARRAY_APA);
+            Assert (IsSimpleInt (aplTypeArg));
 
             // Split cases based upon the arg storage type
             switch (aplTypeArg)

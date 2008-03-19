@@ -225,7 +225,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // If the right arg is an APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
         // Get the APA parameters
@@ -314,8 +314,8 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     //   Fast Boolean Reduction
     if (uDimHi EQ 1
      && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-     && (aplTypeRht EQ ARRAY_BOOL
-      || (aplTypeRht EQ ARRAY_APA
+     && (IsSimpleBool (aplTypeRht)
+      || (IsSimpleAPA (aplTypeRht)
        && (apaOffRht EQ 0 || apaOffRht EQ 1)
        && apaMulRht EQ 0 ))
      && uDimAxRht > 1
@@ -422,7 +422,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         goto YYALLOC_EXIT;
     } // End IF
 
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Fill nested result with PTR_REUSED
         //   in case we fail part way through
@@ -451,7 +451,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     } else
     // If this is an empty nested result, ...
     if (aplNELMRes EQ 0
-     && aplTypeRes EQ ARRAY_NESTED)
+     && IsNested (aplTypeRes))
         // Copy the right arg's prototype
         *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
     else
@@ -885,7 +885,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                         NULL);              // Ptr to array type ...
     // If the left arg is a float,
     //   attempt to convert it to an integer
-    if (aplTypeLft EQ ARRAY_FLOAT)
+    if (IsSimpleFlt (aplTypeLft))
     {
         // Attempt to convert the float to an integer using System CT
         aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
@@ -1054,7 +1054,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         // Fill in the data values (i.e., replicate the identity element)
 
         // Check for Boolean result
-        if (aplTypeRes EQ ARRAY_BOOL)
+        if (IsSimpleBool (aplTypeRes))
         {
             // The zero case is done (already zero from GHND)
 
@@ -1663,7 +1663,7 @@ BOOL PrimOpDydSlashAllocate_EM
     // lpMemRes now points to its data
 
     // If the right arg is an APA, ...
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
     {
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
@@ -1675,7 +1675,7 @@ BOOL PrimOpDydSlashAllocate_EM
 #undef  lpAPA
     } // End IF
 
-    if (aplTypeRes EQ ARRAY_NESTED)
+    if (IsNested (aplTypeRes))
     {
         // Fill nested result with PTR_REUSED
         //   in case we fail part way through

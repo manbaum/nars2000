@@ -1348,7 +1348,7 @@ void InitVarSTEs
             uBitIndex = 0;
 
             // If the arg is APA, ...
-            if (aplTypeArg EQ ARRAY_APA)
+            if (IsSimpleAPA (aplTypeArg))
             {
 #define lpAPA   ((LPAPLAPA) lpMemArg)
                 // Get the APA parameters

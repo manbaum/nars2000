@@ -123,7 +123,7 @@ APLSTYPE PrimSpecQuoteDotStorageTypeMon
     // The storage type of the result is
     //   the same as that of the right arg
     //   except that APAs are converted to INTs
-    if (*lpaplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (*lpaplTypeRht))
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = *lpaplTypeRht;

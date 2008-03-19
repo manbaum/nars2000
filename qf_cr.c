@@ -139,7 +139,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     } // End IF
 
     // Check for DOMAIN ERROR
-    if (aplTypeRht NE ARRAY_CHAR)
+    if (!IsSimpleChar (aplTypeRht))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -322,16 +322,16 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                         // Lock the memory to get a ptr to it
                         lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
                         // Fill in the header
-                        lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                        lpHeaderRes->ArrType    = aplTypeRes;
-////////////////////////lpHeaderRes->PermNdx    = PERMNDX_NONE; // Already zero from GHND
-////////////////////////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-                        lpHeaderRes->RefCnt     = 1;
-                        lpHeaderRes->NELM       = aplNELMRes;
-                        lpHeaderRes->Rank       = aplRankRes;
-#undef  lpHeaderRes
+                        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                        lpHeader->ArrType    = aplTypeRes;
+////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////////////lpHeader->SysVar     = 0;               // Already zero from GHND
+                        lpHeader->RefCnt     = 1;
+                        lpHeader->NELM       = aplNELMRes;
+                        lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
 
                         // Save the dimensions in the result ("1 +" includes the header)
                         (VarArrayBaseToDim (lpMemRes))[0] = 1 + uNumLines;

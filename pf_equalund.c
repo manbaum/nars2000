@@ -141,7 +141,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
 
     // If it's not nested,
     //   it's of depth 0 (scalar) or 1 (vector or higher)
-    if (aplTypeRht NE ARRAY_NESTED)
+    if (!IsNested (aplTypeRht))
         lpYYRes->tkToken.tkData.tkInteger = (aplRankRht NE 0);
     else
     {
@@ -229,14 +229,14 @@ APLINT PrimFnMonEqualUnderBarGlb
 
             // Handle nested prototype
             if (aplNELMRht EQ 0
-             && aplTypeRht EQ ARRAY_NESTED)
+             && IsNested (aplTypeRht))
                 aplNELMRht++;
 
             // Start with 0 or 1 depending upon the rank
             uRes = (aplRankRht NE 0);
 
             // If it's nested, recurse
-            if (aplTypeRht EQ ARRAY_NESTED)
+            if (IsNested (aplTypeRht))
             {
                 // Skip over the header and dimensions
                 lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
@@ -373,8 +373,8 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Split based upon Simple vs. Hetero vs. Nested
-    switch (2 * (aplTypeLft EQ ARRAY_NESTED)
-          + 1 * (aplTypeRht EQ ARRAY_NESTED))
+    switch (2 * IsNested (aplTypeLft)
+          + 1 * IsNested (aplTypeRht))
     {
         case 2 * 0 + 1 * 0:     // Lft = Simple, Rht = Simple
             // If both arguments are scalars, get the
@@ -1081,8 +1081,8 @@ BOOL PrimFnDydEqualUnderbarNested
                 lpMemRht2 = MyGlobalLock (ClrPtrTypeIndAsGlb (lpMemRht));
 
                 // Split based upon Simple vs. Hetero vs. Nested
-                switch (2 * (aplTypeLft EQ ARRAY_NESTED)
-                      + 1 * (aplTypeRht EQ ARRAY_NESTED))
+                switch (2 * IsNested (aplTypeLft)
+                      + 1 * IsNested (aplTypeRht))
                 {
                     case 2 * 0 + 1 * 0:     // Lft = Simple, Rht = Simple
                         // Because this function is commutative, we can switch

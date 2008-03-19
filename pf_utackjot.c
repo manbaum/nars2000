@@ -139,7 +139,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
     } // End IF
 
     // Check for RIGHT DOMAIN ERROR
-    if (aplTypeRht NE ARRAY_CHAR && aplNELMRht NE 0)
+    if ((!IsSimpleChar (aplTypeRht)) && aplNELMRht NE 0)
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -505,9 +505,6 @@ ERROR_EXIT:
 #ifdef DEBUG
     dprintfW (L"--Ending   thread in <PrimFnMonUpTackJotInThread>.");
 #endif
-    // Free the virtual memory for the complete line
-    VirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
-
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 

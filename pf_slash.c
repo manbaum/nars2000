@@ -280,7 +280,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                             NULL,           // Ptr to ...immediate type ...
                             NULL);          // Ptr to array type ...
         // Attempt to convert FLOAT left arg
-        if (aplTypeLft EQ ARRAY_FLOAT)
+        if (IsSimpleFlt (aplTypeLft))
         {
             // Attempt to convert the float to an integer using System CT
             aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
@@ -414,7 +414,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     } // End IF
 
     // Map APA right arg to INT result
-    if (aplTypeRht EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRht))
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = aplTypeRht;
@@ -462,7 +462,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // Handle empty nested array results (prototypes)
-    if (aplNELMRht EQ 0 && aplTypeRht EQ ARRAY_NESTED)
+    if (aplNELMRht EQ 0 && IsNested (aplTypeRht))
     {
         *((LPAPLNESTED) lpMemRes) = CopySymGlbInd (lpMemRht);
 

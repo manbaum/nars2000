@@ -97,6 +97,9 @@ typedef enum tagIC_VALUES
     ICVAL_LENGTH,           // 05:  Length
 } IC_VALUES;
 
+// Define the maximum allowable value for []IC
+#define ICVAL_MAXVAL    (ICVAL_LENGTH - 1)
+
 // Indeterminate Control Indices
 typedef enum tagIC_INDICES
 {
@@ -115,9 +118,6 @@ typedef enum tagIC_INDICES
     ICNDX_1LOG1,            // 0C:  1 {log} 1
     ICNDX_LENGTH,           // 0D:  Length
 } IC_INDICES;
-
-// Define the maximum allowable value for []IC
-#define ICVAL_MAXVAL    (ICVAL_LENGTH - 1)
 
 EXTERN
 APLINT   aplDefaultIC[ICNDX_LENGTH]     // []IC
@@ -342,7 +342,7 @@ typedef enum tagFBFN_INDS               // Fast Boolean function indices
     PF_INDEX_PLUS    ,                  // 0D = ...       "plus"  ...
     PF_INDEX_MINUS   ,                  // 0E = ...       "minus" ...
     PF_INDEX_DIVIDE  ,                  // 0F = ...       "divide" ...
-    PF_INDEX_NEXT                       // 10 = No available entries
+    PF_INDEX_NEXT                       // No available entries (4 bits)
                                         // If another entry is made, be sure
                                         //   to increase Index:4 to Index:5
                                         //   in tagPRIMFLAGS
@@ -753,9 +753,17 @@ typedef enum tagSYS_VARS
                                 // 0F-1F:  Available entries (5 bits)
 } SYS_VARS;
 
+typedef BOOL (*ASYSVARVALIDSET) (LPTOKEN, LPTOKEN);
+
 EXTERN
-// Use as in:  (*aSysVarValid[SYSVAR_IO]) (lptkNamArg, lptkLstArg, lptkRhtArg);
-BOOL (*aSysVarValid[SYSVAR_LENGTH]) (LPTOKEN, LPTOKEN, LPTOKEN);
+// Use as in:  (*aSysVarValidSet[SYSVAR_IO]) (lptkNamArg, lptkRhtArg);
+ASYSVARVALIDSET aSysVarValidSet[SYSVAR_LENGTH];
+
+typedef BOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST);
+
+EXTERN
+// Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht);
+ASYSVARVALIDNDX aSysVarValidNdx[SYSVAR_LENGTH];
 
 EXTERN
 char lpszVersion[]

@@ -424,7 +424,7 @@ void DisplayGlbArr
     //   output stream into lpwszFormat
 
     // Calc when to use raw output
-    bRawOut = (aplType NE ARRAY_CHAR && aplType NE ARRAY_NESTED);
+    bRawOut = ((!IsSimpleChar (aplType)) && (!IsNested (aplType)));
 
     // Split cases based upon the array's storage type
     switch (aplType)

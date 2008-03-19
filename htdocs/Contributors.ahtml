@@ -82,7 +82,8 @@
           couldn't get the one in Windows to do what I wanted.</li>
 
         <li>Numeric input/output <a class="linkleft" href="http://www.netlib.org/fp/">conversion</a>
-          routines by David M. Gay were invaluable for full precision conversion (good to the last ULP!).</li>
+          routines by David M. Gay were invaluable for full numeric precision
+          conversion (good to the last ULP!).</li>
       </ul>
     </div>
 

@@ -118,7 +118,7 @@ APLSTYPE PrimSpecBarStorageTypeMon
     aplTypeRes = *lpaplTypeRht;
 
     // No Boolean result for negation
-    if (aplTypeRes EQ ARRAY_BOOL)
+    if (IsSimpleBool (aplTypeRes))
         aplTypeRes = ARRAY_INT;
 
     return aplTypeRes;
@@ -256,14 +256,14 @@ APLSTYPE PrimSpecBarStorageTypeDyd
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
     // No Boolean results for subtraction
-    if (aplTypeRes EQ ARRAY_BOOL)
+    if (IsSimpleBool (aplTypeRes))
         aplTypeRes = ARRAY_INT;
 
     // Special case subtraction with APA
     if (aplTypeRes EQ ARRAY_INT                            // Res = INT
      && (aplNELMLft NE 1 || aplNELMRht NE 1)                // Not both singletons
-     && ((aplNELMLft EQ 1 && *lpaplTypeRht EQ ARRAY_APA)   // Non-singleton is APA
-      || (aplNELMRht EQ 1 && *lpaplTypeLft EQ ARRAY_APA))) // ...
+     && ((aplNELMLft EQ 1 && IsSimpleAPA (*lpaplTypeRht))   // Non-singleton is APA
+      || (aplNELMRht EQ 1 && IsSimpleAPA (*lpaplTypeLft)))) // ...
         aplTypeRes = ARRAY_APA;
 
     return aplTypeRes;

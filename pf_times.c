@@ -118,8 +118,8 @@ APLSTYPE PrimSpecTimesStorageTypeMon
     aplTypeRes = *lpaplTypeRht;
 
     // Except that FLOAT and APA become INT
-    if (aplTypeRes EQ ARRAY_FLOAT
-     || aplTypeRes EQ ARRAY_APA)
+    if (IsSimpleFlt (aplTypeRes)
+     || IsSimpleAPA (aplTypeRes))
         return ARRAY_INT;
 
     return aplTypeRes;
@@ -215,8 +215,8 @@ APLSTYPE PrimSpecTimesStorageTypeDyd
     // Special case multiplication with APA
     if (aplTypeRes EQ ARRAY_INT                            // Res = INT
      && (aplNELMLft NE 1 || aplNELMRht NE 1)                // Not both singletons
-     && ((aplNELMLft EQ 1 && *lpaplTypeRht EQ ARRAY_APA)   // Non-singleton is APA
-      || (aplNELMRht EQ 1 && *lpaplTypeLft EQ ARRAY_APA))) // ...
+     && ((aplNELMLft EQ 1 && IsSimpleAPA (*lpaplTypeRht))   // Non-singleton is APA
+      || (aplNELMRht EQ 1 && IsSimpleAPA (*lpaplTypeLft)))) // ...
         aplTypeRes = ARRAY_APA;
 
     return aplTypeRes;

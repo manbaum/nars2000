@@ -210,10 +210,10 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRht = MyGlobalLock (hGlbRht);
 
-#define lpHeaderRht     ((LPVARARRAY_HEADER) lpMemRht)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRht)
     // Get the rank
-    aplRankRht = lpHeaderRht->Rank;
-#undef  lpHeaderRht
+    aplRankRht = lpHeader->Rank;
+#undef  lpHeader
 
     // If the right arg rank is zero, the result is {zilde}
     if (aplRankRht EQ 0)
@@ -239,16 +239,16 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
         // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
-        lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-        lpHeaderRes->ArrType    = ARRAY_INT;
-////////lpHeaderRes->PermNdx    = PERMNDX_NONE;     // Already zero from GHND
-////////lpHeaderRes->SysVar     = 0;                // Already zero from GHND
-        lpHeaderRes->RefCnt     = 1;
-        lpHeaderRes->NELM       = aplRankRht;
-        lpHeaderRes->Rank       = 1;
-#undef  lpHeaderRes
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_INT;
+////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////lpHeader->SysVar     = 0;               // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplRankRht;
+        lpHeader->Rank       = 1;
+#undef  lpHeader
 
         // Save the dimension
         *VarArrayBaseToDim (lpMemRes) = aplRankRht;
@@ -387,7 +387,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
                                     NULL,           // Ptr to ...immediate type ...
                                    &aplTypeRes);    // Ptr to array type ...
                 // If it's not char, it's Boolean
-                if (aplTypeRes NE ARRAY_CHAR)
+                if (!IsSimpleChar (aplTypeRes))
                     aplTypeRes = ARRAY_BOOL;
 
 ////////////////ByteRes = 0;
@@ -467,7 +467,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         aplTypeRes = ARRAY_APA;     // Result is an APA
         bReshapeSing = TRUE;        // Mark as special handling
     } else
-    if (aplTypeRes EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeRes))
     {
         // If the right arg is reused, we cannot
         //   store the result as an APA, so use integers
@@ -496,16 +496,16 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeaderRes     ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
-    lpHeaderRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeaderRes->ArrType    = aplTypeRes;
-////lpHeaderRes->PermNdx    = PERMNDX_NONE; // ALready zero from GHND
-////lpHeaderRes->SysVar     = 0;            // Already zero from GHND
-    lpHeaderRes->RefCnt     = 1;
-    lpHeaderRes->NELM       = aplNELMRes;
-    lpHeaderRes->Rank       = aplRankRes;
-#undef  lpHeaderRes
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = aplTypeRes;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
 
     //***************************************************************
     // Now run through the left arg again, copying its data
@@ -660,7 +660,7 @@ BOOL PrimFnDydRhoRhtCopyData
                     APLNELM uNELM;
                     UINT    uBits;
 
-                    Assert (aplTypeRes EQ ARRAY_BOOL);
+                    Assert (IsSimpleBool (aplTypeRes));
 
                     // If the single value is 1, we're saving all 1s (e.g., 0xFF),
                     //   otherwise, we're saving all 0s (e.g. 0x00).
@@ -700,7 +700,7 @@ BOOL PrimFnDydRhoRhtCopyData
                 {
                     APLFLOAT aplFloat;
 
-                    Assert (aplTypeRes EQ ARRAY_FLOAT);
+                    Assert (IsSimpleFlt (aplTypeRes));
 
                     // Copy the single value to avoid recalling it everytime
                     aplFloat = lptkRhtArg->tkData.tkSym->stData.stFloat;
@@ -740,7 +740,7 @@ BOOL PrimFnDydRhoRhtCopyData
                     APLNELM uNELM;
                     UINT    uBits;
 
-                    Assert (aplTypeRes EQ ARRAY_BOOL);
+                    Assert (IsSimpleBool (aplTypeRes));
 
                     // If the single value is 1, we're saving all 1s (e.g., 0xFF),
                     //   otherwise, we're saving all 0s (e.g. 0x00).
@@ -780,7 +780,7 @@ BOOL PrimFnDydRhoRhtCopyData
                 {
                     APLFLOAT aplFloat;
 
-                    Assert (aplTypeRes EQ ARRAY_FLOAT);
+                    Assert (IsSimpleFlt (aplTypeRes));
 
                     // Copy the single value to avoid recalling it everytime
                     aplFloat = lptkRhtArg->tkData.tkFloat;
@@ -1151,11 +1151,11 @@ BOOL PrimFnDydRhoLftGlbValid_EM
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
 
-#define lpHeaderLft     ((LPVARARRAY_HEADER) lpMemLft)
-    aplTypeLft = lpHeaderLft->ArrType;
-    aplNELMLft = lpHeaderLft->NELM;
-    aplRankLft = lpHeaderLft->Rank;
-#undef  lpHeaderLft
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemLft)
+    aplTypeLft = lpHeader->ArrType;
+    aplNELMLft = lpHeader->NELM;
+    aplRankLft = lpHeader->Rank;
+#undef  lpHeader
 
     // The left arg's NELM is the rank of the result
     *lpaplRankRes = aplNELMLft;
@@ -1326,16 +1326,16 @@ void PrimFnDydRhoLftGlbCopyDim
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
 
-#define lpHeaderLft     ((LPVARARRAY_HEADER) lpMemLft)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemLft)
 
     // Get the left arg's NELM to use as loop limit
-    aplNELMLft = lpHeaderLft->NELM;
+    aplNELMLft = lpHeader->NELM;
 
     // Point to the left arg's data
-    lpDataLft = VarArrayBaseToData (lpMemLft, lpHeaderLft->Rank);
+    lpDataLft = VarArrayBaseToData (lpMemLft, lpHeader->Rank);
 
     // Split cases based upon the left arg's array type
-    switch (lpHeaderLft->ArrType)
+    switch (lpHeader->ArrType)
     {
         case ARRAY_BOOL:
             uBitMaskLft = 0x01;
@@ -1390,7 +1390,7 @@ void PrimFnDydRhoLftGlbCopyDim
         defstop
             break;
     } // End SWITCH
-#undef  lpHeaderLft
+#undef  lpHeader
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
@@ -1424,13 +1424,13 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
     // Lock the memory to get a ptr to it
     lpMemRhtBase = MyGlobalLock (hGlbRht);
 
-#define lpHeaderRht     ((LPVARARRAY_HEADER) lpMemRhtBase)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemRhtBase)
 
-    aplNELMRht = lpHeaderRht->NELM;
-    lpMemRhtNext = lpMemRhtData = VarArrayBaseToData (lpMemRhtBase, lpHeaderRht->Rank);
+    aplNELMRht = lpHeader->NELM;
+    lpMemRhtNext = lpMemRhtData = VarArrayBaseToData (lpMemRhtBase, lpHeader->Rank);
 
     // Split cases based upon the right arg's array type
-    switch (lpHeaderRht->ArrType)
+    switch (lpHeader->ArrType)
     {
         case ARRAY_BOOL:
             // This should be optimized to take advantage of alignment
@@ -1444,7 +1444,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             {
                 // Check to see if we should start over again
                 //   the right arg's counter and ptr
-                if (uRht EQ (APLNELMSIGN) lpHeaderRht->NELM)
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
                 {
                     uRht = 0;
                     lpMemRhtNext = lpMemRhtData;
@@ -1482,7 +1482,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             {
                 // Check to see if we should start the right arg's
                 //   counter and ptr over again
-                if (uRht EQ (APLNELMSIGN) lpHeaderRht->NELM)
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
                 {
                     uRht = 0;
                     lpMemRhtNext = lpMemRhtData;
@@ -1499,7 +1499,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             {
                 // Check to see if we should start the right arg's
                 //   counter and ptr over again
-                if (uRht EQ (APLNELMSIGN) lpHeaderRht->NELM)
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
                 {
                     uRht = 0;
                     lpMemRhtNext = lpMemRhtData;
@@ -1516,7 +1516,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             {
                 // Check to see if we should start the right arg's
                 //   counter and ptr over again
-                if (uRht EQ (APLNELMSIGN) lpHeaderRht->NELM)
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
                 {
                     uRht = 0;
                     lpMemRhtNext = lpMemRhtData;
@@ -1536,7 +1536,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             {
                 // Check to see if we should start the right arg's
                 //   counter and ptr over again
-                if (uRht EQ (APLNELMSIGN) lpHeaderRht->NELM)
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
                 {
                     uRht = 0;
                     lpMemRhtNext = lpMemRhtData;
@@ -1555,7 +1555,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
                         break;
 
                     case PTRTYPE_HGLOBAL:
-                        Assert (lpHeaderRht->ArrType EQ ARRAY_NESTED);
+                        Assert (IsNested (lpHeader->ArrType));
 
                         // Data is an valid HGLOBAL array
                         Assert (IsGlbTypeVarInd (lpMemRhtNext));
@@ -1604,7 +1604,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
                 {
                     // Check to see if we should start the right arg's
                     //   counter over again
-                    if (apaLen EQ lpHeaderRht->NELM)
+                    if (apaLen EQ lpHeader->NELM)
                         apaLen = 0;
 
                     *((LPAPLINT) lpDataRes)++ = apaOff + apaMul * apaLen;
@@ -1618,7 +1618,7 @@ BOOL PrimFnDydRhoRhtGlbCopyData_EM
             break;
     } // End SWITCH
 
-#undef  lpHeaderRht
+#undef  lpHeader
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemRhtBase = lpMemRhtNext = lpMemRhtData = NULL;

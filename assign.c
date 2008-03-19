@@ -65,7 +65,7 @@ BOOL AssignName_EM
         } // End IF
 
         // Validate the value
-        return (*aSysVarValid[lptkNam->tkData.tkSym->stFlags.SysVarValid]) (lptkNam, NULL, lptkSrc);
+        return (*aSysVarValidSet[lptkNam->tkData.tkSym->stFlags.SysVarValid]) (lptkNam, lptkSrc);
     } // End IF
 
     // Note that we have to wait until all errors have been
@@ -652,7 +652,7 @@ BOOL AssignSelectSpec_EM
     lpMemVal = VarArrayBaseToData (lpMemVal, aplRankVal);
 
     // If the value is an APA, ...
-    if (aplTypeVal EQ ARRAY_APA)
+    if (IsSimpleAPA (aplTypeVal))
     {
 #define lpAPA       ((LPAPLAPA) lpMemVal)
         // Get the APA parameters

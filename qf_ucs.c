@@ -119,7 +119,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
         if (IsSimpleNum (aplTypeRht))
         {
             // If the right arg is a simple float scalar, ...
-            if (aplTypeRht EQ ARRAY_FLOAT)
+            if (IsSimpleFlt (aplTypeRht))
             {
                 // Attempt to convert the float to an integer using System CT
                 aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);

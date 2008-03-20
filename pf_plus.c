@@ -341,6 +341,7 @@ BOOL PrimFnDydPlusAPA_EM
 {
     APLRANK aplRankRes;         // Result rank
     LPVOID  lpMemRes;           // Ptr to result global memory
+    BOOL    bRet = FALSE;       // TRUE iff the result is valid
 
     DBGENTER;
 
@@ -374,11 +375,7 @@ BOOL PrimFnDydPlusAPA_EM
         DbgStop ();     // We should never get here
 
     if (!*lphGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -405,9 +402,18 @@ BOOL PrimFnDydPlusAPA_EM
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     } // End IF
 
+    // Mark as successful
+    bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+NORMAL_EXIT:
     DBGLEAVE;
 
-    return TRUE;
+    return bRet;
 } // End PrimFnDydPlusAPA_EM
 #undef  APPEND_NAME
 

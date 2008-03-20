@@ -108,11 +108,7 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     //***************************************************************
     // Loop through the right arg counting all of the simple scalars
@@ -158,6 +154,11 @@ LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
         defstop
             return NULL;
     } // End SWITCH
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnMonEpsilon_EM_YY
 #undef  APPEND_NAME
 
@@ -193,11 +194,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -264,6 +261,11 @@ LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnMonEpsilonImm_EM_YY
 #undef  APPEND_NAME
 
@@ -318,11 +320,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -367,6 +365,11 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     TypeDemote (&lpYYRes->tkToken);
 
     return lpYYRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnMonEpsilonGlb_EM_YY
 #undef  APPEND_NAME
 
@@ -1099,11 +1102,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        goto ERROR_EXIT;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -1125,11 +1124,7 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -1237,6 +1232,16 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     if (hGlbRes)
@@ -1451,11 +1456,7 @@ BOOL PrimFnDydEpsilonCvC_EM
     //   because we'll use it quickly and then free it.
     lpMemTT = MyGlobalAlloc (GPTR, ByteTT);
     if (!lpMemTT)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Trundle through the right arg marking the TT
     for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -1489,6 +1490,11 @@ BOOL PrimFnDydEpsilonCvC_EM
     MyGlobalFree (lpMemTT); lpMemTT = NULL;
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
 } // End PrimFnDydEpsilonCvC_EM
 #undef  APPEND_NAME
 

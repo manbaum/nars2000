@@ -48,17 +48,17 @@ LPPL_YYSTYPE PrimFnRho_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonRho_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydRho_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnRho_EM_YY
 #undef  APPEND_NAME
 
@@ -203,7 +203,6 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
     APLRANK      aplRankRht;        // The rank of the array
     HGLOBAL      hGlbRes;           // Result global memory handle
     APLUINT      ByteRes;           // # bytes in the result
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
     UINT         uRes;              // Loop counter
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
@@ -228,13 +227,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbRes)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            bRet = FALSE;
-
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbRes);
@@ -282,7 +275,16 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
 
@@ -346,11 +348,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     //***************************************************************
     if (aplNELMRes NE 0
      && aplNELMRht EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto LENGTH_EXIT;
 
     //***************************************************************
     // If there are no elements in the result,
@@ -487,11 +485,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -597,6 +591,16 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
 
         return NULL;
     } // End IF
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnDydRho_EM_YY
 #undef  APPEND_NAME
 
@@ -1010,11 +1014,7 @@ BOOL PrimFnDydRhoLftValid_EM
                     // Ensure the immediate value isn't too large and isn't negative
                     if (lptkLftArg->tkData.tkSym->stData.stInteger > MAX_APLNELM
                      || lptkLftArg->tkData.tkSym->stData.stInteger < 0)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        return FALSE;
-                    } // End IF
+                        goto DOMAIN_EXIT;
 
                     *lpaplNELMRes = (APLNELM) (lptkLftArg->tkData.tkSym->stData.stInteger);
 
@@ -1036,9 +1036,7 @@ BOOL PrimFnDydRhoLftValid_EM
                     // Fall through to IMMTYPE_CHAR to handle DOMAIN ERROR
 
                 case IMMTYPE_CHAR:
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    return FALSE;
+                    goto DOMAIN_EXIT;
 
                 defstop
                     return FALSE;
@@ -1072,11 +1070,7 @@ BOOL PrimFnDydRhoLftValid_EM
                     // Ensure the immediate value isn't too large and isn't negative
                     if (lptkLftArg->tkData.tkInteger > MAX_APLNELM
                      || lptkLftArg->tkData.tkInteger < 0)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        return FALSE;
-                    } // End IF
+                        goto DOMAIN_EXIT;
 
                     *lpaplNELMRes = (APLNELM) (lptkLftArg->tkData.tkInteger);
 
@@ -1098,9 +1092,7 @@ BOOL PrimFnDydRhoLftValid_EM
                     // Fall through to IMMTYPE_CHAR to handle DOMAIN ERROR
 
                 case IMMTYPE_CHAR:
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    return FALSE;
+                    goto DOMAIN_EXIT;
 
                 defstop
                     return FALSE;
@@ -1113,6 +1105,11 @@ BOOL PrimFnDydRhoLftValid_EM
     } // End SWITCH
 
     return bRet;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
 } // End PrimFnDydRhoLftValid_EM
 #undef  APPEND_NAME
 
@@ -1146,7 +1143,6 @@ BOOL PrimFnDydRhoLftGlbValid_EM
     UINT     u,
              uBits;
     APLINT   aplIntTmp;
-    LPWCHAR  lpErrMsg;
 
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
@@ -1162,10 +1158,8 @@ BOOL PrimFnDydRhoLftGlbValid_EM
 
     // Check for LEFT RANK ERROR
     if (aplRankLft > 1)
-    {
-        lpErrMsg = ERRMSG_RANK_ERROR APPEND_NAME;
-        bRet = FALSE;
-    } else
+        goto RANK_EXIT;
+    else
     {
         // Point to the left arg's data
         lpDataLft = VarArrayBaseToData (lpMemLft, aplRankLft);
@@ -1291,16 +1285,26 @@ BOOL PrimFnDydRhoLftGlbValid_EM
 
         // If error, it's a DOMAIN ERROR
         if (!bRet)
-            lpErrMsg = ERRMSG_DOMAIN_ERROR APPEND_NAME;
+            goto DOMAIN_EXIT;
     } // End IF/ELSE
 
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
 
-    // If error, set the error msg
-    if (!bRet)
-        ErrorMessageIndirectToken (lpErrMsg,
-                                   lptkFunc);
     return bRet;
 } // End PrimFnDydRhoLftGlbValid_EM
 #undef  APPEND_NAME

@@ -46,17 +46,17 @@ LPPL_YYSTYPE PrimFnLeftTack_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonLeftTack_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydLeftTack_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnLeftTack_EM_YY
 #undef  APPEND_NAME
 

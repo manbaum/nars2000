@@ -49,17 +49,17 @@ LPPL_YYSTYPE PrimFnDownShoe_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonDownShoe_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydDownShoe_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnDownShoe_EM_YY
 #undef  APPEND_NAME
 
@@ -125,11 +125,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
     // Check for RIGHT RANK ERROR
     if (aplRankRht > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -147,7 +143,16 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                                   lpMemPTD->hGlbMF_MonUpShoe);  // Magic function global memory handle
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnMonDownShoe_EM_YY
 #undef  APPEND_NAME

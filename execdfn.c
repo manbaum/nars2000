@@ -137,31 +137,19 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     if (lptkLftArg EQ NULL
      && lpMemDfnHdr->FcnValence NE FCNVALENCE_AMB
      && lpMemDfnHdr->numLftArgSTE NE 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // If there is an axis token and this function does not accept
     //   an axis operator, signal an SYNTAX ERROR
     if (lptkAxis NE NULL
      && lpMemDfnHdr->steAxisOpr EQ NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        goto ERROR_EXIT;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // If there's no right arg token and this function requires a right arg,
     //   signal a SYNTAX ERROR
     if (lptkRhtArg EQ NULL
      && lpMemDfnHdr->numRhtArgSTE NE 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkRhtArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -176,11 +164,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      && (aplRankLft > 1
       || (aplRankLft EQ 1
        && lpMemDfnHdr->numLftArgSTE NE aplNELMLft)))
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // If the DFN right arg is a list, make sure the right arg token
     //   is a scalar, or a vector of the proper length
@@ -188,11 +172,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      && (aplRankRht > 1
       || (aplRankRht EQ 1
        && lpMemDfnHdr->numRhtArgSTE NE aplNELMRht)))
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkRhtArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Split cases based upon the starting line #
     switch (startLineNum)
@@ -224,11 +204,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
 
     // Check for non-existant label
     if (startLineNum EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkRhtArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 RESTART_EXCEPTION_EXECDFNGLB:
     __try
     {
@@ -485,7 +461,26 @@ UNLOCALIZE_EXIT:
     // Unlocalize the STEs on the innermost level
     //   and strip off one level
     Unlocalize ();
+
+    goto NORMAL_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbDfnHdr && lpMemDfnHdr)
     {
         // We no longer need this ptr
@@ -1528,11 +1523,7 @@ BOOL InitFcnSTEs
 
             hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
             if (!hGlbRes)
-            {
-                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                          &lpYYArg->tkToken);
-                return FALSE;
-            } // End IF
+                goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
             lpMemRes = MyGlobalLock (hGlbRes);
@@ -1569,6 +1560,11 @@ BOOL InitFcnSTEs
     } // End IF
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYArg->tkToken);
+    return FALSE;
 } // End InitFcnSTEs
 #undef  APPEND_NAME
 

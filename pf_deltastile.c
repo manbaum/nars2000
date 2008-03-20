@@ -70,17 +70,17 @@ LPPL_YYSTYPE PrimFnDeltaStile_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnDeltaStile_EM_YY
 #undef  APPEND_NAME
 
@@ -118,17 +118,17 @@ LPPL_YYSTYPE PrimFnDelStile_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnDelStile_EM_YY
 #undef  APPEND_NAME
 
@@ -248,19 +248,11 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // Check for RIGHT RANK ERROR
     if (aplRankRht EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
     if (!IsSimpleNum (gradeData.aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Get right arg global ptr
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -283,12 +275,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        // Mark as a WS FULL
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -347,7 +334,26 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
@@ -425,44 +431,24 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 
     // Check for LEFT RANK ERROR
     if (aplRankLft EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_RANK_EXIT;
 
     // Check for RIGHT RANK ERROR
     if (aplRankRht EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkRhtArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RIGHT_RANK_EXIT;
 
     // Check for LEFT LENGTH ERROR
     if (aplNELMLft EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
     if (!IsSimpleChar (aplTypeLft))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_DOMAIN_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
     if (!IsSimpleChar (gradeData.aplTypeRht)
      && aplNELMRht NE 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkRhtArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RIGHT_DOMAIN_EXIT;
 
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -471,11 +457,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     // Allocate an array to hold the HGLOBALs of the translate tables
     hGlbTTHandles = DbgGlobalAlloc (GHND, (UINT) aplRankLft * sizeof (TT_HANDLES));
     if (!hGlbTTHandles)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemTTHandles = MyGlobalLock (hGlbTTHandles);
@@ -488,11 +470,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         //    as we'll initialize it ourselves
         lpMemTTHandles[uDim].hGlbTT = DbgGlobalAlloc (GMEM_MOVEABLE, APLCHAR_SIZE * sizeof (APLCHAR));
         if (!lpMemTTHandles[uDim].hGlbTT)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkLftArg);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemTTHandles[uDim].lpMemTT = MyGlobalLock (lpMemTTHandles[uDim].hGlbTT);
@@ -567,12 +545,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        // Mark as a WS FULL
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -631,7 +604,41 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr

@@ -50,17 +50,17 @@ LPPL_YYSTYPE PrimFnIota_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonIota_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydIota_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnIota_EM_YY
 #undef  APPEND_NAME
 
@@ -139,28 +139,13 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     // Check the right argument for RANK, LENGTH, and DOMAIN ERRORs
     //***************************************************************
     if (aplRankRht > 1)
-    {
-        // Mark as a RANK ERROR
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     if (aplNELMRht < 1)
-    {
-        // Mark as a LENGTH ERROR
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     if (!IsSimpleNum (aplTypeRht))
-    {
-        // Mark as a DOMAIN ERROR
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Handle length > 1 args via magic function
     if (aplNELMRht > 1)
@@ -190,12 +175,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
         aplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
 
         if (!bRet)
-        {
-            // Mark as a DOMAIN ERROR
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto DOMAIN_EXIT;
     } // End IF
 
     // Calculate space needed for the result
@@ -204,12 +184,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     // Allocate space for an APA
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
     if (!hGlbRes)
-    {
-        // Mark as a WS FULL
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -249,7 +224,31 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnMonIota_EM_YY
 #undef  APPEND_NAME
@@ -364,11 +363,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        goto ERROR_EXIT;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -376,11 +371,8 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
 
     // Check for LEFT RANK ERROR
     if (aplRankLft EQ 0)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } else
+        goto RANK_EXIT;
+    else
     // Check for extended dyadic iota
     if (aplRankLft > 1)
     {
@@ -426,11 +418,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -559,6 +547,21 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     if (hGlbRes)
@@ -794,11 +797,7 @@ BOOL PrimFnDydIotaCvC_EM
     //   because we'll use it quickly and then free it.
     lpMemTT = MyGlobalAlloc (GMEM_FIXED, ByteTT);
     if (!lpMemTT)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Trundle through the TT setting each value to NotFound
     for (uRht = 0; uRht < APLCHAR_SIZE; uRht++)
@@ -820,6 +819,11 @@ BOOL PrimFnDydIotaCvC_EM
     MyGlobalFree (lpMemTT); lpMemTT = NULL;
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
 } // End PrimFnDydIotaCvC_EM
 #undef  APPEND_NAME
 

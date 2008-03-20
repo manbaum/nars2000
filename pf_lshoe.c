@@ -250,7 +250,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     APLNELMSIGN  iRht;
     APLINT       apaOff,
                  apaMul;
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -269,7 +269,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                            NULL,            // Return last axis value
                           &aplNELMAxis,     // Return # elements in axis vector
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
-            return NULL;
+            goto ERROR_EXIT;
     } else
         // No axis means enclose all dimensions
         aplNELMAxis = aplRankRht;
@@ -366,13 +366,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -456,13 +450,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                                                lptkFunc,                        // Ptr to function token
                                                MP_CHARS);                       // CHARs allowed
                         if (!hGlbProto)
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                       lptkFunc);
-                            bRet = FALSE;
-
-                            goto ERROR_EXIT;
-                        } // End IF
+                            goto WSFULL_EXIT;
                     } else
                     {
                         // Calculate space needed for the result
@@ -472,13 +460,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                         Assert (ByteRes EQ (UINT) ByteRes);
                         hGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);
                         if (!hGlbProto)
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                       lptkFunc);
-                            bRet = FALSE;
-
-                            goto ERROR_EXIT;
-                        } // End IF
+                            goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
                         lpMemProto = MyGlobalLock (hGlbProto);
@@ -506,25 +488,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbProto); lpMemProto = NULL;
-
-                        // If we failed, ...
-                        if (!bRet)
-                        {
-                            // Allocate a new YYRes
-                            lpYYRes = YYAlloc ();
-
-                            // Fill in the result token
-                            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;    // Already zero from YYAlloc
-////////////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;    // Already zero from YYAlloc
-                            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbProto);
-                            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-                            // Free the prototype storage
-                            FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
-
-                            goto ERROR_EXIT;
-                        } // End IF
                     } // End IF/ELSE
 
                     break;
@@ -592,13 +555,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbWVec)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            bRet = FALSE;
-
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemWVec = MyGlobalLock (hGlbWVec);
@@ -624,13 +581,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbOdo)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            bRet = FALSE;
-
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemOdo = MyGlobalLock (hGlbOdo);
@@ -1037,7 +988,16 @@ NORMAL_EXIT:
 
     // See if it fits into a lower (but not necessarily smaller) datatype
     TypeDemote (&lpYYRes->tkToken);
+
+    goto EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+EXIT:
     if (lpMemRes)
     {
         // We no longer need this ptr
@@ -1086,10 +1046,7 @@ QUICK_EXIT:
         DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnMonLeftShoeGlb_EM_YY
 #undef  APPEND_NAME
 
@@ -1132,11 +1089,7 @@ BOOL PrimFnMonLeftShoeProto_EM
         Assert (ByteRes EQ (UINT) ByteRes);
         *lphGlbProto = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!*lphGlbProto)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            return FALSE;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemProto = MyGlobalLock (*lphGlbProto);
@@ -1167,6 +1120,11 @@ BOOL PrimFnMonLeftShoeProto_EM
     } // End IF/ELSE
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
 } // End PrimFnMonLeftShoe_EM
 #undef  APPEND_NAME
 
@@ -1207,11 +1165,7 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
     Assert (ByteRes EQ (UINT) ByteRes);
     *lphGlbSub = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!*lphGlbSub)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Save the HGLOBAL in the result
     *lpMemRes = MakePtrTypeGlb (*lphGlbSub);
@@ -1241,6 +1195,11 @@ BOOL PrimFnMonLeftShoeGlbSub_EM
         *((LPAPLDIM) *lplpMemSub)++ = lpMemDimRht[lpMemAxis[uRht]];
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
 } // End PrimFnMonLeftShoeGlbSub_EM
 #undef  APPEND_NAME
 
@@ -1290,9 +1249,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
             // Fall through to TKT_VARIMMED case to signal a RANK ERROR
 
         case TKT_VARIMMED:
-            ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
+            goto RANK_EXIT;
 
         case TKT_VARARRAY:
             // tkData is a valid HGLOBAL variable array
@@ -1305,6 +1262,11 @@ LPPL_YYSTYPE PrimFnDydLeftShoe_EM_YY
         defstop
             return NULL;
     } // End SWITCH
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnDydLeftShoe_EM_YY
 #undef  APPEND_NAME
 

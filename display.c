@@ -93,9 +93,7 @@ BOOL ArrayDisplay_EM
             break;
 
         case TKT_LISTPAR:   // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkRes);
-            return FALSE;
+            goto SYNTAX_EXIT;
 
         case TKT_VARARRAY:  // The tkData is an HGLOBAL of an array of LPSYMENTRYs/HGLOBALs
             // Check for NoDisplay flag
@@ -137,6 +135,11 @@ BOOL ArrayDisplay_EM
     AppendLine (lpwszFormat, FALSE, bEndingCR);
 
     return TRUE;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkRes);
+    return FALSE;
 } // End ArrayDisplay_EM
 #undef  APPEND_NAME
 

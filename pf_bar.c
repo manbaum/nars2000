@@ -185,11 +185,7 @@ BOOL PrimFnMonBarAPA_EM
 
     *lphGlbRes = CopyArray_EM (hGlbRht, lptkFunc);
     if (!*lphGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -222,6 +218,13 @@ BOOL PrimFnMonBarAPA_EM
     DBGLEAVE;
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    DBGLEAVE;
+
+    return FALSE;
 } // End PrimFnMonBarAPA_EM
 #undef  APPEND_NAME
 
@@ -384,11 +387,7 @@ BOOL PrimFnDydBarAPA_EM
         DbgStop ();     // We should never get here
 
     if (!*lphGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -423,6 +422,13 @@ BOOL PrimFnDydBarAPA_EM
     DBGLEAVE;
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    DBGLEAVE;
+
+    return FALSE;
 } // End PrimFnDydBarAPA_EM
 #undef  APPEND_NAME
 

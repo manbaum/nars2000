@@ -96,12 +96,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
     // Check for NoValue
     if (IsTokenNoValue (lptkLftArg)
      || IsTokenNoValue (lptkRhtArg))
-    {
-        ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
-                                   (lptkLftArg NE NULL) ? lptkLftArg
-                                                        : lptkRhtArg);
-        return NULL;
-    } // End IF
+        goto VALUE_EXIT;
 
     // Split cases based upon the function token type
     switch (lpYYFcnStr->tkToken.tkFlags.TknType)
@@ -109,11 +104,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
         case TKT_FCNIMMED:
             lpPrimFn = PrimFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
             if (!lpPrimFn)
-            {
-                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                          &lpYYFcnStr->tkToken);
-                return NULL;
-            } // End IF
+                goto SYNTAX_EXIT;
 
             return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, NULL);
 
@@ -178,11 +169,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
                     lpPrimFn = PrimFnsTab[FcnTrans (lpYYFcnStr->tkToken.tkData.tkSym->stData.stChar)];
                     if (!lpPrimFn)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                                  &lpYYFcnStr->tkToken);
-                        return NULL;
-                    } // End IF
+                        goto SYNTAX_EXIT;
 
                     // Fill in for PrimFn*** test
                     tkFn.tkFlags.TknType   = TKT_FCNIMMED;
@@ -234,6 +221,17 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             break;
     } // End SWITCH
 
+    return NULL;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStr->tkToken);
+    return NULL;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                               (lptkLftArg NE NULL) ? lptkLftArg
+                                                    : lptkRhtArg);
     return NULL;
 } // End ExecFunc_EM_YY
 #undef  APPEND_NAME
@@ -327,11 +325,7 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
 
             lpPrimFn = PrimFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
             if (!lpPrimFn)
-            {
-                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                          &lpYYFcnStr->tkToken);
-                return NULL;
-            } // End IF
+                goto SYNTAX_EXIT;
 
             return (*lpPrimFn) (lptkLftArg, &lpYYFcnStr->tkToken, lptkRhtArg, lptkAxis);
 
@@ -406,6 +400,11 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
         defstop
             return NULL;
     } // End SWITCH
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStr->tkToken);
+    return NULL;
 } // End ExecFuncStr_EM_YY
 #undef  APPEND_NAME
 

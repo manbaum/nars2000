@@ -57,12 +57,7 @@ BOOL AssignName_EM
     {
         // If the target is a user-defined function/operator system label, signal a SYNTAX ERROR
         if (lptkNam->tkData.tkSym->stFlags.DfnSysLabel)
-        {
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                       lptkNam);
-            DBGLEAVE;
-            return FALSE;
-        } // End IF
+            goto SYNTAX_EXIT;
 
         // Validate the value
         return (*aSysVarValidSet[lptkNam->tkData.tkSym->stFlags.SysVarValid]) (lptkNam, lptkSrc);
@@ -84,13 +79,7 @@ BOOL AssignName_EM
 
             // If the target is a user-defined function/operator label, signal a SYNTAX ERROR
             if (lptkNam->tkData.tkSym->stFlags.DfnLabel)
-            {
-                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                           lptkNam);
-                bRet = FALSE;
-
-                goto ERROR_EXIT;
-            } // End IF
+                goto SYNTAX_EXIT;
 
             // If the source is immediate, ...
             if (lptkSrc->tkData.tkSym->stFlags.Imm)
@@ -348,7 +337,18 @@ BOOL AssignName_EM
     if (bFcnOpr)
         DisplayFcnStrand (lptkSrc);
 #endif
+
+    goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkNam);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+    // Mark as in error
+    bRet = FALSE;
+NORMAL_EXIT:
     DBGLEAVE;
 
     return bRet;
@@ -627,26 +627,12 @@ BOOL AssignSelectSpec_EM
 
     // Check for RANK ERROR
     if (aplRankVal > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkVal);
-        // Mark as in error
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for LENGTH ERROR
     if (aplNELMVal NE 1
      && aplNELMVal NE aplNELMNam)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkVal);
-        // Mark as in error
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Skip over the header and dimension to the data
     lpMemVal = VarArrayBaseToData (lpMemVal, aplRankVal);
@@ -852,12 +838,34 @@ BOOL AssignSelectSpec_EM
         defstop
             break;
     } // End SWITCH
+
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkVal);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkVal);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbVal); lpMemVal = NULL;
+    // Mark as in error
+    bRet = FALSE;
 NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbStr); lpMemNam = NULL;
+    if (hGlbVal && lpMemVal)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbVal); lpMemVal = NULL;
+    } // End IF
+
+    if (hGlbStr && lpMemNam)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbStr); lpMemNam = NULL;
+    } // End IF
 
     // Mark as not displayable
     lptkVal->tkFlags.NoDisplay = 1;

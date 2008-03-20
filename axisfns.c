@@ -105,11 +105,7 @@ BOOL CheckAxisImm
         Assert (ByteAxis EQ (UINT) ByteAxis);
         *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
         if (!*lphGlbAxis)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkAxis);
-            return FALSE;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr it
         *lplpAxisStart = *lplpAxisHead = MyGlobalLock (*lphGlbAxis);
@@ -181,6 +177,18 @@ BOOL CheckAxisImm
     // Save the last (and only) value
     if (lpaplLastAxis)
         *lpaplLastAxis = aplRank;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    // Mark as in error
+    bRet = FALSE;
+NORMAL_EXIT:
     return bRet;
 } // End CheckAxisImm
 #undef  APPEND_NAME
@@ -276,11 +284,7 @@ BOOL CheckAxisGlb
         Assert (ByteAxis EQ (UINT) ByteAxis);
         *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
         if (!*lphGlbAxis)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkAxis);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         *lplpAxisStart = *lplpAxisHead = MyGlobalLock (*lphGlbAxis);
@@ -300,11 +304,7 @@ BOOL CheckAxisGlb
     Assert (ByteDup EQ (UINT) ByteDup);
     hGlbDup = DbgGlobalAlloc (GHND, (UINT) ByteDup);
     if (!hGlbDup)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkAxis);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to the
     //   duplicate indices testing area
@@ -599,7 +599,13 @@ BOOL CheckAxisGlb
 
     goto NORMAL_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+    // Mark as in error
     bRet = FALSE;
 NORMAL_EXIT:
     if (hGlbDup)
@@ -767,8 +773,6 @@ BOOL CheckAxis_EM
     // If bad values, it's an AXIS ERROR
     if (!bRet)
     {
-        ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
-                                   lptkAxis);
         if (lphGlbAxis && *lphGlbAxis)
         {
             // We no longer need this ptr
@@ -777,6 +781,8 @@ BOOL CheckAxis_EM
             // We no longer need this storage
             DbgGlobalFree (*lphGlbAxis); *lphGlbAxis = NULL;
         } // End IF
+
+        goto AXIS_EXIT;
     } else
     if (lphGlbAxis && *lphGlbAxis)
     {
@@ -820,6 +826,17 @@ BOOL CheckAxis_EM
         } // End IF
     } // End IF/ELSE
 
+    goto NORMAL_EXIT;
+
+AXIS_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    // Mark as in error
+    bRet = FALSE;
+NORMAL_EXIT:
     return bRet;
 } // End CheckAxis_EM
 #undef  APPEND_NAME

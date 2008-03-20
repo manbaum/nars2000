@@ -105,11 +105,7 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
 
     if (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR
      && lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -158,6 +154,10 @@ LPPL_YYSTYPE PrimFnMonComma_EM_YY
     return PrimFnMonCommaGlb_EM_YY (ClrPtrTypeDirAsGlb (hGlbRht),   // HGLOBAL
                                     lptkAxis,                       // Ptr to axis token (may be NULL)
                                     lptkFunc);                      // Ptr to function token
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnMonComma_EM_YY
 #undef  APPEND_NAME
 
@@ -245,11 +245,7 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -315,6 +311,11 @@ LPPL_YYSTYPE PrimFnMonCommaImm_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnMonCommaImm_EM_YY
 #undef  APPEND_NAME
 
@@ -366,10 +367,9 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                  aplLastAxis;       // Last ...                              highest
     BOOL         bFract = FALSE,    // TRUE iff axis has fractional values
                  bTableRes,         // TRUE iff function is UTF16_COMMABAR
-                 bRet = TRUE,       // TRUE iff result is valid
                  bReorder = FALSE;  // TRUE iff result values are reordered
                                     //   from those in the right arg
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get the rank of the right arg
     aplRankRht = RankOfGlb (hGlbRht);
@@ -526,13 +526,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -653,13 +647,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbWVec)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            bRet = FALSE;
-
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemWVec = MyGlobalLock (hGlbWVec);
@@ -685,13 +673,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbOdo)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            bRet = FALSE;
-
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemOdo = MyGlobalLock (hGlbOdo);
@@ -856,7 +838,16 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
@@ -905,10 +896,7 @@ ERROR_EXIT:
         DbgGlobalFree (hGlbAxis); hGlbAxis = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnMonCommaGlb_EM_YY
 #undef  APPEND_NAME
 
@@ -967,8 +955,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                  aplDimLftEnd,
                  aplDimRhtEnd,
                  aplDim1 = 1;
-    BOOL         bRet = TRUE,
-                 bFract = FALSE;
+    BOOL         bFract = FALSE;
     UINT         uBitMaskLft,
                  uBitMaskRht,
                  uBitIndexRes;
@@ -983,7 +970,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     APLCHAR      aplCharLft,
                  aplCharRht;
     APLLONGEST   aplVal;
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -1126,13 +1113,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
         {
             // If laminate or the ranks differ by more than 1, ...
             if (bFract || abs64 ((APLRANKSIGN) (aplRankLft - aplRankRht)) NE 1)
-            {
-                ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                           lptkFunc);
-                bRet = FALSE;
-
-                goto ERROR_EXIT;
-            } // End IF
+                goto RANK_EXIT;
 
             // The shapes must be equal except for aplAxis in the larger rank arg
             for (uRht = uLft = 0; uRht < aplRankRht && uLft < aplRankLft; uLft++, uRht++)
@@ -1147,13 +1128,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                 // Compare the dimensions
                 if (lpMemDimLft[uLft] NE lpMemDimRht[uRht])
-                {
-                    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    bRet = FALSE;
-
-                    goto ERROR_EXIT;
-                } // End IF
+                    goto LENGTH_EXIT;
             } // End FOR
         } else
         // The ranks are the same
@@ -1163,13 +1138,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
             for (uRht = 0; uRht < aplRankRht; uRht++)
             if ((bFract || uRht NE aplAxis)             // Laminate or not aplAxis
              && lpMemDimLft[uRht] NE lpMemDimRht[uRht]) // Compare the dimensions
-            {
-                ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                           lptkFunc);
-                bRet = FALSE;
-
-                goto ERROR_EXIT;
-            } // End FOR/IF
+                goto LENGTH_EXIT;
         } // End IF/ELSE
     } // End IF
 
@@ -1262,11 +1231,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
 
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -2030,7 +1995,26 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (lpMemLft)
     {
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
@@ -2046,10 +2030,7 @@ ERROR_EXIT:
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnDydComma_EM_YY
 #undef  APPEND_NAME
 

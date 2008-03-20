@@ -323,7 +323,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
                  uTmp,              // Temporary ...
                  uSub;              // Subarray  ...
     BOOL         bRet = TRUE;       // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     APLBOOL      bQuadIO;           // []IO
 
     // If the right arg is a list, ...
@@ -335,11 +335,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -355,24 +351,12 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     // Check for LEFT/RIGHT RANK ERRORs
     if (aplRankLft > 1
      || aplRankRht > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for LEFT/RIGHT LENGTH ERRORs
     if (aplNELMLft NE 1
      || aplNELMRht NE 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Get the respective first values
     GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
@@ -408,13 +392,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
      || aplIntegerLft < 0
      || aplIntegerRht < 0
      || aplIntegerLft > aplIntegerRht)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Calculate space needed for the result
     // If we're using the brute force algorithm,
@@ -431,13 +409,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        bRet = FALSE;
-
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -517,7 +489,36 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
                            GHND);
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     } // End IF/ELSE
+
+    goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
@@ -536,10 +537,7 @@ ERROR_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnDydQuery_EM_YY
 
 

@@ -63,11 +63,7 @@ EXIT_TYPES GotoLine_EM
 
     // Check for RANK ERROR
     if (aplRankRht > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Get the first value
     GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
@@ -80,11 +76,7 @@ EXIT_TYPES GotoLine_EM
                         NULL);          // Ptr to array type ...
     if (immType EQ IMMTYPE_ERROR
      || IsImmChr (immType))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     if (IsImmFlt (immType))
     {
@@ -93,11 +85,7 @@ EXIT_TYPES GotoLine_EM
         // Attempt to convert the float to an integer using System CT
         aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
         if (!bRet)
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto DOMAIN_EXIT;
     } // End IF
 
     // If the right arg is empty or out of range, ...
@@ -173,7 +161,18 @@ EXIT_TYPES GotoLine_EM
 
     goto NORMAL_EXIT;
 
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+    // Mark as in error
     exitType = EXITTYPE_ERROR;
 NORMAL_EXIT:
     // We no longer need this ptr

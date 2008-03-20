@@ -204,27 +204,15 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
 
     // Check for RANK error
     if (aplRankLft > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for LENGTH error
     if (aplNELMLft NE aplNELMAxis)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Check for DOMAIN error
     if (!IsSimpleNum (aplTypeLft))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Get left & right arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -303,11 +291,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -381,11 +365,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbWVecRht = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbWVecRht)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemWVecRht = MyGlobalLock (hGlbWVecRht);
@@ -413,11 +393,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbOdoRht = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbOdoRht)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemOdoRht = MyGlobalLock (hGlbOdoRht);
@@ -518,6 +494,26 @@ YYALLOC_EXIT:
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     if (hGlbRes)
@@ -936,8 +932,6 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
     // If error, it's a DOMAIN ERROR
     if (!bRet)
     {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
         if (hGlbTmpLft)
         {
             if (lpMemTmpLft)
@@ -949,6 +943,8 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
             // We no longer need this storage
             DbgGlobalFree (hGlbTmpLft); hGlbTmpLft = NULL;
         } // End IF
+
+        goto DOMAIN_EXIT;
     } else
     if (lpMemTmpLft)
     {
@@ -957,6 +953,11 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
     } // End IF
 
     return hGlbTmpLft;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnDydUpDownArrowLftGlbValid_EM
 #undef  APPEND_NAME
 

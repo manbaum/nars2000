@@ -120,11 +120,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -182,6 +178,11 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
     } // End IF/ELSE
 
     return lpYYRes;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnMonEqualUnderbar_EM_YY
 #undef  APPEND_NAME
 
@@ -326,11 +327,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Determine if two arrays are identical in
     //   rank, length, and value at all levels
@@ -453,6 +450,11 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
     } // End IF
 
     return lpYYRes;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnDydEqualUnderbar_EM_YY
 #undef  APPEND_NAME
 

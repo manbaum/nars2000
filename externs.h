@@ -165,6 +165,24 @@ APLUINT  uQuadPP_CWS        ,           // []PP
 EXTERN
 APLCHAR  cQuadPR_CWS        ;           // []PR     (L' ') (When a char scalar)
 
+typedef struct tagRANGELIMIT
+{
+    BOOL CT:1,
+         IC:1,
+         IO:1,
+         PP:1,
+         PW:1,
+         RL:1;
+} RANGELIMIT;
+
+EXTERN
+RANGELIMIT bRangeLimit
+#ifdef DEFINE_VALUES
+//  CT    IC    IO    PP    PW    RL
+= {TRUE, TRUE, TRUE, TRUE, TRUE, TRUE}
+#endif
+;
+
 
 //***************************************************************************
 //  Application values
@@ -759,10 +777,10 @@ EXTERN
 // Use as in:  (*aSysVarValidSet[SYSVAR_IO]) (lptkNamArg, lptkRhtArg);
 ASYSVARVALIDSET aSysVarValidSet[SYSVAR_LENGTH];
 
-typedef BOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST);
+typedef BOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST, LPIMM_TYPES);
 
 EXTERN
-// Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht);
+// Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht, &immTypeRht);
 ASYSVARVALIDNDX aSysVarValidNdx[SYSVAR_LENGTH];
 
 EXTERN

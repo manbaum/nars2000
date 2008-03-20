@@ -175,11 +175,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     // Allocate storage for the result
     hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -332,6 +328,11 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
 
     goto NORMAL_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 NORMAL_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -343,6 +344,7 @@ NORMAL_EXIT:
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 IMMED_EXIT:
+ERROR_EXIT:
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
@@ -457,11 +459,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     {
         // Check for RANK ERROR
         if ((aplRankRht - aplRankLft) NE 1)
-        {
-            ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkLftArg);
-            goto ERROR_EXIT;
-        } // End IF
+            goto RANK_EXIT;
 
         // Skip over the header to the dimensions
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
@@ -471,11 +469,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         for (uDim = 0; uDim < aplRankRht; uDim++)
         if (uDim NE aplAxis
          && lpMemDimLft[uDim] NE lpMemDimRht[uDim + (uDim > aplAxis)])
-        {
-            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkLftArg);
-            goto ERROR_EXIT;
-        } // End IF
+            goto LENGTH_EXIT;
     } // End IF
 
     // Check for DOMAIN ERROR
@@ -508,11 +502,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbRot = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbRot)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkLftArg);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemRot = lpMemRotIni = MyGlobalLock (hGlbRot);
@@ -643,11 +633,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -828,9 +814,26 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
     goto NORMAL_EXIT;
 
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkLftArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     bRet = FALSE;
 

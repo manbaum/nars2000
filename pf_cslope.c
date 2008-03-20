@@ -122,11 +122,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
@@ -137,11 +133,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     // Allocate storage for the left argument
     hGlbLft = DbgGlobalAlloc (GHND, ByteRes);
     if (!hGlbLft)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemLft = MyGlobalLock (hGlbLft);
@@ -190,6 +182,16 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
 
     return lpYYRes2;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnMonCircleSlope_EM_YY
 #undef  APPEND_NAME
 
@@ -238,12 +240,11 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                  lpMemGrUp,         // Ptr to grade up ...
                  lpMemWVec = NULL,  // Ptr to weighting vector ...
                  lpMemOdo = NULL;   // Ptr to odometer ...
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
     APLUINT      ByteRes,           // # bytes in the result
                  uRht,              // Right arg loop counter
                  uRes,              // Result    ...
                  uOdo;              // Odometer  ...
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     UINT         uBitIndex,         // Bit index for marching through Booleans
                  uBitMask;          // Bit mask  ...
     APLINT       iDim,              // Dimension loop counter
@@ -256,11 +257,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
@@ -272,19 +269,11 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
 
     // Check for RANK ERROR
     if (aplRankLft > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Check for LENGTH ERROR
     if (aplNELMLft NE aplRankRht)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Treat the left arg as an axis
     if (!CheckAxis_EM (lptkLftArg,      // The "axis" token
@@ -297,11 +286,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                       &aplRankRes,      // Return last axis value
                        NULL,            // Return # elements in axis vector
                       &hGlbAxis))       // Return HGLOBAL with APLUINT axis values
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Map APA right arg to INT result
     if (IsSimpleAPA (aplTypeRht))
@@ -402,11 +387,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -471,11 +452,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbWVec = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbWVec)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemWVec = MyGlobalLock (hGlbWVec);
@@ -507,11 +484,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbOdo = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbOdo)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemOdo = MyGlobalLock (hGlbOdo);
@@ -684,8 +657,32 @@ PROTO_EXIT:
 
     goto NORMAL_EXIT;
 
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
-    bRet = FALSE;
 NORMAL_EXIT:
     if (hGlbWVec)
     {
@@ -741,10 +738,7 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnDydCircleSlope_EM_YY
 #undef  APPEND_NAME
 

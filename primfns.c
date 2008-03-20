@@ -1538,6 +1538,10 @@ HGLOBAL CopyArray_EM
         dprintfW (L"##RefCnt=1 in " APPEND_NAME L": %08X (%S#%d)", lpMemDst, FNLN);
 #endif
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemDst)
+        // Clear the PermNdx flags
+        lpHeader->PermNdx = PERMNDX_NONE;
+
+        // Set the RefCnt
         lpHeader->RefCnt = 1;
 
         // Recurse through the array, copying all the global ptrs
@@ -1639,13 +1643,13 @@ HGLOBAL CopyArray_EM
 
 
 //***************************************************************************
-//  $CopyArrayAsType
+//  $CopyGlbAsType
 //
-//  Copy a simple array as a given (simple and possibly wider
+//  Copy a simple global as a given (simple and possibly wider
 //    but never narrower) storage type
 //***************************************************************************
 
-HGLOBAL CopyArrayAsType
+HGLOBAL CopyGlbAsType
     (HGLOBAL  hGlbArg,                  // Arg global memory handle
      APLSTYPE aplTypeRes)               // Result storage type
 
@@ -1690,6 +1694,10 @@ HGLOBAL CopyArrayAsType
     lpHeader->Rank       = aplRankArg;
 #undef  lpHeader
 
+    // Copy the dimensions
+    CopyMemory (VarArrayBaseToDim (lpMemRes),
+                VarArrayBaseToDim (lpMemArg),
+                (UINT) aplRankArg * sizeof (APLDIM));
     // Skip over the header to the data
     lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankArg);
@@ -1817,11 +1825,11 @@ ERROR_EXIT:
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
     return hGlbRes;
-} // End CopyArrayAsType
+} // End CopyGlbAsType
 
 
 #ifdef DEBUG

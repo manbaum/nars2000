@@ -649,8 +649,10 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkSym->stData.stBoolean;
 
                     // Test the value
-                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+                    bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
+                                                 uValidLo,          // Low range value (inclusive)
+                                                 uValidHi,          // High ...
+                                                 bRangeLimit);      // TRUE iff we're range limiting
                     break;
 
                 case IMMTYPE_INT:
@@ -658,8 +660,10 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkSym->stData.stInteger;
 
                     // Test the value
-                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+                    bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
+                                                 uValidLo,          // Low range value (inclusive)
+                                                 uValidHi,          // High ...
+                                                 bRangeLimit);      // TRUE iff we're range limiting
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -668,7 +672,10 @@ BOOL ValidateInteger_EM
                                                    &bRet);
                     // Test the value
                     if (bRangeLimit || bRet)
-                        bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+                        bRet = ValidateIntegerTest (&aplInteger,    // Ptr to the integer to test
+                                                     uValidLo,      // Low range value (inclusive)
+                                                     uValidHi,      // High ...
+                                                     bRangeLimit);  // TRUE iff we're range limiting
                     break;
 
                 case IMMTYPE_CHAR:
@@ -688,8 +695,10 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkBoolean;
 
                     // Test the value
-                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+                    bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
+                                                 uValidLo,          // Low range value (inclusive)
+                                                 uValidHi,          // High ...
+                                                 bRangeLimit);      // TRUE iff we're range limiting
                     break;
 
                 case IMMTYPE_INT:
@@ -697,8 +706,10 @@ BOOL ValidateInteger_EM
                     aplInteger = lptkExpr->tkData.tkInteger;
 
                     // Test the value
-                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+                    bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
+                                                 uValidLo,          // Low range value (inclusive)
+                                                 uValidHi,          // High ...
+                                                 bRangeLimit);      // TRUE iff we're range limiting
                     break;
 
                 case IMMTYPE_FLOAT:
@@ -707,7 +718,10 @@ BOOL ValidateInteger_EM
                                                    &bRet);
                     // Test the value
                     if (bRangeLimit || bRet)
-                        bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+                        bRet = ValidateIntegerTest (&aplInteger,    // Ptr to the integer to test
+                                                     uValidLo,      // Low range value (inclusive)
+                                                     uValidHi,      // High ...
+                                                     bRangeLimit);  // TRUE iff we're range limiting
                     break;
 
                 case IMMTYPE_CHAR:
@@ -772,8 +786,10 @@ BOOL ValidateInteger_EM
             aplInteger = BIT0 & *(LPAPLBOOL) lpMemRht;
 
             // Test the value
-            bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+            bRet = ValidateIntegerTest (&aplInteger,                // Ptr to the integer to test
+                                         uValidLo,                  // Low range value (inclusive)
+                                         uValidHi,                  // High ...
+                                         bRangeLimit);              // TRUE iff we're range limiting
             break;
 
         case ARRAY_INT:
@@ -781,8 +797,10 @@ BOOL ValidateInteger_EM
             aplInteger = *(LPAPLINT) lpMemRht;
 
             // Test the value
-            bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+            bRet = ValidateIntegerTest (&aplInteger,                // Ptr to the integer to test
+                                         uValidLo,                  // Low range value (inclusive)
+                                         uValidHi,                  // High ...
+                                         bRangeLimit);              // TRUE iff we're range limiting
             break;
 
         case ARRAY_CHAR:
@@ -798,7 +816,10 @@ BOOL ValidateInteger_EM
                                            &bRet);
             // Test the value
             if (bRangeLimit || bRet)
-                bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+                bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
+                                             uValidLo,              // Low range value (inclusive)
+                                             uValidHi,              // High ...
+                                             bRangeLimit);          // TRUE iff we're range limiting
             break;
 
         defstop
@@ -1500,8 +1521,10 @@ BOOL ValidateIntegerVector_EM
                     aplInteger = lptkRhtArg->tkData.tkSym->stData.stInteger;
 
                     // Test the value
-                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+                    bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
+                                                 uValidLo,          // Low range value (inclusive)
+                                                 uValidHi,          // High ...
+                                                 bRangeLimit);      // TRUE iff we're range limiting
                     if (bRet)
                     {
                         bScalar = TRUE;
@@ -1519,8 +1542,10 @@ BOOL ValidateIntegerVector_EM
                     if (bRet)
                     {
                         // Test the value
-                        bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+                        bRet = ValidateIntegerTest (&aplInteger,    // Ptr to the integer to test
+                                                     uValidLo,      // Low range value (inclusive)
+                                                     uValidHi,      // High ...
+                                                     bRangeLimit);  // TRUE iff we're range limiting
                         if (bRet)
                         {
                             bScalar = TRUE;
@@ -1550,8 +1575,10 @@ BOOL ValidateIntegerVector_EM
                     aplInteger = lptkRhtArg->tkData.tkInteger;
 
                     // Test the value
-                    bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+                    bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
+                                                 uValidLo,          // Low range value (inclusive)
+                                                 uValidHi,          // High ...
+                                                 bRangeLimit);      // TRUE iff we're range limiting
                     if (bRet)
                     {
                         bScalar = TRUE;
@@ -1569,8 +1596,10 @@ BOOL ValidateIntegerVector_EM
                     if (bRet)
                     {
                         // Test the value
-                        bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
-
+                        bRet = ValidateIntegerTest (&aplInteger,    // Ptr to the integer to test
+                                                     uValidLo,      // Low range value (inclusive)
+                                                     uValidHi,      // High ...
+                                                     bRangeLimit);  // TRUE iff we're range limiting
                         if (bRet)
                         {
                             bScalar = TRUE;
@@ -1641,7 +1670,10 @@ BOOL ValidateIntegerVector_EM
                 aplInteger = (uBitMask & *(LPAPLBOOL) lpMemRht) ? 1 : 0;
 
                 // Test the value
-                bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+                bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
+                                             uValidLo,              // Low range value (inclusive)
+                                             uValidHi,              // High ...
+                                             bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
                     goto ERROR_EXIT;
 
@@ -1668,7 +1700,10 @@ BOOL ValidateIntegerVector_EM
                 aplInteger = ((LPAPLINT) lpMemRht)[uRht];
 
                 // Test the value
-                bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+                bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
+                                             uValidLo,              // Low range value (inclusive)
+                                             uValidHi,              // High ...
+                                             bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
                     goto ERROR_EXIT;
             } // End FOR
@@ -1685,7 +1720,10 @@ BOOL ValidateIntegerVector_EM
                 aplInteger = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht],
                                                &bRet);
                 // Test the value
-                bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+                bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
+                                             uValidLo,              // Low range value (inclusive)
+                                             uValidHi,              // High ...
+                                             bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
                     goto ERROR_EXIT;
             } // End FOR
@@ -1707,7 +1745,10 @@ BOOL ValidateIntegerVector_EM
                 aplInteger = apaOffRht + apaMulRht * uRht;
 
                 // Test the value
-                bRet = ValidateIntegerTest (&aplInteger, uValidLo, uValidHi, bRangeLimit);
+                bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
+                                             uValidLo,              // Low range value (inclusive)
+                                             uValidHi,              // High ...
+                                             bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
                     goto ERROR_EXIT;
             } // End FOR
@@ -1915,6 +1956,40 @@ BOOL ValidSetALX_EM
 
 
 //***************************************************************************
+//  $ValidNdxChar
+//
+//  Validate a single value before assigning it to
+//    a position in a char-only SysVar.
+//***************************************************************************
+
+BOOL ValidNdxChar
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
+
+{
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        case ARRAY_CHAR:
+            return TRUE;
+
+        defstop
+            return FALSE;
+    } // End SWITCH
+} // End ValidNdxChar
+
+
+//***************************************************************************
 //  $ValidSetCT_EM
 //
 //  Validate a value before assigning it to []CT
@@ -1928,7 +2003,11 @@ BOOL ValidSetCT_EM
     // Ensure the argument is a real scalar or
     //   one-element vector (demoted to a scalar)
     //   between DEF_MIN_QUADCT and DEF_MAX_QUADCT inclusive.
-    return ValidateFloat_EM (lptkNamArg, lptkRhtArg, DEF_MIN_QUADCT, DEF_MAX_QUADCT, TRUE);
+    return ValidateFloat_EM (lptkNamArg,            // Ptr to name arg token
+                             lptkRhtArg,            // Ptr to right arg token
+                             DEF_MIN_QUADCT,        // Minimum value
+                             DEF_MAX_QUADCT,        // Maximum ...
+                             bRangeLimit.CT);       // TRUE iff range limiting
 } // End ValidSetCT_EM
 
 
@@ -1941,9 +2020,10 @@ BOOL ValidSetCT_EM
 //***************************************************************************
 
 BOOL ValidNdxCT
-    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
-     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
     // Split cases based upon the right arg storage type
@@ -1952,8 +2032,12 @@ BOOL ValidNdxCT
         case ARRAY_BOOL:
         case ARRAY_INT:
         case ARRAY_APA:
+            // The right arg is integer -- convert to float
             *((LPAPLFLOAT) lpaplLongestRht) = (APLFLOAT) (APLINT) *lpaplLongestRht;
 
+            // Set the new immediate type
+            if (lpimmTypeRht)
+                *lpimmTypeRht = IMMTYPE_FLOAT;
             break;
 
         case ARRAY_FLOAT:
@@ -1969,7 +2053,10 @@ BOOL ValidNdxCT
     } // End SWITCH
 
     // Test the value
-    return ValidateFloatTest ((LPAPLFLOAT) lpaplLongestRht, DEF_MIN_QUADCT, DEF_MAX_QUADCT, TRUE);
+    return ValidateFloatTest ((LPAPLFLOAT) lpaplLongestRht,
+                              DEF_MIN_QUADCT,
+                              DEF_MAX_QUADCT,
+                              bRangeLimit.CT);
 } // End ValidNdxCT
 
 
@@ -2036,7 +2123,8 @@ BOOL ValidSetFC_EM
 //
 //  Validate a value before assigning it to []IC.
 //
-//  We allow any numeric singleton or vector whose values are 0 through ICVAL_MAXVAL.
+//  We allow any numeric singleton or vector whose values are
+//    DEF_MIN_QUADIC through DEF_MAX_QUADIC.
 //***************************************************************************
 
 BOOL ValidSetIC_EM
@@ -2070,7 +2158,11 @@ BOOL ValidSetIC_EM
 
     // Ensure the argument is an integer scalar (promoted to a vector)
     //   or an integer vector
-    return ValidateIntegerVector_EM (lptkNamArg, lptkRhtArg, 0, ICVAL_MAXVAL, TRUE);
+    return ValidateIntegerVector_EM (lptkNamArg,
+                                     lptkRhtArg,
+                                     DEF_MIN_QUADIC,
+                                     DEF_MAX_QUADIC,
+                                     bRangeLimit.IC);
 } // End ValidSetIC_EM
 
 
@@ -2079,16 +2171,17 @@ BOOL ValidSetIC_EM
 //
 //  Validate a single value before assigning it to a position in []IC.
 //
-//  We allow any number between 0 and ICVAL_MAXVAL inclusive.
+//  We allow any number between DEF_MIN_QUADIC and DEF_MAX_QUADIC inclusive.
 //***************************************************************************
 
 BOOL ValidNdxIC
-    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
-     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                          // TRUE iff the result is valid
+    BOOL bRet;                              // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2101,8 +2194,11 @@ BOOL ValidNdxIC
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if (!bRet)
+            if ((!bRangeLimit.IC) && !bRet)
                 return bRet;
+            // Set the new immediate type
+            if (lpimmTypeRht)
+                *lpimmTypeRht = IMMTYPE_INT;
             break;
 
         case ARRAY_CHAR:
@@ -2115,7 +2211,10 @@ BOOL ValidNdxIC
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, 0, ICVAL_MAXVAL, TRUE);
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
+                                DEF_MIN_QUADIC,                     // Low range value (inclusive)
+                                DEF_MAX_QUADIC,                     // High ...
+                                bRangeLimit.IC);                    // TRUE iff we're range limiting
 } // End ValidNdxIC
 
 
@@ -2136,9 +2235,9 @@ BOOL ValidSetIO_EM
     //   one-element vector (demoted to a scalar).
     return ValidateInteger_EM (lptkNamArg,          // Ptr to name arg token
                                lptkRhtArg,          // Ptr to right arg token
-                               0,                   // Minimum value
-                               1,                   // Maximum ...
-                               TRUE);               // TRUE if range limiting
+                               DEF_MIN_QUADIO,      // Minimum value
+                               DEF_MAX_QUADIO,      // Maximum ...
+                               bRangeLimit.IO);     // TRUE iff range limiting
 } // End ValidSetIO_EM
 
 
@@ -2147,30 +2246,35 @@ BOOL ValidSetIO_EM
 //
 //  Validate a single value before assigning it to a position in []IO.
 //
-//  We allow any number between 0 and 1 inclusive.
+//  We allow any number between DEF_MIN_QUADIO and DEF_MAX_QUADIO inclusive.
 //***************************************************************************
 
 BOOL ValidNdxIO
-    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
-     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                          // TRUE iff the result is valid
+    BOOL bRet;                              // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
     {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-            break;
-
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if (!bRet)
+            if ((!bRangeLimit.IO) && !bRet)
                 return bRet;
+
+            // Fall through to set the new immediate type
+
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            // Set the new immediate type (in cae it was integer/APA)
+            if (lpimmTypeRht)
+                *lpimmTypeRht = IMMTYPE_BOOL;
             break;
 
         case ARRAY_CHAR:
@@ -2183,7 +2287,10 @@ BOOL ValidNdxIO
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, 0, 1, TRUE);
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
+                                DEF_MIN_QUADIO,                     // Low range value (inclusive)
+                                DEF_MAX_QUADIO,                     // High ...
+                                bRangeLimit.IO);                    // TRUE iff we're range limiting
 } // End ValidNdxIO
 
 
@@ -2222,7 +2329,7 @@ BOOL ValidSetPP_EM
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADPP,      // Minimum value
                                DEF_MAX_QUADPP,      // Maximum ...
-                               TRUE);               // TRUE if range limiting
+                               bRangeLimit.PP);     // TRUE iff range limiting
 } // End ValidSetPP_EM
 
 
@@ -2235,12 +2342,13 @@ BOOL ValidSetPP_EM
 //***************************************************************************
 
 BOOL ValidNdxPP
-    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
-     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                          // TRUE iff the result is valid
+    BOOL bRet;                              // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2253,8 +2361,11 @@ BOOL ValidNdxPP
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if (!bRet)
+            if ((!bRangeLimit.PP) && !bRet)
                 return bRet;
+            // Set the new immediate type
+            if (lpimmTypeRht)
+                *lpimmTypeRht = IMMTYPE_INT;
             break;
 
         case ARRAY_CHAR:
@@ -2267,7 +2378,10 @@ BOOL ValidNdxPP
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, DEF_MIN_QUADPP, DEF_MAX_QUADPP, TRUE);
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
+                                DEF_MIN_QUADPP,                     // Low range value (inclusive)
+                                DEF_MAX_QUADPP,                     // High ...
+                                bRangeLimit.PP);                    // TRUE iff we're range limiting
 } // End ValidNdxPP
 
 
@@ -2473,7 +2587,7 @@ BOOL ValidSetPW_EM
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADPW,      // Minimum value
                                DEF_MAX_QUADPW,      // Maximum ...
-                               TRUE);               // TRUE if range limiting
+                               bRangeLimit.PW);     // TRUE iff range limiting
 } // End ValidSetPW_EM
 
 
@@ -2486,12 +2600,13 @@ BOOL ValidSetPW_EM
 //***************************************************************************
 
 BOOL ValidNdxPW
-    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
-     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                          // TRUE iff the result is valid
+    BOOL bRet;                              // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2504,8 +2619,11 @@ BOOL ValidNdxPW
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if (!bRet)
+            if ((!bRangeLimit.PW) && !bRet)
                 return bRet;
+            // Set the new immediate type
+            if (lpimmTypeRht)
+                *lpimmTypeRht = IMMTYPE_INT;
             break;
 
         case ARRAY_CHAR:
@@ -2518,7 +2636,10 @@ BOOL ValidNdxPW
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, DEF_MIN_QUADPW, DEF_MAX_QUADPW, TRUE);
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
+                                DEF_MIN_QUADPW,                     // Low range value (inclusive)
+                                DEF_MAX_QUADPW,                     // High ...
+                                bRangeLimit.PW);                    // TRUE iff we're range limiting
 } // End ValidNdxPW
 
 
@@ -2540,7 +2661,7 @@ BOOL ValidSetRL_EM
                                lptkRhtArg,          // Ptr to right arg token
                                DEF_MIN_QUADRL,      // Minimum value
                                DEF_MAX_QUADRL,      // Maximum ...
-                               TRUE);               // TRUE if range limiting
+                               bRangeLimit.RL);     // TRUE iff range limiting
 } // End ValidSetRL_EM
 
 
@@ -2553,12 +2674,13 @@ BOOL ValidSetRL_EM
 //***************************************************************************
 
 BOOL ValidNdxRL
-    (APLINT       aplIntegerLst,            // The index value (in case the position is important)
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
      APLSTYPE     aplTypeRht,               // Right arg storage type
-     LPAPLLONGEST lpaplLongestRht)          // Ptr to the right arg value
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht)             // Ptr to right arg immediate type (may be NULL)
 
 {
-    BOOL bRet;                          // TRUE iff the result is valid
+    BOOL bRet;                              // TRUE iff the result is valid
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -2571,8 +2693,11 @@ BOOL ValidNdxRL
         case ARRAY_FLOAT:
             // The right arg is float -- convert to integer
             *lpaplLongestRht = FloatToAplint_SCT (*(LPAPLFLOAT) lpaplLongestRht, &bRet);
-            if (!bRet)
+            if ((!bRangeLimit.RL) && !bRet)
                 return bRet;
+            // Set the new immediate type
+            if (lpimmTypeRht)
+                *lpimmTypeRht = IMMTYPE_INT;
             break;
 
         case ARRAY_CHAR:
@@ -2585,7 +2710,10 @@ BOOL ValidNdxRL
     } // End SWITCH
 
     // Test the value
-    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht, DEF_MIN_QUADRL, DEF_MAX_QUADRL, TRUE);
+    return ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,         // Ptr to the integer to test
+                                DEF_MIN_QUADRL,                     // Low range value (inclusive)
+                                DEF_MAX_QUADRL,                     // High ...
+                                bRangeLimit.RL);                    // TRUE iff we're range limiting
 } // End ValidNdxRL
 
 
@@ -2845,19 +2973,19 @@ BOOL InitSystemVars
     aSysVarValidSet[SYSVAR_WSID] = ValidSetWSID_EM;
 
     // Set the array index validation routine
-    aSysVarValidNdx[SYSVAR_ALX ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_ALX ] = ValidNdxChar   ;
     aSysVarValidNdx[SYSVAR_CT  ] = ValidNdxCT     ;
-    aSysVarValidNdx[SYSVAR_ELX ] = NULL           ;
-    aSysVarValidNdx[SYSVAR_FC  ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_ELX ] = ValidNdxChar   ;
+    aSysVarValidNdx[SYSVAR_FC  ] = ValidNdxChar   ;
     aSysVarValidNdx[SYSVAR_IC  ] = ValidNdxIC     ;
     aSysVarValidNdx[SYSVAR_IO  ] = ValidNdxIO     ;
-    aSysVarValidNdx[SYSVAR_LX  ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_LX  ] = ValidNdxChar   ;
     aSysVarValidNdx[SYSVAR_PP  ] = ValidNdxPP     ;
-    aSysVarValidNdx[SYSVAR_PR  ] = NULL           ;
+    aSysVarValidNdx[SYSVAR_PR  ] = ValidNdxChar   ;
     aSysVarValidNdx[SYSVAR_PW  ] = ValidNdxPW     ;
     aSysVarValidNdx[SYSVAR_RL  ] = ValidNdxRL     ;
-    aSysVarValidNdx[SYSVAR_SA  ] = NULL           ;
-    aSysVarValidNdx[SYSVAR_WSID] = NULL           ;
+    aSysVarValidNdx[SYSVAR_SA  ] = ValidNdxChar   ;
+    aSysVarValidNdx[SYSVAR_WSID] = ValidNdxChar   ;
 
     // Assign default values to the system vars
     if (!AssignGlobalCWS     (hGlbQuadALX_CWS   , SYSVAR_ALX , lpMemPTD->lpSymQuadALX      )) return FALSE;   // Attention Latent Expression

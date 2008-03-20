@@ -54,17 +54,17 @@ LPPL_YYSTYPE PrimFnDomino_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonDomino_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydDomino_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnDomino_EM_YY
 #undef  APPEND_NAME
 
@@ -138,8 +138,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     APLINT       apaOffRht,         // Right arg APA offset
                  apaMulRht;         // ...           multiplier
     APLFLOAT     aplFloatRht;       // Right arg temporary float
-    BOOL         bRet = TRUE;       // TRUE iff result is valid
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     UINT         uBitMask;          // Bit mask for marching through Booleans
     gsl_matrix  *lpGslMatrixU = NULL,
                 *lpGslMatrixV = NULL;
@@ -156,11 +155,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
     // Check for RANK ERROR
     if (aplRankRht > 2)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Calculate the # rows & cols in the result
     switch (aplRankRht)
@@ -197,19 +192,11 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     // Check for LENGTH ERROR
     if (aplRankRht EQ 2
      && uNumRows < uNumCols)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
     if (!IsSimpleNum (aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // The rank of the result is the same as
     //   max (rank of the right arg, 1)
@@ -228,11 +215,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -280,11 +263,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
      || GSL_ENOMEM EQ (int) lpGslMatrixV
      || GSL_ENOMEM EQ (int) lpGslVectorS
      || GSL_ENOMEM EQ (int) lpGslVectorW)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Copy the right arg to the GSL matrix U
     // Split cases based upon the right arg's rank
@@ -362,11 +341,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                                     lpGslVectorW);      // N
     // Check the error code
     if (ErrCode NE GSL_SUCCESS)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Free the GSL work vector
     gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
@@ -474,8 +449,38 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
     goto NORMAL_EXIT;
 
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
-    bRet = FALSE;
+    if (hGlbRes)
+    {
+        if (lpMemRes)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
 
     if (lpGslVectorW)
     {
@@ -501,19 +506,10 @@ ERROR_EXIT:
         gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes)
+    if (hGlbRes && lpMemRes)
     {
-        if (lpMemRes)
-        {
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-        } // End IF
-
-        if (!bRet)
-        {
-            // We no longer need this storage
-            FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
-        } // End IF
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
     if (hGlbRht && lpMemRht)
@@ -522,10 +518,7 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (bRet)
-        return lpYYRes;
-    else
-        return NULL;
+    return lpYYRes;
 } // End PrimFnMonDomino_EM_YY
 #undef  APPEND_NAME
 
@@ -601,11 +594,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
     // Check for RANK ERROR
     if (aplRankLft > 2 || aplRankRht > 2)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Calculate the # rows & cols in the right arg
     switch (aplRankRht)
@@ -674,20 +663,12 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     // Check for LENGTH ERROR
     if (uNumRowsRht <  uNumColsRht
      || uNumRowsLft NE uNumRowsRht)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
     if (!IsSimpleNum (aplTypeLft)
      || !IsSimpleNum (aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Save the # rows & cols in the result
     uNumRowsRes = uNumColsRht;
@@ -711,11 +692,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbRes)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbRes);
@@ -770,11 +747,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
      || GSL_ENOMEM EQ (int) lpGslVectorS
      || GSL_ENOMEM EQ (int) lpGslVectorW
      || GSL_ENOMEM EQ (int) lpGslVectorX)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Copy the right arg to the GSL matrix U
     // Split cases based upon the right arg's rank
@@ -852,11 +825,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                                     lpGslVectorW);      // N
     // Check the error code
     if (ErrCode NE GSL_SUCCESS)
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // Free the GSL work vector
     gsl_vector_free (lpGslVectorW); lpGslVectorW = NULL;
@@ -927,11 +896,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                                        lpGslVectorX);
         // Check the error code
         if (ErrCode NE GSL_SUCCESS)
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto DOMAIN_EXIT;
 
 #define lpMemData   ((LPAPLFLOAT) lpMemRes)
 
@@ -977,7 +942,28 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
     goto NORMAL_EXIT;
 
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+    // Mark as in error
     bRet = FALSE;
 
     if (lpGslVectorB)

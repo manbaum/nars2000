@@ -1287,10 +1287,6 @@ void InitVarSTEs
                         (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
                         (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
                         (*lplpSymEntry)->stData.stLongest = lptkArg->tkData.tkSym->stData.stLongest;
-
-                        Assert (memcmp (*lplpSymEntry,
-                                        lptkArg->tkData.tkSym,
-                                        sizeof (**lplpSymEntry)) EQ 0);
                     } // End FOR
 
                     return;

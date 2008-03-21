@@ -2374,8 +2374,10 @@ LPAPLCHAR FormatArrSimple
 #endif
         } // End IF
 
-        // If blank row or requested to do so, ...
-        if (lpFmtRowStr->bBlank || bNextRow)
+        // If blank row or not last row or last row and requested to do so, ...
+        if (lpFmtRowStr->bBlank
+         || (aplDimRow NE (aplDimNRows - 1))
+         || (bNextRow && aplDimRow EQ (aplDimNRows - 1)))
             // Skip to the start of the next row
             lpwszOut = lpwszOutStart + aplLastDim;
 
@@ -2389,7 +2391,7 @@ LPAPLCHAR FormatArrSimple
             *lpwszOut = L'\0';
 
             // Output the line
-            AppendLine (lpwszOutStart, FALSE, bEndingCR || aplDimRow < (aplDimNRows - 1));
+            AppendLine (lpwszOutStart, FALSE, bEndingCR || aplDimRow NE (aplDimNRows - 1));
 
             // Reset the line start
             lpwszOut = *lplpwszOut;

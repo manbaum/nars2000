@@ -184,6 +184,7 @@ DONE:  General
 * ...       dyadic dot                  (inner product)
 * ...       []FX R
 * ...       []IC                        (Indeterminate Control)
+* []SysVar indexed assignment with range limiting validation
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector

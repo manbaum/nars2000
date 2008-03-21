@@ -643,6 +643,13 @@ ERROR_EXIT:
         //   the caller isn't waiting for us to finish, and
 //////////   the exit type isn't error, and
         //   there's no semaphore to signal
+#ifdef DEBUG
+        dprintfW (L"--Before DisplayPrompt (3):  resetFlag = %d, bWaitUntilFini = %d, exitType = %d, hSigaphore = %08X",
+                  resetFlag,
+                  bWaitUntilFini,
+                  exitType,
+                  hSigaphore);
+#endif
         if (resetFlag EQ RESETFLAG_NONE
          && !bWaitUntilFini
 /////////&& exitType NE EXITTYPE_ERROR

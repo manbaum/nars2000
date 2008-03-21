@@ -2298,32 +2298,33 @@ void FillSISNxt
 RESTART_EXCEPTION_FILLSISNXT:
     __try
     {
+        // Clear to default value
+        ZeroMemory (lpMemPTD->lpSISNxt, sizeof (*lpMemPTD->lpSISNxt));
+
         // Create another level on the SI stack
         lpMemPTD->lpSISNxt->Sig.nature    = SIS_HEADER_SIGNATURE;
         lpMemPTD->lpSISNxt->hSemaphore    = hSemaphore;
-        lpMemPTD->lpSISNxt->hSigaphore    = NULL;
-        lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;
-        lpMemPTD->lpSISNxt->hGlbFcnName   = NULL;
+////////lpMemPTD->lpSISNxt->hSigaphore    = NULL;           // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->hGlbDfnHdr    = NULL;           // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->hGlbFcnName   = NULL;           // Already zero from ZeroMemory
         lpMemPTD->lpSISNxt->hGlbQuadEM    = hGlbM3x0Char;
         lpMemPTD->lpSISNxt->DfnType       = DfnType;
         lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
-        lpMemPTD->lpSISNxt->DfnAxis       = FALSE;
+////////lpMemPTD->lpSISNxt->DfnAxis       = FALSE;          // Already zero from ZeroMemory
         lpMemPTD->lpSISNxt->Suspended     = Suspended;
-        lpMemPTD->lpSISNxt->PermFn        = FALSE;
-        lpMemPTD->lpSISNxt->Avail         = 0;
-        lpMemPTD->lpSISNxt->EventType     = 0;
-        lpMemPTD->lpSISNxt->CurLineNum    = 0;
-        lpMemPTD->lpSISNxt->NxtLineNum    = 0;
-        lpMemPTD->lpSISNxt->numLabels     = 0;
-////    lpMemPTD->lpSISNxt->numResultSTE  = 0;
-////    lpMemPTD->lpSISNxt->numLftArgSTE  = 0;
-////    lpMemPTD->lpSISNxt->numRhtArgSTE  = 0;
-////    lpMemPTD->lpSISNxt->numLocalsSTE  = 0;
-        lpMemPTD->lpSISNxt->numFcnLines   = 0;
-        lpMemPTD->lpSISNxt->QQPromptLen   = 0;
-        lpMemPTD->lpSISNxt->ErrorCode     = ERRORCODE_NONE;
+////////lpMemPTD->lpSISNxt->ResetFlag     = RESETFLAG_NONE; // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->PermFn        = FALSE;          // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->Avail         = 0;              // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->EventType     = 0;              // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->CurLineNum    = 0;              // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->NxtLineNum    = 0;              // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->numLabels     = 0;              // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->numFcnLines   = 0;              // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->QQPromptLen   = 0;              // Already zero from ZeroMemory
+////////lpMemPTD->lpSISNxt->ErrorCode     = ERRORCODE_NONE; // Already zero from ZeroMemory
         lpMemPTD->lpSISNxt->lpSISPrv      = lpMemPTD->lpSISCur;
         lpMemPTD->lpSISNxt->lpSISNxt      = (LPSIS_HEADER) ByteAddr (lpMemPTD->lpSISNxt, sizeof (SIS_HEADER));
+////////lpMemPTD->lpSISNxt->lptkFunc      = NULL;           // Already zero from ZeroMemory
 #ifdef DEBUG
         dprintfW (L"~~Localize:    %08X (%s)", lpMemPTD->lpSISNxt, L"FillSISNxt");
 #endif

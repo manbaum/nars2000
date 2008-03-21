@@ -139,6 +139,12 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      && lpMemDfnHdr->numLftArgSTE NE 0)
         goto SYNTAX_EXIT;
 
+    // If there's a left arg token and this function has no left arg,
+    //   signal a SYNTAX ERROR
+    if (lptkLftArg NE NULL
+     && lpMemDfnHdr->numLftArgSTE EQ 0)
+        goto SYNTAX_EXIT;
+
     // If there is an axis token and this function does not accept
     //   an axis operator, signal an SYNTAX ERROR
     if (lptkAxis NE NULL

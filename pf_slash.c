@@ -297,7 +297,8 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
             uDimAxRes  = aplIntegerLft * lpMemDimRht[aplAxis];
         else
             uDimAxRes  = aplIntegerLft;
-        aplNELMRes = uDimAxRes;
+        // Calculate the result NELM
+        aplNELMRes = uDimLo * uDimAxRes * uDimHi;
     } else
     // Non-singleton left arg
     {
@@ -409,7 +410,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
 
-        // Calculate the NELM of the result
+        // Calculate the result NELM
         aplNELMRes = uDimLo * uDimAxRes * uDimHi;
     } // End IF
 

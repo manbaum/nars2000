@@ -744,7 +744,6 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     APLUINT      uLft,                  // Left arg loop counter
                  uRht,                  // Right ...
                  uRes,                  // Result   ...
-                 uArg,                  // Argument ...
                  ByteAlloc;             // # bytes to allocate
     APLINT       apaOffLft,             // Left arg APA offset
                  apaMulLft,             // ...          multiplier
@@ -980,7 +979,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         for (uRes = 1, iDim = aplRankRes - 1; iDim >= 0; iDim--)
         {
             lpMemWVec[iDim] = uRes;
-            uRes *= lpMemDimRes[iDim];
+            uRes *= lpMemDimRes[lpMemAxisHead[iDim]];
         } // End FOR
 
         //***************************************************************
@@ -1024,28 +1023,19 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         // If there's an axis, ...
         if (lptkAxis
          && aplNELMAxis NE aplRankRes)
-        {
-            // Loop through the odometer values accumulating
-            //   the weighted sum
-            for (uArg = 0, uRht = aplRankRes - aplNELMAxis; uRht < aplRankRes; uRht++)
-                uArg += lpMemOdo[lpMemAxisHead[uRht]] * lpMemWVec[uRht];
-
-            // Increment the odometer in lpMemOdo subject to
-            //   the values in lpMemDimRes
-            IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
-
-            // Use the just computed index for the argument
-            //   with the smaller rank
-            if (aplRankLft < aplRankRht)
-            {
-                uLft = uArg;
-                uRht = uRes;
-            } else
-            {
-                uRht = uArg;
-                uLft = uRes;
-            } // End IF/ELSE
-        } else
+            // Calculate the left and right argument indices
+            CalcLftRhtArgIndices (uRes,
+                                  aplRankRes,
+                                 &uLft,
+                                  aplRankLft,
+                                 &uRht,
+                                  aplRankRht,
+                                  aplNELMAxis,
+                                  lpMemAxisHead,
+                                  lpMemOdo,
+                                  lpMemWVec,
+                                  lpMemDimRes);
+        else
         {
             uLft = (aplNELMLft NE 0) ? uRes % aplNELMLft : uRes;
             uRht = (aplNELMRht NE 0) ? uRes % aplNELMRht : uRes;

@@ -133,7 +133,7 @@
               <span class="APL">{disclose}R[{enclose}L]</span>, and if
               <span class="APL">L{squad}R</span> is valid, it is equivalent to
               <span class="APL">R[{disclose}{jot}.,/L]</span> &mdash; Reach
-              and Scatter indexing may be mixed within a single instance of
+              and Scatter indexing may appear together within a single instance of
                   <span class="APL">R[L]</span>,
                   <span class="APL">R[L]{is}A</span>,
               and <span class="APL">R[L]</span><i>fn</i><span class="APL">{is}A</span></li>
@@ -464,7 +464,7 @@
           <span class="APL">{disclose}R[{enclose}L]</span>, and if
           <span class="APL">L{squad}R</span> is valid, it is equivalent to
           <span class="APL">R[{disclose}{jot}.,/L]</span> &mdash; Reach
-          and Scatter indexing may be mixed within a single instance of
+          and Scatter indexing may appear together within a single instance of
               <span class="APL">R[L]</span>,
               <span class="APL">R[L]{is}A</span>,
           and <span class="APL">R[L]</span><i>fn</i><span class="APL">{is}A</span></li>

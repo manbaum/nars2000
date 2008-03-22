@@ -124,7 +124,7 @@ BOOL AssignName_EM
                      || IsGlbTypeDfnDir (lptkSrc->tkData.tkSym->stData.stGlbData));
 
                 // Copy the "Accepts Axis Operator" flag
-                lptkNam->lptkOrig->tkData.tkSym->stFlags.DfnAxis =
+////////////////lptkNam->lptkOrig->tkData.tkSym->stFlags.DfnAxis =
                 lptkNam->          tkData.tkSym->stFlags.DfnAxis =
                 lptkSrc->          tkData.tkSym->stFlags.DfnAxis;
 
@@ -139,7 +139,7 @@ BOOL AssignName_EM
                     lptkSrc->tkData.tkSym->stData;
 
                     // Copy the direct function flag
-                    lptkNam->lptkOrig->tkData.tkSym->stFlags.FcnDir =
+////////////////////lptkNam->lptkOrig->tkData.tkSym->stFlags.FcnDir =
                     lptkNam->          tkData.tkSym->stFlags.FcnDir =
                     lptkSrc->          tkData.tkSym->stFlags.FcnDir;
                 } else

@@ -1,6 +1,24 @@
 //***************************************************************************
-//  NARS2000 -- Primitive Function -- RightCaretUnderbar
+//	NARS2000 -- Primitive Function -- RightCaretUnderbar
 //***************************************************************************
+
+/***************************************************************************
+	NARS2000 -- An Experimental APL Interpreter
+	Copyright (C) 2006-2008 Sudley Place Software
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
 
 #define STRICT
 #include <windows.h>
@@ -19,40 +37,40 @@
 
 #ifndef PROTO
 PRIMSPEC PrimSpecRightCaretUnderbar = {
-    // Monadic functions
-    &PrimFnMonValenceError_EM,
-    NULL,   // &PrimSpecRightCaretUnderbarStorageTypeMon, -- Can't happen w/RightCaretUnderbar
-    NULL,   // &PrimFnMonRightCaretUnderbarAPA_EM, -- Can't happen w/RightCaretUnderbar
+	// Monadic functions
+	&PrimFnMonValenceError_EM,
+	NULL,	// &PrimSpecRightCaretUnderbarStorageTypeMon, -- Can't happen w/RightCaretUnderbar
+	NULL,	// &PrimFnMonRightCaretUnderbarAPA_EM, -- Can't happen w/RightCaretUnderbar
 
-    NULL,   // &PrimFnMonRightCaretUnderbarBisB, -- Can't happen w/RightCaretUnderbar
-    NULL,   // &PrimFnMonRightCaretUnderbarBisI, -- Can't happen w/RightCaretUnderbar
-    NULL,   // &PrimFnMonRightCaretUnderbarBisF, -- Can't happen w/RightCaretUnderbar
+	NULL,	// &PrimFnMonRightCaretUnderbarBisB, -- Can't happen w/RightCaretUnderbar
+	NULL,	// &PrimFnMonRightCaretUnderbarBisI, -- Can't happen w/RightCaretUnderbar
+	NULL,	// &PrimFnMonRightCaretUnderbarBisF, -- Can't happen w/RightCaretUnderbar
 
-////                 IisB,   // Handled via type promotion (to IisI)
-    NULL,   // &PrimFnMonRightCaretUnderbarIisI, -- Can't happen w/RightCaretUnderbar
-    NULL,   // &PrimFnMonRightCaretUnderbarIisF, -- Can't happen w/RightCaretUnderbar
+////				 IisB,	 // Handled via type promotion (to IisI)
+	NULL,	// &PrimFnMonRightCaretUnderbarIisI, -- Can't happen w/RightCaretUnderbar
+	NULL,	// &PrimFnMonRightCaretUnderbarIisF, -- Can't happen w/RightCaretUnderbar
 
-////                 FisB,   // Handled via type promotion (to FisI)
-    NULL,   // &PrimFnMonRightCaretUnderbarFisI, -- Can't happen w/RightCaretUnderbar
-    NULL,   // &PrimFnMonRightCaretUnderbarFisF, -- Can't happen w/RightCaretUnderbar
+////				 FisB,	 // Handled via type promotion (to FisI)
+	NULL,	// &PrimFnMonRightCaretUnderbarFisI, -- Can't happen w/RightCaretUnderbar
+	NULL,	// &PrimFnMonRightCaretUnderbarFisF, -- Can't happen w/RightCaretUnderbar
 
-    // Dyadic functions
-    &PrimFnDyd_EM_YY,
-    &PrimSpecRightCaretUnderbarStorageTypeDyd,
-    NULL,   // &PrimFnDydRightCaretUnderbarAPA_EM, -- Can't happen w/RightCaretUnderbar
+	// Dyadic functions
+	&PrimFnDyd_EM_YY,
+	&PrimSpecRightCaretUnderbarStorageTypeDyd,
+	NULL,	// &PrimFnDydRightCaretUnderbarAPA_EM, -- Can't happen w/RightCaretUnderbar
 
-    &PrimFnDydRightCaretUnderbarBisBvB,
-    &PrimFnDydRightCaretUnderbarBisIvI,
-    &PrimFnDydRightCaretUnderbarBisFvF,
-    NULL,   // &PrimFnDydRightCaretUnderbarBisCvC, -- Can't happen w/RightCaretUnderbar
+	&PrimFnDydRightCaretUnderbarBisBvB,
+	&PrimFnDydRightCaretUnderbarBisIvI,
+	&PrimFnDydRightCaretUnderbarBisFvF,
+	NULL,	// &PrimFnDydRightCaretUnderbarBisCvC, -- Can't happen w/RightCaretUnderbar
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydRightCaretUnderbarIisIvI, -- Can't happen w/RightCaretUnderbar
-    NULL,   // &PrimFnDydRightCaretUnderbarIisFvF, -- Can't happen w/RightCaretUnderbar
+////				 IisBvB,	// Handled via type promotion (to IisIvI)
+	NULL,	// &PrimFnDydRightCaretUnderbarIisIvI, -- Can't happen w/RightCaretUnderbar
+	NULL,	// &PrimFnDydRightCaretUnderbarIisFvF, -- Can't happen w/RightCaretUnderbar
 
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
-    NULL,   // &PrimFnDydRightCaretUnderbarFisIvI, -- Can't happen w/RightCaretUnderbar
-    NULL,   // &PrimFnDydRightCaretUnderbarFisFvF, -- Can't happen w/RightCaretUnderbar
+////				 FisBvB,	// Handled via type promotion (to FisIvI)
+	NULL,	// &PrimFnDydRightCaretUnderbarFisIvI, -- Can't happen w/RightCaretUnderbar
+	NULL,	// &PrimFnDydRightCaretUnderbarFisFvF, -- Can't happen w/RightCaretUnderbar
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecRightCaretUnderbar};
@@ -60,126 +78,126 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecRightCaretUnderbar};
 
 
 //***************************************************************************
-//  $PrimFnRightCaretUnderbar_EM_YY
+//	$PrimFnRightCaretUnderbar_EM_YY
 //
-//  Primitive function for monadic and dyadic RightCaretUnderbar (ERROR and "not less")
+//	Primitive function for monadic and dyadic RightCaretUnderbar (ERROR and "not less")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnRightCaretUnderbar_EM_YY"
+#define APPEND_NAME 	L" -- PrimFnRightCaretUnderbar_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
 LPPL_YYSTYPE PrimFnRightCaretUnderbar_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+	(LPTOKEN lptkLftArg,			// Ptr to left arg token (may be NULL if monadic)
+	 LPTOKEN lptkFunc,				// Ptr to function token
+	 LPTOKEN lptkRhtArg,			// Ptr to right arg token
+	 LPTOKEN lptkAxis)				// Ptr to axis token (may be NULL)
 
 {
-    // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARETUNDERBAR);
+	// Ensure not an overflow function
+	Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARETUNDERBAR);
 
-    // Split cases based upon monadic or dyadic
-    if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-    else
-        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+	// Split cases based upon monadic or dyadic
+	if (lptkLftArg EQ NULL)
+		return (*lpPrimSpec->PrimFnMon_EM_YY) ( 		   lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+	else
+		return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnRightCaretUnderbar_EM_YY
-#undef  APPEND_NAME
+#undef	APPEND_NAME
 
 
 //***************************************************************************
-//  $PrimSpecRightCaretUnderbarStorageTypeDyd
+//	$PrimSpecRightCaretUnderbarStorageTypeDyd
 //
-//  Primitive dyadic scalar function special handling:  Storage type
+//	Primitive dyadic scalar function special handling:	Storage type
 //***************************************************************************
 
 APLSTYPE PrimSpecRightCaretUnderbarStorageTypeDyd
-    (APLNELM    aplNELMLft,
-     LPAPLSTYPE lpaplTypeLft,
-     LPTOKEN    lptkFunc,
-     APLNELM    aplNELMRht,
-     LPAPLSTYPE lpaplTypeRht)
+	(APLNELM	aplNELMLft,
+	 LPAPLSTYPE lpaplTypeLft,
+	 LPTOKEN	lptkFunc,
+	 APLNELM	aplNELMRht,
+	 LPAPLSTYPE lpaplTypeRht)
 
 {
-    APLSTYPE aplTypeRes;
+	APLSTYPE aplTypeRes;
 
-    // In case the left arg is an empty char,
-    //   change its type to BOOL
-    if (aplNELMLft EQ 0 && IsSimpleChar (*lpaplTypeLft))
-        *lpaplTypeLft = ARRAY_BOOL;
+	// In case the left arg is an empty char,
+	//	 change its type to BOOL
+	if (aplNELMLft EQ 0 && IsSimpleChar (*lpaplTypeLft))
+		*lpaplTypeLft = ARRAY_BOOL;
 
-    // In case the right arg is an empty char,
-    //   change its type to BOOL
-    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
-        *lpaplTypeRht = ARRAY_BOOL;
+	// In case the right arg is an empty char,
+	//	 change its type to BOOL
+	if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+		*lpaplTypeRht = ARRAY_BOOL;
 
-    // Calculate the storage type of the result
-    aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
+	// Calculate the storage type of the result
+	aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // All simple numeric results are Boolean
-    if (IsSimpleNum (aplTypeRes))
-        aplTypeRes = ARRAY_BOOL;
+	// All simple numeric results are Boolean
+	if (IsSimpleNum (aplTypeRes))
+		aplTypeRes = ARRAY_BOOL;
 
-    return aplTypeRes;
+	return aplTypeRes;
 } // End PrimSpecRightCaretUnderbarStorageTypeDyd
 
 
 //***************************************************************************
-//  $PrimFnDydRightCaretUnderbarBisBvB
+//	$PrimFnDydRightCaretUnderbarBisBvB
 //
-//  Primitive scalar function dyadic RightCaretUnderbar:  B {is} B fn B
+//	Primitive scalar function dyadic RightCaretUnderbar:  B {is} B fn B
 //***************************************************************************
 
 APLBOOL PrimFnDydRightCaretUnderbarBisBvB
-    (APLBOOL    aplBooleanLft,
-     APLBOOL    aplBooleanRht,
-     LPPRIMSPEC lpPrimSpec)
+	(APLBOOL	aplBooleanLft,
+	 APLBOOL	aplBooleanRht,
+	 LPPRIMSPEC lpPrimSpec)
 
 {
-    return (aplBooleanLft >= aplBooleanRht);
+	return (aplBooleanLft >= aplBooleanRht);
 } // End PrimFnDydRightCaretUnderbarBisBvB
 
 
 //***************************************************************************
-//  $PrimFnDydRightCaretUnderbarBisIvI
+//	$PrimFnDydRightCaretUnderbarBisIvI
 //
-//  Primitive scalar function dyadic RightCaretUnderbar:  B {is} I fn I
+//	Primitive scalar function dyadic RightCaretUnderbar:  B {is} I fn I
 //***************************************************************************
 
 APLBOOL PrimFnDydRightCaretUnderbarBisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+	(APLINT 	aplIntegerLft,
+	 APLINT 	aplIntegerRht,
+	 LPPRIMSPEC lpPrimSpec)
 
 {
-    return (aplIntegerLft >= aplIntegerRht);
+	return (aplIntegerLft >= aplIntegerRht);
 } // End PrimFnDydRightCaretUnderbarBisIvI
 
 
 //***************************************************************************
-//  $PrimFnDydRightCaretUnderbarBisFvF
+//	$PrimFnDydRightCaretUnderbarBisFvF
 //
-//  Primitive scalar function dyadic RightCaretUnderbar:  B {is} F fn F
+//	Primitive scalar function dyadic RightCaretUnderbar:  B {is} F fn F
 //***************************************************************************
 
 APLBOOL PrimFnDydRightCaretUnderbarBisFvF
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+	(APLFLOAT	aplFloatLft,
+	 APLFLOAT	aplFloatRht,
+	 LPPRIMSPEC lpPrimSpec)
 
 {
-    // If the left and right arguments are tolerantly-equal, return 1
-    if (PrimFnDydEqualBisFvF (aplFloatLft, aplFloatRht, lpPrimSpec))
-        return 1;
+	// If the left and right arguments are tolerantly-equal, return 1
+	if (PrimFnDydEqualBisFvF (aplFloatLft, aplFloatRht, lpPrimSpec))
+		return 1;
 
-    // Otherwise, return the natural result
-    return (aplFloatLft >= aplFloatRht);
+	// Otherwise, return the natural result
+	return (aplFloatLft >= aplFloatRht);
 } // End PrimFnDydRightCaretUnderbarBisFvF
 
 
 //***************************************************************************
-//  End of File: pf_rcaretund.c
+//	End of File: pf_rcaretund.c
 //***************************************************************************

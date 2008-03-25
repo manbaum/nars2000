@@ -1,6 +1,24 @@
 //***************************************************************************
-//  NARS2000 -- System Command:  )LIB
+//	NARS2000 -- System Command:  )LIB
 //***************************************************************************
+
+/***************************************************************************
+	NARS2000 -- An Experimental APL Interpreter
+	Copyright (C) 2006-2008 Sudley Place Software
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
 
 #define STRICT
 #include <windows.h>
@@ -20,60 +38,60 @@
 
 
 //***************************************************************************
-//  $CmdLib_EM
+//	$CmdLib_EM
 //
-//  Execute the system command:  )LIB [first][-][last]
+//	Execute the system command:  )LIB [first][-][last]
 //***************************************************************************
 
 BOOL CmdLib_EM
-    (LPWCHAR lpwszTail)         // Ptr to command line tail
+	(LPWCHAR lpwszTail) 		// Ptr to command line tail
 
 {
-    HANDLE           hFind;     // Handle to FindData
-    WIN32_FIND_DATAW FindData;  // FindFirstFile return data struc
-    UINT             uExtLen;   // Length of workspace extension
+	HANDLE			 hFind; 	// Handle to FindData
+	WIN32_FIND_DATAW FindData;	// FindFirstFile return data struc
+	UINT			 uExtLen;	// Length of workspace extension
 
-    // Create the wildcard string to search for workspaces
-    lstrcpyW (lpwszTemp, wszSaveDir);
-    lstrcatW (lpwszTemp, L"*");
-    lstrcatW (lpwszTemp, WS_WKSEXT);
+	// Create the wildcard string to search for workspaces
+	lstrcpyW (lpwszTemp, wszSaveDir);
+	lstrcatW (lpwszTemp, L"*");
+	lstrcatW (lpwszTemp, WS_WKSEXT);
 
-    // ***FIXME*** -- Make sensitive to [first][-][last] in lpwszTail
-    // ***FIXME*** -- Display in columns
+	// ***FIXME*** -- Make sensitive to [first][-][last] in lpwszTail
+	// ***FIXME*** -- Display in columns
 
-    // Get length of workspace extension
-    uExtLen = lstrlenW (WS_WKSEXT);
+	// Get length of workspace extension
+	uExtLen = lstrlenW (WS_WKSEXT);
 
-    // Find the first (if any) workspace
-    hFind = FindFirstFileW (lpwszTemp, &FindData);
+	// Find the first (if any) workspace
+	hFind = FindFirstFileW (lpwszTemp, &FindData);
 
-    if (hFind NE INVALID_HANDLE_VALUE)
-    {
-        // Delete the workspace extension
-        FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = L'\0';
+	if (hFind NE INVALID_HANDLE_VALUE)
+	{
+		// Delete the workspace extension
+		FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = L'\0';
 
-        // Display the workspace name
-        AppendLine (FindData.cFileName, FALSE, TRUE);
+		// Display the workspace name
+		AppendLine (FindData.cFileName, FALSE, TRUE);
 
-        // Continue looking
-        while (FindNextFileW (hFind, &FindData))
-        {
-            // Delete the workspace extension
-            FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = L'\0';
+		// Continue looking
+		while (FindNextFileW (hFind, &FindData))
+		{
+			// Delete the workspace extension
+			FindData.cFileName[lstrlenW (FindData.cFileName) - uExtLen] = L'\0';
 
-            // Display the workspace name
-            AppendLine (FindData.cFileName, FALSE, TRUE);
-        } // End WHILE
+			// Display the workspace name
+			AppendLine (FindData.cFileName, FALSE, TRUE);
+		} // End WHILE
 
-        // Close the find handle
-        FindClose (hFind); hFind = NULL;
+		// Close the find handle
+		FindClose (hFind); hFind = NULL;
 
-        return TRUE;
-    } else
-        return FALSE;
+		return TRUE;
+	} else
+		return FALSE;
 } // End CmdLib_EM
 
 
 //***************************************************************************
-//  End of File: sc_lib.c
+//	End of File: sc_lib.c
 //***************************************************************************

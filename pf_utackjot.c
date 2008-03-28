@@ -334,7 +334,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 	 LPTOKEN   lptkFunc)
 
 {
-	LPPL_YYSTYPE   lpYYRes; 		// Ptr to the result
+	LPPL_YYSTYPE   lpYYRes = NULL;	// Ptr to the result
 	HGLOBAL 	   hGlbPTD; 		// PerTabData global memory handle
 	LPPERTABDATA   lpMemPTD;		// Ptr to PerTabData global memory
 	HWND		   hWndEC;			// Edit Control window handle
@@ -361,13 +361,17 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 	// Lock the memory to get a ptr to it
 	lpMemPTD = MyGlobalLock (hGlbPTD);
 
-	// Allocate a new YYRes
-	lpYYRes = YYAlloc ();
+	// If there's no error, ...
+	if (lpMemPTD->YYResExec.YYInuse)
+	{
+		// Allocate a new YYRes
+		lpYYRes = YYAlloc ();
 
-	// Copy the result
-	*lpYYRes = lpMemPTD->YYResExec;
-	lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
-	ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+		// Copy the result
+		*lpYYRes = lpMemPTD->YYResExec;
+		lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
+		ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
+	} // End IF
 
 	// We no longer need this ptr
 	MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

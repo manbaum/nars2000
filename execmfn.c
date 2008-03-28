@@ -155,7 +155,7 @@ HGLOBAL Init1MagicFunction
 
 		// Format the error message
 		wsprintfW (wszTemp,
-				   L"SYNTAX ERROR in function header, position %d -- function not saved",
+				   ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER,
 				   lpMemPTD->uCaret);
 		// Display the error message
 		MessageBoxW (hWndEC,

@@ -166,11 +166,12 @@
 			  resolving ambiguities with slash/slope as function/operator
 			  (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
 			  instead of <span class="APL">//3 4</span>)</li>
-			<li>Dyadic iota ({iota}) extended to rank &gt; 1 left arguments returns an array
-			  of vector indices to the left argument (via an internal magic function)</li>
+			<li>Monadic iota ({iota}) extended to negative indices</li>
 			<li>Monadic iota ({iota}) extended to length &gt; 1 vector right arguments
 			  returns an array of indices whose shape is that of the right argument
 			  (via an internal magic function)</li>
+			<li>Dyadic iota ({iota}) extended to rank &gt; 1 left arguments returns an array
+			  of vector indices to the left argument (via an internal magic function)</li>
 			<li>± Infinity (e.g., <span class="APL">{underbar}</span> for infinity
 			  and <span class="APL">{overbar}{underbar}</span> for negative infinity)
 			  &mdash; considerable development work needs to be done to this

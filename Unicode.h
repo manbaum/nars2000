@@ -72,7 +72,7 @@
 #define UTF16_IOTA				 0x2373 		// Alt-'i' - iota
 #define UTF16_JOT				 0x2218 		// Alt-'j' - jot
 #define UTF16_APOSTROPHE		 0x0027 		// Alt-'k' - single quote
-#define UTF16_QUAD				 0x25AF 		// Alt-'l' - quad (9109??)
+#define UTF16_QUAD				 0x2395 		// Alt-'l' - quad (9109??) (was 0x25AF)
 #define UTF16_STILE 			 0x2223 		// Alt-'m' - modulus
 #define UTF16_DOWNTACK			 0x22A4 		// Alt-'n' - representation
 #define UTF16_CIRCLE			 0x25CB 		// Alt-'o' - circle
@@ -228,7 +228,7 @@
 #define WS_UTF16_IOTA				L"\x2373"   // Alt-'i' - iota
 #define WS_UTF16_JOT				L"\x2218"   // Alt-'j' - jot
 #define WS_UTF16_APOSTROPHE 		L"\x0027"   // Alt-'k' - single quote
-#define WS_UTF16_QUAD				L"\x25AF"   // Alt-'l' - quad (9109??)
+#define WS_UTF16_QUAD				L"\x2395"   // Alt-'l' - quad (9109??) (was \x25AF)
 #define WS_UTF16_STILE				L"\x2223"   // Alt-'m' - modulus
 #define WS_UTF16_DOWNTACK			L"\x22A4"   // Alt-'n' - representation
 #define WS_UTF16_CIRCLE 			L"\x25CB"   // Alt-'o' - circle

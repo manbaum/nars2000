@@ -197,7 +197,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 	} // End IF
 
 	// Calculate space needed for the result
-	ByteRes = (UINT) CalcArraySize (ARRAY_APA, aplLongestRht, 1);
+	ByteRes = (UINT) CalcArraySize (ARRAY_APA, abs64 (aplLongestRht), 1);
 
 	// Allocate space for an APA
 	hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
@@ -214,19 +214,24 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
 ////lpHeader->PermNdx	 = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar	 = 0;			// Already zero from GHND
 	lpHeader->RefCnt	 = 1;
-	lpHeader->NELM		 = aplLongestRht;
+	lpHeader->NELM		 = abs64 (aplLongestRht);
 	lpHeader->Rank		 = 1;
 #undef	lpHeader
 
 	// Save the dimension in the result
-	*VarArrayBaseToDim (lpMemRes) = aplLongestRht;
+	*VarArrayBaseToDim (lpMemRes) = abs64 (aplLongestRht);
 
 	// Skip over the header and dimensions to the data (APLAPA struct)
 	lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
 	// Save the APA values
 #define lpAPA		((LPAPLAPA) lpMemRes)
-	lpAPA->Off = bQuadIO;
+	// Handle negative indices
+	if (SIGN_APLINT (aplLongestRht))
+		lpAPA->Off = bQuadIO + aplLongestRht;
+	else
+		lpAPA->Off = bQuadIO;
+
 	lpAPA->Mul = 1;
 #undef	lpAPA
 

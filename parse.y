@@ -5177,10 +5177,10 @@ NORMAL_EXIT:
 
 		// Execute the statement in immediate execution mode
 		exitType =
-		ImmExecStmt (lpwszLine, 	// Ptr to line to execute
-					 FALSE, 		// TRUE iff free the lpwszLine on completion
-					 TRUE,			// TRUE iff wait until finished
-					 (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+		  ImmExecStmt (lpwszLine,	// Ptr to line to execute
+					   FALSE,		// TRUE iff free the lpwszLine on completion
+					   TRUE,		// TRUE iff wait until finished
+					   (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
 		// Split cases based upon the exit type
 		switch (exitType)
 		{

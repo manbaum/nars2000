@@ -104,7 +104,7 @@
 
       <h3>Current Language Features</h3>
       <ul>
-        <li>ISO/IEC 13751 Extended APL Compliant (except for Rank Operator ({hoot}))</li>
+        <li>ISO/IEC 13751 Extended APL Compliant</li>
 
         <li>Consistent Extensions to ISO/IEC 13751
           <ul>
@@ -153,8 +153,7 @@
             <li>Axis operator is allowed on user-defined functions/operators (e.g.,
               <span class="APL">foo[2 3] R</span> by specifying it in the
               function header, as in <span class="APL">{del} Z{is}foo[X] R</span>)</li>
-            <li>Except for where fractional values are allowed (laminate and
-              certain cases of ravel), axis operator values may be negative.
+            <li>Axis operator values may be negative.
               That is, if the largest allowed value is <span class="APL">N</span>,
               then the allowable range for axis operator values is
               <span class="APL">{neg}1-N</span> to <span class="APL">N</span>, inclusive.</li>
@@ -171,7 +170,8 @@
               resolving ambiguities with slash/slope as function/operator
               (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
               instead of <span class="APL">//3 4</span>)</li>
-            <li>Monadic iota ({iota}) extended to negative indices</li>
+            <li>Monadic iota ({iota}) extended to negative indices.  For example, in origin-0,
+              <span class="APL">{iota}{neg}3</span> returns <span class="APL">{neg}3 {neg}2 {neg}1</span>.</li>
             <li>Monadic iota ({iota}) extended to length &gt; 1 vector right arguments
               returns an array of indices whose shape is that of the right argument
               (via an internal magic function)</li>
@@ -240,24 +240,25 @@
 
       <h3>Wish List of Language Features</h3>
       <ul>
-        <li>User-defined function singleton entry point
-          (<span class="APL">{quad}SINGLETON:</span>)</li>
-        <li>User-defined function inverse entry point
+        <li>User-defined function/operator identity element entry point
+          (<span class="APL">{quad}IDENTITY:</span>)</li>
+        <li>User-defined function/operator inverse entry point
           (<span class="APL">{quad}INVERSE:</span>)</li>
+        <li>User-defined function/operator singleton entry point
+          (<span class="APL">{quad}SINGLETON:</span>)</li>
         <li>Dynamic functions (e.g.,
           <span class="APL">AVG{is}{leftbrace}(+/{omega}){divide}{rho}{omega}}</span>)</li>
         <li>Selective assignment (e.g.,
           <span class="APL">(1 1{transpose}A){is}1 2 3</span>)</li>
         <li>Primitive functions and operators user extensible via user-defined APL functions</li>
-        <li>Primitive function dyadic down tack ({downtackjot}) with character left argument
+        <li>Primitive dyadic function down tack ({downtackjot}) with character left argument
           (Format By Example)</li>
-        <li>Primitive function dyadic left shoe ({leftshoe}) (Partitioned Enclose)</li>
-        <li>Primitive function dyadic epsilon underbar ({epsilon_}) (Find)</li>
-        <li>Primitive operator dieresis-del ({deldieresis}) (Dual)</li>
-        <li>Primitive operator dieresis-jot ({jotdieresis}) (Rank)</li>
-        <li>Primitive operator dieresis-star ({stardieresis}) (Power)</li>
-        <li>Primitive operator dieresis-downtack ({downtackdieresis}) (Convolution)</li>
-        <li>Primitive operator stile-tilde ({stiletilde}) (Partition)</li>
+        <li>Primitive dyadic function left shoe ({leftshoe}) (Partitioned Enclose)</li>
+        <li>Primitive dyadic function epsilon underbar ({epsilon_}) (Find)</li>
+        <li>Primitive dyadic operator dieresis-del ({deldieresis}) (Dual)</li>
+        <li>Primitive dyadic operator dieresis-star ({stardieresis}) (Power)</li>
+        <li>Primitive dyadic operator dieresis-downtack ({downtackdieresis}) (Convolution)</li>
+        <li>Primitive dyadic operator stile-tilde ({stiletilde}) (Partition)</li>
       </ul>
     </div>
 
@@ -418,12 +419,17 @@
               resolving ambiguities with slash/slope as function/operator
               (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
                instead of <span class="APL">//3 4</span>)</li>
+            <li>Monadic operator dieresis-circle ({circledieresis}) monadic and dyadic
+              derived functions &mdash; rank using the axis operator, e.g.
+              <i>fn</i><span class="APL">{circledieresis}[N]</span> is the same as
+              <i>fn</i><span class="APL">{jotdieresis}N</span></li>
           </ul>
         </li>
         <li>Dyadic (<b>ALL DONE</b>)
           <ul>
             <li>Dyadic operator jot ({jot}) monadic and dyadic derived functions &mdash; composition</li>
             <li>Dyadic operator dot ({dot}) dyadic derived function &mdash; inner product</li>
+            <li>Dyadic operator dieresis-jot ({jotdieresis}) monadic and dyadic derived functions &mdash; rank</li>
           </ul>
         </li>
       </ul>

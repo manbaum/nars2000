@@ -1,196 +1,196 @@
 //***************************************************************************
-//	NARS2000 -- Starting Adddresses
+//  NARS2000 -- Starting Adddresses
 //***************************************************************************
 
 /***************************************************************************
-	NARS2000 -- An Experimental APL Interpreter
-	Copyright (C) 2006-2008 Sudley Place Software
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2008 Sudley Place Software
 
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
 #ifndef DEBUG
 
 typedef struct tagSTART_ADDRESSES
 {
-	char *StartAddressName;
-	UINT  StartAddressAddr;
+    char   *StartAddressName;
+    LPUCHAR StartAddressAddr;
 } START_ADDRESSES, *LPSTART_ADDRESSES;
 
 
 #ifndef PROTO
 START_ADDRESSES StartAddresses[] =
 {
-	// assign.c
-	"AssignName_EM"             , (UINT) &AssignName_EM             ,
-	"GetNameType"               , (UINT) &GetNameType               ,
-	"AssignArrayCommon"         , (UINT) &AssignArrayCommon         ,
-	"AssignSelectSpec_EM"       , (UINT) &AssignSelectSpec_EM       ,
-	"ModifyAssignNameVals_EM"   , (UINT) &ModifyAssignNameVals_EM   ,
+    // assign.c
+    "AssignName_EM"             , (LPUCHAR) &AssignName_EM             ,
+    "GetNameType"               , (LPUCHAR) &GetNameType               ,
+    "AssignArrayCommon"         , (LPUCHAR) &AssignArrayCommon         ,
+    "AssignSelectSpec_EM"       , (LPUCHAR) &AssignSelectSpec_EM       ,
+    "ModifyAssignNameVals_EM"   , (LPUCHAR) &ModifyAssignNameVals_EM   ,
 
-	// bjhash.c
-	"hashword"                  , (UINT) &hashword                  ,
-	"hashlittle"                , (UINT) &hashlittle                ,
-	"hashlittle2"               , (UINT) &hashlittle2               ,
-	"hashbig"                   , (UINT) &hashbig                   ,
+    // bjhash.c
+    "hashword"                  , (LPUCHAR) &hashword                  ,
+    "hashlittle"                , (LPUCHAR) &hashlittle                ,
+    "hashlittle2"               , (LPUCHAR) &hashlittle2               ,
+    "hashbig"                   , (LPUCHAR) &hashbig                   ,
 
-	// common.c
+    // common.c
 
-	// convert.c
+    // convert.c
 
-	// debug.c
+    // debug.c
 #ifdef DEBUG
-	"Assert"                    , (UINT) &Assert                    ,
-	"CreateDebuggerWindow"      , (UINT) &CreateDebuggerWindow      ,
-	"CreateDebuggerInThread"    , (UINT) &CreateDebuggerInThread    ,
-	"DB_Create"                 , (UINT) DB_Create                  ,
-	"DB_Delete"                 , (UINT) DB_Delete                  ,
-	"DBWndProc"                 , (UINT) DBWndProc                  ,
-	"LclListboxWndProc"         , (UINT) &LclListboxWndProc         ,
-	"DbgMsg"                    , (UINT) &DbgMsg                    ,
-	"DbgMsgW"                   , (UINT) &DbgMsgW                   ,
-	"DbgClr"                    , (UINT) &DbgClr                    ,
-	"dprintf"                   , (UINT) &dprintf                   ,
-	"dprintfW"                  , (UINT) &dprintfW                  ,
-	"DbgGlobalAllocSub"         , (UINT) &DbgGlobalAllocSub         ,
-	"FileNameOnly"              , (UINT) &FileNameOnly              ,
+    "Assert"                    , (LPUCHAR) &Assert                    ,
+    "CreateDebuggerWindow"      , (LPUCHAR) &CreateDebuggerWindow      ,
+    "CreateDebuggerInThread"    , (LPUCHAR) &CreateDebuggerInThread    ,
+    "DB_Create"                 , (LPUCHAR) DB_Create                  ,
+    "DB_Delete"                 , (LPUCHAR) DB_Delete                  ,
+    "DBWndProc"                 , (LPUCHAR) DBWndProc                  ,
+    "LclListboxWndProc"         , (LPUCHAR) &LclListboxWndProc         ,
+    "DbgMsg"                    , (LPUCHAR) &DbgMsg                    ,
+    "DbgMsgW"                   , (LPUCHAR) &DbgMsgW                   ,
+    "DbgClr"                    , (LPUCHAR) &DbgClr                    ,
+    "dprintf"                   , (LPUCHAR) &dprintf                   ,
+    "dprintfW"                  , (LPUCHAR) &dprintfW                  ,
+    "DbgGlobalAllocSub"         , (LPUCHAR) &DbgGlobalAllocSub         ,
+    "FileNameOnly"              , (LPUCHAR) &FileNameOnly              ,
 #endif
 
-	// dfnhdr.c
+    // dfnhdr.c
 
-	// dispdbg.c
+    // dispdbg.c
 
-	// display.c
+    // display.c
 
-	// dtoa.c
+    // dtoa.c
 
-	// editfcn.c
+    // editfcn.c
 
-	// editmat.c
+    // editmat.c
 
-	// editvec.c
+    // editvec.c
 
-	// errmsg.c
+    // errmsg.c
 
-	// except.c
-	"MyGetExceptionCode"        , (UINT) &MyGetExceptionCode        ,
-	"MySetExceptionCode"        , (UINT) &MySetExceptionCode        ,
-	"MySetExceptionAddr"        , (UINT) &MySetExceptionAddr        ,
-	"MySetExceptionText"        , (UINT) &MySetExceptionText        ,
-	"CheckException"            , (UINT) &CheckException            ,
-	"CompareStartAddresses"     , (UINT) &CompareStartAddresses     ,
-	"_DisplayException"         , (UINT) &_DisplayException         ,
+    // except.c
+    "MyGetExceptionCode"        , (LPUCHAR) &MyGetExceptionCode        ,
+    "MySetExceptionCode"        , (LPUCHAR) &MySetExceptionCode        ,
+    "MySetExceptionAddr"        , (LPUCHAR) &MySetExceptionAddr        ,
+    "MySetExceptionText"        , (LPUCHAR) &MySetExceptionText        ,
+    "CheckException"            , (LPUCHAR) &CheckException            ,
+    "CompareStartAddresses"     , (LPUCHAR) &CompareStartAddresses     ,
+    "_DisplayException"         , (LPUCHAR) &_DisplayException         ,
 
-	// execdfn.c
+    // execdfn.c
 
-	// fastbool.c
+    // fastbool.c
 
-	// free.c
+    // free.c
 
-	// g_fmt.c
+    // g_fmt.c
 
-	// getreent.c
+    // getreent.c
 
-	// goto.c
+    // goto.c
 
-	// immexec.c
+    // immexec.c
 
-	// main.c
+    // main.c
 
-	// parse.c
-	"pl_yyparse"                , (UINT) &pl_yyparse                ,
-	"ParseLine"                 , (UINT) &ParseLine                 ,
-	"SymbTypeVFO"               , (UINT) &SymbTypeVFO               ,
-	"LookaheadSurround"         , (UINT) &LookaheadSurround         ,
-	"LookaheadAdjacent"         , (UINT) &LookaheadAdjacent         ,
-	"LookaheadDyadicOp"         , (UINT) &LookaheadDyadicOp         ,
-	"pl_yylex"                  , (UINT) &pl_yylex                  ,
-	"pl_yyerror"                , (UINT) &pl_yyerror                ,
-	"pl_yyfprintf"              , (UINT) &pl_yyfprintf              ,
-	"WaitForInput"              , (UINT) &WaitForInput              ,
-	"AmbOpSwap_EM"              , (UINT) &AmbOpSwap_EM              ,
-	"AmbOpToFcn"                , (UINT) &AmbOpToFcn                ,
+    // parse.c
+    "pl_yyparse"                , (LPUCHAR) &pl_yyparse                ,
+    "ParseLine"                 , (LPUCHAR) &ParseLine                 ,
+    "SymbTypeVFO"               , (LPUCHAR) &SymbTypeVFO               ,
+    "LookaheadSurround"         , (LPUCHAR) &LookaheadSurround         ,
+    "LookaheadAdjacent"         , (LPUCHAR) &LookaheadAdjacent         ,
+    "LookaheadDyadicOp"         , (LPUCHAR) &LookaheadDyadicOp         ,
+    "pl_yylex"                  , (LPUCHAR) &pl_yylex                  ,
+    "pl_yyerror"                , (LPUCHAR) &pl_yyerror                ,
+    "pl_yyfprintf"              , (LPUCHAR) &pl_yyfprintf              ,
+    "WaitForInput"              , (LPUCHAR) &WaitForInput              ,
+    "AmbOpSwap_EM"              , (LPUCHAR) &AmbOpSwap_EM              ,
+    "AmbOpToFcn"                , (LPUCHAR) &AmbOpToFcn                ,
 
-	// pf_*.c
+    // pf_*.c
 
-	// po_*.c
+    // po_*.c
 
-	// primfns.c
-	"FillSISNxt"                , (UINT) &FillSISNxt                ,
+    // primfns.c
+    "FillSISNxt"                , (LPUCHAR) &FillSISNxt                ,
 
-	// primspec.c
+    // primspec.c
 
-	// qf_*.c
+    // qf_*.c
 
-	// refcnt.c
+    // refcnt.c
 
-	// reg.c
+    // reg.c
 
-	// resdebug.c
+    // resdebug.c
 
-	// savews.c
+    // savews.c
 
-	// sessman.c
+    // sessman.c
 
-	// sort.c
+    // sort.c
 
-	// strand.c
+    // strand.c
 
-	// symtab.c
+    // symtab.c
 
-	// symtrans.c
+    // symtrans.c
 
-	// syscmds.c
+    // syscmds.c
 
-	// tabctrl.c
+    // tabctrl.c
 
-	// tokenize.c
+    // tokenize.c
 
-	// translate.c
+    // translate.c
 
-	// ver.c
+    // ver.c
 
-	// yyfns.c
-	"YYAlloc"                   , (UINT) &YYAlloc                   ,
-	"YYCopy"                    , (UINT) &YYCopy                    ,
-	"YYCopyFreeDst"             , (UINT) &YYCopyFreeDst             ,
-	"YYFree"                    , (UINT) &YYFree                    ,
+    // yyfns.c
+    "YYAlloc"                   , (LPUCHAR) &YYAlloc                   ,
+    "YYCopy"                    , (LPUCHAR) &YYCopy                    ,
+    "YYCopyFreeDst"             , (LPUCHAR) &YYCopyFreeDst             ,
+    "YYFree"                    , (LPUCHAR) &YYFree                    ,
 #ifdef DEBUG
-	"YYResIsEmpty"              , (UINT) YYResIsEmpty               ,
+    "YYResIsEmpty"              , (LPUCHAR) YYResIsEmpty               ,
 #endif
-	"YYCopyFcn"                 , (UINT) YYCopyFcn                  ,
+    "YYCopyFcn"                 , (LPUCHAR) YYCopyFcn                  ,
 #ifdef DEBUG
-	"YYCheckInuse"              , (UINT) YYCheckInuse               ,
+    "YYCheckInuse"              , (LPUCHAR) YYCheckInuse               ,
 #endif
 
-	// C API routines
-	"memset"                    , (UINT) &memset                    ,
-////"_aulldiv"                  , (UINT) &_aulldiv                  ,
-	"memmove"                   , (UINT) &memmove                   ,
+    // C API routines
+    "memset"                    , (LPUCHAR) &memset                    ,
+////"_aulldiv"                  , (LPUCHAR) &_aulldiv                  ,
+    "memmove"                   , (LPUCHAR) &memmove                   ,
 
 
 
 
-	// trailer
-	"<no name>"                 , NEG1U                             ,
+    // trailer
+    "<no name>"                 , (LPUCHAR) NEG1U                      ,
 };
 
-#define START_ADDRESSES_LENGTH		((sizeof (StartAddresses) / sizeof (StartAddresses[0])) - 1)
+#define START_ADDRESSES_LENGTH      ((sizeof (StartAddresses) / sizeof (StartAddresses[0])) - 1)
 #endif
 #endif
 
 
 //***************************************************************************
-//	End of File: startaddr.h
+//  End of File: startaddr.h
 //***************************************************************************

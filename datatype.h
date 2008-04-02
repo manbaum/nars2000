@@ -288,7 +288,7 @@ typedef struct tagFCNARRAY_HEADER
     UINT             NameType:4,    // 04:  0000000F:  The type of the array (see NAME_TYPES)
                      Avail:28;      //      FFFFFFF0:  Available bits
     UINT             RefCnt,        // 08:  Reference count
-                     fcnNELM;       // 0C:  # elements in the array
+                     tknNELM;       // 0C:  # tokens in the array (each of which may point to additional arrays)
     HGLOBAL          hGlbTxtLine;   // 10:  Line text global memory handle (may be NULL)
     FILETIME         ftCreation;    // 14:  Time of last creation
                                     // 14:  Length

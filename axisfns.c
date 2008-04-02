@@ -142,14 +142,13 @@ BOOL CheckAxisImm
             aplRank = aplLongest - bQuadIO;
 
             // Check for negative indices [-aplRankCmp, -1]
-            if (lpbFract EQ NULL
-             && SIGN_APLRANK (aplRank))
+            if (SIGN_APLRANK (aplRank))
                 aplRank += aplRankCmp;
 
             // Ensure it's within range
             // Note that because aplRank and aplRankCmp
             //   are unsigned, we don't need to check
-            //   against zero
+            //   for below zero
             bRet = (aplRank < aplRankCmp);
 
             break;
@@ -160,8 +159,7 @@ BOOL CheckAxisImm
             aplRank -= bQuadIO; // Less the index origin
 
             // Check for negative indices [-aplRankCmp, -1]
-            if (lpbFract EQ NULL
-             && SIGN_APLRANK (aplRank))
+            if (SIGN_APLRANK (aplRank))
                 aplRank += aplRankCmp;
 
             // If fractional values are allowed,
@@ -176,7 +174,7 @@ BOOL CheckAxisImm
             // Ensure it's within range
             // Note that because aplRank and aplRankCmp
             //   are unsigned, we don't need to check
-            //   against zero
+            //   for below zero
             bRet = bRet && (aplRank < aplRankCmp);
 
             break;
@@ -350,18 +348,20 @@ BOOL CheckAxisGlb
                 aplRankLcl -= bQuadIO; // Less the index origin
 
                 // Check for negative indices [-aplRankCmp, -1]
-                if (lpbFract EQ NULL
-                 && SIGN_APLRANK (aplRankLcl))
+                if (SIGN_APLRANK (aplRankLcl))
                     aplRankLcl += aplRankCmp;
+
+                // Test against the comparison rank
+                // Note that because aplRankLcl and aplRankCmp
+                //   are unsigned, we don't need to check
+                //   for below zero
+                bRet = (aplRankLcl < aplRankCmp);
 
                 // Save the next trailing value
                 //   if asked to and not sorting
                 //   the axes.
-                if (lphGlbAxis && !bSortAxes)
+                if (bRet && lphGlbAxis && !bSortAxes)
                     *lpAxisTail++ = aplRankLcl;
-
-                // Test against the comparison rank
-                bRet = (aplRankLcl < aplRankCmp);
 
                 // Test for duplicates
                 if (bRet)
@@ -393,21 +393,20 @@ BOOL CheckAxisGlb
                 aplRankLcl = *lpaplInteger++ - bQuadIO;
 
                 // Check for negative indices [-aplRankCmp, -1]
-                if (lpbFract EQ NULL
-                 && SIGN_APLRANK (aplRankLcl))
+                if (SIGN_APLRANK (aplRankLcl))
                     aplRankLcl += aplRankCmp;
+
+                // Ensure it's within range
+                // Note that because aplRankLcl and aplRankCmp
+                //   are unsigned, we don't need to check
+                //   for below zero
+                bRet = (aplRankLcl < aplRankCmp);
 
                 // Save the next trailing value
                 //   if asked to and not sorting
                 //   the axes.
-                if (lphGlbAxis && !bSortAxes)
+                if (bRet && lphGlbAxis && !bSortAxes)
                     *lpAxisTail++ = aplRankLcl;
-
-                // Ensure it's within range
-                // Note that because aplRank and aplRankCmp
-                //   are unsigned, we don't need to check
-                //   against zero
-                bRet = (aplRankLcl < aplRankCmp);
 
                 // Test for duplicates
                 if (bRet)
@@ -430,8 +429,7 @@ BOOL CheckAxisGlb
                 aplRankLcl -= bQuadIO; // Less the index origin
 
                 // Check for negative indices [-aplRankCmp, -1]
-                if (lpbFract EQ NULL
-                 && SIGN_APLRANK (aplRankLcl))
+                if (SIGN_APLRANK (aplRankLcl))
                     aplRankLcl += aplRankCmp;
 
                 // If fractional values are allowed,
@@ -439,21 +437,21 @@ BOOL CheckAxisGlb
                 if (lpbFract)
                     *lpbFract |= !bRet;
 
-                // Save the next trailing value
-                //   if asked to and not sorting
-                //   the axes.
-                if (lphGlbAxis && !bSortAxes)
-                    *lpAxisTail++ = aplRankLcl;
-
                 // If fractional values allowed and are present, ...
                 if (lpbFract && !bRet)
                     bRet = TRUE;
 
                 // Ensure it's within range
-                // Note that because aplRank and aplRankCmp
+                // Note that because aplRankLcl and aplRankCmp
                 //   are unsigned, we don't need to check
-                //   against zero
+                //   for below zero
                 bRet = bRet && (aplRankLcl < aplRankCmp);
+
+                // Save the next trailing value
+                //   if asked to and not sorting
+                //   the axes.
+                if (bRet && lphGlbAxis && !bSortAxes)
+                    *lpAxisTail++ = aplRankLcl;
 
                 // Test for duplicates
                 if (bRet)
@@ -489,28 +487,27 @@ BOOL CheckAxisGlb
                  && ((apaOff + apaMul * (apaLen - 1)) < (APLRANKSIGN) aplRankCmp));
 
             // Save the trailing axis values
-            if (bRet)
             for (u = 0; bRet && u < (APLUINT) apaLen; u++)
             {
                 // Get the next value
                 aplRankLcl = apaOff + apaMul * u;
 
                 // Check for negative indices [-aplRankCmp, -1]
-                if (lpbFract EQ NULL
-                 && SIGN_APLRANK (aplRankLcl))
+                if (SIGN_APLRANK (aplRankLcl))
                     aplRankLcl += aplRankCmp;
+
+                // Ensure it's within range
+                // Note that because aplRankLcl and aplRankCmp
+                //   are unsigned, we don't need to check
+                //   for below zero
+                bRet = (aplRankLcl < aplRankCmp);
 
                 // Save the next trailing value
                 //   if asked to and not sorting
                 //   the axes.
-                if (lphGlbAxis && !bSortAxes)
+                if (bRet && lphGlbAxis && !bSortAxes)
                     *lpAxisTail++ = aplRankLcl;
 
-                // Note there's no possibility of duplicates,
-                //   however, we still need to fill in the
-                //   bit array of values so we can fill in
-                //   the leading axis values from the zeroes
-                //   lpDup.
                 // Test for duplicates
                 if (bRet)
                     bRet = TestDupAxis (lpDup, aplRankLcl, bAllowDups);

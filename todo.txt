@@ -26,6 +26,7 @@ TO DO:  General:  Less Important (post-alpha)
 * Allow SI Damage to be more forgiving
 * Allow [first][-][last] as arg to )LIB/VARS/FNS/OPS/NMS
 * Check for overflow on integer addition/multiplication
+* Check for 64-bit compile
 * Implement these features:
 * ...       selective assignment
 * ...       dynamic functions
@@ -74,11 +75,11 @@ TO DO:  General:  Less Important (post-alpha)
 * ...       dyadic epsilon underbar     (find)
 * ...       dieresis-del                (dual)
 * ...       dieresis-downtack           (convolution)
-* ...       dieresis-jot                (rank)
 * ...       dieresis-star               (power)
 * ...       stile-tilde                 (partition)
 * ...       vector editor       (requires someone to want it badly enough to code it)
 * ...       matrix editor       (requires someone to want it badly enough to code it)
+* ...       []IDENTITY:                 (Identity element entry point for user-defined function/operator)
 * ...       []INVERSE:          (requires power operator)
 * ...       []SINGLETON:        (requires definition of singleton reduction/scan for all functions)
 * ...       bracket indexed strand assignment  (B (A[L])){is}R
@@ -184,12 +185,14 @@ DONE:  General
 * ...       dyadic dot                  (inner product)
 * ...       []FX R
 * ...       []IC                        (Indeterminate Control)
+* ...       dieresis-jot                (dyadic op  -- rank)
+* ...       dieresis-circle             (monadic op -- rank w/Axis)
 * []SysVar indexed assignment with range limiting validation
 * When adding two empty vectors whose prototypes are
   0 (0 0) and (0 0) 0, the resulting empty vector's prototype
   should be (0 0) (0 0).  Also, the sum of an empty vector
   whose prototype is 0 0 and an empty vector whose prototype
-  is 0 0 0 should be a LENGTH ERROR.
+  is 0 0 0 should signal a LENGTH ERROR.
 * Fix display of chars wth embedded CRs, LFs, BSs, etc.
 * Remove apaLen from APA definition
 * Make <dtoa.c> multi-threaded
@@ -205,6 +208,8 @@ DONE:  General
   overflow indicator, and negative sign
 * Fix display of chars in a saved ws (surround with quotes, etc.)
 * Handle multiple SI levels in a saved ws
+* Allow negative indices to the axis operator (except for where fractional values are allowed).
+* Extend monadic iota to allow negative values
 
 
 DONE:  Session Manager

@@ -42,9 +42,9 @@
 ///////                          0x11-0x17      // (available)
 ///////                          0x18           // ...       {jot}
 
-// N.B.:  Whenever changing the above enum (TOKEN_TYPES),
-//   be sure to make a corresponding change to
-//   <aSymbolNames> in <externs.h>.
+// N.B.:  Whenever changing any of the UTF16_xxx symbol
+//   names below, be sure to make a corresponding change
+//   to <aSymbolNames> in <externs.h>.
 
 // No keystroke equivalents for these as yet
 #define UTF16_DIERESISDOT        0x2235         //
@@ -103,7 +103,7 @@
 #define UTF16_SQUAD              0x2337         // Alt-'L' - squad
 #define UTF16_STILETILDE         0x236D         // Alt-'M' - Partition operator   (dagger)
 #define UTF16_DIERESISDOWNTACK   0x2361         // Alt-'N' - Convolution operator (snout)
-#define UTF16_DIERESISCIRCLE     0x2365         // Alt-'O' -                      (holler)
+#define UTF16_DIERESISCIRCLE     0x2365         // Alt-'O' - Rank operator w/Axis (holler)
 #define UTF16_DIERESISSTAR       0x2363         // Alt-'P' - Power operator       (sourpuss)
 //efine UTF16_                                  // Alt-'Q' - (none)
 //efine UTF16_                                  // Alt-'R' - (none)
@@ -259,7 +259,7 @@
 #define WS_UTF16_SQUAD              L"\x2337"   // Alt-'L' - squad
 #define WS_UTF16_STILETILDE         L"\x236D"   // Alt-'M' - Partition operator   (dagger)
 #define WS_UTF16_DIERESISDOWNTACK   L"\x2361"   // Alt-'N' - Convolution operator (snout)
-#define WS_UTF16_DIERESISCIRCLE     L"\x2365"   // Alt-'O' -                      (holler)
+#define WS_UTF16_DIERESISCIRCLE     L"\x2365"   // Alt-'O' - Rank operator w/Axis (holler)
 #define WS_UTF16_DIERESISSTAR       L"\x2363"   // Alt-'P' - Power operator       (sourpuss)
 //efine WS_UTF16_                               // Alt-'Q' - (none)
 //efine WS_UTF16_                               // Alt-'R' - (none)

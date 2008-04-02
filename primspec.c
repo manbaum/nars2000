@@ -5641,8 +5641,8 @@ RESTART_EXCEPTION_NOAXIS:
                     } else
                     // If either argument is FLOAT and the other is simple numeric (BOOL, INT, APA, or FLOAT),
                     //   use BisFvF
-                    if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))   // Res = BOOL(No Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
-                     || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft)))  // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
+                    if ((IsSimpleFlt (aplTypeLft) && IsSimpleNum (aplTypeRht))  // Res = BOOL(No Axis), Lft = FLOAT, Rht = BOOL/INT/APA/FLOAT
+                     || (IsSimpleFlt (aplTypeRht) && IsSimpleNum (aplTypeLft))) // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT, Rht = FLOAT
                     {
                         // Loop through the left/right args/result
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
@@ -5659,7 +5659,174 @@ RESTART_EXCEPTION_NOAXIS:
                             } // End IF
                         } // End FOR
                     } else
+                    // If either arg is hetero and the other is simple, ...
+                    if ((IsSimpleHet (aplTypeLft) && IsSimple (aplTypeRht))     // Res = BOOL(No Axis), Lft = HETERO, Rht = BOOL/INT/APA/FLOAT/CHAR/HETERO
+                     || (IsSimpleHet (aplTypeRht) && IsSimple (aplTypeLft)))    // Res = BOOL(No Axis), Lft = BOOL/INT/APA/FLOAT/CHAR/HETERO, Rht = HETERO
+                    {
+                        // Loop through the left/right args/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                        {
+                            // Get the next values and type
+                            aplTypeLft = GetNextHetero (lpMemLft, uRes, &aplIntegerLft, &aplFloatLft, &aplCharLft);
+                            aplTypeRht = GetNextHetero (lpMemRht, uRes, &aplIntegerRht, &aplFloatRht, &aplCharRht);
+
+                            // Split cases based upon the left hetero's storage type
+                            switch (aplTypeLft)
+                            {
+                                case ARRAY_BOOL:            // Lft = BOOL,  Rht = BOOL/INT/FLOAT/CHAR
+                                    // Split cases based upon the right hetero's storage type
+                                    switch (aplTypeRht)
+                                    {
+                                        case ARRAY_BOOL:    // Lft = BOOL,  Rht = BOOL
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisBvB) ((APLBOOL) aplIntegerLft,
+                                                                     (APLBOOL) aplIntegerRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_INT:     // Lft = BOOL, Rht = INT
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisIvI) ((APLBOOL) aplIntegerLft,
+                                                                               aplIntegerRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_FLOAT:   // Lft = BOOL, Rht = FLOAT
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisFvF) ((APLFLOAT) aplIntegerLft,
+                                                                                aplFloatRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_CHAR:    // Lft = BOOL, Rht = CHAR
+                                            // One arg is numeric, the other char
+                                            Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                                                 || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                                            // If the function is UTF16_NOTEQUAL, the result is one
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL) << uBitIndex;
+
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_INT:             // Lft = INT,   Rht = BOOL/INT/FLOAT/CHAR
+                                    // Split cases based upon the right hetero's storage type
+                                    switch (aplTypeRht)
+                                    {
+                                        case ARRAY_BOOL:    // Lft = INT,  Rht = BOOL
+                                        case ARRAY_INT:     // Lft = INT,  Rht = INT
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisIvI) (aplIntegerLft,
+                                                                     aplIntegerRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_FLOAT:   // Lft = INT,  Rht = FLOAT
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisFvF) (aplFloatLft,
+                                                                     aplFloatRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_CHAR:    // Lft = INT,  Rht = CHAR
+                                            // One arg is numeric, the other char
+                                            Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                                                 || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                                            // If the function is UTF16_NOTEQUAL, the result is one
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL) << uBitIndex;
+
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_FLOAT:           // Lft = FLOAT, Rht = BOOL/INT/FLOAT/CHAR
+                                    // Split cases based upon the right hetero's storage type
+                                    switch (aplTypeRht)
+                                    {
+                                        case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL
+                                        case ARRAY_INT:     // Lft = FLOAT, Rht = INT
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisIvI) (aplIntegerLft,
+                                                                     aplIntegerRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_FLOAT:   // Lft = FLOAT, Rht = FLOAT
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisFvF) (aplFloatLft,
+                                                                     aplFloatRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        case ARRAY_CHAR:    // Lft = FLOAT, Rht = CHAR
+                                            // One arg is numeric, the other char
+                                            Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                                                 || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                                            // If the function is UTF16_NOTEQUAL, the result is one
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL) << uBitIndex;
+
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_CHAR:            // Lft = CHAR,  Rht = BOOL/INT/FLOAT/CHAR
+                                    // Split cases based upon the right hetero's storage type
+                                    switch (aplTypeRht)
+                                    {
+                                        case ARRAY_BOOL:    // Lft = CHAR,  Rht = BOOL
+                                        case ARRAY_INT:     // Lft = CHAR,  Rht = INT
+                                        case ARRAY_FLOAT:   // Lft = CHAR,  Rht = FLOAT
+                                            // One arg is numeric, the other char
+                                            Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUAL
+                                                 || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL);
+                                            // If the function is UTF16_NOTEQUAL, the result is one
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL) << uBitIndex;
+
+                                            break;
+
+                                        case ARRAY_CHAR:    // Lft = CHAR,  Rht = CHAR
+                                            *((LPAPLBOOL)  lpMemRes) |=
+                                              (*lpPrimSpec->BisCvC) (aplCharLft,
+                                                                     aplCharRht,
+                                                                     lpPrimSpec) << uBitIndex;
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;                  // Start over
+                                ((LPAPLBOOL) lpMemRes)++;       // Skip to next byte
+                            } // End IF
+                        } // End FOR
+                    } else
                         DbgStop ();         // We should never get here
+
                     break;
 
                 case ARRAY_INT:                     // Res = INT(No Axis)

@@ -5106,9 +5106,11 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
                                       rcClient.bottom);
     hBitmapOld = SelectObject (hDCMem, hBitmap);
 
+#define hDCSub  hDCInc      // or hDCMem
+
     // Handle WM_ERASEBKGND here by filling in the client area
     //   with the class background brush
-    FillRect (hDCMem, &rcClient, hBrush);
+    FillRect (hDCSub, &rcClient, hBrush);
 
     // Copy various attributes from the screen DC to the memory DC
     SetBkMode    (hDCMem, GetBkMode    (hDCInc));
@@ -5116,18 +5118,20 @@ static void EDIT_WM_Paint(EDITSTATE *es, HDC hdc)
     SetTextColor (hDCMem, GetTextColor (hDCInc));
 
     // Call the original handler
-    EDIT_WM_Paint2 (es, hDCMem, hDCInc);
+    EDIT_WM_Paint2 (es, hDCSub, hDCInc);
+
+#undef  hDCSub
 
     // Copy the memory DC to the screen DC
-    BitBlt (hDCInc,
-            0,
-            0,
-            rcClient.right,
-            rcClient.bottom,
-            hDCMem,
-            0,
-            0,
-            SRCCOPY);
+////BitBlt (hDCInc,
+////        0,
+////        0,
+////        rcClient.right,
+////        rcClient.bottom,
+////        hDCMem,
+////        0,
+////        0,
+////        SRCCOPY);
     // Restore the old resources
     SelectObject (hDCMem, hBitmapOld);
 

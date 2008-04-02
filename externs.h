@@ -723,7 +723,7 @@ UCHAR FastBoolTrans[256][5]
 
 // Default tab stops
 EXTERN
-UINT uTabs
+UINT uTabStops
 #ifdef DEFINE_VALUES
  = DEF_TABS
 #endif

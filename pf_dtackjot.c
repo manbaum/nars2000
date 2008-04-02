@@ -1024,7 +1024,7 @@ LPAPLCHAR CompileArrChar
                 break;
 
             case TCHT:          // []TCHT -- Move ahead to the next tab stop
-                uTmp = (1 + (uCurPos % uTabs)) * uTabs;
+                uTmp = (1 + (uCurPos % uTabStops)) * uTabStops;
                 while (uCurPos < uTmp)
                 {
                     lpaplChar[uCurPos] = L' ';

@@ -1230,6 +1230,9 @@ LRESULT APIENTRY SMWndProc
         case WM_SIZE:               // fwSizeType = wParam;      // Resizing flag
                                     // nWidth = LOWORD(lParam);  // Width of client area
                                     // nHeight = HIWORD(lParam); // Height of client area
+            if (fwSizeType EQ SIZE_MAXIMIZED)
+                InvalidateRect (hWndEC, NULL, TRUE);
+
             if (fwSizeType NE SIZE_MINIMIZED)
                 SetWindowPos (hWndEC,           // Window handle to position
                               0,                // SWP_NOZORDER

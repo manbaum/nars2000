@@ -651,7 +651,7 @@ LPAPLCHAR FormatImmed
                 case TCHT:      // HT
                     // We're always at the (virtual) left margin,
                     //   so insert enough blanks for a TAB
-                    lpaplChar = FillMemoryW (lpaplChar, uTabs + 1, L' ');
+                    lpaplChar = FillMemoryW (lpaplChar, uTabStops + 1, L' ');
 ///////////////////*lpaplChar++ = L' ';     // Append a blank to be deleted
 
                     break;

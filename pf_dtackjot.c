@@ -2090,12 +2090,10 @@ void PropagateRowColCount
            lpFmtColLcl = lpFmtHeader->lpFmtCol1st;
          uCol < lpFmtHeader->uActCols;
          uCol++, lpFmtColLcl++)
-    {
-        uInts += lpFmtColLcl->uLdBl + lpFmtColLcl->uInts;
-        uInts +=                      lpFmtColLcl->uChrs;
-        uFrcs +=                      lpFmtColLcl->uFrcs + lpFmtColLcl->uTrBl;
-    } // End FOR
-
+        uInts += lpFmtColLcl->uLdBl
+               + max (lpFmtColLcl->uInts, lpFmtColLcl->uChrs)
+               + lpFmtColLcl->uFrcs
+               + lpFmtColLcl->uTrBl;
     // Handle leading and trailing blanks
     if (lpFmtHeader->uActCols)
     {

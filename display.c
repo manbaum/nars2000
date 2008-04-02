@@ -446,7 +446,7 @@ void DisplayGlbArr
     Assert (aplLastDim EQ ExteriorHdrWidth (lpFmtHeader));
 
     // Calculate the NELM of the result
-    aplNELMRes = lpFmtHeader->uFmtRows * ExteriorHdrWidth (lpFmtHeader);
+    aplNELMRes = lpFmtHeader->uFmtRows * aplLastDim;
 
 #ifdef PREFILL
     // Fill the output area with all zeros

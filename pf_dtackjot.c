@@ -2295,6 +2295,10 @@ LPAPLCHAR FormatArrSimple
         // Handle non-blank rows
         if (!lpFmtRowStr->bBlank)
         {
+            // If this row's col offset is non-zero, fill with leading blanks
+            if (uColOff)
+                FillMemoryW (lpwszOut, uColOff, L' ');
+
             // Loop through the cols
             for (aplDimCol = 0; aplDimCol < aplChrNCols; aplDimCol++)
             {

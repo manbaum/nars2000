@@ -340,7 +340,7 @@
 
       <h3>Primitive functions</h3>
       <ul>
-        <li>Monadic (<b>ALL DONE</b>)
+        <li>Monadic
           <ul>
             <li>All monadic primitive scalar functions ({plus}{minus}{multiply}{divide}{circle}{circlestar}{star}{stile}{downstile}{upstile}{shreik}{query}{tilde})</li>
             <li>Monadic rho ({rho}) &mdash; shape</li>
@@ -366,7 +366,7 @@
             <li>Monadic downshoe ({downshoe}) &mdash; unique (via an internal magic function)</li>
           </ul>
         </li>
-        <li>Dyadic (<b>ALL DONE</b>)
+        <li>Dyadic
           <ul>
             <li>All dyadic primitive scalar functions ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}{minus}{multiply}{divide}{circle}{circlestar}{star}{stile}{downstile}{upstile}{shreik})
               (with and without axis operator)</li>
@@ -405,7 +405,7 @@
 
       <h3>Primitive operators</h3>
       <ul>
-        <li>Monadic (<b>ALL DONE</b>)
+        <li>Monadic
           <ul>
             <li>Monadic operator each  ({each}) monadic and dyadic derived functions &mdash; each
               (with and without axis operator)</li>
@@ -419,17 +419,18 @@
               resolving ambiguities with slash/slope as function/operator
               (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
                instead of <span class="APL">//3 4</span>)</li>
-            <li>Monadic operator dieresis-circle ({circledieresis}) monadic and dyadic
-              derived functions &mdash; rank using the axis operator, e.g.
-              <i>fn</i><span class="APL">{circledieresis}[N]</span> is the same as
-              <i>fn</i><span class="APL">{jotdieresis}N</span></li>
+            <li>Monadic operator dieresis-circle ({dieresiscircle}) monadic and dyadic
+              derived functions &mdash; rank using the axis operator.  In particular,
+              <i>fn</i><span class="APL">{dieresiscircle}[N]</span> is implemented as
+              <i>fn</i><span class="APL">{dieresisjot}N</span></li>
           </ul>
         </li>
-        <li>Dyadic (<b>ALL DONE</b>)
+        <li>Dyadic
           <ul>
             <li>Dyadic operator jot ({jot}) monadic and dyadic derived functions &mdash; composition</li>
             <li>Dyadic operator dot ({dot}) dyadic derived function &mdash; inner product</li>
-            <li>Dyadic operator dieresis-jot ({jotdieresis}) monadic and dyadic derived functions &mdash; rank</li>
+            <li>Dyadic operator dieresis-jot ({dieresisjot}) monadic and dyadic derived functions
+              &mdash; rank (via an internal magic function)</li>
           </ul>
         </li>
       </ul>
@@ -544,7 +545,7 @@
 
       <h3>System Functions</h3>
       <ul>
-        <li>Niladic (<b>ALL DONE</b>)
+        <li>Niladic
           <ul>
             <li><span class="APL">{quad}AV</span></li>
             <li><span class="APL">{quad}DM</span></li>
@@ -567,7 +568,7 @@
           </ul>
         </li>
 
-        <li>Monadic (<b>ALL DONE</b>)
+        <li>Monadic
           <ul>
             <li><span class="APL">{quad}CR</span></li>
             <li><span class="APL">{quad}DL</span></li>

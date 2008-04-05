@@ -637,7 +637,7 @@ void DisplayTokens
 //***************************************************************************
 
 LPCHAR GetTokenTypeName
-    (UINT uType)
+    (TOKEN_TYPES uType)
 
 {
 typedef struct tagTOKENNAMES
@@ -1350,8 +1350,8 @@ void DisplayUndo
     hWndParent = GetParent (hWnd);
 
     // Get the ptrs to the next available slot in our Undo Buffer
-    (long) lpUndoNxt = GetWindowLong (hWndParent, GWLSF_UNDO_NXT);
-    (long) lpUndoBeg = GetWindowLong (hWndParent, GWLSF_UNDO_BEG);
+    (long) lpUndoNxt = GetWindowLongW (hWndParent, GWLSF_UNDO_NXT);
+    (long) lpUndoBeg = GetWindowLongW (hWndParent, GWLSF_UNDO_BEG);
 
     // Loop through the undo buffer entries
     for (; lpUndoBeg < lpUndoNxt; lpUndoBeg++)

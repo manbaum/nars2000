@@ -492,7 +492,7 @@ BOOL SaveFunctionCom
 
     // Get the handle to the edit control
     if (hWndFE)
-        hWndEC = (HWND) GetWindowLong (hWndFE, GWLSF_HWNDEC);
+        hWndEC = (HWND) GetWindowLongW (hWndFE, GWLSF_HWNDEC);
 
     // Get the length of the header line
     uLineLen = (*lpFX_Save->SF_LineLen) (hWndEC, lpFX_Save, 0);
@@ -771,13 +771,13 @@ BOOL SaveFunctionCom
         // Get the ptr to the start of the Undo Buffer
         if (hWndFE)
         {
-            (long) lpUndoBeg = GetWindowLong (hWndFE, GWLSF_UNDO_BEG);
+            (long) lpUndoBeg = GetWindowLongW (hWndFE, GWLSF_UNDO_BEG);
             if (lpUndoBeg)
             {
                 LPUNDO_BUF lpMemUndo;       // Ptr to Undo Buffer global memory
 
                 // Get the ptr to the last entry in the Undo Buffer
-                (long) lpUndoLst = GetWindowLong (hWndFE, GWLSF_UNDO_LST);
+                (long) lpUndoLst = GetWindowLongW (hWndFE, GWLSF_UNDO_LST);
 
                 // Check for empty Undo buffer
                 if (lpUndoLst EQ lpUndoBeg)
@@ -1042,7 +1042,7 @@ BOOL SaveFunctionCom
 
         // Mark as unchanged since the last save
         if (hWndFE)
-            SetWindowLong (hWndFE, GWLSF_CHANGED, FALSE);
+            SetWindowLongW (hWndFE, GWLSF_CHANGED, FALSE);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;

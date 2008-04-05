@@ -44,7 +44,9 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
             lpYYStrandBase;         // 24:  Ptr to this token's strand base
 #ifdef DEBUG
     UINT    SILevel;                // 2C:  SI Level (needed for YYResIsEmpty)
-                                    // 30:  Length
+    LPCHAR  lpFileName;             // 30:  Ptr to filename where allocated
+    UINT    uLineNum;               // 34:  Line # where allocated
+                                    // 38:  Length
 #else
                                     // 28:  Length
 #endif

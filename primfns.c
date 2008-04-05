@@ -41,13 +41,13 @@
 
 
 //***************************************************************************
-//  $IsFcnOpr
+//  $IsTknFcnOpr
 //
-//  Determine if a given token is a function or operator
+//  Return TRUE iff the given token is a function or operator
 //***************************************************************************
 
-BOOL IsFcnOpr
-    (LPTOKEN lptk)
+BOOL IsTknFcnOpr
+    (LPTOKEN lptk)              // Ptr to token
 
 {
     switch (TokenTypeFV (lptk))
@@ -64,7 +64,7 @@ BOOL IsFcnOpr
         defstop
             return 0;
     } // End SWITCH
-} // End IsFcnOpr
+} // End IsTknFcnOpr
 
 
 //***************************************************************************
@@ -92,6 +92,8 @@ char TokenTypeFV
         case TKT_STRING:
         case TKT_VARIMMED:
         case TKT_VARARRAY:
+        case TKT_AXISIMMED:
+        case TKT_AXISARRAY:
             return 'V';
 
         case TKT_FCNIMMED:
@@ -130,8 +132,6 @@ char TokenTypeFV
         case TKT_LISTINT:
         case TKT_LISTPAR:
         case TKT_LISTBR:
-        case TKT_AXISIMMED:
-        case TKT_AXISARRAY:
         case TKT_STRNAMED:
         defstop
             return '?';
@@ -2517,29 +2517,6 @@ UINT GetImmTypeFcn
 ////        return 0;
 ////} // End SWITCH
 } // End GetImmTypeFcn
-
-
-//***************************************************************************
-//  $IsTknVar
-//
-//  Return TRUE iff the given token is a variable
-//***************************************************************************
-
-BOOL IsTknVar
-    (TOKEN_TYPES tknType)
-
-{
-    switch (tknType)
-    {
-        case TKT_VARNAMED:
-        case TKT_VARIMMED:
-        case TKT_VARARRAY:
-            return TRUE;
-
-        default:
-            return FALSE;
-    } // End SWITCH
-} // End IsTknVar
 
 
 //***************************************************************************

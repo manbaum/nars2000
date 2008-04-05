@@ -346,7 +346,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLong (lpMemPTD->hWndSM, GWLSF_HWNDEC);
+    hWndEC = (HWND) GetWindowLongW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

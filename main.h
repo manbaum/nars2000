@@ -70,89 +70,91 @@ default:        \
 
 #ifdef DEBUG
 
-#define LCLODSAPI   ODSAPI
+  #define YYAlloc()     _YYAlloc(FNLN)
+  #define LCLODSAPI     ODSAPI
 
-#define DBGENTER    if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
-#define DBGLEAVE    if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
+  #define DBGENTER      if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
+  #define DBGLEAVE      if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
 
-#define IsGlbPtr(a) (((a) NE NULL) && (GlobalFlags (a) NE GMEM_INVALID_HANDLE))
+  #define IsGlbPtr(a) (((a) NE NULL) && (GlobalFlags (a) NE GMEM_INVALID_HANDLE))
 
-#ifdef DEBUG_ALLOCFREE
-#define DbgGlobalAlloc(uFlags,ByteRes) \
-DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
+  #ifdef DEBUG_ALLOCFREE
+    #define DbgGlobalAlloc(uFlags,ByteRes) \
+    DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
 
-#define DbgGlobalFree(hGlbToken) \
-dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \
-MyGlobalFree (hGlbToken);
+    #define DbgGlobalFree(hGlbToken) \
+    dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \
+    MyGlobalFree (hGlbToken);
+  #else
+    #define DbgGlobalAlloc(uFlags,ByteRes) \
+    MyGlobalAlloc (uFlags, ByteRes)
+
+    #define DbgGlobalFree(hGlbToken) \
+    MyGlobalFree (hGlbToken);
+  #endif
+
+  #ifdef DEBUG_REFCNT
+    #define DbgIncrRefCntDir(hGlbData) \
+    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    IncrRefCntDir (hGlbData);
+
+    #define DbgIncrRefCntInd(hGlbData) \
+    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    IncrRefCntInd (hGlbData);
+
+    #define DbgDecrRefCntDir(hGlbData) \
+    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    DecrRefCntDir (hGlbData);
+
+    #define DbgDecrRefCntInd(hGlbData) \
+    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    DecrRefCntInd (hGlbData);
+  #else
+   #define DbgIncrRefCntDir(hGlbData) \
+   IncrRefCntDir (hGlbData);
+
+   #define DbgIncrRefCntInd(hGlbData) \
+   IncrRefCntInd (hGlbData);
+
+   #define DbgDecrRefCntDir(hGlbData) \
+   DecrRefCntDir (hGlbData);
+
+   #define DbgDecrRefCntInd(hGlbData) \
+   DecrRefCntInd (hGlbData);
+ #endif
+
+   #define CheckMemStat()      _CheckMemStat ()
+
+   #define DisplayException()
+
 #else
-#define DbgGlobalAlloc(uFlags,ByteRes) \
-MyGlobalAlloc (uFlags, ByteRes)
 
-#define DbgGlobalFree(hGlbToken) \
-MyGlobalFree (hGlbToken);
-#endif
+  #define YYAlloc()     _YYAlloc()
+  #define LCLODSAPI
 
-#ifdef DEBUG_REFCNT
-#define DbgIncrRefCntDir(hGlbData) \
-dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-IncrRefCntDir (hGlbData);
+  #define DBGENTER
+  #define DBGLEAVE
 
-#define DbgIncrRefCntInd(hGlbData) \
-dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-IncrRefCntInd (hGlbData);
+  #define IsGlbPtr(a) ((a) NE NULL && GlobalFlags (a) NE GMEM_INVALID_HANDLE)
 
-#define DbgDecrRefCntDir(hGlbData) \
-dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-DecrRefCntDir (hGlbData);
+  #define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc (uFlags, ByteRes);
 
-#define DbgDecrRefCntInd(hGlbData) \
-dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-DecrRefCntInd (hGlbData);
-#else
-#define DbgIncrRefCntDir(hGlbData) \
-IncrRefCntDir (hGlbData);
+  #define DbgGlobalFree(hGlbToken)        MyGlobalFree (hGlbToken);
 
-#define DbgIncrRefCntInd(hGlbData) \
-IncrRefCntInd (hGlbData);
+  #define DbgIncrRefCntDir(hGlbData)      IncrRefCntDir (hGlbData);
 
-#define DbgDecrRefCntDir(hGlbData) \
-DecrRefCntDir (hGlbData);
+  #define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData);
 
-#define DbgDecrRefCntInd(hGlbData) \
-DecrRefCntInd (hGlbData);
-#endif
+  #define DbgDecrRefCntDir(hGlbData)      DecrRefCntDir (hGlbData);
 
-#define CheckMemStat()      _CheckMemStat ()
+  #define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData);
 
-#define DisplayException()
+  #define DbgMsg(a)
+  #define DbgMsgW(a)
 
-#else
+  #define CheckMemStat()
 
-#define LCLODSAPI
-
-#define DBGENTER
-#define DBGLEAVE
-
-#define IsGlbPtr(a) ((a) NE NULL && GlobalFlags (a) NE GMEM_INVALID_HANDLE)
-
-#define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc (uFlags, ByteRes);
-
-#define DbgGlobalFree(hGlbToken)        MyGlobalFree (hGlbToken);
-
-#define DbgIncrRefCntDir(hGlbData)      IncrRefCntDir (hGlbData);
-
-#define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData);
-
-#define DbgDecrRefCntDir(hGlbData)      DecrRefCntDir (hGlbData);
-
-#define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData);
-
-#define DbgMsg(a)
-#define DbgMsgW(a)
-
-#define CheckMemStat()
-
-#define DisplayException()      _DisplayException()
+  #define DisplayException()      _DisplayException()
 
 #endif
 
@@ -268,7 +270,7 @@ typedef enum tagEXIT_TYPES
 } EXIT_TYPES;
 
 #ifndef DEBUG
-#define Assert(a)
+  #define Assert(a)
 #endif
 
 // Resource debugging

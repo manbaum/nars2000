@@ -93,6 +93,7 @@ TODO: Session Manager
 ---------------------
 * Ensure APL font is installed
 * Language bar to speed entry of APL chars
+* When closing a tab, ensure that all threads under it are terminated
 *
 
 
@@ -279,6 +280,7 @@ QUESTIONS
 * In format-by-specification, does automatic width apply across planes
   or is it different within each plane?
 * Is there any reason to lmiit []AV to 256 elements?
+* What should be the result of {del} z {is} z foo z ?
 *
 
 

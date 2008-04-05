@@ -124,17 +124,17 @@ BOOL WINAPI CreateDebuggerInThread
         // Create the debugger window
         hWndDB =
         lpMemPTD->hWndDB =
-        CreateMDIWindow (szDBClass,             // Class name
-                         szDBTitle,             // Window title
-                         0
-                       | WS_CLIPCHILDREN,       // Styles
-                         CW_USEDEFAULT,         // X-pos
-                         CW_USEDEFAULT,         // Y-pos
-                         CW_USEDEFAULT,         // Height
-                         CW_USEDEFAULT,         // Width
-                         hWndMC,                // Parent
-                         _hInstance,            // Instance
-                         0);                    // Extra data
+          CreateMDIWindowW (LDBWNDCLASS,        // Class name
+                            wszDBTitle,         // Window title
+                            0
+                          | WS_CLIPCHILDREN,    // Styles
+                            CW_USEDEFAULT,      // X-pos
+                            CW_USEDEFAULT,      // Y-pos
+                            CW_USEDEFAULT,      // Height
+                            CW_USEDEFAULT,      // Width
+                            hWndMC,             // Parent
+                            _hInstance,         // Instance
+                            0);                 // Extra data
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -154,7 +154,7 @@ BOOL WINAPI CreateDebuggerInThread
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Tell the SM we're active
-            PostMessage (lpMemPTD->hWndSM, WM_PARENTNOTIFY, MAKEWPARAM (WM_CREATE, IDWC_SM_DB), (LPARAM) hWndDB);
+            PostMessageW (lpMemPTD->hWndSM, WM_PARENTNOTIFY, MAKEWPARAM (WM_CREATE, IDWC_SM_DB), (LPARAM) hWndDB);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -239,43 +239,42 @@ LRESULT APIENTRY DBWndProc
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-#define PROP_LINENUM    "iLineNum"
-
-////LCLODSAPI ("DB: ", hWnd, message, wParam, lParam);
+#define PROP_LINENUM    L"iLineNum"
 
     // Get the window handle of the Listbox
-    (long) hWndLB = GetWindowLong (hWnd, GWLDB_HWNDLB);
+    (long) hWndLB = GetWindowLongW (hWnd, GWLDB_HWNDLB);
 
+////LCLODSAPI ("DB: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_CREATE:
         {
             iLineNum = 0;
-            SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+            SetPropW (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
             // Create a listbox to fit inside this window
             hWndLB =
-            CreateWindow ("LISTBOX",
-                          "Debugger Listbox",   // For debugging only
-                          0
-                        | WS_CHILD
-                        | WS_VSCROLL
-                        | WS_HSCROLL
-                        | WS_CLIPCHILDREN
-                        | LBS_NOINTEGRALHEIGHT
-                        | LBS_EXTENDEDSEL
-                        | LBS_MULTIPLESEL
-                          ,                     // Styles
-                          0,                    // X-position
-                          0,                    // Y-...
-                          CW_USEDEFAULT,        // Width
-                          CW_USEDEFAULT,        // Height
-                          hWnd,                 // Parent window
-                          (HMENU) IDWC_DB_LB,   // ID
-                          _hInstance,           // Instance
-                          0);                   // lParam
+              CreateWindowW (L"LISTBOX",
+                             L"Debugger Listbox",   // For debugging only
+                             0
+                           | WS_CHILD
+                           | WS_VSCROLL
+                           | WS_HSCROLL
+                           | WS_CLIPCHILDREN
+                           | LBS_NOINTEGRALHEIGHT
+                           | LBS_EXTENDEDSEL
+                           | LBS_MULTIPLESEL
+                             ,                      // Styles
+                             0,                     // X-position
+                             0,                     // Y-...
+                             CW_USEDEFAULT,         // Width
+                             CW_USEDEFAULT,         // Height
+                             hWnd,                  // Parent window
+                             (HMENU) IDWC_DB_LB,    // ID
+                             _hInstance,            // Instance
+                             0);                    // lParam
             // Save for later use
-            SetWindowLong (hWnd, GWLDB_HWNDLB, (long) hWndLB);
+            SetWindowLongW (hWnd, GWLDB_HWNDLB, (long) hWndLB);
 
             // Show the windows
             ShowWindow (hWndLB, SW_SHOWNORMAL);
@@ -302,7 +301,7 @@ LRESULT APIENTRY DBWndProc
 
             // Use Post here as we need to wait for the LB window
             //   to be drawn.
-            PostMessage (hWnd, MYWM_INIT_DB, 0, 0);
+            PostMessageW (hWnd, MYWM_INIT_DB, 0, 0);
 
             return FALSE;           // We handled the msg
         } // End WM_CREATE
@@ -353,7 +352,7 @@ LRESULT APIENTRY DBWndProc
 #undef  fwSizeType
 
         case MYWM_DBGMSGA:          // Single-char message
-            iLineNum = (int) GetProp (hWnd, PROP_LINENUM);
+            iLineNum = (int) GetPropW (hWnd, PROP_LINENUM);
 
             // Format the string with a preceding line #
             wsprintfA (szTemp,
@@ -363,7 +362,7 @@ LRESULT APIENTRY DBWndProc
             // Convert the string from A to W
             A2W (wszTemp, szTemp, sizeof (wszTemp) - 1);
 
-            SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+            SetPropW (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
             // Add the string to the ListBox
             iIndex = SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
@@ -374,7 +373,7 @@ LRESULT APIENTRY DBWndProc
             return FALSE;           // We handled the msg
 
         case MYWM_DBGMSGW:          // Double-char message
-            iLineNum = (int) GetProp (hWnd, PROP_LINENUM);
+            iLineNum = (int) GetPropW (hWnd, PROP_LINENUM);
 
             // Format the string with a preceding line #
             wsprintfW (wszTemp,
@@ -382,7 +381,7 @@ LRESULT APIENTRY DBWndProc
                        ++iLineNum,
                        (LPWCHAR) lParam);
 
-            SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+            SetPropW (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
             // Add the string to the ListBox
             iIndex = SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
@@ -418,13 +417,16 @@ LRESULT APIENTRY DBWndProc
             // Start over again
             SendMessageW (hWndLB, LB_RESETCONTENT, 0, 0);
             iLineNum = 0;
-            SetProp (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
+            SetPropW (hWnd, PROP_LINENUM, (HANDLE) iLineNum);
 
             UpdateWindow (hWnd);    // Redraw the screen now
 
             return FALSE;           // We handled the msg
 
         case WM_CLOSE:
+            // Unhook our hooks
+            SendMessageW (hWnd, MYWM_UNHOOK, 0, 0);
+
             DestroyWindow (hWnd);
 
             return FALSE;           // We handled the msg
@@ -450,8 +452,8 @@ LRESULT APIENTRY DBWndProc
             return FALSE;           // We handled the msg
 
         case WM_DESTROY:
-            // Unhook out hooks
-            SendMessage (hWnd, MYWM_UNHOOK, 0, 0);
+            // Unhook our hooks
+            SendMessageW (hWnd, MYWM_UNHOOK, 0, 0);
 
             // Remove all saved window properties
             EnumProps (hWnd, EnumCallbackRemoveProp);
@@ -466,7 +468,7 @@ LRESULT APIENTRY DBWndProc
     } // End SWITCH
 
 ////LCLODSAPI ("DBZ:", hWnd, message, wParam, lParam);
-    return DefMDIChildProc (hWnd, message, wParam, lParam);
+    return DefMDIChildProcW (hWnd, message, wParam, lParam);
 } // End DBWndProc
 #endif
 
@@ -502,12 +504,15 @@ LRESULT WINAPI LclListboxWndProc
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     WNDPROC      lpfnOldListboxWndProc;
 
+////LCLODSAPI ("LLB: ", hWnd, message, wParam, lParam);
+
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Get the address of the old WNDPROC handler
     lpfnOldListboxWndProc = lpMemPTD->lpfnOldListboxWndProc;
 
     // We no longer need this ptr
@@ -679,7 +684,7 @@ LRESULT WINAPI LclListboxWndProc
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                    PostMessage (lpMemPTD->hWndSM, message, wParam, lParam);
+                    PostMessageW (lpMemPTD->hWndSM, message, wParam, lParam);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -693,22 +698,13 @@ LRESULT WINAPI LclListboxWndProc
 
         case WM_CLOSE:
         case WM_DESTROY:
-            // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Unhook the LclListboxWndProc
-            SetWindowLongW (hWnd,
-                            GWL_WNDPROC,
-                            (long) lpMemPTD->lpfnOldListboxWndProc);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+            // Unhook our hooks
+            SendMessageW (GetParent (hWnd), MYWM_UNHOOK, 0, 0);
 
             break;
     } // End SWITCH
 
+////LCLODSAPI ("LLBZ: ", hWnd, message, wParam, lParam);
     lResult = CallWindowProcW (lpfnOldListboxWndProc,
                                hWnd,
                                message,
@@ -808,7 +804,7 @@ void DbgClr
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     if (lpMemPTD->hWndDB)
-        PostMessage (lpMemPTD->hWndDB, MYWM_DBGMSG_CLR, 0, 0);
+        PostMessageW (lpMemPTD->hWndDB, MYWM_DBGMSG_CLR, 0, 0);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

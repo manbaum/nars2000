@@ -27,7 +27,6 @@
 #include "aplerrors.h"
 #include "resdebug.h"
 #include "externs.h"
-#include "pertab.h"
 #include "dfnhdr.h"
 
 // Include prototypes unless prototyping

@@ -793,28 +793,28 @@ NORMAL_EXIT:
 #undef  APPEND_NAME
 
 
-//***************************************************************************
-//  $FreeYYFcn
-//
-//  Free a strand of YYFcns
-//***************************************************************************
-
-void FreeYYFcn
-    (LPPL_YYSTYPE lpYYFcn)
-
-{
-    UINT u, uCnt;
-
-    // Get the token count
-    uCnt = lpYYFcn->TknCount;
-
-    Assert (uCnt NE 0);
-
-    for (u = 0; u < uCnt; u++)
-    {
-        FreeResult (&lpYYFcn[u].tkToken); YYFree (&lpYYFcn[u]);
-    } // End FOR
-} // End FreeYYFcn
+//// //***************************************************************************
+//// //  $FreeYYFcn
+//// //
+//// //  Free a strand of YYFcns
+//// //***************************************************************************
+////
+//// void FreeYYFcn
+////     (LPPL_YYSTYPE lpYYFcn)
+////
+//// {
+////     UINT u, uCnt;
+////
+////     // Get the token count
+////     uCnt = lpYYFcn->TknCount;
+////
+////     Assert (uCnt NE 0);
+////
+////     for (u = 0; u < uCnt; u++)
+////     {
+////         FreeResult (&lpYYFcn[u].tkToken); YYFree (&lpYYFcn[u]);
+////     } // End FOR
+//// } // End FreeYYFcn
 
 
 //***************************************************************************

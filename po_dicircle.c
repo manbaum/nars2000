@@ -81,8 +81,6 @@ LPPL_YYSTYPE PrimProtoOpDieresisCircle_EM_YY
      LPTOKEN      lptkAxis)             // Ptr to axis token always NULL)
 
 {
-    Assert (lptkAxis EQ NULL);
-
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
         //***************************************************************
@@ -137,63 +135,32 @@ LPPL_YYSTYPE PrimOpMonDieresisCircleCommon_EM_YY
      BOOL         bPrototyping)         // TRUE iff protoyping
 
 {
-    HGLOBAL      hGlbPTD,               // PerTabData global memory handle
-                 hGlbMF;                // Magic function global memory handle
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand
+    LPTOKEN      lptkAxis;              // Ptr to axis token
 
     // Check for missing axis
-    if (NULL EQ CheckAxisOper (lpYYFcnStrOpr))
+    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    if (lptkAxis EQ NULL)
         goto AXIS_EXIT;
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the magic function global memory handle
-    hGlbMF = lpMemPTD->hGlbMF_MonRankAxis;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Set ptr to left operand,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     return
-      ExecuteMagicFunction_EM_YY (NULL,                     // Ptr to left arg token
-                                 &lpYYFcnStrOpr->tkToken,   // Ptr to function token
-                                  lpYYFcnStrOpr,            // Ptr to function strand
-                                  lptkRhtArg,               // Ptr to right arg token
-                                  NULL,                     // Ptr to axis token
-                                  hGlbMF,                   // Magic function global memory handle
-                                  bPrototyping
-                                ? LINENUM_PROTOTYPE
-                                : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+      PrimOpDieresisJotCommon_EM_YY (NULL,              // Ptr to left arg token (may be NULL if monadic derived function)
+                                     lpYYFcnStrLft,     // Ptr to left operand function strand
+                                     lpYYFcnStrOpr,     // Ptr to operator function strand
+                      (LPPL_YYSTYPE) lptkAxis,          // Ptr to right operand function strand
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     FALSE,             // TRUE iff check for axis operator
+                                     bPrototyping);     // TRUE iff prototyping
 AXIS_EXIT:
     ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     return NULL;
 } // End PrimOpMonDieresisCircleCommon_EM_YY
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  Magic function for monadic derived function from the rank monadic operator
-//***************************************************************************
-
-static APLCHAR MonHeader[] =
-  $Z $IS L"(" $LO L" " $F L"[" $X L"]) " $R;
-
-static APLCHAR MonLine1[] =
-  $Z $IS L"(" $LO $RANK $X L") " $R;
-
-static LPAPLCHAR MonBody[] =
-{MonLine1,
-};
-
-MAGIC_FUNCTION MF_MonRankAxis =
-{MonHeader,
- MonBody,
- sizeof (MonBody) / sizeof (MonBody[0]),
-};
 
 
 //***************************************************************************
@@ -234,63 +201,32 @@ LPPL_YYSTYPE PrimOpDydDieresisCircleCommon_EM_YY
      BOOL         bPrototyping)         // TRUE iff prototyping
 
 {
-    HGLOBAL      hGlbPTD,               // PerTabData global memory handle
-                 hGlbMF;                // Magic function global memory handle
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYFcnStrLft;         // Ptr to left operand function strand
+    LPTOKEN      lptkAxis;              // Ptr to axis token
 
     // Check for missing axis
-    if (NULL EQ CheckAxisOper (lpYYFcnStrOpr))
+    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    if (lptkAxis EQ NULL)
         goto AXIS_EXIT;
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the magic function global memory handle
-    hGlbMF = lpMemPTD->hGlbMF_DydRankAxis;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Set ptr to left operand,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
     return
-      ExecuteMagicFunction_EM_YY (lptkLftArg,               // Ptr to left arg token
-                                 &lpYYFcnStrOpr->tkToken,   // Ptr to function token
-                                  lpYYFcnStrOpr,            // Ptr to function strand
-                                  lptkRhtArg,               // Ptr to right arg token
-                                  NULL,                     // Ptr to axis token
-                                  hGlbMF,                   // Magic function global memory handle
-                                  bPrototyping
-                                ? LINENUM_PROTOTYPE
-                                : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+      PrimOpDieresisJotCommon_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if monadic derived function)
+                                     lpYYFcnStrLft,     // Ptr to left operand function strand
+                                     lpYYFcnStrOpr,     // Ptr to operator function strand
+                      (LPPL_YYSTYPE) lptkAxis,          // Ptr to right operand function strand
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     FALSE,             // TRUE iff check for axis operator
+                                     bPrototyping);     // TRUE iff prototyping
 AXIS_EXIT:
     ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     return NULL;
 } // End PrimOpDydDieresisCircle_EM_YY
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  Magic function for dyadic derived function from the rank monadic operator
-//***************************************************************************
-
-static APLCHAR DydHeader[] =
-  $Z $IS $L L" (" $LO L" " $F L"[" $X L"]) " $R;
-
-static APLCHAR DydLine1[] =
-  $Z $IS $L L" (" $LO $RANK $X L") " $R;
-
-static LPAPLCHAR DydBody[] =
-{DydLine1,
-};
-
-MAGIC_FUNCTION MF_DydRankAxis =
-{DydHeader,
- DydBody,
- sizeof (DydBody) / sizeof (DydBody[0]),
-};
 
 
 //***************************************************************************

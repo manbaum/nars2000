@@ -49,6 +49,7 @@
 #define $MIN            WS_UTF16_DOWNSTILE
 #define $NEG            WS_UTF16_OVERBAR
 #define $NOTEQUAL       WS_UTF16_NOTEQUAL
+#define $QUAD           WS_UTF16_QUAD
 #define $QUAD_PROTOTYPE WS_UTF16_QUAD L"PROTOTYPE"
 #define $QUAD_ERROR     WS_UTF16_QUAD L"ERROR"
 #define $QUAD_NC        WS_UTF16_QUAD L"NC"

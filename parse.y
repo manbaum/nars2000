@@ -4949,6 +4949,10 @@ EXIT_TYPES ParseLine
         // Display message for unhandled exception
         DisplayException ();
 
+        // Mark as in error
+        uRet = 1;
+        uError = ERRORCODE_ELX;
+
         goto NORMAL_EXIT;
     } // End __try/__Except
 
@@ -5218,7 +5222,7 @@ NORMAL_EXIT:
           ImmExecStmt (lpwszLine,   // Ptr to line to execute
                        FALSE,       // TRUE iff free the lpwszLine on completion
                        TRUE,        // TRUE iff wait until finished
-                       (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+                       (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
         // Split cases based upon the exit type
         switch (exitType)
         {
@@ -6291,7 +6295,7 @@ LPPL_YYSTYPE WaitForInput
     lpMemPTD->lpSISCur->lptkFunc = lptkFunc;
 
     // Get the Edit Control window handle
-    hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
+    hWndEC = (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC);
 
     // Get the char position of the caret
     uCharPos = GetCurCharPos (hWndEC);
@@ -6306,7 +6310,7 @@ LPPL_YYSTYPE WaitForInput
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Tell the Session Manager to display the appropriate prompt
-    PostMessage (hWndSM, MYWM_QUOTEQUAD, bQuoteQuad, 14);
+    PostMessageW (hWndSM, MYWM_QUOTEQUAD, bQuoteQuad, 14);
 #ifdef DEBUG
     dprintfW (L"~~WaitForSingleObject (ENTRY):  %s (%S#%d)", L"WaitForInput", FNLN);
 #endif

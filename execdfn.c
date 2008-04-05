@@ -88,36 +88,8 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      LINE_NUMS    startLineNum)     // Starting line # (see LINE_NUMS)
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht;        // Right ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht;        // Right ...
-    LPSYMENTRY   lpSymEntryBeg,     // Ptr to start of SYMENTRYs on the SIS
-                 lpSymEntryNxt,     // Ptr to next     ...
-                 lpSymLftFcn = NULL,// Ptr to original tkSym in the named left operand
-                 lpSymRhtFcn = NULL;// ...                                right ...
-    HGLOBAL      hGlbPTD = NULL;    // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
-                 lpYYFcnStrRht,     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
-                 lpYYFcnTmpLft,     // Ptr to temp left operand function strand (may be NULL if not an operator)
-                 lpYYFcnTmpRht;     // Ptr to temp right operand function strand (may be NULL if monadic operator or not an operator)
-////PL_YYSTYPE   YYFcnTmpLft,       // Left operand temp function strand (may be NULL if not an operator)
-////             YYFcnTmpRht;       // Right operand temp function strand (may be NULL if monadic operator or not an operator)
-    LPTOKEN      lptkLftTmp,        // Ptr to temp left arg token
-                 lptkRhtTmp;        // ...         right
-    TOKEN        tkLftTmp,          // Temp left arg token
-                 tkRhtTmp;          // ...  right ...
-    SYMENTRY     symLftArg,         // Temp SYMENTRY for left  arg
-                 symLftFcn,         // ...               left  operand
-                 symRhtFcn,         // ...               right operand
-                 symRhtArg;         // ...               right arg
-    BOOL         bNamedLftFcn,      // TRUE iff the left operand is a named function
-                 bNamedRhtFcn;      // ...          right ...
+                 lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
 
     // If there's a function strand, ...
     if (lpYYFcnStr NE NULL)
@@ -139,6 +111,72 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
             lpYYFcnStrRht = NULL;
     } else
         lpYYFcnStrLft = lpYYFcnStrRht = NULL;
+
+    // Call common routine
+    return
+      ExecDfnOprGlb_EM_YY (hGlbDfnHdr,      // User-defined function/operator global memory handle
+                           lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                           lpYYFcnStrLft,   // Ptr to left operand function strand (may be NULL if not an operator and no axis)
+                           lpYYFcnStr,      // Ptr to function strand (may be NULL if not an operator and no axis)
+                           lpYYFcnStrRht,   // Ptr to right operand function strand (may be NULL if not an operator and no axis)
+                           lptkAxis,        // Prt to axis token (may be NULL -- used only if function strand is NULL)
+                           lptkRhtArg,      // Ptr to right arg token
+                           startLineNum);   // Starting line # (see LINE_NUMS)
+} // End ExecDfnGlb_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ExecDfnOprGlb_EM_YY
+//
+//  Execute a user-defined function/operator
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecDfnOprGlb_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
+    (HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle
+     LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+     LPPL_YYSTYPE lpYYFcnStrLft,    // Ptr to left operand function strand (may be NULL if not an operator and no axis)
+     LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
+     LPPL_YYSTYPE lpYYFcnStrRht,    // Ptr to right operand function strand (may be NULL if not an operator and no axis)
+     LPTOKEN      lptkAxis,         // Prt to axis token (may be NULL -- used only if function strand is NULL)
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LINE_NUMS    startLineNum)     // Starting line # (see LINE_NUMS)
+
+{
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht;        // Right ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht;        // Right ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht;        // Right ...
+    LPSYMENTRY   lpSymEntryBeg,     // Ptr to start of SYMENTRYs on the SIS
+                 lpSymEntryNxt,     // Ptr to next     ...
+                 lpSymLftFcn = NULL,// Ptr to original tkSym in the named left operand
+                 lpSymRhtFcn = NULL;// ...                                right ...
+    HGLOBAL      hGlbPTD = NULL;    // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYFcnTmpLft,     // Ptr to temp left operand function strand (may be NULL if not an operator)
+                 lpYYFcnTmpRht;     // Ptr to temp right operand function strand (may be NULL if monadic operator or not an operator)
+////PL_YYSTYPE   YYFcnTmpLft,       // Left operand temp function strand (may be NULL if not an operator)
+////             YYFcnTmpRht;       // Right operand temp function strand (may be NULL if monadic operator or not an operator)
+    LPTOKEN      lptkLftTmp,        // Ptr to temp left arg token
+                 lptkRhtTmp;        // ...         right
+    TOKEN        tkLftTmp,          // Temp left arg token
+                 tkRhtTmp;          // ...  right ...
+    SYMENTRY     symLftArg,         // Temp SYMENTRY for left  arg
+                 symLftFcn,         // ...               left  operand
+                 symRhtFcn,         // ...               right operand
+                 symRhtArg;         // ...               right arg
+    BOOL         bNamedLftFcn,      // TRUE iff the left operand is a named function
+                 bNamedRhtFcn;      // ...          right ...
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -443,7 +481,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
     if (lpYYFcnTmpLft)
     {
         // Split cases based upon fcn vs. var
-        if (IsTknVar (lpYYFcnTmpLft->tkToken.tkFlags.TknType))
+        if (!IsTknFcnOpr (&lpYYFcnTmpLft->tkToken))
             InitVarSTEs (&lpYYFcnTmpLft->tkToken,
                           lpMemDfnHdr->steLftOpr NE NULL,
                          &lpMemDfnHdr->steLftOpr);
@@ -462,7 +500,7 @@ RESTART_EXCEPTION_EXECDFNGLB:
     if (lpYYFcnTmpRht)
     {
         // Split cases based upon fcn vs. var
-        if (IsTknVar (lpYYFcnTmpRht->tkToken.tkFlags.TknType))
+        if (!IsTknFcnOpr (&lpYYFcnTmpRht->tkToken))
             InitVarSTEs (&lpYYFcnTmpRht->tkToken,
                           lpMemDfnHdr->steRhtOpr NE NULL,
                          &lpMemDfnHdr->steRhtOpr);
@@ -481,7 +519,8 @@ RESTART_EXCEPTION_EXECDFNGLB:
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    lpYYRes = ExecuteFunction_EM_YY (startLineNum, &lpYYFcnStr->tkToken);
+    lpYYRes =
+      ExecuteFunction_EM_YY (startLineNum, &lpYYFcnStr->tkToken);
 
     goto NORMAL_EXIT;
 
@@ -530,7 +569,7 @@ NORMAL_EXIT:
         lpYYFcnTmpRht->tkToken.tkData.tkSym = lpSymRhtFcn;
 
     return lpYYRes;
-} // End ExecDfnGlb_EM_YY
+} // End ExecDfnOprGlb_EM_YY
 #undef  APPEND_NAME
 
 
@@ -553,8 +592,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 {
     LPPL_YYSTYPE   lpYYRes = NULL;  // Ptr to the result
     LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header
-////LPTOKEN_HEADER lptkHdr;         // Ptr to header of tokenized line
-////LPTOKEN        lptkLine;        // Ptr to tokenized line
     HGLOBAL        hGlbDfnHdr,      // User-defined function/operator global memory handle
                    hGlbTxtLine,     // Line text global memory handle
                    hGlbTknLine,     // Tokenized line global memory handle
@@ -599,6 +636,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                        0,               // Initial count (non-signalled)
                        64*1024,         // Maximum count
                        NULL);           // No name
+#ifdef DEBUG
+    DisplayFcnLine (lpMemDfnHdr->hGlbTxtHdr, lpMemPTD, 0);
+#endif
     // Loop through the function lines
     while (0 < uLineNum && uLineNum <= lpMemPTD->lpSISCur->numFcnLines)
     {
@@ -610,27 +650,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         hGlbTknLine = lpFcnLines[uLineNum - 1].hGlbTknLine;
 
 #ifdef DEBUG
-        {
-            LPMEMTXT_UNION lpMemTxtLine;
-            LPAPLCHAR      lpMemFcnName;
-
-            // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
-
-            // Lock the memory to get a ptr to it
-            lpMemFcnName = MyGlobalLock (lpMemPTD->lpSISCur->hGlbFcnName);
-
-            wsprintfW (lpwszTemp,
-                       L"Executing line %d of <%s>:  %s",
-                       uLineNum,
-                       lpMemFcnName,
-                      &lpMemTxtLine->C);
-            DbgMsgW (lpwszTemp);
-
-            // We no longer need these ptrs
-            MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbFcnName); lpMemFcnName = NULL;
-            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-        }
+        DisplayFcnLine (hGlbTxtLine, lpMemPTD, uLineNum);
 #endif
         // We no longer need these ptrs
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -652,7 +672,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             HWND hWndEC;        // Edit Control window handle
 
             // Get the Edit Control window handle
-            hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
+            hWndEC = (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC);
 
             // Display the default prompt
             DisplayPrompt (hWndEC, 2);
@@ -693,7 +713,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         uLineNum = lpMemPTD->lpSISCur->NxtLineNum++;
         lpMemPTD->lpSISCur->CurLineNum = uLineNum;
     } // End WHILE
-
+#ifdef DEBUG
+    DisplayFcnLine (NULL, lpMemPTD, NEG1U);
+#endif
     // Close the semaphore handle as it isn't used anymore
     CloseHandle (hSemaphore); hSemaphore = NULL;
 
@@ -854,6 +876,51 @@ ERROR_EXIT:
 
 
 //***************************************************************************
+//  $DisplayFcnLine
+//
+//  Display a given function line
+//***************************************************************************
+
+void DisplayFcnLine
+    (HGLOBAL      hGlbTxtLine,      // Function line text global memory handle (may be NULL if uLineNum EQ NEG1U)
+     LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
+     UINT         uLineNum)         // Function line # (NEG1U for terminating)
+
+{
+    LPMEMTXT_UNION lpMemTxtLine;
+    LPAPLCHAR      lpMemFcnName;
+
+    // If the handle is valid, ...
+    if (hGlbTxtLine)
+        // Lock the memory to get a ptr to it
+        lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+
+    // Lock the memory to get a ptr to it
+    lpMemFcnName = MyGlobalLock (lpMemPTD->lpSISCur->hGlbFcnName);
+
+    if (uLineNum EQ NEG1U)
+        wsprintfW (lpwszTemp,
+                   L"Terminating <%s>",
+                   lpMemFcnName);
+    else
+        wsprintfW (lpwszTemp,
+                   L"Executing line %d of <%s>:  %s",
+                   uLineNum,
+                   lpMemFcnName,
+                  &lpMemTxtLine->C);
+    DbgMsgW (lpwszTemp);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->lpSISCur->hGlbFcnName); lpMemFcnName = NULL;
+
+    // If the handle is valid, ...
+    if (hGlbTxtLine)
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+} // End DisplayFcnline
+
+
+//***************************************************************************
 //  $CheckDfnExitError_EM
 //
 //  Check on user-defined function/operator error on exit
@@ -899,8 +966,8 @@ BOOL CheckDfnExitError_EM
     lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
 
     // If the next line # would not exit the function, quit
-    if (lpSISCur->NxtLineNum NE 0
-     && lpSISCur->NxtLineNum <= lpMemDfnHdr->numFcnLines)
+    if (0 < lpSISCur->NxtLineNum
+     &&     lpSISCur->NxtLineNum <= lpMemDfnHdr->numFcnLines)
         goto NORMAL_EXIT;
 
     // Get the # STEs in the result

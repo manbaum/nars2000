@@ -58,6 +58,9 @@ LIBS_WEXE = GDI32.LIB           \
             SHELL32.LIB         \
             ADVAPI32.LIB        \
             COMCTL32.LIB        \
+!if "$(DEBUG)" == "1"
+            R:\LIB\QDEBUG32.LIB \
+!endif
             libc.lib            \
             libgsl-double.a     \
             libgslcblas-double.a
@@ -245,7 +248,6 @@ $(O)po_slash.DEP        \
 $(O)po_slope.DEP        \
 $(O)primfns.DEP         \
 $(O)primspec.DEP        \
-$(O)qdwa.DEP            \
 $(O)qf_av.DEP           \
 $(O)qf_cr.DEP           \
 $(O)qf_dl.DEP           \
@@ -584,9 +586,6 @@ $(O)yyfns.DEP
 !if exist ($(O)primspec.DEP)
 !       include $(O)primspec.DEP
 !endif
-!if exist ($(O)qdwa.DEP)
-!       include $(O)qdwa.DEP
-!endif
 !if exist ($(O)qf_av.DEP)
 !       include $(O)qf_av.DEP
 !endif
@@ -832,7 +831,6 @@ $(O)po_slash.PRO        \
 $(O)po_slope.PRO        \
 $(O)primfns.PRO         \
 $(O)primspec.PRO        \
-$(O)qdwa.PRO            \
 $(O)qf_av.PRO           \
 $(O)qf_cr.PRO           \
 $(O)qf_dl.PRO           \
@@ -1012,7 +1010,6 @@ $(O)po_slash.OBJ:       $(@B).C         $(PO_SLASH_DEP)
 $(O)po_slope.OBJ:       $(@B).C         $(PO_SLOPE_DEP)
 $(O)primfns.OBJ:        $(@B).C         $(PRIMFNS_DEP)
 $(O)primspec.OBJ:       $(@B).C         $(PRIMSPEC_DEP)
-$(O)qdwa.OBJ:           $(@B).C         $(QDWA_DEP)
 $(O)qf_av.OBJ:          $(@B).C         $(QF_AV_DEP)
 $(O)qf_cr.OBJ:          $(@B).C         $(QF_CR_DEP)
 $(O)qf_dl.OBJ:          $(@B).C         $(QF_DL_DEP)
@@ -1171,7 +1168,6 @@ OBJS=                       \
      $(O)po_slope.OBJ       \
      $(O)primfns.OBJ        \
      $(O)primspec.OBJ       \
-     $(O)qdwa.OBJ           \
      $(O)qf_av.OBJ          \
      $(O)qf_cr.OBJ          \
      $(O)qf_dl.OBJ          \

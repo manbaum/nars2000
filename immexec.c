@@ -189,7 +189,7 @@ void ImmExecLine
              && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
-                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 10);
+                PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 10);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -210,7 +210,7 @@ void ImmExecLine
             if (lpMemPTD->lpSISCur
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
-                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 11);
+                PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 11);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -231,7 +231,7 @@ void ImmExecLine
             if (lpMemPTD->lpSISCur
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
-                PostMessage (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 12);
+                PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 12);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -429,7 +429,7 @@ DWORD WINAPI ImmExecStmtInThread
               ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
                            FALSE,               // TRUE iff free the lpwszLine on completion
                            TRUE,                // TRUE iff wait until finished
-                           (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
+                           (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC)); // Edit Control window handle
             // Split cases based upon the exit type
             switch (exitType)
             {
@@ -452,6 +452,7 @@ DWORD WINAPI ImmExecStmtInThread
                 defstop
                     break;
             } // End SWITCH
+
             goto ERROR_EXIT;
         } // End IF
 
@@ -500,7 +501,7 @@ DWORD WINAPI ImmExecStmtInThread
                       ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
                                    FALSE,           // TRUE iff free the lpwszLine on completion
                                    TRUE,            // TRUE iff wait until finished
-                                   (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
+                                   (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
                     // Set the reset flag
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
@@ -538,7 +539,7 @@ DWORD WINAPI ImmExecStmtInThread
                   ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"ELX", // Ptr to line to execute
                                FALSE,           // TRUE iff free the lpwszLine on completion
                                TRUE,            // TRUE iff wait until finished
-                               (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
+                               (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC));// Edit Control window handle
                 // Set the reset flag
                 lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_NONE;
 
@@ -550,7 +551,7 @@ DWORD WINAPI ImmExecStmtInThread
                 // If from Quad Input, tell SM to redisplay the prompt
                 if (lpSISPrv
                  &&lpSISPrv->DfnType EQ DFNTYPE_QUAD)
-                    PostMessage (hWndSM, MYWM_QUOTEQUAD, FALSE, 13);
+                    PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 13);
                 break;
 
             case EXITTYPE_GOTO_ZILDE:   // Nothing more to do with these types

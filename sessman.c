@@ -68,19 +68,19 @@ In any case,
 
 // MDI WM_NCCREATE & WM_CREATE parameter passing convention
 //
-// When calling CreateMDIWindow with an extra data parameter
+// When calling CreateMDIWindowW with an extra data parameter
 //   of (say) &hGlbPTD, the window procedure receives the data
 //   in the following struc:
 //
-//      typedef struct tagSM_CREATEPARAMS
+//      typedef struct tagSM_CREATEPARAMSW
 //      {
 //          HGLOBAL hGlbPTD;
-//      } SM_CREATEPARAMS, UNALIGNED *LPSM_CREATEPARAMS;
+//      } SM_CREATEPARAMSW, UNALIGNED *LPSM_CREATEPARAMSW;
 //
 //   which is used as follows:
 //
-//      #define lpMDIcs     ((LPMDICREATESTRUCT) (((LPCREATESTRUCT) lParam)->lpCreateParams))
-//      hGlbPTD = ((LPSM_CREATEPARAMS) (lpMDIcs->lParam))->hGlbPTD;
+//      #define lpMDIcs     ((LPMDICREATESTRUCTW) (((LPCREATESTRUCTW) lParam)->lpCreateParams))
+//      hGlbPTD = ((LPSM_CREATEPARAMSW) (lpMDIcs->lParam))->hGlbPTD;
 //      #undef  lpMDIcs
 
 APLCHAR wszQuadInput[] =
@@ -95,7 +95,7 @@ WS_UTF16_QUAD L":";
 
 void SetAttrs
     (HDC      hDC,              // Handle to the device context
-     HFONT    hFont,            // Handle to the font
+     HFONT    hFont,            // Handle to the font (may be NULL)
      COLORREF crfg,             // Foreground text color
      COLORREF crbk)             // Background ...
 
@@ -138,7 +138,7 @@ void AppendLine
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLong (lpMemPTD->hWndSM, GWLSF_HWNDEC);
+    hWndEC = (HWND) GetWindowLongW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -184,7 +184,7 @@ void ReplaceLine
          uLineLen;
 
     // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLong (hWndSM, GWLSF_HWNDEC);
+    hWndEC = (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC);
 
     // Get the line position of the given line
     uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
@@ -410,7 +410,7 @@ void DisplayPrompt
 
 ////if (bSetFocusSM)
 ////    // Set the focus to the Session Manager so the prompt displays
-////    PostMessage (GetParent (hWndEC), MYWM_SETFOCUS, 0, 0);
+////    PostMessageW (GetParent (hWndEC), MYWM_SETFOCUS, 0, 0);
 } // End DisplayPrompt
 
 
@@ -607,12 +607,12 @@ LRESULT APIENTRY SMWndProc
 ////TEXTMETRIC   tm;
 
     // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLong (hWnd, GWLSF_HWNDEC);
+    hWndEC = (HWND) GetWindowLongW (hWnd, GWLSF_HWNDEC);
 
 ////LCLODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
     {
-        case WM_NCCREATE:               // lpcs = (LPCREATESTRUCT) lParam
+        case WM_NCCREATE:               // lpcs = (LPCREATESTRUCTW) lParam
         {
             LPVOID p;
 
@@ -660,7 +660,7 @@ LRESULT APIENTRY SMWndProc
         } // End WM_NCCREATE
 
         case WM_CREATE:             // 0 = (int) wParam
-                                    // lpcs = (LPCREATESTRUCT) lParam
+                                    // lpcs = (LPCREATESTRUCTW) lParam
         {
             int    i;
             LPVOID p;
@@ -669,7 +669,7 @@ LRESULT APIENTRY SMWndProc
             hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Initialize # threads
-            SetProp (hWnd, "NTHREADS", 0);
+            SetPropW (hWnd, L"NTHREADS", 0);
 
             // Initialize variables
             cfSM.hwndOwner = hWnd;
@@ -677,7 +677,7 @@ LRESULT APIENTRY SMWndProc
             vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
 
             // Save in window extra bytes
-            SetWindowLong (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
+            SetWindowLongW (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
 
             // Initialize window-specific resources
             SM_Create (hWnd);
@@ -709,10 +709,10 @@ LRESULT APIENTRY SMWndProc
                           MEM_COMMIT,
                           PAGE_READWRITE);
             // Save in window extra bytes
-            SetWindowLong (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
-            SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
-            SetWindowLong (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
-////////////SetWindowLong (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
+            SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
+            SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
+            SetWindowLongW (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
+////////////SetWindowLongW (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
 
             // Start with an initial action of nothing
             AppendUndo (hWnd,                       // SM Window handle
@@ -723,7 +723,7 @@ LRESULT APIENTRY SMWndProc
                         UNDO_NOGROUP,               // Group index
                         0);                         // Character
             // Save incremented starting ptr in window extra bytes
-            SetWindowLong (hWnd, GWLSF_UNDO_BEG, (long) ++lpUndoBeg);
+            SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) ++lpUndoBeg);
 
             // *************** lpwszCurLine ****************************
 
@@ -1097,7 +1097,7 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             // Save in window extra bytes
-            SetWindowLong (hWnd, GWLSF_HWNDEC, (long) hWndEC);
+            SetWindowLongW (hWnd, GWLSF_HWNDEC, (long) hWndEC);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1146,9 +1146,9 @@ LRESULT APIENTRY SMWndProc
             // Display leading Copyright text
             AppendLine (L"NARS2000 Copyright (C) 2006-8 Sudley Place Software.",              FALSE, TRUE);
             AppendLine (L"This program comes with ABSOLUTELY NO WARRANTY; for details visit", TRUE , TRUE);
-            AppendLine (L"  http://www.nars2000.org/LICENSE, or click on Help > About.",        TRUE , TRUE);
+            AppendLine (L"  http://www.nars2000.org/LICENSE, or click on Help > About.",      TRUE , TRUE);
             AppendLine (L"This is free software, and you are welcome to redistribute it",     TRUE , TRUE);
-            AppendLine (L"  under certain conditions; visit the above link for details.",       TRUE , TRUE);
+            AppendLine (L"  under certain conditions; visit the above link for details.",     TRUE , TRUE);
 
             return FALSE;           // We handled the msg
         } // End WM_CREATE
@@ -1165,7 +1165,7 @@ LRESULT APIENTRY SMWndProc
             switch (idChild)
             {
                 case IDWC_SM_EC:
-                    PostMessage (hWnd, MYWM_INIT_EC, 0, 0);
+                    PostMessageW (hWnd, MYWM_INIT_EC, 0, 0);
 
                     break;
             } // End IF
@@ -1185,9 +1185,9 @@ LRESULT APIENTRY SMWndProc
 
             // If the Debugger window handle is active, ...
             if (lpMemPTD->hWndDB)
-                PostMessage (hWnd, MYWM_KEYDOWN, VK_F9, 0);
+                PostMessageW (hWnd, MYWM_KEYDOWN, VK_F9, 0);
             else
-                PostMessage (hWnd, MYWM_INIT_SMDB, 0, 0);
+                PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1201,7 +1201,7 @@ LRESULT APIENTRY SMWndProc
             // Tell the Edit Control about its font
             SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
 #ifdef DEBUG
-            PostMessage (hWnd, MYWM_INIT_SMDB, 0, 0);
+            PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
 #endif
             // Make sure we can communicate between windows
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
@@ -1423,7 +1423,7 @@ LRESULT APIENTRY SMWndProc
                     lpMemPTD->lpwszCurLine[uLineLen] = L'\0';
 
                     // Reset the changed line flag
-                    SetWindowLong (hWnd, GWLSF_CHANGED, FALSE);
+                    SetWindowLongW (hWnd, GWLSF_CHANGED, FALSE);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1454,7 +1454,7 @@ LRESULT APIENTRY SMWndProc
                     lpMemPTD->lpwszCurLine[uLineLen] = L'\0';
 
                     // Reset the changed line flag
-                    SetWindowLong (hWnd, GWLSF_CHANGED, FALSE);
+                    SetWindowLongW (hWnd, GWLSF_CHANGED, FALSE);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1620,7 +1620,7 @@ LRESULT APIENTRY SMWndProc
             if (lpnmEC->nmHdr.hwndFrom EQ hWndEC)
             {
                 // Get the current vkState
-                lvkState = GetWindowLong (hWnd, GWLSF_VKSTATE);
+                lvkState = GetWindowLongW (hWnd, GWLSF_VKSTATE);
                 vkState = *(LPVKSTATE) &lvkState;
 
                 *lpnmEC->lpCaretWidth =
@@ -1648,7 +1648,7 @@ LRESULT APIENTRY SMWndProc
                                                     // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
                     // The contents of the edit control have changed,
                     // set the changed flag
-                    SetWindowLong (hWnd, GWLSF_CHANGED, TRUE);
+                    SetWindowLongW (hWnd, GWLSF_CHANGED, TRUE);
 
                     break;
 
@@ -1699,18 +1699,18 @@ LRESULT APIENTRY SMWndProc
 #ifdef DEBUG
             // If the debugger is still active, close it
             if (lpMemPTD->hWndDB)
-                SendMessage (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) lpMemPTD->hWndDB, 0);
+                SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) lpMemPTD->hWndDB, 0);
 #endif
             // *************** Undo Buffer *****************************
             // Get the ptr to the start of the Undo Buffer
-            (long) lpUndoBeg = GetWindowLong (hWnd, GWLSF_UNDO_BEG);
+            (long) lpUndoBeg = GetWindowLongW (hWnd, GWLSF_UNDO_BEG);
             if (lpUndoBeg)
             {
                 // Free the virtual storage, first backing up to the start
                 VirtualFree (--lpUndoBeg, 0, MEM_RELEASE);
                 lpUndoBeg = lpUndoNxt = NULL;
-                SetWindowLong (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
-                SetWindowLong (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
+                SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) lpUndoBeg);
+                SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
             } // End IF
 
             // *************** lpSymTab ********************************
@@ -1765,7 +1765,7 @@ LRESULT APIENTRY SMWndProc
     } // End SWITCH
 
 ////LCLODSAPI ("SMZ:", hWnd, message, wParam, lParam);
-    return DefMDIChildProc (hWnd, message, wParam, lParam);
+    return DefMDIChildProcW (hWnd, message, wParam, lParam);
 } // End SMWndProc
 #undef  APPEND_NAME
 

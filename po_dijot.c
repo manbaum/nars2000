@@ -74,6 +74,12 @@ LPPL_YYSTYPE PrimOpDieresisJot_EM_YY
 //    dyadic operator DieresisJot ("rank" and "rank")
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimProtoOpDieresisJot_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -81,7 +87,20 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
      LPTOKEN      lptkAxis)             // Ptr to axis token always NULL)
 
 {
-    Assert (lptkAxis EQ NULL);
+    if (lptkAxis EQ NULL)
+        // Check for axis operator
+        lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+
+    //***************************************************************
+    // The derived functions from this operator are not sensitive
+    //   to the axis operator, so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
@@ -100,6 +119,7 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
                                                  lptkRhtArg,        // Ptr to right arg token
                                                  TRUE);             // TRUE iff prototyping
 } // End PrimProtoOpDieresisJot_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -125,15 +145,51 @@ LPPL_YYSTYPE PrimOpMonDieresisJot_EM_YY
 //  Primitive operator for monadic derived function from DieresisJot ("rank")
 //***************************************************************************
 
+LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
+    (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     BOOL         bPrototyping)         // TRUE iff protoyping
+
+{
+    LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
+                 lpYYFcnStrRht;         // Ptr to right ...
+
+    // Set ptr to left & right operands,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
+    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->FcnCount];
+
+    return
+      PrimOpDieresisJotCommon_EM_YY (NULL,              // Ptr to left arg token (may be NULL if monadic derived function)
+                                     lpYYFcnStrLft,     // Ptr to left operand function strand
+                                     lpYYFcnStrOpr,     // Ptr to operator function strand
+                                     lpYYFcnStrRht,     // Ptr to right operand function strand
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     TRUE,              // TRUE iff check for axis operator
+                                     bPrototyping);     // TRUE iff protoyping
+} // End PrimOpMonDieresisJotCommon_EM_YY
+
+
+//***************************************************************************
+//  $PrimOpDieresisJotCommon_EM_YY
+//
+//  Primitive operator for monadic & dyadic derived function
+//    from DieresisJot ("rank")
+//***************************************************************************
+
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonDieresisJotCommon_EM_YY"
+#define APPEND_NAME     L" -- PrimOpDieresisJotCommon_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
-    (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic derived function)
+     LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand function strand
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
+     LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     BOOL         bCheckAxis,           // TRUE iff check for axis operator
      BOOL         bPrototyping)         // TRUE iff protoyping
 
 {
@@ -142,9 +198,33 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
                  hGlbMF2,               // Magic function #2 global memory handle
                  hGlbOprRht;            // Right operand global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
-                 lpYYFcnStrRht,         // Ptr to right ...
-                 lpYYRes = NULL;        // Ptr to result
+    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to result
+    LPTOKEN      lptkAxis;              // Ptr to axis token
+
+    // Check for axis operator if requested to do so
+    if (bCheckAxis)
+    {
+        lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+
+        //***************************************************************
+        // The derived functions from this operator are not sensitive
+        //   to the axis operator, so signal a syntax error if present
+        //***************************************************************
+        if (lptkAxis NE NULL)
+        {
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                       lptkAxis);
+            return NULL;
+        } // End IF
+    } // End IF
+
+    // Ensure the left operand is a function
+    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
+        goto SYNTAX_EXIT;
+
+    // Ensure the right operand is a variable
+    if (IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
+        goto SYNTAX_EXIT;
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -153,20 +233,12 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the magic function global memory handles
-    hGlbMF1 = lpMemPTD->hGlbMF_MonRank;
+    hGlbMF1 = (lptkLftArg EQ NULL) ? lpMemPTD->hGlbMF_MonRank
+                                   : lpMemPTD->hGlbMF_DydRank;
     hGlbMF2 = lpMemPTD->hGlbMF_Conform;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-    // Set ptr to left & right operands,
-    //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->FcnCount];
-
-    // Check for right operand variable
-    if (!IsTknVar (lpYYFcnStrRht->tkToken.tkFlags.TknType))
-        goto SYNTAX_EXIT;
 
     // Get right operand global ptrs
     GetGlbPtrs_LOCK (&lpYYFcnStrRht->tkToken, &hGlbOprRht, NULL);
@@ -200,9 +272,11 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
         goto DOMAIN_EXIT;
 
     lpYYRes =
-      ExecuteMagicFunction_EM_YY (NULL,                     // Ptr to left arg token
+      ExecuteMagicOperator_EM_YY (lptkLftArg,               // Ptr to left arg token
                                  &lpYYFcnStrOpr->tkToken,   // Ptr to function token
+                                  lpYYFcnStrLft,            // Ptr to left operand function strand
                                   lpYYFcnStrOpr,            // Ptr to function strand
+                                  lpYYFcnStrRht,            // Ptr to right operand function strand
                                   lptkRhtArg,               // Ptr to right arg token
                                   NULL,                     // Ptr to axis token
                                   hGlbMF1,                  // Magic function global memory handle
@@ -287,7 +361,10 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
                 tkLftArg.tkData.tkInteger  = uMaxRank;
 ////////////////tkLftArg.tkCharIndex       = 0;     // Already zero from = {0}
 ////////////////tkLftArg.lptkOrig          = NULL;  // Already zero from = {0}
-
+#ifdef DEBUG
+                // Decrement the SI level of lpYYRes so YYResIsEmpty won't complain
+                lpYYRes->SILevel--;
+#endif
                 // Finish it off with another magic function
                 lpYYRes2 =
                   ExecuteMagicFunction_EM_YY (&tkLftArg,                // Ptr to left arg token
@@ -297,6 +374,10 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
                                                NULL,                    // Ptr to axis token
                                                hGlbMF2,                 // Magic function global memory handle
                                                LINENUM_ONE);            // Starting line # type (see LINE_NUMS)
+#ifdef DEBUG
+                // Restore the SI level of lpYYRes
+                lpYYRes->SILevel++;
+#endif
             } else
                 // Just disclose the argument
                 lpYYRes2 =
@@ -332,7 +413,7 @@ DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     return NULL;
-} // End PrimOpMonDieresisJotCommon_EM_YY
+} // End PrimOpDieresisJotCommon_EM_YY
 #undef  APPEND_NAME
 
 
@@ -341,22 +422,23 @@ DOMAIN_EXIT:
 //***************************************************************************
 
 static APLCHAR MonHeader[] =
-  $Z $IS L"(" $LO L" " $F L" " $X L") " $R;
+  $Z $IS L"(" $LO L" " $F L" " $X L") " $R L";" $O;
 
 static APLCHAR MonLine1[] =
   $X $IS L"1" $RHO $X;
 
 static APLCHAR MonLine2[] =
-  $X $IS $QUAD_IO L"+(-" $RHO $RHO $R L")"
-                  $MAX L"(" $NEG L"1+" $RHO $RHO $R L")"
-                  $MIN $X L"-" $QUAD_IO;
+  $O $IS $RHO $RHO $R;
 
 static APLCHAR MonLine3[] =
+  $X $IS L"(-" $O L")" $MAX $O $MIN $X;
+
+static APLCHAR MonLine4[] =
 //$Z $IS $DISCLOSE $LO $EACH $ENCLOSE L"[" $IOTA L"-" $X L"]" $R
   $Z $IS           $LO $EACH $ENCLOSE L"[" $IOTA L"-" $X L"]" $R
   $DIAMOND $GOTO L"0";
 
-static APLCHAR MonLine4[] =
+static APLCHAR MonLine5[] =
   $QUAD_PROTOTYPE L":"
 //$Z $IS $DISCLOSE $DISCLOSE $LO $EACH $EACH $ENCLOSE L"[" $IOTA L"-" $X L"]" $EACH L"0" $RHO $ENCLOSE $R;
   $Z $IS           $DISCLOSE $LO $EACH $EACH $ENCLOSE L"[" $IOTA L"-" $X L"]" $EACH L"0" $RHO $ENCLOSE $R;
@@ -366,6 +448,7 @@ static LPAPLCHAR MonBody[] =
  MonLine2,
  MonLine3,
  MonLine4,
+ MonLine5,
 };
 
 MAGIC_FUNCTION MF_MonRank =
@@ -376,7 +459,7 @@ MAGIC_FUNCTION MF_MonRank =
 
 
 static APLCHAR ConHeader[] =
-  $Z $IS $L $F L" " $R L";" $O;
+  $Z $IS $L L" " $F L" " $R L";" $O;
 
 static APLCHAR ConLine1[] =
   $O $IS $EPSILON $RHO $JOT $RHO $EACH $Z $IS $R;
@@ -425,36 +508,26 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     BOOL         bPrototyping)         // TRUE iff prototyping
+     BOOL         bPrototyping)         // TRUE iff protoyping
 
 {
-    HGLOBAL      hGlbPTD,               // PerTabData global memory handle
-                 hGlbMF;                // Magic function global memory handle
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
+                 lpYYFcnStrRht;         // Ptr to right ...
 
-    // Get the PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the magic function global memory handle
-    hGlbMF = lpMemPTD->hGlbMF_DydRank;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    // Set ptr to left & right operands,
+    //   skipping over the operator and axis token (if present)
+    lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
+    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->FcnCount];
 
     return
-      ExecuteMagicFunction_EM_YY (lptkLftArg,               // Ptr to left arg token
-                                 &lpYYFcnStrOpr->tkToken,   // Ptr to function token
-                                  lpYYFcnStrOpr,            // Ptr to function strand
-                                  lptkRhtArg,               // Ptr to right arg token
-                                  NULL,                     // Ptr to axis token
-                                  hGlbMF,                   // Magic function global memory handle
-                                  bPrototyping
-                                ? LINENUM_PROTOTYPE
-                                : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
-} // End PrimOpDydDieresisJot_EM_YY
+      PrimOpDieresisJotCommon_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if monadic derived function)
+                                     lpYYFcnStrLft,     // Ptr to left operand function strand
+                                     lpYYFcnStrOpr,     // Ptr to operator function strand
+                                     lpYYFcnStrRht,     // Ptr to right operand function strand
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     TRUE,              // TRUE iff check for axis operator
+                                     bPrototyping);     // TRUE iff protoyping
+} // End PrimOpDydDieresisJotCommon_EM_YY
 
 
 //***************************************************************************
@@ -462,23 +535,24 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
 //***************************************************************************
 
 static APLCHAR DydHeader[] =
-  $Z $IS $L L" (" $LO L" " $F L" " $X L") " $R;
+  $Z $IS $L L" (" $LO L" " $F L" " $X L") " $R L";" $O;
 
 static APLCHAR DydLine1[] =
   $X $IS L"1" $DROP $REVERSE L"3" $RHO $REVERSE $X;
 
 static APLCHAR DydLine2[] =
-  $X $IS $QUAD_IO L"+(-("      $RHO $RHO $L L")," $RHO $RHO $R L")"
-         $MAX L"(" $NEG L"1+(" $RHO $RHO $L L")," $RHO $RHO $R L")"
-         $MIN $X L"-" $QUAD_IO;
+  $O $IS L"(" $RHO $RHO $L L")," $RHO $RHO $R;
 
 static APLCHAR DydLine3[] =
+  $X $IS L"(-" $O L")" $MAX $O $MIN $X;
+
+static APLCHAR DydLine4[] =
   $Z $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $X L"]" $L L")"
                    $LO $EACH
                         $ENCLOSE L"[" $IOTA L"-1" $DROP $X L"]" $R
   $DIAMOND $GOTO L"0";
 
-static APLCHAR DydLine4[] =
+static APLCHAR DydLine5[] =
   $QUAD_PROTOTYPE L":"
   $Z $IS $DISCLOSE $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $X L"]" $EACH L"0" $RHO $ENCLOSE $L L")"
                              $LO $EACH $EACH
@@ -489,6 +563,7 @@ static LPAPLCHAR DydBody[] =
  DydLine2,
  DydLine3,
  DydLine4,
+ DydLine5,
 };
 
 MAGIC_FUNCTION MF_DydRank =

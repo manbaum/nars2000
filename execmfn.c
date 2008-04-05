@@ -44,8 +44,8 @@ extern MAGIC_FUNCTION MF_MonUpShoe;
 extern MAGIC_FUNCTION MF_DydTilde;
 extern MAGIC_FUNCTION MF_MonRank;
 extern MAGIC_FUNCTION MF_DydRank;
-extern MAGIC_FUNCTION MF_MonRankAxis;
-extern MAGIC_FUNCTION MF_DydRankAxis;
+////rn MAGIC_FUNCTION MF_MonRankAxis;
+////rn MAGIC_FUNCTION MF_DydRankAxis;
 extern MAGIC_FUNCTION MF_Conform;
 
 
@@ -81,6 +81,44 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
 
     return lpYYRes;
 } // End ExecuteMagicFunction_EM_YY
+
+
+//***************************************************************************
+//  $ExecuteMagicOperator_EM_YY
+//
+//  Execute a magic operator
+//***************************************************************************
+
+LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN      lptkFunc,             // Ptr to function token
+     LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand function strand (may be NULL if not an operator)
+     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand (may be NULL if not an operator)
+     LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand (may be NULL if not an operator)
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxis,             // Ptr to axis token (may be NULL)
+     HGLOBAL      hGlbMF,               // Magic function global memory handle
+     LINE_NUMS    lineNum)              // Starting line # type (see LINE_NUMS)
+
+{
+    LPPL_YYSTYPE lpYYRes;               // Ptr to result
+
+    lpYYRes =
+      ExecDfnOprGlb_EM_YY (hGlbMF,          // Magic function global memory handle
+                           lptkLftArg,      // Ptr to left arg token
+                           lpYYFcnStrLft,   // Ptr to left operand function strand
+                           lpYYFcnStrOpr,   // Ptr to operator function strand
+                           lpYYFcnStrRht,   // Ptr to right operand function strand
+                           lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
+                           lptkRhtArg,      // Ptr to right arg token
+                           lineNum);        // Starting line # type (see LINE_NUMS)
+    // If there was an error, set the caret to
+    //   point to the primitive function
+    if (lpYYRes EQ NULL)
+        ErrorMessageSetToken (lptkFunc);
+
+    return lpYYRes;
+} // End ExecuteMagicOperator_EM_YY
 
 
 //***************************************************************************
@@ -516,8 +554,8 @@ BOOL InitMagicFunctions
     lpMemPTD->hGlbMF_DydTilde    = Init1MagicFunction (&MF_DydTilde   , lpMemPTD, hWndEC);
     lpMemPTD->hGlbMF_MonRank     = Init1MagicFunction (&MF_MonRank    , lpMemPTD, hWndEC);
     lpMemPTD->hGlbMF_DydRank     = Init1MagicFunction (&MF_DydRank    , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_MonRankAxis = Init1MagicFunction (&MF_MonRankAxis, lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_DydRankAxis = Init1MagicFunction (&MF_DydRankAxis, lpMemPTD, hWndEC);
+////lpMemPTD->hGlbMF_MonRankAxis = Init1MagicFunction (&MF_MonRankAxis, lpMemPTD, hWndEC);
+////lpMemPTD->hGlbMF_DydRankAxis = Init1MagicFunction (&MF_DydRankAxis, lpMemPTD, hWndEC);
     lpMemPTD->hGlbMF_Conform     = Init1MagicFunction (&MF_Conform    , lpMemPTD, hWndEC);
 
     // We no longer need this ptr

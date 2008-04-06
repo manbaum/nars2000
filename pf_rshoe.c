@@ -324,11 +324,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     else
                     // If the result rank and the item rank are unequal, ...
                     if (aplRankCom NE aplRankSub)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
-                    } // End IF
+                        goto RANK_EXIT;
                 } // End IF
 
                 break;
@@ -362,11 +358,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
     // If the common item rank isn't the same as the # elements in the axis, ..
     if (aplRankCom NE aplNELMAxis)
-    {
-        ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto AXIS_EXIT;
 
     //***************************************************************
     // hGlbAxis is not-NULL iff there is an axis
@@ -399,11 +391,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbDimCom = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbDimCom)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemDimCom = MyGlobalLock (hGlbDimCom);
@@ -477,11 +465,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -794,11 +778,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                                                lptkFunc,    // Ptr to function token
                                                MP_CHARS);   // CHARs allowed
                         if (!hGlbProto)
-                        {
-                            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                                       lptkFunc);
-                            goto ERROR_EXIT;
-                        } // End IF
+                            goto WSFULL_EXIT;
 
                         // Set the ptr bits
                         hGlbProto = MakePtrTypeGlb (hGlbProto);
@@ -874,11 +854,7 @@ NORMAL_EXIT:
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbLft = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbLft)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemLft = MyGlobalLock (hGlbLft);
@@ -947,6 +923,21 @@ NORMAL_EXIT:
     TypeDemote (&lpYYRes->tkToken);
 
     goto TAIL_EXIT;
+
+AXIS_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     if (hGlbRes)
@@ -1025,11 +1016,7 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -1072,6 +1059,11 @@ LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
         defstop
             return NULL;
     } // End SWITCH
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnDydRightShoe_EM_YY
 #undef  APPEND_NAME
 
@@ -1108,32 +1100,20 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
 
     // Check for LEFT RANK ERROR
     if (aplRankLft > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // If the left arg is simple, it must be empty (i.e., {zilde} or '')
     if (IsSimple (aplTypeLft))
     {
         if (aplNELMLft NE 0)
-        {
-            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto LENGTH_EXIT;
 
-        goto NORMAL_EXIT;
+        goto YYALLOC_EXIT;
     } // End IF
 
     // Check for LEFT DOMAIN ERROR
     if (!IsNested (aplTypeLft))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto DOMAIN_EXIT;
 
     // From here on the left arg is a nested scalar or vector
 
@@ -1153,7 +1133,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
                                       aplLongestRht,        // Right arg singleton value
                                       lptkFunc))            // Ptr to function token
         goto ERROR_EXIT;
-NORMAL_EXIT:
+
+YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -1163,7 +1144,26 @@ NORMAL_EXIT:
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;         // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr
@@ -1209,9 +1209,7 @@ BOOL PrimFnDydRightShoeGlbImm_EM
         switch (GetPtrTypeDir (((LPAPLNESTED) lpMemLft)[uLft]))
         {
             case PTRTYPE_STCONST:
-                ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                           lptkFunc);
-                return FALSE;
+                goto LENGTH_EXIT;
 
             case PTRTYPE_HGLOBAL:
                 // Ensure that this element is a simple empty vector
@@ -1222,28 +1220,15 @@ BOOL PrimFnDydRightShoeGlbImm_EM
 
                 // Check for LEFT RANK ERROR
                 if (aplRankSub NE 1)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    return FALSE;
-                } // End IF
+                    goto RANK_EXIT;
 
                 // Check for LEFT LENGTH ERROR
                 if (aplNELMSub NE 0)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    return FALSE;
-                } // End IF
+                    goto LENGTH_EXIT;
 
                 // Check for LEFT DOMAIN ERROR
                 if (!IsSimple (aplTypeSub))     // Note we allow empty char
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    return FALSE;
-                } // End IF
-
+                    goto DOMAIN_EXIT;
                 break;
 
             defstop
@@ -1252,6 +1237,21 @@ BOOL PrimFnDydRightShoeGlbImm_EM
     } // End FOR
 
     return TRUE;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
 } // End PrimFnDydRightShoeGlbImm_EM
 #undef  APPEND_NAME
 
@@ -1372,11 +1372,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
 
     // Check for LEFT LENGTH ERROR
     if (aplRankRht NE 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Split cases based upon the left arg immediate type
     switch (immTypeLft)
@@ -1385,11 +1381,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             // Attempt to convert the float to an integer using System CT
             aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
             if (!bRet)
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                return NULL;
-            } // End IF
+                goto DOMAIN_EXIT;
 
             // Fall through to common code
 
@@ -1401,14 +1393,14 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             // Convert to origin-0
             aplLongestLft -= bQuadIO;
 
+            // Check for negative indices [-aplNELMRht, -1]
+            if (SIGN_APLLONGEST (aplLongestLft))
+                aplLongestLft += aplNELMRht;
+
             // Ensure that the index is within range
             // N.B.:  Because APLLONGEST is unsigned, we don't have to worry about negatives
             if (aplLongestLft >= aplNELMRht)
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                return NULL;
-            } // End IF
+                goto DOMAIN_EXIT;
 
             // Extract an element from the right arg
             GetNextValueGlb (hGlbRht,               // Right arg global memory handle
@@ -1441,15 +1433,23 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
             break;
 
         case IMMTYPE_CHAR:
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
+            goto DOMAIN_EXIT;
 
         defstop
             break;
     } // End SWITCH
 
     return lpYYRes;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End PrimFnDydRightShoeImmGlb_EM_YY
 #undef  APPEND_NAME
 
@@ -1499,11 +1499,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
     // Check for LEFT RANK ERROR
     if (aplRankLft > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RANK_EXIT;
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -1572,27 +1568,15 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
             // Check for left RANK ERROR
             if (aplRankSubLft > 1)
-            {
-                ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto RANK_EXIT;
 
             // Check for LEFT LENGTH ERROR
             if (aplNELMSubLft NE aplRankRht)
-            {
-                ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto LENGTH_EXIT;
 
             // Check for LEFT DOMAIN ERROR
             if (!IsSimpleNum (aplTypeSubLft))
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto DOMAIN_EXIT;
 
             // Lock the memory to get a ptr to it
             lpMemSubLft = MyGlobalLock (hGlbSubLft);
@@ -1618,11 +1602,13 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         // Get the left arg item value in origin-0
                         aplTmpSubLft = ((uBitMask & ((LPAPLBOOL) lpMemSubLft)[iDim >> LOG2NBIB]) ? 1 : 0) - bQuadIO;
 
+                        // Check for negative indices [-lpMemDimRht[iDim], -1]
+                        if (SIGN_APLLONGEST (aplTmpSubLft))
+                            aplTmpSubLft += lpMemDimRht[iDim];
+
                         // Ensure the indices are within range
                         if (lpMemDimRht[iDim] <= aplTmpSubLft)
                         {
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
                             bRet = FALSE;
 
                             break;
@@ -1644,11 +1630,13 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         // Get the left arg item value in origin-0
                         aplTmpSubLft = ((LPAPLUINT) lpMemSubLft)[iDim] - bQuadIO;
 
+                        // Check for negative indices [-lpMemDimRht[iDim], -1]
+                        if (SIGN_APLLONGEST (aplTmpSubLft))
+                            aplTmpSubLft += lpMemDimRht[iDim];
+
                         // Ensure the indices are within range
                         if (lpMemDimRht[iDim] <= aplTmpSubLft)
                         {
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
                             bRet = FALSE;
 
                             break;
@@ -1670,11 +1658,13 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         // Attempt to convert the float to an integer using System CT
                         aplTmpSubLft = FloatToAplint_SCT (((LPAPLFLOAT) lpMemSubLft)[iDim], &bRet) - bQuadIO;
 
+                        // Check for negative indices [-lpMemDimRht[iDim], -1]
+                        if (SIGN_APLLONGEST (aplTmpSubLft))
+                            aplTmpSubLft += lpMemDimRht[iDim];
+
                         // Ensure the indices are within range
                         if ((!bRet) || lpMemDimRht[iDim] <= aplTmpSubLft)
                         {
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                       lptkFunc);
                             bRet = FALSE;
 
                             break;
@@ -1701,11 +1691,13 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         // Get the left arg item value in origin-0
                         aplTmpSubLft = (apaOffSubLft + apaMulSubLft * iDim) - bQuadIO;
 
+                        // Check for negative indices [-lpMemDimRht[iDim], -1]
+                        if (SIGN_APLLONGEST (aplTmpSubLft))
+                            aplTmpSubLft += lpMemDimRht[iDim];
+
                         // Ensure the indices are within range
                         if (lpMemDimRht[iDim] <= aplTmpSubLft)
                         {
-                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
                             bRet = FALSE;
 
                             break;
@@ -1728,8 +1720,6 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
                 case ARRAY_HETERO:
                 case ARRAY_NESTED:
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
                     bRet = FALSE;
 
                     break;
@@ -1743,26 +1733,18 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
             // Check for error
             if (!bRet)
-                goto ERROR_EXIT;
+                goto DOMAIN_EXIT;
         } else
         {
             // The left arg is an immediate or simple value
 
             // Ensure that the right arg is a vector
             if (aplRankRht NE 1)
-            {
-                ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto LENGTH_EXIT;
 
             // Ensure that the left arg immediate value is numeric
             if (!IsImmNum (immTypeSubLft))
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto DOMAIN_EXIT;
 
             // Ensure that the left arg immediate value can convert to an integer
             if (IsImmFlt (immTypeSubLft))
@@ -1770,24 +1752,20 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 // Attempt to convert the float to an integer using System CT
                 aplLongestSubLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestSubLft, &bRet);
                 if (!bRet)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
+                    goto DOMAIN_EXIT;
             } // End IF
 
             // Convert the index to origin-0
             aplLongestSubLft -= bQuadIO;
 
+            // Check for negative indices [-aplNELMRht, -1]
+            if (SIGN_APLLONGEST (aplLongestSubLft))
+                aplLongestSubLft += aplNELMRht;
+
             // Ensure that the index is within range
             // N.B.:  Because APLLONGEST is unsigned, we don't have to worry about negatives
             if (aplLongestSubLft >= aplNELMRht)
-            {
-                ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF
+                goto DOMAIN_EXIT;
         } // End IF/ELSE
 
         // We no longer need this ptr
@@ -1866,11 +1844,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     goto ERROR_EXIT;
             } else
             if (aplNELMLft NE 1)
-            {
-                ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                           lptkFunc);
-                goto ERROR_EXIT;
-            } // End IF/ELSE/...
+                goto LENGTH_EXIT;
 
             // If we're assigning a new value, ...
             if (bArraySet)
@@ -1961,7 +1935,22 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE
 
-////goto NORMAL_EXIT;
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
 NORMAL_EXIT:

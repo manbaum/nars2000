@@ -170,13 +170,25 @@
               resolving ambiguities with slash/slope as function/operator
               (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
               instead of <span class="APL">//3 4</span>)</li>
-            <li>Monadic iota ({iota}) extended to negative indices.  For example, in origin-0,
+            <li>Monadic iota ({iota}) extended to negative values.  For example, in origin-0,
               <span class="APL">{iota}{neg}3</span> returns <span class="APL">{neg}3 {neg}2 {neg}1</span>.</li>
             <li>Monadic iota ({iota}) extended to length &gt; 1 vector right arguments
               returns an array of indices whose shape is that of the right argument
               (via an internal magic function)</li>
             <li>Dyadic iota ({iota}) extended to rank &gt; 1 left arguments returns an array
               of vector indices to the left argument (via an internal magic function)</li>
+            <li>Index reference, assignment, modify assignment, squad, and pick
+                 (<span class="APL">R[L]</span>,
+                  <span class="APL">R[L]{is}A</span>,
+                  <span class="APL">R[L]</span><i>fn</i><span class="APL">{is}A</span>,
+                  <span class="APL">L{squad}R</span>,
+              and <span class="APL">L{pick}R</span>)
+              are each extended to negative values in the same way the axis operator is (see above).
+              For example,
+              <span class="APL">A</span>,
+              <span class="APL">A[{iota}{rho}A]</span>, and
+              <span class="APL">A[{iota}-{rho}A]</span> are all identical for any array
+              <span class="APL">A</span> in either origin.</li>
             <li>± Infinity (e.g., <span class="APL">{underbar}</span> for infinity
               and <span class="APL">{overbar}{underbar}</span> for negative infinity)
               &mdash; considerable development work needs to be done to this

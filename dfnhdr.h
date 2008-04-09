@@ -65,7 +65,10 @@ typedef struct tagDFN_HEADER        // Function header structure
                      FcnValence:3,  //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      PermFn:1,      //      00000100:  Permanent function (i.e. Magic Function)
-                     Avail:23;      //      FFFFFE00:  Available bits
+                     ListRes:1,     //      00000200:  TRUE iff the result is a list (unused so far)
+                     ListLft:1,     //      00000400:  TRUE iff the left arg is a list
+                     ListRht:1,     //      00000800:  TRUE iff the right arg is a list
+                     Avail:20;      //      FFFFF000:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
                      nInverseLine,  // 10:  Line # of the []IDENTITY label (0 if not present)
                      nIdentityLine, // 14:  Line # of the []INVERSE label (0 if not present)
@@ -88,8 +91,8 @@ typedef struct tagDFN_HEADER        // Function header structure
     HGLOBAL          hGlbTxtHdr,    // 58:  Text of function header (APLCHAR) global memory handle
                      hGlbTknHdr,    // 5C:  Tokenized function header (TOKEN) ...
                      hGlbUndoBuff;  // 60:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-    FILETIME         ftCreation,    // 64:  Time of creation
-                     ftLastMod;     // 6C:  Time of last modification
+    FILETIME         ftCreation,    // 64:  Time of creation (8 bytes)
+                     ftLastMod;     // 6C:  Time of last modification (8 bytes)
                                     // 74:  Length
                                     // 74:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
@@ -105,8 +108,9 @@ typedef struct tagDFN_HEADER        // Function header structure
 typedef struct tagFH_YYSTYPE        // YYSTYPE for Function Header parser
 {
     TOKEN  tkToken;                 // 00:  Token info
-    UINT   uStrandLen:31,           // 14:  7FFFFFFF:  # elements in this strand
-           Indirect:1;              //      80000000:  Indirect entry
+    UINT   uStrandLen:31,           // 14:  3FFFFFFF:  # elements in this strand
+           Indirect:1,              //      40000000:  Indirect entry
+           List:1;                  //      80000000:  Itsa list
                                     //      00000000:  No available bits
     struct tagFH_YYSTYPE *
            lpYYStrandIndirect;      // 18:  Ptr to the indirect strand if .Indirect is set
@@ -132,7 +136,10 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  FcnValence:3,      //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                  DfnAxis:1,         //      00000080:  User-defined function/operator accepts axis value
                  DisplayErr:1,      //      00000100:  TRUE iff we should display error messages
-                 Avail:23;          //      FFFFFE00:  Available bits
+                 ListRes:1,         //      00000200:  TRUE iff the result is a list
+                 ListLft:1,         //      00000400:  TRUE iff the left arg ...
+                 ListRht:1,         //      00000800:  TRUE iff the right arg ...
+                 Avail:20;          //      FFFFF000:  Available bits
     LPFH_YYSTYPE lpYYStrandStart,   // 24:  Strand stack start (static)
                  lpYYStrandBase,    // 28:  ...          base (dynamic)
                  lpYYStrandNext,    // 2C:  ...          next token (dynamic)

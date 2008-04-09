@@ -125,7 +125,7 @@ AxisOpr:
                                  InitHdrStrand (&$1);
                                  PushHdrStrand_YY (&$1);
                                  PushHdrStrand_YY (&$3);
-                                 $$ = *MakeHdrStrand_YY (&$1);
+                                 MakeHdrStrand_YY (&$1);
                                  lpfhLocalVars->DfnAxis  = 1;
                                  lpfhLocalVars->lpYYAxisOpr = $3.lpYYStrandIndirect;
                                  $$ = $1;
@@ -170,12 +170,14 @@ AxisList:
 List:
       '(' OpenList ')'          {DbgMsgW2 (L"%%List:  '(' OpenList ')'");
                                  $$ = *MakeHdrStrand_YY (&$2);
+                                 $$.List = TRUE;                                    // Set the List bit
                                 }
     ;
 
 Result:
       List    ASSIGN            {DbgMsgW2 (L"%%Result:  List" WS_UTF16_LEFTARROW);
                                  lpfhLocalVars->lpYYResult = $1.lpYYStrandBase;
+                                 lpfhLocalVars->ListRes    = $1.List;               // Copy the List bit
                                  $$ = $1;
                                 }
     | NAMEUNK ASSIGN            {DbgMsgW2 (L"%%Result:  NAMEUNK" WS_UTF16_LEFTARROW);
@@ -189,17 +191,23 @@ Result:
 OptArg:
       '[' List     ']'          {DbgMsgW2 (L"%%OptArg:  [List]");
                                  $$ = $2;
+                                 lpfhLocalVars->ListLft = $2.List;                  // Copy the List bit
                                 }
     | '[' OpenList ']'          {DbgMsgW2 (L"%%OptArg:  [OpenList]");
                                  $$ = *MakeHdrStrand_YY (&$2);
+                                 // This is the only odd case where we can't use the List bit
+                                 //   because there are no parens, so we use the strand length
+                                 lpfhLocalVars->ListLft = $$.lpYYStrandBase->uStrandLen > 1; // Set the List bit
                                 }
     | '(' '[' OpenList ']' ')'  {DbgMsgW2 (L"%%OptArg:  ([OpenList])");
                                  $$ = *MakeHdrStrand_YY (&$3);
+                                 lpfhLocalVars->ListLft = TRUE;                     // Set the List bit
                                 }
     ;
 
 RhtArg:
       List                      {DbgMsgW2 (L"%%RhtArg:  List");
+                                 lpfhLocalVars->ListRht = $1.List;                  // Copy the List bit
                                  $$ = $1;
                                 }
     | NAMEUNK                   {DbgMsgW2 (L"%%RhtArg:  NAMEUNK");
@@ -284,6 +292,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
+                                 lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | List    NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  List NAMEUNK RhtArg");    // Dyadic function
                                  InitHdrStrand (&$2);
@@ -295,6 +304,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
+                                 lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | OptArg  AxisOpr  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg AxisOpr RhtArg");  // Bivalent function w/axis operator
                                  InitHdrStrand (&$2);
@@ -363,6 +373,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
+                                 lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | List    List     RhtArg   {DbgMsgW2 (L"%%NoResHdr:  List List RhtArg");       // Mon/Dyd operator, dyadic derived function
                                  if (!GetOprName (&$2))
@@ -371,6 +382,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_DYD;       // Mark as dyadic
+                                 lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | OptArg  AxisList RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg AxisList RhtArg"); // Mon/Dyd operator, ambivalent derived function w/axis operator
                                  if (!GetOprName (&$2))
@@ -593,6 +605,7 @@ int fh_yylex
     lpYYLval->tkToken            = *lpfhLocalVars->lpNext;
     lpYYLval->uStrandLen         =
     lpYYLval->Indirect           = 0;
+    lpYYLval->List               = FALSE;
     lpYYLval->lpYYStrandIndirect = NULL;
     lpYYLval->lpYYStrandBase     = lpfhLocalVars->lpYYStrandBase;
 

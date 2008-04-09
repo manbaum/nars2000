@@ -75,11 +75,13 @@ char szCloseMessage[] = "You have changed the body of this function;"
 COLORREF crLineNum = RGB (143,188,143),   // Darkseagreen
          crLineTxt = RGB ( 65,105,225);   // Royalblue
 
+// Define struct for passing parameters to WM_NCCREATE/WM_CREATE
+//   for the Function Edit window
 typedef struct tagFE_CREATESTRUCTW
 {
     LPAPLCHAR lpwszLine;
     UINT      ErrCode;
-} FE_CREATESTRUCTW, *LPFE_CREATESTRUCTW;
+} FE_CREATESTRUCTW, UNALIGNED *LPFE_CREATESTRUCTW;
 
 
 typedef struct tagCLIPFMTS

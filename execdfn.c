@@ -165,8 +165,6 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYFcnTmpLft,     // Ptr to temp left operand function strand (may be NULL if not an operator)
                  lpYYFcnTmpRht;     // Ptr to temp right operand function strand (may be NULL if monadic operator or not an operator)
-////PL_YYSTYPE   YYFcnTmpLft,       // Left operand temp function strand (may be NULL if not an operator)
-////             YYFcnTmpRht;       // Right operand temp function strand (may be NULL if monadic operator or not an operator)
     LPTOKEN      lptkLftTmp,        // Ptr to temp left arg token
                  lptkRhtTmp;        // ...         right
     TOKEN        tkLftTmp,          // Temp left arg token
@@ -221,19 +219,25 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     // If the DFN left arg is a list, make sure the left arg token
     //   is a scalar, or a vector of the proper length
-    if (lpMemDfnHdr->numLftArgSTE > 1
-     && (aplRankLft > 1
-      || (aplRankLft EQ 1
-       && lpMemDfnHdr->numLftArgSTE NE aplNELMLft)))
-        goto LENGTH_EXIT;
+    if (lpMemDfnHdr->ListLft)
+    {
+        if (aplRankLft > 1)
+            goto LEFT_RANK_EXIT;
+        if (aplRankLft EQ 1
+         && lpMemDfnHdr->numLftArgSTE NE aplNELMLft)
+            goto LEFT_LENGTH_EXIT;
+    } // End IF
 
     // If the DFN right arg is a list, make sure the right arg token
     //   is a scalar, or a vector of the proper length
-    if (lpMemDfnHdr->numRhtArgSTE > 1
-     && (aplRankRht > 1
-      || (aplRankRht EQ 1
-       && lpMemDfnHdr->numRhtArgSTE NE aplNELMRht)))
-        goto LENGTH_EXIT;
+    if (lpMemDfnHdr->ListRht)
+    {
+        if (aplRankRht > 1)
+            goto RIGHT_RANK_EXIT;
+        if (aplRankRht EQ 1
+         && lpMemDfnHdr->numRhtArgSTE NE aplNELMRht)
+            goto RIGHT_LENGTH_EXIT;
+    } // End IF
 
     // Split cases based upon the starting line #
     switch (startLineNum)
@@ -363,8 +367,6 @@ RESTART_EXCEPTION_EXECDFNGLB:
     if (lpYYFcnStrLft)
     {
         // Copy the PL_YYSTYPE
-////    YYFcnTmpLft = *lpYYFcnStrLft;
-////    lpYYFcnTmpLft = &YYFcnTmpLft;
         lpYYFcnTmpLft = lpYYFcnStrLft;
 
         // If the token is named, ...
@@ -381,8 +383,6 @@ RESTART_EXCEPTION_EXECDFNGLB:
     if (lpYYFcnStrRht)
     {
         // Copy the PL_YYSTYPE
-////    YYFcnTmpRht = *lpYYFcnStrRht;
-////    lpYYFcnTmpRht = &YYFcnTmpRht;
         lpYYFcnTmpRht = lpYYFcnStrRht;
 
         // If the token is named, ...
@@ -531,9 +531,24 @@ UNLOCALIZE_EXIT:
 
     goto NORMAL_EXIT;
 
-LENGTH_EXIT:
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkRhtArg);
     goto ERROR_EXIT;
 
 DOMAIN_EXIT:

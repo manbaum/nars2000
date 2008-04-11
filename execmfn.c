@@ -128,7 +128,8 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
 //***************************************************************************
 
 HGLOBAL Init1MagicFunction
-    (LPMAGIC_FUNCTION lpMagicFunction,  // Ptr to magic function struc
+    (LPWCHAR          lpwszName,        // Ptr to the external name
+     LPMAGIC_FUNCTION lpMagicFunction,  // Ptr to magic function struc
      LPPERTABDATA     lpMemPTD,         // Ptr to PerTabData global memory
      HWND             hWndEC)           // Edit Control window handle
 
@@ -139,6 +140,8 @@ HGLOBAL Init1MagicFunction
                    hGlbDfnHdr = NULL;   // User-defined function/operator header ...
     LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/line text global memory
     FHLOCALVARS    fhLocalVars = {0};   // Re-entrant vars
+    STFLAGS        stFlags = {0};       // STE flags for the MF
+    LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY for the MF
 
     // Throughout this function, we use GlobalAlloc
     //   instead of MyGlobalAlloc because we never intend to
@@ -306,6 +309,7 @@ HGLOBAL Init1MagicFunction
         lpMemDfnHdr->DfnType      = fhLocalVars.DfnType;
         lpMemDfnHdr->FcnValence   = fhLocalVars.FcnValence;
         lpMemDfnHdr->DfnAxis      = fhLocalVars.DfnAxis;
+        lpMemDfnHdr->NoDispRes    = fhLocalVars.NoDispRes;
         lpMemDfnHdr->ListRes      = fhLocalVars.ListRes;
         lpMemDfnHdr->ListLft      = fhLocalVars.ListLft;
         lpMemDfnHdr->ListRht      = fhLocalVars.ListRht;
@@ -485,15 +489,24 @@ HGLOBAL Init1MagicFunction
             lpFcnLines++;
         } // End FOR
 
-        // Check for special labels ([]PROTOTYPE, []INVERSE, and []SINGLETON)
+        // Check for special labels ([]IDENTITY, []INVERSE, []PROTOTYPE, and []SINGLETON)
         GetSpecialLabelNums (lpMemDfnHdr);
 
-        // ***FIXME*** -- Do we need a Symbol Table Entry??
+        // Set the flags for what we're appending
+        stFlags.Perm    =
+        stFlags.Inuse   =
+        stFlags.Value   = TRUE;
+        stFlags.ObjName = OBJNAME_MF;
+        stFlags.UsrDfn  = TRUE;
+        stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;
+////////stFlags.ObjType = NAMETYPE_FN0/FN12/OP1/OP2;
 
+        // Create a symbol table entry for the Magic Function
+        lpSymEntry =
+          SymTabAppendNewName_EM (lpwszName, &stFlags);
 
-
-
-
+        // Set the handle
+        lpSymEntry->stData.stGlbData = MakePtrTypeGlb (hGlbDfnHdr);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -551,15 +564,13 @@ BOOL InitMagicFunctions
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Define the magic functions
-    lpMemPTD->hGlbMF_MonIota     = Init1MagicFunction (&MF_MonIota    , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_DydIota     = Init1MagicFunction (&MF_DydIota    , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_MonUpShoe   = Init1MagicFunction (&MF_MonUpShoe  , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_DydTilde    = Init1MagicFunction (&MF_DydTilde   , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_MonRank     = Init1MagicFunction (&MF_MonRank    , lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_DydRank     = Init1MagicFunction (&MF_DydRank    , lpMemPTD, hWndEC);
-////lpMemPTD->hGlbMF_MonRankAxis = Init1MagicFunction (&MF_MonRankAxis, lpMemPTD, hWndEC);
-////lpMemPTD->hGlbMF_DydRankAxis = Init1MagicFunction (&MF_DydRankAxis, lpMemPTD, hWndEC);
-    lpMemPTD->hGlbMF_Conform     = Init1MagicFunction (&MF_Conform    , lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_MonIota   = Init1MagicFunction (L"#MonIota"  , &MF_MonIota  , lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_DydIota   = Init1MagicFunction (L"#DydIota"  , &MF_DydIota  , lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_MonUpShoe = Init1MagicFunction (L"#MonUpShoe", &MF_MonUpShoe, lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_DydTilde  = Init1MagicFunction (L"#DydTilde" , &MF_DydTilde , lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_MonRank   = Init1MagicFunction (L"#MonRank"  , &MF_MonRank  , lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_DydRank   = Init1MagicFunction (L"#DydRank"  , &MF_DydRank  , lpMemPTD, hWndEC);
+    lpMemPTD->hGlbMF_Conform   = Init1MagicFunction (L"#Conform"  , &MF_Conform  , lpMemPTD, hWndEC);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

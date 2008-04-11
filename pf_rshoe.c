@@ -269,13 +269,19 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
     LPSYMENTRY   lpSymProto,        // Right arg item prototype as Symbol Table Entry
                  lpSym0,            // LPSYMENTRY for constant zero
-                 lpSym1;            // ...                     one
+                 lpSym1,            // ...                     one
+                 lpSymB;            // ...                     ' '
     APLUINT      uSubRest,          // Loop counter
                  uSubLast;          // ...
     APLNELM      aplNELMSubRest,    // Right arg item NELM except for last coordinate
                  aplNELMSubLast;    // Right arg item NELM last coordinate
     APLINT       apaOffSub,         // Right arg item APA offset
                  apaMulSub;         // Right arg item APA multiplier
+
+    // Get STEs for constants
+    lpSym0 = GetSteZero  ();
+    lpSym1 = GetSteOne   ();
+    lpSymB = GetSteBlank ();
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg global
@@ -414,8 +420,6 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 // If the item is not a scalar, ...
                 if (aplRankSub > 0)
                 {
-                    LPAPLDIM lpMemSub;
-
                     // Lock the memory to get a ptr to it
                     lpMemSub = MyGlobalLock (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]));
 
@@ -425,7 +429,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     // Loop through the dimensions of the item
                     //   calculating the maximum of the corresponding dimensions
                     for (uSub = 0; uSub < aplRankSub; uSub++)
-                        lpMemDimCom[uSub] = max (lpMemDimCom[uSub], lpMemSub[uSub]);
+                        lpMemDimCom[uSub] = max (lpMemDimCom[uSub], ((LPAPLDIM) lpMemSub)[uSub]);
                     // We no longer need this ptr
                     MyGlobalUnlock (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht])); lpMemSub = NULL;
                 } // End IF
@@ -514,12 +518,12 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
             case ARRAY_INT:
             case ARRAY_FLOAT:
             case ARRAY_APA:
-                *((LPAPLNESTED) lpMemRes) = GetSteZero ();
+                *((LPAPLNESTED) lpMemRes) = lpSym0;
 
                 break;
 
             case ARRAY_CHAR:
-                *((LPAPLNESTED) lpMemRes) = GetSteBlank ();
+                *((LPAPLNESTED) lpMemRes) = lpSymB;
 
                 break;
 
@@ -565,9 +569,9 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
             case PTRTYPE_STCONST:
                 // Get the item as a prototype
                 if (IsImmChr (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType))
-                    lpSymProto = GetSteBlank ();
+                    lpSymProto = lpSymB;
                 else
-                    lpSymProto = GetSteZero ();
+                    lpSymProto = lpSym0;
 
                 // Loop through the rest of common item's elements
                 //   saving the item's prototype
@@ -616,11 +620,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 {
                     case ARRAY_BOOL:
                         // Get the prototype
-                        lpSymProto = GetSteZero ();
-
-                        // Get the two possible values
-                        lpSym0 = GetSteZero ();
-                        lpSym1 = GetSteOne ();
+                        lpSymProto = lpSym0;
 
                         uBitMask = 0x01;
 
@@ -660,7 +660,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                     case ARRAY_INT:
                         // Get the prototype
-                        lpSymProto = GetSteZero ();
+                        lpSymProto = lpSym0;
 
                         // Loop through the right arg item's elements
                         //   copying them to the result
@@ -691,7 +691,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                         apaMulSub = lpAPA->Mul;
 #undef  lpAPA
                         // Get the prototype
-                        lpSymProto = GetSteZero ();
+                        lpSymProto = lpSym0;
 
                         // Loop through the right arg item's elements
                         //   copying them to the result
@@ -717,7 +717,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                     case ARRAY_FLOAT:
                         // Get the prototype
-                        lpSymProto = GetSteZero ();
+                        lpSymProto = lpSym0;
 
                         // Loop through the right arg item's elements
                         //   copying them to the result
@@ -743,7 +743,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
                     case ARRAY_CHAR:
                         // Get the prototype
-                        lpSymProto = GetSteBlank ();
+                        lpSymProto = lpSymB;
 
                         // Loop through the right arg item's elements
                         //   copying them to the result

@@ -1472,12 +1472,16 @@ LPSYMENTRY SymTabLookupNameLength
            ((const uint32_t *) lpwszString, // A ptr to the name to hash
              iLen * sizeof (WCHAR),         // The # values pointed to
              0);                            // Initial value or previous hash
-    // Set the flags of the entry we're looking for
-    if (lpwszString[0] EQ UTF16_QUAD
-     || lpwszString[0] EQ UTF16_QUOTEQUAD)
-        lpstFlags->ObjName = OBJNAME_SYS;
-    else
-        lpstFlags->ObjName = OBJNAME_USR;
+    // If the caller hasn't set this field, set it ourselves
+    if (lpstFlags->ObjName EQ OBJNAME_NONE)
+    {
+        // Set the flags of the entry we're looking for
+        if (lpwszString[0] EQ UTF16_QUAD
+         || lpwszString[0] EQ UTF16_QUOTEQUAD)
+            lpstFlags->ObjName = OBJNAME_SYS;
+        else
+            lpstFlags->ObjName = OBJNAME_USR;
+    } // End IF
 
     // Mark as in use
     lpstFlags->Inuse   = 1;
@@ -1506,11 +1510,8 @@ LPSYMENTRY SymTabLookupNameLength
             // Lock the memory to get a ptr to it
             lpGlbName = MyGlobalLock (lpHshEntry->htGlbName);
 
-            // Compare with or without sensitivity to case
-            if (lpHshEntry->htSymEntry->stFlags.NotCase)
-                iCmp = _wcsnicmp (lpGlbName, lpwszString, iLen);
-            else
-                iCmp =  wcsncmp  (lpGlbName, lpwszString, iLen);
+            // Compare sensitive to case
+            iCmp = wcsncmp (lpGlbName, lpwszString, iLen);
 
             // We no longer need this ptr
             MyGlobalUnlock (lpHshEntry->htGlbName); lpGlbName = NULL;
@@ -2125,7 +2126,8 @@ LPSYMENTRY SymTabAppendName_EM
 
             return NULL;
         } else
-            lpSymEntry = SymTabAppendNewName_EM (lpwszString, &stFlags);
+            lpSymEntry =
+              SymTabAppendNewName_EM (lpwszString, &stFlags);
     } // End IF
 
     return lpSymEntry;
@@ -2195,6 +2197,9 @@ LPSYMENTRY SymTabAppendNewName_EM
     // Save as return result
     lpSymEntryDest = lpHshEntryDest->htSymEntry = lpMemPTD->lpSymTabNext++;
 
+    // Zero the entry
+    ZeroMemory (lpSymEntryDest, sizeof (*lpSymEntryDest));
+
     // Get a ptr to the corresponding hash entry
     // N.B.  It's very important to call MaskTheHash *AFTER*
     //   calling FindNextFreeUsingHash_SPLIT_EM as lpHshTabSplitNext
@@ -2223,7 +2228,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     MyGlobalUnlock (lpHshEntryDest->htGlbName); lpGlbName = NULL;
 
     // Save the flags
-    *(PUINT_PTR) &lpSymEntryDest->stFlags |= *(PUINT_PTR) lpstFlags;
+    *(PUINT_PTR) &lpSymEntryDest->stFlags = *(PUINT_PTR) lpstFlags;
 
     // Save hash value (so we don't have to rehash on split)
     lpHshEntryDest->uHash        = uHash;

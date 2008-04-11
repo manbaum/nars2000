@@ -204,18 +204,17 @@ void DisplaySymTab
     {
 //// {0x00000001,  L" Imm"        },
 //// {0x0000001E,  L" ImmType"    },
-     {0x00000020,  L" NotCase"    },
-     {0x00000040,  L" Perm"       },
-     {0x00000080,  L" Inuse"      },
-     {0x00000100,  L" Value"      },
-/////{0x00000600,  L" ObjName"    },
-//// {0x00003800,  L" UsrType"    },
-//// {0x0003C000,  L" SysVarValid"},
-     {0x00040000,  L" UsrDfn"     },
-     {0x00080000,  L" DfnLabel"   },
-     {0x00100000,  L" DfnSysLabel"},
-     {0x00200000,  L" DfnAxis"    },
-     {0x00400000,  L" FcnDir"     },
+     {0x00000020,  L" Perm"       },
+     {0x00000040,  L" Inuse"      },
+     {0x00000080,  L" Value"      },
+/////{0x00000700,  L" ObjName"    },
+//// {0x00007800,  L" UsrType"    },
+//// {0x000F8000,  L" SysVarValid"},
+     {0x00100000,  L" UsrDfn"     },
+     {0x00200000,  L" DfnLabel"   },
+     {0x00400000,  L" DfnSysLabel"},
+     {0x00800000,  L" DfnAxis"    },
+     {0x01000000,  L" FcnDir"     },
     };
 
 // The # rows in the above table
@@ -664,24 +663,26 @@ static TOKENNAMES tokenNames[] =
  {"RPAREN"    , TKT_RPAREN   }, // 0F: Right ...   ...         RPAREN
  {"LBRACKET"  , TKT_LBRACKET }, // 10: Left bracket ...        LBRACKET
  {"RBRACKET"  , TKT_RBRACKET }, // 11: Right ...   ...         RBRACKET
- {"EOS"       , TKT_EOS      }, // 12: End-of-Stmt (data is length of stmt including this token)
- {"EOL"       , TKT_EOL      }, // 13: End-of-Line  ...
- {"SOS"       , TKT_SOS      }, // 14: Start-of-Stmt (data is NULL)
- {"LINECONT"  , TKT_LINECONT }, // 15: Line continuation (data is NULL)
- {"INPOUT"    , TKT_INPOUT   }, // 16: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
- {"STRAND"    , TKT_STRAND   }, // 17: Strand accumulating (data is LPTOKEN)
- {"LISTINT"   , TKT_LISTINT  }, // 18: List in parens    (data is HGLOBAL)
- {"LISTPAR"   , TKT_LISTPAR  }, // 19: List in parens    (data is HGLOBAL)
- {"LISTBR"    , TKT_LISTBR   }, // 1A: List in brackets  (data is HGLOBAL)
- {"VARARRAY"  , TKT_VARARRAY }, // 1B: Array of data (data is HGLOBAL)
- {"FCNARRAY"  , TKT_FCNARRAY }, // 1C: Array of functions (data is HGLOBAL)
- {"FCNNAMED"  , TKT_FCNNAMED }, // 1D: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED" , TKT_AXISIMMED}, // 1E: An immediate axis specification (data is immediate)
- {"AXISARRAY" , TKT_AXISARRAY}, // 1F: An array of  ...   (data is HGLOBAL)
- {"OP1NAMED"  , TKT_OP1NAMED }, // 20: A named monadic primitive operator (data is LPSYMENTRY)
- {"OP2NAMED"  , TKT_OP2NAMED }, // 21: ...     dyadic  ...
- {"OP3NAMED"  , TKT_OP3NAMED }, // 22: ...     ambiguous ...
- {"STRNAMED"  , TKT_STRNAMED }, // 23: ...     strand  ...
+ {"LBRACE"    , TKT_LBRACE   }, // 12: Left bracket ...        LBRACKET
+ {"RBRACE"    , TKT_RBRACE   }, // 13: Right ...   ...         RBRACKET
+ {"EOS"       , TKT_EOS      }, // 14: End-of-Stmt (data is length of stmt including this token)
+ {"EOL"       , TKT_EOL      }, // 15: End-of-Line  ...
+ {"SOS"       , TKT_SOS      }, // 16: Start-of-Stmt (data is NULL)
+ {"LINECONT"  , TKT_LINECONT }, // 17: Line continuation (data is NULL)
+ {"INPOUT"    , TKT_INPOUT   }, // 18: Input/Output (data is UTF16_QUAD or UTF16_QUOTEQUAD)
+ {"STRAND"    , TKT_STRAND   }, // 19: Strand accumulating (data is LPTOKEN)
+ {"LISTINT"   , TKT_LISTINT  }, // 1A: List in parens    (data is HGLOBAL)
+ {"LISTPAR"   , TKT_LISTPAR  }, // 1B: List in parens    (data is HGLOBAL)
+ {"LISTBR"    , TKT_LISTBR   }, // 1C: List in brackets  (data is HGLOBAL)
+ {"VARARRAY"  , TKT_VARARRAY }, // 1D: Array of data (data is HGLOBAL)
+ {"FCNARRAY"  , TKT_FCNARRAY }, // 1E: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"  , TKT_FCNNAMED }, // 1F: Symbol table entry for a named function (data is LPSYMENTRY)
+ {"AXISIMMED" , TKT_AXISIMMED}, // 20: An immediate axis specification (data is immediate)
+ {"AXISARRAY" , TKT_AXISARRAY}, // 21: An array of  ...   (data is HGLOBAL)
+ {"OP1NAMED"  , TKT_OP1NAMED }, // 22: A named monadic primitive operator (data is LPSYMENTRY)
+ {"OP2NAMED"  , TKT_OP2NAMED }, // 23: ...     dyadic  ...
+ {"OP3NAMED"  , TKT_OP3NAMED }, // 24: ...     ambiguous ...
+ {"STRNAMED"  , TKT_STRNAMED }, // 25: ...     strand  ...
 };
 
 // The # rows in the above table

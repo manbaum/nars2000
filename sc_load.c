@@ -44,15 +44,13 @@
 //***************************************************************************
 
 BOOL CmdLoad_EM
-    (LPWCHAR lpwszTail)         // Ptr to command line tail
+    (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
+    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     WCHAR        wszTailDPFE[_MAX_PATH];// Save area for canonical form of given ws name
-    FILE        *fStream;               // Ptr to file stream
-    UINT         uSymVar,               // Var index counter
-                 uSymFcn,               // Fcn/Opr index counter
-                 uStr;                  // Loop counter
-    WCHAR        wszCount[8];           // Output save area for formatted uSymxxx counter
+    int          iTabIndex;             // Tab index
 
     // If there's no WSID, that's an error
     if (lpwszTail[0] EQ L'\0')
@@ -68,8 +66,47 @@ BOOL CmdLoad_EM
     // Append the common workspace extension
     lstrcatW (wszTailDPFE, WS_WKSEXT);
 
+    // Get the PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the tab index from which this command was issued
+    iTabIndex = lpMemPTD->TabIndex;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return
+      CreateNewTab (hWndMF,             // Parent window handle
+                    wszTailDPFE,        // Drive, Path, Filename, Ext of the workspace
+                    iTabIndex + 1);     // Insert new tab to the left of this one
+} // End CmdLoad_EM
+
+
+//***************************************************************************
+//  $LoadWorkspace
+//
+//  Load a workspace
+//***************************************************************************
+
+BOOL LoadWorkspace
+    (LPWCHAR lpwszDPFE)                 // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+
+{
+    FILE *fStream;                      // Ptr to file stream for the plain text workspace file
+    UINT  uSymVar,                      // Var index counter
+          uSymFcn,                      // Fcn/Opr index counter
+          uStr;                         // Loop counter
+    WCHAR wszCount[8];                  // Output save area for formatted uSymVar/Fcn counter
+
+    // Check for CLEAR WS
+    if (lpwszDPFE[0] EQ L'\0')
+        goto WSID_EXIT;
+
     // Attempt to open the workspace
-    fStream = _wfopen (wszTailDPFE, L"r");
+    fStream = _wfopen (lpwszDPFE, L"r");
 
     // If the workspace doesn't exist, ...
     if (fStream EQ NULL)
@@ -87,18 +124,17 @@ BOOL CmdLoad_EM
       GetPrivateProfileIntW (L"General",        // Ptr to the section name
                              L"VarCount",       // Ptr to the key name
                              0,                 // Default value if not found
-                             wszTailDPFE);      // Ptr to the file name
+                             lpwszDPFE);        // Ptr to the file name
     uSymFcn =
       GetPrivateProfileIntW (L"General",        // Ptr to the section name
                              L"FcnCount",       // Ptr to the key name
                              0,                 // Default value if not found
-                             wszTailDPFE);      // Ptr to the file name
+                             lpwszDPFE);        // Ptr to the file name
     // Load the [Globals] section
     for (uStr = 0; ; uStr++)
     {
         // Format the counter
         wsprintfW (wszCount, L"%d", uStr);
-
 
         // Read the next string
         GetPrivateProfileStringW (L"Globals",
@@ -106,7 +142,10 @@ BOOL CmdLoad_EM
                                   L"",              // Ptr to the default value
                                   lpwszTemp,        // Ptr to the output buffer
                                   memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
-                                  wszTailDPFE);     // Ptr to the file name
+                                  lpwszDPFE);       // Ptr to the file name
+        // Parse the array attributes
+
+
 
 
 
@@ -133,10 +172,13 @@ BOOL CmdLoad_EM
 
 
 
-
+WSID_EXIT:
+    // Set the value of the new []WSID as lpwszDPFE
+    if (SaveNewWsid (lpwszDPFE))
+        return TRUE;
 ERROR_EXIT:
     return FALSE;
-} // End CmdLoad_EM
+} // End LoadWorkspace
 
 
 //***************************************************************************

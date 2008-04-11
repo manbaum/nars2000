@@ -281,6 +281,10 @@ QUESTIONS
   or is it different within each plane?
 * Is there any reason to lmiit []AV to 256 elements?
 * What should be the result of {del} z {is} z foo z ?
+* How does Dyalog decide whether or not the result from a primitive function is shy?
+* Should {leftrarrow} be interpreted as a (dyadic) function as Dyalog does, e.g. there
+  is an example in their manual of {quad}{jot}{leftarrow}{jot}{quad}VR{each}R ?
+* Also, what category does {quad} belong to in the above line?
 *
 
 

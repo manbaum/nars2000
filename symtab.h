@@ -214,38 +214,21 @@ typedef enum tagOBJ_NAMES
     OBJNAME_NONE = 0,       // 00:  Unnamed
     OBJNAME_USR,            // 01:  User name
     OBJNAME_SYS,            // 02:  System name (starts with a Quad or Quote-quad)
-                            // 03:  Available entry (2 bits)
+    OBJNAME_MF,             // 03:  Magic Function
+                            // 04-07:  Available entries (3 bits)
 } OBJ_NAMES;
 
-#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS"}
-
-typedef enum tagNAME_CLASS
-{
-    NAMECLASS_INV = -1,     // -1 = Invalid name or unknown sysname
-    NAMECLASS_AVL = 0,      //  0 = Available name
-    NAMECLASS_USRLBL,       //  1 = User label
-    NAMECLASS_USRVAR,       //  2 = User variable
-    NAMECLASS_USRFCN,       //  3 = User-defined function
-    NAMECLASS_USROPR,       //  4 = User-defined operator (monadic or dyadec)
-    NAMECLASS_SYSVAR,       //  5 = System variable
-    NAMECLASS_SYSFCN,       //  6 = System function
-    NAMECLASS_SYSLBL,       //  7 = System label
-    NAMECLASS_LENp1,        //  8 = # valid entries + 1 (1-7)
-} NAME_CLASS;
-// Note that )NMS in <sc_fnov.c> assumes that the Name Class
-//   is a single digit.  If you add enough classes to invalidate
-//   that assumptioon, be sure make )NMS work, too.
+#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MF"}
 
 // Symbol table flags
 typedef struct tagSTFLAGS
 {
     UINT Imm:1,             // 00000001:  The data in .stData is Immediate simple numeric or character scalar
          ImmType:4,         // 0000001E:  ...                    Immediate Boolean, Integer, Character, or Float (see IMM_TYPES)
-         NotCase:1,         // 00000020:  Case-insensitive name
-         Perm:1,            // 00000040:  Permanent entry
-         Inuse:1,           // 00000080:  Inuse entry
-         Value:1,           // 00000100:  Entry has a value
-         ObjName:2,         // 00000600:  The data in .stData is NULL if .ObjType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
+         Perm:1,            // 00000020:  Permanent entry
+         Inuse:1,           // 00000040:  Inuse entry
+         Value:1,           // 00000080:  Entry has a value
+         ObjName:3,         // 00000700:  The data in .stData is NULL if .ObjType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
                             //            (see OBJ_NAMES)
          ObjType:4,         // 00007800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
                             //            (see NAME_TYPES)
@@ -267,9 +250,8 @@ typedef struct tagSTFLAGS
 // .Imm     implies one and only one of the IMMTYPE_***s
 // .Imm     = 1 implies that one and only one of aplBoolean, aplInteger, aplChar, or aplFloat is valid.
 // .Imm     = 0 implies that stGlbData is valid.
-// .Perm    is valid for .SysType only.
-// .NotCase is valid for .SysType only.
-// .Value   is valid for NAMETYPE_VAR only, however .SysType EQ NAMETYPE_VAR
+// .Perm    is valid for OBJNAME_SYS and OBJNAME_MF only.
+// .Value   is valid for NAMETYPE_VAR only, however .ObjType EQ NAMETYPE_VAR
 //          should never be without a value.
 // .UsrDfn  is set for .UsrType when the function is user-defined.
 // .FcnDir  may be set for any function/operator in .SysType or .UsrType; it is a
@@ -301,6 +283,23 @@ typedef struct tagSYMENTRY
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)
+
+typedef enum tagNAME_CLASS
+{
+    NAMECLASS_INV = -1,     // -1 = Invalid name or unknown sysname
+    NAMECLASS_AVL = 0,      //  0 = Available name
+    NAMECLASS_USRLBL,       //  1 = User label
+    NAMECLASS_USRVAR,       //  2 = User variable
+    NAMECLASS_USRFCN,       //  3 = User-defined function
+    NAMECLASS_USROPR,       //  4 = User-defined operator (monadic or dyadec)
+    NAMECLASS_SYSVAR,       //  5 = System variable
+    NAMECLASS_SYSFCN,       //  6 = System function
+    NAMECLASS_SYSLBL,       //  7 = System label
+    NAMECLASS_LENp1,        //  8 = # valid entries + 1 (1-7)
+} NAME_CLASS;
+// Note that )NMS in <sc_fnov.c> assumes that the Name Class
+//   is a single digit.  If you add enough classes to invalidate
+//   that assumptioon, be sure make )NMS work, too.
 
 //***************************************************************************
 //  End of File: symtab.h

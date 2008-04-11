@@ -459,17 +459,13 @@ MAGIC_FUNCTION MF_MonRank =
 
 
 static APLCHAR ConHeader[] =
-  $Z $IS $L L" " $F L" " $R L";" $O;
+  $Z $IS $L L" " $F L" " $R;
 
 static APLCHAR ConLine1[] =
-  $O $IS $EPSILON $RHO $JOT $RHO $EACH $Z $IS $R;
-
-static APLCHAR ConLine2[] =
-  $Z $IS $DISCLOSE L"(((" $L L"-" $O L")" $RHO $EACH L"1" L")," $EACH $RHO $EACH $Z L")" $RHO $EACH $Z;
+  $Z $IS $DISCLOSE L"(((" $L L"-" $EPSILON $RHO $JOT $RHO $EACH $R L")" $RHO $EACH L"1" L")," $EACH $RHO $EACH $R L")" $RHO $EACH $R;
 
 static LPAPLCHAR ConBody[] =
 {ConLine1,
- ConLine2,
 };
 
 MAGIC_FUNCTION MF_Conform =
@@ -547,16 +543,16 @@ static APLCHAR DydLine3[] =
   $X $IS L"(-" $O L")" $MAX $O $MIN $X;
 
 static APLCHAR DydLine4[] =
-  $Z $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $X L"]" $L L")"
-                   $LO $EACH
-                        $ENCLOSE L"[" $IOTA L"-1" $DROP $X L"]" $R
+  $Z $IS L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $X L"]" $L L")"
+         $LO $EACH
+              $ENCLOSE L"[" $IOTA L"-1" $DROP $X L"]" $R
   $DIAMOND $GOTO L"0";
 
 static APLCHAR DydLine5[] =
   $QUAD_PROTOTYPE L":"
-  $Z $IS $DISCLOSE $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $X L"]" $EACH L"0" $RHO $ENCLOSE $L L")"
-                             $LO $EACH $EACH
-                                  $ENCLOSE L"[" $IOTA L"-1" $DROP $X L"]" $EACH L"0" $RHO $ENCLOSE $R;
+  $Z $IS $DISCLOSE L"(" $ENCLOSE L"[" $IOTA L"-1" $TAKE $X L"]" $EACH L"0" $RHO $ENCLOSE $L L")"
+                   $LO $EACH $EACH
+                        $ENCLOSE L"[" $IOTA L"-1" $DROP $X L"]" $EACH L"0" $RHO $ENCLOSE $R;
 
 static LPAPLCHAR DydBody[] =
 {DydLine1,

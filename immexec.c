@@ -39,15 +39,13 @@
 #endif
 
 
-typedef struct tagWFSO      // Struct for WaitForSingleObject
+typedef struct tagWFSO          // Struct for WaitForSingleObject
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     HANDLE       WaitHandle,    // WaitHandle from RegisterWaitForSingleObject
                  hSigaphore,    // Handle to signal next (may be NULL)
                  hThread;       // Thread handle
 } WFSO, *LPWFSO;
-
-IE_THREAD ieThread;             // Temporary global
 
 
 //***************************************************************************
@@ -279,27 +277,32 @@ void ImmExecLine
 #endif
 
 EXIT_TYPES ImmExecStmt
-    (LPWCHAR lpwszCompLine, // Ptr to line to execute
-     BOOL    bFreeLine,     // TRUE iff free lpwszCompLine on completion
-     BOOL    bWaitUntilFini,// TRUE iff wait until finished
-     HWND    hWndEC)        // Edit Control window handle
+    (LPWCHAR lpwszCompLine,     // Ptr to line to execute
+     BOOL    bFreeLine,         // TRUE iff free lpwszCompLine on completion
+     BOOL    bWaitUntilFini,    // TRUE iff wait until finished
+     HWND    hWndEC)            // Edit Control window handle
 
 {
-    HANDLE     hThread;     // Thread handle
-    DWORD      dwThreadId;  // The thread ID #
-    LPWFSO     lpMemWFSO;   // Ptr to WFSO global memory
-    EXIT_TYPES exitType;    // Exit code from thread
+    HANDLE     hThread;         // Thread handle
+    DWORD      dwThreadId;      // The thread ID #
+    HGLOBAL    hGlbWFSO;        // WFSO global memory handle
+    LPWFSO     lpMemWFSO;       // Ptr to WFSO global memory
+    EXIT_TYPES exitType;        // Exit code from thread
+    static IE_THREAD ieThread;  // Temporary global
+
+    // Allocate memory for the WaitForSingleObject struct
+    hGlbWFSO = DbgGlobalAlloc (GHND, sizeof (WFSO));
 
     // Save args in struc to pass to thread func
     ieThread.hWndEC         = hWndEC;
     ieThread.hGlbPTD        = TlsGetValue (dwTlsPerTabData); Assert (ieThread.hGlbPTD NE NULL);
     ieThread.lpwszCompLine  = lpwszCompLine;
-    ieThread.hGlbWFSO       = DbgGlobalAlloc (GHND, sizeof (WFSO));
+    ieThread.hGlbWFSO       = hGlbWFSO;
     ieThread.bFreeLine      = bFreeLine;
     ieThread.bWaitUntilFini = bWaitUntilFini;
 
     // Lock the memory to get a ptr to it
-    lpMemWFSO = MyGlobalLock (ieThread.hGlbWFSO);
+    lpMemWFSO = MyGlobalLock (hGlbWFSO);
 
     // Fill in the struct
     lpMemWFSO->hGlbPTD = ieThread.hGlbPTD;
@@ -313,6 +316,9 @@ EXIT_TYPES ImmExecStmt
                            &dwThreadId);            // Returns thread id
     // Save the thread handle
     lpMemWFSO->hThread = hThread;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
 
     // Should we wait until finished?
     if (bWaitUntilFini)
@@ -335,21 +341,24 @@ EXIT_TYPES ImmExecStmt
 #ifdef DEBUG
         dprintfW (L"~~RegisterWaitForSingleObject (%08X) (%S#%d)", hThread, FNLN);
 #endif
+        // Lock the memory to get a ptr to it
+        lpMemWFSO = MyGlobalLock (hGlbWFSO);
+
         // Tell W to callback when this thread terminates
         RegisterWaitForSingleObject (&lpMemWFSO->WaitHandle,// Return wait handle
                                       hThread,              // Handle to wait on
                                      &WaitForImmExecStmt,   // Callback function
-                                      ieThread.hGlbWFSO,    // Callback function parameter
+                                      hGlbWFSO,             // Callback function parameter
                                       INFINITE,             // Wait time in milliseconds
                                       WT_EXECUTEONLYONCE);  // Options
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
+
         // Start 'er up
         ResumeThread (hThread);
 
         exitType = EXITTYPE_NONE;
     } // End IF/ELSE
-
-    // We no longer need this ptr
-    MyGlobalUnlock (ieThread.hGlbWFSO); lpMemWFSO = NULL;
 
     return exitType;
 } // End ImmExecStmt

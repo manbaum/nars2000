@@ -126,11 +126,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
@@ -142,11 +138,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     {
         lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
         if (!lpPrimProtoLft)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            return NULL;
-        } // End IF
+            goto LEFT_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
 
@@ -155,11 +147,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     {
         lpPrimProtoRht = PrimProtoFnsTab[SymTrans (&lpYYFcnStrRht->tkToken)];
         if (!lpPrimProtoRht)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrRht->tkToken);
-            return NULL;
-        } // End IF
+            goto RIGHT_NONCE_EXIT;
     } else
         lpPrimProtoRht = NULL;
 
@@ -280,11 +268,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
         case 0 * 2 + 1 * 1:     // V Jot F -> V F R
             // If there's a left arg, signal a SYNTAX ERROR
             if (lptkLftArg)
-            {
-                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                          &lpYYFcnStrLft->tkToken);
-                return NULL;
-            } // End IF
+                goto LEFT_SYNTAX_EXIT;
 
             // Execute the right operand dyadically
             //   between the left operand and the right arg.
@@ -307,11 +291,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
         case 1 * 2 + 0 * 1:     // F Jot V -> R F V
             // If there's a left arg, signal a SYNTAX ERROR
             if (lptkLftArg)
-            {
-                ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                          &lpYYFcnStrLft->tkToken);
-                return NULL;
-            } // End IF
+                goto LEFT_SYNTAX_EXIT;
 
             // Execute the left operand dyadically
             //   between the right arg and the right operand.
@@ -332,15 +312,33 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
             break;
 
         case 0 * 2 + 0 * 1:     // V op2 V
-            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            break;
+            goto LEFT_SYNTAX_EXIT;
 
         defstop
             break;
     } // End SWITCH
 
     return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+
+LEFT_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    return NULL;
+
+LEFT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    return NULL;
+
+RIGHT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    return NULL;
 } // End PrimOpJotCommon_EM_YY
 #undef  APPEND_NAME
 

@@ -747,6 +747,7 @@ BOOL SaveFunctionCom
         lpMemDfnHdr->DfnType      = fhLocalVars.DfnType;
         lpMemDfnHdr->FcnValence   = fhLocalVars.FcnValence;
         lpMemDfnHdr->DfnAxis      = fhLocalVars.DfnAxis;
+        lpMemDfnHdr->NoDispRes    = fhLocalVars.NoDispRes;
         lpMemDfnHdr->ListRes      = fhLocalVars.ListRes;
         lpMemDfnHdr->ListLft      = fhLocalVars.ListLft;
         lpMemDfnHdr->ListRht      = fhLocalVars.ListRht;

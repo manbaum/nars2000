@@ -214,9 +214,8 @@ void FreeResultSub
             if (bFreeName)
             {
                 // Set the flags we'll leave alone
-                stFlags.Inuse       =
-                stFlags.NotCase     =
-                stFlags.Perm        = 1;
+                stFlags.Perm        =
+                stFlags.Inuse       = 1;
                 stFlags.ObjName     =
                 stFlags.SysVarValid = NEG1U;
 
@@ -714,9 +713,8 @@ BOOL FreeResultGlobalDfn
         STFLAGS stFlags = {0};
 
         // Set the flags we'll leave alone
-        stFlags.Inuse       =
-        stFlags.NotCase     =
-        stFlags.Perm        = 1;
+        stFlags.Perm        =
+        stFlags.Inuse       = 1;
         stFlags.ObjName     =
         stFlags.SysVarValid = NEG1U;
 

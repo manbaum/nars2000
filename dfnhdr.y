@@ -76,12 +76,34 @@
 
 The set of cases we must handle is as follows:
 
+Niladic functions
+-----------------
+
 Result
 ------
     1.  **Empty**
     2.  Z{is}
-    3.  (Z){is}
-    4.  (Z1 Z2 ...){is}
+    3.  (Z1 Z2 ...){is}
+    4.  {Z}{is}
+    5.  {(Z1 Z2 ...)}{is}
+    6.  ({Z1 Z2 ...}){is}
+
+Fcn
+---
+    1.  FOO
+
+
+Monadic/Dyadic Functions/Operators
+----------------------------------
+
+Result
+------
+    1.  **Empty**
+    2.  Z{is}
+    3.  (Z1 Z2 ...){is}
+    4.  {Z}{is}
+    5.  {(Z1 Z2 ...)}{is}
+    6.  ({Z1 Z2 ...}){is}
 
 
 Left Arg
@@ -90,10 +112,12 @@ Left Arg
     2.  L
     3.  (L)
     4.  (L1 L2 ...)
-    5.  [L]
-    6.  [L1 L2 ...]
-    7.  [(L)]
-    8.  [(L1 L2 ...)]
+    5.  {L}
+    6.  {L1 L2 ...}
+    7.  {(L)}
+    8.  {(L1 L2 ...)}
+    9.  ({L})
+   10.  ({L1 L2 ...})
 
 Fcn/Opr
 -------
@@ -112,9 +136,9 @@ Right Arg
     2.  (R)
     3.  (R1 R2 ...)
 
-This yields 768 (=4 x 8 x 8 x 3) distinct Monadic/Dyadic Function/Operator headers
-and           8 (=4 x 1 x 2 x 1) distinct Niladic Function headers
-for a total of 776 (=768 + 8) User-defined function/operator headers,
+This yields 1440 (=6 x 10 x 8 x 3) distinct Monadic/Dyadic Function/Operator headers
+and            6 (=6      x 1    ) distinct Niladic Function headers
+for a total of 1446 user-defined function/operator headers,
 not counting the presence/absence of locals and presence/absence of a comment.
 
  */
@@ -176,8 +200,26 @@ List:
 
 Result:
       List    ASSIGN            {DbgMsgW2 (L"%%Result:  List" WS_UTF16_LEFTARROW);
+                                 if ($1.lpYYStrandBase->uStrandLen EQ 1 && $1.List)
+                                 {
+                                     fh_yyerror (lpfhLocalVars, "length error");
+                                     YYERROR;
+                                 } // End IF
+
                                  lpfhLocalVars->lpYYResult = $1.lpYYStrandBase;
                                  lpfhLocalVars->ListRes    = $1.List;               // Copy the List bit
+                                 $$ = $1;
+                                }
+    | OptArg  ASSIGN            {DbgMsgW2 (L"%%Result:  OptArg" WS_UTF16_LEFTARROW);
+                                 if ($1.lpYYStrandBase->uStrandLen EQ 1 && $1.List)
+                                 {
+                                     fh_yyerror (lpfhLocalVars, "length error");
+                                     YYERROR;
+                                 } // End IF
+
+                                 lpfhLocalVars->lpYYResult = $1.lpYYStrandBase;
+                                 lpfhLocalVars->ListRes    = $1.List;               // Copy the List bit
+                                 lpfhLocalVars->NoDispRes  = TRUE;
                                  $$ = $1;
                                 }
     | NAMEUNK ASSIGN            {DbgMsgW2 (L"%%Result:  NAMEUNK" WS_UTF16_LEFTARROW);
@@ -189,19 +231,18 @@ Result:
     ;
 
 OptArg:
-      '[' List     ']'          {DbgMsgW2 (L"%%OptArg:  [List]");
+      '{' List     '}'          {DbgMsgW2 (L"%%OptArg:  {List}");
                                  $$ = $2;
-                                 lpfhLocalVars->ListLft = $2.List;                  // Copy the List bit
                                 }
-    | '[' OpenList ']'          {DbgMsgW2 (L"%%OptArg:  [OpenList]");
+    | '{' OpenList '}'          {DbgMsgW2 (L"%%OptArg:  {OpenList}");
                                  $$ = *MakeHdrStrand_YY (&$2);
                                  // This is the only odd case where we can't use the List bit
                                  //   because there are no parens, so we use the strand length
-                                 lpfhLocalVars->ListLft = $$.lpYYStrandBase->uStrandLen > 1; // Set the List bit
+                                 $$.List = $$.lpYYStrandBase->uStrandLen > 1;       // Set the List bit
                                 }
-    | '(' '[' OpenList ']' ')'  {DbgMsgW2 (L"%%OptArg:  ([OpenList])");
+    | '(' '{' OpenList '}' ')'  {DbgMsgW2 (L"%%OptArg:  ({OpenList})");
                                  $$ = *MakeHdrStrand_YY (&$3);
-                                 lpfhLocalVars->ListLft = TRUE;                     // Set the List bit
+                                 $$.List = TRUE;                                    // Set the List bit
                                 }
     ;
 
@@ -316,6 +357,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
+                                 lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | OptArg  NAMEUNK  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg NAMEUNK RhtArg");  // Bivalent function
                                  InitHdrStrand (&$2);
@@ -327,6 +369,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
+                                 lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     |        AxisList  RhtArg   {DbgMsgW2 (L"%%NoResHdr:  AxisList RhtArg");        // Mon/Dyd operator, monadic derived function w/axis operator
                                  if (!GetOprName (&$1))
@@ -391,6 +434,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
+                                 lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | OptArg  List     RhtArg   {DbgMsgW2 (L"%%NoResHdr:  OptArg List RhtArg");     // Mon/Dyd operator, ambivalent derived function
                                  if (!GetOprName (&$2))
@@ -399,6 +443,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_AMB;       // Mark as ambivalent
+                                 lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     ;
 
@@ -411,7 +456,11 @@ Locals:
                                 }
     |         ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  ':' NAMESYS");
                                  if (!$2.tkToken.tkData.tkSym->stFlags.Value)
+                                 {
+                                     fh_yyerror (lpfhLocalVars, "value error");
                                      YYERROR;
+                                 } // End IF
+
                                  InitHdrStrand (&$2);
                                  $$ = *PushHdrStrand_YY (&$2);
                                 }
@@ -422,7 +471,11 @@ Locals:
                                 }
     | Locals  ';'      NAMESYS  {DbgMsgW2 (L"%%Locals:  Locals ':' NAMESYS");
                                  if (!$3.tkToken.tkData.tkSym->stFlags.Value)
+                                 {
+                                     fh_yyerror (lpfhLocalVars, "value error");
                                      YYERROR;
+                                 } // End IF
+
                                  $$ = *PushHdrStrand_YY (&$3);
                                 }
     ;
@@ -430,12 +483,27 @@ Locals:
 Header:
         /* Empty */             {DbgMsgW2 (L"%%Header:  <empty>");
                                 }
+    |         error             {DbgMsgW2 (L"%%Header:  error");
+                                 YYERROR;
+                                }
     |         NoResHdr          {DbgMsgW2 (L"%%Header:  NoResHdr");
+                                }
+    |         NoResHdr error    {DbgMsgW2 (L"%%Header:  NoResHdr error");
+                                 YYERROR;
                                 }
     |         NoResHdr Locals   {DbgMsgW2 (L"%%Header:  NoResHdr Locals");
                                  lpfhLocalVars->lpYYLocals = MakeHdrStrand_YY (&$2);
                                 }
+    | error   NoResHdr          {DbgMsgW2 (L"%%Header:  error NoResHdr");
+                                 YYERROR;
+                                }
     | Result  NoResHdr          {DbgMsgW2 (L"%%Header:  Result NoResHdr");
+                                }
+    | error   NoResHdr Locals   {DbgMsgW2 (L"%%Header:  error  NoResHdr Locals");
+                                 YYERROR;
+                                }
+    | Result  NoResHdr error    {DbgMsgW2 (L"%%Header:  Result NoResHdr error");
+                                 YYERROR;
                                 }
     | Result  NoResHdr Locals   {DbgMsgW2 (L"%%Header:  Result NoResHdr Locals");
                                  lpfhLocalVars->lpYYLocals = MakeHdrStrand_YY (&$3);
@@ -643,6 +711,12 @@ int fh_yylex
         case TKT_RBRACKET:
             return ']';
 
+        case TKT_LBRACE:
+            return '{';
+
+        case TKT_RBRACE:
+            return '}';
+
         case TKT_COMMENT:
             return COMMENT;
 
@@ -683,14 +757,39 @@ void fh_yyerror                     // Called for Bison syntax error
     uCharIndex = lpfhLocalVars->lpNext->tkCharIndex;
     lpfhLocalVars->tkErrorCharIndex = uCharIndex;
 
-    // Check for SYNTAX ERROR
+    // If the caller wants error messages displayed, ...
     if (lpfhLocalVars->DisplayErr)
     {
+        // Check for SYNTAX ERROR
 #define ERR     "syntax error"
         lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
         if (lstrcmp (szTemp, ERR) EQ 0)
         {
-            wsprintf (szTemp, "Syntax Error in line 0, position %d -- function NOT saved.", uCharIndex);
+            wsprintf (szTemp, "SYNTAX ERROR in line 0, position %d -- function NOT saved.", uCharIndex);
+            p = szTemp;
+
+            goto DISPLAYCAT;
+#undef  ERR
+        } // End IF
+
+        // Check for VALUE ERROR
+#define ERR     "value error"
+        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+        if (lstrcmp (szTemp, ERR) EQ 0)
+        {
+            wsprintf (szTemp, "VALUE ERROR in line 0, position %d -- function NOT saved.", uCharIndex);
+            p = szTemp;
+
+            goto DISPLAYCAT;
+#undef  ERR
+        } // End IF
+
+        // Check for LENGTH ERROR
+#define ERR     "length error"
+        lstrcpyn (szTemp, s, sizeof (ERR));     // Note: Terminates the string, too
+        if (lstrcmp (szTemp, ERR) EQ 0)
+        {
+            wsprintf (szTemp, "LENGTH ERROR in line 0, position %d -- function NOT saved.", uCharIndex);
             p = szTemp;
 
             goto DISPLAYCAT;

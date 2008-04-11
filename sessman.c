@@ -72,15 +72,15 @@ In any case,
 //   of (say) &hGlbPTD, the window procedure receives the data
 //   in the following struc:
 //
-//      typedef struct tagSM_CREATEPARAMSW
+//      typedef struct tagSM_CREATESTRUCTW
 //      {
 //          HGLOBAL hGlbPTD;
-//      } SM_CREATEPARAMSW, UNALIGNED *LPSM_CREATEPARAMSW;
+//      } SM_CREATESTRUCTW, UNALIGNED *LPSM_CREATESTRUCTW;
 //
 //   which is used as follows:
 //
 //      #define lpMDIcs     ((LPMDICREATESTRUCTW) (((LPCREATESTRUCTW) lParam)->lpCreateParams))
-//      hGlbPTD = ((LPSM_CREATEPARAMSW) (lpMDIcs->lParam))->hGlbPTD;
+//      hGlbPTD = ((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->hGlbPTD;
 //      #undef  lpMDIcs
 
 APLCHAR wszQuadInput[] =
@@ -605,6 +605,7 @@ LRESULT APIENTRY SMWndProc
 ////HDC          hDC;
 ////HFONT        hFontOld;
 ////TEXTMETRIC   tm;
+    static BOOL  bLoadMsgDisp = FALSE; // TRUE iff )LOAD message has been displayed
 
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLongW (hWnd, GWLSF_HWNDEC);
@@ -612,7 +613,9 @@ LRESULT APIENTRY SMWndProc
 ////LCLODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
     {
-        case WM_NCCREATE:               // lpcs = (LPCREATESTRUCTW) lParam
+#define lpMDIcs     ((LPMDICREATESTRUCTW) (((LPCREATESTRUCTW) lParam)->lpCreateParams))
+        case WM_NCCREATE:               // 0 = (int) wParam
+                                        // lpcs = (LPCREATESTRUCTW) lParam
         {
             LPVOID p;
 
@@ -658,7 +661,9 @@ LRESULT APIENTRY SMWndProc
 
             break;                  // Continue with next handler
         } // End WM_NCCREATE
+#undef  lpMDIcs
 
+#define lpMDIcs     ((LPMDICREATESTRUCTW) (((LPCREATESTRUCTW) lParam)->lpCreateParams))
         case WM_CREATE:             // 0 = (int) wParam
                                     // lpcs = (LPCREATESTRUCTW) lParam
         {
@@ -1143,15 +1148,27 @@ LRESULT APIENTRY SMWndProc
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            // Display leading Copyright text
-            AppendLine (L"NARS2000 Copyright (C) 2006-8 Sudley Place Software.",              FALSE, TRUE);
-            AppendLine (L"This program comes with ABSOLUTELY NO WARRANTY; for details visit", TRUE , TRUE);
-            AppendLine (L"  http://www.nars2000.org/LICENSE, or click on Help > About.",      TRUE , TRUE);
-            AppendLine (L"This is free software, and you are welcome to redistribute it",     TRUE , TRUE);
-            AppendLine (L"  under certain conditions; visit the above link for details.",     TRUE , TRUE);
+            // Load the workspace
+            if (!LoadWorkspace (((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->lpwszDPFE))
+                return -1;          // Mark as failed
+
+            // Display the )LOAD message once and only once
+            if (!bLoadMsgDisp)
+            {
+                // Display leading Copyright text and disclaimer
+                AppendLine (L"NARS2000 Copyright (C) 2006-8 Sudley Place Software.",              FALSE, TRUE);
+                AppendLine (L"This program comes with ABSOLUTELY NO WARRANTY; for details visit", TRUE , TRUE);
+                AppendLine (L"  http://www.nars2000.org/LICENSE, or click on Help > About.",      TRUE , TRUE);
+                AppendLine (L"This is free software, and you are welcome to redistribute it",     TRUE , TRUE);
+                AppendLine (L"  under certain conditions; visit the above link for details.",     TRUE , TRUE);
+
+                // Mark as displayed so we don't do it again
+                bLoadMsgDisp = TRUE;
+            } // End IF
 
             return FALSE;           // We handled the msg
         } // End WM_CREATE
+#undef  lpMDIcs
 
         case WM_PARENTNOTIFY:       // fwEvent = LOWORD(wParam);  // Event flags
                                     // idChild = HIWORD(wParam);  // Identifier of child window

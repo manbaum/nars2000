@@ -65,10 +65,11 @@ typedef struct tagDFN_HEADER        // Function header structure
                      FcnValence:3,  //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
                      PermFn:1,      //      00000100:  Permanent function (i.e. Magic Function)
-                     ListRes:1,     //      00000200:  TRUE iff the result is a list (unused so far)
-                     ListLft:1,     //      00000400:  TRUE iff the left arg is a list
-                     ListRht:1,     //      00000800:  TRUE iff the right arg is a list
-                     Avail:20;      //      FFFFF000:  Available bits
+                     NoDispRes:1,   //      00000200:  TRUE iff the result is non-displayable
+                     ListRes:1,     //      00000400:  TRUE iff the result is a list (unused so far)
+                     ListLft:1,     //      00000800:  TRUE iff the left arg is a list
+                     ListRht:1,     //      00001000:  TRUE iff the right arg is a list
+                     Avail:19;      //      FFFFE000:  Available bits
     UINT             RefCnt,        // 0C:  Reference count
                      nInverseLine,  // 10:  Line # of the []IDENTITY label (0 if not present)
                      nIdentityLine, // 14:  Line # of the []INVERSE label (0 if not present)
@@ -136,10 +137,11 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                  FcnValence:3,      //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                  DfnAxis:1,         //      00000080:  User-defined function/operator accepts axis value
                  DisplayErr:1,      //      00000100:  TRUE iff we should display error messages
-                 ListRes:1,         //      00000200:  TRUE iff the result is a list
-                 ListLft:1,         //      00000400:  TRUE iff the left arg ...
-                 ListRht:1,         //      00000800:  TRUE iff the right arg ...
-                 Avail:20;          //      FFFFF000:  Available bits
+                 NoDispRes:1,       //      00000200:  TRUE iff the result is non-displayable
+                 ListRes:1,         //      00000400:  TRUE iff the result is a list
+                 ListLft:1,         //      00000800:  TRUE iff the left arg ...
+                 ListRht:1,         //      00001000:  TRUE iff the right arg ...
+                 Avail:19;          //      FFFFE000:  Available bits
     LPFH_YYSTYPE lpYYStrandStart,   // 24:  Strand stack start (static)
                  lpYYStrandBase,    // 28:  ...          base (dynamic)
                  lpYYStrandNext,    // 2C:  ...          next token (dynamic)

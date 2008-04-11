@@ -92,15 +92,17 @@ enum COL_INDICES
  COL_RPAREN    ,        // 13: Right ...
  COL_LBRACKET  ,        // 14: Left bracket
  COL_RBRACKET  ,        // 15: Right ...
- COL_SPACE     ,        // 16: White space (' ' or '\t')
- COL_QUOTE1    ,        // 17: Single quote symbol
- COL_QUOTE2    ,        // 18: Double ...
- COL_DIAMOND   ,        // 19: Diamond symbol
- COL_LAMP      ,        // 1A: Comment symbol
- COL_EOL       ,        // 1B: End-Of-Line
- COL_UNK       ,        // 1C: Unknown symbols
+ COL_LBRACE    ,        // 16: Left brace
+ COL_RBRACE    ,        // 17: Right ...
+ COL_SPACE     ,        // 18: White space (' ' or '\t')
+ COL_QUOTE1    ,        // 19: Single quote symbol
+ COL_QUOTE2    ,        // 1A: Double ...
+ COL_DIAMOND   ,        // 1B: Diamond symbol
+ COL_LAMP      ,        // 1C: Comment symbol
+ COL_EOL       ,        // 1D: End-Of-Line
+ COL_UNK       ,        // 1E: Unknown symbols
 
- COL_LENGTH    ,        // 1D: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
+ COL_LENGTH    ,        // 1F: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
                         // Because these enums are origin-0, this value is the # valid columns.
 };
 
@@ -210,6 +212,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , NULL        , fnParDone   },   // Right ...
   {FSA_INIT    , NULL        , fnBrkInit   },   // Left bracket
   {FSA_INIT    , NULL        , fnBrkDone   },   // Right ...
+  {FSA_INIT    , NULL        , fnBrcInit   },   // Left brace
+  {FSA_INIT    , NULL        , fnBrcDone   },   // Right ...
   {FSA_INIT    , NULL        , NULL        },   // White space
   {FSA_QUOTE1A , NULL        , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , NULL        , fnQuo2Init  },   // Double ...
@@ -241,6 +245,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnAlpDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnAlpDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnAlpDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnAlpDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnAlpDone   , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnAlpDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnAlpDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnAlpDone   , fnQuo2Init  },   // Double ...
@@ -272,6 +278,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnIntDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnIntDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnIntDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnIntDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnIntDone   , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnIntDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnIntDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnIntDone   , fnQuo2Init  },   // Double ...
@@ -303,6 +311,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnBigDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnBigDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnBigDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnBigDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnBigDone   , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnBigDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnBigDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnBigDone   , fnQuo2Init  },   // Double ...
@@ -334,6 +344,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnFrcDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnFrcDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnFrcDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnFrcDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnFrcDone   , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnFrcDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnFrcDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnFrcDone   , fnQuo2Init  },   // Double ...
@@ -365,6 +377,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnFrcDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnFrcDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnFrcDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnFrcDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnFrcDone   , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnFrcDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnFrcDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnFrcDone   , fnQuo2Init  },   // Double ...
@@ -395,6 +409,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // Left paren
   {FSA_SYNTERR , NULL        , NULL        },   // Right ...
   {FSA_SYNTERR , NULL        , NULL        },   // Left bracket
+  {FSA_SYNTERR , NULL        , NULL        },   // Right ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Left brace
   {FSA_SYNTERR , NULL        , NULL        },   // Right ...
   {FSA_SYNTERR , NULL        , NULL        },   // White space
   {FSA_SYNTERR , NULL        , NULL        },   // Single quote
@@ -427,6 +443,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // Right ...
   {FSA_SYNTERR , NULL        , NULL        },   // Left bracket
   {FSA_SYNTERR , NULL        , NULL        },   // Right ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Left brace
+  {FSA_SYNTERR , NULL        , NULL        },   // Right ...
   {FSA_SYNTERR , NULL        , NULL        },   // White space
   {FSA_SYNTERR , NULL        , NULL        },   // Single quote
   {FSA_SYNTERR , NULL        , NULL        },   // Double ...
@@ -458,6 +476,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnExpDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnExpDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnExpDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnExpDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnExpDone   , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnExpDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnExpDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnExpDone   , fnQuo2Init  },   // Double ...
@@ -489,6 +509,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnAlpDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnAlpDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnAlpDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnAlpDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnAlpDone   , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnAlpDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnAlpDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnAlpDone   , fnQuo2Init  },   // Double ...
@@ -520,6 +542,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnSysDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnSysDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnSysDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnSysDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnSysDone   , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnSysDone   , NULL        },   // White space
   {FSA_QUOTE1A , fnSysDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnSysDone   , fnQuo2Init  },   // Double ...
@@ -550,6 +574,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Left paren
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Right ...
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Left bracket
+  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Right ...
+  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Left brace
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Right ...
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // White space
   {FSA_QUOTE1Z , NULL        , NULL        },   // Single quote
@@ -582,6 +608,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnQuo1Done  , fnParDone   },   // Right ...
   {FSA_INIT    , fnQuo1Done  , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnQuo1Done  , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnQuo1Done  , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnQuo1Done  , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnQuo1Done  , NULL        },   // White space
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Single quote
   {FSA_QUOTE2A , fnQuo1Done  , fnQuo2Init  },   // Double ...
@@ -612,6 +640,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Left paren
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Right ...
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Left bracket
+  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Right ...
+  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Left brace
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Right ...
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // White space
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Single quote
@@ -644,6 +674,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnQuo2Done  , fnParDone   },   // Right ...
   {FSA_INIT    , fnQuo2Done  , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnQuo2Done  , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnQuo2Done  , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnQuo2Done  , fnBrcDone   },   // Right ...
   {FSA_INIT    , fnQuo2Done  , NULL        },   // White space
   {FSA_QUOTE1A , fnQuo2Done  , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Double ...
@@ -655,32 +687,34 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
     // FSA_DOTAMBIG Ambiguous dot:  either FSA_FPFRACT2 or FSA_INIT w/fnOp2Done ('+.' or 'name.' or '[]name.')
  {{FSA_FPFRACT2, fnFrcAccum  , NULL        },   // '0123456789'
   {FSA_SYNTERR , NULL        , NULL        },   // '.'
-  {FSA_ALPHA   , fnOp2Done   , fnAlpInit   },   // Exponent separator (eE)
-  {FSA_ALPHA   , fnOp2Done   , fnAlpInit   },   // 'a..zA..Z'
-  {FSA_INIT    , fnOp2Done   , fnDirIdent  },   // Alpha or Omega
-  {FSA_SYSNAME , fnOp2Done   , fnSysInit   },   // Quad
-  {FSA_INIT    , fnOp2Done   , fnInfinity  },   // Underbar
-  {FSA_INTEGER , fnOp2Done   , fnNegInit   },   // Overbar
-  {FSA_ALPHA   , fnOp2Done   , fnAlpInit   },   // Complex separator (iIjJ)
-  {FSA_ALPHA   , fnOp2Done   , fnAlpInit   },   // Rational separator (rR)
-  {FSA_INIT    , fnOp2Done   , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnOp2Done   , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnOp2Done   , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnOp2Done   , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnOp2Done   , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnOp2Done   , fnOp1Done   },   // ...       monadic operator
+  {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // Exponent separator (eE)
+  {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // 'a..zA..Z'
+  {FSA_INIT    , fnDotDone   , fnDirIdent  },   // Alpha or Omega
+  {FSA_SYSNAME , fnDotDone   , fnSysInit   },   // Quad
+  {FSA_INIT    , fnDotDone   , fnInfinity  },   // Underbar
+  {FSA_INTEGER , fnDotDone   , fnNegInit   },   // Overbar
+  {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // Complex separator (iIjJ)
+  {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // Rational separator (rR)
+  {FSA_INIT    , fnDotDone   , fnAsnDone   },   // Assignment symbol
+  {FSA_INIT    , fnDotDone   , fnLstDone   },   // Semicolon  ...
+  {FSA_INIT    , fnDotDone   , fnClnDone   },   // Colon  ...
+  {FSA_INIT    , fnDotDone   , fnPrmDone   },   // Primitive monadic or dyadic function
+  {FSA_INIT    , fnDotDone   , fnPrmDone   },   // ...       niladic           ...
+  {FSA_INIT    , fnDotDone   , fnOp1Done   },   // ...       monadic operator
   {FSA_SYNTERR , NULL        , NULL        },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnOp2Done   , NULL        },   // Jot
-  {FSA_INIT    , fnOp2Done   , fnParInit   },   // Left paren
-  {FSA_INIT    , fnOp2Done   , fnParDone   },   // Right ...
-  {FSA_INIT    , fnOp2Done   , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnOp2Done   , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnOp2Done   , NULL        },   // White space
-  {FSA_QUOTE1A , fnOp2Done   , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , fnOp2Done   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnOp2Done   , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnOp2Done   , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnOp2Done   , NULL        },   // EOL
+  {FSA_JOTAMBIG, fnDotDone   , NULL        },   // Jot
+  {FSA_INIT    , fnDotDone   , fnParInit   },   // Left paren
+  {FSA_INIT    , fnDotDone   , fnParDone   },   // Right ...
+  {FSA_INIT    , fnDotDone   , fnBrkInit   },   // Left bracket
+  {FSA_INIT    , fnDotDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnDotDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnDotDone   , fnBrcDone   },   // Right ...
+  {FSA_INIT    , fnDotDone   , NULL        },   // White space
+  {FSA_QUOTE1A , fnDotDone   , fnQuo1Init  },   // Single quote
+  {FSA_QUOTE2A , fnDotDone   , fnQuo2Init  },   // Double ...
+  {FSA_INIT    , fnDotDone   , fnDiaDone   },   // Diamond symbol
+  {FSA_INIT    , fnDotDone   , fnComDone   },   // Comment symbol
+  {FSA_EXIT    , fnDotDone   , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
  },
     // FSA_JOTAMBIG Ambiguous jot:  either FSA_OUTAMBIG or normal w/fnJotDone ('J')
@@ -706,6 +740,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnJotDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnJotDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnJotDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnJotDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnJotDone   , fnBrcDone   },   // Right ...
   {FSA_JOTAMBIG, NULL        , NULL        },   // White space
   {FSA_QUOTE1A , fnJotDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnJotDone   , fnQuo2Init  },   // Double ...
@@ -737,6 +773,8 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_INIT    , fnOutDone   , fnParDone   },   // Right ...
   {FSA_INIT    , fnOutDone   , fnBrkInit   },   // Left bracket
   {FSA_INIT    , fnOutDone   , fnBrkDone   },   // Right ...
+  {FSA_INIT    , fnOutDone   , fnBrcInit   },   // Left brace
+  {FSA_INIT    , fnOutDone   , fnBrcDone   },   // Right ...
   {FSA_OUTAMBIG, NULL        , NULL        },   // White space
   {FSA_QUOTE1A , fnOutDone   , fnQuo1Init  },   // Single quote
   {FSA_QUOTE2A , fnOutDone   , fnQuo2Init  },   // Double ...
@@ -1658,6 +1696,37 @@ BOOL fnOp2Done
 
 
 //***************************************************************************
+//  $fnDotDone
+//
+//  End of a dot as a dyadic primitive operator
+//***************************************************************************
+
+BOOL fnDotDone
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+    TKFLAGS    tkFlags = {0};
+    APLLONGEST aplLongest;
+
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsg ("fnDotDone");
+#endif
+
+    // Mark the data as a dyadic primitive operator
+    tkFlags.TknType = TKT_OP2IMMED;
+    tkFlags.ImmType = IMMTYPE_PRIMOP2;
+
+    // Attempt to append as new token, check for TOKEN TABLE FULL,
+    //   and resize as necessary.
+    aplLongest = UTF16_DOT;
+    return AppendNewToken_EM (lptkLocalVars,
+                             &tkFlags,
+                             &aplLongest,
+                              0);
+} // End fnDotDone
+
+
+//***************************************************************************
 //  $fnJotDone
 //
 //  End of a jot as a dyadic primitive operator
@@ -2008,13 +2077,31 @@ BOOL fnBrkInit
 
 
 //***************************************************************************
+//  $fnBrcInit
+//
+//  Left end (start) of a braced expression
+//***************************************************************************
+
+BOOL fnBrcInit
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsg ("fnBrcInit");
+#endif
+
+    return GroupInitCom (lptkLocalVars, TKT_LBRACE);
+} // End fnBrcInit
+
+
+//***************************************************************************
 //  $GroupInitCom
 //
-//  Group (Left paren/bracket) common initialization
+//  Group (Left paren/bracket/brace) common initialization
 //
 //  We maintain a linked list in the token stream to allow us to detect
-//    mismatched or improperly nested grouping symbols (parens and brackets
-//    -- we could easily add braces or even left/right-tacks, if needed).
+//    mismatched or improperly nested grouping symbols (paren, brackets, and braces
+//    -- we could easily add even left/right-tacks, if needed).
 //***************************************************************************
 
 BOOL GroupInitCom
@@ -2081,6 +2168,24 @@ BOOL fnBrkDone
 
     return GroupDoneCom (lptkLocalVars, TKT_RBRACKET, TKT_LBRACKET);
 } // End fnBrkDone
+
+
+//***************************************************************************
+//  $fnBrcDone
+//
+//  Right end (stop) of a braced expression
+//***************************************************************************
+
+BOOL fnBrcDone
+    (LPTKLOCALVARS lptkLocalVars)
+
+{
+#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+    DbgMsg ("fnBrcDone");
+#endif
+
+    return GroupDoneCom (lptkLocalVars, TKT_RBRACE, TKT_LBRACE);
+} // End fnBrcDone
 
 
 //***************************************************************************
@@ -2647,6 +2752,8 @@ void Untokenize
             case TKT_RPAREN:            // Right ...   ...
             case TKT_LBRACKET:          // Left bracket ...
             case TKT_RBRACKET:          // Right ...   ...
+            case TKT_LBRACE:            // Left brace  ...
+            case TKT_RBRACE:            // Right ...   ...
             case TKT_EOS:               // End-of-Stmt (data is length of stmt including this token)
             case TKT_EOL:               // End-of-Line (data is NULL)
             case TKT_SOS:               // Start-of-Stmt (data is NULL)
@@ -3111,12 +3218,18 @@ WCHAR CharTrans
         case UTF16_RBRACKET:            //     ']' - right bracket
             return COL_RBRACKET;
 
-        case L';':                      // Lists (bracketed and otherwise)
+        case UTF16_SEMICOLON:           // Lists (bracketed and otherwise)
             return COL_SEMICOLON;
 
-        case L':':                      // Line labels
+        case UTF16_COLON:               // Line labels
                                         // Control structures ***FIXME***
             return COL_COLON;
+
+        case UTF16_LBRACE:              //     '{' - left brace
+            return COL_LBRACE;
+
+        case UTF16_RBRACE:              //     '}' - right brace
+            return COL_RBRACE;
 
         case UTF16_DEL:                 // Alt-'g' - del
         case L'`':
@@ -3125,8 +3238,6 @@ WCHAR CharTrans
         case L'$':
         case L'%':
         case L'&':
-        case L'{':
-        case L'}':
             return COL_UNK;
 
         default:
@@ -3186,13 +3297,15 @@ static COLNAMES colNames[] =
  {L"RPAREN"    , COL_RPAREN    },   // 13: Right ...
  {L"LBRACKET"  , COL_LBRACKET  },   // 14: Left bracket
  {L"RBRACKET"  , COL_RBRACKET  },   // 15: Right ...
- {L"SPACE"     , COL_SPACE     },   // 16: White space (' ' or '\t')
- {L"QUOTE1"    , COL_QUOTE1    },   // 17: Single quote symbol
- {L"QUOTE2"    , COL_QUOTE2    },   // 18: Double ...
- {L"DIAMOND"   , COL_DIAMOND   },   // 19: Diamond symbol
- {L"LAMP"      , COL_LAMP      },   // 1A: Comment symbol
- {L"EOL"       , COL_EOL       },   // 1B: End-Of-Line
- {L"UNK"       , COL_UNK       },   // 1C: Unknown symbols
+ {L"LBRACE"    , COL_LBRACE    },   // 16: Left brace
+ {L"RBRACE"    , COL_RBRACE    },   // 17: Right ...
+ {L"SPACE"     , COL_SPACE     },   // 18: White space (' ' or '\t')
+ {L"QUOTE1"    , COL_QUOTE1    },   // 19: Single quote symbol
+ {L"QUOTE2"    , COL_QUOTE2    },   // 1A: Double ...
+ {L"DIAMOND"   , COL_DIAMOND   },   // 1B: Diamond symbol
+ {L"LAMP"      , COL_LAMP      },   // 1C: Comment symbol
+ {L"EOL"       , COL_EOL       },   // 1D: End-Of-Line
+ {L"UNK"       , COL_UNK       },   // 1E: Unknown symbols
 };
     if (COL_LENGTH > (uType - COL_FIRST))
         return colNames[uType - COL_FIRST].lpwsz;

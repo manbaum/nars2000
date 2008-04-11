@@ -255,6 +255,7 @@ BOOL WINAPI CreateNewTabInThread
     RECT         rc;            // Rectangle for setting size of window
     int          rcLeft, rcRight, rcBottom;
     CLIENTCREATESTRUCT ccs;     // For MDI Client window
+    SM_CREATESTRUCTW csSM;      // For Session Manager window
     HANDLE       hThread;       // Handle to this thread
     HWND         hWndMC,        // Window handle of MDI Client
                  hWndParent;    // Window handle of the parent
@@ -322,10 +323,6 @@ BOOL WINAPI CreateNewTabInThread
     // Save the tab index
     lpMemPTD->TabIndex = iCurTab;
 
-    // Set the value of the new []WSID as lpwszDPFE
-    if (!SaveNewWsid (lpwszDPFE))
-        goto ERROR_EXIT;
-
     // Save the next available color index
     lpMemPTD->crIndex = GetNextTabColorIndex ();
 
@@ -342,7 +339,7 @@ BOOL WINAPI CreateNewTabInThread
     rc.right  = rcRight;
     rc.bottom = rcBottom;
 
-    // Fill in the CLIENTCREATESTRUCT for the MDI Client
+    // Fill in the CLIENTCREATESTRUCT for the MDI Client window
     ccs.hWindowMenu = GetSubMenu (GetMenu (hWndParent), IDMPOS_SM_WINDOW);
     ccs.idFirstChild = IDM_CHILDWINDOW;
 
@@ -385,6 +382,9 @@ BOOL WINAPI CreateNewTabInThread
     CreateDebuggerWindow (hGlbPTD);
 #endif
 
+    // Fill in the SM WM_CREATE data struct
+    csSM.lpwszDPFE = lpwszDPFE;
+
     // Create the Session Manager window
     lpMemPTD->hWndSM =
       CreateMDIWindowW (LSMWNDCLASS,        // Class name
@@ -397,7 +397,7 @@ BOOL WINAPI CreateNewTabInThread
                         CW_USEDEFAULT,      // Width
                         lpMemPTD->hWndMC,   // Parent
                         _hInstance,         // Instance
-              (LPARAM) &hGlbPTD);           // Extra data
+              (LPARAM) &csSM);              // Extra data
     if (lpMemPTD->hWndSM EQ NULL)
     {
         MB (pszNoCreateSMWnd);
@@ -1226,42 +1226,42 @@ LPAPLCHAR PointToWsName
         // Get the []WSID global memory handle
         hGlbWSID = ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData);
 
-        // Lock the memory to get a ptr to it
-        lpMemWSID = MyGlobalLock (hGlbWSID);
+        // If the []WSID STE has been setup, ...
+        if (hGlbWSID)
+        {
+            // Lock the memory to get a ptr to it
+            lpMemWSID = MyGlobalLock (hGlbWSID);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemWSID)
-        // Get the NELM and rank
-        aplNELMWSID = lpHeader->NELM;
-        aplRankWSID = lpHeader->Rank;
+            // Get the NELM and rank
+            aplNELMWSID = lpHeader->NELM;
+            aplRankWSID = lpHeader->Rank;
 #undef  lpHeader
 
-        // If []WSID is non-empty, ...
-        if (aplNELMWSID)
-        {
-            LPAPLCHAR p, q;             // Temporary ptrs
+            // If []WSID is non-empty, ...
+            if (aplNELMWSID)
+            {
+                LPAPLCHAR p, q;             // Temporary ptrs
 
-            // Skip over the header to the data
-            lpMemWSID = VarArrayBaseToData (lpMemWSID, aplRankWSID);
+                // Skip over the header to the data
+                lpMemWSID = VarArrayBaseToData (lpMemWSID, aplRankWSID);
 
-            // Skip over the path
-            q = lpMemWSID;
-            while (p = strchrW (q, '\\'))
-                q = p + 1;
+                // Skip over the path
+                q = lpMemWSID;
+                while (p = strchrW (q, '\\'))
+                    q = p + 1;
 
-////        // Ensure leading blank to avoid clipping on the left side
-////        //   of the Tab Ctrl
-////        lpwszTemp[0] = L' ';
+                // Copy to temporary storage
+                lstrcpynW (lpwszTemp, q, (lpMemWSID + aplNELMWSID + 1) - q);
 
-            // Copy to temporary storage
-////        lstrcpynW (&lpwszTemp[1], q, (lpMemWSID + aplNELMWSID + 1) - q);
-            lstrcpynW (&lpwszTemp[0], q, (lpMemWSID + aplNELMWSID + 1) - q);
-
-            // Copy the ptr
-            lpwTemp = lpwszTemp;
+                // Copy the ptr
+                lpwTemp = lpwszTemp;
+            } else
+                // Point to the ws name
+                lpwTemp = L"CLEAR WS";
         } else
             // Point to the ws name
             lpwTemp = L"CLEAR WS";
-////        lpwTemp = L" CLEAR WS";
     } else
     {
         // Mark as invalid
@@ -1269,7 +1269,6 @@ LPAPLCHAR PointToWsName
 
         // Point to the ws name
         lpwTemp = L"CLEAR WS";
-////    lpwTemp = L" CLEAR WS";
     } // End IF/ELSE
 
     if (hGlbWSID)
@@ -1304,12 +1303,12 @@ void GetImageRect
 
 
 //***************************************************************************
-//  $NewWsName
+//  $NewTabName
 //
 //  Tell the tab ctrl about a new workspace name
 //***************************************************************************
 
-void NewWsName
+void NewTabName
     (void)
 
 {
@@ -1339,7 +1338,7 @@ void NewWsName
 
     // Tell the Tab Ctrl about the new name
     SendMessageW (hWndTC, TCM_SETITEMW, iCurTab, (LPARAM) &tcItem);
-} // End NewWsName
+} // End NewTabName
 
 
 //***************************************************************************

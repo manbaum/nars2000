@@ -16,12 +16,27 @@ function wfAPLExtension ()
     // In this case it defines the tag <apl> ... </apl>
     // the second parameter is the callback function for
     // processing the text between the tags
-    $wgParser->setHook( "apl", "renderAPL" );
+    $wgParser->setHook( "apl",  "renderAPL" );
+    $wgParser->setHook( "apll", "renderAPLlarge" );
 } // End wfAPLExtension
 
 
 // The callback function for converting the input text to HTML output
 function renderAPL ($input, $argv, &$parser)
+{
+    return renderAPLcom ($input, $argv, &$parser, false);
+} // End renderAPL
+
+
+// The callback function for converting the input text to HTML output
+function renderAPLlarge ($input, $argv, &$parser)
+{
+    return renderAPLcom ($input, $argv, &$parser, true);
+} // End renderAPLlarge
+
+
+// The callback function for converting the input text to HTML output
+function renderAPLcom ($input, $argv, &$parser, $bLargeSize)
 {
     global $FontName;
 
@@ -34,10 +49,12 @@ function renderAPL ($input, $argv, &$parser)
     //    $output .= " <br/> and the value for the arg 'argument2' is: " . $argv["argument2"];
     //    return $output;
 
-    $style = '';
+    $style = 'white-space: nowrap; ';
 
     if ($argv['size'])
         $style .= 'font-size: '   . $argv['size']   . '; ';
+    else
+        $style .= 'font-size: large; ';
 
     if ($argv['font'])
         $style .= 'font-family: ' . $argv['font']   . '; ';
@@ -48,6 +65,6 @@ function renderAPL ($input, $argv, &$parser)
         $style .= 'font-weight: ' . $argv['weight'] . '; ';
 
     return '<span style="' . $style . '">' . $input . '</span>';
-} // End renderAPL
+} // End renderAPLcom
 
 ?>

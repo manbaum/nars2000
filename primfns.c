@@ -123,6 +123,8 @@ char TokenTypeFV
         case TKT_RPAREN:
         case TKT_LBRACKET:
         case TKT_RBRACKET:
+        case TKT_LBRACE:
+        case TKT_RBRACE:
         case TKT_EOS:
         case TKT_EOL:
         case TKT_SOS:

@@ -217,9 +217,9 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     if (lptkRhtArg)
         AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // If the DFN left arg is a list, make sure the left arg token
+    // If the DFN left arg is present and a list, make sure the left arg token
     //   is a scalar, or a vector of the proper length
-    if (lpMemDfnHdr->ListLft)
+    if (lptkLftArg NE NULL && lpMemDfnHdr->ListLft)
     {
         if (aplRankLft > 1)
             goto LEFT_RANK_EXIT;
@@ -228,9 +228,9 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
             goto LEFT_LENGTH_EXIT;
     } // End IF
 
-    // If the DFN right arg is a list, make sure the right arg token
+    // If the DFN right arg is present and a list, make sure the right arg token
     //   is a scalar, or a vector of the proper length
-    if (lpMemDfnHdr->ListRht)
+    if (lptkRhtArg NE NULL && lpMemDfnHdr->ListRht)
     {
         if (aplRankRht > 1)
             goto RIGHT_RANK_EXIT;
@@ -788,7 +788,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                     // Fill in the result token
                     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
                     lpYYRes->tkToken.tkFlags.ImmType   = (*lplpSymEntry)->stFlags.ImmType;
-////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
+////////////////////lpYYRes->tkToken.tkFlags.NoDisplay =                // Set below
                     lpYYRes->tkToken.tkData.tkLongest  = (*lplpSymEntry)->stData.stLongest;
                     lpYYRes->tkToken.tkCharIndex       = NEG1U;
                 } else
@@ -796,10 +796,13 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                     // Fill in the result token
                     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
-////////////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
+////////////////////lpYYRes->tkToken.tkFlags.NoDisplay =                // Set below
                     lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir ((*lplpSymEntry)->stData.stGlbData);
                     lpYYRes->tkToken.tkCharIndex       = NEG1U;
                 } // End IF/ELSE
+
+                // Copy the non-displayable flag
+                lpYYRes->tkToken.tkFlags.NoDisplay = lpMemDfnHdr->NoDispRes;
             } // End IF/ELSE
 
             break;
@@ -866,9 +869,12 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;             // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay =                // Set below
             lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
             lpYYRes->tkToken.tkCharIndex       = NEG1U;
+
+            // Copy the non-displayable flag
+            lpYYRes->tkToken.tkFlags.NoDisplay = lpMemDfnHdr->NoDispRes;
 
             // See if it fits into a lower (but not necessarily smaller) datatype
             TypeDemote (&lpYYRes->tkToken);

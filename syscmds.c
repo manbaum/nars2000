@@ -56,6 +56,7 @@ SYSCMDSTAB SysCmdsTab[]
     {L"exit"  ,     &CmdExit_EM     },
     {L"fns"   ,     &CmdFns_EM      },
     {L"lib"   ,     &CmdLib_EM      },
+    {L"laod"  ,     &CmdLoad_EM     },
     {L"load"  ,     &CmdLoad_EM     },
     {L"newtab",     &CmdNewTab_EM   },
     {L"nms"   ,     &CmdNms_EM      },

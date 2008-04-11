@@ -158,7 +158,7 @@ BOOL CmdWsid_EM
         lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
 
         // Tell the Tab Ctrl about the new workspace name
-        NewWsName ();
+        NewTabName ();
     } else
     // Display the current WSID
     {

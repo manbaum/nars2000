@@ -808,18 +808,14 @@ BOOL SaveNewWsid
     } else
         hGlbWSID = hGlbV0Char;
 
-    // If the STE for []WSID has been setup, ...
-    if (lpMemPTD->lpSymQuadWSID)
-    {
-        // Free the old []WSID
-        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
+    // Free the old []WSID
+    FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
 
-        // Save the new []WSID
-        lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
-    } // End IF
+    // Save the new []WSID
+    lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
 
     // Tell the Tab Ctrl about the new workspace name
-    NewWsName ();
+    NewTabName ();
 
     // Mark as successful
     bRet = TRUE;
@@ -950,14 +946,27 @@ LPAPLCHAR TransferFormGlb
     if (lpMemProVal[0] NE L'\0')
         goto NORMAL_EXIT;
 
-    // Append the storage type
+    // The array values are preceded by the array
+    //   attributes in the form of
+    //   StorageType   NELM   Rank  Shape
+    //   "BIFCHNLA"     %d     %d   *(%d )
+    //   %c %d %d %*(d )
+
+    // Append the storage type as a WCHAR
     *lpaplChar++ = TranslateArrayTypeToChar (aplTypeObj);
 
-    // Append the rank
+    // Append a separator
+    *lpaplChar++ = L' ';
+
+    // Append the NELM (with a trailing blank)
+    lpaplChar =
+      FormatAplint (lpaplChar, aplNELMObj);
+
+    // Append the rank (with a trailing blank)
     lpaplChar =
       FormatAplint (lpaplChar, aplRankObj);
 
-    // Append the shape
+    // Append the shape (each with a trailing blank)
     for (uObj = 0; uObj < aplRankObj; uObj++)
         // Format the dimension
         lpaplChar =

@@ -22,6 +22,8 @@ $br2a = array (
 
 'minus'                 => 0x002D,
 
+'dot'                   => 0x002E,
+
 '/'                     => 0x002F,
 'compress'              => 0x002F,
 
@@ -39,6 +41,8 @@ $br2a = array (
 
 "\\"                    => 0x005C,
 'expand'                => 0x005C,
+
+'underbar'              => 0x005F,
 
 'leftbrace'             => 0x007B,
 '('                     => 0x007B,
@@ -157,6 +161,7 @@ $br2a = array (
 'cup'                   => 0x222A,
 'nub'                   => 0x222A,
 
+'dieresisdot'           => 0x2235,
 'dotdieresis'           => 0x2235,
 
 'tilde'                 => 0x223C,
@@ -186,11 +191,12 @@ $br2a = array (
 'le'                    => 0x2264,
 'lteq'                  => 0x2264,
 'notgreater'            => 0x2264,
+'notmore'               => 0x2264,
 '>:'                    => 0x2264,
 
 '>='                    => 0x2265,
 'ge'                    => 0x2265,
-'geteq'                 => 0x2265,
+'gteq'                  => 0x2265,
 'greq'                  => 0x2265,
 'notless'               => 0x2265,
 '>:'                    => 0x2265,
@@ -211,6 +217,9 @@ $br2a = array (
 'reversebar'            => 0x2296,
 'rotatebar'             => 0x2296,
 'circlebar'             => 0x2296,
+
+'circlemiddledot'       => 0x2299,
+'nullop'                => 0x2299,
 
 'righttack'             => 0x22A2,
 'dex'                   => 0x22A2,
@@ -323,6 +332,7 @@ $br2a = array (
 'do'                    => 0x234E,
 'basenull'              => 0x234E,
 'eval'                  => 0x234E,
+'uptackjot'             => 0x234E,
 '".'                    => 0x234E,
 
 'upwardsvane'           => 0x234F,
@@ -344,6 +354,7 @@ $br2a = array (
 'topnull'               => 0x2355,
 'fmt'                   => 0x2355,
 'thorn'                 => 0x2355,
+'downtackjot'           => 0x2355,
 '":'                    => 0x2355,
 
 'downwardsvane'         => 0x2356,
@@ -383,12 +394,15 @@ $br2a = array (
 'snout'                 => 0x2361,
 
 'deldieresis'           => 0x2362,
+'dieresisdel'           => 0x2362,
 'dual'                  => 0x2362,
 'frog'                  => 0x2362,
 
+'dieresisstar'          => 0x2363,
 'stardieresis'          => 0x2363,
 'sourpuss'              => 0x2363,
 
+'dieresisjot'           => 0x2364,
 'jotdieresis'           => 0x2364,
 'on'                    => 0x2364,
 'rank'                  => 0x2364,
@@ -397,6 +411,7 @@ $br2a = array (
 '"'                     => 0x2364,
 'paw'                   => 0x2364,
 
+'dieresiscircle'        => 0x2365,
 'circledieresis'        => 0x2365,
 'hoof'                  => 0x2365,
 'upon'                  => 0x2365,

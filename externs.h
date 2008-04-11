@@ -104,6 +104,14 @@
   #define EXTERN extern
 #endif
 
+// Define struct for passing parameters to WM_NCCREATE/WM_CREATE
+//   for the Session Manager
+typedef struct tagSM_CREATESTRUCTW
+{
+    LPWCHAR lpwszDPFE;      // Ptr to Drive, Path, Filename, and Ext of the workspace name (with WS_WKSEXT)
+} SM_CREATESTRUCTW, UNALIGNED *LPSM_CREATESTRUCTW;
+
+
 //***************************************************************************
 //  Default global values of system variables -- these values
 //    are used to set the variables in a CLEAR WS.

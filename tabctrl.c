@@ -1123,9 +1123,6 @@ void DrawTab
     // Get a ptr to the ws name
     lpMemWSID = PointToWsName (iCurTab);
 
-////// Reduce the right side of the rectangle to make room for the image
-////lpRect->right -= IMAGE_WIDTH;
-
     // Account for the tab left margin
     lpRect->left  += TABMARGIN_LEFT;
     lpRect->right += TABMARGIN_LEFT;
@@ -1137,14 +1134,12 @@ void DrawTab
                lpRect,
                0
              | DT_SINGLELINE
-////         | DT_CENTER
              | DT_VCENTER
              | DT_NOPREFIX
               );
     // Restore the original values
     lpRect->right -= TABMARGIN_LEFT;
     lpRect->left  -= TABMARGIN_LEFT;
-////lpRect->right += IMAGE_WIDTH;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

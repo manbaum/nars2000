@@ -343,23 +343,20 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
     //***************************************************************
     // Check for axis present
+    //  Even if it's not present, force a full axis vector result
     //***************************************************************
-    if (lptkAxis NE NULL)
-    {
-        // Check the axis values, fill in # elements in axis
-        if (!CheckAxis_EM (lptkAxis,        // The axis token
-                           aplRankRht,      // All values less than this
-                           FALSE,           // TRUE iff scalar or one-element vector only
-                           TRUE,            // TRUE iff want sorted axes
-                           FALSE,           // TRUE iff axes must be contiguous
-                           FALSE,           // TRUE iff duplicate axes are allowed
-                           NULL,            // TRUE iff fractional values allowed
-                           NULL,            // Return last axis value
-                          &aplNELMAxis,     // Return # elements in axis vector
-                          &hGlbAxis))       // Return HGLOBAL with APLINT axis values
-            goto ERROR_EXIT;
-    } else
-        aplNELMAxis = aplRankRht;
+    // Check the axis values, fill in # elements in axis
+    if (!CheckAxis_EM (lptkAxis,        // The axis token
+                       aplRankRht,      // All values less than this
+                       FALSE,           // TRUE iff scalar or one-element vector only
+                       TRUE,            // TRUE iff want sorted axes
+                       FALSE,           // TRUE iff axes must be contiguous
+                       FALSE,           // TRUE iff duplicate axes are allowed
+                       NULL,            // TRUE iff fractional values allowed
+                       NULL,            // Return last axis value
+                      &aplNELMAxis,     // Return # elements in axis vector
+                      &hGlbAxis))       // Return HGLOBAL with APLUINT axis values
+        goto ERROR_EXIT;
 
     // Check for LENGTH ERROR
     if (aplNELMLft NE aplNELMAxis)
@@ -455,21 +452,17 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     } // End IF
 
     // Handle elided axes
-    if (lptkAxis)
+
+    // Lock the memory to get a ptr to it
+    lpMemAxis = MyGlobalLock (hGlbAxis);
+
+    // Loop through the elided axes
+    for (uRes = 0; uRes < (aplRankRht - aplNELMAxis); uRes++)
     {
-        APLUINT uAxis;
-
-        // Lock the memory to get a ptr to it
-        lpMemAxis = MyGlobalLock (hGlbAxis);
-
-        // Loop through the elided axes
-        for (uAxis = 0; uAxis < (aplRankRht - aplNELMAxis); uAxis++)
-        {
-            // Accumulate the NELM & rank
-            aplNELMRes *= lpMemDimRht[lpMemAxis[uAxis]];
-            aplRankRes += 1;
-        } // End FOR
-    } // End IF
+        // Accumulate the NELM & rank
+        aplNELMRes *= lpMemDimRht[lpMemAxis[uRes]];
+        aplRankRes += 1;
+    } // End FOR
 
     // If we're not assigning, ...
     if (lptkSetArg EQ NULL)

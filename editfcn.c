@@ -746,13 +746,17 @@ int LclECPaintHook
                lpwsz + uCol,
                uLen,
               &rc,
-               DT_CALCRECT);
+               0
+             | DT_CALCRECT
+             | DT_NOPREFIX);
     // Draw the line for real
     DrawTextW (hDC,
                lpwsz + uCol,
                uLen,
               &rc,
-               DT_SINGLELINE);
+               0
+             | DT_SINGLELINE
+             | DT_NOPREFIX);
     return MAKELONG (rc.right - rc.left, rc.bottom - rc.top);
 } // End LclECPaintHook
 
@@ -2417,7 +2421,8 @@ void DrawLineNumsFE
                    uLen,
                    &rcPaint,
                    0
-                 | DT_CALCRECT);
+                 | DT_CALCRECT
+                 | DT_NOPREFIX);
         // Move the rectangle down
         rcPaint.top    += uCnt * cyAveCharFE;
         rcPaint.bottom += uCnt * cyAveCharFE;
@@ -2428,7 +2433,8 @@ void DrawLineNumsFE
                    uLen,
                    &rcPaint,
                    0
-                 | DT_LEFT);
+                 | DT_LEFT
+                 | DT_NOPREFIX);
     } // End FOR
 
     // Because we might have deleted some lines whose

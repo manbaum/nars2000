@@ -6019,8 +6019,9 @@ BOOL LookaheadDyadicOp
             break;
     } // End WHILE/SWITCH
 NORMAL_EXIT:
-    DbgMsgW (L"==Exiting  LookaheadDyadicOp");
-
+#ifdef DEBUG
+    dprintfW (L"==Exiting  LookaheadDyadicOp:  %d", bRet);
+#endif
     return bRet;
 } // End LookaheadDyadicOp
 

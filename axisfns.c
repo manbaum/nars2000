@@ -116,7 +116,7 @@ BOOL CheckAxisImm
         //   size is zero, and the lock ptr is zero
         //   which GlobalLock will treat as an error,
         //   returning a zero ptr, so we max aplRankCmp with 1.
-        ByteAxis = sizeof (APLINT) * 2 * max (aplRankCmp, 1);
+        ByteAxis = sizeof (APLUINT) * 2 * max (aplRankCmp, 1);
 
         // Allocate storage for the axis vector
         // N.B. Conversion from APLUINT to UINT.
@@ -253,16 +253,16 @@ BOOL CheckAxisGlb
      LPAPLUINT  lpaplAxisContLo)// Contiguous low axis (not NULL)
 
 {
-    BOOL     bRet = TRUE;
-    LPVOID   lpMem,
-             lpDup = NULL;
-    HGLOBAL  hGlbDup = NULL;
+    BOOL     bRet = TRUE;       // TRUE iff the result is valid
+    LPVOID   lpMem,             // Ptr to incoming data global memory
+             lpDup = NULL;      // Ptr to duplciate axes global memory
+    HGLOBAL  hGlbDup = NULL;    // Duplicate axes global memory handle
     UINT     uBitMask;          // Bit mask for looping through Booleans
-    APLUINT  ByteDup,
-             ByteAxis,
-             u;
-    APLSTYPE aplTypeLcl;
-    APLRANK  aplRankLcl;
+    APLUINT  ByteDup,           // # bytes for the duplicate axis test
+             ByteAxis,          // # bytes for the axis vector
+             u;                 // Loop counter
+    APLSTYPE aplTypeLcl;        // Incoming data storage type
+    APLRANK  aplRankLcl;        // Incoming data rank
     LPAPLINT lpAxisTail;        // Ptr to grade up of AxisHead
     APLBOOL  bQuadIO;           // []IO
 
@@ -298,7 +298,7 @@ BOOL CheckAxisGlb
         //   size is zero, and the lock ptr is zero
         //   which GlobalLock will treat as an error,
         //   returning a zero ptr, so we max aplRankCmp with 1.
-        ByteAxis = sizeof (APLINT) * 2 * max (aplRankCmp, 1);
+        ByteAxis = sizeof (APLUINT) * 2 * max (aplRankCmp, 1);
 
         // Allocate storage for the axis vector
         // N.B. Conversion from APLUINT to UINT.
@@ -700,15 +700,15 @@ BOOL CheckAxis_EM
                                 //   this ptr must be set to NULL.
                                 //   (may be NULL if caller is not interested)
 {
-    BOOL       bRet = TRUE;
-    APLNELM    aplNELM;
+    BOOL       bRet = TRUE;     // TRUE iff the result is valid
+    APLNELM    aplNELM;         //
     LPAPLINT   lpAxisStart,     // Ptr to ptr to start of Axis values in *lphGlbAxis
                lpAxisHead;      // ...                    user axis values in *lphGlbAxis
-    UINT       u;
+    UINT       u;               // Loop counter
     APLUINT    aplAxisContLo;   // Contiguous low axis
-    HGLOBAL    hGlbData = NULL;
-    UINT       immType;
-    APLLONGEST aplLongest;
+    HGLOBAL    hGlbData = NULL; //
+    UINT       immType;         //
+    APLLONGEST aplLongest;      //
 
     // If the caller requests, an axis vector is allocated
     //   of length <2 * aplRankCmp>.  In the first <aplRankCmp>
@@ -722,6 +722,59 @@ BOOL CheckAxis_EM
     // Mark as no fractional values
     if (lpbFract)
         *lpbFract = FALSE;
+
+    // If there's no axis token, allocate storage anyway
+    if (lptkAxis EQ NULL)
+    {
+        APLUINT   ByteAxis;         // # bytes for the axis vector
+        LPAPLUINT lpMemAxis;        // Ptr to axis vector global memory
+
+        Assert (lphGlbAxis NE NULL);
+
+        //***************************************************************
+        // Calculate space needed for axis
+        //
+        // If the comparison rank is zero, the allocation
+        //   size is zero, and the lock ptr is zero
+        //   which GlobalLock will treat as an error,
+        //   returning a zero ptr, so we max aplRankCmp with 1.
+        //***************************************************************
+        ByteAxis = sizeof (APLUINT) * 2 * max (aplRankCmp, 1);
+
+        //***************************************************************
+        // Allocate storage for the axis vector
+        // N.B. Conversion from APLUINT to UINT.
+        //***************************************************************
+        Assert (ByteAxis EQ (UINT) ByteAxis);
+        *lphGlbAxis = DbgGlobalAlloc (GHND, (UINT) ByteAxis);
+        if (!*lphGlbAxis)
+            goto WSFULL_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemAxis = MyGlobalLock (*lphGlbAxis);
+
+        // Fill the memory with [0, alpRankCmp-1]
+        for (u = 0; u < aplRankCmp; u++)
+            *lpMemAxis++ = u;
+
+        // Second verse same as the first
+        for (u = 0; u < aplRankCmp; u++)
+            *lpMemAxis++ = u;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbAxis); lpMemAxis = NULL;
+
+        // Save the last value
+        if (lpaplLastAxis)
+            *lpaplLastAxis = u;
+
+        // Return the # elements
+        if (lpaplNELMAxis NE NULL)
+            *lpaplNELMAxis = aplRankCmp;
+
+        goto NORMAL_EXIT;
+    } // End IF
+
     // Split cases based upon the axis token type
     switch (lptkAxis->tkFlags.TknType)
     {
@@ -866,6 +919,11 @@ BOOL CheckAxis_EM
 
 AXIS_EXIT:
     ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;
 

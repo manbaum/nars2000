@@ -363,7 +363,6 @@ long CheckException
 } // End CheckException
 
 
-#ifndef DEBUG
 //***************************************************************************
 //  $CompareStartAddresses
 //
@@ -383,32 +382,29 @@ int __cdecl CompareStartAddresses
 #undef  lpSARht
 #undef  lpSALft
 } // End CompareStartAddresses
-#endif
 
 
-#ifndef DEBUG
 //***************************************************************************
-//  $_DisplayException
+//  $DisplayException
 //
 //  Display an exception code, address, etc.
 //***************************************************************************
 
-void _DisplayException
+void DisplayException
     (void)
 
 {
-    char         szTemp[1024];
-    int          exceptIndex;
-    UINT         exceptCode,
-                 nearAddress,
-                 nearIndex,
-                 i;
+    char         szTemp[1024];  // Temp output save area
+    int          exceptIndex;   // Exception index
+    UINT         exceptCode,    // Exception code
+                 nearAddress,   // Offset from closest address
+                 nearIndex;     // Index into StartAddresses
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     LPCHAR       exceptText;    // Ptr to exception text
-    LPUCHAR      exceptAddr;    // Ptr to exception addr
+    LPUCHAR      exceptAddr;    // Exception address
 
-    // Sort the StartAddresses
+    // Sort the StartAddresses in ascending order by address
     qsort (StartAddresses,
            START_ADDRESSES_LENGTH,
            sizeof (StartAddresses[0]),
@@ -433,23 +429,19 @@ void _DisplayException
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Find the address closest to and at or below the given address
-    for (i = 0,
-           nearAddress = NEG1U,
-           nearIndex   = START_ADDRESSES_LENGTH;
-         i < START_ADDRESSES_LENGTH;
-         i++)
-    if (exceptAddr >= StartAddresses[i].StartAddressAddr
-     && ((UINT) (exceptAddr - StartAddresses[i].StartAddressAddr)) < nearAddress)
-    {
-        nearAddress = exceptAddr - StartAddresses[i].StartAddressAddr;
-        nearIndex   = i;
-    } // End FOR/IF
+    // If the address is not found, it could be that we're
+    //   running under a debugger and the debugger has changed the
+    //   starting address of the routine to a near JMP instruction,
+    //   so try again with that assumption
+    if (START_ADDRESSES_LENGTH EQ FindRoutineAddress (exceptAddr, &nearAddress, &nearIndex, TRUE))
+        FindRoutineAddress (exceptAddr, &nearAddress, &nearIndex, TRUE);
 
     for (exceptIndex = 0; exceptIndex < EXCEPT_NAMES_LENGTH; exceptIndex++)
     if (exceptCode EQ ExceptNames[exceptIndex].ExceptCode)
         break;
 
     wsprintf (szTemp,
+              "WRITE THIS DOWN!! -- "
               "Exception code = %08X (%s) at %08X"
               " (%s + %08X)"
               " from %s",
@@ -461,11 +453,61 @@ void _DisplayException
               StartAddresses[nearIndex].StartAddressName,
               nearAddress,
               exceptText);
+#ifdef DEBUG
+    DbgMsg (szTemp);
+    DbgStop ();
+#else
     MB (szTemp);
-
-    exit (1);
-} // End _DisplayException
 #endif
+
+    exit (exceptCode);
+} // End DisplayException
+
+
+//***************************************************************************
+//  $FindRoutineAddress
+//
+//  Find the address of the routine at or below a given address
+//***************************************************************************
+
+UINT FindRoutineAddress
+    (LPUCHAR exceptAddr,            // Exception address
+     LPUINT lpNearAddress,          // Ptr to offset from closest address
+     LPUINT lpNearIndex,            // Ptr to index into StartAddresses
+     BOOL   bDebugger)              // TRUE iff test for running under debugger
+
+{
+    UINT    i;                      // Loop counter
+    LPUCHAR startAddr;              // Ptr to starting addr
+
+    // Find the address closest to and at or below the given address
+    for (i = 0,
+           *lpNearAddress = NEG1U,
+           *lpNearIndex   = START_ADDRESSES_LENGTH;
+         i < START_ADDRESSES_LENGTH;
+         i++)
+    {
+        // Get the starting address
+        startAddr = StartAddresses[i].StartAddressAddr;
+
+        // If we're testing for debugger and it's a near JMP (E9 xx xx xx xx), ...
+        if (bDebugger
+         && *startAddr EQ 0xE9)
+            // Skip over the instruction ("5 +") and add in the
+            //   value of the near offset arg to the JMP
+            startAddr += 5 + *(LPUINT) &startAddr[1];
+
+        // Check against the actual address
+        if (exceptAddr >= startAddr
+         && ((UINT) (exceptAddr - startAddr)) < *lpNearAddress)
+        {
+            *lpNearAddress = exceptAddr - startAddr;
+            *lpNearIndex   = i;
+        } // End IF
+    } // End FOR
+
+    return i;
+} // End FindRoutineAddress
 
 
 //***************************************************************************

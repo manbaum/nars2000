@@ -31,8 +31,10 @@
 #define NEG1U   (   (UINT) -1)
 #define NEG1A   ((APLUINT) -1)
 
-#define MB(a)   MessageBox (NULL, a, "NARS2000", MB_OK)
-#define MBC(a)  if (MessageBox (NULL, a, "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define MB(a)       MessageBox  (NULL, a,  "NARS2000", MB_OK)
+#define MBW(a)      MessageBoxW (NULL, a, L"NARS2000", MB_OK)
+#define MBC(a)  if (MessageBox  (NULL, a,  "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define MBWC(a) if (MessageBoxW (NULL, a, L"NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
 #define IsGlbTypeVarDir(a) (IsGlobalTypeArray (            a, VARARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeVarInd(a) (IsGlobalTypeArray (*(LPVOID *) a, VARARRAY_HEADER_SIGNATURE))
 #define IsGlbTypeFcnDir(a) (IsGlobalTypeArray (            a, FCNARRAY_HEADER_SIGNATURE))
@@ -69,7 +71,6 @@ default:        \
 #define FNLN    FileNameOnly (__FILE__), __LINE__
 
 #ifdef DEBUG
-
   #define YYAlloc()     _YYAlloc(FNLN)
   #define LCLODSAPI     ODSAPI
 
@@ -110,25 +111,21 @@ default:        \
     dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
     DecrRefCntInd (hGlbData);
   #else
-   #define DbgIncrRefCntDir(hGlbData) \
-   IncrRefCntDir (hGlbData);
+    #define DbgIncrRefCntDir(hGlbData) \
+    IncrRefCntDir (hGlbData);
 
-   #define DbgIncrRefCntInd(hGlbData) \
-   IncrRefCntInd (hGlbData);
+    #define DbgIncrRefCntInd(hGlbData) \
+    IncrRefCntInd (hGlbData);
 
-   #define DbgDecrRefCntDir(hGlbData) \
-   DecrRefCntDir (hGlbData);
+    #define DbgDecrRefCntDir(hGlbData) \
+    DecrRefCntDir (hGlbData);
 
-   #define DbgDecrRefCntInd(hGlbData) \
-   DecrRefCntInd (hGlbData);
- #endif
+    #define DbgDecrRefCntInd(hGlbData) \
+    DecrRefCntInd (hGlbData);
+  #endif
 
-   #define CheckMemStat()      _CheckMemStat ()
-
-   #define DisplayException()
-
+  #define CheckMemStat()      _CheckMemStat ()
 #else
-
   #define YYAlloc()     _YYAlloc()
   #define LCLODSAPI
 
@@ -153,9 +150,6 @@ default:        \
   #define DbgMsgW(a)
 
   #define CheckMemStat()
-
-  #define DisplayException()      _DisplayException()
-
 #endif
 
 

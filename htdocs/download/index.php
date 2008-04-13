@@ -29,7 +29,7 @@
   font-weight: bold;
   color: rgb(46, 139, 87); /* seagreen */
 }
-.relbutton
+.dnlbutton
 {
   background-color: rgb(255, 69, 0); /* orangered */
 }
@@ -103,6 +103,7 @@
               <th>Date</th>
               <th>Size</th>
               <th>Type</th>
+              <th>Notes</th>
             </tr>
 
             <?php
@@ -115,7 +116,8 @@
             while (false !== ($File = readdir ($dh)))
             {
                 if (!is_dir ($File)
-                 && strcmp ($File, "linestat.txt") != 0)
+                 && strcmp  ($File, "linestat.txt") != 0
+                 && strncmp ($File, "Notes-", 6) != 0)
                 {
                     $Files[] = $File;
                 } // End IF
@@ -127,14 +129,15 @@
 
             foreach ($Files as $File)
             {
-                $Pos  = strpos ($File, '-');
-                $Name = substr ($File, 0, $Pos);
-                $Rel  = substr ($File, $Pos + 1);
+                $Pos    = strpos ($File, '-');
+                $Name   = substr ($File, 0, $Pos);
+                $Rel    = substr ($File, $Pos + 1);
                 $ExtPos = strpos (strrev ($File), '.');
-                $Ext  = substr ($File, -$ExtPos);    // Extract the extension
-                $Rel  = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
-                $Date = date ("Y F d H:i:s", filemtime ($DirName . $File));
-                $Size = number_format (filesize ($DirName . $File));
+                $Ext    = substr ($File, -$ExtPos);    // Extract the extension
+                $Rel    = substr ($Rel , 0, -$ExtPos-1); // Remove trailing extension
+                $Date   = date ("Y F d H:i:s", filemtime ($DirName . $File));
+                $Size   = number_format (filesize ($DirName . $File));
+                $Notes  = "Notes-$Rel.txt";
 
                 echo   "      <tr class=\"$Ext\">\n"
                    .   "        <td>$Name</td>\n"
@@ -142,7 +145,9 @@
                    .   "        <td>$Date</td>\n"
                    .   "        <td>$Size</td>\n"
                    .   "        <td>$Ext</td>\n"
-                   .   "        <td class=\"relbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
+                   . (($Ext == "zip") ? "<td><a class=\"linkleft\" href=\"binaries/$Notes\">Release Notes</a></td>\n"
+                                      : "<td></td>")
+                   .   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$File\">Download</a></td>\n"
                    .   "      </tr>\n";
             } // End FOREACH
 

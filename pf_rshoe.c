@@ -1843,7 +1843,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                                                   lptkFunc))            // Ptr to function token
                     goto ERROR_EXIT;
             } else
-            if (aplNELMLft NE 1)
+            if (uLft NE (aplNELMLft - 1))
                 goto LENGTH_EXIT;
 
             // If we're assigning a new value, ...

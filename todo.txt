@@ -48,7 +48,7 @@ TO DO:  General:  Less Important (post-alpha)
 * ...         []CRLPC R
 * ...         []DEF R
 * ...         []DEFL R
-* ...       L []EA R
+* ...       L []EA R    (Execute Alternate) (EAS)
 * ...         []EC R
 * ...         []ERASE R
 * ...         []FI R
@@ -61,11 +61,11 @@ TO DO:  General:  Less Important (post-alpha)
 * ...         []SI
 * ...         []SINL
 * ...       L []SS R
-* ...         []STOP R
-* ...       L []STOP R
-* ...       L []TF R
-* ...         []TRACE R
-* ...       L []TRACE R
+* ...         []STOP R  (Query Stop) (EAS--Optional)
+* ...       L []STOP R  (Set Stop) (EAS--Optional)
+* ...       L []TF R    (Transfer Form) (EAS)
+* ...         []TRACE R (Query Trace) (EAS--Optional)
+* ...       L []TRACE R (Set Trace) (EAS--Optional)
 * ...         []VI R
 * ...         []VR R
 * ...       extend associativity to derived functions such as {jot}{dot}+ ???
@@ -174,9 +174,11 @@ DONE:  General
 * ...       bracket list indexing        A[L][M1;...;Mn]
 * ...       ambiguous operators
 * ...       dyadic epsilon
+* ...       monadic iota extended to negative integers
+* ...       monadic iota extended to length > 1 vectors
 * ...       dyadic iota
 * ...       dyadic iota extended to non-vector left args (via an internal magic function)
-* ...       dyadic tilde
+* ...       dyadic tilde (via an internal magic function)
 * ...       monadic down shoe
 * ...       bracket indexed assignment   A[L]{is}R
 * ...       bracket indexed modified assignment  A[L]Fcn{is}R
@@ -186,7 +188,7 @@ DONE:  General
 * ...       dyadic dot                  (inner product)
 * ...       []FX R
 * ...       []IC                        (Indeterminate Control)
-* ...       dieresis-jot                (dyadic op  -- rank)
+* ...       dieresis-jot                (dyadic op  -- rank) (via an internal magic function)
 * ...       dieresis-circle             (monadic op -- rank w/Axis)
 * []SysVar indexed assignment with range limiting validation
 * When adding two empty vectors whose prototypes are
@@ -210,7 +212,6 @@ DONE:  General
 * Fix display of chars in a saved ws (surround with quotes, etc.)
 * Handle multiple SI levels in a saved ws
 * Allow negative indices to the axis operator (except for where fractional values are allowed).
-* Extend monadic iota to allow negative values
 
 
 DONE:  Session Manager

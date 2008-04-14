@@ -30,179 +30,182 @@ typedef struct tagSTART_ADDRESSES
 #ifndef PROTO
   START_ADDRESSES StartAddresses[] =
   {
-      // assign.c
-      "AssignName_EM"             , (LPUCHAR) &AssignName_EM             ,
-      "GetNameType"               , (LPUCHAR) &GetNameType               ,
-      "AssignArrayCommon"         , (LPUCHAR) &AssignArrayCommon         ,
-      "AssignSelectSpec_EM"       , (LPUCHAR) &AssignSelectSpec_EM       ,
-      "ModifyAssignNameVals_EM"   , (LPUCHAR) &ModifyAssignNameVals_EM   ,
+    // assign.c
+    "AssignName_EM"             , (LPUCHAR) &AssignName_EM              ,
+    "GetNameType"               , (LPUCHAR) &GetNameType                ,
+    "AssignArrayCommon"         , (LPUCHAR) &AssignArrayCommon          ,
+    "AssignSelectSpec_EM"       , (LPUCHAR) &AssignSelectSpec_EM        ,
+    "ModifyAssignNameVals_EM"   , (LPUCHAR) &ModifyAssignNameVals_EM    ,
 
-      // bjhash.c
-      "hashword"                  , (LPUCHAR) &hashword                  ,
-      "hashlittle"                , (LPUCHAR) &hashlittle                ,
-      "hashlittle2"               , (LPUCHAR) &hashlittle2               ,
-      "hashbig"                   , (LPUCHAR) &hashbig                   ,
+    // bjhash.c
+    "hashword"                  , (LPUCHAR) &hashword                   ,
+    "hashlittle"                , (LPUCHAR) &hashlittle                 ,
+    "hashlittle2"               , (LPUCHAR) &hashlittle2                ,
+    "hashbig"                   , (LPUCHAR) &hashbig                    ,
 
-      // chkesp.c
+    // chkesp.c
 
-      // common.c
+    // common.c
 
-      // convert.c
+    // convert.c
 
-      // debug.c
+    // debug.c
   #ifdef DEBUG
-      "Assert"                    , (LPUCHAR) &Assert                    ,
-      "CreateDebuggerWindow"      , (LPUCHAR) &CreateDebuggerWindow      ,
-      "CreateDebuggerInThread"    , (LPUCHAR) &CreateDebuggerInThread    ,
-      "DB_Create"                 , (LPUCHAR) DB_Create                  ,
-      "DB_Delete"                 , (LPUCHAR) DB_Delete                  ,
-      "DBWndProc"                 , (LPUCHAR) DBWndProc                  ,
-      "LclListboxWndProc"         , (LPUCHAR) &LclListboxWndProc         ,
-      "DbgMsg"                    , (LPUCHAR) &DbgMsg                    ,
-      "DbgMsgW"                   , (LPUCHAR) &DbgMsgW                   ,
-      "DbgClr"                    , (LPUCHAR) &DbgClr                    ,
-      "dprintf"                   , (LPUCHAR) &dprintf                   ,
-      "dprintfW"                  , (LPUCHAR) &dprintfW                  ,
-      "DbgGlobalAllocSub"         , (LPUCHAR) &DbgGlobalAllocSub         ,
-      "FileNameOnly"              , (LPUCHAR) &FileNameOnly              ,
+    "Assert"                    , (LPUCHAR) &Assert                     ,
+    "CreateDebuggerWindow"      , (LPUCHAR) &CreateDebuggerWindow       ,
+    "CreateDebuggerInThread"    , (LPUCHAR) &CreateDebuggerInThread     ,
+    "DB_Create"                 , (LPUCHAR) DB_Create                   ,
+    "DB_Delete"                 , (LPUCHAR) DB_Delete                   ,
+    "DBWndProc"                 , (LPUCHAR) DBWndProc                   ,
+    "LclListboxWndProc"         , (LPUCHAR) &LclListboxWndProc          ,
+    "DbgMsg"                    , (LPUCHAR) &DbgMsg                     ,
+    "DbgMsgW"                   , (LPUCHAR) &DbgMsgW                    ,
+    "DbgClr"                    , (LPUCHAR) &DbgClr                     ,
+    "dprintf"                   , (LPUCHAR) &dprintf                    ,
+    "dprintfW"                  , (LPUCHAR) &dprintfW                   ,
+    "DbgGlobalAllocSub"         , (LPUCHAR) &DbgGlobalAllocSub          ,
+    "FileNameOnly"              , (LPUCHAR) &FileNameOnly               ,
   #endif
 
-      // dfnhdr.c/y
+    // dfnhdr.c/y
 
-      // dispdbg.c
+    // dispdbg.c
 
-      // display.c
+    // display.c
 
-      // dtoa.c
+    // dtoa.c
 
-      // editfcn.c
+    // editfcn.c
 
-      // editmat.c
+    // editmat.c
 
-      // editvec.c
+    // editvec.c
 
-      // errmsg.c
+    // errmsg.c
 
-      // except.c
-      "MyGetExceptionCode"        , (LPUCHAR) &MyGetExceptionCode        ,
-      "MySetExceptionCode"        , (LPUCHAR) &MySetExceptionCode        ,
-      "MySetExceptionAddr"        , (LPUCHAR) &MySetExceptionAddr        ,
-      "MySetExceptionText"        , (LPUCHAR) &MySetExceptionText        ,
-      "CheckException"            , (LPUCHAR) &CheckException            ,
-      "CompareStartAddresses"     , (LPUCHAR) &CompareStartAddresses     ,
-      "_DisplayException"         , (LPUCHAR) &DisplayException          ,
+    // except.c
+    "MyGetExceptionCode"        , (LPUCHAR) &MyGetExceptionCode         ,
+    "MySetExceptionCode"        , (LPUCHAR) &MySetExceptionCode         ,
+    "MySetExceptionAddr"        , (LPUCHAR) &MySetExceptionAddr         ,
+    "MySetExceptionText"        , (LPUCHAR) &MySetExceptionText         ,
+    "CheckException"            , (LPUCHAR) &CheckException             ,
+    "CompareStartAddresses"     , (LPUCHAR) &CompareStartAddresses      ,
+    "_DisplayException"         , (LPUCHAR) &DisplayException           ,
 
-      // execdfn.c
+    // execdfn.c
 
-      // execfns.c
+    // execfns.c
 
-      // execmfn.c
+    // execmfn.c
 
-      // fastbool.c
+    // fastbool.c
 
-      // free.c
+    // free.c
 
-      // g_fmt.c
+    // g_fmt.c
 
-      // getfns.c
+    // getfns.c
 
-      // getreent.c
+    // getreent.c
 
-      // goto.c
+    // goto.c
 
-      // immexec.c
+    // immexec.c
 
-      // initdata.c
+    // initdata.c
 
-      // main.c
+    // main.c
 
-      // parse.c/y
-      "pl_yyparse"                , (LPUCHAR) &pl_yyparse                ,
-      "ParseLine"                 , (LPUCHAR) &ParseLine                 ,
-      "SymbTypeVFO"               , (LPUCHAR) &SymbTypeVFO               ,
-      "LookaheadSurround"         , (LPUCHAR) &LookaheadSurround         ,
-      "LookaheadAdjacent"         , (LPUCHAR) &LookaheadAdjacent         ,
-      "LookaheadDyadicOp"         , (LPUCHAR) &LookaheadDyadicOp         ,
-      "pl_yylex"                  , (LPUCHAR) &pl_yylex                  ,
-      "pl_yyerror"                , (LPUCHAR) &pl_yyerror                ,
-      "pl_yyfprintf"              , (LPUCHAR) &pl_yyfprintf              ,
-      "WaitForInput"              , (LPUCHAR) &WaitForInput              ,
-      "AmbOpSwap_EM"              , (LPUCHAR) &AmbOpSwap_EM              ,
-      "AmbOpToFcn"                , (LPUCHAR) &AmbOpToFcn                ,
+    // parse.c/y
+    "pl_yyparse"                , (LPUCHAR) &pl_yyparse                 ,
+    "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
+    "SymbTypeVFO"               , (LPUCHAR) &SymbTypeVFO                ,
+    "LookaheadSurround"         , (LPUCHAR) &LookaheadSurround          ,
+    "LookaheadAdjacent"         , (LPUCHAR) &LookaheadAdjacent          ,
+    "LookaheadDyadicOp"         , (LPUCHAR) &LookaheadDyadicOp          ,
+    "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
+    "pl_yyerror"                , (LPUCHAR) &pl_yyerror                 ,
+    "pl_yyfprintf"              , (LPUCHAR) &pl_yyfprintf               ,
+    "WaitForInput"              , (LPUCHAR) &WaitForInput               ,
+    "AmbOpSwap_EM"              , (LPUCHAR) &AmbOpSwap_EM               ,
+    "AmbOpToFcn"                , (LPUCHAR) &AmbOpToFcn                 ,
 
-      // pf_*.c
+    // pf_*.c
 
-      // po_*.c
+    // pf_dtackjot.c
+    "PrimFnDownTackJot_EM_YY"   , (LPUCHAR) &PrimFnDownTackJot_EM_YY    ,
 
-      // primfns.c
-      "FillSISNxt"                , (LPUCHAR) &FillSISNxt                ,
+    // po_*.c
 
-      // primspec.c
+    // primfns.c
+    "FillSISNxt"                , (LPUCHAR) &FillSISNxt                 ,
 
-      // qf_*.c
+    // primspec.c
 
-      // refcnt.c
+    // qf_*.c
 
-      // reg.c
+    // refcnt.c
 
-      // resdebug.c
+    // reg.c
 
-      // savefcn.c
+    // resdebug.c
 
-      // sc_*.c
+    // savefcn.c
 
-      // sessman.c
+    // sc_*.c
 
-      // sort.c
+    // sessman.c
 
-      // strand.c
+    // sort.c
 
-      // symtab.c
+    // strand.c
 
-      // symtrans.c
+    // symtab.c
 
-      // syscmds.c
+    // symtrans.c
 
-      // sysvars.c
+    // syscmds.c
 
-      // tabctrl.c
+    // sysvars.c
 
-      // tokenize.c
+    // tabctrl.c
 
-      // translate.c
+    // tokenize.c
 
-      // typemote.c
-      "TypeDemote"                , (LPUCHAR) &TypeDemote                ,
-      "DemoteData"                , (LPUCHAR) &DemoteData                ,
-      "TypePromote_EM"            , (LPUCHAR) &TypePromote_EM            ,
-      "TypePromoteGlb_EM"         , (LPUCHAR) &TypePromoteGlb_EM         ,
-      "QueryPromote"              , (LPUCHAR) &QueryPromote              ,
+    // translate.c
 
-      // ver.c
+    // typemote.c
+    "TypeDemote"                , (LPUCHAR) &TypeDemote                 ,
+    "DemoteData"                , (LPUCHAR) &DemoteData                 ,
+    "TypePromote_EM"            , (LPUCHAR) &TypePromote_EM             ,
+    "TypePromoteGlb_EM"         , (LPUCHAR) &TypePromoteGlb_EM          ,
+    "QueryPromote"              , (LPUCHAR) &QueryPromote               ,
 
-      // yyfns.c
-      "YYAlloc"                   , (LPUCHAR) &_YYAlloc                  ,
-      "YYCopy"                    , (LPUCHAR) &YYCopy                    ,
-      "YYCopyFreeDst"             , (LPUCHAR) &YYCopyFreeDst             ,
-      "YYFree"                    , (LPUCHAR) &YYFree                    ,
+    // ver.c
+
+    // yyfns.c
+    "YYAlloc"                   , (LPUCHAR) &_YYAlloc                   ,
+    "YYCopy"                    , (LPUCHAR) &YYCopy                     ,
+    "YYCopyFreeDst"             , (LPUCHAR) &YYCopyFreeDst              ,
+    "YYFree"                    , (LPUCHAR) &YYFree                     ,
   #ifdef DEBUG
-      "YYResIsEmpty"              , (LPUCHAR) YYResIsEmpty               ,
+    "YYResIsEmpty"              , (LPUCHAR) YYResIsEmpty                ,
   #endif
-      "YYCopyFcn"                 , (LPUCHAR) YYCopyFcn                  ,
+    "YYCopyFcn"                 , (LPUCHAR) YYCopyFcn                   ,
   #ifdef DEBUG
-      "YYCheckInuse"              , (LPUCHAR) YYCheckInuse               ,
+    "YYCheckInuse"              , (LPUCHAR) YYCheckInuse                ,
   #endif
 
-      // C API routines
-      "memset"                    , (LPUCHAR) &memset                    ,
-//////"_aulldiv"                  , (LPUCHAR) &_aulldiv                  ,
-      "memmove"                   , (LPUCHAR) &memmove                   ,
+    // C API routines
+    "memset"                    , (LPUCHAR) &memset                     ,
+////"_aulldiv"                  , (LPUCHAR) &_aulldiv                   ,
+    "memmove"                   , (LPUCHAR) &memmove                    ,
 
 
 
 
-      // trailer
-      "<no name>"                 , (LPUCHAR) NEG1U                      ,
+    // trailer
+    "<no name>"                 , (LPUCHAR) NEG1U                       ,
   };
 
   #define START_ADDRESSES_LENGTH      ((sizeof (StartAddresses) / sizeof (StartAddresses[0])) - 1)

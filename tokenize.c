@@ -2100,8 +2100,9 @@ BOOL fnBrcInit
 //  Group (Left paren/bracket/brace) common initialization
 //
 //  We maintain a linked list in the token stream to allow us to detect
-//    mismatched or improperly nested grouping symbols (paren, brackets, and braces
-//    -- we could easily add even left/right-tacks, if needed).
+//    mismatched or improperly nested grouping symbols (paren, brackets,
+//    and braces) -- we could easily add other left/right-grouping symbols
+//    (say, left/right vanes), if needed.
 //***************************************************************************
 
 BOOL GroupInitCom

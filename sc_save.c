@@ -118,6 +118,7 @@ BOOL CmdSave_EM
     int          iCmp;                  // Comparison result
     UINT         uSymVar,               // Var index counter
                  uSymFcn,               // Fcn/Opr index counter
+                 uGlbCnt = 0,           // # entries in [Globals] section
                  uLine;                 // Function line loop counter
     WCHAR        wszCount[8],           // Output save area for formatted uSymxxx counter
                  wch[2];                // Save area to create one-char string
@@ -371,7 +372,8 @@ BOOL CmdSave_EM
                         lpaplChar =
                           TransferFormGlb (lpaplChar,
                                            lpSymEntry->stData.stGlbData,
-                                           lpMemSaveWSID);
+                                           lpMemSaveWSID,
+                                          &uGlbCnt);
                     } // End IF/ELSE
 
                     // Format the counter
@@ -687,6 +689,15 @@ BOOL CmdSave_EM
                                 L"SIDepth",                         // Ptr to the key name
                                 wszCount,                           // Ptr to the key value
                                 lpMemSaveWSID);                     // Ptr to the file name
+    // Format the [Globals] count
+    wsprintfW (wszCount,
+               L"%d",
+               uGlbCnt);
+    // Write out the [Globals] count to the [Globals] section
+    WritePrivateProfileStringW (L"Globals",                         // Ptr to the section name
+                                L"Count",                           // Ptr to the key name
+                                wszCount,                           // Ptr to the key value
+                                lpMemSaveWSID);                     // Ptr to the file name
     // Write out the SI stack to the [SI] section
     CmdSiSinlCom_EM (L"",               // Ptr to command tail
                      TRUE,              // TRUE iff )SINL
@@ -880,7 +891,8 @@ void WriteFunctionLine
 LPAPLCHAR TransferFormGlb
     (LPAPLCHAR lpaplChar,               // Ptr to output save area
      HGLOBAL   hGlbObj,                 // WS object global memory handle
-     LPAPLCHAR lpMemSaveWSID)           // Ptr to saved WS file DPFE
+     LPAPLCHAR lpMemSaveWSID,           // Ptr to saved WS file DPFE
+     LPUINT    lpGlbCnt)                // Ptr to [Globals] count
 
 {
     APLSTYPE     aplTypeObj;            // WS object storage type
@@ -1201,7 +1213,8 @@ LPAPLCHAR TransferFormGlb
                         lpaplChar =
                           TransferFormGlb (lpaplChar,
                                           hGlbSub,
-                                          lpMemSaveWSID);
+                                          lpMemSaveWSID,
+                                          lpGlbCnt);
 #undef  hGlbSub
                         if (!IsSimple (aplTypeSub))
                         {
@@ -1251,6 +1264,8 @@ LPAPLCHAR TransferFormGlb
                                 lpMemProKey,                    // Ptr to the key name
                                 lpMemProVal,                    // Ptr to the key value
                                 lpMemSaveWSID);                 // Ptr to the file name
+    // Count in another entry
+    (*lpGlbCnt)++;
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbObj); lpMemObj = NULL;

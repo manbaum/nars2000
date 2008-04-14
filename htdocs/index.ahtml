@@ -209,7 +209,10 @@
             </li>
             <li>System functions:
               <ul>
-                <li><span class="APL">1 {quad}CR R</span> and <span class="APL">2 {quad}CR R</span></li>
+                <li><span class="APL">{neg}2 {quad}CR R</span>,
+                    <span class="APL">{neg}1 {quad}CR R</span>,
+                    <span class="APL">1 {quad}CR R</span>, and
+                    <span class="APL">2 {quad}CR R</span></li>
                 <li><span class="APL">{quad}DM</span></li>
                 <li><span class="APL">{quad}DR R</span></li>
                 <li><span class="APL">L {quad}DR R</span></li>
@@ -438,8 +441,8 @@
                instead of <span class="APL">//3 4</span>)</li>
             <li>Monadic operator dieresis-circle ({dieresiscircle}) monadic and dyadic
               derived functions &mdash; rank using the axis operator.  In particular,
-              <span class="APL"><i>f</i>{dieresiscircle}[N]</span> is implemented as
-              <span class="APL"><i>f</i>{dieresisjot}N</span></li>
+              <span class="APL"><i>f</i>{dieresiscircle}[X]</span> is implemented as
+              <span class="APL"><i>f</i>{dieresisjot}X</span></li>
           </ul>
         </li>
         <li>Dyadic
@@ -568,55 +571,58 @@
       <ul>
         <li>Niladic
           <ul>
-            <li><span class="APL">{quad}AV</span></li>
-            <li><span class="APL">{quad}DM</span></li>
-            <li><span class="APL">{quad}EM</span></li>
-            <li><span class="APL">{quad}ET</span></li>
-            <li><span class="APL">{quad}LC</span></li>
-            <li><span class="APL">{quad}SYSID</span></li>
-            <li><span class="APL">{quad}SYSVER</span></li>
-            <li><span class="APL">{quad}TC</span></li>
-            <li><span class="APL">{quad}TCBEL</span></li>
-            <li><span class="APL">{quad}TCBS</span></li>
-            <li><span class="APL">{quad}TCDEL</span></li>
-            <li><span class="APL">{quad}TCESC</span></li>
-            <li><span class="APL">{quad}TCFF</span></li>
-            <li><span class="APL">{quad}TCHT</span></li>
-            <li><span class="APL">{quad}TCLF</span></li>
-            <li><span class="APL">{quad}TCNL</span></li>
-            <li><span class="APL">{quad}TCNUL</span></li>
-            <li><span class="APL">{quad}TS</span></li>
+            <li><span class="APL">{quad}AV</span> (Atomic Vector)</li>
+            <li><span class="APL">{quad}DM</span> (Diagnostic Message)</li>
+            <li><span class="APL">{quad}EM</span> (Event Message)</li>
+            <li><span class="APL">{quad}ET</span> (Event Type)</li>
+            <li><span class="APL">{quad}LC</span> (Line Counter)</li>
+            <li><span class="APL">{quad}SYSID</span> (System Identifier)</li>
+            <li><span class="APL">{quad}SYSVER</span> (System Version)</li>
+            <li><span class="APL">{quad}TC</span> (Terminal Control)</li>
+            <li><span class="APL">{quad}TCBEL</span> (Terminal Control -- Bell)</li>
+            <li><span class="APL">{quad}TCBS</span> (Terminal Control -- Backspace)</li>
+            <li><span class="APL">{quad}TCDEL</span> (Terminal Control -- Delete)</li>
+            <li><span class="APL">{quad}TCESC</span> (Terminal Control -- Escape)</li>
+            <li><span class="APL">{quad}TCFF</span> (Terminal Control -- Form Feed)</li>
+            <li><span class="APL">{quad}TCHT</span> (Terminal Control -- Horizontal Tab)</li>
+            <li><span class="APL">{quad}TCLF</span> (Terminal Control -- Line Feed)</li>
+            <li><span class="APL">{quad}TCNL</span> (Terminal Control -- New Line)</li>
+            <li><span class="APL">{quad}TCNUL</span> (Terminal Control -- Null)</li>
+            <li><span class="APL">{quad}TS</span> (Time Stamp)</li>
+            <li><span class="APL">{quad}UCS</span> (Universal Character Set)</li>
           </ul>
         </li>
 
         <li>Monadic
           <ul>
-            <li><span class="APL">{quad}CR</span></li>
-            <li><span class="APL">{quad}DL</span></li>
-            <li><span class="APL">{quad}DR</span></li>
-            <li><span class="APL">{quad}ERROR</span></li>
-            <li><span class="APL">{quad}ES</span></li>
-            <li><span class="APL">{quad}EX</span></li>
-            <li><span class="APL">{quad}FX</span></li>
-            <li><span class="APL">{quad}NC</span></li>
-            <li><span class="APL">{quad}NL</span></li>
-            <li><span class="APL">{quad}SIZE</span></li>
-            <li><span class="APL">{quad}TYPE</span></li>
-            <li><span class="APL">{quad}UCS</span></li>
+            <li><span class="APL">{quad}CR</span> (Canonical Representation)</li>
+            <li><span class="APL">{quad}DL</span> (Delay)</li>
+            <li><span class="APL">{quad}DR</span> (Data Representation)</li>
+            <li><span class="APL">{quad}ERROR</span> (Signal Error)</li>
+            <li><span class="APL">{quad}ES</span> (Event Simulation)</li>
+            <li><span class="APL">{quad}EX</span> (Expunge)</li>
+            <li><span class="APL">{quad}FX</span> (Function Fix)</li>
+            <li><span class="APL">{quad}NC</span> (Name Class)</li>
+            <li><span class="APL">{quad}NL</span> (Name List)</li>
+            <li><span class="APL">{quad}SIZE</span> (Object Size)</li>
+            <li><span class="APL">{quad}TYPE</span> (Prototype)</li>
+            <li><span class="APL">{quad}UCS</span> (Universal Character Set)</li>
           </ul>
         </li>
 
         <li>Dyadic
           <ul>
-            <li><span class="APL">{quad}CR</span> &mdash;
-              <span class="APL">1 {quad}CR</span> for vector result,
-              <span class="APL">2 {quad}CR</span> for matrix result</li>
-            <li><span class="APL">{quad}DR</span> &mdash;
+            <li><span class="APL">{quad}CR</span> (Character Representation) &mdash;<br />
+              <span class="APL">{neg}2 {quad}CR</span> for matrix result of Magic Function/Operator,<br />
+              <span class="APL">{neg}1 {quad}CR</span> for vector result of Magic Function/Operator,<br />
+              <span class="APL">&nbsp;1 {quad}CR</span> for vector result of User-Definef Function/Operator,<br />
+              <span class="APL">&nbsp;2 {quad}CR</span> for matrix result of User-Definef Function/Operator</li>
+            <li><span class="APL">{quad}DR</span> (Data Representation) &mdash;
               <span class="APL">0 {quad}DR</span> for character message</li>
-            <li class="TBD"><span class="APL">{quad}EA</span></li>
-            <li><span class="APL">{quad}ES</span></li>
-            <li><span class="APL">{quad}NL</span></li>
-            <li class="TBD"><span class="APL">{quad}TF</span></li>
+            <li class="TBD"><span class="APL">{quad}EA</span> (Execute Alternate)</li>
+            <li><span class="APL">{quad}ES</span> (Event Simulation)</li>
+            <li><span class="APL">{quad}NL</span> (Name Class)</li>
+            <li class="TBD"><span class="APL">{quad}TF</span> (Transfer Form)</li>
           </ul>
         </li>
       </ul>

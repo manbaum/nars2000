@@ -20,11 +20,42 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+/***************************************************************************
+
+The sequence of structs matches the structure of the array being
+displayed/formatted.
+
+The topmost struct is
+
+(FMTHEADER) (nCols * FMTCOLSTR) (nRows * FMTROWSTR)
+
+If the data for the first item is simple, it follows in the stream.
+Otherwise, FMTHEADER appears and the process nests
+Each item is treated the same way as above.
+
+COLSTRS:
+      FMTCOLSTR
+    | COLSTRS FMTCOLSTR
+    ;
+
+ROWSTRS:
+      FMTROWSTR
+    | ROWSTRS FMTROWSTR
+    ;
+
+HEADER:
+      FMTHEADER COLSTRS ROWSTRS
+    | FMTHEADER COLSTRS ROWSTRS Data
+    | FMTHEADER COLSTRS ROWSTRS HEADER
+    ;
+
+***************************************************************************/
+
 typedef struct tagFMTHEADER
 {
 #ifdef DEBUG
-  #define FMTHEADER_SIGNATURE 'HHHH'      // 48484848
-      HEADER_SIGNATURE Sig;               // 00:  FMTHEADER signature
+  #define FMTHEADER_SIGNATURE 'HHHH'    // 48484848
+      HEADER_SIGNATURE Sig;             // 00:  FMTHEADER signature
 #endif
     struct tagFMTHEADER *lpFmtHeadUp;   // 04:  Ptr to next chain up
     struct tagFMTROWSTR *lpFmtRowUp;    // 08:  Ptr to parent FMTROWSTR
@@ -49,8 +80,8 @@ typedef struct tagFMTHEADER
 typedef struct tagFMTCOLSTR
 {
 #ifdef DEBUG
-  #define FMTCOLSTR_SIGNATURE 'CCCC'      // 43434343
-      HEADER_SIGNATURE Sig;               // 00:  FMTCOLSTR signature
+  #define FMTCOLSTR_SIGNATURE 'CCCC'    // 43434343
+      HEADER_SIGNATURE Sig;             // 00:  FMTCOLSTR signature
 #endif
     UINT        uLdBl,                  // 04:  # leading blanks
                 uInts,                  // 08:  # Integer digits in Boolean/Integer/APA/Float column,
@@ -65,9 +96,9 @@ typedef struct tagFMTCOLSTR
 typedef struct tagFMTROWSTR
 {
 #ifdef DEBUG
-  #define FMTROWSTR_SIGNATURE 'RRRR'      // 52525252
-      HEADER_SIGNATURE Sig;               // 00:  FMTROWSTR signature
-      FMTCOLSTR   *lpFmtColUp;            // 04:  Ptr to parent FMTCOLSTR
+  #define FMTROWSTR_SIGNATURE 'RRRR'    // 52525252
+      HEADER_SIGNATURE Sig;             // 00:  FMTROWSTR signature
+      FMTCOLSTR   *lpFmtColUp;          // 04:  Ptr to parent FMTCOLSTR
 #endif
     UINT        uFmtRows:30,            // 08:  3FFFFFFF:  # formatted rows in this row
                 bRealRow:1,             //      40000000:  TRUE iff a real row (not from []TCLF)

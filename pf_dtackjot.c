@@ -1275,7 +1275,7 @@ LPAPLCHAR CompileArrHetero
      BOOL        bTCLF)         // TRUE iff handle []TCLF specially
 
 {
-    UINT        uLen;           // Length of integer or fractinoal part
+    UINT        uLen;           // Length of integer or fractional part
     APLDIM      aplDimCol,      // Loop counter
                 aplDimRow;      // ...
     LPAPLCHAR   lpwszOut;       // Ptr to output buffer
@@ -2098,9 +2098,15 @@ void PropagateRowColCount
     if (lpFmtHeader->uActCols)
     {
         uLdBl = lpFmtHeader->lpFmtCol1st->uLdBl;
-        uInts -= uLdBl;
+        if (uInts >= uLdBl)     // Avoid going negative
+            uInts -= uLdBl;
+        else
+            uLdBl = 0;
         uTrBl = lpFmtHeader->lpFmtCol1st[lpFmtHeader->uActCols - 1].uTrBl;
-        uFrcs -= uTrBl;
+        if (uFrcs >= uTrBl)     // Avoid goinig negative
+            uFrcs -= uTrBl;
+        else
+            uTrBl = 0;
     } else
         uLdBl = uTrBl = 0;
 

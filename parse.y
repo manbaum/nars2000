@@ -709,17 +709,6 @@ NameAnyVar:
                                         }
     ;
 
-NameAnyFcn:
-      NAMEUNK                           {DbgMsgW2 (L"%%NameAnyFcn:  NAMEUNK");
-                                         if (!lpplLocalVars->bLookAhead)
-                                             $$ = $1;
-                                        }
-    | NAMEFCN                           {DbgMsgW2 (L"%%NameAnyFcn:  NAMEFCN");
-                                         if (!lpplLocalVars->bLookAhead)
-                                             $$ = $1;
-                                        }
-    ;
-
 NameAnyOpN:
       NAMEUNK                           {DbgMsgW2 (L"%%NameAnyOpN:  NAMEUNK");
                                          if (!lpplLocalVars->bLookAhead)
@@ -745,8 +734,8 @@ NameAnyOpN:
 
 // Function specification
 FcnSpec:
-////| error    ASSIGN NameAnyFcn        --Conflicts
-      LeftOper ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAnyFcn" WS_UTF16_LEFTARROW L"LeftOper");
+////  error    ASSIGN NameAnyOpN        --Conflicts
+      LeftOper ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"LeftOper");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -780,8 +769,8 @@ FcnSpec:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-////| error    ASSIGN NameAnyFcn        --Conflicts
-    | Drv1Func ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAnyFcn" WS_UTF16_LEFTARROW L"Drv1Func");
+////| error    ASSIGN NameAnyOpN        --Conflicts
+    | Drv1Func ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv1Func");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -815,8 +804,8 @@ FcnSpec:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-////| error    ASSIGN NameAnyFcn        --Conflicts
-    | Drv2Func ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAnyFcn" WS_UTF16_LEFTARROW L"Drv2Func");
+////| error    ASSIGN NameAnyOpN        --Conflicts
+    | Drv2Func ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"Drv2Func");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -850,8 +839,8 @@ FcnSpec:
                                              $$.tkToken.tkFlags.NoDisplay = TRUE;
                                          } // End IF
                                         }
-////| error    ASSIGN NameAnyFcn        --Conflicts
-    | AxisFunc ASSIGN NameAnyFcn        {DbgMsgW2 (L"%%FcnSpec:  NameAnyFcn" WS_UTF16_LEFTARROW L"AxisFunc");
+////| error    ASSIGN NameAnyOpN        --Conflicts
+    | AxisFunc ASSIGN NameAnyOpN        {DbgMsgW2 (L"%%FcnSpec:  NameAnyOpN" WS_UTF16_LEFTARROW L"AxisFunc");
                                          if (lpplLocalVars->bCtrlBreak)
                                          {
                                              FreeResult (&$1.tkToken);
@@ -5247,10 +5236,7 @@ EXIT_TYPES ParseLine
                     PAGE_READWRITE);
     if (!plLocalVars.lpYYStrandStart[STRAND_VAR])
     {
-        // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("ParseLine:  VirtualAlloc for <plLocalVars.lpYYStrandStart[STRAND_VAR]> failed");
-
-        plLocalVars.ExitType = EXITTYPE_ERROR;
 
         goto ERROR_EXIT;
     } // End IF
@@ -5270,10 +5256,7 @@ EXIT_TYPES ParseLine
                     PAGE_READWRITE);
     if (!plLocalVars.lpYYStrandStart[STRAND_FCN])
     {
-        // ***FIXME*** -- WS FULL before we got started???
         DbgMsg ("ParseLine:  VirtualAlloc for <pLocalVars.lpYYStrandStart[STRAND_FCN]> failed");
-
-        plLocalVars.ExitType = EXITTYPE_ERROR;
 
         goto ERROR_EXIT;
     } // End IF
@@ -5307,7 +5290,7 @@ EXIT_TYPES ParseLine
 
 #if YYDEBUG
     // Enable debugging
-    yydebug = 1;
+    yydebug = TRUE;
 #endif
 
     __try
@@ -5378,6 +5361,7 @@ EXIT_TYPES ParseLine
             // Fall through to common code
 
         case EXITTYPE_ERROR:        // Mark user-defined function/operator as suspended
+        case EXITTYPE_STOP:
         {
             LPSIS_HEADER lpSISCur;
 
@@ -5511,22 +5495,41 @@ EXIT_TYPES ParseLine
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
-    // Signal an error
-    ErrorMessageDirect (ERRMSG_WS_FULL L"-- ParseLine", // Ptr to error message text
-                        L"",                            // Ptr to the line which generated the error
-                        NEG1U,                          // Position of caret (origin-0)
-                        hWndSM);                        // Window handle to the Session Manager
-    // Execute []ELX
-    plLocalVars.lpYYRes = PrimFnMonUpTackJotCommon_EM_YY (WS_UTF16_QUAD L"ELX", FALSE, NULL);
+    // ***FIXME*** -- At some point we should link together MEMVIRT_STRs
+    //                so we can look at how much address space is allocated
+    //                when we encounter an error such as this.
+
+    // Set the stop in motion
+    plLocalVars.ExitType = EXITTYPE_STOP;
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    lpMemPTD->YYResExec = *plLocalVars.lpYYRes;
-    YYFree (plLocalVars.lpYYRes); plLocalVars.lpYYRes = NULL;
+    // Set the reset flag
+    lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_STOP;
+
+    // Set the result
+    ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+////     // Signal an error
+////     ErrorMessageDirect (ERRMSG_WS_FULL L"-- ParseLine", // Ptr to error message text
+////                         L"",                            // Ptr to the line which generated the error
+////                         NEG1U,                          // Position of caret (origin-0)
+////                         hWndSM);                        // Window handle to the Session Manager
+////     // Execute []ELX
+////     plLocalVars.lpYYRes = PrimFnMonUpTackJotCommon_EM_YY (WS_UTF16_QUAD L"ELX", FALSE, NULL);
+////
+////     // Lock the memory to get a ptr to it
+////     lpMemPTD = MyGlobalLock (hGlbPTD);
+////
+////     lpMemPTD->YYResExec = *plLocalVars.lpYYRes;
+////     YYFree (plLocalVars.lpYYRes); plLocalVars.lpYYRes = NULL;
+////
+////     // We no longer need this ptr
+////     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 NORMAL_EXIT:
     if (plLocalVars.lpYYStrandStart[STRAND_FCN])
     {
@@ -6066,7 +6069,7 @@ PL_YYLEX_START:
     lpMemPTD = MyGlobalLock (lpplLocalVars->hGlbPTD);
 
     lpYYLval->YYIndex        = ++YYIndex;
-    lpYYLval->YYFlag         = 1;         // Mark as a pl_yylex Index
+    lpYYLval->YYFlag         = TRUE;      // Mark as a pl_yylex Index
     lpYYLval->SILevel        = lpMemPTD->SILevel;
 
     // We no longer need this ptr

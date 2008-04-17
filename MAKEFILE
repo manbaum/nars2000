@@ -1237,7 +1237,7 @@ $(LIBS_WEXE) $(LIBS_EXT)
 ####    @strip -s $@
         @del $(O)$(@B).exp
         @del $(O)$(@B).lib
-        @pkzip $(B)$(ENAME) $@ LICENSE $(BC)$(ENAME).HLP >NUL
+        @pkzip $(B)$(ENAME) $@ LICENSE >NUL
         @copy $(O)$(MAPFILE) $(B)$(@B).MAP >NUL
 
 $(L)$(ENAME).EXE:       $(O)$(ENAME).EXE

@@ -437,6 +437,9 @@ BOOL InitSystemNames_EM
     ptdSysVarSym[SYSVAR_SA  ] = &lpMemPTD->lpSymQuadSA  ;
     ptdSysVarSym[SYSVAR_WSID] = &lpMemPTD->lpSymQuadWSID;
 
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     Assert (HshTabFrisk ());
 
     // Append all system names
@@ -449,9 +452,6 @@ BOOL InitSystemNames_EM
     } // End FOR/IF
 
     Assert (HshTabFrisk ());
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End InitSystemNames_EM
@@ -855,7 +855,7 @@ NORMAL_EXIT:
     else
     {
         lptkNamArg->tkData.tkSym->stData.stInteger = aplInteger;
-        lptkNamArg->tkFlags.NoDisplay = 1;
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
     } // End IF
 
     return bRet;
@@ -1147,7 +1147,7 @@ NORMAL_EXIT:
     else
     {
         lptkNamArg->tkData.tkSym->stData.stFloat = aplFloat;
-        lptkNamArg->tkFlags.NoDisplay = 1;
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
     } // End IF
 
     return bRet;
@@ -1456,7 +1456,7 @@ NORMAL_EXIT:
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
-        lptkNamArg->tkFlags.NoDisplay = 1;
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
     } // End IF
 
     return bRet;
@@ -1947,7 +1947,7 @@ NORMAL_EXIT:
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
-        lptkNamArg->tkFlags.NoDisplay = 1;
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
     } // End IF
 
     return bRet;
@@ -2125,7 +2125,7 @@ BOOL ValidSetFC_EM
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbQuadFC_SYS);
-        lptkNamArg->tkFlags.NoDisplay = 1;
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
 
         return TRUE;
     } // End IF
@@ -2169,7 +2169,7 @@ BOOL ValidSetIC_EM
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbQuadIC_SYS);
-        lptkNamArg->tkFlags.NoDisplay = 1;
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
 
         return TRUE;
     } // End IF
@@ -2576,7 +2576,7 @@ MAKE_SCALAR:
             lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbV0Char);
         else
             lptkNamArg->tkData.tkSym->stData.stChar = lpMemPTD->cQuadPR;
-        lptkNamArg->tkFlags.NoDisplay = 1;
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
     } // End IF
 
     // We no longer need this ptr
@@ -2921,7 +2921,7 @@ BOOL ValidSetSA_EM
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
-        lptkNamArg->tkFlags.NoDisplay = 1;
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
     } // End IF
 
     // We no longer need this ptr

@@ -85,7 +85,7 @@ LPPL_YYSTYPE _YYAlloc
         ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 
         // Mark as inuse
-        lpYYRes->YYInuse = 1;
+        lpYYRes->YYInuse = TRUE;
 #ifdef DEBUG
         lpYYRes->SILevel = lpMemPTD->SILevel;   // Save the SI Level
         lpYYRes->YYFlag = 0;  // Mark as a YYAlloc Index
@@ -112,7 +112,7 @@ RESTART_EXCEPTION_YYALLOC:
         ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 
         // Mark as inuse
-        lpYYRes->YYInuse = 1;
+        lpYYRes->YYInuse = TRUE;
 #ifdef DEBUG
         lpYYRes->SILevel = lpMemPTD->SILevel;   // Save the SI Level
         lpYYRes->YYFlag = 0;  // Mark as a YYAlloc Index
@@ -157,9 +157,7 @@ RESTART_EXCEPTION_YYALLOC:
             default:
                 // Display message for unhandled exception
                 DisplayException ();
-#ifdef DEBUG
-                DbgStop ();         // We should never get here
-#endif
+
                 break;
         } // End SWITCH
     } // End __try/__except
@@ -197,7 +195,7 @@ void YYCopy
     YYFlag  = lpYYDst->YYFlag;
 #endif
     *lpYYDst = *lpYYSrc;            // Copy the PL_YYSTYPE
-    lpYYDst->YYInuse = 1;           // Retain YYInuse flag
+    lpYYDst->YYInuse = TRUE;        // Retain YYInuse flag
 #ifdef DEBUG
     lpYYDst->YYIndex = YYIndex;     // Retain YYIndex
     lpYYDst->YYFlag  = YYFlag;      // ...    YYFlag
@@ -222,7 +220,7 @@ void YYCopyFreeDst
         YYCopy (lpYYDst, lpYYSrc);
     else
     {
-        lpYYDst->YYInuse = 1;       // Mark as in use for YYCopy
+        lpYYDst->YYInuse = TRUE;    // Mark as in use for YYCopy
         YYCopy (lpYYDst, lpYYSrc);
         lpYYDst->YYInuse = 0;       // Mark as no longer in use
     } // End IF/ELSE

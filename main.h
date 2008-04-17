@@ -257,10 +257,11 @@ typedef enum tagEXIT_TYPES
     EXITTYPE_QUADERROR_INIT,    // 06:  []ERROR/[]ES -- initialization
     EXITTYPE_QUADERROR_EXEC,    // 07:  []ERROR/[]ES -- execute []ELX
     EXITTYPE_ERROR,             // 08:  ERROR
-    EXITTYPE_DISPLAY,           // 09:  Value not already displayed
-    EXITTYPE_NODISPLAY,         // 0A:  Value already displayed
-    EXITTYPE_NOVALUE,           // 0B:  No value returned
-                                // 0C-0F:  Available entries (4 bits)
+    EXITTYPE_STOP,              // 09:  Stop processing, cannot continue
+    EXITTYPE_DISPLAY,           // 0A:  Value not already displayed
+    EXITTYPE_NODISPLAY,         // 0B:  Value already displayed
+    EXITTYPE_NOVALUE,           // 0C:  No value returned
+                                // 0D-0F:  Available entries (4 bits)
 } EXIT_TYPES;
 
 #ifndef DEBUG

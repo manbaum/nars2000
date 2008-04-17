@@ -98,15 +98,15 @@ typedef struct tagHTFLAGS
 {
     UINT Inuse:1,           // 00000001:  Inuse entry
          PrinHash:1,        // 00000002:  Entry with principal hash
-         CharIsValid:1,     // 00000004:  htChar is valid (and htGlbname is the
-                            //            name's global memory handle)
+         CharIsValid:1,     // 00000004:  htChar is valid (and lpCharName is a
+                            //            ptr to the name)
 #ifdef DEBUG
          Temp:1,            // 00000008:  Temporary flag used for debugging
          Avail:11,          // 0000FFF0:  Available bits
 #else
          Avail:12,          // 0000FFF8:  Available bits
 #endif
-         htChar:16;         // FFFF0000:  Char if CharIsValid is set
+         htChar:16;         // FFFF0000:  Char if CharIsValid is TRUE
 } HTFLAGS, *LPHTFLAGS;
 
 // N.B.:  Whenever changing the above struct (HTFLAGS),
@@ -114,10 +114,12 @@ typedef struct tagHTFLAGS
 //   <ahtFlagNames> in <display.c>.
 
 
+#ifdef DEBUG
 typedef struct tagAPLCHAR6
 {
     APLCHAR aplChar[6];
 } APLCHAR6, *LPAPLCHAR6;
+#endif
 
 
 // Hash table entry
@@ -131,8 +133,11 @@ typedef struct tagHSHENTRY
             uHashAndMask;   // 10:  uHash & the current mask
     union                   // 14:  Handle of the entry's name (NULL if none)
     {
-        HGLOBAL htGlbName;
-        LPAPLCHAR6 *lplpaplChar6;
+        HGLOBAL htGlbName;          // Use only if CharIsValid EQ FALSE
+        LPWCHAR lpwCharName;        // Use only if CharIsValid EQ TRUE
+#ifdef DEBUG
+        LPAPLCHAR6 *lplpaplChar6;   // For debugging only
+#endif
     };
     struct tagSYMENTRY
             *htSymEntry;    // 18:  Ptr to the matching SYMENTRY
@@ -215,7 +220,8 @@ typedef enum tagOBJ_NAMES
     OBJNAME_USR,            // 01:  User name
     OBJNAME_SYS,            // 02:  System name (starts with a Quad or Quote-quad)
     OBJNAME_MF,             // 03:  Magic Function
-                            // 04-07:  Available entries (3 bits)
+    OBJNAME_LOD,            // 04:  )LOAD HGLOBAL
+                            // 05-07:  Available entries (3 bits)
 } OBJ_NAMES;
 
 #define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MF"}

@@ -402,6 +402,9 @@ EXIT_TYPES TranslateResetFlagToExitType
         case RESETFLAG_ALL:
             return EXITTYPE_RESET_ALL;
 
+        case RESETFLAG_STOP:
+            return EXITTYPE_STOP;
+
         defstop
             return EXITTYPE_NONE;
     } // End SWITCH
@@ -434,6 +437,46 @@ APLCHAR TranslateArrayTypeToChar
 {
     return ArrayTypeAsChar[arrType];
 } // End TranslateArrayTypeToChar
+
+
+//***************************************************************************
+//  $TranslateCharToArrayType
+//
+//  Convert a char to an array type
+//***************************************************************************
+
+ARRAY_TYPES TranslateCharToArrayType
+    (WCHAR wChar)
+
+{
+    // Split cases based upon the incoming char
+    switch (wChar)
+    {
+        case 'A':
+            return ARRAY_APA;
+
+        case 'B':
+            return ARRAY_BOOL;
+
+        case 'C':
+            return ARRAY_CHAR;
+
+        case 'F':
+            return ARRAY_FLOAT;
+
+        case 'H':
+            return ARRAY_HETERO;
+
+        case 'I':
+            return ARRAY_INT;
+
+        case 'N':
+            return ARRAY_NESTED;
+
+        defstop
+            return '?';
+    } // End SWITCH
+} // End TranslateCharToArrayType
 
 
 //***************************************************************************

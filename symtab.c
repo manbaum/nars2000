@@ -132,191 +132,198 @@ BOOL HshTabFrisk
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-    // Get the thread's PerTabData global memory handle
-    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get hash mask for next higher hash function
-    uHashMaskNext = 1 + 2 * lpMemPTD->uHashMask;
-
-    // Ensure that the NextSameHash and PrevSameHash chains are valid
-    for (lp = lpMemPTD->lpHshTab;
-         lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
-         lp++)
+    __try
     {
-        if (lp->NextSameHash NE LPHSHENTRY_NONE)
-            Assert (lp EQ lp->NextSameHash->PrevSameHash);
+        // Get the thread's PerTabData global memory handle
+        hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-        if (lp->PrevSameHash NE LPHSHENTRY_NONE)
-            Assert (lp EQ lp->PrevSameHash->NextSameHash);
-    } // End FOR
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Ensure that all uHashAndMask values are up-to-date
-    for (lp = lpMemPTD->lpHshTab;
-         lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
-         lp++)
-    if (lp->htFlags.Inuse)
-        Assert (lp->uHashAndMask EQ MaskTheHash (lp->uHash));
+        // Get hash mask for next higher hash function
+        uHashMaskNext = 1 + 2 * lpMemPTD->uHashMask;
 
-    // Ensure that all empty entries have zero flags
-    //   (possibly except for .PrinHash),
-    //   LPHSHENTRY_NONE in the two hash ptrs (unless .PrinHash),
-    //   and zero everywhere else
-    for (lp = lpMemPTD->lpHshTab;
-         lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
-         lp++)
-    if (!lp->htFlags.Inuse)
-    {
-        htFlags = lp->htFlags;
-        htFlags.PrinHash = FALSE;
+        // Ensure that the NextSameHash and PrevSameHash chains are valid
+        for (lp = lpMemPTD->lpHshTab;
+             lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
+             lp++)
+        {
+            if (lp->NextSameHash NE LPHSHENTRY_NONE)
+                Assert (lp EQ lp->NextSameHash->PrevSameHash);
 
-        Assert (0 EQ *(PUINT_PTR) &htFlags);
+            if (lp->PrevSameHash NE LPHSHENTRY_NONE)
+                Assert (lp EQ lp->PrevSameHash->NextSameHash);
+        } // End FOR
 
-        if (!lp->htFlags.PrinHash)
-            Assert (lp->NextSameHash EQ LPHSHENTRY_NONE
-                 && lp->PrevSameHash EQ LPHSHENTRY_NONE);
-        Assert (lp->uHash           EQ 0
-             && lp->uHashAndMask    EQ 0
-             && lp->htGlbName       EQ NULL
-             && lp->htSymEntry      EQ NULL);
-    } // End FOR/IF
+        // Ensure that all uHashAndMask values are up-to-date
+        for (lp = lpMemPTD->lpHshTab;
+             lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
+             lp++)
+        if (lp->htFlags.Inuse)
+            Assert (lp->uHashAndMask EQ MaskTheHash (lp->uHash));
 
-    // Ensure that .PrinHash is set every DEF_HSHTAB_EPB entries
-    //   and nowhere else
-    for (lp = lpMemPTD->lpHshTab;
-         lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
-         lp++)
-    {
-        if (lp->htFlags.PrinHash)
-            // Ensure .PrinHash is on a proper boundary
-            Assert (0 EQ ((lp - lpMemPTD->lpHshTab) % DEF_HSHTAB_EPB));
-        else
-            Assert (!lp->htFlags.PrinHash);
-    } // End FOR
+        // Ensure that all empty entries have zero flags
+        //   (possibly except for .PrinHash),
+        //   LPHSHENTRY_NONE in the two hash ptrs (unless .PrinHash),
+        //   and zero everywhere else
+        for (lp = lpMemPTD->lpHshTab;
+             lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
+             lp++)
+        if (!lp->htFlags.Inuse)
+        {
+            htFlags = lp->htFlags;
+            htFlags.PrinHash = FALSE;
 
-    // Ensure that every HTE is in some NextSameHash chain starting
-    //   from a .PrinHash entry, or is empty
-    for (lp = lpMemPTD->lpHshTab;
-         lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
-         lp += DEF_HSHTAB_EPB)
-    {
-        // Ensure that all chains start at .PrinHash
-        Assert (lp->PrevSameHash EQ LPHSHENTRY_NONE);
+            Assert (0 EQ *(PUINT_PTR) &htFlags);
 
-        // Trundle through the NextSameHash chain
+            if (!lp->htFlags.PrinHash)
+                Assert (lp->NextSameHash EQ LPHSHENTRY_NONE
+                     && lp->PrevSameHash EQ LPHSHENTRY_NONE);
+            Assert (lp->uHash           EQ 0
+                 && lp->uHashAndMask    EQ 0
+                 && lp->htGlbName       EQ NULL
+                 && lp->htSymEntry      EQ NULL);
+        } // End FOR/IF
+
+        // Ensure that .PrinHash is set every DEF_HSHTAB_EPB entries
+        //   and nowhere else
+        for (lp = lpMemPTD->lpHshTab;
+             lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
+             lp++)
+        {
+            if (lp->htFlags.PrinHash)
+                // Ensure .PrinHash is on a proper boundary
+                Assert (0 EQ ((lp - lpMemPTD->lpHshTab) % DEF_HSHTAB_EPB));
+            else
+                Assert (!lp->htFlags.PrinHash);
+        } // End FOR
+
+        // Ensure that every HTE is in some NextSameHash chain starting
+        //   from a .PrinHash entry, or is empty
+        for (lp = lpMemPTD->lpHshTab;
+             lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
+             lp += DEF_HSHTAB_EPB)
+        {
+            // Ensure that all chains start at .PrinHash
+            Assert (lp->PrevSameHash EQ LPHSHENTRY_NONE);
+
+            // Trundle through the NextSameHash chain
+            for (lpNext = lp;
+                 lpNext NE LPHSHENTRY_NONE;
+                 lpNext = lpNext->NextSameHash)
+            {
+                // Ensure not already set
+                Assert (!lpNext->htFlags.Temp);
+
+                // Set it
+                lpNext->htFlags.Temp = TRUE;
+            } // End FOR
+        } // End FOR
+
+        // Check and unset .Temp entries
+        for (lp = lpMemPTD->lpHshTab;
+             lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
+             lp++)
+        {
+            Assert ((!lp->htFlags.Inuse)
+                 || lp->htFlags.Temp);
+            lp->htFlags.Temp = FALSE;
+        } // End FOR
+
+        uMark = (UINT) (lpMemPTD->lpHshTabSplitNext - lpMemPTD->lpHshTab);
+
+        // Ensure that principal entries below lpHshTabSplitNext hashed with the
+        //   next higher hash function all hash to below lpHshTabSplitNext.
+        // In other words, we moved all of those which hashed to a higher bucket.
+        for (lp  = lpMemPTD->lpHshTab;
+             lp NE lpMemPTD->lpHshTabSplitNext;
+             lp += DEF_HSHTAB_EPB)
         for (lpNext = lp;
              lpNext NE LPHSHENTRY_NONE;
              lpNext = lpNext->NextSameHash)
+        if (lpNext->htFlags.Inuse)
         {
-            // Ensure not already set
-            Assert (!lpNext->htFlags.Temp);
-
-            // Set it
-            lpNext->htFlags.Temp = TRUE;
-        } // End FOR
-    } // End FOR
-
-    // Check and unset .Temp entries
-    for (lp = lpMemPTD->lpHshTab;
-         lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
-         lp++)
-    {
-        Assert ((!lp->htFlags.Inuse)
-             || lp->htFlags.Temp);
-        lp->htFlags.Temp = FALSE;
-    } // End FOR
-
-    uMark = (UINT) (lpMemPTD->lpHshTabSplitNext - lpMemPTD->lpHshTab);
-
-    // Ensure that principal entries below lpHshTabSplitNext hashed with the
-    //   next higher hash function all hash to below lpHshTabSplitNext.
-    // In other words, we moved all of those which hashed to a higher bucket.
-    for (lp  = lpMemPTD->lpHshTab;
-         lp NE lpMemPTD->lpHshTabSplitNext;
-         lp += DEF_HSHTAB_EPB)
-    for (lpNext = lp;
-         lpNext NE LPHSHENTRY_NONE;
-         lpNext = lpNext->NextSameHash)
-    if (lpNext->htFlags.Inuse)
-    {
-        Assert (((lpNext->uHash & uHashMaskNext) * DEF_HSHTAB_EPB) EQ MaskTheHash (lpNext->uHash));
-        Assert (((lpNext->uHash & uHashMaskNext) * DEF_HSHTAB_EPB) < uMark);
-        if (!(((lpNext->uHash & uHashMaskNext) * DEF_HSHTAB_EPB) < uMark))
-        {
-            DisplayHshTab ();
-            MBC ("DisplayHshTab");
+            Assert (((lpNext->uHash & uHashMaskNext) * DEF_HSHTAB_EPB) EQ MaskTheHash (lpNext->uHash));
+            Assert (((lpNext->uHash & uHashMaskNext) * DEF_HSHTAB_EPB) < uMark);
+            if (!(((lpNext->uHash & uHashMaskNext) * DEF_HSHTAB_EPB) < uMark))
+            {
+                DisplayHshTab ();
+                MBC ("DisplayHshTab");
+            } // End IF
         } // End IF
-    } // End IF
 
-    lpBase = &lpMemPTD->lpHshTabSplitNext[lpMemPTD->iHshTabBaseSize];
-    lpEnd  = &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
+        lpBase = &lpMemPTD->lpHshTabSplitNext[lpMemPTD->iHshTabBaseSize];
+        lpEnd  = &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
 
-    uMark = (UINT) (lpBase - lpMemPTD->lpHshTab);
+        uMark = (UINT) (lpBase - lpMemPTD->lpHshTab);
 
-    // Ensure that principal entries at or above lpBase hashed with the
-    //   next higher hash function all hash to at or above lpBase.
-    // In other words, we moved only those which hashed to a higher bucket.
-    for (lp  = lpBase;
-         lp NE lpEnd;
-         lp += DEF_HSHTAB_EPB)
-    for (lpNext = lp;
-         lpNext NE LPHSHENTRY_NONE;
-         lpNext = lpNext->NextSameHash)
-    if (lpNext->htFlags.Inuse)
-        Assert (((lpNext->uHash & uHashMaskNext) * DEF_HSHTAB_EPB) >= uMark);
+        // Ensure that principal entries at or above lpBase hashed with the
+        //   next higher hash function all hash to at or above lpBase.
+        // In other words, we moved only those which hashed to a higher bucket.
+        for (lp  = lpBase;
+             lp NE lpEnd;
+             lp += DEF_HSHTAB_EPB)
+        for (lpNext = lp;
+             lpNext NE LPHSHENTRY_NONE;
+             lpNext = lpNext->NextSameHash)
+        if (lpNext->htFlags.Inuse)
+            Assert (((lpNext->uHash & uHashMaskNext) * DEF_HSHTAB_EPB) >= uMark);
 
-    // Ensure that the symbol table ptrs point back to the hash table
-    for (lp = lpMemPTD->lpHshTab;
-         lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
-         lp++)
-    if (lp->htFlags.Inuse)
-    {
-        if (lp->htFlags.CharIsValid)
+        // Ensure that the symbol table ptrs point back to the hash table
+        for (lp = lpMemPTD->lpHshTab;
+             lp NE &lpMemPTD->lpHshTab[lpMemPTD->iHshTabTotalSize];
+             lp++)
+        if (lp->htFlags.Inuse)
         {
-            Assert (lp->htFlags.htChar NE 0
-                 && lp->htGlbName NE NULL
-                 && lp->htSymEntry EQ NULL);
+            if (lp->htFlags.CharIsValid)
+            {
+                Assert (lp->htFlags.htChar NE 0
+                     && lp->htGlbName NE NULL
+                     && lp->htSymEntry EQ NULL);
+            } else
+            {
+                if (!(lp->htSymEntry
+                 && lp->htSymEntry->stHshEntry EQ lp))
+                {
+                    DisplayHshTab ();
+                    DisplaySymTab (TRUE);
+                    MBC ("HshTabFrisk:  lp->htSymEntry EQ 0");
+                } // End IF
+            } // End IF/ELSE
+        } // End FOR
+
+        // Ensure that the hash table ptrs point back to the symbol table
+        for (lps = lpMemPTD->lpSymTab;
+    /////////lps NE &lpMemPTD->lpSymTab[lpMemPTD->iSymTabTotalSize];
+             lps NE lpMemPTD->lpSymTabNext;
+             lps++)
+        // Check for NoValue entry
+        if (IsSymNoValue (lps))
+            continue;
+        else
+        if (lps->stHshEntry->htFlags.CharIsValid)
+        {
+            Assert (lps->stHshEntry->htFlags.htChar NE 0
+                 && lps->stHshEntry->htGlbName NE NULL
+                 && lps->stHshEntry->htSymEntry EQ NULL);
         } else
         {
-            if (!(lp->htSymEntry
-             && lp->htSymEntry->stHshEntry EQ lp))
+            if (!(lps->stHshEntry
+             && lps->stHshEntry->htSymEntry EQ lps))
             {
                 DisplayHshTab ();
                 DisplaySymTab (TRUE);
-                MBC ("HshTabFrisk:  lp->htSymEntry EQ 0");
+                MBC ("HshTabFrisk:  lp->stHshEntry EQ 0");
             } // End IF
         } // End IF/ELSE
-    } // End FOR
 
-    // Ensure that the hash table ptrs point back to the symbol table
-    for (lps = lpMemPTD->lpSymTab;
-/////////lps NE &lpMemPTD->lpSymTab[lpMemPTD->iSymTabTotalSize];
-         lps NE lpMemPTD->lpSymTabNext;
-         lps++)
-    // Check for NoValue entry
-    if (IsSymNoValue (lps))
-        continue;
-    else
-    if (lps->stHshEntry->htFlags.CharIsValid)
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    } __except (CheckException (GetExceptionInformation (), "HshTabFrisk"))
     {
-        Assert (lps->stHshEntry->htFlags.htChar NE 0
-             && lps->stHshEntry->htGlbName NE NULL
-             && lps->stHshEntry->htSymEntry EQ NULL);
-    } else
-    {
-        if (!(lps->stHshEntry
-         && lps->stHshEntry->htSymEntry EQ lps))
-        {
-            DisplayHshTab ();
-            DisplaySymTab (TRUE);
-            MBC ("HshTabFrisk:  lp->stHshEntry EQ 0");
-        } // End IF
-    } // End IF/ELSE
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+        // Display message for unhandled exception
+        DisplayException ();
+    } // End __try/__except
 
     return TRUE;
 } // End HshTabFrisk
@@ -476,7 +483,7 @@ BOOL HshTabResize_EM
     // This entry is never overwritten with an entry with a
     //   different hash value.
     for (i = lpMemPTD->iHshTabTotalSize; i < iHshTabNewSize; i += DEF_HSHTAB_EPB)
-        lpMemPTD->lpHshTab[i].htFlags.PrinHash = 1;
+        lpMemPTD->lpHshTab[i].htFlags.PrinHash = TRUE;
 
     // Initialize the next & prev same hash STE values
     for (i = lpMemPTD->iHshTabTotalSize; i < iHshTabNewSize; i++)
@@ -1034,12 +1041,12 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $HshTabLookupChar
+//  $HshTabLookupCharHash
 //
-//  Lookup a char based upon the char
+//  Lookup a char based upon the char & hash
 //***************************************************************************
 
-LPHSHENTRY HshTabLookupChar
+LPHSHENTRY HshTabLookupCharHash
     (APLCHAR aplChar,           // The char to lookup
      UINT    uHash)             // The hash of the char
 
@@ -1056,7 +1063,8 @@ LPHSHENTRY HshTabLookupChar
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Set mask flags
-    htMaskFlags.CharIsValid = 1;
+    htMaskFlags.Inuse       =
+    htMaskFlags.CharIsValid = TRUE;
 
     // Loop through the hash table entries
     for (lpHshEntry = &lpMemPTD->lpHshTab[MaskTheHash (uHash)];
@@ -1071,8 +1079,7 @@ LPHSHENTRY HshTabLookupChar
 #endif
     {
         // Check the flags
-        if (lpHshEntry->htFlags.Inuse
-         && ((*(PUINT_PTR) &lpHshEntry->htFlags) & *(PUINT_PTR) &htMaskFlags)
+        if (((*(PUINT_PTR) &lpHshEntry->htFlags) & *(PUINT_PTR) &htMaskFlags)
              EQ *(PUINT_PTR) &htMaskFlags
          && aplChar EQ lpHshEntry->htFlags.htChar)
             break;
@@ -1082,18 +1089,70 @@ LPHSHENTRY HshTabLookupChar
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return lpHshEntry;
-} // End HshTabLookupChar
+} // End HshTabLookupCharHash
 
 
 //***************************************************************************
-//  $AppendSymbolName
+//  $HshTabLookupNameHash
 //
-//  Append the name and value of a symbol to the hash table
+//  Lookup a char based upon the name & hash
 //***************************************************************************
 
-BOOL AppendSymbolName
-    (APLCHAR aplChar,
-     LPCHAR  lpCharName)
+LPHSHENTRY HshTabLookupNameHash
+    (LPWCHAR lpwCharName,       // Ptr to the name to lookup
+     UINT    uHash)             // The hash of the char
+
+{
+    LPHSHENTRY   lpHshEntry;        // Ptr to the result
+    HTFLAGS      htMaskFlags = {0}; // Hash table mask flags
+    HGLOBAL      hGlbPTD;           // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Set mask flags
+    htMaskFlags.Inuse       =
+    htMaskFlags.CharIsValid = TRUE;
+
+    // Loop through the hash table entries
+    for (lpHshEntry = &lpMemPTD->lpHshTab[MaskTheHash (uHash)];
+         lpHshEntry NE LPHSHENTRY_NONE;
+         lpHshEntry = lpHshEntry->NextSameHash)
+#ifdef DEBUG
+    if (!lpHshEntry)
+    {
+        DisplayHshTab ();
+        DbgStop ();             // We should never get here
+    } else
+#endif
+    {
+        // Check the flags
+        if (((*(PUINT_PTR) &lpHshEntry->htFlags) & *(PUINT_PTR) &htMaskFlags)
+             EQ *(PUINT_PTR) &htMaskFlags
+         && lstrcmpW (lpHshEntry->lpwCharName, lpwCharName) EQ 0)
+            break;
+    } // End FOR/IF/ELSE
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return lpHshEntry;
+} // End HshTabLookupNameHash
+
+
+//***************************************************************************
+//  $AppendCharValue
+//
+//  Append the value of a char to the hash table
+//***************************************************************************
+
+BOOL AppendCharValue
+    (APLCHAR aplChar,                   // The corresponding char
+     LPWCHAR lpwCharName)               // Ptr to symbol name
 
 {
     LPHSHENTRY   lpHshEntryDest,        // Ptr to the result
@@ -1112,10 +1171,89 @@ BOOL AppendSymbolName
     // Hash the char
     uHash = hashlittle
            ((const uint32_t *) &aplChar,    // A ptr to the char to hash
-             sizeof (aplChar),              // The # values pointed to
+             sizeof (aplChar),              // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Look up the char
-    lpHshEntryDest = HshTabLookupChar (aplChar, uHash);
+    lpHshEntryDest = HshTabLookupCharHash (aplChar, uHash);
+    if (lpHshEntryDest EQ LPHSHENTRY_NONE)
+    {
+        // This char isn't in the HT -- find the next free entry
+        //   in the hash table, split if necessary
+        lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE);
+
+        // If it's invalid, quit
+        if (!lpHshEntryDest)
+            goto ERROR_EXIT;
+
+        // We *MUST NOT* call MaskTheHash until after the call
+        //   to FindNextFreeUsingHash_SPLIT_EM as that call might well
+        //   split a HTE and change lpHshTabSplitNext and uHashMask,
+        //   and thus the result of MaskTheHash.
+        lpHshEntryHash = &lpMemPTD->lpHshTab[MaskTheHash (uHash)];
+
+        // This entry must be a principal one
+        Assert (lpHshEntryHash->htFlags.PrinHash);
+
+        // Mark this hash table entry as in use
+        lpHshEntryDest->htFlags.Inuse       =
+        lpHshEntryDest->htFlags.CharIsValid = TRUE;
+        lpHshEntryDest->htFlags.htChar      = aplChar;
+
+        // Save the ptr to the name
+        lpHshEntryDest->lpwCharName  = lpwCharName;
+
+        // Save hash value (so we don't have to rehash on split)
+        lpHshEntryDest->uHash        = uHash;
+        lpHshEntryDest->uHashAndMask = MaskTheHash (uHash);
+
+        // Link the destination entry into the hash entry
+        HshTabLink (lpHshEntryHash, lpHshEntryDest);
+
+        // Mark as successful
+        bRet = TRUE;
+    } else
+        DbgStop ();     // We should never get here
+ERROR_EXIT:
+    Assert (HshTabFrisk ());
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return bRet;
+} // End AppendCharValue
+
+
+//***************************************************************************
+//  $AppendCharName
+//
+//  Append the name of a char to the hash table
+//***************************************************************************
+
+BOOL AppendCharName
+    (LPWCHAR lpwCharName,               // Ptr to symbol name
+     APLCHAR aplChar)                   // The corresponding char
+
+{
+    LPHSHENTRY   lpHshEntryDest,        // Ptr to the result
+                 lpHshEntryHash;        // Ptr to principal hash entry
+    UINT         uHash;                 // The hash of the name
+    BOOL         bRet = FALSE;          // TRUE iff result is valid
+    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Hash the name
+    uHash = hashlittle
+           ((const uint32_t *) lpwCharName, // A ptr to the name to hash
+             lstrlenW (lpwCharName) * sizeof (lpwCharName[0]), // The # bytes pointed to
+             0);                            // Initial value or previous hash
+    // Look up the name
+    lpHshEntryDest = HshTabLookupNameHash (lpwCharName, uHash);
     if (lpHshEntryDest EQ LPHSHENTRY_NONE)
     {
         // This name isn't in the HT -- find the next free entry
@@ -1137,11 +1275,11 @@ BOOL AppendSymbolName
 
         // Mark this hash table entry as in use
         lpHshEntryDest->htFlags.Inuse       =
-        lpHshEntryDest->htFlags.CharIsValid = 1;
+        lpHshEntryDest->htFlags.CharIsValid = TRUE;
         lpHshEntryDest->htFlags.htChar      = aplChar;
 
         // Save the ptr to the name
-        lpHshEntryDest->htGlbName = lpCharName;
+        lpHshEntryDest->lpwCharName  = lpwCharName;
 
         // Save hash value (so we don't have to rehash on split)
         lpHshEntryDest->uHash        = uHash;
@@ -1161,16 +1299,16 @@ ERROR_EXIT:
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
-} // End AppendSymbolName
+} // End AppendCharName
 
 
 //***************************************************************************
-//  $InitSymbolNames
+//  $InitCharNamesValues
 //
-//  Append all symbol names and values to the hash table
+//  Append all APL char names and values to the hash table
 //***************************************************************************
 
-BOOL InitSymbolNames
+BOOL InitCharNamesValues
     (void)
 
 {
@@ -1182,21 +1320,27 @@ BOOL InitSymbolNames
     else
     // Loop through all symbol names/values
     for (uSym = 0; uSym < ASYMBOLNAMES_NROWS; uSym++)
-    if (!AppendSymbolName (aSymbolNames[uSym].Symbol,
-                           aSymbolNames[uSym].lpName))
-        return FALSE;
+    {
+        if (!AppendCharValue (aSymbolNames[uSym].Symbol,
+                              aSymbolNames[uSym].lpwName))
+            return FALSE;
+
+        if (!AppendCharName  (aSymbolNames[uSym].lpwName,
+                              aSymbolNames[uSym].Symbol))
+            return FALSE;
+    } // End FOR
 
     return TRUE;
-} // End InitSymbolNames
+} // End InitCharNamesValues
 
 
 //***************************************************************************
-//  $SymbolToName
+//  $CharToName
 //
-//  Translate a symbol to its canonical name
+//  Translate a char to its canonical name
 //***************************************************************************
 
-LPCHAR SymbolToName
+LPWCHAR CharToName
     (APLCHAR aplChar)
 
 {
@@ -1206,15 +1350,92 @@ LPCHAR SymbolToName
     // Hash the char
     uHash = hashlittle
            ((const uint32_t *) &aplChar,    // A ptr to the char to hash
-             sizeof (aplChar),              // The # values pointed to
+             sizeof (aplChar),              // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Look up the char
-    lpHshEntryDest = HshTabLookupChar (aplChar, uHash);
+    lpHshEntryDest = HshTabLookupCharHash (aplChar, uHash);
     if (lpHshEntryDest NE LPHSHENTRY_NONE)
-        return lpHshEntryDest->htGlbName;
+        return lpHshEntryDest->lpwCharName;
     else
         return NULL;
-} // End SymbolToName
+} // End CharToName
+
+
+//***************************************************************************
+//  $NameToChar
+//
+//  Translate a {name} to its char allowing for {x\XXXX}
+//***************************************************************************
+
+WCHAR NameToChar
+    (LPWCHAR lpwCharName)
+
+{
+    UINT       uHash;               // The hash of the char
+    LPHSHENTRY lpHshEntryDest;      // Ptr to the matching hash table entry
+    WCHAR      wcRes,               // Char result
+               wcTmp;               // Temporary char
+    LPWCHAR    lpwCharEnd;          // Temporary ptr
+    UINT       uChr;                // Loop counter
+    // Powers of 16 for converting {\xXXX} to a number
+    static UINT Pow16[] = {16 * 16 * 16,
+                           16 * 16,
+                           16,
+                           1};
+
+    // Check for hex-notation as in {\xXXXX}
+    if (lpwCharName[1] EQ L'\\'
+     && lpwCharName[2] EQ L'x')
+    {
+        // Loop through the four hex digits, converting them to a number
+        for (uChr = wcRes = 0; uChr < 4; uChr++)
+        {
+            WCHAR wChr = lpwCharName[3 + uChr];
+
+            if (L'0' <= wChr
+             &&         wChr <= L'9')
+                wcRes += (     wChr - L'0') * Pow16[uChr];
+            else
+            if (L'A' <= wChr
+             &&         wChr <= L'F')
+                wcRes += (10 + wChr - L'A') * Pow16[uChr];
+            else
+            if (L'a' <= wChr
+             &&         wChr <= L'f')
+                wcRes += (10 + wChr - L'a') * Pow16[uChr];
+            else
+                // We should never get here
+                DbgStop ();
+        } // End FOR
+    } else
+    {
+        // Find the matching L'}'
+        lpwCharEnd = SkipPastCharW (lpwCharName, L'}');
+
+        Assert (lpwCharEnd NE NULL);
+
+        // Save old next char, zap to form zero-terminated name
+        wcTmp = *lpwCharEnd;
+        *lpwCharEnd = L'\0';
+
+        // Hash the char
+        uHash = hashlittle
+               ((const uint32_t *) lpwCharName, // A ptr to the name to hash
+                 lstrlenW (lpwCharName) * sizeof (lpwCharName[0]),// The # bytes pointed to
+                 0);                            // Initial value or previous hash
+        // Look up the char
+        lpHshEntryDest = HshTabLookupNameHash (lpwCharName, uHash);
+        if (lpHshEntryDest NE LPHSHENTRY_NONE)
+            wcRes =lpHshEntryDest->htFlags.htChar;
+        else
+            wcRes =L'\0';
+
+        // Restore the original value
+        *lpwCharEnd = wcTmp;
+    } // End IF/ELSE
+
+    return wcRes;
+} // End NameToChar
 
 
 //***************************************************************************
@@ -1246,7 +1467,7 @@ LPSYMENTRY SymTabLookupChar
     stMaskFlags.Imm     =
     stMaskFlags.Perm    =
     stMaskFlags.Value   =
-    stMaskFlags.Inuse   = 1;
+    stMaskFlags.Inuse   = TRUE;
     stMaskFlags.ImmType = NEG1U;
 
     // Save common value
@@ -1312,7 +1533,7 @@ LPSYMENTRY SymTabLookupNumber
     stMaskFlags.Imm   =
     stMaskFlags.Perm  =
     stMaskFlags.Value =
-    stMaskFlags.Inuse = 1;
+    stMaskFlags.Inuse = TRUE;
     stMaskFlags.ImmType = NEG1U;
 
     // Save common value
@@ -1381,7 +1602,7 @@ LPSYMENTRY SymTabLookupFloat
     stMaskFlags.Imm   =
     stMaskFlags.Perm  =
     stMaskFlags.Value =
-    stMaskFlags.Inuse = 1;
+    stMaskFlags.Inuse = TRUE;
     stMaskFlags.ImmType = NEG1U;
 
     // Save common value
@@ -1470,7 +1691,7 @@ LPSYMENTRY SymTabLookupNameLength
     // Hash the name
     uHash = hashlittle
            ((const uint32_t *) lpwszString, // A ptr to the name to hash
-             iLen * sizeof (WCHAR),         // The # values pointed to
+             iLen * sizeof (WCHAR),         // The # bytes pointed to
              0);                            // Initial value or previous hash
     // If the caller hasn't set this field, set it ourselves
     if (lpstFlags->ObjName EQ OBJNAME_NONE)
@@ -1484,11 +1705,11 @@ LPSYMENTRY SymTabLookupNameLength
     } // End IF
 
     // Mark as in use
-    lpstFlags->Inuse   = 1;
+    lpstFlags->Inuse   = TRUE;
 
     // Set mask flags
     stMaskFlags.ObjName = NEG1U;
-    stMaskFlags.Inuse   = 1;
+    stMaskFlags.Inuse   = TRUE;
 
     for (lpHshEntry = &lpMemPTD->lpHshTab[MaskTheHash (uHash)];
          lpHshEntry NE LPHSHENTRY_NONE;
@@ -1761,13 +1982,13 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
     // Hash the integer
     uHash = hashlittle
            ((const uint32_t *) &aplInteger, // A ptr to the integer to hash
-             IsBooleanValue (aplInteger) ? sizeof (APLBOOL) : sizeof (APLINT), // The # values pointed to
+             IsBooleanValue (aplInteger) ? sizeof (APLBOOL) : sizeof (APLINT), // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
     stNeedFlags.Perm  = bPerm;
     stNeedFlags.Imm   =
     stNeedFlags.Value =
-    stNeedFlags.Inuse = 1;
+    stNeedFlags.Inuse = TRUE;
 
     if (IsBooleanValue (aplInteger))
         stNeedFlags.ImmType = IMMTYPE_BOOL;
@@ -1802,7 +2023,7 @@ LPSYMENTRY SymTabAppendIntegerCommon_EM
             goto ERROR_EXIT;
 
         // Mark this hash table entry as in use
-        lpHshEntryDest->htFlags.Inuse = 1;
+        lpHshEntryDest->htFlags.Inuse = TRUE;
 
         // Save as return result
         lpSymEntryDest = lpHshEntryDest->htSymEntry = lpMemPTD->lpSymTabNext++;
@@ -1893,13 +2114,13 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
     // Hash the float
     uHash = hashlittle
            ((const uint32_t *) &aplFloat,   // A ptr to the float to hash
-             sizeof (aplFloat),             // The # values pointed to
+             sizeof (aplFloat),             // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
     stFlags.Imm   =
     stFlags.Perm  =
     stFlags.Value =
-    stFlags.Inuse = 1;
+    stFlags.Inuse = TRUE;
     stFlags.ImmType = IMMTYPE_FLOAT;
 
     // Lookup the number in the symbol table
@@ -1930,7 +2151,7 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
             goto ERROR_EXIT;
 
         // Mark this hash table entry as in use
-        lpHshEntryDest->htFlags.Inuse = 1;
+        lpHshEntryDest->htFlags.Inuse = TRUE;
 
         // Save as return result
         lpSymEntryDest = lpHshEntryDest->htSymEntry = lpMemPTD->lpSymTabNext++;
@@ -1976,7 +2197,7 @@ LPSYMENTRY SymTabAppendChar_EM
 
 {
     return SymTabAppendCharCommon_EM (aplChar, FALSE);
-} // End SymtabAppendChar_EM
+} // End SymTabAppendChar_EM
 
 
 //***************************************************************************
@@ -1990,7 +2211,7 @@ LPSYMENTRY SymTabAppendPermChar_EM
 
 {
     return SymTabAppendCharCommon_EM (aplChar, TRUE);
-} // End SymtabAppendPermChar_EM
+} // End SymTabAppendPermChar_EM
 
 
 //***************************************************************************
@@ -2020,13 +2241,13 @@ LPSYMENTRY SymTabAppendCharCommon_EM
     // Hash the char
     uHash = hashlittle
            ((const uint32_t *) &aplChar,    // A ptr to the char to hash
-             sizeof (aplChar),              // The # values pointed to
+             sizeof (aplChar),              // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
     stFlags.Imm   =
     stFlags.Perm  =
     stFlags.Value =
-    stFlags.Inuse = 1;
+    stFlags.Inuse = TRUE;
     stFlags.ImmType = IMMTYPE_CHAR;
 
     // Lookup the char in the symbol table
@@ -2057,7 +2278,7 @@ LPSYMENTRY SymTabAppendCharCommon_EM
             goto ERROR_EXIT;
 
         // Mark this hash table entry as in use
-        lpHshEntryDest->htFlags.Inuse = 1;
+        lpHshEntryDest->htFlags.Inuse = TRUE;
 
         // Save as return result
         lpSymEntryDest = lpHshEntryDest->htSymEntry = lpMemPTD->lpSymTabNext++;
@@ -2176,7 +2397,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     // Hash the name
     uHash = hashlittle
            ((const uint32_t *) lpwszString, // A ptr to the name to hash
-             iLen * sizeof (WCHAR),         // The # values pointed to
+             iLen * sizeof (WCHAR),         // The # bytes pointed to
              0);                            // Initial value or previous hash
     // This name isn't in the ST -- find the next free entry
     //   in the hash table, split if necessary
@@ -2192,7 +2413,7 @@ LPSYMENTRY SymTabAppendNewName_EM
         goto ERROR_EXIT;
 
     // Mark this hash table entry as in use
-    lpHshEntryDest->htFlags.Inuse = 1;
+    lpHshEntryDest->htFlags.Inuse = TRUE;
 
     // Save as return result
     lpSymEntryDest = lpHshEntryDest->htSymEntry = lpMemPTD->lpSymTabNext++;

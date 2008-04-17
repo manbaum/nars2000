@@ -196,17 +196,39 @@ void ShowHideChildWindows
 #endif
 
 BOOL CreateNewTab
-    (HWND    hWndParent,    // Window handle of the parent
-     LPWCHAR lpwszDPFE,     // Drive, Path, Filename, Ext of the workspace
-     int     iTab)          // Insert the new tab to the left of this one
+    (HWND    hWndParent,        // Window handle of the parent
+     LPWCHAR lpwsz,             // Drive, Path, Filename, Ext of the workspace
+     int     iTab)              // Insert the new tab to the left of this one
 
 {
-    DWORD  dwThreadId;
-    HANDLE hThread;
+    DWORD   dwThreadId;         // Thread ID
+    HANDLE  hThread;            // Handle to the thread
+    HGLOBAL hGlbDPFE = NULL;    // Workspace DPFE global memory handle
+    LPWCHAR lpwszDPFE;          // Ptr to workspace DPFE global memory
+    UINT    uLen;               // Length of workspace DPFE
+
+    // Save the incoming Workspace DPFE in a global memory object
+    //   and pass that handle to the Session Manager
+    uLen = lstrlenW (lpwsz);
+
+    // Allocate space for the workspace name ("+ 1" for trailing zero)
+    // The storage for this handle is freed in <CreateNewTabInThread>.
+    hGlbDPFE = MyGlobalAlloc (GHND, (uLen + 1) * sizeof (lpwsz[0]));
+    if (!hGlbDPFE)
+        return FALSE;
+
+    // Lock the memory to get a ptr to it
+    lpwszDPFE = MyGlobalLock (hGlbDPFE);
+
+    // Copy the workspace name to global memory
+    CopyMemory (lpwszDPFE, lpwsz, uLen * sizeof (lpwsz[0]));
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;
 
     // Save args in struc to pass to thread func
     cntThread.hWndParent = hWndParent;
-    cntThread.lpwszDPFE  = lpwszDPFE;
+    cntThread.hGlbDPFE   = hGlbDPFE;
     cntThread.iTab       = iTab;
 
 #ifdef DEBUG
@@ -224,7 +246,8 @@ BOOL CreateNewTab
     // Save the thread handle
     cntThread.hThread = hThread;
 
-    ResumeThread (hThread);
+    if (hThread)
+        ResumeThread (hThread);
 
     return (hThread NE NULL);
 } // End CreateNewTab
@@ -247,30 +270,30 @@ BOOL WINAPI CreateNewTabInThread
     (LPCNT_THREAD lpcntThread)
 
 {
-    int          iCurTab;       // Index of the current tab
-    TC_ITEMW     tcItem = {0};  // TabCtrl item struc
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD = NULL; // Ptr to PerTabData global memory
-    BOOL         bRet = TRUE;   // TR$UE iff the result is valid
-    RECT         rc;            // Rectangle for setting size of window
+    int          iCurTab;           // Index of the current tab
+    TC_ITEMW     tcItem = {0};      // TabCtrl item struc
+    HGLOBAL      hGlbPTD,           // PerTabData global memory handle
+                 hGlbDPFE = NULL;   // Workspace DPFE global memory handle
+    LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
+    BOOL         bRet = TRUE;       // TR$UE iff the result is valid
+    RECT         rc;                // Rectangle for setting size of window
     int          rcLeft, rcRight, rcBottom;
-    CLIENTCREATESTRUCT ccs;     // For MDI Client window
-    SM_CREATESTRUCTW csSM;      // For Session Manager window
-    HANDLE       hThread;       // Handle to this thread
-    HWND         hWndMC,        // Window handle of MDI Client
-                 hWndParent;    // Window handle of the parent
-    LPWCHAR      lpwszDPFE;     // Drive, Path, Filename, Ext of the workspace
-    int          iTab;          // Insert the new tab to the left of this one
-    MSG          Msg;           // Message for GetMessage loop
+    CLIENTCREATESTRUCT ccs;         // For MDI Client window
+    SM_CREATESTRUCTW csSM;          // For Session Manager window
+    HANDLE       hThread;           // Handle to this thread
+    HWND         hWndMC,            // Window handle of MDI Client
+                 hWndParent;        // Window handle of the parent
+    int          iTab;              // Insert the new tab to the left of this one
+    MSG          Msg;               // Message for GetMessage loop
     int          nThreads;
-    WCHAR        wszTemp[32];   // Temporary storage
+    WCHAR        wszTemp[32];       // Temporary storage
 
     // Store the thread type ('TC')
     TlsSetValue (dwTlsType, (LPVOID) 'TC');
 
     // Extract values from the arg struc
     hWndParent = lpcntThread->hWndParent;
-    lpwszDPFE  = lpcntThread->lpwszDPFE;
+    hGlbDPFE   = lpcntThread->hGlbDPFE;
     iTab       = lpcntThread->iTab;
     hThread    = lpcntThread->hThread;
 
@@ -295,7 +318,7 @@ BOOL WINAPI CreateNewTabInThread
     // Allocate per tab data
     hGlbPTD = MyGlobalAlloc (GHND, sizeof (PERTABDATA));
     if (!hGlbPTD)
-        return FALSE;       // Stop the whole process
+        goto ERROR_EXIT;    // Stop the whole process
 
     // Save the thread's PerTabData global memory handle
     TlsSetValue (dwTlsPerTabData, (LPVOID) hGlbPTD);
@@ -383,7 +406,7 @@ BOOL WINAPI CreateNewTabInThread
 #endif
 
     // Fill in the SM WM_CREATE data struct
-    csSM.lpwszDPFE = lpwszDPFE;
+    csSM.hGlbDPFE = hGlbDPFE;
 
     // Create the Session Manager window
     lpMemPTD->hWndSM =
@@ -439,10 +462,14 @@ BOOL WINAPI CreateNewTabInThread
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-#ifndef DEBUG
+    // Free the storage for the workspace DPFE global memory
+    if (hGlbDPFE)
+    {
+        MyGlobalFree (hGlbDPFE); hGlbDPFE = NULL;
+    } // End IF
+
     __try
     {
-#endif
         // Main message loop
         while (GetMessage (&Msg, NULL, 0, 0))
         {
@@ -454,13 +481,11 @@ BOOL WINAPI CreateNewTabInThread
                 DispatchMessage  (&Msg);
             } // End IF
         } // End WHILE
-#ifndef DEBUG
     } __except (CheckException (GetExceptionInformation (), "CreateNewTabInThread"))
     {
         // Display message for unhandled exception
         DisplayException ();
     } // End __try/__except
-#endif
     // GetMessage returned FALSE for a Quit message
 
     goto NORMAL_EXIT;
@@ -476,6 +501,12 @@ ERROR_EXIT:
         if (lpMemPTD->hWndSM)
             SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMemPTD->hWndSM), 0);
         DestroyWindow (lpMemPTD->hWndMC);
+    } // End IF
+
+    // Free the storage for the workspace DPFE global memory
+    if (hGlbDPFE)
+    {
+        MyGlobalFree (hGlbDPFE); hGlbDPFE = NULL;
     } // End IF
 NORMAL_EXIT:
     if (lpMemPTD)

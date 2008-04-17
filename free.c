@@ -215,7 +215,7 @@ void FreeResultSub
             {
                 // Set the flags we'll leave alone
                 stFlags.Perm        =
-                stFlags.Inuse       = 1;
+                stFlags.Inuse       = TRUE;
                 stFlags.ObjName     =
                 stFlags.SysVarValid = NEG1U;
 
@@ -714,7 +714,7 @@ BOOL FreeResultGlobalDfn
 
         // Set the flags we'll leave alone
         stFlags.Perm        =
-        stFlags.Inuse       = 1;
+        stFlags.Inuse       = TRUE;
         stFlags.ObjName     =
         stFlags.SysVarValid = NEG1U;
 

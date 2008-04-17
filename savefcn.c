@@ -994,7 +994,7 @@ BOOL SaveFunctionCom
 
         // Mark as valued and user-defined function/operator
         lpSymName->stFlags.Value  =
-        lpSymName->stFlags.UsrDfn = 1;
+        lpSymName->stFlags.UsrDfn = TRUE;
 
         // Copy the "Accepts Axis Operator" flag
         lpSymName->stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;

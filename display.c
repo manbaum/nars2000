@@ -689,6 +689,106 @@ LPAPLCHAR FormatImmed
 
 
 //***************************************************************************
+//  $FormatImmedFC
+//
+//  Format an immediate constant using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatImmedFC
+    (LPWCHAR      lpaplChar,        // Input string
+     UINT         ImmType,          // Immediate type
+     LPAPLLONGEST lpaplLongest,     // Ptr to value to format
+     UINT         uPrecision,       // Precision to use
+     APLCHAR      aplCharDecimal,   // Char to use as decimal separator
+     APLCHAR      aplCharOverbar,   // Char to use as overbar
+     UINT         dtoaMode)         // DTOA mode
+
+{
+    WCHAR wc;
+
+    // Split cases based upon the immediate type
+    switch (ImmType)
+    {
+        case IMMTYPE_BOOL:
+            lpaplChar =
+              FormatAplintFC (lpaplChar,
+                              BIT0 & *(LPAPLBOOL) lpaplLongest,
+                              aplCharOverbar);
+            break;
+
+        case IMMTYPE_INT:
+            lpaplChar =
+              FormatAplintFC (lpaplChar,
+                              *(LPAPLINT) lpaplLongest,
+                              aplCharOverbar);
+            break;
+
+        case IMMTYPE_CHAR:
+            // Get the char
+            wc = *(LPAPLCHAR) lpaplLongest;
+
+            // Test for Terminal Control chars
+            switch (wc)
+            {
+                case TCBEL:     // Bel
+                    MessageBeep (NEG1U);    // Sound the alarum!
+
+                    // Fall through to common code
+
+                case TCDEL:     // Del
+                case TCESC:     // Esc
+                case TCFF:      // FF
+                case TCNUL:     // NUL
+                case TCBS:      // BS
+                case TCNL:      // NL
+                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+
+                    break;          // Can't go any farther left
+
+                case TCHT:      // HT
+                    // We're always at the (virtual) left margin,
+                    //   so insert enough blanks for a TAB
+                    lpaplChar = FillMemoryW (lpaplChar, uTabStops + 1, L' ');
+///////////////////*lpaplChar++ = L' ';     // Append a blank to be deleted
+
+                    break;
+
+                case TCLF:      // LF       // Handled during raw output
+                    *lpaplChar++ = wc;      // Append it
+                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+
+                    break;
+
+                default:
+                    if (wc >= 32)           // If none of the above but printable,
+                        *lpaplChar++ = wc;  //   append it
+
+                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case IMMTYPE_FLOAT:
+            lpaplChar =
+              FormatFloatFC (lpaplChar,                 // Prt to output save area
+                             *(LPAPLFLOAT) lpaplLongest,// The value to format
+                             uPrecision,                // Precision to use
+                             aplCharDecimal,            // Char to use as decimal separator
+                             aplCharOverbar,            // Char to use as overbar
+                             dtoaMode);                 // DTOA mode
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpaplChar;
+} // End FormatImmedFC
+
+
+//***************************************************************************
 //  $FormatAplint
 //
 //  Format an APLINT

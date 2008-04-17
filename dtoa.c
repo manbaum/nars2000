@@ -1564,6 +1564,7 @@ strtod
 #ifdef USE_LOCALE
         CONST char *s2;
 #endif
+        _control87(PC_53, MCW_PC);
 
         sign = nz0 = nz = 0;
         dval(rv) = 0.;

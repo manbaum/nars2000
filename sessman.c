@@ -520,7 +520,7 @@ void FormatQQuadInput
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = 0;             // Already zero from YYAlloc
-        lpYYRes->tkToken.tkFlags.NoDisplay = 1;
+        lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lpMemPTD->lpSISCur->lptkFunc->tkCharIndex;
     } // End IF/ELSE
@@ -679,7 +679,7 @@ LRESULT APIENTRY SMWndProc
             // Initialize variables
             cfSM.hwndOwner = hWnd;
             ZeroMemory (&vkState, sizeof (vkState));
-            vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
+            vkState.Ins = TRUE;     // Initially inserting ***FIXME*** Make it an option
 
             // Save in window extra bytes
             SetWindowLongW (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
@@ -905,7 +905,7 @@ LRESULT APIENTRY SMWndProc
             // This entry is never overwritten with an entry with a
             //   different hash value.
             for (i = 0; i < DEF_HSHTAB_INITSIZE; i += DEF_HSHTAB_EPB)
-                lpMemPTD->lpHshTab[i].htFlags.PrinHash = 1;
+                lpMemPTD->lpHshTab[i].htFlags.PrinHash = TRUE;
 
             // Initialize the next & prev same HTE values
             for (i = 0; i < DEF_HSHTAB_INITSIZE; i++)
@@ -961,7 +961,7 @@ LRESULT APIENTRY SMWndProc
             lpMemPTD->steNoValue = lpMemPTD->lpSymTabNext++;
 
             // Set the flags for the NoValue entry
-            lpMemPTD->steNoValue->stFlags.Perm = 1;
+            lpMemPTD->steNoValue->stFlags.Perm = TRUE;
             lpMemPTD->steNoValue->stFlags.ObjName = OBJNAME_NONE;
             lpMemPTD->steNoValue->stFlags.ObjType = NAMETYPE_UNK;
 
@@ -1062,10 +1062,10 @@ LRESULT APIENTRY SMWndProc
 
             // *************** Symbol Names ****************************
 
-            // Initialize all symbol names
-            if (!InitSymbolNames ())
+            // Initialize all char names & values
+            if (!InitCharNamesValues ())
             {
-                DbgMsg ("WM_CREATE:  InitSymbolNames failed");
+                DbgMsg ("WM_CREATE:  InitCharNamesValues failed");
 
                 return -1;          // Mark as failed
             } // End IF
@@ -1149,7 +1149,7 @@ LRESULT APIENTRY SMWndProc
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Load the workspace
-            if (!LoadWorkspace (((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->lpwszDPFE))
+            if (!LoadWorkspace_EM (((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->hGlbDPFE))
                 return -1;          // Mark as failed
 
             // Display the )LOAD message once and only once
@@ -1607,7 +1607,6 @@ LRESULT APIENTRY SMWndProc
                 defstop
 #else
                 default:
-                    DbgBrk ();          // ***FIXME***
                     Beep (1000,        // Frequency in Hz (37 to 32,767)
                           1000);         // Duration in milliseconds
 #endif
@@ -1672,7 +1671,6 @@ LRESULT APIENTRY SMWndProc
                 case EN_MAXTEXT:    // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
                                     // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
                     // The edit control has exceed its maximum # chars
-                    DbgBrk ();      // ***TESTME***
 
                     // The default maximum is 32K, so we increase it by that amount
                     Assert (hWndEC NE 0);

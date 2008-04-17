@@ -3270,7 +3270,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                                  -iPrc,
                                                  aplCharDecimal,
                                                  aplCharOverbar,
-                                                 3);
+                                                 2);
                             } // End IF/ELSE
 
                             break;
@@ -3287,7 +3287,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                                              abs64 (iPrc),
                                              aplCharDecimal,
                                              aplCharOverbar,
-                                             3);
+                                             2);
                             // If iPrc is positive, ensure there are at least that many
                             //   digits to the right of the decimal point -- pad with zeros
                             //   if not.

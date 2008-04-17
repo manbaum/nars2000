@@ -150,7 +150,7 @@ AxisOpr:
                                  PushHdrStrand_YY (&$1);
                                  PushHdrStrand_YY (&$3);
                                  MakeHdrStrand_YY (&$1);
-                                 lpfhLocalVars->DfnAxis  = 1;
+                                 lpfhLocalVars->DfnAxis  = TRUE;
                                  lpfhLocalVars->lpYYAxisOpr = $3.lpYYStrandIndirect;
                                  $$ = $1;
                                 }
@@ -170,21 +170,21 @@ AxisList:
       '('          AxisOpr          ')'
                                 {DbgMsgW2 (L"%%AxisList:  (AxisOpr)");
                                  InitHdrStrand (&$2);
-                                 $2.Indirect = 1;
+                                 $2.Indirect = TRUE;
                                  PushHdrStrand_YY (&$2);
                                  $$ = *MakeHdrStrand_YY (&$2);
                                 }
     | '(' NAMEUNK  AxisOpr          ')'
                                 {DbgMsgW2 (L"%%AxisList:  (NAMEUNK AxisOpr)");
                                  PushHdrStrand_YY (&$2);
-                                 $3.Indirect = 1;
+                                 $3.Indirect = TRUE;
                                  PushHdrStrand_YY (&$3);
                                  $$ = *MakeHdrStrand_YY (&$2);
                                 }
     | '(' NAMEUNK  AxisOpr NAMEUNK ')'
                                 {DbgMsgW2 (L"%%AxisList:  (NAMEUNK AxisOpr NAMEUNK)");
                                  PushHdrStrand_YY (&$2);
-                                 $3.Indirect = 1;
+                                 $3.Indirect = TRUE;
                                  PushHdrStrand_YY (&$3);
                                  PushHdrStrand_YY (&$4);
                                  $$ = *MakeHdrStrand_YY (&$2);
@@ -618,7 +618,7 @@ BOOL ParseHeader
 
 #if YYDEBUG
     // Enable debugging
-    yydebug = 1;
+    yydebug = TRUE;
 #endif
 
     // Parse the header, check for errors

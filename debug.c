@@ -102,10 +102,8 @@ BOOL WINAPI CreateDebuggerInThread
                  hWndDB;        // Debugger window handle
     MSG          Msg;           // Message for GetMessage loop
 
-#ifndef DEBUG
     __try
     {
-#endif
         // Save the thread type ('DB')
         TlsSetValue (dwTlsType, (LPVOID) 'DB');
 
@@ -173,13 +171,12 @@ BOOL WINAPI CreateDebuggerInThread
 
             // GetMessage returned FALSE for a Quit message
         } // End IF
-#ifndef DEBUG
     } __except (CheckException (GetExceptionInformation (), "CreateDebuggerInThread"))
     {
         // Display message for unhandled exception
         DisplayException ();
     } // End __try/__except
-#endif
+
     return 0;
 } // End CreateDebuggerInThread
 #endif

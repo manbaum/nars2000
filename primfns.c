@@ -2403,9 +2403,7 @@ RESTART_EXCEPTION_FILLSISNXT:
             default:
                 // Display message for unhandled exception
                 DisplayException ();
-#ifdef DEBUG
-                DbgStop ();         // We should never get here
-#endif
+
                 break;
         } // End SWITCH
     } // End __try/__except

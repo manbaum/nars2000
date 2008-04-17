@@ -397,10 +397,8 @@ DWORD WINAPI ImmExecStmtInThread
     LPWFSO        lpMemWFSO;            // Ptr to WFSO global memory
     LPSIS_HEADER  lpSISPrv;             // Ptr to previous SIS header
 
-#ifndef DEBUG
     __try
     {
-#endif
         // Save the thread type ('IE')
         TlsSetValue (dwTlsType, (LPVOID) 'IE');
 
@@ -682,7 +680,6 @@ ERROR_EXIT:
          && hSigaphore EQ NULL)
             DisplayPrompt (hWndEC, 3);
         return exitType;
-#ifndef DEBUG
     } __except (CheckException (GetExceptionInformation (), "ImmExecStmtInThread"))
     {
         // Display message for unhandled exception
@@ -690,7 +687,6 @@ ERROR_EXIT:
 
         return EXITTYPE_ERROR;      // To keep the compiler happy
     } // End __try/__except
-#endif
 } // End ImmExecStmtInThread
 #undef  APPEND_NAME
 

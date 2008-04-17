@@ -263,7 +263,7 @@ LRESULT APIENTRY FEWndProc
             ZeroMemory (&vkState, sizeof (vkState));
 
             // Save in window extra bytes
-            vkState.Ins = 1;        // Initially inserting ***FIXME*** Make it an option
+            vkState.Ins = TRUE;     // Initially inserting ***FIXME*** Make it an option
             SetWindowLongW (hWnd, GWLSF_VKSTATE, *(long *) &vkState);
 
             // See if there is an existing function
@@ -1879,6 +1879,10 @@ void PasteAPLChars
     // Get the # formats on the clipboard
     uCount = CountClipboardFormats ();
 
+    // If there are no formats, ...
+    if (uCount EQ 0)
+        goto NORMAL_EXIT;
+
     // Allocate memory to hold the format # and the matching handle
     hGlbFmts = MyGlobalAlloc (GHND, uCount * sizeof (CLIPFMTS));
     if (!hGlbFmts)
@@ -1984,7 +1988,7 @@ void PasteAPLChars
 
     // We no longer need this storage
     MyGlobalFree (hGlbFmts); hGlbFmts = NULL;
-
+NORMAL_EXIT:
     // We're done with the clipboard and its handle
     CloseClipboard (); hGlbClip = NULL;
 ERROR_EXIT:

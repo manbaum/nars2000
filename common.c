@@ -145,8 +145,21 @@ BOOL IsWhite
 
 {
     return (c EQ ' ' || c EQ '\t') ? TRUE : FALSE;
-
 } // End IsWhite
+
+
+//****************************************************************************
+//  $IsWhiteW
+//
+//  Determine if a char is white space
+//****************************************************************************
+
+BOOL IsWhiteW
+    (WCHAR wc)
+
+{
+    return (wc EQ L' ' || wc EQ L'\t') ? TRUE : FALSE;
+} // End IsWhiteW
 
 
 //****************************************************************************
@@ -156,16 +169,84 @@ BOOL IsWhite
 //****************************************************************************
 
 LPCHAR SkipWhite
-    (LPCHAR p)
+    (LPCHAR lp)
 
 {
     // Skip over white space
-    while (IsWhite (*p))
-        p++;
+    while (IsWhite (*lp))
+        lp++;
 
-    return p;
-
+    return lp;
 } // End SkipWhite
+
+
+//***************************************************************************
+//  $SkipBlackW
+//
+//  Skip over leading black space
+//***************************************************************************
+
+LPWCHAR SkipBlackW
+    (LPWCHAR lpw)
+
+{
+    // Skip over white space
+    while (!IsWhiteW (*lpw))
+        lpw++;
+
+    return lpw;
+} // End SkipBlackW
+
+
+//************************************************************************
+//  $SkipToCharW
+//
+//  Skip to a given WCHAR taking into account EOL
+//************************************************************************
+
+LPWCHAR SkipToCharW
+    (LPWCHAR lpwChar,
+     WCHAR   wChar)
+
+{
+    LPWCHAR lpw;        // Temporary ptr
+
+    // Find the char
+    lpw = strchrW (lpwChar, wChar);
+
+    // If it's not found (EOL instead), ...
+    if (lpw EQ NULL)
+        lpw = &lpwChar[lstrlenW (lpwChar)];
+
+    return lpw;
+} // End SkipToCharW
+
+
+//************************************************************************
+//  $SkipPastCharW
+//
+//  Skip past a given WCHAR taking into account EOL
+//************************************************************************
+
+LPWCHAR SkipPastCharW
+    (LPWCHAR lpwChar,
+     WCHAR   wChar)
+
+{
+    LPWCHAR lpw;        // Temporary ptr
+
+    // Find the char
+    lpw = strchrW (lpwChar, wChar);
+
+    // If it's not found (EOL instead), ...
+    if (lpw EQ NULL)
+        lpw = &lpwChar[lstrlenW (lpwChar)];
+    else
+        // Skip over the trailing char
+        lpw++;
+
+    return lpw;
+} // End SkipPastCharW
 
 
 //************************************************************************

@@ -1973,10 +1973,8 @@ int PASCAL WinMain
 ////ShowWindow (hWndMF, nCmdShow);
 ////UpdateWindow (hWndMF);
 
-#ifndef DEBUG
     __try
     {
-#endif
         // Main message loop
         while (GetMessage (&Msg, NULL, 0, 0))
         {
@@ -1993,13 +1991,11 @@ int PASCAL WinMain
                 DispatchMessage  (&Msg);
             } // End IF
         } // End WHILE
-#ifndef DEBUG
     } __except (CheckException (GetExceptionInformation (), "WinMain"))
     {
         // Display message for unhandled exception
         DisplayException ();
     } // End __try/__except
-#endif
 
     // GetMessage returned FALSE for a Quit message
 EXIT4:

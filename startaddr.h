@@ -161,6 +161,9 @@ typedef struct tagSTART_ADDRESSES
     // strand.c
 
     // symtab.c
+  #ifdef DEBUG
+    "HshTabFrisk"               , (LPUCHAR) &HshTabFrisk                ,
+  #endif
 
     // symtrans.c
 

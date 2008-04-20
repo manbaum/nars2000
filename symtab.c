@@ -287,7 +287,10 @@ BOOL HshTabFrisk
                 {
                     DisplayHshTab ();
                     DisplaySymTab (TRUE);
-                    MBC ("HshTabFrisk:  lp->htSymEntry EQ 0");
+                    if (lp->htSymEntry EQ 0)
+                        MBC ("HshTabFrisk:  lp->htSymEntry EQ 0");
+                    else
+                        MBC ("HshTabFrisk:  lp->htSymEntry->stHshEntry NE lp");
                 } // End IF
             } // End IF/ELSE
         } // End FOR
@@ -301,21 +304,24 @@ BOOL HshTabFrisk
         if (IsSymNoValue (lps))
             continue;
         else
+        if (lps->stHshEntry EQ 0)
+        {
+            DisplayHshTab ();
+            DisplaySymTab (TRUE);
+            MBC ("HshTabFrisk:  lps->stHshEntry EQ 0");
+        } else
         if (lps->stHshEntry->htFlags.CharIsValid)
         {
             Assert (lps->stHshEntry->htFlags.htChar NE 0
                  && lps->stHshEntry->htGlbName NE NULL
                  && lps->stHshEntry->htSymEntry EQ NULL);
         } else
+        if (lps->stHshEntry->htSymEntry NE lps)
         {
-            if (!(lps->stHshEntry
-             && lps->stHshEntry->htSymEntry EQ lps))
-            {
-                DisplayHshTab ();
-                DisplaySymTab (TRUE);
-                MBC ("HshTabFrisk:  lp->stHshEntry EQ 0");
-            } // End IF
-        } // End IF/ELSE
+            DisplayHshTab ();
+            DisplaySymTab (TRUE);
+            MBC ("HshTabFrisk:  lps->stHshEntry->htSymEntry NE lps");
+        } // End IF/ELSE/...
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1697,8 +1703,7 @@ LPSYMENTRY SymTabLookupNameLength
     if (lpstFlags->ObjName EQ OBJNAME_NONE)
     {
         // Set the flags of the entry we're looking for
-        if (lpwszString[0] EQ UTF16_QUAD
-         || lpwszString[0] EQ UTF16_QUOTEQUAD)
+        if (IsSysName (lpwszString))
             lpstFlags->ObjName = OBJNAME_SYS;
         else
             lpstFlags->ObjName = OBJNAME_USR;
@@ -2117,10 +2122,10 @@ LPSYMENTRY SymTabAppendFloatCommon_EM
              sizeof (aplFloat),             // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
-    stFlags.Imm   =
-    stFlags.Perm  =
-    stFlags.Value =
-    stFlags.Inuse = TRUE;
+    stFlags.Perm    = bPerm;
+    stFlags.Imm     =
+    stFlags.Value   =
+    stFlags.Inuse   = TRUE;
     stFlags.ImmType = IMMTYPE_FLOAT;
 
     // Lookup the number in the symbol table
@@ -2244,10 +2249,10 @@ LPSYMENTRY SymTabAppendCharCommon_EM
              sizeof (aplChar),              // The # bytes pointed to
              0);                            // Initial value or previous hash
     // Set the flags of the entry we're looking for
-    stFlags.Imm   =
-    stFlags.Perm  =
-    stFlags.Value =
-    stFlags.Inuse = TRUE;
+    stFlags.Perm    = bPerm;
+    stFlags.Imm     =
+    stFlags.Value   =
+    stFlags.Inuse   = TRUE;
     stFlags.ImmType = IMMTYPE_CHAR;
 
     // Lookup the char in the symbol table
@@ -2449,7 +2454,7 @@ LPSYMENTRY SymTabAppendNewName_EM
     MyGlobalUnlock (lpHshEntryDest->htGlbName); lpGlbName = NULL;
 
     // Save the flags
-    *(PUINT_PTR) &lpSymEntryDest->stFlags = *(PUINT_PTR) lpstFlags;
+    lpSymEntryDest->stFlags = *lpstFlags;
 
     // Save hash value (so we don't have to rehash on split)
     lpHshEntryDest->uHash        = uHash;

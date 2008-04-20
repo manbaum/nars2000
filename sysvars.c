@@ -366,14 +366,14 @@ BOOL SymTabAppendSysName_EM
     // Set the flags of the entry we're appending
     if (lpSysName->bSysVar)
     {
-        stFlags.ObjType     = NAMETYPE_VAR;
+        stFlags.stNameType  = NAMETYPE_VAR;
         stFlags.DfnSysLabel = (lpSysName->uValence EQ SYSLBL);
     } else
     {
         if (lpSysName->uValence EQ 0)
-            stFlags.ObjType = NAMETYPE_FN0;
+            stFlags.stNameType = NAMETYPE_FN0;
         else
-            stFlags.ObjType = NAMETYPE_FN12;
+            stFlags.stNameType = NAMETYPE_FN12;
     } // End IF/ELSE
 
     // Set the flags for what we're appending
@@ -1452,7 +1452,7 @@ NORMAL_EXIT:
     else
     {
         // Free the old value
-        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lptkNamArg->tkData.tkSym->stData.stGlbData));
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
@@ -1943,7 +1943,7 @@ NORMAL_EXIT:
     else
     {
         // Free the old value
-        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lptkNamArg->tkData.tkSym->stData.stGlbData));
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
@@ -2121,7 +2121,7 @@ BOOL ValidSetFC_EM
      && aplRankRht EQ 1)
     {
         // Free the named arg
-        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lptkNamArg->tkData.tkSym->stData.stGlbData));
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbQuadFC_SYS);
@@ -2165,7 +2165,7 @@ BOOL ValidSetIC_EM
      && aplRankRht EQ 1)
     {
         // Free the named arg
-        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lptkNamArg->tkData.tkSym->stData.stGlbData));
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbQuadIC_SYS);
@@ -2917,7 +2917,7 @@ BOOL ValidSetSA_EM
     else
     {
         // Free the old value
-        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lptkNamArg->tkData.tkSym->stData.stGlbData));
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);

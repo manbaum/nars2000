@@ -48,7 +48,7 @@
 
 // No keystroke equivalents for these as yet
 #define UTF16_DIERESISDOT        0x2235         //
-#define UTF16_NOTEQUALUNDERBAR   0x2262         // Not-match function
+#define UTF16_NOTEQUALUNDERBAR   0x2262         // Mismatch function
 #define UTF16_IBEAM              0x2336         //
 #define UTF16_QUADJOT            0x233B         //
 #define UTF16_QUADSLOPE          0x2342         //
@@ -206,7 +206,7 @@
 
 // No keystroke equivalents for these as yet
 #define WS_UTF16_DIERESISDOT        L"\x2235"   //
-#define WS_UTF16_NOTEQUALUNDERBAR   L"\x2262"   // Not-match function
+#define WS_UTF16_NOTEQUALUNDERBAR   L"\x2262"   // Mismatch function
 #define WS_UTF16_IBEAM              L"\x2336"   //
 #define WS_UTF16_QUADJOT            L"\x233B"   //
 #define WS_UTF16_QUADSLOPE          L"\x2342"   //

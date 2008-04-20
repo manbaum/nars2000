@@ -73,7 +73,7 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
     LPAPLCHAR    lpwszLine;         // 18:  Ptr to line text (zero-terminated)
     UINT         tkErrorCharIndex,  // 1C:  Error char index
                  tkLACharIndex;     // 20:  LookAhead char index
-    UINT         NameType:4,        // 24:  0000000F:  Object type (see NAME_TYPES)
+    UINT         plNameType:4,      // 24:  0000000F:  Object name type (see NAME_TYPES)
                  bLookAhead:1,      //      00000010:  TRUE iff looking for object type within surrounding parens
                  ExitType:4,        //      000001E0:  Exit Type (see EXIT_TYPES)
                  bRet:1,            //      00000200   Various function results

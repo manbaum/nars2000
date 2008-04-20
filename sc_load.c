@@ -102,35 +102,37 @@ BOOL LoadWorkspace_EM
     (HGLOBAL hGlbDPFE)                  // Workspace DPFE global memory handle
 
 {
-    LPWCHAR    lpwszDPFE;               // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
-    FILE      *fStream;                 // Ptr to file stream for the plain text workspace file
-    UINT       uSymVar,                 // Var index counter
-               uSymFcn,                 // Fcn/Opr index counter
-               uGlbCnt,                 // [GlobalVars] count
-               uSIDepth,                // [General] SIDepth value
-               uSID,                    // Loop counter
-               uLen,                    // Temporary length
-               uStr;                    // Loop counter
-    LPWCHAR    lpwSrc,                  // Ptr to incoming data
-               lpwDst,                  // Ptr to destination data in name
-               lpwSrcStart;             // Ptr to starting point
-    WCHAR      wszCount[8],             // Save area for formatted uSymVar/Fcn counter
-               wszSectName[15],         // ...                     section name (e.g., [Vars.nnn])
-               wcTmp;                   // Temporary char
-    BOOL       bRet = FALSE;            // TRUE iff the result is valid
-    APLSTYPE   aplTypeObj;              // Object storage type
-    APLNELM    aplNELMObj;              // Object NELM
-    APLRANK    aplRankObj;              // Object rank
-    APLINT     aplInteger;              // Temporary integer
-    APLUINT    ByteObj,                 // # bytes needed for the object
-               uObj;                    // Loop counter
-    HGLOBAL    hGlbObj;                 // Object global memory handle
-    LPVOID     lpMemObj;                // Ptr to object global memory
-    STFLAGS    stFlags = {0};           // SymTab flags
-    LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
-    UINT       uBitIndex;               // Bit index for looping through Boolean result
-    LPWCHAR    lpwCharEnd;              // Temporary ptr
-    char       szFmt[128];              // Temporary save area
+    LPWCHAR      lpwszDPFE;             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+    FILE        *fStream;               // Ptr to file stream for the plain text workspace file
+    UINT         uSymVar,               // Var index counter
+                 uSymFcn,               // Fcn/Opr index counter
+                 uGlbCnt,               // [GlobalVars] count
+                 uSIDepth,              // [General] SIDepth value
+                 uSID,                  // Loop counter
+                 uLen,                  // Temporary length
+                 uStr;                  // Loop counter
+    LPWCHAR      lpwSrc,                // Ptr to incoming data
+                 lpwDst,                // Ptr to destination data in name
+                 lpwSrcStart;           // Ptr to starting point
+    WCHAR        wszCount[8],           // Save area for formatted uSymVar/Fcn counter
+                 wszSectName[15],       // ...                     section name (e.g., [Vars.nnn])
+                 wcTmp;                 // Temporary char
+    BOOL         bRet = FALSE,          // TRUE iff the result is valid
+                 bImmed;                // TRUE iff the result of ParseSavedWsValue is immediate
+    APLSTYPE     aplTypeObj;            // Object storage type
+    APLNELM      aplNELMObj;            // Object NELM
+    APLRANK      aplRankObj;            // Object rank
+    APLINT       aplInteger;            // Temporary integer
+    APLUINT      ByteObj,               // # bytes needed for the object
+                 uObj;                  // Loop counter
+    HGLOBAL      hGlbObj;               // Object global memory handle
+    LPVOID       lpMemObj;              // Ptr to object global memory
+    STFLAGS      stFlags = {0};         // SymTab flags
+    LPSYMENTRY   lpSymEntry;            // Ptr to STE for HGLOBAL
+    UINT         uBitIndex;             // Bit index for looping through Boolean result
+    LPWCHAR      lpwCharEnd;            // Temporary ptr
+    APLLONGEST   aplLongestObj;         // Object immediate value
+    LPAPLLONGEST lpaplLongestObj;       // Ptr to ...
 
     // Lock the memory to get a ptr to it
     lpwszDPFE = MyGlobalLock (hGlbDPFE);
@@ -150,12 +152,8 @@ BOOL LoadWorkspace_EM
     fclose (fStream); fStream = NULL;
 
     // Set the flags for what we're appending or looking up
-////stFlags.Perm    =
     stFlags.Inuse   = TRUE;
-////stFlags.Value   = TRUE;
     stFlags.ObjName = OBJNAME_LOD;
-////stFlags.UsrDfn  = TRUE;
-////stFlags.DfnAxis = FALSE;        // Already zero from = {0}
 
     // Get the Var & Fcn/Opr counts
     uSymVar =
@@ -196,24 +194,42 @@ BOOL LoadWorkspace_EM
                                   memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
                                   lpwszDPFE);           // Ptr to the file name
         // Parse the array attributes
-        Assert (lpwSrc[0] NE L'\0');
+
+        // Ensure it's non-empty
+        if  (lpwSrc[0] EQ L'\0')
+            goto CORRUPTWS_EXIT;
 
         // ***FIXME*** -- Do we need to restore the object PermNdx?
 
         // Get the object storage type
         aplTypeObj = TranslateCharToArrayType (*lpwSrc++);
 
-        Assert (*lpwSrc EQ L' '); lpwSrc++;
+        // Ensure there's a valid separator
+        if (*lpwSrc NE L' ')
+            goto CORRUPTWS_EXIT;
+
+        // Skip over it
+        lpwSrc++;
 
         // Get the object NELM
         swscanf (lpwSrc, L"%I64d", &aplNELMObj); lpwSrc = SkipBlackW (lpwSrc);
 
-        Assert (*lpwSrc EQ L' '); lpwSrc++;
+        // Ensure there's a valid separator
+        if (*lpwSrc NE L' ')
+            goto CORRUPTWS_EXIT;
+
+        // Skip over it
+        lpwSrc++;
 
         // Get the object rank
         swscanf (lpwSrc, L"%I64d", &aplRankObj); lpwSrc = SkipBlackW (lpwSrc);
 
-        Assert (*lpwSrc EQ L' '); lpwSrc++;
+        // Ensure there's a valid separator
+        if (*lpwSrc NE L' ')
+            goto CORRUPTWS_EXIT;
+
+        // Skip over it
+        lpwSrc++;
 
         //***************************************************************
         // Calculate space needed for the object
@@ -241,14 +257,14 @@ BOOL LoadWorkspace_EM
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
         // Fill in the header
-        // Note that the RefCnt is initialized to zero
-        // It will be incremented upon each reference
+////////// Note that the RefCnt is initialized to zero
+////////// It will be incremented upon each reference
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeObj;
 ////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND ***FIXME*** -- Set correct PERMNDX_xxx
 ////////lpHeader->SysVar     = 0;               // Already zero from GHND
-////////lpHeader->RefCnt     = 0;               // Already zero from GHND
-        lpHeader->NELM       = 1;
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplNELMObj;
         lpHeader->Rank       = aplRankObj;
 #undef  lpHeader
 
@@ -320,18 +336,17 @@ BOOL LoadWorkspace_EM
                     lpwCharEnd = SkipToCharW (lpwSrc, L' ');
 
                     // Save old next char, zap to form zero-terminated name
-                    wcTmp = *lpwCharEnd;
-                    *lpwCharEnd = L'\0';
+                    wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
 
                     // Convert the format string to ASCII
-                    W2A (szFmt, lpwSrc, sizeof (szFmt) - 1);
+                    W2A ((LPCHAR) lpwszFormat, lpwSrc, DEF_WFORMAT_MAXSIZE - 1);
 
                     // Restore the original value
                     *lpwCharEnd = wcTmp;
 
                     // Use David Gay's routines
                     // Save in the result and skip over it
-                    *((LPAPLFLOAT) lpMemObj)++ = strtod (szFmt, NULL);
+                    *((LPAPLFLOAT) lpMemObj)++ = strtod ((LPCHAR) lpwszFormat, NULL);
 
                     // Skip to the next field
                     lpwSrc = &lpwCharEnd[1];
@@ -388,109 +403,8 @@ BOOL LoadWorkspace_EM
 
                 // Loop through the elements
                 for (uObj = 0; uObj < aplNELMObj; uObj++)
-                if (*lpwSrc EQ L'#')
-                {
-                    // Find the trailing L' '
-                    lpwCharEnd = SkipToCharW (lpwSrc, L' ');
-
-                    // Save old next char, zap to form zero-terminated name
-                    wcTmp = *lpwCharEnd;
-                    *lpwCharEnd = L'\0';
-
-                    // Get the matching HGLOBAL
-                    lpSymEntry = SymTabLookupName (lpwSrc, &stFlags);
-
-                    Assert (lpSymEntry NE NULL);
-
-                    // Restore the original value
-                    *lpwCharEnd = wcTmp;
-
-                    // Save in the result and skip over it
-                    *((LPAPLNESTED) lpMemObj)++ = lpSymEntry->stData.stGlbData;
-
-                    // Increment the reference count
-                    DbgIncrRefCntDir (lpSymEntry->stData.stGlbData);
-
-                    // Skip to the next field
-                    lpwSrc = &lpwCharEnd[1];
-                } else
-                {
-                    // Skip to the NELM
-                    lpwSrc = SkipPastCharW (lpwSrc, L' ');
-
-                    Assert (*lpwSrc EQ L'1');
-
-                    // Skip to the rank
-                    lpwSrc = SkipPastCharW (lpwSrc, L' ');
-
-                    Assert (*lpwSrc EQ L'0');
-
-                    // Skip to the value
-                    lpwSrc = SkipPastCharW (lpwSrc, L' ');
-
-                    // Split cases based upon the immediate type char
-                    switch (*lpwSrc)
-                    {
-                        case L'B':  // Boolean
-                        case L'I':  // Integer
-                            // Scan in the value
-                            swscanf (lpwSrc, L"%I64d", &aplInteger);
-
-                            // Skip to the next field
-                            lpwSrc = SkipPastCharW (lpwSrc, L' ');
-
-                            // Save in the result and skip over it
-                            *((LPAPLHETERO) lpMemObj)++ = SymTabAppendInteger_EM (aplInteger);
-
-                            break;
-
-                        case L'C':  // Character
-                            Assert (L'\'' EQ *lpwSrc); lpwSrc++;
-
-                            if (L'{' EQ  *lpwSrc)
-                            {
-                                // Get the next char
-                                wcTmp = NameToChar (lpwSrc);
-
-                                // Skip to the next field
-                                lpwSrc = SkipPastCharW (lpwSrc, L'}');
-                            } else
-                                wcTmp = *lpwSrc++;
-
-                            Assert (L'\'' EQ *lpwSrc); lpwSrc++;
-
-                            // Save in the result and skip over it
-                            *((LPAPLHETERO) lpMemObj)++ = SymTabAppendChar_EM (wcTmp);
-
-                            break;
-
-                        case L'F':  // Float
-                            // Find the trailing L' '
-                            lpwCharEnd = SkipToCharW (lpwSrc, L' ');
-
-                            // Save old next char, zap to form zero-terminated name
-                            wcTmp = *lpwCharEnd;
-                            *lpwCharEnd = L'\0';
-
-                            // Convert the format string to ASCII
-                            W2A (szFmt, lpwSrc, sizeof (szFmt) - 1);
-
-                            // Restore the original value
-                            *lpwCharEnd = wcTmp;
-
-                            // Save in the result and skip over it
-                            *((LPAPLHETERO) lpMemObj)++ = SymTabAppendFloat_EM (strtod (szFmt, NULL));
-
-                            // Skip to the next field
-                            lpwSrc = &lpwCharEnd[1];
-
-                            break;
-
-                        defstop
-                            break;
-                    } // End FOR/SWITCH
-                } // End FOR/SWITCH
-
+                    lpwSrc =
+                      ParseSavedWsValue (lpwSrc, &lpMemObj, NULL, NULL, TRUE);
                 break;
 
             defstop
@@ -523,8 +437,6 @@ BOOL LoadWorkspace_EM
                                       lpwSrc,               // Ptr to the output buffer
                                       memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
                                       lpwszDPFE);           // Ptr to the file name
-            DbgBrk ();
-
             // Look for the name separator (L'=')
             lpwCharEnd = strchrW (lpwSrc, L'=');
             Assert (lpwCharEnd NE NULL);
@@ -548,23 +460,98 @@ BOOL LoadWorkspace_EM
             } else
                 *lpwDst++ = *lpwSrc++;
 
+            // Skip over the zapped L'='
+            lpwSrc++;
+
             // Ensure the name is zero-terminated
             *lpwDst = L'\0';
 
+            if (IsSysName (lpwSrcStart))
+                // Tell 'em we're looking for system names
+                stFlags.ObjName = OBJNAME_SYS;
+            else
+                // Tell 'em we're looking for user names
+                stFlags.ObjName = OBJNAME_USR;
+
             // Lookup the name in the symbol table
-            lpSymEntry = SymTabLookupName (lpwSrcStart, &stFlags);
+            lpSymEntry =
+              SymTabLookupName (lpwSrcStart, &stFlags);
 
+            // If the name is not found, it must be a user name
+            Assert ((stFlags.ObjName EQ OBJNAME_USR) || lpSymEntry NE NULL);
 
+            // If the name is not found, append it as a user name
+            if (lpSymEntry EQ NULL)
+            {
+                // Append the name to get a new LPSYMENTRY
+                lpSymEntry = SymTabAppendNewName_EM (lpwSrcStart, &stFlags);
 
+                // Mark the SYMENTRY as immediate so we don't free the
+                //   (non-existant) stGlbData
+                // Set other flags as appropriate
+                lpSymEntry->stFlags.Imm        =
+                lpSymEntry->stFlags.Value      = TRUE;
+                lpSymEntry->stFlags.ObjName    = OBJNAME_USR;
+                lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
+            } // End IF
 
+            // Clear so we save a clean value
+            aplLongestObj = 0;
 
+            // Set this value as lpaplLongestObj is incremented by ParseSavedWsValue
+            lpaplLongestObj = &aplLongestObj;
 
+            // Parse the value into aplLongestObj and aplTypeObj
+            lpwSrc =
+              ParseSavedWsValue (lpwSrc, &lpaplLongestObj, &aplTypeObj, &bImmed, FALSE);
 
+            // Out with the old
+            if (!lpSymEntry->stFlags.Imm)
+                FreeResultGlobalVar (lpSymEntry->stData.stGlbData);
 
-
+            // In with the new
+            if (bImmed)
+            {
+                // Set the stFlags & stData
+                lpSymEntry->stFlags.Imm      = TRUE;
+                lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
+                lpSymEntry->stData.stLongest = aplLongestObj;
+            } else
+            {
+                // Set the stFlags & stData
+                lpSymEntry->stFlags.Imm      = FALSE;
+                lpSymEntry->stFlags.ImmType  = 0;
+                lpSymEntry->stData.stLongest = aplLongestObj;
+            } // End IF/ELSE
 
             // Restore the original value
             *lpwCharEnd = L'=';
+        } // End FOR
+
+        // Delete the symbol table entries we allocated of the form "#%d"
+
+        // Loop through the [GlobalVars] section
+        for (uStr = 0; uStr < uGlbCnt; uStr++)
+        {
+            // Format the counter
+            wsprintfW (wszCount, FMTSTR_GLBCNT, uStr);
+
+            // Tell 'em we're looking for )LOAD objects
+            stFlags.Inuse   = TRUE;
+            stFlags.ObjName = OBJNAME_LOD;
+
+            // Get the matching HGLOBAL
+            lpSymEntry =
+              SymTabLookupName (wszCount, &stFlags);
+
+            Assert (lpSymEntry NE NULL);
+
+            // If the SYMENTRY is not immediate, free its global
+            if (!lpSymEntry->stFlags.Imm)
+                FreeResultGlobalVar (lpSymEntry->stData.stGlbData);
+
+            // Erase the STE
+            EraseSTE (lpSymEntry);
         } // End FOR
 
         // Format the section name
@@ -577,34 +564,26 @@ BOOL LoadWorkspace_EM
 
 
 
+
+
+
+
+
+
+
+
         } // End FOR
     } // End FOR
-
-
-
-
-
-
-
-
-
-
-    AppendLine (L"NONCE COMMAND", FALSE, TRUE);
-
-    goto ERROR_EXIT;
-
-
-
-
-
-
-
 WSID_EXIT:
     // Set the value of the new []WSID as lpwszDPFE
-    if (SaveNewWsid (lpwszDPFE))
-        bRet = TRUE;
+    bRet = SaveNewWsid (lpwszDPFE);
 
     goto NORMAL_EXIT;
+
+CORRUPTWS_EXIT:
+    AppendLine (ERRMSG_CORRUPT_WS, FALSE, TRUE);
+
+    goto ERROR_EXIT;
 
 WSNOTFOUND_EXIT:
     AppendLine (ERRMSG_WS_NOT_FOUND, FALSE, TRUE);
@@ -621,6 +600,202 @@ NORMAL_EXIT:
     return bRet;
 } // End LoadWorkspace_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ParseSavedWsValue
+//
+//  Parse a value of the form #nnn or X N R S V
+//***************************************************************************
+
+LPWCHAR ParseSavedWsValue
+    (LPWCHAR    lpwSrc,                 // Ptr to input buffer
+     LPVOID    *lplpMemObj,             // Ptr to ptr to output element
+     LPAPLSTYPE lpaplTypeObj,           // Ptr to storage type (may be NULL)
+     LPBOOL     lpbImmed,               // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
+     BOOL       bSymTab)                // TRUE iff to save SymTabAppend values, FALSE to save values directly
+
+{
+    WCHAR      wcTmp;                   // Temporary char
+    LPWCHAR    lpwCharEnd;              // Temporary ptr
+    STFLAGS    stFlags = {0};           // SymTab flags
+    LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
+    APLINT     aplInteger;              // Temporary integer
+    APLSTYPE   aplTypeObj;              // Object storage type
+
+    // Tell 'em we're looking for )LOAD objects
+    stFlags.Inuse   = TRUE;
+    stFlags.ObjName = OBJNAME_LOD;
+
+    if (*lpwSrc EQ L'#')
+    {
+        // Find the trailing L' '
+        lpwCharEnd = SkipToCharW (lpwSrc, L' ');
+
+        // Save old next char, zap to form zero-terminated name
+        wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
+
+        // Get the matching HGLOBAL
+        lpSymEntry =
+          SymTabLookupName (lpwSrc, &stFlags);
+
+        Assert (lpSymEntry NE NULL);
+
+        // Restore the original value
+        *lpwCharEnd = wcTmp;
+
+        // Save in the result and skip over it
+        *((LPAPLNESTED) *lplpMemObj)++ =
+          lpSymEntry->stData.stGlbData;
+
+        // Increment the reference count
+        DbgIncrRefCntDir (lpSymEntry->stData.stGlbData);
+
+        // Skip to the next field
+        lpwSrc = &lpwCharEnd[1];
+
+        // If the caller wants the storage type, ...
+        if (lpaplTypeObj)
+        {
+            HGLOBAL hGlbObj;            // Object global memory handle
+            LPVOID  lpMemObj;           // Ptr to object global memory
+
+            // stData is not immediate
+            Assert (!lpSymEntry->stFlags.Imm);
+
+            // Get the global memory handle
+            hGlbObj = lpSymEntry->stData.stGlbData;
+
+            // stData is a valid HGLOBAL variable array
+            Assert (IsGlbTypeVarDir (hGlbObj));
+
+            // Clear the type bits
+            hGlbObj = ClrPtrTypeDirAsGlb (hGlbObj);
+
+            // Lock the memory to get a ptr to it
+            lpMemObj = MyGlobalLock (hGlbObj);
+
+            // Save the storage type
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
+            *lpaplTypeObj = lpHeader->ArrType;
+#undef  lpHeader
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
+        } // End IF
+
+        // If the caller wants the immediate flag, ...
+        if (lpbImmed)
+            // Save as not immediate
+            *lpbImmed = FALSE;
+    } else
+    {
+        // Get the storage type from the immediate char
+        aplTypeObj = TranslateCharToArrayType (*lpwSrc);
+
+        // If the caller wants the storage type, ...
+        if (lpaplTypeObj)
+            // Save the storage type
+            *lpaplTypeObj = aplTypeObj;
+
+        // If the caller wants the immediate flag, ...
+        if (lpbImmed)
+            // Save as immediate
+            *lpbImmed = TRUE;
+
+        // Skip to the NELM
+        lpwSrc = SkipPastCharW (lpwSrc, L' ');
+
+        Assert (*lpwSrc EQ L'1');
+
+        // Skip to the rank
+        lpwSrc = SkipPastCharW (lpwSrc, L' ');
+
+        Assert (*lpwSrc EQ L'0');
+
+        // Skip to the value
+        lpwSrc = SkipPastCharW (lpwSrc, L' ');
+
+        // Split cases based upon the storage type
+        switch (aplTypeObj)
+        {
+            case ARRAY_BOOL:        // Boolean
+            case ARRAY_INT:         // Integer
+                // Scan in the value
+                swscanf (lpwSrc, L"%I64d", &aplInteger);
+
+                // Skip to the next field
+                lpwSrc = SkipPastCharW (lpwSrc, L' ');
+
+                // If we're to save the SymTab, ...
+                if (bSymTab)
+                    // Save in the result and skip over it
+                    *((LPAPLHETERO) *lplpMemObj)++ =
+                      SymTabAppendInteger_EM (aplInteger);
+                else
+                    // Save the result directly
+                    *((LPAPLINT) *lplpMemObj) = aplInteger;
+                break;
+
+            case ARRAY_CHAR:        // Character
+                Assert (L'\'' EQ *lpwSrc); lpwSrc++;
+
+                if (L'{' EQ  *lpwSrc)
+                {
+                    // Get the next char
+                    wcTmp = NameToChar (lpwSrc);
+
+                    // Skip to the next field
+                    lpwSrc = SkipPastCharW (lpwSrc, L'}');
+                } else
+                    wcTmp = *lpwSrc++;
+
+                Assert (L'\'' EQ *lpwSrc); lpwSrc++;
+
+                // If we're to save the SymTab, ...
+                if (bSymTab)
+                    // Save in the result and skip over it
+                    *((LPAPLHETERO) *lplpMemObj)++ =
+                      SymTabAppendChar_EM (wcTmp);
+                else
+                    // Save the result directly
+                    *((LPAPLCHAR) *lplpMemObj) = wcTmp;
+                break;
+
+            case ARRAY_FLOAT:       // Float
+                // Find the trailing L' '
+                lpwCharEnd = SkipToCharW (lpwSrc, L' ');
+
+                // Save old next char, zap to form zero-terminated name
+                wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
+
+                // Convert the format string to ASCII
+                W2A ((LPCHAR) lpwszFormat, lpwSrc, DEF_WFORMAT_MAXSIZE - 1);
+
+                // Restore the original value
+                *lpwCharEnd = wcTmp;
+
+                // If we're to save the SymTab, ...
+                if (bSymTab)
+                    // Save in the result and skip over it
+                    *((LPAPLHETERO) *lplpMemObj)++ =
+                      SymTabAppendFloat_EM (strtod ((LPCHAR) lpwszFormat, NULL));
+                else
+                    // Save the result directly
+                    *((LPAPLFLOAT) *lplpMemObj) = strtod ((LPCHAR) lpwszFormat, NULL);
+
+                // Skip to the next field
+                lpwSrc = &lpwCharEnd[1];
+
+                break;
+
+            defstop
+                break;
+        } // End FOR/SWITCH
+    } // End FOR/SWITCH
+
+    return lpwSrc;
+} // End ParseSavedWsValue
 
 
 //***************************************************************************

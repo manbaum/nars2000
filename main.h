@@ -31,35 +31,36 @@
 #define NEG1U   (   (UINT) -1)
 #define NEG1A   ((APLUINT) -1)
 
-#define MB(a)       MessageBox  (NULL, a,  "NARS2000", MB_OK)
-#define MBW(a)      MessageBoxW (NULL, a, L"NARS2000", MB_OK)
-#define MBC(a)  if (MessageBox  (NULL, a,  "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define MBWC(a) if (MessageBoxW (NULL, a, L"NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define IsGlbTypeVarDir(a) (IsGlobalTypeArray (            a, VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeVarInd(a) (IsGlobalTypeArray (*(LPVOID *) a, VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnDir(a) (IsGlobalTypeArray (            a, FCNARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnInd(a) (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeDfnDir(a) (IsGlobalTypeArray (            a, DFN_HEADER_SIGNATURE))
-#define IsGlbTypeNamDir(a) (IsGlobalTypeArray (            a, VARNAMED_HEADER_SIGNATURE))
+#define MB(a)                   MessageBox  (NULL, a,  "NARS2000", MB_OK)
+#define MBW(a)                  MessageBoxW (NULL, a, L"NARS2000", MB_OK)
+#define MBC(a)              if (MessageBox  (NULL, a,  "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define MBWC(a)             if (MessageBoxW (NULL, a, L"NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define IsGlbTypeVarDir(a)  (IsGlobalTypeArray (            a, VARARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeVarInd(a)  (IsGlobalTypeArray (*(LPVOID *) a, VARARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnDir(a)  (IsGlobalTypeArray (            a, FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnInd(a)  (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeDfnDir(a)  (IsGlobalTypeArray (            a, DFN_HEADER_SIGNATURE))
+#define IsGlbTypeNamDir(a)  (IsGlobalTypeArray (            a, VARNAMED_HEADER_SIGNATURE))
 #define IsSymNoValue(a)     ((a)->stHshEntry EQ NULL                \
                           && (a)->stFlags.Perm                      \
                           && (a)->stFlags.Value EQ 0                \
                           && (a)->stFlags.ObjName EQ OBJNAME_NONE   \
-                          && (a)->stFlags.ObjType EQ NAMETYPE_UNK)
+                          && (a)->stFlags.stNameType EQ NAMETYPE_UNK)
 #define IsTokenNoValue(a)   ((a)                                    \
                           && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
                           && IsSymNoValue ((a)->tkData.tkSym))
+#define IsSysName(a)        ((a)[0] EQ UTF16_QUAD || (a)[1] EQ UTF16_QUOTEQUAD)
 
 #define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
 
 #define AplModI(m,a) PrimFnDydStileIisIvI (m, a, NULL)
 #define AplModF(m,a) PrimFnDydStileFisFvF (m, a, NULL)
 
-#define LOPART_DWORDLONG        ((DWORDLONG) 0x00000000FFFFFFFF)
-#define HIPART_DWORDLONG        ((DWORDLONG) 0xFFFFFFFF00000000)
+#define LOPART_DWORDLONG    ((DWORDLONG) 0x00000000FFFFFFFF)
+#define HIPART_DWORDLONG    ((DWORDLONG) 0xFFFFFFFF00000000)
 
-#define LODWORD(x)              ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
-#define HIDWORD(x)              ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
+#define LODWORD(x)          ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
+#define HIDWORD(x)          ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
 
 #define QWORD   ULONGLONG
 

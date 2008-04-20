@@ -804,7 +804,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
                               CopySymGlbDir (hGlbProto);
                         // We no longer need this storage
-                        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (hGlbProto)); hGlbProto = NULL;
+                        FreeResultGlobalVar (hGlbProto); hGlbProto = NULL;
 
                         break;
 

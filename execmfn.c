@@ -499,7 +499,6 @@ HGLOBAL Init1MagicFunction
         stFlags.ObjName = OBJNAME_MF;
         stFlags.UsrDfn  = TRUE;
         stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;
-////////stFlags.ObjType = NAMETYPE_FN0/FN12/OP1/OP2;
 
         // Create a symbol table entry for the Magic Function
         lpSymEntry =

@@ -501,7 +501,7 @@ StmtSing:
 ////|     IndexListWE EOL               {DbgMsgW2 (L"%%StmtSing:  EOL IndexListWE");
 ////                                     if (lpplLocalVars->bLookAhead)
 ////                                     {
-////                                         lpplLocalVars->NameType = NAMETYPE_LST;
+////                                         lpplLocalVars->plNameType = NAMETYPE_LST;
 ////                                         YYACCEPT;
 ////                                     } else
 ////                                         YYERROR;
@@ -509,7 +509,7 @@ StmtSing:
     |     ArrExpr EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL ArrExpr");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_VAR;
+                                             lpplLocalVars->plNameType = NAMETYPE_VAR;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -517,7 +517,7 @@ StmtSing:
     |     FcnSpec EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL FcnSpec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_FN12;
+                                             lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -525,7 +525,7 @@ StmtSing:
     |     Op1Spec EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL Op1Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_OP1;
+                                             lpplLocalVars->plNameType = NAMETYPE_OP1;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -533,7 +533,7 @@ StmtSing:
     |     Op1Spec LeftOper EOL          {DbgMsgW2 (L"%%StmtSing:  EOL LeftOper Op1Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_FN12;
+                                             lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -541,7 +541,7 @@ StmtSing:
     |     Op2Spec EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL Op2Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_OP2;
+                                             lpplLocalVars->plNameType = NAMETYPE_OP2;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -549,7 +549,7 @@ StmtSing:
     |     Op3Spec EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL Op3Spec");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_OP1;
+                                             lpplLocalVars->plNameType = NAMETYPE_OP1;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -557,7 +557,7 @@ StmtSing:
     |     MonOp   EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL MonOp");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_OP1;
+                                             lpplLocalVars->plNameType = NAMETYPE_OP1;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -565,7 +565,7 @@ StmtSing:
     |     DydOp   EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL DydOp");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_OP2;
+                                             lpplLocalVars->plNameType = NAMETYPE_OP2;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -573,7 +573,7 @@ StmtSing:
     |     AmbOp   EOL                   {DbgMsgW2 (L"%%StmtSing:  EOL AmbOp");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_OP3;
+                                             lpplLocalVars->plNameType = NAMETYPE_OP3;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -581,7 +581,7 @@ StmtSing:
     |     AmbOpTermStmt EOL             {DbgMsgW2 (L"%%StmtSing:  EOL AmbOpTermStmt");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_VAR;
+                                             lpplLocalVars->plNameType = NAMETYPE_VAR;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -589,7 +589,7 @@ StmtSing:
     |     AmbOpTermParenStmt EOL        {DbgMsgW2 (L"%%StmtSing:  EOL AmbOpTermParenStmt");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_VAR;
+                                             lpplLocalVars->plNameType = NAMETYPE_VAR;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -597,7 +597,7 @@ StmtSing:
     |     LeftOper EOL                  {DbgMsgW2 (L"%%StmtSing:  EOL LeftOper");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_FN12;
+                                             lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -605,7 +605,7 @@ StmtSing:
     |     AxisFunc EOL                  {DbgMsgW2 (L"%%StmtSing:  EOL AxisFunc");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_FN12;
+                                             lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -613,7 +613,7 @@ StmtSing:
     |     Drv1Func EOL                  {DbgMsgW2 (L"%%StmtSing:  EOL Drv1Func");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_FN12;
+                                             lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -621,7 +621,7 @@ StmtSing:
     |     Drv2Func EOL                  {DbgMsgW2 (L"%%StmtSing:  EOL Drv2Func");
                                          if (lpplLocalVars->bLookAhead)
                                          {
-                                             lpplLocalVars->NameType = NAMETYPE_FN12;
+                                             lpplLocalVars->plNameType = NAMETYPE_FN12;
                                              YYACCEPT;
                                          } else
                                              YYERROR;
@@ -5679,28 +5679,28 @@ char SymbTypeVFO
             return '?';
     } // End IF/SWITCH
 
-    if (IsNameTypeVar (stFlags.ObjType)
-     || stFlags.ObjType EQ NAMETYPE_FN0)
+    if (IsNameTypeVar (stFlags.stNameType)
+     || stFlags.stNameType EQ NAMETYPE_FN0)
         return 'V';
 
     // Note we must perform the following test
     //   AFTER the one above so as not to catch the FN0 case.
-    if (IsNameTypeFn (stFlags.ObjType))
+    if (IsNameTypeFn (stFlags.stNameType))
         return 'F';
 
-    if (stFlags.ObjType EQ NAMETYPE_OP1)
+    if (stFlags.stNameType EQ NAMETYPE_OP1)
         return '1';
 
-    if (stFlags.ObjType EQ NAMETYPE_OP2)
+    if (stFlags.stNameType EQ NAMETYPE_OP2)
         return '2';
 
-    if (stFlags.ObjType EQ NAMETYPE_OP3)
+    if (stFlags.stNameType EQ NAMETYPE_OP3)
         return '3';
 
-    // After having checked all the other .ObjType possibilities,
+    // After having checked all the other .stNameType possibilities,
     //   if it's a NAMETYPE_UNK, then it's really a VALUE ERROR, but this
     //   isn't the time to signal that.
-    if (stFlags.ObjType EQ NAMETYPE_UNK)
+    if (stFlags.stNameType EQ NAMETYPE_UNK)
         return 'V';
 
     return '?';             // SYNTAX ERROR
@@ -5760,7 +5760,7 @@ char LookaheadSurround
     if (uRet)
         cRes = '?';
     else
-        cRes = NAMETYPE_STRING[plLocalVars.NameType];
+        cRes = NAMETYPE_STRING[plLocalVars.plNameType];
 #ifdef DEBUG
     dprintfW (L"==Exiting  LookaheadSurround:  %c", cRes);
 #endif
@@ -5998,7 +5998,7 @@ BOOL LookaheadDyadicOp
 
         case TKT_VARNAMED:
             // Look inside the symbol table entry
-            bRet = (lptkNext->tkData.tkSym->stFlags.ObjType EQ NAMETYPE_OP2);
+            bRet = (lptkNext->tkData.tkSym->stFlags.stNameType EQ NAMETYPE_OP2);
 
             goto NORMAL_EXIT;
 
@@ -6100,14 +6100,14 @@ PL_YYLEX_START:
             stFlags = lpplLocalVars->lptkNext->tkData.tkSym->stFlags;
 
             // Test various cases mostly vased on the ObjType
-            if (IsNameTypeVar (stFlags.ObjType))
+            if (IsNameTypeVar (stFlags.stNameType))
             {
 ////////////////lpYYLval->tkToken.tkFlags.TknType                     =
 ////////////////lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_VARNAMED;    // Already set
 
                 return NAMEVAR;
             } else
-            if (stFlags.ObjType EQ NAMETYPE_FN0)
+            if (stFlags.stNameType EQ NAMETYPE_FN0)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_VARNAMED; // Instead of TKT_FCNNAMED because it'll be executed right away
@@ -6118,7 +6118,7 @@ PL_YYLEX_START:
                 else
                     return USRFN0;
             } else
-            if (stFlags.ObjType EQ NAMETYPE_FN12)
+            if (stFlags.stNameType EQ NAMETYPE_FN12)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_FCNNAMED;
@@ -6129,21 +6129,21 @@ PL_YYLEX_START:
                 else
                     return NAMEFCN;
             } else
-            if (stFlags.ObjType EQ NAMETYPE_OP1)
+            if (stFlags.stNameType EQ NAMETYPE_OP1)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_OP1NAMED;
 
                 return NAMEOP1;
             } else
-            if (stFlags.ObjType EQ NAMETYPE_OP2)
+            if (stFlags.stNameType EQ NAMETYPE_OP2)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_OP2NAMED;
 
                 return NAMEOP2;
             } else
-            if (stFlags.ObjType EQ NAMETYPE_OP3)
+            if (stFlags.stNameType EQ NAMETYPE_OP3)
             {
                 lpYYLval->tkToken.tkFlags.TknType                     =
                 lpplLocalVars->lptkNext->tkFlags.TknType              = TKT_OP3NAMED;

@@ -258,10 +258,10 @@ void DisplaySymTab
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
                        L" ObjName=%s",
                        lpwObjNameStr[stFlags.ObjName]);
-        if (stFlags.ObjType NE NAMETYPE_UNK)
+        if (stFlags.stNameType NE NAMETYPE_UNK)
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
-                       L" ObjType=%s",
-                       lpwNameTypeStr[stFlags.ObjType]);
+                       L" stNameType=%s",
+                       lpwNameTypeStr[stFlags.stNameType]);
 
         for (j = 0;
              j < ST_FLAGNAMES_NROWS;
@@ -269,7 +269,7 @@ void DisplaySymTab
         if ((*(PUINT_PTR) &stFlags) & astFlagNames[j].uMask)
             lstrcatW (wszFlags, astFlagNames[j].lpwszName);
 
-        if (IsNameTypeVar (stFlags.ObjType)
+        if (IsNameTypeVar (stFlags.stNameType)
          && !stFlags.DfnSysLabel)
             wsprintfW (&wszFlags[lstrlenW (wszFlags)],
                        L" SysVarValid=%d",
@@ -524,7 +524,7 @@ void DisplayGlobals
             wsprintf (lpszDebug,
                       "hGlb=%08X, NamTyp=%s, NELM=%3d, RC=%1d,                    Lock=%d, Line#=%4d",
                       hGlb,
-                      lpNameTypeStr[lpHeader->NameType],
+                      lpNameTypeStr[lpHeader->fnNameType],
                       lpHeader->tknNELM,
                       lpHeader->RefCnt,
                       (MyGlobalFlags (hGlb) & GMEM_LOCKCOUNT) - 1,
@@ -746,8 +746,8 @@ void DisplayFcnStrand
         case TKT_OP2IMMED:
         case TKT_OP3IMMED:
             lpaplChar += wsprintfW (lpaplChar,
-                                    L"NameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
-                                    NAMETYPE_FN12,  // lpHeader->NameType,
+                                    L"fnNameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
+                                    NAMETYPE_FN12,  // lpHeader->fnNameType,
                                     1,              // LODWORD (lpHeader->NELM),
                                     0);             // lpHeader->RefCnt);
             *lpaplChar++ = TranslateFcnOprToChar (lptkFunc->tkData.tkChar);
@@ -777,8 +777,8 @@ void DisplayFcnStrand
                 {
                     // Start off with the header
                     lpaplChar += wsprintfW (lpaplChar,
-                                            L"NameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
-                                            NAMETYPE_FN12,  // lpHeader->NameType,
+                                            L"fnNameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
+                                            NAMETYPE_FN12,  // lpHeader->fnNameType,
                                             1,              // LODWORD (lpHeader->NELM),
                                             0);             // lpHeader->RefCnt);
                     // Display the function name from the symbol table
@@ -790,8 +790,8 @@ void DisplayFcnStrand
             {
                 // Start off with the header
                 lpaplChar += wsprintfW (lpaplChar,
-                                        L"NameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
-                                        NAMETYPE_FN12,  // lpHeader->NameType,
+                                        L"fnNameType=%1d, NELM=%3d, RC=%2d, Fn:  ",
+                                        NAMETYPE_FN12,  // lpHeader->fnNameType,
                                         1,              // LODWORD (lpHeader->NELM),
                                         0);             // lpHeader->RefCnt);
                 *lpaplChar++ = lptkFunc->tkData.tkSym->stData.stChar;
@@ -835,7 +835,7 @@ NORMAL_EXIT:
 LPWCHAR DisplayFcnGlb
     (LPWCHAR lpaplChar,         // Ptr to output save area
      HGLOBAL hGlbFcnArr,        // Function array global memory handle
-     BOOL    bDispHeader)       // TRUE iff we're to display the header (NameType=...)
+     BOOL    bDispHeader)       // TRUE iff we're to display the header (fnNameType=...)
 
 {
     LPVOID  lpMemFcnArr;    // Ptr to function array global memory
@@ -849,8 +849,8 @@ LPWCHAR DisplayFcnGlb
 
     if (bDispHeader)
         lpaplChar += wsprintfW (lpaplChar,
-                                L"NameType=%s, NELM=%3d, RC=%2d, Fn:  ",
-                                lpwNameTypeStr[lpHeader->NameType],
+                                L"fnNameType=%s, NELM=%3d, RC=%2d, Fn:  ",
+                                lpwNameTypeStr[lpHeader->fnNameType],
                                 tknNELM,
                                 lpHeader->RefCnt);
 #undef  lpHeader

@@ -301,7 +301,7 @@ BOOL CmdSave_EM
          && stFlags.ObjName NE OBJNAME_LOD)     // and not be a )LOAD HGLOBAL
         {
             // Split cases based upon the object type
-            switch (stFlags.ObjType)
+            switch (stFlags.stNameType)
             {
                 case NAMETYPE_VAR:
                     // Append separator
@@ -353,12 +353,12 @@ BOOL CmdSave_EM
                                 *lpaplChar = L'\0';
                         } // End IF/ELSE
                     } else
-                        // Convert the gloabl memory to saved ws form
+                        // Convert the variable in gloabl memory to saved ws form
                         lpaplChar =
-                          SavedWsFormGlb (lpaplChar,
-                                          lpSymEntry->stData.stGlbData,
-                                          lpMemSaveWSID,
-                                         &uGlbCnt);
+                          SavedWsFormGlbVar (lpaplChar,
+                                             lpSymEntry->stData.stGlbData,
+                                             lpMemSaveWSID,
+                                            &uGlbCnt);
                     // Format the counter
                     wsprintfW (wszCount, L"%d", uSymVar++);
 
@@ -801,7 +801,7 @@ BOOL SaveNewWsid
         hGlbWSID = hGlbV0Char;
 
     // Free the old []WSID
-    FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData));
+    FreeResultGlobalVar (lpMemPTD->lpSymQuadWSID->stData.stGlbData);
 
     // Save the new []WSID
     lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);
@@ -865,12 +865,12 @@ void WriteFunctionLine
 
 
 //***************************************************************************
-//  $SavedWsFormGlb
+//  $SavedWsFormGlbVar
 //
-//  Convert global memory to saved ws form
+//  Convert a variable in global memory to saved ws form
 //***************************************************************************
 
-LPAPLCHAR SavedWsFormGlb
+LPAPLCHAR SavedWsFormGlbVar
     (LPAPLCHAR lpaplChar,               // Ptr to output save area
      HGLOBAL   hGlbObj,                 // WS object global memory handle
      LPAPLCHAR lpMemSaveWSID,           // Ptr to saved WS file DPFE
@@ -1155,12 +1155,12 @@ LPAPLCHAR SavedWsFormGlb
                         // Get the global's Type
                         AttrsOfGlb (ClrPtrTypeDirAsGlb (hGlbSub), &aplTypeSub, NULL, NULL, NULL);
 
-                        // Convert the gloabl memory to saved ws form
+                        // Convert the variable in gloabl memory to saved ws form
                         lpaplChar =
-                          SavedWsFormGlb (lpaplChar,
-                                          hGlbSub,
-                                          lpMemSaveWSID,
-                                          lpGlbCnt);
+                          SavedWsFormGlbVar (lpaplChar,
+                                             hGlbSub,
+                                             lpMemSaveWSID,
+                                             lpGlbCnt);
                         // Ensure there's a trailing blank
                         if (lpaplChar[-1] NE L' ')
                         {
@@ -1222,7 +1222,7 @@ NORMAL_EXIT:
     // Return a ptr to the profile keyname's terminating zero
 ////return &lpMemProKeyName[lstrlenW (lpMemProKeyName)];
     return &lpaplChar[lstrlenW (lpaplChar)];
-} // End SavedWsFormGlb
+} // End SavedWsFormGlbVar
 
 
 //***************************************************************************

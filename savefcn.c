@@ -1008,12 +1008,12 @@ BOOL SaveFunctionCom
         switch (lpMemDfnHdr->DfnType)
         {
             case DFNTYPE_OP1:   // Monadic operator
-                lpSymName->stFlags.ObjType = NAMETYPE_OP1;
+                lpSymName->stFlags.stNameType = NAMETYPE_OP1;
 
                 break;
 
             case DFNTYPE_OP2:   // Dyadic operator
-                lpSymName->stFlags.ObjType = NAMETYPE_OP2;
+                lpSymName->stFlags.stNameType = NAMETYPE_OP2;
 
                 break;
 
@@ -1022,14 +1022,14 @@ BOOL SaveFunctionCom
                 switch (lpMemDfnHdr->FcnValence)
                 {
                     case FCNVALENCE_NIL:    // Niladic function
-                        lpSymName->stFlags.ObjType = NAMETYPE_FN0;
+                        lpSymName->stFlags.stNameType = NAMETYPE_FN0;
 
                         break;
 
                     case FCNVALENCE_MON:    // Monadic function
                     case FCNVALENCE_DYD:    // Dyadic function
                     case FCNVALENCE_AMB:    // Ambivalent function
-                        lpSymName->stFlags.ObjType = NAMETYPE_FN12;
+                        lpSymName->stFlags.stNameType = NAMETYPE_FN12;
 
                         break;
 

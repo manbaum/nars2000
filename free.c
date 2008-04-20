@@ -196,7 +196,7 @@ void FreeResultSub
                 // Is it time to free the name?
                 if (bFreeName)
                 {
-                    bTmp = FreeResultGlobalDFV (ClrPtrTypeDirAsGlb (hGlbData));
+                    bTmp = FreeResultGlobalDFV (hGlbData);
                     if (bTmp)
                     {
 #ifdef DEBUG_ZAP
@@ -248,7 +248,7 @@ void FreeResultSub
                      || IsGlbTypeFcnDir (hGlbData)
                      || IsGlbTypeDfnDir (hGlbData));
 
-                bTmp = FreeResultGlobalDFV (ClrPtrTypeDirAsGlb (hGlbData));
+                bTmp = FreeResultGlobalDFV (hGlbData);
                 if (bTmp)
                 {
 #ifdef DEBUG_ZAP
@@ -292,6 +292,9 @@ BOOL FreeResultGlobalDFV
     (HGLOBAL hGlbData)
 
 {
+    // Clear the type bits in case they are set on the way in
+    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
+
     // Split cases based upon the signature
     switch (GetSignatureGlb (hGlbData))
     {
@@ -338,6 +341,9 @@ BOOL FreeResultGlobalVar
 
     // Data is an valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir (MakePtrTypeGlb (hGlbData)));
+
+    // Clear the type bits in case they are set on the way in
+    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
 
     // Lock the memory to get a ptr to it
     lpMem = MyGlobalLock (hGlbData);
@@ -473,7 +479,7 @@ BOOL FreeResultGlobalFcn
     // Data is an valid HGLOBAL function array
     Assert (IsGlbTypeFcnDir (MakePtrTypeGlb (hGlbData)));
 
-    // Clear the ptr type bits
+    // Clear the type bits in case they are set on the way in
     hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
 
     // Lock the memory to get a ptr to it
@@ -691,7 +697,7 @@ BOOL FreeResultGlobalDfn
     // Data is an valid HGLOBAL user-defined function/operator
     Assert (IsGlbTypeDfnDir (MakePtrTypeGlb (hGlbData)));
 
-    // Clear the ptr type bits
+    // Clear the type bits in case they are set on the way in
     hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
 
     // Lock the memory to get a ptr to it

@@ -1299,13 +1299,12 @@ BOOL fnAlpDone
     // Ensure properly terminated
     lpMemPTD->lpwszString[lpMemPTD->iStringLen] = L'\0';
 
-    // If this is a system name (starts with a Quad),
+    // If this is a system name (starts with a Quad or Quote-Quad),
     //   convert it to lowercase as those names are
     //   case-insensitive
-    if (lpMemPTD->lpwszString[0] EQ UTF16_QUAD
-     || lpMemPTD->lpwszString[0] EQ UTF16_QUOTEQUAD)
+    if (IsSysName (lpMemPTD->lpwszString))
     {
-        // Handle Quad and QuoteQuad via a separate token
+        // Handle Quad and QuoteQuad alone via a separate token
         if (lpMemPTD->iStringLen EQ 1)
         {
             // Mark the data as Quad or QuoteQuad
@@ -2726,7 +2725,7 @@ void Untokenize
             case TKT_STRING:            // String  (data is HGLOBAL)
             case TKT_VARARRAY:          // Array of data (data is HGLOBAL)
                 // Free the array and all elements of it
-                if (FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpToken->tkData.tkGlbData)))
+                if (FreeResultGlobalVar (lpToken->tkData.tkGlbData))
                 {
 #ifdef DEBUG_ZAP
                     dprintfW (L"**Zapping in Untokenize: %08X (%d) (%S#%d)",

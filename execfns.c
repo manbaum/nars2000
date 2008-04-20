@@ -143,7 +143,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                 stFlags = lpYYFcnStr->tkToken.tkData.tkSym->stFlags;
 
                 // Skip assertion if it's some kind of function/operator
-                if (IsNameTypeFnOp (stFlags.ObjType))
+                if (IsNameTypeFnOp (stFlags.stNameType))
                 {
                     LPPRIMFNS lpNameFcn;
 

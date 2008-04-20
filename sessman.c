@@ -961,9 +961,11 @@ LRESULT APIENTRY SMWndProc
             lpMemPTD->steNoValue = lpMemPTD->lpSymTabNext++;
 
             // Set the flags for the NoValue entry
-            lpMemPTD->steNoValue->stFlags.Perm = TRUE;
-            lpMemPTD->steNoValue->stFlags.ObjName = OBJNAME_NONE;
-            lpMemPTD->steNoValue->stFlags.ObjType = NAMETYPE_UNK;
+            lpMemPTD->steNoValue->stFlags.Perm       = TRUE;
+            lpMemPTD->steNoValue->stFlags.ObjName    = OBJNAME_NONE;
+            lpMemPTD->steNoValue->stFlags.stNameType = NAMETYPE_UNK;
+
+            Assert (IsSymNoValue (lpMemPTD->steNoValue));
 
 ////////////// We no longer need this ptr
 ////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1588,6 +1590,15 @@ LRESULT APIENTRY SMWndProc
                     LPSYMENTRY lpSym = NULL;
 
                     DbgBrk ();      // ***FIXME*** -- Check on lock count of hGlbPTD
+
+                    // Get the thread's PerTabData global memory handle
+                    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
                     return FALSE;
                 } // End VK_F11

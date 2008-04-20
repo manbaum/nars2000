@@ -1707,7 +1707,7 @@ BOOL ArrayIndexSet_EM
     AttrsOfToken (lptkLstArg, NULL, &aplNELMLst,  NULL,       NULL);
 
     // If the name arg is a system var, check for function/operator system labels
-    bSysVar = (IsNameTypeVar (lptkNamArg->tkData.tkSym->stFlags.ObjType)
+    bSysVar = (IsNameTypeVar (lptkNamArg->tkData.tkSym->stFlags.stNameType)
             && lptkNamArg->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS);
     if (bSysVar)
     {
@@ -2028,7 +2028,7 @@ BOOL ArrayIndexSetNamScalar_EM
             // We no longer need this ptr
             MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
 
-            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (hGlbNam));
+            FreeResultGlobalVar (hGlbNam);
         } // End IF
 
         Assert (!bSysVar);
@@ -2047,7 +2047,7 @@ BOOL ArrayIndexSetNamScalar_EM
             // We no longer need this ptr
             MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
 
-            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (hGlbNam));
+            FreeResultGlobalVar (hGlbNam);
         } // End IF
 
         // If this is indexed assignment into a SysVar, ...
@@ -2641,7 +2641,7 @@ BOOL ArrayIndexSetSingLst_EM
                         break;
 
                     case PTRTYPE_HGLOBAL:
-                        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemNam)[aplLongestSubLst]));
+                        FreeResultGlobalVar (((LPAPLNESTED) lpMemNam)[aplLongestSubLst]);
                         ((LPAPLNESTED) lpMemNam)[aplLongestSubLst] = NULL;
 
                         break;
@@ -3067,7 +3067,7 @@ BOOL ArrayIndexSetVector_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    FreeResultGlobalVar (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRes)[aplLongestSubLst]));
+                    FreeResultGlobalVar (((LPAPLNESTED) lpMemRes)[aplLongestSubLst]);
                     ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] = NULL;
 
                     break;
@@ -3405,7 +3405,7 @@ void ArrayIndexReplace
             // Free the old value if it's a global
             if (GetPtrTypeDir (hGlbSubRht) EQ PTRTYPE_HGLOBAL)
             {
-                FreeResultGlobalVar (ClrPtrTypeDirAsGlb (hGlbSubRht)); hGlbSubRht = NULL;
+                FreeResultGlobalVar (hGlbSubRht); hGlbSubRht = NULL;
             } // End IF
 
             break;

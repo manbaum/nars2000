@@ -271,7 +271,7 @@ LRESULT APIENTRY FEWndProc
             if (lpSymName)
             {
                 // If it's a function/operator but not a user-defined function/operator, ...
-                if (IsNameTypeFnOp (lpSymName->stFlags.ObjType)
+                if (IsNameTypeFnOp (lpSymName->stFlags.stNameType)
                  && !lpSymName->stFlags.UsrDfn)
                 {
                     // ***FIXME*** -- Allow the user to edit the function array
@@ -782,8 +782,7 @@ BOOL IzitNameChar
          || aplChar EQ UTF16_OVERBAR
          || aplChar EQ UTF16_ALPHA          // Only as one and only char
          || aplChar EQ UTF16_OMEGA          // ...
-         || aplChar EQ UTF16_QUAD           // Valid as 1st char only
-         || aplChar EQ UTF16_QUOTEQUAD);    // ...
+         || IsSysName (&aplChar));          // Valid as 1st char only
 } // End IzitNameChar
 
 
@@ -929,7 +928,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 // If the name is that of a user defined function/operator
                 //   or it is undefined, edit it as a function
-                switch (lpSymEntry->stFlags.ObjType)
+                switch (lpSymEntry->stFlags.stNameType)
                 {
                     case NAMETYPE_UNK:
                     case NAMETYPE_FN0:
@@ -1050,8 +1049,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             // The name spans [uCharPosBeg, uCharPosEnd)
             // Check the whole name now
             if (ValidName (&lpwszTemp[uCharPosBeg], uCharPosEnd - uCharPosBeg)
-             && lpwszTemp[uCharPosBeg] NE UTF16_QUAD
-             && lpwszTemp[uCharPosBeg] NE UTF16_QUOTEQUAD)
+             && !IsSysName (&lpwszTemp[uCharPosBeg]))
             {
                 STFLAGS    stFlags = {0};       // Symbol Table Flags used to limit the lookup
                 LPSYMENTRY lpSymEntry;          // Ptr to SYMENTRY if found

@@ -1044,7 +1044,7 @@ BOOL CheckDfnExitError_EM
                     lptkLine++;
 
                 // If it's not a variable, ...
-                if ((*lplpSymEntry)->stFlags.ObjType NE NAMETYPE_VAR)
+                if ((*lplpSymEntry)->stFlags.stNameType NE NAMETYPE_VAR)
                 {
                     // Set the error message
                     ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
@@ -1081,7 +1081,7 @@ BOOL CheckDfnExitError_EM
                     goto ERROR_EXIT;
                 } else
                 // If the name is not a variable, ...
-                if (lplpSymEntry[numRes]->stFlags.ObjType NE NAMETYPE_VAR)
+                if (lplpSymEntry[numRes]->stFlags.stNameType NE NAMETYPE_VAR)
                 {
                     // Set the error message
                     ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
@@ -1191,14 +1191,14 @@ BOOL Unlocalize
                 hGlbData = lpSymEntryCur->stData.stGlbData;
 
                 // Split cases based upon the nametype
-                switch (lpSymEntryCur->stFlags.ObjType)
+                switch (lpSymEntryCur->stFlags.stNameType)
                 {
                     case NAMETYPE_VAR:
                         // stData is a valid HGLOBAL variable array
                         Assert (IsGlbTypeVarDir (hGlbData));
 
                         // Free the global var
-                        FreeResultGlobalVar (ClrPtrTypeDirAsGlb (hGlbData));
+                        FreeResultGlobalVar (hGlbData);
 
                         break;
 
@@ -1207,7 +1207,7 @@ BOOL Unlocalize
                         Assert (lpSymEntryCur->stFlags.UsrDfn);
 
                         // Free the global user-defined function/operator
-                        FreeResultGlobalDfn (ClrPtrTypeDirAsGlb (hGlbData));
+                        FreeResultGlobalDfn (hGlbData);
 
                         break;
 
@@ -1216,10 +1216,10 @@ BOOL Unlocalize
                     case NAMETYPE_OP2:
                         if (lpSymEntryCur->stFlags.UsrDfn)
                             // Free the global user-defined function/operator
-                            FreeResultGlobalDfn (ClrPtrTypeDirAsGlb (hGlbData));
+                            FreeResultGlobalDfn (hGlbData);
                         else
                             // Free the global function array
-                            FreeResultGlobalFcn (ClrPtrTypeDirAsGlb (hGlbData));
+                            FreeResultGlobalFcn (hGlbData);
                         break;
 
                     defstop
@@ -1327,14 +1327,14 @@ LPSYMENTRY LocalizeLabels
 ////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below
 
                 // Initialize the SYMENTRY to an integer constant
-                lpSymEntrySrc->stFlags.Imm      = TRUE;
-                lpSymEntrySrc->stFlags.ImmType  = IMMTYPE_INT;
-                lpSymEntrySrc->stFlags.Inuse    = TRUE;
-                lpSymEntrySrc->stFlags.Value    = TRUE;
-                lpSymEntrySrc->stFlags.ObjName  = OBJNAME_USR;
-                lpSymEntrySrc->stFlags.ObjType  = NAMETYPE_VAR;
-                lpSymEntrySrc->stFlags.DfnLabel = TRUE;
-                lpSymEntrySrc->stData.stInteger = uLineNum + 1;
+                lpSymEntrySrc->stFlags.Imm        = TRUE;
+                lpSymEntrySrc->stFlags.ImmType    = IMMTYPE_INT;
+                lpSymEntrySrc->stFlags.Inuse      = TRUE;
+                lpSymEntrySrc->stFlags.Value      = TRUE;
+                lpSymEntrySrc->stFlags.ObjName    = OBJNAME_USR;
+                lpSymEntrySrc->stFlags.stNameType = NAMETYPE_VAR;
+                lpSymEntrySrc->stFlags.DfnLabel   = TRUE;
+                lpSymEntrySrc->stData.stInteger   = uLineNum + 1;
 
                 // Set the ptr to the previous entry to the STE on the stack
                 lpSymEntrySrc->stPrvEntry       = &lpSymEntryNxt[-1];
@@ -1394,12 +1394,12 @@ void InitVarSTEs
                     *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
-                    (*lplpSymEntry)->stFlags.Imm      = TRUE;
-                    (*lplpSymEntry)->stFlags.ImmType  = lptkArg->tkFlags.ImmType;
-                    (*lplpSymEntry)->stFlags.Value    = TRUE;
-                    (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-                    (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                    (*lplpSymEntry)->stData.stLongest = lptkArg->tkData.tkLongest;
+                    (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                    (*lplpSymEntry)->stFlags.ImmType    = lptkArg->tkFlags.ImmType;
+                    (*lplpSymEntry)->stFlags.Value      = TRUE;
+                    (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                    (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                    (*lplpSymEntry)->stData.stLongest   = lptkArg->tkData.tkLongest;
                 } // End FOR
 
                 return;
@@ -1425,12 +1425,12 @@ void InitVarSTEs
                         *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
-                        (*lplpSymEntry)->stFlags.Imm      = TRUE;
-                        (*lplpSymEntry)->stFlags.ImmType  = lptkArg->tkData.tkSym->stFlags.ImmType;
-                        (*lplpSymEntry)->stFlags.Value    = TRUE;
-                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stLongest = lptkArg->tkData.tkSym->stData.stLongest;
+                        (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                        (*lplpSymEntry)->stFlags.ImmType    = lptkArg->tkData.tkSym->stFlags.ImmType;
+                        (*lplpSymEntry)->stFlags.Value      = TRUE;
+                        (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stLongest   = lptkArg->tkData.tkSym->stData.stLongest;
                     } // End FOR
 
                     return;
@@ -1454,12 +1454,12 @@ void InitVarSTEs
             *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
-////////////(*lplpSymEntry)->stFlags.Imm      = 0;      // Already zero from previous initialization
-////////////(*lplpSymEntry)->stFlags.ImmType  = 0;      // Already zero from previous initialization
-            (*lplpSymEntry)->stFlags.Value    = TRUE;
-            (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-            (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-            (*lplpSymEntry)->stData.stGlbData = CopySymGlbDir (hGlbArg);
+////////////(*lplpSymEntry)->stFlags.Imm        = 0;    // Already zero from previous initialization
+////////////(*lplpSymEntry)->stFlags.ImmType    = 0;    // Already zero from previous initialization
+            (*lplpSymEntry)->stFlags.Value      = TRUE;
+            (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+            (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+            (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir (hGlbArg);
         } else
         {
             APLSTYPE aplTypeArg;            // Arg storage type
@@ -1509,12 +1509,12 @@ void InitVarSTEs
                 switch (aplTypeArg)
                 {
                     case ARRAY_BOOL:
-                        (*lplpSymEntry)->stFlags.Imm      = TRUE;
-                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_INT;
-                        (*lplpSymEntry)->stFlags.Value    = TRUE;
-                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stBoolean = BIT0 & ((*(LPAPLBOOL) lpMemArg) >> uBitIndex);
+                        (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                        (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_INT;
+                        (*lplpSymEntry)->stFlags.Value      = TRUE;
+                        (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stBoolean   = BIT0 & ((*(LPAPLBOOL) lpMemArg) >> uBitIndex);
 
                         // Check for end-of-byte
                         if (++uBitIndex EQ NBIB)
@@ -1526,42 +1526,42 @@ void InitVarSTEs
                         break;
 
                     case ARRAY_INT:
-                        (*lplpSymEntry)->stFlags.Imm      = TRUE;
-                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_INT;
-                        (*lplpSymEntry)->stFlags.Value    = TRUE;
-                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stInteger = *((LPAPLINT) lpMemArg)++;
+                        (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                        (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_INT;
+                        (*lplpSymEntry)->stFlags.Value      = TRUE;
+                        (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stInteger   = *((LPAPLINT) lpMemArg)++;
 
                         break;
 
                     case ARRAY_FLOAT:
-                        (*lplpSymEntry)->stFlags.Imm      = TRUE;
-                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_FLOAT;
-                        (*lplpSymEntry)->stFlags.Value    = TRUE;
-                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stFloat   = *((LPAPLFLOAT) lpMemArg)++;
+                        (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                        (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_FLOAT;
+                        (*lplpSymEntry)->stFlags.Value      = TRUE;
+                        (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stFloat     = *((LPAPLFLOAT) lpMemArg)++;
 
                         break;
 
                     case ARRAY_CHAR:
-                        (*lplpSymEntry)->stFlags.Imm      = TRUE;
-                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_CHAR;
-                        (*lplpSymEntry)->stFlags.Value    = TRUE;
-                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stChar    = *((LPAPLCHAR) lpMemArg)++;
+                        (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                        (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_CHAR;
+                        (*lplpSymEntry)->stFlags.Value      = TRUE;
+                        (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stChar      = *((LPAPLCHAR) lpMemArg)++;
 
                         break;
 
                     case ARRAY_APA:
-                        (*lplpSymEntry)->stFlags.Imm      = TRUE;
-                        (*lplpSymEntry)->stFlags.ImmType  = IMMTYPE_INT;
-                        (*lplpSymEntry)->stFlags.Value    = TRUE;
-                        (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-                        (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stInteger = apaOffArg + apaMulArg * uSym;
+                        (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                        (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_INT;
+                        (*lplpSymEntry)->stFlags.Value      = TRUE;
+                        (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                        (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                        (*lplpSymEntry)->stData.stInteger   = apaOffArg + apaMulArg * uSym;
 
                         break;
 
@@ -1571,12 +1571,12 @@ void InitVarSTEs
                         switch (GetPtrTypeInd (lpMemArg))
                         {
                             case PTRTYPE_STCONST:
-                                (*lplpSymEntry)->stFlags.Imm      = TRUE;
-                                (*lplpSymEntry)->stFlags.ImmType  = (*(LPAPLHETERO) lpMemArg)->stFlags.ImmType;
-                                (*lplpSymEntry)->stFlags.Value    = TRUE;
-                                (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-                                (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                                (*lplpSymEntry)->stData           = (*(LPAPLHETERO) lpMemArg)->stData;
+                                (*lplpSymEntry)->stFlags.Imm        = TRUE;
+                                (*lplpSymEntry)->stFlags.ImmType    = (*(LPAPLHETERO) lpMemArg)->stFlags.ImmType;
+                                (*lplpSymEntry)->stFlags.Value      = TRUE;
+                                (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                                (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                                (*lplpSymEntry)->stData             = (*(LPAPLHETERO) lpMemArg)->stData;
 
                                 // Skip to next element in arg
                                 ((LPAPLHETERO) lpMemArg)++;
@@ -1584,12 +1584,12 @@ void InitVarSTEs
                                 break;
 
                             case PTRTYPE_HGLOBAL:
-////////////////////////////////(*lplpSymEntry)->stFlags.Imm      = 0;      // Already zero from previous initialization
-////////////////////////////////(*lplpSymEntry)->stFlags.ImmType  = 0;      // Already zero from previous initialization
-                                (*lplpSymEntry)->stFlags.Value    = TRUE;
-                                (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-                                (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_VAR;
-                                (*lplpSymEntry)->stData.stGlbData = CopySymGlbInd (lpMemArg);
+////////////////////////////////(*lplpSymEntry)->stFlags.Imm        = 0;    // Already zero from previous initialization
+////////////////////////////////(*lplpSymEntry)->stFlags.ImmType    = 0;    // Already zero from previous initialization
+                                (*lplpSymEntry)->stFlags.Value      = TRUE;
+                                (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+                                (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
+                                (*lplpSymEntry)->stData.stGlbData   = CopySymGlbInd (lpMemArg);
 
                                 // Skip to next element in arg
                                 ((LPAPLNESTED) lpMemArg)++;
@@ -1650,12 +1650,12 @@ BOOL InitFcnSTEs
             *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
-            (*lplpSymEntry)->stFlags.Imm      = TRUE;
-            (*lplpSymEntry)->stFlags.ImmType  = lpYYArg->tkToken.tkFlags.ImmType;
-            (*lplpSymEntry)->stFlags.Value    = TRUE;
-            (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-            (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_FN12;
-            (*lplpSymEntry)->stData.stLongest = lpYYArg->tkToken.tkData.tkLongest;
+            (*lplpSymEntry)->stFlags.Imm        = TRUE;
+            (*lplpSymEntry)->stFlags.ImmType    = lpYYArg->tkToken.tkFlags.ImmType;
+            (*lplpSymEntry)->stFlags.Value      = TRUE;
+            (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+            (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
+            (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
         } else
         {
             APLUINT ByteRes;            // # bytes in the result
@@ -1679,7 +1679,7 @@ BOOL InitFcnSTEs
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemRes)
             // Fill in the header
             lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
-            lpHeader->NameType    = NAMETYPE_FN12;
+            lpHeader->fnNameType  = NAMETYPE_FN12;
             lpHeader->RefCnt      = 1;
             lpHeader->tknNELM     = lpYYArg->FcnCount;
 ////////////lpHeader->hGlbTxtLine = NULL;           // Already zero from GHND
@@ -1723,12 +1723,12 @@ BOOL InitFcnSTEs
             *((PUINT_PTR) &(*lplpSymEntry)->stFlags) &= *(PUINT_PTR) &stFlagsClr;
 ////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
-////////////(*lplpSymEntry)->stFlags.Imm      = 0;      // Already zero from above
-////////////(*lplpSymEntry)->stFlags.ImmType  = 0;      // Already zero from above
-            (*lplpSymEntry)->stFlags.Value    = TRUE;
-            (*lplpSymEntry)->stFlags.ObjName  = OBJNAME_USR;
-            (*lplpSymEntry)->stFlags.ObjType  = NAMETYPE_FN12;
-            (*lplpSymEntry)->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
+////////////(*lplpSymEntry)->stFlags.Imm        = 0;    // Already zero from above
+////////////(*lplpSymEntry)->stFlags.ImmType    = 0;    // Already zero from above
+            (*lplpSymEntry)->stFlags.Value      = TRUE;
+            (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
+            (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
+            (*lplpSymEntry)->stData.stGlbData   = MakePtrTypeGlb (hGlbRes);
         } // End IF/ELSE
     } // End IF
 

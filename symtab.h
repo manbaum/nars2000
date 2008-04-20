@@ -234,9 +234,9 @@ typedef struct tagSTFLAGS
          Perm:1,            // 00000020:  Permanent entry
          Inuse:1,           // 00000040:  Inuse entry
          Value:1,           // 00000080:  Entry has a value
-         ObjName:3,         // 00000700:  The data in .stData is NULL if .ObjType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
+         ObjName:3,         // 00000700:  The data in .stData is NULL if .stNameType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
                             //            (see OBJ_NAMES)
-         ObjType:4,         // 00007800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
+         stNameType:4,      // 00007800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
                             //            (see NAME_TYPES)
          SysVarValid:5,     // 000F8000:  Index to validation routine for System Vars (see SYS_VARS)
          UsrDfn:1,          // 00100000:  User-defined function/operator
@@ -257,14 +257,15 @@ typedef struct tagSTFLAGS
 // .Imm     = 1 implies that one and only one of aplBoolean, aplInteger, aplChar, or aplFloat is valid.
 // .Imm     = 0 implies that stGlbData is valid.
 // .Perm    is valid for OBJNAME_SYS and OBJNAME_MF only.
-// .Value   is valid for NAMETYPE_VAR only, however .ObjType EQ NAMETYPE_VAR
+// .Value   is valid for NAMETYPE_VAR only, however .stNameType EQ NAMETYPE_VAR
 //          should never be without a value.
 // .UsrDfn  is set for .UsrType when the function is user-defined.
 // .FcnDir  may be set for any function/operator in .SysType or .UsrType; it is a
 //          direct pointer to the code.
 // htGlbName in HSHENTRY is set for .UsrType and .SysType when .Imm and .FcnDir are clear.
 
-typedef union tagSYMTAB_DATA    // Immediate data or a handle to global data
+// Immediate data or a handle to global data
+typedef union tagSYMTAB_DATA
 {
     APLBOOL    stBoolean;       // 00:  A number (Boolean)
     APLINT     stInteger;       // 00:  A number (Integer)
@@ -289,23 +290,6 @@ typedef struct tagSYMENTRY
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)
-
-typedef enum tagNAME_CLASS
-{
-    NAMECLASS_INV = -1,     // -1 = Invalid name or unknown sysname
-    NAMECLASS_AVL = 0,      //  0 = Available name
-    NAMECLASS_USRLBL,       //  1 = User label
-    NAMECLASS_USRVAR,       //  2 = User variable
-    NAMECLASS_USRFCN,       //  3 = User-defined function
-    NAMECLASS_USROPR,       //  4 = User-defined operator (monadic or dyadec)
-    NAMECLASS_SYSVAR,       //  5 = System variable
-    NAMECLASS_SYSFCN,       //  6 = System function
-    NAMECLASS_SYSLBL,       //  7 = System label
-    NAMECLASS_LENp1,        //  8 = # valid entries + 1 (1-7)
-} NAME_CLASS;
-// Note that )NMS in <sc_fnov.c> assumes that the Name Class
-//   is a single digit.  If you add enough classes to invalidate
-//   that assumptioon, be sure make )NMS work, too.
 
 //***************************************************************************
 //  End of File: symtab.h

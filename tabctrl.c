@@ -766,15 +766,15 @@ LRESULT WINAPI LclTabCtrlWndProc
 #endif
 
             // Free global storage
-            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadALX ->stData.stGlbData)); lpMemPTD->lpSymQuadALX ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadELX ->stData.stGlbData)); lpMemPTD->lpSymQuadELX ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadFC  ->stData.stGlbData)); lpMemPTD->lpSymQuadFC  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadIC  ->stData.stGlbData)); lpMemPTD->lpSymQuadIC  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadLX  ->stData.stGlbData)); lpMemPTD->lpSymQuadLX  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadSA  ->stData.stGlbData)); lpMemPTD->lpSymQuadSA  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
+            FreeResultGlobalVar (lpMemPTD->lpSymQuadALX ->stData.stGlbData); lpMemPTD->lpSymQuadALX ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (lpMemPTD->lpSymQuadELX ->stData.stGlbData); lpMemPTD->lpSymQuadELX ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (lpMemPTD->lpSymQuadFC  ->stData.stGlbData); lpMemPTD->lpSymQuadFC  ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (lpMemPTD->lpSymQuadIC  ->stData.stGlbData); lpMemPTD->lpSymQuadIC  ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (lpMemPTD->lpSymQuadLX  ->stData.stGlbData); lpMemPTD->lpSymQuadLX  ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (lpMemPTD->lpSymQuadSA  ->stData.stGlbData); lpMemPTD->lpSymQuadSA  ->stData.stGlbData = NULL;
+            FreeResultGlobalVar (lpMemPTD->lpSymQuadWSID->stData.stGlbData); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
             if (lpMemPTD->cQuadPR)
-                FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadPR  ->stData.stGlbData)); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
+                FreeResultGlobalVar (lpMemPTD->lpSymQuadPR  ->stData.stGlbData); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
 
 #undef  APPEND_NAME
 

@@ -261,7 +261,7 @@ void FreeStrand
                     // tkData is a valid HGLOBAL variable array
                     Assert (IsGlbTypeVarDir (lpYYToken->tkToken.tkData.tkGlbData));
 
-                    if (FreeResultGlobalVar (ClrPtrTypeDirAsGlb (lpYYToken->tkToken.tkData.tkGlbData)))
+                    if (FreeResultGlobalVar (lpYYToken->tkToken.tkData.tkGlbData))
                     {
 #ifdef DEBUG_ZAP
                         dprintfW (L"**Zapping in FreeStrand: %08X (%S#%d)",
@@ -281,7 +281,7 @@ void FreeStrand
                     // tkData is a valid HGLOBAL function array
                     Assert (IsGlbTypeFcnDir (lpYYToken->tkToken.tkData.tkGlbData));
 
-                    if (FreeResultGlobalFcn (ClrPtrTypeDirAsGlb (lpYYToken->tkToken.tkData.tkGlbData)))
+                    if (FreeResultGlobalFcn (lpYYToken->tkToken.tkData.tkGlbData))
                     {
 #ifdef DEBUG_ZAP
                         dprintfW (L"**Zapping in FreeStrand: %08X (%S#%d)",
@@ -1073,7 +1073,7 @@ ERROR_EXIT:
 
 LPPL_YYSTYPE MakeFcnStrand_EM_YY
     (LPPL_YYSTYPE lpYYArg,          // Ptr to incoming token
-     NAME_TYPES   nameType,         // Type of the strand
+     NAME_TYPES   fnNameType,       // Type of the strand
      BOOL         bSaveTxtLine)     // TRUE iff we should save the line text
 
 {
@@ -1169,7 +1169,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemStr)
     // Fill in the header
     lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
-    lpHeader->NameType    = nameType;
+    lpHeader->fnNameType  = fnNameType;
     lpHeader->RefCnt      = 1;
 ////lpHeader->tknNELM     =             // To be filled in below
 
@@ -2164,7 +2164,7 @@ LPTOKEN CopyToken_EM
 
                 // Skip assertion if it's some kind of function/operator
                 stFlags = lpToken->tkData.tkSym->stFlags;
-                if (IsNameTypeFnOp (stFlags.ObjType))
+                if (IsNameTypeFnOp (stFlags.stNameType))
                     break;
 
                 // stData is a valid HGLOBAL function array

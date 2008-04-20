@@ -359,7 +359,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  ExpungeName
+//  $ExpungeName
 //
 //  Expunge a given name and
 //    return a one iff successful
@@ -375,7 +375,7 @@ APLBOOL ExpungeName
 
     // If the STE is not immediate, free the global memory handle
     if (!lpSymEntry->stFlags.Imm)
-        FreeResultGlobalDFV (ClrPtrTypeDirAsGlb (lpSymEntry->stData.stGlbData));
+        FreeResultGlobalDFV (lpSymEntry->stData.stGlbData);
 
     // Erase the Symbol Table Entry
     EraseSTE (lpSymEntry);
@@ -385,7 +385,7 @@ APLBOOL ExpungeName
 
 
 //***************************************************************************
-//  EraseSTE
+//  $EraseSTE
 //
 //  Erase a Symbol Table Entry
 //***************************************************************************
@@ -411,7 +411,7 @@ void EraseSTE
 
 
 //***************************************************************************
-//  EraseableName
+//  $EraseableName
 //
 //  Return a one iff the name is erasable
 //***************************************************************************
@@ -425,7 +425,7 @@ APLBOOL EraseableName
     APLBOOL   bRet;             // TRUE iff eraseable name
 
     // Split cases based upon the Name Type
-    switch (lpSymEntry->stFlags.ObjType)
+    switch (lpSymEntry->stFlags.stNameType)
     {
         case NAMETYPE_UNK:
         case NAMETYPE_VAR:
@@ -446,8 +446,8 @@ APLBOOL EraseableName
             // Izit a valid name?
             bRet = ValidName (lpMemName, lstrlenW (lpMemName));
 
-            // Not if the first char is Quad or Quote-quad
-            bRet &= (lpMemName[0] NE UTF16_QUAD && lpMemName[0] NE UTF16_QUOTEQUAD);
+            // Not if it's a system name
+            bRet &= !IsSysName (lpMemName);
 
             // We no longer need this ptr
             MyGlobalUnlock (htGlbName); lpMemName = NULL;
@@ -462,7 +462,7 @@ APLBOOL EraseableName
 
 
 //***************************************************************************
-//  IzitSusPendent
+//  $IzitSusPendent
 //
 //  Return a one if the name is that of a suspended or
 //    pendent defined function/operator

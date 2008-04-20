@@ -51,7 +51,6 @@ typedef struct tagSTART_ADDRESSES
 
     // debug.c
   #ifdef DEBUG
-    "Assert"                    , (LPUCHAR) &Assert                     ,
     "CreateDebuggerWindow"      , (LPUCHAR) &CreateDebuggerWindow       ,
     "CreateDebuggerInThread"    , (LPUCHAR) &CreateDebuggerInThread     ,
     "DB_Create"                 , (LPUCHAR) DB_Create                   ,
@@ -107,6 +106,7 @@ typedef struct tagSTART_ADDRESSES
     // getfns.c
 
     // getreent.c
+    "__getreent"                , (LPUCHAR) &__getreent                 ,
 
     // goto.c
 

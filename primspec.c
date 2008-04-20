@@ -587,8 +587,6 @@ RESTART_EXCEPTION_VARNAMED:
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                DisplayException ();
-
                 // Split cases based upon the ExceptionCode
                 switch (MyGetExceptionCode ())
                 {
@@ -729,8 +727,6 @@ RESTART_EXCEPTION_VARIMMED:
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                DisplayException ();
-
                 // Split cases based upon the ExceptionCode
                 switch (MyGetExceptionCode ())
                 {
@@ -1306,8 +1302,6 @@ RESTART_EXCEPTION:
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        DisplayException ();
-
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
@@ -3455,8 +3449,6 @@ RESTART_EXCEPTION:
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        DisplayException ();
-
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
@@ -4198,8 +4190,6 @@ RESTART_EXCEPTION:
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        DisplayException ();
-
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
@@ -4551,7 +4541,7 @@ HGLOBAL PrimFnDydSiScSiSc_EM
                                 lptkFunc);
     else
         return NULL;
-} // End PrimDydSiScSiSc_EM
+} // End PrimFnDydSiScSiSc_EM
 #undef  APPEND_NAME
 
 
@@ -4703,13 +4693,11 @@ RESTART_EXCEPTION_IMMED:
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), "PrimDydSiScSiScSub_EM"))
+    } __except (CheckException (GetExceptionInformation (), "PrimFnDydSiScSiScSub_EM"))
     {
 #ifdef DEBUG
         dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-        DisplayException ();
-
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())
         {
@@ -4748,7 +4736,7 @@ RESTART_EXCEPTION_IMMED:
     } // End __try/__except
 ERROR_EXIT:
     return bRet;
-} // End PrimDydSiScSiScSub_EM
+} // End PrimFnDydSiScSiScSub_EM
 #undef  APPEND_NAME
 
 
@@ -5004,8 +4992,6 @@ RESTART_EXCEPTION_SINGLETON:
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                DisplayException ();
-
                 // Split cases based upon the ExceptionCode
                 switch (GetExceptionCode ())
                 {
@@ -5687,8 +5673,6 @@ RESTART_EXCEPTION_AXIS:
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                DisplayException ();
-
                 // Split cases based upon the ExceptionCode
                 switch (GetExceptionCode ())
                 {
@@ -6065,8 +6049,6 @@ RESTART_EXCEPTION_NOAXIS:
 #ifdef DEBUG
                 dprintfW (L"!!Initiating Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 #endif
-                DisplayException ();
-
                 // Split cases based upon the ExceptionCode
                 switch (GetExceptionCode ())
                 {

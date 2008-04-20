@@ -265,8 +265,11 @@ typedef enum tagEXIT_TYPES
                                 // 0D-0F:  Available entries (4 bits)
 } EXIT_TYPES;
 
-#ifndef DEBUG
-  #define Assert(a)
+#ifdef DEBUG
+  #define Assert(a)     ((a) || (DbgBrk (), 0))
+#else
+  #define Assert(a)     ((void) 0)
+////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
 #endif
 
 // Resource debugging

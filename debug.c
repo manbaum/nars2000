@@ -43,19 +43,28 @@
 
 CDB_THREAD cdbThread;           // Temporary global
 
-#ifdef DEBUG
-//***************************************************************************
-//  $Assert
-//***************************************************************************
-
-void Assert
-    (BOOL bAssert)
-
-{
-    if (!bAssert)
-        DbgBrk ();
-} // End Assert
-#endif
+////#ifndef DEBUG
+//////***************************************************************************
+//////  $AssertPrint
+//////***************************************************************************
+////
+////void AssertPrint
+////    (LPCHAR lpExp,              // Ptr to expression string
+////     LPCHAR lpFileName,         // Ptr to filename where allocated
+////     UINT   uLineNum)           // Line # where allocated
+////
+////{
+////    char szTemp[1024];
+////
+////    wsprintf (szTemp,
+////              "ASSERTION FAILURE:  Expression <%s> failed in file <%s> line #%d, continuing anyway...",
+////              lpExp,
+////              lpFileName,
+////              uLineNum);
+////
+////    MB (szTemp);
+////} // End AssertPrint
+////#endif
 
 
 #ifdef DEBUG

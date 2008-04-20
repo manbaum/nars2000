@@ -458,9 +458,8 @@ void DisplayException
     DbgStop ();
 #else
     MB (szTemp);
-#endif
-
     exit (exceptCode);
+#endif
 } // End DisplayException
 
 

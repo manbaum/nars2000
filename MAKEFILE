@@ -391,6 +391,9 @@ $(O)yyfns.DEP
 !if exist ($(O)free.DEP)
 !       include $(O)free.DEP
 !endif
+!if exist ($(O)getreent.DEP)
+!       include $(O)getreent.DEP
+!endif
 !if exist ($(O)g_fmt.DEP)
 !       include $(O)g_fmt.DEP
 !endif
@@ -414,6 +417,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)pf_bar.DEP)
 !       include $(O)pf_bar.DEP
+!endif
+!if exist ($(O)pf_circle.DEP)
+!       include $(O)pf_circle.DEP
 !endif
 !if exist ($(O)pf_colonbar.DEP)
 !       include $(O)pf_colonbar.DEP
@@ -766,6 +772,7 @@ $(O)execmfn.PRO         \
 $(O)fastbool.PRO        \
 $(O)free.PRO            \
 $(O)g_fmt.PRO           \
+$(O)getreent.PRO        \
 $(O)getfns.PRO          \
 $(O)goto.PRO            \
 $(O)immexec.PRO         \
@@ -912,7 +919,7 @@ ICONS=$(A)About.ico     \
       $(A)LineCont.bmp
 
 ## Cygwin-specific files
-$(O)getreent.OBJ:       $(@B).C
+$(O)getreent.OBJ:       $(@B).C         $(GETREENT_DEP)
 
 ## FP-specific files
 $(O)dtoa.OBJ:           $(@B).C         $(DTOA_DEP)

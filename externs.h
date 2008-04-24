@@ -1130,21 +1130,20 @@ typedef struct
 //     Alt-'>'
 //     Alt-'?'
 //
-//   as well as eleven duplicated symbols:
+//   as well as several duplicated symbols:
 //
-//     Symbol Name              Keystroke
+//     Symbol & Name              Keystroke
 //     --------------------------------------------------
-//     Asterisk                 Alt-'p'
-//     Equal                    Alt-'5'
-//     Left Caret               Alt-'3'
-//     Question Mark            Alt-'q'
-//     Right Caret              Alt-'7'
-//     Shreik                   Alt-'_'
-//     Single Quote             Alt-'k'
-//     Stile                    Alt-'m'
-//     Tilde                    Alt-'t'
-//     Underscore               Alt-'f'
-//     Up Caret (Circumflex)    Alt-'0'
+//     * Asterisk                 Alt-'p'
+//     = Equal                    Alt-'5'
+//     < Left Caret               Alt-'3'
+//     ? Question Mark            Alt-'q'
+//     > Right Caret              Alt-'7'
+//     ! Shreik                   Alt-'_'
+//     ' Single Quote             Alt-'k'
+//     | Stile                    Alt-'m'
+//     ~ Tilde                    Alt-'t'
+//     ^ Up Caret (Circumflex)    Alt-'0'
 
 EXTERN
 CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
@@ -1223,7 +1222,7 @@ CHARCODE aCharCodes[1+126-32]   // This ordering follows the ASCII charset
 {'c', UTF16_UPSHOE            },  // c                 99
 {'d', UTF16_DOWNSTILE         },  // d                100
 {'e', UTF16_EPSILON           },  // e                101
-{'f', UTF16_UNDERBAR          },  // f                102
+{'f', UTF16_INFINITY          },  // f                102
 {'g', UTF16_DEL               },  // g                103
 {'h', UTF16_DELTA             },  // h                104
 {'i', UTF16_IOTA              },  // i                105
@@ -1262,7 +1261,7 @@ typedef struct tagSYMBOLNAMES
 } SYMBOLNAMES, *LPSYMBOLNAMES;
 
 // The # rows in the above table
-#define ASYMBOLNAMES_NROWS  89
+#define ASYMBOLNAMES_NROWS  90
 
 // Translate table for symbols to names
 EXTERN
@@ -1287,7 +1286,7 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
   {UTF16_UPSHOE               , L"{upshoe}"             },  // Alt-'c' - intersection
   {UTF16_DOWNSTILE            , L"{downstile}"          },  // Alt-'d' - floor
   {UTF16_EPSILON              , L"{epsilon}"            },  // Alt-'e' - epsilon
-  {UTF16_UNDERBAR             , L"{underbar}"           },  // Alt-'f' - underbar
+  {UTF16_INFINITY             , L"{infinity}"           },  // Alt-'f' - infinity
   {UTF16_DEL                  , L"{del}"                },  // Alt-'g' - del
   {UTF16_DELTA                , L"{delta}"              },  // Alt-'h' - delta
   {UTF16_IOTA                 , L"{iota}"               },  // Alt-'i' - iota
@@ -1396,12 +1395,13 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
 //{UTF16_                     ,                         },  // Alt-'?' - (none)
 
 // Non-Alt key equivalents (these are the only ones we need for SaveWS)
-  {UTF16_LBRACE               , L"{leftbrace}"          },  // Left brace
-  {UTF16_RBRACE               , L"{rightbrace}"         },  // Right brace
-  {UTF16_SLOPE                , L"{slope}"              },  // Slope
-  {UTF16_STILE2               , L"{stile2}"             },  // Stile (a.k.a. 0x2223)
-  {UTF16_CIRCUMFLEX           , L"{circumflex}"         },  // Circumflex
-  {UTF16_DOUBLEQUOTE          , L"{doublequote}"        },  // Double quote
+  {UTF16_DOUBLEQUOTE          , L"{doublequote}"        },  // 22:  Double quote
+  {UTF16_POUND                , L"{pound}"              },  // 23:  Pound
+  {UTF16_SLOPE                , L"{slope}"              },  // 5C:  Slope
+  {UTF16_CIRCUMFLEX           , L"{circumflex}"         },  // 5E:  Circumflex
+  {UTF16_LBRACE               , L"{leftbrace}"          },  // 7B:  Left brace
+  {UTF16_STILE2               , L"{stile2}"             },  // 7C:  Stile (a.k.a. 0x2223)
+  {UTF16_RBRACE               , L"{rightbrace}"         },  // 7D:  Right brace
 }
 #endif
 ;

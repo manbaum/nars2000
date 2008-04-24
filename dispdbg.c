@@ -442,7 +442,7 @@ void DisplayGlobals
                 // It's a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (MakePtrTypeGlb (hGlb)));
 
-                if (lpHeader->Rank EQ 0)
+                if (IsScalar (lpHeader->Rank))
                     aplDim = (APLDIM) -1;
                 else
                     aplDim = *VarArrayBaseToDim (lpHeader);
@@ -456,7 +456,7 @@ void DisplayGlobals
                     case ARRAY_INT:
                     case ARRAY_FLOAT:
                     case ARRAY_APA:
-                        if (lpHeader->NELM EQ 0)
+                        if (IsEmpty (lpHeader->NELM))
                         {
                             aplArrChar[0] = UTF16_ZILDE;
                             aplArrChar[1] = L'\0';
@@ -750,6 +750,7 @@ void DisplayFcnStrand
                                     NAMETYPE_FN12,  // lpHeader->fnNameType,
                                     1,              // LODWORD (lpHeader->NELM),
                                     0);             // lpHeader->RefCnt);
+            // Translate from INDEX_xxx to UTF16_xxx
             *lpaplChar++ = TranslateFcnOprToChar (lptkFunc->tkData.tkChar);
 
             break;
@@ -782,7 +783,9 @@ void DisplayFcnStrand
                                             1,              // LODWORD (lpHeader->NELM),
                                             0);             // lpHeader->RefCnt);
                     // Display the function name from the symbol table
-                    lpaplChar = CopySteName (lpaplChar, lptkFunc->tkData.tkSym);
+                    lpaplChar = CopySteName (lpaplChar,
+                                             lptkFunc->tkData.tkSym,
+                                             NULL);
                 } else
                 if (!lptkFunc->tkData.tkSym->stFlags.UsrDfn)
                     lpaplChar = DisplayFcnGlb (lpaplChar, ClrPtrTypeDirAsGlb (hGlbData), TRUE);
@@ -898,6 +901,7 @@ LPWCHAR DisplayFcnSub
                 if (tknNELM > 2)
                     lpaplChar =
                       DisplayFcnSub (lpaplChar, &lpYYMem[2], tknNELM - 2);              // Fcn
+                // Translate from INDEX_xxx to UTF16_xxx
                 *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);// Op1
                 lpaplChar =
                   DisplayFcnSub (lpaplChar, &lpYYMem[1], 1);                            // [X]
@@ -905,6 +909,7 @@ LPWCHAR DisplayFcnSub
             {
                 lpaplChar =
                   DisplayFcnSub (lpaplChar, &lpYYMem[1], tknNELM - 1);                  // Fcn
+                // Translate from INDEX_xxx to UTF16_xxx
                 *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);// Op1
             } // End IF/ELSE/...
 
@@ -914,6 +919,7 @@ LPWCHAR DisplayFcnSub
             FcnCount = 1 + lpYYMem[1].FcnCount;
             lpaplChar =
               DisplayFcnSub (lpaplChar, &lpYYMem[1], lpYYMem[1].FcnCount);              // Lfcn
+            // Translate from INDEX_xxx to UTF16_xxx
             *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);    // Op2
             if (lpYYMem[FcnCount].FcnCount > 1)
                 *lpaplChar++ = L'(';
@@ -924,6 +930,7 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_FCNIMMED:
+            // Translate from INDEX_xxx to UTF16_xxx
             *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);    // Fcn
 
             // Check for axis operator
@@ -975,7 +982,8 @@ LPWCHAR DisplayFcnSub
                     // Copy the internal function name
                     lpaplChar =
                       CopySteName (lpaplChar,
-                                   lpYYMem->tkToken.tkData.tkSym);
+                                   lpYYMem->tkToken.tkData.tkSym,
+                                   NULL);
                 else
                 {
                     // Get the function array global memory handle
@@ -1108,7 +1116,8 @@ LPWCHAR DisplayFcnSub
                     // Copy the user-defined function/operator name
                     lpaplChar =
                       CopySteName (lpaplChar,
-                                   ((LPDFN_HEADER) lpMemData)->steFcnName);
+                                   ((LPDFN_HEADER) lpMemData)->steFcnName,
+                                   NULL);
                     break;
 
                 defstop
@@ -1127,7 +1136,8 @@ LPWCHAR DisplayFcnSub
             // Copy the STE name
             lpaplChar =
               CopySteName (lpaplChar,
-                           lpYYMem->tkToken.tkData.tkSym);
+                           lpYYMem->tkToken.tkData.tkSym,
+                           NULL);
             break;
 
         defstop

@@ -65,17 +65,18 @@ LPPL_YYSTYPE PrimFnUpTack_EM_YY
     //   so signal a syntax error if present
     //***************************************************************
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonUpTack_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydUpTack_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimFnUpTack_EM_YY
 #undef  APPEND_NAME
 
@@ -193,21 +194,12 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, &aplColsLft);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Check for LEFT & RIGHT DOMAIN ERRORs
-    if (!IsSimpleNum (aplTypeLft)
-     || !IsSimpleNum (aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
-
     // Get left & right arg global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Calculate length of right arg first dimension
-    if (hGlbRht && aplRankRht > 0)
+    if (hGlbRht && !IsScalar (aplRankRht))
         aplFrstRht = *VarArrayBaseToDim (lpMemRht);
     else
         aplFrstRht = 1;
@@ -216,11 +208,47 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     if (aplColsLft NE aplFrstRht
      && aplColsLft NE 1
      && aplFrstRht NE 1)
+        goto LENGTH_EXIT;
+
+    // Check for LEFT DOMAIN ERROR
+    if (!IsSimple (aplTypeLft))
+        goto LEFT_DOMAIN_EXIT;
+
+    if (!IsSimpleNum (aplTypeLft)
+     && !IsEmpty (aplColsLft)
+     && !IsScalar (aplRankLft))
+        goto LEFT_DOMAIN_EXIT;
+
+    // Check for RIGHT DOMAIN ERROR
+    if (!IsSimple (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
+
+    if (!IsSimpleNum (aplTypeRht)
+     && !IsEmpty (aplFrstRht)
+     && !IsScalar (aplRankRht))
+        goto RIGHT_DOMAIN_EXIT;
+
+    // If both are scalars, and one is not numeric, ...
+    if (IsScalar (aplRankLft)
+     && IsScalar (aplRankRht))
     {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
+        if (!IsSimpleNum (aplTypeLft))
+            goto LEFT_DOMAIN_EXIT;
+        if (!IsSimpleNum (aplTypeRht))
+            goto RIGHT_DOMAIN_EXIT;
     } // End IF
+
+    // Re-calculate the inner dimensions based upon
+    //   scalar/one-element vector extension for empty args
+    if ((IsScalar (aplRankLft)
+      || IsVectorSing (aplNELMLft, aplRankLft))
+     && IsEmpty (aplFrstRht))
+        aplColsLft = aplFrstRht;
+    else
+    if ((IsScalar (aplRankRht)
+      || IsVectorSing (aplNELMRht, aplRankRht))
+     && IsEmpty (aplColsLft))
+        aplFrstRht = aplColsLft;
 
     // Calc larger of inner dimensions (in case of scalar extension)
     aplInnrMax = max (aplColsLft, aplFrstRht);
@@ -229,15 +257,21 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     if (aplColsLft)
         aplRestLft = aplNELMLft / aplColsLft;
     else
-    for (aplRestLft = 1, uOutLft = 0; uOutLft < (aplRankLft - 1); uOutLft++)
-        aplRestLft *= (VarArrayBaseToDim (lpMemLft))[uOutLft];
+    if (hGlbLft)
+        for (aplRestLft = 1, uOutLft = 0; uOutLft < (aplRankLft - 1); uOutLft++)
+            aplRestLft *= (VarArrayBaseToDim (lpMemLft))[uOutLft];
+    else
+        aplRestLft = 1;
 
     // Calc product of the remaining dimensions in right arg
     if (aplFrstRht)
         aplRestRht = aplNELMRht / aplFrstRht;
     else
-    for (aplRestRht = 1, uOutRht = 1; uOutRht < aplRankRht; uOutRht++)
-        aplRestRht *= (VarArrayBaseToDim (lpMemRht))[uOutRht];
+    if (hGlbRht)
+        for (aplRestRht = 1, uOutRht = 1; uOutRht < aplRankRht; uOutRht++)
+            aplRestRht *= (VarArrayBaseToDim (lpMemRht))[uOutRht];
+    else
+        aplRestRht = 1;
 
     // Calc result rank
     aplRankRes = max (aplRankLft, 1) + max (aplRankRht, 1) - 2;
@@ -267,11 +301,7 @@ RESTART_EXCEPTION:
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -380,8 +410,14 @@ RESTART_EXCEPTION:
 
                 // If the right arg is an array, ...
                 if (hGlbRht)
-                    // Get the next right arg value
-                    GetNextValueGlb (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
+                {
+                    // If the right arg is non-empty, ...
+                    if (aplNELMRht)
+                        // Get the next right arg value
+                        GetNextValueGlb (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
+                    else
+                        aplLongestRht = 0;
+                } // End IF
 
                 // If the right arg is int, convert it to float
                 if (IsSimpleInt (aplTypeRht))
@@ -394,8 +430,14 @@ RESTART_EXCEPTION:
 
                 // If the left arg is an array, ...
                 if (hGlbLft)
-                    // Get the next left arg value
-                    GetNextValueGlb (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
+                {
+                    // If the left arg is non-empty, ...
+                    if (aplNELMLft)
+                        // Get the next left arg value
+                        GetNextValueGlb (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
+                    else
+                        aplLongestLft = 0;
+                } // End IF
 
                 // If the left arg is int, convert it to float
                 if (IsSimpleInt (aplTypeLft))
@@ -409,7 +451,13 @@ RESTART_EXCEPTION:
             {
                 // Get the next right arg value
                 if (hGlbRht)
-                    GetNextValueGlb (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
+                {
+                    // If the right arg is non-empty, ...
+                    if (aplNELMRht)
+                        GetNextValueGlb (hGlbRht, uInnRht, NULL, &aplLongestRht, NULL);
+                    else
+                        aplLongestRht = 0;
+                } // End IF
 
                 __try
                 {
@@ -418,7 +466,13 @@ RESTART_EXCEPTION:
 
                     // Get the next left arg value
                     if (hGlbLft)
-                        GetNextValueGlb (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
+                    {
+                        // If the left arg is non-empty, ...
+                        if (aplNELMLft)
+                            GetNextValueGlb (hGlbLft, uInnLft, NULL, &aplLongestLft, NULL);
+                        else
+                            aplLongestLft = 0;
+                    } // End IF
 
                     // Multiply into the weighting value
                     InnValInt = imul64 (InnValInt, aplLongestLft, NULL);
@@ -478,7 +532,31 @@ YYALLOC_EXIT:
 
     // See if it fits into a lower (but not necessarily smaller) datatype
     TypeDemote (&lpYYRes->tkToken);
+
+    goto NORMAL_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbRes && lpMemRes)
     {
         // We no longer need this ptr

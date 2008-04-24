@@ -234,9 +234,15 @@ APLBOOL PrimFnMonTildeBisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    if (!IsBooleanValue (aplFloatRht))
+    APLINT aplIntRht;
+    BOOL   bRet;
+
+    // Attempt to convert the float to an integer using System CT
+    aplIntRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+
+    if ((!bRet) || !IsBooleanValue (aplIntRht))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    return !(APLBOOL) aplFloatRht;
+    return !(APLBOOL) aplIntRht;
 } // End PrimFnMonTildeBisF
 
 

@@ -171,17 +171,15 @@ typedef enum tagIMM_TYPES
     IMMTYPE_ERROR = 0x0F    // 0F:  Error (not an immediate type)
 } IMM_TYPES, *LPIMM_TYPES;
 
+// N.B.:  Whenever changing the above enum (IMM_TYPES),
+//   be sure to make a corresponding change to
+//   the macros <IsImmXXX> in <macros.h>, and the]
+//   #define ImmTypeAsChar just below here.
+
 // Translate an immediate type to a char
 // Note that the order of the chars in this #define
 //   depends upon the ordering of the above enum
 #define ImmTypeAsChar   L"BIFC?123"
-
-// Note that the following macros depend upon
-//   the ordering of the above enum
-#define IsImmInt(a)     ((a) < IMMTYPE_FLOAT)
-#define IsImmNum(a)     ((a) < IMMTYPE_CHAR)
-#define IsImmFlt(a)     ((a) EQ IMMTYPE_FLOAT)
-#define IsImmChr(a)     ((a) EQ IMMTYPE_CHAR)
 
 // Name types
 typedef enum tagNAME_TYPES
@@ -198,6 +196,10 @@ typedef enum tagNAME_TYPES
                             // 09-0F:  Available entries (4 bits)
 } NAME_TYPES;
 
+// N.B.:  Whenever changing the above enum (NAME_TYPES),
+//   be sure to make a corresponding change to
+//   the macros <IsNameTypeXXX> in <macros.h>.
+
 #define NAMETYPE_STRING     "?VNF123?L"
 //                              0       1       2       3       4       5       6       7       8
 #define NAMETYPE_STRPTR     { "Unk",  "Var",  "Nil",  "Fcn",  "Op1",  "Op2",  "Op3",  "???",  "Lst"}
@@ -206,13 +208,6 @@ typedef enum tagNAME_TYPES
 // The above enum is constructed so as to allow the following masks to be used:
 #define NAMETYPEMASK_FN     0x02    // Name is a function
 #define NAMETYPEMASK_OP     0x04    // Name is an operator
-
-// ... along with the following macros
-#define IsNameTypeFn(a)     ((a) &  NAMETYPEMASK_FN                   )
-#define IsNameTypeOp(a)     ((a) &                    NAMETYPEMASK_OP )
-#define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
-#define IsNameTypeVar(a)    ((a) EQ NAMETYPE_VAR)
-#define IsNameTypeName(a)   (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_OP3)
 
 typedef enum tagOBJ_NAMES
 {
@@ -290,6 +285,7 @@ typedef struct tagSYMENTRY
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)
+
 
 //***************************************************************************
 //  End of File: symtab.h

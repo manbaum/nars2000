@@ -2549,10 +2549,11 @@ LPSYMENTRY ParseFunctionName
     hWndEC = (HWND) GetWindowLongW (hWndFE, GWLSF_HWNDEC);
 
     // Tokenize the line
-    hGlbTknHdr = Tokenize_EM (lpaplChar,
-                              lstrlenW (lpaplChar),
-                              hWndEC,
-                              NULL);
+    hGlbTknHdr =
+      Tokenize_EM (lpaplChar,
+                   lstrlenW (lpaplChar),
+                   NULL,
+                   NULL);
     if (!hGlbTknHdr)
         return NULL;
 

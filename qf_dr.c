@@ -62,17 +62,17 @@ LPPL_YYSTYPE SysFnDR_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonDR_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydDR_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnDR_EM_YY
 #undef  APPEND_NAME
 
@@ -216,27 +216,15 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
 
     // Check for LEFT RANK ERROR
     if (aplRankLft > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto LEFT_RANK_EXIT;
 
     // Check for LEFT LENGTH ERROR
     if (aplNELMLft NE 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
     if (!IsSimpleNum (aplTypeLft))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto LEFT_DOMAIN_EXIT;
 
     // Get the first (and only) value
     GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
@@ -256,11 +244,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         // Attempt to convert the float to an integer using System CT
         aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
         if (!bRet)
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NULL;
-        } // End IF
+            goto LEFT_DOMAIN_EXIT;
     } // End IF
 
     // Ensure the left arg is valid
@@ -315,6 +299,21 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_OCTONIONS:
             return PrimFnNonceError_EM (lptkFunc);
     } // End SWITCH
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    return NULL;
+
+LEFT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    return NULL;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    return NULL;
 } // End SysFnDydDR_EM_YY
 #undef  APPEND_NAME
 
@@ -362,11 +361,7 @@ LPPL_YYSTYPE SysFnDydDR_Convert_EM_YY
 
     // Check for RIGHT DOMAIN ERROR
     if (!IsSimpleNH (aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto RIGHT_DOMAIN_EXIT;
 
     // Handle empty right args & result
     if (aplNELMRht EQ 0)
@@ -405,11 +400,7 @@ LPPL_YYSTYPE SysFnDydDR_Convert_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -480,6 +471,16 @@ ERROR_EXIT:
     } // End IF
 
     return lpYYRes;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    return NULL;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End SysFnDydDR_Convert_EM_YY
 #undef  APPEND_NAME
 
@@ -572,16 +573,17 @@ APLNELM SysFnDydDR_GetCols_EM
 
         // Ensure the right arg BPE is a multiple of the result BPE
         if (0 NE (aplColsRht % uBPERes))
-        {
-            ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                       lptkFunc);
-            return NEG1U;
-        } // End IF
+            goto RIGHT_DOMAIN_EXIT;
 
         // Return # result cols
         return (aplColsRht / uBPERes);
     } else
         return 0;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NEG1U;
 } // End SysFnDydDR_GetCols_EM
 #undef  APPEND_NAME
 
@@ -681,11 +683,7 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -724,6 +722,11 @@ LPPL_YYSTYPE SysFnDydDR_SHOW_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End SysFnDydDR_SHOW_EM_YY
 #undef  APPEND_NAME
 
@@ -762,11 +765,7 @@ HGLOBAL SysFnDydDR_FloatToChar_EM
 
     // Ensure the right arg is float
     if (!IsSimpleFlt (aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto RIGHT_NONCE_EXIT;
 
     // Convert the FP argument to displayable chars
 
@@ -778,11 +777,7 @@ HGLOBAL SysFnDydDR_FloatToChar_EM
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -851,6 +846,16 @@ HGLOBAL SysFnDydDR_FloatToChar_EM
     } // End IF
 
     return hGlbRes;
+
+RIGHT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
 } // End SysFnDydDR_FloatToChar_EM
 #undef  APPEND_NAME
 

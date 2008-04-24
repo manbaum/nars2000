@@ -23,9 +23,10 @@
 </div>
 
 <div class="menu">&nbsp;&nbsp;
-<a href="/">Home</a> |
+<span>&nbsp;Home&nbsp;</span> |
 <a href="/download/">Download</a> |
 <a href="http://wiki.nars2000.org">Documentation</a> |
+<a href="http://forums.nars2000.org">Forums</a> |
 <a href="/Contributors.ahtml">Contributors</a> |
 <a href="/LICENSE">License</a> |
 <a href="http://wiki.nars2000.org/index.php/NARS2000:About">About</a>
@@ -41,7 +42,7 @@
       <li><a href="#Language_Features">Language Features</a></li>
       <li><a href="#Datatypes">Datatypes</a></li>
       <li><a href="#Miscellaneous">Miscellaneous Features</a></li>
-      <li><a href="#Currently_Implemented">Currently Implemented Features</a></li>
+      <li><a href="#Currently_Unimplemented">Currently Unimplemented Features</a></li>
       <li><a href="#Platforms">Platforms</a></li>
       <li><a href="#Documentation">Documentation</a></li>
       <li><a href="#What_It_Isnt">What It Isn't</a></li>
@@ -93,8 +94,7 @@
         smoothly.</p>
 
       <p>Moreover, this project is made available as
-        <a class="linkleft" href="http://www.gnu.org/philosophy/free-sw.html">Free Software</a> (as opposed to
-        <a class="linkleft" href="http://www.gnu.org/philosophy/open-source-misses-the-point.html">Open Source</a>)
+        <a class="linkleft" href="http://www.gnu.org/philosophy/free-sw.html">Free Software</a>
         so, among other things, any developer may pick it up and add new features, and any end user
         may use it free of charge.</p>
     </div>
@@ -194,8 +194,8 @@
               <span class="APL">A[{iota}{rho}A]</span>, and
               <span class="APL">A[{iota}-{rho}A]</span> are all identical for any array
               <span class="APL">A</span> in either origin.</li>
-            <li>± Infinity (e.g., <span class="APL">{underbar}</span> for infinity
-              and <span class="APL">{overbar}{underbar}</span> for negative infinity)
+            <li>± Infinity (e.g., <span class="APL">{infinity}</span> for infinity
+              and <span class="APL">{overbar}{infinity}</span> for negative infinity)
               &mdash; considerable development work needs to be done to this
               feature to handle the many special cases</li>
             <li>Monadic and dyadic domino ({domino}) &mdash; matrix inverse/divide extended to
@@ -294,8 +294,8 @@
         <li>Nested arrays</li>
         <li>APAs (Arithmetic Progression Arrays) (e.g.,
           <span class="APL">2 3 4{rho}{iota}24</span>)</li>
-        <li>± Infinity (e.g., <span class="APL">{underbar}</span> for infinity
-          and <span class="APL">{overbar}{underbar}</span> for negative infinity)
+        <li>± Infinity (e.g., <span class="APL">{infinity}</span> for infinity
+          and <span class="APL">{overbar}{infinity}</span> for negative infinity)
           &mdash; considerable development work needs to be done to this
           feature to handle the many special cases</li>
         </ul>
@@ -356,272 +356,16 @@
     </div>
 
     <div class="section">
-      <h2 id="Currently_Implemented">Currently Implemented Features</h2>
+      <h2 id="Currently_Unimplemented">Currently Unimplemented Features</h2>
 
-      <h3>Primitive functions</h3>
-      <ul>
-        <li>Monadic
-          <ul>
-            <li>All monadic primitive scalar functions ({plus}{minus}{multiply}{divide}{circle}{circlestar}{star}{stile}{downstile}{upstile}{shreik}{query}{tilde})</li>
-            <li>Monadic rho ({rho}) &mdash; shape</li>
-            <li>Monadic left shoe ({enclose}) &mdash; enclose (with and without axis operator)</li>
-            <li>Monadic iota ({iota}) &mdash; index generator</li>
-            <li>Monadic iota ({iota}) extended to length &gt; 1 vector right arguments
-              returns an array of indices whose shape is that of the right argument
-              (via an internal magic function)</li>
-            <li>Monadic epsilon ({epsilon}) &mdash; enlist</li>
-            <li>Monadic comma ({comma} and {commabar}) &mdash; ravel (with and without axis operator), and table
-               &mdash; Axis operator to Ravel may transpose coordinates</li>
-            <li>Monadic equal-underbar ({equalunderbar}) &mdash; depth</li>
-            <li>Monadic circle-slope ({circleslope}) &mdash; transpose</li>
-            <li>Monadic circle-stile/circle-bar ({circlestile} and {circlebar}) &mdash; reverse (with and without axis operator)</li>
-            <li>Monadic domino ({domino}) &mdash; matrix inverse
-              using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
-            <li>Monadic downtack jot ({thorn}) &mdash; default format</li>
-            <li>Monadic up arrow ({uparrow}) &mdash; first</li>
-            <li>Monadic uptack jot ({uptackjot}) &mdash; execute</li>
-            <li>Monadic right shoe ({disclose}) &mdash; disclose (with and without axis operator)</li>
-            <li>Monadic delta stile ({gradeup}) &mdash; numeric grade up</li>
-            <li>Monadic del stile ({gradedown}) &mdash; numeric grade down</li>
-            <li>Monadic downshoe ({downshoe}) &mdash; unique (via an internal magic function)</li>
-          </ul>
-        </li>
-        <li>Dyadic
-          <ul>
-            <li>All dyadic primitive scalar functions ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}{minus}{multiply}{divide}{circle}{circlestar}{star}{stile}{downstile}{upstile}{shreik})
-              (with and without axis operator)</li>
-            <li>Dyadic up ({upcaret}) and down ({downcaret}) caret have been extended to
-              Least Common Multiple (LCM) and Greatest Common Divisor (GCD),
-              respectively</li>
-            <li>Dyadic query ({query}) &mdash; deal</li>
-            <li>Dyadic rho ({rho}) &mdash; reshape</li>
-            <li>Dyadic slash ({/}) &mdash; replicate</li>
-            <li>Dyadic slope ({\}) &mdash; expand</li>
-            <li>Dyadic left tack ({lev}) &mdash; left</li>
-            <li>Dyadic right tack ({dex}) &mdash; right</li>
-            <li>Dyadic comma ({comma} and {commabar}) &mdash; catenate/laminate (with and without axis operator)</li>
-            <li>Dyadic equal-underbar ({equalunderbar}) &mdash; match</li>
-            <li>Dyadic circle-slope ({circleslope}) &mdash; transpose</li>
-            <li>Dyadic circle-stile/circle-bar ({circlestile} and {circlebar}) &mdash; rotate (with and without axis operator)</li>
-            <li>Dyadic domino ({domino}) &mdash; matrix divide
-              using Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
-            <li>Dyadic down arrow ({drop}) &mdash; drop (with and without axis operator)</li>
-            <li>Dyadic up arrow ({take}) &mdash; take (with and without axis operator)</li>
-            <li>Dyadic delta stile ({gradeup}) &mdash; character grade up</li>
-            <li>Dyadic del stile ({gradedown}) &mdash; character grade down</li>
-            <li>Dyadic right shoe ({pick}) &mdash; pick</li>
-            <li>Dyadic down tack ({encode}) &mdash; encode/representation</li>
-            <li>Dyadic up tack ({decode}) &mdash; decode/base value</li>
-            <li>Dyadic squad ({squad}) &mdash; index (with and without axis operator)</li>
-            <li>Dyadic epsilon ({epsilon}) &mdash; member of</li>
-            <li>Dyadic iota ({iota}) &mdash; index of</li>
-            <li>Dyadic iota ({iota}) extended to rank &gt; 1 left arguments returns an array
-              of vector indices to the left argument (via an internal magic function)</li>
-            <li>Dyadic tilde ({tilde}) &mdash; without (via an internal magic function)</li>
-            <li>Dyadic down tack jot ({downtackjot}) &mdash; format by specification &mdash; needs work on spacing</li>
-          </ul>
-        </li>
-      </ul>
-
-      <h3>Primitive operators</h3>
-      <ul>
-        <li>Monadic
-          <ul>
-            <li>Monadic operator each  ({each}) monadic and dyadic derived functions &mdash; each
-              (with and without axis operator)</li>
-            <li>Monadic operator frown ({frown}) monadic and dyadic derived functions &mdash; commute and duplicate</li>
-            <li>Monadic operator jot-dot ({jot}{dot}) dyadic derived function &mdash; outer product</li>
-            <li>Monadic operator slash ({/}) monadic and dyadic derived functions &mdash;
-               reduce and N-wise reduce (with and without axis operator)</li>
-            <li>Monadic operator slope ({\}) monadic derived function &mdash;
-               scan (with and without axis operator)</li>
-            <li>Monadic operator null ({circlemiddledot}) to aid in
-              resolving ambiguities with slash/slope as function/operator
-              (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
-               instead of <span class="APL">//3 4</span>)</li>
-            <li>Monadic operator dieresis-circle ({dieresiscircle}) monadic and dyadic
-              derived functions &mdash; rank using the axis operator.  In particular,
-              <span class="APL"><i>f</i>{dieresiscircle}[X]</span> is implemented as
-              <span class="APL"><i>f</i>{dieresisjot}X</span></li>
-          </ul>
-        </li>
-        <li>Dyadic
-          <ul>
-            <li>Dyadic operator jot ({jot}) monadic and dyadic derived functions &mdash; composition</li>
-            <li>Dyadic operator dot ({dot}) dyadic derived function &mdash; inner product</li>
-            <li>Dyadic operator dieresis-jot ({dieresisjot}) monadic and dyadic derived functions
-              &mdash; rank (via an internal magic function)</li>
-          </ul>
-        </li>
-      </ul>
-
-      <h3>Datatypes</h3>
-      <ul>
-          <li>1-bit Booleans</li>
-          <li>2-byte Characters (Unicode, that is, UTF-16)</li>
-          <li>64-bit Integers</li>
-          <li>64-bit Floats</li>
-          <li>Nested arrays</li>
-          <li>APAs (Arithmetic Progression Arrays) (e.g.,
-            <span class="APL">2 3 4{rho}{iota}24</span>)</li>
-          <li>± Infinity (e.g., <span class="APL">{underbar}</span> for infinity
-            and <span class="APL">{overbar}{underbar}</span> for negative infinity)
-            &mdash; considerable development work needs to be done to this
-            feature to handle the many special cases</li>
-      </ul>
-
-      <h3>Miscellaneous</h3>
-      <ul>
-        <li>Strands (e.g., <span class="APL">(1 2 3) 'abcd' ({iota}4)</span>)</li>
-        <li>Strand Assignment (e.g., <span class="APL">(A B){is}1 2</span> is the same as
-          <span class="APL">A{is}1</span> and
-          <span class="APL">B{is}2</span>)</li>
-        <li>Modify Assignment (e.g.,
-          <span class="APL">A+{is}1</span> is the same as <span class="APL">A{is}A+1</span>)</li>
-        <li>Modify Strand Assignment (e.g.
-          <span class="APL">(A B)+{is}1</span> is the same as
-          <span class="APL">A{is}A+1</span> and
-          <span class="APL">B{is}B+1</span>)</li>
-        <li>Function/operator assignment (e.g.,
-          <span class="APL">F{is}+.{times}</span> and
-          <span class="APL">F{is}{dieresis}</span> and
-          <span class="APL">F{is}{jot}</span>)</li>
-        <li>Function editing via <span class="APL">{del}</span> or <span class="APL">)EDIT</span></li>
-        <li>Raw output</li>
-        <li>Unified index reference, assignment, and modify assignment:
-              <span class="APL">R[L]</span>,
-              <span class="APL">R[L]{is}A</span>,
-          and <span class="APL">R[L]<i>f</i>{is}A</span>
-          allow both Reach and Scatter indexing &mdash; that is, if
-          <span class="APL">L{pick}R</span> is valid, it is equivalent to
-          <span class="APL">{disclose}R[{enclose}L]</span>, and if
-          <span class="APL">L{squad}R</span> is valid, it is equivalent to
-          <span class="APL">R[{disclose}{jot}.,/L]</span> &mdash; Reach
-          and Scatter indexing may appear together within a single instance of
-              <span class="APL">R[L]</span>,
-              <span class="APL">R[L]{is}A</span>,
-          and <span class="APL">R[L]<i>f</i>{is}A</span></li>
-        <li>Quad and Quote-Quad output, e.g., (<span class="APL">{quad}{is}R {diamond} {quotequad}{is}R</span>)</li>
-        <li>Prototypes for all primitive functions and operators</li>
-        <li>Fast Boolean reduction ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus})
-          and scan ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand})
-          along contiguous bits</li>
-        <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
-          <span class="APL">1 2+[1] 2 3{rho}R</span>)</li>
-        <li>Axis operator to primitive scalar dyadic functions may transpose coordinates (e.g.,
-          <span class="APL">(2 3{rho}L)+[1 2] 2 3 4{rho}R</span> and
-          <span class="APL">(3 2{rho}L)+[2 1] 2 3 4{rho}R</span> are both valid
-          but, in general, have different values)</li>
-        <li>Axis operator to Ravel may transpose coordinates (e.g.,
-          <span class="APL">,[2 1] R</span> and <span class="APL">,[1 2] R</span>
-          are both valid but, in general, have the same values in different order)</li>
-        <li>Axis operator is allowed on the dyadic derived function from the Each operator (e.g.,
-          <span class="APL">(2 3{rho}L){rho}{each}[1 2] 2 3 4{rho}R</span>)</li>
-        <li>Axis operator values may be negative.
-          That is, if the largest allowed value is <span class="APL">N</span>,
-          then the allowable range for axis operator values is
-          <span class="APL">1 {neg}1[1]-N</span> to <span class="APL">N</span>, inclusive.</li>
-        <li>User-defined operators (e.g., <span class="APL">{del}
-         Z{is}L (LO OP1[X]) R</span> or
-         <span class="APL">{del}
-         Z{is}L (LO OP2[X] RO) R</span>)</li>
-        <li>Strand left and right arguments and result to user-defined
-          functions/operators along with optional left argument (e.g., <span class="APL">{del}
-         (Z<sub>1</sub> Z<sub>2</sub>){is}{L<sub>1</sub> L<sub>2</sub> L<sub>3</sub>} (LO OP2[X] RO) (R<sub>1</sub> R<sub>2</sub> R<sub>3</sub> R<sub>4</sub>)</span>)</li>
-        <li>Function Execution along with Goto (<span class="APL">{goto}</span>),
-          Goto line # (<span class="APL">{goto}N</span>)</li>
-        <li>Control-Break (along with Control-C)</li>
-        <li>Event Handling (<span class="APL">{quad}ALX</span>)</li>
-        <li>Error Handling (<span class="APL">{quad}ELX</span>
-          and <span class="APL">{quad}DM</span>)</li>
-        <li>User-defined function/operator prototype entry point
-          (<span class="APL">{quad}PROTOTYPE:</span>)</li>
-        <li>Control chars (<span class="APL">{quad}TCBEL</span>, <span class="APL">{quad}TCBS</span>,
-          <span class="APL">{quad}TCDEL</span>, <span class="APL">{quad}TCESC</span>,
-          <span class="APL">{quad}TCFF</span>, <span class="APL">{quad}TCHT</span>,
-          <span class="APL">{quad}TCLF</span>, <span class="APL">{quad}TCNL</span>, and
-          <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output</li>
-      </ul>
-
-      <h3>Session Manager</h3>
-      <ul>
-        <li>Tabbed Workspaces</li>
-        <li>Function Editor</li>
-        <li>Character translation during Paste from APL+WIN and other contexts</li>
-      </ul>
-
-      <h3>System Variables</h3>
-      <ul>
-        <li><span class="APL">{quad}ALX</span> (Attention Latent Expression)</li>
-        <li><span class="APL">{quad}CT</span> (Comparison Tolerance)</li>
-        <li><span class="APL">{quad}ELX</span> (Error Latent Expression)</li>
-        <li><span class="APL">{quad}FC</span> (Format Control)</li>
-        <li><span class="APL">{quad}IO</span> (Index Origin)</li>
-        <li><span class="APL">{quad}IC</span> (Indeterminate Control)</li>
-        <li><span class="APL">{quad}LX</span> (Latent Expression)</li>
-        <li><span class="APL">{quad}PP</span> (Print Precision)</li>
-        <li><span class="APL">{quad}PR</span> (Prompt Replacement)</li>
-        <li><span class="APL">{quad}PW</span> (Print Width)</li>
-        <li><span class="APL">{quad}RL</span> (Random Link)</li>
-        <li><span class="APL">{quad}SA</span> (Stop Action)</li>
-        <li><span class="APL">{quad}WSID</span> (Workspace Identifier)</li>
-      </ul>
+      <p>The following features are required by the Extended APL Standard, but
+        are not, as yet, implemented:</p>
 
       <h3>System Functions</h3>
       <ul>
-        <li>Niladic
-          <ul>
-            <li><span class="APL">{quad}AV</span> (Atomic Vector)</li>
-            <li><span class="APL">{quad}DM</span> (Diagnostic Message)</li>
-            <li><span class="APL">{quad}EM</span> (Event Message)</li>
-            <li><span class="APL">{quad}ET</span> (Event Type)</li>
-            <li><span class="APL">{quad}LC</span> (Line Counter)</li>
-            <li><span class="APL">{quad}SYSID</span> (System Identifier)</li>
-            <li><span class="APL">{quad}SYSVER</span> (System Version)</li>
-            <li><span class="APL">{quad}TC</span> (Terminal Control)</li>
-            <li><span class="APL">{quad}TCBEL</span> (Terminal Control -- Bell)</li>
-            <li><span class="APL">{quad}TCBS</span> (Terminal Control -- Backspace)</li>
-            <li><span class="APL">{quad}TCDEL</span> (Terminal Control -- Delete)</li>
-            <li><span class="APL">{quad}TCESC</span> (Terminal Control -- Escape)</li>
-            <li><span class="APL">{quad}TCFF</span> (Terminal Control -- Form Feed)</li>
-            <li><span class="APL">{quad}TCHT</span> (Terminal Control -- Horizontal Tab)</li>
-            <li><span class="APL">{quad}TCLF</span> (Terminal Control -- Line Feed)</li>
-            <li><span class="APL">{quad}TCNL</span> (Terminal Control -- New Line)</li>
-            <li><span class="APL">{quad}TCNUL</span> (Terminal Control -- Null)</li>
-            <li><span class="APL">{quad}TS</span> (Time Stamp)</li>
-            <li><span class="APL">{quad}UCS</span> (Universal Character Set)</li>
-          </ul>
-        </li>
-
-        <li>Monadic
-          <ul>
-            <li><span class="APL">{quad}CR</span> (Canonical Representation)</li>
-            <li><span class="APL">{quad}DL</span> (Delay)</li>
-            <li><span class="APL">{quad}DR</span> (Data Representation)</li>
-            <li><span class="APL">{quad}ERROR</span> (Signal Error)</li>
-            <li><span class="APL">{quad}ES</span> (Event Simulation)</li>
-            <li><span class="APL">{quad}EX</span> (Expunge)</li>
-            <li><span class="APL">{quad}FX</span> (Function Fix)</li>
-            <li><span class="APL">{quad}NC</span> (Name Class)</li>
-            <li><span class="APL">{quad}NL</span> (Name List)</li>
-            <li><span class="APL">{quad}SIZE</span> (Object Size)</li>
-            <li><span class="APL">{quad}TYPE</span> (Prototype)</li>
-            <li><span class="APL">{quad}UCS</span> (Universal Character Set)</li>
-          </ul>
-        </li>
-
         <li>Dyadic
           <ul>
-            <li><span class="APL">{quad}CR</span> (Character Representation) &mdash;<br />
-              <span class="APL">{neg}2 {quad}CR</span> for matrix result of Magic Function/Operator,<br />
-              <span class="APL">{neg}1 {quad}CR</span> for vector result of Magic Function/Operator,<br />
-              <span class="APL">&nbsp;1 {quad}CR</span> for vector result of User-Definef Function/Operator,<br />
-              <span class="APL">&nbsp;2 {quad}CR</span> for matrix result of User-Definef Function/Operator</li>
-            <li><span class="APL">{quad}DR</span> (Data Representation) &mdash;
-              <span class="APL">0 {quad}DR</span> for character message</li>
             <li class="TBD"><span class="APL">{quad}EA</span> (Execute Alternate)</li>
-            <li><span class="APL">{quad}ES</span> (Event Simulation)</li>
-            <li><span class="APL">{quad}NL</span> (Name Class)</li>
             <li class="TBD"><span class="APL">{quad}TF</span> (Transfer Form)</li>
           </ul>
         </li>
@@ -629,26 +373,8 @@
 
       <h3>System Commands</h3>
       <ul>
-        <li><span class="APL">)CLEAR</span></li>
-        <li><span class="APL">)CLOSE</span></li>
         <li class="TBD"><span class="APL">)COPY</span></li>
-        <li><span class="APL">)DROP</span></li>
-        <li><span class="APL">)EDIT</span></li>
-        <li><span class="APL">)ERASE</span></li>
-        <li><span class="APL">)EXIT</span></li>
-        <li><span class="APL">)FNS</span></li>
-        <li><span class="APL">)LIB</span></li>
         <li class="TBD"><span class="APL">)LOAD</span></li>
-        <li><span class="APL">)NEWTAB</span></li>
-        <li><span class="APL">)NMS</span></li>
-        <li><span class="APL">)OPS</span></li>
-        <li><span class="APL">)RESET</span></li>
-        <li><span class="APL">)SAVE</span></li>
-        <li><span class="APL">)SI</span></li>
-        <li><span class="APL">)SIC</span></li>
-        <li><span class="APL">)SINL</span></li>
-        <li><span class="APL">)VARS</span></li>
-        <li><span class="APL">)WSID</span></li>
       </ul>
     </div>
 

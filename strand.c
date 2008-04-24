@@ -1185,8 +1185,9 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         LPMEMTXT_UNION lpMemTxtLine;    // Ptr to line text global memory
         LPAPLCHAR      lpMemTxtSrc;     // Ptr to line text source
 
-        // Get the ptr to the source line text
-        lpMemTxtSrc = lpplLocalVars->lpwszLine;
+        // Get the ptr to the source line text, and
+        //   skip over the assignment arrow
+        lpMemTxtSrc = 1 + strchrW (lpplLocalVars->lpwszLine, UTF16_LEFTARROW);
 
         // Skip over leading blanks
         while (*lpMemTxtSrc EQ L' ')
@@ -1998,9 +1999,9 @@ LPPL_YYSTYPE MakeList_EM_YY
 
                 if (lpSymEntry->stFlags.Imm)
                 {
-                    lpSymEntry = MakeSymEntry_EM (lpSymEntry->stFlags.ImmType,
-                                                 &lpSymEntry->stData.stLongest,
-                                                 &lpYYArg->tkToken);
+                    lpSymEntry = MakeSymEntry_EM (lpSymEntry->stFlags.ImmType,  // Immediate type
+                                                 &lpSymEntry->stData.stLongest, // Ptr to immediate value
+                                                 &lpYYArg->tkToken);            // Ptr to function token
                     if (lpSymEntry)
                         *((LPAPLLIST) lpMemLst)++ = lpSymEntry;
                     else

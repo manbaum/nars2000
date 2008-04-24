@@ -1802,9 +1802,9 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 // If the set arg is simple non-heterogeneous, ...
                 if (IsSimpleNH (aplTypeSet))
                     ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
-                      MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),
-                                      &aplLongestSet,
-                                       lptkFunc);
+                      MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),    // Immediate type
+                                      &aplLongestSet,                               // Ptr to immediate value
+                                       lptkFunc);                                   // Ptr to function token
                 else
                     ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
                       CopySymGlbDir (hGlbSet);
@@ -1858,6 +1858,9 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     // Promote the right arg
                     if (!TypePromoteGlb_EM (&hGlbRht, aplTypePro, lptkFunc))
                         goto ERROR_EXIT;
+
+                    // Clear the type bits
+                    hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
 
                     // Save the new type
                     aplTypeRht = aplTypePro;

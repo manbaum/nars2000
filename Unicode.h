@@ -66,7 +66,7 @@
 #define UTF16_UPSHOE             0x2229         // Alt-'c' - intersection
 #define UTF16_DOWNSTILE          0x230A         // Alt-'d' - floor
 #define UTF16_EPSILON            0x220A         // Alt-'e' - epsilon
-#define UTF16_UNDERBAR           0x005F         // Alt-'f' - underbar
+#define UTF16_INFINITY           0x221E         // Alt-'f' - infinity
 #define UTF16_DEL                0x2207         // Alt-'g' - del
 #define UTF16_DELTA              0x2206         // Alt-'h' - delta
 #define UTF16_IOTA               0x2373         // Alt-'i' - iota
@@ -196,6 +196,7 @@
 #define UTF16_SLOPE              0x005C         // Slope
 #define UTF16_RBRACKET           0x005D         // Right bracket
 #define UTF16_CIRCUMFLEX         0x005E         // Circumflex
+#define UTF16_UNDERBAR           0x005F         // Underbar
 #define UTF16_BACKTICK           0x0060         // Backtick
 #define UTF16_LBRACE             0x007B         // Left brace
 #define UTF16_STILE2             0x007C         // Stile (a.k.a. 0x2223)
@@ -222,7 +223,7 @@
 #define WS_UTF16_UPSHOE             L"\x2229"   // Alt-'c' - intersection
 #define WS_UTF16_DOWNSTILE          L"\x230A"   // Alt-'d' - floor
 #define WS_UTF16_EPSILON            L"\x220A"   // Alt-'e' - epsilon
-#define WS_UTF16_UNDERBAR           L"\x005F"   // Alt-'f' - underbar
+#define WS_UTF16_INFINITY           L"\x221E"   // Alt-'f' - infinity
 #define WS_UTF16_DEL                L"\x2207"   // Alt-'g' - del
 #define WS_UTF16_DELTA              L"\x2206"   // Alt-'h' - delta
 #define WS_UTF16_IOTA               L"\x2373"   // Alt-'i' - iota
@@ -352,6 +353,7 @@
 #define WS_UTF16_SLOPE              L"\x005C"   // Slope
 #define WS_UTF16_RBRACKET           L"\x005D"   // Right bracket
 #define WS_UTF16_CIRCUMFLEX         L"\x005E"   // Circumflex
+#define WS_UTF16_UNDERBAR           L"\x005F"   // Underbar
 #define WS_UTF16_BACKTICK           L"\x0060"   // Backtick
 #define WS_UTF16_LBRACE             L"\x007B"   // Left brace
 #define WS_UTF16_STILE2             L"\x007C"   // Stile (a.k.a. 0x2223)

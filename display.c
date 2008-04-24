@@ -255,19 +255,19 @@ void DisplayGlbArr
         lpMem = VarArrayBaseToData (lpMem, aplRank);
 
         // Get the # columns
-        if (aplRank EQ 0)
+        if (IsScalar (aplRank))
             aplDimNCols = aplDimNRows = 1;
         else
         {
             aplDimNCols = lpMemDim[aplRank - 1];
 
             // If there are no columns and the rank is > 1, ignore this
-            if (aplDimNCols EQ 0
+            if (IsEmpty (aplDimNCols)
              && aplRank > 1)
                 goto NORMAL_EXIT;
 
             // Get the # rows (across all planes)
-            if (aplRank EQ 1)
+            if (IsVector (aplRank))
                 aplDimNRows = 1;
             else
                 aplDimNRows = aplNELM / aplDimNCols;
@@ -580,8 +580,8 @@ void DisplayGlbArr
     } // End IF
 
     // If this is an empty vector, make sure it skips a line
-    if (lpFmtHeader->uFmtRows EQ 0
-     && aplRank EQ 1)
+    if (IsEmpty (lpFmtHeader->uFmtRows)
+     && IsVector (aplRank))
         AppendLine (L"", FALSE, TRUE);// Display the empty line
 ERROR_EXIT:
 NORMAL_EXIT:
@@ -894,7 +894,7 @@ LPAPLCHAR FormatFloatFC
     {
         if (fFloat < 0)
             *lpaplChar++ = aplCharOverbar;
-        *lpaplChar++ = L'_';    // Char for infinity
+        *lpaplChar++ = CHR_INFINITY;    // Char for infinity
     } else
     {
         LPAPLCHAR p, ep, dp;

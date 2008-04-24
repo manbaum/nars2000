@@ -484,26 +484,26 @@ Header:
         /* Empty */             {DbgMsgW2 (L"%%Header:  <empty>");
                                 }
     |         error             {DbgMsgW2 (L"%%Header:  error");
-                                 YYERROR;
+                                 YYABORT;
                                 }
     |         NoResHdr          {DbgMsgW2 (L"%%Header:  NoResHdr");
                                 }
     |         NoResHdr error    {DbgMsgW2 (L"%%Header:  NoResHdr error");
-                                 YYERROR;
+                                 YYABORT;
                                 }
     |         NoResHdr Locals   {DbgMsgW2 (L"%%Header:  NoResHdr Locals");
                                  lpfhLocalVars->lpYYLocals = MakeHdrStrand_YY (&$2);
                                 }
     | error   NoResHdr          {DbgMsgW2 (L"%%Header:  error NoResHdr");
-                                 YYERROR;
+                                 YYABORT;
                                 }
     | Result  NoResHdr          {DbgMsgW2 (L"%%Header:  Result NoResHdr");
                                 }
     | error   NoResHdr Locals   {DbgMsgW2 (L"%%Header:  error  NoResHdr Locals");
-                                 YYERROR;
+                                 YYABORT;
                                 }
     | Result  NoResHdr error    {DbgMsgW2 (L"%%Header:  Result NoResHdr error");
-                                 YYERROR;
+                                 YYABORT;
                                 }
     | Result  NoResHdr Locals   {DbgMsgW2 (L"%%Header:  Result NoResHdr Locals");
                                  lpfhLocalVars->lpYYLocals = MakeHdrStrand_YY (&$3);
@@ -511,10 +511,7 @@ Header:
     ;
 
 HeaderComm:
-      error                     {DbgMsgW2 (L"%%HeaderComm:  error");
-                                 YYABORT;
-                                }
-    | Header SOS                {DbgMsgW2 (L"%%HeaderComm:  Header SOS");
+      Header SOS                {DbgMsgW2 (L"%%HeaderComm:  Header SOS");
 #ifdef DEBUG
                                  DisplayFnHdr (lpfhLocalVars);
 #endif

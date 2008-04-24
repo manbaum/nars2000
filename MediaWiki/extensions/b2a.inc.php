@@ -140,6 +140,8 @@ $br2a = array (
 'jot'                   => 0x2218,
 'null'                  => 0x2218,
 
+'infinity'              => 0x221E,
+
 'and'                   => 0x2227,
 '^'                     => 0x2227,
 'lcm'                   => 0x2227,

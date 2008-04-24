@@ -1,23 +1,23 @@
 //***************************************************************************
-//	NARS2000 -- Primitive Function -- Query
+//  NARS2000 -- Primitive Function -- Query
 //***************************************************************************
 
 /***************************************************************************
-	NARS2000 -- An Experimental APL Interpreter
-	Copyright (C) 2006-2008 Sudley Place Software
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2008 Sudley Place Software
 
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
 #define STRICT
@@ -40,40 +40,40 @@
 #ifndef PROTO
 PRIMSPEC PrimSpecQuery =
 {
-	// Monadic functions
-	&PrimFnMon_EM_YY,
-	&PrimSpecQueryStorageTypeMon,
-	NULL,	// &PrimFnMonQueryAPA_EM, -- Can't happen w/Query
+    // Monadic functions
+    &PrimFnMon_EM_YY,
+    &PrimSpecQueryStorageTypeMon,
+    NULL,   // &PrimFnMonQueryAPA_EM, -- Can't happen w/Query
 
-	NULL,	// &PrimFnMonQueryBisB, -- Can't happen w/Query
-	NULL,	// &PrimFnMonQueryBisI, -- Can't happen w/Query
-	NULL,	// &PrimFnMonQueryBisF, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryBisB, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryBisI, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryBisF, -- Can't happen w/Query
 
-////			   IisB,	 // Handled via type promotion (to IisI)
-	&PrimFnMonQueryIisI,
-	&PrimFnMonQueryIisF,
+////               IisB,     // Handled via type promotion (to IisI)
+    &PrimFnMonQueryIisI,
+    NULL,   // &PrimFnMonQueryIisF, -- can't happen w/Query
 
-////			   FisB,	 // Handled via type promotion (to FisI)
-	NULL,	// &PrimFnMonQueryFisI, -- Can't happen w/Query
-	NULL,	// &PrimFnMonQueryFisF, -- can't happen w/Query
+////               FisB,     // Handled via type promotion (to FisI)
+    NULL,   // &PrimFnMonQueryFisI, -- Can't happen w/Query
+    &PrimFnMonQueryFisF,
 
-	// Dyadic functions
-	NULL,	// &PrimFnDyd_EM, -- Can't happen w/Query
-	NULL,	// &PrimSpecQueryStorageTypeDyd, -- Can't happen w/Query
-	NULL,	// &PrimFnDydQueryAPA_EM, -- Can't happen w/Query
+    // Dyadic functions
+    NULL,   // &PrimFnDyd_EM, -- Can't happen w/Query
+    NULL,   // &PrimSpecQueryStorageTypeDyd, -- Can't happen w/Query
+    NULL,   // &PrimFnDydQueryAPA_EM, -- Can't happen w/Query
 
-	NULL,	// &PrimFnDydQueryBisBvB, -- Can't happen w/Query
-	NULL,	// &PrimFnDydQueryBisIvI, -- Can't happen w/Query
-	NULL,	// &PrimFnDydQueryBisFvF, -- Can't happen w/Query
-	NULL,	// &PrimFnDydQueryBisCvC, -- Can't happen w/Query
+    NULL,   // &PrimFnDydQueryBisBvB, -- Can't happen w/Query
+    NULL,   // &PrimFnDydQueryBisIvI, -- Can't happen w/Query
+    NULL,   // &PrimFnDydQueryBisFvF, -- Can't happen w/Query
+    NULL,   // &PrimFnDydQueryBisCvC, -- Can't happen w/Query
 
-////				 IisBvB,	// Handled via type promotion (to IisIvI)
-	NULL,	// &PrimFnDydQueryIisIvI,
-	NULL,	// &PrimFnDydQueryIisFvF, -- Can't happen w/Query
+////                 IisBvB,    // Handled via type promotion (to IisIvI)
+    NULL,   // &PrimFnDydQueryIisIvI,
+    NULL,   // &PrimFnDydQueryIisFvF, -- Can't happen w/Query
 
-////				 FisBvB,	// Handled via type promotion (to FisIvI)
-	NULL,	// &PrimFnDydQueryFisIvI, -- Can't happen w/Query
-	NULL,	// &PrimFnDydQueryFisFvF, -- Can't happen w/Query
+////                 FisBvB,    // Handled via type promotion (to FisIvI)
+    NULL,   // &PrimFnDydQueryFisIvI, -- Can't happen w/Query
+    NULL,   // &PrimFnDydQueryFisFvF, -- Can't happen w/Query
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
@@ -81,484 +81,461 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
 
 
 //***************************************************************************
-//	$PrimFnQuery_EM_YY
+//  $PrimFnQuery_EM_YY
 //
-//	Primitive function for monadic and dyadic Query ("roll" and "deal")
+//  Primitive function for monadic and dyadic Query ("roll" and "deal")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- PrimFnQuery_EM_YY"
+#define APPEND_NAME     L" -- PrimFnQuery_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
 LPPL_YYSTYPE PrimFnQuery_EM_YY
-	(LPTOKEN lptkLftArg,			// Ptr to left arg token (may be NULL if monadic)
-	 LPTOKEN lptkFunc,				// Ptr to function token
-	 LPTOKEN lptkRhtArg,			// Ptr to right arg token
-	 LPTOKEN lptkAxis)				// Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-	// Ensure not an overflow function
-	Assert (lptkFunc->tkData.tkChar EQ UTF16_QUERY);
+    // Ensure not an overflow function
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_QUERY);
 
-	// Split cases based upon monadic or dyadic
-	if (lptkLftArg EQ NULL)
-		return (*lpPrimSpec->PrimFnMon_EM_YY) ( 		   lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-	else
-		return PrimFnDydQuery_EM_YY 		  (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+    // Split cases based upon monadic or dyadic
+    if (lptkLftArg EQ NULL)
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+    else
+        return PrimFnDydQuery_EM_YY           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnQuery_EM_YY
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	$PrimProtoFnQuery_EM_YY
+//  $PrimProtoFnQuery_EM_YY
 //
-//	Generate a prototype for the primitive functions monadic & dyadic Query
+//  Generate a prototype for the primitive functions monadic & dyadic Query
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- PrimProtoFnQuery_EM_YY"
+#define APPEND_NAME     L" -- PrimProtoFnQuery_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
 LPPL_YYSTYPE PrimProtoFnQuery_EM_YY
-	(LPTOKEN lptkLftArg,			// Ptr to left arg token
-	 LPTOKEN lptkFunc,				// Ptr to function token
-	 LPTOKEN lptkRhtArg,			// Ptr to right arg token
-	 LPTOKEN lptkAxis)				// Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-	// If the left arg is not present, ...
-	if (lptkLftArg EQ NULL)
-		//***************************************************************
-		// Called monadically
-		//***************************************************************
-		return PrimProtoFnScalar_EM_YY (lptkLftArg, 		// Ptr to left arg token
-										lptkFunc,			// Ptr to function token
-										lptkRhtArg, 		// Ptr to right arg token
-										lptkAxis);			// Ptr to axis token (may be NULL)
-	else
-	{
-		//***************************************************************
-		// Called dyadically
-		//***************************************************************
+    // If the left arg is not present, ...
+    if (lptkLftArg EQ NULL)
+        //***************************************************************
+        // Called monadically
+        //***************************************************************
+        return PrimProtoFnScalar_EM_YY (lptkLftArg,         // Ptr to left arg token
+                                        lptkFunc,           // Ptr to function token
+                                        lptkRhtArg,         // Ptr to right arg token
+                                        lptkAxis);          // Ptr to axis token (may be NULL)
+    else
+        //***************************************************************
+        // Called dyadically
+        //***************************************************************
 
-		// Convert to a prototype
-		return PrimProtoFnMixed_EM_YY (&PrimFnQuery_EM_YY,	// Ptr to primitive function routine
-										lptkLftArg, 		// Ptr to left arg token
-										lptkFunc,			// Ptr to function token
-										lptkRhtArg, 		// Ptr to right arg token
-										lptkAxis);			// Ptr to axis token (may be NULL)
-	} // End IF/ELSE
+        // Convert to a prototype
+        return PrimProtoFnMixed_EM_YY (&PrimFnQuery_EM_YY,  // Ptr to primitive function routine
+                                        lptkLftArg,         // Ptr to left arg token
+                                        lptkFunc,           // Ptr to function token
+                                        lptkRhtArg,         // Ptr to right arg token
+                                        lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnQuery_EM_YY
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	$PrimSpecQueryStorageTypeMon
+//  $PrimSpecQueryStorageTypeMon
 //
-//	Primitive monadic scalar function special handling:  Storage type
+//  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
 
 APLSTYPE PrimSpecQueryStorageTypeMon
-	(APLNELM	aplNELMRht,
-	 LPAPLSTYPE lpaplTypeRht,
-	 LPTOKEN	lptkFunc)
+    (APLNELM    aplNELMRht,
+     LPAPLSTYPE lpaplTypeRht,
+     LPTOKEN    lptkFunc)
 
 {
-	APLSTYPE aplTypeRes;
+    APLSTYPE aplTypeRes;
 
-	// In case the right arg is an empty char,
-	//	 change its type to BOOL
-	if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
-		*lpaplTypeRht = ARRAY_BOOL;
+    // In case the right arg is an empty char,
+    //   change its type to BOOL
+    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+        *lpaplTypeRht = ARRAY_BOOL;
 
-	if (IsSimpleChar (*lpaplTypeRht)
-	 || *lpaplTypeRht EQ ARRAY_LIST)
-		return ARRAY_ERROR;
+    if (IsSimpleChar (*lpaplTypeRht)
+     || *lpaplTypeRht EQ ARRAY_LIST)
+        return ARRAY_ERROR;
 
-	// The storage type of the result is
-	//	 the same as that of the right arg
-	//	 except SimpleNum goes to INT
-	if (IsSimpleNum (*lpaplTypeRht))
-		aplTypeRes = ARRAY_INT;
-	else
-		aplTypeRes = *lpaplTypeRht;
-	return aplTypeRes;
+    // The storage type of the result is
+    //   the same as that of the right arg
+    //   except SimpleInt goes to INT
+    //   and    SimpleFlt goes to FLT
+    if (IsSimpleInt (*lpaplTypeRht))
+        aplTypeRes = ARRAY_INT;
+    else
+    if (IsSimpleFlt (*lpaplTypeRht))
+        aplTypeRes = ARRAY_FLOAT;
+    else
+        aplTypeRes = *lpaplTypeRht;
+    return aplTypeRes;
 } // End PrimSpecQueryStorageTypeMon
 
 
 //***************************************************************************
-//	$PrimFnMonQueryIisI
+//  $PrimFnMonQueryIisI
 //
-//	Primitive scalar function monadic Query:  I {is} fn I
+//  Primitive scalar function monadic Query:  I {is} fn I
 //
-//	This algorithm was taken from
-//	  "How the Roll Function Works" by E. E. McDonnell,
-//	  APL Quote Quad, Vol. 8, Number 3, p. 42.
+//  This algorithm was taken from
+//    "How the Roll Function Works" by E. E. McDonnell,
+//    APL Quote Quad, Vol. 8, Number 3, p. 42.
 //***************************************************************************
 
 APLINT PrimFnMonQueryIisI
-	(APLINT 	aplIntegerRht,
-	 LPPRIMSPEC lpPrimSpec)
+    (APLINT     aplIntegerRht,
+     LPPRIMSPEC lpPrimSpec)
 
 {
-	HGLOBAL 	 hGlbPTD;		// PerTabData global memory handle
-	LPPERTABDATA lpMemPTD;		// Ptr to PerTabData global memory
-	APLBOOL 	 bQuadIO;		// []IO
-	APLUINT 	 uQuadRL;		// []RL
+    APLBOOL      bQuadIO;       // []IO
+    APLUINT      uQuadRL;       // []RL
 
-	// Get the current value of []IO & []RL
-	bQuadIO = GetQuadIO ();
-	uQuadRL = GetQuadRL ();
+    // Get the current value of []IO & []RL
+    bQuadIO = GetQuadIO ();
+    uQuadRL = lpPrimSpec->QuadRL;
 
-	// Check for DOMAIN ERROR
-	if (aplIntegerRht < bQuadIO)
-		RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    // Check for DOMAIN ERROR
+    if (aplIntegerRht < bQuadIO)
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-	// Calculate new QuadRL
-	uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
+    // Calculate new QuadRL
+    uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
 
-	// Get the thread's PerTabData global memory handle
-	hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Save uQuadRL back into lpPrimSpec
+    lpPrimSpec->QuadRL = uQuadRL;
 
-	// Lock the memory to get a ptr to it
-	lpMemPTD = MyGlobalLock (hGlbPTD);
-
-	// Save uQuadRL back into the system variable
-	lpMemPTD->lpSymQuadRL->stData.stInteger = uQuadRL;
-
-	// We no longer need this ptr
-	MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-	// Reduce the argument if too large
-	if (aplIntegerRht > QUADRL_MODULUS)
-		aplIntegerRht = AplModI (aplIntegerRht, QUADRL_MODULUS);
-
-	// Ye old Linear Congruential Generator
-	return bQuadIO + (uQuadRL * aplIntegerRht) / QUADRL_MODULUS;
+    // Ye old Linear Congruential Generator
+    return bQuadIO + (uQuadRL * aplIntegerRht) / QUADRL_MODULUS;
 } // End PrimFnMonQueryIisI
 
 
 //***************************************************************************
-//	$PrimFnMonQueryIisF
+//  $PrimFnMonQueryFisF
 //
-//	Primitive scalar function monadic Query:  I {is} fn F
+//  Primitive scalar function monadic Query:  F {is} fn F
 //
-//	This algorithm was taken from
-//	  "How the Roll Function Works" by E. E. McDonnell,
-//	  APL Quote Quad, Vol. 8, Number 3, p. 42.
+//  This algorithm was taken from
+//    "How the Roll Function Works" by E. E. McDonnell,
+//    APL Quote Quad, Vol. 8, Number 3, p. 42.
 //***************************************************************************
 
-APLINT PrimFnMonQueryIisF
-	(APLFLOAT	aplFloatRht,
-	 LPPRIMSPEC lpPrimSpec)
+APLFLOAT PrimFnMonQueryFisF
+    (APLFLOAT   aplFloatRht,
+     LPPRIMSPEC lpPrimSpec)
 
 {
-	HGLOBAL 	 hGlbPTD;		// PerTabData global memory handle
-	LPPERTABDATA lpMemPTD;		// Ptr to PerTabData global memory
-	APLBOOL 	 bQuadIO;		// []IO
-	APLUINT 	 uQuadRL;		// []RL
+    APLBOOL      bQuadIO;       // []IO
+    APLUINT      uQuadRL;       // []RL
 
-	// Get the current value of []IO & []RL
-	bQuadIO = GetQuadIO ();
-	uQuadRL = GetQuadRL ();
+    // Get the current value of []IO & []RL
+    bQuadIO = GetQuadIO ();
+    uQuadRL = lpPrimSpec->QuadRL;
 
-	// Check for DOMAIN ERROR
-	if (aplFloatRht < bQuadIO
-	 || aplFloatRht NE floor (aplFloatRht)
-	 || aplFloatRht >= Float2Pow53)
-		RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    // Check for DOMAIN ERROR
+    if (aplFloatRht < bQuadIO
+     || aplFloatRht NE floor (aplFloatRht))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-	// Calculate new QuadRL
-	uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
+    // Calculate new QuadRL
+    uQuadRL = (uQuadRL * DEF_QUADRL_CWS) % QUADRL_MODULUS;
 
-	// Get the thread's PerTabData global memory handle
-	hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+    // Save uQuadRL back into lpPrimSpec
+    lpPrimSpec->QuadRL = uQuadRL;
 
-	// Lock the memory to get a ptr to it
-	lpMemPTD = MyGlobalLock (hGlbPTD);
-
-	// Save uQuadRL back into the system variable
-	lpMemPTD->lpSymQuadRL->stData.stInteger = uQuadRL;
-
-	// We no longer need this ptr
-	MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-	// Reduce the argument if too large
-	if (aplFloatRht > QUADRL_MODULUS)
-		aplFloatRht = AplModF (aplFloatRht, QUADRL_MODULUS);
-
-	// Ye old Linear Congruential Generator
-	return bQuadIO + (uQuadRL * (APLINT) aplFloatRht) / QUADRL_MODULUS;
-} // End PrimFnMonQueryIisF
+    // Ye old Linear Congruential Generator
+    return bQuadIO + (((APLINT) uQuadRL) * aplFloatRht) / QUADRL_MODULUS;
+} // End PrimFnMonQueryFisF
 
 
 //***************************************************************************
-//	$PrimFnDydQuery_EM_YY
+//  $PrimFnDydQuery_EM_YY
 //
-//	Primitive function for dyadic Query ("deal")
+//  Primitive function for dyadic Query ("deal")
 //
-//	This algorithm was taken from
-//	  "APLGOL, an Experimental Structured Programming Language" by R. A. Kelley,
-//	  IBM Journal of Research and Delvelopment, January 1973, pp. 69-73.
+//  This algorithm was taken from
+//    "APLGOL, an Experimental Structured Programming Language" by R. A. Kelley,
+//    IBM Journal of Research and Delvelopment, January 1973, pp. 69-73.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- PrimFnDydQuery_EM_YY"
+#define APPEND_NAME     L" -- PrimFnDydQuery_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
 LPPL_YYSTYPE PrimFnDydQuery_EM_YY
-	(LPTOKEN lptkLftArg,			// Ptr to left arg token
-	 LPTOKEN lptkFunc,				// Ptr to function token
-	 LPTOKEN lptkRhtArg,			// Ptr to right arg token
-	 LPTOKEN lptkAxis)				// Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-	APLSTYPE	 aplTypeLft,		// Left arg storage type
-				 aplTypeRht;		// Right ...
-	APLNELM 	 aplNELMLft,		// Left arg NELM
-				 aplNELMRht;		// Right ...
-	APLRANK 	 aplRankLft,		// Left arg rank
-				 aplRankRht;		// Right ...
-	HGLOBAL 	 hGlbLft = NULL,	// Left arg global memory handle
-				 hGlbRht = NULL,	// Right ...
-				 hGlbRes = NULL;	// Result	...
-	LPVOID		 lpMemLft = NULL,	// Ptr to left arg global memory
-				 lpMemRht = NULL;	// Ptr to right ...
-	LPAPLINT	 lpMemRes = NULL;	// Ptr to result   ...
-	APLINT		 aplIntegerLft, 	// Left arg temporary integer
-				 aplIntegerRht; 	// Right ...
-	APLFLOAT	 aplFloatLft,		// Left arg temporary float
-				 aplFloatRht;		// Right ...
-	APLUINT 	 ByteRes;			// # bytes in the result
-	APLINT		 uLft,				// Left arg loop counter
-				 uRht,				// Right ...
-				 uTmp,				// Temporary ...
-				 uSub;				// Subarray  ...
-	BOOL		 bRet = TRUE;		// TRUE iff result is valid
-	LPPL_YYSTYPE lpYYRes = NULL;	// Ptr to the result
-	APLBOOL 	 bQuadIO;			// []IO
+    APLSTYPE     aplTypeLft,        // Left arg storage type
+                 aplTypeRht;        // Right ...
+    APLNELM      aplNELMLft,        // Left arg NELM
+                 aplNELMRht;        // Right ...
+    APLRANK      aplRankLft,        // Left arg rank
+                 aplRankRht;        // Right ...
+    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
+                 hGlbRht = NULL,    // Right ...
+                 hGlbRes = NULL;    // Result   ...
+    LPVOID       lpMemLft = NULL,   // Ptr to left arg global memory
+                 lpMemRht = NULL;   // Ptr to right ...
+    LPAPLINT     lpMemRes = NULL;   // Ptr to result   ...
+    APLINT       aplIntegerLft,     // Left arg temporary integer
+                 aplIntegerRht;     // Right ...
+    APLFLOAT     aplFloatLft,       // Left arg temporary float
+                 aplFloatRht;       // Right ...
+    APLUINT      ByteRes;           // # bytes in the result
+    APLINT       uLft,              // Left arg loop counter
+                 uRht,              // Right ...
+                 uTmp,              // Temporary ...
+                 uSub;              // Subarray  ...
+    BOOL         bRet = TRUE;       // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    APLBOOL      bQuadIO;           // []IO
 
-	// If the right arg is a list, ...
-	if (IsTknParList (lptkRhtArg))
-		return PrimFnSyntaxError_EM (lptkFunc);
+    // If the right arg is a list, ...
+    if (IsTknParList (lptkRhtArg))
+        return PrimFnSyntaxError_EM (lptkFunc);
 
-	//***************************************************************
-	// This function is not sensitive to the axis operator,
-	//	 so signal a syntax error if present
-	//***************************************************************
-	if (lptkAxis NE NULL)
-		goto SYNTAX_EXIT;
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto SYNTAX_EXIT;
 
-	// Get the current value of []IO
-	bQuadIO = GetQuadIO ();
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
 
-	// Get the attributes (Type, NELM, and Rank) of the left & right args
-	AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
-	AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+    // Get the attributes (Type, NELM, and Rank) of the left & right args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-	// Get left and right arg's global ptrs
-	GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-	GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    // Get left and right arg's global ptrs
+    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-	// Check for LEFT/RIGHT RANK ERRORs
-	if (aplRankLft > 1
-	 || aplRankRht > 1)
-		goto RANK_EXIT;
+    // Check for LEFT/RIGHT RANK ERRORs
+    if (aplRankLft > 1
+     || aplRankRht > 1)
+        goto RANK_EXIT;
 
-	// Check for LEFT/RIGHT LENGTH ERRORs
-	if (aplNELMLft NE 1
-	 || aplNELMRht NE 1)
-		goto LENGTH_EXIT;
+    // Check for LEFT/RIGHT LENGTH ERRORs
+    if (aplNELMLft NE 1
+     || aplNELMRht NE 1)
+        goto LENGTH_EXIT;
 
-	// Get the respective first values
-	GetFirstValueToken (lptkLftArg, 	// Ptr to left arg token
-					   &aplIntegerLft,	// Ptr to integer result
-					   &aplFloatLft,	// Ptr to float ...
-						NULL,			// Ptr to WCHAR ...
-						NULL,			// Ptr to longest ...
-						NULL,			// Ptr to lpSym/Glb ...
-						NULL,			// Ptr to ...immediate type ...
-						NULL);			// Ptr to array type ...
-	GetFirstValueToken (lptkRhtArg, 	// Ptr to right arg token
-					   &aplIntegerRht,	// Ptr to integer result
-					   &aplFloatRht,	// Ptr to float ...
-						NULL,			// Ptr to WCHAR ...
-						NULL,			// Ptr to longest ...
-						NULL,			// Ptr to lpSym/Glb ...
-						NULL,			// Ptr to ...immediate type ...
-						NULL);			// Ptr to array type ...
-	// Check for LEFT/RIGHT DOMAIN ERRORs
-	bRet = ((!IsSimpleChar (aplTypeLft))
-		 && (!IsSimpleChar (aplTypeRht)));
-	if (bRet)
-	{
-		if (IsSimpleFlt (aplTypeLft))
-			// Attempt to convert the float to an integer using System CT
-			aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
-		if (bRet && IsSimpleFlt (aplTypeRht))
-			// Attempt to convert the float to an integer using System CT
-			aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-	} // End IF
+    // Get the respective first values
+    GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
+                       &aplIntegerLft,  // Ptr to integer result
+                       &aplFloatLft,    // Ptr to float ...
+                        NULL,           // Ptr to WCHAR ...
+                        NULL,           // Ptr to longest ...
+                        NULL,           // Ptr to lpSym/Glb ...
+                        NULL,           // Ptr to ...immediate type ...
+                        NULL);          // Ptr to array type ...
+    GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
+                       &aplIntegerRht,  // Ptr to integer result
+                       &aplFloatRht,    // Ptr to float ...
+                        NULL,           // Ptr to WCHAR ...
+                        NULL,           // Ptr to longest ...
+                        NULL,           // Ptr to lpSym/Glb ...
+                        NULL,           // Ptr to ...immediate type ...
+                        NULL);          // Ptr to array type ...
+    // Check for LEFT/RIGHT DOMAIN ERRORs
+    bRet = ((!IsSimpleChar (aplTypeLft))
+         && (!IsSimpleChar (aplTypeRht)));
+    if (bRet)
+    {
+        if (IsSimpleFlt (aplTypeLft))
+            // Attempt to convert the float to an integer using System CT
+            aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
+        if (bRet && IsSimpleFlt (aplTypeRht))
+            // Attempt to convert the float to an integer using System CT
+            aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
+    } // End IF
 
-	if (!bRet
-	 || aplIntegerLft < 0
-	 || aplIntegerRht < 0
-	 || aplIntegerLft > aplIntegerRht)
-		goto DOMAIN_EXIT;
+    if (!bRet
+     || aplIntegerLft < 0
+     || aplIntegerRht < 0
+     || aplIntegerLft > aplIntegerRht)
+        goto DOMAIN_EXIT;
 
-	// Calculate space needed for the result
-	// If we're using the brute force algorithm,
-	//	 allocate only what is needed
-	if (aplIntegerLft < (aplIntegerRht / 16))
-		ByteRes = CalcArraySize (ARRAY_INT, aplIntegerLft, 1);
-	else
-	// Otherwise, allocate space for aplIntegerRht integers,
-	//	 and downsize it at the end.
-		ByteRes = CalcArraySize (ARRAY_INT, aplIntegerRht, 1);
+    // Calculate space needed for the result
+    // If we're using the brute force algorithm,
+    //   allocate only what is needed
+    if (aplIntegerLft < (aplIntegerRht / 16))
+        ByteRes = CalcArraySize (ARRAY_INT, aplIntegerLft, 1);
+    else
+    // Otherwise, allocate space for aplIntegerRht integers,
+    //   and downsize it at the end.
+        ByteRes = CalcArraySize (ARRAY_INT, aplIntegerRht, 1);
 
-	// Allocate space for the result
-	// N.B. Conversion from APLUINT to UINT.
-	Assert (ByteRes EQ (UINT) ByteRes);
-	hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
-	if (!hGlbRes)
-		goto WSFULL_EXIT;
+    // Allocate space for the result
+    // N.B. Conversion from APLUINT to UINT.
+    Assert (ByteRes EQ (UINT) ByteRes);
+    hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
+    if (!hGlbRes)
+        goto WSFULL_EXIT;
 
-	// Allocate a new YYRes
-	lpYYRes = YYAlloc ();
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
 
-	// Fill in the result token
-	lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0; 	// Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0; 	// Already zero from YYAlloc
-	lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-	lpYYRes->tkToken.tkCharIndex	   = lptkFunc->tkCharIndex;
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-	// Lock the memory to get a ptr to it
-	lpMemRes = MyGlobalLock (hGlbRes);
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader	((LPVARARRAY_HEADER) lpMemRes)
-	// Fill in the header
-	lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-	lpHeader->ArrType	 = ARRAY_INT;
-////lpHeader->PermNdx	 = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar	 = 0;			// Already zero from GHND
-	lpHeader->RefCnt	 = 1;
-	lpHeader->NELM		 = aplIntegerLft;
-	lpHeader->Rank		 = 1;
-#undef	lpHeader
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_INT;
+////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////lpHeader->SysVar     = 0;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplIntegerLft;
+    lpHeader->Rank       = 1;
+#undef  lpHeader
 
-	// Skip over the header to the dimension
-	*VarArrayBaseToDim (lpMemRes) = aplIntegerLft;
+    // Skip over the header to the dimension
+    *VarArrayBaseToDim (lpMemRes) = aplIntegerLft;
 
-	// Skip over the header and dimension to the data
-	lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    // Skip over the header and dimension to the data
+    lpMemRes = VarArrayBaseToData (lpMemRes, 1);
 
-	// Split cases based upon the ratio of the left to right arg
-	if (aplIntegerLft < (aplIntegerRht / 16))
-	{
-		// The short case
-		for (uLft = 0; uLft < aplIntegerLft; uLft++)
-		{
-			// Get a random number
-			uTmp = PrimFnMonQueryIisI (aplIntegerRht, NULL);
+    // In order to make roll atomic, save the current []RL into lpPrimSpec
+    SavePrimSpecRL (lpPrimSpec);
 
-			// Search for it in the existing set
-			for (uSub = 0; uSub < uLft; uSub++)
-			if (uTmp EQ lpMemRes[uSub])
-				break;
+    // Split cases based upon the ratio of the left to right arg
+    if (aplIntegerLft < (aplIntegerRht / 16))
+    {
+        // The short case
+        for (uLft = 0; uLft < aplIntegerLft; uLft++)
+        {
+            // Get a random number
+            uTmp = PrimFnMonQueryIisI (aplIntegerRht, lpPrimSpec);
 
-			// If not found, save it in the result
-			if (uSub EQ uLft)
-				lpMemRes[uLft] = uTmp;
-			else
-				uLft--;
-		} // End FOR
-	} else
-	{
-		// The long case
+            // Search for it in the existing set
+            for (uSub = 0; uSub < uLft; uSub++)
+            if (uTmp EQ lpMemRes[uSub])
+                break;
 
-		// Fill the result with {iota}aplIntegerRht
-		for (uLft = 0; uLft < aplIntegerRht; uLft++)	// Z {is} {iota} R
-			lpMemRes[uLft] = uLft + bQuadIO;
+            // If not found, save it in the result
+            if (uSub EQ uLft)
+                lpMemRes[uLft] = uTmp;
+            else
+                uLft--;
+        } // End FOR
+    } else
+    {
+        // The long case
 
-		// Loop through the elements
-		for (uLft = 0; uLft < aplIntegerLft; uLft++)	// :for I :in ({iota} L) - {quad}IO
-		{
-														// J {is} I + (?R - I) - {quad}IO
-			uRht = uLft + PrimFnMonQueryIisI (aplIntegerRht - uLft, NULL) - bQuadIO;
-			uTmp		   = lpMemRes[uLft];			// Z[{quad}IO + I J] {is} Z[{quad}IO + J I]
-			lpMemRes[uLft] = lpMemRes[uRht];
-			lpMemRes[uRht] = uTmp;
-		} // End IF 									// :endfor
+        // Fill the result with {iota}aplIntegerRht
+        for (uLft = 0; uLft < aplIntegerRht; uLft++)    // Z {is} {iota} R
+            lpMemRes[uLft] = uLft + bQuadIO;
 
-		// We no longer need this ptr
-		MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        // Loop through the elements
+        for (uLft = 0; uLft < aplIntegerLft; uLft++)    // :for I :in ({iota} L) - {quad}IO
+        {
+                                                        // J {is} I + (?R - I) - {quad}IO
+            uRht = uLft + PrimFnMonQueryIisI (aplIntegerRht - uLft, lpPrimSpec) - bQuadIO;
+            uTmp           = lpMemRes[uLft];            // Z[{quad}IO + I J] {is} Z[{quad}IO + J I]
+            lpMemRes[uLft] = lpMemRes[uRht];
+            lpMemRes[uRht] = uTmp;
+        } // End IF                                     // :endfor
 
-		// Reallocate the memory down to the value of the left arg
-		hGlbRes =
-		  MyGlobalReAlloc (hGlbRes,
-						   MyGlobalSize (hGlbRes) - (UINT) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
-						   GHND);
-		lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-	} // End IF/ELSE
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-	goto NORMAL_EXIT;
+        // Reallocate the memory down to the value of the left arg
+        hGlbRes =
+          MyGlobalReAlloc (hGlbRes,
+                           MyGlobalSize (hGlbRes) - (UINT) (aplIntegerRht - aplIntegerLft) * sizeof (APLINT),
+                           GHND);
+        lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    } // End IF/ELSE
+
+    // Restore the value of []RL from lpPrimSpec
+    RestPrimSpecRL (lpPrimSpec);
+
+    goto NORMAL_EXIT;
 
 SYNTAX_EXIT:
-	ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-							   lptkAxis);
-	goto ERROR_EXIT;
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
 
 RANK_EXIT:
-	ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-							   lptkLftArg);
-	goto ERROR_EXIT;
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
 
 LENGTH_EXIT:
-	ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-							   lptkLftArg);
-	goto ERROR_EXIT;
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
 
 DOMAIN_EXIT:
-	ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-							   lptkLftArg);
-	goto ERROR_EXIT;
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
 
 WSFULL_EXIT:
-	ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-							   lptkFunc);
-	goto ERROR_EXIT;
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
 NORMAL_EXIT:
-	if (hGlbRes && lpMemRes)
-	{
-		// We no longer need this ptr
-		MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-	} // End IF
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    } // End IF
 
-	if (hGlbLft && lpMemLft)
-	{
-		// We no longer need this ptr
-		MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
-	} // End IF
+    if (hGlbLft && lpMemLft)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    } // End IF
 
-	if (hGlbRht && lpMemRht)
-	{
-		// We no longer need this ptr
-		MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-	} // End IF
+    if (hGlbRht && lpMemRht)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    } // End IF
 
-	return lpYYRes;
+    return lpYYRes;
 } // End PrimFnDydQuery_EM_YY
 
 
 //***************************************************************************
-//	End of File: pf_query.c
+//  End of File: pf_query.c
 //***************************************************************************

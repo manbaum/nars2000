@@ -46,8 +46,9 @@
 </div>
 <div class="menu">&nbsp;&nbsp;
 <a href="/">Home</a> |
-<a href="/download/">Download</a> |
+<span>&nbsp;Download&nbsp;</span> |
 <a href="http://wiki.nars2000.org">Documentation</a> |
+<a href="http://forums.nars2000.org">Forums</a> |
 <a href="/Contributors.ahtml">Contributors</a> |
 <a href="/LICENSE">License</a> |
 <a href="http://wiki.nars2000.org/index.php/NARS2000:About">About</a>

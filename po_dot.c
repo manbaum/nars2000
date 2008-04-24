@@ -601,11 +601,13 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         {
             // If the result is an immediate, ...
             if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_VARIMMED)
-                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,
-                                                              &lpYYRes->tkToken.tkData.tkLongest,
-                                                              &lpYYRes->tkToken);
+                *((LPAPLNESTED) lpMemRes)++ =
+                  MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,    // Immediate type
+                                  &lpYYRes->tkToken.tkData.tkLongest,   // Ptr to immediate value
+                                  &lpYYRes->tkToken);                   // Ptr to function token
             else
-                *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpYYRes->tkToken.tkData.tkGlbData);
+                *((LPAPLNESTED) lpMemRes)++ =
+                  CopySymGlbDir (lpYYRes->tkToken.tkData.tkGlbData);
 
             // Free the result item
             FreeResult (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
@@ -770,11 +772,13 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
 
         // If the accumulated reduction is an immediate, ...
         if (tkItmRed.tkFlags.TknType EQ TKT_VARIMMED)
-            *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (tkItmRed.tkFlags.ImmType,
-                                                          &tkItmRed.tkData.tkLongest,
-                                                          &tkItmRed);
+            *((LPAPLNESTED) lpMemRes)++ =
+              MakeSymEntry_EM (tkItmRed.tkFlags.ImmType,    // Immediate type
+                              &tkItmRed.tkData.tkLongest,   // Ptr to immediate value
+                              &tkItmRed);                   // Ptr to function token
         else
-            *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (tkItmRed.tkData.tkGlbData);
+            *((LPAPLNESTED) lpMemRes)++ =
+              CopySymGlbDir (tkItmRed.tkData.tkGlbData);
         // Free the accumulated reduction token
         FreeResult (&tkItmRed);
     } // End FOR/FOR

@@ -429,7 +429,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         } // End WHILE
     } else
     {
-        // No axis means ravel/table all dimensions
+        // No axis means ravel all dimensions or table all but the first
         aplNELMAxis = aplRankRht;
         aplLastAxis = aplRankRht - 1;
     } // End IF/ELSE
@@ -442,11 +442,11 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     bTableRes = (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
     if (bTableRes)
     {
-        aplLastAxis = aplRankRht;
+        aplLastAxis = aplRankRht - 1;
         aplNELMAxis = aplRankRht - 1;
     } else
     // Empty axis means insert new last unit coordinate
-    if (aplNELMAxis EQ 0)
+    if (IsEmpty (aplNELMAxis))
         aplLastAxis = aplRankRht;
 
     // Set the value of the first axis
@@ -577,7 +577,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     if (bTableRes)
     {
         // Save the dimensions
-        ((LPAPLDIM) lpMemRes)[0] = (aplRankRht EQ 0) ? 1 : lpMemDimRht[0];
+        ((LPAPLDIM) lpMemRes)[0] = IsScalar (aplRankRht) ? 1 : lpMemDimRht[0];
         ((LPAPLDIM) lpMemRes)[1] = aplDimNew;
     } else
     // If we're collapsing dimensions, ...
@@ -1001,8 +1001,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     Assert (aplTypeRht < ARRAY_LENGTH);
 
     // Get the respective first values
-    if (aplRankLft EQ 0                         // Scalar
-     && aplNELMLft NE 0                         // and non-empty
+    if (IsScalar (aplRankLft)                   // Scalar
+     && !IsEmpty (aplNELMLft)                   // and non-empty
      && !IsNested (aplTypeLft))                 // and non-nested
         GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
                            &aplIntegerLft,      // Ptr to integer result
@@ -1013,7 +1013,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             NULL,               // Ptr to ...immediate type ...
                             NULL);              // Ptr to array type ...
     else                                        // otherwise,
-    if ((aplRankLft EQ 0 || aplNELMLft EQ 0)    // Scalar or empty
+    if ((IsScalar (aplRankLft)                  // Scalar
+      || IsEmpty (aplNELMLft))                  //   or empty
      && IsNested (aplTypeLft))                  // and nested
         GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
                             NULL,               // Ptr to integer result
@@ -1023,8 +1024,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                            &lpSymGlbLft,        // Ptr to lpSym/Glb ...
                             NULL,               // Ptr to ...immediate type ...
                             NULL);              // Ptr to array type ...
-    if (aplRankRht EQ 0                         // Scalar
-     && aplNELMRht NE 0                         // and non-empty
+    if (IsScalar (aplRankRht)                   // Scalar
+     && !IsEmpty (aplNELMRht)                   // and non-empty
      && !IsNested (aplTypeRht))                 // and non-nested
         GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
                            &aplIntegerRht,      // Ptr to integer result
@@ -1035,7 +1036,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             NULL,               // Ptr to ...immediate type ...
                             NULL);              // Ptr to array type ...
     else                                        // otherwise,
-    if ((aplRankRht EQ 0 || aplNELMRht EQ 0)    // Scalar or empty
+    if ((IsScalar (aplRankRht) || IsEmpty (aplNELMRht)) // Scalar or empty
      && IsNested (aplTypeRht))                  // and nested
         GetFirstValueToken (lptkRhtArg,         // Ptr to right arg token
                             NULL,               // Ptr to integer result
@@ -1093,8 +1094,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     } // End IF/ELSE
 
     // Left and right scalar args are laminated
-    if (aplRankLft EQ 0
-     && aplRankRht EQ 0)
+    if (IsScalar (aplRankLft)
+     && IsScalar (aplRankRht))
     {
         bFract = TRUE;
         aplAxis = 0;
@@ -1162,14 +1163,14 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     } // End IF
 
     // If left arg is scalar, set dimension to 1
-    if (aplRankLft EQ 0)
+    if (IsScalar (aplRankLft))
         lpMemDimLft = &aplDim1;
     else
         // Skip over the header to the dimensions
         lpMemDimLft = VarArrayBaseToDim (lpMemLft);
 
     // If right arg is scalar, set dimension to 1
-    if (aplRankRht EQ 0)
+    if (IsScalar (aplRankRht))
         lpMemDimRht = &aplDim1;
     else
         // Skip over the header to the dimensions
@@ -1203,12 +1204,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // Determine the storage type of the result based upon
     //   the storage types of the left and right args
     //   as well as the NELMs
-    if (aplNELMLft EQ 0)
+    if (IsEmpty (aplNELMLft))
     {
         aplTypeRes = aplTypeRht;
         hGlbTmp    = hGlbRht;
     } else
-    if (aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMRht))
     {
         aplTypeRes = aplTypeLft;
         hGlbTmp    = hGlbLft;
@@ -1225,7 +1226,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     } // End IF
 
     // If the result is empty, use the prototype of the right arg
-    if (aplNELMRes EQ 0)
+    if (IsEmpty (aplNELMRes))
     {
         // Split cases based upon the right arg's storage type
         switch (aplTypeRht)
@@ -1310,7 +1311,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     //   at and beyond the axis taking into account
     //   laminate, scalar extension, and rank differing by one
     aplDimLftEnd = 1;
-    if (bFract || aplRankLft EQ 0)
+    if (bFract || IsScalar (aplRankLft))
         for (uEnd = aplAxis + !bFract;
              uEnd < aplRankRht;
              uEnd++)
@@ -1325,7 +1326,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     //   at and beyond the axis taking into account
     //   laminate, scalar extension, and rank differing by one
     aplDimRhtEnd = 1;
-    if (bFract || aplRankRht EQ 0)
+    if (bFract || IsScalar (aplRankRht))
         for (uEnd = aplAxis + !bFract;
              uEnd < aplRankLft;
              uEnd++)
@@ -1388,7 +1389,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
             for (uBeg = 0; uBeg < aplDimBeg; uBeg++)
             {
                 // If the left arg is a scalar, ...
-                if (aplRankLft EQ 0)
+                if (IsScalar (aplRankLft))
                     // Loop through the left arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                     {
@@ -1432,7 +1433,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     } // End FOR
 
                 // If the right arg is a scalar, ...
-                if (aplRankRht EQ 0)
+                if (IsScalar (aplRankRht))
                     // Loop through the right arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                     {
@@ -1487,7 +1488,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 {
                     case ARRAY_BOOL:    // Res = INT, Lft = BOOL
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLINT) lpMemRes)++ = aplIntegerLft;
@@ -1511,7 +1512,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                     case ARRAY_INT:     // Res = INT, Lft = INT
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLINT) lpMemRes)++ = aplIntegerLft;
@@ -1536,7 +1537,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 {
                     case ARRAY_BOOL:    // Res = INT, Rht = BOOL
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLINT) lpMemRes)++ = aplIntegerRht;
@@ -1560,7 +1561,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                     case ARRAY_INT:     // Res = INT, Rht = INT
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLINT) lpMemRes)++ = aplIntegerRht;
@@ -1592,7 +1593,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 {
                     case ARRAY_BOOL:    // Res = FLOAT, Lft = BOOL
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatLft;
@@ -1616,7 +1617,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                     case ARRAY_INT:     // Res = FLOAT, Lft = INT
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatLft;
@@ -1628,7 +1629,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                     case ARRAY_FLOAT:   // Res = FLOAT, Lft = FLOAT
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatLft;
@@ -1653,7 +1654,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 {
                     case ARRAY_BOOL:    // Res = FLOAT, Rht = BOOL
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatRht;
@@ -1677,7 +1678,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                     case ARRAY_INT:     // Res = FLOAT, Rht = INT
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatRht;
@@ -1689,7 +1690,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                     case ARRAY_FLOAT:   // Res = FLOAT, Rht = FLOAT
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLFLOAT) lpMemRes)++ = aplFloatRht;
@@ -1717,7 +1718,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
             for (uBeg = 0; uBeg < aplDimBeg; uBeg++)
             {
                 // If the left arg is a scalar, ...
-                if (aplRankLft EQ 0)
+                if (IsScalar (aplRankLft))
                     // Loop through the left arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                         *((LPAPLCHAR) lpMemRes)++ = aplCharLft;
@@ -1727,7 +1728,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         *((LPAPLCHAR) lpMemRes)++ = *((LPAPLCHAR) lpMemLft)++;
 
                 // If the right arg is a scalar, ...
-                if (aplRankRht EQ 0)
+                if (IsScalar (aplRankRht))
                     // Loop through the right arg's trailing dimensions
                     for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                         *((LPAPLCHAR) lpMemRes)++ = aplCharRht;
@@ -1742,7 +1743,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
         case ARRAY_HETERO:              // Res = HETERO, Lft/Rht = HETERO/Num/CHAR
         case ARRAY_NESTED:              // Res = NESTED, Lft/Rht = NESTED/HETERO/Num/CHAR
             // If the left arg is a simple scalar, ...
-            if (aplRankLft EQ 0
+            if (IsScalar (aplRankLft)
              && IsSimpleNH (aplTypeLft))
             {
                 // Split cases based upon the left arg storage type
@@ -1769,11 +1770,14 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 } // End SWITCH
 
                 // Make an LPSYMENTRY out of it
-                lpSymGlbLft = MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeLft), &aplVal, lptkFunc);
+                lpSymGlbLft =
+                  MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeLft),    // Immediate type
+                                  &aplVal,                                      // Ptr to immediate value
+                                   lptkFunc);                                   // Ptr to function token
             } // End IF
 
             // If the right arg is a simple scalar, ...
-            if (aplRankRht EQ 0
+            if (IsScalar (aplRankRht)
              && IsSimpleNH (aplTypeRht))
             {
                 // Split cases based upon the right arg storage type
@@ -1800,11 +1804,14 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 } // End SWITCH
 
                 // Make an LPSYMENTRY out of it
-                lpSymGlbRht = MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeRht), &aplVal, lptkFunc);
+                lpSymGlbRht =
+                  MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeRht),    // Immediate type
+                                  &aplVal,                                      // Ptr to immediate value
+                                   lptkFunc);                                   // Ptr to function token
             } // End IF
 
             // If the result is empty, use the prototype of the right arg
-            if (aplNELMRes EQ 0)
+            if (IsEmpty (aplNELMRes))
                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
             else
             // Loop through the leading dimensions
@@ -1815,7 +1822,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 {
                     case ARRAY_BOOL:    // Res = NESTED, Lft = BOOL
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
@@ -1824,7 +1831,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 aplVal = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? 1 : 0;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc);
+                                *((LPAPLNESTED) lpMemRes)++ =
+                                  MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
+                                                  &aplVal,          // Ptr to immediate value
+                                                   lptkFunc);       // Ptr to function token
 
                                 // Shift over the bit mask
                                 uBitMaskLft <<= 1;
@@ -1840,7 +1850,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                     case ARRAY_INT:     // Res = NESTED, Lft = INT
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
@@ -1849,13 +1859,16 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLINT) lpMemLft)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
+                                *((LPAPLNESTED) lpMemRes)++ =
+                                  MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
+                                                  &aplVal,          // Ptr to immediate value
+                                                  lptkFunc);        // Ptr to function token
                             } // End FOR
                         break;
 
                     case ARRAY_FLOAT:   // Res = NESTED, Lft = FLOAT
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
@@ -1864,13 +1877,16 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLINT) lpMemLft)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc);
+                                *((LPAPLNESTED) lpMemRes)++ =
+                                  MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
+                                                  &aplVal,          // Ptr to immediate value
+                                                  lptkFunc);        // Ptr to function token
                             } // End FOR
                         break;
 
                     case ARRAY_CHAR:    // Res = NESTED, Lft = CHAR
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
@@ -1879,7 +1895,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLCHAR) lpMemLft)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc);
+                                *((LPAPLNESTED) lpMemRes)++ =
+                                  MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
+                                                  &aplVal,          // Ptr to immediate value
+                                                   lptkFunc);       // Ptr to function token
                             } // End FOR
                         break;
 
@@ -1888,7 +1907,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                         {
                             aplVal = apaOffLft + apaMulLft * uEndLft++;
-                            *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
+                            *((LPAPLNESTED) lpMemRes)++ =
+                              MakeSymEntry_EM (IMMTYPE_INT,         // Immediate type
+                                              &aplVal,              // Ptr to immediate value
+                                               lptkFunc);           // Ptr to function token
                         } // End FOR
 
                         break;
@@ -1896,7 +1918,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     case ARRAY_HETERO:  // Res = NESTED, Lft = HETERO
                     case ARRAY_NESTED:  // Res = NESTED, Lft = NESTED
                         // If the left arg is a scalar, ...
-                        if (aplRankLft EQ 0)
+                        if (IsScalar (aplRankLft))
                             // Loop through the left arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbLft);
@@ -1915,7 +1937,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 {
                     case ARRAY_BOOL:    // Res = NESTED, Rht = BOOL
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
@@ -1924,7 +1946,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 aplVal = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc);
+                                *((LPAPLNESTED) lpMemRes)++ =
+                                  MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
+                                                  &aplVal,          // Ptr to immediate value
+                                                   lptkFunc);       // Ptr to function token
 
                                 // Shift over the bit mask
                                 uBitMaskRht <<= 1;
@@ -1940,7 +1965,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
 
                     case ARRAY_INT:     // Res = NESTED, Rht = INT
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
@@ -1949,13 +1974,16 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLINT) lpMemRht)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
+                                *((LPAPLNESTED) lpMemRes)++ =
+                                  MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
+                                                  &aplVal,          // Ptr to immediate value
+                                                   lptkFunc);       // Ptr to function token
                             } // End FOR
                         break;
 
                     case ARRAY_FLOAT:   // Res = NESTED, Rht = FLOAT
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
@@ -1964,13 +1992,16 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLINT) lpMemRht)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc);
+                                *((LPAPLNESTED) lpMemRes)++ =
+                                  MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
+                                                  &aplVal,          // Ptr to immediate value
+                                                   lptkFunc);       // Ptr to function token
                             } // End FOR
                         break;
 
                     case ARRAY_CHAR:    // Res = NESTED, Rht = CHAR
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);
@@ -1979,7 +2010,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 aplVal = *((LPAPLCHAR) lpMemRht)++;
-                                *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc);
+                                *((LPAPLNESTED) lpMemRes)++ =
+                                  MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
+                                                  &aplVal,          // Ptr to immediate value
+                                                   lptkFunc);       // Ptr to function token
                             } // End FOR
                         break;
 
@@ -1988,7 +2022,10 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                         {
                             aplVal = apaOffRht + apaMulRht * uEndRht++;
-                            *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
+                            *((LPAPLNESTED) lpMemRes)++ =
+                              MakeSymEntry_EM (IMMTYPE_INT,         // Immediate type
+                                              &aplVal,              // Ptr to immediate value
+                                               lptkFunc);           // Ptr to function token
                         } // End FOR
 
                         break;
@@ -1996,7 +2033,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     case ARRAY_HETERO:  // Res = NESTED, Rht = HETERO
                     case ARRAY_NESTED:  // Res = NESTED, Rht = NESTED
                         // If the right arg is a scalar, ...
-                        if (aplRankRht EQ 0)
+                        if (IsScalar (aplRankRht))
                             // Loop through the right arg's trailing dimensions
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir (lpSymGlbRht);

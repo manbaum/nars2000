@@ -535,10 +535,11 @@ BOOL SaveFunctionCom
         (*lpFX_Save->SF_ReadLine) (hWndEC, lpFX_Save, 0, &lpMemTxtLine->C);
 
         // Tokenize the line
-        hGlbTknHdr = Tokenize_EM (&lpMemTxtLine->C,
-                                   uLineLen,
-                                   hWndEC,
-                                  &ErrorHandler);
+        hGlbTknHdr =
+          Tokenize_EM (&lpMemTxtLine->C,
+                        uLineLen,
+                        hWndEC,
+                       &ErrorHandler);
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } // End IF
@@ -935,16 +936,18 @@ BOOL SaveFunctionCom
                 (*lpFX_Save->SF_ReadLine) (hWndEC, lpFX_Save, (uLineNum + 1), &lpMemTxtLine->C);
 
                 // Tokenize the line
-                lpFcnLines->hGlbTknLine = Tokenize_EM (&lpMemTxtLine->C,
-                                                        uLineLen,
-                                                        hWndEC,
-                                                       &ErrorHandler);
+                lpFcnLines->hGlbTknLine =
+                  Tokenize_EM (&lpMemTxtLine->C,
+                                uLineLen,
+                                hWndEC,
+                               &ErrorHandler);
             } else
                 // Tokenize the (empty) line
-                lpFcnLines->hGlbTknLine = Tokenize_EM (L"",
-                                                       0,
-                                                       hWndEC,
-                                                      &ErrorHandler);
+                lpFcnLines->hGlbTknLine =
+                  Tokenize_EM (L"",
+                               0,
+                               hWndEC,
+                              &ErrorHandler);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 

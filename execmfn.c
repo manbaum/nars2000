@@ -184,18 +184,20 @@ HGLOBAL Init1MagicFunction
         CopyMemory (&lpMemTxtLine->C, lpMagicFunction->Header, uLineLen * sizeof (APLCHAR));
 
         // Tokenize the line
-        hGlbTknHdr = Tokenize_EM (&lpMemTxtLine->C,
-                                   uLineLen,
-                                   hWndEC,
-                                  &ErrorHandler);
+        hGlbTknHdr =
+          Tokenize_EM (&lpMemTxtLine->C,
+                        uLineLen,
+                        hWndEC,
+                       &ErrorHandler);
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtHdr); lpMemTxtLine = NULL;
     } else
         // Tokenize the (empty) line
-        hGlbTknHdr = Tokenize_EM (L"",
-                                  0,
-                                  hWndEC,
-                                  NULL);
+        hGlbTknHdr =
+          Tokenize_EM (L"",
+                       0,
+                       NULL,
+                       NULL);
     if (!hGlbTknHdr)
     {
         WCHAR wszTemp[1024];
@@ -450,16 +452,18 @@ HGLOBAL Init1MagicFunction
                 CopyMemory (&lpMemTxtLine->C, lpMagicFunction->Body[uLineNum], uLineLen * sizeof (APLCHAR));
 
                 // Tokenize the line
-                lpFcnLines->hGlbTknLine = Tokenize_EM (&lpMemTxtLine->C,
-                                                        uLineLen,
-                                                        hWndEC,
-                                                       &ErrorHandler);
+                lpFcnLines->hGlbTknLine =
+                  Tokenize_EM (&lpMemTxtLine->C,
+                                uLineLen,
+                                hWndEC,
+                               &ErrorHandler);
             } else
                 // Tokenize the (empty) line
-                lpFcnLines->hGlbTknLine = Tokenize_EM (L"",
-                                                       0,
-                                                       hWndEC,
-                                                      &ErrorHandler);
+                lpFcnLines->hGlbTknLine =
+                  Tokenize_EM (L"",
+                               0,
+                               hWndEC,
+                              &ErrorHandler);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 

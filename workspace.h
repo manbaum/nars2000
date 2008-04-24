@@ -28,13 +28,12 @@
 #define SECTNAME_FCNS           L"Fcns"
 
 // Key names
-#define KEYNAME_VARCOUNT        L"VarCount"
-#define KEYNAME_FCNCOUNT        L"FcnCount"
-#define KEYNAME_GLBCOUNT        L"GlbCount"
+#define KEYNAME_COUNT           L"Count"
 #define KEYNAME_VERSION         L"Version"
 #define KEYNAME_UNDO            L"Undo"
-#define KEYNAME_SIDEPTH         L"SIDepth"
+#define KEYNAME_SILEVEL         L"SILevel"
 #define KEYNAME_CREATIONTIME    L"CreationTime"
+#define KEYNAME_USERDEFINED     L"UserDefined"
 
 // Format string for [GlobalVars] and [GlobalFcns] section keynames
 #define FMTSTR_GLBCNT           L"#%d"

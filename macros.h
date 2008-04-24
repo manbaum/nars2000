@@ -1,0 +1,265 @@
+//****************************************************************************
+//  NARS2000 -- Macros File
+//****************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2008 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+
+#define MB(a)                   MessageBox  (NULL, a,  "NARS2000", MB_OK)
+#define MBW(a)                  MessageBoxW (NULL, a, L"NARS2000", MB_OK)
+#define MBC(a)              if (MessageBox  (NULL, a,  "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define MBWC(a)             if (MessageBoxW (NULL, a, L"NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
+#define IsGlbTypeVarDir(a)  (IsGlobalTypeArray (            a, VARARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeVarInd(a)  (IsGlobalTypeArray (*(LPVOID *) a, VARARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnDir(a)  (IsGlobalTypeArray (            a, FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeFcnInd(a)  (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
+#define IsGlbTypeDfnDir(a)  (IsGlobalTypeArray (            a, DFN_HEADER_SIGNATURE))
+#define IsGlbTypeNamDir(a)  (IsGlobalTypeArray (            a, VARNAMED_HEADER_SIGNATURE))
+#define IsSymNoValue(a)     ((a)->stHshEntry EQ NULL                \
+                          && (a)->stFlags.Perm                      \
+                          && (a)->stFlags.Value EQ 0                \
+                          && (a)->stFlags.ObjName EQ OBJNAME_NONE   \
+                          && (a)->stFlags.stNameType EQ NAMETYPE_UNK)
+#define IsTokenNoValue(a)   ((a)                                    \
+                          && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
+                          && IsSymNoValue ((a)->tkData.tkSym))
+#define IsSysName(a)        ((a)[0] EQ UTF16_QUAD || (a)[1] EQ UTF16_QUOTEQUAD)
+
+#define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
+
+#define AplModI(m,a) PrimFnDydStileIisIvI (m, a, NULL)
+#define AplModF(m,a) PrimFnDydStileFisFvF (m, a, NULL)
+
+#define LODWORD(x)          ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
+#define HIDWORD(x)          ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
+
+#define LOSHORT(l)  ((short)((DWORD)(l) & 0xffff))
+#define HISHORT(l)  ((short)((DWORD)(l) >> 16))
+
+#ifdef DEBUG
+  #define YYAlloc()     _YYAlloc(FNLN)
+
+  #define IsGlbPtr(a) (((a) NE NULL) && (GlobalFlags (a) NE GMEM_INVALID_HANDLE))
+
+  #ifdef DEBUG_ALLOCFREE
+    #define DbgGlobalAlloc(uFlags,ByteRes) \
+    DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
+
+    #define DbgGlobalFree(hGlbToken) \
+    dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \
+    MyGlobalFree (hGlbToken);
+  #else
+    #define DbgGlobalAlloc(uFlags,ByteRes) \
+    MyGlobalAlloc (uFlags, ByteRes)
+
+    #define DbgGlobalFree(hGlbToken) \
+    MyGlobalFree (hGlbToken);
+  #endif
+
+  #ifdef DEBUG_REFCNT
+    #define DbgIncrRefCntDir(hGlbData) \
+    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    IncrRefCntDir (hGlbData);
+
+    #define DbgIncrRefCntInd(hGlbData) \
+    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    IncrRefCntInd (hGlbData);
+
+    #define DbgDecrRefCntDir(hGlbData) \
+    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    DecrRefCntDir (hGlbData);
+
+    #define DbgDecrRefCntInd(hGlbData) \
+    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
+    DecrRefCntInd (hGlbData);
+  #else
+    #define DbgIncrRefCntDir(hGlbData) \
+    IncrRefCntDir (hGlbData);
+
+    #define DbgIncrRefCntInd(hGlbData) \
+    IncrRefCntInd (hGlbData);
+
+    #define DbgDecrRefCntDir(hGlbData) \
+    DecrRefCntDir (hGlbData);
+
+    #define DbgDecrRefCntInd(hGlbData) \
+    DecrRefCntInd (hGlbData);
+  #endif
+
+  #define CheckMemStat()      _CheckMemStat ()
+
+  #define Assert(a)     ((a) || (DbgBrk (), 0))
+#else
+  #define YYAlloc()     _YYAlloc()
+
+  #define IsGlbPtr(a) ((a) NE NULL && GlobalFlags (a) NE GMEM_INVALID_HANDLE)
+
+  #define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc (uFlags, ByteRes);
+
+  #define DbgGlobalFree(hGlbToken)        MyGlobalFree (hGlbToken);
+
+  #define DbgIncrRefCntDir(hGlbData)      IncrRefCntDir (hGlbData);
+
+  #define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData);
+
+  #define DbgDecrRefCntDir(hGlbData)      DecrRefCntDir (hGlbData);
+
+  #define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData);
+
+  #define DbgMsg(a)
+  #define DbgMsgW(a)
+
+  #define CheckMemStat()
+
+  #define Assert(a)     ((void) 0)
+////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
+#endif
+
+
+#define SIGN_APLNELM(a)     ((a) >> 63)     // Sign bit of an APLNELM
+#define SIGN_APLRANK(a)     ((a) >> 63)     // ...            APLRANK
+#define SIGN_APLDIM(a)      ((a) >> 63)     // ...            APLDIM
+#define SIGN_APLINT(a)      (((APLUINT) a) >> 63) // ...      APLINT
+#define SIGN_APLUINT(a)     ((a) >> 63)     // ...            APLUINT
+#define SIGN_APLLONGEST(a)  ((a) >> 63)     // ...            APLLONGEST
+
+
+// Define macro for detecting simple array type
+/////// IsSimple(ArrType)               ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA || (ArrType) EQ ARRAY_FLOAT || (ArrType) EQ ARRAY_CHAR || (ArrType) EQ ARRAY_HETERO)
+#define IsSimple(ArrType)               (uTypeMap[ArrType] <= uTypeMap[ARRAY_HETERO])
+
+// Define macro for detecting simple non-heterogeneous array type
+/////// IsSimpleNH(ArrType)             ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA || (ArrType) EQ ARRAY_FLOAT || (ArrType) EQ ARRAY_CHAR)
+#define IsSimpleNH(ArrType)             (uTypeMap[ArrType] < uTypeMap[ARRAY_HETERO])
+
+// Define macro for detecting simple numeric array type
+/////// IsSimpleNum(ArrType)            ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA || (ArrType) EQ ARRAY_FLOAT)
+#define IsSimpleNum(ArrType)            (uTypeMap[ArrType] < uTypeMap[ARRAY_CHAR])
+
+// Define macro for detecting simple Boolean array type
+#define IsSimpleBool(ArrType)           ((ArrType) EQ ARRAY_BOOL)
+
+// Define macro for detecting simple integer-like array type
+#define IsSimpleInt(ArrType)            ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA)
+
+// Define macro for detecting simple APA array type
+#define IsSimpleAPA(ArrType)            ((ArrType) EQ ARRAY_APA)
+
+// Define macro for detecting simple float array type
+#define IsSimpleFlt(ArrType)            ((ArrType) EQ ARRAY_FLOAT)
+
+// Define macro for detecting simple character array type
+#define IsSimpleChar(ArrType)           ((ArrType) EQ ARRAY_CHAR)
+
+// Define macro for detecting simple character or heterogeneous array type
+#define IsSimpleCH(ArrType)             ((ArrType) EQ ARRAY_CHAR || (ArrType) EQ ARRAY_HETERO)
+
+// Define macro for detecting simple hetero array type
+#define IsSimpleHet(ArrType)            ((ArrType) EQ ARRAY_HETERO)
+
+// Define macro for detecting nested array type
+#define IsNested(ArrType)               ((ArrType) EQ ARRAY_NESTED)
+
+// Define macro for detecting scalars
+#define IsScalar(ArrRank)               ((ArrRank) EQ 0)
+
+// Define macro for detecting vectors
+#define IsVector(ArrRank)               ((ArrRank) EQ 1)
+
+// Define macro for detecting matrices
+#define IsMatrix(ArrRank)               ((ArrRank) EQ 2)
+
+// Define macro for detecting matrices or higher rank arrays
+#define IsMultiRank(ArrRank)            ((ArrRank) >  2)
+
+// Define macro for detecting singletons
+#define IsSingleton(ArrNELM)            ((ArrNELM) EQ 1)
+
+// Define macro for detecting multiple element arrays
+#define IsMultiNELM(ArrNELM)            ((ArrNELM) >  1)
+
+// Define macro for detecting singleton vectors
+#define IsVectorSing(ArrNELM,ArrRank)   (IsSingleton (ArrNELM) && IsVector (ArrRank))
+
+// Define macro for detecting simple scalars
+#define IsSimpleScalar(ArrType,ArrRank) (IsSimple (ArrType) && IsScalar (ArrRank))
+
+// Define macro for detecting empty arrays
+#define IsEmpty(ArrNELM)                ((ArrNELM) EQ 0)
+
+// Define macro for detecting simple Boolean value
+#define IsBooleanValue(Val)             ((Val) EQ 0 || (Val) EQ 1)
+
+// Define macro for detecting a parenthetic list
+#define IsTknParList(Tkn)               ((Tkn)->tkFlags.TknType EQ TKT_LISTPAR)
+
+// Macros to skip from the variable array base to either the dimensions or the data
+#define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER)                            )
+#define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * aplRank)
+#define VarArrayDimToData(lpMem,aplRank)  (LPVOID)   (((LPCHAR) lpMem)                            + sizeof (APLDIM) * aplRank)
+
+// Macro to skip from the function array base to the data
+#define FcnArrayBaseToData(lpMem) (LPVOID)   (((LPCHAR) lpMem) + sizeof (FCNARRAY_HEADER))
+
+// Macro to skip from the named array base to the data
+#define VarNamedBaseToData(lpMem) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARNAMED_HEADER))
+
+// Macros to clear the low-order bits of either an LPSYMENTRY,
+//   or HGLOBAL (luckily, both types of ptrs are the same size).
+// These macros come in either direct (Dir) or indirect (Ind) form
+#define ClrPtrTypeDir(lpMem)                       ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeDirAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeDirAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeDirAsFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
+#define ClrPtrTypeInd(lpMem)                       ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
+#define ClrPtrTypeIndAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
+#define ClrPtrTypeIndAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
+
+// Macro to extract the low-order bits of a memory ptr used
+//   to distinguish between the various pointer types.
+#define GetPtrTypeInd(lpMem)    (  PTRTYPE_MASK  & *(PUINT_PTR) lpMem)
+#define GetPtrTypeDir(lpMem)    (  PTRTYPE_MASK  &  ( UINT)     lpMem)
+
+// Macro to create a masked LPSYMENTRY
+#define MakePtrTypeSym(lpMem)        ((LPSYMENTRY) (PTRTYPE_STCONST | (UINT) lpMem))
+
+// Macro to create a masked HGLOBAL
+#define MakePtrTypeGlb(lpMem)        ((HGLOBAL)    (PTRTYPE_HGLOBAL | (UINT) lpMem))
+
+// Note that the following macros depend upon
+//   the ordering of the enum IMM_TYPES in <symtab.h>
+#define IsImmInt(a)     ((a) < IMMTYPE_FLOAT)
+#define IsImmNum(a)     ((a) < IMMTYPE_CHAR)
+#define IsImmFlt(a)     ((a) EQ IMMTYPE_FLOAT)
+#define IsImmChr(a)     ((a) EQ IMMTYPE_CHAR)
+
+// The enum NAME_TYPES in <symtab.h> is constructed to allow
+//  the following macros to be used.
+#define IsNameTypeFn(a)     ((a) &  NAMETYPEMASK_FN                   )
+#define IsNameTypeOp(a)     ((a) &                    NAMETYPEMASK_OP )
+#define IsNameTypeFnOp(a)   ((a) & (NAMETYPEMASK_FN | NAMETYPEMASK_OP))
+#define IsNameTypeVar(a)    ((a) EQ NAMETYPE_VAR)
+#define IsNameTypeName(a)   (NAMETYPE_VAR <= (a) && (a) <= NAMETYPE_OP3)
+
+
+
+
+//***************************************************************************
+//  End of File: macros.h
+//***************************************************************************

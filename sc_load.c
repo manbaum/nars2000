@@ -107,25 +107,31 @@ BOOL LoadWorkspace_EM
     UINT         uSymVar,               // Var index counter
                  uSymFcn,               // Fcn/Opr index counter
                  uGlbCnt,               // [GlobalVars] count
-                 uSIDepth,              // [General] SIDepth value
+                 uLineCnt,              // # lines in the current function
+                 uSILevel,              // [General] SILevel value
+                 uLineLen,              // Line length
                  uSID,                  // Loop counter
-                 uLen,                  // Temporary length
                  uStr;                  // Loop counter
     LPWCHAR      lpwSrc,                // Ptr to incoming data
                  lpwDst,                // Ptr to destination data in name
-                 lpwSrcStart;           // Ptr to starting point
+                 lpwSrcStart,           // Ptr to starting point
+                 lpwSectName;           // Ptr to section name
     WCHAR        wszCount[8],           // Save area for formatted uSymVar/Fcn counter
                  wszSectName[15],       // ...                     section name (e.g., [Vars.nnn])
                  wcTmp;                 // Temporary char
     BOOL         bRet = FALSE,          // TRUE iff the result is valid
-                 bImmed;                // TRUE iff the result of ParseSavedWsValue is immediate
+                 bImmed,                // TRUE iff the result of ParseSavedWsValue is immediate
+                 bUserDefined;          // TRUE iff the durrent function is User-Defined
     APLSTYPE     aplTypeObj;            // Object storage type
     APLNELM      aplNELMObj;            // Object NELM
     APLRANK      aplRankObj;            // Object rank
     APLINT       aplInteger;            // Temporary integer
     APLUINT      ByteObj,               // # bytes needed for the object
                  uObj;                  // Loop counter
-    HGLOBAL      hGlbObj;               // Object global memory handle
+    HGLOBAL      hGlbPTD,               // PerTabData global memory handle
+                 hGlbObj,               // Object global memory handle
+                 hGlbTknLine;           // Tokenized header/line global memory handle
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPVOID       lpMemObj;              // Ptr to object global memory
     STFLAGS      stFlags = {0};         // SymTab flags
     LPSYMENTRY   lpSymEntry;            // Ptr to STE for HGLOBAL
@@ -133,6 +139,15 @@ BOOL LoadWorkspace_EM
     LPWCHAR      lpwCharEnd;            // Temporary ptr
     APLLONGEST   aplLongestObj;         // Object immediate value
     LPAPLLONGEST lpaplLongestObj;       // Ptr to ...
+    FILETIME     ftCreation;            // Function creation time
+    LPUNDO_BUF   lpMemUndo;             // Ptr to Undo Buffer global memory
+    APLUINT      ByteRes;               // # bytes in the function line
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Lock the memory to get a ptr to it
     lpwszDPFE = MyGlobalLock (hGlbDPFE);
@@ -155,26 +170,10 @@ BOOL LoadWorkspace_EM
     stFlags.Inuse   = TRUE;
     stFlags.ObjName = OBJNAME_LOD;
 
-    // Get the Var & Fcn/Opr counts
-    uSymVar =
-      GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
-                             KEYNAME_VARCOUNT,          // Ptr to the key name
-                             0,                         // Default value if not found
-                             lpwszDPFE);                // Ptr to the file name
-    uSymFcn =
-      GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
-                             KEYNAME_FCNCOUNT,          // Ptr to the key name
-                             0,                         // Default value if not found
-                             lpwszDPFE);                // Ptr to the file name
-    uSIDepth =
-      GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
-                             KEYNAME_SIDEPTH,           // Ptr to the key name
-                             0,                         // Default value if not found
-                             lpwszDPFE);                // Ptr to the file name
     // Get [GlobalVars] count
     uGlbCnt =
       GetPrivateProfileIntW (SECTNAME_GLOBALVARS,       // Ptr to the section name
-                             KEYNAME_GLBCOUNT,          // Ptr to the key name
+                             KEYNAME_COUNT,             // Ptr to the key name
                              0,                         // Default value if not found
                              lpwszDPFE);                // Ptr to the file name
     // Loop through the [GlobalVars] section
@@ -184,7 +183,7 @@ BOOL LoadWorkspace_EM
         lpwSrc = lpwszTemp;
 
         // Format the counter
-        uLen = wsprintfW (wszCount, FMTSTR_GLBCNT, uStr);
+        wsprintfW (wszCount, FMTSTR_GLBCNT, uStr);
 
         // Read the next string
         GetPrivateProfileStringW (SECTNAME_GLOBALVARS,  // Ptr to the section name
@@ -360,6 +359,7 @@ BOOL LoadWorkspace_EM
                 // Loop through the elements
                 for (uObj = 0; uObj < aplNELMObj; uObj++)
                 {
+                    // Convert the {name}s and other chars to UTF16_xxx
                     if (L'{' EQ  *lpwSrc)
                     {
                         // Get the next char
@@ -415,20 +415,179 @@ BOOL LoadWorkspace_EM
         MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
     } // End FOR
 
+    // Get [GlobalFcns] count
+    uGlbCnt =
+      GetPrivateProfileIntW (SECTNAME_GLOBALFCNS,       // Ptr to the section name
+                             KEYNAME_COUNT,             // Ptr to the key name
+                             0,                         // Default value if not found
+                             lpwszDPFE);                // Ptr to the file name
+    // Loop through the [GlobalFcns] section
+    for (uStr = 0; uStr < uGlbCnt; uStr++)
+    {
+        // Save ptr
+        lpwSrc = lpwszTemp;
+
+        // Format the counter
+        wsprintfW (wszCount, FMTSTR_GLBCNT, uStr);
+
+        // Read the next string
+        GetPrivateProfileStringW (SECTNAME_GLOBALFCNS,  // Ptr to the section name
+                                  wszCount,             // Ptr to the key name
+                                  L"",                  // Ptr to the default value
+                                  lpwSrc,               // Ptr to the output buffer
+                                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                  lpwszDPFE);           // Ptr to the file name
+        // The output is a section name of the form nnn.Name where nnn is the function count
+        lpwSectName = lpwSrc;
+
+        // Skip past the section name and its terminating zero
+        lpwSrc = &lpwSectName[lstrlenW (lpwSectName) + 1];
+
+        // Get the count for the section name
+        uLineCnt =
+          GetPrivateProfileIntW (lpwSectName,               // Ptr to the section name
+                                 KEYNAME_COUNT,             // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszDPFE);                // Ptr to the file name
+        Assert (uLineCnt > 0);
+
+        // Get the UserDefined flag
+        bUserDefined =
+          GetPrivateProfileIntW (lpwSectName,               // Ptr to the section name
+                                 KEYNAME_USERDEFINED,       // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszDPFE);                // Ptr to the file name
+        // Get the CreationTime string
+        GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
+                                  KEYNAME_CREATIONTIME, // Ptr to the key name
+                                  L"",                  // Ptr to the default value
+                                  lpwSrc,               // Ptr to the output buffer
+                                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                  lpwszDPFE);           // Ptr to the file name
+        // Convert the CreationTime string to time
+        swscanf (lpwSrc, L"%16I64X", &ftCreation);
+
+        // Save ptr to undo buffer
+        lpMemUndo = (LPUNDO_BUF) lpwSrc;
+
+        // Get the Undo buffer string, and
+        //   skip over the buffer (including the trailing zero)
+        lpwSrc += 1 +
+          GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
+                                    KEYNAME_UNDO,       // Ptr to the key name
+                                    L"",                // Ptr to the default value
+                          (LPWCHAR) lpMemUndo,          // Ptr to the output buffer
+                                    memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                    lpwszDPFE);         // Ptr to the file name
+        // If it's a user-defined function/oprtator, ...
+        if (bUserDefined)
+        {
+            DbgBrk ();
+
+            // Parse the function header
+
+
+
+
+
+
+            // Loop through the function lines
+
+
+
+
+        } else
+        // It's a function array
+        {
+            DbgBrk ();
+
+            // Get the one (and only) line
+            GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
+                                      L"0",               // Ptr to the key name
+                                      L"",                // Ptr to the default value
+                                      lpwSrc,             // Ptr to the output buffer
+                                      memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                      lpwszDPFE);         // Ptr to the file name
+            // Convert in place
+            lpwSrcStart = lpwDst = lpwSrc;
+
+            // Convert the {name}s and other chars to UTF16_xxx
+            while (*lpwSrc)
+            if (*lpwSrc EQ L'{')
+            {
+                // Get the next char
+                *lpwDst++ = NameToChar (lpwSrc);
+
+                // Find the matching L'}'
+                lpwSrc = SkipPastCharW (lpwSrc, L'}');
+            } else
+                *lpwDst++ = *lpwSrc++;
+
+            // Ensure properly terminated
+            *lpwDst = L'\0';
+
+            // Get the length of the line (in WCHARs)
+            uLineLen = lpwDst - lpwSrcStart;
+
+            // Tokenize the line
+            hGlbTknLine =
+              Tokenize_EM (lpwSrcStart,
+                           uLineLen,
+                           NULL,
+                           NULL);
+            // Parse the line so we can get a function strand
+////        ParseLine
+
+
+
+            // Calculate the # bytes we'll need for the header and data
+            ByteRes = CalcFcnSize (uLineLen);
+
+            // Allocate
+
+
+
+
+
+
+
+
+
+
+        } // End IF/ELSE
+
+
+
+
+
+    } // End FOR
+
+    // Get the SI Level
+    uSILevel =
+      GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
+                             KEYNAME_SILEVEL,           // Ptr to the key name
+                             0,                         // Default value if not found
+                             lpwszDPFE);                // Ptr to the file name
     // Loop through the SI levels
-    for (uSID = 0; uSID <= uSIDepth; uSID++)
+    for (uSID = 0; uSID <= uSILevel; uSID++)
     {
         // Format the section name
         wsprintfW (wszSectName, SECTNAME_VARS L".%d", uSID);
 
-        // Loop through the [Vars.0] section
+        // Get the [Vars.nnn] count
+        uSymVar =
+          GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
+                                 KEYNAME_COUNT,             // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszDPFE);                // Ptr to the file name
+        // Loop through the [Vars.nnn] section where nnn is the SI level
         for (uStr = 0; uStr < uSymVar; uStr++)
         {
             // Save ptr
             lpwSrc = lpwszTemp;
 
             // Format the counter
-            uLen = wsprintfW (wszCount, L"%d", uStr);
+            wsprintfW (wszCount, L"%d", uStr);
 
             // Read the next string
             GetPrivateProfileStringW (wszSectName,          // Ptr to the section name
@@ -450,6 +609,7 @@ BOOL LoadWorkspace_EM
 
             // Convert the name from {...} form
             while (*lpwSrc)
+            // Convert the {name}s and other chars to UTF16_xxx
             if (*lpwSrc EQ L'{')
             {
                 // Get the next char
@@ -505,24 +665,38 @@ BOOL LoadWorkspace_EM
             lpwSrc =
               ParseSavedWsValue (lpwSrc, &lpaplLongestObj, &aplTypeObj, &bImmed, FALSE);
 
-            // Out with the old
-            if (!lpSymEntry->stFlags.Imm)
-                FreeResultGlobalVar (lpSymEntry->stData.stGlbData);
-
-            // In with the new
-            if (bImmed)
+            // If it's []DM, handle it specially
+            if (lstrcmpiW (lpwSrcStart, WS_UTF16_QUAD L"dm") EQ 0)
             {
-                // Set the stFlags & stData
-                lpSymEntry->stFlags.Imm      = TRUE;
-                lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
-                lpSymEntry->stData.stLongest = aplLongestObj;
+                Assert (!bImmed);
+                Assert (IsSimpleChar (aplTypeObj));
+
+                // Out with the old
+                FreeResultGlobalVar (lpMemPTD->hGlbQuadDM);
+
+                // In with the new
+                lpMemPTD->hGlbQuadDM = ClrPtrTypeDirAsGlb ((HGLOBAL) aplLongestObj);
             } else
             {
-                // Set the stFlags & stData
-                lpSymEntry->stFlags.Imm      = FALSE;
-                lpSymEntry->stFlags.ImmType  = 0;
-                lpSymEntry->stData.stLongest = aplLongestObj;
-            } // End IF/ELSE
+                // Out with the old
+                if (!lpSymEntry->stFlags.Imm)
+                    FreeResultGlobalVar (lpSymEntry->stData.stGlbData);
+
+                // In with the new
+                if (bImmed)
+                {
+                    // Set the stFlags & stData
+                    lpSymEntry->stFlags.Imm      = TRUE;
+                    lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
+                    lpSymEntry->stData.stLongest = aplLongestObj;
+                } else
+                {
+                    // Set the stFlags & stData
+                    lpSymEntry->stFlags.Imm      = FALSE;
+                    lpSymEntry->stFlags.ImmType  = 0;
+                    lpSymEntry->stData.stLongest = aplLongestObj;
+                } // End IF/ELSE
+            } // End IF
 
             // Restore the original value
             *lpwCharEnd = L'=';
@@ -557,7 +731,13 @@ BOOL LoadWorkspace_EM
         // Format the section name
         wsprintfW (wszSectName, SECTNAME_FCNS L".%d", uSID);
 
-        // Loop through the [Fcns.0] section
+        // Get the [Fcns.nnn] count
+        uSymFcn =
+          GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
+                                 KEYNAME_COUNT,             // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszDPFE);                // Ptr to the file name
+        // Loop through the [Fcns.nnn] section where nnn is the SI level
         for (uStr = 0; uStr < uSymFcn; uStr++)
         {
             DbgBrk ();
@@ -596,6 +776,9 @@ ERROR_EXIT:
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End LoadWorkspace_EM
@@ -740,6 +923,7 @@ LPWCHAR ParseSavedWsValue
             case ARRAY_CHAR:        // Character
                 Assert (L'\'' EQ *lpwSrc); lpwSrc++;
 
+                // Convert the {name}s and other chars to UTF16_xxx
                 if (L'{' EQ  *lpwSrc)
                 {
                     // Get the next char

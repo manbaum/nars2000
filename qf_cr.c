@@ -213,16 +213,15 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     if (lpSymEntry->stFlags.Imm)
     {
         // Append the function name from the symbol table
-        lpw = CopySteName (lpwszTemp, lpSymEntry);
+        lpw = CopySteName (lpwszTemp, lpSymEntry, &aplNELMRes);
 
         // Append a left arrow
         *lpw++ = UTF16_LEFTARROW;
+        aplNELMRes++;
 
         // Append the single char
         *lpw++ = lpSymEntry->stData.stChar;
-
-        // Calculate the result NELM
-        aplNELMRes = lpw - lpwszTemp;
+        aplNELMRes++;
 
         // Finish the job via subroutine
         hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
@@ -232,10 +231,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
         if (lpSymEntry->stFlags.FcnDir)
         {
             // Append the function name from the symbol table
-            lpw = CopySteName (lpwszTemp, lpSymEntry);
-
-            // Calculate the result NELM
-            aplNELMRes = lpw - lpwszTemp;
+            lpw = CopySteName (lpwszTemp, lpSymEntry, &aplNELMRes);
 
             // Finish the job via subroutine
             hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
@@ -666,7 +662,8 @@ HGLOBAL SysFnMonCR_ALLOC_EM
 
 LPAPLCHAR CopySteName
     (LPAPLCHAR  lpMemRes,       // Ptr to result global memory
-     LPSYMENTRY lpSymEntry)     // Ptr to function symbol table entry
+     LPSYMENTRY lpSymEntry,     // Ptr to function symbol table entry
+     LPAPLNELM  lpaplNELM)      // Ptr to name length (may be NULL)
 
 {
     LPAPLCHAR lpMemName;        // Ptr to function name global memory
@@ -683,6 +680,10 @@ LPAPLCHAR CopySteName
 
     // Skip over the name
     lpMemRes += uNameLen;
+
+    // Return the name length, if requested
+    if (lpaplNELM)
+        *lpaplNELM = uNameLen;
 
     // We no longer need this ptr
     MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;

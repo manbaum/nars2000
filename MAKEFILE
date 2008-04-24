@@ -253,6 +253,7 @@ $(O)qf_cr.DEP           \
 $(O)qf_dl.DEP           \
 $(O)qf_dm.DEP           \
 $(O)qf_dr.DEP           \
+$(O)qf_ea.DEP           \
 $(O)qf_em.DEP           \
 $(O)qf_error.DEP        \
 $(O)qf_es.DEP           \
@@ -266,6 +267,7 @@ $(O)qf_size.DEP         \
 $(O)qf_sysid.DEP        \
 $(O)qf_sysver.DEP       \
 $(O)qf_tc.DEP           \
+$(O)qf_tf.DEP           \
 $(O)qf_ts.DEP           \
 $(O)qf_type.DEP         \
 $(O)qf_ucs.DEP          \
@@ -607,6 +609,9 @@ $(O)yyfns.DEP
 !if exist ($(O)qf_dr.DEP)
 !       include $(O)qf_dr.DEP
 !endif
+!if exist ($(O)qf_ea.DEP)
+!       include $(O)qf_ea.DEP
+!endif
 !if exist ($(O)qf_em.DEP)
 !       include $(O)qf_em.DEP
 !endif
@@ -645,6 +650,9 @@ $(O)yyfns.DEP
 !endif
 !if exist ($(O)qf_tc.DEP)
 !       include $(O)qf_tc.DEP
+!endif
+!if exist ($(O)qf_tf.DEP)
+!       include $(O)qf_tf.DEP
 !endif
 !if exist ($(O)qf_ts.DEP)
 !       include $(O)qf_ts.DEP
@@ -843,6 +851,7 @@ $(O)qf_cr.PRO           \
 $(O)qf_dl.PRO           \
 $(O)qf_dm.PRO           \
 $(O)qf_dr.PRO           \
+$(O)qf_ea.PRO           \
 $(O)qf_em.PRO           \
 $(O)qf_error.PRO        \
 $(O)qf_es.PRO           \
@@ -856,6 +865,7 @@ $(O)qf_size.PRO         \
 $(O)qf_sysid.PRO        \
 $(O)qf_sysver.PRO       \
 $(O)qf_tc.PRO           \
+$(O)qf_tf.PRO           \
 $(O)qf_ts.PRO           \
 $(O)qf_type.PRO         \
 $(O)qf_ucs.PRO          \
@@ -1022,6 +1032,7 @@ $(O)qf_cr.OBJ:          $(@B).C         $(QF_CR_DEP)
 $(O)qf_dl.OBJ:          $(@B).C         $(QF_DL_DEP)
 $(O)qf_dm.OBJ:          $(@B).C         $(QF_DM_DEP)
 $(O)qf_dr.OBJ:          $(@B).C         $(QF_DR_DEP)
+$(O)qf_ea.OBJ:          $(@B).C         $(QF_EA_DEP)
 $(O)qf_em.OBJ:          $(@B).C         $(QF_EM_DEP)
 $(O)qf_error.OBJ:       $(@B).C         $(QF_ERROR_DEP)
 $(O)qf_es.OBJ:          $(@B).C         $(QF_ES_DEP)
@@ -1035,6 +1046,7 @@ $(O)qf_size.OBJ:        $(@B).C         $(QF_SIZE_DEP)
 $(O)qf_sysid.OBJ:       $(@B).C         $(QF_SYSID_DEP)
 $(O)qf_sysver.OBJ:      $(@B).C         $(QF_SYSVER_DEP)
 $(O)qf_tc.OBJ:          $(@B).C         $(QF_TC_DEP)
+$(O)qf_tf.OBJ:          $(@B).C         $(QF_TF_DEP)
 $(O)qf_ts.OBJ:          $(@B).C         $(QF_TS_DEP)
 $(O)qf_type.OBJ:        $(@B).C         $(QF_TYPE_DEP)
 $(O)qf_ucs.OBJ:         $(@B).C         $(QF_UCS_DEP)
@@ -1180,6 +1192,7 @@ OBJS=                       \
      $(O)qf_dl.OBJ          \
      $(O)qf_dm.OBJ          \
      $(O)qf_dr.OBJ          \
+     $(O)qf_ea.OBJ          \
      $(O)qf_em.OBJ          \
      $(O)qf_error.OBJ       \
      $(O)qf_es.OBJ          \
@@ -1193,6 +1206,7 @@ OBJS=                       \
      $(O)qf_sysid.OBJ       \
      $(O)qf_sysver.OBJ      \
      $(O)qf_tc.OBJ          \
+     $(O)qf_tf.OBJ          \
      $(O)qf_ts.OBJ          \
      $(O)qf_type.OBJ        \
      $(O)qf_ucs.OBJ         \

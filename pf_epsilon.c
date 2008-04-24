@@ -936,7 +936,10 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? 1 : 0;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ =
+                          MakeSymEntry_EM (IMMTYPE_BOOL,            // Immediate type
+                                          &aplVal,                  // Ptr to immediate value
+                                           lptkFunc);               // Ptr to function token
 
                         // Shift over the bit mask
                         uBitMask <<= 1;
@@ -956,7 +959,10 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = *((LPAPLINT) lpMemRht)++;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ =
+                          MakeSymEntry_EM (IMMTYPE_INT,             // Immediate type
+                                          &aplVal,                  // Ptr to immediate value
+                                           lptkFunc);               // Ptr to function token
                     } // End FOR
 
                     break;
@@ -966,7 +972,10 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = *(LPAPLLONGEST) ((LPAPLFLOAT) lpMemRht)++;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ =
+                          MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
+                                          &aplVal,                  // Ptr to immediate value
+                                           lptkFunc);               // Ptr to function token
                     } // End FOR
 
                     break;
@@ -976,7 +985,10 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = apaOffRht + apaMulRht * uRht;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ =
+                          MakeSymEntry_EM (IMMTYPE_INT,             // Immediate type
+                                          &aplVal,                  // Ptr to immediate value
+                                           lptkFunc);               // Ptr to function token
                     } // End FOR
 
                     break;
@@ -986,7 +998,10 @@ void PrimFnMonEpsilonGlbCopy
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         aplVal = *((LPAPLCHAR) lpMemRht)++;
-                        *(*(LPAPLHETERO *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc);
+                        *(*(LPAPLHETERO *) lplpMemRes)++ =
+                          MakeSymEntry_EM (IMMTYPE_CHAR,            // Immediate type
+                                          &aplVal,                  // Ptr to immediate value
+                                           lptkFunc);               // Ptr to function token
                     } // End FOR
 
                     break;
@@ -1014,27 +1029,35 @@ void PrimFnMonEpsilonGlbCopy
                             {
                                 case IMMTYPE_BOOL:  // Res = HETERO, Rht = NESTED:BOOL
                                     aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stBoolean;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_BOOL, &aplVal, lptkFunc);
-
+                                    *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                      MakeSymEntry_EM (IMMTYPE_BOOL,    // Immediate type
+                                                      &aplVal,          // Ptr to immediate value
+                                                       lptkFunc);       // Ptr to function token
                                     break;
 
                                 case IMMTYPE_INT:   // Res = HETERO, Rht = NESTED:INT
                                     aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stInteger;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_INT, &aplVal, lptkFunc);
-
+                                    *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                      MakeSymEntry_EM (IMMTYPE_INT,     // Immediate type
+                                                      &aplVal,          // Ptr to immediate value
+                                                       lptkFunc);       // Ptr to function token
                                     break;
 
                                 case IMMTYPE_FLOAT: // Res = HETERO, Rht = NESTED:FLOAT
                                     aplVal = *(LPAPLLONGEST) &(*(LPAPLHETERO) lpMemRht)->stData.stFloat;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_FLOAT, &aplVal, lptkFunc);
-
+                                    *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                      MakeSymEntry_EM (IMMTYPE_FLOAT,   // Immediate type
+                                                      &aplVal,          // Ptr to immediate value
+                                                       lptkFunc);       // Ptr to function token
                                     break;
 
 
                                 case IMMTYPE_CHAR:  // Res = HETERO, Rht = NESTED:CHAR
                                     aplVal = (*(LPAPLHETERO) lpMemRht)->stData.stChar;
-                                    *(*(LPAPLNESTED *) lplpMemRes)++ = MakeSymEntry_EM (IMMTYPE_CHAR, &aplVal, lptkFunc);
-
+                                    *(*(LPAPLNESTED *) lplpMemRes)++ =
+                                      MakeSymEntry_EM (IMMTYPE_CHAR,    // Immediate type
+                                                      &aplVal,          // Ptr to immediate value
+                                                      lptkFunc);        // Ptr to function token
                                     break;
 
                                 defstop

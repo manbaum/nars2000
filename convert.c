@@ -54,7 +54,7 @@ APLINT FloatToAplint_SCT
     aplInteger = (APLINT) floor (fFloat);
 
     // See how the number and its tolerant floor compare
-    if (CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL))
+    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL, TRUE))
     {
         if (lpbRet)
             *lpbRet = TRUE;
@@ -65,7 +65,7 @@ APLINT FloatToAplint_SCT
     aplInteger = (APLINT) ceil (fFloat);
 
     // See how the number and its tolerant ceiling compare
-    if (CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL))
+    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, SYS_CT, NULL, TRUE))
     {
         if (lpbRet)
             *lpbRet = TRUE;
@@ -80,6 +80,102 @@ APLINT FloatToAplint_SCT
     // The ceiling is important in CheckAxis for laminate
     return aplInteger;
 } // End FloatToAplint_SCT
+
+
+//***************************************************************************
+//  $CompareCT
+//
+//  Compare two floating point values with a Comparison Tolerance
+//***************************************************************************
+
+APLBOOL CompareCT
+    (APLFLOAT   aplFloatLft,
+     APLFLOAT   aplFloatRht,
+     APLFLOAT   fCompTol,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return _CompareCT (aplFloatLft,
+                       aplFloatRht,
+                       fCompTol,
+                       lpPrimSpec,
+                       FALSE);
+} // End CompareCT
+
+
+//***************************************************************************
+//  $_CompareCT
+//
+//  Compare two floating point values with a Comparison Tolerance
+//***************************************************************************
+
+APLBOOL _CompareCT
+    (APLFLOAT   aplFloatLft,        // Left arg float
+     APLFLOAT   aplFloatRht,        // Right ...
+     APLFLOAT   fCompTol,           // Comparison tolerance
+     LPPRIMSPEC lpPrimSpec,         // Ptr to local PRIMSPEC
+     BOOL       bIntegerTest)       // TRUE iff this is an integer test
+
+{
+    APLFLOAT aplLftAbs,
+             aplRhtAbs,
+             aplHoodLo;
+
+    // If Lft EQ Rht (absolutely), return 1
+    if (aplFloatLft EQ aplFloatRht)
+        return TRUE;
+
+    // If the comparison tolerance is zero, return 0
+    if (fCompTol EQ 0)
+        return FALSE;
+
+    // Get the absolute values
+    aplLftAbs = PrimFnMonStileFisF (aplFloatLft, lpPrimSpec);
+    aplRhtAbs = PrimFnMonStileFisF (aplFloatRht, lpPrimSpec);
+
+    // If this is an integer test, allow comparisons with zero
+    if (bIntegerTest)
+    {
+        if (aplFloatLft EQ 0
+         && aplRhtAbs <= fCompTol)
+            return TRUE;
+
+        if (aplFloatRht EQ 0
+         && aplLftAbs <= fCompTol)
+            return TRUE;
+    } // End IF
+
+    // If the signs differ, return FALSE
+    if (PrimFnMonTimesIisF (aplFloatLft, lpPrimSpec)
+     NE PrimFnMonTimesIisF (aplFloatRht, lpPrimSpec))
+        return FALSE;
+
+    // Calculate the low end of the left neighborhood of (|Rht)
+    // ***FIXME*** -- Handle exponent underflow in the
+    //   following multiplication
+    aplHoodLo = aplRhtAbs - aplRhtAbs * fCompTol;
+
+    // If (|Rht) is greater than (|Lft),
+    // and (|Lft) is in the
+    //    left-neighborhood of (|Rht) with CT, return 1
+    if (aplHoodLo <= aplLftAbs
+     &&              aplLftAbs < aplRhtAbs)
+        return TRUE;
+
+    // Calculate the low end of the left neighborhood of (|Lft)
+    // ***FIXME*** -- Handle exponent underflow in the
+    //   following multiplication
+    aplHoodLo = aplLftAbs - aplLftAbs * fCompTol;
+
+    // If (|Lft) is greater than (|Rht),
+    // and (|Rht) is in the
+    //    left-neighborhood of (|Lft) with CT, return 1
+    if (aplHoodLo <= aplRhtAbs
+     &&              aplRhtAbs < aplLftAbs)
+        return TRUE;
+
+    return FALSE;
+} // End _CompareCT
 
 
 //***************************************************************************
@@ -195,10 +291,11 @@ UINT ConvertWideToNameLength
     while (uLen--)
     {
         // Get the next char
-        wc = TranslateFcnOprToChar (*lpwszInp++);
+        wc = *lpwszInp++;
 
         if (32 <= wc && wc <= 0x7E
          && wc NE L'\''
+         && wc NE L'#'
          && wc NE L'{'
          && wc NE L'}')
             *lpwsz++ = wc;

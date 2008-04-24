@@ -65,17 +65,17 @@ LPPL_YYSTYPE SysFnNL_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return SysFnMonNL_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return SysFnDydNL_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End SysFnNL_EM_YY
 #undef  APPEND_NAME
 
@@ -113,7 +113,7 @@ LPPL_YYSTYPE SysFnMonNL_EM_YY
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNC_EM_YY"
+#define APPEND_NAME     L" -- SysFnDydNL_EM_YY"
 #else
 #define APPEND_NAME
 #endif
@@ -145,9 +145,9 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
     APLINT       apaOffRht,         // Right arg APA offset
                  apaMulRht;         // Right arg APA multiplier
+    APLNELM      uNameLen;          // Length of the current name
     UINT         uBitMask,          // Mask for looping through Booleans
                  nameClasses = 0,   // Bit flags for each nameclass 1 through (NAMECLASS_LENp1 - 1)
-                 uNameLen,          // Length of the current name
                  uMaxNameLen = 0,   // Length of longest name
                  uSymCnt,           // Count of # matching STEs
                  uSymNum;           // Loop counter
@@ -174,21 +174,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 
         // Check for LEFT RANK ERROR
         if (aplRankLft > 1)
-        {
-            ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto LEFT_RANK_EXIT;
 
         // Check for LEFT DOMAIN ERROR
         if (!IsSimple (aplTypeLft)
          || ((!IsSimpleChar (aplTypeLft))
           && aplNELMLft NE 0))
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End IF
+            goto LEFT_DOMAIN_EXIT;
 
         // Get left arg global ptr
         aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
@@ -200,31 +192,19 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             // Skip over the header and dimensions to the data
             lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
-        // Validate the chars in the left arg
-        for (uLft = 0; uLft < aplNELMLft; uLft++)
-        if (!IzitNameChar (lpMemLft[uLft]))
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkFunc);
-            goto ERROR_EXIT;
-        } // End FOR/IF
+////////// Validate the chars in the left arg
+////////for (uLft = 0; uLft < aplNELMLft; uLft++)
+////////if (!IzitNameChar (lpMemLft[uLft]))
+////////    goto LEFT_DOMAIN_EXIT;
     } // End IF
 
     // Check for RIGHT RANK ERROR
     if (aplRankRht > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
     if (!IsSimpleNum (aplTypeRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto RIGHT_DOMAIN_EXIT;
 
     // Get right arg global ptr
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -249,11 +229,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 
                     if (aplLongestRht EQ 0
                      || aplLongestRht >= NAMECLASS_LENp1)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
-                    } // End IF
+                        goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
                     nameClasses |= BIT0 << (UINT) aplLongestRht;
@@ -270,11 +246,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 
                     if (aplLongestRht EQ 0
                      || aplLongestRht >= NAMECLASS_LENp1)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
-                    } // End IF
+                        goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
                     nameClasses |= BIT0 << (UINT) aplLongestRht;
@@ -292,11 +264,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                     if (!bRet
                      || aplLongestRht EQ 0
                      || aplLongestRht >= NAMECLASS_LENp1)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
-                    } // End IF
+                        goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
                     nameClasses |= BIT0 << (UINT) aplLongestRht;
@@ -318,11 +286,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 
                     if (aplLongestRht EQ 0
                      || aplLongestRht >= NAMECLASS_LENp1)
-                    {
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
-                    } // End IF
+                        goto RIGHT_DOMAIN_EXIT;
 
                     // Mark as nameclass aplLongestRht
                     nameClasses |= BIT0 << (UINT) aplLongestRht;
@@ -344,11 +308,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             case ARRAY_INT:
                 if (aplLongestRht EQ 0
                  || aplLongestRht >= NAMECLASS_LENp1)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
+                    goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht
                 nameClasses |= BIT0 << (UINT) aplLongestRht;
@@ -361,11 +321,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
                 if (!bRet
                  || aplLongestRht EQ 0
                  || aplLongestRht >= NAMECLASS_LENp1)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                               lptkFunc);
-                    goto ERROR_EXIT;
-                } // End IF
+                    goto RIGHT_DOMAIN_EXIT;
 
                 // Mark as nameclass aplLongestRht
                 nameClasses |= BIT0 << (UINT) aplLongestRht;
@@ -411,7 +367,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         uNameLen = lstrlenW (lpMemName);
 
         // Find the longest name
-        uMaxNameLen = max (uMaxNameLen, uNameLen);
+        uMaxNameLen = max (uMaxNameLen, (UINT) uNameLen);
 
         // We no longer need this ptr
         MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
@@ -439,11 +395,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -470,7 +422,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     for (uSymNum = 0; uSymNum < uSymCnt; uSymNum++)
     {
         // Copy the STE name to the result
-        lpMemRes = CopySteName (lpMemRes, lpSymSort[uSymNum]);
+        lpMemRes = CopySteName (lpMemRes, lpSymSort[uSymNum], &uNameLen);
 
         // Fill in the tail of the name with blanks
         // Could use FillMemoryW ??
@@ -487,7 +439,36 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbLft && lpMemLft)
     {
         // We no longer need this ptr

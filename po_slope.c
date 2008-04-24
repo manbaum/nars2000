@@ -461,9 +461,10 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                 {
                     case TKT_VARIMMED:
                         // Save in the result as an LPSYMENTRY
-                        ((LPAPLNESTED) lpMemRes)[uRht] = MakeSymEntry_EM (tkLftArg.tkFlags.ImmType,
-                                                                         &tkLftArg.tkData.tkLongest,
-                                                                         &lpYYFcnStrOpr->tkToken);
+                        ((LPAPLNESTED) lpMemRes)[uRht] =
+                          MakeSymEntry_EM (tkLftArg.tkFlags.ImmType,    // Immediate type
+                                          &tkLftArg.tkData.tkLongest,   // Ptr to immediate value
+                                          &lpYYFcnStrOpr->tkToken);     // Ptr to function token
                         break;
 
                     case TKT_VARARRAY:
@@ -511,8 +512,6 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                     // If it succeeded, ...
                     if (lpYYRes)
                     {
-                        DbgBrk ();
-
                         // Copy the result to the left arg token
                         tkLftArg = lpYYRes->tkToken;
 
@@ -526,9 +525,10 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                     {
                         case TKT_VARIMMED:
                             // Save in the result as an LPSYMENTRY
-                            ((LPAPLNESTED) lpMemRes)[uRht] = MakeSymEntry_EM (tkLftArg.tkFlags.ImmType,
-                                                                             &tkLftArg.tkData.tkLongest,
-                                                                             &lpYYFcnStrOpr->tkToken);
+                            ((LPAPLNESTED) lpMemRes)[uRht] =
+                              MakeSymEntry_EM (tkLftArg.tkFlags.ImmType,    // Immediate type
+                                              &tkLftArg.tkData.tkLongest,   // Ptr to immediate value
+                                              &lpYYFcnStrOpr->tkToken);     // Ptr to function token
                             break;
 
                         case TKT_VARARRAY:
@@ -613,9 +613,10 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                 {
                     case TKT_VARIMMED:
                         // Save in the result as an LPSYMENTRY
-                        ((LPAPLNESTED) lpMemRes)[uDimRht + uAx * uDimHi] = MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,
-                                                                      &tkRhtArg.tkData.tkLongest,
-                                                                      &lpYYFcnStrOpr->tkToken);
+                        ((LPAPLNESTED) lpMemRes)[uDimRht + uAx * uDimHi] =
+                          MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,    // Immediate type
+                                          &tkRhtArg.tkData.tkLongest,   // Ptr to immediate value
+                                          &lpYYFcnStrOpr->tkToken);     // Ptr to function token
                         break;
 
                     case TKT_VARARRAY:

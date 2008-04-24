@@ -2904,6 +2904,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
 
     // Check for LEFT LENGTH ERROR
     if (aplNELMLft NE 1                     // Single number
+     && aplNELMLft NE 2                     // Pair of numbers
      && (0 NE (aplNELMLft % 2)              // Pairs of numbers
       || ((aplNELMLft / 2) NE aplColsRht))) // One pair per right arg col
         goto LENGTH_EXIT;

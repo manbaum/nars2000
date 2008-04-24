@@ -292,7 +292,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     APLRANK      aplRankLft,        // Left arg rank
                  aplRankRht,        // Right ...
                  aplRankRes,        // Result   ...
-                 aplRankSet;        // Set  ...
+                 aplRankSet,        // Set  ...
+                 aplRankN1Res,      // Result rank without length 1 dimensions
+                 aplRankN1Set;      // Set    ...
     HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
                  hGlbRht = NULL,    // Right ...
                  hGlbAxis = NULL,   // Axis ...
@@ -305,11 +307,14 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                  lpMemRes = NULL,   // Ptr to result   ...
                  lpMemSet = NULL;   // Ptr to set  ...
     APLUINT      uLft,              // Loop counter
+                 uRht,              // Loop counter
                  ByteRes,           // # bytes in the result
                  uWVal,             // Weighting value
                  aplIntAcc,         // Accumulation value
                  uRes,              // Loop counter
                  uSet,              // Loop counter
+                 uDimSet,           // Loop counter
+                 uSub,              // Loop counter
                  aplIndexSet;       // Index into set arg
     APLINT       iLft,              // Loop counter
                  iAxisNxt;          // Index of next axis value
@@ -321,7 +326,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                  lpMemLimLft;       // Ptr to left arg limit vector
     LPAPLDIM     lpMemDimRht,       // Ptr to right arg dimensions
                  lpMemDimRes,       // Ptr to result    ...
-                 lpMemDimSet;       // Ptr to set   ...
+                 lpMemDimSet,       // Ptr to set   ...
+                 lpMemDimSub;       // Ptr to sub   ...
     APLLONGEST   aplLongestLft,     // Left arg as immediate value
                  aplLongestSet;     // Set  ...
     UINT         uBitMask;          // Bit mask when looping through Booleans
@@ -383,7 +389,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
     // Initialize NELM and rank to their identity elements
     aplNELMRes = 1;
-    aplRankRes = 0;
+    aplRankRes = aplRankN1Res = 0;
 
     //***************************************************************
     // Trundle through the left arg accumulating the
@@ -437,6 +443,23 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 // Accumulate the NELM & rank
                 aplNELMRes *= aplNELMSub;
                 aplRankRes += aplRankSub;
+
+                // If we're assigning, count non-length 1 dimensions for <aplRankN1Res>
+                if (lptkSetArg && aplRankSub)
+                {
+                    // Lock the memory to get a ptr to it
+                    lpMemDimSub = MyGlobalLock (hGlbSub);
+
+                    // Skip over the header to the dimensions
+                    lpMemDimSub = VarArrayBaseToDim (lpMemDimSub);
+
+                    // Loop through the dimensions counting the non-length 1 dimensions
+                    for (uSub = 0; uSub < aplRankSub; uSub++)
+                        aplRankN1Res +=  (*lpMemDimSub++ NE 1);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbSub); lpMemDimSub = NULL;
+                } // End IF
             } else
             // The left arg item is immediate (in <aplLongestSub> and of type <immTypeSub>)
             {
@@ -445,8 +468,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     goto DOMAIN_EXIT;
 
                 // Accumulate the NELM & rank
-                aplNELMRes *= 1;            // No action:  compiler will eliminate
-                aplRankRes += 0;            // ...
+                aplNELMRes   *= 1;          // No action:  compiler will eliminate
+                aplRankRes   += 0;          // ...
+                aplRankN1Res += 0;          // ...
             } // End IF/ELSE
         } // End FOR
     } // End IF
@@ -460,8 +484,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     for (uRes = 0; uRes < (aplRankRht - aplNELMAxis); uRes++)
     {
         // Accumulate the NELM & rank
-        aplNELMRes *= lpMemDimRht[lpMemAxis[uRes]];
-        aplRankRes += 1;
+        aplNELMRes   *= lpMemDimRht[lpMemAxis[uRes]];
+        aplRankRes   += 1;
+        aplRankN1Res += (lpMemDimRht[lpMemAxis[uRes]] NE 1);
     } // End FOR
 
     // If we're not assigning, ...
@@ -499,16 +524,26 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         lpMemDimRes = VarArrayBaseToDim (lpMemRes);
     } else
     {
-        // Check for RANK ERROR between the result arg & set arg ranks
-        if (aplNELMSet NE 1
-         && aplRankRes NE aplRankSet)
-            goto RANK_EXIT;
+        // Initialize
+        aplRankN1Set = 0;
 
         // Get set arg global ptrs
         aplLongestSet = GetGlbPtrs_LOCK (lptkSetArg, &hGlbSet, &lpMemSet);
+
         if (lpMemSet)
+        {
             // Skip over the header to the dimensions
             lpMemDimSet = VarArrayBaseToDim (lpMemSet);
+
+            // Loop through the dimensions counting the non-length 1 dimensions
+            for (uSet = 0; uSet < aplRankSet; uSet++)
+                aplRankN1Set +=  (lpMemDimSet[uSet] NE 1);
+        } // End IF
+
+        // Check for RANK ERROR between the result arg & set arg ranks
+        if (aplNELMSet NE 1
+         && aplRankN1Res NE aplRankN1Set)
+            goto RANK_EXIT;
     } // End IF/ELSE
 
     //***************************************************************
@@ -539,6 +574,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
     // Initialize axis index
     iAxisNxt = uLft = 0;
+
+    // Initialize set arg dimension loop counter
+    uDimSet = 0;
 
     //***************************************************************
     // Copy dimensions from the right arg or left arg items
@@ -584,22 +622,31 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                         // Fill in the result's dimension
                         CopyMemory (lpMemDimRes, lpMemSub, (UINT) aplRankSub * sizeof (APLDIM));
                     else
+                    // Loop through the sub-item dimensions
+                    for (uSub = 0; uSub < aplRankSub; uSub++, uDimSet++)
                     {
+                        // Skip over length 1 dimensions in the sub-item
+                        while (IsSingleton (lpMemSub[uSub])
+                         && uSub < aplRankSub)
+                            uSub++;
+
+                        // Skip over length 1 dimensions in the set arg
+                        while (IsSingleton (lpMemDimSet[uDimSet])
+                         && uDimSet < aplRankSet)
+                            uDimSet++;
+
                         // Compare the left arg item & set arg dimensions
-                        for (uSet = 0; uSet < aplRankSub; uSet++)
-                        if (*lpMemSub++ NE *lpMemDimSet++)
+                        if (lpMemSub[uSub] NE lpMemDimSet[uDimSet])
                             goto LENGTH_EXIT;
-                    } // End IF/ELSE
+                    } // End IF/ELSE/FOR
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
 
                     // If we're not assigning, ...
                     if (lptkSetArg EQ NULL)
-                    {
                         // Skip over the copied dimensions
                         lpMemDimRes += aplRankSub;
-                    } // End IF
 
                     // Fill in the left arg item limit
                     *lpMemLimLft++ = aplNELMSub;
@@ -623,8 +670,21 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 *lpMemDimRes++ = lpMemDimRht[uAxisNxt];
             else
             {
+                // Copy index
+                uRht = uAxisNxt;
+
+                // Skip over length 1 dimensions in the right arg
+                while (IsSingleton (lpMemDimRht[uRht])
+                 && uRht < aplRankRht)
+                    uRht++;
+
+                // Skip over length 1 dimensions in the set arg
+                while (IsSingleton (lpMemDimSet[uDimSet])
+                 && uDimSet < aplRankSet)
+                    uDimSet++;
+
                 // Compare the right arg & set arg dimensions
-                if (lpMemDimRht[uAxisNxt] NE *lpMemDimSet++)
+                if (lpMemDimRht[uRht] NE lpMemDimSet[uDimSet++])
                     goto LENGTH_EXIT;
             } // End IF/ELSE
 
@@ -668,6 +728,9 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             // Promote the right arg
             if (!TypePromoteGlb_EM (&hGlbRht, aplTypePro, lptkFunc))
                 goto ERROR_EXIT;
+
+            // Clear the type bits
+            hGlbRht = ClrPtrTypeDirAsGlb (hGlbRht);
 
             // Save the new type
             aplTypeRht = aplTypePro;
@@ -891,9 +954,10 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     case ARRAY_HETERO:
                     case ARRAY_NESTED:
                         // Save in result
-                        *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (immTypeSub,
-                                                                      &aplLongestSub,
-                                                                       lptkFunc);
+                        *((LPAPLNESTED) lpMemRes)++ =
+                          MakeSymEntry_EM (immTypeSub,      // Immediate type
+                                          &aplLongestSub,   // Ptr to immediate value
+                                           lptkFunc);       // Ptr to function token
                         break;
 
                     defstop

@@ -119,6 +119,10 @@ typedef struct tagFMTROWSTR
 // ***FIXME*** -- Is this any better than filling as needed??
 #define PREFILL         // With blanks
 
+// Define char to display for infinity
+////ine CHR_INFINITY        L'_'
+#define CHR_INFINITY        UTF16_INFINITY
+
 
 //***************************************************************************
 //  End of File: display.h

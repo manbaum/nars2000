@@ -156,7 +156,7 @@ LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
     // If it's not nested,
     //   it's of depth 0 (scalar) or 1 (vector or higher)
     if (!IsNested (aplTypeRht))
-        lpYYRes->tkToken.tkData.tkInteger = (aplRankRht NE 0);
+        lpYYRes->tkToken.tkData.tkInteger = !IsScalar (aplRankRht);
     else
     {
         // Split cases based upon the right arg's token type
@@ -247,12 +247,12 @@ APLINT PrimFnMonEqualUnderBarGlb
 #undef  lpHeader
 
             // Handle nested prototype
-            if (aplNELMRht EQ 0
+            if (IsEmpty (aplNELMRht)
              && IsNested (aplTypeRht))
                 aplNELMRht++;
 
             // Start with 0 or 1 depending upon the rank
-            uRes = (aplRankRht NE 0);
+            uRes = !IsScalar (aplRankRht);
 
             // If it's nested, recurse
             if (IsNested (aplTypeRht))
@@ -396,8 +396,8 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
             //   first values and compare them as they
             //   might be TKT_VARIMMED and thus not pointed
             //   to by the lpMemLft/Rht vars
-            if (aplRankLft EQ 0
-             && aplRankRht EQ 0)
+            if (IsScalar (aplRankLft)
+             && IsScalar (aplRankRht))
             {
                 // Ensure Numeric vs. Numeric or Char vs. Char
                 bNumLft = IsSimpleNum (aplTypeLft);
@@ -515,7 +515,7 @@ BOOL PrimFnDydEqualUnderbarSimple
         return FALSE;
 
     // Ensure the dimensions are the same
-    if (aplRankLft NE 0)
+    if (!IsScalar (aplRankLft))
     {
         // Skip over the headers to the dimensions
         lpMemLft = VarArrayBaseToDim (lpMemLft);
@@ -599,7 +599,7 @@ BOOL PrimFnDydEqualUnderbarSimple
                     return TRUE;
 
                 case ARRAY_APA:     // Lft = BOOL, Rht = APA
-#define lpAPA       ((LPAPLAPA) lpMemLft)
+#define lpAPA       ((LPAPLAPA) lpMemRht)
                     // Get the APA parameters
                     apaOff = lpAPA->Off;
                     apaMul = lpAPA->Mul;
@@ -796,24 +796,24 @@ BOOL PrimFnDydEqualUnderbarSimple
             } // End SWITCH
 
         case ARRAY_APA:             // Lft = APA, Rht = APA/CHAR/HETERO
+#define lpAPA       ((LPAPLAPA) lpMemLft)
+            // Get the APA parameters
+            apaOff = lpAPA->Off;
+            apaMul = lpAPA->Mul;
+#undef  lpAPA
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
             {
                 case ARRAY_APA:     // Lft = APA, Rht = APA
                     // Compare the APA offsets and multipliers
-#define lpAPA       ((LPAPLAPA) lpMemLft)
-                    return ((lpAPA->Off EQ lpAPA->Off)
-                         && (lpAPA->Mul EQ lpAPA->Mul));
+#define lpAPA       ((LPAPLAPA) lpMemRht)
+                    return ((apaOff EQ lpAPA->Off)
+                         && (apaMul EQ lpAPA->Mul));
 #undef  lpAPA
                 case ARRAY_CHAR:    // Lft = APA, Rht = CHAR
                     return FALSE;
 
                 case ARRAY_HETERO:  // Lft = APA, Rht = HETERO
-#define lpAPA       ((LPAPLAPA) lpMemLft)
-                    // Get the APA parameters
-                    apaOff = lpAPA->Off;
-                    apaMul = lpAPA->Mul;
-#undef  lpAPA
                     // Loop through the elements
                     for (uDim = 0; uDim < (APLINT) aplNELMLft; uDim++)
                     {

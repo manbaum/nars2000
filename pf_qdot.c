@@ -250,7 +250,7 @@ APLFLOAT PrimFnMonQuoteDotFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    INT      iRet;
+    int           iRet;
     gsl_sf_result gsr = {0};
 
     // Check for indeterminates:  !N for integer N < 0

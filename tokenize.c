@@ -76,7 +76,7 @@ enum COL_INDICES
  COL_ALPHA     ,        // 03: Alphabetic
  COL_DIRIDENT  ,        // 04: Alpha or Omega
  COL_Q_QQ      ,        // 05: Quad
- COL_UNDERBAR  ,        // 06: Underbar (infinity)
+ COL_INFINITY  ,        // 06: Infinity
  COL_OVERBAR   ,        // 07: Overbar
  COL_COMPLEX   ,        // 08: Complex number separator
  COL_RATIONAL  ,        // 09: Rational number separator
@@ -196,7 +196,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , NULL        , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , NULL        , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , NULL        , fnSysInit   },   // Quad
-  {FSA_INIT    , NULL        , fnInfinity  },   // Underbar
+  {FSA_INIT    , NULL        , fnInfinity  },   // Infinity
   {FSA_OVERBAR , fnAlpInit   , fnNegInit   },   // Overbar
   {FSA_ALPHA   , NULL        , fnAlpInit   },   // Complex separator (iIjJ)
   {FSA_ALPHA   , NULL        , fnAlpInit   },   // Rational separator (rR)
@@ -229,7 +229,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_SYNTERR , NULL        , NULL        },   // Alpha or Omega
   {FSA_SYSNAME , fnAlpDone   , fnSysInit   },   // Quad
-  {FSA_INIT    , NULL        , fnInfinity  },   // Underbar
+  {FSA_INIT    , NULL        , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_SYNTERR , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_SYNTERR , NULL        , NULL        },   // Rational separator (rR)
@@ -262,7 +262,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnIntDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnIntDone   , fnSysInit   },   // Quad
-  {FSA_SYNTERR , NULL        , NULL        },   // Underbar
+  {FSA_INIT    , fnIntDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_NONCE   , NULL        , NULL        },   // Rational separator (rR)
@@ -295,7 +295,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnBigDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnBigDone   , fnSysInit   },   // Quad
-  {FSA_SYNTERR , NULL        , NULL        },   // Underbar
+  {FSA_INIT    , fnBigDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_NONCE   , NULL        , NULL        },   // Rational separator (rR)
@@ -328,7 +328,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnFrcDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnFrcDone   , fnSysInit   },   // Quad
-  {FSA_SYNTERR , NULL        , NULL        },   // Underbar
+  {FSA_INIT    , fnFrcDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_NONCE   , NULL        , NULL        },   // Rational separator (rR)
@@ -361,7 +361,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnFrcDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnFrcDone   , fnSysInit   },   // Quad
-  {FSA_SYNTERR , NULL        , NULL        },   // Underbar
+  {FSA_INIT    , fnFrcDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_NONCE   , NULL        , NULL        },   // Rational separator (rR)
@@ -394,7 +394,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_SYNTERR , NULL        , NULL        },   // Alpha or Omega
   {FSA_SYNTERR , NULL        , NULL        },   // Quad
-  {FSA_SYNTERR , NULL        , NULL        },   // Underbar
+  {FSA_SYNTERR , NULL        , NULL        },   // Infinity
   {FSA_FPEXP2  , fnNegExp    , NULL        },   // Overbar
   {FSA_SYNTERR , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_SYNTERR , NULL        , NULL        },   // Rational separator (rR)
@@ -427,7 +427,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_SYNTERR , NULL        , NULL        },   // Alpha or Omega
   {FSA_SYNTERR , NULL        , NULL        },   // Quad
-  {FSA_SYNTERR , NULL        , NULL        },   // Underbar
+  {FSA_SYNTERR , NULL        , NULL        },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_SYNTERR , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_SYNTERR , NULL        , NULL        },   // Rational separator (rR)
@@ -460,7 +460,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnExpDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnExpDone   , fnSysInit   },   // Quad
-  {FSA_SYNTERR , NULL        , NULL        },   // Underbar
+  {FSA_INIT    , fnExpDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_NONCE   , NULL        , NULL        },   // Rational separator (rR)
@@ -493,7 +493,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnAlpAccum  , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnAlpDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnAlpDone   , fnSysInit   },   // Quad
-  {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Underbar
+  {FSA_INIT    , fnAlpDone   , fnInfinity  },   // Infinity
   {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Overbar
   {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Complex separator (iIjJ)
   {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Rational separator (rR)
@@ -526,7 +526,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYSNAME , fnSysAccum  , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnSysDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnSysDone   , fnSysInit   },   // Quad
-  {FSA_SYSNAME , fnSysAccum  , NULL        },   // Underbar
+  {FSA_INIT    , fnSysDone   , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnSysDone   , fnNegInit   },   // Overbar
   {FSA_SYSNAME , fnSysAccum  , NULL        },   // Complex separator (iIjJ)
   {FSA_SYSNAME , fnSysAccum  , NULL        },   // Rational separator (rR)
@@ -559,7 +559,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // 'a..zA..Z'
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Alpha or Omega
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Quad
-  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Underbar
+  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Infinity
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Overbar
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Complex separator (iIjJ)
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Rational separator (rR)
@@ -592,7 +592,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnQuo1Done  , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnQuo1Done  , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnQuo1Done  , fnSysInit   },   // Quad
-  {FSA_INIT    , fnQuo1Done  , fnInfinity  },   // Underbar
+  {FSA_INIT    , fnQuo1Done  , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnQuo1Done  , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnQuo1Done  , fnAlpInit   },   // Complex separator (iIjJ)
   {FSA_ALPHA   , fnQuo1Done  , fnAlpInit   },   // Rational separator (rR)
@@ -625,7 +625,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // 'a..zA..Z'
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Alpha or Omega
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Quad
-  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Underbar
+  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Infinity
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Overbar
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Complex separator (iIjJ)
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Rational separator (rR)
@@ -658,7 +658,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnQuo2Done  , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnQuo2Done  , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnQuo2Done  , fnSysInit   },   // Quad
-  {FSA_INIT    , fnQuo2Done  , fnInfinity  },   // Underbar
+  {FSA_INIT    , fnQuo2Done  , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnQuo2Done  , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnQuo2Done  , fnAlpInit   },   // Complex separator (iIjJ)
   {FSA_ALPHA   , fnQuo2Done  , fnAlpInit   },   // Rational separator (rR)
@@ -691,7 +691,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnDotDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnDotDone   , fnSysInit   },   // Quad
-  {FSA_INIT    , fnDotDone   , fnInfinity  },   // Underbar
+  {FSA_INIT    , fnDotDone   , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnDotDone   , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // Complex separator (iIjJ)
   {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // Rational separator (rR)
@@ -724,7 +724,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnJotDone   , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnJotDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnJotDone   , fnSysInit   },   // Quad
-  {FSA_INIT    , fnJotDone   , fnInfinity  },   // Underbar
+  {FSA_INIT    , fnJotDone   , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnJotDone   , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnJotDone   , fnAlpInit   },   // Complex separator (iIjJ)
   {FSA_ALPHA   , fnJotDone   , fnAlpInit   },   // Rational separator (rR)
@@ -757,7 +757,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnOutDone   , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnOutDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnOutDone   , fnSysInit   },   // Quad
-  {FSA_INIT    , fnOutDone   , fnInfinity  },   // Underbar
+  {FSA_INIT    , fnOutDone   , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnOutDone   , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnOutDone   , fnAlpInit   },   // Complex separator (iIjJ)
   {FSA_ALPHA   , fnOutDone   , fnAlpInit   },   // Rational separator (rR)
@@ -1570,7 +1570,7 @@ BOOL fnPrmDone
 //***************************************************************************
 //  $fnInfinity
 //
-//  Infinity symbol (_)
+//  Infinity symbol (_ or 0x221E)
 //***************************************************************************
 
 BOOL fnInfinity
@@ -2344,8 +2344,8 @@ The format of a token is defined in tokens.h
 HGLOBAL Tokenize_EM
     (LPAPLCHAR   lpwszLine,     // The line to tokenize (not necessarily zero-terminated)
      UINT        uLen,          // The length of the above line
-     HWND        hWndEC,        // Window handle for Edit Control
-     LPERRHANDFN lpErrHandFn)   // Ptr to error handling function
+     HWND        hWndEC,        // Window handle for Edit Control (may be NULL if lpErrHandFn is NULL)
+     LPERRHANDFN lpErrHandFn)   // Ptr to error handling function (may be NULL)
 
 {
     UINT         uChar;         // Loop counter
@@ -3025,7 +3025,8 @@ WCHAR CharTrans
             return COL_RATIONAL;
 
         case L'_':
-            return COL_UNDERBAR;
+        case UTF16_INFINITY:
+            return COL_INFINITY;
 
         case L'.':
             return COL_DOT;
@@ -3058,7 +3059,7 @@ WCHAR CharTrans
         case UTF16_UPSHOE:              // Alt-'c' - up shoe
         case UTF16_DOWNSTILE:           // Alt-'d' - down stile
         case UTF16_EPSILON:             // Alt-'e' - epsilon
-////////case UTF16_UNDERBAR:            // Alt-'f' - underbar (COL_ALPHA)
+////////case UTF16_INFINITY:            // Alt-'f' - infinity (COL_INFINITY)
 ////////case UTF16_DEL:                 // Alt-'g' - del (COL_UNK)
 ////////case UTF16_DELTA:               // Alt-'h' - delta (COL_ALPHA)
         case UTF16_IOTA:                // Alt-'i' - iota
@@ -3281,7 +3282,7 @@ static COLNAMES colNames[] =
  {L"ALPHA"     , COL_ALPHA     },   // 03: Alphabetic
  {L"DIRIDENT"  , COL_DIRIDENT  },   // 04: Alpha or Omega
  {L"Q_QQ"      , COL_Q_QQ      },   // 05: Quad
- {L"UNDERBAR"  , COL_UNDERBAR  },   // 06: Underbar (infinity)
+ {L"INFINITY"  , COL_INFINITY  },   // 06: Infinity
  {L"OVERBAR"   , COL_OVERBAR   },   // 07: Overbar
  {L"COMPLEX"   , COL_COMPLEX   },   // 08: Complex number separator
  {L"RATIONAL"  , COL_RATIONAL  },   // 09: Rational number separator

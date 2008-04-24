@@ -669,16 +669,17 @@ BOOL ExecFuncOnToken_EM
             case TKT_VARIMMED:
                 // Convert the immediate value into a symbol table constant,
                 //   and save into the result
-                *((LPAPLNESTED) *lplpMemRes)++ = MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,
-                                                                 &lpYYRes->tkToken.tkData.tkLongest,
-                                                                 &lpYYFcnStr->tkToken);
+                *((LPAPLNESTED) *lplpMemRes)++ =
+                  MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,    // Immediate type
+                                  &lpYYRes->tkToken.tkData.tkLongest,   // Ptr to immediate value
+                                  &lpYYFcnStr->tkToken);                // Ptr to function token
                 break;
 
             case TKT_VARARRAY:
                 // Copy (increment the reference count of) the global object,
                 //   and save into the result
-                *((LPAPLNESTED) *lplpMemRes)++ = CopySymGlbDir (lpYYRes->tkToken.tkData.tkGlbData);
-
+                *((LPAPLNESTED) *lplpMemRes)++ =
+                  CopySymGlbDir (lpYYRes->tkToken.tkData.tkGlbData);
                 break;
 
             defstop

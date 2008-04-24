@@ -395,11 +395,11 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    HGLOBAL      hGlbRes;
-    APLSTYPE     aplTypeRes,
-                 aplTypeRht;
-    APLRANK      aplRankRht;
-    APLNELM      aplNELMRht;
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    APLSTYPE     aplTypeRes,        // Result storage type
+                 aplTypeRht;        // Right arg storage type
+    APLRANK      aplRankRht;        // Right arg rank
+    APLNELM      aplNELMRht;        // Right arg NELM
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     DBGENTER;
@@ -458,6 +458,9 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir (hGlbRes));
 
+                // In order to make roll atomic, save the current []RL into lpPrimSpec
+                SavePrimSpecRL (lpPrimSpec);
+
                 // Handle via subroutine
                 hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirAsGlb (hGlbRes),
                                            lptkFunc,
@@ -468,6 +471,9 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
 
                     return NULL;
                 } // End IF
+
+                // Restore the value of []RL from lpPrimSpec
+                RestPrimSpecRL (lpPrimSpec);
 
                 // Fill in the result token
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -490,98 +496,101 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
 ////////////lpYYRes->tkToken.tkData            =        // Filled in below
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 RESTART_EXCEPTION_VARNAMED:
+            // In order to make roll atomic, save the current []RL into lpPrimSpec
+            SavePrimSpecRL (lpPrimSpec);
+
             __try
             {
-            // Split cases based upon the storage type of the result
-            switch (aplTypeRes)
-            {
-                case ARRAY_BOOL:            // Res = BOOL
-                    // Split cases based upon the right arg's storage type
-                    switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
-                    {
-                        case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
-                            lpYYRes->tkToken.tkData.tkBoolean  =
-                              (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkSym->stData.stBoolean,
-                                                   lpPrimSpec);
-                            break;
+                // Split cases based upon the storage type of the result
+                switch (aplTypeRes)
+                {
+                    case ARRAY_BOOL:            // Res = BOOL
+                        // Split cases based upon the right arg's storage type
+                        switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
+                                lpYYRes->tkToken.tkData.tkBoolean  =
+                                  (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkSym->stData.stBoolean,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_INT:   // Res = BOOL, Rht = INT
-                            lpYYRes->tkToken.tkData.tkBoolean  =
-                              (*lpPrimSpec->BisI) (lptkRhtArg->tkData.tkSym->stData.stInteger,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_INT:   // Res = BOOL, Rht = INT
+                                lpYYRes->tkToken.tkData.tkBoolean  =
+                                  (*lpPrimSpec->BisI) (lptkRhtArg->tkData.tkSym->stData.stInteger,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
-                            lpYYRes->tkToken.tkData.tkBoolean  =
-                              (*lpPrimSpec->BisF) (lptkRhtArg->tkData.tkSym->stData.stFloat,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
+                                lpYYRes->tkToken.tkData.tkBoolean  =
+                                  (*lpPrimSpec->BisF) (lptkRhtArg->tkData.tkSym->stData.stFloat,
+                                                       lpPrimSpec);
+                                break;
 
-                        defstop
-                            return NULL;
-                    } // End SWITCH
+                            defstop
+                                return NULL;
+                        } // End SWITCH
 
-                    break;
+                        break;
 
-                case ARRAY_INT:             // Res = INT
-                    // Split cases based upon the right arg's storage type
-                    switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
-                    {
-                        case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
-                            lpYYRes->tkToken.tkData.tkInteger  =
-                              (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean,
-                                                   lpPrimSpec);
-                            break;
+                    case ARRAY_INT:             // Res = INT
+                        // Split cases based upon the right arg's storage type
+                        switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
+                                lpYYRes->tkToken.tkData.tkInteger  =
+                                  (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_INT:   // Res = INT, Rht = INT
-                            lpYYRes->tkToken.tkData.tkInteger  =
-                              (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkSym->stData.stInteger,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_INT:   // Res = INT, Rht = INT
+                                lpYYRes->tkToken.tkData.tkInteger  =
+                                  (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkSym->stData.stInteger,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
-                            lpYYRes->tkToken.tkData.tkInteger  =
-                              (*lpPrimSpec->IisF) (lptkRhtArg->tkData.tkSym->stData.stFloat,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
+                                lpYYRes->tkToken.tkData.tkInteger  =
+                                  (*lpPrimSpec->IisF) (lptkRhtArg->tkData.tkSym->stData.stFloat,
+                                                       lpPrimSpec);
+                                break;
 
-                        defstop
-                            return NULL;
-                    } // End SWITCH
+                            defstop
+                                return NULL;
+                        } // End SWITCH
 
-                    break;
+                        break;
 
-                case ARRAY_FLOAT:           // Res = FLOAT
-                    // Split cases based upon the right arg's storage type
-                    switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
-                    {
-                        case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
-                            lpYYRes->tkToken.tkData.tkFloat  =
-                              (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean,
-                                                   lpPrimSpec);
-                            break;
+                    case ARRAY_FLOAT:           // Res = FLOAT
+                        // Split cases based upon the right arg's storage type
+                        switch (lptkRhtArg->tkData.tkSym->stFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
+                                lpYYRes->tkToken.tkData.tkFloat  =
+                                  (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkSym->stData.stBoolean,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
-                            lpYYRes->tkToken.tkData.tkFloat  =
-                              (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkSym->stData.stInteger,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
+                                lpYYRes->tkToken.tkData.tkFloat  =
+                                  (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkSym->stData.stInteger,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
-                            lpYYRes->tkToken.tkData.tkFloat  =
-                              (*lpPrimSpec->FisF) (lptkRhtArg->tkData.tkSym->stData.stFloat,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
+                                lpYYRes->tkToken.tkData.tkFloat  =
+                                  (*lpPrimSpec->FisF) (lptkRhtArg->tkData.tkSym->stData.stFloat,
+                                                       lpPrimSpec);
+                                break;
 
-                        defstop
-                            return NULL;
-                    } // End SWITCH
+                            defstop
+                                return NULL;
+                        } // End SWITCH
 
-                    break;
+                        break;
 
-                defstop
-                    return NULL;
-            } // SWITCH
+                    defstop
+                        return NULL;
+                } // SWITCH
             } __except (CheckException (GetExceptionInformation (), "PrimFnMon_EM_YY #1"))
             {
 #ifdef DEBUG
@@ -624,104 +633,110 @@ RESTART_EXCEPTION_VARNAMED:
                 } // End SWITCH
             } // End __try/__except
 
+            // Restore the value of []RL from lpPrimSpec
+            RestPrimSpecRL (lpPrimSpec);
+
             DBGLEAVE;
 
             return lpYYRes;
 
         case TKT_VARIMMED:
 RESTART_EXCEPTION_VARIMMED:
+            // In order to make roll atomic, save the current []RL into lpPrimSpec
+            SavePrimSpecRL (lpPrimSpec);
+
             __try
             {
-            // Split cases based upon the result storage type
-            switch (aplTypeRes)
-            {
-                case ARRAY_BOOL:            // Res = BOOL
-                    // Split cases based upon the right arg's storage type
-                    switch (lptkRhtArg->tkFlags.ImmType)
-                    {
-                        case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
-                            lpYYRes->tkToken.tkData.tkBoolean =
-                              (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkBoolean,
-                                                   lpPrimSpec);
-                            break;
+                // Split cases based upon the result storage type
+                switch (aplTypeRes)
+                {
+                    case ARRAY_BOOL:            // Res = BOOL
+                        // Split cases based upon the right arg's storage type
+                        switch (lptkRhtArg->tkFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
+                                lpYYRes->tkToken.tkData.tkBoolean =
+                                  (*lpPrimSpec->BisB) (lptkRhtArg->tkData.tkBoolean,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_INT:   // Res = BOOL, Rht = INT
-                            lpYYRes->tkToken.tkData.tkBoolean =
-                              (*lpPrimSpec->BisI) (lptkRhtArg->tkData.tkInteger,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_INT:   // Res = BOOL, Rht = INT
+                                lpYYRes->tkToken.tkData.tkBoolean =
+                                  (*lpPrimSpec->BisI) (lptkRhtArg->tkData.tkInteger,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
-                            lpYYRes->tkToken.tkData.tkBoolean =
-                              (*lpPrimSpec->BisF) (lptkRhtArg->tkData.tkFloat,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
+                                lpYYRes->tkToken.tkData.tkBoolean =
+                                  (*lpPrimSpec->BisF) (lptkRhtArg->tkData.tkFloat,
+                                                       lpPrimSpec);
+                                break;
 
-                        defstop
-                            return NULL;
-                    } // End SWITCH
+                            defstop
+                                return NULL;
+                        } // End SWITCH
 
-                    break;
+                        break;
 
-                case ARRAY_INT:             // Res = INT
-                    // Split cases based upon the right arg's storage type
-                    switch (lptkRhtArg->tkFlags.ImmType)
-                    {
-                        case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
-                            lpYYRes->tkToken.tkData.tkInteger =
-                              (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkBoolean,
-                                                   lpPrimSpec);
-                            break;
+                    case ARRAY_INT:             // Res = INT
+                        // Split cases based upon the right arg's storage type
+                        switch (lptkRhtArg->tkFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
+                                lpYYRes->tkToken.tkData.tkInteger =
+                                  (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkBoolean,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_INT:   // Res = INT, Rht = INT
-                            lpYYRes->tkToken.tkData.tkInteger =
-                              (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkInteger,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_INT:   // Res = INT, Rht = INT
+                                lpYYRes->tkToken.tkData.tkInteger =
+                                  (*lpPrimSpec->IisI) (lptkRhtArg->tkData.tkInteger,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
-                            lpYYRes->tkToken.tkData.tkInteger =
-                              (*lpPrimSpec->IisF) (lptkRhtArg->tkData.tkFloat,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
+                                lpYYRes->tkToken.tkData.tkInteger =
+                                  (*lpPrimSpec->IisF) (lptkRhtArg->tkData.tkFloat,
+                                                       lpPrimSpec);
+                                break;
 
-                        defstop
-                            return NULL;
-                    } // End SWITCH
+                            defstop
+                                return NULL;
+                        } // End SWITCH
 
-                    break;
+                        break;
 
-                case ARRAY_FLOAT:           // Res = FLOAT
-                    // Split cases based upon the right arg's storage type
-                    switch (lptkRhtArg->tkFlags.ImmType)
-                    {
-                        case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
-                            lpYYRes->tkToken.tkData.tkFloat   =
-                              (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkBoolean,
-                                                   lpPrimSpec);
-                            break;
+                    case ARRAY_FLOAT:           // Res = FLOAT
+                        // Split cases based upon the right arg's storage type
+                        switch (lptkRhtArg->tkFlags.ImmType)
+                        {
+                            case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
+                                lpYYRes->tkToken.tkData.tkFloat   =
+                                  (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkBoolean,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
-                            lpYYRes->tkToken.tkData.tkFloat   =
-                              (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkInteger,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
+                                lpYYRes->tkToken.tkData.tkFloat   =
+                                  (*lpPrimSpec->FisI) (lptkRhtArg->tkData.tkInteger,
+                                                       lpPrimSpec);
+                                break;
 
-                        case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
-                            lpYYRes->tkToken.tkData.tkFloat   =
-                              (*lpPrimSpec->FisF) (lptkRhtArg->tkData.tkFloat,
-                                                   lpPrimSpec);
-                            break;
+                            case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
+                                lpYYRes->tkToken.tkData.tkFloat   =
+                                  (*lpPrimSpec->FisF) (lptkRhtArg->tkData.tkFloat,
+                                                       lpPrimSpec);
+                                break;
 
-                        defstop
-                            return NULL;
-                    } // End SWITCH
+                            defstop
+                                return NULL;
+                        } // End SWITCH
 
-                    break;
+                        break;
 
-                defstop
-                    return NULL;
-            } // End SWITCH
+                    defstop
+                        return NULL;
+                } // End SWITCH
             } __except (CheckException (GetExceptionInformation (), "PrimFnMon_EM_YY #2"))
             {
 #ifdef DEBUG
@@ -764,6 +779,9 @@ RESTART_EXCEPTION_VARIMMED:
                 } // End SWITCH
             } // End __try/__except
 
+            // Restore the value of []RL from lpPrimSpec
+            RestPrimSpecRL (lpPrimSpec);
+
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
             lpYYRes->tkToken.tkFlags.ImmType   = aplTypeRes;
@@ -782,6 +800,9 @@ RESTART_EXCEPTION_VARIMMED:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (hGlbRes));
 
+            // In order to make roll atomic, save the current []RL into lpPrimSpec
+            SavePrimSpecRL (lpPrimSpec);
+
             // Handle via subroutine
             hGlbRes = PrimFnMonGlb_EM (ClrPtrTypeDirAsGlb (hGlbRes),
                                        lptkFunc,
@@ -792,6 +813,9 @@ RESTART_EXCEPTION_VARIMMED:
 
                 return NULL;
             } // End IF
+
+            // Restore the value of []RL from lpPrimSpec
+            RestPrimSpecRL (lpPrimSpec);
 
             // Fill in the result token
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -950,353 +974,353 @@ RESTART_EXCEPTION:
 
     __try
     {
-    // Split cases based upon the storage type of the result
-    switch (aplTypeRes)
-    {
-        case ARRAY_BOOL:            // Res = BOOL
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_BOOL:    // Res = BOOL, Rht = BOOL
-                    // ***FIXME*** -- Optimize by chunking
-
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                    {
-                        *((LPAPLBOOL) lpMemRes) |=
-                          (*lpPrimSpec->BisB) ((APLBOOL) (BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex)),
-                                               lpPrimSpec) << uBitIndex;
-                        // Check for end-of-byte
-                        if (++uBitIndex EQ NBIB)
-                        {
-                            uBitIndex = 0;              // Start over
-                            ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
-                            ((LPAPLBOOL) lpMemRes)++;   // ...
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_INT:     // Res = BOOL, Rht = INT
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                    {
-                        *((LPAPLBOOL) lpMemRes) |=
-                          (*lpPrimSpec->BisI) (*((LPAPLINT) lpMemRht)++,
-                                               lpPrimSpec) << uBitIndex;
-
-                        // Check for end-of-byte
-                        if (++uBitIndex EQ NBIB)
-                        {
-                            uBitIndex = 0;              // Start over
-                            ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_APA:     // Res = BOOL, Rht = APA
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                    {
-                        *((LPAPLBOOL) lpMemRes) |=
-                          (*lpPrimSpec->BisI) (apaOffRht + apaMulRht * uRes,
-                                               lpPrimSpec) << uBitIndex;
-
-                        // Check for end-of-byte
-                        if (++uBitIndex EQ NBIB)
-                        {
-                            uBitIndex = 0;              // Start over
-                            ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_FLOAT:   // Res = BOOL, Rht = FLOAT
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                    {
-                        *((LPAPLBOOL) lpMemRes) |=
-                          (*lpPrimSpec->BisF) (*((LPAPLFLOAT) lpMemRht)++,
-                                               lpPrimSpec) << uBitIndex;
-
-                        // Check for end-of-byte
-                        if (++uBitIndex EQ NBIB)
-                        {
-                            uBitIndex = 0;              // Start over
-                            ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                defstop
-                    break;
-            } // End FOR/SWITCH
-
-            break;
-
-        case ARRAY_INT:             // Res = INT
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_BOOL:    // Res = INT, Rht = BOOL
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                    {
-                        *((LPAPLINT) lpMemRes)++ =
-                          (*lpPrimSpec->IisI) (BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex),
-                                               lpPrimSpec);
-
-                        // Check for end-of-byte
-                        if (++uBitIndex EQ NBIB)
-                        {
-                            uBitIndex = 0;              // Start over
-                            ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_INT:     // Res = INT, Rht = INT
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                        *((LPAPLINT) lpMemRes)++ =
-                          (*lpPrimSpec->IisI) (*((LPAPLINT) lpMemRht)++,
-                                               lpPrimSpec);
-                    break;
-
-                case ARRAY_FLOAT:   // Res = INT, Rht = FLOAT
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                        *((LPAPLINT) lpMemRes)++ =
-                          (*lpPrimSpec->IisF) (*((LPAPLFLOAT) lpMemRht)++,
-                                               lpPrimSpec);
-                    break;
-
-                case ARRAY_APA:     // Res = INT, Rht = APA
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                        *((LPAPLINT) lpMemRes)++ =
-                          (*lpPrimSpec->IisI) (apaOffRht + apaMulRht * uRes,
-                                               lpPrimSpec);
-                    break;
-
-                defstop
-                    break;
-            } // End FOR/SWITCH
-
-            break;
-
-        case ARRAY_FLOAT:           // Res = FLOAT
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_BOOL:    // Res = FLOAT, Rht = BOOL
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                    {
-                        *((LPAPLFLOAT) lpMemRes)++ =
-                          (*lpPrimSpec->FisI) (BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex),
-                                               lpPrimSpec);
-                        // Check for end-of-byte
-                        if (++uBitIndex EQ NBIB)
-                        {
-                            uBitIndex = 0;              // Start over
-                            ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_INT:     // Res = FLOAT, Rht = INT
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                        *((LPAPLFLOAT) lpMemRes)++ =
-                          (*lpPrimSpec->FisI) (*((LPAPLINT) lpMemRht)++,
-                                               lpPrimSpec);
-                    break;
-
-                case ARRAY_APA:     // Res = FLOAT, Rht = APA
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                        *((LPAPLFLOAT) lpMemRes)++ =
-                          (*lpPrimSpec->FisI) (apaOffRht + apaMulRht * uRes,
-                                               lpPrimSpec);
-                    break;
-
-                case ARRAY_FLOAT:   // Res = FLOAT, Rht = FLOAT
-                    // Loop through the right arg/result
-                    for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
-                        *((LPAPLFLOAT) lpMemRes)++ =
-                          (*lpPrimSpec->FisF) (*((LPAPLFLOAT) lpMemRht)++,
-                                               lpPrimSpec);
-                    break;
-
-                defstop
-                    break;
-            } // End FOR/SWITCH
-
-            break;
-
-        case ARRAY_NESTED:          // Res = NESTED
-            // Loop through the right arg/result
-            for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRht; uRes++, ((APLNESTED *) lpMemRht)++)
-            switch (GetPtrTypeInd (lpMemRht))
-            {
-                case PTRTYPE_STCONST:
+        // Split cases based upon the storage type of the result
+        switch (aplTypeRes)
+        {
+            case ARRAY_BOOL:            // Res = BOOL
+                // Split cases based upon the right arg's storage type
+                switch (aplTypeRht)
                 {
-                    APLSTYPE   aplTypeRes2,
-                               aplTypeRht2;
-                    LPSYMENTRY lpSymSrc,
-                               lpSymDst;
+                    case ARRAY_BOOL:    // Res = BOOL, Rht = BOOL
+                        // ***FIXME*** -- Optimize by chunking
 
-                    // Get the type of the SYMENTRY
-                    aplTypeRht2 = TranslateImmTypeToArrayType ((ClrPtrTypeIndAsSym (lpMemRht))->stFlags.ImmType);
-
-                    // Get the storage type of the result
-                    aplTypeRes2 = (*lpPrimSpec->StorageTypeMon) (1,
-                                                                &aplTypeRht2,
-                                                                 lptkFunc);
-                    // Check for DOMAIN ERROR
-                    if (aplTypeRes2 EQ ARRAY_ERROR)
-                    {
-                        // Mark as a DOMAIN ERROR
-                        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                                   lptkFunc);
-                        goto ERROR_EXIT;
-                    } // End IF
-
-                    // Copy the SYMENTRY as the same type as the result
-                    lpSymSrc = ClrPtrTypeIndAsSym (lpMemRht);
-                    lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
-                                                   TranslateArrayTypeToImmType (aplTypeRes2),
-                                                   lptkFunc);
-                    if (lpSymDst)
-                    {
-                        // Split cases based upon the result storage type
-                        switch (aplTypeRes2)
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
                         {
-                            case ARRAY_BOOL:            // Res = BOOL
-                                // Split cases based upon the right arg's storage type
-                                switch (lpSymSrc->stFlags.ImmType)
-                                {
-                                    case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
-                                        lpSymDst->stData.stBoolean =
-                                          (*lpPrimSpec->BisB) (lpSymSrc->stData.stBoolean,
-                                                               lpPrimSpec);
-                                        break;
+                            *((LPAPLBOOL) lpMemRes) |=
+                              (*lpPrimSpec->BisB) ((APLBOOL) (BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex)),
+                                                   lpPrimSpec) << uBitIndex;
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;              // Start over
+                                ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                                ((LPAPLBOOL) lpMemRes)++;   // ...
+                            } // End IF
+                        } // End FOR
 
-                                    case IMMTYPE_INT:   // Res = BOOL, Rht = INT
-                                        DbgBrk ();  // ***TESTME*** -- No such primitive
+                        break;
 
-                                        lpSymDst->stData.stBoolean =
-                                          (*lpPrimSpec->BisI) (lpSymSrc->stData.stInteger,
-                                                               lpPrimSpec);
-                                        break;
+                    case ARRAY_INT:     // Res = BOOL, Rht = INT
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            *((LPAPLBOOL) lpMemRes) |=
+                              (*lpPrimSpec->BisI) (*((LPAPLINT) lpMemRht)++,
+                                                   lpPrimSpec) << uBitIndex;
 
-                                    case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
-                                        lpSymDst->stData.stBoolean =
-                                          (*lpPrimSpec->BisF) (lpSymSrc->stData.stFloat,
-                                                               lpPrimSpec);
-                                        break;
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;              // Start over
+                                ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                            } // End IF
+                        } // End FOR
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
+                        break;
 
-                                break;
+                    case ARRAY_APA:     // Res = BOOL, Rht = APA
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            *((LPAPLBOOL) lpMemRes) |=
+                              (*lpPrimSpec->BisI) (apaOffRht + apaMulRht * uRes,
+                                                   lpPrimSpec) << uBitIndex;
 
-                            case ARRAY_INT:
-                                // Split cases based upon the right arg's storage type
-                                switch (lpSymSrc->stFlags.ImmType)
-                                {
-                                    case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
-                                        DbgBrk ();  // ***TESTME*** -- No such primitive
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;              // Start over
+                                ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                            } // End IF
+                        } // End FOR
 
-                                        lpSymDst->stData.stInteger =
-                                          (*lpPrimSpec->IisI) (lpSymSrc->stData.stBoolean,
-                                                               lpPrimSpec);
-                                        break;
+                        break;
 
-                                    case IMMTYPE_INT:   // Res = INT, Rht = INT
-                                        lpSymDst->stData.stInteger =
-                                          (*lpPrimSpec->IisI) (lpSymSrc->stData.stInteger,
-                                                               lpPrimSpec);
-                                        break;
+                    case ARRAY_FLOAT:   // Res = BOOL, Rht = FLOAT
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            *((LPAPLBOOL) lpMemRes) |=
+                              (*lpPrimSpec->BisF) (*((LPAPLFLOAT) lpMemRht)++,
+                                                   lpPrimSpec) << uBitIndex;
 
-                                    case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
-                                        lpSymDst->stData.stInteger =
-                                          (*lpPrimSpec->IisF) (lpSymSrc->stData.stFloat,
-                                                               lpPrimSpec);
-                                        break;
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;              // Start over
+                                ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                            } // End IF
+                        } // End FOR
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
+                        break;
 
-                                break;
+                    defstop
+                        break;
+                } // End FOR/SWITCH
 
-                            case ARRAY_FLOAT:
-                                // Split cases based upon the right arg's storage type
-                                switch (lpSymSrc->stFlags.ImmType)
-                                {
-                                    case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
-                                        lpSymDst->stData.stFloat =
-                                          (*lpPrimSpec->FisI) (lpSymSrc->stData.stBoolean,
-                                                               lpPrimSpec);
-                                        break;
+                break;
 
-                                    case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
-                                        lpSymDst->stData.stFloat =
-                                          (*lpPrimSpec->FisI) (lpSymSrc->stData.stInteger,
-                                                               lpPrimSpec);
-                                        break;
+            case ARRAY_INT:             // Res = INT
+                // Split cases based upon the right arg's storage type
+                switch (aplTypeRht)
+                {
+                    case ARRAY_BOOL:    // Res = INT, Rht = BOOL
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            *((LPAPLINT) lpMemRes)++ =
+                              (*lpPrimSpec->IisI) (BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex),
+                                                   lpPrimSpec);
 
-                                    case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
-                                        lpSymDst->stData.stFloat =
-                                          (*lpPrimSpec->FisF) (lpSymSrc->stData.stFloat,
-                                                               lpPrimSpec);
-                                        break;
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;              // Start over
+                                ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                            } // End IF
+                        } // End FOR
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
+                        break;
 
-                                break;
+                    case ARRAY_INT:     // Res = INT, Rht = INT
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                            *((LPAPLINT) lpMemRes)++ =
+                              (*lpPrimSpec->IisI) (*((LPAPLINT) lpMemRht)++,
+                                                   lpPrimSpec);
+                        break;
 
-                            defstop
-                                break;
-                        } // End SWITCH
+                    case ARRAY_FLOAT:   // Res = INT, Rht = FLOAT
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                            *((LPAPLINT) lpMemRes)++ =
+                              (*lpPrimSpec->IisF) (*((LPAPLFLOAT) lpMemRht)++,
+                                                   lpPrimSpec);
+                        break;
 
-                        // Save in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeSym (lpSymDst);
-                    } else
-                        bRet = FALSE;
-                    break;
-                } // End PTRTYPE_STCONST
+                    case ARRAY_APA:     // Res = INT, Rht = APA
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                            *((LPAPLINT) lpMemRes)++ =
+                              (*lpPrimSpec->IisI) (apaOffRht + apaMulRht * uRes,
+                                                   lpPrimSpec);
+                        break;
 
-                case PTRTYPE_HGLOBAL:
-                    // Handle via subroutine
-                    hGlbSub = PrimFnMonGlb_EM (ClrPtrTypeIndAsGlb (lpMemRht),
-                                               lptkFunc,
-                                               lpPrimSpec);
-                    if (hGlbSub)
-                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
-                    else
-                        bRet = FALSE;
-                    break;
+                    defstop
+                        break;
+                } // End FOR/SWITCH
 
-                defstop
-                    break;
-            } // End FOR/SWITCH
+                break;
 
-            break;
+            case ARRAY_FLOAT:           // Res = FLOAT
+                // Split cases based upon the right arg's storage type
+                switch (aplTypeRht)
+                {
+                    case ARRAY_BOOL:    // Res = FLOAT, Rht = BOOL
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                        {
+                            *((LPAPLFLOAT) lpMemRes)++ =
+                              (*lpPrimSpec->FisI) (BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex),
+                                                   lpPrimSpec);
+                            // Check for end-of-byte
+                            if (++uBitIndex EQ NBIB)
+                            {
+                                uBitIndex = 0;              // Start over
+                                ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
+                            } // End IF
+                        } // End FOR
 
-        defstop
-            break;
-    } // End SWITCH
+                        break;
+
+                    case ARRAY_INT:     // Res = FLOAT, Rht = INT
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                            *((LPAPLFLOAT) lpMemRes)++ =
+                              (*lpPrimSpec->FisI) (*((LPAPLINT) lpMemRht)++,
+                                                   lpPrimSpec);
+                        break;
+
+                    case ARRAY_APA:     // Res = FLOAT, Rht = APA
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                            *((LPAPLFLOAT) lpMemRes)++ =
+                              (*lpPrimSpec->FisI) (apaOffRht + apaMulRht * uRes,
+                                                   lpPrimSpec);
+                        break;
+
+                    case ARRAY_FLOAT:   // Res = FLOAT, Rht = FLOAT
+                        // Loop through the right arg/result
+                        for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
+                            *((LPAPLFLOAT) lpMemRes)++ =
+                              (*lpPrimSpec->FisF) (*((LPAPLFLOAT) lpMemRht)++,
+                                                   lpPrimSpec);
+                        break;
+
+                    defstop
+                        break;
+                } // End FOR/SWITCH
+
+                break;
+
+            case ARRAY_NESTED:          // Res = NESTED
+                // Loop through the right arg/result
+                for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRht; uRes++, ((APLNESTED *) lpMemRht)++)
+                switch (GetPtrTypeInd (lpMemRht))
+                {
+                    case PTRTYPE_STCONST:
+                    {
+                        APLSTYPE   aplTypeRes2,
+                                   aplTypeRht2;
+                        LPSYMENTRY lpSymSrc,
+                                   lpSymDst;
+
+                        // Get the type of the SYMENTRY
+                        aplTypeRht2 = TranslateImmTypeToArrayType ((ClrPtrTypeIndAsSym (lpMemRht))->stFlags.ImmType);
+
+                        // Get the storage type of the result
+                        aplTypeRes2 = (*lpPrimSpec->StorageTypeMon) (1,
+                                                                    &aplTypeRht2,
+                                                                     lptkFunc);
+                        // Check for DOMAIN ERROR
+                        if (aplTypeRes2 EQ ARRAY_ERROR)
+                        {
+                            // Mark as a DOMAIN ERROR
+                            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                                       lptkFunc);
+                            goto ERROR_EXIT;
+                        } // End IF
+
+                        // Copy the SYMENTRY as the same type as the result
+                        lpSymSrc = ClrPtrTypeIndAsSym (lpMemRht);
+                        lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
+                                                       TranslateArrayTypeToImmType (aplTypeRes2),
+                                                       lptkFunc);
+                        if (lpSymDst)
+                        {
+                            // Split cases based upon the result storage type
+                            switch (aplTypeRes2)
+                            {
+                                case ARRAY_BOOL:            // Res = BOOL
+                                    // Split cases based upon the right arg's storage type
+                                    switch (lpSymSrc->stFlags.ImmType)
+                                    {
+                                        case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
+                                            lpSymDst->stData.stBoolean =
+                                              (*lpPrimSpec->BisB) (lpSymSrc->stData.stBoolean,
+                                                                   lpPrimSpec);
+                                            break;
+
+                                        case IMMTYPE_INT:   // Res = BOOL, Rht = INT
+                                            DbgBrk ();  // ***TESTME*** -- No such primitive
+
+                                            lpSymDst->stData.stBoolean =
+                                              (*lpPrimSpec->BisI) (lpSymSrc->stData.stInteger,
+                                                                   lpPrimSpec);
+                                            break;
+
+                                        case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
+                                            lpSymDst->stData.stBoolean =
+                                              (*lpPrimSpec->BisF) (lpSymSrc->stData.stFloat,
+                                                                   lpPrimSpec);
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_INT:
+                                    // Split cases based upon the right arg's storage type
+                                    switch (lpSymSrc->stFlags.ImmType)
+                                    {
+                                        case IMMTYPE_BOOL:  // Res = INT, Rht = BOOL
+                                            DbgBrk ();  // ***TESTME*** -- No such primitive
+
+                                            lpSymDst->stData.stInteger =
+                                              (*lpPrimSpec->IisI) (lpSymSrc->stData.stBoolean,
+                                                                   lpPrimSpec);
+                                            break;
+
+                                        case IMMTYPE_INT:   // Res = INT, Rht = INT
+                                            lpSymDst->stData.stInteger =
+                                              (*lpPrimSpec->IisI) (lpSymSrc->stData.stInteger,
+                                                                   lpPrimSpec);
+                                            break;
+
+                                        case IMMTYPE_FLOAT: // Res = INT, Rht = FLOAT
+                                            lpSymDst->stData.stInteger =
+                                              (*lpPrimSpec->IisF) (lpSymSrc->stData.stFloat,
+                                                                   lpPrimSpec);
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_FLOAT:
+                                    // Split cases based upon the right arg's storage type
+                                    switch (lpSymSrc->stFlags.ImmType)
+                                    {
+                                        case IMMTYPE_BOOL:  // Res = FLOAT, Rht = BOOL
+                                            lpSymDst->stData.stFloat =
+                                              (*lpPrimSpec->FisI) (lpSymSrc->stData.stBoolean,
+                                                                   lpPrimSpec);
+                                            break;
+
+                                        case IMMTYPE_INT:   // Res = FLOAT, Rht = INT
+                                            lpSymDst->stData.stFloat =
+                                              (*lpPrimSpec->FisI) (lpSymSrc->stData.stInteger,
+                                                                   lpPrimSpec);
+                                            break;
+
+                                        case IMMTYPE_FLOAT: // Res = FLOAT, Rht = FLOAT
+                                            lpSymDst->stData.stFloat =
+                                              (*lpPrimSpec->FisF) (lpSymSrc->stData.stFloat,
+                                                                   lpPrimSpec);
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Save in the result
+                            *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeSym (lpSymDst);
+                        } else
+                            bRet = FALSE;
+                        break;
+                    } // End PTRTYPE_STCONST
+
+                    case PTRTYPE_HGLOBAL:
+                        // Handle via subroutine
+                        hGlbSub = PrimFnMonGlb_EM (ClrPtrTypeIndAsGlb (lpMemRht),
+                                                   lptkFunc,
+                                                   lpPrimSpec);
+                        if (hGlbSub)
+                            *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                        else
+                            bRet = FALSE;
+                        break;
+
+                    defstop
+                        break;
+                } // End FOR/SWITCH
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), "PrimFnMonGlb_EM"))
     {
 #ifdef DEBUG
@@ -4536,9 +4560,9 @@ HGLOBAL PrimFnDydSiScSiSc_EM
                                   lpPrimSpec))
         // Convert the immediate type and value in tkRes
         //   into an LPSYMENTRY
-        return MakeSymEntry_EM (tkRes.tkFlags.ImmType,
-                               &tkRes.tkData.tkLongest,
-                                lptkFunc);
+        return MakeSymEntry_EM (tkRes.tkFlags.ImmType,      // Immediate type
+                               &tkRes.tkData.tkLongest,     // Ptr to immediate value
+                                lptkFunc);                  // Ptr to function token
     else
         return NULL;
 } // End PrimFnDydSiScSiSc_EM

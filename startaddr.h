@@ -135,7 +135,56 @@ typedef struct tagSTART_ADDRESSES
     // pf_dtackjot.c
     "PrimFnDownTackJot_EM_YY"   , (LPUCHAR) &PrimFnDownTackJot_EM_YY    ,
 
-    // po_*.c
+    // pf_equalund.c
+    "PrimFnEqualUnderbar_EM_YY" , (LPUCHAR) &PrimFnEqualUnderbar_EM_YY  ,
+
+    // pf_index.c
+    "ArrayIndexRef_EM_YY"       , (LPUCHAR) &ArrayIndexRef_EM_YY        ,
+
+    // pf_plus.c
+    "PrimFnPlus_EM_YY"          , (LPUCHAR) &PrimFnPlus_EM_YY           ,
+
+    // pf_qdot.c
+    "PrimFnQuoteDot_EM_YY"      , (LPUCHAR) &PrimFnQuoteDot_EM_YY       ,
+
+    // pf_query.c
+    "PrimFnQuery_EM_YY"         , (LPUCHAR) &PrimFnQuery_EM_YY          ,
+    "PrimFnDydQuery_EM_YY"      , (LPUCHAR) &PrimFnDydQuery_EM_YY       ,
+
+    // pf_utack.c
+    "PrimFnUpTack_EM_YY"        , (LPUCHAR) &PrimFnUpTack_EM_YY         ,
+    "PrimFnMonUpTack_EM_YY"     , (LPUCHAR) &PrimFnMonUpTack_EM_YY      ,
+    "PrimFnDydUpTack_EM_YY"     , (LPUCHAR) &PrimFnDydUpTack_EM_YY      ,
+
+    // po_cmiddot.c
+    "PrimOpDydCircleMiddleDotCommon_EM_YY", (LPUCHAR) &PrimOpDydCircleMiddleDotCommon_EM_YY,
+
+    // po_dicircle.c
+    "PrimOpDieresisCircle_EM_YY", (LPUCHAR) &PrimOpDieresisCircle_EM_YY ,
+
+    // po_dieresis.c
+    "PrimOpDieresis_EM_YY"      , (LPUCHAR) &PrimOpDieresis_EM_YY       ,
+
+    // po_dijot.c
+    "PrimOpDieresisJot_EM_YY"   , (LPUCHAR) &PrimOpDieresisJot_EM_YY    ,
+
+    // po_ditilde.c
+    "PrimOpDieresisTilde_EM_YY" , (LPUCHAR) &PrimOpDieresisTilde_EM_YY  ,
+
+    // po_dot.c
+    "PrimOpDot_EM_YY"           , (LPUCHAR) &PrimOpDot_EM_YY            ,
+
+    // po_jot.c
+    "PrimOpJot_EM_YY"           , (LPUCHAR) &PrimOpJot_EM_YY            ,
+
+    // po_jotdot.c
+    "PrimOpJotDot_EM_YY"        , (LPUCHAR) &PrimOpJotDot_EM_YY         ,
+
+    // po_slash.c
+    "PrimOpSlash_EM_YY"         , (LPUCHAR) &PrimOpSlash_EM_YY          ,
+
+    // po_slope.c
+    "PrimOpSlope_EM_YY"         , (LPUCHAR) &PrimOpSlope_EM_YY          ,
 
     // primfns.c
     "FillSISNxt"                , (LPUCHAR) &FillSISNxt                 ,
@@ -155,10 +204,13 @@ typedef struct tagSTART_ADDRESSES
     // sc_*.c
 
     // sessman.c
+    "SetAttrs"                  , (LPUCHAR) &SetAttrs                   ,
 
     // sort.c
+    "ShellSort"                 , (LPUCHAR) &ShellSort                  ,
 
     // strand.c
+    "InitVarStrand"             , (LPUCHAR) &InitVarStrand              ,
 
     // symtab.c
   #ifdef DEBUG
@@ -166,16 +218,22 @@ typedef struct tagSTART_ADDRESSES
   #endif
 
     // symtrans.c
+    "FcnTrans"                  , (LPUCHAR) &FcnTrans                   ,
 
     // syscmds.c
+    "IncorrectCommand"          , (LPUCHAR) &IncorrectCommand           ,
 
     // sysvars.c
+    "MakePermVars"              , (LPUCHAR) &MakePermVars               ,
 
     // tabctrl.c
+    "EnumCallbackShowHide"      , (LPUCHAR) &EnumCallbackShowHide       ,
 
     // tokenize.c
+    "UTLockAndSet"              , (LPUCHAR) &UTLockAndSet               ,
 
     // translate.c
+    "TranslateTknTypeToTknTypeNamed", (LPUCHAR) &TranslateTknTypeToTknTypeNamed,
 
     // typemote.c
     "TypeDemote"                , (LPUCHAR) &TypeDemote                 ,
@@ -185,6 +243,7 @@ typedef struct tagSTART_ADDRESSES
     "QueryPromote"              , (LPUCHAR) &QueryPromote               ,
 
     // ver.c
+    "LclFileVersionStr"         , (LPUCHAR) &LclFileVersionStr          ,
 
     // yyfns.c
     "YYAlloc"                   , (LPUCHAR) &_YYAlloc                   ,

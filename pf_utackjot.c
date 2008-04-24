@@ -432,10 +432,11 @@ DWORD WINAPI PrimFnMonUpTackJotInThread
     // Tokenize, parse, and untokenize the line
 
     // Tokenize the line
-    hGlbToken = Tokenize_EM (lpwszCompLine,
-                             lstrlenW (lpwszCompLine),
-                             hWndEC,
-                            &ErrorMessageDirect);
+    hGlbToken =
+      Tokenize_EM (lpwszCompLine,
+                   lstrlenW (lpwszCompLine),
+                   hWndEC,
+                  &ErrorMessageDirect);
     // If it's invalid, ...
     if (hGlbToken EQ NULL)
     {

@@ -95,6 +95,10 @@ BOOL AssignName_EM
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lptkSrc->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
+            // Ensure there's a value (could have come from a{is}{execute}'')
+            if (IsSymNoValue (lptkSrc->tkData.tkSym))
+                goto VALUE_EXIT;
+
             // If the target is a user-defined function/operator label, signal a SYNTAX ERROR
             if (lptkNam->tkData.tkSym->stFlags.DfnLabel)
                 goto SYNTAX_EXIT;
@@ -357,6 +361,11 @@ BOOL AssignName_EM
 #endif
 
     goto NORMAL_EXIT;
+
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                               lptkSrc);
+    goto ERROR_EXIT;
 
 SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,

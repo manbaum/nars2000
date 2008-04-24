@@ -45,13 +45,6 @@ typedef ULONGLONG   APLLONGEST;         // Longest datatype in TOKEN_DATA & SYMT
 #define MAX_APLDIM  0xFFFFFFFFFFFFFFFF  // ...     APLDIM
 #define MAX_APLINT  0xFFFFFFFFFFFFFFFF  // ...     APLINT
 
-#define SIGN_APLNELM(a)     ((a) >> 63)     // Sign bit of an APLNELM
-#define SIGN_APLRANK(a)     ((a) >> 63)     // ...            APLRANK
-#define SIGN_APLDIM(a)      ((a) >> 63)     // ...            APLDIM
-#define SIGN_APLINT(a)      (((APLUINT) a) >> 63) // ...      APLINT
-#define SIGN_APLUINT(a)     ((a) >> 63)     // ...            APLUINT
-#define SIGN_APLLONGEST(a)  ((a) >> 63)     // ...            APLLONGEST
-
 // # integers in an APLCHAR
 #define APLCHAR_SIZE    (BIT0 << (NBIB * sizeof (APLCHAR)))
 
@@ -128,48 +121,6 @@ typedef enum tagARRAY_TYPES
 // N.B. the order of elements in this vector matches
 //   the order of elements in the above ARRAY_TYPES enum.
 #define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 0
-
-// Define macro for detecting simple array type
-/////// IsSimple(a)         (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR || a EQ ARRAY_HETERO)
-#define IsSimple(a)         (uTypeMap[a] <= uTypeMap[ARRAY_HETERO])
-
-// Define macro for detecting simple non-heterogeneous array type
-/////// IsSimpleNH(a)       (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT || a EQ ARRAY_CHAR)
-#define IsSimpleNH(a)       (uTypeMap[a] < uTypeMap[ARRAY_HETERO])
-
-// Define macro for detecting simple numeric array type
-/////// IsSimpleNum(a)      (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA || a EQ ARRAY_FLOAT)
-#define IsSimpleNum(a)      (uTypeMap[a] < uTypeMap[ARRAY_CHAR])
-
-// Define macro for detecting simple Boolean array type
-#define IsSimpleBool(a)     (a EQ ARRAY_BOOL)
-
-// Define macro for detecting simple integer-like array type
-#define IsSimpleInt(a)      (a EQ ARRAY_BOOL || a EQ ARRAY_INT || a EQ ARRAY_APA)
-
-// Define macro for detecting simple APA array type
-#define IsSimpleAPA(a)      (a EQ ARRAY_APA)
-
-// Define macro for detecting simple float array type
-#define IsSimpleFlt(a)      (a EQ ARRAY_FLOAT)
-
-// Define macro for detecting simple character array type
-#define IsSimpleChar(a)     (a EQ ARRAY_CHAR)
-
-// Define macro for detecting simple character or heterogeneous array type
-#define IsSimpleCH(a)       (a EQ ARRAY_CHAR || a EQ ARRAY_HETERO)
-
-// Define macro for detecting simple hetero array type
-#define IsSimpleHet(a)      (a EQ ARRAY_HETERO)
-
-// Define macro for detecting nested array type
-#define IsNested(a)         (a EQ ARRAY_NESTED)
-
-// Define macro for detecting simple Boolean value
-#define IsBooleanValue(a)   (a EQ 0 || a EQ 1)
-
-// Define macro for detecting a parenthetic list
-#define IsTknParList(a)     ((a)->tkFlags.TknType EQ TKT_LISTPAR)
 
 // Define APA structure
 typedef struct tagAPLAPA    // Offset + Multiplier {times} {iota} Length (origin-0)
@@ -275,11 +226,6 @@ typedef struct tagVARARRAY_HEADER
                                 // 14:  Length
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
 
-// Macros to skip from the array base to either the dimensions or the data
-#define VarArrayBaseToDim(lpMem)          (LPAPLDIM) (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER)                            )
-#define VarArrayBaseToData(lpMem,aplRank) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * aplRank)
-#define VarArrayDimToData(lpMem,aplRank)  (LPVOID)   (((LPCHAR) lpMem)                            + sizeof (APLDIM) * aplRank)
-
 // Function array header signature
 #define FCNARRAY_HEADER_SIGNATURE   'SNCF'
 
@@ -296,9 +242,6 @@ typedef struct tagFCNARRAY_HEADER
                                     // 14:  Length
 } FCNARRAY_HEADER, *LPFCNARRAY_HEADER;
 
-// Macros to skip from the array base to the data
-#define FcnArrayBaseToData(lpMem) (LPVOID)   (((LPCHAR) lpMem) + sizeof (FCNARRAY_HEADER))
-
 // Named strand header
 #define VARNAMED_HEADER_SIGNATURE   'RTSN'
 
@@ -308,9 +251,6 @@ typedef struct tagVARNAMED_HEADER
     APLNELM          NELM;      // 04:  # elements in the array
                                 // 0C:  Length
 } VARNAMED_HEADER, *LPVARNAMED_HEADER;
-
-// Macros to skip from the array base to the data
-#define VarNamedBaseToData(lpMem) (LPVOID)   (((LPCHAR) lpMem) + sizeof (VARNAMED_HEADER))
 
 // Distinguish between immediate LPSYMENTRY and HGLOBAL in an array
 typedef enum tagPTR_TYPES
@@ -322,28 +262,6 @@ typedef enum tagPTR_TYPES
 } PTR_TYPES;            // No available entries (2 bits)
 
 #define PTRTYPE_MASK     3      // This masks the two low-order bits
-
-// Macros to clear the low-order bits of either an LPSYMENTRY,
-//   or HGLOBAL (luckily, both types of ptrs are the same size).
-// These macros come in either direct (Dir) or indirect (Ind) form
-#define ClrPtrTypeDir(lpMem)                       ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeDirAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeDirAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeDirAsFcn(lpMem)     (LPPRIMFNS)  ((~PTRTYPE_MASK) &  ( UINT)     lpMem)
-#define ClrPtrTypeInd(lpMem)                       ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
-#define ClrPtrTypeIndAsSym(lpMem)     (LPSYMENTRY) ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
-#define ClrPtrTypeIndAsGlb(lpMem)     (HGLOBAL)    ((~PTRTYPE_MASK) & *(PUINT_PTR) lpMem)
-
-// Macro to extract the low-order bits of a memory ptr used
-//   to distinguish between the various pointer types.
-#define GetPtrTypeInd(lpMem)    (  PTRTYPE_MASK  & *(PUINT_PTR) lpMem)
-#define GetPtrTypeDir(lpMem)    (  PTRTYPE_MASK  &  ( UINT)     lpMem)
-
-// Macro to create a masked LPSYMENTRY
-#define MakePtrTypeSym(lpMem)        ((LPSYMENTRY) (PTRTYPE_STCONST | (UINT) lpMem))
-
-// Macro to create a masked HGLOBAL
-#define MakePtrTypeGlb(lpMem)        ((HGLOBAL)    (PTRTYPE_HGLOBAL | (UINT) lpMem))
 
 // For LPSYMENTRY and HGLOBAL values in a temporary array, sometimes
 //   those values can be re-used in another array without having

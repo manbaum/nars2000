@@ -20,47 +20,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#include "macros.h"
+
 #define EQ ==
 #define NE !=
-
-#define LOSHORT(l)  ((short)((DWORD)(l) & 0xffff))
-#define HISHORT(l)  ((short)((DWORD)(l) >> 16))
 
 #define TRUE    1
 #define FALSE   0
 #define NEG1U   (   (UINT) -1)
 #define NEG1A   ((APLUINT) -1)
 
-#define MB(a)                   MessageBox  (NULL, a,  "NARS2000", MB_OK)
-#define MBW(a)                  MessageBoxW (NULL, a, L"NARS2000", MB_OK)
-#define MBC(a)              if (MessageBox  (NULL, a,  "NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define MBWC(a)             if (MessageBoxW (NULL, a, L"NARS2000", MB_OKCANCEL) EQ IDCANCEL) DbgBrk ()
-#define IsGlbTypeVarDir(a)  (IsGlobalTypeArray (            a, VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeVarInd(a)  (IsGlobalTypeArray (*(LPVOID *) a, VARARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnDir(a)  (IsGlobalTypeArray (            a, FCNARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeFcnInd(a)  (IsGlobalTypeArray (*(LPVOID *) a, FCNARRAY_HEADER_SIGNATURE))
-#define IsGlbTypeDfnDir(a)  (IsGlobalTypeArray (            a, DFN_HEADER_SIGNATURE))
-#define IsGlbTypeNamDir(a)  (IsGlobalTypeArray (            a, VARNAMED_HEADER_SIGNATURE))
-#define IsSymNoValue(a)     ((a)->stHshEntry EQ NULL                \
-                          && (a)->stFlags.Perm                      \
-                          && (a)->stFlags.Value EQ 0                \
-                          && (a)->stFlags.ObjName EQ OBJNAME_NONE   \
-                          && (a)->stFlags.stNameType EQ NAMETYPE_UNK)
-#define IsTokenNoValue(a)   ((a)                                    \
-                          && (a)->tkFlags.TknType EQ TKT_VARNAMED   \
-                          && IsSymNoValue ((a)->tkData.tkSym))
-#define IsSysName(a)        ((a)[0] EQ UTF16_QUAD || (a)[1] EQ UTF16_QUOTEQUAD)
-
-#define ByteAddr(a,b)       (&(((LPBYTE) (a))[b]))
-
-#define AplModI(m,a) PrimFnDydStileIisIvI (m, a, NULL)
-#define AplModF(m,a) PrimFnDydStileFisFvF (m, a, NULL)
-
 #define LOPART_DWORDLONG    ((DWORDLONG) 0x00000000FFFFFFFF)
 #define HIPART_DWORDLONG    ((DWORDLONG) 0xFFFFFFFF00000000)
-
-#define LODWORD(x)          ( (DWORD) (   (x) & LOPART_DWORDLONG ) )
-#define HIDWORD(x)          ( (DWORD) ( ( (x) & HIPART_DWORDLONG ) >> 32 ) )
 
 #define QWORD   ULONGLONG
 
@@ -72,85 +43,15 @@ default:        \
 #define FNLN    FileNameOnly (__FILE__), __LINE__
 
 #ifdef DEBUG
-  #define YYAlloc()     _YYAlloc(FNLN)
   #define LCLODSAPI     ODSAPI
 
   #define DBGENTER      if (gDbgLvl > 2) {DbgMsgW (L"Entering" APPEND_NAME);}
   #define DBGLEAVE      if (gDbgLvl > 2) {DbgMsgW (L"Leaving " APPEND_NAME);}
-
-  #define IsGlbPtr(a) (((a) NE NULL) && (GlobalFlags (a) NE GMEM_INVALID_HANDLE))
-
-  #ifdef DEBUG_ALLOCFREE
-    #define DbgGlobalAlloc(uFlags,ByteRes) \
-    DbgGlobalAllocSub (uFlags, ByteRes, L"##GlobalAlloc in " APPEND_NAME L": %08X (%S#%d)", FNLN)
-
-    #define DbgGlobalFree(hGlbToken) \
-    dprintfW (L"**GlobalFree  in " APPEND_NAME L": %08X (%S#%d)", hGlbToken, FNLN); \
-    MyGlobalFree (hGlbToken);
-  #else
-    #define DbgGlobalAlloc(uFlags,ByteRes) \
-    MyGlobalAlloc (uFlags, ByteRes)
-
-    #define DbgGlobalFree(hGlbToken) \
-    MyGlobalFree (hGlbToken);
-  #endif
-
-  #ifdef DEBUG_REFCNT
-    #define DbgIncrRefCntDir(hGlbData) \
-    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    IncrRefCntDir (hGlbData);
-
-    #define DbgIncrRefCntInd(hGlbData) \
-    dprintfW (L"##RefCnt++ in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    IncrRefCntInd (hGlbData);
-
-    #define DbgDecrRefCntDir(hGlbData) \
-    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    DecrRefCntDir (hGlbData);
-
-    #define DbgDecrRefCntInd(hGlbData) \
-    dprintfW (L"##RefCnt-- in " APPEND_NAME L": %08X (%S#%d)", ClrPtrTypeDir (hGlbData), FNLN); \
-    DecrRefCntInd (hGlbData);
-  #else
-    #define DbgIncrRefCntDir(hGlbData) \
-    IncrRefCntDir (hGlbData);
-
-    #define DbgIncrRefCntInd(hGlbData) \
-    IncrRefCntInd (hGlbData);
-
-    #define DbgDecrRefCntDir(hGlbData) \
-    DecrRefCntDir (hGlbData);
-
-    #define DbgDecrRefCntInd(hGlbData) \
-    DecrRefCntInd (hGlbData);
-  #endif
-
-  #define CheckMemStat()      _CheckMemStat ()
 #else
-  #define YYAlloc()     _YYAlloc()
   #define LCLODSAPI
 
   #define DBGENTER
   #define DBGLEAVE
-
-  #define IsGlbPtr(a) ((a) NE NULL && GlobalFlags (a) NE GMEM_INVALID_HANDLE)
-
-  #define DbgGlobalAlloc(uFlags,ByteRes)  MyGlobalAlloc (uFlags, ByteRes);
-
-  #define DbgGlobalFree(hGlbToken)        MyGlobalFree (hGlbToken);
-
-  #define DbgIncrRefCntDir(hGlbData)      IncrRefCntDir (hGlbData);
-
-  #define DbgIncrRefCntInd(hGlbData)      IncrRefCntInd (hGlbData);
-
-  #define DbgDecrRefCntDir(hGlbData)      DecrRefCntDir (hGlbData);
-
-  #define DbgDecrRefCntInd(hGlbData)      DecrRefCntInd (hGlbData);
-
-  #define DbgMsg(a)
-  #define DbgMsgW(a)
-
-  #define CheckMemStat()
 #endif
 
 
@@ -264,13 +165,6 @@ typedef enum tagEXIT_TYPES
     EXITTYPE_NOVALUE,           // 0C:  No value returned
                                 // 0D-0F:  Available entries (4 bits)
 } EXIT_TYPES;
-
-#ifdef DEBUG
-  #define Assert(a)     ((a) || (DbgBrk (), 0))
-#else
-  #define Assert(a)     ((void) 0)
-////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
-#endif
 
 // Resource debugging
 #define MAXOBJ  128000

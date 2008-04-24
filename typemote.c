@@ -304,63 +304,61 @@ void TypeDemote
 
             // Loop through the elements
             for (uRht = 0; uRht < aplNELMNstRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
+            // Split cases based upon the ptr type of the element
+            switch (GetPtrTypeInd (lpMemRht))
             {
-                // Split cases based upon the ptr type of the element
-                switch (GetPtrTypeInd (lpMemRht))
-                {
-                    case PTRTYPE_STCONST:
-                        lpSymEntry = *(LPAPLHETERO) lpMemRht;
+                case PTRTYPE_STCONST:
+                    lpSymEntry = *(LPAPLHETERO) lpMemRht;
 
-                        // stData is an immediate
-                        Assert (lpSymEntry->stFlags.Imm);
+                    // stData is an immediate
+                    Assert (lpSymEntry->stFlags.Imm);
 
-                        // Get the immediate type (translated to an ARRAY_TYPE)
-                        aplTypeSub = TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType);
+                    // Get the immediate type (translated to an ARRAY_TYPE)
+                    aplTypeSub = TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType);
 
-                        // Check for various possible type demotions
-                        switch (aplTypeSub)
-                        {
-                            case ARRAY_FLOAT:   // Check for demotion from FLOAT to INT/BOOL
-                                aplFloat = lpSymEntry->stData.stFloat;
+                    // Check for various possible type demotions
+                    switch (aplTypeSub)
+                    {
+                        case ARRAY_FLOAT:   // Check for demotion from FLOAT to INT/BOOL
+                            aplFloat = lpSymEntry->stData.stFloat;
 
-                                if (IsBooleanValue (aplFloat))
-                                    aplTypeSub = ARRAY_BOOL;
-                                else
-                                if (aplFloat EQ floor (aplFloat)
-                                 && fabs (aplFloat) < Float2Pow53)
-                                    aplTypeSub = ARRAY_INT;
-                                break;
+                            if (IsBooleanValue (aplFloat))
+                                aplTypeSub = ARRAY_BOOL;
+                            else
+                            if (aplFloat EQ floor (aplFloat)
+                             && fabs (aplFloat) < Float2Pow53)
+                                aplTypeSub = ARRAY_INT;
+                            break;
 
-                            case ARRAY_INT:     // Check for demotion from INT to BOOL
-                                aplInteger = lpSymEntry->stData.stInteger;
+                        case ARRAY_INT:     // Check for demotion from INT to BOOL
+                            aplInteger = lpSymEntry->stData.stInteger;
 
-                                if (IsBooleanValue (aplInteger))
-                                    aplTypeSub = ARRAY_BOOL;
-                                break;
+                            if (IsBooleanValue (aplInteger))
+                                aplTypeSub = ARRAY_BOOL;
+                            break;
 
-                            case ARRAY_BOOL:    // No type demotion
-                            case ARRAY_CHAR:    // No type demotion
-                            default:
-                                break;
-                        } // End SWITCH
+                        case ARRAY_BOOL:    // No type demotion
+                        case ARRAY_CHAR:    // No type demotion
+                        default:
+                            break;
+                    } // End SWITCH
 
-                        // Check storage type
-                        aplTypeRes = aplTypeArr[aplTypeRes][aplTypeSub];
+                    // Check storage type
+                    aplTypeRes = aplTypeArr[aplTypeRes][aplTypeSub];
 
-                        // Check for no demotion
-                        if (IsSimpleHet (aplTypeRes)
-                         && IsSimpleHet (aplTypeRht))
-                            goto NORMAL_EXIT;
-                        break;
-
-                    case PTRTYPE_HGLOBAL:
-                        // It's nested, so there's no demotion
+                    // Check for no demotion
+                    if (IsSimpleHet (aplTypeRes)
+                     && IsSimpleHet (aplTypeRht))
                         goto NORMAL_EXIT;
+                    break;
 
-                    defstop
-                        break;
-                } // End SWITCH
-            } // End FOR
+                case PTRTYPE_HGLOBAL:
+                    // It's nested, so there's no demotion
+                    goto NORMAL_EXIT;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
 
             break;
 

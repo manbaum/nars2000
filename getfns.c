@@ -1398,6 +1398,7 @@ APLUINT GetQuadRL
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Get the current value
     uQuadRL = lpMemPTD->lpSymQuadRL->stData.stInteger;
 
     // We no longer need this ptr
@@ -1405,6 +1406,63 @@ APLUINT GetQuadRL
 
     return uQuadRL;
 } // End GetQuadRL
+
+
+//***************************************************************************
+//  $SetQuadRL
+//
+//  Set the current value of []RL
+//***************************************************************************
+
+void SetQuadRL
+    (APLUINT uQuadRL)           // []RL
+
+{
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Set the new value
+    lpMemPTD->lpSymQuadRL->stData.stInteger = uQuadRL;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End SetQuadRL
+
+
+//***************************************************************************
+//  $SavePrimSpecRL
+//
+//  Save []RL in lpPrimSpec
+//***************************************************************************
+
+void SavePrimSpecRL
+    (LPPRIMSPEC lpPrimSpec)
+
+{
+    // Save it
+    lpPrimSpec->QuadRL = GetQuadRL ();
+} // End SavePrimSpecRL
+
+
+//***************************************************************************
+//  $RestPrimSpecRL
+//
+//  Restore []RL from lpPrimSpec
+//***************************************************************************
+
+void RestPrimSpecRL
+    (LPPRIMSPEC lpPrimSpec)
+
+{
+    // Restore it
+    SetQuadRL (lpPrimSpec->QuadRL);
+} // End RestPrimSpecRL
 
 
 //***************************************************************************

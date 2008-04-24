@@ -83,6 +83,15 @@ ul, ol
   text-decoration:  underline;
 }
 
+.menu span
+{
+  font-size:  small;
+  font-variant:  small-caps;
+  background:  white;
+  color:  black;
+  text-decoration:  none;
+}
+
 .pagetable tr
 {
   vertical-align: top;

@@ -431,6 +431,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                 for (uRes = 0; uRes < uNELMRes; uRes++)
                     *((LPAPLBOOL) lpMemRes)++ = 0xFF;
             } else
+            if (aplFloatIdent NE 0.0)
                 for (uRes = 0; uRes < aplNELMRes; uRes++)
                     *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
         } // End IF
@@ -577,9 +578,10 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             {
                 case TKT_VARIMMED:
                     // Save in the result as an LPSYMENTRY
-                    *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,
-                                                                  &tkRhtArg.tkData.tkLongest,
-                                                                  &lpYYFcnStrOpr->tkToken);
+                    *((LPAPLNESTED) lpMemRes)++ =
+                      MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,    // Immediate type
+                                      &tkRhtArg.tkData.tkLongest,   // Ptr to immediate value
+                                      &lpYYFcnStrOpr->tkToken);     // Ptr to function token
                     break;
 
                 case TKT_VARARRAY:
@@ -1380,9 +1382,10 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                 {
                     case TKT_VARIMMED:
                         // Save in the result as an LPSYMENTRY
-                        *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,
-                                                                      &tkRhtArg.tkData.tkLongest,
-                                                                      &lpYYFcnStrOpr->tkToken);
+                        *((LPAPLNESTED) lpMemRes)++ =
+                          MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,    // Immediate type
+                                          &tkRhtArg.tkData.tkLongest,   // Ptr to immediate value
+                                          &lpYYFcnStrOpr->tkToken);     // Ptr to function token
                         break;
 
                     case TKT_VARARRAY:

@@ -490,11 +490,13 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                             case ARRAY_NESTED:
                                 // Copy the squad/pick value to the result
                                 if (lpYYItm->tkToken.tkFlags.TknType EQ TKT_VARIMMED)
-                                    *((LPAPLNESTED) lpMemRes)++ = MakeSymEntry_EM (lpYYItm->tkToken.tkFlags.ImmType,
-                                                                                  &lpYYItm->tkToken.tkData.tkLongest,
-                                                                                   lptkFunc);
+                                    *((LPAPLNESTED) lpMemRes)++ =
+                                      MakeSymEntry_EM (lpYYItm->tkToken.tkFlags.ImmType,    // Immediate type
+                                                      &lpYYItm->tkToken.tkData.tkLongest,   // Ptr to immediate value
+                                                       lptkFunc);                           // Ptr to function token
                                 else
-                                    *((LPAPLNESTED) lpMemRes)++ = lpYYItm->tkToken.tkData.tkGlbData;
+                                    *((LPAPLNESTED) lpMemRes)++ =
+                                      lpYYItm->tkToken.tkData.tkGlbData;
                                 break;
 
                             case ARRAY_APA:
@@ -1610,12 +1612,14 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
                 // If it's immediate, ...
                 if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_VARIMMED)
                     // Fill in the data
-                    *((LPAPLNESTED) lpMemRes) = MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,
-                                                                &lpYYRes->tkToken.tkData.tkLongest,
-                                                                 lptkFunc);
+                    *((LPAPLNESTED) lpMemRes) =
+                      MakeSymEntry_EM (lpYYRes->tkToken.tkFlags.ImmType,    // Immediate type
+                                      &lpYYRes->tkToken.tkData.tkLongest,   // Ptr to immediate value
+                                       lptkFunc);                           // Ptr to function token
                 else
                     // Fill in the data
-                    *((LPAPLNESTED) lpMemRes) = lpYYRes->tkToken.tkData.tkGlbData;
+                    *((LPAPLNESTED) lpMemRes) =
+                      lpYYRes->tkToken.tkData.tkGlbData;
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;  // ***DEBUG***
@@ -2653,7 +2657,10 @@ BOOL ArrayIndexSetSingLst_EM
                 if (hGlbSubRht)
                     ((LPAPLHETERO) lpMemNam)[aplLongestSubLst] = CopySymGlbDir (hGlbSubRht);
                 else
-                    ((LPAPLHETERO) lpMemNam)[aplLongestSubLst] = MakeSymEntry_EM (immTypeRht, &aplLongestRht, lptkFunc);
+                    ((LPAPLHETERO) lpMemNam)[aplLongestSubLst] =
+                      MakeSymEntry_EM (immTypeRht,      // Immediate type
+                                      &aplLongestRht,   // Ptr to immediate value
+                                       lptkFunc);       // Ptr to function token
                 break;
 
             defstop
@@ -2687,11 +2694,13 @@ BOOL ArrayIndexSetSingLst_EM
         goto WSFULL_EXIT;
 
     // If the types are different, we need to type promote the result
-    if (aplTypeRes NE aplTypeNam)
-    {
-        if (!TypePromoteGlb_EM (lphGlbRes, aplTypeRes, lptkFunc))
-            goto ERROR_EXIT;
-    } // End IF
+    if (aplTypeRes NE aplTypeNam                        // Type are different,
+      && (!(bSysVar && aplNELMSubLst EQ 0)              // and not an empty []var
+      && !TypePromoteGlb_EM (lphGlbRes, aplTypeRes, lptkFunc)))
+          goto ERROR_EXIT;
+
+    // Clear the type bits
+    *lphGlbRes = ClrPtrTypeDirAsGlb (*lphGlbRes);
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -2972,6 +2981,7 @@ BOOL ArrayIndexSetVector_EM
     BOOL       bRet = TRUE;             // TRUE iff the result is valid
     APLLONGEST aplLongestSubLst;        // List arg subitem immediate value
     HGLOBAL    hGlbSubLst;              // Ptr to list arg subitem global memory handle
+    IMM_TYPES  immTypeRht;              // Right arg item immediate type
 
     // Get next index from global memory
     GetNextItemMem (lpMemSubLst,        // Ptr to item global memory data
@@ -3021,9 +3031,10 @@ BOOL ArrayIndexSetVector_EM
     if (bSysVar)
     {
         // Validate the one (and only) item from the right arg
-        if (!(*SysVarValid) (aplLongestSubLst, aplTypeRht, &aplLongestRht, NULL))
+        if (!(*SysVarValid) (aplLongestSubLst, aplTypeRht, &aplLongestRht, &immTypeRht))
             goto DOMAIN_EXIT;
-    } // End IF
+    } else
+        immTypeRht = TranslateArrayTypeToImmType (aplTypeRht);
 
     // Split cases based upon the result storage type
     switch (aplTypeRes)
@@ -3047,8 +3058,11 @@ BOOL ArrayIndexSetVector_EM
 
         case ARRAY_FLOAT:
             // Replace the corresponding item in the result
-            ((LPAPLFLOAT)  lpMemRes)[aplLongestSubLst] = *(LPAPLFLOAT) &aplLongestRht;
-
+            // If the right arg is simple integer, convert it to float
+            if (IsSimpleInt (aplTypeRht))
+                ((LPAPLFLOAT)  lpMemRes)[aplLongestSubLst] = (APLFLOAT) (APLINT) aplLongestRht;
+            else
+                ((LPAPLFLOAT)  lpMemRes)[aplLongestSubLst] = *(LPAPLFLOAT) &aplLongestRht;
             break;
 
         case ARRAY_CHAR:
@@ -3076,9 +3090,17 @@ BOOL ArrayIndexSetVector_EM
                     break;
             } // End SWITCH
 
-            // Replace the corresponding item in the result
-            ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] = CopySymGlbDir (hGlbSubRht);
-
+            // If the right arg item is an HGLOBAL, ...
+            if (hGlbSubRht)
+                // Replace the corresponding item in the result
+                ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] =
+                  CopySymGlbDir (hGlbSubRht);
+            else
+                // Replace the corresponding item in the result
+                ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] =
+                  MakeSymEntry_EM (immTypeRht,      // Immediate type
+                                  &aplLongestRht,   // Ptr to immediate value
+                                   lptkFunc);       // Ptr to function token
             break;
 
         defstop
@@ -3395,9 +3417,9 @@ void ArrayIndexReplace
             // If the set arg is simple, ...
             if (hGlbSet EQ NULL)
                 ((LPAPLNESTED) lpMemRht)[aplIndex] =
-                  MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),
-                                  &aplLongestSet,
-                                   lptkFunc);
+                  MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),    // Immediate type
+                                  &aplLongestSet,                               // Ptr to immediate value
+                                   lptkFunc);                                   // Ptr to function token
             else
                 ((LPAPLNESTED) lpMemRht)[aplIndex] =
                   CopySymGlbDir (hGlbSet);

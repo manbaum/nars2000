@@ -392,7 +392,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft EQ 0)
+    if (IsScalar (aplRankLft))
         goto RANK_EXIT;
     else
     // Check for extended dyadic iota
@@ -492,11 +492,11 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     // Calculate the NotFound value
     NotFound = bQuadIO + aplNELMLft;
 
-    // If the result is non-empty, and
+    // If the left arg is non-empty, and
     //    the right arg is non-empty, and
     //    the left and right args are not different types (numeric vs. char), ...
-    if (!(aplNELMLft EQ 0
-       || aplNELMRht EQ 0
+    if (!(IsEmpty (aplNELMLft)
+       || IsEmpty (aplNELMRht)
        || (IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))
        || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft))))
     {

@@ -454,7 +454,8 @@ UINT SF_NumLinesFE
      LPVOID    lpVoid)              // Ptr to common struc
 
 {
-    return SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0) - 1;
+    return -1 +
+      SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 } // End SF_NumLinesFE
 
 
@@ -473,7 +474,8 @@ UINT SF_NumLinesCom
 
 {
     // The # function lines
-    return (UINT) lpFX_Params->aplColsRht - 1;
+    return -1 +
+      (UINT) lpFX_Params->aplColsRht;
 } // End SF_NumLinesCom
 
 
@@ -489,11 +491,11 @@ UINT SF_NumLinesLW
      LPLW_PARAMS lpLW_Params)       // Ptr to common struc
 
 {
-    return
+    return -1 +
       GetPrivateProfileIntW (lpLW_Params->lpwSectName,      // Ptr to the section name
                              KEYNAME_COUNT,                 // Ptr to the key name
                              0,                             // Default value if not found
-                             lpLW_Params->lpwszDPFE) - 1;   // Ptr to the file name
+                             lpLW_Params->lpwszDPFE);       // Ptr to the file name
 } // End SF_NumLinesLW
 
 

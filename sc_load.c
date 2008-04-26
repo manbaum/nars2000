@@ -75,7 +75,7 @@ BOOL CmdLoad_EM
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the tab index from which this command was issued
-    iTabIndex = lpMemPTD->TabIndex;
+    iTabIndex = lpMemPTD->CurTabIndex;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -131,7 +131,6 @@ BOOL LoadWorkspace_EM
                  uObj;                  // Loop counter
     HGLOBAL      hGlbPTD,               // PerTabData global memory handle
                  hGlbObj;               // Object global memory handle
-////             hGlbTknLine;           // Tokenized header/line global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPVOID       lpMemObj;              // Ptr to object global memory
     STFLAGS      stFlags = {0};         // SymTab flags
@@ -145,9 +144,6 @@ BOOL LoadWorkspace_EM
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Lock the memory to get a ptr to it
     lpwszDPFE = MyGlobalLock (hGlbDPFE);
@@ -518,11 +514,17 @@ BOOL LoadWorkspace_EM
                 Assert (!bImmed);
                 Assert (IsSimpleChar (aplTypeObj));
 
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
                 // Out with the old
                 FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
 
                 // In with the new
                 lpMemPTD->hGlbQuadDM = ClrPtrTypeDirAsGlb ((HGLOBAL) aplLongestObj);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
             } else
             {
                 // Out with the old
@@ -851,24 +853,50 @@ WSID_EXIT:
     goto NORMAL_EXIT;
 
 CORRUPTWS_EXIT:
-    AppendLine (ERRMSG_CORRUPT_WS, FALSE, TRUE);
+    AppendLine (ERRMSG_CORRUPT_WS APPEND_NAME, FALSE, TRUE);
 
     goto ERROR_EXIT;
 
 WSNOTFOUND_EXIT:
-    AppendLine (ERRMSG_WS_NOT_FOUND, FALSE, TRUE);
+{
+    int iPrvTabIndex;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the index of the tab from which we were )LOADed
+    iPrvTabIndex = lpMemPTD->PrvTabIndex;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    if (iPrvTabIndex NE -1)
+    {
+        // Get the PerTabData global memory handle for the preceding tab
+        hGlbPTD = GetPerTabHandle (iPrvTabIndex);
+
+        // Lock the memory to get a pre to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Send this error message to the previous tab's SM
+        SendMessageW (lpMemPTD->hWndSM, MYWM_ERRMSG, 0, (LPARAM) ERRMSG_WS_NOT_FOUND APPEND_NAME);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+    } // End IF
 
     goto ERROR_EXIT;
+}
 
 WSFULL_EXIT:
     AppendLine (ERRMSG_WS_FULL APPEND_NAME, FALSE, TRUE);
+
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
 } // End LoadWorkspace_EM

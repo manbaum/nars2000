@@ -143,7 +143,7 @@ void AppendLine
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    // Move the caret to the end of the buffer
+    // Move the text caret to the end of the buffer
     MoveCaretEOB (hWndEC);
 
     // Scroll the caret into view
@@ -164,7 +164,7 @@ void AppendLine
 //***************************************************************************
 //  $ReplaceLine
 //
-//  Replace lpwszCurLine in the history buffer
+//  Replace the current line in the history buffer
 //***************************************************************************
 
 #ifdef DEBUG
@@ -174,17 +174,13 @@ void AppendLine
 #endif
 
 void ReplaceLine
-    (HWND    hWndSM,
-     LPWCHAR lpwszLine,
-     UINT    uLineNum)
+    (HWND    hWndEC,            // Edit Control window handle
+     LPWCHAR lpwszLine,         // Ptr to incoming line text
+     UINT    uLineNum)          // Line # to replace
 
 {
-    HWND hWndEC;
     UINT uLinePos,
          uLineLen;
-
-    // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLongW (hWndSM, GWLSF_HWNDEC);
 
     // Get the line position of the given line
     uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
@@ -358,11 +354,11 @@ LPWCHAR strchrW
 //***************************************************************************
 //  $MoveCaretEOB
 //
-//  Move the caret in an Edit Control to the end of the buffer
+//  Move the text caret in an Edit Control to the end of the buffer
 //***************************************************************************
 
 void MoveCaretEOB
-    (HWND hWnd)         // Window handle of Edit Control
+    (HWND hWndEC)           // Window handle of Edit Control
 
 {
     UINT uLineCnt,
@@ -371,19 +367,19 @@ void MoveCaretEOB
          uCharPos;
 
     // Get the # lines in the text
-    uLineCnt = SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
+    uLineCnt = SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
     // Get the initial char pos of the last line
-    uLinePos = SendMessageW (hWnd, EM_LINEINDEX, uLineCnt - 1, 0);
+    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineCnt - 1, 0);
 
     // Get the length of the last line
-    uLineLen = SendMessageW (hWnd, EM_LINELENGTH, uLinePos, 0);
+    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
 
     // Add to get char pos
     uCharPos = uLinePos + uLineLen;
 
     // Set the caret to the End-of-Buffer
-    SendMessageW (hWnd, EM_SETSEL, uCharPos, uCharPos);
+    SendMessageW (hWndEC, EM_SETSEL, uCharPos, uCharPos);
 } // End MoveCaretEOB
 
 
@@ -402,7 +398,7 @@ void DisplayPrompt
 #ifdef DEBUG
     dprintfW (L"~~DisplayPrompt (%d)", uCaller);
 #endif
-    // Move the caret to the End-of-the-buffer
+    // Move the text caret to the end of the buffer
     MoveCaretEOB (hWndEC);
 
     // Display the indent
@@ -1134,7 +1130,7 @@ LRESULT APIENTRY SMWndProc
             {
                 DbgMsg ("WM_CREATE:  InitMagicFunctions failed");
 
-                return -1;          // Mark as failed
+                goto WM_CREATE_FAIL;
             } // End IF
 
             // ***FIXME*** -- For some reason, the
@@ -1152,7 +1148,7 @@ LRESULT APIENTRY SMWndProc
 
             // Load the workspace
             if (!LoadWorkspace_EM (((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->hGlbDPFE, hWndEC))
-                return -1;          // Mark as failed
+                goto WM_CREATE_FAIL;
 
             // Display the )LOAD message once and only once
             if (!bLoadMsgDisp)
@@ -1169,6 +1165,19 @@ LRESULT APIENTRY SMWndProc
             } // End IF
 
             return FALSE;           // We handled the msg
+
+WM_CREATE_FAIL:
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Unhook the LclEditCtrlWndProc
+            SetWindowLongW (hWndEC,
+                            GWL_WNDPROC,
+                            (long) lpMemPTD->lpfnOldEditCtrlWndProc);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            return -1;              // Mark as failed
         } // End WM_CREATE
 #undef  lpMDIcs
 
@@ -1212,11 +1221,7 @@ LRESULT APIENTRY SMWndProc
 
             break;
 #endif
-        case MYWM_INIT_EC:
-            // ***TESTME*** -- Correct to comment out this call to InvalidateRect?
-////        // Tell the Edit Control to redraw itself
-////        InvalidateRect (hWndEC, NULL, FALSE);
-
+        case MYWM_INIT_EC:          // hFont = (HFONT) wParam;
             // Tell the Edit Control about its font
             SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
 #ifdef DEBUG
@@ -1235,11 +1240,25 @@ LRESULT APIENTRY SMWndProc
 
         case MYWM_QUOTEQUAD:        // bQuoteQuad = (BOOL) wParam
                                     // TRUE iff Quote-Quad input, FALSE if Quad input
+                                    // iPromptIndex = (int) lParam;
             if (!wParam)
             {
                 AppendLine (wszQuadInput, FALSE, TRUE);
                 DisplayPrompt (hWndEC, lParam);
             } // End IF
+
+            return FALSE;           // We handled the msg
+
+        case MYWM_ERRMSG:           // lpwErrMsg = (LPWCHAR) lParam;
+            // Display the error message, replacing the current
+            //   line as it might have a prompt on it
+            ReplaceLine (hWndEC, (LPWCHAR) lParam, NEG1U);
+
+            // Move the text caret to the next line
+            AppendLine (L"", FALSE, TRUE);
+
+            // Display the default prompt
+            DisplayPrompt (hWndEC, 7);
 
             return FALSE;           // We handled the msg
 
@@ -1383,19 +1402,19 @@ LRESULT APIENTRY SMWndProc
                             // Append CRLF
                             lstrcatW (lpMemPTD->lpwszTmpLine, L"\r\n");
 
-                            // Move the caret to the end of the buffer
+                            // Move the text caret to the end of the buffer
                             MoveCaretEOB (hWndEC);
 
                             // Get the # of the last line
                             uLastNum = SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
                             // Replace the last line in the buffer
-                            ReplaceLine (hWnd, lpMemPTD->lpwszTmpLine, uLastNum);
+                            ReplaceLine (hWndEC, lpMemPTD->lpwszTmpLine, uLastNum);
 
                             // Restore the original of the current line
-                            ReplaceLine (hWnd, lpMemPTD->lpwszCurLine, uLineNum);
+                            ReplaceLine (hWndEC, lpMemPTD->lpwszCurLine, uLineNum);
 
-                            // Move the caret to the end of the buffer
+                            // Move the text caret to the end of the buffer
                             MoveCaretEOB (hWndEC);
 
                             // Get the current line #
@@ -1780,9 +1799,6 @@ LRESULT APIENTRY SMWndProc
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-            // We no longer need this storage
-            MyGlobalFree (hGlbPTD); hGlbPTD = NULL;
 
             // Tell the thread to quit, too
             PostQuitMessage (0);

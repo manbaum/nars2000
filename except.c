@@ -298,20 +298,20 @@ long CheckVirtAlloc
 //***************************************************************************
 
 long CheckException
-    (LPEXCEPTION_POINTERS lpExcept,
-     LPCHAR               lpText)
+    (LPEXCEPTION_POINTERS lpExcept,         // Ptr to exception information
+     LPCHAR               lpText)           // Ptr to text of exception handler
 
 {
     UINT    uMem;               // Loop counter
     LPUCHAR lpInvalidAddr;      // Ptr to invalid address
 
-    // Save the exception code & address for later use
+    // Save the exception code, address, and text for later use
     MySetExceptionCode (lpExcept->ExceptionRecord->ExceptionCode);
     MySetExceptionAddr (lpExcept->ExceptionRecord->ExceptionAddress);
     MySetExceptionText (lpText);
 
     // Split cases based upon the exception code
-    switch (MyGetExceptionCode ())
+    switch (lpExcept->ExceptionRecord->ExceptionCode)
     {
         case EXCEPTION_ACCESS_VIOLATION:
             // Get the invalid address

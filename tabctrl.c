@@ -270,12 +270,12 @@ BOOL WINAPI CreateNewTabInThread
     (LPCNT_THREAD lpcntThread)
 
 {
-    int          iCurTab;           // Index of the current tab
+    int          iCurTab = -1;      // Index of the current tab
     TC_ITEMW     tcItem = {0};      // TabCtrl item struc
     HGLOBAL      hGlbPTD,           // PerTabData global memory handle
                  hGlbDPFE = NULL;   // Workspace DPFE global memory handle
     LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
-    BOOL         bRet = TRUE;       // TR$UE iff the result is valid
+    BOOL         bRet = FALSE;      // TR$UE iff the result is valid
     RECT         rc;                // Rectangle for setting size of window
     int          rcLeft, rcRight, rcBottom;
     CLIENTCREATESTRUCT ccs;         // For MDI Client window
@@ -343,8 +343,9 @@ BOOL WINAPI CreateNewTabInThread
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Save the tab index
-    lpMemPTD->TabIndex = iCurTab;
+    // Save the current and previous tab index
+    lpMemPTD->CurTabIndex = iCurTab;
+    lpMemPTD->PrvTabIndex = iTab - 1;
 
     // Save the next available color index
     lpMemPTD->crIndex = GetNextTabColorIndex ();
@@ -421,16 +422,12 @@ BOOL WINAPI CreateNewTabInThread
                         lpMemPTD->hWndMC,   // Parent
                         _hInstance,         // Instance
               (LPARAM) &csSM);              // Extra data
+    // If there's an error, don't display a message
+    //   because that is a normal occurrence if we
+    //   fail )LOAD.
     if (lpMemPTD->hWndSM EQ NULL)
-    {
-        MB (pszNoCreateSMWnd);
-
         goto ERROR_EXIT;
-    } // End IF
 
-////// Save the PTD handle with the window
-////SetPropW (lpMemPTD->hWndSM, L"PTD", hGlbPTD);
-////
     // Get # current threads under the SM
     nThreads = 1 + (int) GetPropW (lpMemPTD->hWndSM, L"NTHREADS");
 
@@ -488,38 +485,73 @@ BOOL WINAPI CreateNewTabInThread
     } // End __try/__except
     // GetMessage returned FALSE for a Quit message
 
-    goto NORMAL_EXIT;
-
+    // Mark as successful
+    bRet = TRUE;
 ERROR_EXIT:
-    bRet = FALSE;       // Stop the whole process
-
-    // Destroy any windows we might have created
-    if (lpMemPTD && lpMemPTD->hWndMC)
-    {
-        if (lpMemPTD->hWndDB)
-            SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMemPTD->hWndDB), 0);
-        if (lpMemPTD->hWndSM)
-            SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMemPTD->hWndSM), 0);
-        DestroyWindow (lpMemPTD->hWndMC);
-    } // End IF
-
-    // Free the storage for the workspace DPFE global memory
-    if (hGlbDPFE)
-    {
-        MyGlobalFree (hGlbDPFE); hGlbDPFE = NULL;
-    } // End IF
-NORMAL_EXIT:
-    if (lpMemPTD)
+    if (hGlbPTD && lpMemPTD)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
 
-    // If we failed,
-    if ((!bRet) && hGlbPTD)
+    // If there's a current tab index, delete it
+    if (iCurTab NE -1)
+        TabCtrl_DeleteItem (hWndTC, iCurTab);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    if (lpMemPTD->hWndSM)
+        // Unhook the LclEditCtrlWndProc
+        SetWindowLongW ((HWND) GetWindowLongW (lpMemPTD->hWndSM, GWLSF_HWNDEC),
+                        GWL_WNDPROC,
+                        (long) lpMemPTD->lpfnOldEditCtrlWndProc);
+    // Destroy any windows we might have created
+    if (lpMemPTD && lpMemPTD->hWndMC)
+    {
+        if (lpMemPTD->hWndDB)
+        {
+            SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMemPTD->hWndDB), 0); lpMemPTD->hWndDB = NULL;
+        } // End IF
+
+        if (lpMemPTD->hWndSM)
+        {
+            SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMemPTD->hWndSM), 0); lpMemPTD->hWndSM = NULL;
+        } // End IF
+
+        DestroyWindow (lpMemPTD->hWndMC); lpMemPTD->hWndMC = NULL;
+    } // End IF
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    if (hGlbDPFE)
+    {
+        // Free the storage for the workspace DPFE global memory
+        MyGlobalFree (hGlbDPFE); hGlbDPFE = NULL;
+    } // End IF
+
+    if (hGlbPTD)
     {
         // We no longer need this storage
-        DbgGlobalFree (hGlbPTD); hGlbPTD = NULL;
+        MyGlobalFree (hGlbPTD); hGlbPTD = NULL;
+    } // End IF
+
+    // Get the per tab global memory handle
+    hGlbPTD = GetPerTabHandle (TabCtrl_GetCurSel (hWndTC));
+    if (hGlbPTD)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemPTD = MyGlobalLock (hGlbPTD);
+
+        // Show the child windows of the incoming tab
+        ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
+
+        // Ensure the SM has the focus
+        PostMessageW (lpMemPTD->hWndSM, MYWM_SETFOCUS, 0, 0);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
 
     return bRet;
@@ -716,13 +748,8 @@ LRESULT WINAPI LclTabCtrlWndProc
         case TCM_DELETEITEM:                    // itemID = (int) wParam;
                                                 // 0 = lParam;
         {
-            int  iNewTab;
-            HWND hWndMC,
-                 hWndEC,
-#ifdef DEBUG
-                 hWndDB,
-#endif
-                 hWndSM;
+            int  iNewTab;                       // Index of new tab (after deleting this one)
+            HWND hWndEC;                        // Edit Control window handle
 
 #define iTab    ((int) wParam)
 
@@ -750,6 +777,10 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Get the outgoing per tab global memory handle
             hGlbPTD = GetPerTabHandle (iTab);
 
+            // If it's invalid, we're closing out the last tab, so just quit
+            if (hGlbPTD EQ NULL)
+                break;
+
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -765,65 +796,38 @@ LRESULT WINAPI LclTabCtrlWndProc
 #define APPEND_NAME
 #endif
 
-            // Free global storage
-            FreeResultGlobalVar (lpMemPTD->lpSymQuadALX ->stData.stGlbData); lpMemPTD->lpSymQuadALX ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (lpMemPTD->lpSymQuadELX ->stData.stGlbData); lpMemPTD->lpSymQuadELX ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (lpMemPTD->lpSymQuadFC  ->stData.stGlbData); lpMemPTD->lpSymQuadFC  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (lpMemPTD->lpSymQuadIC  ->stData.stGlbData); lpMemPTD->lpSymQuadIC  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (lpMemPTD->lpSymQuadLX  ->stData.stGlbData); lpMemPTD->lpSymQuadLX  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (lpMemPTD->lpSymQuadSA  ->stData.stGlbData); lpMemPTD->lpSymQuadSA  ->stData.stGlbData = NULL;
-            FreeResultGlobalVar (lpMemPTD->lpSymQuadWSID->stData.stGlbData); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
-            if (lpMemPTD->cQuadPR)
-                FreeResultGlobalVar (lpMemPTD->lpSymQuadPR  ->stData.stGlbData); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
+            // Free global storage if the SymTab is valid
+            if (lpMemPTD->lpSymTab)
+            {
+                FreeResultGlobalVar (lpMemPTD->lpSymQuadALX ->stData.stGlbData); lpMemPTD->lpSymQuadALX ->stData.stGlbData = NULL;
+                FreeResultGlobalVar (lpMemPTD->lpSymQuadELX ->stData.stGlbData); lpMemPTD->lpSymQuadELX ->stData.stGlbData = NULL;
+                FreeResultGlobalVar (lpMemPTD->lpSymQuadFC  ->stData.stGlbData); lpMemPTD->lpSymQuadFC  ->stData.stGlbData = NULL;
+                FreeResultGlobalVar (lpMemPTD->lpSymQuadIC  ->stData.stGlbData); lpMemPTD->lpSymQuadIC  ->stData.stGlbData = NULL;
+                FreeResultGlobalVar (lpMemPTD->lpSymQuadLX  ->stData.stGlbData); lpMemPTD->lpSymQuadLX  ->stData.stGlbData = NULL;
+                FreeResultGlobalVar (lpMemPTD->lpSymQuadSA  ->stData.stGlbData); lpMemPTD->lpSymQuadSA  ->stData.stGlbData = NULL;
+                FreeResultGlobalVar (lpMemPTD->lpSymQuadWSID->stData.stGlbData); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
+                if (lpMemPTD->cQuadPR)
+                    FreeResultGlobalVar (lpMemPTD->lpSymQuadPR  ->stData.stGlbData); lpMemPTD->lpSymQuadPR  ->stData.stGlbData = NULL;
+            } // End IF
 
 #undef  APPEND_NAME
 
-            // Get the various window handles
-            hWndMC = lpMemPTD->hWndMC;
-            hWndSM = lpMemPTD->hWndSM;
-#ifdef DEBUG
-            hWndDB = lpMemPTD->hWndDB;
-#endif
-            // Get the Edit Ctrl window handle
-            hWndEC = (HWND) GetWindowLongW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
+            // If the SM handle is valid, ...
+            if (lpMemPTD->hWndSM)
+            {
+                // Get the Edit Ctrl window handle
+                hWndEC = (HWND) GetWindowLongW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
 
-            // Unhook the LclEditCtrlWndProc
-            SetWindowLongW (hWndEC,
-                            GWL_WNDPROC,
-                            (long) lpMemPTD->lpfnOldEditCtrlWndProc);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-#ifdef DEBUG
-            if (hWndDB)
-                // Destroy the DB window
-                SendMessageW (hWndMC, WM_MDIDESTROY, (WPARAM) hWndDB, 0);
-#endif
-            // Destroy the SM window
-            SendMessageW (hWndMC, WM_MDIDESTROY, (WPARAM) hWndSM, 0);
-
-            // The storage for hGlbPTD is freed in
-            //   SMWndProc's WM_DESTROY message handler
-
-            // In order to reduce screen flicker, we
-            //   postpone removing the tab until the new
-            //   tab has been displayed.
-
-            // Close the matching MDI client window
-            DestroyWindow (hWndMC);
-
-            DestroyCaret ();    // 'cause we just lost the focus
-
-            // Get the per tab global memory handle
-            hGlbPTD = GetPerTabHandle (iNewTab);
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Show the child windows of the incoming tab
-            ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
+                // Unhook the LclEditCtrlWndProc
+                SetWindowLongW (hWndEC,
+                                GWL_WNDPROC,
+                                (long) lpMemPTD->lpfnOldEditCtrlWndProc);
+            } // End IF
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            // The storage for hGlbPTD is freed in CreateTabInThread
 
             // Save as new tab index
             gCurTab = TabCtrl_GetCurSel (hWndTC);
@@ -1350,7 +1354,7 @@ void NewTabName
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the tab index
-    iCurTab = lpMemPTD->TabIndex;
+    iCurTab = lpMemPTD->CurTabIndex;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

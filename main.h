@@ -96,6 +96,7 @@ default:        \
 #define MYWM_CLOSE_FN       (WM_APP + 6)    // FE (CloseFunction)
 #define MYWM_QUOTEQUAD      (WM_APP + 7)    // PL (Quote-Quad/Quad Input)
 #define MYWM_INIT_SMDB      (WM_APP + 8)    // SM (Initialize SM/DB windows)
+#define MYWM_ERRMSG         (WM_APP + 9)    // SM (Display error message)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP + 0)    // DB

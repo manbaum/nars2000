@@ -292,6 +292,8 @@ BOOL FreeResultGlobalDFV
     (HGLOBAL hGlbData)
 
 {
+    BOOL bRet;                      // TRUE iff result is valid
+
     // Clear the type bits in case they are set on the way in
     hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
 
@@ -299,17 +301,25 @@ BOOL FreeResultGlobalDFV
     switch (GetSignatureGlb (hGlbData))
     {
         case DFN_HEADER_SIGNATURE:
-            return FreeResultGlobalDfn (hGlbData);
+            bRet = FreeResultGlobalDfn (hGlbData); hGlbData = NULL;
+
+            break;
 
         case FCNARRAY_HEADER_SIGNATURE:
-            return FreeResultGlobalFcn (hGlbData);
+            bRet = FreeResultGlobalFcn (hGlbData); hGlbData = NULL;
+
+            break;
 
         case VARARRAY_HEADER_SIGNATURE:
-            return FreeResultGlobalVar (hGlbData);
+            bRet = FreeResultGlobalVar (hGlbData); hGlbData = NULL;
+
+            break;
 
         defstop
-            return FALSE;
+            bRet = FALSE;
     } // End SWITCH
+
+    return bRet;
 } // End FreeResultGlobalDFV
 
 

@@ -1480,7 +1480,7 @@ NORMAL_EXIT:
     else
     {
         // Free the old value
-        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
@@ -1970,7 +1970,7 @@ NORMAL_EXIT:
     else
     {
         // Free the old value
-        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);
@@ -2148,7 +2148,7 @@ BOOL ValidSetFC_EM
      && IsVector (aplRankRht))
     {
         // Free the named arg
-        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbQuadFC_SYS);
@@ -2192,7 +2192,7 @@ BOOL ValidSetIC_EM
      && IsVector (aplRankRht))
     {
         // Free the named arg
-        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbQuadIC_SYS);
@@ -2948,7 +2948,7 @@ BOOL ValidSetSA_EM
     else
     {
         // Free the old value
-        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData);
+        FreeResultGlobalVar (lptkNamArg->tkData.tkSym->stData.stGlbData); lptkNamArg->tkData.tkSym->stData.stGlbData = NULL;
 
         // Save as new value
         lptkNamArg->tkData.tkSym->stData.stGlbData = MakePtrTypeGlb (hGlbRes);

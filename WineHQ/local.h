@@ -27,9 +27,6 @@ BOOL IzitFE (HWND);
 extern int __cdecl dprintfW(unsigned short *lpwszFmt,...);
 #ifdef DEBUG
 extern int gDbgLvl;
-void Assert (BOOL bAssert);
-#else
-#define Assert(a)
 #endif
 
 #include "main.h"

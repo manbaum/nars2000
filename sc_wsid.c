@@ -152,7 +152,7 @@ BOOL CmdWsid_EM
         MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
 
         // Free the old []WSID
-        FreeResultGlobalVar (lpMemPTD->lpSymQuadWSID->stData.stGlbData);
+        FreeResultGlobalVar (lpMemPTD->lpSymQuadWSID->stData.stGlbData); lpMemPTD->lpSymQuadWSID->stData.stGlbData = NULL;
 
         // Save the new []WSID
         lpMemPTD->lpSymQuadWSID->stData.stGlbData = MakePtrTypeGlb (hGlbWSID);

@@ -33,6 +33,7 @@
 #define KEYNAME_UNDO            L"Undo"
 #define KEYNAME_SILEVEL         L"SILevel"
 #define KEYNAME_CREATIONTIME    L"CreationTime"
+#define KEYNAME_LASTMODTIME     L"LastModTime"
 #define KEYNAME_USERDEFINED     L"UserDefined"
 
 // Format string for [GlobalVars] and [GlobalFcns] section keynames

@@ -1260,8 +1260,8 @@ typedef struct tagSYMBOLNAMES
     LPWCHAR lpwName;    // Ptr to name
 } SYMBOLNAMES, *LPSYMBOLNAMES;
 
-// The # rows in the above table
-#define ASYMBOLNAMES_NROWS  90
+// The # rows in the below table
+#define ASYMBOLNAMES_NROWS  91
 
 // Translate table for symbols to names
 EXTERN
@@ -1397,6 +1397,7 @@ SYMBOLNAMES aSymbolNames[ASYMBOLNAMES_NROWS]
 // Non-Alt key equivalents (these are the only ones we need for SaveWS)
   {UTF16_DOUBLEQUOTE          , L"{doublequote}"        },  // 22:  Double quote
   {UTF16_POUND                , L"{pound}"              },  // 23:  Pound
+  {UTF16_COMMA                , L"{comma}"              },  // 2C:  Comma
   {UTF16_SLOPE                , L"{slope}"              },  // 5C:  Slope
   {UTF16_CIRCUMFLEX           , L"{circumflex}"         },  // 5E:  Circumflex
   {UTF16_LBRACE               , L"{leftbrace}"          },  // 7B:  Left brace

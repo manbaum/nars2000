@@ -215,7 +215,7 @@ void InitPrimFns
     InitPrimFn (UTF16_UPSHOE            , &PrimFnUpShoe_EM_YY            ); // Alt-'c' - up shoe
     InitPrimFn (UTF16_DOWNSTILE         , &PrimFnDownStile_EM_YY         ); // Alt-'d' - down stile
     InitPrimFn (INDEX_EPSILON           , &PrimFnEpsilon_EM_YY           ); // Alt-'e' - epsilon
-////                                                                        // Alt-'f' - underbar
+////                                                                        // Alt-'f' - infinity
 ////                                                                        // Alt-'g' - del
 ////                                                                        // Alt-'h' - delta
     InitPrimFn (UTF16_IOTA              , &PrimFnIota_EM_YY              ); // Alt-'i' - iota
@@ -369,7 +369,6 @@ LPPL_YYSTYPE PrimFn_EM
 
 
 // Primitive functions TO DO
-#define PrimProtoFnDownShoe_EM_YY               PrimProtoFn_EM
 #define PrimProtoFnEpsilonUnderbar_EM_YY        PrimProtoFn_EM
 
 
@@ -396,12 +395,10 @@ LPPL_YYSTYPE PrimFn_EM
 #define PrimProtoFnNotEqual_EM_YY               PrimProtoFnScalar_EM_YY
 #define PrimProtoFnPlus_EM_YY                   PrimProtoFnScalar_EM_YY
 #define PrimProtoFnQuoteDot_EM_YY               PrimProtoFnScalar_EM_YY
-#define PrimProtoFnQuery_EM_YY                  PrimProtoFnQuery_EM_YY
 #define PrimProtoFnRightCaret_EM_YY             PrimProtoFnScalar_EM_YY
 #define PrimProtoFnRightCaretUnderbar_EM_YY     PrimProtoFnScalar_EM_YY
 #define PrimProtoFnStar_EM_YY                   PrimProtoFnScalar_EM_YY
 #define PrimProtoFnStile_EM_YY                  PrimProtoFnScalar_EM_YY
-#define PrimProtoFnTilde_EM_YY                  PrimProtoFnTilde_EM_YY
 #define PrimProtoFnTimes_EM_YY                  PrimProtoFnScalar_EM_YY
 #define PrimProtoFnUpCaret_EM_YY                PrimProtoFnScalar_EM_YY
 #define PrimProtoFnUpCaretTilde_EM_YY           PrimProtoFnScalar_EM_YY
@@ -484,7 +481,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_UPSHOE            , &PrimProtoFnUpShoe_EM_YY            );   // Alt-'c' - up shoe
     InitPrimProtoFn (UTF16_DOWNSTILE         , &PrimProtoFnDownStile_EM_YY         );   // Alt-'d' - down stile
     InitPrimProtoFn (INDEX_EPSILON           , &PrimProtoFnEpsilon_EM_YY           );   // Alt-'e' - epsilon
-////                                                                                    // Alt-'f' - underbar
+////                                                                                    // Alt-'f' - infinity
 ////                                                                                    // Alt-'g' - del
 ////                                                                                    // Alt-'h' - delta
     InitPrimProtoFn (UTF16_IOTA              , &PrimProtoFnIota_EM_YY              );   // Alt-'i' - iota

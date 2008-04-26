@@ -1179,6 +1179,9 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     // Convert system time to file time and save as creation time
     SystemTimeToFileTime (&systemTime, &lpHeader->ftCreation);
 
+    // Use the same time as the last modification time
+    lpHeader->ftLastMod = lpHeader->ftCreation;
+
     if (bSaveTxtLine)
     {
         UINT           uLineLen;        // Line length

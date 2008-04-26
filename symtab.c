@@ -2331,16 +2331,21 @@ ERROR_EXIT:
 #endif
 
 LPSYMENTRY SymTabAppendName_EM
-    (LPWCHAR lpwszString)
+    (LPWCHAR   lpwszString,                     // Ptr to name
+     LPSTFLAGS lpstFlags)                       // Ptr to incoming stFlags (may be NULL)
 
 {
     LPSYMENTRY lpSymEntry;
     STFLAGS    stFlags = {0};
 
+    // If no incoming flags, ...
+    if (lpstFlags EQ NULL)
+        lpstFlags = &stFlags;
+
     // Lookup the name in the symbol table
     // SymTabLookupName sets the .ObjName enum,
     //   and the .Inuse flag
-    lpSymEntry = SymTabLookupName (lpwszString, &stFlags);
+    lpSymEntry = SymTabLookupName (lpwszString, lpstFlags);
 
     // If not found and it's a system name, fail
     //    as we don't handle unknown system names
@@ -2353,7 +2358,7 @@ LPSYMENTRY SymTabAppendName_EM
             return NULL;
         } else
             lpSymEntry =
-              SymTabAppendNewName_EM (lpwszString, &stFlags);
+              SymTabAppendNewName_EM (lpwszString, lpstFlags);
     } // End IF
 
     return lpSymEntry;

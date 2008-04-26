@@ -191,7 +191,7 @@ LPWCHAR SkipBlackW
 
 {
     // Skip over white space
-    while (!IsWhiteW (*lpw))
+    while (*lpw && !IsWhiteW (*lpw))
         lpw++;
 
     return lpw;

@@ -125,7 +125,7 @@ void BreakMessage
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Free the old value
-    FreeResultGlobalVar (lpMemPTD->hGlbQuadDM);
+    FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
 
     // Save the new value in the STE
     lpMemPTD->hGlbQuadDM = hGlbRes;
@@ -344,7 +344,7 @@ void ErrorMessageDirect
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
     // Free the old value
-    FreeResultGlobalVar (lpMemPTD->hGlbQuadDM);
+    FreeResultGlobalVar (lpMemPTD->hGlbQuadDM); lpMemPTD->hGlbQuadDM = NULL;
 
     // Save the new value in the PTD
     lpMemPTD->hGlbQuadDM = hGlbRes; hGlbRes = NULL;
@@ -427,7 +427,7 @@ void ErrorMessageDirect
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
             // Free the old value of []EM
-            FreeResultGlobalVar (lpSISCur->hGlbQuadEM);
+            FreeResultGlobalVar (lpSISCur->hGlbQuadEM); lpSISCur->hGlbQuadEM = NULL;
 
             // Save the global in the current SIS header
             lpSISCur->hGlbQuadEM = hGlbRes;

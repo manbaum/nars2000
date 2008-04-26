@@ -1151,7 +1151,7 @@ LRESULT APIENTRY SMWndProc
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Load the workspace
-            if (!LoadWorkspace_EM (((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->hGlbDPFE))
+            if (!LoadWorkspace_EM (((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->hGlbDPFE, hWndEC))
                 return -1;          // Mark as failed
 
             // Display the )LOAD message once and only once

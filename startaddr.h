@@ -75,6 +75,9 @@ typedef struct tagSTART_ADDRESSES
     // dtoa.c
 
     // editfcn.c
+    "CreateFcnWindow"           , (LPUCHAR) &CreateFcnWindow            ,
+    "FEWndProc"                 , (LPUCHAR) &FEWndProc                  ,
+    "LclEditCtrlWndProc"        , (LPUCHAR) &LclEditCtrlWndProc         ,
 
     // editmat.c
 
@@ -104,17 +107,22 @@ typedef struct tagSTART_ADDRESSES
     // g_fmt.c
 
     // getfns.c
+    "GetFirstItemToken"         , (LPUCHAR) &GetFirstItemToken          ,
 
     // getreent.c
     "__getreent"                , (LPUCHAR) &__getreent                 ,
 
     // goto.c
+    "GotoLine_EM"               , (LPUCHAR) &GotoLine_EM                ,
 
     // immexec.c
+    "WaitForImmExecStmt"        , (LPUCHAR) &WaitForImmExecStmt         ,
 
     // initdata.c
+    "InitPrimTabs"              , (LPUCHAR) &InitPrimTabs               ,
 
     // main.c
+    "EnumCallbackPassMsg"       , (LPUCHAR) &EnumCallbackPassMsg        ,
 
     // parse.c/y
     "pl_yyparse"                , (LPUCHAR) &pl_yyparse                 ,
@@ -200,8 +208,37 @@ typedef struct tagSTART_ADDRESSES
     // resdebug.c
 
     // savefcn.c
+    "SaveFunction"              , (LPUCHAR) &SaveFunction               ,
 
-    // sc_*.c
+    // sc_copy.c
+    "CmdCopy_EM"                , (LPUCHAR) &CmdCopy_EM                 ,
+
+    // sc_drop.c
+    "CmdDrop_EM"                , (LPUCHAR) &CmdDrop_EM                 ,
+
+    // sc_erase.c
+    "CmdErase_EM"               , (LPUCHAR) &CmdErase_EM                ,
+
+    // sc_fnov.c
+    "CmdFns_EM"                 , (LPUCHAR) &CmdFns_EM                  ,
+
+    // sc_lib.c
+    "CmdLib_EM"                 , (LPUCHAR) &CmdLib_EM                  ,
+
+    // sc_load.c
+    "CmdLoad_EM"                , (LPUCHAR) &CmdLoad_EM                 ,
+
+    // sc_reset.c
+    "CmdReset_EM"               , (LPUCHAR) &CmdReset_EM                ,
+
+    // sc_save.c
+    "CmdSave_EM"                , (LPUCHAR) &CmdSave_EM                 ,
+
+    // sc_si.c
+    "CmdSi_EM"                  , (LPUCHAR) &CmdSi_EM                   ,
+
+    // sc_wsid.c
+    "CmdWsid_EM"                , (LPUCHAR) &CmdWsid_EM                 ,
 
     // sessman.c
     "SetAttrs"                  , (LPUCHAR) &SetAttrs                   ,

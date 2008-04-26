@@ -76,33 +76,34 @@ enum COL_INDICES
  COL_ALPHA     ,        // 03: Alphabetic
  COL_DIRIDENT  ,        // 04: Alpha or Omega
  COL_Q_QQ      ,        // 05: Quad
- COL_INFINITY  ,        // 06: Infinity
- COL_OVERBAR   ,        // 07: Overbar
- COL_COMPLEX   ,        // 08: Complex number separator
- COL_RATIONAL  ,        // 09: Rational number separator
- COL_ASSIGN    ,        // 0A: Assignment symbol
- COL_SEMICOLON ,        // 0B: Semicolon symbol
- COL_COLON     ,        // 0C: Colon symbol
- COL_PRIM_FN   ,        // 0D: Primitive monadic or dyadic function
- COL_PRIM_FN0  ,        // 0E: ...       niladic function
- COL_PRIM_OP1  ,        // 0F: ...       monadic/ambiguous operator
- COL_PRIM_OP2  ,        // 10: ...       dyadic  ...
- COL_JOT       ,        // 11: Jot symbol
- COL_LPAREN    ,        // 12: Left paren
- COL_RPAREN    ,        // 13: Right ...
- COL_LBRACKET  ,        // 14: Left bracket
- COL_RBRACKET  ,        // 15: Right ...
- COL_LBRACE    ,        // 16: Left brace
- COL_RBRACE    ,        // 17: Right ...
- COL_SPACE     ,        // 18: White space (' ' or '\t')
- COL_QUOTE1    ,        // 19: Single quote symbol
- COL_QUOTE2    ,        // 1A: Double ...
- COL_DIAMOND   ,        // 1B: Diamond symbol
- COL_LAMP      ,        // 1C: Comment symbol
- COL_EOL       ,        // 1D: End-Of-Line
- COL_UNK       ,        // 1E: Unknown symbols
+ COL_UNDERBAR  ,        // 06: Underbar
+ COL_INFINITY  ,        // 07: Infinity
+ COL_OVERBAR   ,        // 08: Overbar
+ COL_COMPLEX   ,        // 09: Complex number separator
+ COL_RATIONAL  ,        // 0A: Rational number separator
+ COL_ASSIGN    ,        // 0B: Assignment symbol
+ COL_SEMICOLON ,        // 0C: Semicolon symbol
+ COL_COLON     ,        // 0D: Colon symbol
+ COL_PRIM_FN   ,        // 0E: Primitive monadic or dyadic function
+ COL_PRIM_FN0  ,        // 0F: ...       niladic function
+ COL_PRIM_OP1  ,        // 10: ...       monadic/ambiguous operator
+ COL_PRIM_OP2  ,        // 11: ...       dyadic  ...
+ COL_JOT       ,        // 12: Jot symbol
+ COL_LPAREN    ,        // 13: Left paren
+ COL_RPAREN    ,        // 14: Right ...
+ COL_LBRACKET  ,        // 15: Left bracket
+ COL_RBRACKET  ,        // 16: Right ...
+ COL_LBRACE    ,        // 17: Left brace
+ COL_RBRACE    ,        // 18: Right ...
+ COL_SPACE     ,        // 19: White space (' ' or '\t')
+ COL_QUOTE1    ,        // 1A: Single quote symbol
+ COL_QUOTE2    ,        // 1B: Double ...
+ COL_DIAMOND   ,        // 1C: Diamond symbol
+ COL_LAMP      ,        // 1D: Comment symbol
+ COL_EOL       ,        // 1E: End-Of-Line
+ COL_UNK       ,        // 1F: Unknown symbols
 
- COL_LENGTH    ,        // 1F: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
+ COL_LENGTH    ,        // 20: # column indices (cols in fsaColTable) ***MUST*** BE THE LAST ENTRY
                         // Because these enums are origin-0, this value is the # valid columns.
 };
 
@@ -196,8 +197,9 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , NULL        , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , NULL        , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , NULL        , fnSysInit   },   // Quad
+  {FSA_INIT    , NULL        , fnInfinity  },   // Underbar
   {FSA_INIT    , NULL        , fnInfinity  },   // Infinity
-  {FSA_OVERBAR , fnAlpInit   , fnNegInit   },   // Overbar
+  {FSA_OVERBAR , NULL        , fnNegInit   },   // Overbar
   {FSA_ALPHA   , NULL        , fnAlpInit   },   // Complex separator (iIjJ)
   {FSA_ALPHA   , NULL        , fnAlpInit   },   // Rational separator (rR)
   {FSA_INIT    , NULL        , fnAsnDone   },   // Assignment symbol
@@ -228,31 +230,32 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // Exponent separator (eE)
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_SYNTERR , NULL        , NULL        },   // Alpha or Omega
-  {FSA_SYSNAME , fnAlpDone   , fnSysInit   },   // Quad
+  {FSA_SYNTERR , NULL        , NULL        },   // Quad
+  {FSA_INIT    , NULL        , fnInfinity  },   // Underbar
   {FSA_INIT    , NULL        , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_SYNTERR , NULL        , NULL        },   // Complex separator (iIjJ)
   {FSA_SYNTERR , NULL        , NULL        },   // Rational separator (rR)
-  {FSA_INIT    , fnAlpDone   , fnAsnDone   },   // Assignment symbol
-  {FSA_INIT    , fnAlpDone   , fnLstDone   },   // Semicolon  ...
-  {FSA_INIT    , fnAlpDone   , fnClnDone   },   // Colon  ...
-  {FSA_INIT    , fnAlpDone   , fnPrmDone   },   // Primitive monadic or dyadic function
-  {FSA_INIT    , fnAlpDone   , fnPrmDone   },   // ...       niladic           ...
-  {FSA_INIT    , fnAlpDone   , fnOp1Done   },   // ...       monadic operator
-  {FSA_INIT    , fnAlpDone   , fnOp2Done   },   // ...       dyadic  ...
-  {FSA_JOTAMBIG, fnAlpDone   , NULL        },   // Jot
-  {FSA_INIT    , fnAlpDone   , fnParInit   },   // Left paren
-  {FSA_INIT    , fnAlpDone   , fnParDone   },   // Right ...
-  {FSA_INIT    , fnAlpDone   , fnBrkInit   },   // Left bracket
-  {FSA_INIT    , fnAlpDone   , fnBrkDone   },   // Right ...
-  {FSA_INIT    , fnAlpDone   , fnBrcInit   },   // Left brace
-  {FSA_INIT    , fnAlpDone   , fnBrcDone   },   // Right ...
-  {FSA_INIT    , fnAlpDone   , NULL        },   // White space
-  {FSA_QUOTE1A , fnAlpDone   , fnQuo1Init  },   // Single quote
-  {FSA_QUOTE2A , fnAlpDone   , fnQuo2Init  },   // Double ...
-  {FSA_INIT    , fnAlpDone   , fnDiaDone   },   // Diamond symbol
-  {FSA_INIT    , fnAlpDone   , fnComDone   },   // Comment symbol
-  {FSA_EXIT    , fnAlpDone   , NULL        },   // EOL
+  {FSA_SYNTERR , NULL        , NULL        },   // Assignment symbol
+  {FSA_SYNTERR , NULL        , NULL        },   // Semicolon  ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Colon  ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Primitive monadic or dyadic function
+  {FSA_SYNTERR , NULL        , NULL        },   // ...       niladic           ...
+  {FSA_SYNTERR , NULL        , NULL        },   // ...       monadic operator
+  {FSA_SYNTERR , NULL        , NULL        },   // ...       dyadic  ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Jot
+  {FSA_SYNTERR , NULL        , NULL        },   // Left paren
+  {FSA_SYNTERR , NULL        , NULL        },   // Right ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Left bracket
+  {FSA_SYNTERR , NULL        , NULL        },   // Right ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Left brace
+  {FSA_SYNTERR , NULL        , NULL        },   // Right ...
+  {FSA_SYNTERR , NULL        , NULL        },   // White space
+  {FSA_SYNTERR , NULL        , NULL        },   // Single quote
+  {FSA_SYNTERR , NULL        , NULL        },   // Double ...
+  {FSA_SYNTERR , NULL        , NULL        },   // Diamond symbol
+  {FSA_SYNTERR , NULL        , NULL        },   // Comment symbol
+  {FSA_SYNTERR , NULL        , NULL        },   // EOL
   {FSA_SYNTERR , NULL        , NULL        },   // Unknown symbols
  },
     // FSA_INTEGER  Number, integer part ('n')
@@ -262,6 +265,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnIntDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnIntDone   , fnSysInit   },   // Quad
+  {FSA_INIT    , fnIntDone   , fnInfinity  },   // Underbar
   {FSA_INIT    , fnIntDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
@@ -295,6 +299,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnBigDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnBigDone   , fnSysInit   },   // Quad
+  {FSA_INIT    , fnBigDone   , fnInfinity  },   // Underbar
   {FSA_INIT    , fnBigDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
@@ -328,6 +333,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnFrcDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnFrcDone   , fnSysInit   },   // Quad
+  {FSA_INIT    , fnFrcDone   , fnInfinity  },   // Underbar
   {FSA_INIT    , fnFrcDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
@@ -361,6 +367,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnFrcDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnFrcDone   , fnSysInit   },   // Quad
+  {FSA_INIT    , fnFrcDone   , fnInfinity  },   // Underbar
   {FSA_INIT    , fnFrcDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
@@ -394,6 +401,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_SYNTERR , NULL        , NULL        },   // Alpha or Omega
   {FSA_SYNTERR , NULL        , NULL        },   // Quad
+  {FSA_SYNTERR , NULL        , NULL        },   // Underbar
   {FSA_SYNTERR , NULL        , NULL        },   // Infinity
   {FSA_FPEXP2  , fnNegExp    , NULL        },   // Overbar
   {FSA_SYNTERR , NULL        , NULL        },   // Complex separator (iIjJ)
@@ -427,6 +435,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_SYNTERR , NULL        , NULL        },   // Alpha or Omega
   {FSA_SYNTERR , NULL        , NULL        },   // Quad
+  {FSA_SYNTERR , NULL        , NULL        },   // Underbar
   {FSA_SYNTERR , NULL        , NULL        },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_SYNTERR , NULL        , NULL        },   // Complex separator (iIjJ)
@@ -460,6 +469,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYNTERR , NULL        , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnExpDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnExpDone   , fnSysInit   },   // Quad
+  {FSA_INIT    , fnExpDone   , fnInfinity  },   // Underbar
   {FSA_INIT    , fnExpDone   , fnInfinity  },   // Infinity
   {FSA_SYNTERR , NULL        , NULL        },   // Overbar
   {FSA_NONCE   , NULL        , NULL        },   // Complex separator (iIjJ)
@@ -493,6 +503,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnAlpAccum  , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnAlpDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnAlpDone   , fnSysInit   },   // Quad
+  {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Underbar
   {FSA_INIT    , fnAlpDone   , fnInfinity  },   // Infinity
   {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Overbar
   {FSA_ALPHA   , fnAlpAccum  , NULL        },   // Complex separator (iIjJ)
@@ -526,6 +537,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_SYSNAME , fnSysAccum  , NULL        },   // 'a..zA..Z'
   {FSA_INIT    , fnSysDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnSysDone   , fnSysInit   },   // Quad
+  {FSA_SYSNAME , fnSysAccum  , NULL        },   // Underbar
   {FSA_INIT    , fnSysDone   , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnSysDone   , fnNegInit   },   // Overbar
   {FSA_SYSNAME , fnSysAccum  , NULL        },   // Complex separator (iIjJ)
@@ -559,6 +571,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // 'a..zA..Z'
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Alpha or Omega
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Quad
+  {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Underbar
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Infinity
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Overbar
   {FSA_QUOTE1A , fnQuo1Accum , NULL        },   // Complex separator (iIjJ)
@@ -592,6 +605,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnQuo1Done  , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnQuo1Done  , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnQuo1Done  , fnSysInit   },   // Quad
+  {FSA_INIT    , fnQuo1Done  , fnInfinity  },   // Underbar
   {FSA_INIT    , fnQuo1Done  , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnQuo1Done  , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnQuo1Done  , fnAlpInit   },   // Complex separator (iIjJ)
@@ -625,6 +639,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // 'a..zA..Z'
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Alpha or Omega
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Quad
+  {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Underbar
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Infinity
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Overbar
   {FSA_QUOTE2A , fnQuo2Accum , NULL        },   // Complex separator (iIjJ)
@@ -658,6 +673,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnQuo2Done  , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnQuo2Done  , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnQuo2Done  , fnSysInit   },   // Quad
+  {FSA_INIT    , fnQuo2Done  , fnInfinity  },   // Underbar
   {FSA_INIT    , fnQuo2Done  , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnQuo2Done  , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnQuo2Done  , fnAlpInit   },   // Complex separator (iIjJ)
@@ -691,6 +707,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnDotDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnDotDone   , fnSysInit   },   // Quad
+  {FSA_INIT    , fnDotDone   , fnInfinity  },   // Underbar
   {FSA_INIT    , fnDotDone   , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnDotDone   , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnDotDone   , fnAlpInit   },   // Complex separator (iIjJ)
@@ -724,6 +741,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnJotDone   , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnJotDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnJotDone   , fnSysInit   },   // Quad
+  {FSA_INIT    , fnJotDone   , fnInfinity  },   // Underbar
   {FSA_INIT    , fnJotDone   , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnJotDone   , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnJotDone   , fnAlpInit   },   // Complex separator (iIjJ)
@@ -757,6 +775,7 @@ FSA_ACTION fsaColTable [][COL_LENGTH]
   {FSA_ALPHA   , fnOutDone   , fnAlpInit   },   // 'a..zA..Z'
   {FSA_INIT    , fnOutDone   , fnDirIdent  },   // Alpha or Omega
   {FSA_SYSNAME , fnOutDone   , fnSysInit   },   // Quad
+  {FSA_INIT    , fnOutDone   , fnInfinity  },   // Underbar
   {FSA_INIT    , fnOutDone   , fnInfinity  },   // Infinity
   {FSA_INTEGER , fnOutDone   , fnNegInit   },   // Overbar
   {FSA_ALPHA   , fnOutDone   , fnAlpInit   },   // Complex separator (iIjJ)
@@ -1325,7 +1344,7 @@ BOOL fnAlpDone
     } // End IF
 
     // Lookup in or append to the symbol table
-    lpSymEntry = SymTabAppendName_EM (lpMemPTD->lpwszString);
+    lpSymEntry = SymTabAppendName_EM (lpMemPTD->lpwszString, NULL);
     if (lpSymEntry)
     {
         // Mark the data as a symbol table entry
@@ -1390,7 +1409,7 @@ BOOL fnDirIdent
     lpMemPTD->lpwszString[lpMemPTD->iStringLen] = L'\0';
 
     // Lookup in or append to the symbol table
-    lpSymEntry = SymTabAppendName_EM (lpMemPTD->lpwszString);
+    lpSymEntry = SymTabAppendName_EM (lpMemPTD->lpwszString, NULL);
     if (lpSymEntry)
     {
         // Mark the data as a symbol table entry
@@ -3025,6 +3044,8 @@ WCHAR CharTrans
             return COL_RATIONAL;
 
         case L'_':
+            return COL_UNDERBAR;
+
         case UTF16_INFINITY:
             return COL_INFINITY;
 
@@ -3282,31 +3303,32 @@ static COLNAMES colNames[] =
  {L"ALPHA"     , COL_ALPHA     },   // 03: Alphabetic
  {L"DIRIDENT"  , COL_DIRIDENT  },   // 04: Alpha or Omega
  {L"Q_QQ"      , COL_Q_QQ      },   // 05: Quad
- {L"INFINITY"  , COL_INFINITY  },   // 06: Infinity
- {L"OVERBAR"   , COL_OVERBAR   },   // 07: Overbar
- {L"COMPLEX"   , COL_COMPLEX   },   // 08: Complex number separator
- {L"RATIONAL"  , COL_RATIONAL  },   // 09: Rational number separator
- {L"ASSIGN"    , COL_ASSIGN    },   // 0A: Assignment symbol
- {L"SEMICOLON" , COL_SEMICOLON },   // 0B: Semicolon symbol
- {L"COLON"     , COL_COLON     },   // 0C: Colon symbol
- {L"PRIM_FN"   , COL_PRIM_FN   },   // 0D: Primitive monadic or dyadic function
- {L"PRIM_FN0"  , COL_PRIM_FN0  },   // 0E: ...       niladic function
- {L"PRIM_OP1"  , COL_PRIM_OP1  },   // 0F: ...       monadic operator
- {L"PRIM_OP2"  , COL_PRIM_OP2  },   // 10: ...       dyadic  ...
- {L"JOT"       , COL_JOT       },   // 11: Jot symbol
- {L"LPAREN"    , COL_LPAREN    },   // 12: Left paren
- {L"RPAREN"    , COL_RPAREN    },   // 13: Right ...
- {L"LBRACKET"  , COL_LBRACKET  },   // 14: Left bracket
- {L"RBRACKET"  , COL_RBRACKET  },   // 15: Right ...
- {L"LBRACE"    , COL_LBRACE    },   // 16: Left brace
- {L"RBRACE"    , COL_RBRACE    },   // 17: Right ...
- {L"SPACE"     , COL_SPACE     },   // 18: White space (' ' or '\t')
- {L"QUOTE1"    , COL_QUOTE1    },   // 19: Single quote symbol
- {L"QUOTE2"    , COL_QUOTE2    },   // 1A: Double ...
- {L"DIAMOND"   , COL_DIAMOND   },   // 1B: Diamond symbol
- {L"LAMP"      , COL_LAMP      },   // 1C: Comment symbol
- {L"EOL"       , COL_EOL       },   // 1D: End-Of-Line
- {L"UNK"       , COL_UNK       },   // 1E: Unknown symbols
+ {L"UNDERBAR"  , COL_UNDERBAR  },   // 06: Underbar
+ {L"INFINITY"  , COL_INFINITY  },   // 07: Infinity
+ {L"OVERBAR"   , COL_OVERBAR   },   // 08: Overbar
+ {L"COMPLEX"   , COL_COMPLEX   },   // 09: Complex number separator
+ {L"RATIONAL"  , COL_RATIONAL  },   // 0A: Rational number separator
+ {L"ASSIGN"    , COL_ASSIGN    },   // 0B: Assignment symbol
+ {L"SEMICOLON" , COL_SEMICOLON },   // 0C: Semicolon symbol
+ {L"COLON"     , COL_COLON     },   // 0D: Colon symbol
+ {L"PRIM_FN"   , COL_PRIM_FN   },   // 0E: Primitive monadic or dyadic function
+ {L"PRIM_FN0"  , COL_PRIM_FN0  },   // 0F: ...       niladic function
+ {L"PRIM_OP1"  , COL_PRIM_OP1  },   // 10: ...       monadic operator
+ {L"PRIM_OP2"  , COL_PRIM_OP2  },   // 11: ...       dyadic  ...
+ {L"JOT"       , COL_JOT       },   // 12: Jot symbol
+ {L"LPAREN"    , COL_LPAREN    },   // 13: Left paren
+ {L"RPAREN"    , COL_RPAREN    },   // 14: Right ...
+ {L"LBRACKET"  , COL_LBRACKET  },   // 15: Left bracket
+ {L"RBRACKET"  , COL_RBRACKET  },   // 16: Right ...
+ {L"LBRACE"    , COL_LBRACE    },   // 17: Left brace
+ {L"RBRACE"    , COL_RBRACE    },   // 18: Right ...
+ {L"SPACE"     , COL_SPACE     },   // 19: White space (' ' or '\t')
+ {L"QUOTE1"    , COL_QUOTE1    },   // 1A: Single quote symbol
+ {L"QUOTE2"    , COL_QUOTE2    },   // 1B: Double ...
+ {L"DIAMOND"   , COL_DIAMOND   },   // 1C: Diamond symbol
+ {L"LAMP"      , COL_LAMP      },   // 1D: Comment symbol
+ {L"EOL"       , COL_EOL       },   // 1E: End-Of-Line
+ {L"UNK"       , COL_UNK       },   // 1F: Unknown symbols
 };
     if (COL_LENGTH > (uType - COL_FIRST))
         return colNames[uType - COL_FIRST].lpwsz;

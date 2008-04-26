@@ -2032,7 +2032,7 @@ BOOL ArrayIndexSetNamScalar_EM
             // We no longer need this ptr
             MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
 
-            FreeResultGlobalVar (hGlbNam);
+            FreeResultGlobalVar (hGlbNam); hGlbNam = NULL;
         } // End IF
 
         Assert (!bSysVar);
@@ -2051,7 +2051,7 @@ BOOL ArrayIndexSetNamScalar_EM
             // We no longer need this ptr
             MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
 
-            FreeResultGlobalVar (hGlbNam);
+            FreeResultGlobalVar (hGlbNam); hGlbNam = NULL;
         } // End IF
 
         // If this is indexed assignment into a SysVar, ...

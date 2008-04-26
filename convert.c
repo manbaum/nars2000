@@ -349,5 +349,35 @@ void FormatCurDateTime
 
 
 //***************************************************************************
+//  $ConvertNameInPlace
+//
+//  Convert the {name}s and other chars to UTF16_xxx equivalents
+//***************************************************************************
+
+LPWCHAR ConvertNameInPlace
+    (LPWCHAR lpwSrc)            // Ptr to string to convert
+
+{
+    LPWCHAR lpwDst = lpwSrc;
+
+    while (*lpwSrc)
+    if (*lpwSrc EQ L'{')
+    {
+        // Get the next char
+        *lpwDst++ = NameToChar (lpwSrc);
+
+        // Find the matching L'}'
+        lpwSrc = SkipPastCharW (lpwSrc, L'}');
+    } else
+        *lpwDst++ = *lpwSrc++;
+
+    // Ensure properly terminated
+    *lpwDst = L'\0';
+
+    return lpwSrc;
+} // End ConvertNameInPlace
+
+
+//***************************************************************************
 //  End of File: convert.c
 //***************************************************************************

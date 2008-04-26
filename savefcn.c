@@ -22,6 +22,7 @@
 
 #define STRICT
 #include <windows.h>
+#include <stdio.h>
 
 #include "aplerrors.h"
 #include "main.h"
@@ -31,6 +32,7 @@
 #include "pertab.h"
 #include "sis.h"
 #include "savefcn.h"
+#include "workspace.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -54,30 +56,26 @@ BOOL SaveFunction
     (HWND hWndFE)                   // Function Editor window handle
 
 {
-    FX_SAVE FX_Save = {0};
+    SF_FCNS SF_Fcns = {0};
 
     // Fill in common values
-////FX_Save.hGlbRht       =                     // []FX only
-////FX_Save.aplLongestRht =                     // ...
-////FX_Save.aplRowsRht    =                     // ...
-////FX_Save.aplColsRht    =                     // ...
-////FX_Save.bRet          =                     // Filled in by SaveFunctionCom
-////FX_Save.uErrLine      =                     // []FX only
-////FX_Save.lpSymName     =                     // ...
-////FX_Save.lptkFunc      =                     // ...
-    FX_Save.SF_LineLen    = SF_LineLenFE;
-    FX_Save.SF_ReadLine   = SF_ReadLineFE;
-    FX_Save.SF_NumLines   = SF_NumLinesFE;
+    SF_Fcns.SF_LineLen      = SF_LineLenFE;     // Ptr to line length function
+    SF_Fcns.SF_ReadLine     = SF_ReadLineFE;    // Ptr to read line function
+    SF_Fcns.SF_NumLines     = SF_NumLinesFE;    // Ptr to get # lines function
+    SF_Fcns.SF_CreationTime = SF_CreationTimeCom;// Ptr to get function creation time
+    SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;// Ptr to get function creation time
+    SF_Fcns.SF_UndoBuffer   = SF_UndoBufferFE;  // Ptr to get function Undo Buffer global memory handle
+////SF_Fcns.LclParams       = NULL;             // Already zero from = {0}
 
     // Call common routine
     return SaveFunctionCom (hWndFE,             // Function Edit window handle (not-[]FX only)
-                           &FX_Save);           // Ptr to common values
+                           &SF_Fcns);           // Ptr to common values
 } // End SaveFunction
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  SF_LineLenFE
+//  $SF_LineLenFE
 //
 //  Return the length of a function text header/line
 //    when called from function editor
@@ -85,7 +83,7 @@ BOOL SaveFunction
 
 UINT SF_LineLenFE
     (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save,           // Ptr to common struc
+     LPVOID    lpVoid,              // Ptr to common struc
      UINT      uLineNum)            // Function line #
 
 {
@@ -99,7 +97,7 @@ UINT SF_LineLenFE
 
 
 //***************************************************************************
-//  SF_LineLenSV
+//  $SF_LineLenSV
 //
 //  Return the length of a function text header/line
 //    when called from []FX with a simple char scalar or vector arg
@@ -107,7 +105,7 @@ UINT SF_LineLenFE
 
 UINT SF_LineLenSV
     (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save,           // Ptr to common struc
+     LPVOID    lpVoid,              // Ptr to common struc
      UINT      uLineNum)            // Function line #
 
 {
@@ -117,16 +115,16 @@ UINT SF_LineLenSV
 
 
 //***************************************************************************
-//  SF_LineLenM
+//  $SF_LineLenM
 //
 //  Return the length of a function text header/line
 //    when called from []FX with a simple char matrix arg
 //***************************************************************************
 
 UINT SF_LineLenM
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save,           // Ptr to common struc
-     UINT      uLineNum)            // Function line #
+    (HWND        hWndEC,            // Edit Control window handle (FE only)
+     LPFX_PARAMS lpFX_Params,       // Ptr to common struc
+     UINT        uLineNum)          // Function line #
 
 {
     LPAPLCHAR lpMemRht;             // Ptr to right arg global memory
@@ -134,16 +132,16 @@ UINT SF_LineLenM
               uLineLen;             // Line length
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (lpFX_Save->hGlbRht);
+    lpMemRht = MyGlobalLock (lpFX_Params->hGlbRht);
 
     // Get the # cols in the matrix
-    uLineLen = (UINT) lpFX_Save->aplColsRht;
+    uLineLen = (UINT) lpFX_Params->aplColsRht;
 
     // Calc the offset to the appropriate row
     uRowOff = uLineNum * uLineLen;
 
     // Skip over the header to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Save->aplRankRht);
+    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
 
     // As this is a matrix and the header/function line might have
     //   been padded out beyond its normal length, delete trailing blanks
@@ -152,23 +150,23 @@ UINT SF_LineLenM
         break;
 
     // We no longer need this ptr
-    MyGlobalUnlock (lpFX_Save->hGlbRht); lpMemRht = NULL;
+    MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemRht = NULL;
 
     return uLineLen;
 } // End SF_LineLenM
 
 
 //***************************************************************************
-//  SF_LineLenN
+//  $SF_LineLenN
 //
 //  Return the length of a function text header/line
 //    when called from []FX with a nested arg
 //***************************************************************************
 
 UINT SF_LineLenN
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save,           // Ptr to common struc
-     UINT      uLineNum)            // Function line #
+    (HWND        hWndEC,            // Edit Control window handle (FE only)
+     LPFX_PARAMS lpFX_Params,       // Ptr to common struc
+     UINT        uLineNum)          // Function line #
 
 {
     LPAPLNESTED lpMemRht;           // Ptr to right arg global memory
@@ -176,10 +174,10 @@ UINT SF_LineLenN
     APLNELM     aplNELMItmRht;      // Right arg item NELM
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (lpFX_Save->hGlbRht);
+    lpMemRht = MyGlobalLock (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Save->aplRankRht);
+    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
 
     // Split cases based upon the right arg item ptr type
     switch (GetPtrTypeDir (lpMemRht[uLineNum]))
@@ -203,14 +201,40 @@ UINT SF_LineLenN
     } // End SWITCH
 
     // We no longer need this ptr
-    MyGlobalUnlock (lpFX_Save->hGlbRht); lpMemRht = NULL;
+    MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemRht = NULL;
 
     return (UINT) aplNELMItmRht;
 } // End SF_LineLenN
 
 
 //***************************************************************************
-//  SF_ReadLineFE
+//  $SF_LineLenLW
+//
+//  Return the length of a function text header/line
+//    when called from LoadWorkspace
+//***************************************************************************
+
+UINT SF_LineLenLW
+    (HWND        hWndEC,            // Edit Control window handle (FE only)
+     LPLW_PARAMS lpLW_Params,       // Ptr to common struc
+     UINT        uLineNum)          // Function line #
+
+{
+    // The caller requests the line length before it reads
+    //   the line so it can allocate memory.
+
+    // This means we must read the line first so we can get its length
+    SF_ReadLineLW (hWndEC,                  // Edit Control window handle (FE only)
+                   lpLW_Params,             // Ptr to common struc
+                   uLineNum,                // Function line #
+                   lpLW_Params->lpwBuffer); // Ptr to header/line global memory
+    // Return the length
+    return lstrlenW (lpLW_Params->lpwBuffer);
+} // End SF_LineLenLW
+
+
+//***************************************************************************
+//  $SF_ReadLineFE
 //
 //  Read in a header/function line
 //    when called from function editor
@@ -218,7 +242,7 @@ UINT SF_LineLenN
 
 void SF_ReadLineFE
     (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save,           // Ptr to common struc
+     LPVOID    lpVoid,              // Ptr to common struc
      UINT      uLineNum,            // Function line #
      LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
 
@@ -228,57 +252,57 @@ void SF_ReadLineFE
 
 
 //***************************************************************************
-//  SF_ReadLineSV
+//  $SF_ReadLineSV
 //
 //  Read in a header/function line
 //    when called from []FX with a simple char scalar or vector arg
 //***************************************************************************
 
 void SF_ReadLineSV
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save,           // Ptr to common struc
-     UINT      uLineNum,            // Function line #
-     LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
+    (HWND        hWndEC,            // Edit Control window handle (FE only)
+     LPFX_PARAMS lpFX_Params,       // Ptr to common struc
+     UINT        uLineNum,          // Function line #
+     LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
 
 {
     LPAPLCHAR lpMemRht;             // Ptr to right arg global memory
 
     // Check for immediate right arg
-    if (uLineNum EQ 0 && lpFX_Save->hGlbRht EQ NULL)
+    if (uLineNum EQ 0 && lpFX_Params->hGlbRht EQ NULL)
     {
         // Copy the simple char to the result
-        *lpMemLine++ = (APLCHAR) lpFX_Save->aplLongestRht;
+        *lpMemLine++ = (APLCHAR) lpFX_Params->aplLongestRht;
         *lpMemLine++ = L'\0';
     } else
     {
         // Lock the memory to get a ptr to it
-        lpMemRht = MyGlobalLock (lpFX_Save->hGlbRht);
+        lpMemRht = MyGlobalLock (lpFX_Params->hGlbRht);
 
         // Skip over the header to the data
-        lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Save->aplRankRht);
+        lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
 
         // Copy the simple char to the result
         *lpMemLine++ = lpMemRht[uLineNum];
         *lpMemLine++ = L'\0';
 
         // We no longer need this ptr
-        MyGlobalUnlock (lpFX_Save->hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemRht = NULL;
     } // End IF/ELSE
 } // End SF_ReadLineSV
 
 
 //***************************************************************************
-//  SF_ReadLineM
+//  $SF_ReadLineM
 //
 //  Read in a header/function line
 //    when called from []FX with a simple char matrix arg
 //***************************************************************************
 
 void SF_ReadLineM
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save,           // Ptr to common struc
-     UINT      uLineNum,            // Function line #
-     LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
+    (HWND        hWndEC,            // Edit Control window handle (FE only)
+     LPFX_PARAMS lpFX_Params,       // Ptr to common struc
+     UINT        uLineNum,          // Function line #
+     LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
 
 {
     LPAPLCHAR lpMemRht;             // Ptr to right arg global memory
@@ -286,13 +310,13 @@ void SF_ReadLineM
               uLineLen;             // Line length
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (lpFX_Save->hGlbRht);
+    lpMemRht = MyGlobalLock (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Save->aplRankRht);
+    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
 
     // Get the # cols in the matrix
-    uLineLen = (UINT) lpFX_Save->aplColsRht;
+    uLineLen = (UINT) lpFX_Params->aplColsRht;
 
     // Calc the offset to the appropriate row
     uRowOff = uLineNum * uLineLen;
@@ -311,22 +335,22 @@ void SF_ReadLineM
     *lpMemLine++ = L'\0';
 
     // We no longer need this ptr
-    MyGlobalUnlock (lpFX_Save->hGlbRht); lpMemRht = NULL;
+    MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemRht = NULL;
 } // End SF_ReadLineM
 
 
 //***************************************************************************
-//  SF_ReadLineN
+//  $SF_ReadLineN
 //
 //  Read in a header/function line
 //    when called from []FX with a nested arg
 //***************************************************************************
 
 void SF_ReadLineN
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save,           // Ptr to common struc
-     UINT      uLineNum,            // Function line #
-     LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
+    (HWND        hWndEC,            // Edit Control window handle (FE only)
+     LPFX_PARAMS lpFX_Params,       // Ptr to common struc
+     UINT        uLineNum,          // Function line #
+     LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
 
 {
     LPAPLNESTED lpMemRht;           // Ptr to right arg global memory
@@ -335,10 +359,10 @@ void SF_ReadLineN
     UINT        uLineLen;           // Line length
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (lpFX_Save->hGlbRht);
+    lpMemRht = MyGlobalLock (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
-    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Save->aplRankRht);
+    lpMemRht = VarArrayBaseToData (lpMemRht, lpFX_Params->aplRankRht);
 
     // Split cases based upon the right arg item ptr type
     switch (GetPtrTypeDir (lpMemRht[uLineNum]))
@@ -378,12 +402,48 @@ void SF_ReadLineN
     } // End SWITCH
 
     // We no longer need this ptr
-    MyGlobalUnlock (lpFX_Save->hGlbRht); lpMemRht = NULL;
+    MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemRht = NULL;
 } // End SF_ReadLineN
 
 
 //***************************************************************************
-//  SF_NumLinesFE
+//  $SF_ReadLineLW
+//
+//  Read in a header/function line
+//    when called from LoadWorkspace
+//***************************************************************************
+
+void SF_ReadLineLW
+    (HWND        hWndEC,            // Edit Control window handle (FE only)
+     LPLW_PARAMS lpLW_Params,       // Ptr to common struc
+     UINT        uLineNum,          // Function line #
+     LPAPLCHAR   lpMemLine)         // Ptr to header/line global memory
+
+{
+    WCHAR wszLineNum[8];            // Save area for formatted line #
+
+    // Format the line #
+    wsprintfW (wszLineNum, L"%d", uLineNum);
+
+    // Get the one (and only) line
+    GetPrivateProfileStringW (lpLW_Params->lpwSectName,             // Ptr to the section name
+                              wszLineNum,                           // Ptr to the key name
+                              L"",                                  // Ptr to the default value
+                              lpLW_Params->lpwBuffer,               // Ptr to the output buffer
+                              memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                              lpLW_Params->lpwszDPFE);              // Ptr to the file name
+    // Convert the {name}s and other chars to UTF16_xxx
+    (void) ConvertNameInPlace (lpLW_Params->lpwBuffer);
+
+    // Copy the buffer to the caller's save area
+    CopyMemory (lpMemLine,
+                lpLW_Params->lpwBuffer,
+                lstrlenW (lpLW_Params->lpwBuffer) * sizeof (lpLW_Params->lpwBuffer[0]));
+} // End SF_ReadLineLW
+
+
+//***************************************************************************
+//  $SF_NumLinesFE
 //
 //  Return the # lines in the function (excluding the header line)
 //    when called from function editor
@@ -391,7 +451,7 @@ void SF_ReadLineN
 
 UINT SF_NumLinesFE
     (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save)           // Ptr to common struc
+     LPVOID    lpVoid)              // Ptr to common struc
 
 {
     return SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0) - 1;
@@ -399,54 +459,377 @@ UINT SF_NumLinesFE
 
 
 //***************************************************************************
-//  SF_NumLinesSV
+//  $SF_NumLinesCom
 //
 //  Return the # lines in the function (excluding the header line)
-//    when called from []FX with a simple char scalar or vector arg
-//***************************************************************************
-
-UINT SF_NumLinesSV
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save)           // Ptr to common struc
-
-{
-    // The # function lines
-    return (UINT) lpFX_Save->aplColsRht - 1;
-} // End SF_NumLinesSV
-
-
-//***************************************************************************
-//  SF_NumLinesM
-//
-//  Return the # lines in the function (excluding the header line)
-//    when called from []FX with a simple char matrix arg
-//***************************************************************************
-
-UINT SF_NumLinesM
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save)           // Ptr to common struc
-
-{
-    // The # function lines
-    return (UINT) lpFX_Save->aplRowsRht - 1;
-} // End SF_NumLinesM
-
-
-//***************************************************************************
-//  SF_NumLinesN
-//
-//  Return the # lines in the function (excluding the header line)
+//    when called from []FX with a simple char scalar or vector arg, or
+//    when called from []FX with a simple char matrix arg, or
 //    when called from []FX with a nested arg
 //***************************************************************************
 
-UINT SF_NumLinesN
-    (HWND      hWndEC,              // Edit Control window handle (FE only)
-     LPFX_SAVE lpFX_Save)           // Ptr to common struc
+UINT SF_NumLinesCom
+    (HWND        hWndEC,            // Edit Control window handle (FE only)
+     LPFX_PARAMS lpFX_Params)       // Ptr to common struc
 
 {
     // The # function lines
-    return (UINT) lpFX_Save->aplColsRht - 1;
-} // End SF_NumLinesN
+    return (UINT) lpFX_Params->aplColsRht - 1;
+} // End SF_NumLinesCom
+
+
+//***************************************************************************
+//  $SF_NumLinesLW
+//
+//  Return the # lines in the function (excluding the header line)
+//    when called from LoadWorkspace
+//***************************************************************************
+
+UINT SF_NumLinesLW
+    (HWND        hWndEC,            // Edit Control window handle (FE only)
+     LPLW_PARAMS lpLW_Params)       // Ptr to common struc
+
+{
+    return
+      GetPrivateProfileIntW (lpLW_Params->lpwSectName,      // Ptr to the section name
+                             KEYNAME_COUNT,                 // Ptr to the key name
+                             0,                             // Default value if not found
+                             lpLW_Params->lpwszDPFE) - 1;   // Ptr to the file name
+} // End SF_NumLinesLW
+
+
+//***************************************************************************
+//  $SF_CreationTimeCom
+//
+//  Return the creation time
+//    when called from function editor, or
+//    when called from []FX with a simple char scalar or vector arg, or
+//    when called from []FX with a simple char matrix arg, or
+//    when called from []FX with a nested arg
+//***************************************************************************
+
+void SF_CreationTimeCom
+    (LPLW_PARAMS lpLW_Params,       // Ptr to common struc
+     SYSTEMTIME *lpSystemTime,      // Prt to current system (UTC) time
+     FILETIME   *lpftCreation)      // Ptr to output save area
+
+{
+    // Convert system time to file time and save as creation time
+    SystemTimeToFileTime (lpSystemTime, lpftCreation);
+} // End SF_CreationTimeCom
+
+
+//***************************************************************************
+//  $SF_CreationTimeLW
+//
+//  Return the creation time
+//    when called from LoadWorkspace
+//***************************************************************************
+
+void SF_CreationTimeLW
+    (LPLW_PARAMS lpLW_Params,       // Ptr to common struc
+     SYSTEMTIME *lpSystemTime,      // Prt to current system (UTC) time
+     FILETIME   *lpftCreation)      // Ptr to output save area
+
+{
+    // Copy from parameters
+    *lpftCreation = lpLW_Params->ftCreation;
+} // End SF_CreationTimeLW
+
+
+//***************************************************************************
+//  $SF_LastModTimeCom
+//
+//  Return the last modification time
+//    when called from function editor
+//    when called from []FX with a simple char scalar or vector arg
+//    when called from []FX with a simple char matrix arg
+//    when called from []FX with a nested arg
+//***************************************************************************
+
+void SF_LastModTimeCom
+    (LPLW_PARAMS lpLW_Params,       // Ptr to common struc
+     SYSTEMTIME *lpSystemTime,      // Prt to current system (UTC) time
+     FILETIME   *lpftLastMod)       // Ptr to output save area
+
+{
+    // Convert system time to file time and save as last modification time
+    SystemTimeToFileTime (lpSystemTime, lpftLastMod);
+} // End SF_LastModTimeCom
+
+
+//***************************************************************************
+//  $SF_LastModTimeLW
+//
+//  Return the last modification time
+//    when called from LoadWorkspace
+//***************************************************************************
+
+void SF_LastModTimeLW
+    (LPLW_PARAMS lpLW_Params,       // Ptr to common struc
+     SYSTEMTIME *lpSystemTime,      // Prt to current system (UTC) time
+     FILETIME   *lpftLastMod)       // Ptr to output save area
+
+{
+    // Copy from parameters
+    *lpftLastMod = lpLW_Params->ftLastMod;
+} // End SF_LastModTimeLW
+
+
+//***************************************************************************
+//  $SF_UndoBufferFE
+//
+//  Return a ptr to the Undo buffer
+//    when called from function editor
+//***************************************************************************
+
+HGLOBAL SF_UndoBufferFE
+    (HWND        hWndEC,            // Edit Cnotrol window handle
+     LPVOID      lpVoid)            // Ptr to common struc
+
+{
+    HWND         hWndFE;            // Function Editor window handle
+    LPUNDO_BUF   lpUndoBeg,         // Ptr to start of Undo buffer
+                 lpUndoLst;         // Ptr to end ...
+    HGLOBAL      hGlbUndoBuff;      // Undo Buffer global memory handle
+
+    // Get the Function Editor window handle
+    hWndFE = GetParent (hWndEC);
+
+    (long) lpUndoBeg = GetWindowLongW (hWndFE, GWLSF_UNDO_BEG);
+    if (lpUndoBeg)
+    {
+        LPUNDO_BUF lpMemUndo;       // Ptr to Undo Buffer global memory
+
+        // Get the ptr to the last entry in the Undo Buffer
+        (long) lpUndoLst = GetWindowLongW (hWndFE, GWLSF_UNDO_LST);
+
+        // Check for empty Undo buffer
+        if (lpUndoLst EQ lpUndoBeg)
+            hGlbUndoBuff = NULL;
+        else
+        {
+            // Allocate storage for the Undo buffer
+            hGlbUndoBuff = DbgGlobalAlloc (GHND, (lpUndoLst - lpUndoBeg) * sizeof (UNDO_BUF));
+            if (!hGlbUndoBuff)
+            {
+                MessageBox (hWndEC,
+                            "Insufficient memory to save Undo buffer!!",
+                            lpszAppName,
+                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                return NULL;
+            } // End IF
+
+            // Lock the memory to get a ptr to it
+            lpMemUndo = MyGlobalLock (hGlbUndoBuff);
+
+            // Copy the Undo Buffer to global memory
+            CopyMemory (lpMemUndo, lpUndoBeg, (lpUndoLst - lpUndoBeg) * sizeof (UNDO_BUF));
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbUndoBuff); lpMemUndo = NULL;
+        } // End IF/ELSE
+    } // End IF
+
+    return hGlbUndoBuff;
+} // End SF_UndoBufferFE
+
+
+//***************************************************************************
+//  $SF_UndoBufferCom
+//
+//  Return a ptr to the Undo buffer
+//    when called from []FX with a simple char scalar or vector arg
+//    when called from []FX with a simple char matrix arg
+//    when called from []FX with a nested arg
+//***************************************************************************
+
+HGLOBAL SF_UndoBufferCom
+    (HWND        hWndEC,            // Edit Cnotrol window handle
+     LPVOID      lpVoid)            // Ptr to common struc
+
+{
+    // No Undo Buffer for []FX created functions
+    return NULL;
+} // End SF_UndoBufferCom
+
+
+//***************************************************************************
+//  $SF_UndoBufferLW
+//
+//  Return a ptr to the Undo buffer
+//    when called from LoadWorkspace
+//***************************************************************************
+
+HGLOBAL SF_UndoBufferLW
+    (HWND        hWndEC,            // Edit Cnotrol window handle
+     LPLW_PARAMS lpLW_Params)       // Ptr to common struc
+
+{
+    LPWCHAR    lpMemUndoTxt;        // Ptr to Undo Buffer in text format
+    WCHAR      wcAction;            // Temporary character
+    LPUNDO_BUF lpMemUndoBin;        // Ptr to Undo Buffer in binary format
+    UINT       uUndoCount,          // # entries in the Undo Buffer
+               uFields;             // # fields parsed by swscanf
+    HGLOBAL    hGlbUndoBuff;        // Undo Buffer global memory handle
+
+    // Get parameters
+    lpMemUndoTxt = lpLW_Params->lpMemUndoTxt;
+
+    // Parse the # entries, and skip over it
+    swscanf (lpMemUndoTxt, L"%d", &uUndoCount);
+    lpMemUndoTxt = SkipBlackW (lpMemUndoTxt);
+
+    // Skip over the separating blank
+    Assert (*lpMemUndoTxt EQ L' '); lpMemUndoTxt++;
+
+    // Allocate storage for the Undo buffer
+    hGlbUndoBuff = DbgGlobalAlloc (GHND, uUndoCount * sizeof (UNDO_BUF));
+    if (!hGlbUndoBuff)
+    {
+        MessageBox (hWndEC,
+                    "Insufficient memory to save Undo buffer!!",
+                    lpszAppName,
+                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        return NULL;
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpMemUndoBin = MyGlobalLock (hGlbUndoBuff);
+
+    // Parse the Undo Buffer entries
+    while (*lpMemUndoTxt)
+    {
+        // Convert the Undo Buffer text to Undo Buffer format
+
+        // Parse the Action, CharPosBeg, CharPosEnd, Group
+        uFields =
+          swscanf (lpMemUndoTxt,
+                   L"%c %d %d %d '%c'",
+                  &wcAction,
+                  &lpMemUndoBin->CharPosBeg,
+                  &lpMemUndoBin->CharPosEnd,
+                  &lpMemUndoBin->Group,
+                  &lpMemUndoBin->Char);
+        // Convert the Action code to binary
+        switch (wcAction)
+        {
+            case L'N':
+                // Save the Action
+                lpMemUndoBin->Action = undoNone;
+
+                break;
+
+            case L'I':
+                // Save the Action
+                lpMemUndoBin->Action = undoIns;
+
+                break;
+
+            case L'R':
+                // Save the Action
+                lpMemUndoBin->Action = undoRep;
+
+                break;
+
+            case L'D':
+                // Save the Action
+                lpMemUndoBin->Action = undoDel;
+
+                break;
+
+            case L'S':
+                // Save the Action
+                lpMemUndoBin->Action = undoSel;
+
+                break;
+
+            case L'T':
+                // Save the Action
+                lpMemUndoBin->Action = undoInsToggle;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Split cases based upon the # fields scanned
+        switch (uFields)
+        {
+            case 4:
+                Assert (lpMemUndoBin->Action NE undoIns
+                     && lpMemUndoBin->Action NE undoRep);
+                break;
+
+            case 5:
+                // Parse the Char if Ins or Rep
+                Assert (lpMemUndoBin->Action EQ undoIns
+                     || lpMemUndoBin->Action EQ undoRep);
+                if (lpMemUndoBin->Char EQ L'{')
+                {
+                    // Skip to the left brace char
+                    lpMemUndoTxt = SkipToCharW (lpMemUndoTxt, L'{');
+
+                    // Parse the {name}
+                    lpMemUndoBin->Char = NameToChar (lpMemUndoTxt);
+                } else
+                if (lpMemUndoBin->Char EQ L'\\')
+                {
+                    // Skip over the slope char
+                    lpMemUndoTxt = SkipPastCharW (lpMemUndoTxt, L'\\');
+
+                    // Split cases based upon the next char
+                    switch (*lpMemUndoTxt)
+                    {
+                        case L'n':
+                            lpMemUndoBin->Char = L'\n';
+
+                            break;
+
+                        case L'r':
+                            lpMemUndoBin->Char = L'\r';
+
+                            break;
+
+                        case L'\'':
+                            lpMemUndoBin->Char = L'\'';
+
+                            break;
+
+                        case L'\\':
+                            lpMemUndoBin->Char = L'\\';
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+                } // End IF/ELSE/...
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Skip over the separating comma
+        lpMemUndoTxt = SkipPastCharW (lpMemUndoTxt, L',');
+
+        if (*lpMemUndoTxt)
+        {
+            // Skip over the separating blank
+            Assert (*lpMemUndoTxt EQ L' '); lpMemUndoTxt++;
+        } // End IF
+
+        // Skip to next entry
+        lpMemUndoBin++;
+    } // End WHILE
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbUndoBuff); lpMemUndoBin = NULL;
+
+    return hGlbUndoBuff;
+} // End SF_UndoBufferLW
 
 
 //***************************************************************************
@@ -464,7 +847,7 @@ UINT SF_NumLinesN
 
 BOOL SaveFunctionCom
     (HWND      hWndFE,                  // Function Editor window handle (FE only, NULL otherwise)
-     LPFX_SAVE lpFX_Save)               // Ptr to common struc
+     LPSF_FCNS lpSF_Fcns)               // Ptr to common struc
 
 {
     HWND           hWndEC = NULL;       // Window handle to Edit Control
@@ -479,8 +862,8 @@ BOOL SaveFunctionCom
     WCHAR          wszTemp[1024];       // Save area for error message text
 
     // Fill in common values
-    lpFX_Save->bRet = FALSE;
-    lpFX_Save->uErrLine = NEG1U;
+    lpSF_Fcns->bRet = FALSE;
+    lpSF_Fcns->uErrLine = NEG1U;
 
     if (hWndFE)
     {
@@ -495,7 +878,7 @@ BOOL SaveFunctionCom
         hWndEC = (HWND) GetWindowLongW (hWndFE, GWLSF_HWNDEC);
 
     // Get the length of the header line
-    uLineLen = (*lpFX_Save->SF_LineLen) (hWndEC, lpFX_Save, 0);
+    uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns->LclParams, 0);
 
     // Allocate space for the text
     //   (the "sizeof (uLineLen)" is for the leading line length
@@ -532,7 +915,7 @@ BOOL SaveFunctionCom
         lpMemTxtLine->W = (WORD) uLineLen;
 
         // Read in the line text
-        (*lpFX_Save->SF_ReadLine) (hWndEC, lpFX_Save, 0, &lpMemTxtLine->C);
+        (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns->LclParams, 0, &lpMemTxtLine->C);
 
         // Tokenize the line
         hGlbTknHdr =
@@ -547,7 +930,7 @@ BOOL SaveFunctionCom
     if (!hGlbTknHdr)
     {
         // Mark the line in error
-        lpFX_Save->uErrLine = 0;
+        lpSF_Fcns->uErrLine = 0;
 
         if (hWndFE)
         {
@@ -585,7 +968,7 @@ BOOL SaveFunctionCom
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
         else
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lpFX_Save->lptkFunc);
+                                       lpSF_Fcns->lptkFunc);
         goto ERROR_EXIT;        // Mark as failed
     } // End IF
 
@@ -607,8 +990,6 @@ BOOL SaveFunctionCom
                      numSTE;            // Loop counter
         LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
         LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
-        LPUNDO_BUF   lpUndoBeg,         // Ptr to start of Undo buffer
-                     lpUndoLst;         // Ptr to end ...
         LPSYMENTRY   lpSymName = NULL,  // Ptr to SYMENTRY for the function name
                     *lplpSymDfnHdr;     // Ptr to LPSYMENTRYs at end of user-defined function/operator header
         SYSTEMTIME   systemTime;        // Current system (UTC) time
@@ -619,7 +1000,7 @@ BOOL SaveFunctionCom
         if (!fhLocalVars.lpYYFcnName)
         {
             // Mark the line in error
-            lpFX_Save->uErrLine = 0;
+            lpSF_Fcns->uErrLine = 0;
 
             goto ERROR_EXIT;
         } // End IF
@@ -679,8 +1060,7 @@ BOOL SaveFunctionCom
             // Free it
             FreeResultGlobalDfn (hGlbOldDfn); hGlbOldDfn = NULL;
         } else
-            // Convert system time to file time and save as creation time
-            SystemTimeToFileTime (&systemTime, &ftCreation);
+            (*lpSF_Fcns->SF_CreationTime) (lpSF_Fcns->LclParams, &systemTime, &ftCreation);
 
         // Get # extra result STEs
         if (fhLocalVars.lpYYResult)
@@ -711,7 +1091,7 @@ BOOL SaveFunctionCom
             numLocalsSTE = 0;
 
         // Get # lines in the function (excluding the header)
-        numFcnLines = (*lpFX_Save->SF_NumLines) (hWndEC, lpFX_Save);
+        numFcnLines = (*lpSF_Fcns->SF_NumLines) (hWndEC, lpSF_Fcns->LclParams);
 
         // Allocate global memory for the function header
         hGlbDfnHdr = DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
@@ -729,7 +1109,7 @@ BOOL SaveFunctionCom
                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             else
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                           lpFX_Save->lptkFunc);
+                                           lpSF_Fcns->lptkFunc);
             goto ERROR_EXIT;
         } // End IF
 
@@ -770,47 +1150,11 @@ BOOL SaveFunctionCom
         // Save creation time
         lpMemDfnHdr->ftCreation = ftCreation;
 
-        // Convert system time to file time and save as last modification time
-        SystemTimeToFileTime (&systemTime, &lpMemDfnHdr->ftLastMod);
+        // Get the function's last modification time
+        (*lpSF_Fcns->SF_LastModTime) (lpSF_Fcns->LclParams, &systemTime, &lpMemDfnHdr->ftLastMod);
 
         // Get the ptr to the start of the Undo Buffer
-        if (hWndFE)
-        {
-            (long) lpUndoBeg = GetWindowLongW (hWndFE, GWLSF_UNDO_BEG);
-            if (lpUndoBeg)
-            {
-                LPUNDO_BUF lpMemUndo;       // Ptr to Undo Buffer global memory
-
-                // Get the ptr to the last entry in the Undo Buffer
-                (long) lpUndoLst = GetWindowLongW (hWndFE, GWLSF_UNDO_LST);
-
-                // Check for empty Undo buffer
-                if (lpUndoLst EQ lpUndoBeg)
-                    lpMemDfnHdr->hGlbUndoBuff = NULL;
-                else
-                {
-                    // Allocate storage for the Undo buffer
-                    lpMemDfnHdr->hGlbUndoBuff = DbgGlobalAlloc (GHND, (lpUndoLst - lpUndoBeg) * sizeof (UNDO_BUF));
-                    if (!lpMemDfnHdr->hGlbUndoBuff)
-                    {
-                        MessageBox (hWndEC,
-                                    "Insufficient memory to save Undo buffer!!",
-                                    lpszAppName,
-                                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                        goto ERROR_EXIT;
-                    } // End IF
-
-                    // Lock the memory to get a ptr to it
-                    lpMemUndo = MyGlobalLock (lpMemDfnHdr->hGlbUndoBuff);
-
-                    // Copy the Undo Buffer to global memory
-                    CopyMemory (lpMemUndo, lpUndoBeg, (lpUndoLst - lpUndoBeg) * sizeof (UNDO_BUF));
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
-                } // End IF/ELSE
-            } // End IF
-        } // End IF
+        lpMemDfnHdr->hGlbUndoBuff = (*lpSF_Fcns->SF_UndoBuffer) (hWndEC, lpSF_Fcns->LclParams);
 
         // Save the dynamic parts of the function into global memory
 
@@ -891,7 +1235,7 @@ BOOL SaveFunctionCom
             HGLOBAL hGlbTxtLine;    // Line text global memory handle
 
             // Get the length of the function line
-            uLineLen = (*lpFX_Save->SF_LineLen) (hWndEC, lpFX_Save, uLineNum + 1);
+            uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns->LclParams, uLineNum + 1);
 
             // Allocate global memory to hold this text
             // The "sizeof (uLineLen) + " is for the leading length
@@ -908,7 +1252,7 @@ BOOL SaveFunctionCom
                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
                 else
                     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                               lpFX_Save->lptkFunc);
+                                               lpSF_Fcns->lptkFunc);
                 goto ERROR_EXIT;
             } // End IF
 
@@ -933,7 +1277,7 @@ BOOL SaveFunctionCom
                 lpMemTxtLine->W = (WORD) uLineLen;
 
                 // Read in the line text
-                (*lpFX_Save->SF_ReadLine) (hWndEC, lpFX_Save, (uLineNum + 1), &lpMemTxtLine->C);
+                (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns->LclParams, (uLineNum + 1), &lpMemTxtLine->C);
 
                 // Tokenize the line
                 lpFcnLines->hGlbTknLine =
@@ -973,7 +1317,7 @@ BOOL SaveFunctionCom
                     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
                 } else
                     // Save the line # in error (origin-0)
-                    lpFX_Save->uErrLine = uLineNum + 1;
+                    lpSF_Fcns->uErrLine = uLineNum + 1;
 
                 goto ERROR_EXIT;
             } // End IF
@@ -1054,8 +1398,8 @@ BOOL SaveFunctionCom
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-        lpFX_Save->bRet = TRUE;
-        lpFX_Save->lpSymName = lpSymName;
+        lpSF_Fcns->bRet = TRUE;
+        lpSF_Fcns->lpSymName = lpSymName;
 
         goto NORMAL_EXIT;
     } else
@@ -1090,13 +1434,13 @@ NORMAL_EXIT:
         VirtualFree (fhLocalVars.lpYYStrandStart, 0, MEM_RELEASE); fhLocalVars.lpYYStrandStart = NULL;
     } // End IF
 
-    return lpFX_Save->bRet;
+    return lpSF_Fcns->bRet;
 } // End SaveFunctionCom
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  GetSpecialLabelNums
+//  $GetSpecialLabelNums
 //
 //  Return the line #s (or zero if not found) of the special line labels
 //***************************************************************************

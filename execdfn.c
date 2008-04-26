@@ -1165,7 +1165,7 @@ BOOL Unlocalize
         resetFlag = lpMemPTD->lpSISCur->ResetFlag;
 
         // Free the outgoing value of []EM
-        FreeResultGlobalVar (lpMemPTD->lpSISCur->hGlbQuadEM);
+        FreeResultGlobalVar (lpMemPTD->lpSISCur->hGlbQuadEM); lpMemPTD->lpSISCur->hGlbQuadEM = NULL;
 
         // Get # LPSYMENTRYs on the stack
         numSymEntries = lpMemPTD->lpSISCur->numSymEntries;
@@ -1198,7 +1198,7 @@ BOOL Unlocalize
                         Assert (IsGlbTypeVarDir (hGlbData));
 
                         // Free the global var
-                        FreeResultGlobalVar (hGlbData);
+                        FreeResultGlobalVar (hGlbData); hGlbData = NULL;
 
                         break;
 

@@ -317,6 +317,18 @@ LRESULT APIENTRY FEWndProc
             SetWindowLongW (hWnd, GWLSF_UNDO_INI, (long) lpUndoBeg);
 ////////////SetWindowLongW (hWnd, GWLSF_UNDO_GRP, 0);    // Already zero
 
+            // Save in window extra bytes
+            SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
+            SetWindowLongW (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
+
+            // Start with an initial action of nothing
+            AppendUndo (hWnd,                       // FE Window handle
+                        GWLSF_UNDO_NXT,             // Offset in hWnd extra bytes of lpUndoNxt
+                        undoNone,                   // Action
+                        0,                          // Beginning char position
+                        0,                          // Ending    ...
+                        UNDO_NOGROUP,               // Group index
+                        0);                         // Character
             // If there's a pre-existing function,
             //   and there's an Undo Buffer
             if (hGlbDfnHdr
@@ -332,32 +344,18 @@ LRESULT APIENTRY FEWndProc
                 lpMemUndo = MyGlobalLock (lpMemDfnHdr->hGlbUndoBuff);
 
                 // Copy the previous Undo Buffer contents
-                CopyMemory (lpUndoBeg, lpMemUndo, uUndoSize);
+                CopyMemory (&lpUndoBeg[1], lpMemUndo, uUndoSize);
 
                 // We no longer need this ptr
                 MyGlobalUnlock (lpMemDfnHdr->hGlbUndoBuff); lpMemUndo = NULL;
 
                 // Get the ptr to the next available entry
-                lpUndoNxt = (LPUNDO_BUF) ByteAddr (lpUndoBeg, uUndoSize);
+                lpUndoNxt = (LPUNDO_BUF) ByteAddr (&lpUndoBeg[1], uUndoSize);
 
                 // Save in window extra bytes
                 SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoNxt);
                 SetWindowLongW (hWnd, GWLSF_UNDO_LST, (long) lpUndoNxt);
-            } else
-            {
-                // Save in window extra bytes
-                SetWindowLongW (hWnd, GWLSF_UNDO_NXT, (long) lpUndoBeg);
-                SetWindowLongW (hWnd, GWLSF_UNDO_LST, (long) lpUndoBeg);
-
-                // Start with an initial action of nothing
-                AppendUndo (hWnd,                       // FE Window handle
-                            GWLSF_UNDO_NXT,             // Offset in hWnd extra bytes of lpUndoNxt
-                            undoNone,                   // Action
-                            0,                          // Beginning char position
-                            0,                          // Ending    ...
-                            UNDO_NOGROUP,               // Group index
-                            0);                         // Character
-            } // End IF/ELSE
+            } // End IF
 
             // Save incremented starting ptr in window extra bytes
             SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) ++lpUndoBeg);
@@ -652,7 +650,6 @@ LRESULT APIENTRY FEWndProc
                 case EN_MAXTEXT:    // idEditCtrl = (int) LOWORD(wParam); // Identifier of edit control
                                     // hwndEditCtrl = (HWND) lParam;      // Handle of edit control
                     // The edit control has exceed its maximum # chars
-                    DbgBrk ();      // ***TESTME***
 
                     // The default maximum is 32K, so we increase it by that amount
                     iMaxLimit = SendMessageW (hWndEC, EM_GETLIMITTEXT, 0, 0);
@@ -1063,7 +1060,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 // Name not found -- append it
                 // Lookup in or append to the symbol table
-                return (LRESULT) SymTabAppendName_EM (&lpwszTemp[uCharPosBeg]);
+                return (LRESULT) SymTabAppendName_EM (&lpwszTemp[uCharPosBeg], NULL);
             } else
                 return (LRESULT) NULL;
         } // End MYWM_IZITNAME
@@ -1543,6 +1540,8 @@ LRESULT WINAPI LclEditCtrlWndProc
             return (lpUndoBeg NE lpUndoNxt);
 
         case WM_REDO:
+            break;
+
             DbgBrk ();              // ***FINISHME*** -- Make Redo work??
 
 

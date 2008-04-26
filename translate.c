@@ -122,6 +122,42 @@ NAME_TYPES TranslateDfnToNameType
 
 
 //***************************************************************************
+//  $TranslateNameTypeToImmType
+//
+//  Translate a name type (see NAME_TYPES) to
+//    an immediate type (see IMM_TYPES).
+//***************************************************************************
+
+IMM_TYPES TranslateNameTypeToImmType
+    (NAME_TYPES nameType)
+
+{
+    switch (nameType)
+    {
+        case NAMETYPE_FN12:
+            return IMMTYPE_PRIMFCN;
+
+        case NAMETYPE_OP1:
+            return IMMTYPE_PRIMOP1;
+
+        case NAMETYPE_OP2:
+            return IMMTYPE_PRIMOP2;
+
+        case NAMETYPE_OP3:
+            return IMMTYPE_PRIMOP3;
+
+        case NAMETYPE_FN0:
+        case NAMETYPE_UNK:
+        case NAMETYPE_VAR:
+        case NAMETYPE_FILL1:
+        case NAMETYPE_LST:
+        defstop
+            return IMMTYPE_ERROR;
+    } // End SWITCH
+} // End TranslateNameTypeToImmType
+
+
+//***************************************************************************
 //  $TranslateImmTypeToTknType
 //
 //  Translate an immediate type (see IMM_TYPES) to

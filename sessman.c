@@ -332,26 +332,6 @@ BOOL IzitLastLine
 
 
 //***************************************************************************
-//  $strchrW
-//
-//  The wide form of <strchr>
-//***************************************************************************
-
-LPWCHAR strchrW
-    (LPWCHAR wp,
-     WCHAR   wch)
-
-{
-
-    for (; *wp; wp++)
-    if (wch EQ *wp)
-        return wp;
-
-    return NULL;
-} // End strchrW
-
-
-//***************************************************************************
 //  $MoveCaretEOB
 //
 //  Move the text caret in an Edit Control to the end of the buffer
@@ -606,6 +586,9 @@ LRESULT APIENTRY SMWndProc
     // Get the handle to the edit control
     hWndEC = (HWND) GetWindowLongW (hWnd, GWLSF_HWNDEC);
 
+    // Get the thread's PerTabData global memory handle
+    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
+
 ////LCLODSAPI ("SM: ", hWnd, message, wParam, lParam);
     switch (message)
     {
@@ -614,9 +597,6 @@ LRESULT APIENTRY SMWndProc
                                         // lpcs = (LPCREATESTRUCTW) lParam
         {
             LPVOID p;
-
-            // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -665,9 +645,6 @@ LRESULT APIENTRY SMWndProc
         {
             int    i;
             LPVOID p;
-
-            // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Initialize # threads
             SetPropW (hWnd, L"NTHREADS", 0);
@@ -1133,15 +1110,17 @@ LRESULT APIENTRY SMWndProc
                 goto WM_CREATE_FAIL;
             } // End IF
 
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
             // ***FIXME*** -- For some reason, the
             //                background of the MC window
             //                doesn't get painted, so I'm
             //                using this kludge for now.
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
             InvalidateRect (lpMemPTD->hWndMC, NULL, TRUE);
+
+            // Save the bExecLX flag
+            lpMemPTD->bExecLX = ((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->bExecLX;
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1163,6 +1142,9 @@ LRESULT APIENTRY SMWndProc
                 // Mark as displayed so we don't do it again
                 bLoadMsgDisp = TRUE;
             } // End IF
+
+            // Tell the window to finish initialization
+            PostMessageW (hWnd, MYWM_INIT_EC, 0, 0);
 
             return FALSE;           // We handled the msg
 
@@ -1205,9 +1187,6 @@ WM_CREATE_FAIL:
 
 #ifdef DEBUG
         case MYWM_INIT_SMDB:
-            // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -1221,17 +1200,59 @@ WM_CREATE_FAIL:
 
             break;
 #endif
-        case MYWM_INIT_EC:          // hFont = (HFONT) wParam;
+        case MYWM_INIT_EC:
+            // Wait for the third receipt of this message
+            //   so we are sure everything is initialized
+            switch ((int) GetPropW (hWnd, L"INIT_EC"))
+            {
+                case 0:
+                    SetPropW (hWnd, L"INIT_EC", (HANDLE) 1);
+
+                    return FALSE;
+
+                case 1:
+                    SetPropW (hWnd, L"INIT_EC", (HANDLE) 2);
+
+                    return FALSE;
+
+                case 2:
+                    RemovePropW (hWnd, L"INIT_EC");
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Make sure we can communicate between windows
+            AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
+
             // Tell the Edit Control about its font
             SendMessageW (hWndEC, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
 #ifdef DEBUG
             PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
 #endif
-            // Make sure we can communicate between windows
-            AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // If requested, execute []LX
+            if (lpMemPTD->bExecLX)
+            {
+                // Reset the flag
+                lpMemPTD->bExecLX = FALSE;
+
+                // Execute the statement in immediate execution mode
+                ImmExecStmt (WS_UTF16_UPTACKJOT WS_UTF16_QUAD L"LX",    // Ptr to line to execute
+                             FALSE,                                     // TRUE iff free the lpwszLine on completion
+                             FALSE,                                     // TRUE iff wait until finished
+                             hWndEC);                                   // Edit Control window handle
+            } // End IF
 
             // Display the default prompt
             DisplayPrompt (hWndEC, 1);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // Ensure the SM has the focus
             SetFocus (hWnd);
@@ -1335,9 +1356,6 @@ WM_CREATE_FAIL:
             UINT uLineLen,
                  uLineCnt;
             BOOL bRet;
-
-            // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Special cases for SM windows:
             //   * Up/Dn arrows:
@@ -1552,9 +1570,6 @@ WM_CREATE_FAIL:
                                  nHeightDB, nHeightSM;
                     HWND         hWndMC;
 
-                    // Get the thread's PerTabData global memory handle
-                    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
-
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -1609,9 +1624,6 @@ WM_CREATE_FAIL:
                     LPSYMENTRY lpSym = NULL;
 
                     DbgBrk ();      // ***FIXME*** -- Check on lock count of hGlbPTD
-
-                    // Get the thread's PerTabData global memory handle
-                    hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1735,9 +1747,6 @@ WM_CREATE_FAIL:
         case WM_DESTROY:
             // Remove all saved window properties
             EnumProps (hWnd, EnumCallbackRemoveProp);
-
-            // Get the thread's PerTabData global memory handle
-            hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);

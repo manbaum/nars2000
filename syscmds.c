@@ -67,7 +67,7 @@ SYSCMDSTAB SysCmdsTab[]
     {L"sic"   ,     &CmdReset_EM    },
     {L"sinl"  ,     &CmdSinl_EM     },
     {L"vars"  ,     &CmdVars_EM     },
-////{L"xload" ,     &CmdXload_EM    },
+    {L"xload" ,     &CmdXload_EM    },
     {L"wsid"  ,     &CmdWsid_EM     },
 }
 #endif
@@ -156,7 +156,8 @@ BOOL CmdClear_EM
 
     return CreateNewTab (hWndMF,
                          L"",
-                         TabCtrl_GetItemCount (hWndTC));
+                         TabCtrl_GetItemCount (hWndTC),
+                         FALSE);
 } // End CmdClear_EM
 
 
@@ -227,7 +228,8 @@ BOOL CmdNewTab_EM
 {
     return CreateNewTab (hWndMF,
                          L"",
-                         TabCtrl_GetItemCount (hWndTC));
+                         TabCtrl_GetItemCount (hWndTC),
+                         FALSE);
 } // End CmdNewTab_EM
 
 

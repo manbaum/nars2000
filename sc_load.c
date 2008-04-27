@@ -49,6 +49,35 @@ BOOL CmdLoad_EM
     (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
 {
+    return CmdLoadCom_EM (lpwszTail, TRUE);
+} // End CmdLoad_EM
+
+
+//***************************************************************************
+//  $CmdXload_EM
+//
+//  Execute the system command:  )XLOAD wsid
+//***************************************************************************
+
+BOOL CmdXload_EM
+    (LPWCHAR lpwszTail)                 // Ptr to command line tail
+
+{
+    return CmdLoadCom_EM (lpwszTail, FALSE);
+} // End CmdXload_EM
+
+
+//***************************************************************************
+//  $CmdLoadCom_EM
+//
+//  Execute the system command:  )LOAD or )XLOAD wsid
+//***************************************************************************
+
+BOOL CmdLoadCom_EM
+    (LPWCHAR lpwszTail,                 // Ptr to command line tail
+     BOOL    bExecLX)                   // TRUE iff execute []LX after successful load
+
+{
     HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     WCHAR        wszTailDPFE[_MAX_PATH];// Save area for canonical form of given ws name
@@ -83,8 +112,9 @@ BOOL CmdLoad_EM
     return
       CreateNewTab (hWndMF,             // Parent window handle
                     wszTailDPFE,        // Drive, Path, Filename, Ext of the workspace
-                    iTabIndex + 1);     // Insert new tab to the left of this one
-} // End CmdLoad_EM
+                    iTabIndex + 1,      // Insert new tab to the left of this one
+                    bExecLX);           // TRUE iff execute []LX after successful load
+} // End CmdLoadCom_EM
 
 
 //***************************************************************************
@@ -842,6 +872,42 @@ BOOL LoadWorkspace_EM
             // Parse the line into lpSymEntry->stData
             ParseSavedWsFcn (lpwSrc, lpSymEntry, nameType);
         } // End FOR
+
+        // If there's another SI level to process, create a new SIS struc
+        if (uSID < uSILevel)
+        {
+            DbgBrk ();
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+
+
+#if 0
+            // Fill in the SIS header for a User-Defined Function/Operator
+            FillSISNxt (lpMemPTD,                   // Ptr to PerTabData global memory
+                        NULL,                       // Semaphore handle (Filled in by ExecuteFunction_EM_YY)
+                        lpMemDfnHdr->DfnType,       // DfnType
+                        lpMemDfnHdr->FcnValence,    // FcnValence
+                        FALSE,                      // Suspended
+                        FALSE);                     // LinkIntoChain
+            // Fill in the non-default SIS header entries
+            lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
+            lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
+            lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
+            lpMemPTD->lpSISNxt->PermFn       = lpMemDfnHdr->PermFn;
+            lpMemPTD->lpSISNxt->CurLineNum   = 1;
+            lpMemPTD->lpSISNxt->NxtLineNum   = 2;
+////////////lpMemPTD->lpSISNxt->numLabels    =              // Filled in below
+            lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
+////////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in below
+#endif
+
+
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+        } // End IF
     } // End FOR
 
     // Delete the symbol table entries for functions we allocated of the form "#%d"

@@ -76,7 +76,8 @@ typedef struct tagPERTABDATA
     UINT         bTabTextState:1,   // 58:  00000001:  TRUE iff the tab's text state is Highlight, FALSE if Normal
                  bNegative:1,       //      00000002:  Sign bit for integer part
                  bNegExp:1,         //      00000004:  ...          exponent ...
-                 Avail:29;          //      FFFFFFF8:  Available bits
+                 bExecLX:1,         //      00000008:  TRUE iff execute []LX after successful load
+                 Avail:28;          //      FFFFFFF0:  Available bits
 
     LPWCHAR      lpwszCurLine,      // 5C:  The contents of the line
                                     //      with the cursor on it.

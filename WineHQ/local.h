@@ -33,3 +33,11 @@ extern int gDbgLvl;
 #include "editctrl.h"
 #include "resource.h"
 
+#ifdef DEBUG
+  #define   LCLODSAPI   ODSAPI
+extern void __cdecl ODSAPI(char *lpStr,struct HWND__ *hWnd,unsigned int message,unsigned int wParam,long lParam);
+#else
+  #define   LCLODSAPI
+#endif
+
+

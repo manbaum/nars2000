@@ -33,6 +33,7 @@
 #include "pertab.h"
 #include "threads.h"
 #include "colors.h"
+#include "editctrl.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -198,7 +199,8 @@ void ShowHideChildWindows
 BOOL CreateNewTab
     (HWND    hWndParent,        // Window handle of the parent
      LPWCHAR lpwsz,             // Drive, Path, Filename, Ext of the workspace
-     int     iTab)              // Insert the new tab to the left of this one
+     int     iTab,              // Insert the new tab to the left of this one
+     BOOL    bExecLX)           // TRUE iff execute []LX after successful load
 
 {
     DWORD   dwThreadId;         // Thread ID
@@ -230,6 +232,7 @@ BOOL CreateNewTab
     cntThread.hWndParent = hWndParent;
     cntThread.hGlbDPFE   = hGlbDPFE;
     cntThread.iTab       = iTab;
+    cntThread.bExecLX    = bExecLX;
 
 #ifdef DEBUG
     // Can't call Debugger as it hasn't been created as yet.
@@ -287,6 +290,7 @@ BOOL WINAPI CreateNewTabInThread
     MSG          Msg;               // Message for GetMessage loop
     int          nThreads;
     WCHAR        wszTemp[32];       // Temporary storage
+    BOOL         bExecLX;           // TRUE iff execute []LX after successful load
 
     // Store the thread type ('TC')
     TlsSetValue (dwTlsType, (LPVOID) 'TC');
@@ -295,6 +299,7 @@ BOOL WINAPI CreateNewTabInThread
     hWndParent = lpcntThread->hWndParent;
     hGlbDPFE   = lpcntThread->hGlbDPFE;
     iTab       = lpcntThread->iTab;
+    bExecLX    = lpcntThread->bExecLX;
     hThread    = lpcntThread->hThread;
 
     // Get the size and position of the parent window.
@@ -408,6 +413,7 @@ BOOL WINAPI CreateNewTabInThread
 
     // Fill in the SM WM_CREATE data struct
     csSM.hGlbDPFE = hGlbDPFE;
+    csSM.bExecLX  = bExecLX;
 
     // Create the Session Manager window
     lpMemPTD->hWndSM =
@@ -455,6 +461,9 @@ BOOL WINAPI CreateNewTabInThread
     // Save hWndMC for use inside message loop
     //   so we can unlock the per-tab data memory
     hWndMC = lpMemPTD->hWndMC;
+
+    // Tell the SM we're finished
+    PostMessage (lpMemPTD->hWndSM, MYWM_INIT_EC, 0, 0);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

@@ -719,7 +719,8 @@ LRESULT APIENTRY MFWndProc
             // Load a CLEAR WS
             if (!CreateNewTab (hWnd,
                                L"",
-                               TabCtrl_GetItemCount (hWndTC)))
+                               TabCtrl_GetItemCount (hWndTC),
+                               FALSE))
                 return -1;          // Stop the whole process
 
             // *************** Fonts ***********************************
@@ -1135,7 +1136,8 @@ LRESULT APIENTRY MFWndProc
                     // Load a CLEAR WS
                     if (!CreateNewTab (hWnd,
                                        L"",
-                                       (gOverTab EQ -1) ? 999 : gOverTab + 1))
+                                       (gOverTab EQ -1) ? 999 : gOverTab + 1,
+                                       FALSE))
                         return -1;          // Stop the whole process
 
                     return FALSE;   // We handled the msg

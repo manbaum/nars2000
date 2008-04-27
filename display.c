@@ -448,21 +448,22 @@ void DisplayGlbArr
     // Calculate the NELM of the result
     aplNELMRes = lpFmtHeader->uFmtRows * aplLastDim;
 
+    lpaplChar = lpwszFormat;
+
 #ifdef PREFILL
     // Fill the output area with all zeros
+    // Ensure at least one value filled in case the char array is empty
     if (IsSimpleChar (aplType))
-        ZeroMemory (lpwszFormat, (UINT) aplNELMRes * sizeof (APLCHAR));
+        ZeroMemory (lpaplChar, (UINT) max (aplNELMRes, 1) * sizeof (APLCHAR));
     else
     {
         // Fill the output area with all blanks
         Assert (aplNELMRes EQ (UINT) aplNELMRes);
-        FillMemoryW (lpwszFormat, (UINT) aplNELMRes, L' ');
+        FillMemoryW (lpaplChar, (UINT) aplNELMRes, L' ');
     } // End IF/ELSE
 #endif
-    lpaplChar = lpwszFormat;
-
     // Run through the array again processing the
-    //   output stream into lpwszFormat
+    //   output stream into lpaplChar
 
     // Calc when to use raw output
     bRawOut = ((!IsSimpleChar (aplType)) && (!IsNested (aplType)));

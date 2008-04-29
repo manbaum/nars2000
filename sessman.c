@@ -695,7 +695,7 @@ LRESULT APIENTRY SMWndProc
         case WM_NCCREATE:               // 0 = (int) wParam
                                         // lpcs = (LPCREATESTRUCTW) lParam
         {
-            LPVOID p;
+            LPVOID p;                   // Temporary ptr
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -747,8 +747,9 @@ WM_NCCREATE_FAIL:
         case WM_CREATE:             // 0 = (int) wParam
                                     // lpcs = (LPCREATESTRUCTW) lParam
         {
-            int    i;
-            LPVOID p;
+            int     i;                  // Loop counter
+            LPVOID  p;                  // Temporary ptr
+            HGLOBAL hGlbTmp;            // Temporary hGlbNum/hGlbStr
 
             // Initialize # threads
             SetPropW (hWnd, L"NTHREADS", 0);
@@ -835,66 +836,48 @@ WM_NCCREATE_FAIL:
 ////////////              MEM_COMMIT,
 ////////////              PAGE_READWRITE);
 
-            // *************** lpszNumAlp ******************************
+            // *************** hGlbNum *********************************
+
+            // Allocate storage for hGlbNum
+            hGlbTmp = MyGlobalAlloc (GHND, DEF_NUM_INITSIZE * sizeof (char));
+            if (!hGlbTmp)
+                goto WM_CREATE_FAIL;
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Allocate virtual memory for the Name & Number accumulator
-            p = lpMemPTD->lpszNumAlp =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_NUMALP_MAXSIZE * sizeof (lpMemPTD->lpszNumAlp[0]),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
+            // Set initial limit for hGlbNum
+            lpMemPTD->iNumLim = DEF_NUM_INITSIZE;
+
+            // Save back into PTD var
+            lpMemPTD->hGlbNum = hGlbTmp;
+
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-            if (!p)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpszNumAlp> failed");
+            // *************** hGlbStr *********************************
 
-                goto WM_CREATE_FAIL;    // Mark as failed
-            } // End IF
-
-            // Commit the intial size
-            VirtualAlloc (p,
-                          DEF_NUMALP_INITSIZE * sizeof (lpMemPTD->lpszNumAlp[0]),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
-
-            // *************** lpwszString *****************************
+            // Allocate storage for hGlbStr
+            hGlbTmp = MyGlobalAlloc (GHND, DEF_STR_INITSIZE * sizeof (APLCHAR));
+            if (!hGlbTmp)
+                goto WM_CREATE_FAIL;
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
-            // Allocate virtual memory for the wide string accumulator
-            p = lpMemPTD->lpwszString =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_STRING_MAXSIZE * sizeof (lpMemPTD->lpwszString[0]),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+            // Set initial limit for hGlbNum
+            lpMemPTD->iStrLim = DEF_STR_INITSIZE;
 
-            if (!p)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszString> failed");
+            // Save back into PTD var
+            lpMemPTD->hGlbStr = hGlbTmp;
 
-                goto WM_CREATE_FAIL;    // Mark as failed
-            } // End IF
-
-            // Commit the intial size
-            VirtualAlloc (p,
-                          DEF_STRING_INITSIZE * sizeof (lpMemPTD->lpwszString[0]),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
+////////////// We no longer need this ptr
+////////////MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             // *************** lpHshTab ********************************
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
+////////////// Lock the memory to get a ptr to it
+////////////lpMemPTD = MyGlobalLock (hGlbPTD);
 
             // Allocate virtual memory for the hash table
             p = lpMemPTD->lpHshTab =
@@ -1373,7 +1356,11 @@ LOAD_WORKSPACE_FAIL:
         case WM_MDIACTIVATE:        // Activate/de-activate a child window
             // If we're being activated, ...
             if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
+            {
                 ActivateMDIMenu (hMenuSM, hMenuSMWindow);
+                SetFocus (hWnd);
+            } // End IF
+
             break;                  // Continue with DefMDIChildProc
 
         case MYWM_SETFOCUS:
@@ -1871,16 +1858,16 @@ LOAD_WORKSPACE_FAIL:
                 VirtualFree (lpMemPTD->lpSymTab, 0, MEM_RELEASE); lpMemPTD->lpSymTab = NULL;
             } // End IF
 
-            // *************** lpwszString *****************************
-            if (lpMemPTD->lpwszString)
+            // *************** hGlbStr *********************************
+            if (lpMemPTD->hGlbStr)
             {
-                VirtualFree (lpMemPTD->lpwszString, 0, MEM_RELEASE); lpMemPTD->lpwszString = NULL;
+                MyGlobalFree (lpMemPTD->hGlbStr); lpMemPTD->hGlbStr = NULL;
             } // End IF
 
-            // *************** lpszNumAlp ******************************
-            if (lpMemPTD->lpszNumAlp)
+            // *************** hGlbNum *********************************
+            if (lpMemPTD->hGlbNum)
             {
-                VirtualFree (lpMemPTD->lpszNumAlp, 0, MEM_RELEASE); lpMemPTD->lpszNumAlp = NULL;
+                MyGlobalFree (lpMemPTD->hGlbNum); lpMemPTD->hGlbNum = NULL;
             } // End IF
 
 ////////////// *************** lptkStackBase ***************************

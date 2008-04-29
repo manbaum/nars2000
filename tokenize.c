@@ -861,10 +861,8 @@ void InitAccumVars
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Integers & floating points
-////lpMemPTD->lpszNumAlp[0]  = '\0';
-////lpMemPTD->lpwszString[0] = L'\0';
-    lpMemPTD->iNumAlpLen = 0;
-    lpMemPTD->iStringLen = 0;
+    lpMemPTD->iNumLen    = 0;
+    lpMemPTD->iStrLen    = 0;
     lpMemPTD->aplInteger = 0;
     lpMemPTD->bNegative  =
     lpMemPTD->bNegExp    = FALSE;
@@ -875,27 +873,150 @@ void InitAccumVars
 
 
 //***************************************************************************
-//  $NumAlpAccum
+//  $CheckResizeNum_EM
 //
-//  Accumulate into lpszNumAlp, checking for
+//  See if we need to resize the Numeric global var
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CheckResizeNum_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL CheckResizeNum_EM
+    (LPPERTABDATA lpMemPTD)     // Ptr to PerTabData global memory
+
+{
+    BOOL    bRet = FALSE;       // TRUE iff result is valid
+    int     iNumLim;            // Temporary iNumLim
+    HGLOBAL hGlbNum;            // Temporary hGlbNum
+
+    // Check for need to resize hGlbNum
+    //   allowing for one more char and a terminating zero
+    if (lpMemPTD->iNumLen >= (lpMemPTD->iNumLim - 1))
+    {
+        // Get desired size
+        iNumLim = lpMemPTD->iNumLim + DEF_NUM_INCRSIZE;
+
+        // If it's out of range, ...
+        if (iNumLim > DEF_NUM_MAXSIZE)
+        {
+            // Save the error message
+            ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
+
+            goto ERROR_EXIT;
+        } else
+        {
+            // Attempt to realloc to that size
+            hGlbNum =
+              MyGlobalReAlloc (lpMemPTD->hGlbNum, iNumLim, GMEM_MOVEABLE);
+            if (!hGlbNum)
+            {
+                // Save the error message
+                ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+                goto ERROR_EXIT;
+            } // End IF
+
+            // Save back in PTD var
+            lpMemPTD->iNumLim = iNumLim;
+            lpMemPTD->hGlbNum = hGlbNum;
+        } // End IF
+    } // End IF
+
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    return bRet;
+} // End CheckResizeNum_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CheckResizeStr_EM
+//
+//  See if we need to resize the String global var
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CheckResizeStr_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL CheckResizeStr_EM
+    (LPPERTABDATA lpMemPTD)     // Ptr to PerTabData global memory
+
+{
+    BOOL    bRet = FALSE;       // TRUE iff result is valid
+    int     iStrLim;            // Temporary iStrLim
+    HGLOBAL hGlbStr;            // Temporary hGlbStr
+
+    // Check for need to resize hGlbStr
+    //   allowing for one more char and a terminating zero
+    if (lpMemPTD->iStrLen >= (lpMemPTD->iStrLim - 1))
+    {
+        // Get desired size
+        iStrLim = lpMemPTD->iStrLim + DEF_STR_INCRSIZE;
+
+        // If it's out of range, ...
+        if (iStrLim > DEF_STR_MAXSIZE)
+        {
+            // Save the error message
+            ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
+
+            goto ERROR_EXIT;
+        } else
+        {
+            // Attempt to realloc to that size
+            hGlbStr =
+              MyGlobalReAlloc (lpMemPTD->hGlbStr, iStrLim, GMEM_MOVEABLE);
+            if (!hGlbStr)
+            {
+                // Save the error message
+                ErrorMessageIndirect (ERRMSG_WS_FULL APPEND_NAME);
+
+                goto ERROR_EXIT;
+            } // End IF
+
+            // Save back in PTD var
+            lpMemPTD->iStrLim = iStrLim;
+            lpMemPTD->hGlbStr = hGlbStr;
+        } // End IF
+    } // End IF
+
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
+    return bRet;
+} // End CheckResizeStr_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $NumAccum_EM
+//
+//  Accumulate into lpszNum, checking for overflow.
 //
 //  The suffix _EM means that this function generates its own error message
 //    so the caller doesn't need to.
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- NumAlpAccum"
+#define APPEND_NAME     L" -- NumAccum_EM"
 #else
 #define APPEND_NAME
 #endif
 
-BOOL NumAlpAccum_EM
+BOOL NumAccum_EM
     (WCHAR wch)
 
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     BOOL         bRet;          // TRUE iff result is valid
+    LPCHAR       lpszNum;       // Ptr to Num global memory
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -903,20 +1024,31 @@ BOOL NumAlpAccum_EM
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Check for need to resize hGlbNum
+    bRet = CheckResizeNum_EM (lpMemPTD);
+    if (!bRet)
+        goto ERROR_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpszNum = MyGlobalLock (lpMemPTD->hGlbNum);
+
     // In case we overflow, or convert to FP, save the chars
     // Check for overflow -- LIMIT ERROR
-    bRet = (lpMemPTD->iNumAlpLen < lpMemPTD->iMaxNumAlp);
+    bRet = (lpMemPTD->iNumLen < DEF_NUM_MAXSIZE);
     if (bRet)
-        lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen++] = (char) wch;
+        lpszNum[lpMemPTD->iNumLen++] = (char) wch;
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
     // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbNum); lpszNum = NULL;
+ERROR_EXIT:
+    // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     return bRet;
-} // End NumAlpAccum_EM
+} // End NumAccum_EM
 #undef  APPEND_NAME
 
 
@@ -983,7 +1115,7 @@ BOOL fnIntAccum
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
-    return NumAlpAccum_EM (wch);
+    return NumAccum_EM (wch);
 } // End fnIntAccum
 
 
@@ -1012,9 +1144,6 @@ BOOL fnIntDone
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Ensure properly terminated
-    lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen] = '\0';
-
     // Include the sign bit
     // (N.B.  can't overflow as there are more negative #s than positive #s)
     if (lpMemPTD->bNegative)
@@ -1033,7 +1162,7 @@ BOOL fnIntDone
     bRet = AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
                              &lpMemPTD->aplInteger,
-                              -lpMemPTD->iNumAlpLen);
+                              -lpMemPTD->iNumLen);
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
 
@@ -1063,6 +1192,7 @@ BOOL fnFPAccum
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     BOOL         bRet;          // TRUE iff result is valid
+    LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnFPAccum");
@@ -1074,14 +1204,25 @@ BOOL fnFPAccum
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Check for need to resize hGlbNum
+    bRet = CheckResizeNum_EM (lpMemPTD);
+    if (!bRet)
+        goto ERROR_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpszNum = MyGlobalLock (lpMemPTD->hGlbNum);
+
     // Check for overflow -- LIMIT ERROR
-    bRet = (lpMemPTD->iNumAlpLen < lpMemPTD->iMaxNumAlp);
+    bRet = (lpMemPTD->iNumLen < DEF_NUM_MAXSIZE);
     if (bRet)
-        lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen++] = (char) *lptkLocalVars->lpwsz;
+        lpszNum[lpMemPTD->iNumLen++] = (char) *lptkLocalVars->lpwsz;
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbNum); lpszNum = NULL;
+ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1109,6 +1250,7 @@ BOOL fnNegInit
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     BOOL         bRet;          // TRUE iff result is valid
+    LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnNegInit");
@@ -1120,16 +1262,28 @@ BOOL fnNegInit
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Check for need to resize hGlbNum
+    bRet = CheckResizeNum_EM (lpMemPTD);
+    if (!bRet)
+        goto ERROR_EXIT;
+
+    // Mark as negative
     lpMemPTD->bNegative = TRUE;
 
+    // Lock the memory to get a ptr to it
+    lpszNum = MyGlobalLock (lpMemPTD->hGlbNum);
+
     // Check for overflow -- LIMIT ERROR
-    bRet = (lpMemPTD->iNumAlpLen < lpMemPTD->iMaxNumAlp);
+    bRet = (lpMemPTD->iNumLen < DEF_NUM_MAXSIZE);
     if (bRet)
-        lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen++] = '-';
+        lpszNum[lpMemPTD->iNumLen++] = '-';
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbNum); lpszNum = NULL;
+ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1157,6 +1311,7 @@ BOOL fnNegExp
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     BOOL         bRet;          // TRUE iff result is valid
+    LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnNegExp");
@@ -1168,16 +1323,28 @@ BOOL fnNegExp
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Check for need to resize hGlbNum
+    bRet = CheckResizeNum_EM (lpMemPTD);
+    if (!bRet)
+        goto ERROR_EXIT;
+
+    // Mark as negative
     lpMemPTD->bNegExp = TRUE;
 
+    // Lock the memory to get a ptr to it
+    lpszNum = MyGlobalLock (lpMemPTD->hGlbNum);
+
     // Check for overflow -- LIMIT ERROR
-    bRet = (lpMemPTD->iNumAlpLen < lpMemPTD->iMaxNumAlp);
+    bRet = (lpMemPTD->iNumLen < DEF_NUM_MAXSIZE);
     if (bRet)
-        lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen++] = L'-';
+        lpszNum[lpMemPTD->iNumLen++] = L'-';
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbNum); lpszNum = NULL;
+ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1201,6 +1368,7 @@ BOOL fnFPDone
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     BOOL         bRet;          // TRUE iff result is valid
+    LPCHAR       lpszNum;       // Ptr to Num global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnFPDone");
@@ -1212,11 +1380,17 @@ BOOL fnFPDone
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Lock the memory to get a ptr to it
+    lpszNum = MyGlobalLock (lpMemPTD->hGlbNum);
+
     // Ensure properly terminated
-    lpMemPTD->lpszNumAlp[lpMemPTD->iNumAlpLen] = '\0';
+    lpszNum[lpMemPTD->iNumLen] = '\0';
 
     // Use David Gay's routines
-    aplFloat = strtod (lpMemPTD->lpszNumAlp, NULL);
+    aplFloat = strtod (lpszNum, NULL);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbNum); lpszNum = NULL;
 
     // Mark as an immediate float or Boolean
     tkFlags.TknType = TKT_VARIMMED;
@@ -1230,7 +1404,7 @@ BOOL fnFPDone
     bRet = AppendNewToken_EM (lptkLocalVars,
                              &tkFlags,
                               (LPAPLLONGEST) &aplFloat,
-                              -lpMemPTD->iNumAlpLen);
+                              -lpMemPTD->iNumLen);
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
 
@@ -1260,6 +1434,7 @@ BOOL fnAlpha
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     BOOL         bRet;          // TRUE iff result is valid
+    LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnAlpha");
@@ -1271,15 +1446,26 @@ BOOL fnAlpha
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Check for need to resize hGlbStr
+    bRet = CheckResizeStr_EM (lpMemPTD);
+    if (!bRet)
+        goto ERROR_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpwszStr = MyGlobalLock (lpMemPTD->hGlbStr);
+
     // Check for overflow -- LIMIT ERROR
-    bRet = (lpMemPTD->iStringLen < lpMemPTD->iMaxString);
+    bRet = (lpMemPTD->iStrLen < DEF_STR_MAXSIZE);
     if (bRet)
         // Save the char
-        lpMemPTD->lpwszString[lpMemPTD->iStringLen++] = *lptkLocalVars->lpwsz;
+        lpwszStr[lpMemPTD->iStrLen++] = *lptkLocalVars->lpwsz;
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbStr); lpwszStr = NULL;
+ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1304,6 +1490,7 @@ BOOL fnAlpDone
     TKFLAGS      tkFlags = {0};
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnAlpDone");
@@ -1315,36 +1502,39 @@ BOOL fnAlpDone
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Lock the memory to get a ptr to it
+    lpwszStr = MyGlobalLock (lpMemPTD->hGlbStr);
+
     // Ensure properly terminated
-    lpMemPTD->lpwszString[lpMemPTD->iStringLen] = L'\0';
+    lpwszStr[lpMemPTD->iStrLen] = L'\0';
 
     // If this is a system name (starts with a Quad or Quote-Quad),
     //   convert it to lowercase as those names are
     //   case-insensitive
-    if (IsSysName (lpMemPTD->lpwszString))
+    if (IsSysName (lpwszStr))
     {
         // Handle Quad and QuoteQuad alone via a separate token
-        if (lpMemPTD->iStringLen EQ 1)
+        if (lpMemPTD->iStrLen EQ 1)
         {
             // Mark the data as Quad or QuoteQuad
             tkFlags.TknType = TKT_INPOUT;
 
             // Copy to local var so we may pass its address
-            aplInteger = lpMemPTD->lpwszString[0];
+            aplInteger = lpwszStr[0];
 
             // Attempt to append as new token, check for TOKEN TABLE FULL,
             //   and resize as necessary.
             bRet = AppendNewToken_EM (lptkLocalVars,
                                      &tkFlags,
                                      &aplInteger,
-                                      -lpMemPTD->iStringLen);
+                                      -lpMemPTD->iStrLen);
             goto NORMAL_EXIT;
         } else
-            CharLowerW (&lpMemPTD->lpwszString[1]);
+            CharLowerW (&lpwszStr[1]);
     } // End IF
 
     // Lookup in or append to the symbol table
-    lpSymEntry = SymTabAppendName_EM (lpMemPTD->lpwszString, NULL);
+    lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
     if (lpSymEntry)
     {
         // Mark the data as a symbol table entry
@@ -1358,12 +1548,15 @@ BOOL fnAlpDone
         bRet = AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
                                  &aplInteger,
-                                  -lpMemPTD->iStringLen);
+                                  -lpMemPTD->iStrLen);
     } else
         bRet = FALSE;
 NORMAL_EXIT:
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbStr); lpwszStr = NULL;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1388,6 +1581,7 @@ BOOL fnDirIdent
     TKFLAGS      tkFlags = {0};
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnDirIdent");
@@ -1399,17 +1593,20 @@ BOOL fnDirIdent
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Lock the memory to get a ptr to it
+    lpwszStr = MyGlobalLock (lpMemPTD->hGlbStr);
+
     // Save the character in the string
-    lpMemPTD->lpwszString[0] = lptkLocalVars->lpwsz[0];
+    lpwszStr[0] = lptkLocalVars->lpwsz[0];
 
     // Save the string length
-    lpMemPTD->iStringLen = 1;
+    lpMemPTD->iStrLen = 1;
 
     // Ensure properly terminated
-    lpMemPTD->lpwszString[lpMemPTD->iStringLen] = L'\0';
+    lpwszStr[lpMemPTD->iStrLen] = L'\0';
 
     // Lookup in or append to the symbol table
-    lpSymEntry = SymTabAppendName_EM (lpMemPTD->lpwszString, NULL);
+    lpSymEntry = SymTabAppendName_EM (lpwszStr, NULL);
     if (lpSymEntry)
     {
         // Mark the data as a symbol table entry
@@ -1423,12 +1620,15 @@ BOOL fnDirIdent
         bRet = AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
                                  &aplInteger,
-                                  -lpMemPTD->iStringLen);
+                                  -lpMemPTD->iStrLen);
     } else
         bRet = FALSE;
 
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbStr); lpwszStr = NULL;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1878,6 +2078,7 @@ BOOL fnQuoAccum
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     BOOL         bRet;          // TRUE iff result is valid
+    LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnQuoAccum");
@@ -1889,14 +2090,25 @@ BOOL fnQuoAccum
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Check for need to resize hGlbStr
+    bRet = CheckResizeStr_EM (lpMemPTD);
+    if (!bRet)
+        goto ERROR_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpwszStr = MyGlobalLock (lpMemPTD->hGlbStr);
+
     // Check for overflow -- LIMIT ERROR
-    bRet = (lpMemPTD->iStringLen < lpMemPTD->iMaxString);
+    bRet = (lpMemPTD->iStrLen < DEF_STR_MAXSIZE);
     if (bRet)
-        lpMemPTD->lpwszString[lpMemPTD->iStringLen++] = *lptkLocalVars->lpwsz;
+        lpwszStr[lpMemPTD->iStrLen++] = *lptkLocalVars->lpwsz;
     else
         // Save the error message
         ErrorMessageIndirect (ERRMSG_LIMIT_ERROR APPEND_NAME);
 
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbStr); lpwszStr = NULL;
+ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
@@ -1927,6 +2139,7 @@ BOOL fnQuoDone
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     BOOL         bRet;          // TRUE iff result is valid
+    LPWCHAR      lpwszStr;      // Ptr to Str global memory
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsg ("fnQuoDone");
@@ -1938,8 +2151,11 @@ BOOL fnQuoDone
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+    // Lock the memory to get a ptr to it
+    lpwszStr = MyGlobalLock (lpMemPTD->hGlbStr);
+
     // Ensure properly terminated
-    lpMemPTD->lpwszString[lpMemPTD->iStringLen] = L'\0';
+    lpwszStr[lpMemPTD->iStrLen] = L'\0';
 
     // The initial FSA action for a string is to store the leading
     //   delimiter, that is a single or double quote, so we can
@@ -1950,10 +2166,10 @@ BOOL fnQuoDone
     //   means the string length is one too big.
 
     // Take care of the string length
-    lpMemPTD->iStringLen--;             // Count out the leading string delimiter
+    lpMemPTD->iStrLen--;             // Count out the leading string delimiter
 
     // If this string is of length zero, then store it as an empty vector
-    if (lpMemPTD->iStringLen EQ 0)
+    if (lpMemPTD->iStrLen EQ 0)
     {
         // Mark the data as a string in a global memory handle
         tkFlags.TknType = TKT_STRING;
@@ -1969,27 +2185,27 @@ BOOL fnQuoDone
                                   0);
     } else
     // If this string is of length one, then store it as a char scalar
-    if (lpMemPTD->iStringLen EQ 1)
+    if (lpMemPTD->iStrLen EQ 1)
     {
         // Mark the data as an immediate chracter
         tkFlags.TknType = TKT_VARIMMED;
         tkFlags.ImmType = IMMTYPE_CHAR;
 
         // Copy to local var so we may pass its address
-        aplInteger = lpMemPTD->lpwszString[1];
+        aplInteger = lpwszStr[1];
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         bRet = AppendNewToken_EM (lptkLocalVars,
                                  &tkFlags,
                                  &aplInteger,
-                                  -lpMemPTD->iStringLen);
+                                  -lpMemPTD->iStrLen);
     } else
     {
         APLUINT ByteRes;        // # bytes in the string vector
 
         // Calculate space needed for the string vector
-        ByteRes = CalcArraySize (ARRAY_CHAR, lpMemPTD->iStringLen, 1);
+        ByteRes = CalcArraySize (ARRAY_CHAR, lpMemPTD->iStrLen, 1);
 
         //***************************************************************
         // Allocate global memory for the array header,
@@ -2021,14 +2237,14 @@ BOOL fnQuoDone
 ////////////lpHeader->PermNdx    = PERMNDX_NONE;
 ////////////lpHeader->SysVar     = 0;
             lpHeader->RefCnt     = 1;
-            lpHeader->NELM       = lpMemPTD->iStringLen;
+            lpHeader->NELM       = lpMemPTD->iStrLen;
             lpHeader->Rank       = 1;
 #undef  lpHeader
 
-            *VarArrayBaseToDim (lpwsz) = lpMemPTD->iStringLen;
+            *VarArrayBaseToDim (lpwsz) = lpMemPTD->iStrLen;
             CopyMemory (VarArrayBaseToData (lpwsz, 1),
-                       &lpMemPTD->lpwszString[1],       // Skip over the string delimiter
-                        lpMemPTD->iStringLen * sizeof (APLCHAR));
+                       &lpwszStr[1],       // Skip over the string delimiter
+                        lpMemPTD->iStrLen * sizeof (APLCHAR));
             MyGlobalUnlock (hGlb); lpwsz = NULL;
 
             // Mark the data as a string in a global memory handle
@@ -2042,12 +2258,15 @@ BOOL fnQuoDone
             bRet = AppendNewToken_EM (lptkLocalVars,
                                      &tkFlags,
                                      &aplInteger,
-                                      -lpMemPTD->iStringLen);
+                                      -lpMemPTD->iStrLen);
         } // End IF/ELSE
     } // End IF
 
     //  Initialize the accumulation variables for the next constant
     InitAccumVars ();
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbStr); lpwszStr = NULL;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;

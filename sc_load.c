@@ -573,7 +573,8 @@ BOOL ParseSavedWsFcn_EM
 
 {
     WCHAR      wcTmp;                   // Temporary char
-    LPWCHAR    lpwCharEnd;              // Temporary ptr
+    LPWCHAR    lpwCharEnd,              // Temporary ptr
+               lpwDataEnd;              // ...
     STFLAGS    stFlags = {0};           // SymTab flags
     LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
     HGLOBAL    hGlbObj,                 // Object global memory handle
@@ -594,6 +595,7 @@ BOOL ParseSavedWsFcn_EM
     {
         // Find the trailing L' '
         lpwCharEnd = SkipToCharW (lpwSrc, L' ');
+        lpwDataEnd = &lpwSrc[lstrlenW (lpwSrc)] + 1;
 
         // Save old next char, zap to form zero-terminated name
         wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
@@ -606,6 +608,7 @@ BOOL ParseSavedWsFcn_EM
         if (lpSymEntry EQ NULL)
             hGlbObj =
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (#nnn)
+                                      lpwDataEnd,   // Ptr to next available byte
                                       hWndEC,       // Edit Control window handle
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
@@ -686,7 +689,8 @@ LPWCHAR ParseSavedWsVar_EM
 
 {
     WCHAR      wcTmp;                   // Temporary char
-    LPWCHAR    lpwCharEnd;              // Temporary ptr
+    LPWCHAR    lpwCharEnd,              // Temporary ptr
+               lpwDataEnd;              // ...
     STFLAGS    stFlags = {0};           // SymTab flags
     LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
     APLINT     aplInteger;              // Temporary integer
@@ -702,6 +706,7 @@ LPWCHAR ParseSavedWsVar_EM
     {
         // Find the trailing L' '
         lpwCharEnd = SkipToCharW (lpwSrc, L' ');
+        lpwDataEnd = &lpwSrc[lstrlenW (lpwSrc)] + 1;
 
         // Save old next char, zap to form zero-terminated name
         wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
@@ -715,6 +720,7 @@ LPWCHAR ParseSavedWsVar_EM
         {
             hGlbObj =
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (#nnn)
+                                      lpwDataEnd,   // Ptr to next available byte
                                       hWndEC,       // Edit Control window handle
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
@@ -900,7 +906,8 @@ ERROR_EXIT:
 #endif
 
 HGLOBAL LoadWorkspaceGlobal_EM
-    (LPWCHAR  lpwSrc,                   // Ptr to keyname (#nnn)
+    (LPWCHAR  lpwGlbName,               // Ptr to keyname (#nnn)
+     LPWCHAR  lpwSrc,                   // Ptr to next available byte
      HWND     hWndEC,                   // Edit Control window handle
      LPWCHAR  lpwszDPFE,                // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
      LPWCHAR *lplpwErrMsg)              // Ptr to ptr to (constant) error message text
@@ -919,8 +926,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                  lpwSectName,           // Ptr to section name
                  lpwDst,                // Ptr to destination data in name
                  lpwSrcStart,           // Ptr to starting point
-                 lpwCharEnd,            // Temporary ptr
-                 lpwGlbName;            // Ptr to global name (#nnn)
+                 lpwCharEnd;            // Temporary ptr
     UINT         uBitIndex,             // Bit index for looping through Boolean result
                  uLineCnt;              // # lines in the current function
     FILETIME     ftCreation,            // Function creation time
@@ -928,12 +934,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
     BOOL         bUserDefined;          // TRUE iff the durrent function is User-Defined
     LPVOID       lpMemObj;              // Ptr to object global memory
     APLINT       aplInteger;            // Temporary integer
-
-    // Save as ptr to global name
-    lpwGlbName = lpwSrc;
-
-    // Skip over it and the terminating zero
-    lpwSrc = &lpwGlbName[lstrlenW (lpwGlbName) + 1];
 
     // Read the corresponding string from [Globals]
     GetPrivateProfileStringW (SECTNAME_GLOBALS,     // Ptr to the section name

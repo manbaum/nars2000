@@ -1149,6 +1149,7 @@ static LRESULT WINAPI EditWndProc_common( HWND hwnd, UINT msg,
         EDIT_ImeComposition(hwnd,lParam,es);
         EDIT_SetCaretPos(es, caret_pos, es->flags & EF_AFTER_WRAP);
         break;
+    }
 #endif
 
 #if USE_IME

@@ -97,6 +97,7 @@ default:        \
 #define MYWM_QUOTEQUAD      (WM_APP + 7)    // PL (Quote-Quad/Quad Input)
 #define MYWM_INIT_SMDB      (WM_APP + 8)    // SM (Initialize SM/DB windows)
 #define MYWM_ERRMSG         (WM_APP + 9)    // SM (Display error message)
+#define MYWM_SAVE_WS        (WM_APP +10)    // SM (Save workspace)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP + 0)    // DB

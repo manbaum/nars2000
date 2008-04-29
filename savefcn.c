@@ -681,6 +681,10 @@ HGLOBAL SF_UndoBufferLW
     swscanf (lpMemUndoTxt, L"%d", &uUndoCount);
     lpMemUndoTxt = SkipBlackW (lpMemUndoTxt);
 
+    // Check for empty buffer
+    if (*lpMemUndoTxt EQ 0)
+        return NULL;
+
     // Skip over the separating blank
     Assert (*lpMemUndoTxt EQ L' '); lpMemUndoTxt++;
 

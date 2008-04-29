@@ -78,11 +78,12 @@ typedef struct tagPERTABDATA
                  bNegExp:1,         //      00000004:  ...          exponent ...
                  bExecLX:1,         //      00000008:  TRUE iff execute []LX after successful load
                  Avail:28;          //      FFFFFFF0:  Available bits
+    HGLOBAL      hGlbCurLine;       // 5C:  Current line global memory handle
 
-    LPWCHAR      lpwszCurLine,      // 5C:  The contents of the line
-                                    //      with the cursor on it.
-                 lpwszTmpLine,      // 60:  Temporary holding area
-                 lpwszErrorMessage; // 64:  Ptr to error message to signal
+////LPWCHAR      lpwszCurLine,      // 5C:  The contents of the line
+////                                //      with the cursor on it.
+/////////////////lpwszTmpLine,      // 60:  Temporary holding area
+    LPWCHAR      lpwszErrorMessage; // 64:  Ptr to error message to signal
     LPWCHAR      lpwszQuadErrorMsg; // 68   Used for []ERROR/[]ES messages
     LPCHAR       lpszNumAlp;        // 6C:  Accumulator for integers & floating points & names
     LPWCHAR      lpwszString;       // 70:  ...             strings

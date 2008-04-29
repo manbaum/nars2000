@@ -280,7 +280,7 @@ typedef struct tagSTART_ADDRESSES
     "QueryPromote"              , (LPUCHAR) &QueryPromote               ,
 
     // ver.c
-    "LclFileVersionStr"         , (LPUCHAR) &LclFileVersionStr          ,
+    "LclFileVersionStrW"        , (LPUCHAR) &LclFileVersionStrW         ,
 
     // yyfns.c
     "YYAlloc"                   , (LPUCHAR) &_YYAlloc                   ,

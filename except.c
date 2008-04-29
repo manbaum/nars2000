@@ -341,6 +341,27 @@ long CheckException
                 } // End IF
             } // End FOR
 
+#if 0
+            {
+                DWORD   regEBP;             // Stack trace ptr
+                LPBYTE  caller;             // Ptr to caller in stack trace
+
+                DbgBrk ();
+
+                // Do a stack trace
+                regEBP = lpExcept->ContextRecord->Ebp;
+
+                do
+                {
+                    if (regEBP & 3
+                     || IsBadReadPtr ((LPVOID) regEBP, 8))
+                        break;
+
+                    caller = ((LPBYTE *) regEBP)[1];
+                    regEBP = *(DWORD *) regEBP;
+                } while (TRUE);
+            } // End ***DEBUG***
+#endif
             // Fall through to common handler execution
 
 ////////case EXCEPTION_RESULT_BOOL:

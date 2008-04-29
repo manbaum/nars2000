@@ -34,6 +34,7 @@
 #define ERRMSG_SYMBOL_TABLE_FULL                L"SYMBOL TABLE FULL"
 #define ERRMSG_SYNTAX_ERROR                     L"SYNTAX ERROR"
 #define ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER  L"SYNTAX ERROR in function header, position %d -- function not saved"
+#define ERRMSG_TABS_FULL                        L"TABS FULL"
 #define ERRMSG_TOKEN_TABLE_FULL                 L"TOKEN TABLE FULL"
 #define ERRMSG_VALENCE_ERROR                    L"VALENCE ERROR"
 #define ERRMSG_VALUE_ERROR                      L"VALUE ERROR"

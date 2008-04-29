@@ -337,22 +337,13 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
     LPPL_YYSTYPE   lpYYRes;         // Ptr to the result
     HGLOBAL        hGlbPTD;         // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
-    HWND           hWndEC;          // Edit Control window handle
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Get the handle to the edit control
-    hWndEC = (HWND) GetWindowLongW (lpMemPTD->hWndSM, GWLSF_HWNDEC);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
     // Save args in struc to pass to thread func
-    utjThread.hWndEC        = hWndEC;
+    // Get hWndEC for the Session Manager from the current thread
+    utjThread.hWndEC        = GetThreadSMEC ();
     utjThread.hGlbPTD       = hGlbPTD;
     utjThread.lpwszCompLine = lpwszCompLine;
 

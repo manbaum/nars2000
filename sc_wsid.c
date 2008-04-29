@@ -43,6 +43,12 @@
 //  Execute the system command:  )WSID [wsid]
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CmdWsid_EM"
+#else
+#define APPEND_NAME
+#endif
+
 BOOL CmdWsid_EM
     (LPWCHAR lpwszTail)                 // Ptr to command line tail
 
@@ -80,7 +86,7 @@ BOOL CmdWsid_EM
         MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemWSID = NULL;
 
         // Convert the given workspace name into a canonical form
-        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszSaveDir);
+        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszWorkDir);
 
         // Calculate space needed for the WSID
         uLen = lstrlenW (wszTailDPFE);
@@ -94,7 +100,7 @@ BOOL CmdWsid_EM
         hGlbWSID = DbgGlobalAlloc (GHND, (UINT) ByteWSID);
         if (!hGlbWSID)
         {
-            AppendLine (ERRMSG_WS_FULL, FALSE, TRUE);
+            ReplaceLastLineCRPmt (ERRMSG_WS_FULL APPEND_NAME);
 
             goto ERROR_EXIT;
         } // End IF
@@ -193,6 +199,7 @@ ERROR_EXIT:
 
     return bRet;
 } // End CmdWsid_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

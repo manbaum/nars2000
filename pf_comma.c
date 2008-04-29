@@ -1216,6 +1216,13 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     } else
         aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
 
+    // Check for Boolean result
+    if ((IsSimpleBool (aplTypeLft)
+      && IsBooleanAPA (lptkRhtArg))
+     || (IsSimpleBool (aplTypeRht)
+      && IsBooleanAPA (lptkLftArg)))
+        aplTypeRes = ARRAY_BOOL;
+
     // Check for APA result
     if (IsSimpleAPA (aplTypeRes))
     {

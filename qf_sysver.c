@@ -1,23 +1,23 @@
 //***************************************************************************
-//	NARS2000 -- System Function -- Quad SYSVER
+//  NARS2000 -- System Function -- Quad SYSVER
 //***************************************************************************
 
 /***************************************************************************
-	NARS2000 -- An Experimental APL Interpreter
-	Copyright (C) 2006-2008 Sudley Place Software
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2008 Sudley Place Software
 
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
 #define STRICT
@@ -36,178 +36,201 @@
 
 
 //***************************************************************************
-//	$SysFnSYSVER_EM_YY
+//  $SysFnSYSVER_EM_YY
 //
-//	System function:  []SYSVER -- System Version
+//  System function:  []SYSVER -- System Version
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- SysFnSYSVER_EM_YY"
+#define APPEND_NAME     L" -- SysFnSYSVER_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
 LPPL_YYSTYPE SysFnSYSVER_EM_YY
-	(LPTOKEN lptkLftArg,			// Ptr to left arg token (should be NULL)
-	 LPTOKEN lptkFunc,				// Ptr to function token
-	 LPTOKEN lptkRhtArg,			// Ptr to right arg token (should be NULL)
-	 LPTOKEN lptkAxis)				// Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-	UINT		 ByteRes;			// # bytes in the result
-	HGLOBAL 	 hGlbRes;			// Result global memory handle
-	LPVOID		 lpMemRes;			// Ptr to result global memory
-	char		 szFileVer[32]; 	//
-	LPAPLCHAR	 p; 				//
-	HANDLE		 hFile; 			//
-	LPPL_YYSTYPE lpYYRes;			// Ptr to the result
+    UINT         ByteRes;           // # bytes in the result
+    APLNELM      aplNELMRes;        // Result NELM
+    HGLOBAL      hGlbRes;           // Result global memory handle
+    LPAPLCHAR    lpMemRes,          // Ptr to result global memory
+                 lpMemData;         // Ptr to result data
+    LPAPLCHAR    lpw;               // Temporary ptr
+    HANDLE       hFile;             // File handle from CreateFileW
+    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
-	// This function is niladic
-	Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
+    // This function is niladic
+    Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
 
-	//***************************************************************
-	// This function is not sensitive to the axis operator,
-	//	 so signal a syntax error if present
-	//***************************************************************
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
 
-	if (lptkAxis NE NULL)
-	{
-		ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-								   lptkAxis);
-		return NULL;
-	} // End IF
+    if (lptkAxis NE NULL)
+    {
+        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                   lptkAxis);
+        return NULL;
+    } // End IF
 
-#define SYSVER	L"0.00.001.0799  Tue Jan 16 17:43:45 2007  Win/32"
+    // Define maximum length of []SYSVER
+#define SYSVER  L"000.000.0000.00799  Tue Jan 16 17:43:45 2007  Win/32"
 #define SYSVER_NELM    ((sizeof (SYSVER) / sizeof (APLCHAR)) - 1)
 
-	// Calculate space needed for the result
-	ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);
+    // Calculate space needed for the result
+    ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, SYSVER_NELM, 1);
 
-	// Allocate space for the result
-	hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
-	if (!hGlbRes)
-	{
-		ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-								   lptkFunc);
-		return NULL;
-	} // End IF
+    // Allocate space for the result
+    hGlbRes = DbgGlobalAlloc (GHND, ByteRes);
+    if (!hGlbRes)
+    {
+        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                                   lptkFunc);
+        return NULL;
+    } // End IF
 
-	// Lock the memory to get a ptr to it
-	lpMemRes = MyGlobalLock (hGlbRes);
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader	((LPVARARRAY_HEADER) lpMemRes)
-	// Fill in the header
-	lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-	lpHeader->ArrType	 = ARRAY_CHAR;
-////lpHeader->PermNdx	 = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar	 = 0;			// Already zero from GHND
-	lpHeader->RefCnt	 = 1;
-	lpHeader->NELM		 = SYSVER_NELM;
-	lpHeader->Rank		 = 1;
-#undef	lpHeader
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = 0;               // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+////lpHeader->NELM       = SYSVER_NELM;     // Filled in below
+    lpHeader->Rank       = 1;
+#undef  lpHeader
 
-	// Fill in the dimension
-	*VarArrayBaseToDim (lpMemRes) = SYSVER_NELM;
+    // Fill in the dimension
+////*VarArrayBaseToDim (lpMemRes) = SYSVER_NELM;    // Filled in below
 
-	// Skip over the header and dimensions to the data
-	lpMemRes = VarArrayBaseToData (lpMemRes, 1);
+    // Skip over the header and dimensions to the data
+    lpw = lpMemData = VarArrayBaseToData (lpMemRes, 1);
 
-	p = (LPAPLCHAR) lpMemRes;
+    // Read in the application's File Version String
+    LclFileVersionStrW (wszAppDPFE, lpw);
 
-	// Read in the application's File Version String
-	LclFileVersionStr (szAppDPFE, szFileVer);
+    // Skip to the trailing zero
+    lpw += lstrlenW (lpw);
+    *lpw++ = L' ';      // Blank separators
+    *lpw++ = L' ';
 
-	A2W (p, szFileVer, SYSVER_NELM);
+    // Open the executable file so we can read its internal timestamp
+    hFile = CreateFileW (wszAppDPFE,                // lpwFileName
+                         GENERIC_READ,              // dwDesiredAccess
+                         FILE_SHARE_READ,           // dwShareMode
+                         NULL,                      // lpSecurityAttributes
+                         OPEN_EXISTING,             // dwCreationDistribution
+                         FILE_ATTRIBUTE_NORMAL,     // dwFlagsAndAttributes
+                         NULL);                     // hTemplateFile
+    if (hFile)
+    {
+        DWORD              dwTemp,
+                           dwCount;
+        IMAGE_DOS_HEADER   idh;
+        IMAGE_NT_HEADERS32 inth;
 
-	// Skip to the trailing zero
-	p += lstrlenW (p);
-	*p++ = L' ';    // Blank separators
-	*p++ = L' ';
+        // Set the file pointer to read the e_lfanew value
+        SetFilePointer (hFile, ((LPBYTE) &idh.e_lfanew) - (LPBYTE) &idh, NULL, FILE_BEGIN);
 
-	// Open the executable file so we can read its internal timestamp
-	hFile = CreateFile (szAppDPFE,				// lpFileName
-						GENERIC_READ,			// dwDesiredAccess
-						FILE_SHARE_READ,		// dwShareMode
-						NULL,					// lpSecurityAttributes
-						OPEN_EXISTING,			// dwCreationDistribution
-						FILE_ATTRIBUTE_NORMAL,	// dwFlagsAndAttributes
-						NULL);					// hTemplateFile
-	if (hFile)
-	{
-		DWORD			   dwTemp,
-						   dwCount;
-		IMAGE_DOS_HEADER   idh;
-		IMAGE_NT_HEADERS32 inth;
+        // Read in the e_lfanew value
+        ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
 
-		// Set the file pointer to read the e_lfanew value
-		SetFilePointer (hFile, ((LPBYTE) &idh.e_lfanew) - (LPBYTE) &idh, NULL, FILE_BEGIN);
+        // Add in the distance to the file timestamp
+        dwTemp += ((LPBYTE) (&inth.FileHeader.TimeDateStamp)) - (LPBYTE) &inth;
 
-		// Read in the e_lfanew value
-		ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
+        // Set file pointer to the file timestamp
+        SetFilePointer (hFile, dwTemp, NULL, FILE_BEGIN);
 
-		// Add in the distance to the file timestamp
-		dwTemp += ((LPBYTE) (&inth.FileHeader.TimeDateStamp)) - (LPBYTE) &inth;
+        // Read in the file timestamp
+        ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
 
-		// Set file pointer to the file timestamp
-		SetFilePointer (hFile, dwTemp, NULL, FILE_BEGIN);
+        // Get the time in ASCII
+        lstrcpyW (lpw, ConvTimeW (dwTemp));
 
-		// Read in the file timestamp
-		ReadFile (hFile, &dwTemp, sizeof (dwTemp), &dwCount, NULL);
+        // Skip to the trailing zero
+        lpw += lstrlenW (lpw);
+        *lpw++ = L' ';    // Blank separators
+        *lpw++ = L' ';
 
-		A2W (p, ConvTime (dwTemp), SYSVER_NELM);
+#define SYSTYPE     L"Win/32"
 
-		// Skip to the trailing zero
-		p += lstrlenW (p);
-		*p++ = L' ';    // Blank separators
-		*p++ = L' ';
+        CopyMemory (lpw, SYSTYPE, sizeof (SYSTYPE) - 1 * sizeof (APLCHAR));
 
-#define SYSTYPE 	L"Win/32"
+        // We no longer need this handle
+        CloseHandle (hFile); hFile = NULL;
+    } // End IF
 
-		CopyMemory (p, SYSTYPE, sizeof (SYSTYPE) - 1 * sizeof (APLCHAR));
+    // Calculate the actual NELM
+    aplNELMRes = lstrlenW (lpMemData);
 
-		// We no longer need this handle
-		CloseHandle (hFile); hFile = NULL;
-	} // End IF
+    // Fill in actual length of []SYSVER
+#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+    lpHeader->NELM = aplNELMRes;
+#undef  lpHeader
 
-	// We no longer need this ptr
-	MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    // Fill in the dimension
+    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
 
-	// Allocate a new YYRes
-	lpYYRes = YYAlloc ();
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
 
-	// Fill in the result token
-	lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = 0; 	// Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = 0; 	// Already zero from YYAlloc
-	lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-	lpYYRes->tkToken.tkCharIndex	   = lptkFunc->tkCharIndex;
+    // Make sure we didn't overwrite
+    if (aplNELMRes < SYSVER_NELM)
+    {
+        // Calculate space needed for the result
+        ByteRes = (UINT) CalcArraySize (ARRAY_CHAR, aplNELMRes, 1);
 
-	return lpYYRes;
+        // Re-allocate the global downwards
+        hGlbRes = MyGlobalReAlloc (hGlbRes, ByteRes, GMEM_MOVEABLE);
+    } else
+    if (aplNELMRes > SYSVER_NELM)
+        // We should never get here
+        DbgStop ();
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
 } // End SysFnSYSVER_EM_YY
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	$ConvTime
+//  $ConvTimeW
 //
-//	Convert to ASCII string in the form of
-//	  Wed Jan 02 02:03:55 1980
+//  Convert to ASCII string in the form of
+//    Wed Jan 02 02:03:55 1980
 //***************************************************************************
 
-LPSTR ConvTime
-	(DWORD time)
+LPWSTR ConvTimeW
+    (DWORD time)
 {
-	LPSTR p;
+    LPWSTR lpw;
 
-	p = asctime (gmtime ((const time_t *) &time));
+    lpw = _wasctime (gmtime ((const time_t *) &time));
 
-	// Zap the "\n" so it prints on one line
-	p [lstrlen (p) - 1] = '\0';
+    // Zap the "\n" so it prints on one line
+    lpw[lstrlenW (lpw) - 1] = L'\0';
 
-	return p;
-} // End ConvTime ()
+    return lpw;
+} // End ConvTimeW
 
 
 //***************************************************************************
-//	End of File: qf_sysver.c
+//  End of File: qf_sysver.c
 //***************************************************************************

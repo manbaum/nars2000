@@ -48,38 +48,38 @@
 #define DEF_TEXT_BG_COLOR   COLOR_WHITE
 
 // Size of storage areas
-#define DEF_CURLINE_INITSIZE    (   4*1024)                 // Initial line size in bytes
-#define DEF_CURLINE_MAXSIZE     ( 256*1024)                 // Maximum ...
-#define DEF_CURLINE_MAXLEN      (DEF_CURLINE_INITSIZE - 1)  // Maximum current line length
-#define DEF_NUMALP_INITSIZE     (  64*1024)                 // Initial size for lpszNumAlp
-#define DEF_NUMALP_MAXSIZE      (  64*1024)                 // Maximum ...
-#define DEF_STRING_INITSIZE     (  64*1024)                 // Initial size for lpwszString
-#define DEF_STRING_MAXSIZE      (  64*1024)                 // Maximum ...
+////ine DEF_CURLINE_INITSIZE    (   4*1024)                 // Initial line size in bytes
+////ine DEF_CURLINE_MAXSIZE     (   4*1024)                 // Maximum ...
+////ine DEF_CURLINE_MAXLEN      (DEF_CURLINE_INITSIZE - 1)  // Maximum current line length
+#define DEF_NUMALP_INITSIZE     (   1*1024)                 // Initial size for lpszNumAlp
+#define DEF_NUMALP_MAXSIZE      (   1*1024)                 // Maximum ...
+#define DEF_STRING_INITSIZE     (   1*1024)                 // Initial size for lpwszString
+#define DEF_STRING_MAXSIZE      (   1*1024)                 // Maximum ...
 ////ine DEF_TOKENSTACK_INITSIZE (  64*1024)                 // Initial size of token stack
 ////ine DEF_TOKENSTACK_MAXSIZE  (1024*1024)                 // Maximum ...
 #define DEF_SIS_INITSIZE        (   0*1024)                 // Initial size for State Indicator Stack
-#define DEF_SIS_INCRSIZE        (  64*1024)                 // Incremental ..
-#define DEF_SIS_MAXSIZE         ( 256*1024)                 // Maximum ...
-#define DEF_YYRES_INITSIZE      (   0*1024)                 // Initial size of YYRes buffer
-#define DEF_YYRES_INCRSIZE      (   4*1024)                 // Incremental ...
-#define DEF_YYRES_MAXSIZE       (  64*1024)                 // Maximum ...
-#define DEF_CTEMP_INITSIZE      (  64*1024)                 // Initial size of char  temporary storage
-#define DEF_CTEMP_MAXSIZE       ( 256*1024)                 // Maximum ...
-#define DEF_WTEMP_INITSIZE      (  64*1024)                 // Initial size of WCHAR ...
-#define DEF_WTEMP_MAXSIZE       ( 256*1024)                 // Maximum ...
-#define DEF_DEBUG_INITSIZE      (  64*1024)                 // Initial size of debug ...
-#define DEF_DEBUG_MAXSIZE       (  64*1024)                 // Maximum ...
+#define DEF_SIS_INCRSIZE        (   1*1024)                 // Incremental ..
+#define DEF_SIS_MAXSIZE         (   4*1024)                 // Maximum ...
+#define DEF_YYRES_INITSIZE      (   1*1024)                 // Initial size of YYRes buffer
+#define DEF_YYRES_INCRSIZE      (   1*1024)                 // Incremental ...
+#define DEF_YYRES_MAXSIZE       (  16*1024)                 // Maximum ...
+#define DEF_CTEMP_INITSIZE      (   4*1024)                 // Initial size of char  temporary storage
+#define DEF_CTEMP_MAXSIZE       (  16*1024)                 // Maximum ...
+#define DEF_WTEMP_INITSIZE      (   4*1024)                 // Initial size of WCHAR ...
+#define DEF_WTEMP_MAXSIZE       (  16*1024)                 // Maximum ...
+#define DEF_DEBUG_INITSIZE      (   1*1024)                 // Initial size of debug ...
+#define DEF_DEBUG_MAXSIZE       (  16*1024)                 // Maximum ...
 #define DEF_WFORMAT_INITSIZE    (  64*1024)                 // Initial size of WCHAR Formatting storage
 #define DEF_WFORMAT_MAXSIZE     (  64*1024)                 // Maximum ...
 #define DEF_UNDOBUF_INITSIZE    (   4*1024)                 // Initial size of Undo buffer
 #define DEF_UNDOBUF_MAXSIZE     (  64*1024)                 // Maximum ...
-#define DEF_QUADERROR_INITSIZE  (   4*1024)                 // Initial size of []ERROR/[]ES buffer
-#define DEF_QUADERROR_MAXSIZE   (  64*1024)                 // Maximum ...
-#define DEF_STRAND_INITSIZE     (  64*1024)                 // Initial size in tokens of the strand stack
-#define DEF_STRAND_MAXSIZE      ( 256*1024)                 // Maximum ...
-#define DEF_DISPLAY_INITSIZE    (  64*1024)                 // Initial size of WCHARs for Array Display
-#define DEF_DISPLAY_INCRSIZE    (  64*1024)                 // Incremental ...
-#define DEF_DISPLAY_MAXSIZE     ( 256*1024)                 // Maximum ...
+#define DEF_QUADERROR_INITSIZE  (   1*1024)                 // Initial size of []ERROR/[]ES buffer
+#define DEF_QUADERROR_MAXSIZE   (  16*1024)                 // Maximum ...
+#define DEF_STRAND_INITSIZE     (   1*1024)                 // Initial size in tokens of the strand stack
+#define DEF_STRAND_MAXSIZE      (   4*1024)                 // Maximum ...
+#define DEF_DISPLAY_INITSIZE    (   4*1024)                 // Initial size of WCHARs for Array Display
+#define DEF_DISPLAY_INCRSIZE    (   4*1024)                 // Incremental ...
+#define DEF_DISPLAY_MAXSIZE     (  64*1024)                 // Maximum ...
 
 
 // Global Options
@@ -257,18 +257,19 @@ char lpszAppName[]                      // Application name for MessageBox
 #ifdef DEFINE_VALUES
  = "NARS2000" APPEND_DEBUG
 #endif
-,
-     szAppDPFE  [_MAX_PATH],            // .EXE drive, path, filename.ext
-     szHlpDPFE  [_MAX_PATH],            // .HLP ...
-/////szInitDir  [_MAX_PATH],            // Initial directory for File Open & Save
-     szOpenFile [_MAX_PATH];            // Save area for multiple files to open
+;
 
 EXTERN
-WCHAR wszLoadDir[_MAX_PATH],            // Load workspaces directory
-      wszSaveDir[_MAX_PATH],            // Save ...
-      wszDefDrive[_MAX_DRIVE];          // Default drive letter
+WCHAR wszAppDPFE  [_MAX_PATH],          // .EXE drive, path, filename.ext
+//////wszInitDir  [_MAX_PATH],          // Initial directory for File Open & Save
+      wszHlpDPFE  [_MAX_PATH];          // .HLP ...
+EXTERN
+char szOpenFile [_MAX_PATH];            // Save area for multiple files to open
 
-#define WKSNAME "workspaces"            // Name of Workspaces subdirectory under main dir
+EXTERN
+WCHAR wszWorkDir[_MAX_PATH];            // Load/Save workspaces directory
+
+#define WS_WKSNAME  L"workspaces"       // Name of Workspaces subdirectory under main dir
 
 EXTERN
 CRITICAL_SECTION CSO0,                  // Critical Section Object #0
@@ -756,6 +757,11 @@ int gLstTab                             // Index of the previous (outgoing) tab 
 #ifdef DEFINE_VALUES
  = -1
 #endif
+,
+    gOverTab                            // Index of the tab the mouse is over
+#ifdef DEFINE_VALUES
+ = -1
+#endif
 ;
 
 EXTERN
@@ -814,13 +820,6 @@ typedef BOOL (*ASYSVARVALIDNDX) (APLINT, APLSTYPE, LPAPLLONGEST, LPIMM_TYPES);
 EXTERN
 // Use as in:  (*aSysVarValidNdx[SYSVAR_IO]) (aplIntegerLst, lpaplIntegerRht, &immTypeRht);
 ASYSVARVALIDNDX aSysVarValidNdx[SYSVAR_LENGTH];
-
-EXTERN
-char lpszVersion[]
-#ifdef DEFINE_VALUES
- = "NARS2000\nVersion %s"
-#endif
-;
 
 EXTERN
 int MFSizeState                         // Size state for MF (SIZE_xxx)
@@ -904,13 +903,6 @@ long cxAveCharTC, cyAveCharTC,          // Size of an average character in the T
      cxAveCharFE, cyAveCharFE,          // ...                                 FE ...
      cxAveCharME, cyAveCharME,          // ...                                 ME ...
      cxAveCharVE, cyAveCharVE;          // ...                                 VE ...
-
-EXTERN
-int gOverTab                            // Index of the tab the mouse is over
-#ifdef DEFINE_VALUES
- = -1
-#endif
-;
 
 EXTERN
 WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure

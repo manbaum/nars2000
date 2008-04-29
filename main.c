@@ -626,10 +626,12 @@ LRESULT APIENTRY MFWndProc
      LONG lParam)       // ...
 
 {
-    RECT         rcDtop;    // Rectangle for desktop
+    RECT         rcDtop;        // Rectangle for desktop
     HWND         hWndActive,
-                 hWndMC;
-
+                 hWndMC,
+                 hWndSM;
+    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
 ////                           IDCANCEL,         IDH_CANCEL,
@@ -873,24 +875,19 @@ LRESULT APIENTRY MFWndProc
                     // Return a ptr to the stored tooltip text
                     lstrcpyW (TooltipText, lpMemWSID);
 #else
-                    {
-                        HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-                        LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+                    // Get the PerTabData global memory handle
+                    hGlbPTD = GetPerTabHandle (lpttt->hdr.idFrom);
 
-                        // Get the PerTabData global memory handle
-                        hGlbPTD = GetPerTabHandle (lpttt->hdr.idFrom);
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
 
-                        // Lock the memory to get a ptr to it
-                        lpMemPTD = MyGlobalLock (hGlbPTD);
-
-                        // Return a ptr to the stored tooltip text
-                        wsprintfW (TooltipText,
-                                   L"hWndMC=%08X: %s",
-                                   lpMemPTD->hWndMC,
-                                   lpMemWSID);
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-                    }
+                    // Return a ptr to the stored tooltip text
+                    wsprintfW (TooltipText,
+                               L"hWndMC=%08X: %s",
+                               lpMemPTD->hWndMC,
+                               lpMemWSID);
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 #endif
                     // Return the ptr to the caller
                     lpttt->lpszText = TooltipText;
@@ -969,10 +966,10 @@ LRESULT APIENTRY MFWndProc
 ////////
 ////////    if (lpHI->iContextType EQ HELPINFO_WINDOW)  // Must be for control
 ////////    {
-////////        WinHelp (lpHI->hItemHandle,
-////////                 szHlpDPFE,
-////////                 HELP_WM_HELP,
-////////                 (DWORD) (LPVOID) aHelpIDs);
+////////        WinHelpW (lpHI->hItemHandle,
+////////                  wszHlpDPFE,
+////////                  HELP_WM_HELP,
+////////                  (DWORD) (LPVOID) aHelpIDs);
 ////////        fHelp = TRUE;
 ////////    } // End IF
 ////////
@@ -983,10 +980,10 @@ LRESULT APIENTRY MFWndProc
 ////////case WM_CONTEXTMENU:
 ////////    if (hWndTreeView NE (HWND) wParam)
 ////////    {
-////////        WinHelp ((HWND) wParam,
-////////                 szHlpDPFE,
-////////                 HELP_CONTEXTMENU,
-////////                 (DWORD) (LPVOID) aHelpIDs);
+////////        WinHelpW ((HWND) wParam,
+////////                  wszHlpDPFE,
+////////                  HELP_CONTEXTMENU,
+////////                  (DWORD) (LPVOID) aHelpIDs);
 ////////        fHelp = TRUE;
 ////////    } // End IF
 ////////    return FALSE;           // We handled the message
@@ -1117,7 +1114,7 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;       // We handled the msg
 
                 case IDM_HELP_CONTENTS:
-                    WinHelp (hWnd, szHlpDPFE, HELP_INDEX, 0);
+                    WinHelpW (hWnd, wszHlpDPFE, HELP_INDEX, 0);
 
                     return FALSE;       // We handled the msg
 
@@ -1171,9 +1168,20 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVE_WS:
-                    CmdSave_EM (L"");   // Handle the same as )SAVE
+                    // Get the per tab global memory handle
+                    hGlbPTD = GetPerTabHandle (gOverTab);
 
-                    return FALSE;   // We handled the msg
+                    // Lock the memory to get a ptr to it
+                    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                    // Get this tab's SM window handle
+                    hWndSM = lpMemPTD->hWndSM;
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+                    // Tell the SM to save the ws
+                    return SendMessageW (hWndSM, MYWM_SAVE_WS, 0, (LPARAM) L"");
 
                 case IDM_SAVE_AS_WS:
                     DbgBrk ();      // ***FINISHME*** -- IDM_SAVE_AS_WS
@@ -1197,7 +1205,7 @@ LRESULT APIENTRY MFWndProc
                     return FALSE;   // We handled the msg
 
                 case IDM_SAVECLOSE_WS:
-                    if (CmdSave_EM (L""))   // Handle the same as )SAVE
+                    if (SendMessageW (hWnd, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_SAVE_WS, NULL, 0)))
                         // Close the tab
                         CloseTab (gOverTab);
 
@@ -1242,9 +1250,9 @@ LRESULT APIENTRY MFWndProc
 
         case WM_QUERYENDSESSION:
         case WM_CLOSE:
-            if (fHelp && szHlpDPFE[0])   // If we used help and there's a valid .HLP file, ...
+            if (fHelp && wszHlpDPFE[0])  // If we used help and there's a valid .HLP file, ...
             {
-                WinHelp (hWnd, szHlpDPFE, HELP_QUIT, 0); // Quit it
+                WinHelpW (hWnd, wszHlpDPFE, HELP_QUIT, 0); // Quit it
                 fHelp = FALSE;
             } // End IF
 
@@ -1255,8 +1263,8 @@ LRESULT APIENTRY MFWndProc
             if (EnumChildWindows (hWnd, EnumCallbackQueryClose, 0))
             {
 #ifdef DEBUG
-                // Tell the debugger windows to unhook its hooks
-                EnumChildWindows (hWnd, EnumCallbackUnhookDebugger, 0);
+////            // Tell the debugger windows to unhook its hooks
+////            EnumChildWindows (hWnd, EnumCallbackUnhookDebugger, 0);
 #endif
                 // Delete all the tabs
                 TabCtrl_DeleteAllItems (hWndTC);
@@ -1424,33 +1432,33 @@ BOOL CALLBACK EnumCallbackQueryClose
 } // End EnumCallbackQueryClose
 
 
-#ifdef DEBUG
-//***************************************************************************
-//  $EnumCallbackCloseDebugger
-//
-//  EnumChildWindows callback to tell debugger windows to unhook its hooks
-//***************************************************************************
-
-BOOL CALLBACK EnumCallbackUnhookDebugger
-    (HWND   hWnd,           // Handle to child window
-     LPARAM lParam)         // Application-defined value
-
-{
-    // When an MDI child window is minimized, Windows creates two windows: an
-    // icon and the icon title.  The parent of the icon title window is set to
-    // the MDI client window, which confines the icon title to the MDI client
-    // area.  The owner of the icon title is set to the MDI child window.
-    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
-        return TRUE;                    // skip it, and continue enumerating
-
-    // If it's a debugger window, ...
-    if (IzitDB (hWnd))
-        // Tell it to unhook its hooks
-        SendMessageW (hWnd, MYWM_UNHOOK, 0, 0);
-
-    return TRUE;
-} // End EnumCallbackUnhookDebugger
-#endif
+//// #ifdef DEBUG
+//// //***************************************************************************
+//// //  $EnumCallbackCloseDebugger
+//// //
+//// //  EnumChildWindows callback to tell debugger windows to unhook its hooks
+//// //***************************************************************************
+////
+//// BOOL CALLBACK EnumCallbackUnhookDebugger
+////     (HWND   hWnd,           // Handle to child window
+////      LPARAM lParam)         // Application-defined value
+////
+//// {
+////     // When an MDI child window is minimized, Windows creates two windows: an
+////     // icon and the icon title.  The parent of the icon title window is set to
+////     // the MDI client window, which confines the icon title to the MDI client
+////     // area.  The owner of the icon title is set to the MDI child window.
+////     if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+////         return TRUE;                    // skip it, and continue enumerating
+////
+////     // If it's a debugger window, ...
+////     if (IzitDB (hWnd))
+////         // Tell it to unhook its hooks
+////         SendMessageW (hWnd, MYWM_UNHOOK, 0, 0);
+////
+////     return TRUE;
+//// } // End EnumCallbackUnhookDebugger
+//// #endif
 
 
 #ifdef DEBUG

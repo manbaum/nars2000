@@ -73,6 +73,12 @@ BOOL CmdXload_EM
 //  Execute the system command:  )LOAD or )XLOAD wsid
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- CmdLoadCom_EM"
+#else
+#define APPEND_NAME
+#endif
+
 BOOL CmdLoadCom_EM
     (LPWCHAR lpwszTail,                 // Ptr to command line tail
      BOOL    bExecLX)                   // TRUE iff execute []LX after successful load
@@ -82,6 +88,7 @@ BOOL CmdLoadCom_EM
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     WCHAR        wszTailDPFE[_MAX_PATH];// Save area for canonical form of given ws name
     int          iTabIndex;             // Tab index
+    FILE        *fStream;               // Ptr to file stream for the plain text workspace file
 
     // If there's no WSID, that's an error
     if (lpwszTail[0] EQ L'\0')
@@ -92,7 +99,7 @@ BOOL CmdLoadCom_EM
     } // End IF
 
     // Convert the given workspace name into a canonical form (without WKSEXT)
-    MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszSaveDir);
+    MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszWorkDir);
 
     // Append the common workspace extension
     lstrcatW (wszTailDPFE, WS_WKSEXT);
@@ -109,12 +116,28 @@ BOOL CmdLoadCom_EM
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
+    // Handle WS NOT FOUND messages here
+    // Attempt to open the workspace
+    fStream = _wfopen (wszTailDPFE, L"r");
+
+    // If the workspace doesn't exist, ...
+    if (fStream EQ NULL)
+        goto WSNOTFOUND_EXIT;
+
+    // We no longer need this handle
+    fclose (fStream); fStream = NULL;
+
     return
       CreateNewTab (hWndMF,             // Parent window handle
                     wszTailDPFE,        // Drive, Path, Filename, Ext of the workspace
                     iTabIndex + 1,      // Insert new tab to the left of this one
                     bExecLX);           // TRUE iff execute []LX after successful load
+WSNOTFOUND_EXIT:
+    ReplaceLastLineCRPmt (ERRMSG_WS_NOT_FOUND APPEND_NAME);
+
+    return FALSE;
 } // End CmdLoadCom_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -134,43 +157,30 @@ BOOL LoadWorkspace_EM
      HWND    hWndEC)                    // Edit control window handle
 
 {
-    LPWCHAR      lpwszDPFE;             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+    LPWCHAR      lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                 lpwErrMsg;             // Ptr to (constant) error message text
     FILE        *fStream;               // Ptr to file stream for the plain text workspace file
     UINT         uSymVar,               // Var index counter
                  uSymFcn,               // Fcn/Opr index counter
-                 uGlbCnt,               // [GlobalVars] count
-                 uLineCnt,              // # lines in the current function
+                 uGlbCnt,               // [Globals] count
                  uSILevel,              // [General] SILevel value
                  uSID,                  // Loop counter
                  uStr;                  // Loop counter
     LPWCHAR      lpwSrc,                // Ptr to incoming data
                  lpwDst,                // Ptr to destination data in name
-                 lpwSrcStart,           // Ptr to starting point
-                 lpwSectName;           // Ptr to section name
+                 lpwSrcStart;           // Ptr to starting point
     WCHAR        wszCount[8],           // Save area for formatted uSymVar/Fcn counter
-                 wszSectName[15],       // ...                     section name (e.g., [Vars.nnn])
-                 wcTmp;                 // Temporary char
+                 wszSectName[15];       // ...                     section name (e.g., [Vars.nnn])
     BOOL         bRet = FALSE,          // TRUE iff the result is valid
-                 bImmed,                // TRUE iff the result of ParseSavedWsVar is immediate
-                 bUserDefined;          // TRUE iff the durrent function is User-Defined
-    APLSTYPE     aplTypeObj;            // Object storage type
-    APLNELM      aplNELMObj;            // Object NELM
-    APLRANK      aplRankObj;            // Object rank
-    APLINT       aplInteger;            // Temporary integer
-    APLUINT      ByteObj,               // # bytes needed for the object
-                 uObj;                  // Loop counter
-    HGLOBAL      hGlbPTD,               // PerTabData global memory handle
-                 hGlbObj;               // Object global memory handle
+                 bImmed;                // TRUE iff the result of ParseSavedWsVar_EM is immediate
+    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
-    LPVOID       lpMemObj;              // Ptr to object global memory
+    APLSTYPE     aplTypeObj;            // Object storage type
     STFLAGS      stFlags = {0};         // SymTab flags
     LPSYMENTRY   lpSymEntry;            // Ptr to STE for HGLOBAL
-    UINT         uBitIndex;             // Bit index for looping through Boolean result
     LPWCHAR      lpwCharEnd;            // Temporary ptr
     APLLONGEST   aplLongestObj;         // Object immediate value
     LPAPLLONGEST lpaplLongestObj;       // Ptr to ...
-    FILETIME     ftCreation,            // Function creation time
-                 ftLastMod;             // ...      last modification time
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -192,259 +202,6 @@ BOOL LoadWorkspace_EM
     // We no longer need this handle
     fclose (fStream); fStream = NULL;
 
-    //***************************************************************
-    // Load the variables
-    //***************************************************************
-
-    // Get [GlobalVars] count
-    uGlbCnt =
-      GetPrivateProfileIntW (SECTNAME_GLOBALVARS,       // Ptr to the section name
-                             KEYNAME_COUNT,             // Ptr to the key name
-                             0,                         // Default value if not found
-                             lpwszDPFE);                // Ptr to the file name
-    // Loop through the [GlobalVars] section
-    for (uStr = 0; uStr < uGlbCnt; uStr++)
-    {
-        // Save ptr
-        lpwSrc = lpwszTemp;
-
-        // Format the counter
-        wsprintfW (wszCount, FMTSTR_GLBCNT, uStr);
-
-        // Read the next string
-        GetPrivateProfileStringW (SECTNAME_GLOBALVARS,  // Ptr to the section name
-                                  wszCount,             // Ptr to the key name
-                                  L"",                  // Ptr to the default value
-                                  lpwSrc,               // Ptr to the output buffer
-                                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
-                                  lpwszDPFE);           // Ptr to the file name
-        // Parse the array attributes
-
-        // Ensure it's non-empty
-        if  (lpwSrc[0] EQ L'\0')
-            goto CORRUPTWS_EXIT;
-
-        // ***FIXME*** -- Do we need to restore the object PermNdx?
-
-        // Get the object storage type
-        aplTypeObj = TranslateCharToArrayType (*lpwSrc++);
-
-        // Ensure there's a valid separator
-        if (*lpwSrc NE L' ')
-            goto CORRUPTWS_EXIT;
-
-        // Skip over it
-        lpwSrc++;
-
-        // Get the object NELM
-        swscanf (lpwSrc, L"%I64d", &aplNELMObj); lpwSrc = SkipBlackW (lpwSrc);
-
-        // Ensure there's a valid separator
-        if (*lpwSrc NE L' ')
-            goto CORRUPTWS_EXIT;
-
-        // Skip over it
-        lpwSrc++;
-
-        // Get the object rank
-        swscanf (lpwSrc, L"%I64d", &aplRankObj); lpwSrc = SkipBlackW (lpwSrc);
-
-        // Ensure there's a valid separator
-        if (*lpwSrc NE L' ')
-            goto CORRUPTWS_EXIT;
-
-        // Skip over it
-        lpwSrc++;
-
-        //***************************************************************
-        // Calculate space needed for the object
-        //***************************************************************
-        ByteObj = CalcArraySize (aplTypeObj, aplNELMObj, aplRankObj);
-
-        //***************************************************************
-        // Now we can allocate the storage for the result
-        // N.B.:  Conversion from APLUINT to UINT.
-        //***************************************************************
-        Assert (ByteObj EQ (UINT) ByteObj);
-        hGlbObj = MyGlobalAlloc (GHND, (UINT) ByteObj);
-        if (!hGlbObj)
-            goto WSFULL_EXIT;
-
-        // Set the flags for what we're appending
-        stFlags.Inuse   = TRUE;
-        stFlags.ObjName = OBJNAME_LOD;
-
-        // Create a symbol table entry for the )LOAD HGLOBAL
-        lpSymEntry =
-          SymTabAppendName_EM (wszCount, &stFlags);
-
-        // Set the handle
-        lpSymEntry->stData.stGlbData = MakePtrTypeGlb (hGlbObj);
-
-        // Lock the memory to get a ptr to it
-        lpMemObj = MyGlobalLock (hGlbObj);
-
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
-        // Fill in the header
-////////// Note that the RefCnt is initialized to zero
-////////// It will be incremented upon each reference
-        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-        lpHeader->ArrType    = aplTypeObj;
-////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND ***FIXME*** -- Set correct PERMNDX_xxx
-////////lpHeader->SysVar     = 0;               // Already zero from GHND
-        lpHeader->RefCnt     = 1;
-        lpHeader->NELM       = aplNELMObj;
-        lpHeader->Rank       = aplRankObj;
-#undef  lpHeader
-
-        // Skip over the header to the dimensions
-        lpMemObj = VarArrayBaseToDim (lpMemObj);
-
-        // Fill in the result's dimension
-        for (uObj = 0; uObj < aplRankObj; uObj++)
-        {
-            // Scan in the next dimension
-            swscanf (lpwSrc, L"%I64d", lpMemObj);
-
-            // Skip to the next field
-            lpwSrc = SkipPastCharW (lpwSrc, L' ');
-
-            // Skip over the dimension
-            ((LPAPLDIM) lpMemObj)++;
-        } // End FOR
-
-        // lpwSrc now points to the data
-
-        // Split cases based upon the object storage type
-        switch (aplTypeObj)
-        {
-            case ARRAY_BOOL:
-                // Initialize the bit index
-                uBitIndex = 0;
-
-                // Loop through the elements
-                for (uObj = 0; uObj < aplNELMObj; uObj++)
-                {
-                    // Scan in the next value
-                    swscanf (lpwSrc, L"%I64d", &aplInteger);
-
-                    // Skip to the next field
-                    lpwSrc = SkipPastCharW (lpwSrc, L' ');
-
-                    // Save in the result
-                    *((LPAPLBOOL) lpMemObj) |= aplInteger << uBitIndex;
-
-                    // Check for end-of-byte
-                    if (++uBitIndex EQ NBIB)
-                    {
-                        uBitIndex = 0;              // Start over
-                        ((LPAPLBOOL) lpMemObj)++;   // Skip to next byte
-                    } // End IF
-                } // End FOR
-
-                break;
-
-            case ARRAY_INT:
-                // Loop through the elements
-                for (uObj = 0; uObj < aplNELMObj; uObj++)
-                {
-                    // Scan in the next value and skip over it
-                    swscanf (lpwSrc, L"%I64d", ((LPAPLINT) lpMemObj)++);
-
-                    // Skip to the next field
-                    lpwSrc = SkipPastCharW (lpwSrc, L' ');
-                } // End FOR
-
-                break;
-
-            case ARRAY_FLOAT:
-                // Loop through the elements
-                for (uObj = 0; uObj < aplNELMObj; uObj++)
-                {
-                    // Find the trailing L' '
-                    lpwCharEnd = SkipToCharW (lpwSrc, L' ');
-
-                    // Save old next char, zap to form zero-terminated name
-                    wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
-
-                    // Convert the format string to ASCII
-                    W2A ((LPCHAR) lpwszFormat, lpwSrc, DEF_WFORMAT_MAXSIZE - 1);
-
-                    // Restore the original value
-                    *lpwCharEnd = wcTmp;
-
-                    // Use David Gay's routines
-                    // Save in the result and skip over it
-                    *((LPAPLFLOAT) lpMemObj)++ = strtod ((LPCHAR) lpwszFormat, NULL);
-
-                    // Skip to the next field
-                    lpwSrc = &lpwCharEnd[1];
-                } // End FOR
-
-                break;
-
-            case ARRAY_CHAR:
-                Assert (L'\'' EQ *lpwSrc); lpwSrc++;
-
-                // Loop through the elements
-                for (uObj = 0; uObj < aplNELMObj; uObj++)
-                {
-                    // Convert the single {name} or other char to UTF16_xxx
-                    if (L'{' EQ  *lpwSrc)
-                    {
-                        // Get the next char
-                        wcTmp = NameToChar (lpwSrc);
-
-                        // Skip to the next field
-                        lpwSrc = SkipPastCharW (lpwSrc, L'}');
-                    } else
-                        wcTmp = *lpwSrc++;
-
-                    // Save in the result and skip over it
-                    *((LPAPLCHAR) lpMemObj)++ = wcTmp;
-                } // End FOR
-
-                Assert (L'\'' EQ *lpwSrc); lpwSrc++;
-
-                break;
-
-            case ARRAY_APA:
-                // The next two values are the APA offset and multiplier
-
-                // Scan in the next value and skip over it
-                swscanf (lpwSrc, L"%I64d", ((LPAPLINT) lpMemObj)++);
-
-                // Skip to the next field
-                lpwSrc = SkipPastCharW (lpwSrc, L' ');
-
-                // Scan in the next value and skip over it
-                swscanf (lpwSrc, L"%I64d", ((LPAPLINT) lpMemObj)++);
-
-                // Skip to the next field
-                lpwSrc = SkipPastCharW (lpwSrc, L' ');
-
-                break;
-
-            case ARRAY_HETERO:
-            case ARRAY_NESTED:
-                // The elements consist of either a simple scalar
-                //   (starts with one of the storage types), or a
-                //   global (starts with a #)
-
-                // Loop through the elements
-                for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    lpwSrc =
-                      ParseSavedWsVar (lpwSrc, &lpMemObj, NULL, NULL, TRUE);
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
-    } // End FOR
-
     // Get the SI Level
     uSILevel =
       GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
@@ -454,6 +211,10 @@ BOOL LoadWorkspace_EM
     // Loop through the SI levels
     for (uSID = 0; uSID <= uSILevel; uSID++)
     {
+        //***************************************************************
+        // Load the variables at this SI level
+        //***************************************************************
+
         // Format the section name
         wsprintfW (wszSectName, SECTNAME_VARS L".%d", uSID);
 
@@ -463,7 +224,7 @@ BOOL LoadWorkspace_EM
                                  KEYNAME_COUNT,             // Ptr to the key name
                                  0,                         // Default value if not found
                                  lpwszDPFE);                // Ptr to the file name
-        // Loop through the [Vars.nnn] section where nnn is the SI level
+        // Loop through the [Vars.sss] section where sss is the SI level
         for (uStr = 0; uStr < uSymVar; uStr++)
         {
             // Save ptr
@@ -531,12 +292,21 @@ BOOL LoadWorkspace_EM
             // Clear so we save a clean value
             aplLongestObj = 0;
 
-            // Set this value as lpaplLongestObj is incremented by ParseSavedWsVar
+            // Set this value as lpaplLongestObj is incremented by ParseSavedWsVar_EM
             lpaplLongestObj = &aplLongestObj;
 
             // Parse the value into aplLongestObj and aplTypeObj
             lpwSrc =
-              ParseSavedWsVar (lpwSrc, &lpaplLongestObj, &aplTypeObj, &bImmed, FALSE);
+              ParseSavedWsVar_EM (lpwSrc,
+                                 &lpaplLongestObj,
+                                 &aplTypeObj,
+                                 &bImmed,
+                                  FALSE,
+                                  hWndEC,
+                                  lpwszDPFE,
+                                 &lpwErrMsg);
+            if (lpwSrc EQ NULL)
+                goto ERRMSG_EXIT;
 
             // If it's []DM, handle it specially
             if (lstrcmpiW (lpwSrcStart, WS_UTF16_QUAD L"dm") EQ 0)
@@ -582,215 +352,11 @@ BOOL LoadWorkspace_EM
             // Restore the original value
             *lpwCharEnd = L'=';
         } // End FOR
-    } // End FOR
 
-    // Delete the symbol table entries for vars we allocated of the form "#%d"
-    DeleteLoadSTEs (uGlbCnt);
+        //***************************************************************
+        // Load the functions at this SI level
+        //***************************************************************
 
-    //***************************************************************
-    // Load the functions
-    //***************************************************************
-
-    // Get [GlobalFcns] count
-    uGlbCnt =
-      GetPrivateProfileIntW (SECTNAME_GLOBALFCNS,       // Ptr to the section name
-                             KEYNAME_COUNT,             // Ptr to the key name
-                             0,                         // Default value if not found
-                             lpwszDPFE);                // Ptr to the file name
-    // Loop through the [GlobalFcns] section
-    for (uStr = 0; uStr < uGlbCnt; uStr++)
-    {
-        LPWCHAR lpwFcnName;             // Ptr to function name
-
-        // Save ptr
-        lpwSrc = lpwszTemp;
-
-        // Format the counter
-        wsprintfW (wszCount, FMTSTR_GLBCNT, uStr);
-
-        // Prepare to read in the section name
-        lpwSectName = lpwSrc;
-
-        // Read the next string
-        // The output is a section name of the form nnn.Name where nnn is the function count
-        GetPrivateProfileStringW (SECTNAME_GLOBALFCNS,  // Ptr to the section name
-                                  wszCount,             // Ptr to the key name
-                                  L"",                  // Ptr to the default value
-                                  lpwSectName,          // Ptr to the output buffer
-                                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
-                                  lpwszDPFE);           // Ptr to the file name
-        // Get a ptr to the function name
-        lpwFcnName = strchrW (lpwSectName, L'.') + 1;
-
-        // Skip past the section name and its terminating zero
-        lpwSrc = &lpwSectName[lstrlenW (lpwSectName) + 1];
-
-        // Get the count for the section name
-        uLineCnt =
-          GetPrivateProfileIntW (lpwSectName,               // Ptr to the section name
-                                 KEYNAME_COUNT,             // Ptr to the key name
-                                 0,                         // Default value if not found
-                                 lpwszDPFE);                // Ptr to the file name
-        Assert (uLineCnt > 0);
-
-        // Get the UserDefined flag
-        bUserDefined =
-          GetPrivateProfileIntW (lpwSectName,               // Ptr to the section name
-                                 KEYNAME_USERDEFINED,       // Ptr to the key name
-                                 0,                         // Default value if not found
-                                 lpwszDPFE);                // Ptr to the file name
-        // Get the CreationTime string
-        GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
-                                  KEYNAME_CREATIONTIME, // Ptr to the key name
-                                  L"",                  // Ptr to the default value
-                                  lpwSrc,               // Ptr to the output buffer
-                                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
-                                  lpwszDPFE);           // Ptr to the file name
-        // Convert the CreationTime string to time
-        swscanf (lpwSrc, L"%16I64X", &ftCreation);
-
-        // Get the LastModTime string
-        GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
-                                  KEYNAME_LASTMODTIME,  // Ptr to the key name
-                                  L"",                  // Ptr to the default value
-                                  lpwSrc,               // Ptr to the output buffer
-                                  memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
-                                  lpwszDPFE);           // Ptr to the file name
-        // Convert the LastModTime string to time
-        swscanf (lpwSrc, L"%16I64X", &ftLastMod);
-
-        // If it's a user-defined function/operator, ...
-        if (bUserDefined)
-        {
-            SF_FCNS    SF_Fcns = {0};       // Common struc for SaveFunctionCom
-            LW_PARAMS  LW_Params = {0};     // Local  ...
-            LPWCHAR    lpMemUndoTxt;        // Ptr to Undo Buffer in text format
-
-            // Save ptr to undo buffer in text format
-            lpMemUndoTxt = lpwSrc;
-
-            // Get the Undo buffer string, and
-            //   skip over the buffer (including the trailing zero)
-            lpwSrc += 1 +
-              GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
-                                        KEYNAME_UNDO,       // Ptr to the key name
-                                        L"",                // Ptr to the default value
-                              (LPWCHAR) lpMemUndoTxt,       // Ptr to the output buffer
-                                        memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
-                                        lpwszDPFE);         // Ptr to the file name
-            // Fill in common values
-////////////SF_Fcns.bRet            =                   // Filled in by SaveFunctionCom
-////////////SF_Fcns.uErrLine        =                   // ...
-////////////SF_Fcns.lpSymName       =                   // ...
-            SF_Fcns.lptkFunc        = NULL;             // Ptr to function token ***FIXME*** -- Used on error
-            SF_Fcns.SF_LineLen      = SF_LineLenLW;     // Ptr to line length function
-            SF_Fcns.SF_ReadLine     = SF_ReadLineLW;    // Ptr to read line function
-            SF_Fcns.SF_NumLines     = SF_NumLinesLW;    // Ptr to get # lines function
-            SF_Fcns.SF_CreationTime = SF_CreationTimeLW;// Ptr to get function creation time
-            SF_Fcns.SF_LastModTime  = SF_LastModTimeLW; // Ptr to get function last modification time
-            SF_Fcns.SF_UndoBuffer   = SF_UndoBufferLW;  // Ptr to get function last modification time
-
-            // Fill in local values
-            LW_Params.lpwSectName  = lpwSectName;    // Ptr to section name
-            LW_Params.lpwszDPFE    = lpwszDPFE;      // Ptr to workspace DPFE
-            LW_Params.lpwBuffer    = lpwSrc;         // Ptr to buffer
-            LW_Params.lpMemUndoTxt = lpMemUndoTxt;   // Ptr to Undo Buffer in text format
-            LW_Params.ftCreation   = ftCreation;     // Function Creation Time
-            LW_Params.ftLastMod    = ftLastMod;      // Function Last Modification Time
-
-            // Save ptr to local parameters
-            SF_Fcns.LclParams   = &LW_Params;
-
-            // Call common routine
-            if (!SaveFunctionCom (NULL, &SF_Fcns))
-            {
-                // Format the error message
-                wsprintfW (lpwszFormat,
-                           L"Error loading function <%s> line <%d> in workspace <%s> -- WORKSPACE MAY BE CORRUPT:  PROCEED WITH CAUTION",
-                           lpwFcnName,
-                           SF_Fcns.uErrLine,
-                           lpwszDPFE);
-                MBW (lpwszFormat);
-
-                goto CORRUPTWS_EXIT;
-            } // End IF/ELSE
-        } else
-        // It's a function array
-        {
-#ifdef DEBUG
-            EXIT_TYPES exitType;
-#endif
-            // Append the variable name and an assignment arrow to the output buffer
-            lstrcpyW (lpwSrc, lpwFcnName);
-            lpwFcnName = lpwSrc;
-            lpwSrc += lstrlenW (lpwSrc);
-            *lpwSrc++ = UTF16_LEFTARROW;
-
-            // Get the one (and only) line
-            GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
-                                      L"0",               // Ptr to the key name
-                                      L"",                // Ptr to the default value
-                                      lpwSrc,             // Ptr to the output buffer
-                                      memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
-                                      lpwszDPFE);         // Ptr to the file name
-            // Convert in place
-            lpwSrcStart = lpwDst = lpwSrc;
-
-            // Convert the {name}s and other chars to UTF16_xxx
-            (void) ConvertNameInPlace (lpwSrc);
-
-            // Execute the statement
-#ifdef DEBUG
-            exitType =
-#endif
-              ImmExecStmt (lpwFcnName,      // Ptr to line to execute
-                           FALSE,           // Free lpwszCompLine on completion
-                           TRUE,            // TRUE iff wait until finished
-                           hWndEC);         // Edit Control window handle
-            Assert (exitType EQ EXITTYPE_NOVALUE);
-        } // End IF/ELSE
-
-        // Lookup the STE and save its HGLOBAL in the STE for #nnn
-
-        // Set the flags for what we're looking up/appending
-        stFlags.Inuse   = TRUE;
-
-        if (IsSysName (lpwFcnName))
-            // Tell 'em we're looking for system names
-            stFlags.ObjName = OBJNAME_SYS;
-        else
-            // Tell 'em we're looking for user names
-            stFlags.ObjName = OBJNAME_USR;
-
-        // Lookup the name in the symbol table
-        lpSymEntry =
-          SymTabLookupName (lpwFcnName, &stFlags);
-        Assert (lpSymEntry NE NULL);
-
-        // Copy the HGLOBAL
-        hGlbObj = CopySymGlbDir (lpSymEntry->stData.stGlbData);
-
-        // Set the flags for what we're appending
-        stFlags.Inuse   = TRUE;
-        stFlags.ObjName = OBJNAME_LOD;
-
-        // Create a symbol table entry for the )LOAD HGLOBAL
-        lpSymEntry =
-          SymTabAppendName_EM (wszCount, &stFlags);
-
-        // Set the handle
-        lpSymEntry->stData.stGlbData = MakePtrTypeGlb (hGlbObj);
-    } // End FOR
-
-    // Get the SI Level
-    uSILevel =
-      GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
-                             KEYNAME_SILEVEL,           // Ptr to the key name
-                             0,                         // Default value if not found
-                             lpwszDPFE);                // Ptr to the file name
-    // Loop through the SI levels
-    for (uSID = 0; uSID <= uSILevel; uSID++)
-    {
         // Format the section name
         wsprintfW (wszSectName, SECTNAME_FCNS L".%d", uSID);
 
@@ -800,7 +366,7 @@ BOOL LoadWorkspace_EM
                                  KEYNAME_COUNT,             // Ptr to the key name
                                  0,                         // Default value if not found
                                  lpwszDPFE);                // Ptr to the file name
-        // Loop through the [Fcns.nnn] section where nnn is the SI level
+        // Loop through the [Fcns.sss] section where sss is the SI level
         for (uStr = 0; uStr < uSymFcn; uStr++)
         {
             NAME_TYPES nameType;
@@ -840,15 +406,9 @@ BOOL LoadWorkspace_EM
 
             Assert (*lpwSrc EQ L'='); lpwSrc++;
 
-            // Set the flags for what we're looking up/appending
+            // Set the flags for what we're looking up
             stFlags.Inuse   = TRUE;
-
-            if (IsSysName (lpwSrcStart))
-                // Tell 'em we're looking for system names
-                stFlags.ObjName = OBJNAME_SYS;
-            else
-                // Tell 'em we're looking for user names
-                stFlags.ObjName = OBJNAME_USR;
+            stFlags.ObjName = OBJNAME_USR;
 
             // Lookup the name in the symbol table
             lpSymEntry =
@@ -864,13 +424,18 @@ BOOL LoadWorkspace_EM
                 lpSymEntry = SymTabAppendName_EM (lpwSrcStart, &stFlags);
 
                 // Set stFlags as appropriate
-                lpSymEntry->stFlags.Value      = TRUE;
                 lpSymEntry->stFlags.ObjName    = OBJNAME_USR;
-////////////////lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
+////////////////lpSymEntry->stFlags.stNameType = nameType;          // Set in ParseSavedWsFcn_EM
             } // End IF
 
             // Parse the line into lpSymEntry->stData
-            ParseSavedWsFcn (lpwSrc, lpSymEntry, nameType);
+            if (!ParseSavedWsFcn_EM (lpwSrc,
+                                     lpSymEntry,
+                                     nameType,
+                                     hWndEC,
+                                     lpwszDPFE,
+                                    &lpwErrMsg))
+                goto ERRMSG_EXIT;
         } // End FOR
 
         // If there's another SI level to process, create a new SIS struc
@@ -910,22 +475,55 @@ BOOL LoadWorkspace_EM
         } // End IF
     } // End FOR
 
-    // Delete the symbol table entries for functions we allocated of the form "#%d"
+    // Get [Globals] count
+    uGlbCnt =
+      GetPrivateProfileIntW (SECTNAME_GLOBALS,          // Ptr to the section name
+                             KEYNAME_COUNT,             // Ptr to the key name
+                             0,                         // Default value if not found
+                             lpwszDPFE);                // Ptr to the file name
+    // Delete the symbol table entries for vars we allocated of the form "#%d"
     DeleteLoadSTEs (uGlbCnt);
 WSID_EXIT:
     // Set the value of the new []WSID as lpwszDPFE
-    bRet = SaveNewWsid (lpwszDPFE);
+    bRet = SaveNewWsid_EM (lpwszDPFE);
 
     goto NORMAL_EXIT;
 
-CORRUPTWS_EXIT:
-    AppendLine (ERRMSG_CORRUPT_WS APPEND_NAME, FALSE, TRUE);
+WSNOTFOUND_EXIT:
+    // Send this (constant) error message to the previously outgoing tab
+    SendMessageLastTab (ERRMSG_WS_NOT_FOUND APPEND_NAME, hGlbPTD);
 
     goto ERROR_EXIT;
 
-WSNOTFOUND_EXIT:
+ERRMSG_EXIT:
+    // Send this (constant) error message to the previously outgoing tab
+    SendMessageLastTab (lpwErrMsg, hGlbPTD);
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;
+
+    return bRet;
+} // End LoadWorkspace_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SendMessageLastTab
+//
+//  Send a (constant) message to the previously outgoing tab
+//***************************************************************************
+
+void SendMessageLastTab
+    (const LPWCHAR lpwErrMsg,           // Ptr to constant error message text
+     HGLOBAL       hGlbPTD)             // PerTabData global memory handle
+
 {
-    int iPrvTabIndex;
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    int          iPrvTabIndex;          // Index of previous tab
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -945,47 +543,42 @@ WSNOTFOUND_EXIT:
         lpMemPTD = MyGlobalLock (hGlbPTD);
 
         // Send this error message to the previous tab's SM
-        SendMessageW (lpMemPTD->hWndSM, MYWM_ERRMSG, 0, (LPARAM) ERRMSG_WS_NOT_FOUND APPEND_NAME);
+        SendMessageW (lpMemPTD->hWndSM, MYWM_ERRMSG, 0, (LPARAM) lpwErrMsg);
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
     } // End IF
-
-    goto ERROR_EXIT;
-}
-
-WSFULL_EXIT:
-    AppendLine (ERRMSG_WS_FULL APPEND_NAME, FALSE, TRUE);
-
-    goto ERROR_EXIT;
-
-ERROR_EXIT:
-NORMAL_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;
-
-    return bRet;
-} // End LoadWorkspace_EM
-#undef  APPEND_NAME
+} // End SendMessageLastTab
 
 
 //***************************************************************************
-//  $ParseSavedWsFcn
+//  $ParseSavedWsFcn_EM
 //
 //  Parse a value of the form #nnn or {name}...
 //***************************************************************************
 
-void ParseSavedWsFcn
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ParseSavedWsFcn_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL ParseSavedWsFcn_EM
     (LPWCHAR    lpwSrc,                 // Ptr to input buffer
      LPSYMENTRY lpSymObj,               // Ptr to STE for the object
-     NAME_TYPES nameType)               // Function name type (see NAME_TYPES)
+     NAME_TYPES nameType,               // Function name type (see NAME_TYPES)
+     HWND       hWndEC,                 // Edit Control window handle
+     LPWCHAR    lpwszDPFE,              // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+     LPWCHAR   *lplpwErrMsg)            // Ptr to ptr to (constant) error message text
 
 {
     WCHAR      wcTmp;                   // Temporary char
     LPWCHAR    lpwCharEnd;              // Temporary ptr
     STFLAGS    stFlags = {0};           // SymTab flags
     LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
-    HGLOBAL    hGlbObj;                 // Object global memory handle
+    HGLOBAL    hGlbObj,                 // Object global memory handle
+               hGlbOld;                 // Old ...
+    BOOL       bRet = FALSE;            // TRUE iff result is valid
 
     // Tell 'em we're looking for )LOAD objects
     stFlags.Inuse   = TRUE;
@@ -995,7 +588,7 @@ void ParseSavedWsFcn
     lpSymObj->stFlags.stNameType = nameType;
 
     // Copy the old value
-    hGlbObj = lpSymObj->stData.stGlbData;
+    hGlbOld = lpSymObj->stData.stGlbData;
 
     if (*lpwSrc EQ L'#')
     {
@@ -1009,13 +602,27 @@ void ParseSavedWsFcn
         lpSymEntry =
           SymTabLookupName (lpwSrc, &stFlags);
 
-        Assert (lpSymEntry NE NULL);
+        // If it's not found, load it from the [Globals] section
+        if (lpSymEntry EQ NULL)
+            hGlbObj =
+              LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (#nnn)
+                                      hWndEC,       // Edit Control window handle
+                                      lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                      lplpwErrMsg); // Ptr to ptr to (constant) error message text
+        else
+        {
+            hGlbObj = lpSymEntry->stData.stGlbData;
+            lpSymEntry = NULL;
+        } // End IF/ELSE
+
+        if (hGlbObj EQ NULL)
+            goto CORRUPTWS_EXIT;
 
         // Restore the original value
         *lpwCharEnd = wcTmp;
 
         // Save in the result
-        lpSymObj->stData.stGlbData = CopySymGlbDir (lpSymEntry->stData.stGlbData);
+        lpSymObj->stData.stGlbData = CopySymGlbDir (hGlbObj);
     } else
     {
         // Convert the single {name} or other char to UTF16_xxx
@@ -1040,26 +647,42 @@ void ParseSavedWsFcn
     } // End IF
 
     // If there's an old value, ...
-    if (hGlbObj)
+    if (hGlbOld)
     {
         // Free the old value
-        FreeResultGlobalDFV (hGlbObj); hGlbObj = NULL;
+        FreeResultGlobalDFV (hGlbOld); hGlbOld = NULL;
     } // End IF
-} // End ParseSavedWsFcn
+
+    return TRUE;
+CORRUPTWS_EXIT:
+    *lplpwErrMsg = ERRMSG_CORRUPT_WS APPEND_NAME;
+
+    return FALSE;
+} // End ParseSavedWsFcn_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $ParseSavedWsVar
+//  $ParseSavedWsVar_EM
 //
-//  Parse a value of the form #nnn or X N R S V
+//  Parse a value of the form V #nnn or V T N R S V
 //***************************************************************************
 
-LPWCHAR ParseSavedWsVar
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ParseSavedWsVar_EM"
+#else
+#define APPEND_NAME
+#endif
+
+LPWCHAR ParseSavedWsVar_EM
     (LPWCHAR    lpwSrc,                 // Ptr to input buffer
      LPVOID    *lplpMemObj,             // Ptr to ptr to output element
      LPAPLSTYPE lpaplTypeObj,           // Ptr to storage type (may be NULL)
      LPBOOL     lpbImmed,               // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
-     BOOL       bSymTab)                // TRUE iff to save SymTabAppend values, FALSE to save values directly
+     BOOL       bSymTab,                // TRUE iff to save SymTabAppend values, FALSE to save values directly
+     HWND       hWndEC,                 // Edit Control window handle
+     LPWCHAR    lpwszDPFE,              // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+     LPWCHAR   *lplpwErrMsg)            // Ptr to ptr to (constant error message text
 
 {
     WCHAR      wcTmp;                   // Temporary char
@@ -1068,11 +691,13 @@ LPWCHAR ParseSavedWsVar
     LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
     APLINT     aplInteger;              // Temporary integer
     APLSTYPE   aplTypeObj;              // Object storage type
+    HGLOBAL    hGlbObj;                 // Object global memory handle
 
     // Tell 'em we're looking for )LOAD objects
     stFlags.Inuse   = TRUE;
     stFlags.ObjName = OBJNAME_LOD;
 
+    // If it's in the [Globals] section, ...
     if (*lpwSrc EQ L'#')
     {
         // Find the trailing L' '
@@ -1085,17 +710,31 @@ LPWCHAR ParseSavedWsVar
         lpSymEntry =
           SymTabLookupName (lpwSrc, &stFlags);
 
-        Assert (lpSymEntry NE NULL);
+        // If it's not found, load it from the [Globals] section
+        if (lpSymEntry EQ NULL)
+        {
+            hGlbObj =
+              LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (#nnn)
+                                      hWndEC,       // Edit Control window handle
+                                      lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                      lplpwErrMsg); // Ptr to ptr to (constant) error message text
+            if (hGlbObj EQ NULL)
+                goto ERROR_EXIT;
+        } else
+        {
+            hGlbObj = lpSymEntry->stData.stGlbData; lpSymEntry = NULL;
+            if (hGlbObj EQ NULL)
+                goto CORRUPTWS_EXIT;
+        } // End IF/ELSE
 
         // Restore the original value
         *lpwCharEnd = wcTmp;
 
         // Save in the result and skip over it
-        *((LPAPLNESTED) *lplpMemObj)++ =
-          lpSymEntry->stData.stGlbData;
+        *((LPAPLNESTED) *lplpMemObj)++ = hGlbObj;
 
         // Increment the reference count
-        DbgIncrRefCntDir (lpSymEntry->stData.stGlbData);
+        DbgIncrRefCntDir (hGlbObj);
 
         // Skip to the next field
         lpwSrc = &lpwCharEnd[1];
@@ -1103,14 +742,7 @@ LPWCHAR ParseSavedWsVar
         // If the caller wants the storage type, ...
         if (lpaplTypeObj)
         {
-            HGLOBAL hGlbObj;            // Object global memory handle
             LPVOID  lpMemObj;           // Ptr to object global memory
-
-            // stData is not immediate
-            Assert (!lpSymEntry->stFlags.Imm);
-
-            // Get the global memory handle
-            hGlbObj = lpSymEntry->stData.stGlbData;
 
             // stData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir (hGlbObj));
@@ -1242,7 +874,495 @@ LPWCHAR ParseSavedWsVar
     } // End IF
 
     return lpwSrc;
-} // End ParseSavedWsVar
+
+CORRUPTWS_EXIT:
+    *lplpwErrMsg = ERRMSG_CORRUPT_WS APPEND_NAME;
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    return NULL;
+} // End ParseSavedWsVar_EM
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $LoadWorkspaceGlobal_EM
+//
+//  Return the global memory handle corresponding
+//    to an entry in the [Globals] section
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- LoadWorkspaceGlobal_EM"
+#else
+#define APPEND_NAME
+#endif
+
+HGLOBAL LoadWorkspaceGlobal_EM
+    (LPWCHAR  lpwSrc,                   // Ptr to keyname (#nnn)
+     HWND     hWndEC,                   // Edit Control window handle
+     LPWCHAR  lpwszDPFE,                // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+     LPWCHAR *lplpwErrMsg)              // Ptr to ptr to (constant) error message text
+
+{
+    APLSTYPE     aplTypeObj;            // Object storage type
+    APLNELM      aplNELMObj;            // Object NELM
+    APLRANK      aplRankObj;            // Object rank
+    HGLOBAL      hGlbObj;               // Object global memory handle
+    APLUINT      ByteObj,               // # bytes needed for the object
+                 uObj;                  // Loop counter
+    STFLAGS      stFlags = {0};         // SymTab flags
+    LPSYMENTRY   lpSymEntry;            // Ptr to STE for HGLOBAL
+    WCHAR        wcTmp;                 // Temporary char
+    LPWCHAR      lpwFcnName,            // Ptr to function name
+                 lpwSectName,           // Ptr to section name
+                 lpwDst,                // Ptr to destination data in name
+                 lpwSrcStart,           // Ptr to starting point
+                 lpwCharEnd,            // Temporary ptr
+                 lpwGlbName;            // Ptr to global name (#nnn)
+    UINT         uBitIndex,             // Bit index for looping through Boolean result
+                 uLineCnt;              // # lines in the current function
+    FILETIME     ftCreation,            // Function creation time
+                 ftLastMod;             // ...      last modification time
+    BOOL         bUserDefined;          // TRUE iff the durrent function is User-Defined
+    LPVOID       lpMemObj;              // Ptr to object global memory
+    APLINT       aplInteger;            // Temporary integer
+
+    // Save as ptr to global name
+    lpwGlbName = lpwSrc;
+
+    // Skip over it and the terminating zero
+    lpwSrc = &lpwGlbName[lstrlenW (lpwGlbName) + 1];
+
+    // Read the corresponding string from [Globals]
+    GetPrivateProfileStringW (SECTNAME_GLOBALS,     // Ptr to the section name
+                              lpwGlbName,           // Ptr to the key name
+                              L"",                  // Ptr to the default value
+                              lpwSrc,               // Ptr to the output buffer
+                              memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                              lpwszDPFE);           // Ptr to the file name
+    // Parse the array attributes
+    // The result in lpwSrc is
+    //   V T N R S value    for variables
+    //   F nnn.Name         for functions
+
+    // Ensure it's non-empty
+    if  (lpwSrc[0] EQ L'\0')
+        goto CORRUPTWS_EXIT;
+
+    // Split cases based upon Variable vs. Function/Operator
+    switch (*lpwSrc++)
+    {
+        case L'V':
+            // ***FIXME*** -- Do we need to restore the object PermNdx?
+
+            Assert (*lpwSrc EQ L' '); lpwSrc++;
+
+            // Get the object storage type
+            aplTypeObj = TranslateCharToArrayType (*lpwSrc++);
+
+            // Ensure there's a valid separator
+            if (*lpwSrc NE L' ')
+                goto CORRUPTWS_EXIT;
+
+            // Skip over it
+            lpwSrc++;
+
+            // Get the object NELM
+            swscanf (lpwSrc, L"%I64d", &aplNELMObj); lpwSrc = SkipBlackW (lpwSrc);
+
+            // Ensure there's a valid separator
+            if (*lpwSrc NE L' ')
+                goto CORRUPTWS_EXIT;
+
+            // Skip over it
+            lpwSrc++;
+
+            // Get the object rank
+            swscanf (lpwSrc, L"%I64d", &aplRankObj); lpwSrc = SkipBlackW (lpwSrc);
+
+            // Ensure there's a valid separator
+            if (*lpwSrc NE L' ')
+                goto CORRUPTWS_EXIT;
+
+            // Skip over it
+            lpwSrc++;
+
+            //***************************************************************
+            // Calculate space needed for the object
+            //***************************************************************
+            ByteObj = CalcArraySize (aplTypeObj, aplNELMObj, aplRankObj);
+
+            //***************************************************************
+            // Now we can allocate the storage for the result
+            // N.B.:  Conversion from APLUINT to UINT.
+            //***************************************************************
+            Assert (ByteObj EQ (UINT) ByteObj);
+            hGlbObj = MyGlobalAlloc (GHND, (UINT) ByteObj);
+            if (!hGlbObj)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemObj = MyGlobalLock (hGlbObj);
+
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
+            // Fill in the header
+////////////// Note that the RefCnt is initialized to zero
+////////////// It will be incremented upon each reference
+            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+            lpHeader->ArrType    = aplTypeObj;
+////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND ***FIXME*** -- Set correct PERMNDX_xxx
+////////////lpHeader->SysVar     = 0;               // Already zero from GHND
+            lpHeader->RefCnt     = 1;
+            lpHeader->NELM       = aplNELMObj;
+            lpHeader->Rank       = aplRankObj;
+#undef  lpHeader
+
+            // Skip over the header to the dimensions
+            lpMemObj = VarArrayBaseToDim (lpMemObj);
+
+            // Fill in the result's dimension
+            for (uObj = 0; uObj < aplRankObj; uObj++)
+            {
+                // Scan in the next dimension
+                swscanf (lpwSrc, L"%I64d", lpMemObj);
+
+                // Skip to the next field
+                lpwSrc = SkipPastCharW (lpwSrc, L' ');
+
+                // Skip over the dimension
+                ((LPAPLDIM) lpMemObj)++;
+            } // End FOR
+
+            // lpwSrc now points to the data
+
+            // Split cases based upon the object storage type
+            switch (aplTypeObj)
+            {
+                case ARRAY_BOOL:
+                    // Initialize the bit index
+                    uBitIndex = 0;
+
+                    // Loop through the elements
+                    for (uObj = 0; uObj < aplNELMObj; uObj++)
+                    {
+                        // Scan in the next value
+                        swscanf (lpwSrc, L"%I64d", &aplInteger);
+
+                        // Skip to the next field
+                        lpwSrc = SkipPastCharW (lpwSrc, L' ');
+
+                        // Save in the result
+                        *((LPAPLBOOL) lpMemObj) |= aplInteger << uBitIndex;
+
+                        // Check for end-of-byte
+                        if (++uBitIndex EQ NBIB)
+                        {
+                            uBitIndex = 0;              // Start over
+                            ((LPAPLBOOL) lpMemObj)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_INT:
+                    // Loop through the elements
+                    for (uObj = 0; uObj < aplNELMObj; uObj++)
+                    {
+                        // Scan in the next value and skip over it
+                        swscanf (lpwSrc, L"%I64d", ((LPAPLINT) lpMemObj)++);
+
+                        // Skip to the next field
+                        lpwSrc = SkipPastCharW (lpwSrc, L' ');
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_FLOAT:
+                    // Loop through the elements
+                    for (uObj = 0; uObj < aplNELMObj; uObj++)
+                    {
+                        // Find the trailing L' '
+                        lpwCharEnd = SkipToCharW (lpwSrc, L' ');
+
+                        // Save old next char, zap to form zero-terminated name
+                        wcTmp = *lpwCharEnd; *lpwCharEnd = L'\0';
+
+                        // Convert the format string to ASCII
+                        W2A ((LPCHAR) lpwszFormat, lpwSrc, DEF_WFORMAT_MAXSIZE - 1);
+
+                        // Restore the original value
+                        *lpwCharEnd = wcTmp;
+
+                        // Use David Gay's routines
+                        // Save in the result and skip over it
+                        *((LPAPLFLOAT) lpMemObj)++ = strtod ((LPCHAR) lpwszFormat, NULL);
+
+                        // Skip to the next field
+                        lpwSrc = &lpwCharEnd[1];
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_CHAR:
+                    Assert (L'\'' EQ *lpwSrc); lpwSrc++;
+
+                    // Loop through the elements
+                    for (uObj = 0; uObj < aplNELMObj; uObj++)
+                    {
+                        // Convert the single {name} or other char to UTF16_xxx
+                        if (L'{' EQ  *lpwSrc)
+                        {
+                            // Get the next char
+                            wcTmp = NameToChar (lpwSrc);
+
+                            // Skip to the next field
+                            lpwSrc = SkipPastCharW (lpwSrc, L'}');
+                        } else
+                            wcTmp = *lpwSrc++;
+
+                        // Save in the result and skip over it
+                        *((LPAPLCHAR) lpMemObj)++ = wcTmp;
+                    } // End FOR
+
+                    Assert (L'\'' EQ *lpwSrc); lpwSrc++;
+
+                    break;
+
+                case ARRAY_APA:
+                    // The next two values are the APA offset and multiplier
+
+                    // Scan in the next value and skip over it
+                    swscanf (lpwSrc, L"%I64d", ((LPAPLINT) lpMemObj)++);
+
+                    // Skip to the next field
+                    lpwSrc = SkipPastCharW (lpwSrc, L' ');
+
+                    // Scan in the next value and skip over it
+                    swscanf (lpwSrc, L"%I64d", ((LPAPLINT) lpMemObj)++);
+
+                    // Skip to the next field
+                    lpwSrc = SkipPastCharW (lpwSrc, L' ');
+
+                    break;
+
+                case ARRAY_HETERO:
+                case ARRAY_NESTED:
+                    // The elements consist of either a simple scalar
+                    //   (starts with one of the storage types), or a
+                    //   global (starts with a #)
+
+                    // Loop through the elements
+                    for (uObj = 0; uObj < aplNELMObj; uObj++)
+                        lpwSrc =
+                          ParseSavedWsVar_EM (lpwSrc,
+                                             &lpMemObj,
+                                              NULL,
+                                              NULL,
+                                              TRUE,
+                                              hWndEC,
+                                              lpwszDPFE,
+                                              lplpwErrMsg);
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
+
+            // Set the ptr type bits
+            hGlbObj = MakePtrTypeGlb (hGlbObj);
+
+            break;
+
+        case L'F':
+            Assert (*lpwSrc EQ L' '); lpwSrc++;
+
+            // Point to the section name of the form nnn.Name where nnn is the count
+            lpwSectName = lpwSrc;
+
+            // Get a ptr to the function name
+            lpwFcnName = strchrW (lpwSectName, L'.') + 1;
+
+            // Skip past the section name and its terminating zero
+            lpwSrc = &lpwSectName[lstrlenW (lpwSectName) + 1];
+
+            // Get the count for the section name
+            uLineCnt =
+              GetPrivateProfileIntW (lpwSectName,               // Ptr to the section name
+                                     KEYNAME_COUNT,             // Ptr to the key name
+                                     0,                         // Default value if not found
+                                     lpwszDPFE);                // Ptr to the file name
+            Assert (uLineCnt > 0);
+
+            // Get the UserDefined flag
+            bUserDefined =
+              GetPrivateProfileIntW (lpwSectName,               // Ptr to the section name
+                                     KEYNAME_USERDEFINED,       // Ptr to the key name
+                                     0,                         // Default value if not found
+                                     lpwszDPFE);                // Ptr to the file name
+            // Get the CreationTime string
+            GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
+                                      KEYNAME_CREATIONTIME, // Ptr to the key name
+                                      L"",                  // Ptr to the default value
+                                      lpwSrc,               // Ptr to the output buffer
+                                      memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                      lpwszDPFE);           // Ptr to the file name
+            // Convert the CreationTime string to time
+            swscanf (lpwSrc, L"%16I64X", &ftCreation);
+
+            // Get the LastModTime string
+            GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
+                                      KEYNAME_LASTMODTIME,  // Ptr to the key name
+                                      L"",                  // Ptr to the default value
+                                      lpwSrc,               // Ptr to the output buffer
+                                      memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                      lpwszDPFE);           // Ptr to the file name
+            // Convert the LastModTime string to time
+            swscanf (lpwSrc, L"%16I64X", &ftLastMod);
+
+            // If it's a user-defined function/operator, ...
+            if (bUserDefined)
+            {
+                SF_FCNS    SF_Fcns = {0};       // Common struc for SaveFunctionCom
+                LW_PARAMS  LW_Params = {0};     // Local  ...
+                LPWCHAR    lpMemUndoTxt;        // Ptr to Undo Buffer in text format
+
+                // Save ptr to undo buffer in text format
+                lpMemUndoTxt = lpwSrc;
+
+                // Get the Undo buffer string, and
+                //   skip over the buffer (including the trailing zero)
+                lpwSrc += 1 +
+                  GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
+                                            KEYNAME_UNDO,       // Ptr to the key name
+                                            L"",                // Ptr to the default value
+                                  (LPWCHAR) lpMemUndoTxt,       // Ptr to the output buffer
+                                            memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                            lpwszDPFE);         // Ptr to the file name
+                // Fill in common values
+////////////////SF_Fcns.bRet            =                   // Filled in by SaveFunctionCom
+////////////////SF_Fcns.uErrLine        =                   // ...
+////////////////SF_Fcns.lpSymName       =                   // ...
+                SF_Fcns.lptkFunc        = NULL;             // Ptr to function token ***FIXME*** -- Used on error
+                SF_Fcns.SF_LineLen      = SF_LineLenLW;     // Ptr to line length function
+                SF_Fcns.SF_ReadLine     = SF_ReadLineLW;    // Ptr to read line function
+                SF_Fcns.SF_NumLines     = SF_NumLinesLW;    // Ptr to get # lines function
+                SF_Fcns.SF_CreationTime = SF_CreationTimeLW;// Ptr to get function creation time
+                SF_Fcns.SF_LastModTime  = SF_LastModTimeLW; // Ptr to get function last modification time
+                SF_Fcns.SF_UndoBuffer   = SF_UndoBufferLW;  // Ptr to get function last modification time
+
+                // Fill in local values
+                LW_Params.lpwSectName  = lpwSectName;    // Ptr to section name
+                LW_Params.lpwszDPFE    = lpwszDPFE;      // Ptr to workspace DPFE
+                LW_Params.lpwBuffer    = lpwSrc;         // Ptr to buffer
+                LW_Params.lpMemUndoTxt = lpMemUndoTxt;   // Ptr to Undo Buffer in text format
+                LW_Params.ftCreation   = ftCreation;     // Function Creation Time
+                LW_Params.ftLastMod    = ftLastMod;      // Function Last Modification Time
+
+                // Save ptr to local parameters
+                SF_Fcns.LclParams   = &LW_Params;
+
+                // Call common routine
+                if (!SaveFunctionCom (NULL, &SF_Fcns))
+                {
+                    // Format the error message
+                    wsprintfW (lpwszFormat,
+                               L"Error loading function <%s> line <%d> in workspace <%s> -- WORKSPACE MAY BE CORRUPT:  PROCEED WITH CAUTION",
+                               lpwFcnName,
+                               SF_Fcns.uErrLine,
+                               lpwszDPFE);
+                    MBW (lpwszFormat);
+
+                    goto CORRUPTWS_EXIT;
+                } // End IF/ELSE
+            } else
+            // It's a function array
+            {
+                LPWCHAR lpwLine;                // Ptr to line to execute
+#ifdef DEBUG
+                EXIT_TYPES exitType;
+#endif
+                // Append the variable name and an assignment arrow to the output buffer
+                lpwLine = lpwSrc;
+                lstrcpyW (lpwLine, lpwFcnName);
+                lpwSrc += lstrlenW (lpwSrc);
+                *lpwSrc++ = UTF16_LEFTARROW;
+
+                // Get the one (and only) line
+                GetPrivateProfileStringW (lpwSectName,        // Ptr to the section name
+                                          L"0",               // Ptr to the key name
+                                          L"",                // Ptr to the default value
+                                          lpwSrc,             // Ptr to the output buffer
+                                          memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
+                                          lpwszDPFE);         // Ptr to the file name
+                // Convert in place
+                lpwSrcStart = lpwDst = lpwSrc;
+
+                // Convert the {name}s and other chars to UTF16_xxx
+                (void) ConvertNameInPlace (lpwSrc);
+
+                // Execute the statement
+#ifdef DEBUG
+                exitType =
+#endif
+                  ImmExecStmt (lpwLine,         // Ptr to line to execute
+                               FALSE,           // Free lpwszCompLine on completion
+                               TRUE,            // TRUE iff wait until finished
+                               hWndEC);         // Edit Control window handle
+                Assert (exitType EQ EXITTYPE_NOVALUE);
+            } // End IF/ELSE
+
+            // Lookup the STE and save its HGLOBAL in the STE for #nnn
+
+            // Set the flags for what we're looking up
+            stFlags.Inuse   = TRUE;
+            stFlags.ObjName = OBJNAME_USR;
+
+            // Lookup the name in the symbol table
+            lpSymEntry =
+              SymTabLookupName (lpwFcnName, &stFlags);
+            Assert (lpSymEntry NE NULL);
+
+            // Copy the HGLOBAL
+            hGlbObj = CopySymGlbDir (lpSymEntry->stData.stGlbData);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Set the flags for what we're appending
+    stFlags.Inuse   = TRUE;
+    stFlags.ObjName = OBJNAME_LOD;
+
+    // Create a symbol table entry for the )LOAD HGLOBAL
+    lpSymEntry =
+      SymTabAppendName_EM (lpwGlbName, &stFlags);
+
+    // Set the handle
+    lpSymEntry->stData.stGlbData = hGlbObj;
+
+    return hGlbObj;
+
+CORRUPTWS_EXIT:
+    *lplpwErrMsg = ERRMSG_CORRUPT_WS APPEND_NAME;
+
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    *lplpwErrMsg = ERRMSG_WS_FULL APPEND_NAME;
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    return NULL;
+} // End LoadWorkspaceGlobal_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1264,7 +1384,7 @@ void DeleteLoadSTEs
     stFlags.Inuse   = TRUE;
     stFlags.ObjName = OBJNAME_LOD;
 
-    // Loop through the [GlobalVars] or [GlobalFcns] section deleting #nnn STEs
+    // Loop through the [Globals] section deleting #nnn STEs
     for (uStr = 0; uStr < uGlbCnt; uStr++)
     {
         // Format the counter

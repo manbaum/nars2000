@@ -6248,5 +6248,49 @@ APLFLOAT TranslateQuadICIndex
 
 
 //***************************************************************************
+//  $IsBooleanAPA
+//
+//  Return TRUE iff the token is a Boolean APA
+//***************************************************************************
+
+BOOL IsBooleanAPA
+    (LPTOKEN lptkArg)               // Ptr to token arg
+
+{
+    BOOL     bRet = FALSE;          // TRUE iff the result is valid
+    APLSTYPE aplTypeArg;            // Arg storage type
+    APLRANK  aplRankArg;            // Arg rank
+    HGLOBAL  hGlbArg = NULL;        // Arg global memory handle
+    LPAPLAPA lpMemArg = NULL;       // Ptr to arg global memory
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the arg
+    AttrsOfToken (lptkArg, &aplTypeArg, NULL, &aplRankArg, NULL);
+
+    // Check for APA
+    if (!IsSimpleAPA (aplTypeArg))
+        goto NORMAL_EXIT;
+
+    // Get arg global ptrs
+    GetGlbPtrs_LOCK (lptkArg, &hGlbArg, &lpMemArg);
+
+    // Skip over the header to the data
+    lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);
+
+    // Check for Boolean APA
+    bRet = (IsBooleanValue (lpMemArg->Off)
+         && lpMemArg->Mul EQ 0);
+NORMAL_EXIT:
+    if (hGlbArg && lpMemArg)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+    } // End IF
+
+    return bRet;
+} // End IsBooleanAPA
+
+
+//***************************************************************************
 //  End of File: primspec.c
 //***************************************************************************

@@ -38,45 +38,46 @@
 #include "compro.h"
 #endif
 
-char szVarFileInfo[] = "\\VarFileInfo\\Translation";
+WCHAR wszVarFileInfo[] = L"\\VarFileInfo\\Translation",
+      lpwszVersion[]   = L"NARS2000\nVersion %s";
 
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
 
 
 //***************************************************************************
-//  $LclFileVersionStr
+//  $LclFileVersionStrW
 //
 //  Get file version string
 //***************************************************************************
 
-void LclFileVersionStr
-    (LPSTR pszFileName,
-     LPSTR szFileVer)
+void LclFileVersionStrW
+    (LPWSTR lpwszFileName,
+     LPWSTR wszFileVer)
 
 {
-    DWORD dwVerHandle;  // Version file handle
-    DWORD dwVerSize;    // Size of the VERSIONINFO struc
-    DWORD dwTrans;  // Translation value
-    LPSTR lpVer, lpBuf;
+    DWORD  dwVerHandle;     // Version file handle
+    DWORD  dwVerSize;       // Size of the VERSIONINFO struc
+    DWORD  dwTrans;         // Translation value
+    LPWSTR lpwVer, lpwBuf;
     HLOCAL hLoc;
-    UINT  cb;
-    char szTemp[128];
+    UINT   cb;
+    WCHAR  wszTemp[128];
 
-    szTemp[0] = '\0';       // Ensure properly terminated in case we fail
-    dwVerSize = GetFileVersionInfoSize (pszFileName, &dwVerHandle);
+    wszTemp[0] = '\0';      // Ensure properly terminated in case we fail
+    dwVerSize = GetFileVersionInfoSizeW (lpwszFileName, &dwVerHandle);
 
     if (dwVerSize EQ 0)     // If it didn't work, ...
         return;
 
     // Allocate space for the file version info
     hLoc = LocalAlloc (LPTR, (long) dwVerSize);
-    lpVer = (LPSTR) hLoc;
-    if (lpVer EQ NULL)      // If it didn't work
+    lpwVer = (LPWSTR) hLoc;
+    if (lpwVer EQ NULL)     // If it didn't work
         return;
 
     // Read in the file version info
-    if (!GetFileVersionInfo (pszFileName, dwVerHandle, dwVerSize, lpVer))
+    if (!GetFileVersionInfoW (lpwszFileName, dwVerHandle, dwVerSize, lpwVer))
         goto FREE;
 
     // Get the translation string
@@ -86,21 +87,22 @@ void LclFileVersionStr
     // call writes into the string (zapping the intermediate backslash
     // so it can lstrcmpi against various possible cases).
 ////if (!VerQueryValue (lpVer, "\\VarFileInfo\\Translation", &lpBuf, &cb))
-    if (!VerQueryValue (lpVer, szVarFileInfo, &lpBuf, &cb))
+    if (!VerQueryValueW (lpwVer, wszVarFileInfo, &lpwBuf, &cb))
         goto FREE;
 
     // Extract the translation value (with the swapped words)
-    dwTrans = *(DWORD FAR *)lpBuf;
-    wsprintf (szTemp, "\\StringFileInfo\\%08lX\\FileVersion",
-            MAKELONG (HIWORD (dwTrans), LOWORD (dwTrans)));
-    if (!VerQueryValue (lpVer, szTemp, &lpBuf, &cb))
+    dwTrans = *(DWORD FAR *)lpwBuf;
+    wsprintfW (wszTemp,
+               L"\\StringFileInfo\\%08lX\\FileVersion",
+               MAKELONG (HIWORD (dwTrans), LOWORD (dwTrans)));
+    if (!VerQueryValueW (lpwVer, wszTemp, &lpwBuf, &cb))
         goto FREE;
 
     // Copy to local storage as we're about to free the memory
-    lstrcpy (szFileVer, lpBuf);
+    lstrcpyW (wszFileVer, lpwBuf);
 FREE:
     LocalFree (hLoc);       // Free the local memory
-} // End LclFileVersionStr
+} // End LclFileVersionStrW
 
 
 //***************************************************************************
@@ -123,16 +125,16 @@ BOOL CALLBACK AboutDlgProc
     {
         case WM_INITDIALOG:
         {
-            char szTemp[512], szFileVer[32];
+            WCHAR wszTemp[512], wszFileVer[32];
 
             // Read in the application's File Version String
-            LclFileVersionStr (szAppDPFE, szFileVer);
+            LclFileVersionStrW (wszAppDPFE, wszFileVer);
 
             // Format the version #
-            wsprintf (szTemp, lpszVersion, szFileVer);
+            wsprintfW (wszTemp, lpwszVersion, wszFileVer);
 
             // Write out the version string
-            SetDlgItemText (hDlg, IDC_VERSION, szTemp);
+            SetDlgItemTextW (hDlg, IDC_VERSION, wszTemp);
 
             CenterWindow (hDlg);    // Reposition the window to the center of the screen
 

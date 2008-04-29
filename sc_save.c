@@ -52,32 +52,16 @@ void MakeWorkspaceNameCanonical
      LPWCHAR wszDefDir)         // Default drive and directory if no drive letter
 
 {
-    WCHAR wszDrive [_MAX_DRIVE],// Save area for drive letter
-          wszDir   [_MAX_DIR],  // ...           directory
-          wszFname [_MAX_FNAME],// ...           filename
-          wszExt   [_MAX_EXT],  // ...           extension
-          wszTmpDir[_MAX_DIR];  // ...           temporary directory
-
-    // Split the name into its component parts
-    _wsplitpath (wszInp, wszDrive, wszDir, wszFname, wszExt);
-
-    // If there is no drive letter, use the default one
-    if (wszDrive[0] EQ L'\0')
+    // If the name doesn't begin with a drive letter and
+    //   doesn't start at the root or a dot, prepend the
+    //   default dir
+    if (wszInp[0] NE L'\0'      // Non-empty,
+     && wszInp[0] NE L'.'       // and not current dir,
+     && wszInp[0] NE L'\\'      // and not root dir,
+     && wszInp[1] NE L':')      // and no drive letter
     {
-        lstrcpyW (wszDrive, wszDefDrive);
-
-        // If the directory is not at the root, prepend the default
-        //   Save Workspace directory name
-        if (wszDir[0] NE L'\\')
-        {
-            lstrcpyW (wszTmpDir, wszDefDir);
-            lstrcatW (wszTmpDir, wszDir);
-            wszDrive[0] = L'\0';        // Because wszSaveDir includes the drive letter
-        } else
-            lstrcpyW (wszTmpDir, wszDir);
-
-        // Put it back together into a DPFE
-        _wmakepath (wszOut, wszDrive, wszTmpDir, wszFname, wszExt);
+        lstrcpyW (wszOut, wszDefDir);
+        lstrcatW (wszOut, wszInp);
     } else
         lstrcpyW (wszOut, wszInp);
 } //  End MakeWorkspaceNameCanonical
@@ -101,7 +85,7 @@ BOOL CmdSave_EM
 {
     HGLOBAL      hGlbPTD,               // PerTabData global memory handle
                  hGlbName,              // STE name global memory handle
-                 hGlbCnt = NULL,        // Vars/Fcns counters global memory handle
+                 hGlbCnt = NULL,        // Vars/Fcns/Oprs counters global memory handle
                  stGlbData;             // SYMENTRY's stGlbData
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPVOID       lpMemOldWSID = NULL;   // Ptr to old []WSID global memory
@@ -119,8 +103,7 @@ BOOL CmdSave_EM
     UINT         uNameLen;              // Length of the object name in WCHARs
     int          iCmp;                  // Comparison result
     UINT         uCnt,                  // Loop counter
-                 uGlbCntVar = 0,        // # entries in [GlobalVars] section
-                 uGlbCntFcn = 0;        // ..           [GlobalFcns] ...
+                 uGlbCnt=0;             // # entries in [Globals] section
     WCHAR        wszCount[8];           // Output save area for formatted uSymxxx counter
     FILE        *fStream;               // Ptr to file stream
     LPSYMENTRY   lpSymEntry,            // Ptr to STE
@@ -152,7 +135,7 @@ BOOL CmdSave_EM
 ////wszTempDPFE[aplNELMWSID] = L'\0';   // Already done via "+ 1" in lstrcpynW
 
     // Convert the []WSID workspace name into a canonical form (without WKSEXT)
-    MakeWorkspaceNameCanonical (wszWsidDPFE, wszTempDPFE, wszSaveDir);
+    MakeWorkspaceNameCanonical (wszWsidDPFE, wszTempDPFE, wszWorkDir);
 
     // If there is a specified WS Name,
     //   and the current []WSID is different from the specified WS Name,
@@ -162,7 +145,7 @@ BOOL CmdSave_EM
     if (*lpwszTail)
     {
         // Convert the given workspace name into a canonical form (without WKSEXT)
-        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszSaveDir);
+        MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszWorkDir);
 
         // Compare the workspace names (without their extensions)
         iCmp = lstrcmpiW (wszWsidDPFE, wszTailDPFE);
@@ -196,7 +179,7 @@ BOOL CmdSave_EM
                 } // End IF/ELSE
 
                 // Display the error message
-                AppendLine (lpwszTemp, FALSE, TRUE);
+                ReplaceLastLineCRPmt (lpwszTemp);
 
                 goto ERROR_EXIT;
             } // End IF
@@ -205,7 +188,7 @@ BOOL CmdSave_EM
             MyGlobalUnlock (ClrPtrTypeDirAsGlb (lpMemPTD->lpSymQuadWSID->stData.stGlbData)); lpMemOldWSID = NULL;
 
             // Set the value of the new []WSID as wszTailDPFE
-            if (!SaveNewWsid (wszTailDPFE))
+            if (!SaveNewWsid_EM (wszTailDPFE))
                 goto ERROR_EXIT;
         } // End IF
 
@@ -233,7 +216,8 @@ BOOL CmdSave_EM
     // The full workspace name to save to is in lpMemSaveWSID
 
     // Allocate space for two counters (Vars & Fcns) per SI level
-    hGlbCnt = MyGlobalAlloc (GHND, 2 * sizeof (UINT) * (lpMemPTD->SILevel + 1));
+    hGlbCnt = MyGlobalAlloc (GHND, 2 *
+    sizeof (UINT) * (lpMemPTD->SILevel + 1));
     if (!hGlbCnt)
         goto WSFULL_EXIT;
 
@@ -243,21 +227,36 @@ BOOL CmdSave_EM
     // The format of a saved ws is as an .ini file
     //   (named *.ws.nars) with the following sections:
     //   [General]    (General settings)
-    //   [GlobalVars] (Ptrs to global memory variables)
-    //   [Vars.0]     (Global variables)
+    //   [Globals]    (Ptrs to global memory variables/function/operators)
+    //   [Vars.0]     (Global variables) -- targets of )COPY
     //   [Vars.1]     (Variables at level 1 in the SI stack)
-    //   [Vars.nnn]   (Variables at level nnn in the SI stack)
-    //   [GlobalFcns] (Ptrs to global memory functions/operators)
-    //   [Fns.0]      (Global functions)
-    //   [Fns.1]      (Functions at level 1 in the SI stack)
-    //   [Fns.nnn]    (Functions at level nnn in the SI stack)
-    // Each of the above sections has content of
-    //   1          = Name      (1st name)
-    //   2          = Name      (2nd name)
-    //   xxx        = Name      (xxxth name)
-    // Corresponding to each of the above names, there is a
-    //   separate section [nnn.Name], for example,
-    //   [0.Name]     (The contents of the name "Name" at level 0)
+    //   [Vars.sss]   (Variables at level nnn in the SI stack)
+    //   [Fcns.0]     (Global functions) -- targets of )COPY
+    //   [Fcns.1]     (Functions at level 1 in the SI stack)
+    //   [Fcns.sss]   (Functions at level nnn in the SI stack)
+    // The [Globals] section has content of
+    //  #ggg=V T N R S value    for variables -- %c %d %d %*(d) ...
+    //                          where V is V indicating a variable
+    //                                T is the variable type (BIFCHNA) -- %c
+    //                                N is the NELM -- %d
+    //                                R is the rank -- %d
+    //                                S is the shape -- Rank occurrences of %d
+    //                                value is the series of values of similar form to #ggg
+    //                                  without the leading V.
+    //  #ggg=F nnn.Name         for user-defined functions/operators
+    //                          where F is F indicating a function
+    //                                nnn is a counter across functions & variables
+    //                                Name is the name of the function
+    // The [Vars.sss] section has content of
+    //  xxx=Name=#ggg           for a variable in [Globals]
+    //  xxx=Name=T 1 0 value    for an immediate scalar variable
+    //                          where T is the variable immediate type (BIFC)
+    // The [Fcns.sss] section has content of
+    //  xxx=Name=y=#ggg         for a function in [Globals] with NameType y
+    //  xxx={name} or char      for immediate functions
+    // The [nnn.Name] section (used for user-defined functions/operators only)
+    //   has content of
+    //  xxx=<Function Header/Lines>
 
     // Create (or truncate the file)
     fStream = _wfopen (lpMemSaveWSID, L"w");
@@ -378,7 +377,7 @@ BOOL CmdSave_EM
                           SavedWsFormGlbVar (lpaplChar,
                                              stGlbData,
                                              lpMemSaveWSID,
-                                            &uGlbCntVar);
+                                            &uGlbCnt);
                     // Format the counter
                     wsprintfW (wszCount, L"%d", lpMemCnt[0 + 2 * lpSymEntry->stSILevel]++);
 
@@ -398,10 +397,10 @@ BOOL CmdSave_EM
                 case NAMETYPE_OP1:
                 case NAMETYPE_OP2:
                 case NAMETYPE_OP3:
-                    // Format the section name as [nnn.Name] where nnn is the function count
+                    // Format the function section name as F nnn.Name where nnn is the count
                     wsprintfW (lpwszFormat,
-                               L"%d.%s",
-                               uGlbCntFcn,
+                               L"F %d.%s",
+                               uGlbCnt,
                                lpwszTemp);
                     // Append separator
                     *lpaplChar++ = L'=';
@@ -434,7 +433,7 @@ BOOL CmdSave_EM
                                              lpwszFormat,
                                              lpSymEntry->stData.stGlbData,
                                              lpMemSaveWSID,
-                                            &uGlbCntFcn);
+                                            &uGlbCnt);
                     // Format the counter
                     wsprintfW (wszCount, L"%d", lpMemCnt[1 + 2 * lpSymEntry->stSILevel]++);
 
@@ -469,19 +468,10 @@ BOOL CmdSave_EM
 
 ////DbgBrk ();
 
-    // Delete the #XXXXXXXX=#n references in the [GlobalVars] section
-    for (uCnt = 0; uCnt < uGlbCntVar; uCnt++)
+    // Delete the #XXXXXXXX=#n references in the [Globals] section
+    for (uCnt = 0; uCnt < uGlbCnt; uCnt++)
     {
-////    WritePrivateProfileStringW (SECTNAME_GLOBALVARS,        // Ptr to the section name
-////                               ... ,                        // Ptr to key name
-////                               NULL,                        // Ptr to key value (NULL to delete)
-////                               lpMemSaveWSID);              // Ptr to the file name
-    } // End FOR
-
-    // Delete the #XXXXXXXX=#n references in the [GlobalFcns] section
-    for (uCnt = 0; uCnt < uGlbCntFcn; uCnt++)
-    {
-////    WritePrivateProfileStringW (SECTNAME_GLOBALFCNS,        // Ptr to the section name
+////    WritePrivateProfileStringW (SECTNAME_GLOBALS,           // Ptr to the section name
 ////                               ... ,                        // Ptr to key name
 ////                               NULL,                        // Ptr to key value (NULL to delete)
 ////                               lpMemSaveWSID);              // Ptr to the file name
@@ -525,21 +515,12 @@ BOOL CmdSave_EM
                                 KEYNAME_SILEVEL,                // Ptr to the key name
                                 wszCount,                       // Ptr to the key value
                                 lpMemSaveWSID);                 // Ptr to the file name
-    // Format the [GlobalVars] count
+    // Format the [Globals] count
     wsprintfW (wszCount,
                L"%d",
-               uGlbCntVar);
-    // Write out the count to the [GlobalVars] section
-    WritePrivateProfileStringW (SECTNAME_GLOBALVARS,            // Ptr to the section name
-                                KEYNAME_COUNT,                  // Ptr to the key name
-                                wszCount,                       // Ptr to the key value
-                                lpMemSaveWSID);                 // Ptr to the file name
-    // Format the [GlobalFcns] count
-    wsprintfW (wszCount,
-               L"%d",
-               uGlbCntFcn);
-    // Write out the count to the [GlobalFcns] section
-    WritePrivateProfileStringW (SECTNAME_GLOBALFCNS,            // Ptr to the section name
+               uGlbCnt);
+    // Write out the count to the [Globals] section
+    WritePrivateProfileStringW (SECTNAME_GLOBALS,               // Ptr to the section name
                                 KEYNAME_COUNT,                  // Ptr to the key name
                                 wszCount,                       // Ptr to the key value
                                 lpMemSaveWSID);                 // Ptr to the file name
@@ -549,7 +530,7 @@ BOOL CmdSave_EM
                      lpMemSaveWSID);    // Ptr to the file name
     // Note if the SI is non-empty
     if (lpMemPTD->SILevel)
-        AppendLine (L"WARNING:  SI non-empty -- not restartable after )LOAD", FALSE, TRUE);
+        ReplaceLastLineCRPmt (L"WARNING:  SI non-empty -- not restartable after )LOAD");
 
     // Get the length of the []WSID excluding WKSEXT
     iCmp = lstrlenW (lpMemSaveWSID) - ((sizeof WKSEXT) - 1);
@@ -566,7 +547,7 @@ BOOL CmdSave_EM
     FormatCurDateTime (&lpwszTemp[lstrlenW (lpwszTemp)]);
 
     // Write out the WSID and SAVED date & time
-    AppendLine (lpwszTemp, FALSE, TRUE);
+    ReplaceLastLineCRPmt (lpwszTemp);
 
     // Mark as successful
     bRet = TRUE;
@@ -575,19 +556,19 @@ BOOL CmdSave_EM
 
 WSFULL_EXIT:
     // Display the error message
-    AppendLine (ERRMSG_WS_FULL APPEND_NAME, FALSE, TRUE);
+    ReplaceLastLineCRPmt (ERRMSG_WS_FULL APPEND_NAME);
 
     goto ERROR_EXIT;
 
 NOTSAVED_CLEAR_EXIT:
     // Display the error message
-    AppendLine (ERRMSG_NOT_SAVED_CLEAR_WS, FALSE, TRUE);
+    ReplaceLastLineCRPmt (ERRMSG_NOT_SAVED_CLEAR_WS);
 
     goto ERROR_EXIT;
 
 NOTSAVED_FILE_EXIT:
     // Display the error message
-    AppendLine (ERRMSG_NOT_SAVED_FILE_ERROR APPEND_NAME, FALSE, TRUE);
+    ReplaceLastLineCRPmt (ERRMSG_NOT_SAVED_FILE_ERROR APPEND_NAME);
 
     goto ERROR_EXIT;
 
@@ -627,17 +608,18 @@ NORMAL_EXIT:
 
 LPAPLCHAR SavedWsFormGlbFcn
     (LPAPLCHAR lpaplChar,               // Ptr to output save area
-     LPAPLCHAR lpwszSectName,           // Ptr to the section name as [nnn.Name] where nnn is the function count
+     LPAPLCHAR lpwszFcnTypeName,        // Ptr to the function section name as F nnn.Name where nnn is the count
      HGLOBAL   hGlbObj,                 // WS object global memory handle
      LPAPLCHAR lpMemSaveWSID,           // Ptr to saved WS file DPFE
-     LPUINT    lpGlbCnt)                // Ptr to [GlobalFcns] count
+     LPUINT    lpGlbCnt)                // Ptr to [Globals] count
 
 {
     HGLOBAL        hGlbTxtLine;         // Text header/line global memory handle
     LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/textline global memory
     LPVOID         lpMemObj = NULL;     // Ptr to WS object ...
     LPAPLCHAR      lpMemProKeyName,     // Ptr to profile keyname
-                   lpaplCharStart;      // Ptr to start of buffer
+                   lpaplCharStart,      // Ptr to start of buffer
+                   lpwszSectName;       // Ptr to the section name as nnn.Name where nnn is the count
     UINT           uLine;               // Function line loop counter
     FILETIME       ftCreation,          // Object creation time
                    ftLastMod;           // ...    last modification time
@@ -646,6 +628,9 @@ LPAPLCHAR SavedWsFormGlbFcn
 
     Assert (IsGlbTypeFcnDir (hGlbObj)
          || IsGlbTypeDfnDir (hGlbObj));
+
+    // Skip over the 'F ' to point to the section name
+    lpwszSectName = &lpwszFcnTypeName[2];
 
     // Save ptr to start of buffer
     lpaplCharStart = lpaplChar;
@@ -661,8 +646,8 @@ LPAPLCHAR SavedWsFormGlbFcn
     lpMemProKeyName = lpaplChar;
 
     // Check to see if this global has already been saved
-    //   in the [GlobalFcns] section
-    if (GetPrivateProfileStringW (SECTNAME_GLOBALFCNS,          // Ptr to the section name
+    //   in the [Globals] section
+    if (GetPrivateProfileStringW (SECTNAME_GLOBALS,             // Ptr to the section name
                                   wszGlbObj,                    // Ptr to the key name
                                   L"",                          // Default value if not found
                                   lpaplChar,                    // Ptr to the output buffer
@@ -911,13 +896,13 @@ LPAPLCHAR SavedWsFormGlbFcn
     // Count in another entry
     (*lpGlbCnt)++;
 
-    // Write out the entry in the [GlobalFcns] section
-    WritePrivateProfileStringW (SECTNAME_GLOBALFCNS,            // Ptr to the section name
+    // Write out the entry in the [Globals] section
+    WritePrivateProfileStringW (SECTNAME_GLOBALS,               // Ptr to the section name
                                 wszGlbCnt,                      // Ptr to the key value
-                                lpwszSectName,                  // Ptr to the key name
+                                lpwszFcnTypeName,               // Ptr to the key name
                                 lpMemSaveWSID);                 // Ptr to the file name
     // Write out the saved marker
-    WritePrivateProfileStringW (SECTNAME_GLOBALFCNS,            // Ptr to the section name
+    WritePrivateProfileStringW (SECTNAME_GLOBALS,               // Ptr to the section name
                                 wszGlbObj,                      // Ptr to the key name
                                 wszGlbCnt,                      // Ptr to the key value
                                 lpMemSaveWSID);                 // Ptr to the file name
@@ -989,7 +974,7 @@ LPAPLCHAR SavedWsFormGlbVar
     (LPAPLCHAR lpaplChar,               // Ptr to output save area
      HGLOBAL   hGlbObj,                 // WS object global memory handle
      LPAPLCHAR lpMemSaveWSID,           // Ptr to saved WS file DPFE
-     LPUINT    lpGlbCnt)                // Ptr to [GlobalVars] count
+     LPUINT    lpGlbCnt)                // Ptr to [Globals] count
 
 {
     APLSTYPE     aplTypeObj;            // WS object storage type
@@ -1010,9 +995,6 @@ LPAPLCHAR SavedWsFormGlbVar
     WCHAR        wszGlbObj[16 + 1],     // Save area for formatted hGlbObj (room for 64-bit ptr plus terminating zero)
                  wszGlbCnt[8 + 1];      // Save area for formatted *lpGlbCnt
 
-    // Save ptr to start of buffer
-    lpaplCharStart = lpaplChar;
-
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
 
@@ -1029,18 +1011,25 @@ LPAPLCHAR SavedWsFormGlbVar
     wsprintfW (wszGlbObj,
                L"#%08X",
                hGlbObj);
-    // Save as ptr to the profile keyname
-    lpMemProKeyName = lpaplChar;
-
     // Check to see if this global has already been saved
-    //   in the [GlobalVars] section
-    if (GetPrivateProfileStringW (SECTNAME_GLOBALVARS,          // Ptr to the section name
+    //   in the [Globals] section
+    if (GetPrivateProfileStringW (SECTNAME_GLOBALS,             // Ptr to the section name
                                   wszGlbObj,                    // Ptr to the key name
                                   L"",                          // Default value if not found
                                   lpaplChar,                    // Ptr to the output buffer
                                   8 * sizeof (lpaplChar[0]),    // Byte size of the output buffer
                                   lpMemSaveWSID))               // Ptr to the file name
         goto NORMAL_EXIT;
+
+    // Save as ptr to the profile keyname
+    lpMemProKeyName = lpaplChar;
+
+    // Save ptr to start of buffer
+    lpaplCharStart = lpaplChar;
+
+    // Append the marker as a variable
+    *lpaplChar++ = L'V';
+    *lpaplChar++ = L' ';
 
     // Lock the memory to get a ptr to it
     lpMemObj = MyGlobalLock (hGlbObj);
@@ -1312,13 +1301,13 @@ LPAPLCHAR SavedWsFormGlbVar
     // Count in another entry
     (*lpGlbCnt)++;
 
-    // Write out the entry in the [GlobalVars] section
-    WritePrivateProfileStringW (SECTNAME_GLOBALVARS,            // Ptr to the section name
+    // Write out the entry in the [Globals] section
+    WritePrivateProfileStringW (SECTNAME_GLOBALS,               // Ptr to the section name
                                 wszGlbCnt,                      // Ptr to the key value
                                 lpMemProKeyName,                // Ptr to the key name
                                 lpMemSaveWSID);                 // Ptr to the file name
     // Write out the saved marker
-    WritePrivateProfileStringW (SECTNAME_GLOBALVARS,            // Ptr to the section name
+    WritePrivateProfileStringW (SECTNAME_GLOBALS,               // Ptr to the section name
                                 wszGlbObj,                      // Ptr to the key name
                                 wszGlbCnt,                      // Ptr to the key value
                                 lpMemSaveWSID);                 // Ptr to the file name
@@ -1387,12 +1376,18 @@ LPAPLCHAR AppendArrayHeader
 
 
 //***************************************************************************
-//  $SaveNewWsid
+//  $SaveNewWsid_EM
 //
 //  Save a new []WSID
 //***************************************************************************
 
-BOOL SaveNewWsid
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SaveNewWsid_EM"
+#else
+#define APPEND_NAME
+#endif
+
+BOOL SaveNewWsid_EM
     (LPAPLCHAR lpMemSaveWSID)           // Ptr to []WSID to save (includes WKSEXT)
 
 {
@@ -1477,7 +1472,7 @@ BOOL SaveNewWsid
 
 WSFULL_EXIT:
     // Display the error message
-    AppendLine (ERRMSG_NOT_SAVED_WS_FULL, FALSE, TRUE);
+    ReplaceLastLineCRPmt (ERRMSG_NOT_SAVED_WS_FULL APPEND_NAME);
 
     goto ERROR_EXIT;
 
@@ -1491,7 +1486,8 @@ NORMAL_EXIT:
         lpMemSaveWSID[iLen2] = L'.';
 
     return bRet;
-} // End SaveNewWsid
+} // End SaveNewWsid_EM
+#undef  APPEND_NAME
 
 
 //***************************************************************************

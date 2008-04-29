@@ -67,7 +67,7 @@ http://portal.acm.org/citation.cfm?id=3324
 #define DEF_HSHTAB_EPB         8
 
 // Maximum hash table size (# entries)
-#define DEF_HSHTAB_MAXSIZE  (1024 * 1024 * DEF_HSHTAB_EPB)
+#define DEF_HSHTAB_MAXSIZE  (  64 * 1024 * DEF_HSHTAB_EPB)
 
 // Starting hash table size (# entries)
 #define DEF_HSHTAB_INITSIZE (DEF_HSHTAB_NBLKS * DEF_HSHTAB_EPB)
@@ -149,7 +149,7 @@ typedef struct tagHSHENTRY
 //********************* SYMBOL TABLE ****************************************
 
 // Maximum symbol table size (# entries)
-#define DEF_SYMTAB_MAXSIZE  (1024*1024)
+#define DEF_SYMTAB_MAXSIZE  (  64*1024)
 
 // Starting symbol table size (# entries)
 #define DEF_SYMTAB_INITSIZE (   4*1024)

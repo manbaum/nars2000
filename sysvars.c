@@ -1388,7 +1388,7 @@ BOOL ValidateCharVector_EM
             lpwszTemp[aplNELMRht] = L'\0';
 
             // Convert the []WSID workspace name into a canonical form
-            MakeWorkspaceNameCanonical (lpwszTemp, lpwszTemp, wszSaveDir);
+            MakeWorkspaceNameCanonical (lpwszTemp, lpwszTemp, wszWorkDir);
 
             // Get length of the name as the NELM
             aplNELMRes = lstrlenW (lpwszTemp);
@@ -1427,7 +1427,7 @@ MAKE_VECTOR:
         wsz[1] = L'\0';
 
         // Convert the []WSID workspace name into a canonical form
-        MakeWorkspaceNameCanonical (lpwszTemp, wsz, wszSaveDir);
+        MakeWorkspaceNameCanonical (lpwszTemp, wsz, wszWorkDir);
 
         // Get length of the name as the NELM
         aplNELMRes = lstrlenW (lpwszTemp);

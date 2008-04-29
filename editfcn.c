@@ -1776,6 +1776,22 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Tell the ending code to draw the line #s afterwards
             bDrawLineNums = TRUE;
 
+            // If this tab isn't active, ignore the msg
+            if (!IsCurTabActive ())
+            {
+                PAINTSTRUCT ps;
+
+                // If there's no incoming HDC, ...
+                if (((HDC) wParam) EQ NULL)
+                {
+                    // Tell 'em we're done
+                    BeginPaint (hWnd, &ps);
+                    EndPaint   (hWnd, &ps);
+                } // End IF
+
+                return FALSE;       // We ignored the msg
+            } // End IF
+
             break;
 
         case WM_DESTROY:

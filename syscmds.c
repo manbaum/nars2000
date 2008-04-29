@@ -93,7 +93,7 @@ void IncorrectCommand
     (void)
 
 {
-    AppendLine (ERRMSG_INCORRECT_COMMAND APPEND_NAME, FALSE, TRUE);
+    ReplaceLastLineCRPmt (ERRMSG_INCORRECT_COMMAND APPEND_NAME);
 } // End IncorrectCommand
 #undef  APPEND_NAME
 
@@ -173,7 +173,7 @@ BOOL CmdClose_EM
 {
     if (TabCtrl_GetItemCount (hWndTC) EQ 1)
     {
-        AppendLine (L"Can't close last workspace -- use )EXIT", FALSE, TRUE);
+        ReplaceLastLineCRPmt (L"Can't close last workspace -- use )EXIT");
 
         return FALSE;
     } // End IF

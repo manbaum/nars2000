@@ -47,7 +47,7 @@ The Session Manager (SM) window consists of an Edit Control which
 holds the APL statements of the session.
 
 When the cursor moves to a line, the contents of the current line
-are copied to <lpwszCurLine>.
+are copied to <lpwCurLine>.
 
 If the user edits the line:
     * The edit changes are saved in the Edit Control.
@@ -55,7 +55,7 @@ If the user edits the line:
 In any case,
     * If the user hits Enter, the contents of the current
       line in the Edit Control are copied to the last line
-      in the Edit Control, the contents of <lpwszCurLine>
+      in the Edit Control, the contents of <lpwCurLine>
       replace the current line in the Edit Control, and the
       last line in the Edit Control is executed.
 
@@ -116,20 +116,18 @@ void SetAttrs
 
 
 //***************************************************************************
-//  $AppendLine
+//  $GetThreadSMEC
 //
-//  Append lpwszLine to the history buffer
+//  Get the hWndEC for the Session Manager from the current thread
 //***************************************************************************
 
-void AppendLine
-    (LPWCHAR lpwszLine,         // Ptr to the line to append
-     BOOL    bLineCont,         // TRUE iff this is a line continuation
-     BOOL    bEndingCRLF)       // TRUE iff this line should end with a CR/LF
+HWND GetThreadSMEC
+    (void)
 
 {
-    HWND         hWndEC;        // Window handle to Edit Control
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+    HWND         hWndEC;        // Window handle to Edit Control
 
     // Get the PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -142,6 +140,27 @@ void AppendLine
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return hWndEC;
+} // End GetThreadSMEC
+
+
+//***************************************************************************
+//  $AppendLine
+//
+//  Append lpwszLine to the history buffer
+//***************************************************************************
+
+void AppendLine
+    (LPWCHAR lpwszLine,         // Ptr to the line to append
+     BOOL    bLineCont,         // TRUE iff this is a line continuation
+     BOOL    bEndingCRLF)       // TRUE iff this line should end with a CR/LF
+
+{
+    HWND hWndEC;                // Window handle to Edit Control
+
+    // Get hWndEC for the Session Manager from the current thread
+    hWndEC = GetThreadSMEC ();
 
     // Move the text caret to the end of the buffer
     MoveCaretEOB (hWndEC);
@@ -156,7 +175,7 @@ void AppendLine
 
     // If requested, end the line
     if (bEndingCRLF)
-        // Replace the selection (none) with "\r\n"
+        // Replace the selection (none) with L"\r\n"
         SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) L"\r\n");
 } // End AppendLine
 
@@ -190,11 +209,73 @@ void ReplaceLine
 
     // Set the selection to this line
     SendMessageW (hWndEC, EM_SETSEL, uLinePos, uLinePos + uLineLen);
-
+#ifdef DEBUG
+    dprintfW (L"ReplaceLine: %d:<%s> (%S#%d)", uLineNum, lpwszLine, FNLN);
+#endif
     // Replace the selection with the given line
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 } // End ReplaceLine
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ReplacelastLineCR
+//
+//  Replace the last line in the history buffer
+//    and move the text caret to the next line
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ReplacelastLineCR"
+#else
+#define APPEND_NAME
+#endif
+
+void ReplaceLastLineCR
+    (LPWCHAR lpwszLine)         // Ptr to incoming line text
+
+{
+    HWND hWndEC;                // Window handle to Edit Control
+
+    // Get hWndEC for the Session Manager from the current thread
+    hWndEC = GetThreadSMEC ();
+
+    // Move the text caret to the end of the buffer
+    MoveCaretEOB (hWndEC);
+#ifdef DEBUG
+    dprintfW (L"ReplaceLastLineCR: <%s> (%S#%d)", lpwszLine, FNLN);
+#endif
+    // Replace the current (now last) line
+    ReplaceLine (hWndEC, lpwszLine, NEG1U);
+
+    // Move the text caret to the next line
+    AppendLine (L"", FALSE, TRUE);
+} // End ReplacelastLineCR
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $ReplaceLastLineCRPmt
+//
+//  Replace the last line in the history buffer
+//    move the text caret to the next line, and
+//    display a prompt if this is not the active tab
+//***************************************************************************
+
+void ReplaceLastLineCRPmt
+    (LPWCHAR lpwszLine)         // Ptr to incoming line text
+
+{
+#ifdef DEBUG
+    dprintfW (L"ReplaceLastLineCRPmt: <%s> (%S#%d)", lpwszLine, FNLN);
+#endif
+    // Replace the last line
+    ReplaceLastLineCR (lpwszLine);
+
+    // If this is not the active tab, display a prompt
+    if (!IsCurTabActive ())
+        DisplayPrompt (GetThreadSMEC (), 8);
+} // End ReplaceLastLineCRPmt
 
 
 //***************************************************************************
@@ -391,6 +472,27 @@ void DisplayPrompt
 
 
 //***************************************************************************
+//  $GetLineLength
+//
+//  Return the line length of a given line #
+//***************************************************************************
+
+UINT GetLineLength
+    (HWND hWndEC,           // Edit Control window handle
+     UINT uLineNum)         // The line #
+
+{
+    UINT uLinePos;          // Char position of start of line
+
+    // Get the position of the start of the line
+    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+
+    // Get the line length
+    return SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+} // GetLineLength
+
+
+//***************************************************************************
 //  $FormatQQuadInput
 //
 //  Format QQ input and save in global memory
@@ -408,18 +510,14 @@ void FormatQQuadInput
      LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
 
 {
-    UINT         uLinePos,      // Char position of start of line
-                 uLineLen;      // Line length
+    UINT         uLineLen;      // Line length
     APLUINT      ByteRes;       // # bytes in the result
     HGLOBAL      hGlbRes;       // Result global memory handle
     LPAPLCHAR    lpMemRes;      // Ptr to result global memory
     LPPL_YYSTYPE lpYYRes;       // Ptr to the result
 
-    // Get the position of the start of the line
-    uLinePos = SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
-
-    // Get the line length
-    uLineLen = SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+    // Get the line length of a given line #
+    uLineLen = GetLineLength (hWndEC, uLineNum);
 
     // Calculate space needed for the result
     // N.B.:  max is needed because, in order to get the line,
@@ -569,15 +667,16 @@ LRESULT APIENTRY SMWndProc
      LONG lParam)   // ...
 
 {
-    HWND         hWndEC;    // Window handle to Edit Control
-    int          iMaxLimit; // Maximum # chars in edit control
+    HWND         hWndEC;                // Window handle to Edit Control
+    int          iMaxLimit;             // Maximum # chars in edit control
     VKSTATE      vkState;
     long         lvkState;
-    HGLOBAL      hGlbPTD;   // Handle to this window's PerTabData
-    LPPERTABDATA lpMemPTD;  // Ptr to ...
-////RECT         rcFmtEC;   // Formatting rectangle for the Edit Control
-    LPUNDO_BUF   lpUndoBeg, // Ptr to start of Undo Buffer
-                 lpUndoNxt; // ...    next available slot in the Undo Buffer
+    HGLOBAL      hGlbPTD;               // Handle to this window's PerTabData
+    LPPERTABDATA lpMemPTD;              // Ptr to ...
+    LPWCHAR      lpwCurLine;            // Ptr to current line global memory
+////RECT         rcFmtEC;               // Formatting rectangle for the Edit Control
+    LPUNDO_BUF   lpUndoBeg,             // Ptr to start of Undo Buffer
+                 lpUndoNxt;             // ...    next available slot in the Undo Buffer
 ////HDC          hDC;
 ////HFONT        hFontOld;
 ////TEXTMETRIC   tm;
@@ -620,7 +719,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_NCCREATE:  VirtualAlloc for <lpwszQuadErrorMsg> failed");
 
-                return -1;              // Mark as failed
+                goto WM_NCCREATE_FAIL;  // Mark as failed
             } // End IF
 
             // Lock the memory to get a ptr to it
@@ -636,6 +735,11 @@ LRESULT APIENTRY SMWndProc
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
             break;                  // Continue with next handler
+WM_NCCREATE_FAIL:
+            // Send a constant message to the previous tab
+            SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, hGlbPTD);
+
+            return -1;              // Mark as failed
         } // End WM_NCCREATE
 #undef  lpMDIcs
 
@@ -678,7 +782,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpUndoBeg> failed");
 
-                return -1;              // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -703,62 +807,6 @@ LRESULT APIENTRY SMWndProc
             // Save incremented starting ptr in window extra bytes
             SetWindowLongW (hWnd, GWLSF_UNDO_BEG, (long) ++lpUndoBeg);
 
-            // *************** lpwszCurLine ****************************
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Allocate memory for the current line
-            p = lpMemPTD->lpwszCurLine =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_CURLINE_MAXSIZE * sizeof (lpMemPTD->lpwszCurLine[0]),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-            if (!p)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszCurLine> failed");
-
-                return -1;              // Mark as failed
-            } // End IF
-
-            // Commit the intial size
-            VirtualAlloc (p,
-                          DEF_CURLINE_INITSIZE * sizeof (lpMemPTD->lpwszCurLine[0]),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
-
-            // *************** lpwszTmpLine ****************************
-
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Allocate memory for the temporary line
-            p = lpMemPTD->lpwszTmpLine =
-              VirtualAlloc (NULL,       // Any address
-                            DEF_CURLINE_MAXSIZE * sizeof (lpMemPTD->lpwszTmpLine[0]),
-                            MEM_RESERVE,
-                            PAGE_READWRITE);
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
-            if (!p)
-            {
-                // ***FIXME*** -- WS FULL before we got started???
-                DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszTmpLine> failed");
-
-                return -1;              // Mark as failed
-            } // End IF
-
-            // Commit the intial size
-            VirtualAlloc (p,
-                          DEF_CURLINE_INITSIZE * sizeof (lpMemPTD->lpwszTmpLine[0]),
-                          MEM_COMMIT,
-                          PAGE_READWRITE);
-
 ////////////// *************** lptkStackBase ***************************
 ////////////
 ////////////// Lock the memory to get a ptr to it
@@ -778,7 +826,7 @@ LRESULT APIENTRY SMWndProc
 ////////////    // ***FIXME*** -- WS FULL before we got started???
 ////////////    DbgMsg ("WM_CREATE:  VirtualAlloc for <lptkStackBase> failed");
 ////////////
-////////////    return -1;              // Mark as failed
+////////////    goto WM_CREATE_FAIL;    // Mark as failed
 ////////////} // End IF
 ////////////
 ////////////// Commit the intial size
@@ -806,7 +854,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpszNumAlp> failed");
 
-                return -1;              // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -834,7 +882,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpwszString> failed");
 
-                return -1;              // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -862,7 +910,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpHshTab> failed");
 
-                return -1;              // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -912,7 +960,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpSymTab> failed");
 
-                return -1;              // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -961,7 +1009,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpStateInd> failed");
 
-                return -1;              // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -988,7 +1036,7 @@ LRESULT APIENTRY SMWndProc
                 // ***FIXME*** -- WS FULL before we got started???
                 DbgMsg ("WM_CREATE:  VirtualAlloc for <lpMemPTD->lpYYRes> failed");
 
-                return -1;              // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // Commit the intial size
@@ -1022,7 +1070,7 @@ LRESULT APIENTRY SMWndProc
             {
                 DbgMsg ("WM_CREATE:  InitSystemNames_EM failed");
 
-                return -1;          // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // *************** System Vars *****************************
@@ -1032,7 +1080,7 @@ LRESULT APIENTRY SMWndProc
             {
                 DbgMsg ("WM_CREATE:  InitSystemVars failed");
 
-                return -1;          // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // *************** Symbol Names ****************************
@@ -1042,38 +1090,38 @@ LRESULT APIENTRY SMWndProc
             {
                 DbgMsg ("WM_CREATE:  InitCharNamesValues failed");
 
-                return -1;          // Mark as failed
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // *************** Edit Control ****************************
             // Create an Edit Control within which we can enter expressions
             hWndEC =
-            CreateWindowExW (0L,                    // Extended styles
-                             LECWNDCLASS,           // Class name
-                             NULL,                  // Initial text
-                             0
-                           | WS_CHILD
-                           | WS_CLIPCHILDREN
-                           | WS_VSCROLL
-                           | ES_MULTILINE
-                           | ES_WANTRETURN
-                           | ES_NOHIDESEL           // ***TESTME***
-                           | ES_AUTOHSCROLL
-                           | ES_AUTOVSCROLL
-                             ,                      // Styles
-                             0,                     // X-position
-                             0,                     // Y-...
-                             CW_USEDEFAULT,         // Width
-                             CW_USEDEFAULT,         // Height
-                             hWnd,                  // Parent window
-                             (HMENU) IDWC_SM_EC,    // ID
-                             _hInstance,            // Instance
-                             0);                    // lParam
+              CreateWindowExW (0L,                  // Extended styles
+                               LECWNDCLASS,         // Class name
+                               NULL,                // Initial text
+                               0
+                             | WS_CHILD
+                             | WS_CLIPCHILDREN
+                             | WS_VSCROLL
+                             | ES_MULTILINE
+                             | ES_WANTRETURN
+                             | ES_NOHIDESEL         // ***TESTME***
+                             | ES_AUTOHSCROLL
+                             | ES_AUTOVSCROLL
+                               ,                    // Styles
+                               0,                   // X-position
+                               0,                   // Y-...
+                               CW_USEDEFAULT,       // Width
+                               CW_USEDEFAULT,       // Height
+                               hWnd,                // Parent window
+                               (HMENU) IDWC_SM_EC,  // ID
+                               _hInstance,          // Instance
+                               0);                  // lParam
             if (hWndEC EQ NULL)
             {
                 MB (pszNoCreateSMEditCtrl);
 
-                return -1;          // Stop the whole process
+                goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
 
             // Save in window extra bytes
@@ -1107,7 +1155,7 @@ LRESULT APIENTRY SMWndProc
             {
                 DbgMsg ("WM_CREATE:  InitMagicFunctions failed");
 
-                goto WM_CREATE_FAIL;
+                goto WM_CREATE_FAIL_UNHOOK;
             } // End IF
 
             // Lock the memory to get a ptr to it
@@ -1127,7 +1175,7 @@ LRESULT APIENTRY SMWndProc
 
             // Load the workspace
             if (!LoadWorkspace_EM (((LPSM_CREATESTRUCTW) (lpMDIcs->lParam))->hGlbDPFE, hWndEC))
-                goto WM_CREATE_FAIL;
+                goto LOAD_WORKSPACE_FAIL;
 
             // Display the )LOAD message once and only once
             if (!bLoadMsgDisp)
@@ -1148,7 +1196,7 @@ LRESULT APIENTRY SMWndProc
 
             return FALSE;           // We handled the msg
 
-WM_CREATE_FAIL:
+WM_CREATE_FAIL_UNHOOK:
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
 
@@ -1158,7 +1206,10 @@ WM_CREATE_FAIL:
                             (long) lpMemPTD->lpfnOldEditCtrlWndProc);
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-
+WM_CREATE_FAIL:
+            // Send a constant message to the previous tab
+            SendMessageLastTab (ERRMSG_TABS_FULL APPEND_NAME, hGlbPTD);
+LOAD_WORKSPACE_FAIL:
             return -1;              // Mark as failed
         } // End WM_CREATE
 #undef  lpMDIcs
@@ -1246,10 +1297,9 @@ WM_CREATE_FAIL:
                              FALSE,                                     // TRUE iff free the lpwszLine on completion
                              FALSE,                                     // TRUE iff wait until finished
                              hWndEC);                                   // Edit Control window handle
-            } // End IF
-
-            // Display the default prompt
-            DisplayPrompt (hWndEC, 1);
+            } else
+                // Display the default prompt
+                DisplayPrompt (hWndEC, 1);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -1273,15 +1323,14 @@ WM_CREATE_FAIL:
         case MYWM_ERRMSG:           // lpwErrMsg = (LPWCHAR) lParam;
             // Display the error message, replacing the current
             //   line as it might have a prompt on it
-            ReplaceLine (hWndEC, (LPWCHAR) lParam, NEG1U);
-
-            // Move the text caret to the next line
-            AppendLine (L"", FALSE, TRUE);
-
-            // Display the default prompt
-            DisplayPrompt (hWndEC, 7);
+            ReplaceLastLineCRPmt ((LPWCHAR) lParam);
 
             return FALSE;           // We handled the msg
+
+        case MYWM_SAVE_WS:          // 0 = wParam;
+                                    // lpwWSID = (LPWCHAR) lParam;
+            // Save the workspace
+            return CmdSave_EM ((LPWCHAR) lParam);
 
 #define fwSizeType  wParam
 #define nWidth      (LOWORD (lParam))
@@ -1407,18 +1456,24 @@ WM_CREATE_FAIL:
                         //   copy it and append it to the buffer
                         if (!IzitLastLine (hWndEC))
                         {
-                            UINT uLastNum;
+                            UINT    uLastNum;
+                            LPWCHAR lpwTmpLine;
+
+                            // Get the line length of a given line #
+                            uLineLen = GetLineLength (hWndEC, uLineNum);
+
+                            // Allocate space for the line including a terminating CR/LF/zero
+                            lpwTmpLine =
+                              MyGlobalAlloc (GPTR, (uLineLen + 3) * sizeof (lpwTmpLine[0]));
 
                             // Tell EM_GETLINE maximum # chars in the buffer
-                            // The output array is a temporary so we don't have to
-                            //   worry about overwriting outside the allocated buffer
-                            ((LPWORD) lpMemPTD->lpwszTmpLine)[0] = DEF_CURLINE_MAXLEN;
+                            ((LPWORD) lpwTmpLine)[0] = uLineLen;
 
                             // Get the current line
-                            SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpMemPTD->lpwszTmpLine);
+                            SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwTmpLine);
 
                             // Append CRLF
-                            lstrcatW (lpMemPTD->lpwszTmpLine, L"\r\n");
+                            lstrcatW (lpwTmpLine, L"\r\n");
 
                             // Move the text caret to the end of the buffer
                             MoveCaretEOB (hWndEC);
@@ -1427,10 +1482,19 @@ WM_CREATE_FAIL:
                             uLastNum = SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
 
                             // Replace the last line in the buffer
-                            ReplaceLine (hWndEC, lpMemPTD->lpwszTmpLine, uLastNum);
+                            ReplaceLine (hWndEC, lpwTmpLine, uLastNum);
+
+                            // We no longer need this storage
+                            MyGlobalFree (lpwTmpLine); lpwTmpLine = NULL;
+
+                            // Lock the memory to get a ptr to it
+                            lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
 
                             // Restore the original of the current line
-                            ReplaceLine (hWndEC, lpMemPTD->lpwszCurLine, uLineNum);
+                            ReplaceLine (hWndEC, lpwCurLine, uLineNum);
+
+                            // We no longer need this ptr
+                            MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
 
                             // Move the text caret to the end of the buffer
                             MoveCaretEOB (hWndEC);
@@ -1463,20 +1527,37 @@ WM_CREATE_FAIL:
                     if (uLineNum < 1)
                         break;
 
+                    // Set (new) current line
+                    uLineNum--;
+
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+                    // Get the length of the (new) current line
+                    uLineLen = GetLineLength (hWndEC, uLineNum);
+
+                    // If there's a previous current line global memory handle,
+                    //   free it
+                    if (lpMemPTD->hGlbCurLine)
+                    {
+                        MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
+                    } // End IF
+
+                    // Allocate space for the line including a terminating zero
+                    lpMemPTD->hGlbCurLine =
+                      MyGlobalAlloc (GHND, (uLineLen + 1) * sizeof (lpwCurLine[0]));
+
+                    // Lock the memory to get a ptr to it
+                    lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
+
                     // Tell EM_GETLINE maximum # chars in the buffer
-                    // The output array is a temporary so we don't have to
-                    //   worry about overwriting outside the allocated buffer
-                    ((LPWORD) lpMemPTD->lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
+                    ((LPWORD) lpwCurLine)[0] = uLineLen;
 
                     // Save the (new) current line
-                    uLineLen =
-                      SendMessageW (hWndEC, EM_GETLINE, max (uLineNum, 1) - 1, (LPARAM) lpMemPTD->lpwszCurLine);
+                    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwCurLine);
 
-                    // Ensure properly terminated
-                    lpMemPTD->lpwszCurLine[uLineLen] = L'\0';
+                    // We no longer need this ptr
+                    MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
 
                     // Reset the changed line flag
                     SetWindowLongW (hWnd, GWLSF_CHANGED, FALSE);
@@ -1494,20 +1575,37 @@ WM_CREATE_FAIL:
                     if (uLineCnt <= (uLineNum + 1))
                         break;
 
+                    // Set (new) current line
+                    uLineNum++;
+
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
 
+                    // Get the length of the (new) current line
+                    uLineLen = GetLineLength (hWndEC, uLineNum);
+
+                    // If there's a previous current line global memory handle,
+                    //   free it
+                    if (lpMemPTD->hGlbCurLine)
+                    {
+                        MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
+                    } // End IF
+
+                    // Allocate space for the line including a terminating zero
+                    lpMemPTD->hGlbCurLine =
+                      MyGlobalAlloc (GHND, (uLineLen + 1) * sizeof (lpwCurLine[0]));
+
+                    // Lock the memory to get a ptr to it
+                    lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
+
                     // Tell EM_GETLINE maximum # chars in the buffer
-                    // The output array is a temporary so we don't have to
-                    //   worry about overwriting outside the allocated buffer
-                    ((LPWORD) lpMemPTD->lpwszCurLine)[0] = DEF_CURLINE_MAXLEN;
+                    ((LPWORD) lpwCurLine)[0] = uLineLen;
 
                     // Save the (new) current line
-                    uLineLen =
-                      SendMessageW (hWndEC, EM_GETLINE, uLineNum + 1, (LPARAM) lpMemPTD->lpwszCurLine);
+                    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwCurLine);
 
-                    // Ensure properly terminated
-                    lpMemPTD->lpwszCurLine[uLineLen] = L'\0';
+                    // We no longer need this ptr
+                    MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
 
                     // Reset the changed line flag
                     SetWindowLongW (hWnd, GWLSF_CHANGED, FALSE);
@@ -1791,16 +1889,10 @@ WM_CREATE_FAIL:
 ////////////    VirtualFree (lpMemPTD->lptkStackBase, 0, MEM_RELEASE); lpMemPTD->lptkStackBase = NULL;
 ////////////} // End IF
 
-            // *************** lpwszTmpLine ****************************
-            if (lpMemPTD->lpwszTmpLine)
+            // *************** hGlbCurLine *****************************
+            if (lpMemPTD->hGlbCurLine)
             {
-                VirtualFree (lpMemPTD->lpwszTmpLine, 0, MEM_RELEASE); lpMemPTD->lpwszTmpLine = NULL;
-            } // End IF
-
-            // *************** lpwszCurLine ****************************
-            if (lpMemPTD->lpwszCurLine)
-            {
-                VirtualFree (lpMemPTD->lpwszCurLine, 0, MEM_RELEASE); lpMemPTD->lpwszCurLine = NULL;
+                MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
             } // End IF
 
             // Uninitialize window-specific resources

@@ -649,33 +649,29 @@ void GetFileNames
     (HINSTANCE hInstance)
 
 {
-    char szDir  [_MAX_DIR],
-         szDrive[_MAX_DRIVE],
-         szFname[_MAX_FNAME],
-         szExt  [_MAX_EXT],
-         szTemp [_MAX_PATH];
+    WCHAR wszDir  [_MAX_DIR],
+          wszDrive[_MAX_DRIVE],
+          wszFname[_MAX_FNAME],
+          wszExt  [_MAX_EXT];
+///////// wszTemp [_MAX_PATH];
 
-    if (GetModuleFileName (hInstance, szAppDPFE, sizeof (szAppDPFE)))
+    if (GetModuleFileNameW (hInstance, wszAppDPFE, sizeof (wszAppDPFE)))
     {
         // Split out the drive and path from the module filename
-        _splitpath (szAppDPFE, szDrive, szDir, szFname, szExt);
+        _wsplitpath (wszAppDPFE, wszDrive, wszDir, wszFname, wszExt);
 
         // Create the .HLP file name
-        _makepath  (szHlpDPFE, szDrive, szDir, szFname, ".HLP");
+        _wmakepath  (wszHlpDPFE, wszDrive, wszDir, wszFname, L".HLP");
 
         // Create the Load and the Save Workspace directory names
-        _makepath  (szTemp, szDrive, szDir, NULL, NULL);
-        lstrcat    (szTemp, WKSNAME "\\");      // Must end with a backslash
+        _wmakepath  (wszWorkDir, wszDrive, wszDir, NULL, NULL);
+        lstrcatW    (wszWorkDir, WS_WKSNAME L"\\");    // Must end with a backslash
 
         // Ensure the directory exists
-        _mkdir (szTemp);
+        _wmkdir (wszWorkDir);
 
-        // Convert to wide
-        A2W (wszLoadDir, szTemp, _MAX_PATH);
-        lstrcpyW (wszSaveDir, wszLoadDir);
-
-        // Save the default drive letter for later use
-        A2W (wszDefDrive, szDrive, _MAX_DRIVE);
+////    // Convert to wide
+////    A2W (wszWorkDir, szTemp, _MAX_PATH);
 
 ////////// Create the initial directory for File Open & Save
 ////////_makepath  (szInitDir, szDrive, szDir, NULL,    NULL);

@@ -49,6 +49,9 @@
 #define TABMARGIN_LEFT      8
 #define TABMARGIN_RIGHT     8
 
+// Define the starting char for tab numbering
+#define TABNUMBER_START     L'\x2460'
+
 CNT_THREAD cntThread;           // Temporary storage for CreateNewTabInThread
 
 // 1s mark the indices in use
@@ -285,7 +288,8 @@ BOOL WINAPI CreateNewTabInThread
     SM_CREATESTRUCTW csSM;          // For Session Manager window
     HANDLE       hThread;           // Handle to this thread
     HWND         hWndMC,            // Window handle of MDI Client
-                 hWndParent;        // Window handle of the parent
+                 hWndParent,        // Window handle of the parent
+                 hWndTmp;           // Temporary window handle
     int          iTab;              // Insert the new tab to the left of this one
     MSG          Msg;               // Message for GetMessage loop
     int          nThreads;
@@ -349,7 +353,7 @@ BOOL WINAPI CreateNewTabInThread
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Save the current and previous tab index
-    lpMemPTD->CurTabIndex = iCurTab;
+    lpMemPTD->CurTabIndex = gCurTab = iCurTab;
     lpMemPTD->PrvTabIndex = iTab - 1;
 
     // Save the next available color index
@@ -415,8 +419,15 @@ BOOL WINAPI CreateNewTabInThread
     csSM.hGlbDPFE = hGlbDPFE;
     csSM.bExecLX  = bExecLX;
 
+    // Save hWndMC for use inside message loop
+    //   so we can unlock the per-tab data memory
+    hWndMC = lpMemPTD->hWndMC;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
     // Create the Session Manager window
-    lpMemPTD->hWndSM =
+    hWndTmp =
       CreateMDIWindowW (LSMWNDCLASS,        // Class name
                         wszSMTitle,         // Window title
                         0
@@ -425,14 +436,20 @@ BOOL WINAPI CreateNewTabInThread
                         CW_USEDEFAULT,      // Y-pos
                         CW_USEDEFAULT,      // Height
                         CW_USEDEFAULT,      // Width
-                        lpMemPTD->hWndMC,   // Parent
+                        hWndMC,             // Parent
                         _hInstance,         // Instance
               (LPARAM) &csSM);              // Extra data
     // If there's an error, don't display a message
     //   because that is a normal occurrence if we
     //   fail )LOAD.
-    if (lpMemPTD->hWndSM EQ NULL)
+    if (hWndTmp EQ NULL)
         goto ERROR_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Save as the SM window handle
+    lpMemPTD->hWndSM = hWndTmp;
 
     // Get # current threads under the SM
     nThreads = 1 + (int) GetPropW (lpMemPTD->hWndSM, L"NTHREADS");
@@ -457,10 +474,6 @@ BOOL WINAPI CreateNewTabInThread
 
     // Draw the tab with the text normal
     InvalidateRect (hWndTC, NULL, FALSE);
-
-    // Save hWndMC for use inside message loop
-    //   so we can unlock the per-tab data memory
-    hWndMC = lpMemPTD->hWndMC;
 
     // Tell the SM we're finished
     PostMessage (lpMemPTD->hWndSM, MYWM_INIT_EC, 0, 0);
@@ -496,7 +509,11 @@ BOOL WINAPI CreateNewTabInThread
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     if (hGlbPTD && lpMemPTD)
     {
         // We no longer need this ptr
@@ -552,9 +569,6 @@ ERROR_EXIT:
     {
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
-
-        // Show the child windows of the incoming tab
-        ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
 
         // Ensure the SM has the focus
         PostMessageW (lpMemPTD->hWndSM, MYWM_SETFOCUS, 0, 0);
@@ -717,7 +731,7 @@ LRESULT WINAPI LclTabCtrlWndProc
                         IDM_NEW_WS,
                         "&New WS");
             AppendMenu (hMenu,                  // Handle
-                        MF_ENABLED
+                        MF_GRAYED
                       | MF_STRING,              // Flags
                         IDM_DUP_WS,
                         "&Duplicate WS");
@@ -757,8 +771,9 @@ LRESULT WINAPI LclTabCtrlWndProc
         case TCM_DELETEITEM:                    // itemID = (int) wParam;
                                                 // 0 = lParam;
         {
-            int  iNewTab;                       // Index of new tab (after deleting this one)
-            HWND hWndEC;                        // Edit Control window handle
+            int     iNewTab;                    // Index of new tab (after deleting this one)
+            HWND    hWndEC;                     // Edit Control window handle
+            LRESULT lResult;                    // Result from CallWindowProc
 
 #define iTab    ((int) wParam)
 
@@ -792,9 +807,6 @@ LRESULT WINAPI LclTabCtrlWndProc
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
-
-            // Hide the child windows of the outgoing tab
-            ShowHideChildWindows (lpMemPTD->hWndMC, FALSE);
 
             // Reset this tab's color index bit
             ResetTabColorIndex (lpMemPTD->crIndex);
@@ -838,10 +850,40 @@ LRESULT WINAPI LclTabCtrlWndProc
 
             // The storage for hGlbPTD is freed in CreateTabInThread
 
+            // Call the original window proc so it can delete
+            //   the tab and we can get the new current selection
+            lResult =
+              CallWindowProcW (lpfnOldTabCtrlWndProc,
+                               hWnd,
+                               message,
+                               wParam,
+                               lParam); // Pass on down the line
             // Save as new tab index
             gCurTab = TabCtrl_GetCurSel (hWndTC);
 
-            break;
+            // The Tab Control returns -1 when no tab is selected (huh?)
+            // I've seen this, but am not sure how to duplicate it
+            // In any case, if that happens, use the last (rightmost) tab.
+            if (gCurTab EQ -1)
+                gCurTab = TabCtrl_GetItemCount (hWndTC) - 1;
+
+            // Continue only if the tab index is valid
+            if (gCurTab NE -1)
+            {
+                // Get the outgoing per tab global memory handle
+                hGlbPTD = GetPerTabHandle (gCurTab);
+
+                // Lock the memory to get a ptr to it
+                lpMemPTD = MyGlobalLock (hGlbPTD);
+
+                // Give the new tab the focus
+                PostMessageW (lpMemPTD->hWndSM, MYWM_SETFOCUS, 0, 0);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+            } // End IF
+
+            return lResult;
 #undef  iTab
         } // End TCM_DELETEITEM
     } // End SWITCH
@@ -908,22 +950,6 @@ BOOL CloseTab
     (int iTabIndex)             // Tab index
 
 {
-#ifdef DEBUG
-    HGLOBAL      hGlbPTD;       // PerTabData global memory handle
-    LPPERTABDATA lpMemPTD = NULL; // Ptr to PerTabData global memory
-
-    // Get the per tab global memory handle
-    hGlbPTD = GetPerTabHandle (iTabIndex);
-
-    // Lock the memory to get a ptr to it
-    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-    // Tell the debugger window to close
-    SendMessageW (lpMemPTD->hWndDB, WM_CLOSE, 0, 0);
-
-    // We no longe need this ptr
-    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
-#endif
     // Close the tab
     return (TabCtrl_DeleteItem (hWndTC, iTabIndex) NE -1);
 } // End CloseTab
@@ -1291,23 +1317,24 @@ LPAPLCHAR PointToWsName
                     q = p + 1;
 
                 // Copy to temporary storage
-                lstrcpynW (lpwszTemp, q, (lpMemWSID + aplNELMWSID + 1) - q);
+                lstrcpynW (&lpwszTemp[2], q, (lpMemWSID + aplNELMWSID + 1) - q);
 
                 // Copy the ptr
                 lpwTemp = lpwszTemp;
+                lpwTemp[1] = L' ';
             } else
                 // Point to the ws name
-                lpwTemp = L"CLEAR WS";
+                lpwTemp = L"  CLEAR WS";
         } else
             // Point to the ws name
-            lpwTemp = L"CLEAR WS";
+            lpwTemp = L"  CLEAR WS";
     } else
     {
         // Mark as invalid
         hGlbWSID = NULL;
 
         // Point to the ws name
-        lpwTemp = L"CLEAR WS";
+        lpwTemp = L"  CLEAR WS";
     } // End IF/ELSE
 
     if (hGlbWSID)
@@ -1318,6 +1345,9 @@ LPAPLCHAR PointToWsName
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    // Prepend the tab index
+    lpwTemp[0] = TABNUMBER_START + GetTabColorIndex (iTabIndex);
 
     return lpwTemp;
 } // End PointToWsName
@@ -1378,6 +1408,21 @@ void NewTabName
     // Tell the Tab Ctrl about the new name
     SendMessageW (hWndTC, TCM_SETITEMW, iCurTab, (LPARAM) &tcItem);
 } // End NewTabName
+
+
+//***************************************************************************
+//  $IsCurTabActive
+//
+//  Return TRUE iff the current tab is the active tab
+//***************************************************************************
+
+BOOL IsCurTabActive
+    (void)
+
+{
+    // Compare hGlbPTD from the Tab Index and from the thread
+    return (GetPerTabHandle (gCurTab) EQ TlsGetValue (dwTlsPerTabData));
+} // End IsCurTabActive
 
 
 //***************************************************************************

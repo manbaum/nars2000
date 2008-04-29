@@ -22,8 +22,7 @@
 
 // Section names
 #define SECTNAME_GENERAL        L"General"
-#define SECTNAME_GLOBALVARS     L"GlobalVars"
-#define SECTNAME_GLOBALFCNS     L"GlobalFcns"
+#define SECTNAME_GLOBALS        L"Globals"
 #define SECTNAME_VARS           L"Vars"
 #define SECTNAME_FCNS           L"Fcns"
 

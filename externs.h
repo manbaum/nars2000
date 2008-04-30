@@ -85,6 +85,13 @@
 #define DEF_NEWTABONCLEAR   TRUE
 #define DEF_NEWTABONLOAD    TRUE
 
+
+// Date/time formats
+#define DATETIME_OUT        L"dd/mm/yyyy hh:mm:ss"
+#define DATETIME_FMT        L"%02d/%02d/%04d %2d:%02d:%02d"
+#define DATETIME_LEN        (sizeof (DATETIME_OUT) / sizeof (WCHAR))
+
+
 #include <commctrl.h>
 #include "datatype.h"
 #include "primfns.h"

@@ -49,6 +49,7 @@
 <span>&nbsp;Download&nbsp;</span> |
 <a href="http://wiki.nars2000.org">Documentation</a> |
 <a href="http://forums.nars2000.org">Forums</a> |
+<a href="http://svn.nars2000.org/">Browse Code</a> |
 <a href="/Contributors.ahtml">Contributors</a> |
 <a href="/LICENSE">License</a> |
 <a href="http://wiki.nars2000.org/index.php/NARS2000:About">About</a>

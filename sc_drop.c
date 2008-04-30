@@ -52,18 +52,18 @@ BOOL CmdDrop_EM
 {
     WCHAR wszTailDPFE[_MAX_PATH];   // Save area for canonical form of given ws name
     BOOL  bRet = FALSE;             // TRUE iff result is valid
-    WCHAR wszTemp[19 + 1];          // Output save area
+    WCHAR wszTemp[DATETIME_LEN + 1];// Output save area ("+ 1" for terminating zero)
 
     // If there is a specified WS Name, ...
     if (*lpwszTail)
     {
-        // Convert the given workspace name into a canonical form
+        // Convert the given workspace name into a canonical form (without WKSEXT)
         MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, wszWorkDir);
 
         // Append the common workspace extension
         lstrcatW (wszTailDPFE, WS_WKSEXT);
 
-        // Attempt to open the workspace
+        // Attempt to delete the workspace
         if (!_wremove (wszTailDPFE))
         {
             // Display the current date & time of the drop

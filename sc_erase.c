@@ -1,23 +1,23 @@
 //***************************************************************************
-//	NARS2000 -- System Command:  )ERASE
+//  NARS2000 -- System Command:  )ERASE
 //***************************************************************************
 
 /***************************************************************************
-	NARS2000 -- An Experimental APL Interpreter
-	Copyright (C) 2006-2008 Sudley Place Software
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2008 Sudley Place Software
 
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
 #define STRICT
@@ -40,148 +40,148 @@
 
 
 //***************************************************************************
-//	$CmdErase_EM
+//  $CmdErase_EM
 //
-//	Execute the system command:  )ERASE var[ var]
+//  Execute the system command:  )ERASE var[ var]
 //***************************************************************************
 
 BOOL CmdErase_EM
-	(LPWCHAR lpwszTail) 			// Ptr to command line tail
+    (LPWCHAR lpwszTail)             // Ptr to command line tail
 
 {
-	APLUINT 	 uRht;				// Loop counter
-////LPAPLCHAR	 lpMemDataRht,		// Ptr to right arg char data
-	LPAPLCHAR	 lpMemDataStart;	// Ptr to start of identifier
-	LPSYMENTRY	 lpSymEntry;		// Ptr to STE
-	STFLAGS 	 stFlags;			// STE flags
-	BOOL		 bNotErasedHeader = FALSE; // TRUE iff the NotErased header
-									//	 has been displayed
-	int 		 iNotErasedWidth = 0; // Width (so far) of NotErased line
+    APLUINT      uRht;              // Loop counter
+////LPAPLCHAR    lpMemDataRht,      // Ptr to right arg char data
+    LPAPLCHAR    lpMemDataStart;    // Ptr to start of identifier
+    LPSYMENTRY   lpSymEntry;        // Ptr to STE
+    STFLAGS      stFlags;           // STE flags
+    BOOL         bNotErasedHeader = FALSE; // TRUE iff the NotErased header
+                                    //   has been displayed
+    int          iNotErasedWidth = 0; // Width (so far) of NotErased line
 
-	// Loop through the right arg looking for identifiers
-	uRht = 0;
-	while (TRUE)
-	{
-		// Skip over white space
-		while (lpwszTail[uRht] EQ L' ')
-			uRht++;
-		if (lpwszTail[uRht])
-		{
-			// Save the starting ptr
-			lpMemDataStart = &lpwszTail[uRht];
+    // Loop through the right arg looking for identifiers
+    uRht = 0;
+    while (TRUE)
+    {
+        // Skip over white space
+        while (lpwszTail[uRht] EQ L' ')
+            uRht++;
+        if (lpwszTail[uRht])
+        {
+            // Save the starting ptr
+            lpMemDataStart = &lpwszTail[uRht];
 
-			// Skip over black space
-			while (lpwszTail[uRht] && lpwszTail[uRht] NE L' ')
-				uRht++;
-			// Lookup the name in the symbol table
-			// SymTabLookupName sets the .ObjName enum,
-			//	 and the .Inuse flag
-			ZeroMemory (&stFlags, sizeof (stFlags));
-			lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
-												&lpwszTail[uRht] - lpMemDataStart,
-												&stFlags);
-			// If found, attempt to expunge the name
-			// If not found, ignore it if it's a valid name
-			// If not expunged, display the name after the NotErased header
-			if (lpSymEntry)
-			{
-				// Attempt to expunge the global value
-				if (!ExpungeName (GetGlobalSTE (lpSymEntry)))
-					ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
-			} else
-			{
-				if (!ValidName (lpMemDataStart,
-							   &lpwszTail[uRht] - lpMemDataStart))
-					ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
-			} // End IF/ELSE
-		} else
-			break;
-	} // End WHILE
+            // Skip over black space
+            while (lpwszTail[uRht] && lpwszTail[uRht] NE L' ')
+                uRht++;
+            // Lookup the name in the symbol table
+            // SymTabLookupName sets the .ObjName enum,
+            //   and the .Inuse flag
+            ZeroMemory (&stFlags, sizeof (stFlags));
+            lpSymEntry = SymTabLookupNameLength (lpMemDataStart,
+                                                &lpwszTail[uRht] - lpMemDataStart,
+                                                &stFlags);
+            // If found, attempt to expunge the name
+            // If not found, ignore it if it's a valid name
+            // If not expunged, display the name after the NotErased header
+            if (lpSymEntry)
+            {
+                // Attempt to expunge the global value
+                if (!ExpungeName (GetGlobalSTE (lpSymEntry)))
+                    ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
+            } else
+            {
+                if (!ValidName (lpMemDataStart,
+                               &lpwszTail[uRht] - lpMemDataStart))
+                    ExpungeError (lpSymEntry, &bNotErasedHeader, &iNotErasedWidth);
+            } // End IF/ELSE
+        } else
+            break;
+    } // End WHILE
 
-	// If we displayed any unerased names, end the line
-	if (bNotErasedHeader)
-		AppendLine (L"", TRUE, TRUE);
-	return TRUE;
+    // If we displayed any unerased names, end the line
+    if (bNotErasedHeader)
+        AppendLine (L"", TRUE, TRUE);
+    return TRUE;
 } // End CmdErase_EM
 
 
 //***************************************************************************
-//	ExpungeError
+//  ExpungeError
 //
-//	Display the NotErased header followed by the STE name
-//	  wrapping at the page width
+//  Display the NotErased header followed by the STE name
+//    wrapping at the page width
 //***************************************************************************
 
 void ExpungeError
-	(LPSYMENTRY lpSymEntry, 		// Ptr to the STE
-	 LPBOOL 	lpbNotErasedHeader, // TRUE iff the NotErased header has been displayed
-	 LPINT		lpiNotErasedWidth)	// Current width of the NotErased line
+    (LPSYMENTRY lpSymEntry,         // Ptr to the STE
+     LPBOOL     lpbNotErasedHeader, // TRUE iff the NotErased header has been displayed
+     LPINT      lpiNotErasedWidth)  // Current width of the NotErased line
 
 {
-	HGLOBAL   htGlbName;			// STE name global memory handle
-	LPAPLCHAR lpGlbName;			// Ptr to STE name
-	int 	  iLen; 				// Length of the STE name
-	APLUINT   uQuadPW;				// []PW
+    HGLOBAL   htGlbName;            // STE name global memory handle
+    LPAPLCHAR lpGlbName;            // Ptr to STE name
+    int       iLen;                 // Length of the STE name
+    APLUINT   uQuadPW;              // []PW
 
-	// Get the current value of []PW
-	uQuadPW = GetQuadPW ();
+    // Get the current value of []PW
+    uQuadPW = GetQuadPW ();
 
-	// If the header has not been displayed as yet, do so now
-	if (!lpbNotErasedHeader)
-	{
-		AppendLine (ERRMSG_NOT_ERASED, FALSE, FALSE);
-		*lpbNotErasedHeader = TRUE;
-		*lpiNotErasedWidth = (sizeof (ERRMSG_NOT_ERASED) / sizeof (APLCHAR)) - 1;
-	} // End IF
+    // If the header has not been displayed as yet, do so now
+    if (!lpbNotErasedHeader)
+    {
+        AppendLine (ERRMSG_NOT_ERASED, FALSE, FALSE);
+        *lpbNotErasedHeader = TRUE;
+        *lpiNotErasedWidth = (sizeof (ERRMSG_NOT_ERASED) / sizeof (APLCHAR)) - 1;
+    } // End IF
 
-	// Get the STE name global memory handle
-	htGlbName = lpSymEntry->stHshEntry->htGlbName;
+    // Get the STE name global memory handle
+    htGlbName = lpSymEntry->stHshEntry->htGlbName;
 
-	// Lock the memory to get a ptr to it
-	lpGlbName = MyGlobalLock (htGlbName);
+    // Lock the memory to get a ptr to it
+    lpGlbName = MyGlobalLock (htGlbName);
 
-	// Get the length of the name
-	iLen = lstrlenW (lpGlbName);
+    // Get the length of the name
+    iLen = lstrlenW (lpGlbName);
 
-	if ((*lpiNotErasedWidth + 2 + iLen) > uQuadPW)
-	{
-		// End the line
-		AppendLine (L"", TRUE, TRUE);
-		*lpiNotErasedWidth = 0;
-	} // End IF
+    if ((*lpiNotErasedWidth + 2 + iLen) > uQuadPW)
+    {
+        // End the line
+        AppendLine (L"", TRUE, TRUE);
+        *lpiNotErasedWidth = 0;
+    } // End IF
 
-	// Output leading blanks if not at line start
-	if (*lpiNotErasedWidth)
-	{
-		AppendLine (L"  ", TRUE, FALSE);
-		*lpiNotErasedWidth += 2;
-	} // End IF
+    // Output leading blanks if not at line start
+    if (*lpiNotErasedWidth)
+    {
+        AppendLine (L"  ", TRUE, FALSE);
+        *lpiNotErasedWidth += 2;
+    } // End IF
 
-	// Output the STE name
-	AppendLine (lpGlbName, TRUE, FALSE);
-	*lpiNotErasedWidth += iLen;
+    // Output the STE name
+    AppendLine (lpGlbName, TRUE, FALSE);
+    *lpiNotErasedWidth += iLen;
 
-	// We no longer need this ptr
-	MyGlobalUnlock (htGlbName); lpGlbName = NULL;
+    // We no longer need this ptr
+    MyGlobalUnlock (htGlbName); lpGlbName = NULL;
 } // End ExpungeError
 
 
 //***************************************************************************
-//	GetGlobalSTE
+//  GetGlobalSTE
 //
-//	Return a ptr to the global STE for a given STE
+//  Return a ptr to the global STE for a given STE
 //***************************************************************************
 
 LPSYMENTRY GetGlobalSTE
-	(LPSYMENTRY lpSymEntry) 		// Ptr to the STE
+    (LPSYMENTRY lpSymEntry)         // Ptr to the STE
 
 {
-	// Loop through the chain of previous STEs
-	while (lpSymEntry->stPrvEntry)
-		lpSymEntry = lpSymEntry->stPrvEntry;
-	return lpSymEntry;
+    // Loop through the chain of previous STEs
+    while (lpSymEntry->stPrvEntry)
+        lpSymEntry = lpSymEntry->stPrvEntry;
+    return lpSymEntry;
 } // End GetGlobalSTE
 
 //***************************************************************************
-//	End of File: sc_erase.c
+//  End of File: sc_erase.c
 //***************************************************************************

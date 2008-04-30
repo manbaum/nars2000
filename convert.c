@@ -337,8 +337,9 @@ void FormatCurDateTime
     else
         GetSystemTime (&SystemTime);
 
+    // Format it
     wsprintfW (wszTemp,
-               L"%02d/%02d/%04d %2d:%02d:%02d",
+               DATETIME_FMT,
                SystemTime.wMonth,
                SystemTime.wDay,
                SystemTime.wYear,

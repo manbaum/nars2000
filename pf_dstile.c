@@ -1,23 +1,23 @@
 //***************************************************************************
-//	NARS2000 -- Primitive Function -- DownStile
+//  NARS2000 -- Primitive Function -- DownStile
 //***************************************************************************
 
 /***************************************************************************
-	NARS2000 -- An Experimental APL Interpreter
-	Copyright (C) 2006-2008 Sudley Place Software
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2008 Sudley Place Software
 
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
 #define STRICT
@@ -39,40 +39,40 @@
 
 #ifndef PROTO
 PRIMSPEC PrimSpecDownStile = {
-	// Monadic functions
-	&PrimFnMon_EM_YY,
-	&PrimSpecDownStileStorageTypeMon,
-	&PrimFnMonDownStileAPA_EM,
+    // Monadic functions
+    &PrimFnMon_EM_YY,
+    &PrimSpecDownStileStorageTypeMon,
+    &PrimFnMonDownStileAPA_EM,
 
-	&PrimFnMonDownStileBisB,
-	NULL,	// &PrimFnMonDownStileBisI, -- Can't happen w/DownStile
-	NULL,	// &PrimFnMonDownStileBisF, -- Can't happen w/DownStile
+    &PrimFnMonDownStileBisB,
+    NULL,   // &PrimFnMonDownStileBisI, -- Can't happen w/DownStile
+    NULL,   // &PrimFnMonDownStileBisF, -- Can't happen w/DownStile
 
-////				   IisB,   // Handled via type promotion (to IisI)
-	&PrimFnMonDownStileIisI,
-	&PrimFnMonDownStileIisF,
+////                   IisB,   // Handled via type promotion (to IisI)
+    &PrimFnMonDownStileIisI,
+    &PrimFnMonDownStileIisF,
 
-////				   FisB,   // Handled via type promotion (to FisI)
-	NULL,	// &PrimFnMonDownStileFisI, -- Can't happen w/DownStile
-	&PrimFnMonDownStileFisF,
+////                   FisB,   // Handled via type promotion (to FisI)
+    NULL,   // &PrimFnMonDownStileFisI, -- Can't happen w/DownStile
+    &PrimFnMonDownStileFisF,
 
-	// Dyadic functions
-	&PrimFnDyd_EM_YY,
-	&PrimSpecDownStileStorageTypeDyd,
-	NULL,	// &PrimFnDydDownStileAPA_EM, -- Can't happen w/DownStile
+    // Dyadic functions
+    &PrimFnDyd_EM_YY,
+    &PrimSpecDownStileStorageTypeDyd,
+    NULL,   // &PrimFnDydDownStileAPA_EM, -- Can't happen w/DownStile
 
-	&PrimFnDydUpCaretBisBvB,
-	NULL,	// &PrimFnDydDownStileBisIvI, -- Can't happen w/DownStile
-	NULL,	// &PrimFnDydDownStileBisFvF, -- Can't happen w/DownStile
-	NULL,	// &PrimFnDydDownStileBisCvC, -- Can't happen w/DownStile
+    &PrimFnDydUpCaretBisBvB,
+    NULL,   // &PrimFnDydDownStileBisIvI, -- Can't happen w/DownStile
+    NULL,   // &PrimFnDydDownStileBisFvF, -- Can't happen w/DownStile
+    NULL,   // &PrimFnDydDownStileBisCvC, -- Can't happen w/DownStile
 
-////				   IisBvB,	// Handled via type promotion (to IisIvI)
-	&PrimFnDydDownStileIisIvI,
-	NULL,	// &PrimFnDydDownStileIisFvF, -- Can't happen w/DownStile
+////                   IisBvB,  // Handled via type promotion (to IisIvI)
+    &PrimFnDydDownStileIisIvI,
+    NULL,   // &PrimFnDydDownStileIisFvF, -- Can't happen w/DownStile
 
-////				   FisBvB,	// Handled via type promotion (to FisIvI)
-	NULL,	// &PrimFnDydDownStileFisIvI, -- Can't happen w/DownStile
-	&PrimFnDydDownStileFisFvF,
+////                   FisBvB,  // Handled via type promotion (to FisIvI)
+    NULL,   // &PrimFnDydDownStileFisIvI, -- Can't happen w/DownStile
+    &PrimFnDydDownStileFisFvF,
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownStile};
@@ -80,316 +80,316 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownStile};
 
 
 //***************************************************************************
-//	$PrimFnDownStile_EM_YY
+//  $PrimFnDownStile_EM_YY
 //
-//	Primitive function for monadic and dyadic DownStile ("floor" and "minimum")
+//  Primitive function for monadic and dyadic DownStile ("floor" and "minimum")
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- PrimFnDownStile_EM_YY"
+#define APPEND_NAME     L" -- PrimFnDownStile_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
 LPPL_YYSTYPE PrimFnDownStile_EM_YY
-	(LPTOKEN lptkLftArg,			// Ptr to left arg token (may be NULL if monadic)
-	 LPTOKEN lptkFunc,				// Ptr to function token
-	 LPTOKEN lptkRhtArg,			// Ptr to right arg token
-	 LPTOKEN lptkAxis)				// Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-	// Ensure not an overflow function
-	Assert (lptkFunc->tkData.tkChar EQ UTF16_DOWNSTILE);
+    // Ensure not an overflow function
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_DOWNSTILE);
 
-	// Split cases based upon monadic or dyadic
-	if (lptkLftArg EQ NULL)
-		return (*lpPrimSpec->PrimFnMon_EM_YY) ( 		   lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
-	else
-		return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+    // Split cases based upon monadic or dyadic
+    if (lptkLftArg EQ NULL)
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+    else
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnDownStile_EM_YY
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	$PrimSpecDownStileStorageTypeMon
+//  $PrimSpecDownStileStorageTypeMon
 //
-//	Primitive monadic scalar function special handling:  Storage type
+//  Primitive monadic scalar function special handling:  Storage type
 //***************************************************************************
 
 APLSTYPE PrimSpecDownStileStorageTypeMon
-	(APLNELM	aplNELMRht,
-	 LPAPLSTYPE lpaplTypeRht,
-	 LPTOKEN	lptkFunc)
+    (APLNELM    aplNELMRht,
+     LPAPLSTYPE lpaplTypeRht,
+     LPTOKEN    lptkFunc)
 
 {
-	APLSTYPE aplTypeRes;
+    APLSTYPE aplTypeRes;
 
-	// In case the right arg is an empty char,
-	//	 change its type to BOOL
-	if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
-		*lpaplTypeRht = ARRAY_BOOL;
+    // In case the right arg is an empty char,
+    //   change its type to BOOL
+    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+        *lpaplTypeRht = ARRAY_BOOL;
 
-	if (IsSimpleChar (*lpaplTypeRht)
-	 || *lpaplTypeRht EQ ARRAY_LIST)
-		return ARRAY_ERROR;
+    if (IsSimpleChar (*lpaplTypeRht)
+     || *lpaplTypeRht EQ ARRAY_LIST)
+        return ARRAY_ERROR;
 
-	// The storage type of the result is
-	//	 the same as that of the right arg
-	//	 except FLOAT goes to INT.
-	// IisF promotes to FisF as necessary.
-	if (IsSimpleFlt (*lpaplTypeRht))
-		aplTypeRes = ARRAY_INT;
-	else
-		aplTypeRes = *lpaplTypeRht;
+    // The storage type of the result is
+    //   the same as that of the right arg
+    //   except FLOAT goes to INT.
+    // IisF promotes to FisF as necessary.
+    if (IsSimpleFlt (*lpaplTypeRht))
+        aplTypeRes = ARRAY_INT;
+    else
+        aplTypeRes = *lpaplTypeRht;
 
-	return aplTypeRes;
+    return aplTypeRes;
 } // End PrimSpecDownStileStorageTypeMon
 
 
 //***************************************************************************
-//	$PrimFnMonDownStileBisB
+//  $PrimFnMonDownStileBisB
 //
-//	Primitive scalar function monadic DownStile:  B {is} fn B
+//  Primitive scalar function monadic DownStile:  B {is} fn B
 //***************************************************************************
 
 APLBOOL PrimFnMonDownStileBisB
-	(APLBOOL	aplBooleanRht,
-	 LPPRIMSPEC lpPrimSpec)
+    (APLBOOL    aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)
 
 {
-	return aplBooleanRht;
+    return aplBooleanRht;
 } // End PrimFnMonDownStileBisB
 
 
 //***************************************************************************
-//	$PrimFnMonDownStileIisI
+//  $PrimFnMonDownStileIisI
 //
-//	Primitive scalar function monadic DownStile:  I {is} fn I
+//  Primitive scalar function monadic DownStile:  I {is} fn I
 //***************************************************************************
 
 APLINT PrimFnMonDownStileIisI
-	(APLINT 	aplIntegerRht,
-	 LPPRIMSPEC lpPrimSpec)
+    (APLINT     aplIntegerRht,
+     LPPRIMSPEC lpPrimSpec)
 
 {
-	return aplIntegerRht;
+    return aplIntegerRht;
 } // End PrimFnMonDownStileIisI
 
 
 //***************************************************************************
-//	$PrimFnMonDownStileIisF
+//  $PrimFnMonDownStileIisF
 //
-//	Primitive scalar function monadic DownStile:  I {is} fn F
+//  Primitive scalar function monadic DownStile:  I {is} fn F
 //***************************************************************************
 
 APLINT PrimFnMonDownStileIisF
-	(APLFLOAT	aplFloatRht,
-	 LPPRIMSPEC lpPrimSpec)
+    (APLFLOAT   aplFloatRht,
+     LPPRIMSPEC lpPrimSpec)
 
 {
-	// Check for ± infinity and numbers whose
-	//	 absolute value is >= 2*53
-	if (!_finite (aplFloatRht)
-	 || fabs (aplFloatRht) >= Float2Pow53)
-		RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    // Check for ± infinity and numbers whose
+    //   absolute value is >= 2*53
+    if (!_finite (aplFloatRht)
+     || fabs (aplFloatRht) >= Float2Pow53)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
-	return (APLINT) PrimFnMonDownStileFisF (aplFloatRht, lpPrimSpec);
+    return (APLINT) PrimFnMonDownStileFisF (aplFloatRht, lpPrimSpec);
 } // End PrimFnMonDownStileIisF
 
 
 //***************************************************************************
-//	$PrimFnMonDownStileFisF
+//  $PrimFnMonDownStileFisF
 //
-//	Primitive scalar function monadic DownStile:  F {is} fn F
+//  Primitive scalar function monadic DownStile:  F {is} fn F
 //***************************************************************************
 
 APLFLOAT PrimFnMonDownStileFisF
-	(APLFLOAT	aplFloatRht,
-	 LPPRIMSPEC lpPrimSpec)
+    (APLFLOAT   aplFloatRht,
+     LPPRIMSPEC lpPrimSpec)
 
 {
-	APLFLOAT	 aplFloor,
-				 aplCeil,
-				 aplNear;
-	APLFLOAT	 fQuadCT;		// []CT
+    APLFLOAT     aplFloor,
+                 aplCeil,
+                 aplNear;
+    APLFLOAT     fQuadCT;       // []CT
 
-	// Get the current value of []CT
-	fQuadCT = GetQuadCT ();
+    // Get the current value of []CT
+    fQuadCT = GetQuadCT ();
 
-	// Check for ± infinity
-	if (!_finite (aplFloatRht))
-		return aplFloatRht;
+    // Check for ± infinity
+    if (!_finite (aplFloatRht))
+        return aplFloatRht;
 
-	// Get the exact floor and ceiling
-	aplFloor = floor (aplFloatRht);
-	aplCeil  = ceil  (aplFloatRht);
+    // Get the exact floor and ceiling
+    aplFloor = floor (aplFloatRht);
+    aplCeil  = ceil  (aplFloatRht);
 
-	// Calculate the integer nearest the right arg
+    // Calculate the integer nearest the right arg
 
-	// Split cases based upon the signum of the difference between
-	//	 (the number and its floor) and (the ceiling and the number)
-	switch (PrimFnMonTimesIisF ((aplFloatRht - aplFloor)
-							  - (aplCeil - aplFloatRht),
-								lpPrimSpec))
-	{
-		case  1:
-			aplNear = aplCeil;
+    // Split cases based upon the signum of the difference between
+    //   (the number and its floor) and (the ceiling and the number)
+    switch (PrimFnMonTimesIisF ((aplFloatRht - aplFloor)
+                              - (aplCeil - aplFloatRht),
+                                lpPrimSpec))
+    {
+        case  1:
+            aplNear = aplCeil;
 
-			break;
+            break;
 
-		case  0:
-			// They are equal, so use the one with the larger absolute value
-			aplNear = ((fabs (aplFloor) > fabs (aplCeil)) ? aplFloor
-														  : aplCeil);
-			break;
+        case  0:
+            // They are equal, so use the one with the larger absolute value
+            aplNear = ((fabs (aplFloor) > fabs (aplCeil)) ? aplFloor
+                                                          : aplCeil);
+            break;
 
-		case -1:
-			aplNear = aplFloor;
+        case -1:
+            aplNear = aplFloor;
 
-			break;
+            break;
 
-		defstop
-			break;
-	} // End SWITCH
+        defstop
+            break;
+    } // End SWITCH
 
-	// If Near is < Rht, return Near
-	if (aplNear < aplFloatRht)
-		return aplNear;
+    // If Near is < Rht, return Near
+    if (aplNear < aplFloatRht)
+        return aplNear;
 
-	// If Near is non-zero, and
-	//	 Rht is tolerantly-equal to Near,
-	//	 return Near; otherwise, return Near - 1
-	if (aplNear)
-	{
-		if (PrimFnDydEqualBisFvF (aplFloatRht,
-								  (APLFLOAT) aplNear,
-								  lpPrimSpec))
-			return aplNear;
-		else
-			return aplNear - 1;
-	} // End IF
+    // If Near is non-zero, and
+    //   Rht is tolerantly-equal to Near,
+    //   return Near; otherwise, return Near - 1
+    if (aplNear)
+    {
+        if (PrimFnDydEqualBisFvF (aplFloatRht,
+                                  (APLFLOAT) aplNear,
+                                  lpPrimSpec))
+            return aplNear;
+        else
+            return aplNear - 1;
+    } // End IF
 
-	// aplNear is zer0
+    // aplNear is zer0
 
-	// If Rht is between (-[]CT) and 0 (inclusive),
-	//	 return 0; othewise, return -1
-	if ((-fQuadCT) <= aplFloatRht
-	 && 			  aplFloatRht <= 0)
-		return 0;
-	else
-		return -1;
+    // If Rht is between (-[]CT) and 0 (inclusive),
+    //   return 0; othewise, return -1
+    if ((-fQuadCT) <= aplFloatRht
+     &&               aplFloatRht <= 0)
+        return 0;
+    else
+        return -1;
 } // End PrimFnMonDownStileFisF
 
 
 //***************************************************************************
-//	$PrimFnMonDownStileAPA_EM
+//  $PrimFnMonDownStileAPA_EM
 //
-//	Monadic downstile, result is APA
+//  Monadic downstile, result is APA
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME 	L" -- PrimFnMonDownStileAPA_EM"
+#define APPEND_NAME     L" -- PrimFnMonDownStileAPA_EM"
 #else
 #define APPEND_NAME
 #endif
 
 BOOL PrimFnMonDownStileAPA_EM
-	(LPPL_YYSTYPE lpYYRes,			// Ptr to the result (may be NULL)
-	 LPTOKEN	  lptkFunc, 		// Ptr to function token
-	 HGLOBAL	  hGlbRht,			// Right arg handle
-	 HGLOBAL	 *lphGlbRes,		// Ptr to result handle
-	 APLRANK	  aplRankRht,		// Rank fo the right arg
-	 LPPRIMSPEC   lpPrimSpec)		// Ptr to local PRIMSPEC
+    (LPPL_YYSTYPE lpYYRes,          // Ptr to the result (may be NULL)
+     LPTOKEN      lptkFunc,         // Ptr to function token
+     HGLOBAL      hGlbRht,          // Right arg handle
+     HGLOBAL     *lphGlbRes,        // Ptr to result handle
+     APLRANK      aplRankRht,       // Rank fo the right arg
+     LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
-	DBGENTER;
+    DBGENTER;
 
-	// Axis may be anything
+    // Axis may be anything
 
-	// Copy the HGLOBAL to the result
-	*lphGlbRes = CopySymGlbDirAsGlb (hGlbRht);
+    // Copy the HGLOBAL to the result
+    *lphGlbRes = CopySymGlbDirAsGlb (hGlbRht);
 
-	// Fill in the result token
-	if (lpYYRes)
-	{
-		lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////lpYYRes->tkToken.tkFlags.ImmType   = 0; 	// Already zero from YYAlloc
-////////lpYYRes->tkToken.tkFlags.NoDisplay = 0; 	// Already zero from YYAlloc
-		lpYYRes->tkToken.tkData.tkGlbData  = hGlbRht;
-	} // End IF
+    // Fill in the result token
+    if (lpYYRes)
+    {
+        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////lpYYRes->tkToken.tkFlags.ImmType   = 0;     // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
+        lpYYRes->tkToken.tkData.tkGlbData  = hGlbRht;
+    } // End IF
 
-	DBGLEAVE;
+    DBGLEAVE;
 
-	return TRUE;
+    return TRUE;
 } // End PrimFnMonDownStileAPA_EM
-#undef	APPEND_NAME
+#undef  APPEND_NAME
 
 
 //***************************************************************************
-//	$PrimSpecDownStileStorageTypeDyd
+//  $PrimSpecDownStileStorageTypeDyd
 //
-//	Primitive dyadic scalar function special handling:	Storage type
+//  Primitive dyadic scalar function special handling:  Storage type
 //***************************************************************************
 
 APLSTYPE PrimSpecDownStileStorageTypeDyd
-	(APLNELM	aplNELMLft,
-	 LPAPLSTYPE lpaplTypeLft,
-	 LPTOKEN	lptkFunc,
-	 APLNELM	aplNELMRht,
-	 LPAPLSTYPE lpaplTypeRht)
+    (APLNELM    aplNELMLft,
+     LPAPLSTYPE lpaplTypeLft,
+     LPTOKEN    lptkFunc,
+     APLNELM    aplNELMRht,
+     LPAPLSTYPE lpaplTypeRht)
 
 {
-	APLSTYPE aplTypeRes;
+    APLSTYPE aplTypeRes;
 
-	// In case the left arg is an empty char,
-	//	 change its type to BOOL
-	if (aplNELMLft EQ 0 && IsSimpleChar (*lpaplTypeLft))
-		*lpaplTypeLft = ARRAY_BOOL;
+    // In case the left arg is an empty char,
+    //   change its type to BOOL
+    if (aplNELMLft EQ 0 && IsSimpleChar (*lpaplTypeLft))
+        *lpaplTypeLft = ARRAY_BOOL;
 
-	// In case the right arg is an empty char,
-	//	 change its type to BOOL
-	if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
-		*lpaplTypeRht = ARRAY_BOOL;
+    // In case the right arg is an empty char,
+    //   change its type to BOOL
+    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+        *lpaplTypeRht = ARRAY_BOOL;
 
-	// Calculate the storage type of the result
-	aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
+    // Calculate the storage type of the result
+    aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-	return aplTypeRes;
+    return aplTypeRes;
 } // End PrimSpecDownStileStorageTypeDyd
 
 
 //***************************************************************************
-//	$PrimFnDydDownStileIisIvI
+//  $PrimFnDydDownStileIisIvI
 //
-//	Primitive scalar function dyadic DownStile:  I {is} I fn I
+//  Primitive scalar function dyadic DownStile:  I {is} I fn I
 //***************************************************************************
 
 APLINT PrimFnDydDownStileIisIvI
-	(APLINT 	aplIntegerLft,
-	 APLINT 	aplIntegerRht,
-	 LPPRIMSPEC lpPrimSpec)
+    (APLINT     aplIntegerLft,
+     APLINT     aplIntegerRht,
+     LPPRIMSPEC lpPrimSpec)
 
 {
-	return min (aplIntegerLft, aplIntegerRht);
+    return min (aplIntegerLft, aplIntegerRht);
 } // End PrimFnDydDownStileIisIvI
 
 
 //***************************************************************************
-//	$PrimFnDydDownStileFisFvF
+//  $PrimFnDydDownStileFisFvF
 //
-//	Primitive scalar function dyadic DownStile:  F {is} F fn F
+//  Primitive scalar function dyadic DownStile:  F {is} F fn F
 //***************************************************************************
 
 APLFLOAT PrimFnDydDownStileFisFvF
-	(APLFLOAT	aplFloatLft,
-	 APLFLOAT	aplFloatRht,
-	 LPPRIMSPEC lpPrimSpec)
+    (APLFLOAT   aplFloatLft,
+     APLFLOAT   aplFloatRht,
+     LPPRIMSPEC lpPrimSpec)
 
 {
-	return min (aplFloatLft, aplFloatRht);
+    return min (aplFloatLft, aplFloatRht);
 } // End PrimFnDydDownStileFisFvF
 
 
 //***************************************************************************
-//	End of File: pf_dstile.c
+//  End of File: pf_dstile.c
 //***************************************************************************

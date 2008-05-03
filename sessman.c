@@ -1028,6 +1028,69 @@ WM_NCCREATE_FAIL:
                           MEM_COMMIT,
                           PAGE_READWRITE);
 
+            // *************** Strand Accumulators *********************
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Allocate virtual memory for the VAR strand accumulator
+            memVirtStr[MEMVIRT_STRAND_VAR].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
+            memVirtStr[MEMVIRT_STRAND_VAR].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+            memVirtStr[MEMVIRT_STRAND_VAR].IniAddr  =
+            p = lpMemPTD->lpStrand[STRAND_VAR] =
+              VirtualAlloc (NULL,       // Any address
+                            memVirtStr[MEMVIRT_STRAND_VAR].MaxSize,
+                            MEM_RESERVE,        // memVirtStr
+                            PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandVar> failed");
+
+                return FALSE;           // Mark as failed
+            } // End IF
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Commit the intial size
+            VirtualAlloc (lpMemPTD->lpStrand[STRAND_VAR],
+                          DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+            // Allocate virtual memory for the FCN strand accumulator
+            memVirtStr[MEMVIRT_STRAND_FCN].IncrSize = DEF_STRAND_INCRSIZE * sizeof (PL_YYSTYPE);
+            memVirtStr[MEMVIRT_STRAND_FCN].MaxSize  = DEF_STRAND_MAXSIZE  * sizeof (PL_YYSTYPE);
+            memVirtStr[MEMVIRT_STRAND_FCN].IniAddr  =
+            p = lpMemPTD->lpStrand[STRAND_FCN] =
+              VirtualAlloc (NULL,       // Any address
+                            memVirtStr[MEMVIRT_STRAND_FCN].MaxSize,
+                            MEM_RESERVE,        // memVirtStr
+                            PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+            if (!p)
+            {
+                // ***FIXME*** -- WS FULL before we got started???
+                DbgMsg ("InitInstance:  VirtualAlloc for <lpMemPTD->lpStrandFcn> failed");
+
+                return FALSE;           // Mark as failed
+            } // End IF
+
+            // Lock the memory to get a ptr to it
+            lpMemPTD = MyGlobalLock (hGlbPTD);
+
+            // Commit the intial size
+            VirtualAlloc (lpMemPTD->lpStrand[STRAND_FCN],
+                          DEF_STRAND_INITSIZE * sizeof (PL_YYSTYPE),
+                          MEM_COMMIT,
+                          PAGE_READWRITE);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
 ////////////// *************** Fonts ***********************************
 ////////////
 ////////////// Get the text metrics for this font
@@ -1204,15 +1267,39 @@ LOAD_WORKSPACE_FAIL:
 #define idChild     (HIWORD (wParam))
 
             // Check for WM_CREATE from the Edit Control/Debugger
-            if (fwEvent EQ WM_CREATE)
-            // Split cases based upon the child ID
-            switch (idChild)
+            switch (fwEvent)
             {
-                case IDWC_SM_EC:
-                    PostMessageW (hWnd, MYWM_INIT_EC, 0, 0);
+                case WM_CREATE:
+                    // Split cases based upon the child ID
+                    switch (idChild)
+                    {
+                        case IDWC_SM_EC:
+                            PostMessageW (hWnd, MYWM_INIT_EC, 0, 0);
+
+                            break;
+                    } // End SWITCH
 
                     break;
-            } // End IF
+
+                case WM_LBUTTONDOWN:
+                {
+                    UINT uCharPos;              // Character position
+
+                    // Ask the Edit Control what char is under the mouse cursor
+                    uCharPos = SendMessageW (hWndEC, EM_CHARFROMPOS, 0, lParam);
+
+                    // If it's valid, ...
+                    if (uCharPos NE NEG1U)
+                        // Move to that line
+                        MoveToLine (HIWORD (uCharPos),
+                                    hGlbPTD,
+                                    hWndEC);
+                    break;
+                } // End WM_LBUTTONDOWN
+
+                default:
+                    break;
+            } // End SWITCH
 
             return FALSE;           // We handled the msg
 
@@ -1515,42 +1602,7 @@ LOAD_WORKSPACE_FAIL:
                         break;
 
                     // Set (new) current line
-                    uLineNum--;
-
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-                    // Get the length of the (new) current line
-                    uLineLen = GetLineLength (hWndEC, uLineNum);
-
-                    // If there's a previous current line global memory handle,
-                    //   free it
-                    if (lpMemPTD->hGlbCurLine)
-                    {
-                        MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
-                    } // End IF
-
-                    // Allocate space for the line including a terminating zero
-                    lpMemPTD->hGlbCurLine =
-                      MyGlobalAlloc (GHND, (uLineLen + 1) * sizeof (lpwCurLine[0]));
-
-                    // Lock the memory to get a ptr to it
-                    lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
-
-                    // Tell EM_GETLINE maximum # chars in the buffer
-                    ((LPWORD) lpwCurLine)[0] = uLineLen;
-
-                    // Save the (new) current line
-                    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwCurLine);
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
-
-                    // Reset the changed line flag
-                    SetWindowLongW (hWnd, GWLSF_CHANGED, FALSE);
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+                    MoveToLine (--uLineNum, hGlbPTD, hWndEC);
 
                     break;
 
@@ -1563,42 +1615,7 @@ LOAD_WORKSPACE_FAIL:
                         break;
 
                     // Set (new) current line
-                    uLineNum++;
-
-                    // Lock the memory to get a ptr to it
-                    lpMemPTD = MyGlobalLock (hGlbPTD);
-
-                    // Get the length of the (new) current line
-                    uLineLen = GetLineLength (hWndEC, uLineNum);
-
-                    // If there's a previous current line global memory handle,
-                    //   free it
-                    if (lpMemPTD->hGlbCurLine)
-                    {
-                        MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
-                    } // End IF
-
-                    // Allocate space for the line including a terminating zero
-                    lpMemPTD->hGlbCurLine =
-                      MyGlobalAlloc (GHND, (uLineLen + 1) * sizeof (lpwCurLine[0]));
-
-                    // Lock the memory to get a ptr to it
-                    lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
-
-                    // Tell EM_GETLINE maximum # chars in the buffer
-                    ((LPWORD) lpwCurLine)[0] = uLineLen;
-
-                    // Save the (new) current line
-                    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwCurLine);
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
-
-                    // Reset the changed line flag
-                    SetWindowLongW (hWnd, GWLSF_CHANGED, FALSE);
-
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+                    MoveToLine (++uLineNum, hGlbPTD, hWndEC);
 
                     break;
 #ifdef DEBUG
@@ -1898,6 +1915,59 @@ LOAD_WORKSPACE_FAIL:
     return DefMDIChildProcW (hWnd, message, wParam, lParam);
 } // End SMWndProc
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MoveToLine
+//
+//  Common routine when moving the text cursor to a new line
+//***************************************************************************
+
+void MoveToLine
+    (UINT    uLineNum,                  // The given line #
+     HGLOBAL hGlbPTD,                   // PerTabData global memory handle
+     HWND    hWndEC)                    // Edit Control window handle
+
+{
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData
+    UINT         uLineLen;              // Line length
+    LPWCHAR      lpwCurLine;            // Ptr to current line global memory
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the length of the (new) current line
+    uLineLen = GetLineLength (hWndEC, uLineNum);
+
+    // If there's a previous current line global memory handle,
+    //   free it
+    if (lpMemPTD->hGlbCurLine)
+    {
+        MyGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
+    } // End IF
+
+    // Allocate space for the line including a terminating zero
+    lpMemPTD->hGlbCurLine =
+      MyGlobalAlloc (GHND, (uLineLen + 1) * sizeof (lpwCurLine[0]));
+
+    // Lock the memory to get a ptr to it
+    lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
+
+    // Tell EM_GETLINE maximum # chars in the buffer
+    ((LPWORD) lpwCurLine)[0] = uLineLen;
+
+    // Save the (new) current line
+    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwCurLine);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
+
+    // Reset the changed line flag
+    SetWindowLongW (lpMemPTD->hWndSM, GWLSF_CHANGED, FALSE);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+} // End MoveToLine
 
 
 //***************************************************************************

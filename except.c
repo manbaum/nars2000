@@ -279,7 +279,7 @@ long CheckVirtAlloc
             {
                 // Allocate more memory
                 if (VirtualAlloc (lpInvalidAddr,
-                                  1,
+                                  lpMemVirtStr[uMem].IncrSize,
                                   MEM_COMMIT,
                                   PAGE_READWRITE) NE NULL)
                     return EXCEPTION_CONTINUE_EXECUTION;

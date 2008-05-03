@@ -885,7 +885,7 @@ LPWCHAR DisplayFcnSub
 {
     HGLOBAL hGlbData;           // Function array global memory handle
     LPVOID  lpMemData;          // Ptr to function array global memory
-    UINT    FcnCount;           // Function count
+    UINT    TknCount;           // Token count
 
     // Split cases based upon the token type
     switch (lpYYMem[0].tkToken.tkFlags.TknType)
@@ -916,16 +916,16 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_OP2IMMED:
-            FcnCount = 1 + lpYYMem[1].FcnCount;
+            TknCount = 1 + lpYYMem[1].TknCount;
             lpaplChar =
-              DisplayFcnSub (lpaplChar, &lpYYMem[1], lpYYMem[1].FcnCount);              // Lfcn
+              DisplayFcnSub (lpaplChar, &lpYYMem[1], lpYYMem[1].TknCount);              // Lfcn
             // Translate from INDEX_xxx to UTF16_xxx
             *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);    // Op2
-            if (lpYYMem[FcnCount].FcnCount > 1)
+            if (lpYYMem[TknCount].TknCount > 1)
                 *lpaplChar++ = L'(';
             lpaplChar =
-              DisplayFcnSub (lpaplChar, &lpYYMem[FcnCount], lpYYMem[FcnCount].FcnCount);// Rfcn
-            if (lpYYMem[FcnCount].FcnCount > 1)
+              DisplayFcnSub (lpaplChar, &lpYYMem[TknCount], lpYYMem[TknCount].TknCount);// Rfcn
+            if (lpYYMem[TknCount].TknCount > 1)
                 *lpaplChar++ = L')';
             break;
 
@@ -939,7 +939,6 @@ LPWCHAR DisplayFcnSub
               || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
                 lpaplChar =
                   DisplayFcnSub (lpaplChar, &lpYYMem[1], 1);                            // [X]
-
             break;
 
         case TKT_OP1NAMED:
@@ -1006,7 +1005,6 @@ LPWCHAR DisplayFcnSub
               || lpYYMem[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
                 lpaplChar =
                   DisplayFcnSub (lpaplChar, &lpYYMem[1], 1);                        // [X]
-
             break;
 
         case TKT_OPJOTDOT:
@@ -1020,7 +1018,6 @@ LPWCHAR DisplayFcnSub
               DisplayFcnSub (lpaplChar, &lpYYMem[1], tknNELM - 1);
             if (tknNELM > 2)
                 *lpaplChar++ = L')';
-
             break;
 
         case TKT_AXISIMMED:
@@ -1059,7 +1056,6 @@ LPWCHAR DisplayFcnSub
                             lpYYMem[0].tkToken.tkData.tkInteger);
             if (lpaplChar[-1] EQ L' ')
                 lpaplChar--;            // Back over the trailing blank
-
             break;
 
         case TKT_VARARRAY:
@@ -1240,15 +1236,14 @@ void DisplayStrand
         } // End IF
 
         wsprintf (lpszDebug,
-                  "Strand (%08X): %-9.9s D=%08X CI=%2d TC=%1d FC=%1d IN=%1d F=%08X B=%08X",
+                  "Strand (%08X): %-9.9s D=%08X CI=%2d TC=%1d IN=%1d F=%08X B=%08X",
                   lp,
                   GetTokenTypeName (lp->tkToken.tkFlags.TknType),
                   LODWORD (lp->tkToken.tkData.tkInteger),
                   lp->tkToken.tkCharIndex,
                   lp->TknCount,
-                  lp->FcnCount,
                   lp->YYIndirect,
-                  lp->lpYYFcn,
+                  lp->lpYYFcnBase,
                   lpLast);
         DbgMsg (lpszDebug);
     } // End FOR

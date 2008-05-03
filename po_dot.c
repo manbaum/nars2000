@@ -228,7 +228,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->FcnCount];
+    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
 
     // Get a ptr to the left & right prototype function
     if (bPrototyping)

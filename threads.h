@@ -24,7 +24,7 @@ typedef struct tagCNT_THREAD    // Thread struct for CreateNewTabInThread
 {
     HWND    hWndParent;         // 00:  Window handle of the parent
     HGLOBAL hGlbDPFE;           // 04:  Workspace DPFE global memory handle
-    int     iTab;               // 08:  Insert the new tab to the left of this one
+    int     iTabIndex;          // 08:  Insert the new tab to the left of this one
     BOOL    bExecLX;            // 0C:  TRUE iff execute []LX after successful load
     HANDLE  hThread;            // 10:  Handle to the current thread
                                 // 14:  Length

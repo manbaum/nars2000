@@ -35,7 +35,7 @@
 #define KEYNAME_LASTMODTIME     L"LastModTime"
 #define KEYNAME_USERDEFINED     L"UserDefined"
 
-// Format string for [GlobalVars] and [GlobalFcns] section keynames
+// Format string for [Globals] section keyname
 #define FMTSTR_GLBCNT           L"#%d"
 
 

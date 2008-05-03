@@ -905,22 +905,33 @@ LRESULT APIENTRY MFWndProc
                     if (ClickOnClose ())
                         return TRUE;
                     // Save the index of the outgoing tab
-                    gLstTab = TabCtrl_GetCurSel (hWndTC);
+                    gLstTabID = TranslateTabIndexToID (TabCtrl_GetCurSel (hWndTC));
 
                     return FALSE;
 
                 case TCN_SELCHANGE:     // idTabCtl = (int) LOWORD(wParam);
                                         // lpnmhdr = (LPNMHDR) lParam;
+                {
+                    int iCurTabIndex,       // Index of the current tab
+                        iLstTabIndex;       // Index of the previous tab
+
+                    // Get the index of the incoming tab
+                    iCurTabIndex = TabCtrl_GetCurSel (hWndTC);
+
+                    // Get the index of the previous tab
+                    iLstTabIndex = TranslateTabIDToIndex (gLstTabID);
+
                     // Save the index of the incoming tab
-                    gCurTab = TabCtrl_GetCurSel (hWndTC);
+                    gCurTabID = TranslateTabIndexToID (iCurTabIndex);
 
                     // Hide the child windows of the outgoing tab
-                    if (gLstTab NE -1)
-                        ShowHideChildWindows (GetWndMC (gLstTab), FALSE);
+                    if (iLstTabIndex NE -1)
+                        ShowHideChildWindows (GetWndMC (iLstTabIndex), FALSE);
                     // Show the child windows of the incoming tab
-                    if (gCurTab NE -1)
-                        ShowHideChildWindows (GetWndMC (gCurTab), TRUE);
+                    if (iCurTabIndex NE -1)
+                        ShowHideChildWindows (GetWndMC (iCurTabIndex), TRUE);
                     return FALSE;       // We handled the msg
+                } // End TCN_SELCHANGE
 
                 default:
                     break;
@@ -1133,35 +1144,40 @@ LRESULT APIENTRY MFWndProc
                     // Load a CLEAR WS
                     if (!CreateNewTab (hWnd,
                                        L"",
-                                       (gOverTab EQ -1) ? 999 : gOverTab + 1,
+                                       (gOverTabIndex EQ -1) ? 999 : gOverTabIndex + 1,
                                        FALSE))
                         return -1;          // Stop the whole process
 
                     return FALSE;   // We handled the msg
 
                 case IDM_LOAD_WS:
+#ifdef DEBUG
                     DbgBrk ();      // ***FINISHME*** -- IDM_LOAD_WS
-
+#endif
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_XLOAD_WS:
+#ifdef DEBUG
                     DbgBrk ();      // ***FINISHME*** -- IDM_XLOAD_WS
-
+#endif
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_COPY_WS:
+#ifdef DEBUG
                     DbgBrk ();      // ***FINISHME*** -- IDM_COPY_WS
-
+#endif
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_PCOPY_WS:
+#ifdef DEBUG
                     DbgBrk ();      // ***FINISHME*** -- IDM_PCOPY_WS
+#endif
 
 
 
@@ -1169,7 +1185,7 @@ LRESULT APIENTRY MFWndProc
 
                 case IDM_SAVE_WS:
                     // Get the per tab global memory handle
-                    hGlbPTD = GetPerTabHandle (gOverTab);
+                    hGlbPTD = GetPerTabHandle (gOverTabIndex);
 
                     // Lock the memory to get a ptr to it
                     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -1184,21 +1200,26 @@ LRESULT APIENTRY MFWndProc
                     return SendMessageW (hWndSM, MYWM_SAVE_WS, 0, (LPARAM) L"");
 
                 case IDM_SAVE_AS_WS:
+#ifdef DEBUG
                     DbgBrk ();      // ***FINISHME*** -- IDM_SAVE_AS_WS
-
+#endif
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_DROP_WS:
+#ifdef DEBUG
                     DbgBrk ();      // ***FINISHME*** -- IDM_DROP_WS
+#endif
 
 
 
                     return FALSE;   // We handled the msg
 
                 case IDM_DUP_WS:
+#ifdef DEBUG
                     DbgBrk ();      // ***FINISHME*** -- IDM_DUP_WS
+#endif
 
 
 
@@ -1207,13 +1228,13 @@ LRESULT APIENTRY MFWndProc
                 case IDM_SAVECLOSE_WS:
                     if (SendMessageW (hWnd, WM_COMMAND, GET_WM_COMMAND_MPS (IDM_SAVE_WS, NULL, 0)))
                         // Close the tab
-                        CloseTab (gOverTab);
+                        CloseTab (gOverTabIndex);
 
                     return FALSE;   // We handled the msg
 
                 case IDM_CLOSE_WS:
                     // Close the tab
-                    CloseTab (gOverTab);
+                    CloseTab (gOverTabIndex);
 
                     return FALSE;   // We handled the msg
 
@@ -1351,20 +1372,20 @@ HWND GetActiveMC
     (HWND hWndTC)           // Window handle of Tab Control
 
 {
-    int iCurTab;            // Index of the current tab
+    int iCurTabIndex;       // Index of the current tab
 
     // If the Tab Control is not defined, quit
     if (hWndTC EQ NULL)
         return NULL;
 
     // Get the index of the currently selected tab
-    iCurTab = TabCtrl_GetCurSel (hWndTC);
+    iCurTabIndex = TabCtrl_GetCurSel (hWndTC);
 
     // If no tab selected (early in MFWndProc processing), quit
-    if (iCurTab EQ -1)
+    if (iCurTabIndex EQ -1)
         return NULL;
 
-    return GetWndMC (iCurTab);
+    return GetWndMC (iCurTabIndex);
 } // End GetActiveMC
 
 
@@ -1670,8 +1691,9 @@ BOOL InitInstance
     _hInstance = hInstance;
 
     // Allocate virtual memory for the char temporary storage
-    memVirtStr[MEMVIRT_SZTEMP].MaxSize = DEF_CTEMP_MAXSIZE * sizeof (char);
-    memVirtStr[MEMVIRT_SZTEMP].IniAddr = (LPUCHAR)
+    memVirtStr[MEMVIRT_SZTEMP].IncrSize = DEF_CTEMP_INCRSIZE * sizeof (char);
+    memVirtStr[MEMVIRT_SZTEMP].MaxSize  = DEF_CTEMP_MAXSIZE  * sizeof (char);
+    memVirtStr[MEMVIRT_SZTEMP].IniAddr  = (LPUCHAR)
     lpszTemp =
       VirtualAlloc (NULL,       // Any address
                     memVirtStr[MEMVIRT_SZTEMP].MaxSize,
@@ -1692,8 +1714,9 @@ BOOL InitInstance
                   PAGE_READWRITE);
 
     // Allocate virtual memory for the WCHAR temporary storage
-    memVirtStr[MEMVIRT_WSZTEMP].MaxSize = DEF_WTEMP_MAXSIZE * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZTEMP].IniAddr = (LPUCHAR)
+    memVirtStr[MEMVIRT_WSZTEMP].IncrSize = DEF_WTEMP_INCRSIZE * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZTEMP].MaxSize  = DEF_WTEMP_MAXSIZE  * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZTEMP].IniAddr  = (LPUCHAR)
     lpwszTemp =
       VirtualAlloc (NULL,       // Any address
                     memVirtStr[MEMVIRT_WSZTEMP].MaxSize,
@@ -1714,8 +1737,9 @@ BOOL InitInstance
                   PAGE_READWRITE);
 
     // Allocate virtual memory for the WCHAR Formatting storage
-    memVirtStr[MEMVIRT_WSZFORMAT].MaxSize = DEF_WFORMAT_MAXSIZE * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZFORMAT].IniAddr = (LPUCHAR)
+    memVirtStr[MEMVIRT_WSZFORMAT].IncrSize = DEF_WFORMAT_INCRSIZE * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZFORMAT].MaxSize  = DEF_WFORMAT_MAXSIZE  * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZFORMAT].IniAddr  = (LPUCHAR)
     lpwszFormat =
       VirtualAlloc (NULL,       // Any address
                     memVirtStr[MEMVIRT_WSZFORMAT].MaxSize,
@@ -1736,8 +1760,9 @@ BOOL InitInstance
                   PAGE_READWRITE);
 #ifdef DEBUG
     // Allocate virtual memory for the char debug storage
-    memVirtStr[MEMVIRT_SZDEBUG].MaxSize = DEF_DEBUG_MAXSIZE * sizeof (char);
-    memVirtStr[MEMVIRT_SZDEBUG].IniAddr = (LPUCHAR)
+    memVirtStr[MEMVIRT_SZDEBUG].IncrSize = DEF_DEBUG_INCRSIZE * sizeof (char);
+    memVirtStr[MEMVIRT_SZDEBUG].MaxSize  = DEF_DEBUG_MAXSIZE  * sizeof (char);
+    memVirtStr[MEMVIRT_SZDEBUG].IniAddr  = (LPUCHAR)
     lpszDebug =
       VirtualAlloc (NULL,       // Any address
                     memVirtStr[MEMVIRT_SZDEBUG].MaxSize,
@@ -1758,8 +1783,9 @@ BOOL InitInstance
                   PAGE_READWRITE);
 
     // Allocate virtual memory for the WCHAR debug storage
-    memVirtStr[MEMVIRT_WSZDEBUG].MaxSize = DEF_DEBUG_MAXSIZE * sizeof (WCHAR);
-    memVirtStr[MEMVIRT_WSZDEBUG].IniAddr = (LPUCHAR)
+    memVirtStr[MEMVIRT_WSZDEBUG].IncrSize = DEF_DEBUG_INCRSIZE * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZDEBUG].MaxSize  = DEF_DEBUG_MAXSIZE  * sizeof (WCHAR);
+    memVirtStr[MEMVIRT_WSZDEBUG].IniAddr  = (LPUCHAR)
     lpwszDebug =
       VirtualAlloc (NULL,       // Any address
                     memVirtStr[MEMVIRT_WSZDEBUG].MaxSize,

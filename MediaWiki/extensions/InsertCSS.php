@@ -16,15 +16,12 @@ function fnInsertCSS (&$out, &$text)
                 return;
     } // End FOREACH
 
-////$fp = fopen ("/rul/mediawiki/extensions/stylesheet", 'a');
-////fwrite ($fp, $sh . "\r\n$index\r\n"); $index++;
-////fclose ($fp);
-
     // Add a stylesheet
     $out->addLink (array ('rel'  => 'stylesheet',
                           'type' => 'text/css',
                           'href' => 'extensions/apl.css'
                          ));
+    return true;
 } // End fnInsertCSS
 
 ?>

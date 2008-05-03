@@ -155,6 +155,8 @@ code
 .APL
 {
   white-space: nowrap;
+  font-family: SImPL, monospace;
+  font-weight: bold;
 }
 
 li.TBD:before

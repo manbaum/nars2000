@@ -50,12 +50,6 @@ LPTOKEN CheckAxisOper
       || lpYYFcnStr[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
         return &lpYYFcnStr[1].tkToken;
     else
-    if (lpYYFcnStr->lpYYFcn
-     && lpYYFcnStr->lpYYFcn->TknCount > 1
-     && (lpYYFcnStr->lpYYFcn[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
-      || lpYYFcnStr->lpYYFcn[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
-        return &lpYYFcnStr->lpYYFcn[1].tkToken;
-    else
         return NULL;
 } // End CheckAxisOper
 

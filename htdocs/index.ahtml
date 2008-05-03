@@ -5,7 +5,6 @@
 <head>
   <title>NARS2000 Welcome Page</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-  <meta name="Braces2APL" content="font" />
   <link rel="stylesheet"
         href="http://www.sudleyplace.com/styles/common.css"
         type="text/css" />
@@ -137,7 +136,7 @@
                   <span class="APL">R[L]</span>,
                   <span class="APL">R[L]{is}A</span>,
               and <span class="APL">R[L]<i>f</i>{is}A</span></li>
-            <li>Dyadic operator jot ({jot}) (composition) (e.g.,
+            <li>Dyadic operator jot (<span class="APL">{jot}</span>) (composition) (e.g.,
               <span class="APL">f{is},{jot}{gradeup}{jot}{gradeup}{jot},</span>)</li>
             <li>Axis operator allowed with primitive scalar dyadic functions (e.g.,
               <span class="APL">1 2+[1] 2 3{rho}R</span>)</li>
@@ -172,16 +171,16 @@
               the result as non-displayable.</li>
             <li>User-defined function/operator prototype entry point
               (<span class="APL">{quad}PROTOTYPE:</span>)</li>
-            <li>Monadic operator null ({circlemiddledot}) to aid in
+            <li>Monadic operator null (<span class="APL">{circlemiddledot}</span>) to aid in
               resolving ambiguities with slash/slope as function/operator
               (e.g., use <span class="APL">/{circlemiddledot}/3 4</span>
               instead of <span class="APL">//3 4</span>)</li>
-            <li>Monadic iota ({iota}) extended to negative values.  For example, in origin-0,
+            <li>Monadic iota (<span class="APL">{iota}</span>) extended to negative values.  For example, in origin-0,
               <span class="APL">{iota}{neg}3</span> returns <span class="APL">{neg}3 {neg}2 {neg}1</span>.</li>
-            <li>Monadic iota ({iota}) extended to length &gt; 1 vector right arguments
+            <li>Monadic iota (<span class="APL">{iota}</span>) extended to length &gt; 1 vector right arguments
               returns an array of indices whose shape is that of the right argument
               (via an internal magic function)</li>
-            <li>Dyadic iota ({iota}) extended to rank &gt; 1 left arguments returns an array
+            <li>Dyadic iota (<span class="APL">{iota}</span>) extended to rank &gt; 1 left arguments returns an array
               of vector indices to the left argument (via an internal magic function)</li>
             <li>Index reference, assignment, modify assignment, squad, and pick
                  (<span class="APL">R[L]</span>,
@@ -199,7 +198,7 @@
               and <span class="APL">{overbar}{infinity}</span> for negative infinity)
               &mdash; considerable development work needs to be done to this
               feature to handle the many special cases</li>
-            <li>Monadic and dyadic domino ({domino}) &mdash; matrix inverse/divide extended to
+            <li>Monadic and dyadic domino (<span class="APL">{domino}</span>) &mdash; matrix inverse/divide extended to
               use Moore-Penrose pseudo-inverse algorithm via Singular Value Decomposition</li>
             <li>Prototypes for all primitive functions and operators</li>
             <li>System variables:
@@ -240,7 +239,7 @@
 
         <li>Optional Facilities Included
           <ul>
-            <li>Statement Separator ({diamond})</li>
+            <li>Statement Separator (<span class="APL">{diamond}</span>)</li>
           </ul>
         </li>
 
@@ -254,7 +253,7 @@
 
         <li>Facilities Purposely Omitted
          <ul>
-           <li>Locked functions ({deltilde})</li>
+           <li>Locked functions (<span class="APL">{deltilde}</span>)</li>
          </ul>
         </li>
       </ul>
@@ -272,14 +271,14 @@
         <li>Selective assignment (e.g.,
           <span class="APL">(1 1{transpose}A){is}1 2 3</span>)</li>
         <li>Primitive functions and operators user extensible via user-defined APL functions</li>
-        <li>Primitive dyadic function down tack ({downtackjot}) with character left argument
+        <li>Primitive dyadic function down tack (<span class="APL">{downtackjot}</span>) with character left argument
           (Format By Example)</li>
-        <li>Primitive dyadic function left shoe ({leftshoe}) (Partitioned Enclose)</li>
-        <li>Primitive dyadic function epsilon underbar ({epsilon_}) (Find)</li>
-        <li>Primitive dyadic operator dieresis-del ({deldieresis}) (Dual)</li>
-        <li>Primitive dyadic operator dieresis-star ({stardieresis}) (Power)</li>
-        <li>Primitive dyadic operator dieresis-downtack ({downtackdieresis}) (Convolution)</li>
-        <li>Primitive dyadic operator stile-tilde ({stiletilde}) (Partition)</li>
+        <li>Primitive dyadic function left shoe (<span class="APL">{leftshoe}</span>) (Partitioned Enclose)</li>
+        <li>Primitive dyadic function epsilon underbar (<span class="APL">{epsilon_}</span>) (Find)</li>
+        <li>Primitive dyadic operator dieresis-del (<span class="APL">{deldieresis}</span>) (Dual)</li>
+        <li>Primitive dyadic operator dieresis-star (<span class="APL">{stardieresis}</span>) (Power)</li>
+        <li>Primitive dyadic operator dieresis-downtack (<span class="APL">{downtackdieresis}</span>) (Convolution)</li>
+        <li>Primitive dyadic operator stile-tilde (<span class="APL">{stiletilde}</span>) (Partition)</li>
       </ul>
     </div>
 
@@ -327,8 +326,8 @@
         <li>Array rank and dimension limit of 64 bits</li>
         <li>Multilevel Undo in function editing</li>
         <li>Undo buffer saved with function for reuse on next edit</li>
-        <li>Fast Boolean reduction ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus})
-          and scan ({lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand})
+        <li>Fast Boolean reduction (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}{plus}</span>)
+          and scan (<span class="APL">{lessthan}{notmore}{equal}{notless}{morethan}{notequal}{or}{nor}{and}{nand}</span>)
           along contiguous bits</li>
         <li>Right double click on an editable name brings up the function editor on that name</li>
         <li>Control chars (<span class="APL">{quad}TCBEL</span>, <span class="APL">{quad}TCBS</span>,
@@ -370,11 +369,6 @@
             <li class="TBD"><span class="APL">{quad}TF</span> (Transfer Form)</li>
           </ul>
         </li>
-      </ul>
-
-      <h3>System Commands</h3>
-      <ul>
-        <li class="TBD"><span class="APL">)COPY</span></li>
       </ul>
     </div>
 

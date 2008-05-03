@@ -157,7 +157,7 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->FcnCount];
+    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
 
     return
       PrimOpDieresisJotCommon_EM_YY (NULL,              // Ptr to left arg token (may be NULL if monadic derived function)
@@ -513,7 +513,7 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (NULL NE CheckAxisOper (lpYYFcnStrOpr))];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->FcnCount];
+    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
 
     return
       PrimOpDieresisJotCommon_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if monadic derived function)

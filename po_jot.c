@@ -131,7 +131,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
-    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->FcnCount];
+    lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
 
     // Get a ptr to the prototype function for the left operand
     if (bPrototyping && IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
@@ -159,7 +159,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
 
     // Check for axis operator in the left operand
     if (uLftArg
-     && lpYYFcnStrLft->FcnCount > 1
+     && lpYYFcnStrLft->TknCount > 1
      && (lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
       || lpYYFcnStrLft[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
         lptkAxisLft = &lpYYFcnStrLft[1].tkToken;
@@ -168,7 +168,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
 
     // Check for axis operator in the right operand
     if (uRhtArg
-     && lpYYFcnStrRht->FcnCount > 1
+     && lpYYFcnStrRht->TknCount > 1
      && (lpYYFcnStrRht[1].tkToken.tkFlags.TknType EQ TKT_AXISIMMED
       || lpYYFcnStrRht[1].tkToken.tkFlags.TknType EQ TKT_AXISARRAY))
         lptkAxisRht = &lpYYFcnStrRht[1].tkToken;

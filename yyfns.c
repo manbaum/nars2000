@@ -331,18 +331,19 @@ LPPL_YYSTYPE YYCopyFcn
     (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
      LPPL_YYSTYPE  lpYYArg,             // Ptr to function arg
      LPPL_YYSTYPE *lpYYBase,            // Ptr to ptr to YY base address
-     LPINT         lpFcnCount,          // Ptr to resulting function count
+     LPINT         lpTknCount,          // Ptr to resulting token count
      BOOL          bResUsed)            // TRUE iff the result is used
 
 {
     int          i,
                  iLen,
-                 FcnCount,
-                 TotalFcnCount = 0;
+                 TknCount,
+                 TotalTknCount = 0;
     PL_YYSTYPE   YYFcn = {0};
     HGLOBAL      hGlbData;
     LPTOKEN      lpToken;
     LPPL_YYSTYPE lpYYMem0,
+                 lpYYMem1,
                  lpYYCopy;
 
     // Get the token count in this function strand
@@ -363,13 +364,21 @@ LPPL_YYSTYPE YYCopyFcn
         Assert (YYCheckInuse (&lpYYArg[i]));        // ***DEBUG***
 
         // Calculate the earlier function base
-        *lpYYBase = min (*lpYYBase, lpYYArg[i].lpYYFcn);
+        *lpYYBase = min (*lpYYBase, lpYYArg[i].lpYYFcnBase);
 
         // If the function is indirect, recurse
         if (lpYYArg[i].YYIndirect)
         {
-            FcnCount = 0;   // Initialize as it is incremented in YYCopyFcn
-            lpYYMem = YYCopyFcn (lpYYMem, lpYYArg[i].lpYYFcn, lpYYBase, &FcnCount, TRUE);
+            // Save the starting point so we can save the token count
+            lpYYMem1 = lpYYMem;
+
+            TknCount = 0;   // Initialize as it is incremented in YYCopyFcn
+            lpYYMem = YYCopyFcn (lpYYMem, lpYYArg[i].lpYYFcnBase, lpYYBase, &TknCount, TRUE);
+
+            Assert (TknCount EQ (lpYYMem - lpYYMem1));
+
+            // Set the proper token count
+            lpYYMem1->TknCount = TknCount;
 
             Assert (YYCheckInuse (&lpYYArg[i]));    // ***DEBUG***
         } else
@@ -396,14 +405,13 @@ LPPL_YYSTYPE YYCopyFcn
                     YYFcn.tkToken.tkData.tkChar     = lpToken->tkData.tkSym->stData.stChar;
                     YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
 ////////////////////YYFcn.tkToken.lptkOrig          = NULL;     // ALready zero from = {0}
-////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
-////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
+////////////////////YYFcn.TknCount                  = TknCount; // (Factored out below)
 ////////////////////YYFcn.YYInuse                   = 0;        // (Factored out below)
 ////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
 ////////////////////YYFcn.YYAvail                   = 0;        // Already zero from = {0}
 ////////////////////YYFcn.YYIndex                   = 0;        // (Factored out below)
 ////////////////////YYFcn.YYFlag                    = 0;        // Already zero from = {0}
-////////////////////YYFcn.lpYYFcn                   = NULL;     // Already zero from = {0}
+////////////////////YYFcn.lpYYFcnBase               = NULL;     // Already zero from = {0}
                     YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
                 } else
                 {
@@ -431,19 +439,17 @@ LPPL_YYSTYPE YYCopyFcn
                         YYFcn.tkToken.tkData.tkGlbData  = hGlbData;
                         YYFcn.tkToken.tkCharIndex       = lpToken->tkCharIndex;
 ////////////////////////YYFcn.tkToken.lptkOrig          = NULL;     // ALready zero from = {0}
-////////////////////////YYFcn.TknCount                  = lpYYArg[i].TknCount; // (Factored out below)
-////////////////////////YYFcn.FcnCount                  = FcnCount;            // (Factored out below)
+////////////////////////YYFcn.TknCount                  = TknCount; // (Factored out below)
 ////////////////////////YYFcn.YYInuse                   = 0;        // (Factored out below)
 ////////////////////////YYFcn.YYIndirect                = 0;        // Already zero from = {0}
 ////////////////////////YYFcn.YYAvail                   = 0;        // Already zero from = {0}
 ////////////////////////YYFcn.YYIndex                   = 0;        // (Factored out below)
 ////////////////////////YYFcn.YYFlag                    = 0;        // Already zero from = {0}
-////////////////////////YYFcn.lpYYFcn                   = NULL;     // Already zero from = {0}
+////////////////////////YYFcn.lpYYFcnBase               = NULL;     // Already zero from = {0}
                         YYFcn.lpYYStrandBase            = lpYYArg[i].lpYYStrandBase;
                     } // End IF
                 } // End IF/ELSE
 
-                YYFcn.TknCount = lpYYArg[i].TknCount;
                 YYFcn.YYInuse  = 0;
 #ifdef DEBUG
                 YYFcn.YYIndex  = NEG1U;
@@ -466,23 +472,23 @@ LPPL_YYSTYPE YYCopyFcn
                 YYFree (lpYYCopy); lpYYCopy = NULL;
             } // End IF/ELSE
 
-            // Save the function count
-            FcnCount = 1;
-            lpYYMem[-1].FcnCount = FcnCount;
+            // Save the token count
+            TknCount = 1;
+            lpYYMem[-1].TknCount = TknCount;
         } // End IF/ELSE
 
-        // Accumulate into the total function count
-        TotalFcnCount += FcnCount;
+        // Accumulate into the total token count
+        TotalTknCount += TknCount;
     } // End FOR
 
     // Save the total function count in the first token
-    lpYYMem0->FcnCount = TotalFcnCount;
+    lpYYMem0->TknCount = TotalTknCount;
 
     // Return as the overall total
-    *lpFcnCount = TotalFcnCount;
+    *lpTknCount = TotalTknCount;
 
 #ifdef DEBUG
-    lpYYArg[0].FcnCount = TotalFcnCount;
+    lpYYArg[0].TknCount = TotalTknCount;
 
     if (bResUsed)
         Assert (YYCheckInuse (lpYYMem));            // ***DEBUG***

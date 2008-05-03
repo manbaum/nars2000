@@ -98,15 +98,15 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
 
     // If there's room for a left operand, ...
     if (lpYYFcnStr
-     && lpYYFcnStr->FcnCount > (UINT) (1 + (lptkAxis NE NULL)))
+     && lpYYFcnStr->TknCount > (UINT) (1 + (lptkAxis NE NULL)))
     {
         // Set ptr to left operand
         lpYYFcnStrLft = &lpYYFcnStr[1 + (lptkAxis NE NULL)];
 
         // If there's room for a right operand, ...
-        if (lpYYFcnStr->FcnCount > (UINT) (lpYYFcnStrLft->FcnCount + (lpYYFcnStrLft - lpYYFcnStr)))
+        if (lpYYFcnStr->TknCount > (UINT) (lpYYFcnStrLft->TknCount + (lpYYFcnStrLft - lpYYFcnStr)))
             // Set ptr to right operand
-            lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->FcnCount];
+            lpYYFcnStrRht = &lpYYFcnStrLft[lpYYFcnStrLft->TknCount];
         else
             lpYYFcnStrRht = NULL;
     } else
@@ -1643,7 +1643,7 @@ BOOL InitFcnSTEs
         Assert (numArgSTE EQ 1);
 
         // Split cases based upon the function count
-        if (lpYYArg->FcnCount EQ 1
+        if (lpYYArg->TknCount EQ 1
          && lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNIMMED)
         {
             // Clear the STE flags & data
@@ -1664,7 +1664,7 @@ BOOL InitFcnSTEs
             UINT    uFcn;               // Loop counter
 
             // Calculate space needed for the result
-            ByteRes = CalcFcnSize (lpYYArg->FcnCount);
+            ByteRes = CalcFcnSize (lpYYArg->TknCount);
 
             // Allocate global memory for the function array
             // N.B.: Conversion from APLUINT to UINT.
@@ -1681,7 +1681,7 @@ BOOL InitFcnSTEs
             lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
             lpHeader->fnNameType  = NAMETYPE_FN12;
             lpHeader->RefCnt      = 1;
-            lpHeader->tknNELM     = lpYYArg->FcnCount;
+            lpHeader->tknNELM     = lpYYArg->TknCount;
 ////////////lpHeader->hGlbTxtLine = NULL;           // Already zero from GHND
 #undef  lpHeader
 
@@ -1691,10 +1691,10 @@ BOOL InitFcnSTEs
             // Copy the PL_YYSTYPEs to the global memory object
             // Test cases:  +/rank[2] a     (as defined operator)
             //              +/{rank}[2] a   (as primitive operator)
-            CopyMemory (lpMemRes, lpYYArg, lpYYArg->FcnCount * sizeof (PL_YYSTYPE));
+            CopyMemory (lpMemRes, lpYYArg, lpYYArg->TknCount * sizeof (PL_YYSTYPE));
 
             // Loop through the functions incrementing the RefCnt as appropriate
-            for (uFcn = 0; uFcn < lpYYArg->FcnCount; uFcn++)
+            for (uFcn = 0; uFcn < lpYYArg->TknCount; uFcn++)
             // Split cases based upon the token type
             switch (lpYYArg[uFcn].tkToken.tkFlags.TknType)
             {

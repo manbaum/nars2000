@@ -27,9 +27,8 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
     //   we might need it to be an LPPL_YYSTYPE (for a function strand)
     //   or an LPTOKEN (single function).
     TOKEN   tkToken;                // 00:  Token info
-    UINT    TknCount,               // 14:  Token count
-            FcnCount;               // 18:  Function count
-    UINT    YYInuse:1,              // 1C:  00000001:  This entry is in use
+    UINT    TknCount;               // 14:  Token count
+    UINT    YYInuse:1,              // 18:  00000001:  This entry is in use
             YYIndirect:1,           //      00000002:  Arg is indirect
 #ifdef DEBUG
             Avail:6,                //      000000FC:  Available bits
@@ -38,17 +37,18 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
 #else
             Avail:30;               //      FFFFFFFC:  Available bits
 #endif
-    struct tagPL_YYSTYPE *
-            lpYYFcn;                // 20:  Ptr to function/operator
-    struct tagPL_YYSTYPE *
-            lpYYStrandBase;         // 24:  Ptr to this token's strand base
+    struct tagPL_YYSTYPE
+           *lpYYFcnBase,            // 1C:  Ptr to base function/operator
+                                    //      Not valid outside the enclosing
+                                    //        invocation of ParseLine
+           *lpYYStrandBase;         // 20:  Ptr to this token's strand base
 #ifdef DEBUG
-    UINT    SILevel;                // 2C:  SI Level (needed for YYResIsEmpty)
-    LPCHAR  lpFileName;             // 30:  Ptr to filename where allocated
-    UINT    uLineNum;               // 34:  Line # where allocated
-                                    // 38:  Length
+    UINT    SILevel;                // 24:  SI Level (needed for YYResIsEmpty)
+    LPCHAR  lpFileName;             // 28:  Ptr to filename where allocated
+    UINT    uLineNum;               // 2C:  Line # where allocated
+                                    // 30:  Length
 #else
-                                    // 28:  Length
+                                    // 24:  Length
 #endif
 } PL_YYSTYPE, *LPPL_YYSTYPE;        // Data type of yacc stack
 

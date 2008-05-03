@@ -259,7 +259,7 @@ LRESULT APIENTRY DBWndProc
     // Get the window handle of the Listbox
     (long) hWndLB = GetWindowLongW (hWnd, GWLDB_HWNDLB);
 
-    LCLODSAPI ("DB: ", hWnd, message, wParam, lParam);
+////LCLODSAPI ("DB: ", hWnd, message, wParam, lParam);
     switch (message)
     {
         case WM_CREATE:
@@ -483,11 +483,11 @@ LRESULT APIENTRY DBWndProc
             goto NORMAL_EXIT;       // We handled the msg
     } // End SWITCH
 
-    LCLODSAPI ("DBY:", hWnd, message, wParam, lParam);
+////LCLODSAPI ("DBY:", hWnd, message, wParam, lParam);
     lResult =
       DefMDIChildProcW (hWnd, message, wParam, lParam);
 NORMAL_EXIT:
-    LCLODSAPI ("DBZ:", hWnd, message, wParam, lParam);
+////LCLODSAPI ("DBZ:", hWnd, message, wParam, lParam);
 
     return lResult;
 } // End DBWndProc

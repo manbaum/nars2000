@@ -180,6 +180,24 @@ LPCHAR SkipWhite
 } // End SkipWhite
 
 
+//****************************************************************************
+//  $SkipWhiteW
+//
+//  Skip over leading white space
+//****************************************************************************
+
+LPWCHAR SkipWhiteW
+    (LPWCHAR lpw)
+
+{
+    // Skip over white space
+    while (IsWhiteW (*lpw))
+        lpw++;
+
+    return lpw;
+} // End SkipWhiteW
+
+
 //***************************************************************************
 //  $SkipBlackW
 //

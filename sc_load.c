@@ -111,7 +111,7 @@ BOOL CmdLoadCom_EM
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the tab index from which this command was issued
-    iTabIndex = lpMemPTD->CurTabIndex;
+    iTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -160,16 +160,16 @@ BOOL LoadWorkspace_EM
     LPWCHAR      lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                  lpwErrMsg;             // Ptr to (constant) error message text
     FILE        *fStream;               // Ptr to file stream for the plain text workspace file
-    UINT         uSymVar,               // Var index counter
-                 uSymFcn,               // Fcn/Opr index counter
+    UINT         uSymVar,               // Var section counter
+                 uSymFcn,               // Fcn/Opr ...
                  uGlbCnt,               // [Globals] count
                  uSILevel,              // [General] SILevel value
                  uSID,                  // Loop counter
-                 uStr;                  // Loop counter
+                 uCnt;                  // Loop counter
     LPWCHAR      lpwSrc,                // Ptr to incoming data
-                 lpwDst,                // Ptr to destination data in name
                  lpwSrcStart;           // Ptr to starting point
     WCHAR        wszCount[8],           // Save area for formatted uSymVar/Fcn counter
+////             wszVersion[8],         // ...                     version info
                  wszSectName[15];       // ...                     section name (e.g., [Vars.nnn])
     BOOL         bRet = FALSE,          // TRUE iff the result is valid
                  bImmed;                // TRUE iff the result of ParseSavedWsVar_EM is immediate
@@ -181,6 +181,8 @@ BOOL LoadWorkspace_EM
     LPWCHAR      lpwCharEnd;            // Temporary ptr
     APLLONGEST   aplLongestObj;         // Object immediate value
     LPAPLLONGEST lpaplLongestObj;       // Ptr to ...
+    LPSYMENTRY   lpSymLink = NULL;      // Anchor of SYMENTRY links for [Globals] values
+                                        //   so we may delete them easily
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -202,6 +204,13 @@ BOOL LoadWorkspace_EM
     // We no longer need this handle
     fclose (fStream); fStream = NULL;
 
+////// Get the version #
+////GetPrivateProfileStringW (SECTNAME_GENERAL,     // Ptr to the section name
+////                          KEYNAME_VERSION,      // Ptr to the key name
+////                          L"",                  // Ptr to the default value
+////                          wszVersion,           // Ptr to the output buffer
+////                          sizeof (wszVersion) / sizeof (wszVersion[0]), // Byte size of the output buffer
+////                          lpwszDPFE);           // Ptr to the file name
     // Get the SI Level
     uSILevel =
       GetPrivateProfileIntW (SECTNAME_GENERAL,          // Ptr to the section name
@@ -225,13 +234,13 @@ BOOL LoadWorkspace_EM
                                  0,                         // Default value if not found
                                  lpwszDPFE);                // Ptr to the file name
         // Loop through the [Vars.sss] section where sss is the SI level
-        for (uStr = 0; uStr < uSymVar; uStr++)
+        for (uCnt = 0; uCnt < uSymVar; uCnt++)
         {
             // Save ptr
             lpwSrc = lpwszTemp;
 
             // Format the counter
-            wsprintfW (wszCount, L"%d", uStr);
+            wsprintfW (wszCount, L"%d", uCnt);
 
             // Read the next string
             GetPrivateProfileStringW (wszSectName,          // Ptr to the section name
@@ -249,7 +258,6 @@ BOOL LoadWorkspace_EM
 
             // Save the starting point
             lpwSrcStart = lpwSrc;
-            lpwDst = lpwSrc;
 
             // Convert the {name}s and other chars to UTF16_xxx
             lpwSrc = ConvertNameInPlace (lpwSrc);
@@ -283,8 +291,7 @@ BOOL LoadWorkspace_EM
                 // Mark the SYMENTRY as immediate so we don't free the
                 //   (non-existant) stGlbData
                 // Set other flags as appropriate
-                lpSymEntry->stFlags.Imm        =
-                lpSymEntry->stFlags.Value      = TRUE;
+                lpSymEntry->stFlags.Imm        = TRUE;
                 lpSymEntry->stFlags.ObjName    = OBJNAME_USR;
                 lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
             } // End IF
@@ -297,14 +304,15 @@ BOOL LoadWorkspace_EM
 
             // Parse the value into aplLongestObj and aplTypeObj
             lpwSrc =
-              ParseSavedWsVar_EM (lpwSrc,
-                                 &lpaplLongestObj,
-                                 &aplTypeObj,
-                                 &bImmed,
-                                  FALSE,
-                                  hWndEC,
-                                  lpwszDPFE,
-                                 &lpwErrMsg);
+              ParseSavedWsVar_EM (lpwSrc,           // Ptr to input buffer
+                                 &lpaplLongestObj,  // Ptr to ptr to output element
+                                 &aplTypeObj,       // Ptr to storage type (may be NULL)
+                                 &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
+                                  FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
+                                  hWndEC,           // Edit Control window handle
+                                 &lpSymLink,        // Ptr to ptr to SYMENTRY link
+                                  lpwszDPFE,        // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                 &lpwErrMsg);       // Ptr to ptr to (constant error message text
             if (lpwSrc EQ NULL)
                 goto ERRMSG_EXIT;
 
@@ -338,12 +346,14 @@ BOOL LoadWorkspace_EM
                 {
                     // Set the stFlags & stData
                     lpSymEntry->stFlags.Imm      = TRUE;
+                    lpSymEntry->stFlags.Value    = TRUE;
                     lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
                     lpSymEntry->stData.stLongest = aplLongestObj;
                 } else
                 {
                     // Set the stFlags & stData
                     lpSymEntry->stFlags.Imm      = FALSE;
+                    lpSymEntry->stFlags.Value    = TRUE;
                     lpSymEntry->stFlags.ImmType  = 0;
                     lpSymEntry->stData.stLongest = aplLongestObj;
                 } // End IF/ELSE
@@ -367,7 +377,7 @@ BOOL LoadWorkspace_EM
                                  0,                         // Default value if not found
                                  lpwszDPFE);                // Ptr to the file name
         // Loop through the [Fcns.sss] section where sss is the SI level
-        for (uStr = 0; uStr < uSymFcn; uStr++)
+        for (uCnt = 0; uCnt < uSymFcn; uCnt++)
         {
             NAME_TYPES nameType;
 
@@ -375,7 +385,7 @@ BOOL LoadWorkspace_EM
             lpwSrc = lpwszTemp;
 
             // Format the counter
-            wsprintfW (wszCount, L"%d", uStr);
+            wsprintfW (wszCount, L"%d", uCnt);
 
             // Read the next string
             GetPrivateProfileStringW (wszSectName,          // Ptr to the section name
@@ -393,7 +403,6 @@ BOOL LoadWorkspace_EM
 
             // Save the starting point
             lpwSrcStart = lpwSrc;
-            lpwDst = lpwSrc;
 
             // Convert the {name}s and other chars to UTF16_xxx
             lpwSrc = ConvertNameInPlace (lpwSrc);
@@ -429,19 +438,20 @@ BOOL LoadWorkspace_EM
             } // End IF
 
             // Parse the line into lpSymEntry->stData
-            if (!ParseSavedWsFcn_EM (lpwSrc,
-                                     lpSymEntry,
-                                     nameType,
-                                     hWndEC,
-                                     lpwszDPFE,
-                                    &lpwErrMsg))
+            if (!ParseSavedWsFcn_EM (lpwSrc,        // Ptr to input buffer
+                                     lpSymEntry,    // Ptr to STE for the object
+                                     nameType,      // Function name type (see NAME_TYPES)
+                                     hWndEC,        // Edit Control window handle
+                                    &lpSymLink,     // Ptr to ptr to SYMENTRY link
+                                     lpwszDPFE,     // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                    &lpwErrMsg))    // Ptr to ptr to (constant) error message text
                 goto ERRMSG_EXIT;
         } // End FOR
 
         // If there's another SI level to process, create a new SIS struc
         if (uSID < uSILevel)
         {
-            DbgBrk ();
+////        DbgBrk ();
 
             // Lock the memory to get a ptr to it
             lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -470,8 +480,8 @@ BOOL LoadWorkspace_EM
 
 
 
-            // Lock the memory to get a ptr to it
-            lpMemPTD = MyGlobalLock (hGlbPTD);
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
         } // End IF
     } // End FOR
 
@@ -481,8 +491,11 @@ BOOL LoadWorkspace_EM
                              KEYNAME_COUNT,             // Ptr to the key name
                              0,                         // Default value if not found
                              lpwszDPFE);                // Ptr to the file name
-    // Delete the symbol table entries for vars we allocated of the form "#%d"
-    DeleteLoadSTEs (uGlbCnt);
+    // Delete the symbol table entries for vars/fcns we allocated of the form "#%d"
+    DeleteGlobalLinks (lpSymLink);
+
+    // Display the workspace timestamp
+    DisplayWorkspaceStamp (lpwszDPFE);
 WSID_EXIT:
     // Set the value of the new []WSID as lpwszDPFE
     bRet = SaveNewWsid_EM (lpwszDPFE);
@@ -512,6 +525,59 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $DisplayWorkspaceStamp
+//
+//  Display the workspace timestamp
+//***************************************************************************
+
+void DisplayWorkspaceStamp
+    (LPWCHAR lpwszDPFE)                 // Workspace filenam
+
+{
+#define TIMESTAMP_FMT L"SAVED MM/DD/YYYY hh:mm:ss"
+
+    WCHAR      wszTimeStamp[16 + 1],    // Output save area for time stamp
+               wszTemp[1 + (sizeof (TIMESTAMP_FMT) / sizeof (WCHAR))];
+    FILETIME   ftCreation,              // Function creation time in UTC
+               ftLocalTime;             // ...                       localtime
+    SYSTEMTIME systemTime;              // Current system (UTC) time
+
+    // Read the creation time
+    GetPrivateProfileStringW (SECTNAME_GENERAL,     // Ptr to the section name
+                              KEYNAME_CREATIONTIME, // Ptr to the key name
+                              L"",                  // Ptr to the default value
+                              wszTimeStamp,         // Ptr to the output buffer
+                              sizeof (wszTimeStamp),// Byte size of the output buffer
+                              lpwszDPFE);           // Ptr to the file name
+    // Convert the CreationTime string to time
+    swscanf (wszTimeStamp, L"%16I64X", &ftCreation);
+
+    if (bUseLocalTime)
+        // Convert to local filetime
+        FileTimeToLocalFileTime (&ftCreation, &ftLocalTime);
+    else
+        ftLocalTime = ftCreation;
+
+    // Convert the creation time to system time so we can display it
+    FileTimeToSystemTime (&ftLocalTime, &systemTime);
+
+    lstrcpyW (wszTemp, L"SAVED ");
+
+    // Format it
+    wsprintfW (wszTemp + lstrlenW (wszTemp),
+               DATETIME_FMT,
+               systemTime.wMonth,
+               systemTime.wDay,
+               systemTime.wYear,
+               systemTime.wHour,
+               systemTime.wMinute,
+               systemTime.wSecond);
+    // Display it
+    AppendLine (wszTemp, FALSE, TRUE);
+} // End DisplayWorkspaceStamp
+
+
+//***************************************************************************
 //  $SendMessageLastTab
 //
 //  Send a (constant) message to the previously outgoing tab
@@ -529,7 +595,7 @@ void SendMessageLastTab
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the index of the tab from which we were )LOADed
-    iPrvTabIndex = lpMemPTD->PrvTabIndex;
+    iPrvTabIndex = TranslateTabIDToIndex (lpMemPTD->PrvTabID);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
@@ -564,12 +630,13 @@ void SendMessageLastTab
 #endif
 
 BOOL ParseSavedWsFcn_EM
-    (LPWCHAR    lpwSrc,                 // Ptr to input buffer
-     LPSYMENTRY lpSymObj,               // Ptr to STE for the object
-     NAME_TYPES nameType,               // Function name type (see NAME_TYPES)
-     HWND       hWndEC,                 // Edit Control window handle
-     LPWCHAR    lpwszDPFE,              // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
-     LPWCHAR   *lplpwErrMsg)            // Ptr to ptr to (constant) error message text
+    (LPWCHAR     lpwSrc,                // Ptr to input buffer
+     LPSYMENTRY  lpSymObj,              // Ptr to STE for the object
+     NAME_TYPES  nameType,              // Function name type (see NAME_TYPES)
+     HWND        hWndEC,                // Edit Control window handle
+     LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
+     LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+     LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant) error message text
 
 {
     WCHAR      wcTmp;                   // Temporary char
@@ -610,6 +677,7 @@ BOOL ParseSavedWsFcn_EM
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (#nnn)
                                       lpwDataEnd,   // Ptr to next available byte
                                       hWndEC,       // Edit Control window handle
+                                      lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
         else
@@ -678,14 +746,15 @@ CORRUPTWS_EXIT:
 #endif
 
 LPWCHAR ParseSavedWsVar_EM
-    (LPWCHAR    lpwSrc,                 // Ptr to input buffer
-     LPVOID    *lplpMemObj,             // Ptr to ptr to output element
-     LPAPLSTYPE lpaplTypeObj,           // Ptr to storage type (may be NULL)
-     LPBOOL     lpbImmed,               // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
-     BOOL       bSymTab,                // TRUE iff to save SymTabAppend values, FALSE to save values directly
-     HWND       hWndEC,                 // Edit Control window handle
-     LPWCHAR    lpwszDPFE,              // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
-     LPWCHAR   *lplpwErrMsg)            // Ptr to ptr to (constant error message text
+    (LPWCHAR     lpwSrc,                // Ptr to input buffer
+     LPVOID     *lplpMemObj,            // Ptr to ptr to output element
+     LPAPLSTYPE  lpaplTypeObj,          // Ptr to storage type (may be NULL)
+     LPBOOL      lpbImmed,              // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
+     BOOL        bSymTab,               // TRUE iff to save SymTabAppend values, FALSE to save values directly
+     HWND        hWndEC,                // Edit Control window handle
+     LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
+     LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+     LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant error message text
 
 {
     WCHAR      wcTmp;                   // Temporary char
@@ -722,6 +791,7 @@ LPWCHAR ParseSavedWsVar_EM
               LoadWorkspaceGlobal_EM (lpwSrc,       // Ptr to keyname (#nnn)
                                       lpwDataEnd,   // Ptr to next available byte
                                       hWndEC,       // Edit Control window handle
+                                      lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                       lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
                                       lplpwErrMsg); // Ptr to ptr to (constant) error message text
             if (hGlbObj EQ NULL)
@@ -906,11 +976,12 @@ ERROR_EXIT:
 #endif
 
 HGLOBAL LoadWorkspaceGlobal_EM
-    (LPWCHAR  lpwGlbName,               // Ptr to keyname (#nnn)
-     LPWCHAR  lpwSrc,                   // Ptr to next available byte
-     HWND     hWndEC,                   // Edit Control window handle
-     LPWCHAR  lpwszDPFE,                // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
-     LPWCHAR *lplpwErrMsg)              // Ptr to ptr to (constant) error message text
+    (LPWCHAR     lpwGlbName,            // Ptr to keyname (#nnn)
+     LPWCHAR     lpwSrc,                // Ptr to next available byte
+     HWND        hWndEC,                // Edit Control window handle
+     LPSYMENTRY *lplpSymLink,           // Ptr to ptr to SYMENTRY link
+     LPWCHAR     lpwszDPFE,             // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+     LPWCHAR    *lplpwErrMsg)           // Ptr to ptr to (constant) error message text
 
 {
     APLSTYPE     aplTypeObj;            // Object storage type
@@ -920,11 +991,11 @@ HGLOBAL LoadWorkspaceGlobal_EM
     APLUINT      ByteObj,               // # bytes needed for the object
                  uObj;                  // Loop counter
     STFLAGS      stFlags = {0};         // SymTab flags
-    LPSYMENTRY   lpSymEntry;            // Ptr to STE for HGLOBAL
+    LPSYMENTRY   lpSymEntry,            // Ptr to STE for HGLOBAL
+                 lpSymLink;             // Ptr to SYMENTRY temp for *lplpSymLink
     WCHAR        wcTmp;                 // Temporary char
     LPWCHAR      lpwFcnName,            // Ptr to function name
                  lpwSectName,           // Ptr to section name
-                 lpwDst,                // Ptr to destination data in name
                  lpwSrcStart,           // Ptr to starting point
                  lpwCharEnd;            // Temporary ptr
     UINT         uBitIndex,             // Bit index for looping through Boolean result
@@ -1156,14 +1227,15 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     // Loop through the elements
                     for (uObj = 0; uObj < aplNELMObj; uObj++)
                         lpwSrc =
-                          ParseSavedWsVar_EM (lpwSrc,
-                                             &lpMemObj,
-                                              NULL,
-                                              NULL,
-                                              TRUE,
-                                              hWndEC,
-                                              lpwszDPFE,
-                                              lplpwErrMsg);
+                          ParseSavedWsVar_EM (lpwSrc,       // Ptr to input buffer
+                                             &lpMemObj,     // Ptr to ptr to output element
+                                              NULL,         // Ptr to storage type (may be NULL)
+                                              NULL,         // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
+                                              TRUE,         // TRUE iff to save SymTabAppend values, FALSE to save values directly
+                                              hWndEC,       // Edit Control window handle
+                                              lplpSymLink,  // Ptr to ptr to SYMENTRY link
+                                              lpwszDPFE,    // Drive, Path, Filename, Ext of the workspace (with WS_WKSEXT)
+                                              lplpwErrMsg); // Ptr to ptr to (constant error message text
                     break;
 
                 defstop
@@ -1300,7 +1372,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                           memVirtStr[MEMVIRT_WSZTEMP].MaxSize,  // Byte size of the output buffer
                                           lpwszDPFE);         // Ptr to the file name
                 // Convert in place
-                lpwSrcStart = lpwDst = lpwSrc;
+                lpwSrcStart = lpwSrc;
 
                 // Convert the {name}s and other chars to UTF16_xxx
                 (void) ConvertNameInPlace (lpwSrc);
@@ -1316,7 +1388,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 Assert (exitType EQ EXITTYPE_NOVALUE);
             } // End IF/ELSE
 
-            // Lookup the STE and save its HGLOBAL in the STE for #nnn
+            // Lookup the STE and get its HGLOBAL
+            //   so we can save it in the STE for #nnn
 
             // Set the flags for what we're looking up
             stFlags.Inuse   = TRUE;
@@ -1347,6 +1420,11 @@ HGLOBAL LoadWorkspaceGlobal_EM
     // Set the handle
     lpSymEntry->stData.stGlbData = hGlbObj;
 
+    // Link this SYMENTRY into the chain
+    lpSymLink = *lplpSymLink;
+    *lplpSymLink = lpSymEntry;
+    lpSymEntry->stSymLink = lpSymLink;
+
     return hGlbObj;
 
 CORRUPTWS_EXIT:
@@ -1363,49 +1441,6 @@ ERROR_EXIT:
     return NULL;
 } // End LoadWorkspaceGlobal_EM
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $DeleteLoadSTEs
-//
-//  Delete OBJNAME_LOD STEs
-//***************************************************************************
-
-void DeleteLoadSTEs
-    (UINT uGlbCnt)
-
-{
-    UINT       uStr;                    // Loop counter
-    WCHAR      wszCount[8];             // Save area for formatted uSymVar/Fcn counter
-    STFLAGS    stFlags = {0};           // SymTab flags
-    LPSYMENTRY lpSymEntry;              // Ptr to STE for HGLOBAL
-
-    // Tell 'em we're looking for )LOAD objects
-    stFlags.Inuse   = TRUE;
-    stFlags.ObjName = OBJNAME_LOD;
-
-    // Loop through the [Globals] section deleting #nnn STEs
-    for (uStr = 0; uStr < uGlbCnt; uStr++)
-    {
-        // Format the counter
-        wsprintfW (wszCount, FMTSTR_GLBCNT, uStr);
-
-        // Get the matching HGLOBAL
-        lpSymEntry =
-          SymTabLookupName (wszCount, &stFlags);
-
-        Assert (lpSymEntry NE NULL);
-
-        // If the SYMENTRY is not immediate, free its global
-        if (!lpSymEntry->stFlags.Imm)
-        {
-            FreeResultGlobalDFV (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
-        } // End IF
-
-        // Erase the STE
-        EraseSTE (lpSymEntry);
-    } // End FOR
-} // End DeleteLoadSTEs
 
 
 //***************************************************************************

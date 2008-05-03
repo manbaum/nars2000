@@ -338,8 +338,8 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                     lptkRhtArg);    // Ptr to right arg token
 
         case TKT_FCNIMMED:  // Either F or F[X]
-            Assert (lpYYFcnStr->FcnCount EQ 1
-                 || lpYYFcnStr->FcnCount EQ 2);
+            Assert (lpYYFcnStr->TknCount EQ 1
+                 || lpYYFcnStr->TknCount EQ 2);
 
             // Check for axis operator
             lptkAxis = CheckAxisOper (lpYYFcnStr);
@@ -396,8 +396,8 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
             } // End SWITCH
 
         case TKT_FCNNAMED:
-            Assert (lpYYFcnStr->FcnCount EQ 1
-                 || lpYYFcnStr->FcnCount EQ 2);
+            Assert (lpYYFcnStr->TknCount EQ 1
+                 || lpYYFcnStr->TknCount EQ 2);
 
             // Check for axis operator
             lptkAxis = CheckAxisOper (lpYYFcnStr);

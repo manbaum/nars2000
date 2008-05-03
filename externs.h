@@ -54,8 +54,9 @@
 #define DEF_STR_INITSIZE        (      256)                 // Initial size for lpwszStr
 #define DEF_STR_INCRSIZE        (      256)                 // Incremental ...
 #define DEF_STR_MAXSIZE         (   4*1024)                 // Maximum ...
-////ine DEF_TOKENSTACK_INITSIZE (  64*1024)                 // Initial size of token stack
-////ine DEF_TOKENSTACK_MAXSIZE  (1024*1024)                 // Maximum ...
+////ine DEF_TOKENSTACK_INITSIZE (   4*1024)                 // Initial size of token stack
+////ine DEF_TOKENSTACK_INCRSIZE (   4*1024)                 // Incremental ...
+////ine DEF_TOKENSTACK_MAXSIZE  (  64*1024)                 // Maximum ...
 #define DEF_SIS_INITSIZE        (   0*1024)                 // Initial size for State Indicator Stack
 #define DEF_SIS_INCRSIZE        (   1*1024)                 // Incremental ..
 #define DEF_SIS_MAXSIZE         (   4*1024)                 // Maximum ...
@@ -63,18 +64,25 @@
 #define DEF_YYRES_INCRSIZE      (   1*1024)                 // Incremental ...
 #define DEF_YYRES_MAXSIZE       (  16*1024)                 // Maximum ...
 #define DEF_CTEMP_INITSIZE      (   4*1024)                 // Initial size of char  temporary storage
+#define DEF_CTEMP_INCRSIZE      (   1*1024)                 // Incremental ...
 #define DEF_CTEMP_MAXSIZE       (  16*1024)                 // Maximum ...
 #define DEF_WTEMP_INITSIZE      (   4*1024)                 // Initial size of WCHAR ...
+#define DEF_WTEMP_INCRSIZE      (   1*1024)                 // Incremental ...
 #define DEF_WTEMP_MAXSIZE       (  16*1024)                 // Maximum ...
 #define DEF_DEBUG_INITSIZE      (   1*1024)                 // Initial size of debug ...
+#define DEF_DEBUG_INCRSIZE      (   1*1024)                 // Incremental ...
 #define DEF_DEBUG_MAXSIZE       (  16*1024)                 // Maximum ...
 #define DEF_WFORMAT_INITSIZE    (  64*1024)                 // Initial size of WCHAR Formatting storage
+#define DEF_WFORMAT_INCRSIZE    (   1*1024)                 // Incremental ...
 #define DEF_WFORMAT_MAXSIZE     (  64*1024)                 // Maximum ...
 #define DEF_UNDOBUF_INITSIZE    (   4*1024)                 // Initial size of Undo buffer
+#define DEF_UNDOBUF_INCRSIZE    (   4*1024)                 // Incremental ...
 #define DEF_UNDOBUF_MAXSIZE     (  64*1024)                 // Maximum ...
 #define DEF_QUADERROR_INITSIZE  (   1*1024)                 // Initial size of []ERROR/[]ES buffer
+#define DEF_QUADERROR_INCRSIZE  (   1*1024)                 // Incremental ...
 #define DEF_QUADERROR_MAXSIZE   (  16*1024)                 // Maximum ...
 #define DEF_STRAND_INITSIZE     (   1*1024)                 // Initial size in tokens of the strand stack
+#define DEF_STRAND_INCRSIZE     (   1*1024)                 // Incremental ...
 #define DEF_STRAND_MAXSIZE      (   4*1024)                 // Maximum ...
 #define DEF_DISPLAY_INITSIZE    (   4*1024)                 // Initial size of WCHARs for Array Display
 #define DEF_DISPLAY_INCRSIZE    (   4*1024)                 // Incremental ...
@@ -734,7 +742,7 @@ UCHAR FastBoolTrans[256][5]
 
 
 //***************************************************************************
-//
+//  Tab Control vars
 //***************************************************************************
 
 // Default tab stops
@@ -754,17 +762,19 @@ WCHAR wszIndent[DEF_INDENT + 1]
 ;
 
 EXTERN
-int gLstTab                             // Index of the previous (outgoing) tab (-1 = none)
+int gLstTabID                           // ID of the previous (outgoing) tab (-1 = none)
 #ifdef DEFINE_VALUES
  = -1
 #endif
 ,
-    gCurTab                             // Index of the current (incoming) tab  (-1 = none)
+    gCurTabID                           // ID of the current (incoming) tab  (-1 = none)
 #ifdef DEFINE_VALUES
  = -1
 #endif
 ,
-    gOverTab                            // Index of the tab the mouse is over
+    gOverTabIndex                       // Index of the tab the mouse is over
+                                        // As this is a transient value, we store it as
+                                        //   an index rather than an ID
 #ifdef DEFINE_VALUES
  = -1
 #endif
@@ -1049,23 +1059,24 @@ typedef enum tagMEMVIRTENUM
     MEMVIRT_SZTEMP = 0,                 // 00:  lpszTemp
     MEMVIRT_WSZTEMP,                    // 01:  lpwszTemp
     MEMVIRT_WSZFORMAT,                  // 02:  lpwszFormat
+    MEMVIRT_STRAND_VAR,                 // 03:  Var strand accumulator in parser
+    MEMVIRT_STRAND_FCN,                 // 04:  Fcn ...
 #ifdef DEBUG
-    MEMVIRT_SZDEBUG,                    // 03:  lpszDebug
-    MEMVIRT_WSZDEBUG,                   // 04:  lpwszDebug
+    MEMVIRT_SZDEBUG,                    // 05:  lpszDebug
+    MEMVIRT_WSZDEBUG,                   // 06:  lpwszDebug
 #endif
-    MEMVIRT_LENGTH                      // 05:  # entries
+    MEMVIRT_LENGTH                      // 07:  # entries
 } MEMVIRTENUM;
 
 typedef struct tagMEMVIRTSTR
 {
     LPUCHAR IniAddr;                    // Initial address
-    UINT    MaxSize;                    // Maximum size in bytes
+    UINT    IncrSize,                   // Incremental size in bytes
+            MaxSize;                    // Maximum     ...
 } MEMVIRTSTR, *LPMEMVIRTSTR;
 
-#define MEMVIRTSTR_LEN  10
-
 EXTERN
-MEMVIRTSTR memVirtStr[MEMVIRTSTR_LEN];
+MEMVIRTSTR memVirtStr[MEMVIRT_LENGTH];
 
 EXTERN
 UINT uMemVirtCnt

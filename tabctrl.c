@@ -170,20 +170,6 @@ void ShowHideChildWindows
         // Show/hide the MDI Client window
         ShowWindow (hWndMC, SW_HIDE);
     } // End IF/ELSE
-
-////// Loop through the child windows
-////EnumChildWindows (hWndMC,
-////                  EnumCallbackShowHide,
-////                  bShow ? SW_SHOWNORMAL : SW_HIDE);
-////// Put the MDI Client window at the top (SHOW) or bottom (HIDE)
-//////   of the Z-order
-////SetWindowPos (hWndMC,
-////              bShow ? HWND_TOP : HWND_BOTTOM,
-////              0, 0, 0, 0,
-////              SWP_NOMOVE
-////            | SWP_NOSIZE);
-////// Show/hide the MDI Client window
-////ShowWindow (hWndMC, bShow ? SW_SHOWNORMAL : SW_HIDE);
 } // End ShowHideChildWindows
 
 
@@ -202,7 +188,7 @@ void ShowHideChildWindows
 BOOL CreateNewTab
     (HWND    hWndParent,        // Window handle of the parent
      LPWCHAR lpwsz,             // Drive, Path, Filename, Ext of the workspace
-     int     iTab,              // Insert the new tab to the left of this one
+     int     iTabIndex,         // Insert the new tab to the left of this one
      BOOL    bExecLX)           // TRUE iff execute []LX after successful load
 
 {
@@ -234,7 +220,7 @@ BOOL CreateNewTab
     // Save args in struc to pass to thread func
     cntThread.hWndParent = hWndParent;
     cntThread.hGlbDPFE   = hGlbDPFE;
-    cntThread.iTab       = iTab;
+    cntThread.iTabIndex  = iTabIndex;
     cntThread.bExecLX    = bExecLX;
 
 #ifdef DEBUG
@@ -276,7 +262,7 @@ BOOL WINAPI CreateNewTabInThread
     (LPCNT_THREAD lpcntThread)
 
 {
-    int          iCurTab = -1;      // Index of the current tab
+    int          iCurTabIndex = -1; // Index of the current tab
     TC_ITEMW     tcItem = {0};      // TabCtrl item struc
     HGLOBAL      hGlbPTD,           // PerTabData global memory handle
                  hGlbDPFE = NULL;   // Workspace DPFE global memory handle
@@ -290,7 +276,7 @@ BOOL WINAPI CreateNewTabInThread
     HWND         hWndMC,            // Window handle of MDI Client
                  hWndParent,        // Window handle of the parent
                  hWndTmp;           // Temporary window handle
-    int          iTab;              // Insert the new tab to the left of this one
+    int          iTabIndex;         // Insert the new tab to the left of this one
     MSG          Msg;               // Message for GetMessage loop
     int          nThreads;
     WCHAR        wszTemp[32];       // Temporary storage
@@ -302,17 +288,17 @@ BOOL WINAPI CreateNewTabInThread
     // Extract values from the arg struc
     hWndParent = lpcntThread->hWndParent;
     hGlbDPFE   = lpcntThread->hGlbDPFE;
-    iTab       = lpcntThread->iTab;
+    iTabIndex  = lpcntThread->iTabIndex;
     bExecLX    = lpcntThread->bExecLX;
     hThread    = lpcntThread->hThread;
 
     // Get the size and position of the parent window.
     GetClientRect (hWndParent, &rc);
 
-    if (gCurTab NE -1)
+    if (gCurTabID NE -1)
     {
         // Get the per tab global memory handle
-        hGlbPTD = GetPerTabHandle (gCurTab);
+        hGlbPTD = GetPerTabHandle (TranslateTabIDToIndex (gCurTabID));
 
         // Lock the memory to get a ptr to it
         lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -341,8 +327,8 @@ BOOL WINAPI CreateNewTabInThread
 
     // Insert a new tab
     // The new tab is inserted to the left of the index value (iTab)
-    iCurTab = SendMessageW (hWndTC, TCM_INSERTITEMW, iTab, (LPARAM) &tcItem);
-    if (iCurTab EQ -1)
+    iCurTabIndex = SendMessageW (hWndTC, TCM_INSERTITEMW, iTabIndex, (LPARAM) &tcItem);
+    if (iCurTabIndex EQ -1)
     {
         MB (pszNoInsertTCTab);
 
@@ -352,12 +338,17 @@ BOOL WINAPI CreateNewTabInThread
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
-    // Save the current and previous tab index
-    lpMemPTD->CurTabIndex = gCurTab = iCurTab;
-    lpMemPTD->PrvTabIndex = iTab - 1;
+    // Save the next available color index and Tab ID
+    lpMemPTD->CurTabID =
+    gCurTabID =
+    lpMemPTD->crIndex =
+      GetNextTabColorIndex ();
 
-    // Save the next available color index
-    lpMemPTD->crIndex = GetNextTabColorIndex ();
+    // Save the previous tab ID (if there is one)
+    if (iTabIndex EQ 0)
+        lpMemPTD->PrvTabID = gCurTabID;
+    else
+        lpMemPTD->PrvTabID = TranslateTabIndexToID (iTabIndex - 1);
 
     // Calculate the display rectangle, assuming the
     // tab control is the size of the client area.
@@ -470,7 +461,7 @@ BOOL WINAPI CreateNewTabInThread
     ShowHideChildWindows (lpMemPTD->hWndMC, TRUE);
 
     // Activate this tab
-    TabCtrl_SetCurSel (hWndTC, iCurTab);
+    TabCtrl_SetCurSel (hWndTC, iCurTabIndex);
 
     // Draw the tab with the text normal
     InvalidateRect (hWndTC, NULL, FALSE);
@@ -521,8 +512,8 @@ NORMAL_EXIT:
     } // End IF
 
     // If there's a current tab index, delete it
-    if (iCurTab NE -1)
-        TabCtrl_DeleteItem (hWndTC, iCurTab);
+    if (iCurTabIndex NE -1)
+        TabCtrl_DeleteItem (hWndTC, iCurTabIndex);
 
     // Lock the memory to get a ptr to it
     lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -628,7 +619,9 @@ LRESULT WINAPI LclTabCtrlWndProc
     HMENU          hMenu;
     UINT           uCloseState,
                    uOverTabState;
-    ////int            iTmpTab;
+#if 0
+    int            iTmpTabIndex;
+#endif
     HGLOBAL        hGlbPTD;         // PerTabData global memory handle
     LPPERTABDATA   lpMemPTD;        // Ptr to PerTabData global memory
 
@@ -655,10 +648,10 @@ LRESULT WINAPI LclTabCtrlWndProc
             tcHit.pt.y = HIWORD (lParam);
 
             // Ask the Tab Control if we're over a tab
-            iTmpTab = TabCtrl_HitTest (hWnd, &tcHit);
+            iTmpTabIndex = TabCtrl_HitTest (hWnd, &tcHit);
 
             // Ensure we're over a tab
-            if (iTmpTab EQ -1)
+            if (iTmpTabIndex EQ -1)
             {
                 SendMessageW (hWnd, WM_MOUSELEAVE, wParam, lParam);
                 ReleaseCapture ();
@@ -668,24 +661,24 @@ LRESULT WINAPI LclTabCtrlWndProc
             } // End IF
 
             // If it's not the same tab, restore the state of the previous one
-            if (iTmpTab NE gOverTab)
+            if (iTmpTabIndex NE gOverTabIndex)
                 SendMessageW (hWnd, WM_MOUSELEAVE, wParam, lParam);
 
-            gOverTab = iTmpTab;
+            gOverTabIndex = iTmpTabIndex;
 
             // Draw the tab with the text highlighted
-            SetTabTextState (gOverTab, TRUE);
+            SetTabTextState (gOverTabIndex, TRUE);
             InvalidateRect (hWnd, NULL, FALSE);
 
             break;
 
         case WM_MOUSELEAVE:
             // If the tab index is invalid, ignore this message
-            if (gOverTab EQ -1)
+            if (gOverTabIndex EQ -1)
                 break;
 
             // Draw the tab with the text normal
-            SetTabTextState (gOverTab, FALSE);
+            SetTabTextState (gOverTabIndex, FALSE);
             InvalidateRect (hWnd, NULL, FALSE);
 
             break;
@@ -705,7 +698,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             tcHit.pt.y = HIWORD (lParam);
 
             // Ask the Tab Control if we're over a tab
-            gOverTab = TabCtrl_HitTest (hWnd, &tcHit);
+            gOverTabIndex = TabCtrl_HitTest (hWnd, &tcHit);
 
             // Get the mouse position in screen coordinates
             GetCursorPos (&ptScr);
@@ -715,13 +708,13 @@ LRESULT WINAPI LclTabCtrlWndProc
 
             // If we're not over a tab, disallow any actions
             //   which require a valid tab indsex
-            uOverTabState = (gOverTab EQ -1)
+            uOverTabState = (gOverTabIndex EQ -1)
                           ? MF_GRAYED
                           : MF_ENABLED;
 
             // If we're not over a tab or this is the last open tab,
             //   disallow closing the WS
-            uCloseState = (gOverTab EQ -1 || TabCtrl_GetItemCount (hWnd) EQ 1)
+            uCloseState = (gOverTabIndex EQ -1 || TabCtrl_GetItemCount (hWnd) EQ 1)
                         ? MF_GRAYED
                         : MF_ENABLED;
 
@@ -765,22 +758,24 @@ LRESULT WINAPI LclTabCtrlWndProc
                                             // yPos = HIWORD(lParam);  // vertical position of cursor
             // If the user clicked on the icon, close the tab
             if (ClickOnClose ())
-                CloseTab (gOverTab);
+                CloseTab (gOverTabIndex);
             break;
 
         case TCM_DELETEITEM:                    // itemID = (int) wParam;
                                                 // 0 = lParam;
         {
-            int     iNewTab;                    // Index of new tab (after deleting this one)
+            int     iNewTabIndex,               // Index of new tab (after deleting this one)
+                    iDelTabIndex;               // Index of tab to delete
             HWND    hWndEC;                     // Edit Control window handle
             LRESULT lResult;                    // Result from CallWindowProc
 
-#define iTab    ((int) wParam)
+            // Save the tab index to delete
+            iDelTabIndex = (int) wParam;
 
-            // If gOverTab is this tab or to the right of it,
-            //    decrement gOverTab.
-            if (gOverTab >= iTab)
-                gOverTab--;
+            // If gOverTabIndex is this tab or to the right of it,
+            //    decrement gOverTabIndex.
+            if (gOverTabIndex >= iDelTabIndex)
+                gOverTabIndex--;
 
             // If the current tab is the one being deleted,
             //   the index of the new tab is one to the right
@@ -788,18 +783,18 @@ LRESULT WINAPI LclTabCtrlWndProc
             // Note that within this message, we haven't deleted
             //   the tab as yet, so the indexing doesn't need
             //   to take that into account.
-            iNewTab = TabCtrl_GetCurSel (hWnd);
-            if (iNewTab EQ iTab)
+            iNewTabIndex = TabCtrl_GetCurSel (hWnd);
+            if (iNewTabIndex EQ iDelTabIndex)
             {
                 // Izit the rightmost tab?
-                if (iNewTab EQ (TabCtrl_GetItemCount (hWnd) - 1))
-                    iNewTab--;
+                if (iNewTabIndex EQ (TabCtrl_GetItemCount (hWnd) - 1))
+                    iNewTabIndex--;
                 else
-                    iNewTab++;
+                    iNewTabIndex++;
             } // End IF
 
             // Get the outgoing per tab global memory handle
-            hGlbPTD = GetPerTabHandle (iTab);
+            hGlbPTD = GetPerTabHandle (iDelTabIndex);
 
             // If it's invalid, we're closing out the last tab, so just quit
             if (hGlbPTD EQ NULL)
@@ -858,20 +853,20 @@ LRESULT WINAPI LclTabCtrlWndProc
                                message,
                                wParam,
                                lParam); // Pass on down the line
-            // Save as new tab index
-            gCurTab = TabCtrl_GetCurSel (hWndTC);
+            // Save as new tab ID
+            gCurTabID = TranslateTabIndexToID (TabCtrl_GetCurSel (hWndTC));
 
             // The Tab Control returns -1 when no tab is selected (huh?)
             // I've seen this, but am not sure how to duplicate it
             // In any case, if that happens, use the last (rightmost) tab.
-            if (gCurTab EQ -1)
-                gCurTab = TabCtrl_GetItemCount (hWndTC) - 1;
+            if (gCurTabID EQ -1)
+                gCurTabID = TranslateTabIndexToID (TabCtrl_GetItemCount (hWndTC) - 1);
 
-            // Continue only if the tab index is valid
-            if (gCurTab NE -1)
+            // Continue only if the tab ID is valid
+            if (gCurTabID NE -1)
             {
                 // Get the outgoing per tab global memory handle
-                hGlbPTD = GetPerTabHandle (gCurTab);
+                hGlbPTD = GetPerTabHandle (TranslateTabIDToIndex (gCurTabID));
 
                 // Lock the memory to get a ptr to it
                 lpMemPTD = MyGlobalLock (hGlbPTD);
@@ -884,7 +879,6 @@ LRESULT WINAPI LclTabCtrlWndProc
             } // End IF
 
             return lResult;
-#undef  iTab
         } // End TCM_DELETEITEM
     } // End SWITCH
 
@@ -916,10 +910,10 @@ BOOL ClickOnClose
     ScreenToClient (hWndTC, &tcHit.pt);
 
     // Ask the Tab Control if we're over a tab
-    gOverTab = TabCtrl_HitTest (hWndTC, &tcHit);
+    gOverTabIndex = TabCtrl_HitTest (hWndTC, &tcHit);
 
     // If we're not over a tab, quit
-    if (gOverTab EQ -1)
+    if (gOverTabIndex EQ -1)
         return FALSE;
 
     // If there's only one tab, don't check the close button
@@ -927,10 +921,10 @@ BOOL ClickOnClose
         return FALSE;
 
     // Get the item's bounding rectangle
-    TabCtrl_GetItemRect (hWndTC, gOverTab, &rcTab);
+    TabCtrl_GetItemRect (hWndTC, gOverTabIndex, &rcTab);
 
     // Remove the border from the rectangle
-    AdjustTabRect (&rcTab, gOverTab, FALSE);
+    AdjustTabRect (&rcTab, gOverTabIndex, FALSE);
 
     // Transform the bounding rectangle into an image rectangle
     GetImageRect (&rcTab);
@@ -1156,7 +1150,7 @@ void DrawTab
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the tab's color index
-    crIndex = lpMemPTD->crIndex;
+    crIndex = lpMemPTD->crIndex % NUM_CRTABS;
 
     // Get the tab's background color
     crbk = crTab[crIndex].bk;
@@ -1313,7 +1307,7 @@ LPAPLCHAR PointToWsName
 
                 // Skip over the path
                 q = lpMemWSID;
-                while (p = strchrW (q, '\\'))
+                while (p = strchrW (q, L'\\'))
                     q = p + 1;
 
                 // Copy to temporary storage
@@ -1383,7 +1377,7 @@ void NewTabName
 {
     HGLOBAL      hGlbPTD;       // PerTabData global memory handle
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    int          iCurTab;       // Index of the current tab
+    int          iCurTabIndex;  // Index of the current tab
     TC_ITEMW     tcItem = {0};  // TabCtrl item struc
 
     // Get the PerTabData global memory handle
@@ -1393,20 +1387,20 @@ void NewTabName
     lpMemPTD = MyGlobalLock (hGlbPTD);
 
     // Get the tab index
-    iCurTab = lpMemPTD->CurTabIndex;
+    iCurTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
 
     // Initialize the item struc
     tcItem.mask       = TCIF_TEXT;
-    tcItem.pszText    = PointToWsName (iCurTab);
+    tcItem.pszText    = PointToWsName (iCurTabIndex);
 ////tcItem.cchTextMax =
 ////tcItem.iImage     =
 ////tcItem.lParam     =
 
     // Tell the Tab Ctrl about the new name
-    SendMessageW (hWndTC, TCM_SETITEMW, iCurTab, (LPARAM) &tcItem);
+    SendMessageW (hWndTC, TCM_SETITEMW, iCurTabIndex, (LPARAM) &tcItem);
 } // End NewTabName
 
 
@@ -1421,7 +1415,8 @@ BOOL IsCurTabActive
 
 {
     // Compare hGlbPTD from the Tab Index and from the thread
-    return (GetPerTabHandle (gCurTab) EQ TlsGetValue (dwTlsPerTabData));
+    return (GetPerTabHandle (TranslateTabIDToIndex (gCurTabID))
+                          EQ TlsGetValue (dwTlsPerTabData));
 } // End IsCurTabActive
 
 

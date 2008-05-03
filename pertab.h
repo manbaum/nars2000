@@ -130,15 +130,16 @@ typedef struct tagPERTABDATA
                  hGlbMF_Conform;    //110:  Conform for Rank operator
 
     UINT         SILevel,           //114:  Current State Indicator level
-                 CurTabIndex,       //118:  Index of the corresponding tab
-                 PrvTabIndex;       //11C:  Index of the preceding tab (from which we were loaded)
+                 CurTabID,          //118:  ID of the corresponding tab
+                 PrvTabID;          //11C:  ID of the preceding tab (from which we were loaded)
     HANDLE       hSemaDelay;        //120:  Delay semaphore (NULL if no delay active)
     EXIT_TYPES   ImmExecExitType;   //124:  ImmExec exit type (see EXIT_TYPES)
     PL_YYSTYPE   YYResExec;         //128:  Result from execute primitive
                                     //      Size = 38h for DEBUG, 28h otherwise
-    APLCHAR      cQuadPR;           //160:  []PR     (' ') (When a char scalar)
-    APLBOOL      bQuadxSA;          //162:  []SA (in its index form)
-                                    //163:  Length
+    LPPL_YYSTYPE lpStrand[STRAND_LEN];//160:  Ptrs to strand accumulators in parser
+    APLCHAR      cQuadPR;           //164:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //166:  []SA (in its index form)
+                                    //167:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

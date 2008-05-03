@@ -26,7 +26,9 @@
 #include <math.h>
 
 #include "main.h"
+#include "resdebug.h"
 #include "externs.h"
+#include "pertab.h"
 #include "sis.h"
 #include "dfnhdr.h"
 
@@ -578,6 +580,63 @@ APLCHAR TranslateFcnOprToChar
             return fcnOpr;
     } // End SWITCH
 } // End TranslateFcnOprToChar
+
+
+//***************************************************************************
+//  $TranslateTabIDToIndex
+//
+//  Translate a tab ID (unique global number) to
+//            a tab index (a value the Tab Control understands)
+//***************************************************************************
+
+int TranslateTabIDToIndex
+    (int iTabID)
+
+{
+    int iTabCount;                  // The # tabs
+
+    // Get the # tabs
+    iTabCount = TabCtrl_GetItemCount (hWndTC);
+
+    // Loop through each tab looking for a match between the hGlbPTD
+    while (--iTabCount >= 0)
+    if (iTabID EQ TranslateTabIndexToID (iTabCount))
+        return iTabCount;
+
+    // Mark as failed
+    return -1;
+} // End TranslateTabIDToIndex
+
+
+//***************************************************************************
+//  $TranslateTabIndexToID
+//
+//  Translate a tab index (a value the Tab Control understands) to
+//            a tab ID (unique global number).
+//***************************************************************************
+
+int TranslateTabIndexToID
+    (int iTabIndex)
+
+{
+    HGLOBAL      hGlbPTD;               // PerTabData global memory handle
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+    int          iTabID;                // The result
+
+    // Get the matching PerTabHandle
+    hGlbPTD = GetPerTabHandle (iTabIndex);
+
+    // Lock the memory to get a ptr to it
+    lpMemPTD = MyGlobalLock (hGlbPTD);
+
+    // Get the matching tab ID
+    iTabID = lpMemPTD->CurTabID;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbPTD); lpMemPTD = NULL;
+
+    return iTabID;
+} // End TranslateTabIndexToID
 
 
 //***************************************************************************

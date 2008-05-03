@@ -212,8 +212,9 @@ void DisplayGlbArr
     uQuadPW = GetQuadPW ();
 
     // Allocate space for the display
-    lclMemVirtStr[0].MaxSize = DEF_DISPLAY_MAXSIZE * sizeof (APLCHAR);
-    lclMemVirtStr[0].IniAddr = (LPUCHAR)
+    lclMemVirtStr[0].IncrSize = DEF_DISPLAY_INCRSIZE * sizeof (APLCHAR);
+    lclMemVirtStr[0].MaxSize  = DEF_DISPLAY_MAXSIZE  * sizeof (APLCHAR);
+    lclMemVirtStr[0].IniAddr  = (LPUCHAR)
     lpaplCharIni =
       VirtualAlloc (NULL,           // Any address
                     lclMemVirtStr[0].MaxSize,
@@ -426,7 +427,7 @@ void DisplayGlbArr
         } // End SWITCH
     } __except (CheckVirtAlloc (GetExceptionInformation (),
                                 lclMemVirtStr,
-                                1,
+                                sizeof (lclMemVirtStr) / sizeof (lclMemVirtStr[0]),
                                 "DisplayGlbArr"))
     {} // End __try/__except
 

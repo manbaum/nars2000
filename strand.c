@@ -103,9 +103,8 @@ LPPL_YYSTYPE PushVarStrand_YY
 ////lpYYRes->tkToken.tkFlags.NoDisplay = 0;     // Already zero from YYAlloc
     lpYYRes->tkToken.tkData.tkLongest  = NEG1U; // Debug value
     lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
-    lpYYRes->TknCount                  =
-    lpYYRes->FcnCount                  = 0;
-    lpYYRes->lpYYFcn                   = NULL;
+    lpYYRes->TknCount                  = 0;
+    lpYYRes->lpYYFcnBase               = NULL;
 
     // Copy the strand base to the result
     lpYYRes->lpYYStrandBase  =
@@ -148,8 +147,8 @@ LPPL_YYSTYPE PushFcnStrand_YY
 
     // Copy the strand base to the result
     lpYYArg->lpYYStrandBase = lpplLocalVars->lpYYStrandBase[STRAND_FCN];
-    if (!lpYYArg->lpYYFcn)
-        lpYYArg->lpYYFcn = lpplLocalVars->lpYYStrandNext[STRAND_FCN];
+    if (!lpYYArg->lpYYFcnBase)
+        lpYYArg->lpYYFcnBase = lpplLocalVars->lpYYStrandNext[STRAND_FCN];
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -159,7 +158,7 @@ LPPL_YYSTYPE PushFcnStrand_YY
 
     // Return our own position so the next user
     //   of this token can refer to it.
-    lpYYRes->lpYYFcn = lpplLocalVars->lpYYStrandNext[STRAND_FCN];
+    lpYYRes->lpYYFcnBase = lpplLocalVars->lpYYStrandNext[STRAND_FCN];
 
     // Save this token on the strand stack
     //   and skip over it
@@ -379,7 +378,7 @@ static char tabConvert[][STRAND_LENGTH] =
     // Save the base of this strand
     lpYYStrand              =
     lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
-    lpYYRes->lpYYFcn = (LPPL_YYSTYPE) -1;  // For debugging
+    lpYYRes->lpYYFcnBase = (LPPL_YYSTYPE) -1;  // For debugging
 
     // Get the # elements in the strand
     iLen = lpplLocalVars->lpYYStrandNext[STRAND_VAR] - lpYYStrand;
@@ -1079,7 +1078,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 {
     UINT          uIniLen,          // Initial strand length
                   uActLen,          // Actual  ...
-                  FcnCount = 0;
+                  uCnt,             // Loop counter
+                  TknCount = 0;     // Token count
     APLUINT       ByteRes;          // # bytes in the result
     HGLOBAL       hGlbStr;
     LPVOID        lpMemStr;
@@ -1088,7 +1088,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
                   lpYYMemData,
                   lpYYBase = (LPPL_YYSTYPE) -1,
                   lpYYRes;          // Ptr to the result
-    BOOL          bRet = TRUE;
+    BOOL          bRet = TRUE;      // TRUE iff the result is valid
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
     SYSTEMTIME    systemTime;       // Current system (UTC) time
 
@@ -1121,10 +1121,11 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Copy the entire token
-        lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg->lpYYFcn, FALSE);
-        lpYYRes->FcnCount = 1;
+        lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg->lpYYFcnBase, FALSE);
+        lpYYRes->TknCount = 1;
 
-        lpYYBase = lpYYArg->lpYYFcn;
+        lpYYBase = lpYYArg->lpYYFcnBase;
+        lpYYRes->lpYYFcnBase = NULL;            // No longer valid
 
         Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
@@ -1223,11 +1224,15 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
 
     // Copy the PL_YYSTYPEs to the global memory object
-    lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount, TRUE);
+    lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, TRUE);
 
     // Calculate the actual length
     lpHeader->tknNELM = uActLen = lpYYMemData - lpYYMemStart;
 #undef  lpHeader
+
+    // Zap all occurrences of <lpYYFcnBase> as they are no longer valid
+    for (uCnt = 0; uCnt < uActLen; uCnt++)
+        lpYYMemStart[uCnt].lpYYFcnBase = NULL;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbStr); lpMemStr = lpYYMemData = lpYYMemStart = NULL;
@@ -1237,11 +1242,12 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     if (uActLen EQ 1)
     {
         Assert (YYCheckInuse (lpYYRes));            // ***DEBUG***
-        Assert (YYCheckInuse (lpYYArg->lpYYFcn));   // ***DEBUG***
+        Assert (YYCheckInuse (lpYYArg->lpYYFcnBase));   // ***DEBUG***
 
         // Copy the entire token
-        YYCopyFcn (lpYYRes, lpYYArg->lpYYFcn, &lpYYBase, &FcnCount, FALSE);
-        Assert (FcnCount EQ 1);
+        YYCopyFcn (lpYYRes, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, FALSE);
+        lpYYRes->lpYYFcnBase = NULL;            // No longer valid
+        Assert (TknCount EQ 1);
 
         Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
@@ -1261,9 +1267,10 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
 
     Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
+    Assert (TknCount EQ uActLen);
+
     // Save the token & function counts
-    lpYYRes->TknCount = uActLen;
-    lpYYRes->FcnCount = FcnCount;
+    lpYYRes->TknCount = TknCount;
 #ifdef DEBUG
     if (hGlbStr)
         // Display the function array
@@ -1447,8 +1454,8 @@ LPPL_YYSTYPE MakePrimFcn_YY
     lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcn, FALSE);
     lpYYRes->tkToken.tkFlags.TknType = TKT_FCNIMMED;
     lpYYRes->tkToken.tkFlags.ImmType = GetImmTypeFcn (lpYYFcn->tkToken.tkData.tkChar);
-    lpYYRes->lpYYFcn = NULL;
-    lpYYRes->FcnCount = 1;
+    lpYYRes->lpYYFcnBase = NULL;
+    lpYYRes->TknCount = 1;
 
     DBGLEAVE;
 
@@ -1478,7 +1485,7 @@ LPPL_YYSTYPE MakeNameFcn_YY
     DBGENTER;
 
     lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcn, FALSE);
-    lpYYRes->lpYYFcn = NULL;
+    lpYYRes->lpYYFcnBase = NULL;
 
     DBGLEAVE;
 
@@ -1510,9 +1517,8 @@ LPPL_YYSTYPE MakePrimOp1_YY
 
     YYCopy (lpYYRes, lpYYOp1);      // No need to CopyPL_YYSTYPE_EM_YY immediates
     lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP1;
-    lpYYRes->lpYYFcn                 = NULL;
+    lpYYRes->lpYYFcnBase             = NULL;
     lpYYRes->TknCount                =
-    lpYYRes->FcnCount                =
     lpYYRes->Avail                   = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex                 = NEG1U;
@@ -1546,9 +1552,8 @@ LPPL_YYSTYPE MakePrimOp2_YY
 
     YYCopy (lpYYRes, lpYYOp2);      // No need to CopyPL_YYSTYPE_EM_YY immediates
     lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP2;
-    lpYYRes->lpYYFcn                 = NULL;
+    lpYYRes->lpYYFcnBase             = NULL;
     lpYYRes->TknCount                =
-    lpYYRes->FcnCount                =
     lpYYRes->Avail                   = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex                 = NEG1U;
@@ -1582,9 +1587,8 @@ LPPL_YYSTYPE MakePrimOp3_YY
 
     YYCopy (lpYYRes, lpYYOp3);      // No need to CopyPL_YYSTYPE_EM_YY immediates
     lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP3;
-    lpYYRes->lpYYFcn                 = NULL;
+    lpYYRes->lpYYFcnBase             = NULL;
     lpYYRes->TknCount                =
-    lpYYRes->FcnCount                =
     lpYYRes->Avail                   = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex                 = NEG1U;
@@ -1614,9 +1618,8 @@ LPPL_YYSTYPE MakeNameOp123_YY
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
     lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYOp123, FALSE);
-    lpYYRes->lpYYFcn                 = NULL;
+    lpYYRes->lpYYFcnBase             = NULL;
     lpYYRes->TknCount                =
-    lpYYRes->FcnCount                =
     lpYYRes->Avail                   = 0;
 #ifdef DEBUG
     lpYYRes->YYIndex                 = NEG1U;
@@ -1882,13 +1885,12 @@ LPPL_YYSTYPE PushList_YY
         YYTmp.tkToken.tkData.tkLongest  = NEG1U;        // Debug value
         YYTmp.tkToken.tkCharIndex       = NEG1U;        // ...
 ////////YYTmp.TknCount                  = 0;    // Already zero from = {0}
-////////YYTmp.FcnCount                  = 0;    // Already zero from = {0}
 ////////YYTmp.YYInuse                   = 0;    // Already zero from = {0}
 ////////YYTmp.Indirect                  = 0;    // Already zero from = {0}
 ////////YYTmp.Avail                     = 0;    // Already zero from = {0}
 ////////YYTmp.YYIndex                   = 0;    // Already zero from = {0}
 ////////YYTmp.YYFlag                    = 0;    // Already zero from = {0}
-////////YYTmp.lpYYFcn                   = NULL; // Already zero from = {0]
+////////YYTmp.lpYYFcnBase               = NULL; // Already zero from = {0]
         YYTmp.lpYYStrandBase            = lpplLocalVars->lpYYStrandBase[STRAND_VAR];
         lpYYArg = &YYTmp;
     } // End IF

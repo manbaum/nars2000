@@ -5,7 +5,7 @@
 
 $wgExtensionFunctions[] = "wfAPLExtension";
 
-$FontName = "APL385 Unicode";
+$FontName = "SImPL";
 
 function wfAPLExtension ()
 {
@@ -24,19 +24,19 @@ function wfAPLExtension ()
 // The callback function for converting the input text to HTML output
 function renderAPL ($input, $argv, &$parser)
 {
-    return renderAPLcom ($input, $argv, &$parser, false);
+    return renderAPLcom ($input, $argv, &$parser, false, false);
 } // End renderAPL
 
 
 // The callback function for converting the input text to HTML output
 function renderAPLlarge ($input, $argv, &$parser)
 {
-    return renderAPLcom ($input, $argv, &$parser, true);
+    return renderAPLcom ($input, $argv, &$parser, true, true);
 } // End renderAPLlarge
 
 
 // The callback function for converting the input text to HTML output
-function renderAPLcom ($input, $argv, &$parser, $bLargeSize)
+function renderAPLcom ($input, $argv, &$parser, $bLargeSize, $bBoldWeight)
 {
     global $FontName;
 
@@ -54,15 +54,19 @@ function renderAPLcom ($input, $argv, &$parser, $bLargeSize)
     if ($argv['size'])
         $style .= 'font-size: '   . $argv['size']   . '; ';
     else
+    if ($bLargeSize)
         $style .= 'font-size: large; ';
 
     if ($argv['font'])
         $style .= 'font-family: ' . $argv['font']   . '; ';
     else
-        $style .= 'font-family: ' . $FontName       . '; ';
+        $style .= 'font-family: \'' . $FontName     . '\'; ';
 
     if ($argv['weight'])
         $style .= 'font-weight: ' . $argv['weight'] . '; ';
+    else
+    if ($bBoldWeight)
+        $style .= 'font-weight: bold; ';
 
     return '<span style="' . $style . '">' . $input . '</span>';
 } // End renderAPLcom

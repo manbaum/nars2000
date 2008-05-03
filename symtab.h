@@ -215,11 +215,11 @@ typedef enum tagOBJ_NAMES
     OBJNAME_USR,            // 01:  User name
     OBJNAME_SYS,            // 02:  System name (starts with a Quad or Quote-quad)
     OBJNAME_MF,             // 03:  Magic Function
-    OBJNAME_LOD,            // 04:  )LOAD HGLOBAL
+    OBJNAME_LOD,            // 04:  )LOAD and )COPY HGLOBAL
                             // 05-07:  Available entries (3 bits)
 } OBJ_NAMES;
 
-#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MF"}
+#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MF", L"LOD"}
 
 // Symbol table flags
 typedef struct tagSTFLAGS
@@ -273,15 +273,20 @@ typedef union tagSYMTAB_DATA
                                 // 08:  Length
 } SYMTAB_DATA, *LPSYMTAB_DATA;
 
+#define structSYMENTRY  struct tagSYMENTRY
+
 // Symbol table entry
 typedef struct tagSYMENTRY
 {
     STFLAGS     stFlags;        // 00:  Flags
-    SYMTAB_DATA stData;         // 04:  For immediates, the data value; for others, the HGLOBAL
+    SYMTAB_DATA stData;         // 04:  For immediates, the data value;
+                                //        for others, the HGLOBAL
     LPHSHENTRY  stHshEntry;     // 0C:  Ptr to the matching HSHENTRY
-    struct tagSYMENTRY *stPrvEntry;// 10:  Ptr to previous (shadowed) STE (NULL = none)
-    UINT        stSILevel;      // 14:  State Indicator Level for this STE
-                                // 18:  Length
+    structSYMENTRY *stPrvEntry, // 10:  Ptr to previous (shadowed) STE (NULL = none)
+                   *stSymLink;  // 14:  Ptr to next entry in linked list of
+                                //        similarly grouped entries (NULL = none)
+    UINT        stSILevel;      // 18:  State Indicator Level for this STE
+                                // 1C:  Length
 } SYMENTRY, *LPSYMENTRY;
 
 #define LPSYMENTRY_NONE     ((LPSYMENTRY) -1)

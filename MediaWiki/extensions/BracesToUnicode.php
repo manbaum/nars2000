@@ -31,7 +31,7 @@
 
 3.  Use WSIS notation as in {rho} to represent the corresponding
     APL character.  This script will convert those five characters to
-    &#9076; which is rho in APL385 Unicode.
+    &#9076; which is rho in any APL unicode font.
 
     To display a left brace on a web page, use &#123; -- there is
     no need to encode specially a right brace as the algorithm below
@@ -70,7 +70,7 @@ require_once ("$Home/$PathToExt/b2a.inc.php");
 // Initialize various flags
 $bTitle = false;    // TRUE iff surround Unicode symbol with <span title="..."> </span>
 $bFont  = false;    // TRUE iff surround Unicode symbol with <span style="..."> </span>
-$FontName = "APL385 Unicode";
+$FontName = "SImPL";
 
 
 //*************************** FUNCTIONS ***********************//
@@ -80,9 +80,7 @@ function fnBracesToUnicode (&$parser, &$out)
 {
     $out = ProcessFile ($out);
 
-////$fp = fopen ("/rul/mediawiki/extensions/content.html", 'a');
-////fwrite ($fp, $out);
-////fclose ($fp);
+    return true;
 } // End fnBracesToUnicode
 
 

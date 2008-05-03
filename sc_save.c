@@ -104,11 +104,16 @@ BOOL CmdSave_EM
     int          iCmp;                  // Comparison result
     UINT         uCnt,                  // Loop counter
                  uGlbCnt=0;             // # entries in [Globals] section
-    WCHAR        wszCount[8];           // Output save area for formatted uSymxxx counter
+    WCHAR        wszCount[8],           // Output save area for formatted uSymxxx counter
+                 wszTimeStamp[16 + 1];  // ...                            time stamps
     FILE        *fStream;               // Ptr to file stream
     LPSYMENTRY   lpSymEntry,            // Ptr to STE
-                 lpSymTabNext;          // ...
+                 lpSymTabNext,          // ...
+                 lpSymLink = NULL;      // Anchor of SYMENTRY links for [Globals] values
+                                        //   so we may delete them easily
     STFLAGS      stFlags;               // STE flags
+    SYSTEMTIME   systemTime;            // Current system (UTC) time
+    FILETIME     ftCreation;            // Creation time
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -235,25 +240,25 @@ BOOL CmdSave_EM
     //   [Fcns.1]     (Functions at level 1 in the SI stack)
     //   [Fcns.sss]   (Functions at level nnn in the SI stack)
     // The [Globals] section has content of
-    //  #ggg=V T N R S value    for variables -- %c %d %d %*(d) ...
-    //                          where V is V indicating a variable
-    //                                T is the variable type (BIFCHNA) -- %c
-    //                                N is the NELM -- %d
-    //                                R is the rank -- %d
-    //                                S is the shape -- Rank occurrences of %d
-    //                                value is the series of values of similar form to #ggg
-    //                                  without the leading V.
-    //  #ggg=F nnn.Name         for user-defined functions/operators
-    //                          where F is F indicating a function
-    //                                nnn is a counter across functions & variables
-    //                                Name is the name of the function
+    //  #ggg=V T N R S value        for variables -- %c %d %d %*(d) ...
+    //                              where V is V indicating a variable
+    //                                    T is the variable type (BIFCHNA) -- %c
+    //                                    N is the NELM -- %d
+    //                                    R is the rank -- %d
+    //                                    S is the shape -- Rank occurrences of %d
+    //                                    value is the series of values of similar form to #ggg
+    //                                      without the leading V.
+    //  #ggg=F nnn.Name             for user-defined functions/operators
+    //                              where F is F indicating a function
+    //                                    nnn is a counter across functions & variables
+    //                                    Name is the name of the function
     // The [Vars.sss] section has content of
-    //  xxx=Name=#ggg           for a variable in [Globals]
-    //  xxx=Name=T 1 0 value    for an immediate scalar variable
-    //                          where T is the variable immediate type (BIFC)
+    //  xxx=Name=#ggg               for a variable in [Globals]
+    //  xxx=Name=T 1 0 value        for an immediate scalar variable
+    //                              where T is the variable immediate type (BIFC)
     // The [Fcns.sss] section has content of
-    //  xxx=Name=y=#ggg         for a function in [Globals] with NameType y
-    //  xxx={name} or char      for immediate functions
+    //  xxx=Name=y=#ggg             for a function in [Globals] with NameType y
+    //  xxx=Name=y={name} or char   for immediate functions
     // The [nnn.Name] section (used for user-defined functions/operators only)
     //   has content of
     //  xxx=<Function Header/Lines>
@@ -377,7 +382,9 @@ BOOL CmdSave_EM
                           SavedWsFormGlbVar (lpaplChar,
                                              stGlbData,
                                              lpMemSaveWSID,
-                                            &uGlbCnt);
+                                            &uGlbCnt,
+                                             lpSymEntry,
+                                            &lpSymLink);
                     // Format the counter
                     wsprintfW (wszCount, L"%d", lpMemCnt[0 + 2 * lpSymEntry->stSILevel]++);
 
@@ -433,7 +440,9 @@ BOOL CmdSave_EM
                                              lpwszFormat,
                                              lpSymEntry->stData.stGlbData,
                                              lpMemSaveWSID,
-                                            &uGlbCnt);
+                                            &uGlbCnt,
+                                             lpSymEntry,
+                                            &lpSymLink);
                     // Format the counter
                     wsprintfW (wszCount, L"%d", lpMemCnt[1 + 2 * lpSymEntry->stSILevel]++);
 
@@ -466,16 +475,29 @@ BOOL CmdSave_EM
         } // End IF/ELSE/...
     } // End FOR/IF/...
 
-////DbgBrk ();
-
     // Delete the #XXXXXXXX=#n references in the [Globals] section
-    for (uCnt = 0; uCnt < uGlbCnt; uCnt++)
+    while (lpSymLink)
     {
-////    WritePrivateProfileStringW (SECTNAME_GLOBALS,           // Ptr to the section name
-////                               ... ,                        // Ptr to key name
-////                               NULL,                        // Ptr to key value (NULL to delete)
-////                               lpMemSaveWSID);              // Ptr to the file name
-    } // End FOR
+        LPSYMENTRY lpSymLast;           // Temporary ptr to previous stSymLink
+        WCHAR      wszGlbObj[16 + 1];   // Save area for formatted hGlbObj
+                                        //   (room for 64-bit ptr plus terminating zero)
+
+        // Format the global memory handle
+        wsprintfW (wszGlbObj,
+                   L"#%08X",
+                   ClrPtrTypeDirAsGlb (lpSymLink->stData.stGlbData));
+        // Delete the #XXXXXXXX= entry in the [Globals] section
+        WritePrivateProfileStringW (SECTNAME_GLOBALS,           // Ptr to the section name
+                                   wszGlbObj,                   // Ptr to key name
+                                   NULL,                        // Ptr to key value (NULL to delete)
+                                   lpMemSaveWSID);              // Ptr to the file name
+        // Point to the next entry and zap it
+        lpSymLast = lpSymLink->stSymLink;
+        lpSymLink->stSymLink = NULL;
+
+        // Point to the next one
+        lpSymLink = lpSymLast;
+    } // End WHILE
 
     // Loop through the SI levels
     for (uCnt = 0; uCnt < (lpMemPTD->SILevel + 1); uCnt++)
@@ -528,6 +550,23 @@ BOOL CmdSave_EM
     CmdSiSinlCom_EM (L"",               // Ptr to command tail
                      TRUE,              // TRUE iff )SINL
                      lpMemSaveWSID);    // Ptr to the file name
+    // Get the current system (UTC) time
+    GetSystemTime (&systemTime);
+
+    // Convert system time to file time and save as creation time
+    SystemTimeToFileTime (&systemTime, &ftCreation);
+
+    // Format the creation time
+    wsprintfW (wszTimeStamp,
+               L"%08X%08X",
+               ftCreation.dwHighDateTime,
+               ftCreation.dwLowDateTime);
+
+    // Write out the creation time to the [General] section
+    WritePrivateProfileStringW (SECTNAME_GENERAL,               // Ptr to the section name
+                                KEYNAME_CREATIONTIME,           // Ptr to the key name
+                                wszTimeStamp,                   // Ptr to the key value
+                                lpMemSaveWSID);                 // Ptr to the file name
     // Note if the SI is non-empty
     if (lpMemPTD->SILevel)
         ReplaceLastLineCRPmt (L"WARNING:  SI non-empty -- not restartable after )LOAD");
@@ -607,11 +646,13 @@ NORMAL_EXIT:
 //***************************************************************************
 
 LPAPLCHAR SavedWsFormGlbFcn
-    (LPAPLCHAR lpaplChar,               // Ptr to output save area
-     LPAPLCHAR lpwszFcnTypeName,        // Ptr to the function section name as F nnn.Name where nnn is the count
-     HGLOBAL   hGlbObj,                 // WS object global memory handle
-     LPAPLCHAR lpMemSaveWSID,           // Ptr to saved WS file DPFE
-     LPUINT    lpGlbCnt)                // Ptr to [Globals] count
+    (LPAPLCHAR   lpaplChar,             // Ptr to output save area
+     LPAPLCHAR   lpwszFcnTypeName,      // Ptr to the function section name as F nnn.Name where nnn is the count
+     HGLOBAL     hGlbObj,               // WS object global memory handle
+     LPAPLCHAR   lpMemSaveWSID,         // Ptr to saved WS file DPFE
+     LPUINT      lpGlbCnt,              // Ptr to [Globals] count
+     LPSYMENTRY  lpSymEntry,            // Ptr to this global's SYMENTRY
+     LPSYMENTRY *lplpSymLink)           // Ptr tp ptr to SYMENTRY link
 
 {
     HGLOBAL        hGlbTxtLine;         // Text header/line global memory handle
@@ -623,8 +664,10 @@ LPAPLCHAR SavedWsFormGlbFcn
     UINT           uLine;               // Function line loop counter
     FILETIME       ftCreation,          // Object creation time
                    ftLastMod;           // ...    last modification time
-    WCHAR          wszGlbObj[16 + 1],   // Save area for formatted hGlbObj (room for 64-bit ptr plus terminating zero)
+    WCHAR          wszGlbObj[16 + 1],   // Save area for formatted hGlbObj
+                                        //   (room for 64-bit ptr plus terminating zero)
                    wszGlbCnt[8 + 1];    // Save area for formatted *lpGlbCnt
+    LPSYMENTRY     lpSymLink;           // Ptr to SYMENTRY temp for *lplpSymLink
 
     Assert (IsGlbTypeFcnDir (hGlbObj)
          || IsGlbTypeDfnDir (hGlbObj));
@@ -909,6 +952,11 @@ LPAPLCHAR SavedWsFormGlbFcn
     // Move back to the start
     lpaplChar = lpaplCharStart;
 
+    // Link this SYMENTRY into the chain
+    lpSymLink = *lplpSymLink;
+    *lplpSymLink = lpSymEntry;
+    lpSymEntry->stSymLink = lpSymLink;
+
     // Copy the formatted GlbCnt to the start of the buffer as the result
     lstrcpyW (lpaplChar, wszGlbCnt);
 NORMAL_EXIT:
@@ -971,10 +1019,12 @@ void WriteFunctionLine
 //***************************************************************************
 
 LPAPLCHAR SavedWsFormGlbVar
-    (LPAPLCHAR lpaplChar,               // Ptr to output save area
-     HGLOBAL   hGlbObj,                 // WS object global memory handle
-     LPAPLCHAR lpMemSaveWSID,           // Ptr to saved WS file DPFE
-     LPUINT    lpGlbCnt)                // Ptr to [Globals] count
+    (LPAPLCHAR   lpaplChar,             // Ptr to output save area
+     HGLOBAL     hGlbObj,               // WS object global memory handle
+     LPAPLCHAR   lpMemSaveWSID,         // Ptr to saved WS file DPFE
+     LPUINT      lpGlbCnt,              // Ptr to [Globals] count
+     LPSYMENTRY  lpSymEntry,            // Ptr to this global's SYMENTRY
+     LPSYMENTRY *lplpSymLink)           // Ptr to ptr to SYMENTRY link
 
 {
     APLSTYPE     aplTypeObj;            // WS object storage type
@@ -994,6 +1044,7 @@ LPAPLCHAR SavedWsFormGlbVar
     STFLAGS      stFlags;               // Object SymTab flags
     WCHAR        wszGlbObj[16 + 1],     // Save area for formatted hGlbObj (room for 64-bit ptr plus terminating zero)
                  wszGlbCnt[8 + 1];      // Save area for formatted *lpGlbCnt
+    LPSYMENTRY   lpSymLink;             // Ptr to SYMENTRY temp for *lplpSymLink
 
     // Get the thread's PerTabData global memory handle
     hGlbPTD = TlsGetValue (dwTlsPerTabData); Assert (hGlbPTD NE NULL);
@@ -1218,8 +1269,6 @@ LPAPLCHAR SavedWsFormGlbVar
                     if (IsImmFlt (stFlags.ImmType))
                         lpMemPTD->lpSymQuadPP->stData.stInteger = DEF_MAX_QUADPP;
 
-                    // ***FIXME*** -- Handle non-printable chars (e.g. []TCxxx)
-
                     // Append the header for the simple scalar
                     lpaplChar =
                       AppendArrayHeader (lpaplChar,                         // Ptr to output save area
@@ -1264,7 +1313,9 @@ LPAPLCHAR SavedWsFormGlbVar
                           SavedWsFormGlbVar (lpaplChar,
                                              hGlbSub,
                                              lpMemSaveWSID,
-                                             lpGlbCnt);
+                                             lpGlbCnt,
+                                             lpSymEntry,
+                                             lplpSymLink);
                         // Ensure there's a trailing blank
                         if (lpaplChar[-1] NE L' ')
                         {
@@ -1313,6 +1364,11 @@ LPAPLCHAR SavedWsFormGlbVar
                                 lpMemSaveWSID);                 // Ptr to the file name
     // Move back to the start
     lpaplChar = lpaplCharStart;
+
+    // Link this SYMENTRY into the chain
+    lpSymLink = *lplpSymLink;
+    *lplpSymLink = lpSymEntry;
+    lpSymEntry->stSymLink = lpSymLink;
 
     // Copy the formatted GlbCnt to the start of the buffer as the result
     lstrcpyW (lpaplChar, wszGlbCnt);

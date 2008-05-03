@@ -37,6 +37,9 @@ typedef struct tagSTART_ADDRESSES
     "AssignSelectSpec_EM"       , (LPUCHAR) &AssignSelectSpec_EM        ,
     "ModifyAssignNameVals_EM"   , (LPUCHAR) &ModifyAssignNameVals_EM    ,
 
+    // axisfns.c
+    "CheckAxisOper"             , (LPUCHAR) &CheckAxisOper              ,
+
     // bjhash.c
     "hashword"                  , (LPUCHAR) &hashword                   ,
     "hashlittle"                , (LPUCHAR) &hashlittle                 ,
@@ -69,7 +72,9 @@ typedef struct tagSTART_ADDRESSES
     // dfnhdr.c/y
 
     // dispdbg.c
-
+  #ifdef DEBUG
+    "DisplayHshTab"             , (LPUCHAR) &DisplayHshTab              ,
+  #endif
     // display.c
 
     // dtoa.c

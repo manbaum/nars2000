@@ -147,11 +147,7 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
@@ -160,14 +156,10 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
     // Split cases depending on whether or not we're prototyping
     if (bPrototyping)
     {
-        // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
         if (!lpPrimProtoLft)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrOpr->tkToken);
-            return NULL;
-        } // End IF
+            goto NONCE_EXIT;
 
         // Execute the function monadically on the right arg
         // Note that we cast the function strand to LPTOKEN
@@ -184,6 +176,15 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
                                   lpYYFcnStrLft,    // Ptr to left operand function strand
                                   lptkRhtArg,       // Ptr to right arg token
                                   lptkAxis);        // Ptr to axis token (may be NULL)
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    return NULL;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
 } // End PrimOpMonCircleMiddleDotCommon_EM_YY
 #undef  APPEND_NAME
 
@@ -240,14 +241,10 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
     // Split cases depending on whether or not we're prototyping
     if (bPrototyping)
     {
-        // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
         if (!lpPrimProtoLft)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrOpr->tkToken);
-            return NULL;
-        } // End IF
+            goto NONCE_EXIT;
 
         // Execute the function dyadically between the two args
         // Note that we cast the function strand to LPTOKEN
@@ -264,6 +261,10 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
                                   lpYYFcnStrLft,// Ptr to left operand function strand
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis);    // Ptr to axis token (may be NULL)
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    return NULL;
 } // End PrimOpDydCircleMiddleDotCommon_EM_YY
 #undef  APPEND_NAME
 

@@ -36,7 +36,33 @@
 #define KEYNAME_USERDEFINED     L"UserDefined"
 
 // Format string for [Globals] section keyname
-#define FMTSTR_GLBCNT           L"#%d"
+#define FMTCHR_LEAD             L':'
+#define FMTSTR_LEAD             L":"
+#define FMTSTR_GLBCNT           FMTSTR_LEAD L"%u"
+#define FMTSTR_GLBOBJ           FMTSTR_LEAD L"%08X"
+
+
+typedef struct tagSAVEDWSGLBVARPARM
+{
+    LPAPLCHAR   lpMemSaveWSID;          // Ptr to saved WS file DPFE
+    LPUINT      lpGlbCnt;               // Ptr to [Globals] count
+    LPSYMENTRY  lpSymEntry;             // Ptr to this global's SYMENTRY
+    LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
+} SAVEDWSGLBVARPARM, *LPSAVEDWSGLBVARPARM;
+
+typedef LPAPLCHAR (*LPSAVEDWSGLBVARCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBVARPARM);
+
+
+typedef struct tagLOADWSGLBVARPARM
+{
+    LPWCHAR     lpwSrc;                 // Ptr to next available byte
+    HWND        hWndEC;                 // Edit Control window handle
+    LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
+    LPAPLCHAR   lpwszDPFE;              // Ptr to saved WS file DPFE
+    LPWCHAR    *lplpwErrMsg;            // Ptr to ptr to (constant) error message text
+} LOADWSGLBVARPARM, *LPLOADWSGLBVARPARM;
+
+typedef HGLOBAL (*LPLOADWSGLBVARCONV) (UINT, LPLOADWSGLBVARPARM);
 
 
 //***************************************************************************

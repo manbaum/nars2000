@@ -233,21 +233,15 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     // Get a ptr to the left & right prototype function
     if (bPrototyping)
     {
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
         if (!lpPrimProtoLft)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            goto ERROR_EXIT;
-        } // End IF
+            goto LEFT_NONCE_EXIT;
 
-        lpPrimProtoRht = PrimProtoFnsTab[SymTrans (&lpYYFcnStrRht->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
         if (!lpPrimProtoRht)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrRht->tkToken);
-            goto ERROR_EXIT;
-        } // End IF
+            goto RIGHT_NONCE_EXIT;
     } else
         lpPrimProtoLft = lpPrimProtoRht = NULL;
 
@@ -270,11 +264,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     if (aplColsLft NE aplFrstRht
      && aplColsLft NE 1
      && aplFrstRht NE 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Calc larger of inner dimensions (in case of scalar extension)
     aplInnrMax = max (aplColsLft, aplFrstRht);
@@ -316,11 +306,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -573,13 +559,10 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         // Get the right operand prototype function
         if (lpPrimProtoRht EQ NULL)
         {
-            lpPrimProtoRht = PrimProtoFnsTab[SymTrans (&lpYYFcnStrRht->tkToken)];
+            // Get the appropriate prototype function ptr
+            lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
             if (!lpPrimProtoRht)
-            {
-                ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                          &lpYYFcnStrRht->tkToken);
-                goto ERROR_EXIT;
-            } // End IF
+                goto RIGHT_NONCE_EXIT;
         } // End IF
 
         // Execute the right operand between the left & right items
@@ -800,6 +783,26 @@ YYALLOC_EXIT:
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
+
+LEFT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+RIGHT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     if (hGlbRes)

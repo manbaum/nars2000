@@ -20,6 +20,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#include "workspace.h"
+
 #define INIT_PERTABVARS                                     \
     lpMemPTD->Sig.nature         = ' DTP';                  \
     lpMemPTD->hGlbQuadDM         = hGlbV0Char;              \
@@ -136,10 +138,14 @@ typedef struct tagPERTABDATA
     EXIT_TYPES   ImmExecExitType;   //124:  ImmExec exit type (see EXIT_TYPES)
     PL_YYSTYPE   YYResExec;         //128:  Result from execute primitive
                                     //      Size = 38h for DEBUG, 28h otherwise
-    LPPL_YYSTYPE lpStrand[STRAND_LEN];//160:  Ptrs to strand accumulators in parser
-    APLCHAR      cQuadPR;           //164:  []PR     (' ') (When a char scalar)
-    APLBOOL      bQuadxSA;          //166:  []SA (in its index form)
-                                    //167:  Length
+    LPPL_YYSTYPE lpStrand[STRAND_LEN];//160:  Ptrs to strand accumulators in parser (4 bytes each)
+    LPLOADWSGLBVARCONV
+                 lpLoadWsGlbVarConv;//168:  Ptr to function to convert a FMTSTR_GLBOBJ to an HGLOBAL
+    LPLOADWSGLBVARPARM
+                 lpLoadWsGlbVarParm;//16C:  Ptr to extra parms for LoadWsGlbVarConv
+    APLCHAR      cQuadPR;           //170:  []PR     (' ') (When a char scalar)
+    APLBOOL      bQuadxSA;          //172:  []SA (in its index form)
+                                    //173:  Length
 } PERTABDATA, *LPPERTABDATA;
 
 

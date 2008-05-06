@@ -136,7 +136,8 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     // Get a ptr to the prototype function for the left operand
     if (bPrototyping && IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
     {
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
         if (!lpPrimProtoLft)
             goto LEFT_NONCE_EXIT;
     } else
@@ -145,7 +146,8 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     // Get a ptr to the prototype function for the right operand
     if (bPrototyping && IsTknFcnOpr (&lpYYFcnStrRht->tkToken))
     {
-        lpPrimProtoRht = PrimProtoFnsTab[SymTrans (&lpYYFcnStrRht->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
         if (!lpPrimProtoRht)
             goto RIGHT_NONCE_EXIT;
     } else

@@ -32,7 +32,6 @@
 #include "pertab.h"
 #include "sis.h"
 #include "savefcn.h"
-#include "workspace.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO

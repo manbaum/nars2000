@@ -211,21 +211,9 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     else
     // If it's immediate, ...
     if (lpSymEntry->stFlags.Imm)
-    {
-        // Append the function name from the symbol table
-        lpw = CopySteName (lpwszTemp, lpSymEntry, &aplNELMRes);
-
-        // Append a left arrow
-        *lpw++ = UTF16_LEFTARROW;
-        aplNELMRes++;
-
-        // Append the single char
-        *lpw++ = lpSymEntry->stData.stChar;
-        aplNELMRes++;
-
         // Finish the job via subroutine
-        hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
-    } else
+        hGlbRes = SysFnMonCR_ALLOC_EM (aplTypeRes, 1, aplRankRes, &lpSymEntry->stData.stChar, lptkFunc);
+    else
     {
         // Check for internal functions
         if (lpSymEntry->stFlags.FcnDir)
@@ -463,7 +451,7 @@ NORMAL_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End SysFnnCR_Common_EM_YY
+} // End SysFnCR_Common_EM_YY
 #undef  APPEND_NAME
 
 

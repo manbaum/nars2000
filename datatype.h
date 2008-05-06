@@ -238,9 +238,9 @@ typedef struct tagFCNARRAY_HEADER
     UINT             RefCnt,        // 08:  Reference count
                      tknNELM;       // 0C:  # tokens in the array (each of which may point to additional arrays)
     HGLOBAL          hGlbTxtLine;   // 10:  Line text global memory handle (may be NULL)
-    FILETIME         ftCreation,    // 14:  Time of last creation
-                     ftLastMod;     // 18:  Time of last modification
-                                    // 1C:  Length
+    FILETIME         ftCreation,    // 14:  Time of last creation (8 bytes)
+                     ftLastMod;     // 1C:  Time of last modification (8 bytes)
+                                    // 24:  Length
 } FCNARRAY_HEADER, *LPFCNARRAY_HEADER;
 
 // Named strand header

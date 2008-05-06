@@ -30,7 +30,6 @@
 #include "externs.h"
 #include "aplerrors.h"
 #include "pertab.h"
-#include "workspace.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -42,7 +41,7 @@
 //  $CmdCopy_EM
 //
 //  Execute the system command:  )COPY wsid [obj1 [obj2 ...]]
-//                               )COPY #nnn [obj1 [obj2 ...]]
+//                               )COPY :nnn [obj1 [obj2 ...]]
 //    where wsid is a workspace identifier and #nnn is a tab identifier.
 //***************************************************************************
 
@@ -88,10 +87,10 @@ BOOL CmdCopy_EM
 
     // Split cases based upon the first char
     // If we're copying from another tab, ...
-    if (*lpwszTail EQ L'#')
+    if (*lpwszTail EQ FMTCHR_LEAD)
     {
         // Scan the command line for the source tab ID
-        iCnt = swscanf (lpwszTail, L"#%u", &iSrcTabID);
+        iCnt = swscanf (lpwszTail, FMTSTR_GLBCNT, &iSrcTabID);
 
         // Ensure we got a value
         if (iCnt NE 1)
@@ -199,7 +198,7 @@ BOOL CmdCopy_EM
                 } // End IF
 
                 // Loop through the [Vars.0] section looking for each given name of the form
-                //  xxx=Name=#ggg               for a variable in [Globals]
+                //  xxx=Name=:ggg               for a variable in [Globals]
                 //  xxx=Name=T 1 0 value        for an immediate scalar variable
                 //                              where T is the variable immediate type (BIFC)
                 switch (CopyWsVars (lpwNameInCmd,   // Ptr to name in command line (may be NULL if bAllNames)
@@ -226,7 +225,7 @@ BOOL CmdCopy_EM
                 } // End SWITCH
 
                 // Loop through the [Fcns.0] section looking for each given name of the form
-                //  xxx=Name=y=#ggg             for a function in [Globals] with NameType y
+                //  xxx=Name=y=:ggg             for a function in [Globals] with NameType y
                 //  xxx=Name=y={name} or char   for immediate functions
                 switch (CopyWsFcns (lpwNameInCmd,   // Ptr to name in command line (may be NULL if bAllNames)
                                     hWndEC,         // Edit Control for SM window handle
@@ -261,7 +260,7 @@ BOOL CmdCopy_EM
             } // End WHILE
         } // End IF/ELSE
 
-        // Delete the symbol table entries for vars/fcns we allocated of the form "#%d"
+        // Delete the symbol table entries for vars/fcns we allocated of the form FMTSTR_GLBCNT
         DeleteGlobalLinks (lpSymLink);
     } // End IF/ELSE
 

@@ -51,7 +51,9 @@ LPPL_YYSTYPE PrimOpSlash_EM_YY
 
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
-         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR);
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH         // For when we come in via TKT_OP3NAMED
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);    // ...
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
@@ -270,29 +272,21 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     // Calculate the result NELM
     aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
     if (!bRet)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Handle prototypes specially
     if (aplNELMRes EQ 0
      || bPrototyping)
     {
-        // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
         if (!lpPrimProtoLft)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            return NULL;
-        } // End IF
+            goto LEFT_NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
 
-    // Calculate a ptr to the Primitive Function Flags
-    lpPrimFlags = &PrimFlags[SymTrans (&lpYYFcnStrLft->tkToken)];
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlags = GetPrimFlagsPtr (lpYYFcnStrLft);
 
     // If the axis dimension is zero, get the identity
     //   element for the left operand or signal a DOMAIN ERROR
@@ -302,15 +296,12 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         //   or it is, but is without an identity element,
         //   signal a DOMAIN ERROR
         if (!lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         || !PrimFlags[SymTrans (&lpYYFcnStrLft->tkToken)].IdentElem)
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                      &lpYYFcnStrOpr->tkToken);
-            goto ERROR_EXIT;
-        } // End IF
+         || lpPrimFlags EQ NULL
+         || !lpPrimFlags->IdentElem)
+            goto DOMAIN_EXIT;
 
         // Get the identity element
-        aplFloatIdent = PrimIdent[PrimFlags[SymTrans (&lpYYFcnStrLft->tkToken)].Index];
+        aplFloatIdent = PrimIdent[lpPrimFlags->Index];
 
         // If the identity element is Boolean, the result is too
         if (aplFloatIdent EQ 0.0
@@ -353,7 +344,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 //////   calculate the storage type of the result,
 //////   otherwise, assume it's ARRAY_NESTED
 ////if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-//// && PrimFlags[SymTrans (&lpYYFcnStrLft->tkToken)].DydScalar)
+//// && lpPrimFlags->DydScalar)
 ////{
 ////    // Get the corresponding lpPrimSpec
 ////    lpPrimSpec = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
@@ -365,11 +356,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 ////                                                1,
 ////                                               &aplTypeRht);
 ////    if (aplTypeRes EQ ARRAY_ERROR)
-////    {
-////        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-////                                  &lpYYFcnStrOpr->tkToken);
-////        goto ERROR_EXIT;
-////    } // End IF
+////        goto DOMAIN_EXIT;
 ////} else
         aplTypeRes = ARRAY_NESTED;
 
@@ -381,11 +368,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -621,6 +604,21 @@ YYALLOC_EXIT:
 
     goto NORMAL_EXIT;
 
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+LEFT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     if (hGlbRes)
     {
@@ -687,11 +685,7 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
                                   &lpYYFcnStrOpr->tkToken,  // Ptr to function token
                                    MP_NUMONLY);             // Numerics only
             if (!hGlbRht)
-            {
-                ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                          &lpYYFcnStrOpr->tkToken);
-                goto ERROR_EXIT;
-            } // End IF
+                goto WSFULL_EXIT;
 
             hGlbRht = MakePtrTypeGlb (hGlbRht);
         } else
@@ -729,7 +723,16 @@ LPPL_YYSTYPE PrimOpMonSlashScalar_EM_YY
     } // End IF/ELSE
 
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     return lpYYRes;
 } // End PrimOpMonSlashScalar_EM_YY
 #undef  APPEND_NAME
@@ -850,6 +853,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                  tkRhtArg = {0};    // Right ...
     LPTOKEN      lptkAxis;          // Ptr to axis token (may be NULL)
     LPPRIMFNS    lpPrimProtoLft;    // Ptr to left operand prototype function
+    LPPRIMFLAGS  lpPrimFlags;       // Ptr to corresponding PrimFlags entry
 
     // Check for axis operator
     lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
@@ -858,61 +862,34 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     //   skipping over the operator and axis token (if present)
     lpYYFcnStrLft = &lpYYFcnStrOpr[1 + (lptkAxis NE NULL)];
 
-    // Get a ptr to the prototype function for the first symbol (a function or operator)
-    if (bPrototyping)
-    {
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
-        if (!lpPrimProtoLft)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            return NULL;
-        } // End IF
-    } else
-        lpPrimProtoLft = NULL;
-
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Handle prototypes specially
-    if ((aplNELMLft EQ 0 || aplNELMRht EQ 0)
-     && lpPrimProtoLft EQ NULL)
+    // Get a ptr to the prototype function for the first symbol (a function or operator)
+    if (bPrototyping
+     || (aplNELMLft EQ 0 || aplNELMRht EQ 0))
     {
-        // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
         if (!lpPrimProtoLft)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            return NULL;
-        } // End IF
-    } // End IF
+            goto LEFT_NONCE_EXIT;
+    } else
+        lpPrimProtoLft = NULL;
 
     // Check for LEFT RANK ERROR
     if (aplRankLft > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_RANK_EXIT;
 
     // Check for LEFT LENGTH ERROR
     if (aplNELMLft NE 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
     if (!IsSimpleNum (aplTypeLft))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_DOMAIN_EXIT;
 
     // Get the one (and only) value from the left arg
     GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
@@ -930,11 +907,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         // Attempt to convert the float to an integer using System CT
         aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
         if (!bRet)
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                       lptkLftArg);
-            goto ERROR_EXIT;
-        } // End IF
+            goto LEFT_DOMAIN_EXIT;
     } // End IF
 
     // Calculate the absolute value of aplIntegerLft
@@ -1000,11 +973,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
     // Check for more LEFT DOMAIN ERRORs
     if (aplIntegerLftAbs > (APLINT) (1 + uDimAxRht))
-    {
-        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_DOMAIN_EXIT;
 
     // Calculate the result axis dimension
     uDimAxRes = 1 + uDimAxRht - aplIntegerLftAbs;
@@ -1020,26 +989,19 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     if (aplIntegerLft EQ 0
      || aplIntegerLftAbs EQ (APLINT) (uDimAxRht + 1))
     {
-        UINT uIdent,
-             uIndex;
-
-        // Get the index of the identity element (if any)
-        uIndex = SymTrans (&lpYYFcnStrLft->tkToken);
-        uIdent = PrimFlags[uIndex].Index;
+        // Get a ptr to the Primitive Function Flags
+        lpPrimFlags = GetPrimFlagsPtr (lpYYFcnStrLft);
 
         // If it's not an immediate primitive function,
         //   or it is, but is without an identity element,
         //   signal a LEFT DOMAIN ERROR
         if (!lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         || !PrimFlags[uIndex].IdentElem)
-        {
-            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            goto ERROR_EXIT;
-        } // End IF
+         || lpPrimFlags EQ NULL
+         || !lpPrimFlags->IdentElem)
+            goto LEFT_DOMAIN_EXIT;
 
         // Get the identity element
-        aplFloatIdent = PrimIdent[uIdent];
+        aplFloatIdent = PrimIdent[lpPrimFlags->Index];
 
         // If the prototype is Boolean, the result is too
         if (aplFloatIdent EQ 0.0
@@ -1057,11 +1019,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     if (bRet || uDimAxRes EQ 0)
         aplNELMRes = imul64 (aplNELMRes, uDimAxRes, &bRet);
     if (!bRet)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     //***************************************************************
     // Pick off special cases of the left arg
@@ -1115,7 +1073,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     } else
     // If the absolute value of the left arg is one, the result is
     //   the right arg
-    if (aplIntegerLftAbs EQ 1)
+    if (aplIntegerLftAbs EQ 1 && hGlbRht)
         hGlbRes = CopySymGlbDir (MakePtrTypeGlb (hGlbRht));
     else
     // If the left arg is uDimAxRht, the result is
@@ -1423,6 +1381,31 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
     goto NORMAL_EXIT;
 
+LEFT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LEFT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     if (lpYYRes)
     {
@@ -1509,11 +1492,7 @@ BOOL PrimOpDydSlashInsertDim_EM
         // Allocate space for the result
         hGlbTmp = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbTmp)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                      &lpYYFcnStrOpr->tkToken);
-            return FALSE;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemRes = MyGlobalLock (hGlbTmp);
@@ -1597,11 +1576,7 @@ BOOL PrimOpDydSlashInsertDim_EM
                                   GHND);
     // Check for errors
     if (*lphGlbRes EQ NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // If the handle is moveable, GlobalReAlloc returns the same handle
     Assert (hGlbTmp EQ *lphGlbRes);
@@ -1624,6 +1599,11 @@ BOOL PrimOpDydSlashInsertDim_EM
     MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    return FALSE;
 } // End PrimOpDydSlashInsertDim_EM
 #undef  APPEND_NAME
 
@@ -1670,11 +1650,7 @@ BOOL PrimOpDydSlashAllocate_EM
     Assert (ByteRes EQ (UINT) ByteRes);
     *lphGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!*lphGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     *lplpMemRes = MyGlobalLock (*lphGlbRes);
@@ -1726,6 +1702,11 @@ BOOL PrimOpDydSlashAllocate_EM
     } // End IF
 
     return TRUE;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    return FALSE;
 } // End PrimOpDydSlashAllocate_EM
 #undef  APPEND_NAME
 

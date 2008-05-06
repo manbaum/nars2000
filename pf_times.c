@@ -376,11 +376,7 @@ BOOL PrimFnDydTimesAPA_EM
         DbgStop ();     // We should never get here
 
     if (!*lphGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        return FALSE;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (*lphGlbRes);
@@ -411,6 +407,13 @@ BOOL PrimFnDydTimesAPA_EM
     DBGLEAVE;
 
     return TRUE;
+
+WSFULL_EXIT:
+    DBGLEAVE;
+
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return FALSE;
 } // End PrimFnDydTimesAPA_EM
 #undef  APPEND_NAME
 

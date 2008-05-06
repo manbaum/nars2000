@@ -805,7 +805,7 @@ BOOL PrimFnDydIotaCvC_EM
      LPTOKEN   lptkFunc)            // Ptr to function token
 
 {
-    LPAPLUINT lpMemTT;              // Translate table gloabl memory handle
+    LPAPLUINT lpMemTT;              // Translate table global memory handle
     UINT      ByteTT;               // # bytes in the Translate Table
     APLUINT   uRht;                 // Loop counter
     APLINT    iLft;                 // ...

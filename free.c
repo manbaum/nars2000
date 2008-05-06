@@ -294,9 +294,6 @@ BOOL FreeResultGlobalDFV
 {
     BOOL bRet;                      // TRUE iff result is valid
 
-    // Clear the type bits in case they are set on the way in
-    hGlbData = ClrPtrTypeDirAsGlb (hGlbData);
-
     // Split cases based upon the signature
     switch (GetSignatureGlb (hGlbData))
     {
@@ -660,7 +657,7 @@ BOOL FreeResultGlobalFcn
 //***************************************************************************
 //  $GetSignatureGlb
 //
-//  Get the signature of a gloabl object
+//  Get the signature of a global object
 //***************************************************************************
 
 UINT GetSignatureGlb
@@ -669,6 +666,9 @@ UINT GetSignatureGlb
 {
     LPHEADER_SIGNATURE lpMemLcl;            // Ptr to signature global memory
     UINT               Sig;                 // The signature
+
+    // Clear the type bits in case they are set on the way in
+    hGlbLcl = ClrPtrTypeDirAsGlb (hGlbLcl);
 
     // Lock the memory to get a ptr to it
     lpMemLcl = MyGlobalLock (hGlbLcl);

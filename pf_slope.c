@@ -235,17 +235,13 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
-    // Check for RANK ERROR
+    // Check for LEFT RANK ERROR
     if (aplRankLft > 1)
-    {
-        ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LEFT_RANK_EXIT;
 
-    // Check for DOMAIN ERROR
+    // Check for LEFT DOMAIN ERROR
     if (!IsSimpleNum (aplTypeLft))
-        goto DOMAIN_EXIT;
+        goto LEFT_DOMAIN_EXIT;
 
         // Skip over the header to the dimensions
     if (lpMemRht)
@@ -288,12 +284,12 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
             // Attempt to convert the float to an integer using System CT
             aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
             if (!bRet)
-                goto DOMAIN_EXIT;
+                goto LEFT_DOMAIN_EXIT;
         } // End IF
 
         // Check the singleton arg
         if (!IsBooleanValue (aplIntegerLft))
-            goto DOMAIN_EXIT;
+            goto LEFT_DOMAIN_EXIT;
 
         // Save as the sum of the values in the left arg
         uDimLftSum = aplIntegerLft;
@@ -310,11 +306,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         Assert (ByteRes EQ (UINT) ByteRes);
         hGlbRep = DbgGlobalAlloc (GHND, (UINT) ByteRes);
         if (!hGlbRep)
-        {
-            ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                       lptkLftArg);
-            goto ERROR_EXIT;
-        } // End IF
+            goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
         lpMemRep = MyGlobalLock (hGlbRep);
@@ -355,7 +347,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 {
                     aplIntegerLft = *((LPAPLINT) lpMemLft)++;
                     if (!IsBooleanValue (aplIntegerLft))
-                        goto DOMAIN_EXIT;
+                        goto LEFT_DOMAIN_EXIT;
                     uDimLftSum += aplIntegerLft;
 
                     *lpMemRep++ = aplIntegerLft;
@@ -369,7 +361,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                     // Attempt to convert the float to an integer using System CT
                     aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
                     if (!bRet || !IsBooleanValue (aplIntegerLft))
-                        goto DOMAIN_EXIT;
+                        goto LEFT_DOMAIN_EXIT;
                     uDimLftSum += aplIntegerLft;
 
                     *lpMemRep++ = aplIntegerLft;
@@ -386,7 +378,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 // Check the first and last values
                 if (!IsBooleanValue (apaOff)
                  || !IsBooleanValue (apaOff + apaMul * (aplNELMLft - 1)))
-                    goto DOMAIN_EXIT;
+                    goto LEFT_DOMAIN_EXIT;
 
                 for (uDim = 0; uDim < aplNELMLft; uDim++)
                 {
@@ -413,11 +405,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     // Scalar right arg matches everything
     if (aplRankRht NE 0
      && uDimLftSum NE lpMemDimRht[aplAxis])
-    {
-        ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                                   lptkLftArg);
-        goto ERROR_EXIT;
-    } // End IF
+        goto LENGTH_EXIT;
 
     // Map APA right arg to INT result
     if (IsSimpleAPA (aplTypeRht))
@@ -436,11 +424,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                   lptkFunc);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -738,9 +722,26 @@ PROTO_EXIT:
 
     goto NORMAL_EXIT;
 
-DOMAIN_EXIT:
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkLftArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     if (hGlbRes)
     {

@@ -326,6 +326,13 @@ UCHAR gDbgLvl                           // Debug level 0 = none
 #endif
 ;
 
+EXTERN
+LPWCHAR lpwNameTypeStr[]
+#ifdef DEFINE_VALUES
+ = NAMETYPE_WSTRPTR
+#endif
+;
+
 #ifdef DEBUG
   EXTERN
   LPCHAR lpszDebug;                     // Used for temporary storage of char
@@ -333,13 +340,6 @@ UCHAR gDbgLvl                           // Debug level 0 = none
   EXTERN
   LPWCHAR lpwszDebug;                   // Used for temporary storage of WCHAR
                                         //   debug output
-  EXTERN
-  LPWCHAR lpwNameTypeStr[]
-  #ifdef DEFINE_VALUES
-   = NAMETYPE_WSTRPTR
-  #endif
-  ;
-
   EXTERN
   LPCHAR lpNameTypeStr[]
   #ifdef DEFINE_VALUES

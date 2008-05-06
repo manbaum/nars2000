@@ -63,6 +63,7 @@ SYSCMDSTAB SysCmdsTab[]
     {L"ops"   ,     &CmdOps_EM      },
     {L"reset" ,     &CmdReset_EM    },
     {L"save"  ,     &CmdSave_EM     },
+    {L"svae"  ,     &CmdSave_EM     },
     {L"si"    ,     &CmdSi_EM       },
     {L"sic"   ,     &CmdReset_EM    },
     {L"sinl"  ,     &CmdSinl_EM     },

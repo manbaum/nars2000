@@ -1466,5 +1466,67 @@ void RestPrimSpecRL
 
 
 //***************************************************************************
+//  $GetPrototypeFcnPtr
+//
+//  Return a ptr to the appropriate prototype function
+//    corresponding to a give function token type.
+//***************************************************************************
+
+LPPRIMFNS GetPrototypeFcnPtr
+    (LPPL_YYSTYPE lpYYFcnStr)
+
+{
+    // Split cases based upon the token type of the function strand's first item
+    switch (lpYYFcnStr->tkToken.tkFlags.TknType)
+    {
+        case TKT_FCNIMMED:
+        case TKT_OP1IMMED:
+        case TKT_OP2IMMED:
+        case TKT_OP3IMMED:
+        case TKT_OPJOTDOT:
+            // Get a ptr to the prototype function for the first symbol (a function or operator)
+            return PrimProtoFnsTab[SymTrans (&lpYYFcnStr->tkToken)];
+
+        case TKT_FCNARRAY:
+            // Get a ptr to the prototype function for the user-defined function/operator
+            return &ExecDfnGlbProto_EM_YY;
+
+        defstop
+            return NULL;
+    } // End SWITCH
+} // End GetPrototypeFcnPtr
+
+
+//***************************************************************************
+//  $GetPrimFlagsPtr
+//
+//  Return a ptr to the PrimFlags entry
+//    corresponding to a given function token type.
+//***************************************************************************
+
+LPPRIMFLAGS GetPrimFlagsPtr
+    (LPPL_YYSTYPE lpYYFcnStr)
+
+{
+    // Split cases based upon the token type of the function strand's first item
+    switch (lpYYFcnStr->tkToken.tkFlags.TknType)
+    {
+        case TKT_FCNIMMED:
+        case TKT_OP1IMMED:
+        case TKT_OP2IMMED:
+        case TKT_OP3IMMED:
+        case TKT_OPJOTDOT:
+            return &PrimFlags[SymTrans (&lpYYFcnStr->tkToken)];
+
+        case TKT_FCNARRAY:
+            return NULL;
+
+        defstop
+            return NULL;
+    } // End SWITCH
+} // End GetPrimFlagsPtr
+
+
+//***************************************************************************
 //  End of File: getfns.c
 //***************************************************************************

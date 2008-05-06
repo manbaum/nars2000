@@ -59,6 +59,7 @@
 #define UTF16_LEFTSINGLEQUOTE    0x2018         // Left single quotation mark
 #define UTF16_RIGHTSINGLEQUOTE   0x2019         // Right ...
 #define UTF16_DELTILDE           0x236B         // Del-tilde
+#define UTF16_HORIZELLIPSIS      0x2026         // Horizontal ellipsis
 
 // The alphabet, unshifted
 #define UTF16_ALPHA              0x237A         // Alt-'a' - alpha

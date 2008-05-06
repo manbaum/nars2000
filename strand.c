@@ -1079,7 +1079,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     UINT          uIniLen,          // Initial strand length
                   uActLen,          // Actual  ...
                   uCnt,             // Loop counter
-                  TknCount = 0;     // Token count
+                  TknCount;         // Token count
     APLUINT       ByteRes;          // # bytes in the result
     HGLOBAL       hGlbStr;
     LPVOID        lpMemStr;
@@ -1106,8 +1106,8 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpYYStrand              =
     lpYYRes->lpYYStrandBase = lpYYArg->lpYYStrandBase;
 
-    // Get the (maximum) # elements in the strand
-    uIniLen = lpplLocalVars->lpYYStrandNext[STRAND_FCN] - lpYYStrand;
+    // Count the # tokens in the strand
+    uIniLen = YYCountFcnStr (lpYYArg->lpYYFcnBase);
 
     //***********************************************************************
     //********** Single Element Case ****************************************
@@ -1172,7 +1172,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
     lpHeader->fnNameType  = fnNameType;
     lpHeader->RefCnt      = 1;
-////lpHeader->tknNELM     =             // To be filled in below
+    lpHeader->tknNELM     = uIniLen;
 
     // Get the current system (UTC) time
     GetSystemTime (&systemTime);
@@ -1183,22 +1183,46 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     // Use the same time as the last modification time
     lpHeader->ftLastMod = lpHeader->ftCreation;
 
+    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
+
+    // Skip over the header to the data (PL_YYSTYPEs)
+    lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
+
+    // Initialize token count
+    TknCount = 0;
+
+    // Copy the PL_YYSTYPEs to the global memory object
+    lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, TRUE);
+
+    // Calculate the actual length
+    lpHeader->tknNELM = uActLen = lpYYMemData - lpYYMemStart;
+
+    Assert (TknCount EQ uIniLen);
+    Assert (uActLen  EQ uIniLen);
+
+    // Zap all occurrences of <lpYYFcnBase> as they are no longer valid
+    for (uCnt = 0; uCnt < uActLen; uCnt++)
+        lpYYMemStart[uCnt].lpYYFcnBase = NULL;
+
     if (bSaveTxtLine)
     {
         UINT           uLineLen;        // Line length
         LPMEMTXT_UNION lpMemTxtLine;    // Ptr to line text global memory
-        LPAPLCHAR      lpMemTxtSrc;     // Ptr to line text source
+        LPAPLCHAR      lpMemTxtSrc,     // Ptr to start of WCHARs
+                       lpMemTxtEnd;     // ...    end   ...
 
-        // Get the ptr to the source line text, and
-        //   skip over the assignment arrow
-        lpMemTxtSrc = 1 + strchrW (lpplLocalVars->lpwszLine, UTF16_LEFTARROW);
+        // Use a temp var
+        lpMemTxtSrc = lpwszTemp;
 
-        // Skip over leading blanks
-        while (*lpMemTxtSrc EQ L' ')
-            lpMemTxtSrc++;
-
+        // Convert the tokens to WCHARs
+        lpMemTxtEnd =
+          DisplayFcnGlb (lpMemTxtSrc,       // Ptr to output save area
+                         hGlbStr,           // Function array global memory handle
+                         FALSE,             // TRUE iff we're to display the header
+                         NULL,              // Ptr to function to convert an HGLOBAL to FMTSTR_GLBOBJ (may be NULL)
+                         NULL);             // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
         // Get the line length
-        uLineLen = lstrlenW (lpMemTxtSrc);
+        uLineLen = lpMemTxtEnd - lpMemTxtSrc;
 
         // Allocate global memory for a length <uLineLen> vector of type <APLCHAR>.
         lpHeader->hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
@@ -1218,52 +1242,9 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
         } // End IF
     } // End IF
 
-    Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
-
-    // Skip over the header to the data (PL_YYSTYPEs)
-    lpYYMemStart = lpYYMemData = FcnArrayBaseToData (lpMemStr);
-
-    // Copy the PL_YYSTYPEs to the global memory object
-    lpYYMemData = YYCopyFcn (lpYYMemData, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, TRUE);
-
-    // Calculate the actual length
-    lpHeader->tknNELM = uActLen = lpYYMemData - lpYYMemStart;
-#undef  lpHeader
-
-    // Zap all occurrences of <lpYYFcnBase> as they are no longer valid
-    for (uCnt = 0; uCnt < uActLen; uCnt++)
-        lpYYMemStart[uCnt].lpYYFcnBase = NULL;
-
     // We no longer need this ptr
     MyGlobalUnlock (hGlbStr); lpMemStr = lpYYMemData = lpYYMemStart = NULL;
-
-    // Handle case where we overallocated to the extent that there
-    //   is only one function which can then be immediate.
-    if (uActLen EQ 1)
-    {
-        Assert (YYCheckInuse (lpYYRes));            // ***DEBUG***
-        Assert (YYCheckInuse (lpYYArg->lpYYFcnBase));   // ***DEBUG***
-
-        // Copy the entire token
-        YYCopyFcn (lpYYRes, lpYYArg->lpYYFcnBase, &lpYYBase, &TknCount, FALSE);
-        lpYYRes->lpYYFcnBase = NULL;            // No longer valid
-        Assert (TknCount EQ 1);
-
-        Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
-
-        // Note that the result token in lpYYRes is now TKT_FCNIMMED
-
-        // We no longer need this storage
-        FreeResultGlobalFcn (hGlbStr); hGlbStr = NULL;
-    } else
-    if (uIniLen NE uActLen)
-    {
-        // Resize the block downwards
-        hGlbStr =
-          MyGlobalReAlloc (hGlbStr,
-                           (UINT) ByteRes - (uIniLen - uActLen) * sizeof (PL_YYSTYPE),
-                           GHND);
-    } // End IF/ELSE/IF
+#undef  lpHeader
 
     Assert (YYCheckInuse (lpYYRes));        // ***DEBUG***
 
@@ -1465,32 +1446,33 @@ LPPL_YYSTYPE MakePrimFcn_YY
 
 
 //***************************************************************************
-//  $MakeNameFcn_YY
+//  $MakeNameFcnOpr_YY
 //
-//  Make a token for a named function
+//  Make a token for a named function, monadic/dyadic/ambiguous operator
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeNameFcn_YY"
+#define APPEND_NAME     L" -- MakeNameFcnOpr_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE MakeNameFcn_YY
-    (LPPL_YYSTYPE lpYYFcn)
+LPPL_YYSTYPE MakeNameFcnOpr_YY
+    (LPPL_YYSTYPE lpYYFcnOpr)
 
 {
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
-    DBGENTER;
-
-    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcn, FALSE);
+    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYFcnOpr, FALSE);
     lpYYRes->lpYYFcnBase = NULL;
-
-    DBGLEAVE;
-
+    lpYYRes->TknCount                =
+    lpYYRes->Avail                   = 0;
+#ifdef DEBUG
+    lpYYRes->YYIndex                 = NEG1U;
+    lpYYRes->YYFlag                  = 0;
+#endif
     return lpYYRes;
-} // End MakeNameFcn_YY
+} // End MakeNameFcnOpr_YY
 #undef  APPEND_NAME
 
 
@@ -1510,21 +1492,7 @@ LPPL_YYSTYPE MakePrimOp1_YY
     (LPPL_YYSTYPE lpYYOp1)
 
 {
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    YYCopy (lpYYRes, lpYYOp1);      // No need to CopyPL_YYSTYPE_EM_YY immediates
-    lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP1;
-    lpYYRes->lpYYFcnBase             = NULL;
-    lpYYRes->TknCount                =
-    lpYYRes->Avail                   = 0;
-#ifdef DEBUG
-    lpYYRes->YYIndex                 = NEG1U;
-    lpYYRes->YYFlag                  = 0;
-#endif
-    return lpYYRes;
+    return MakePrimOp123_YY (lpYYOp1, IMMTYPE_PRIMOP1);
 } // End MakePrimOp1_YY
 #undef  APPEND_NAME
 
@@ -1545,21 +1513,7 @@ LPPL_YYSTYPE MakePrimOp2_YY
     (LPPL_YYSTYPE lpYYOp2)
 
 {
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    YYCopy (lpYYRes, lpYYOp2);      // No need to CopyPL_YYSTYPE_EM_YY immediates
-    lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP2;
-    lpYYRes->lpYYFcnBase             = NULL;
-    lpYYRes->TknCount                =
-    lpYYRes->Avail                   = 0;
-#ifdef DEBUG
-    lpYYRes->YYIndex                 = NEG1U;
-    lpYYRes->YYFlag                  = 0;
-#endif
-    return lpYYRes;
+    return MakePrimOp123_YY (lpYYOp2, IMMTYPE_PRIMOP2);
 } // End MakePrimOp2_YY
 #undef  APPEND_NAME
 
@@ -1580,44 +1534,35 @@ LPPL_YYSTYPE MakePrimOp3_YY
     (LPPL_YYSTYPE lpYYOp3)
 
 {
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    YYCopy (lpYYRes, lpYYOp3);      // No need to CopyPL_YYSTYPE_EM_YY immediates
-    lpYYRes->tkToken.tkFlags.ImmType = IMMTYPE_PRIMOP3;
-    lpYYRes->lpYYFcnBase             = NULL;
-    lpYYRes->TknCount                =
-    lpYYRes->Avail                   = 0;
-#ifdef DEBUG
-    lpYYRes->YYIndex                 = NEG1U;
-    lpYYRes->YYFlag                  = 0;
-#endif
-    return lpYYRes;
+    return MakePrimOp123_YY (lpYYOp3, IMMTYPE_PRIMOP3);
 } // End MakePrimOp3_YY
 #undef  APPEND_NAME
 
 
 //***************************************************************************
-//  $MakeNameOp123_YY
+//  $MakePrimOp123_YY
 //
-//  Make a named monadic/dyadic/ambiguous operator
+//  Common routine to MakePrimOp?_YY
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeNameOp123_YY"
+#define APPEND_NAME     L" -- MakePrimOp123_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE MakeNameOp123_YY
-    (LPPL_YYSTYPE lpYYOp123)
+LPPL_YYSTYPE MakePrimOp123_YY
+    (LPPL_YYSTYPE lpYYOp123,
+     IMM_TYPES    immType)
 
 {
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
 
-    lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYOp123, FALSE);
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    YYCopy (lpYYRes, lpYYOp123);    // No need to CopyPL_YYSTYPE_EM_YY immediates
+    lpYYRes->tkToken.tkFlags.ImmType = immType;
     lpYYRes->lpYYFcnBase             = NULL;
     lpYYRes->TknCount                =
     lpYYRes->Avail                   = 0;
@@ -1626,7 +1571,7 @@ LPPL_YYSTYPE MakeNameOp123_YY
     lpYYRes->YYFlag                  = 0;
 #endif
     return lpYYRes;
-} // End MakeNameOp123_YY
+} // End MakePrimOp123_YY
 #undef  APPEND_NAME
 
 

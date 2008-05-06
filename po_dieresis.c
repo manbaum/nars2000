@@ -188,37 +188,13 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     if (aplNELMRht EQ 0
      || bPrototyping)
     {
-        // Split cases based upon the token type of the function strand's first item
-        switch (lpYYFcnStrLft->tkToken.tkFlags.TknType)
-        {
-            case TKT_FCNIMMED:
-            case TKT_OP1IMMED:
-            case TKT_OP2IMMED:
-            case TKT_OP3IMMED:
-            case TKT_OPJOTDOT:
-                // Get a ptr to the prototype function for the first symbol (a function or operator)
-                lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
-                if (!lpPrimProtoLft)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                              &lpYYFcnStrLft->tkToken);
-                    goto ERROR_EXIT;
-                } // End IF
+        // Get the appropriate prototype function ptr
+        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        if (!lpPrimProtoLft)
+            goto NONCE_EXIT;
 
-                break;
-
-            case TKT_FCNARRAY:
-                // Get a ptr to the prototype function for the user-defined function/operator
-                lpPrimProtoLft = ExecDfnGlbProto_EM_YY;
-
-////////////////// Make sure the result is marked as Nested
-////////////////aplTypeRes = ARRAY_NESTED;      // Set previously
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
+////////// Make sure the result is marked as Nested
+////////aplTypeRes = ARRAY_NESTED;      // Set previously
     } else
         lpPrimProtoLft = NULL;
 
@@ -263,11 +239,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrLft->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -597,6 +569,16 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
     goto NORMAL_EXIT;
 
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     if (hGlbRes)
     {
@@ -851,37 +833,13 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     if (aplNELMRes EQ 0
      || bPrototyping)
     {
-        // Split cases based upon the token type of the function strand's first item
-        switch (lpYYFcnStrLft->tkToken.tkFlags.TknType)
-        {
-            case TKT_FCNIMMED:
-            case TKT_OP1IMMED:
-            case TKT_OP2IMMED:
-            case TKT_OP3IMMED:
-            case TKT_OPJOTDOT:
-                // Get a ptr to the prototype function for the first symbol (a function or operator)
-                lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
-                if (!lpPrimProtoLft)
-                {
-                    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                              &lpYYFcnStrLft->tkToken);
-                    goto ERROR_EXIT;
-                } // End IF
+        // Get the appropriate prototype function ptr
+        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
+        if (!lpPrimProtoLft)
+            goto NONCE_EXIT;
 
-                break;
-
-            case TKT_FCNARRAY:
-                // Get a ptr to the prototype function for the user-defined function/operator
-                lpPrimProtoLft = ExecDfnGlbProto_EM_YY;
-
-////////////////// Make sure the result is marked as Nested
-////////////////aplTypeRes = ARRAY_NESTED;      // Set previously
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
+////////// Make sure the result is marked as Nested
+////////aplTypeRes = ARRAY_NESTED;      // Set previously
     } else
         lpPrimProtoLft = NULL;
 
@@ -1105,6 +1063,11 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     bRet = FALSE;

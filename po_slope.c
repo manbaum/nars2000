@@ -50,7 +50,9 @@ LPPL_YYSTYPE PrimOpSlope_EM_YY
 
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE
-         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR);
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE         // For when we come in via TKT_OP3NAMED
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR);    // ...
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
@@ -182,13 +184,10 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     // Get a ptr to the prototype function for the first symbol (a function or operator)
     if (bPrototyping)
     {
-        lpPrimProtoLft = PrimProtoFnsTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
         if (!lpPrimProtoLft)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrLft->tkToken);
-            return NULL;
-        } // End IF
+            goto NONCE_EXIT;
     } else
         lpPrimProtoLft = NULL;
 
@@ -214,7 +213,8 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     {
         // No axis specified:
         // if Slope, use last dimension
-        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE)
+        if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE
+         || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE)
             aplAxis = aplRankRht - 1;
         else
             // Otherwise, it's SlopeBar on the first dimension
@@ -280,11 +280,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     if (bRet || uDimAxRht EQ 0)
         aplNELMRes = imul64 (aplNELMRes, uDimAxRht, &bRet);
     if (!bRet)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // If the right arg is empty, return it
     if (aplNELMRht EQ 0)
@@ -294,8 +290,8 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         goto YYALLOC_EXIT;
     } // End IF
 
-    // Calculate a ptr to the Primitive Function Flags
-    lpPrimFlags = &PrimFlags[SymTrans (&lpYYFcnStrLft->tkToken)];
+    // Get a ptr to the Primitive Function Flags
+    lpPrimFlags = GetPrimFlagsPtr (lpYYFcnStrLft);
 
     // If the product of the dimensions above
     //   the axis dimension is one, and
@@ -326,7 +322,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 //////   calculate the storage type of the result,
 //////   otherwise, assume it's ARRAY_NESTED
 ////if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-//// && PrimFlags[SymTrans (&lpYYFcnStrLft->tkToken)].DydScalar)
+//// && lpPrimFlags->DydScalar)
 ////{
 ////    // Get the corresponding lpPrimSpec
 ////    lpPrimSpec = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
@@ -338,11 +334,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 ////                                                1,
 ////                                               &aplTypeRht);
 ////    if (aplTypeRes EQ ARRAY_ERROR)
-////    {
-////        ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-////                                  &lpYYFcnStrOpr->tkToken);
-////        goto ERROR_EXIT;
-////    } // End IF
+////        goto DOMAIN_EXIT;
 ////} else
         aplTypeRes = ARRAY_NESTED;
 
@@ -354,11 +346,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        goto ERROR_EXIT;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -656,6 +644,16 @@ YYALLOC_EXIT:
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
 
 ERROR_EXIT:
     if (hGlbRes)

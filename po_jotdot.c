@@ -216,11 +216,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     //***************************************************************
 
     if (lptkAxis NE NULL)
-    {
-        ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                                   lptkAxis);
-        return NULL;
-    } // End IF
+        goto SYNTAX_EXIT;
 
     // Set ptr to right operand,
     //   skipping over the operator and axis token (if present)
@@ -229,24 +225,16 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     // The result NELM is the product of the left & right NELMs
     aplNELMRes = imul64 (aplNELMLft, aplNELMRht, &bRet);
     if (!bRet)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Handle prototypes separately
     if (aplNELMRes EQ 0
      || bPrototyping)
     {
-        // Get a ptr to the prototype function for the first symbol (a function or operator)
-        lpPrimProtoRht = PrimProtoFnsTab[SymTrans (&lpYYFcnStrRht->tkToken)];
+        // Get the appropriate prototype function ptr
+        lpPrimProtoRht = GetPrototypeFcnPtr (lpYYFcnStrRht);
         if (!lpPrimProtoRht)
-        {
-            ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                                      &lpYYFcnStrRht->tkToken);
-            goto ERROR_EXIT;
-        } // End IF
+            goto NONCE_EXIT;
     } else
         lpPrimProtoRht = NULL;
 
@@ -265,11 +253,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     Assert (ByteRes EQ (UINT) ByteRes);
     hGlbRes = DbgGlobalAlloc (GHND, (UINT) ByteRes);
     if (!hGlbRes)
-    {
-        ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                                  &lpYYFcnStrOpr->tkToken);
-        return NULL;
-    } // End IF
+        goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
     lpMemRes = MyGlobalLock (hGlbRes);
@@ -442,6 +426,21 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     TypeDemote (&lpYYRes->tkToken);
 
     goto NORMAL_EXIT;
+
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    return NULL;
 
 ERROR_EXIT:
     if (hGlbRes)

@@ -32,7 +32,6 @@
 #include "aplerrors.h"
 #include "sysvars.h"
 #include "dfnhdr.h"
-#include "workspace.h"
 
 // Include prototypes unless prototyping
 #ifndef PROTO
@@ -240,24 +239,24 @@ BOOL CmdSave_EM
     //   [Fcns.1]     (Functions at level 1 in the SI stack)
     //   [Fcns.sss]   (Functions at level nnn in the SI stack)
     // The [Globals] section has content of
-    //  #ggg=V T N R S value        for variables -- %c %d %d %*(d) ...
+    //  FMTSTR_GLBCNT=V T N R S val for variables -- %c %d %d %*(d) ...
     //                              where V is V indicating a variable
     //                                    T is the variable type (BIFCHNA) -- %c
     //                                    N is the NELM -- %d
     //                                    R is the rank -- %d
     //                                    S is the shape -- Rank occurrences of %d
-    //                                    value is the series of values of similar form to #ggg
+    //                                    value is the series of values of similar form to FMTSTR_GLBCNT
     //                                      without the leading V.
-    //  #ggg=F nnn.Name             for user-defined functions/operators
+    //  FMTSTR_GLBCNT=F nnn.Name    for user-defined functions/operators
     //                              where F is F indicating a function
     //                                    nnn is a counter across functions & variables
     //                                    Name is the name of the function
     // The [Vars.sss] section has content of
-    //  xxx=Name=#ggg               for a variable in [Globals]
+    //  xxx=Name=FMTSTR_GLBCNT      for a variable in [Globals]
     //  xxx=Name=T 1 0 value        for an immediate scalar variable
     //                              where T is the variable immediate type (BIFC)
     // The [Fcns.sss] section has content of
-    //  xxx=Name=y=#ggg             for a function in [Globals] with NameType y
+    //  xxx=Name=y=FMTSTR_GLBCNT    for a function in [Globals] with NameType y
     //  xxx=Name=y={name} or char   for immediate functions
     // The [nnn.Name] section (used for user-defined functions/operators only)
     //   has content of
@@ -350,9 +349,9 @@ BOOL CmdSave_EM
                             //   represented as either {symbol} or {\xXXXX} where XXXX is
                             //   a four-digit hex number.
                             lpaplChar +=
-                              ConvertWideToNameLength (lpaplChar,
-                                                      &lpSymEntry->stData.stChar,
-                                                       1);
+                              ConvertWideToNameLength (lpaplChar,                   // Ptr to output save buffer
+                                                      &lpSymEntry->stData.stChar,   // Ptr to incoming chars
+                                                       1);                          // # chars to convert
                             // Append a trailing single quote
                             *lpaplChar++ = L'\'';
 
@@ -430,9 +429,9 @@ BOOL CmdSave_EM
                         //   represented as either {symbol} or {\xXXXX} where XXXX is
                         //   a four-digit hex number.
                         lpaplChar +=
-                          ConvertWideToNameLength (lpaplChar,
-                                                  &aplChar,
-                                                   1);
+                          ConvertWideToNameLength (lpaplChar,   // Ptr to output save buffer
+                                                  &aplChar,     // Ptr to incoming chars
+                                                   1);          // # chars to convert
                     } else
                         // Convert the function/operator in global memory to saved ws form
                         lpaplChar =
@@ -475,7 +474,7 @@ BOOL CmdSave_EM
         } // End IF/ELSE/...
     } // End FOR/IF/...
 
-    // Delete the #XXXXXXXX=#n references in the [Globals] section
+    // Delete the FMTSTR_GLBOBJ=FMTSTR_GLBCNT references in the [Globals] section
     while (lpSymLink)
     {
         LPSYMENTRY lpSymLast;           // Temporary ptr to previous stSymLink
@@ -484,9 +483,9 @@ BOOL CmdSave_EM
 
         // Format the global memory handle
         wsprintfW (wszGlbObj,
-                   L"#%08X",
+                   FMTSTR_GLBOBJ,
                    ClrPtrTypeDirAsGlb (lpSymLink->stData.stGlbData));
-        // Delete the #XXXXXXXX= entry in the [Globals] section
+        // Delete the FMTSTR_GLBOBJ= entry in the [Globals] section
         WritePrivateProfileStringW (SECTNAME_GLOBALS,           // Ptr to the section name
                                    wszGlbObj,                   // Ptr to key name
                                    NULL,                        // Ptr to key value (NULL to delete)
@@ -655,19 +654,19 @@ LPAPLCHAR SavedWsFormGlbFcn
      LPSYMENTRY *lplpSymLink)           // Ptr tp ptr to SYMENTRY link
 
 {
-    HGLOBAL        hGlbTxtLine;         // Text header/line global memory handle
-    LPMEMTXT_UNION lpMemTxtLine;        // Ptr to header/textline global memory
-    LPVOID         lpMemObj = NULL;     // Ptr to WS object ...
-    LPAPLCHAR      lpMemProKeyName,     // Ptr to profile keyname
-                   lpaplCharStart,      // Ptr to start of buffer
-                   lpwszSectName;       // Ptr to the section name as nnn.Name where nnn is the count
-    UINT           uLine;               // Function line loop counter
-    FILETIME       ftCreation,          // Object creation time
-                   ftLastMod;           // ...    last modification time
-    WCHAR          wszGlbObj[16 + 1],   // Save area for formatted hGlbObj
-                                        //   (room for 64-bit ptr plus terminating zero)
-                   wszGlbCnt[8 + 1];    // Save area for formatted *lpGlbCnt
-    LPSYMENTRY     lpSymLink;           // Ptr to SYMENTRY temp for *lplpSymLink
+    LPVOID            lpMemObj = NULL;      // Ptr to WS object ...
+    LPAPLCHAR         lpMemProKeyName,      // Ptr to profile keyname
+                      lpaplCharStart,       // Ptr to start of buffer
+                      lpaplCharStart2,      // Ptr to start of buffer
+                      lpwszSectName;        // Ptr to the section name as nnn.Name where nnn is the count
+    UINT              uLine;                // Function line loop counter
+    FILETIME          ftCreation,           // Object creation time
+                      ftLastMod;            // ...    last modification time
+    WCHAR             wszGlbObj[16 + 1],    // Save area for formatted hGlbObj
+                                            //   (room for 64-bit ptr plus terminating zero)
+                      wszGlbCnt[8 + 1];     // Save area for formatted *lpGlbCnt
+    LPSYMENTRY        lpSymLink;            // Ptr to SYMENTRY temp for *lplpSymLink
+    SAVEDWSGLBVARPARM SavedWsGlbVarParm;    // Extra parms for SavedWsGlbVarConv
 
     Assert (IsGlbTypeFcnDir (hGlbObj)
          || IsGlbTypeDfnDir (hGlbObj));
@@ -683,7 +682,7 @@ LPAPLCHAR SavedWsFormGlbFcn
 
     // Format the hGlbObj
     wsprintfW (wszGlbObj,
-               L"#%08X",
+               FMTSTR_GLBOBJ,
                hGlbObj);
     // Save as ptr to the profile keyname
     lpMemProKeyName = lpaplChar;
@@ -705,19 +704,32 @@ LPAPLCHAR SavedWsFormGlbFcn
     switch (((LPHEADER_SIGNATURE) lpMemObj)->nature)
     {
         case FCNARRAY_HEADER_SIGNATURE:
-            // Get the text line global memory handle
-            hGlbTxtLine = ((LPFCNARRAY_HEADER) lpMemObj)->hGlbTxtLine;
+            // Fill in the extra parms
+            SavedWsGlbVarParm.lpMemSaveWSID = lpMemSaveWSID;
+            SavedWsGlbVarParm.lpGlbCnt      = lpGlbCnt;
+            SavedWsGlbVarParm.lpSymEntry    = lpSymEntry;
+            SavedWsGlbVarParm.lplpSymLink   = lplpSymLink;
 
-            // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+            // Call the common function display function
+            lpaplChar =
+              DisplayFcnGlb (lpaplCharStart,        // Ptr to output save area
+                             hGlbObj,               // Function array global memory handle
+                             FALSE,                 // TRUE iff we're to display the header
+                            &SavedWsGlbVarConv,     // Ptr to function to convert an HGLOBAL to {{nnn}} (may be NULL)
+                            &SavedWsGlbVarParm);    // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+            // Ensure properly terminated
+            *lpaplChar++ = L'\0';
+
+            // Save as new start of buffer
+            lpaplCharStart2 = lpaplChar;
 
             // Format the text as an ASCII string with non-ASCII chars
             //   represented as either {symbol} or {\xXXXX} where XXXX is
             //   a four-digit hex number.
             lpaplChar +=
-              ConvertWideToNameLength (lpaplChar,
-                                      &lpMemTxtLine->C,
-                                       lpMemTxtLine->U);
+              ConvertWideToNameLength (lpaplChar,                   // Ptr to output save buffer
+                                       lpaplCharStart,              // Ptr to incoming chars
+                                       lstrlenW (lpaplCharStart));  // # chars to convert
             // Ensure properly terminated
             *lpaplChar++ = L'\0';
 
@@ -727,13 +739,10 @@ LPAPLCHAR SavedWsFormGlbFcn
             // Copy last mod time
             ftLastMod  = ((LPFCNARRAY_HEADER) lpMemObj)->ftLastMod;
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-
             // Write out the single line
             WritePrivateProfileStringW (lpwszSectName,      // Ptr to the section name
                                         L"0",               // Ptr to the key name
-                                        lpaplCharStart,     // Ptr to the key value
+                                        lpaplCharStart2,    // Ptr to the key value
                                         lpMemSaveWSID);     // Ptr to the file name
             // Write out the Count key value
             WritePrivateProfileStringW (lpwszSectName,      // Ptr to the section name
@@ -998,17 +1007,17 @@ void WriteFunctionLine
     // Format the text as an ASCII string with non-ASCII chars
     //   represented as either {symbol} or {\xXXXX} where XXXX is
     //   a four-digit hex number.
-    ConvertWideToNameLength (lpwFormat,
-                            &lpMemTxtLine->C,
-                             lpMemTxtLine->U);
+    ConvertWideToNameLength (lpwFormat,                     // Ptr to output save buffer
+                            &lpMemTxtLine->C,               // Ptr to incoming chars
+                             lpMemTxtLine->U);              // # chars to convert
     // We no longer need this ptr
     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
 
     // Write out the entry (nnn = FunctionLine)
-    WritePrivateProfileStringW (lpwszSectName,                      // Ptr to the section name
-                                wszCount,                           // Ptr to the key name
-                                lpwFormat,                          // Ptr to the key value
-                                lpMemSaveWSID);                     // Ptr to the file name
+    WritePrivateProfileStringW (lpwszSectName,              // Ptr to the section name
+                                wszCount,                   // Ptr to the key name
+                                lpwFormat,                  // Ptr to the key value
+                                lpMemSaveWSID);             // Ptr to the file name
 } // End WriteFunctionLine
 
 
@@ -1060,7 +1069,7 @@ LPAPLCHAR SavedWsFormGlbVar
 
     // Format the hGlbObj
     wsprintfW (wszGlbObj,
-               L"#%08X",
+               FMTSTR_GLBOBJ,
                hGlbObj);
     // Check to see if this global has already been saved
     //   in the [Globals] section
@@ -1165,9 +1174,9 @@ LPAPLCHAR SavedWsFormGlbVar
                 //   represented as either {symbol} or {\xXXXX} where XXXX is
                 //   a four-digit hex number.
                 lpaplChar +=
-                  ConvertWideToNameLength (lpaplChar,
-                                           (LPAPLCHAR) lpMemObj,
-                                           1);
+                  ConvertWideToNameLength (lpaplChar,           // Ptr to output save buffer
+                                           (LPAPLCHAR) lpMemObj,// Ptr to incoming chars
+                                           1);                  // # chars to convert
             // Append a trailing single quote
             *lpaplChar++ = L'\'';
 
@@ -1221,9 +1230,9 @@ LPAPLCHAR SavedWsFormGlbVar
                     //   represented as either {symbol} or {\xXXXX} where XXXX is
                     //   a four-digit hex number.
                     lpaplChar +=
-                      ConvertWideToNameLength (lpaplChar,
-                                              &(*(LPAPLHETERO) lpMemObj)->stData.stChar,
-                                               1);
+                      ConvertWideToNameLength (lpaplChar,                               // Ptr to output save buffer
+                                              &(*(LPAPLHETERO) lpMemObj)->stData.stChar,// Ptr to incoming chars
+                                               1);                                      // # chars to convert
                     // Append a trailing single quote
                     *lpaplChar++ = L'\'';
 
@@ -1308,7 +1317,7 @@ LPAPLCHAR SavedWsFormGlbVar
                         // Get the global's Type
                         AttrsOfGlb (ClrPtrTypeDirAsGlb (hGlbSub), &aplTypeSub, NULL, NULL, NULL);
 
-                        // Convert the variable in gloabl memory to saved ws form
+                        // Convert the variable in global memory to saved ws form
                         lpaplChar =
                           SavedWsFormGlbVar (lpaplChar,
                                              hGlbSub,
@@ -1544,6 +1553,34 @@ NORMAL_EXIT:
     return bRet;
 } // End SaveNewWsid_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SavedWsGlbVarConv
+//
+//  Callback function for DisplayFcnGlb to format a global
+//***************************************************************************
+
+LPAPLCHAR SavedWsGlbVarConv
+    (LPAPLCHAR           lpaplChar,                 // Ptr to output save area
+     HGLOBAL             hGlbObj,                   // Object global memory handle
+     LPSAVEDWSGLBVARPARM lpSavedWsGlbVarParm)       // Ptr to extra parameters for lpSavedWsGlbVarConv
+
+{
+
+    // Convert the variable in global memory to saved ws form
+    lpaplChar =
+      SavedWsFormGlbVar (lpaplChar,
+                         hGlbObj,
+                         lpSavedWsGlbVarParm->lpMemSaveWSID,
+                         lpSavedWsGlbVarParm->lpGlbCnt,
+                         lpSavedWsGlbVarParm->lpSymEntry,
+                         lpSavedWsGlbVarParm->lplpSymLink);
+    // Include a trailing blank
+    *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End SavedWsGlbVarConv
 
 
 //***************************************************************************

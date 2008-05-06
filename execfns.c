@@ -264,6 +264,12 @@ VALUE_EXIT:
 //  Execute a function in global memory
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- ExecFcnGlb_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE ExecFcnGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      HGLOBAL hGlbFcn,               // Handle to function strand
@@ -273,12 +279,24 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
 {
     LPPL_YYSTYPE lpYYFcnStr,        // Ptr to function strand
                  lpYYRes;           // Ptr to the result
+    LPTOKEN      lptkAxis2;         // Ptr to secondary axis token (may be NULL)
 
     // Lock the memory to get a ptr to it
     lpYYFcnStr = MyGlobalLock (hGlbFcn);
 
     // Skip over the header to the data (PL_YYSTYPEs)
     lpYYFcnStr = FcnArrayBaseToData (lpYYFcnStr);
+
+    // Check for axis operator
+    lptkAxis2 = CheckAxisOper (lpYYFcnStr);
+
+    // If two axis tokens, that's an error
+    if (lptkAxis && lptkAxis2)
+        goto SYNTAX_EXIT;
+    else
+    // If the secondary only, use it
+    if (lptkAxis2)
+        lptkAxis = lptkAxis2;
 
     // The contents of the global memory object consist of
     //   a series of PL_YYSTYPEs in RPN order.
@@ -290,7 +308,12 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
     MyGlobalUnlock (hGlbFcn); lpYYFcnStr = NULL;
 
     return lpYYRes;
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                              &lpYYFcnStr->tkToken);
+    return NULL;
 } // End ExecFcnGlb_EM_YY
+#undef  APPEND_NAME
 
 
 //***************************************************************************

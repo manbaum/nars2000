@@ -126,7 +126,7 @@ APLSTYPE PrimSpecStarStorageTypeMon
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     if (IsSimpleChar (*lpaplTypeRht)
@@ -193,12 +193,12 @@ APLSTYPE PrimSpecStarStorageTypeDyd
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMLft EQ 0 && IsSimpleChar (*lpaplTypeLft))
+    if (IsEmpty (aplNELMLft) && IsSimpleChar (*lpaplTypeLft))
         *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     // If both arguments are simple numeric,

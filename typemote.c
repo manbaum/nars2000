@@ -167,7 +167,7 @@ void TypeDemote
     // If the right arg is a simple scalar,
     //   convert it to an immediate
     if (IsSimple (aplTypeRht)
-     && aplRankRht EQ 0)
+     && IsScalar (aplRankRht))
     {
         APLLONGEST aplLongestRht;
 
@@ -415,7 +415,7 @@ void TypeDemote
     if (uTypeMap[aplTypeRes] < min (uTypeMap[ARRAY_HETERO], uTypeMap[aplTypeRht]))
     {
         // Handle simple scalars as immediates
-        if (aplRankRht EQ 0
+        if (IsScalar (aplRankRht)
          && IsSimple (aplTypeRes))
         {
             LPAPLLONGEST lpaplLongestRht;

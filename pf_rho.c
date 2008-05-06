@@ -1175,7 +1175,7 @@ BOOL PrimFnDydRhoLftGlbValid_EM
     *lpaplRankRes = aplNELMLft;
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto RANK_EXIT;
     else
     {
@@ -1229,9 +1229,9 @@ BOOL PrimFnDydRhoLftGlbValid_EM
                     {
                         // Loop through the rest of the dimensions
                         for (u++; u < aplNELMLft; u++)
-                        if (((LPAPLINT) lpDataLft)[u] EQ 0);
+                        if (IsZeroDim (((LPAPLINT) lpDataLft)[u]))
                         {
-                            // The result NELM isz ero
+                            // The result NELM is zero
                             *lpaplNELMRes = 0;
 
                             goto NORMAL_EXIT;
@@ -1277,9 +1277,9 @@ BOOL PrimFnDydRhoLftGlbValid_EM
                             aplIntTmp = FloatToAplint_SCT (((LPAPLFLOAT) lpDataLft)[u], &bRet);
                             if (!bRet)
                                 goto DOMAIN_EXIT;
-                            if (aplIntTmp EQ 0)
+                            if (IsZeroDim (aplIntTmp))
                             {
-                                // The result NELM isz ero
+                                // The result NELM is zero
                                 *lpaplNELMRes = 0;
 
                                 goto NORMAL_EXIT;

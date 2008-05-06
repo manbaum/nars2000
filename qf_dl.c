@@ -111,7 +111,7 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
-    if (aplRankRht > 1)
+    if (IsMultiRank (aplRankRht))
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -119,7 +119,7 @@ LPPL_YYSTYPE SysFnMonDL_EM_YY
     } // End IF
 
     // Check for LENGTH ERROR
-    if (aplNELMRht NE 1)
+    if (!IsSingleton (aplNELMRht))
     {
         ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                    lptkFunc);

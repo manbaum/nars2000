@@ -382,7 +382,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
         goto RIGHT_DOMAIN_EXIT;
 
     // Handle empty right args & result
-    if (aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMRht))
         aplTypeRes = ARRAY_BOOL;
 
     // Calculate the result cols
@@ -399,7 +399,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
         // Set the # result cols
         aplColsRes = aplNELMRes;
     } else
-    if (aplColsRht NE 0)
+    if (!IsZeroDim (aplColsRht))
         aplNELMRes = aplColsRes * (aplNELMRht / aplColsRht);
     else
         aplNELMRes = 0;

@@ -421,7 +421,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Handle prototypes separately
-    if (aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMRht))
         return PrimProtoFnScalar_EM_YY (NULL,       // Ptr to left arg token
                                         lptkFunc,   // Ptr to function token
                                         lptkRhtArg, // Ptr to right arg token
@@ -1466,8 +1466,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Handle prototypes separately
-    if (aplNELMLft EQ 0
-     || aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMLft)
+     || IsEmpty (aplNELMRht))
     {
         lpYYRes = PrimProtoFnScalar_EM_YY (lptkLftArg,  // Ptr to left arg token
                                            lptkFunc,    // Ptr to function token
@@ -1541,7 +1541,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
 
     // The NELM of the result is the larger of the two args
     //   unless one is empty
-    if (aplNELMLft EQ 0 || aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMLft) || IsEmpty (aplNELMRht))
         aplNELMRes = 0;
     else
         aplNELMRes = max (aplNELMLft, aplNELMRht);
@@ -4845,8 +4845,8 @@ BOOL PrimFnDydSimpSimp_EM
     if (*lphGlbRes)
         lpMemRes = MyGlobalLock (*lphGlbRes);
 
-    if (aplNELMLft EQ 1
-     && aplNELMRht EQ 1)
+    if (IsSingleton (aplNELMLft)
+     && IsSingleton (aplNELMRht))
     {
         //***************************************************************
         // Both args are singletons
@@ -4855,7 +4855,7 @@ BOOL PrimFnDydSimpSimp_EM
         // Axis may be anything
 
         // If the result is a scalar, ...
-        if (aplRankRes EQ 0)
+        if (IsScalar (aplRankRes))
         {
             // Get the respective first values
             GetFirstValueToken (lptkLftArg,         // Ptr to left arg token
@@ -5063,8 +5063,8 @@ RESTART_EXCEPTION_SINGLETON:
         // Finish with common code
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
-    if (aplNELMLft EQ 1
-     || aplNELMRht EQ 1)
+    if (IsSingleton (aplNELMLft)
+     || IsSingleton (aplNELMRht))
     {
         //***************************************************************
         // One of the args is a singleton, the other not
@@ -5073,7 +5073,7 @@ RESTART_EXCEPTION_SINGLETON:
         // Axis may be anything
 
         // Copy the ptr of the non-singleton argument
-        if (aplNELMLft NE 1)
+        if (!IsSingleton (aplNELMLft))
         {
             lpMemDimArg = lpMemLft;
             aplTypeArg  = aplTypeLft;
@@ -5098,7 +5098,7 @@ RESTART_EXCEPTION_SINGLETON:
         } // End IF
 
         // Get the value of the singleton
-        if (aplNELMLft EQ 1)
+        if (IsSingleton (aplNELMLft))
             GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
                                &aplIntegerLft,  // Ptr to integer result
                                &aplFloatLft,    // Ptr to float ...
@@ -5117,7 +5117,7 @@ RESTART_EXCEPTION_SINGLETON:
                                 NULL,           // Ptr to ...immediate type ...
                                 NULL);          // Ptr to array type ...
         // Split cases based upon which argument is the simgleton
-        if (aplNELMLft NE 1)    // Lft = Multipleton, Rht = Singleton
+        if (!IsSingleton (aplNELMLft))  // Lft = Multipleton, Rht = Singleton
             bRet = PrimFnDydMultSing_EM (aplTypeRes,
                                          lpMemRes,
                                          aplNELMRes,
@@ -5132,7 +5132,7 @@ RESTART_EXCEPTION_SINGLETON:
                                          lptkFunc,
                                          lpPrimSpec);
 
-        else                    // Lft = Singleton, Rht = Multipleton
+        else                            // Lft = Singleton, Rht = Multipleton
             bRet = PrimFnDydSingMult_EM (aplTypeRes,
                                          lpMemRes,
                                          aplNELMRes,

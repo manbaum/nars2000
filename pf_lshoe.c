@@ -304,7 +304,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     //   is an identity function.  We could go through
     //   all of the work below and end up with the same
     //   result, but why bother??
-    if (lptkAxis && aplNELMAxis EQ 0)
+    if (lptkAxis && IsEmpty (aplNELMAxis))
     {
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
@@ -427,7 +427,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     else
     {
         // Handle prototypes for the result
-        if (aplNELMRes EQ 0)
+        if (IsEmpty (aplNELMRes))
         {
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
@@ -461,7 +461,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
 
                 case ARRAY_HETERO:
                 case ARRAY_NESTED:
-                    if (aplNELMSub EQ 0)
+                    if (IsEmpty (aplNELMSub))
                     {
                         hGlbProto =
                           MakeMonPrototype_EM (ClrPtrTypeIndAsGlb (lpMemRht),   // Proto arg handle
@@ -529,7 +529,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         // Check for empty subarrays
         //***************************************************************
 
-        if (aplNELMSub EQ 0)
+        if (IsEmpty (aplNELMSub))
         {
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
@@ -1096,7 +1096,7 @@ BOOL PrimFnMonLeftShoeProto_EM
     LPVOID lpMemProto;              // Ptr to prototype global memory
 
     // If the subarray is empty, the result is zilde
-    if (aplNELMSub EQ 0)
+    if (IsEmpty (aplNELMSub))
         *lphGlbProto = hGlbMT;
     else
     {

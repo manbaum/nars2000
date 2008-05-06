@@ -147,7 +147,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (aplRankRht > 1)
+    if (IsMultiRank (aplRankRht))
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -155,7 +155,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
     } // End IF
 
     // Check for LEFT RANK ERROR
-    if (lptkLftArg && aplRankLft > 1)
+    if (lptkLftArg && IsMultiRank (aplRankLft))
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -180,7 +180,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
     } // End IF
 
     // If the right arg is empty, return NoValue
-    if (aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMRht))
         lpYYRes = MakeNoValue_YY (lptkFunc);
     else
     {

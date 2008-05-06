@@ -157,7 +157,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
-    if (aplRankRht > 1)
+    if (IsMultiRank (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for DOMAIN ERROR
@@ -173,7 +173,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
         stFlags.ObjName = OBJNAME_MF;
 
     // Split cases based upon the right arg rank
-    if (aplRankRht EQ 0)
+    if (IsScalar (aplRankRht))
         // Lookup the name in the symbol table
         // SymTabLookupName sets the .ObjName enum,
         //   and the .Inuse flag
@@ -286,7 +286,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     uNumLines = lpMemDfnHdr->numFcnLines;
 
                     // Run through the function lines looking for the longest
-                    if (aplRankRes EQ 2)
+                    if (IsMatrix (aplRankRes))
                     {
                         for (uLine = 0; uLine < uNumLines; uLine++)
                         {
@@ -313,7 +313,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
                     // Calculate the result NELM ("1 +" includes the header)
                     aplNELMRes = 1 + uNumLines;
-                    if (aplRankRes EQ 2)
+                    if (IsMatrix (aplRankRes))
                         aplNELMRes *= uMaxLineLen;
 
                     // Calculate space needed for the result
@@ -344,7 +344,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
                         // Save the dimensions in the result ("1 +" includes the header)
                         (VarArrayBaseToDim (lpMemRes))[0] = 1 + uNumLines;
-                        if (aplRankRes EQ 2)
+                        if (IsMatrix (aplRankRes))
                             (VarArrayBaseToDim (lpMemRes))[1] = uMaxLineLen;
 
 #define lpMemResChar    ((LPAPLCHAR) lpMemRes)
@@ -353,7 +353,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
                         // If this is a nested result, fill it in PTR_REUSED
                         //   in case we fail along the way
-                        if (aplRankRes EQ 1)
+                        if (IsVector (aplRankRes))
                         for (uRes = 0; uRes < aplNELMRes; uRes++)
                             ((LPAPLNESTED) lpMemResChar)[uRes] = PTR_REUSED;
 
@@ -471,7 +471,7 @@ LPVOID SysFnCR_Copy_EM
     (APLRANK aplRankRes,                    // Result rank
      LPVOID  lpMemRes,                      // Ptr to result
      HGLOBAL hGlbTxt,                       // Header/line text global memory handle
-     UINT    uMaxLineLen,                   // Maximum line length (valid only with aplRankRes EQ 2)
+     UINT    uMaxLineLen,                   // Maximum line length (valid only with IsMatrix (aplRankRes))
      LPTOKEN lptkFunc)                      // Ptr to function token
 
 {
@@ -485,7 +485,7 @@ LPVOID SysFnCR_Copy_EM
     lpMemTxtLine = MyGlobalLock (hGlbTxt);
 
     // Split cases based upon the result rank (1 or 2)
-    if (aplRankRes EQ 1)
+    if (IsVector (aplRankRes))
     {
         // Calculate space needed for the result
         ByteRes = CalcArraySize (ARRAY_CHAR, lpMemTxtLine->U, 1);
@@ -542,7 +542,7 @@ LPVOID SysFnCR_Copy_EM
 
         // Fill the remainder of the line with blanks
         // Could use FillMemoryW ??
-        if (aplRankRes EQ 2)
+        if (IsMatrix (aplRankRes))
         for (lpMemResChar += uLineLen;
              uLineLen < uMaxLineLen;
              uLineLen++)
@@ -610,10 +610,10 @@ HGLOBAL SysFnMonCR_ALLOC_EM
     lpHeader->Rank       = aplRankRes;
 #undef  lpHeader
 
-    // If the rank EQ 2 and the NELM NE 0, the first
+    // If it's a non-empty matrix, the first
     //   dimension is 1
-    if (aplRankRes EQ 2
-     && aplNELMRes NE 0)
+    if (IsMatrix (aplRankRes)
+     && !IsEmpty (aplNELMRes))
     {
         // Save the dimension in the result
         (VarArrayBaseToDim (lpMemRes))[0] = 1;
@@ -715,11 +715,11 @@ LPPL_YYSTYPE SysFnDydCR_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT LENGTH ERROR
-    if (aplNELMLft NE 1)
+    if (!IsSingleton (aplNELMLft))
         goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR

@@ -185,7 +185,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     //***************************************************************
     //  Handle prototypes separately
     //***************************************************************
-    if (aplNELMRht EQ 0
+    if (IsEmpty (aplNELMRht)
      || bPrototyping)
     {
         // Get the appropriate prototype function ptr
@@ -281,7 +281,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     tkRhtArg.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
     // Handle prototypes separately
-    if (aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMRht))
     {
         // Split cases based upon the storage type of the right arg
         switch (aplTypeRht)
@@ -822,7 +822,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
 
     // The NELM of the result is the larger of the two args
     //   unless one is empty
-    if (aplNELMLft EQ 0 || aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMLft) || IsEmpty (aplNELMRht))
         aplNELMRes = 0;
     else
         aplNELMRes = max (aplNELMLft, aplNELMRht);
@@ -830,7 +830,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     //***************************************************************
     //  Handle prototypes separately
     //***************************************************************
-    if (aplNELMRes EQ 0
+    if (IsEmpty (aplNELMRes)
      || bPrototyping)
     {
         // Get the appropriate prototype function ptr
@@ -1004,8 +1004,8 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                   lpMemDimRes);
         else
         {
-            uLft = (aplNELMLft NE 0) ? uRes % aplNELMLft : uRes;
-            uRht = (aplNELMRht NE 0) ? uRes % aplNELMRht : uRes;
+            uLft = IsEmpty (aplNELMLft) ? uRes : uRes % aplNELMLft;
+            uRht = IsEmpty (aplNELMRht) ? uRes : uRes % aplNELMRht;
         } // End IF/ELSE
 
         // If the left arg is not immediate, get the next value

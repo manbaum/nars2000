@@ -221,7 +221,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         aplNELMAxis = aplRankRes;
 
     // Check for RANK error
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto RANK_EXIT;
 
     // Check for LENGTH error
@@ -342,7 +342,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     lpMemLoHiRht = &lpMemTmpLft[aplRankRes];
 
     // Copy the left arg values to the result dimensions
-    if (aplRankRht > 0)
+    if (!IsScalar (aplRankRht))
     {
         for (uRes = 0; uRes < aplRankRes; uRes++)
         {
@@ -734,7 +734,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
     //   the right arg is not scalar, and
     //   it's UpArrow
     if (lpMemAxisTail
-     && aplRankRht > 0
+     && !IsScalar (aplRankRht)
      && !bDownArrow)
         // Copy the right arg dimensions to the normalized left arg
         //   some of which will be overwritten by the actual left arg,
@@ -869,7 +869,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         {
             // Get the next value
             aplIntLft = abs64 (lpMemTmpLft[uDim]);
-            if (aplRankRht > 0)
+            if (!IsScalar (aplRankRht))
                 aplIntTmp = lpMemDimRht[uDim];
             else
                 aplIntTmp = 1;
@@ -894,7 +894,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
                 } // End IF/ELSE
 
                 // Calculate the remaining dimension length
-                if (aplRankRht > 0)
+                if (!IsScalar (aplRankRht))
                     aplIntLft = aplIntTmp - aplIntLft;
                 else
                     aplIntLft = 1 - aplIntLft;

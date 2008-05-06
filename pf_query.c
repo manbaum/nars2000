@@ -170,7 +170,7 @@ APLSTYPE PrimSpecQueryStorageTypeMon
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     if (IsSimpleChar (*lpaplTypeRht)
@@ -338,13 +338,13 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for LEFT/RIGHT RANK ERRORs
-    if (aplRankLft > 1
-     || aplRankRht > 1)
+    if (IsMultiRank (aplRankLft)
+     || IsMultiRank (aplRankRht))
         goto RANK_EXIT;
 
     // Check for LEFT/RIGHT LENGTH ERRORs
-    if (aplNELMLft NE 1
-     || aplNELMRht NE 1)
+    if (!IsSingleton (aplNELMLft)
+     || !IsSingleton (aplNELMRht))
         goto LENGTH_EXIT;
 
     // Get the respective first values

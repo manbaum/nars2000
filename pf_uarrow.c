@@ -250,7 +250,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
 
     // If the right arg is scalar, the result rank is aplNELMLft,
     //   otherwise the result rank is aplRankRht
-    if (aplRankRht EQ 0)
+    if (IsScalar (aplRankRht))
         aplRankRes = aplNELMLft;
     else
         aplRankRes = aplRankRht;
@@ -280,7 +280,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         aplNELMAxis = aplRankRes;
 
     // Check for RANK error
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -310,7 +310,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // Split off case of {zilde}{take} SimpleScalar
     //               and      ''{take} SimpleScalar
     if (IsSimple (aplTypeLft)
-     && aplNELMLft EQ 0
+     && IsEmpty (aplNELMLft)
      && IsSimple (aplTypeRht))
     {
         // Allocate a new YYRes;
@@ -364,7 +364,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     //   unless the right arg is hetero and the result is a singleton, or
     //   the right arg is APA
     if (IsSimpleHet (aplTypeRht)
-     && aplNELMRes EQ 1)
+     && IsSingleton (aplNELMRes))
         aplTypeRes = TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType);
     else
     if (IsSimpleAPA (aplTypeRht))
@@ -425,7 +425,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     // lpMemRes now points to its data
 
     // Handle empty array results
-    if (aplNELMRes EQ 0)
+    if (IsEmpty (aplNELMRes))
     {
         // If the result is nested, copy the prototype from the right arg
         if (IsNested (aplTypeRes))

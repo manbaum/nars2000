@@ -465,7 +465,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 
     // Check for RIGHT DOMAIN ERROR
     if (!IsSimpleChar (gradeData.aplTypeRht)
-     && aplNELMRht NE 0)
+     && !IsEmpty (aplNELMRht))
         goto RIGHT_DOMAIN_EXIT;
 
     // Get left and right arg's global ptrs

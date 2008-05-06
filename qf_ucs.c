@@ -131,7 +131,7 @@ LPPL_YYSTYPE SysFnMonUCS_EM_YY
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // If the right arg/result is a scalar, ...
-    if (aplRankRht EQ 0)
+    if (IsScalar (aplRankRht))
     {
         // If the right arg is a simple numeric scalar, ...
         if (IsSimpleNum (aplTypeRht))

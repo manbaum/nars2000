@@ -141,7 +141,7 @@ BOOL CmdWsid_EM
         AppendLine (L"WAS ", FALSE, FALSE);
 
         // If the old []WSID is empty, ...
-        if (aplNELMWSID EQ 0)
+        if (IsEmpty (aplNELMWSID))
             AppendLine (L"CLEAR WS", FALSE, TRUE);
         else
         {
@@ -171,7 +171,7 @@ BOOL CmdWsid_EM
         AppendLine (L"IS ", FALSE, FALSE);
 
         // If current []WSID is empty, ...
-        if (aplNELMWSID EQ 0)
+        if (IsEmpty (aplNELMWSID))
             AppendLine (L"CLEAR WS", FALSE, TRUE);
         else
         {

@@ -327,7 +327,7 @@ LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     PrimFnMonEpsilonGlbCount (hGlbRht, &aplTypeRes, &aplNELMRes, &aplTypePro);
 
     // Handle empty result
-    if (aplNELMRes EQ 0)
+    if (IsEmpty (aplNELMRes))
         aplTypeRes = aplTypePro;
 
     // Calculate space needed for the result
@@ -446,7 +446,7 @@ void PrimFnMonEpsilonGlbCount
             // Empty args don't contribute to the result,
             //   so we don't want to risk changing the storage
             //   type to HETERO by running through aplTypeArr.
-            if (aplNELMRht NE 0)
+            if (!IsEmpty (aplNELMRht))
             {
                 *lpaplTypeRes = aplTypeArr[*lpaplTypeRes][aplTypeRht];
                 (*lpaplNELMRes) += aplNELMRht;
@@ -1210,8 +1210,8 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     // If the result is non-empty, and
     //    the right arg is non-empty, and
     //    the left and right args are not different types (numeric vs. char), ...
-    if (!(aplNELMLft EQ 0
-       || aplNELMRht EQ 0
+    if (!(IsEmpty (aplNELMLft)
+       || IsEmpty (aplNELMRht)
        || (IsSimpleNum (aplTypeLft) && IsSimpleChar (aplTypeRht))
        || (IsSimpleNum (aplTypeRht) && IsSimpleChar (aplTypeLft))))
     {

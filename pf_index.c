@@ -104,7 +104,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
     //***************************************************************
     // If the list arg is empty, ...
     //***************************************************************
-    if (aplNELMLst EQ 0)
+    if (IsEmpty (aplNELMLst))
     {
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
@@ -131,7 +131,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
     //***************************************************************
     // If the list arg is a singleton, ...
     //***************************************************************
-    if (aplNELMLst EQ 1)
+    if (IsSingleton (aplNELMLst))
     {
         APLSTYPE aplTypeItm;            // List arg subitem storage type
         APLNELM  aplNELMItm;            // List arg subitem NELM
@@ -167,7 +167,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
         // Handle obvious DOMAIN ERRORs
         if (IsSimpleCH (aplTypeSub)
-          && aplNELMSub NE 0)
+          && !IsEmpty (aplNELMSub))
             goto DOMAIN_EXIT;
 
         //***************************************************************
@@ -215,7 +215,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
         // The list arg item must be a nested array of simple empty numeric
         //   or char vectors.
         //***************************************************************
-        if (aplRankNam EQ 0)
+        if (IsScalar (aplRankNam))
             lpYYRes =
               ArrayIndexRefNamScalar_EM_YY (hGlbNam,        // Name arg global memory handle
                                             lpMemNam,       // Ptr to name arg global memory
@@ -308,7 +308,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             {
                 case PTRTYPE_STCONST:       // Immediates are NELM 1, Rank 0
                     // Check for LENGTH ERROR
-                    if (aplRankNam NE 1)    // Check Name rank vs. list item NELM
+                    if (!IsVector (aplRankNam)) // Check Name rank vs. list item NELM
                         goto RANK_EXIT;
 
                     // Get the value & type
@@ -401,7 +401,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, NULL);
 
                     // Check for RANK ERROR
-                    if (aplRankItm NE 1)
+                    if (!IsVector (aplRankItm))
                         goto RANK_EXIT;
 
                     // If it's simple numeric and the name arg rank
@@ -645,7 +645,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
     bQuadIO = GetQuadIO ();
 
     // Check for RANK ERROR
-    if (aplRankNam NE 1)
+    if (!IsVector (aplRankNam))
         goto RANK_EXIT;
 
     // Convert float to int if necessary
@@ -811,7 +811,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     bQuadIO = GetQuadIO ();
 
     // Check for RANK ERROR
-    if (aplRankNam NE 1)
+    if (!IsVector (aplRankNam))
         goto RANK_EXIT;
 
     // Calculate space needed for the result
@@ -862,7 +862,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     } // End IF
 
     // Handle prototypes
-    if (aplNELMLst EQ 0
+    if (IsEmpty (aplNELMLst)
      && IsNested (aplTypeRes))
     {
         LPAPLNESTED lpMemNam;           // Ptr to name arg global memory
@@ -1149,7 +1149,7 @@ LPPL_YYSTYPE ArrayIndexRefNamScalar_EM_YY
             lpMemNam = VarArrayBaseToData (lpMemNam, 0);
 
             // If the list arg is empty, copy the name arg prototype to the result
-            if (aplNELMLst EQ 0)
+            if (IsEmpty (aplNELMLst))
             {
                 HGLOBAL hGlbProto;          // Prototype global memory handle
 
@@ -1254,11 +1254,11 @@ BOOL ArrayIndexValidZilde_EM
             AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemNdx)[uNdx]), &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
 
             // Check for RANK ERROR
-            if (aplRankSub NE 1)
+            if (!IsVector (aplRankSub))
                 goto RANK_EXIT;
 
             // Check for LENGTH ERROR
-            if (aplNELMSub NE 0)
+            if (!IsEmpty (aplNELMSub))
                 goto LENGTH_EXIT;
 
             // Check for DOMAIN ERROR
@@ -1334,7 +1334,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
 
     // Check for RANK ERROR
     if (aplRankNam NE aplNELMLst
-     && aplNELMLst NE 1)
+     && !IsSingleton (aplNELMLst))
         goto RANK_EXIT;
 
     // If there are no elided indices, use squad without axis operator
@@ -1380,7 +1380,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
         lpMemLstNew = VarArrayBaseToData (lpMemLstNew, 1);
 
         // Handle prototypes
-        if (uCount EQ 0)
+        if (IsEmpty (uCount))
             // Use {zilde} as the prototype
             *lpMemLstNew = MakePtrTypeGlb (hGlbZilde);
         else
@@ -1723,7 +1723,7 @@ BOOL ArrayIndexSet_EM
 
     // Split cases based upon whether or not the name
     //   var is scalar (this also covers immediates)
-    if (aplRankNam EQ 0)
+    if (IsScalar (aplRankNam))
     {
         //***************************************************************
         // The name arg value is a scalar
@@ -1746,7 +1746,7 @@ BOOL ArrayIndexSet_EM
         //***************************************************************
         // If the list arg is empty, ...
         //***************************************************************
-        if (aplNELMLst EQ 0)                // A[]{is}R
+        if (IsEmpty (aplNELMLst))               // A[]{is}R
         {
             hGlbRes = ArrayIndexSetNoLst_EM (lptkNamArg,    // Ptr to name arg token
                                              lptkRhtArg,    // Ptr to right ...
@@ -1763,7 +1763,7 @@ BOOL ArrayIndexSet_EM
             //***************************************************************
             // If the list arg is a singleton, ...
             //***************************************************************
-            if (aplNELMLst EQ 1)
+            if (IsSingleton (aplNELMLst))
             {
                 bRet = ArrayIndexSetSingLst_EM (lptkNamArg,     // Ptr to name arg token
                                                 lptkLstArg,     // Ptr to list ...
@@ -1904,7 +1904,7 @@ BOOL ArrayIndexSetNamScalar_EM
     if (aplNELMLst)
     {
         // Check for RANK ERROR
-        if (aplNELMLst NE 1
+        if (!IsSingleton (aplNELMLst)
          || hGlbLst EQ NULL)
             goto RANK_EXIT;
 
@@ -1934,7 +1934,7 @@ BOOL ArrayIndexSetNamScalar_EM
         AttrsOfGlb (hGlbSubLst, &aplTypeSubLst, &aplNELMSubLst, &aplRankSubLst, NULL);
 
         // Check for RANK ERROR
-        if ((aplNELMSubLst NE 1 || aplNELMRht NE 1)
+        if ((!IsSingleton (aplNELMSubLst) || !IsSingleton (aplNELMRht))
          && aplRankSubLst NE aplRankRht)
             goto RANK_EXIT;
 
@@ -1942,7 +1942,7 @@ BOOL ArrayIndexSetNamScalar_EM
         lpMemSubLst = MyGlobalLock (hGlbSubLst);
 
         // Check for LENGTH ERROR
-        if (aplNELMSubLst NE 1 || aplNELMRht NE 1)
+        if (!IsSingleton (aplNELMSubLst) || !IsSingleton (aplNELMRht))
         {
             // Skip over the header to the dimensions
             lpMemRht    = VarArrayBaseToDim (lpMemRht);
@@ -1965,12 +1965,12 @@ BOOL ArrayIndexSetNamScalar_EM
             goto ERROR_EXIT;
 
         // If the index arg is empty, just quit
-        if (aplNELMSubLst EQ 0)
+        if (IsEmpty (aplNELMSubLst))
             goto NORMAL_EXIT;
     } else
     {
         // Check for RANK ERROR between the name and right args
-        if (aplNELMRht NE 1
+        if (!IsSingleton (aplNELMRht)
          && aplRankNam NE aplRankRht)
             goto RANK_EXIT;
 
@@ -2191,7 +2191,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Singleton right args match all lists
-    if (aplNELMRht NE 1)
+    if (!IsSingleton (aplNELMRht))
     {
         // Check for RANK ERROR between the list and right args
         if (aplRankNam NE aplRankRht)
@@ -2467,7 +2467,7 @@ BOOL ArrayIndexSetSingLst_EM
     } // End SWITCH
 
     // Check for RANK ERROR between the list and right args
-    if (aplNELMRht NE 1
+    if (!IsSingleton (aplNELMRht)
      && aplRankSubLst NE aplRankRht
      && aplNELMSubLst NE aplNELMRht)
         goto RANK_EXIT;
@@ -2476,7 +2476,7 @@ BOOL ArrayIndexSetSingLst_EM
     lpMemSubLst = VarArrayBaseToDim (lpMemSubLst);
 
     // Check for LENGTH ERROR between the list and right args
-    if (aplNELMRht NE 1)
+    if (!IsSingleton (aplNELMRht))
     {
         APLRANK aplRankMax;
 
@@ -2502,9 +2502,9 @@ BOOL ArrayIndexSetSingLst_EM
                 aplDimRht    = 1;
 
             // Skip over equal or unit dimensions
-            if (aplDimSubLst      EQ aplDimRht
-             || aplDimSubLst EQ 1 && aplDimRht NE 1
-             || aplDimSubLst NE 1 && aplDimRht EQ 1)
+            if (aplDimSubLst EQ aplDimRht
+             ||  IsUnitDim (aplDimSubLst) && !IsUnitDim (aplDimRht)
+             || !IsUnitDim (aplDimSubLst) &&  IsUnitDim (aplDimRht))
                 continue;
 
             // If the ranks differ, it's a RANK ERROR
@@ -2532,7 +2532,7 @@ BOOL ArrayIndexSetSingLst_EM
     // Handle obvious DOMAIN ERRORs
     if (IsSimpleHet (aplTypeSubLst)
      || (IsSimpleChar (aplTypeSubLst)
-      && aplNELMSubLst NE 0))
+      && !IsEmpty (aplNELMSubLst)))
         goto DOMAIN_EXIT;
 
     // Calculate the storage type of the result
@@ -2695,7 +2695,7 @@ BOOL ArrayIndexSetSingLst_EM
 
     // If the types are different, we need to type promote the result
     if (aplTypeRes NE aplTypeNam                        // Type are different,
-      && (!(bSysVar && aplNELMSubLst EQ 0)              // and not an empty []var
+      && (!(bSysVar && IsEmpty (aplNELMSubLst))         // and not an empty []var
       && !TypePromoteGlb_EM (lphGlbRes, aplTypeRes, lptkFunc)))
           goto ERROR_EXIT;
 
@@ -2717,7 +2717,7 @@ BOOL ArrayIndexSetSingLst_EM
     //***************************************************************
     if (IsSimple (aplTypeSubLst))
     {
-        if (aplNELMRht EQ 1)
+        if (IsSingleton (aplNELMRht))
             // Get the one (and only) item from the right arg
             GetFirstItemToken (lptkRhtArg,      // Ptr to the token
                               &aplLongestRht,   // Ptr to the longest (may be NULL)
@@ -2728,7 +2728,7 @@ BOOL ArrayIndexSetSingLst_EM
         for (uRes = 0; uRes < aplNELMSubLst; uRes++)
         {
             // Get the next item from the right arg
-            if (aplNELMRht NE 1)
+            if (!IsSingleton (aplNELMRht))
                 GetNextItemMem (lpMemRht,
                                 aplTypeRht,
                                 uRes,
@@ -2777,7 +2777,7 @@ BOOL ArrayIndexSetSingLst_EM
         else
             aplTypeSet = aplTypeRht;
 
-        if (aplNELMRht EQ 1)
+        if (IsSingleton (aplNELMRht))
             // Get the one (and only) item from the right arg
             GetFirstItemToken (lptkRhtArg,      // Ptr to the token
                               &aplLongestRht,   // Ptr to the longest (may be NULL)
@@ -2788,7 +2788,7 @@ BOOL ArrayIndexSetSingLst_EM
         for (uRes = 0; uRes < aplNELMSubLst; uRes++)
         {
             // Get the next value from the right arg
-            if (aplNELMRht NE 1)
+            if (!IsSingleton (aplNELMRht))
                 GetNextItemMem (lpMemRht,
                                 aplTypeRht,
                                 uRes,
@@ -2803,7 +2803,7 @@ BOOL ArrayIndexSetSingLst_EM
 
                 case PTRTYPE_STCONST:
                     // Check for RANK ERROR
-                    if (aplRankNam NE 1)
+                    if (!IsVector (aplRankNam))
                         goto RANK_EXIT;
 
                     // Index assignment into a the top level of a vector
@@ -3186,7 +3186,7 @@ BOOL ArrayIndexSetRect_EM
 
     // Check for RANK ERROR
     if (aplRankNam NE aplNELMLst
-     && aplNELMLst NE 1)
+     && !IsSingleton (aplNELMLst))
         goto RANK_EXIT;
 
     // If there are no elided indices, use squad without axis operator
@@ -3234,7 +3234,7 @@ BOOL ArrayIndexSetRect_EM
         lpMemLstNew = VarArrayBaseToData (lpMemLstNew, 1);
 
         // Handle prototypes
-        if (uCount EQ 0)
+        if (IsEmpty (uCount))
             // Use {zilde} as the prototype
             *lpMemLstNew = MakePtrTypeGlb (hGlbZilde);
         else

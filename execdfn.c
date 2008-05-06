@@ -221,9 +221,9 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     //   is a scalar, or a vector of the proper length
     if (lptkLftArg NE NULL && lpMemDfnHdr->ListLft)
     {
-        if (aplRankLft > 1)
+        if (IsMultiRank (aplRankLft))
             goto LEFT_RANK_EXIT;
-        if (aplRankLft EQ 1
+        if (IsVector (aplRankLft)
          && lpMemDfnHdr->numLftArgSTE NE aplNELMLft)
             goto LEFT_LENGTH_EXIT;
     } // End IF
@@ -232,9 +232,9 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     //   is a scalar, or a vector of the proper length
     if (lptkRhtArg NE NULL && lpMemDfnHdr->ListRht)
     {
-        if (aplRankRht > 1)
+        if (IsMultiRank (aplRankRht))
             goto RIGHT_RANK_EXIT;
-        if (aplRankRht EQ 1
+        if (IsVector (aplRankRht)
          && lpMemDfnHdr->numRhtArgSTE NE aplNELMRht)
             goto RIGHT_LENGTH_EXIT;
     } // End IF
@@ -1480,7 +1480,7 @@ void InitVarSTEs
 
             // These were checked for above, but it never hurts to test again
             Assert (aplNELMArg EQ numArgSTE);
-            Assert (aplRankArg EQ 1);
+            Assert (IsVector (aplRankArg));
 
             // Skip over the header and dimensions to the data
             lpMemArg = VarArrayBaseToData (lpMemArg, aplRankArg);

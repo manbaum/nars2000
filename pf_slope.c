@@ -236,7 +236,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT DOMAIN ERROR
@@ -248,7 +248,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Calculate product of dimensions before, at, and after the axis dimension
-    if (aplRankRht EQ 0)
+    if (IsScalar (aplRankRht))
         uDimLo = uDimAxRht = uDimHi = 1;
     else
     {
@@ -267,7 +267,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     } // End IF/ELSE
 
     // If the left arg is singleton, get its value
-    if (aplNELMLft EQ 1)
+    if (IsSingleton (aplNELMLft))
     {
         // Get the integer or float value
         GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
@@ -403,7 +403,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
 
     // Check for LENGTH ERROR
     // Scalar right arg matches everything
-    if (aplRankRht NE 0
+    if (!IsScalar (aplRankRht)
      && uDimLftSum NE lpMemDimRht[aplAxis])
         goto LENGTH_EXIT;
 
@@ -455,7 +455,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 
     // Handle empty nested array results (prototypes)
-    if (aplNELMRht EQ 0 && IsNested (aplTypeRht))
+    if (IsEmpty (aplNELMRht) && IsNested (aplTypeRht))
     {
         APLNELM aplNELM;
 
@@ -469,7 +469,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     } // End IF
 
     // If the right arg is a singleton, get its value
-    if (aplNELMRht EQ 1)
+    if (IsSingleton (aplNELMRht))
         GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
                            &aplIntegerRht,  // Ptr to integer result
                            &aplFloatRht,    // Ptr to float ...
@@ -492,7 +492,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
-                    if (aplNELMLft EQ 1)
+                    if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
                         uLen = lpMemRep[uAx];
@@ -500,7 +500,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                     uBitIndex = (UINT) (uRes % NBIB);
                     if (uLen)
                     {
-                        if (aplNELMRht EQ 1)
+                        if (IsSingleton (aplNELMRht))
                             ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= aplIntegerRht << uBitIndex;
                         else
                         {
@@ -531,13 +531,13 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
-                    if (aplNELMLft EQ 1)
+                    if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
                         uLen = lpMemRep[uAx];
                     if (uLen)
                     {
-                        if (aplNELMRht EQ 1)
+                        if (IsSingleton (aplNELMRht))
                             ((LPAPLINT) lpMemRes)[uDimRes + uAx * uDimHi] = aplIntegerRht;
                         else
                         {
@@ -566,13 +566,13 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
-                    if (aplNELMLft EQ 1)
+                    if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
                         uLen = lpMemRep[uAx];
                     if (uLen)
                     {
-                        if (aplNELMRht EQ 1)
+                        if (IsSingleton (aplNELMRht))
                             ((LPAPLFLOAT) lpMemRes)[uDimRes + uAx * uDimHi] = aplFloatRht;
                         else
                         {
@@ -601,7 +601,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
-                    if (aplNELMLft EQ 1)
+                    if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
                         uLen = lpMemRep[uAx];
@@ -613,7 +613,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                             aplCharRep = aplCharRht;
 
                         ((LPAPLCHAR) lpMemRes)[uDimRes + uAx * uDimHi] =
-                        (aplNELMRht EQ 1) ? aplCharRht : aplCharRep;
+                        IsSingleton (aplNELMRht) ? aplCharRht : aplCharRep;
                     } else
                         ((LPAPLCHAR) lpMemRes)[uDimRes + uAx * uDimHi] = L' ';
                 } // End FOR
@@ -636,13 +636,13 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < uDimAxRht; uAx++)
                 {
-                    if (aplNELMLft EQ 1)
+                    if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
                         uLen = lpMemRep[uAx];
                     if (uLen)
                     {
-                        if (aplNELMRht EQ 1)
+                        if (IsSingleton (aplNELMRht))
                             ((LPAPLINT) lpMemRes)[uDimRes + uAx * uDimHi] = aplIntegerRht;
                         else
                             ((LPAPLINT) lpMemRes)[uDimRes + uAx * uDimHi] = apaOff + apaMul * (uDimRht + uAcc++ * uDimHi);
@@ -683,13 +683,13 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 uDimRes = uLo * uDimHi * aplNELMLft + uHi;
                 for (uAcc = uAx = 0; uAx < uDimAxRht; uAx++)
                 {
-                    if (aplNELMLft EQ 1)
+                    if (IsSingleton (aplNELMLft))
                         uLen = aplIntegerLft;
                     else
                         uLen = lpMemRep[uAx];
                     if (uLen)
                     {
-                        if (aplNELMRht EQ 1)
+                        if (IsSingleton (aplNELMRht))
                             ((LPAPLNESTED) lpMemRes)[uDimRes + uAx * uDimHi] = CopySymGlbDir (aplNestRht);
                         else
                         {

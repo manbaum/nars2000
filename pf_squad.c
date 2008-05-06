@@ -218,11 +218,11 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for RANK ERROR
-    if (aplRankLft NE 1)
+    if (!IsVector (aplRankLft))
         goto RANK_EXIT;
 
     // Check for LENGTH ERROR
-    if (aplNELMLft NE 0)
+    if (!IsEmpty (aplNELMLft))
         goto LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
@@ -404,7 +404,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         APLRANK  aplRankSub;    // Left arg item rank
 
         // Check for empty left arg
-        if (aplNELMLft EQ 0)
+        if (IsEmpty (aplNELMLft))
         {
             // The prototype for the left arg must be
             //   a nested numeric array
@@ -455,7 +455,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
                     // Loop through the dimensions counting the non-length 1 dimensions
                     for (uSub = 0; uSub < aplRankSub; uSub++)
-                        aplRankN1Res +=  (*lpMemDimSub++ NE 1);
+                        aplRankN1Res +=  !IsUnitDim (*lpMemDimSub++);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbSub); lpMemDimSub = NULL;
@@ -486,7 +486,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         // Accumulate the NELM & rank
         aplNELMRes   *= lpMemDimRht[lpMemAxis[uRes]];
         aplRankRes   += 1;
-        aplRankN1Res += (lpMemDimRht[lpMemAxis[uRes]] NE 1);
+        aplRankN1Res += !IsUnitDim (lpMemDimRht[lpMemAxis[uRes]]);
     } // End FOR
 
     // If we're not assigning, ...
@@ -537,11 +537,11 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
             // Loop through the dimensions counting the non-length 1 dimensions
             for (uSet = 0; uSet < aplRankSet; uSet++)
-                aplRankN1Set +=  (lpMemDimSet[uSet] NE 1);
+                aplRankN1Set +=  !IsUnitDim (lpMemDimSet[uSet]);
         } // End IF
 
         // Check for RANK ERROR between the result arg & set arg ranks
-        if (aplNELMSet NE 1
+        if (!IsSingleton (aplNELMSet)
          && aplRankN1Res NE aplRankN1Set)
             goto RANK_EXIT;
     } // End IF/ELSE
@@ -583,7 +583,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     //    to the result
     //***************************************************************
 #define uAxisNxt    ((APLUINT) iAxisNxt)
-    if (lptkSetArg EQ NULL || aplNELMSet NE 1)
+    if (lptkSetArg EQ NULL || !IsSingleton (aplNELMSet))
     while (uAxisNxt < aplRankRht)
     {
         if (aplNELMAxis EQ aplRankRht       // No or full axis operator
@@ -626,12 +626,12 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     for (uSub = 0; uSub < aplRankSub; uSub++, uDimSet++)
                     {
                         // Skip over length 1 dimensions in the sub-item
-                        while (IsSingleton (lpMemSub[uSub])
+                        while (IsUnitDim (lpMemSub[uSub])
                          && uSub < aplRankSub)
                             uSub++;
 
                         // Skip over length 1 dimensions in the set arg
-                        while (IsSingleton (lpMemDimSet[uDimSet])
+                        while (IsUnitDim (lpMemDimSet[uDimSet])
                          && uDimSet < aplRankSet)
                             uDimSet++;
 
@@ -674,12 +674,12 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 uRht = uAxisNxt;
 
                 // Skip over length 1 dimensions in the right arg
-                while (IsSingleton (lpMemDimRht[uRht])
+                while (IsUnitDim (lpMemDimRht[uRht])
                  && uRht < aplRankRht)
                     uRht++;
 
                 // Skip over length 1 dimensions in the set arg
-                while (IsSingleton (lpMemDimSet[uDimSet])
+                while (IsUnitDim (lpMemDimSet[uDimSet])
                  && uDimSet < aplRankSet)
                     uDimSet++;
 
@@ -708,7 +708,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             // Skip over the header and dimensions to the data
             lpMemSet = VarArrayBaseToData (lpMemSet, aplRankSet);
 
-            if (aplNELMSet EQ 1)
+            if (IsSingleton (aplNELMSet))
                 // Get the first item from the set arg
                 GetNextItemMem (lpMemSet,
                                 aplTypeSet,
@@ -838,7 +838,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     // The left arg item value is immediate
                     //   (in <aplLongestSub> and of immediate type <immTypeSub>)
                     {
-                        Assert (lpMemOdo[iAxisNxt] EQ 0);
+                        Assert (IsZeroDim (lpMemOdo[iAxisNxt]));
 
                         // If the index value is float, attempt to convert it to int
                         if (IsImmFlt (immTypeSub))
@@ -854,7 +854,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 // The left arg item is immediate
                 //   (in <aplLongestLft> of array type <aplTypeLft>)
                 {
-                    Assert (lpMemOdo[iAxisNxt] EQ 0);
+                    Assert (IsZeroDim (lpMemOdo[iAxisNxt]));
 
                     hGlbSub = NULL;
                     aplLongestSub = aplLongestLft;
@@ -967,7 +967,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         } else
         {
             // Get the next item from the set arg
-            if (aplNELMSet NE 1)
+            if (!IsSingleton (aplNELMSet))
                 GetNextItemMem (lpMemSet,
                                 aplTypeSet,
                                 aplIndexSet++,

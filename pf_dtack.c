@@ -255,7 +255,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
         lpMemDimRes += aplRankLft;
 
         // Calc the # rows in the left arg
-        if (aplRankLft > 1)
+        if (IsMultiRank (aplRankLft))
             aplRowsLft = (VarArrayBaseToDim (lpMemLft))[aplRankLft - 2];
         else
         {

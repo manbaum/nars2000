@@ -208,7 +208,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     } // End SWITCH
 
     // Check for LENGTH ERROR
-    if (aplRankRht EQ 2
+    if (IsMatrix (aplRankRht)
      && uNumRows < uNumCols)
         goto LENGTH_EXIT;
 
@@ -730,7 +730,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         if (IsVector (aplRankRes))
             *VarArrayBaseToDim (lpMemRes) = uNumRowsRes;
         else
-        if (aplRankRes EQ 2)
+        if (IsMatrix (aplRankRes))
         {
             (VarArrayBaseToDim (lpMemRes))[0] = uNumRowsRes;
             (VarArrayBaseToDim (lpMemRes))[1] = uNumColsRes;

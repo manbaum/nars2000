@@ -462,7 +462,7 @@ void GetFirstValueGlb
             break;
 
         case ARRAY_INT:
-            Assert (aplNELM > 0);
+            Assert (!IsEmpty (aplNELM));
 
             aplInteger = *(LPAPLINT) lpMem;
 
@@ -496,7 +496,7 @@ void GetFirstValueGlb
             break;
 
         case ARRAY_FLOAT:
-            Assert (aplNELM > 0);
+            Assert (!IsEmpty (aplNELM));
 
             aplFloat = *(LPAPLFLOAT) lpMem;
 
@@ -547,7 +547,7 @@ void GetFirstValueGlb
                         break;
                     } // End IF
 
-                    Assert (IsNested (aplType) || aplNELM > 0);
+                    Assert (IsNested (aplType) || !IsEmpty (aplNELM));
 
                     // Handle the immediate case
                     GetFirstValueImm (lpSym->stFlags.ImmType,

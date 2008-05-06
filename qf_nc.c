@@ -138,7 +138,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
     // Check for DOMAIN ERROR
     if (!IsSimple (aplTypeRht)
      || ((!IsSimpleChar (aplTypeRht))
-      && aplNELMRht NE 0))
+      && !IsEmpty (aplNELMRht)))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -528,7 +528,7 @@ BOOL CalcNumIDs
                     // If multiple names in a vector are not allowed
                     //   and this is the second name, ...
                     if (!bVectorOfNames
-                     && *lpaplNELMRes EQ 1)
+                     && IsSingleton (*lpaplNELMRes))
                         return FALSE;
 
                     // Count in another element in the result

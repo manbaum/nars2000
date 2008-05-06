@@ -118,7 +118,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &FX_Params.aplRankRht, &FX_Params.aplColsRht);
 
     // Check for empty right arg
-    if (aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMRht))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -161,7 +161,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                         AttrsOfGlb (hGlbItmRht, &aplTypeItmRht, NULL, &aplRankItmRht, NULL);
 
                         // Ensure the item is a scalar/vector
-                        if (aplRankItmRht > 1)
+                        if (IsMultiRank (aplRankItmRht))
                         {
                             ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                                        lptkFunc);
@@ -192,7 +192,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                             // We no longer need this ptr
                             MyGlobalUnlock (hGlbItmRht); lpMemItmRht = NULL;
 
-                            if (aplNELMItmRht EQ 0)
+                            if (IsEmpty (aplNELMItmRht))
                             {
                                 ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                            lptkFunc);
@@ -251,7 +251,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                 // Simple character scalar or vector
 
                 // Check for DOMAIN ERROR
-                if (aplNELMRht EQ 0)
+                if (IsEmpty (aplNELMRht))
                 {
                     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                                lptkFunc);

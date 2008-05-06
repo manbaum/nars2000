@@ -133,7 +133,7 @@ void FastBoolScan
 
 #define lpAPA       ((LPAPLAPA) lpMemRht)
 
-        Assert (aplNELMRht > 1);
+        Assert (IsMultiNELM (aplNELMRht));
         Assert (lpAPA->Mul EQ 0);
 
         // Check the APA multiplier
@@ -381,7 +381,7 @@ void FastBoolScanQual
 
 #define lpAPA       ((LPAPLAPA) lpMemRht)
 
-        Assert (aplNELMRht > 1);
+        Assert (IsMultiNELM (aplNELMRht));
         Assert (lpAPA->Mul EQ 0);
 
         // Check the APA multiplier
@@ -541,7 +541,7 @@ void FastBoolRed
 
 #define lpAPA       ((LPAPLAPA) lpMemRht)
 
-        Assert (aplNELMRht > 1);
+        Assert (IsMultiNELM (aplNELMRht));
         Assert (lpAPA->Mul EQ 0);
 
         // Check the APA multiplier
@@ -708,7 +708,7 @@ void FastBoolRedQual
     {
 #define lpAPA       ((LPAPLAPA) lpMemRht)
 
-        Assert (aplNELMRht > 1);
+        Assert (IsMultiNELM (aplNELMRht));
         Assert (lpAPA->Mul EQ 0);
 
         // The possibilities are as follows (where V can be any non-negative integer vector):

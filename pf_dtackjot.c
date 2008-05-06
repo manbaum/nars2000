@@ -211,15 +211,15 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Get the # rows & columns in the right arg
-    if (aplRankRht EQ 0)
+    if (IsScalar (aplRankRht))
         aplDimNCols = aplDimNRows = 1;
     else
     {
         aplDimNCols = lpMemDimRht[aplRankRht - 1];
 
         // Get the # rows (across all planes)
-        if (aplRankRht EQ 1
-         || aplDimNCols EQ 0)
+        if (IsVector (aplRankRht)
+         || !IsZeroDim (aplDimNCols))
             aplDimNRows = 1;
         else
             aplDimNRows = aplNELMRht / aplDimNCols;
@@ -274,15 +274,15 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
 
     // Save ptr to 1st and last child FMTROWSTR
     lpFmtHeader->lpFmtRow1st = lpFmtHeader->lpFmtRowLst =
-      ((aplDimNRows NE 0) ? (LPFMTROWSTR) lpaplChar
-                          : NULL);
+      (IsZeroDim (aplDimNRows) ? NULL
+                               : (LPFMTROWSTR) lpaplChar);
     // Loop through the array appending the formatted values (separated by L'\0')
     //   to the output vector, and accumulating the values in the appropriate
     //   FMTCOLSTR & FMTROWSTR entries.
 
     // If the right arg is a simple scalar,
     //   get its value
-    bSimpleScalar = (aplRankRht EQ 0 && IsSimpleNH (aplTypeRht));
+    bSimpleScalar = (IsScalar (aplRankRht) && IsSimpleNH (aplTypeRht));
     if (bSimpleScalar)
         GetFirstValueToken (lptkRhtArg,     // Ptr to right arg token
                            &aplIntegerRht,  // Ptr to integer result
@@ -355,7 +355,7 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
 
             // If the right arg is scalar,
             //   return it as an immediate
-            if (aplRankRht EQ 0)
+            if (IsScalar (aplRankRht))
             {
                 // Allocate a new YYRes
                 lpYYRes = YYAlloc ();
@@ -466,13 +466,13 @@ LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     //   of the result is two, fill in the
     //   next-to-the-last dimension
     if ((IsNested (aplTypeRht) || lpFmtHeader->uMatRes)
-     && aplRankRes EQ 2)
+     && IsMatrix (aplRankRes))
         // Fill in the # rows
         *((LPAPLDIM) lpMemRes)++ = lpFmtHeader->uFmtRows;
     else
     {
         // Fill in all but the last dimension
-        if (lpMemDimRht && aplRankRht NE 0)
+        if (lpMemDimRht && !IsScalar (aplRankRht))
         for (aplDimCol = 0; aplDimCol < (aplRankRht - 1); aplDimCol++)
             *((LPAPLDIM) lpMemRes)++ = *lpMemDimRht++;
     } // End IF
@@ -613,7 +613,7 @@ LPAPLCHAR CompileArrBool
     for (aplDimCol = 0; aplDimCol < aplDimNCols; aplDimCol++)
     {
         // Include a leading blank if nested or not scalar/vector or not 1st col
-        uLen = (           (aplRank > 1) || aplDimCol NE 0);
+        uLen = (IsMultiRank (aplRank) || aplDimCol NE 0);
 
         // Max the current leading blanks with this
         lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
@@ -770,7 +770,7 @@ LPAPLCHAR CompileArrInteger
             lpFmtRowLcl->uItemCount++;
 
             // Include a leading blank if nested or not scalar/vector or not 1st col
-            uLen = (           (aplRank > 1) || aplDimCol NE 0);
+            uLen = (           IsMultiRank (aplRank) || aplDimCol NE 0);
 
             // Max the current leading blanks with this
             lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
@@ -888,7 +888,7 @@ LPAPLCHAR CompileArrFloat
 ////////////    lpFmtColStr[aplDimCol].uFmtType = max (lpFmtColStr[aplDimCol].uFmtType, FMTTYPE_EXP);
 ////////////
             // Include a leading blank if nested or not scalar/vector or not 1st col
-            uLen = (           (aplRank > 1) || aplDimCol NE 0);
+            uLen = (           IsMultiRank (aplRank) || aplDimCol NE 0);
 
             // Max the current leading blanks with this
             lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
@@ -1210,7 +1210,7 @@ LPAPLCHAR CompileArrAPA
             lpFmtRowLcl->uItemCount++;
 
             // Include a leading blank if nested or not scalar/vector or not 1st col
-            uLen = (           (aplRank > 1) || aplDimCol NE 0);
+            uLen = (           IsMultiRank (aplRank) || aplDimCol NE 0);
 
             // Max the current leading blanks with this
             lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
@@ -1396,8 +1396,8 @@ LPAPLCHAR CompileArrHetero
 
             // Include a leading blank if (first col and (nested or rank > 1))
             //                          or (not first col) and either last or current is not a char
-            uLen = ((aplDimCol EQ 0 && (           (aplRank > 1)))
-                 || (aplDimCol NE 0 && ((immTypeLst NE IMMTYPE_CHAR || immTypeCur NE IMMTYPE_CHAR))));
+            uLen = ((IsZeroDim (aplDimCol) && IsMultiRank (aplRank))
+                 || ((aplDimCol NE 0) && (immTypeLst NE IMMTYPE_CHAR || immTypeCur NE IMMTYPE_CHAR)));
             // Max the current leading blanks with this
             lpFmtColStr[aplDimCol].uLdBl = max (lpFmtColStr[aplDimCol].uLdBl, uLen);
 
@@ -1498,7 +1498,7 @@ LPAPLCHAR CompileArrNested
 
     // Set the Matrix result bit if the arg is
     //   a matrix or higher rank array
-    lpFmtHeader->uMatRes |= (aplRank > 1);
+    lpFmtHeader->uMatRes |= IsMultiRank (aplRank);
 
     // Loop through the rows
     for (aplDimRow = 0; aplDimRow < aplDimNRows; aplDimRow++)
@@ -1631,7 +1631,7 @@ LPAPLCHAR CompileArrNestedCon
 ////lpFmtHeader->uFmtFrcs    = 0;                   // ...                           ...
 ////lpFmtHeader->uFmtTrBl    = 0;                   // ...                           ...
     lpFmtHeader->uDepth      = 1 + lpFmtHeader->lpFmtHeadUp->uDepth;
-    lpFmtHeader->uMatRes     = (aplRank > 1);
+    lpFmtHeader->uMatRes     = IsMultiRank (aplRank);
 
     // Skip over the FMTHEADER to the next available position
     lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
@@ -1652,8 +1652,8 @@ LPAPLCHAR CompileArrNestedCon
 
     // Save ptr to 1st and last child FMTROWSTR
     lpFmtHeader->lpFmtRow1st = lpFmtHeader->lpFmtRowLst =
-      ((aplDimNRows NE 0) ? (LPFMTROWSTR) lpaplChar
-                          : NULL);
+      (IsZeroDim (aplDimNRows) ? NULL
+                               : (LPFMTROWSTR) lpaplChar);
 #undef  aplRank
 #undef  aplDimNCols
 #undef  aplDimNRows
@@ -1778,15 +1778,15 @@ LPAPLCHAR CompileArrNestedGlb
     lpMemDim = VarArrayBaseToDim (lpMem);
 
     // Get the # rows & columns in the right arg
-    if (aplRank EQ 0)
+    if (IsScalar (aplRank))
         aplDimNCols = aplDimNRows = 1;
     else
     {
         aplDimNCols = lpMemDim[aplRank - 1];
 
         // Get the # rows (across all planes)
-        if (aplRank EQ 1
-         || aplDimNCols EQ 0)
+        if (IsVector (aplRank)
+         || IsZeroDim (aplDimNCols))
             aplDimNRows = 1;
         else
             aplDimNRows = aplNELM / aplDimNCols;
@@ -1819,7 +1819,7 @@ LPAPLCHAR CompileArrNestedGlb
 ////lpFmtHeader->uFmtFrcs    = 0;                   // ...                           ...
 ////lpFmtHeader->uFmtTrBl    = 0;                   // ...                           ...
     lpFmtHeader->uDepth      = 1 + lpFmtHeader->lpFmtHeadUp->uDepth;
-    lpFmtHeader->uMatRes     = (aplRank > 1);
+    lpFmtHeader->uMatRes     = IsMultiRank (aplRank);
 
     // Create <aplChrNCols> FMTCOLSTRs in the output
     lpFmtColStr = (LPFMTCOLSTR) (&lpFmtHeader[1]);
@@ -1838,15 +1838,15 @@ LPAPLCHAR CompileArrNestedGlb
 
     // Save ptr to 1st and last child FMTROWSTR
     lpFmtHeader->lpFmtRow1st = lpFmtHeader->lpFmtRowLst =
-      ((aplDimNRows NE 0) ? (LPFMTROWSTR) lpaplChar
-                          : NULL);
+      (IsZeroDim (aplDimNRows) ? NULL
+                               : (LPFMTROWSTR) lpaplChar);
     // Loop through the array appending the formatted values (separated by L'\0')
     //   to the output vector, and accumulating the values in the appropriate
     //   FMTCOLSTR & FMTROWSTR entries.
 
     // If the right arg is a simple scalar,
     //   get its value
-    bSimpleScalar = (aplRank EQ 0 && IsSimpleNH (aplType));
+    bSimpleScalar = (IsScalar (aplRank) && IsSimpleNH (aplType));
     if (bSimpleScalar)
         GetFirstValueGlb (hGlb,                 // The global memory handle
                          &aplInteger,           // Ptr to integer result
@@ -2738,7 +2738,7 @@ LPAPLCHAR FormatArrNestedGlb
 
     // Distribute this column's FMTCOLSTR (in lpFmtColStr)
     //   amongst the FMTCOLSTRs for this item (in lpaplChar)
-    if (aplDimNCols NE 0)
+    if (!IsZeroDim (aplDimNCols))
     {
         UINT uLclWid,           // Local column width
              uGlbWid;           // Global ...
@@ -2891,7 +2891,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto RANK_EXIT;
 
     // Check for "format by example"
@@ -2903,7 +2903,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     // Continue with "format by specification"
 
     // Check for LEFT LENGTH ERROR
-    if (aplNELMLft NE 1                     // Single number
+    if (!IsSingleton (aplNELMLft)           // Single number
      && aplNELMLft NE 2                     // Pair of numbers
      && (0 NE (aplNELMLft % 2)              // Pairs of numbers
       || ((aplNELMLft / 2) NE aplColsRht))) // One pair per right arg col
@@ -2936,7 +2936,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
     // Handle singleton left arg
-    if (aplNELMLft EQ 1)
+    if (IsSingleton (aplNELMLft))
     {
         // Get the first value from the token
         GetFirstValueToken (lptkLftArg,         // Ptr to the token
@@ -3064,15 +3064,15 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
 
     // Get the # rows & columns in the right arg
-    if (aplRankRht EQ 0)
+    if (IsScalar (aplRankRht))
         aplDimNCols = aplDimNRows = 1;
     else
     {
         aplDimNCols = lpMemDimRht[aplRankRht - 1];
 
         // Get the # rows (across all planes)
-        if (aplRankRht EQ 1
-         || aplDimNCols EQ 0)
+        if (IsVector (aplRankRht)
+         || IsZeroDim (aplDimNCols))
             aplDimNRows = 1;
         else
             aplDimNRows = aplNELMRht / aplDimNCols;
@@ -3121,13 +3121,13 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
                             case ARRAY_FLOAT:
                             case ARRAY_APA:
                                 // Numeric scalars only
-                                if (aplRankSubRht > 0)
+                                if (!IsScalar (aplRankSubRht))
                                     goto DOMAIN_EXIT;
                                 break;
 
                             case ARRAY_CHAR:
                                 // Character scalars or vectors only
-                                if (aplRankSubRht > 1)
+                                if (IsMultiRank (aplRankSubRht))
                                     goto DOMAIN_EXIT;
                                 break;
 
@@ -3378,7 +3378,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     (LPVOID) lpMemRes = VarArrayBaseToDim (lpMemRes);
 
     // Fill in the dimensions
-    if (aplRankRes EQ 2)
+    if (IsMatrix (aplRankRes))
         *((LPAPLDIM) lpMemRes)++ = aplDimNRows;
     *((LPAPLDIM) lpMemRes)++ = uTotWid;
 

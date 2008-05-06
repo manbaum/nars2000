@@ -255,15 +255,15 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Calculate length of right arg first dimension
-    if (hGlbRht && aplRankRht > 0)
+    if (hGlbRht && !IsScalar (aplRankRht))
         aplFrstRht = *VarArrayBaseToDim (lpMemRht);
     else
         aplFrstRht = 1;
 
     // Check for LENGTH ERROR
     if (aplColsLft NE aplFrstRht
-     && aplColsLft NE 1
-     && aplFrstRht NE 1)
+     && !IsUnitDim (aplColsLft)
+     && !IsUnitDim (aplFrstRht))
         goto LENGTH_EXIT;
 
     // Calc larger of inner dimensions (in case of scalar extension)
@@ -391,7 +391,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     } // End IF
 
     // Check for empty result
-    if (aplNELMRes EQ 0)
+    if (IsEmpty (aplNELMRes))
     {
         // Fill in the prototype which is
         //   leftOperand / {first}leftarg rightOperand {first}rightArg
@@ -400,7 +400,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         if (hGlbLft)
         {
             // If the left arg is empty, get its prototype
-            if (aplNELMLft EQ 0)
+            if (IsEmpty (aplNELMLft))
             {
                 // Split cases based upon the left arg storage type
                 switch (aplTypeLft)
@@ -480,7 +480,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         if (hGlbRht)
         {
             // If the right arg is empty, get its prototype
-            if (aplNELMRht EQ 0)
+            if (IsEmpty (aplNELMRht))
             {
                 // Split cases based upon the right arg storage type
                 switch (aplTypeRht)
@@ -620,13 +620,13 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                     uInnRht;            // ...        right ...
 
             // Calc left inner index, taking into account scalar extension
-            if (aplColsLft EQ 1)
+            if (IsUnitDim (aplColsLft))
                 uInnLft = 1 * 0       + aplColsLft * uOutLft;
             else
                 uInnLft = 1 * iInnMax + aplColsLft * uOutLft;
 
             // Calc right inner index, taking into account scalar extension
-            if (aplFrstRht EQ 1)
+            if (IsUnitDim (aplFrstRht))
                 uInnRht = 1 * uOutRht + aplRestRht * 0      ;
             else
                 uInnRht = 1 * uOutRht + aplRestRht * iInnMax;

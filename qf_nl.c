@@ -173,13 +173,13 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
         // Check for LEFT RANK ERROR
-        if (aplRankLft > 1)
+        if (IsMultiRank (aplRankLft))
             goto LEFT_RANK_EXIT;
 
         // Check for LEFT DOMAIN ERROR
         if (!IsSimple (aplTypeLft)
-         || ((!IsSimpleChar (aplTypeLft))
-          && aplNELMLft NE 0))
+         || (!IsSimpleChar (aplTypeLft)
+          && !IsEmpty (aplNELMLft)))
             goto LEFT_DOMAIN_EXIT;
 
         // Get left arg global ptr
@@ -199,7 +199,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     } // End IF
 
     // Check for RIGHT RANK ERROR
-    if (aplRankRht > 1)
+    if (IsMultiRank (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for RIGHT DOMAIN ERROR

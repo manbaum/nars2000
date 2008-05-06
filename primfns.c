@@ -279,7 +279,7 @@ void AttrsOfGlb
     // Skip over the header to the dimensions
     if (lpaplCols)
     {
-        if (lpHeader->Rank NE 0)
+        if (!IsScalar (lpHeader->Rank))
             *lpaplCols = ((LPAPLDIM) VarArrayBaseToDim (lpMemData))[lpHeader->Rank - 1];
         else
             *lpaplCols = 1;
@@ -449,8 +449,8 @@ BOOL PrimScalarFnDydAllocate_EM
 
     // Split cases based upon the singleton status
     //   of the left & right args
-    if (aplNELMLft EQ 1
-     && aplNELMRht EQ 1)
+    if (IsSingleton (aplNELMLft)
+     && IsSingleton (aplNELMRht))
     {
         //***************************************************************
         // Both args are singletons
@@ -462,19 +462,19 @@ BOOL PrimScalarFnDydAllocate_EM
         // If it's a simple numeric scalar, it'll
         //   be stored as an immediate token,
         //   not global memory.
-        if (*lpaplRankRes EQ 0
+        if (IsScalar (*lpaplRankRes)
          && IsSimpleNum (aplTypeRes))
             return TRUE;
     } else
-    if (aplNELMLft EQ 1
-     || aplNELMRht EQ 1)
+    if (IsSingleton (aplNELMLft)
+     || IsSingleton (aplNELMRht))
     {
         //***************************************************************
         // One of the args is a singleton, the other not
         //***************************************************************
 
         // The rank of the result is the rank of the non-singleton
-        if (aplNELMLft NE 1)
+        if (!IsSingleton (aplNELMLft))
             *lpaplRankRes = aplRankLft;
         else
             *lpaplRankRes = aplRankRht;
@@ -517,18 +517,18 @@ BOOL PrimScalarFnDydAllocate_EM
 #undef  lpHeader
 
     // Fill in the dimensions
-    if (aplNELMLft EQ 1
-     && aplNELMRht EQ 1)
+    if (IsSingleton (aplNELMLft)
+     && IsSingleton (aplNELMRht))
     {
         // Fill in the dimensions (all 1)
         for (uRes = 0; uRes < *lpaplRankRes; uRes++)
             (VarArrayBaseToDim (lpMemRes))[uRes] = 1;
     } else
-    if (aplNELMLft EQ 1
-     || aplNELMRht EQ 1)
+    if (IsSingleton (aplNELMLft)
+     || IsSingleton (aplNELMRht))
     {
         // Copy the ptr to the non-singleton argument
-        if (aplNELMLft NE 1)
+        if (!IsSingleton (aplNELMLft))
             lpMemDimArg = lpMemLft;
         else
             lpMemDimArg = lpMemRht;
@@ -653,7 +653,7 @@ HGLOBAL MakeMonPrototype_EM
 
                 case MP_NUMONLY:
                     // If the arg is non-empty, that's an error
-                    if (aplNELM NE 0)
+                    if (!IsEmpty (aplNELM))
                         goto DOMAIN_ERROR_EXIT;
 
                     // Change the storage type to Boolean
@@ -942,19 +942,19 @@ HGLOBAL MakeDydPrototype_EM
     } // End IF
 
     // Handle scalar extension with empty other arg
-    if (aplNELMLft EQ 0
+    if (IsEmpty (aplNELMLft)
      && hGlbRht EQ NULL)
         aplTypeRht = ARRAY_BOOL;
-    if (aplNELMRht EQ 0
+    if (IsEmpty (aplNELMRht)
      && hGlbLft EQ NULL)
         aplTypeLft = ARRAY_BOOL;
 
     // The rank of the result is the larger of the two args
     //   unless one is a singleton.
-    if (aplNELMLft EQ 1 && aplNELMRht NE 1 && aplRankLft > aplRankRht)
+    if ( IsSingleton (aplNELMLft) && !IsSingleton (aplNELMRht) && aplRankLft > aplRankRht)
         aplRankRes = aplRankRht;
     else
-    if (aplNELMLft NE 1 && aplNELMRht EQ 1 && aplRankLft < aplRankRht)
+    if (!IsSingleton (aplNELMLft) &&  IsSingleton (aplNELMRht) && aplRankLft < aplRankRht)
         aplRankRes = aplRankLft;
     else
         aplRankRes = max (aplRankLft, aplRankRht);
@@ -1026,7 +1026,7 @@ HGLOBAL MakeDydPrototype_EM
 
     // The NELM of the result is the larger of the two args
     //   unless one is empty
-    if (aplNELMLft EQ 0 || aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMLft) || IsEmpty (aplNELMRht))
         aplNELMRes = 0;
     else
         aplNELMRes = max (aplNELMLft, aplNELMRht);
@@ -1957,7 +1957,7 @@ BOOL CheckRankLengthError_EM
 
     // OUTER RANK and LENGTH ERRORs are possible only if
     //   neither argument is a singleton
-    if (aplNELMLft NE 1 && aplNELMRht NE 1)
+    if (!IsSingleton (aplNELMLft) && !IsSingleton (aplNELMRht))
     {
         // Check for OUTER RANK ERROR
         if ((aplRankLft <  aplRankRht && (aplRankLft NE aplNELMAxis))

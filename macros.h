@@ -188,6 +188,9 @@
 // Define macro for detecting matrices or higher rank arrays
 #define IsMultiRank(ArrRank)            ((ArrRank) >  2)
 
+// Define macro for detecting empty arrays
+#define IsEmpty(ArrNELM)                ((ArrNELM) EQ 0)
+
 // Define macro for detecting singletons
 #define IsSingleton(ArrNELM)            ((ArrNELM) EQ 1)
 
@@ -200,8 +203,14 @@
 // Define macro for detecting simple scalars
 #define IsSimpleScalar(ArrType,ArrRank) (IsSimple (ArrType) && IsScalar (ArrRank))
 
-// Define macro for detecting empty arrays
-#define IsEmpty(ArrNELM)                ((ArrNELM) EQ 0)
+// Define macro for detecting zero dimensions
+#define IsZeroDim(ArrDim)               ((ArrDim) EQ 0)
+
+// Define macro for detecting unit dimensions
+#define IsUnitDim(ArrDim)               ((ArrDim) EQ 1)
+
+// Define macro for detecting length > 1 dimensions
+#define IsMultiDim(ArrDim)              ((ArrDim) >  1)
 
 // Define macro for detecting simple Boolean value
 #define IsBooleanValue(Val)             ((Val) EQ 0 || (Val) EQ 1)

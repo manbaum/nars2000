@@ -1121,8 +1121,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // If neither arg is a scalar, ...
-    if (aplRankLft NE 0
-     && aplRankRht NE 0)
+    if (!IsScalar (aplRankLft)
+     && !IsScalar (aplRankRht))
     {
         // Skip over the headers to the dimensions
         lpMemDimLft = VarArrayBaseToDim (lpMemLft);
@@ -1351,7 +1351,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // If the left arg is not a scalar,
     //   skip over its header and dimensions to the data
     //   and get the APA values if appropriate
-    if (aplRankLft NE 0)
+    if (!IsScalar (aplRankLft))
     {
         lpMemLft = VarArrayBaseToData (lpMemLft, aplRankLft);
 
@@ -1370,7 +1370,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // If the right arg is not a scalar,
     //   skip over its header and dimensions to the data
     //   and get the APA values if appropriate
-    if (aplRankRht NE 0)
+    if (!IsScalar (aplRankRht))
     {
         lpMemRht = VarArrayBaseToData (lpMemRht, aplRankRht);
 

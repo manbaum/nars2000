@@ -145,7 +145,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
     AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (aplRankRht > 1)
+    if (IsMultiRank (aplRankRht))
         goto RANK_EXIT;
 
     // Get the PerTabData global memory handle

@@ -653,11 +653,11 @@ BOOL AssignSelectSpec_EM
 #undef  lpHeader
 
     // Check for RANK ERROR
-    if (aplRankVal > 1)
+    if (IsMultiRank (aplRankVal))
         goto RANK_EXIT;
 
     // Check for LENGTH ERROR
-    if (aplNELMVal NE 1
+    if (!IsSingleton (aplNELMVal)
      && aplNELMVal NE aplNELMNam)
         goto LENGTH_EXIT;
 
@@ -701,7 +701,7 @@ BOOL AssignSelectSpec_EM
                 AssignName_EM (&((LPPL_YYSTYPE) lpMemNam)[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
 
                 // If there's more than one value, ...
-                if (aplNELMVal NE 1)
+                if (!IsSingleton (aplNELMVal))
                 {
                     // Shift over the bit mask
                     uBitMaskVal <<= 1;

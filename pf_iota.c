@@ -155,7 +155,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
     //***************************************************************
     // Check the right argument for RANK, LENGTH, and DOMAIN ERRORs
     //***************************************************************
-    if (aplRankRht > 1)
+    if (IsMultiRank (aplRankRht))
         goto RANK_EXIT;
 
     if (aplNELMRht < 1)
@@ -165,7 +165,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
         goto DOMAIN_EXIT;
 
     // Handle length > 1 args via magic function
-    if (aplNELMRht > 1)
+    if (IsMultiNELM (aplNELMRht))
         return PrimFnMonIotaVector_EM_YY (lptkFunc,     // Ptr to function token
                                           lptkRhtArg,   // Ptr to right arg token
                                           lptkAxis);    // Ptr to axis token (may be NULL)
@@ -396,7 +396,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
         goto RANK_EXIT;
     else
     // Check for extended dyadic iota
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
     {
         HGLOBAL      hGlbPTD,           // PerTabData global memory handle
                      hGlbMF;            // Magic function global memory handle

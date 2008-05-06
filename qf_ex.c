@@ -140,8 +140,8 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
 
     // Check for DOMAIN ERROR
     if (!IsSimple (aplTypeRht)
-     || ((!IsSimpleChar (aplTypeRht))
-      && aplNELMRht NE 0))
+     || (!IsSimpleChar (aplTypeRht)
+      && !IsEmpty (aplNELMRht)))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);

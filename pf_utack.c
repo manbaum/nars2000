@@ -206,8 +206,8 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
 
     // Check for LENGTH ERROR
     if (aplColsLft NE aplFrstRht
-     && aplColsLft NE 1
-     && aplFrstRht NE 1)
+     && !IsUnitDim (aplColsLft)
+     && !IsUnitDim (aplFrstRht))
         goto LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
@@ -280,7 +280,7 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     aplNELMRes = aplRestLft * aplRestRht;
 
     // Check for empty result
-    if (aplNELMRes EQ 0)
+    if (IsEmpty (aplNELMRes))
         // Calc result Type
         aplTypeRes = ARRAY_BOOL;
     else
@@ -355,7 +355,7 @@ RESTART_EXCEPTION:
     } // End IF
 
     // Check for empty result
-    if (aplNELMRes EQ 0)
+    if (IsEmpty (aplNELMRes))
         goto YYALLOC_EXIT;
 
     // Skip over the dimensions to the data
@@ -392,13 +392,13 @@ RESTART_EXCEPTION:
                     uInnRht;            // ...        right ...
 
             // Calc left inner index, taking into account scalar extension
-            if (aplColsLft EQ 1)
+            if (IsUnitDim (aplColsLft))
                 uInnLft = 1 * 0       + aplColsLft * uOutLft;
             else
                 uInnLft = 1 * iInnMax + aplColsLft * uOutLft;
 
             // Calc right inner index, taking into account scalar extension
-            if (aplFrstRht EQ 1)
+            if (IsUnitDim (aplFrstRht))
                 uInnRht = 1 * uOutRht + aplRestRht * 0      ;
             else
                 uInnRht = 1 * uOutRht + aplRestRht * iInnMax;

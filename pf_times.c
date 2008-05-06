@@ -124,7 +124,7 @@ APLSTYPE PrimSpecTimesStorageTypeMon
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     if (IsSimpleChar (*lpaplTypeRht)
@@ -219,12 +219,12 @@ APLSTYPE PrimSpecTimesStorageTypeDyd
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMLft EQ 0 && IsSimpleChar (*lpaplTypeLft))
+    if (IsEmpty (aplNELMLft) && IsSimpleChar (*lpaplTypeLft))
         *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     // Calculate the storage type of the result
@@ -232,9 +232,9 @@ APLSTYPE PrimSpecTimesStorageTypeDyd
 
     // Special case multiplication with APA
     if (aplTypeRes EQ ARRAY_INT                            // Res = INT
-     && (aplNELMLft NE 1 || aplNELMRht NE 1)                // Not both singletons
-     && ((aplNELMLft EQ 1 && IsSimpleAPA (*lpaplTypeRht))   // Non-singleton is APA
-      || (aplNELMRht EQ 1 && IsSimpleAPA (*lpaplTypeLft)))) // ...
+     && (!IsSingleton (aplNELMLft) || !IsSingleton (aplNELMRht))    // Not both singletons
+     && ((IsSingleton (aplNELMLft) && IsSimpleAPA (*lpaplTypeRht))   // Non-singleton is APA
+      || (IsSingleton (aplNELMRht) && IsSimpleAPA (*lpaplTypeLft)))) // ...
         aplTypeRes = ARRAY_APA;
 
     return aplTypeRes;
@@ -363,12 +363,12 @@ BOOL PrimFnDydTimesAPA_EM
 
     // Split cases based upon the arg's NELM
     //   (one of the arg's must be a singleton)
-    if (aplNELMLft NE 1)
+    if (!IsSingleton (aplNELMLft))
     {
         *lphGlbRes = CopyArray_EM (hGlbLft, lptkFunc);
         aplRankRes = aplRankLft;
     } else
-    if (aplNELMRht NE 1)
+    if (!IsSingleton (aplNELMRht))
     {
         *lphGlbRes = CopyArray_EM (hGlbRht, lptkFunc);
         aplRankRes = aplRankRht;

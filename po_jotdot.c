@@ -228,7 +228,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Handle prototypes separately
-    if (aplNELMRes EQ 0
+    if (IsEmpty (aplNELMRes)
      || bPrototyping)
     {
         // Get the appropriate prototype function ptr
@@ -370,7 +370,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
         aplNELMLft = max (aplNELMLft, 1);
 
     // Handle prototypes
-    if (aplNELMRes EQ 0
+    if (IsEmpty (aplNELMRes)
      && IsNested (aplTypeRes))
     {
         if (!PrimOpDydJotDotProto_EM (&lpMemRes,        // Ptr to ptr to result global memory

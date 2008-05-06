@@ -406,7 +406,7 @@ static char tabConvert[][STRAND_LENGTH] =
                 {
                     // If this is a single NoValue item, ignore it
                     //   as it's coming from a function with no return value
-                    if (iLen EQ 1
+                    if (IsSingleton (iLen)
                      && IsSymNoValue (lpYYToken->tkToken.tkData.tkSym))
                     {
                         cStrandNxtType = STRAND_BOOL;
@@ -431,7 +431,7 @@ static char tabConvert[][STRAND_LENGTH] =
                     lpMemStr = MyGlobalLock (ClrPtrTypeDirAsGlb (hGlbData));
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
-                    if (lpHeader->Rank EQ 0)
+                    if (IsScalar (lpHeader->Rank))
                         cStrandNxtType = TranslateArrayTypeToStrandType (lpHeader->ArrType);
                     else
                         cStrandNxtType = STRAND_NESTED;
@@ -541,7 +541,7 @@ static char tabConvert[][STRAND_LENGTH] =
     //   Integer, Float, or Character (but not Charst), store it in
     //   a TKT_VARIMMED token, or if it's a string, pass on the existing
     //   HGLOBAL.
-    if (iLen EQ 1)
+    if (IsSingleton (iLen))
     {
         // Split cases based upon the strand's storage type
         switch (cStrandCurType)
@@ -1114,7 +1114,7 @@ LPPL_YYSTYPE MakeFcnStrand_EM_YY
     //***********************************************************************
 
     // If there is a single element, pass through the entire token
-    if (uIniLen EQ 1)
+    if (IsSingleton (uIniLen))
     {
         // Free the allocated result as CopyPL_YYSTYPE_EM_YY
         //   will allocate a result

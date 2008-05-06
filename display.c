@@ -264,7 +264,7 @@ void DisplayGlbArr
 
             // If there are no columns and the rank is > 1, ignore this
             if (IsEmpty (aplDimNCols)
-             && aplRank > 1)
+             && IsMultiRank (aplRank))
                 goto NORMAL_EXIT;
 
             // Get the # rows (across all planes)

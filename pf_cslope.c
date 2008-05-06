@@ -286,7 +286,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // Check for RANK ERROR
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto RANK_EXIT;
 
     // Check for LENGTH ERROR

@@ -172,7 +172,7 @@ APLSTYPE PrimSpecTildeStorageTypeMon
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (aplNELMRht EQ 0 && IsSimpleChar (*lpaplTypeRht))
+    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     if (IsSimpleChar (*lpaplTypeRht)
@@ -286,7 +286,7 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
     AttrsOfToken (lptkLftArg, NULL, NULL, &aplRankLft, NULL);
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Get the PerTabData global memory handle

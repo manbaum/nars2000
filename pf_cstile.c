@@ -169,7 +169,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     } // End IF/ELSE
 
     // Check for singleton
-    if (aplNELMRht EQ 1)
+    if (IsSingleton (aplNELMRht))
     {
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
@@ -494,7 +494,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         goto DOMAIN_EXIT;
 
     // If the left arg is singleton, get its value
-    if (aplNELMLft EQ 1)
+    if (IsSingleton (aplNELMLft))
     {
         // If the left arg is float, ...
         if (IsSimpleFlt (aplTypeLft))
@@ -706,7 +706,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
             {
-                if (aplNELMLft EQ 1)
+                if (IsSingleton (aplNELMLft))
                     aplRot = aplIntegerLft;
                 else
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
@@ -729,7 +729,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
             {
-                if (aplNELMLft EQ 1)
+                if (IsSingleton (aplNELMLft))
                     aplRot = aplIntegerLft;
                 else
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
@@ -746,7 +746,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
             {
-                if (aplNELMLft EQ 1)
+                if (IsSingleton (aplNELMLft))
                     aplRot = aplIntegerLft;
                 else
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
@@ -763,7 +763,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
             {
-                if (aplNELMLft EQ 1)
+                if (IsSingleton (aplNELMLft))
                     aplRot = aplIntegerLft;
                 else
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
@@ -785,7 +785,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
             {
-                if (aplNELMLft EQ 1)
+                if (IsSingleton (aplNELMLft))
                     aplRot = aplIntegerLft;
                 else
                     aplRot = lpMemRot[uLo * uDimHi + uHi];
@@ -803,7 +803,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
             {
-                if (aplNELMLft EQ 1)
+                if (IsSingleton (aplNELMLft))
                     aplRot = aplIntegerLft;
                 else
                     aplRot = lpMemRot[uLo * uDimHi + uHi];

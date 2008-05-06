@@ -282,8 +282,8 @@ BOOL CheckAxisGlb
 #undef  lpHeader
 
     // Check the axis rank and the NELM (if singletons only)
-    if ((aplRankLcl > 1)
-     || (bSingleton && *lpaplNELM NE 1))
+    if (IsMultiRank (aplRankLcl)
+     || (bSingleton && !IsSingleton (*lpaplNELM)))
         goto ERROR_EXIT;
 
     // Return the # elements

@@ -80,7 +80,7 @@ EXIT_TYPES GotoLine_EM
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RANK ERROR
-    if (aplRankRht > 1)
+    if (IsMultiRank (aplRankRht))
         goto RANK_EXIT;
 
     // Get the first value

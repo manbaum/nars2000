@@ -113,7 +113,7 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (aplRankRht > 1)
+    if (IsMultiRank (aplRankRht))
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -123,7 +123,7 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
     // Check for DOMAIN ERROR
     if (!IsSimpleNH (aplTypeRht)
      || ((!IsSimpleChar (aplTypeRht))
-      && aplNELMRht NE 0))
+      && !IsEmpty (aplNELMRht)))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -131,7 +131,7 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
     } // End IF
 
     // If the right arg is empty, return NoValue
-    if (aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMRht))
         lpYYRes = MakeNoValue_YY (lptkFunc);
     else
     {

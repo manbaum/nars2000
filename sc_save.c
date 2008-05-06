@@ -171,7 +171,7 @@ BOOL CmdSave_EM
                 fclose (fStream); fStream = NULL;
 
                 // If []WSID is empty, it's a CLEAR WS
-                if (aplNELMWSID EQ 0)
+                if (IsEmpty (aplNELMWSID))
                     lstrcpyW (lpwszTemp, ERRMSG_NOT_SAVED_CLEAR_WS);
                 else
                 {
@@ -201,7 +201,7 @@ BOOL CmdSave_EM
     } else
     {
         // If []WSID is empty, it's a CLEAR WS
-        if (aplNELMWSID EQ 0)
+        if (IsEmpty (aplNELMWSID))
             goto NOTSAVED_CLEAR_EXIT;
 
         // Append the common workspace extension

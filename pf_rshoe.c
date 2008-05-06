@@ -322,10 +322,10 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]), NULL, NULL, &aplRankSub, NULL);
 
                 // If the item is not a scalar, ...
-                if (aplRankSub > 0)
+                if (!IsScalar (aplRankSub))
                 {
                     // If the result rank hasn't been specified as yet, ...
-                    if (aplRankCom EQ 0)
+                    if (IsScalar (aplRankCom))
                         aplRankCom = aplRankSub;
                     else
                     // If the result rank and the item rank are unequal, ...
@@ -418,7 +418,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]), NULL, &aplNELMSub, &aplRankSub, NULL);
 
                 // If the item is not a scalar, ...
-                if (aplRankSub > 0)
+                if (!IsScalar (aplRankSub))
                 {
                     // Lock the memory to get a ptr to it
                     lpMemSub = MyGlobalLock (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemRht)[uRht]));
@@ -442,7 +442,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     } // End IF/FOR
 
     // Trundle through the common item's shape and calculate its NELM
-    if (aplRankCom > 0)
+    if (!IsScalar (aplRankCom))
     {
         // Calculate the product of  the dimensions except for the last
         for (aplNELMComRest = 1, uCom = 0; uCom < (aplRankCom - 1); uCom++)
@@ -502,7 +502,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     lpMemRes = VarArrayBaseToData (lpMemRes, aplRankRes);
 
     // Handle prototypes
-    if (aplNELMRes EQ 0)
+    if (IsEmpty (aplNELMRes))
     {
         // Get the handle of the right arg item (prototype)
         hGlbSub = ClrPtrTypeIndAsGlb ((LPAPLNESTED *) lpMemRht);
@@ -602,7 +602,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 lpMemSub = VarArrayBaseToDim (lpMemSub);
 
                 // Trundle through the right arg item's shape, ...
-                if (aplRankSub > 0)
+                if (!IsScalar (aplRankSub))
                 {
                     // Calculate the product of the dimensions except for the last
                     for (aplNELMSubRest = 1, uSub = 0; uSub < (aplRankSub - 1); uSub++)
@@ -1099,13 +1099,13 @@ LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto RANK_EXIT;
 
     // If the left arg is simple, it must be empty (i.e., {zilde} or '')
     if (IsSimple (aplTypeLft))
     {
-        if (aplNELMLft NE 0)
+        if (!IsEmpty (aplNELMLft))
             goto LENGTH_EXIT;
 
         goto YYALLOC_EXIT;
@@ -1219,11 +1219,11 @@ BOOL PrimFnDydRightShoeGlbImm_EM
                 AttrsOfGlb (ClrPtrTypeDirAsGlb (((LPAPLNESTED) lpMemLft)[uLft]), &aplTypeSub, &aplNELMSub, &aplRankSub, NULL);
 
                 // Check for LEFT RANK ERROR
-                if (aplRankSub NE 1)
+                if (!IsVector (aplRankSub))
                     goto RANK_EXIT;
 
                 // Check for LEFT LENGTH ERROR
-                if (aplNELMSub NE 0)
+                if (!IsEmpty (aplNELMSub))
                     goto LENGTH_EXIT;
 
                 // Check for LEFT DOMAIN ERROR
@@ -1371,7 +1371,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
     AttrsOfGlb (hGlbRht, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for LEFT LENGTH ERROR
-    if (aplRankRht NE 1)
+    if (!IsVector (aplRankRht))
         goto LENGTH_EXIT;
 
     // Split cases based upon the left arg immediate type
@@ -1498,7 +1498,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     AttrsOfGlb (hGlbLft, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto RANK_EXIT;
 
     // Get the current value of []IO
@@ -1567,7 +1567,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             AttrsOfGlb (hGlbSubLft, &aplTypeSubLft, &aplNELMSubLft, &aplRankSubLft, NULL);
 
             // Check for left RANK ERROR
-            if (aplRankSubLft > 1)
+            if (IsMultiRank (aplRankSubLft))
                 goto RANK_EXIT;
 
             // Check for LEFT LENGTH ERROR
@@ -1713,7 +1713,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     break;
 
                 case ARRAY_CHAR:
-                    if (aplNELMSubLft EQ 0)     // Allow empty chars
+                    if (IsEmpty (aplNELMSubLft))    // Allow empty chars
                         break;
 
                     // Fall through to common code
@@ -1739,7 +1739,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             // The left arg is an immediate or simple value
 
             // Ensure that the right arg is a vector
-            if (aplRankRht NE 1)
+            if (!IsVector (aplRankRht))
                 goto LENGTH_EXIT;
 
             // Ensure that the left arg immediate value is numeric

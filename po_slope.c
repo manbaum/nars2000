@@ -225,7 +225,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // If the right arg is a scalar, return it
-    if (aplRankRht EQ 0)
+    if (IsScalar (aplRankRht))
     {
         lpYYRes = PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
                                               hGlbRht,          // Right arg global memory handle
@@ -277,13 +277,13 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
     // Calculate the result NELM
     aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
-    if (bRet || uDimAxRht EQ 0)
+    if (bRet || IsZeroDim (uDimAxRht))
         aplNELMRes = imul64 (aplNELMRes, uDimAxRht, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;
 
     // If the right arg is empty, return it
-    if (aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMRht))
     {
         hGlbRes = CopySymGlbDirAsGlb (MakePtrTypeGlb (hGlbRht));
 
@@ -301,13 +301,13 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     //   we're not doing prototypes, then
     //   check for the possibility of doing a
     //   Fast Boolean Scan
-    if (uDimHi EQ 1
+    if (IsUnitDim (uDimHi)
      && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
      && (IsSimpleBool (aplTypeRht)
       || (IsSimpleAPA (aplTypeRht)
-       && (apaOffRht EQ 0 || apaOffRht EQ 1)
+       && IsBooleanValue (apaOffRht)
        && apaMulRht EQ 0 ))
-     && uDimAxRht > 1
+     && IsMultiDim (uDimAxRht)
      && lpPrimProtoLft EQ NULL
      && lpPrimFlags
      && lpPrimFlags->FastBool)

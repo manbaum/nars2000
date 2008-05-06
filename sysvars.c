@@ -1116,7 +1116,7 @@ BOOL ValidateFloat_EM
 
         bRet = FALSE;
     } else
-    if (IsEmpty (aplNELMRht EQ 0))
+    if (IsEmpty (aplNELMRht))
     {
         // Must be simple to be valid
         bRet = IsSimple (aplTypeRht);

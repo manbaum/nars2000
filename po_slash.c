@@ -219,7 +219,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
 
     // If the right arg is a scalar, return it
-    if (aplRankRht EQ 0)
+    if (IsScalar (aplRankRht))
     {
         lpYYRes = PrimOpMonSlashScalar_EM_YY (lptkRhtArg,       // Ptr to right arg token
                                               hGlbRht,          // Right arg global memory handle
@@ -275,7 +275,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Handle prototypes specially
-    if (aplNELMRes EQ 0
+    if (IsEmpty (aplNELMRes)
      || bPrototyping)
     {
         // Get the appropriate prototype function ptr
@@ -290,7 +290,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
     // If the axis dimension is zero, get the identity
     //   element for the left operand or signal a DOMAIN ERROR
-    if (uDimAxRht EQ 0)
+    if (IsZeroDim (uDimAxRht))
     {
         // If it's not an immediate primitive function,
         //   or it is, but is without an identity element,
@@ -319,13 +319,13 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     //   we're not doing prototypes, then
     //   check for the possibility of doing a
     //   Fast Boolean Reduction
-    if (uDimHi EQ 1
+    if (IsUnitDim (uDimHi)
      && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
      && (IsSimpleBool (aplTypeRht)
       || (IsSimpleAPA (aplTypeRht)
-       && (apaOffRht EQ 0 || apaOffRht EQ 1)
+       && IsBooleanValue (apaOffRht)
        && apaMulRht EQ 0 ))
-     && uDimAxRht > 1
+     && IsMultiDim (uDimAxRht)
      && lpPrimProtoLft EQ NULL
      && lpPrimFlags
      && (lpPrimFlags->FastBool || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PLUS))
@@ -396,7 +396,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     // lpMemRes now points to its data
 
     // If the axis dimension is zero, fill with the identity element
-    if (uDimAxRht EQ 0)
+    if (IsZeroDim (uDimAxRht))
     {
         // The zero case is done (GHND)
 
@@ -450,7 +450,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                        lpYYFcnStrOpr);      // Ptr to operator function strand
     } else
     // If this is an empty nested result, ...
-    if (aplNELMRes EQ 0
+    if (IsEmpty (aplNELMRes)
      && IsNested (aplTypeRes))
     {
         // If the right arg is nested or simple hetero, ...
@@ -870,7 +870,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     // Handle prototypes specially
     // Get a ptr to the prototype function for the first symbol (a function or operator)
     if (bPrototyping
-     || (aplNELMLft EQ 0 || aplNELMRht EQ 0))
+     || IsEmpty (aplNELMLft)
+     || IsEmpty (aplNELMRht))
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (lpYYFcnStrLft);
@@ -880,11 +881,11 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         lpPrimProtoLft = NULL;
 
     // Check for LEFT RANK ERROR
-    if (aplRankLft > 1)
+    if (IsMultiRank (aplRankLft))
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT LENGTH ERROR
-    if (aplNELMLft NE 1)
+    if (!IsSingleton (aplNELMLft))
         goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN ERROR
@@ -959,7 +960,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             uDimLo *= lpMemDimRht[uDim];
 
         // Get the length of the axis dimension
-        if (aplRankRht EQ 0)
+        if (IsScalar (aplRankRht))
             uDimAxRht = 1;
         else
             uDimAxRht = lpMemDimRht[uDim];
@@ -1016,7 +1017,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
     // Calculate the result NELM
     aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
-    if (bRet || uDimAxRes EQ 0)
+    if (bRet || IsZeroDim (uDimAxRes))
         aplNELMRes = imul64 (aplNELMRes, uDimAxRes, &bRet);
     if (!bRet)
         goto WSFULL_EXIT;

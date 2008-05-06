@@ -149,7 +149,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Check for RIGHT RANK ERROR
-    if (aplRankRht > 1)
+    if (IsMultiRank (aplRankRht))
     {
         ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -157,7 +157,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
     } // End IF
 
     // Check for RIGHT DOMAIN ERROR
-    if ((!IsSimpleChar (aplTypeRht)) && aplNELMRht NE 0)
+    if ((!IsSimpleChar (aplTypeRht)) && !IsEmpty (aplNELMRht))
     {
         ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                    lptkFunc);
@@ -165,7 +165,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
     } // End IF
 
     // Check for empty case
-    if (aplNELMRht EQ 0)
+    if (IsEmpty (aplNELMRht))
         // Return PL_YYSTYPE NoValue entry
         return MakeNoValue_YY (lptkFunc);
 
